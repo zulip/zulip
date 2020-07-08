@@ -16,7 +16,7 @@ from zulip_bots.lib import get_bots_directory_path
 
 
 def generate_zulip_bots_static_files() -> None:
-    bots_dir = 'static/generated/bots'
+    bots_dir = "static/generated/bots"
     if os.path.isdir(bots_dir):
         # delete old static files, they could be outdated
         shutil.rmtree(bots_dir)
@@ -36,13 +36,14 @@ def generate_zulip_bots_static_files() -> None:
 
     package_bots_dir = get_bots_directory_path()
 
-    logo_glob_pattern = os.path.join(package_bots_dir, '*/logo.*')
+    logo_glob_pattern = os.path.join(package_bots_dir, "*/logo.*")
     logos = glob.glob(logo_glob_pattern)
     copyfiles(logos)
 
-    doc_glob_pattern = os.path.join(package_bots_dir, '*/doc.md')
+    doc_glob_pattern = os.path.join(package_bots_dir, "*/doc.md")
     docs = glob.glob(doc_glob_pattern)
     copyfiles(docs)
+
 
 if __name__ == "__main__":
     generate_zulip_bots_static_files()

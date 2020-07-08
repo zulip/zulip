@@ -20,156 +20,160 @@ sanity_check.check_venv(__file__)
 import ujson
 from zulint.printer import BOLDRED, CYAN, ENDC, GREEN
 
-INDEX_JS = 'frontend_tests/zjsunit/index.js'
-NODE_COVERAGE_PATH = 'var/node-coverage/coverage-final.json'
+INDEX_JS = "frontend_tests/zjsunit/index.js"
+NODE_COVERAGE_PATH = "var/node-coverage/coverage-final.json"
 
-USAGE = '''
+USAGE = """
     tools/test-js-with-node                      - to run all tests
     tools/test-js-with-node util.js activity.js  - to run just a couple tests
     tools/test-js-with-node --coverage           - to generate coverage report
-    '''
+    """
 
 # We do not yet require 100% line coverage for these files:
 EXEMPT_FILES = {
-    'static/js/admin.js',
-    'static/js/archive.js',
-    'static/js/attachments_ui.js',
-    'static/js/avatar.js',
-    'static/js/billing/helpers.js',
-    'static/js/blueslip.js',
-    'static/js/blueslip_stacktrace.ts',
-    'static/js/channel.js',
-    'static/js/click_handlers.js',
-    'static/js/compose_actions.js',
-    'static/js/composebox_typeahead.js',
-    'static/js/compose_fade.js',
-    'static/js/compose.js',
-    'static/js/condense.js',
-    'static/js/confirm_dialog.js',
-    'static/js/copy_and_paste.js',
-    'static/js/csrf.js',
-    'static/js/debug.js',
-    'static/js/drafts.js',
-    'static/js/echo.js',
-    'static/js/emoji_picker.js',
-    'static/js/emojisets.js',
-    'static/js/favicon.js',
-    'static/js/feedback_widget.js',
-    'static/js/floating_recipient_bar.js',
-    'static/js/gear_menu.js',
-    'static/js/global.d.ts',
-    'static/js/hashchange.js',
-    'static/js/hbs.d.ts',
-    'static/js/hotkey.js',
-    'static/js/hotspots.js',
-    'static/js/info_overlay.js',
-    'static/js/invite.js',
-    'static/js/lightbox_canvas.js',
-    'static/js/lightbox.js',
-    'static/js/list_util.js',
-    'static/js/loading.js',
-    'static/js/local_message.js',
-    'static/js/localstorage.js',
-    'static/js/message_edit.js',
-    'static/js/message_edit_history.js',
-    'static/js/message_events.js',
-    'static/js/message_fetch.js',
-    'static/js/message_flags.js',
-    'static/js/message_list_data.js',
-    'static/js/message_list.js',
-    'static/js/message_list_view.js',
-    'static/js/message_live_update.js',
-    'static/js/message_scroll.js',
-    'static/js/message_util.js',
-    'static/js/message_viewport.js',
-    'static/js/muting_ui.js',
-    'static/js/narrow.js',
-    'static/js/navigate.js',
-    'static/js/night_mode.js',
-    'static/js/notifications.js',
-    'static/js/overlays.js',
-    'static/js/padded_widget.js',
-    'static/js/page_params.js',
-    'static/js/panels.js',
-    'static/js/pm_list_dom.js',
-    'static/js/poll_widget.js',
-    'static/js/popovers.js',
-    'static/js/ready.js',
-    'static/js/realm_icon.js',
-    'static/js/realm_logo.js',
-    'static/js/recent_topics.js',
-    'static/js/reload.js',
-    'static/js/reload_state.js',
-    'static/js/reminder.js',
-    'static/js/rendered_markdown.js',
-    'static/js/resize.js',
-    'static/js/rows.js',
-    'static/js/scroll_bar.js',
-    'static/js/search_pill_widget.js',
-    'static/js/sent_messages.js',
-    'static/js/server_events.js',
-    'static/js/dropdown_list_widget.js',
-    'static/js/settings_account.js',
-    'static/js/settings_bots.js',
-    'static/js/settings_config.js',
-    'static/js/settings_display.js',
-    'static/js/settings_emoji.js',
-    'static/js/settings_exports.js',
-    'static/js/settings_invites.js',
-    'static/js/settings.js',
-    'static/js/settings_linkifiers.js',
-    'static/js/settings_notifications.js',
-    'static/js/settings_org.js',
-    'static/js/settings_panel_menu.js',
-    'static/js/settings_profile_fields.js',
-    'static/js/settings_sections.js',
-    'static/js/settings_streams.js',
-    'static/js/settings_toggle.js',
-    'static/js/settings_ui.js',
-    'static/js/settings_users.js',
-    'static/js/setup.js',
-    'static/js/spoilers.js',
-    'static/js/starred_messages.js',
-    'static/js/stream_color.js',
-    'static/js/stream_create.js',
-    'static/js/stream_edit.js',
-    'static/js/stream_list.js',
-    'static/js/stream_muting.js',
-    'static/js/stream_popover.js',
-    'static/js/stream_ui_updates.js',
-    'static/js/submessage.js',
-    'static/js/subs.js',
-    'static/js/tab_bar.js',
-    'static/js/templates.js',
-    'static/js/tictactoe_widget.js',
-    'static/js/timerender.js',
-    'static/js/todo_widget.js',
-    'static/js/topic_list.js',
-    'static/js/topic_zoom.js',
-    'static/js/tutorial.js',
-    'static/js/typing_events.js',
-    'static/js/typing.js',
-    'static/js/ui_init.js',
-    'static/js/ui.js',
-    'static/js/ui_report.js',
-    'static/js/ui_util.js',
-    'static/js/unread_ops.js',
-    'static/js/unread_ui.js',
-    'static/js/upload_widget.js',
-    'static/js/user_status_ui.js',
-    'static/js/zcommand.js',
-    'static/js/zform.js',
-    'static/js/zulip.js',
+    "static/js/admin.js",
+    "static/js/archive.js",
+    "static/js/attachments_ui.js",
+    "static/js/avatar.js",
+    "static/js/billing/helpers.js",
+    "static/js/blueslip.js",
+    "static/js/blueslip_stacktrace.ts",
+    "static/js/channel.js",
+    "static/js/click_handlers.js",
+    "static/js/compose_actions.js",
+    "static/js/composebox_typeahead.js",
+    "static/js/compose_fade.js",
+    "static/js/compose.js",
+    "static/js/condense.js",
+    "static/js/confirm_dialog.js",
+    "static/js/copy_and_paste.js",
+    "static/js/csrf.js",
+    "static/js/debug.js",
+    "static/js/drafts.js",
+    "static/js/echo.js",
+    "static/js/emoji_picker.js",
+    "static/js/emojisets.js",
+    "static/js/favicon.js",
+    "static/js/feedback_widget.js",
+    "static/js/floating_recipient_bar.js",
+    "static/js/gear_menu.js",
+    "static/js/global.d.ts",
+    "static/js/hashchange.js",
+    "static/js/hbs.d.ts",
+    "static/js/hotkey.js",
+    "static/js/hotspots.js",
+    "static/js/info_overlay.js",
+    "static/js/invite.js",
+    "static/js/lightbox_canvas.js",
+    "static/js/lightbox.js",
+    "static/js/list_util.js",
+    "static/js/loading.js",
+    "static/js/local_message.js",
+    "static/js/localstorage.js",
+    "static/js/message_edit.js",
+    "static/js/message_edit_history.js",
+    "static/js/message_events.js",
+    "static/js/message_fetch.js",
+    "static/js/message_flags.js",
+    "static/js/message_list_data.js",
+    "static/js/message_list.js",
+    "static/js/message_list_view.js",
+    "static/js/message_live_update.js",
+    "static/js/message_scroll.js",
+    "static/js/message_util.js",
+    "static/js/message_viewport.js",
+    "static/js/muting_ui.js",
+    "static/js/narrow.js",
+    "static/js/navigate.js",
+    "static/js/night_mode.js",
+    "static/js/notifications.js",
+    "static/js/overlays.js",
+    "static/js/padded_widget.js",
+    "static/js/page_params.js",
+    "static/js/panels.js",
+    "static/js/pm_list_dom.js",
+    "static/js/poll_widget.js",
+    "static/js/popovers.js",
+    "static/js/ready.js",
+    "static/js/realm_icon.js",
+    "static/js/realm_logo.js",
+    "static/js/recent_topics.js",
+    "static/js/reload.js",
+    "static/js/reload_state.js",
+    "static/js/reminder.js",
+    "static/js/rendered_markdown.js",
+    "static/js/resize.js",
+    "static/js/rows.js",
+    "static/js/scroll_bar.js",
+    "static/js/search_pill_widget.js",
+    "static/js/sent_messages.js",
+    "static/js/server_events.js",
+    "static/js/dropdown_list_widget.js",
+    "static/js/settings_account.js",
+    "static/js/settings_bots.js",
+    "static/js/settings_config.js",
+    "static/js/settings_display.js",
+    "static/js/settings_emoji.js",
+    "static/js/settings_exports.js",
+    "static/js/settings_invites.js",
+    "static/js/settings.js",
+    "static/js/settings_linkifiers.js",
+    "static/js/settings_notifications.js",
+    "static/js/settings_org.js",
+    "static/js/settings_panel_menu.js",
+    "static/js/settings_profile_fields.js",
+    "static/js/settings_sections.js",
+    "static/js/settings_streams.js",
+    "static/js/settings_toggle.js",
+    "static/js/settings_ui.js",
+    "static/js/settings_users.js",
+    "static/js/setup.js",
+    "static/js/spoilers.js",
+    "static/js/starred_messages.js",
+    "static/js/stream_color.js",
+    "static/js/stream_create.js",
+    "static/js/stream_edit.js",
+    "static/js/stream_list.js",
+    "static/js/stream_muting.js",
+    "static/js/stream_popover.js",
+    "static/js/stream_ui_updates.js",
+    "static/js/submessage.js",
+    "static/js/subs.js",
+    "static/js/tab_bar.js",
+    "static/js/templates.js",
+    "static/js/tictactoe_widget.js",
+    "static/js/timerender.js",
+    "static/js/todo_widget.js",
+    "static/js/topic_list.js",
+    "static/js/topic_zoom.js",
+    "static/js/tutorial.js",
+    "static/js/typing_events.js",
+    "static/js/typing.js",
+    "static/js/ui_init.js",
+    "static/js/ui.js",
+    "static/js/ui_report.js",
+    "static/js/ui_util.js",
+    "static/js/unread_ops.js",
+    "static/js/unread_ui.js",
+    "static/js/upload_widget.js",
+    "static/js/user_status_ui.js",
+    "static/js/zcommand.js",
+    "static/js/zform.js",
+    "static/js/zulip.js",
 }
 
 parser = argparse.ArgumentParser(USAGE)
-parser.add_argument('--coverage', dest='coverage',
-                    action="store_true",
-                    default=False, help='Get coverage report')
-parser.add_argument('--force', dest='force',
-                    action="store_true",
-                    default=False, help='Run tests despite possible problems.')
-parser.add_argument('args', nargs=argparse.REMAINDER)
+parser.add_argument(
+    "--coverage", dest="coverage", action="store_true", default=False, help="Get coverage report",
+)
+parser.add_argument(
+    "--force",
+    dest="force",
+    action="store_true",
+    default=False,
+    help="Run tests despite possible problems.",
+)
+parser.add_argument("args", nargs=argparse.REMAINDER)
 options = parser.parse_args()
 individual_files = options.args
 
@@ -177,13 +181,14 @@ from tools.lib.test_script import assert_provisioning_status_ok
 
 assert_provisioning_status_ok(options.force)
 
+
 def get_dev_host() -> str:
     # See similar code in dev_settings.py.  We only use
     # this to report where you can find coverage reports.
     # We duplicate the code here to avoid depending on
     # Django.
 
-    host = os.getenv('EXTERNAL_HOST')
+    host = os.getenv("EXTERNAL_HOST")
     if host is not None:
         return host
 
@@ -191,65 +196,70 @@ def get_dev_host() -> str:
     user_name = pwd.getpwuid(user_id).pw_name
     if user_name == "zulipdev":
         hostname = os.uname()[1].lower()
-        if '.zulipdev.org' not in hostname:
-            hostname += '.zulipdev.org'
-        return hostname + ':9991'
+        if ".zulipdev.org" not in hostname:
+            hostname += ".zulipdev.org"
+        return hostname + ":9991"
     else:
         # For local development environments, we use localhost by
         # default, via the "zulipdev.com" hostname.
-        return 'zulipdev.com:9991'
+        return "zulipdev.com:9991"
+
 
 def print_error(msg: str) -> None:
-    print(BOLDRED + 'ERROR:' + ENDC + ' ' + msg)
+    print(BOLDRED + "ERROR:" + ENDC + " " + msg)
+
 
 def run_tests_via_node_js() -> int:
-    os.environ['TZ'] = 'UTC'
+    os.environ["TZ"] = "UTC"
 
     # Add ".js" to the end of all the file arguments, so index.js
     # can actually verify if the file exists or not.
     for index, arg in enumerate(options.args):
-        if not arg.endswith('.js') and not arg.endswith('.ts'):
+        if not arg.endswith(".js") and not arg.endswith(".ts"):
             # If it doesn't end with ".js" or ".ts", assume it is a JS file,
             # since most files are currently JS files.
-            options.args[index] = arg + '.js'
+            options.args[index] = arg + ".js"
 
     # The index.js test runner is the real "driver" here, and we launch
     # with either nyc or node, depending on whether we want coverage
     # reports.  Running under nyc is slower and creates funny
     # tracebacks, so you generally want to get coverage reports only
     # after making sure tests will pass.
-    node_tests_cmd = ['node', '--stack-trace-limit=100', INDEX_JS]
+    node_tests_cmd = ["node", "--stack-trace-limit=100", INDEX_JS]
     node_tests_cmd += individual_files
     if options.coverage:
-        coverage_dir = os.path.join(ROOT_DIR, 'var/node-coverage')
-        coverage_lcov_file = os.path.join(coverage_dir, 'lcov.info')
+        coverage_dir = os.path.join(ROOT_DIR, "var/node-coverage")
+        coverage_lcov_file = os.path.join(coverage_dir, "lcov.info")
 
-        nyc = os.path.join(ROOT_DIR, 'node_modules/.bin/nyc')
-        command = [nyc, '--extension', '.hbs', '--extension', '.ts']
-        command += ['--report-dir', coverage_dir]
-        command += ['--temp-directory', coverage_dir, '-r=text-summary']
+        nyc = os.path.join(ROOT_DIR, "node_modules/.bin/nyc")
+        command = [nyc, "--extension", ".hbs", "--extension", ".ts"]
+        command += ["--report-dir", coverage_dir]
+        command += ["--temp-directory", coverage_dir, "-r=text-summary"]
         command += node_tests_cmd
-        command += ['&&', 'nyc', 'report', '-r=lcov', '-r=json']
-        command += ['>', coverage_lcov_file]
+        command += ["&&", "nyc", "report", "-r=lcov", "-r=json"]
+        command += [">", coverage_lcov_file]
     else:
         # Normal testing, no coverage analysis.
         # Run the index.js test runner, which runs all the other tests.
         command = node_tests_cmd
 
-    print('Starting node tests...')
+    print("Starting node tests...")
 
     # If we got this far, we can run the tests!
     try:
         ret = subprocess.check_call(command)
     except OSError:
-        print(f'Bad command: {command}')
+        print(f"Bad command: {command}")
         raise
     except subprocess.CalledProcessError:
-        print('\n** Tests failed, PLEASE FIX! **\n')
+        print("\n** Tests failed, PLEASE FIX! **\n")
         sys.exit(1)
     return ret
 
-def check_line_coverage(fn: str, line_coverage: Dict[Any, Any], line_mapping: Dict[Any, Any], log: bool = True) -> bool:
+
+def check_line_coverage(
+    fn: str, line_coverage: Dict[Any, Any], line_mapping: Dict[Any, Any], log: bool = True,
+) -> bool:
     missing_lines = []
     for line in line_coverage:
         if line_coverage[line] == 0:
@@ -263,6 +273,7 @@ def check_line_coverage(fn: str, line_coverage: Dict[Any, Any], line_mapping: Di
         return False
     return True
 
+
 def read_coverage() -> Any:
     coverage_json = None
     try:
@@ -273,13 +284,14 @@ def read_coverage() -> Any:
         raise
     return coverage_json
 
+
 def enforce_proper_coverage(coverage_json: Any) -> bool:
     all_js_files = set(
-        glob.glob('static/js/*.js') +
-        glob.glob('static/js/*.ts') +
-        glob.glob('static/shared/js/*.js') +
-        glob.glob('static/shared/js/*.ts') +
-        glob.glob('static/js/billing/*.js'),
+        glob.glob("static/js/*.js")
+        + glob.glob("static/js/*.ts")
+        + glob.glob("static/shared/js/*.js")
+        + glob.glob("static/shared/js/*.ts")
+        + glob.glob("static/js/billing/*.js"),
     )
     enforce_fully_covered = all_js_files - EXEMPT_FILES
 
@@ -290,8 +302,8 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
             coverage_lost = True
             print_error(f"{relative_path} has no node test coverage")
             continue
-        line_coverage = coverage_json[path]['s']
-        line_mapping = coverage_json[path]['statementMap']
+        line_coverage = coverage_json[path]["s"]
+        line_mapping = coverage_json[path]["statementMap"]
         if not check_line_coverage(relative_path, line_coverage, line_mapping):
             coverage_lost = True
     if coverage_lost:
@@ -306,8 +318,8 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
     for path in coverage_json:
         relative_path = os.path.relpath(path, ROOT_DIR)
         if relative_path in EXEMPT_FILES:
-            line_coverage = coverage_json[path]['s']
-            line_mapping = coverage_json[path]['statementMap']
+            line_coverage = coverage_json[path]["s"]
+            line_mapping = coverage_json[path]["statementMap"]
             if check_line_coverage(relative_path, line_coverage, line_mapping, log=False):
                 coverage_not_enforced = True
                 print_error(f"{relative_path} unexpectedly has 100% line coverage.")
@@ -317,8 +329,9 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
         print("One or more fully covered files are miscategorized.")
         print("Remove the file(s) from EXEMPT_FILES in `tools/test-js-with-node`.")
 
-    problems_encountered = (coverage_lost or coverage_not_enforced)
+    problems_encountered = coverage_lost or coverage_not_enforced
     return problems_encountered
+
 
 ret = run_tests_via_node_js()
 
@@ -332,8 +345,8 @@ if options.coverage and ret == 0:
 print()
 if ret == 0:
     if options.coverage:
-        reports_location = f'http://{get_dev_host()}/node-coverage/index.html'
-        print('View coverage reports at ' + CYAN + reports_location + ENDC)
+        reports_location = f"http://{get_dev_host()}/node-coverage/index.html"
+        print("View coverage reports at " + CYAN + reports_location + ENDC)
 
     print(GREEN + "Test(s) passed. SUCCESS!" + ENDC)
 else:

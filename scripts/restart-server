@@ -9,19 +9,23 @@ import subprocess
 import sys
 import time
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, ENDC, OKGREEN, WARNING, overwrite_symlink
 
 logging.Formatter.converter = time.gmtime
-logging.basicConfig(format="%(asctime)s restart-server: %(message)s",
-                    level=logging.INFO)
+logging.basicConfig(format="%(asctime)s restart-server: %(message)s", level=logging.INFO)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--fill-cache', action='store_true', dest='fill_cache', default=False,
-                    help='Fill the memcached caches')
+parser.add_argument(
+    "--fill-cache",
+    action="store_true",
+    dest="fill_cache",
+    default=False,
+    help="Fill the memcached caches",
+)
 args = parser.parse_args()
 
-deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
+deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
 os.chdir(deploy_path)
 
 if pwd.getpwuid(os.getuid()).pw_name != "zulip":
@@ -29,7 +33,9 @@ if pwd.getpwuid(os.getuid()).pw_name != "zulip":
     sys.exit(1)
 
 # Send a statsd event on restarting the server
-subprocess.check_call(["./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))])
+subprocess.check_call(
+    ["./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))],
+)
 
 if args.fill_cache:
     logging.info("Filling memcached caches")
@@ -50,7 +56,7 @@ config_file = configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
 try:
-    tornado_processes = int(config_file.get('application_server', 'tornado_processes'))
+    tornado_processes = int(config_file.get("application_server", "tornado_processes"))
 except (configparser.NoSectionError, configparser.NoOptionError):
     tornado_processes = 1
 
@@ -60,7 +66,7 @@ except (configparser.NoSectionError, configparser.NoOptionError):
 # insufficient priority.  This is important, because Tornado is the
 # main source of user-visible downtime when we restart a Zulip server.
 if tornado_processes > 1:
-    for p in range(9800, 9800+tornado_processes):
+    for p in range(9800, 9800 + tornado_processes):
         # Restart Tornado processes individually for a better rate of
         # restarts.  This also avoids behavior with restarting a whole
         # supervisord group where if any individual process is slow to
@@ -82,8 +88,8 @@ subprocess.check_call(["supervisorctl", "start"] + core_server_services)
 logging.info("Starting workers")
 subprocess.check_call(["supervisorctl", "start", "zulip-workers:*"])
 
-using_sso = subprocess.check_output(['./scripts/get-django-setting', 'USING_APACHE_SSO'])
-if using_sso.strip() == b'True':
+using_sso = subprocess.check_output(["./scripts/get-django-setting", "USING_APACHE_SSO"])
+if using_sso.strip() == b"True":
     logging.info("Restarting Apache WSGI process...")
     subprocess.check_call(["pkill", "-f", "apache2", "-u", "zulip"])
 
@@ -103,6 +109,8 @@ if change_symlink and "PWD" in os.environ:
 which has now changed. Your shell will not see this change until you run:
   cd {}
 to traverse the symlink again.{}
-""".format(WARNING, symlink, shlex.quote(os.environ["PWD"]), ENDC),
+""".format(
+                    WARNING, symlink, shlex.quote(os.environ["PWD"]), ENDC,
+                ),
                 file=sys.stderr,
             )

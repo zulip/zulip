@@ -12,11 +12,12 @@ assert_running_as_root()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 parser = argparse.ArgumentParser(description="Run puppet")
-parser.add_argument('--force', '-f', action="store_true",
-                    help="Do not prompt with proposed changes")
-parser.add_argument('--config', action="store",
-                    default="/etc/zulip/zulip.conf",
-                    help="Alternate zulip.conf path")
+parser.add_argument(
+    "--force", "-f", action="store_true", help="Do not prompt with proposed changes",
+)
+parser.add_argument(
+    "--config", action="store", default="/etc/zulip/zulip.conf", help="Alternate zulip.conf path",
+)
 args, extra_args = parser.parse_known_args()
 
 config = configparser.RawConfigParser()
@@ -27,7 +28,7 @@ puppet_config = """
 Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
 """
 
-for pclass in re.split(r'\s*,\s*', config.get('machine', 'puppet_classes')):
+for pclass in re.split(r"\s*,\s*", config.get("machine", "puppet_classes")):
     puppet_config += f"include {pclass}\n"
 
 # We use the puppet configuration from the same Zulip checkout as this script
@@ -42,21 +43,21 @@ puppet_env["FACTER_zulip_conf_path"] = args.config
 puppet_env["FACTER_zulip_scripts_path"] = scripts_path
 
 # This is to suppress puppet warnings with ruby 2.7.
-if (distro_info['ID'], distro_info['VERSION_ID']) in [('ubuntu', '20.04')]:
+if (distro_info["ID"], distro_info["VERSION_ID"]) in [("ubuntu", "20.04")]:
     puppet_env["RUBYOPT"] = "-W0"
 
 if not args.force:
-    subprocess.check_call(puppet_cmd + ['--noop', '--show_diff'], env=puppet_env)
+    subprocess.check_call(puppet_cmd + ["--noop", "--show_diff"], env=puppet_env)
 
     do_apply = None
-    while do_apply != 'y':
+    while do_apply != "y":
         sys.stdout.write("Apply changes? [y/N] ")
         sys.stdout.flush()
         do_apply = sys.stdin.readline().strip().lower()
-        if do_apply == '' or do_apply == 'n':
+        if do_apply == "" or do_apply == "n":
             sys.exit(0)
 
-ret = subprocess.call(puppet_cmd + ['--detailed-exitcodes'], env=puppet_env)
+ret = subprocess.call(puppet_cmd + ["--detailed-exitcodes"], env=puppet_env)
 # ret = 0 => no changes, no errors
 # ret = 2 => changes, no errors
 # ret = 4 => no changes, yes errors

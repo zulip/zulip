@@ -19,9 +19,7 @@ COPYRIGHT_FILENAME = "docs/THIRDPARTY"
 os.chdir(os.path.join(os.path.dirname(__file__), ".."))
 status = 0
 
-*files, empty = subprocess.check_output(
-    ["git", "ls-files", "-z"], encoding="utf-8",
-).split("\0")
+*files, empty = subprocess.check_output(["git", "ls-files", "-z"], encoding="utf-8").split("\0")
 assert empty == ""
 files += [
     "static/generated/emoji/images/emoji/unicode/ignore-this-path",
@@ -35,9 +33,7 @@ if not c.header.known_format():
     print(f"{COPYRIGHT_FILENAME}: Unknown header format {c.header.format}")
     status = 1
 
-defined_licenses = {
-    p.license.synopsis for p in c.all_license_paragraphs() if p.license.text
-}
+defined_licenses = {p.license.synopsis for p in c.all_license_paragraphs() if p.license.text}
 
 for p in c.all_files_paragraphs():
     for g in p.files:
@@ -54,10 +50,7 @@ if dumped != "".join(lines):
     print(f"{COPYRIGHT_FILENAME}: Changes expected:")
     sys.stdout.writelines(
         difflib.unified_diff(
-            lines,
-            io.StringIO(dumped).readlines(),
-            COPYRIGHT_FILENAME,
-            COPYRIGHT_FILENAME,
+            lines, io.StringIO(dumped).readlines(), COPYRIGHT_FILENAME, COPYRIGHT_FILENAME,
         ),
     )
     status = 1

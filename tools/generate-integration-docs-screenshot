@@ -53,8 +53,10 @@ from zerver.lib.webhooks.common import get_fixture_http_headers
 from zerver.models import Message, UserProfile, get_realm, get_user_by_delivery_email
 
 
-def create_integration_bot(integration: WebhookIntegration, bot_name: Optional[str]=None) -> UserProfile:
-    realm = get_realm('zulip')
+def create_integration_bot(
+    integration: WebhookIntegration, bot_name: Optional[str] = None,
+) -> UserProfile:
+    realm = get_realm("zulip")
     owner = get_user_by_delivery_email("iago@zulip.com", realm)
     bot_email = f"{integration.name}-bot@example.com"
     if bot_name is None:
@@ -84,24 +86,28 @@ def create_integration_bot(integration: WebhookIntegration, bot_name: Optional[s
 
     return bot
 
+
 def create_integration_stream(integration: WebhookIntegration, bot: UserProfile) -> None:
     assert isinstance(bot.bot_owner, UserProfile)
     stream, created = create_stream_if_needed(bot.bot_owner.realm, integration.stream_name)
     bulk_add_subscriptions([stream], [bot, bot.bot_owner], from_stream_creation=created)
+
 
 def get_integration(integration_name: str) -> WebhookIntegration:
     integration = INTEGRATIONS[integration_name]
     assert isinstance(integration, WebhookIntegration), "Not a WebhookIntegration"
     return integration
 
+
 def get_requests_headers(integration_name: str, fixture_name: str) -> Dict[str, Any]:
     headers = get_fixture_http_headers(integration_name, fixture_name)
 
     def fix_name(header: str) -> str:
-        header = header if not header.startswith('HTTP_') else header[len('HTTP_'):]
-        return header.replace('_', '-')
+        header = header if not header.startswith("HTTP_") else header[len("HTTP_") :]
+        return header.replace("_", "-")
 
     return {fix_name(k): v for k, v in headers.items()}
+
 
 def custom_headers(headers_json: str) -> Dict[str, str]:
     if not headers_json:
@@ -110,14 +116,17 @@ def custom_headers(headers_json: str) -> Dict[str, str]:
         return ujson.loads(headers_json)
     except ValueError as ve:
         raise argparse.ArgumentTypeError(
-            'Encountered an error while attempting to parse custom headers: {}\n'
-            'Note: all strings must be enclosed within "" instead of \'\''.format(ve))
+            "Encountered an error while attempting to parse custom headers: {}\n"
+            "Note: all strings must be enclosed within \"\" instead of ''".format(ve),
+        )
 
-def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, fixture_path: str,
-                             config: ScreenshotConfig) -> bool:
+
+def send_bot_payload_message(
+    bot: UserProfile, integration: WebhookIntegration, fixture_path: str, config: ScreenshotConfig,
+) -> bool:
     # Delete all messages, so new message is the only one it's message group
     Message.objects.filter(sender=bot).delete()
-    json_fixture = fixture_path.endswith('.json')
+    json_fixture = fixture_path.endswith(".json")
     _, fixture_name = split_fixture_path(fixture_path)
 
     if fixture_name:
@@ -127,19 +136,19 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
             else:
                 data = f.read().strip()
     else:
-        data = ''
+        data = ""
 
     headers = get_requests_headers(integration.name, fixture_name)
     headers.update(config.custom_headers)
     if config.use_basic_auth:
-        credentials = base64.b64encode(f'{bot.email}:{bot.api_key}'.encode('utf8')).decode('utf8')
-        auth = f'basic {credentials}'
+        credentials = base64.b64encode(f"{bot.email}:{bot.api_key}".encode("utf8")).decode("utf8")
+        auth = f"basic {credentials}"
         headers.update(dict(Authorization=auth))
 
     assert isinstance(bot.bot_owner, UserProfile)
-    stream = integration.stream_name or 'devel'
+    stream = integration.stream_name or "devel"
     url = f"{bot.bot_owner.realm.uri}/{integration.url}"
-    params = {'api_key': bot.api_key, 'stream': stream}
+    params = {"api_key": bot.api_key, "stream": stream}
     params.update(config.extra_params)
 
     extra_args = {}
@@ -154,34 +163,40 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
         params[config.payload_param_name] = ujson.dumps(data)
 
     else:
-        extra_args = {'json': data}
+        extra_args = {"json": data}
 
-    url = f'{url}?{urlencode(params)}'
+    url = f"{url}?{urlencode(params)}"
 
     try:
         response = requests.post(url=url, headers=headers, **extra_args)
     except requests.exceptions.ConnectionError:
-        print('This tool needs the local dev server to be running. '
-              'Please start it using tools/run-dev.py before running this tool.')
+        print(
+            "This tool needs the local dev server to be running. "
+            "Please start it using tools/run-dev.py before running this tool.",
+        )
         sys.exit(1)
     if response.status_code != 200:
         print(response.json())
-        print('Failed to trigger webhook')
+        print("Failed to trigger webhook")
         return False
     else:
-        print(f'Triggered {integration.name} webhook')
+        print(f"Triggered {integration.name} webhook")
         return True
+
 
 def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
     message = Message.objects.filter(sender=bot).last()
     if message is None:
-        print(f'No message found for {bot.full_name}')
+        print(f"No message found for {bot.full_name}")
         return
     message_id = str(message.id)
-    screenshot_script = os.path.join(TOOLS_DIR, 'message-screenshot.js')
-    subprocess.check_call(['node', screenshot_script, message_id, image_path])
+    screenshot_script = os.path.join(TOOLS_DIR, "message-screenshot.js")
+    subprocess.check_call(["node", screenshot_script, message_id, image_path])
 
-def generate_screenshot_from_config(integration_name: str, screenshot_config: ScreenshotConfig) -> None:
+
+def generate_screenshot_from_config(
+    integration_name: str, screenshot_config: ScreenshotConfig,
+) -> None:
     integration = get_integration(integration_name)
     fixture_path, image_path = get_fixture_and_image_paths(integration, screenshot_config)
     bot = create_integration_bot(integration, screenshot_config.bot_name)
@@ -189,49 +204,64 @@ def generate_screenshot_from_config(integration_name: str, screenshot_config: Sc
     message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
     if message_sent:
         capture_last_message_screenshot(bot, image_path)
-        print(f'Screenshot captured to: {BOLDRED}{image_path}{ENDC}')
+        print(f"Screenshot captured to: {BOLDRED}{image_path}{ENDC}")
+
 
 parser = argparse.ArgumentParser()
 group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument('--all', default=False, action='store_true')
-group.add_argument('--integration', type=str, help='Name of the integration')
-parser.add_argument('--fixture', type=str, help='Name of the fixture file to use')
-parser.add_argument('--image-name', type=str, help='Name for the screenshot image')
-parser.add_argument('--image-dir', type=str, help='Directory name where to save the screenshot image')
-parser.add_argument('--bot-name', type=str, help='Name to use for the bot')
-parser.add_argument('-A', '--use-basic-auth', action='store_true',
-                    help='Add basic auth headers to the request')
-parser.add_argument('-Q', '--payload-as-query-param', action='store_true',
-                    help='Send payload as query param instead of body')
-parser.add_argument('-P', '--payload-param-name', type=str,
-                    help='Param name to use for the payload')
-parser.add_argument('-H', '--custom-headers',
-                    type=custom_headers,
-                    help='Any additional headers to be sent with the request.')
+group.add_argument("--all", default=False, action="store_true")
+group.add_argument("--integration", type=str, help="Name of the integration")
+parser.add_argument("--fixture", type=str, help="Name of the fixture file to use")
+parser.add_argument("--image-name", type=str, help="Name for the screenshot image")
+parser.add_argument(
+    "--image-dir", type=str, help="Directory name where to save the screenshot image",
+)
+parser.add_argument("--bot-name", type=str, help="Name to use for the bot")
+parser.add_argument(
+    "-A", "--use-basic-auth", action="store_true", help="Add basic auth headers to the request",
+)
+parser.add_argument(
+    "-Q",
+    "--payload-as-query-param",
+    action="store_true",
+    help="Send payload as query param instead of body",
+)
+parser.add_argument(
+    "-P", "--payload-param-name", type=str, help="Param name to use for the payload",
+)
+parser.add_argument(
+    "-H",
+    "--custom-headers",
+    type=custom_headers,
+    help="Any additional headers to be sent with the request.",
+)
 
 options = parser.parse_args()
 prepare_puppeteer_run()
 
 if options.all:
     for key, value in vars(options).items():
-        if key != 'all' and value:
-            print('Generating screenshots for all integrations. Ignoring all command-line options')
+        if key != "all" and value:
+            print("Generating screenshots for all integrations. Ignoring all command-line options")
     for integration_name, screenshot_configs in DOC_SCREENSHOT_CONFIG.items():
         for screenshot_config in screenshot_configs:
             generate_screenshot_from_config(integration_name, screenshot_config)
 
 elif options.fixture:
-    config = dict(fixture_name=options.fixture, use_basic_auth=options.use_basic_auth,
-                  custom_headers=options.custom_headers,
-                  payload_as_query_param=options.payload_as_query_param)
+    config = dict(
+        fixture_name=options.fixture,
+        use_basic_auth=options.use_basic_auth,
+        custom_headers=options.custom_headers,
+        payload_as_query_param=options.payload_as_query_param,
+    )
     if options.image_name:
-        config['image_name'] = options.image_name
+        config["image_name"] = options.image_name
     if options.image_dir:
-        config['image_dir'] = options.image_dir
+        config["image_dir"] = options.image_dir
     if options.bot_name:
-        config['bot_name'] = options.bot_name
+        config["bot_name"] = options.bot_name
     if options.payload_param_name:
-        config['payload_param_name'] = options.payload_param_name
+        config["payload_param_name"] = options.payload_param_name
     screenshot_config = ScreenshotConfig(**config)
     generate_screenshot_from_config(options.integration, screenshot_config)
 

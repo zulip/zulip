@@ -19,21 +19,24 @@ EXCLUDED_FILES = [
     ## Test data Files for testing modules in tests
     "tools/tests/test_template_data",
     # Our parser doesn't handle the way its conditionals are layered
-    'templates/zerver/emails/missed_message.source.html',
+    "templates/zerver/emails/missed_message.source.html",
     # Previously unchecked and our parser doesn't like its indentation
-    'static/assets/icons/template.hbs',
+    "static/assets/icons/template.hbs",
 ]
+
 
 def check_our_files(modified_only: bool, all_dups: bool, fix: bool, targets: List[str]) -> None:
     by_lang = lister.list_files(
         targets=targets,
         modified_only=args.modified,
-        ftypes=['hbs', 'html'],
-        group_by_ftype=True, exclude=EXCLUDED_FILES,
+        ftypes=["hbs", "html"],
+        group_by_ftype=True,
+        exclude=EXCLUDED_FILES,
     )
 
-    check_handlebar_templates(by_lang['hbs'], fix)
-    check_html_templates(by_lang['html'], all_dups, fix)
+    check_handlebar_templates(by_lang["hbs"], fix)
+    check_html_templates(by_lang["html"], all_dups, fix)
+
 
 def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) -> None:
     # Our files with .html extensions are usually for Django, but we also
@@ -43,69 +46,75 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
     # The casperjs files use HTML5 (whereas Zulip prefers XHTML), and
     # there are also cases where Casper deliberately uses invalid HTML,
     # so we exclude them from our linter.
-    logging.basicConfig(format='%(levelname)s:%(message)s')
-    templates = sorted(fn for fn in templates if 'casperjs' not in fn)
+    logging.basicConfig(format="%(levelname)s:%(message)s")
+    templates = sorted(fn for fn in templates if "casperjs" not in fn)
     # Use of underscore templates <%= %>.
-    if 'templates/zerver/team.html' in templates:
-        templates.remove('templates/zerver/team.html')
+    if "templates/zerver/team.html" in templates:
+        templates.remove("templates/zerver/team.html")
 
     def check_for_duplicate_ids(templates: List[str]) -> Dict[str, List[str]]:
         template_id_dict = build_id_dict(templates)
         # TODO: Clean up these cases of duplicate ids in the code
         IGNORE_IDS = [
-            'api-example-tabs',
-            'errors',
-            'error-message-box',
-            'email',
-            'messages',
-            'registration',
-            'pw_strength',
-            'id_password',
-            'top_navbar',
-            'id_email',
-            'id_terms',
-            'send_confirm',
-            'register',
-            'footer',
-            'charged_amount',
-            'change-plan-status',
+            "api-example-tabs",
+            "errors",
+            "error-message-box",
+            "email",
+            "messages",
+            "registration",
+            "pw_strength",
+            "id_password",
+            "top_navbar",
+            "id_email",
+            "id_terms",
+            "send_confirm",
+            "register",
+            "footer",
+            "charged_amount",
+            "change-plan-status",
             # Temporary while we have searchbox forked
-            'search_exit',
-            'search_query',
-            'tab_bar',
-            'search_arrows',
-            'searchbox_form',
-            'searchbox',
+            "search_exit",
+            "search_query",
+            "tab_bar",
+            "search_arrows",
+            "searchbox_form",
+            "searchbox",
         ]
-        bad_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
-                        if (ids not in IGNORE_IDS) and len(fns) > 1}
+        bad_ids_dict = {
+            ids: fns
+            for ids, fns in template_id_dict.items()
+            if (ids not in IGNORE_IDS) and len(fns) > 1
+        }
 
         if all_dups:
-            ignorable_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
-                                  if ids in IGNORE_IDS and len(fns) > 1}
+            ignorable_ids_dict = {
+                ids: fns
+                for ids, fns in template_id_dict.items()
+                if ids in IGNORE_IDS and len(fns) > 1
+            }
 
             for ids, fns in ignorable_ids_dict.items():
-                logging.warning("Duplicate ID(s) detected :Id '" + ids +
-                                "' present at following files:")
+                logging.warning(
+                    "Duplicate ID(s) detected :Id '" + ids + "' present at following files:",
+                )
                 for fn in fns:
                     print(fn)
 
         for ids, fns in bad_ids_dict.items():
-            logging.error("Duplicate ID(s) detected :Id '" + ids +
-                          "' present at following files:")
+            logging.error("Duplicate ID(s) detected :Id '" + ids + "' present at following files:")
             for fn in fns:
                 print(fn)
         return bad_ids_dict
 
     bad_ids_list: List[str] = []
-    archive_templates = [fn for fn in templates if 'templates/zerver/archive' in fn]
-    templates = [fn for fn in templates if 'templates/zerver/archive' not in fn]
+    archive_templates = [fn for fn in templates if "templates/zerver/archive" in fn]
+    templates = [fn for fn in templates if "templates/zerver/archive" not in fn]
 
     bad_ids_list += list(check_for_duplicate_ids(archive_templates).keys())
     bad_ids_list += list(check_for_duplicate_ids(templates).keys())
 
     if bad_ids_list:
-        print('Exiting--please clean up all duplicates before running this again.')
+        print("Exiting--please clean up all duplicates before running this again.")
         sys.exit(1)
 
     for fn in templates:
@@ -117,9 +126,9 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
         bad_files = [
             # These use various whitespace-dependent formatting that
             # prevent cleaning them.
-            'templates/corporate/zephyr-mirror.html',
+            "templates/corporate/zephyr-mirror.html",
             # Can't clean this because of `preserve_spaces`
-            'templates/zerver/app/markdown_help.html',
+            "templates/zerver/app/markdown_help.html",
         ]
         validate(fn=fn, check_indent=(fn not in bad_files))
 
@@ -128,9 +137,9 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
         # zephyr-mirror.html has some whitespace-dependent formatting
         # for code blocks that prevent cleaning it.  Might make sense
         # to convert it to a /help/ markdown article.
-        'templates/corporate/zephyr-mirror.html',
+        "templates/corporate/zephyr-mirror.html",
         # Can't clean this because of `preserve_spaces`
-        'templates/zerver/app/markdown_help.html',
+        "templates/zerver/app/markdown_help.html",
     ]
     # TODO: Clean these files
     for fn in templates:
@@ -138,13 +147,14 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
             if not validate_indent_html(fn, fix):
                 sys.exit(1)
 
+
 def check_handlebar_templates(templates: Iterable[str], fix: bool) -> None:
     # Check all our handlebars templates.
-    templates = [fn for fn in templates if fn.endswith('.hbs')]
+    templates = [fn for fn in templates if fn.endswith(".hbs")]
 
     IGNORE_FILES = [
         # TODO: Add some exclude mechanism for the line-wrapping issue here.
-        'static/templates/recipient_row.hbs',
+        "static/templates/recipient_row.hbs",
     ]
 
     for fn in templates:
@@ -158,17 +168,21 @@ def check_handlebar_templates(templates: Iterable[str], fix: bool) -> None:
         if not validate_indent_html(fn, fix):
             sys.exit(1)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--modified',
-                        action='store_true', default=False,
-                        help='only check modified files')
-    parser.add_argument('--all-dups',
-                        action="store_true", default=False,
-                        help='Run lint tool to detect duplicate ids on ignored files as well')
-    parser.add_argument('--fix',
-                        action='store_true', default=False,
-                        help='Automatically fix indentation problems.')
-    parser.add_argument('targets', nargs=argparse.REMAINDER)
+    parser.add_argument(
+        "-m", "--modified", action="store_true", default=False, help="only check modified files",
+    )
+    parser.add_argument(
+        "--all-dups",
+        action="store_true",
+        default=False,
+        help="Run lint tool to detect duplicate ids on ignored files as well",
+    )
+    parser.add_argument(
+        "--fix", action="store_true", default=False, help="Automatically fix indentation problems.",
+    )
+    parser.add_argument("targets", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     check_our_files(args.modified, args.all_dups, args.fix, args.targets)

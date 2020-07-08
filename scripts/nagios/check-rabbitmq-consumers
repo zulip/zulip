@@ -19,46 +19,49 @@ states = {
     3: "UNKNOWN",
 }
 
-if 'USER' in os.environ and not os.environ['USER'] in ['root', 'rabbitmq']:
+if "USER" in os.environ and not os.environ["USER"] in ["root", "rabbitmq"]:
     print("This script must be run as the root or rabbitmq user")
 
 
 usage = """Usage: check-rabbitmq-consumers --queue=[queue-name] --min-threshold=[min-threshold]"""
 
 parser = argparse.ArgumentParser(usage=usage)
-parser.add_argument('--min-threshold',
-                    dest='min_count',
-                    type=int,
-                    default=1,
-                    action='store')
+parser.add_argument("--min-threshold", dest="min_count", type=int, default=1, action="store")
 
 options = parser.parse_args()
 
 config_file = configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
+
+
 def get_config(section: str, key: str, default_value: str) -> str:
     if config_file.has_option(section, key):
         return config_file.get(section, key)
     return default_value
-TORNADO_PROCESSES = int(get_config('application_server', 'tornado_processes', '1'))
 
-output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
-                                 universal_newlines=True)
+
+TORNADO_PROCESSES = int(get_config("application_server", "tornado_processes", "1"))
+
+output = subprocess.check_output(
+    ["/usr/sbin/rabbitmqctl", "list_consumers"], universal_newlines=True,
+)
 
 consumers: Dict[str, int] = defaultdict(int)
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
-queues = set(normal_queues).union({
-    # These queues may not be present if settings.TORNADO_PROCESSES > 1
-    'notify_tornado',
-})
+queues = set(normal_queues).union(
+    {
+        # These queues may not be present if settings.TORNADO_PROCESSES > 1
+        "notify_tornado",
+    },
+)
 
 for queue_name in queues:
     queue_name = queue_name.strip()
     consumers[queue_name] = 0
 
-for line in output.split('\n'):
-    parts = line.split('\t')
+for line in output.split("\n"):
+    parts = line.split("\t")
     if len(parts) >= 2:
         queue_name = parts[0]
         if queue_name.startswith("notify_tornado_"):
@@ -80,5 +83,7 @@ for queue_name in consumers.keys():
     else:
         status = 0
     with open(state_file_tmp, "w") as f:
-        f.write(f"{now}|{status}|{states[status]}|queue {queue_name} has {consumers[queue_name]} consumers, needs {target_count}\n")
+        f.write(
+            f"{now}|{status}|{states[status]}|queue {queue_name} has {consumers[queue_name]} consumers, needs {target_count}\n",
+        )
     os.rename(state_file_tmp, state_file_path)

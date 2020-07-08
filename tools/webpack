@@ -5,19 +5,26 @@ import os
 import subprocess
 from typing import NoReturn
 
-os.chdir(os.path.join(os.path.dirname(__file__), '..'))
-STATIC_PATH = 'static/'
+os.chdir(os.path.join(os.path.dirname(__file__), ".."))
+STATIC_PATH = "static/"
 
 
 def build_for_prod_or_casper(quiet: bool) -> NoReturn:
     """Builds for production, writing the output to disk"""
 
-    webpack_args = ['node', 'node_modules/.bin/webpack-cli',
-                    '--config', 'tools/webpack.config.ts', '-p',
-                    '--env', 'production']
+    webpack_args = [
+        "node",
+        "node_modules/.bin/webpack-cli",
+        "--config",
+        "tools/webpack.config.ts",
+        "-p",
+        "--env",
+        "production",
+    ]
     if quiet:
-        webpack_args += ['--display', 'errors-only']
+        webpack_args += ["--display", "errors-only"]
     os.execvp(webpack_args[0], webpack_args)
+
 
 def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check: bool) -> None:
     """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
@@ -25,61 +32,67 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
     # This is our most dynamic configuration, which we use for our
     # dev server.  The key piece here is that we identify changes to
     # files as devs make edits and serve new assets on the fly.
-    webpack_args = ['node', 'node_modules/.bin/webpack-dev-server']
+    webpack_args = ["node", "node_modules/.bin/webpack-dev-server"]
     webpack_args += [
-        '--config',
-        'tools/webpack.config.ts',
+        "--config",
+        "tools/webpack.config.ts",
         # webpack-cli has a bug where it ignores --watch-poll with
         # multi-config, and we don't need the katex-cli part anyway.
-        '--config-name', 'frontend',
-        '--allowed-hosts', ','.join([host, '.zulipdev.com', '.zulipdev.org']),
-        '--host', host,
-        '--port', port,
+        "--config-name",
+        "frontend",
+        "--allowed-hosts",
+        ",".join([host, ".zulipdev.com", ".zulipdev.org"]),
+        "--host",
+        host,
+        "--port",
+        port,
         # We add the hot flag using the cli because it takes care
         # of addition to entry points and adding the plugin
         # automatically
-        '--hot',
+        "--hot",
     ]
     if minify:
-        webpack_args.append('--optimize-minimize')
+        webpack_args.append("--optimize-minimize")
     if disable_host_check:
-        webpack_args.append('--disable-host-check')
+        webpack_args.append("--disable-host-check")
 
     # Tell webpack-dev-server to fall back to periodic polling on
     # filesystems where inotify is known to be broken.
     cwd = os.getcwd()
     inotify_broken = False
-    with open('/proc/self/mounts') as mounts:
+    with open("/proc/self/mounts") as mounts:
         for line in mounts:
             fields = line.split()
             if fields[1] == cwd:
                 inotify_broken = fields[2] in ["nfs", "vboxsf"]
     if inotify_broken:
-        webpack_args.append('--watch-poll=1000')
+        webpack_args.append("--watch-poll=1000")
 
     # TODO: This process should also fall back to periodic polling if
     # inotify_broken.
     import pyinotify
+
     try:
         webpack_process = subprocess.Popen(webpack_args)
 
         class WebpackConfigFileChangeHandler(pyinotify.ProcessEvent):
             def process_default(self, event: pyinotify.Event) -> None:
                 nonlocal webpack_process
-                print('Restarting webpack-dev-server due to config changes...')
+                print("Restarting webpack-dev-server due to config changes...")
                 webpack_process.terminate()
                 webpack_process.wait()
                 webpack_process = subprocess.Popen(webpack_args)
 
         watch_manager = pyinotify.WatchManager()
         event_notifier = pyinotify.Notifier(watch_manager, WebpackConfigFileChangeHandler())
-        for file in ['webpack.config.ts', 'webpack-helpers.ts', 'webpack.assets.json']:
+        for file in ["webpack.config.ts", "webpack-helpers.ts", "webpack.assets.json"]:
             filepath = os.path.join(os.path.dirname(__file__), file)
             watch_manager.add_watch(filepath, pyinotify.IN_MODIFY)
         event_notifier.loop()
     finally:
         webpack_process.terminate()
         webpack_process.wait()
+
 
 def build_for_most_tests() -> None:
     """Generates a stub asset stat file for django so backend test can render a page"""
@@ -93,47 +106,77 @@ def build_for_most_tests() -> None:
     # was out of the scope of the effort here to add some comments and
     # clean up names.
     entries = {}
-    with open('tools/webpack.assets.json') as json_data:
+    with open("tools/webpack.assets.json") as json_data:
         for entry in json.load(json_data).keys():
-            entries[entry] = [{
-                "name": f"{entry}.js",
-                "publicPath": f"http://localhost:3000/webpack-stub/{entry}-stubentry.js",
-                "path": f"/stubfolder/{entry}-stubfile.js",
-            }]
+            entries[entry] = [
+                {
+                    "name": f"{entry}.js",
+                    "publicPath": f"http://localhost:3000/webpack-stub/{entry}-stubentry.js",
+                    "path": f"/stubfolder/{entry}-stubfile.js",
+                },
+            ]
     stat_data = {
         "status": "done",
         "chunks": entries,
         "entryPoints": {name: [chunk] for name, chunk in entries.items()},
     }
-    directory = 'var'
+    directory = "var"
     if not os.path.exists(directory):
         os.makedirs(directory)
-    with open(os.path.join(directory, 'webpack-stats-test.json'), 'w') as outfile:
+    with open(os.path.join(directory, "webpack-stats-test.json"), "w") as outfile:
         json.dump(stat_data, outfile)
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--test',
-                    action='store_true', dest='test', default=False,
-                    help='generate a stub webpack-stats.json file (for backend testing)')
-parser.add_argument('--quiet',
-                    action='store_true', dest='quiet', default=False,
-                    help='Minimizes webpack output while running')
-parser.add_argument('--watch',
-                    action='store_true', dest='watch', default=False,
-                    help='watch for changes to source files (for development)')
-parser.add_argument('--host',
-                    action='store', dest='host',
-                    default='127.0.0.1', help='set the host for the webpack server to run on')
-parser.add_argument('--port',
-                    action='store', dest='port',
-                    default='9994', help='set the port for the webpack server to run on')
-parser.add_argument('--minify',
-                    action='store_true', dest='minify', default=False,
-                    help='Minify and optimize the assets (for development)')
-parser.add_argument('--disable-host-check',
-                    action='store_true', dest='disable_host_check', default=None,
-                    help='Disable host check for webpack-dev-server')
+parser.add_argument(
+    "--test",
+    action="store_true",
+    dest="test",
+    default=False,
+    help="generate a stub webpack-stats.json file (for backend testing)",
+)
+parser.add_argument(
+    "--quiet",
+    action="store_true",
+    dest="quiet",
+    default=False,
+    help="Minimizes webpack output while running",
+)
+parser.add_argument(
+    "--watch",
+    action="store_true",
+    dest="watch",
+    default=False,
+    help="watch for changes to source files (for development)",
+)
+parser.add_argument(
+    "--host",
+    action="store",
+    dest="host",
+    default="127.0.0.1",
+    help="set the host for the webpack server to run on",
+)
+parser.add_argument(
+    "--port",
+    action="store",
+    dest="port",
+    default="9994",
+    help="set the port for the webpack server to run on",
+)
+parser.add_argument(
+    "--minify",
+    action="store_true",
+    dest="minify",
+    default=False,
+    help="Minify and optimize the assets (for development)",
+)
+parser.add_argument(
+    "--disable-host-check",
+    action="store_true",
+    dest="disable_host_check",
+    default=None,
+    help="Disable host check for webpack-dev-server",
+)
 
 args = parser.parse_args()
 if "CASPER_TESTS" in os.environ:

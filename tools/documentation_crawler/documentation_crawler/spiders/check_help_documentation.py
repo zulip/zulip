@@ -22,59 +22,64 @@ class UnusedImagesLinterSpider(BaseDocumentationSpider):
         self.images_static_dir: str = get_images_dir(self.images_path)
 
     def _is_external_url(self, url: str) -> bool:
-        is_external = url.startswith('http') and self.start_urls[0] not in url
-        if self._has_extension(url) and f'localhost:9981/{self.images_path}' in url:
+        is_external = url.startswith("http") and self.start_urls[0] not in url
+        if self._has_extension(url) and f"localhost:9981/{self.images_path}" in url:
             self.static_images.add(basename(urlparse(url).path))
         return is_external or self._has_extension(url)
 
     def closed(self, *args: Any, **kwargs: Any) -> None:
         unused_images = set(os.listdir(self.images_static_dir)) - self.static_images
         if unused_images:
-            exception_message = "The following images are not used in documentation " \
-                                "and can be removed: {}"
+            exception_message = (
+                "The following images are not used in documentation " "and can be removed: {}"
+            )
             self._set_error_state()
             unused_images_relatedpath = [
-                os.path.join(self.images_path, img) for img in unused_images]
-            raise Exception(exception_message.format(', '.join(unused_images_relatedpath)))
+                os.path.join(self.images_path, img) for img in unused_images
+            ]
+            raise Exception(exception_message.format(", ".join(unused_images_relatedpath)))
 
 
 class HelpDocumentationSpider(UnusedImagesLinterSpider):
     name = "help_documentation_crawler"
-    start_urls = ['http://localhost:9981/help']
+    start_urls = ["http://localhost:9981/help"]
     deny_domains: List[str] = []
-    deny = ['/privacy']
+    deny = ["/privacy"]
     images_path = "static/images/help"
 
 
 class APIDocumentationSpider(UnusedImagesLinterSpider):
-    name = 'api_documentation_crawler'
-    start_urls = ['http://localhost:9981/api']
+    name = "api_documentation_crawler"
+    start_urls = ["http://localhost:9981/api"]
     deny_domains: List[str] = []
     images_path = "static/images/api"
+
 
 class PorticoDocumentationSpider(BaseDocumentationSpider):
     def _is_external_url(self, url: str) -> bool:
         return (
-            not url.startswith('http://localhost:9981')
-            or url.startswith('http://localhost:9981/help')
-            or url.startswith('http://localhost:9981/api')
+            not url.startswith("http://localhost:9981")
+            or url.startswith("http://localhost:9981/help")
+            or url.startswith("http://localhost:9981/api")
             or self._has_extension(url)
         )
 
-    name = 'portico_documentation_crawler'
-    start_urls = ['http://localhost:9981/hello',
-                  'http://localhost:9981/history',
-                  'http://localhost:9981/plans',
-                  'http://localhost:9981/team',
-                  'http://localhost:9981/apps',
-                  'http://localhost:9981/integrations',
-                  'http://localhost:9981/terms',
-                  'http://localhost:9981/privacy',
-                  'http://localhost:9981/features',
-                  'http://localhost:9981/why-zulip',
-                  'http://localhost:9981/for/open-source',
-                  'http://localhost:9981/for/companies',
-                  'http://localhost:9981/for/working-groups-and-communities',
-                  'http://localhost:9981/for/research',
-                  'http://localhost:9981/security']
+    name = "portico_documentation_crawler"
+    start_urls = [
+        "http://localhost:9981/hello",
+        "http://localhost:9981/history",
+        "http://localhost:9981/plans",
+        "http://localhost:9981/team",
+        "http://localhost:9981/apps",
+        "http://localhost:9981/integrations",
+        "http://localhost:9981/terms",
+        "http://localhost:9981/privacy",
+        "http://localhost:9981/features",
+        "http://localhost:9981/why-zulip",
+        "http://localhost:9981/for/open-source",
+        "http://localhost:9981/for/companies",
+        "http://localhost:9981/for/working-groups-and-communities",
+        "http://localhost:9981/for/research",
+        "http://localhost:9981/security",
+    ]
     deny_domains: List[str] = []

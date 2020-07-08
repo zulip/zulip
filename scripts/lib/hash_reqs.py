@@ -16,16 +16,17 @@ def expand_reqs_helper(fpath: str, visited: MutableSet[str]) -> List[str]:
     result = []  # type: List[str]
 
     for line in open(fpath):
-        if line.startswith('#'):
+        if line.startswith("#"):
             continue
         dep = line.split(" #", 1)[0].strip()  # remove comments and strip whitespace
         if dep:
-            if dep.startswith('-r'):
+            if dep.startswith("-r"):
                 child = os.path.join(curr_dir, dep[3:])
                 result += expand_reqs_helper(child, visited)
             else:
                 result.append(dep)
     return result
+
 
 def expand_reqs(fpath: str) -> List[str]:
     """
@@ -37,18 +38,22 @@ def expand_reqs(fpath: str) -> List[str]:
     output = expand_reqs_helper(absfpath, set())
     return sorted(set(output))
 
+
 def hash_deps(deps: Iterable[str]) -> str:
     deps_str = "\n".join(deps) + "\n"
-    return hashlib.sha1(deps_str.encode('utf-8')).hexdigest()
+    return hashlib.sha1(deps_str.encode("utf-8")).hexdigest()
+
 
 def main() -> int:
-    description = ("Finds the SHA1 hash of list of dependencies in a requirements file"
-                   " after recursively visiting all files specified in it.")
+    description = (
+        "Finds the SHA1 hash of list of dependencies in a requirements file"
+        " after recursively visiting all files specified in it."
+    )
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("fpath", metavar="FILE",
-                        help="Path to requirements file")
-    parser.add_argument("--print", dest="print_reqs", action='store_true',
-                        help="Print all dependencies")
+    parser.add_argument("fpath", metavar="FILE", help="Path to requirements file")
+    parser.add_argument(
+        "--print", dest="print_reqs", action="store_true", help="Print all dependencies",
+    )
     args = parser.parse_args()
 
     deps = expand_reqs(args.fpath)
@@ -58,6 +63,7 @@ def main() -> int:
         for dep in deps:
             print(dep)
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

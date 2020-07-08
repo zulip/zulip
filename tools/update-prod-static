@@ -6,12 +6,12 @@ import os
 import sys
 
 # We need settings so we can figure out where the prod-static directory is.
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from scripts.lib.setup_path import setup_path
 
 setup_path()
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 from django.conf import settings
 
 # check for the venv
@@ -22,8 +22,9 @@ from scripts.lib.zulip_tools import run
 sanity_check.check_venv(__file__)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--prev-deploy', metavar='DIR',
-                    help='a previous deploy from which to reuse files if possible')
+parser.add_argument(
+    "--prev-deploy", metavar="DIR", help="a previous deploy from which to reuse files if possible",
+)
 args = parser.parse_args()
 prev_deploy = args.prev_deploy
 
@@ -33,35 +34,45 @@ os.chdir(settings.DEPLOY_ROOT)
 setup_node_modules(production=True)
 
 # Build emoji
-run(['./tools/setup/emoji/build_emoji'])
+run(["./tools/setup/emoji/build_emoji"])
 
 # Inline CSS in emails
-run(['./scripts/setup/inline_email_css.py'])
+run(["./scripts/setup/inline_email_css.py"])
 
 # Copy over static files from the zulip_bots package
-run(['./tools/setup/generate_zulip_bots_static_files.py'])
+run(["./tools/setup/generate_zulip_bots_static_files.py"])
 
 # Build pygment data
-run(['./tools/setup/build_pygments_data'])
+run(["./tools/setup/build_pygments_data"])
 
 # Create webpack bundle
-run(['./tools/webpack', '--quiet'])
+run(["./tools/webpack", "--quiet"])
 
 # Collect the files that we're going to serve; this creates prod-static/serve.
-run([
-    './manage.py', 'collectstatic', '--no-default-ignore',
-    '-v0',
-    '--noinput',
-    '-i', 'assets',
-    '-i', 'emoji-styles',
-    '-i', 'html',
-    '-i', 'js',
-    '-i', 'styles',
-    '-i', 'templates',
-])
+run(
+    [
+        "./manage.py",
+        "collectstatic",
+        "--no-default-ignore",
+        "-v0",
+        "--noinput",
+        "-i",
+        "assets",
+        "-i",
+        "emoji-styles",
+        "-i",
+        "html",
+        "-i",
+        "js",
+        "-i",
+        "styles",
+        "-i",
+        "templates",
+    ],
+)
 
 # Compile translation strings to generate `.mo` files.
-run(['./manage.py', 'compilemessages', '-v0'])
+run(["./manage.py", "compilemessages", "-v0"])
 
 # Needed if PRODUCTION
-os.makedirs('prod-static', exist_ok=True)
+os.makedirs("prod-static", exist_ok=True)

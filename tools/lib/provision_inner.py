@@ -25,20 +25,22 @@ from version import PROVISION_VERSION
 VENV_PATH = "/srv/zulip-py3-venv"
 UUID_VAR_PATH = get_dev_uuid_var_path()
 
+
 def create_var_directories() -> None:
     # create var/coverage, var/log, etc.
-    var_dir = os.path.join(ZULIP_PATH, 'var')
+    var_dir = os.path.join(ZULIP_PATH, "var")
     sub_dirs = [
-        'coverage',
-        'log',
-        'node-coverage',
-        'test_uploads',
-        'uploads',
-        'xunit-test-results',
+        "coverage",
+        "log",
+        "node-coverage",
+        "test_uploads",
+        "uploads",
+        "xunit-test-results",
     ]
     for sub_dir in sub_dirs:
         path = os.path.join(var_dir, sub_dir)
         os.makedirs(path, exist_ok=True)
+
 
 def build_pygments_data_paths() -> List[str]:
     paths = [
@@ -47,25 +49,29 @@ def build_pygments_data_paths() -> List[str]:
     ]
     return paths
 
+
 def compilemessages_paths() -> List[str]:
-    paths = ['zerver/management/commands/compilemessages.py']
-    paths += glob.glob('locale/*/LC_MESSAGES/*.po')
-    paths += glob.glob('locale/*/translations.json')
+    paths = ["zerver/management/commands/compilemessages.py"]
+    paths += glob.glob("locale/*/LC_MESSAGES/*.po")
+    paths += glob.glob("locale/*/translations.json")
     return paths
+
 
 def inline_email_css_paths() -> List[str]:
     paths = [
         "scripts/setup/inline_email_css.py",
         "templates/zerver/emails/email.css",
     ]
-    paths += glob.glob('templates/zerver/emails/*.source.html')
+    paths += glob.glob("templates/zerver/emails/*.source.html")
     return paths
+
 
 def configure_rabbitmq_paths() -> List[str]:
     paths = [
         "scripts/setup/configure-rabbitmq",
     ]
     return paths
+
 
 def setup_shell_profile(shell_profile: str) -> None:
     shell_profile_path = os.path.expanduser(shell_profile)
@@ -75,23 +81,23 @@ def setup_shell_profile(shell_profile: str) -> None:
             with open(shell_profile_path) as shell_profile_file:
                 lines = [line.strip() for line in shell_profile_file.readlines()]
             if command not in lines:
-                with open(shell_profile_path, 'a+') as shell_profile_file:
-                    shell_profile_file.writelines(command + '\n')
+                with open(shell_profile_path, "a+") as shell_profile_file:
+                    shell_profile_file.writelines(command + "\n")
         else:
-            with open(shell_profile_path, 'w') as shell_profile_file:
-                shell_profile_file.writelines(command + '\n')
+            with open(shell_profile_path, "w") as shell_profile_file:
+                shell_profile_file.writelines(command + "\n")
 
     source_activate_command = "source " + os.path.join(VENV_PATH, "bin", "activate")
     write_command(source_activate_command)
-    if os.path.exists('/srv/zulip'):
-        write_command('cd /srv/zulip')
+    if os.path.exists("/srv/zulip"):
+        write_command("cd /srv/zulip")
+
 
 def setup_bash_profile() -> None:
     """Select a bash profile file to add setup code to."""
 
     BASH_PROFILES = [
-        os.path.expanduser(p) for p in
-        ("~/.bash_profile", "~/.bash_login", "~/.profile")
+        os.path.expanduser(p) for p in ("~/.bash_profile", "~/.bash_login", "~/.profile")
     ]
 
     def clear_old_profile() -> None:
@@ -103,8 +109,7 @@ def setup_bash_profile() -> None:
 
         BASH_PROFILE = BASH_PROFILES[0]
         DOT_PROFILE = BASH_PROFILES[2]
-        OLD_PROFILE_TEXT = "source /srv/zulip-py3-venv/bin/activate\n" + \
-            "cd /srv/zulip\n"
+        OLD_PROFILE_TEXT = "source /srv/zulip-py3-venv/bin/activate\n" + "cd /srv/zulip\n"
 
         if os.path.exists(DOT_PROFILE):
             try:
@@ -125,41 +130,35 @@ def setup_bash_profile() -> None:
         # no existing bash profile found; claim .bash_profile
         setup_shell_profile(BASH_PROFILES[0])
 
+
 def need_to_run_build_pygments_data() -> bool:
     if not os.path.exists("static/generated/pygments_data.json"):
         return True
 
     return is_digest_obsolete(
-        "build_pygments_data_hash",
-        build_pygments_data_paths(),
-        [pygments_version],
+        "build_pygments_data_hash", build_pygments_data_paths(), [pygments_version],
     )
+
 
 def need_to_run_compilemessages() -> bool:
-    if not os.path.exists('locale/language_name_map.json'):
+    if not os.path.exists("locale/language_name_map.json"):
         # User may have cleaned their git checkout.
-        print('Need to run compilemessages due to missing language_name_map.json')
+        print("Need to run compilemessages due to missing language_name_map.json")
         return True
 
-    return is_digest_obsolete(
-        "last_compilemessages_hash",
-        compilemessages_paths(),
-    )
+    return is_digest_obsolete("last_compilemessages_hash", compilemessages_paths())
+
 
 def need_to_run_inline_email_css() -> bool:
-    if not os.path.exists('templates/zerver/emails/compiled/'):
+    if not os.path.exists("templates/zerver/emails/compiled/"):
         return True
 
-    return is_digest_obsolete(
-        "last_email_source_files_hash",
-        inline_email_css_paths(),
-    )
+    return is_digest_obsolete("last_email_source_files_hash", inline_email_css_paths())
+
 
 def need_to_run_configure_rabbitmq(settings_list: List[str]) -> bool:
     obsolete = is_digest_obsolete(
-        'last_configure_rabbitmq_hash',
-        configure_rabbitmq_paths(),
-        settings_list,
+        "last_configure_rabbitmq_hash", configure_rabbitmq_paths(), settings_list,
     )
 
     if obsolete:
@@ -167,6 +166,7 @@ def need_to_run_configure_rabbitmq(settings_list: List[str]) -> bool:
 
     try:
         from zerver.lib.queue import SimpleQueueClient
+
         SimpleQueueClient()
         return False
     except Exception:
@@ -182,13 +182,15 @@ def clean_unused_caches() -> None:
         no_headings=True,
     )
     from scripts.lib import clean_emoji_cache, clean_node_cache, clean_venv_cache
+
     clean_venv_cache.main(args)
     clean_node_cache.main(args)
     clean_emoji_cache.main(args)
 
+
 def main(options: argparse.Namespace) -> int:
     setup_bash_profile()
-    setup_shell_profile('~/.zprofile')
+    setup_shell_profile("~/.zprofile")
 
     # This needs to happen before anything that imports zproject.settings.
     run(["scripts/setup/generate_secrets.py", "--development"])
@@ -206,9 +208,7 @@ def main(options: argparse.Namespace) -> int:
     if options.is_force or need_to_run_build_pygments_data():
         run(["tools/setup/build_pygments_data"])
         write_new_digest(
-            'build_pygments_data_hash',
-            build_pygments_data_paths(),
-            [pygments_version],
+            "build_pygments_data_hash", build_pygments_data_paths(), [pygments_version],
         )
     else:
         print("No need to run `tools/setup/build_pygments_data`.")
@@ -216,8 +216,7 @@ def main(options: argparse.Namespace) -> int:
     if options.is_force or need_to_run_inline_email_css():
         run(["scripts/setup/inline_email_css.py"])
         write_new_digest(
-            "last_email_source_files_hash",
-            inline_email_css_paths(),
+            "last_email_source_files_hash", inline_email_css_paths(),
         )
     else:
         print("No need to run `scripts/setup/inline_email_css.py`.")
@@ -229,6 +228,7 @@ def main(options: argparse.Namespace) -> int:
         # Need to set up Django before using template_status
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
         import django
+
         django.setup()
 
         from django.conf import settings
@@ -239,11 +239,10 @@ def main(options: argparse.Namespace) -> int:
             destroy_leaked_test_databases,
         )
 
-        if options.is_force or need_to_run_configure_rabbitmq(
-                [settings.RABBITMQ_PASSWORD]):
+        if options.is_force or need_to_run_configure_rabbitmq([settings.RABBITMQ_PASSWORD]):
             run(["scripts/setup/configure-rabbitmq"])
             write_new_digest(
-                'last_configure_rabbitmq_hash',
+                "last_configure_rabbitmq_hash",
                 configure_rabbitmq_paths(),
                 [settings.RABBITMQ_PASSWORD],
             )
@@ -251,7 +250,7 @@ def main(options: argparse.Namespace) -> int:
             print("No need to run `scripts/setup/configure-rabbitmq.")
 
         dev_template_db_status = DEV_DATABASE.template_status()
-        if options.is_force or dev_template_db_status == 'needs_rebuild':
+        if options.is_force or dev_template_db_status == "needs_rebuild":
             run(["tools/setup/postgres-init-dev-db"])
             if options.skip_dev_db_build:
                 # We don't need to build the manual development
@@ -264,26 +263,25 @@ def main(options: argparse.Namespace) -> int:
             else:
                 run(["tools/rebuild-dev-database"])
                 DEV_DATABASE.write_new_db_digest()
-        elif dev_template_db_status == 'run_migrations':
+        elif dev_template_db_status == "run_migrations":
             DEV_DATABASE.run_db_migrations()
-        elif dev_template_db_status == 'current':
+        elif dev_template_db_status == "current":
             print("No need to regenerate the dev DB.")
 
         test_template_db_status = TEST_DATABASE.template_status()
-        if options.is_force or test_template_db_status == 'needs_rebuild':
+        if options.is_force or test_template_db_status == "needs_rebuild":
             run(["tools/setup/postgres-init-test-db"])
             run(["tools/rebuild-test-database"])
             TEST_DATABASE.write_new_db_digest()
-        elif test_template_db_status == 'run_migrations':
+        elif test_template_db_status == "run_migrations":
             TEST_DATABASE.run_db_migrations()
-        elif test_template_db_status == 'current':
+        elif test_template_db_status == "current":
             print("No need to regenerate the test DB.")
 
         if options.is_force or need_to_run_compilemessages():
             run(["./manage.py", "compilemessages"])
             write_new_digest(
-                "last_compilemessages_hash",
-                compilemessages_paths(),
+                "last_compilemessages_hash", compilemessages_paths(),
             )
         else:
             print("No need to run `manage.py compilemessages`.")
@@ -296,18 +294,18 @@ def main(options: argparse.Namespace) -> int:
 
     # Keeping this cache file around can cause eslint to throw
     # random TypeErrors when new/updated dependencies are added
-    if os.path.isfile('.eslintcache'):
+    if os.path.isfile(".eslintcache"):
         # Remove this block when
         # https://github.com/eslint/eslint/issues/11639 is fixed
         # upstream.
-        os.remove('.eslintcache')
+        os.remove(".eslintcache")
 
     # Clean up the root of the `var/` directory for various
     # testing-related files that we have migrated to
     # `var/<uuid>/test-backend`.
     print("Cleaning var/ directory files...")
-    var_paths = glob.glob('var/test*')
-    var_paths.append('var/bot_avatar')
+    var_paths = glob.glob("var/test*")
+    var_paths.append("var/bot_avatar")
     for path in var_paths:
         try:
             if os.path.isdir(path):
@@ -317,29 +315,40 @@ def main(options: argparse.Namespace) -> int:
         except FileNotFoundError:
             pass
 
-    version_file = os.path.join(UUID_VAR_PATH, 'provision_version')
-    print(f'writing to {version_file}\n')
-    open(version_file, 'w').write(PROVISION_VERSION + '\n')
+    version_file = os.path.join(UUID_VAR_PATH, "provision_version")
+    print(f"writing to {version_file}\n")
+    open(version_file, "w").write(PROVISION_VERSION + "\n")
 
     print()
     print(OKBLUE + "Zulip development environment setup succeeded!" + ENDC)
     return 0
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--force', action='store_true', dest='is_force',
-                        default=False,
-                        help="Ignore all provisioning optimizations.")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        dest="is_force",
+        default=False,
+        help="Ignore all provisioning optimizations.",
+    )
 
-    parser.add_argument('--build-release-tarball-only', action='store_true',
-                        dest='is_build_release_tarball_only',
-                        default=False,
-                        help="Provision for test suite with production settings.")
+    parser.add_argument(
+        "--build-release-tarball-only",
+        action="store_true",
+        dest="is_build_release_tarball_only",
+        default=False,
+        help="Provision for test suite with production settings.",
+    )
 
-    parser.add_argument('--skip-dev-db-build', action='store_true',
-                        dest='skip_dev_db_build',
-                        default=False,
-                        help="Don't run migrations on dev database.")
+    parser.add_argument(
+        "--skip-dev-db-build",
+        action="store_true",
+        dest="skip_dev_db_build",
+        default=False,
+        help="Don't run migrations on dev database.",
+    )
 
     options = parser.parse_args()
     sys.exit(main(options))

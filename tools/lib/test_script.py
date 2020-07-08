@@ -10,41 +10,47 @@ from version import PROVISION_VERSION
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+
 def get_major_version(v: str) -> int:
-    return int(v.split('.')[0])
+    return int(v.split(".")[0])
+
 
 def get_version_file() -> str:
     uuid_var_path = get_dev_uuid_var_path()
-    return os.path.join(uuid_var_path, 'provision_version')
+    return os.path.join(uuid_var_path, "provision_version")
 
-PREAMBLE = '''
+
+PREAMBLE = """
 Before we run tests, we make sure your provisioning version
 is correct by looking at var/provision_version, which is at
 version %s, and we compare it to the version in source
 control (version.py), which is %s.
-'''
+"""
+
 
 def preamble(version: str) -> str:
     text = PREAMBLE % (version, PROVISION_VERSION)
-    text += '\n'
+    text += "\n"
     return text
 
-NEED_TO_DOWNGRADE = '''
+
+NEED_TO_DOWNGRADE = """
 It looks like you checked out a branch that expects an older
 version of dependencies than the version you provisioned last.
 This may be ok, but it's likely that you either want to rebase
 your branch on top of upstream/master or re-provision your VM.
 
 Do this: `./tools/provision`
-'''
+"""
 
-NEED_TO_UPGRADE = '''
+NEED_TO_UPGRADE = """
 It looks like you checked out a branch that has added
 dependencies beyond what you last provisioned. Your command
 is likely to fail until you add dependencies by provisioning.
 
 Do this: `./tools/provision`
-'''
+"""
+
 
 def get_provisioning_status() -> Tuple[bool, Optional[str]]:
     version_file = get_version_file()
@@ -78,7 +84,7 @@ def assert_provisioning_status_ok(force: bool) -> None:
         ok, msg = get_provisioning_status()
         if not ok:
             print(msg)
-            print('If you really know what you are doing, use --force to run anyway.')
+            print("If you really know what you are doing, use --force to run anyway.")
             sys.exit(1)
 
 
@@ -94,13 +100,14 @@ def find_js_test_files(test_dir: str, files: Iterable[str]) -> List[str]:
         test_files.append(os.path.abspath(file))
 
     if not test_files:
-        test_files = sorted(glob.glob(os.path.join(test_dir, '*.js')))
+        test_files = sorted(glob.glob(os.path.join(test_dir, "*.js")))
 
     return test_files
 
+
 def prepare_puppeteer_run() -> None:
     os.chdir(ZULIP_PATH)
-    subprocess.check_call(['node', 'node_modules/puppeteer/install.js'])
-    os.makedirs('var/puppeteer', exist_ok=True)
-    for f in glob.glob('var/puppeteer/puppeteer-failure*.png'):
+    subprocess.check_call(["node", "node_modules/puppeteer/install.js"])
+    os.makedirs("var/puppeteer", exist_ok=True)
+    for f in glob.glob("var/puppeteer/puppeteer-failure*.png"):
         os.remove(f)

@@ -16,7 +16,8 @@ from scripts.lib.zulip_tools import (
 )
 
 ENV = get_environment()
-VENV_CACHE_DIR = '/srv/zulip-venv-cache'
+VENV_CACHE_DIR = "/srv/zulip-venv-cache"
+
 
 def get_caches_in_use(threshold_days: int) -> Set[str]:
     setups_to_check = {ZULIP_PATH}
@@ -48,10 +49,11 @@ def get_caches_in_use(threshold_days: int) -> Set[str]:
 
     return caches_in_use
 
+
 def main(args: argparse.Namespace) -> None:
     caches_in_use = get_caches_in_use(args.threshold_days)
-    purge_unused_caches(
-        VENV_CACHE_DIR, caches_in_use, "venv cache", args)
+    purge_unused_caches(VENV_CACHE_DIR, caches_in_use, "venv cache", args)
+
 
 if __name__ == "__main__":
     args = parse_cache_script_args("This script cleans unused zulip venv caches.")

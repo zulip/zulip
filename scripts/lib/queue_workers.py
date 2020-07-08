@@ -9,7 +9,7 @@ from scripts.lib.setup_path import setup_path
 
 setup_path()
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 
 import django
 
@@ -18,8 +18,13 @@ from zerver.worker.queue_processors import get_active_worker_queues
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--queue-type', action='store', dest='queue_type', default=None,
-                        help="Specify which types of queues to list")
+    parser.add_argument(
+        "--queue-type",
+        action="store",
+        dest="queue_type",
+        default=None,
+        help="Specify which types of queues to list",
+    )
     args = parser.parse_args()
 
     for worker in sorted(get_active_worker_queues(args.queue_type)):

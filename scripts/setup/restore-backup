@@ -32,14 +32,7 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
     # (E.g. because this is a development backup).
     tarball_file.seek(0, 0)
     subprocess.call(
-        [
-            "tar",
-            "-C",
-            "/etc/zulip",
-            "--strip-components=2",
-            "-xz",
-            "zulip-backup/settings",
-        ],
+        ["tar", "-C", "/etc/zulip", "--strip-components=2", "-xz", "zulip-backup/settings"],
         stdin=tarball_file,
     )
 
@@ -97,49 +90,53 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
 
         run(
             [
-                os.path.join(
-                    settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions",
-                ),
+                os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions"),
                 db["NAME"],
             ],
             env=postgres_env,
         )
         run(["dropdb", "--if-exists", "--", db["NAME"]], cwd="/", env=postgres_env)
-        run(["createdb", "-O", "zulip", "-T", "template0", "--", db["NAME"]], cwd="/", env=postgres_env)
+        run(
+            ["createdb", "-O", "zulip", "-T", "template0", "--", db["NAME"]],
+            cwd="/",
+            env=postgres_env,
+        )
         os.setresuid(0, 0, 0)
 
         if settings.PRODUCTION:
             # In case we are restoring a backup from an older Zulip
             # version, there may be new secrets to generate.
-            subprocess.check_call([
-                os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "generate_secrets.py"),
-                "--production",
-            ])
+            subprocess.check_call(
+                [
+                    os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "generate_secrets.py"),
+                    "--production",
+                ],
+            )
 
             # If there is a local rabbitmq, we need to reconfigure it
             # to ensure the rabbitmq password matches the value in the
             # restored zulip-secrets.conf.  We need to be careful to
             # only do this if rabbitmq is configured to run locally on
             # the system.
-            rabbitmq_host = subprocess.check_output(
-                [os.path.join(settings.DEPLOY_ROOT,
-                              "scripts", "get-django-setting"),
-                 "RABBITMQ_HOST"]).strip().decode("utf-8")
+            rabbitmq_host = (
+                subprocess.check_output(
+                    [
+                        os.path.join(settings.DEPLOY_ROOT, "scripts", "get-django-setting"),
+                        "RABBITMQ_HOST",
+                    ],
+                )
+                .strip()
+                .decode("utf-8")
+            )
             if rabbitmq_host in ["127.0.0.1", "::1", "localhost", "localhost6"]:
-                run([os.path.join(settings.DEPLOY_ROOT,
-                                  "scripts", "setup", "configure-rabbitmq")])
+                run([os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "configure-rabbitmq")])
 
             # In production, we also need to do a `zulip-puppet-apply`
             # in order to apply any configuration from
             # /etc/zulip/zulip.conf to this system, since it was
             # originally installed without the restored copy of that
             # file.
-            run(
-                [
-                    os.path.join(settings.DEPLOY_ROOT, "scripts", "zulip-puppet-apply"),
-                    "-f",
-                ],
-            )
+            run([os.path.join(settings.DEPLOY_ROOT, "scripts", "zulip-puppet-apply"), "-f"])
 
         # Now, restore the the database backup using pg_restore.  This
         # needs to run after zulip-puppet-apply to ensure full-text

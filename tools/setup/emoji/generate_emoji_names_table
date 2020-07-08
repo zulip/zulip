@@ -15,11 +15,13 @@ from emoji_setup_utils import EMOJISETS, emoji_is_universal, get_emoji_code
 
 TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ZULIP_PATH = os.path.dirname(TOOLS_DIR)
-EMOJI_MAP_FILE = os.path.join(TOOLS_DIR, 'setup', 'emoji', 'emoji_map.json')
-UNIFIED_REACTIONS_FILE = os.path.join(ZULIP_PATH, 'zerver', 'management', 'data', 'unified_reactions.json')
-EMOJI_DATA_FILE = os.path.join(ZULIP_PATH, 'node_modules', 'emoji-datasource-google', 'emoji.json')
-EMOJI_CACHE = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji')
-OUTPUT_FILE = os.path.join(EMOJI_CACHE, 'emoji_names_table.html')
+EMOJI_MAP_FILE = os.path.join(TOOLS_DIR, "setup", "emoji", "emoji_map.json")
+UNIFIED_REACTIONS_FILE = os.path.join(
+    ZULIP_PATH, "zerver", "management", "data", "unified_reactions.json",
+)
+EMOJI_DATA_FILE = os.path.join(ZULIP_PATH, "node_modules", "emoji-datasource-google", "emoji.json")
+EMOJI_CACHE = os.path.join(ZULIP_PATH, "static", "generated", "emoji")
+OUTPUT_FILE = os.path.join(EMOJI_CACHE, "emoji_names_table.html")
 
 with open(EMOJI_DATA_FILE) as fp:
     EMOJI_DATA = ujson.load(fp)
@@ -107,22 +109,23 @@ TABLE_CSS = """
 """
 
 SORTED_CATEGORIES = [
-    'Smileys & Emotion',
-    'People & Body',
-    'Animals & Nature',
-    'Food & Drink',
-    'Activities',
-    'Travel & Places',
-    'Objects',
-    'Symbols',
-    'Flags',
-    'Skin Tones',
+    "Smileys & Emotion",
+    "People & Body",
+    "Animals & Nature",
+    "Food & Drink",
+    "Activities",
+    "Travel & Places",
+    "Objects",
+    "Symbols",
+    "Flags",
+    "Skin Tones",
 ]
 
 emoji_code_to_zulip_names: Dict[str, str] = {}
 emoji_code_to_iamcal_names: Dict[str, str] = {}
 emoji_code_to_gemoji_names: Dict[str, str] = {}
 emoji_collection: Dict[str, List[Dict[str, Any]]] = {category: [] for category in SORTED_CATEGORIES}
+
 
 def generate_emoji_code_to_emoji_names_maps() -> None:
     # Prepare gemoji names map.
@@ -135,7 +138,9 @@ def generate_emoji_code_to_emoji_names_maps() -> None:
             reverse_unified_reactions_map[emoji_code] = [name]
 
     for emoji_code in reverse_unified_reactions_map:
-        emoji_code_to_gemoji_names[emoji_code] = ", ".join(reverse_unified_reactions_map[emoji_code])
+        emoji_code_to_gemoji_names[emoji_code] = ", ".join(
+            reverse_unified_reactions_map[emoji_code],
+        )
 
     # Prepare iamcal names map.
     for emoji_dict in EMOJI_DATA:
@@ -150,18 +155,21 @@ def generate_emoji_code_to_emoji_names_maps() -> None:
         names.extend(aliases)
         emoji_code_to_zulip_names[emoji_code] = ", ".join(names)
 
+
 def get_sorting_info(category: str, sort_order: int) -> str:
     return " ".join([category, str(sort_order)])
 
+
 def get_images_html(emoji_code: str) -> str:
-    images_html = ''
+    images_html = ""
     for emojiset in EMOJISETS:
-        images_html += (EMOJI_IMAGE_TEMPLATE % {
-            'emoji_code': emoji_code,
-            'emojiset': emojiset,
-        })
+        images_html += EMOJI_IMAGE_TEMPLATE % {
+            "emoji_code": emoji_code,
+            "emojiset": emojiset,
+        }
 
     return images_html
+
 
 def generate_emoji_collection() -> None:
     generate_emoji_code_to_emoji_names_maps()
@@ -172,21 +180,24 @@ def generate_emoji_collection() -> None:
         category = emoji_dict["category"]
         emoji_code = get_emoji_code(emoji_dict)
         sort_order = emoji_dict["sort_order"]
-        emoji_collection[category].append({
-            "category": category,
-            "emoji_code": emoji_code,
-            "images_html": get_images_html(emoji_code),
-            "gemoji_names": emoji_code_to_gemoji_names.get(emoji_code, ""),
-            "iamcal_names": emoji_code_to_iamcal_names.get(emoji_code, ""),
-            "zulip_names": emoji_code_to_zulip_names.get(emoji_code, ""),
-            "unicode_name": (emoji_dict["name"] or "").lower(),
-            "sort_order": sort_order,
-            "sorting_info": get_sorting_info(category, sort_order),
-        })
+        emoji_collection[category].append(
+            {
+                "category": category,
+                "emoji_code": emoji_code,
+                "images_html": get_images_html(emoji_code),
+                "gemoji_names": emoji_code_to_gemoji_names.get(emoji_code, ""),
+                "iamcal_names": emoji_code_to_iamcal_names.get(emoji_code, ""),
+                "zulip_names": emoji_code_to_zulip_names.get(emoji_code, ""),
+                "unicode_name": (emoji_dict["name"] or "").lower(),
+                "sort_order": sort_order,
+                "sorting_info": get_sorting_info(category, sort_order),
+            },
+        )
 
     # Sort `emoji_collection`.
     for category in SORTED_CATEGORIES:
-        emoji_collection[category].sort(key=lambda x: x['sort_order'])
+        emoji_collection[category].sort(key=lambda x: x["sort_order"])
+
 
 def main() -> None:
     generate_emoji_collection()
@@ -197,14 +208,14 @@ def main() -> None:
             # We need to use the weird `dict(**kwargs)` format to avoid lint errors.
             tbody += TABLE_ROW_TEMPLATE % dict(**emoji_entry)
 
-    with open(OUTPUT_FILE, 'w') as fp:
-        fp.write(EMOJI_LISTING_TEMPLATE % {
-            'tbody': tbody,
-            'table_css': TABLE_CSS,
-        })
+    with open(OUTPUT_FILE, "w") as fp:
+        fp.write(EMOJI_LISTING_TEMPLATE % {"tbody": tbody, "table_css": TABLE_CSS})
 
-    print("Done! Open http://localhost:9991/static/generated/emoji/emoji_names_table.html "
-          "to view(after starting the dev server).")
+    print(
+        "Done! Open http://localhost:9991/static/generated/emoji/emoji_names_table.html "
+        "to view(after starting the dev server).",
+    )
+
 
 if __name__ == "__main__":
     main()

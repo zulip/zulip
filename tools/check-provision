@@ -12,12 +12,13 @@ from tools.lib.test_script import assert_provisioning_status_ok
 
 def run() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--force', default=False,
-                        action="store_true",
-                        help='Run tests despite possible problems.')
+    parser.add_argument(
+        "--force", default=False, action="store_true", help="Run tests despite possible problems.",
+    )
     options = parser.parse_args()
 
     assert_provisioning_status_ok(options.force)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     run()

@@ -8,8 +8,9 @@ from .common.spiders import BaseDocumentationSpider
 def get_start_url() -> List[str]:
     # Get index html file as start url and convert it to file uri
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    start_file = os.path.join(dir_path, os.path.join(*[os.pardir] * 4),
-                              "docs/_build/html/index.html")
+    start_file = os.path.join(
+        dir_path, os.path.join(*[os.pardir] * 4), "docs/_build/html/index.html",
+    )
     return [
         pathlib.Path(os.path.abspath(start_file)).as_uri(),
     ]
@@ -17,6 +18,6 @@ def get_start_url() -> List[str]:
 
 class DocumentationSpider(BaseDocumentationSpider):
     name = "documentation_crawler"
-    deny_domains = ['localhost:9991']
-    deny = [r'\_sources\/.*\.txt']
+    deny_domains = ["localhost:9991"]
+    deny = [r"\_sources\/.*\.txt"]
     start_urls = get_start_url()
