@@ -1,5 +1,6 @@
 class zulip_ops::munin_server {
   include zulip_ops::base
+  include zulip_ops::apache
   include zulip::supervisor
 
   $munin_packages = [
@@ -17,8 +18,20 @@ class zulip_ops::munin_server {
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    source  => 'puppet:///modules/zulip_ops/munin/apache.conf'
-    notify  => Service['munin-node'],
+    source  => 'puppet:///modules/zulip_ops/munin/apache.conf',
+    notify  => Service['apache2'],
+  }
+
+  file { '/etc/apache2/conf-available/munin.conf':
+    ensure  => link,
+    target  => '/etc/munin/apache.conf',
+    require => File['/etc/munin/apache.conf'],
+  }
+
+  apache2conf { 'munin':
+    ensure  => present,
+    require => File['/etc/apache2/conf-available/munin.conf'],
+    notify  => Service['apache2'],
   }
 
   file { '/etc/munin/munin.conf':
