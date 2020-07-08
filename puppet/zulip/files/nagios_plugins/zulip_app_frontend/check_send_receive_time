@@ -24,6 +24,7 @@ setup_path()
 from typing import Any, Dict, List, Optional
 
 import django
+import zulip
 
 usage = """Usage: send-receive.py [options] [config]
 
@@ -66,9 +67,6 @@ sendreceive.label Send-receive round trip time
 sendreceive.warning 3
 sendreceive.critical 5""")
         sys.exit(0)
-
-sys.path.append('/home/zulip/deployments/current/api')
-import zulip
 
 sys.path.append('/home/zulip/deployments/current')
 os.environ['DJANGO_SETTINGS_MODULE'] = "zproject.settings"
