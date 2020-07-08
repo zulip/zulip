@@ -1615,12 +1615,12 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         registration_key = 'invalid_confirmation_key'
         url = '/accounts/register/'
-        response = self.client_post(url, {'key': registration_key, 'from_confirmation': 1, 'full_nme': 'alice'})
+        response = self.client_post(url, {'key': registration_key, 'from_confirmation': 1, 'full_name': 'alice'})
         self.assertEqual(response.status_code, 200)
         self.assert_in_success_response(['The registration link has expired or is not valid.'], response)
 
         registration_key = confirmation_link.split('/')[-1]
-        response = self.client_post(url, {'key': registration_key, 'from_confirmation': 1, 'full_nme': 'alice'})
+        response = self.client_post(url, {'key': registration_key, 'from_confirmation': 1, 'full_name': 'alice'})
         self.assert_in_success_response(['We just need you to do one last thing.'], response)
         response = self.submit_reg_form_for_user(email, password, key=registration_key)
         self.assertEqual(response.status_code, 302)
