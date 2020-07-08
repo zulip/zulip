@@ -15,6 +15,25 @@ let current_topic_sidebar_elem;
 let all_messages_sidebar_elem;
 let starred_messages_sidebar_elem;
 
+function get_popover_menu_items(sidebar_elem) {
+    if (!sidebar_elem) {
+        blueslip.error("Trying to get menu items when action popover is closed.");
+        return;
+    }
+
+    const popover_data = $(sidebar_elem).data("popover");
+    if (!popover_data) {
+        blueslip.error("Cannot find popover data for stream sidebar menu.");
+        return;
+    }
+    return $("li:not(.divider):visible > a", popover_data.$tip);
+}
+
+exports.stream_sidebar_menu_handle_keyboard = (key) => {
+    const items = get_popover_menu_items(current_stream_sidebar_elem);
+    popovers.popover_items_handle_keyboard(key, items);
+};
+
 function elem_to_stream_id(elem) {
     const stream_id = parseInt(elem.attr("data-stream-id"), 10);
 
