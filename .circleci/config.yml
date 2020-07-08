@@ -136,19 +136,19 @@ aliases:
       name: install production
       command: |
         sudo service rabbitmq-server restart
-        sudo mispipe "/tmp/production-install 2>&1" ts
+        sudo --preserve-env=CIRCLECI mispipe "/tmp/production-install 2>&1" ts
 
   - &verify_production
     run:
       name: verify install
       command: |
-        sudo mispipe "/tmp/production-verify 2>&1" ts
+        sudo --preserve-env=CIRCLECI mispipe "/tmp/production-verify 2>&1" ts
 
   - &upgrade_postgresql
     run:
       name: upgrade postgresql
       command: |
-        sudo mispipe "/tmp/production-upgrade-pg 2>&1" ts
+        sudo --preserve-env=CIRCLECI mispipe "/tmp/production-upgrade-pg 2>&1" ts
 
   - &check_xenial_provision_error
     run:
