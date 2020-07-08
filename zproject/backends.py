@@ -960,6 +960,7 @@ class ExternalAuthDataDict(TypedDict, total=False):
     desktop_flow_otp: Optional[str]
     multiuse_object_key: str
     full_name_validated: bool
+    user_avatar_url: str
 
 class ExternalAuthResult:
     LOGIN_KEY_PREFIX = "login_key_"
@@ -1100,6 +1101,7 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     if 'auth_failed_reason' in kwargs.get('response', {}):
         return_data["social_auth_failed_reason"] = kwargs['response']["auth_failed_reason"]
         return None
+
     elif hasattr(backend, 'get_verified_emails'):
         # Some social backends, like GitHubAuthBackend, don't
         # guarantee that the `details` data is validated (i.e., it's
@@ -1180,6 +1182,7 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     return_data['validated_email'] = validated_email
     user_profile = common_get_active_user(validated_email, realm, return_data)
 
+    user_avatar_url = kwargs['response'].get('avatar_url', '')
     full_name = kwargs['details'].get('fullname')
     first_name = kwargs['details'].get('first_name')
     last_name = kwargs['details'].get('last_name')
@@ -1200,6 +1203,9 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
         # first name and last name as separate attributes. In that case
         # we construct the full name from them.
         return_data["full_name"] = f"{first_name or ''} {last_name or ''}".strip()  # strip removes the unnecessary ' '
+
+    if user_avatar_url:
+        return_data["user_avatar_url"] = user_avatar_url
 
     return user_profile
 
@@ -1292,6 +1298,7 @@ def social_auth_finish(backend: Any,
     full_name_validated = backend.full_name_validated
     email_address = return_data['validated_email']
     full_name = return_data['full_name']
+    user_avatar_url = return_data.get('user_avatar_url', '')
     redirect_to = strategy.session_get('next')
     realm = Realm.objects.get(id=return_data["realm_id"])
     multiuse_object_key = strategy.session_get('multiuse_object_key', '')
@@ -1319,6 +1326,7 @@ def social_auth_finish(backend: Any,
         full_name_validated=full_name_validated,
         mobile_flow_otp=mobile_flow_otp,
         desktop_flow_otp=desktop_flow_otp,
+        user_avatar_url=user_avatar_url,
     )
     if user_profile is None:
         data_dict.update(dict(full_name=full_name, email=email_address))

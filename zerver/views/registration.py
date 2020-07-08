@@ -169,6 +169,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     name_validated = False
     full_name = None
     require_ldap_password = False
+    user_avatar_url = ''
+    if prereg_user.user_avatar_url and request.POST.get('use_social_avatar') == 'on':
+        user_avatar_url = prereg_user.user_avatar_url
 
     if request.POST.get('from_confirmation'):
         try:
@@ -244,6 +247,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             else:
                 form = RegistrationForm(initial={'full_name': prereg_user.full_name},
                                         realm_creation=realm_creation)
+
         elif 'full_name' in request.POST:
             form = RegistrationForm(
                 initial={'full_name': request.POST.get('full_name')},
@@ -251,6 +255,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             )
         else:
             form = RegistrationForm(realm_creation=realm_creation)
+
     else:
         postdata = request.POST.copy()
         if name_changes_disabled(realm):
@@ -374,6 +379,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
 
         if user_profile is None:
             user_profile = do_create_user(email, password, realm, full_name,
+                                          user_avatar_url=user_avatar_url,
                                           prereg_user=prereg_user,
                                           role=role,
                                           tos_version=settings.TOS_VERSION,
@@ -416,6 +422,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         context={'form': form,
                  'email': email,
                  'key': key,
+                 'user_avatar_url': prereg_user.user_avatar_url,
                  'full_name': request.session.get('authenticated_full_name', None),
                  'lock_name': name_validated and name_changes_disabled(realm),
                  # password_auth_enabled is normally set via our context processor,

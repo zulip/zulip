@@ -91,7 +91,7 @@ def get_safe_redirect_to(url: str, redirect_host: str) -> str:
 
 def create_preregistration_user(email: str, request: HttpRequest, realm_creation: bool=False,
                                 password_required: bool=True, full_name: Optional[str]=None,
-                                full_name_validated: bool=False) -> HttpResponse:
+                                full_name_validated: bool=False, user_avatar_url: str='') -> HttpResponse:
     realm = None
     if not realm_creation:
         try:
@@ -105,10 +105,11 @@ def create_preregistration_user(email: str, request: HttpRequest, realm_creation
         realm=realm,
         full_name=full_name,
         full_name_validated=full_name_validated,
+        user_avatar_url=user_avatar_url
     )
 
 def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str='',
-                               mobile_flow_otp: Optional[str]=None,
+                               user_avatar_url: str='', mobile_flow_otp: Optional[str]=None,
                                desktop_flow_otp: Optional[str]=None,
                                is_signup: bool=False, password_required: bool=True,
                                multiuse_object_key: str='',
@@ -144,7 +145,6 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
     elif desktop_flow_otp:
         set_expirable_session_var(request.session, 'registration_desktop_flow_otp', desktop_flow_otp,
                                   expiry_seconds=3600)
-
     if multiuse_object_key:
         from_multiuse_invite = True
         multiuse_obj = Confirmation.objects.get(confirmation_key=multiuse_object_key).content_object
@@ -179,6 +179,11 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
                 prereg_user.full_name = full_name
                 prereg_user.full_name_validated = full_name_validated
                 update_fields.extend(["full_name", "full_name_validated"])
+
+            if user_avatar_url:
+                prereg_user.user_avatar_url = user_avatar_url
+                update_fields.extend(['user_avatar_url'])
+
             prereg_user.save(update_fields=update_fields)
         except PreregistrationUser.DoesNotExist:
             prereg_user = create_preregistration_user(
@@ -186,6 +191,7 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
                 password_required=password_required,
                 full_name=full_name,
                 full_name_validated=full_name_validated,
+                user_avatar_url=user_avatar_url
             )
 
         if multiuse_obj is not None:

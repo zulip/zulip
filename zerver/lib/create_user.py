@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 import orjson
@@ -107,6 +108,7 @@ def create_user(email: str,
                 bot_owner: Optional[UserProfile] = None,
                 tos_version: Optional[str] = None,
                 timezone: str = "",
+                user_avatar_url: str='',
                 avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
                 is_mirror_dummy: bool = False,
                 default_sending_stream: Optional[Stream] = None,
@@ -160,4 +162,21 @@ def create_user(email: str,
     user_profile.save(update_fields=["recipient"])
 
     Subscription.objects.create(user_profile=user_profile, recipient=recipient)
+
+    if user_avatar_url:
+        from zerver.lib.actions import do_change_avatar_fields
+        from zerver.lib.upload import upload_avatar_image_from_url
+
+        try:
+            avatar_hash = upload_avatar_image_from_url(user_avatar_url, user_profile)
+            do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER)
+            user_profile.avatar_hash = avatar_hash
+            user_profile.save(update_fields=["avatar_hash"])
+
+        except Exception as err:
+            logging.warning(f'Error while rtying to set user avatar from URL {user_avatar_url}: {err}')
+            # If the avatar image upload fails, use avatar from Gravatar.
+            user_profile.avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+            user_profile.save(update_fields=["avatar_source"])
+
     return user_profile
