@@ -12,11 +12,29 @@ from zerver.lib.validator import (
     check_bool,
     check_dict_only,
     check_int,
+    check_list,
+    check_none_or,
     check_string,
     check_union,
     equals,
 )
 from zerver.models import Realm
+
+# These fields are used for "stream" events, and are included in the
+# larger "subscription" events that also contain personal settings.
+basic_stream_fields = [
+    ("description", check_string),
+    ("first_message_id", check_none_or(check_int)),
+    ("history_public_to_subscribers", check_bool),
+    ("invite_only", check_bool),
+    ("is_announcement_only", check_bool),
+    ("is_web_public", check_bool),
+    ("message_retention_days", equals(None)),
+    ("name", check_string),
+    ("rendered_description", check_string),
+    ("stream_id", check_int),
+    ("stream_post_policy", check_int),
+]
 
 
 def check_events_dict(
@@ -96,3 +114,12 @@ def check_realm_update(var_name: str, event: Dict[str, Any],) -> None:
         assert isinstance(value, str)
     else:
         raise AssertionError(f"Unexpected property type {property_type}")
+
+
+check_stream_create = check_events_dict(
+    required_keys=[
+        ("type", equals("stream")),
+        ("op", equals("create")),
+        ("streams", check_list(check_dict_only(basic_stream_fields))),
+    ]
+)

@@ -89,7 +89,12 @@ from zerver.lib.actions import (
     remove_members_from_user_group,
     try_update_realm_custom_profile_field,
 )
-from zerver.lib.event_schema import check_events_dict, check_realm_update
+from zerver.lib.event_schema import (
+    basic_stream_fields,
+    check_events_dict,
+    check_realm_update,
+    check_stream_create,
+)
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import MentionData
 from zerver.lib.message import render_markdown
@@ -140,21 +145,6 @@ from zerver.tornado.event_queue import (
     clear_client_event_queues_for_testing,
 )
 
-# These fields are used for "stream" events, and are included in the
-# larger "subscription" events that also contain personal settings.
-basic_stream_fields = [
-    ('description', check_string),
-    ('first_message_id', check_none_or(check_int)),
-    ('history_public_to_subscribers', check_bool),
-    ('invite_only', check_bool),
-    ('is_announcement_only', check_bool),
-    ('is_web_public', check_bool),
-    ('message_retention_days', equals(None)),
-    ('name', check_string),
-    ('rendered_description', check_string),
-    ('stream_id', check_int),
-    ('stream_post_policy', check_int),
-]
 
 class BaseAction(ZulipTestCase):
     def setUp(self) -> None:
@@ -2605,11 +2595,6 @@ class SubscribeActionTest(BaseAction):
         subscription_schema_checker = check_list(
             check_dict_only(subscription_fields),
         )
-        stream_create_schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('create')),
-            ('streams', check_list(check_dict_only(basic_stream_fields))),
-        ])
         add_schema_checker = check_events_dict([
             ('type', equals('subscription')),
             ('op', equals('add')),
@@ -2754,5 +2739,5 @@ class SubscribeActionTest(BaseAction):
             action,
             include_subscribers=include_subscribers,
             num_events=2)
-        stream_create_schema_checker('events[0]', events[0])
+        check_stream_create('events[0]', events[0])
         add_schema_checker('events[1]', events[1])
