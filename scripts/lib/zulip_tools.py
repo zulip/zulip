@@ -41,18 +41,19 @@ CYAN = '\x1b[36m'
 
 def overwrite_symlink(src: str, dst: str) -> None:
     while True:
-        tmp = tempfile.mktemp(
+        tmp = tempfile.NamedTemporaryFile(
             prefix='.' + os.path.basename(dst) + '.',
-            dir=os.path.dirname(dst))
+            dir=os.path.dirname(dst),
+            delete=False)
         try:
-            os.symlink(src, tmp)
+            os.symlink(src, tmp.name)
         except FileExistsError:
             continue
         break
     try:
-        os.rename(tmp, dst)
+        os.rename(tmp.name, dst)
     except Exception:
-        os.remove(tmp)
+        os.remove(tmp.name)
         raise
 
 def parse_cache_script_args(description: str) -> argparse.Namespace:
