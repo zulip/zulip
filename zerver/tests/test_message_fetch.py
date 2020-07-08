@@ -17,6 +17,7 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_set_realm_property,
     do_update_message,
+    get_last_message_id,
 )
 from zerver.lib.markdown import MentionData
 from zerver.lib.message import (
@@ -3217,3 +3218,14 @@ class MessageVisibilityTest(ZulipTestCase):
         with mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
             maybe_update_first_visible_message_id(realm, lookback_hours)
         m.assert_called_once_with(realm)
+
+class MiscMessageTest(ZulipTestCase):
+    def test_get_last_message_id(self) -> None:
+        self.assertEqual(
+            get_last_message_id(),
+            Message.objects.latest('id').id,
+        )
+
+        Message.objects.all().delete()
+
+        self.assertEqual(get_last_message_id(), -1)
