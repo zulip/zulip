@@ -100,6 +100,7 @@ from zerver.lib.event_schema import (
     check_subscription_peer_remove,
     check_subscription_remove,
     check_update_display_settings,
+    check_update_global_notifications,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import MentionData
@@ -1551,12 +1552,6 @@ class NormalActionsTest(BaseAction):
                 # These settings are tested in their own tests.
                 continue
 
-            schema_checker = check_events_dict([
-                ('type', equals('update_global_notifications')),
-                ('notification_name', equals(notification_setting)),
-                ('user', check_string),
-                ('setting', check_bool),
-            ])
             do_change_notification_settings(self.user_profile, notification_setting, False)
 
             for setting_value in [True, False]:
@@ -1566,7 +1561,7 @@ class NormalActionsTest(BaseAction):
                         notification_setting,
                         setting_value,
                         log=False))
-                schema_checker('events[0]', events[0])
+                check_update_global_notifications('events[0]', events[0], setting_value)
 
                 # Also test with notification_settings_null=True
                 events = self.verify_action(
@@ -1574,16 +1569,10 @@ class NormalActionsTest(BaseAction):
                         self.user_profile, notification_setting, setting_value, log=False),
                     notification_settings_null=True,
                     state_change_expected=False)
-                schema_checker('events[0]', events[0])
+                check_update_global_notifications('events[0]', events[0], setting_value)
 
     def test_change_notification_sound(self) -> None:
         notification_setting = "notification_sound"
-        schema_checker = check_events_dict([
-            ('type', equals('update_global_notifications')),
-            ('notification_name', equals(notification_setting)),
-            ('user', check_string),
-            ('setting', equals("ding")),
-        ])
 
         events = self.verify_action(
             lambda: do_change_notification_settings(
@@ -1591,16 +1580,10 @@ class NormalActionsTest(BaseAction):
                 notification_setting,
                 'ding',
                 log=False))
-        schema_checker('events[0]', events[0])
+        check_update_global_notifications('events[0]', events[0], 'ding')
 
     def test_change_desktop_icon_count_display(self) -> None:
         notification_setting = "desktop_icon_count_display"
-        schema_checker = check_events_dict([
-            ('type', equals('update_global_notifications')),
-            ('notification_name', equals(notification_setting)),
-            ('user', check_string),
-            ('setting', equals(2)),
-        ])
 
         events = self.verify_action(
             lambda: do_change_notification_settings(
@@ -1608,14 +1591,7 @@ class NormalActionsTest(BaseAction):
                 notification_setting,
                 2,
                 log=False))
-        schema_checker('events[0]', events[0])
-
-        schema_checker = check_events_dict([
-            ('type', equals('update_global_notifications')),
-            ('notification_name', equals(notification_setting)),
-            ('user', check_string),
-            ('setting', equals(1)),
-        ])
+        check_update_global_notifications('events[0]', events[0], 2)
 
         events = self.verify_action(
             lambda: do_change_notification_settings(
@@ -1623,7 +1599,7 @@ class NormalActionsTest(BaseAction):
                 notification_setting,
                 1,
                 log=False))
-        schema_checker('events[0]', events[0])
+        check_update_global_notifications('events[0]', events[0], 1)
 
     def test_realm_update_plan_type(self) -> None:
         realm = self.user_profile.realm
