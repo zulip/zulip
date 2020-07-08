@@ -178,6 +178,39 @@ def check_realm_bot_add(var_name: str, event: Dict[str, Any],) -> None:
         raise AssertionError(f"Unknown bot_type: {bot_type}")
 
 
+_check_bot_for_update = check_dict_only(
+    required_keys=[
+        # force vertical
+        ("user_id", check_int),
+    ],
+    optional_keys=[
+        ("api_key", check_string),
+        ("avatar_url", check_string),
+        ("default_all_public_streams", check_bool),
+        ("default_events_register_stream", check_none_or(check_string)),
+        ("default_sending_stream", check_none_or(check_string)),
+        ("full_name", check_string),
+        ("owner_id", check_int),
+        ("services", _check_bot_services),
+    ],
+)
+
+_check_realm_bot_update = check_events_dict(
+    required_keys=[
+        ("type", equals("realm_bot")),
+        ("op", equals("update")),
+        ("bot", _check_bot_for_update),
+    ]
+)
+
+
+def check_realm_bot_update(var_name: str, event: Dict[str, Any], field: str,) -> None:
+    # Check the overall schema first.
+    _check_realm_bot_update(var_name, event)
+
+    assert {"user_id", field} == set(event["bot"].keys())
+
+
 """
 realm/update events are flexible for values;
 we will use a more strict checker to check
