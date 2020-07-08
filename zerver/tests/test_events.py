@@ -4,7 +4,7 @@ import copy
 import sys
 import time
 from io import StringIO
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set
 from unittest import mock
 
 import ujson
@@ -95,6 +95,7 @@ from zerver.lib.event_schema import (
     check_realm_update,
     check_stream_create,
     check_stream_update,
+    check_subscription_add,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import MentionData
@@ -2565,31 +2566,6 @@ class SubscribeActionTest(BaseAction):
         self.do_test_subscribe_events(include_subscribers=False)
 
     def do_test_subscribe_events(self, include_subscribers: bool) -> None:
-        subscription_fields: List[Tuple[str, Validator[object]]] = [
-            *basic_stream_fields,
-            ('audible_notifications', check_none_or(check_bool)),
-            ('color', check_string),
-            ('desktop_notifications', check_none_or(check_bool)),
-            ('email_address', check_string),
-            ('email_notifications', check_none_or(check_bool)),
-            ('in_home_view', check_bool),
-            ('is_muted', check_bool),
-            ('pin_to_top', check_bool),
-            ('push_notifications', check_none_or(check_bool)),
-            ('stream_weekly_traffic', check_none_or(check_int)),
-            ('wildcard_mentions_notify', check_none_or(check_bool)),
-        ]
-
-        if include_subscribers:
-            subscription_fields.append(('subscribers', check_list(check_int)))
-        subscription_schema_checker = check_list(
-            check_dict_only(subscription_fields),
-        )
-        add_schema_checker = check_events_dict([
-            ('type', equals('subscription')),
-            ('op', equals('add')),
-            ('subscriptions', subscription_schema_checker),
-        ])
         remove_schema_checker = check_events_dict([
             ('type', equals('subscription')),
             ('op', equals('remove')),
@@ -2619,7 +2595,7 @@ class SubscribeActionTest(BaseAction):
             action,
             event_types=["subscription", "realm_user"],
             include_subscribers=include_subscribers)
-        add_schema_checker('events[0]', events[0])
+        check_subscription_add('events[0]', events[0], include_subscribers)
 
         # Add another user to that totally new stream
         action = lambda: self.subscribe(self.example_user("othello"), "test_stream")
@@ -2659,7 +2635,7 @@ class SubscribeActionTest(BaseAction):
             action,
             include_subscribers=include_subscribers,
             num_events=2)
-        add_schema_checker('events[1]', events[1])
+        check_subscription_add('events[1]', events[1], include_subscribers)
 
         action = lambda: do_change_stream_description(stream, 'new description')
         events = self.verify_action(
@@ -2696,4 +2672,4 @@ class SubscribeActionTest(BaseAction):
             include_subscribers=include_subscribers,
             num_events=2)
         check_stream_create('events[0]', events[0])
-        add_schema_checker('events[1]', events[1])
+        check_subscription_add('events[1]', events[1], include_subscribers)
