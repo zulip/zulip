@@ -60,6 +60,9 @@ from zerver.lib.streams import (
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_subscription,
+    message_stream_count,
+    most_recent_message,
+    most_recent_usermessage,
     queries_captured,
     reset_emails_in_zulip_realm,
     tornado_redirected_to_list,
@@ -4259,3 +4262,34 @@ class NoRecipientIDsTest(ZulipTestCase):
         #
         # This covers a rare corner case.
         self.assertEqual(len(subs[0]), 0)
+
+class PersonalMessagesTestSub(ZulipTestCase):
+    def test_auto_subbed_to_personals(self) -> None:
+        """
+        Newly created users are auto-subbed to the ability to receive
+        personals.
+        """
+        test_email = self.nonreg_email('test')
+        self.register(test_email, "test")
+        user_profile = self.nonreg_user('test')
+        old_messages_count = message_stream_count(user_profile)
+        self.send_personal_message(user_profile, user_profile)
+        new_messages_count = message_stream_count(user_profile)
+        self.assertEqual(new_messages_count, old_messages_count + 1)
+
+        recipient = Recipient.objects.get(type_id=user_profile.id,
+                                          type=Recipient.PERSONAL)
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.recipient, recipient)
+
+        with mock.patch('zerver.models.get_display_recipient', return_value='recip'):
+            self.assertEqual(
+                str(message),
+                '<Message: recip /  / '
+                '<UserProfile: {} {}>>'.format(user_profile.email, user_profile.realm))
+
+            user_message = most_recent_usermessage(user_profile)
+            self.assertEqual(
+                str(user_message),
+                f'<UserMessage: recip / {user_profile.email} ([])>',
+            )
