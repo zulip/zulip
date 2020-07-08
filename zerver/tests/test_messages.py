@@ -1,20 +1,13 @@
 import datetime
 from typing import Dict, List
-from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import get_active_presence_idle_user_ids, get_client
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import (
-    message_stream_count,
-    most_recent_message,
-    most_recent_usermessage,
-)
 from zerver.lib.url_encoding import near_message_url
 from zerver.models import (
     Message,
-    Recipient,
     UserPresence,
     UserProfile,
     bulk_get_huddle_user_ids,
@@ -52,36 +45,6 @@ class PersonalMessagesTest(ZulipTestCase):
 
         for msg in self.get_messages():
             self.assertNotIn('is_private', msg['flags'])
-
-    def test_auto_subbed_to_personals(self) -> None:
-        """
-        Newly created users are auto-subbed to the ability to receive
-        personals.
-        """
-        test_email = self.nonreg_email('test')
-        self.register(test_email, "test")
-        user_profile = self.nonreg_user('test')
-        old_messages_count = message_stream_count(user_profile)
-        self.send_personal_message(user_profile, user_profile)
-        new_messages_count = message_stream_count(user_profile)
-        self.assertEqual(new_messages_count, old_messages_count + 1)
-
-        recipient = Recipient.objects.get(type_id=user_profile.id,
-                                          type=Recipient.PERSONAL)
-        message = most_recent_message(user_profile)
-        self.assertEqual(message.recipient, recipient)
-
-        with mock.patch('zerver.models.get_display_recipient', return_value='recip'):
-            self.assertEqual(
-                str(message),
-                '<Message: recip /  / '
-                '<UserProfile: {} {}>>'.format(user_profile.email, user_profile.realm))
-
-            user_message = most_recent_usermessage(user_profile)
-            self.assertEqual(
-                str(user_message),
-                f'<UserMessage: recip / {user_profile.email} ([])>',
-            )
 
 class MissedMessageTest(ZulipTestCase):
     def test_presence_idle_user_ids(self) -> None:

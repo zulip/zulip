@@ -68,6 +68,9 @@ from zerver.lib.test_helpers import (
     find_key_by_email,
     get_test_image_file,
     load_subdomain_token,
+    message_stream_count,
+    most_recent_message,
+    most_recent_usermessage,
     queries_captured,
     reset_emails_in_zulip_realm,
 )
@@ -225,6 +228,36 @@ class AddNewUserHistoryTest(ZulipTestCase):
         self.assertTrue(len(older_messages) > 0)
         for msg in older_messages:
             self.assertTrue(msg.flags.read.is_set)
+
+    def test_auto_subbed_to_personals(self) -> None:
+        """
+        Newly created users are auto-subbed to the ability to receive
+        personals.
+        """
+        test_email = self.nonreg_email('test')
+        self.register(test_email, "test")
+        user_profile = self.nonreg_user('test')
+        old_messages_count = message_stream_count(user_profile)
+        self.send_personal_message(user_profile, user_profile)
+        new_messages_count = message_stream_count(user_profile)
+        self.assertEqual(new_messages_count, old_messages_count + 1)
+
+        recipient = Recipient.objects.get(type_id=user_profile.id,
+                                          type=Recipient.PERSONAL)
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.recipient, recipient)
+
+        with patch('zerver.models.get_display_recipient', return_value='recip'):
+            self.assertEqual(
+                str(message),
+                '<Message: recip /  / '
+                '<UserProfile: {} {}>>'.format(user_profile.email, user_profile.realm))
+
+            user_message = most_recent_usermessage(user_profile)
+            self.assertEqual(
+                str(user_message),
+                f'<UserMessage: recip / {user_profile.email} ([])>',
+            )
 
 class InitialPasswordTest(ZulipTestCase):
     def test_none_initial_password_salt(self) -> None:
