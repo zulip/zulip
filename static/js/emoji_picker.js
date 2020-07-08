@@ -28,21 +28,19 @@ const search_results = [];
 let section_head_offsets = [];
 let edit_message_id = null;
 
-function get_all_emoji_categories() {
-    return [
-        { name: "Popular", icon: "fa-star-o" },
-        { name: "Smileys & Emotion", icon: "fa-smile-o" },
-        { name: "People & Body", icon: "fa-thumbs-o-up" },
-        { name: "Animals & Nature", icon: "fa-leaf" },
-        { name: "Food & Drink", icon: "fa-cutlery" },
-        { name: "Activities", icon: "fa-soccer-ball-o" },
-        { name: "Travel & Places", icon: "fa-car" },
-        { name: "Objects", icon: "fa-lightbulb-o" },
-        { name: "Symbols", icon: "fa-hashtag" },
-        { name: "Flags", icon: "fa-flag" },
-        { name: "Custom", icon: "fa-cog" },
-    ];
-}
+const EMOJI_CATEGORIES = [
+    { name: "Popular", icon: "fa-star-o" },
+    { name: "Smileys & Emotion", icon: "fa-smile-o" },
+    { name: "People & Body", icon: "fa-thumbs-o-up" },
+    { name: "Animals & Nature", icon: "fa-leaf" },
+    { name: "Food & Drink", icon: "fa-cutlery" },
+    { name: "Activities", icon: "fa-soccer-ball-o" },
+    { name: "Travel & Places", icon: "fa-car" },
+    { name: "Objects", icon: "fa-lightbulb-o" },
+    { name: "Symbols", icon: "fa-hashtag" },
+    { name: "Flags", icon: "fa-flag" },
+    { name: "Custom", icon: "fa-cog" },
+];
 
 function get_total_sections() {
     if (search_is_active) {
@@ -133,7 +131,7 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
     }
     catalog.set("Popular", popular);
 
-    const categories = get_all_emoji_categories().filter((category) => catalog.has(category.name));
+    const categories = EMOJI_CATEGORIES.filter((category) => catalog.has(category.name));
     exports.complete_emoji_catalog = categories.map((category) => ({
         name: category.name,
         icon: category.icon,
