@@ -247,12 +247,16 @@ function toggle_reaction(emoji_name) {
     exports.hide_emoji_popover();
 }
 
+function is_composition(emoji) {
+    return $(emoji).hasClass('composition');
+}
+
 function maybe_select_emoji(e) {
     if (e.keyCode === 13) { // enter key
         e.preventDefault();
         const first_emoji = get_rendered_emoji(0, 0);
         if (first_emoji) {
-            if (exports.is_composition(first_emoji)) {
+            if (is_composition(first_emoji)) {
                 first_emoji.click();
             } else {
                 toggle_reaction(first_emoji.attr("data-emoji-name"));
@@ -261,7 +265,7 @@ function maybe_select_emoji(e) {
     }
 }
 
-exports.toggle_selected_emoji = function () {
+function toggle_selected_emoji() {
     // Toggle the currently selected emoji.
     const selected_emoji = get_selected_emoji();
 
@@ -272,7 +276,7 @@ exports.toggle_selected_emoji = function () {
     const emoji_name = $(selected_emoji).attr("data-emoji-name");
 
     toggle_reaction(emoji_name);
-};
+}
 
 function round_off_to_previous_multiple(number_to_round, multiple) {
     return number_to_round - number_to_round % multiple;
@@ -379,7 +383,7 @@ function change_focus_to_filter() {
     reset_emoji_showcase();
 }
 
-exports.navigate = function (event_name) {
+exports.navigate = function (event_name, e) {
     if (event_name === 'toggle_reactions_popover' && exports.reactions_popped() &&
         (search_is_active === false || search_results.length === 0)) {
         exports.hide_emoji_popover();
@@ -388,7 +392,16 @@ exports.navigate = function (event_name) {
 
     // If search is active and results are empty then return immediately.
     if (search_is_active === true && search_results.length === 0) {
-        return;
+        return true;
+    }
+
+    if (event_name === 'enter') {
+        if (is_composition(e.target)) {
+            e.target.click();
+        } else {
+            toggle_selected_emoji();
+        }
+        return true;
     }
 
     const $popover = $(".emoji-popover").expectOne();
@@ -734,10 +747,6 @@ exports.register_click_handlers = function () {
             true,
         );
     });
-};
-
-exports.is_composition = function (emoji) {
-    return $(emoji).hasClass('composition');
 };
 
 exports.initialize = function () {
