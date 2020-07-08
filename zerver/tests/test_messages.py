@@ -4,7 +4,7 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import get_active_presence_idle_user_ids, get_client, get_last_message_id
+from zerver.lib.actions import get_active_presence_idle_user_ids, get_client
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     message_stream_count,
@@ -22,17 +22,6 @@ from zerver.models import (
     get_realm,
 )
 
-
-class MiscMessageTest(ZulipTestCase):
-    def test_get_last_message_id(self) -> None:
-        self.assertEqual(
-            get_last_message_id(),
-            Message.objects.latest('id').id,
-        )
-
-        Message.objects.all().delete()
-
-        self.assertEqual(get_last_message_id(), -1)
 
 class PersonalMessagesTest(ZulipTestCase):
 

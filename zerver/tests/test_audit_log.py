@@ -24,11 +24,12 @@ from zerver.lib.actions import (
     do_reactivate_user,
     do_regenerate_api_key,
     do_set_realm_authentication_methods,
+    get_last_message_id,
     get_streams_traffic,
 )
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import RealmAuditLog, UserProfile, get_client, get_realm
+from zerver.models import Message, RealmAuditLog, UserProfile, get_client, get_realm
 
 
 class TestRealmAuditLog(ZulipTestCase):
@@ -252,3 +253,14 @@ class TestRealmAuditLog(ZulipTestCase):
         expected_new_value = {'property': 'authentication_methods', 'value': auth_method_dict}
         self.assertEqual(extra_data[RealmAuditLog.OLD_VALUE], expected_old_value)
         self.assertEqual(extra_data[RealmAuditLog.NEW_VALUE], expected_new_value)
+
+    def test_get_last_message_id(self) -> None:
+        # get_last_message_id is a helper mainly used for RealmAuditLog
+        self.assertEqual(
+            get_last_message_id(),
+            Message.objects.latest('id').id,
+        )
+
+        Message.objects.all().delete()
+
+        self.assertEqual(get_last_message_id(), -1)
