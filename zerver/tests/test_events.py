@@ -89,7 +89,7 @@ from zerver.lib.actions import (
     remove_members_from_user_group,
     try_update_realm_custom_profile_field,
 )
-from zerver.lib.event_schema import check_events_dict
+from zerver.lib.event_schema import check_events_dict, check_realm_update
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import MentionData
 from zerver.lib.message import render_markdown
@@ -2471,24 +2471,7 @@ class RealmPropertyActionTest(BaseAction):
         vals = test_values.get(name)
         property_type = Realm.property_types[name]
         if property_type is bool:
-            validator: Validator[object] = check_bool
             vals = bool_tests
-        elif property_type is str:
-            validator = check_string
-        elif property_type == (str, type(None)):
-            validator = check_string
-        elif property_type is int:
-            validator = check_int
-        elif property_type == (int, type(None)):
-            validator = check_int
-        else:
-            raise AssertionError(f"Unexpected property type {property_type}")
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals(name)),
-            ('value', validator),
-        ])
 
         if vals is None:
             raise AssertionError(f'No test created for {name}')
@@ -2511,7 +2494,7 @@ class RealmPropertyActionTest(BaseAction):
                     RealmAuditLog.OLD_VALUE: {'property': name, 'value': old_value},
                     RealmAuditLog.NEW_VALUE: {'property': name, 'value': val}
                 })).count(), 1)
-            schema_checker('events[0]', events[0])
+            check_realm_update('events[0]', events[0])
 
     def test_change_realm_property(self) -> None:
         for prop in Realm.property_types:
