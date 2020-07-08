@@ -36,6 +36,21 @@ basic_stream_fields = [
     ("stream_post_policy", check_int),
 ]
 
+subscription_fields: Sequence[Tuple[str, Validator[object]]] = [
+    *basic_stream_fields,
+    ("audible_notifications", check_none_or(check_bool)),
+    ("color", check_string),
+    ("desktop_notifications", check_none_or(check_bool)),
+    ("email_address", check_string),
+    ("email_notifications", check_none_or(check_bool)),
+    ("in_home_view", check_bool),
+    ("is_muted", check_bool),
+    ("pin_to_top", check_bool),
+    ("push_notifications", check_none_or(check_bool)),
+    ("stream_weekly_traffic", check_none_or(check_int)),
+    ("wildcard_mentions_notify", check_none_or(check_bool)),
+]
+
 
 def check_events_dict(
     required_keys: Sequence[Tuple[str, Validator[object]]],
@@ -186,3 +201,32 @@ def check_stream_update(var_name: str, event: Dict[str, Any],) -> None:
         assert value in Stream.STREAM_POST_POLICY_TYPES
     else:
         raise AssertionError(f"Unknown property: {prop}")
+
+
+_check_single_subscription = check_dict_only(
+    required_keys=subscription_fields,
+    optional_keys=[
+        # force vertical
+        ("subscribers", check_list(check_int)),
+    ],
+)
+
+_check_subscription_add = check_events_dict(
+    required_keys=[
+        ("type", equals("subscription")),
+        ("op", equals("add")),
+        ("subscriptions", check_list(_check_single_subscription)),
+    ],
+)
+
+
+def check_subscription_add(
+    var_name: str, event: Dict[str, Any], include_subscribers: bool,
+) -> None:
+    _check_subscription_add(var_name, event)
+
+    for sub in event["subscriptions"]:
+        if include_subscribers:
+            assert "subscribers" in sub.keys()
+        else:
+            assert "subscribers" not in sub.keys()
