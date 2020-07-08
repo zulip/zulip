@@ -99,6 +99,7 @@ from zerver.lib.event_schema import (
     check_subscription_peer_add,
     check_subscription_peer_remove,
     check_subscription_remove,
+    check_update_display_settings,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import MentionData
@@ -2491,25 +2492,18 @@ class UserDisplayActionTest(BaseAction):
             color_scheme = [2, 3, 1]
         )
 
-        property_type = UserProfile.property_types[setting_name]
-        if property_type is bool:
-            validator: Validator[object] = check_bool
-        elif property_type is str:
-            validator = check_string
-        elif property_type is int:
-            validator = check_int
-        else:
-            raise AssertionError(f"Unexpected property type {property_type}")
-
         num_events = 1
         if setting_name == "timezone":
             num_events = 2
         values = test_changes.get(setting_name)
+
+        property_type = UserProfile.property_types[setting_name]
         if property_type is bool:
             if getattr(self.user_profile, setting_name) is False:
                 values = [True, False, True]
             else:
                 values = [False, True, False]
+
         if values is None:
             raise AssertionError(f'No test created for {setting_name}')
 
@@ -2521,23 +2515,7 @@ class UserDisplayActionTest(BaseAction):
                     value),
                 num_events=num_events)
 
-            schema_checker = check_events_dict([
-                ('type', equals('update_display_settings')),
-                ('setting_name', equals(setting_name)),
-                ('user', check_string),
-                ('setting', validator),
-            ])
-            language_schema_checker = check_events_dict([
-                ('type', equals('update_display_settings')),
-                ('language_name', check_string),
-                ('setting_name', equals(setting_name)),
-                ('user', check_string),
-                ('setting', validator),
-            ])
-            if setting_name == "default_language":
-                language_schema_checker('events[0]', events[0])
-            else:
-                schema_checker('events[0]', events[0])
+            check_update_display_settings('events[0]', events[0])
 
             timezone_schema_checker = check_events_dict([
                 ('type', equals('realm_user')),
