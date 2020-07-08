@@ -18,7 +18,7 @@ from zerver.lib.validator import (
     check_union,
     equals,
 )
-from zerver.models import Realm, Stream
+from zerver.models import Realm, Stream, UserProfile
 
 # These fields are used for "stream" events, and are included in the
 # larger "subscription" events that also contain personal settings.
@@ -265,3 +265,35 @@ check_subscription_remove = check_events_dict(
         ("subscriptions", check_list(_check_remove_sub)),
     ]
 )
+
+_check_update_display_settings = check_events_dict(
+    required_keys=[
+        ("type", equals("update_display_settings")),
+        ("setting_name", check_string),
+        ("setting", check_value),
+        ("user", check_string),
+    ],
+    optional_keys=[
+        # force vertical
+        ("language_name", check_string),
+    ],
+)
+
+
+def check_update_display_settings(var_name: str, event: Dict[str, Any],) -> None:
+    """
+    Display setting events have a "setting" field that
+    is more specifically typed according to the
+    UserProfile.property_types dictionary.
+    """
+    _check_update_display_settings(var_name, event)
+    setting_name = event["setting_name"]
+    setting = event["setting"]
+
+    setting_type = UserProfile.property_types[setting_name]
+    assert isinstance(setting, setting_type)
+
+    if setting_name == "default_language":
+        assert "language_name" in event.keys()
+    else:
+        assert "language_name" not in event.keys()
