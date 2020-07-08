@@ -1,10 +1,10 @@
-class zulip_ops::munin {
+class zulip_ops::munin_server {
+  include zulip_ops::base
   include zulip::supervisor
 
-  $munin_packages = [# Packages needed for munin
+  $munin_packages = [
     'munin',
     'autossh',
-    # Packages needed for munin website
     'libapache2-mod-fcgid',
   ]
   package { $munin_packages: ensure => 'installed' }
@@ -12,22 +12,22 @@ class zulip_ops::munin {
   $default_host_domain = zulipconf('nagios', 'default_host_domain', undef)
   $hosts = zulipconf_nagios_hosts()
 
-  file { '/etc/munin':
-    require => Package['munin'],
-    recurse => true,
+  file { '/etc/munin/apache.conf':
+    require => Package['munin-node'],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    source  => 'puppet:///modules/zulip_ops/munin'
+    source  => 'puppet:///modules/zulip_ops/munin/apache.conf'
+    notify  => Service['munin-node'],
   }
 
   file { '/etc/munin/munin.conf':
     ensure  => file,
-    require => [ Package['munin'], File['/etc/munin'] ],
+    require => Package['munin'],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    content => template('zulip_ops/munin/munin.conf.erb')
+    content => template('zulip_ops/munin/munin.conf.erb'),
   }
 
   file { '/etc/supervisor/conf.d/munin_tunnels.conf':
@@ -37,6 +37,6 @@ class zulip_ops::munin {
     owner   => 'root',
     group   => 'root',
     content => template('zulip_ops/supervisor/conf.d/munin_tunnels.conf.erb'),
-    notify  => Service['supervisor']
+    notify  => Service['supervisor'],
   }
 }
