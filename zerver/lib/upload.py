@@ -14,6 +14,7 @@ from typing import Any, Callable, Optional, Tuple
 
 import boto3
 import botocore
+import requests
 from boto3.resources.base import ServiceResource
 from boto3.session import Session
 from botocore.client import Config
@@ -28,7 +29,7 @@ from PIL import ExifTags, Image, ImageOps
 from PIL.GifImagePlugin import GifImageFile
 from PIL.Image import DecompressionBombError
 
-from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.avatar_hash import user_avatar_content_hash, user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.utils import generate_random_token
 from zerver.models import Attachment, Message, Realm, RealmEmoji, UserProfile
@@ -853,6 +854,14 @@ def upload_avatar_image(user_file: File, acting_user_profile: UserProfile,
                         content_type: Optional[str]=None) -> None:
     upload_backend.upload_avatar_image(user_file, acting_user_profile,
                                        target_user_profile, content_type=content_type)
+
+def upload_avatar_image_from_url(avatar_url: str, user_profile: UserProfile) -> str:
+    response = requests.get(avatar_url)
+    user_avatar_file_io = io.BytesIO(response.content)
+
+    upload_backend.upload_avatar_image(user_avatar_file_io, user_profile, user_profile)
+
+    return user_avatar_content_hash(user_avatar_file_io.getvalue())
 
 def delete_avatar_image(user_profile: UserProfile) -> None:
     upload_backend.delete_avatar_image(user_profile)
