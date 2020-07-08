@@ -1217,3 +1217,17 @@ class MessageAccessTests(ZulipTestCase):
         filtered_messages = bulk_access_messages(unsubscribed_user, messages)
 
         self.assertEqual(len(filtered_messages), 2)
+
+
+class PersonalMessagesFlagTest(ZulipTestCase):
+    def test_is_private_flag_not_leaked(self) -> None:
+        """
+        Make sure `is_private` flag is not leaked to the API.
+        """
+        self.login('hamlet')
+        self.send_personal_message(self.example_user("hamlet"),
+                                   self.example_user("cordelia"),
+                                   "test")
+
+        for msg in self.get_messages():
+            self.assertNotIn('is_private', msg['flags'])
