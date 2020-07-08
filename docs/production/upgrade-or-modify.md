@@ -471,11 +471,16 @@ across future Zulip releases.
 Eventually, you'll want to upgrade to a new Zulip release.  If your
 changes were integrated into that Zulip release or are otherwise no
 longer needed, you can just [upgrade as
-usual](#upgrading-to-a-release).  Otherwise, you'll need to update
-your branch by rebasing your changes (starting from a
-[clone][fork-clone] of the [zulip/zulip][] repository).  The example
-below assumes you have a branch off of 2.0.4 and want to upgrade to
-2.1.0.
+usual](#upgrading-to-a-release).  If you [upgraded to
+master](#upgrading-to-master); review that section again; new
+maintenance releases are likely "older" than your current installation
+and you might need to upgrade to the master again rather than to the
+new maintenance release.
+
+Otherwise, you'll need to update your branch by rebasing your changes
+(starting from a [clone][fork-clone] of the [zulip/zulip][]
+repository).  The example below assumes you have a branch off of 2.0.4
+and want to upgrade to 2.1.0.
 
 ```
 cd zulip
@@ -546,14 +551,20 @@ released.
 
 ### Upgrading to master
 
-It's unsafe to backport arbitrary patches from master to an older
-version.  Common issues include:
+Many Zulip servers (including chat.zulip.org and zulip.com) upgrade to
+master on a regular basis to get the latest features.  Before doing
+so, it's important to understand how to happily run a server based on
+master.
+
+For background, it's backporting arbitrary patches from master to an
+older version requires some care.  Common issues include:
 
 * Changes containing database migrations (new files under
   `*/migrations/`), which includes most new features.  We
   don't support applying database migrations out of order.
 * Changes that are stacked on top of other changes to the same system.
-* Essentially any patch with hundreds of lines of changes.
+* Essentially any patch with hundreds of lines of changes will have
+  merge conflicts and require extra work to apply.
 
 While it's possible to backport these sorts of changes, you're
 unlikely to succeed without help from the core team via a support
@@ -563,15 +574,21 @@ If you need an unreleased feature, the best path is usually to
 upgrade to Zulip master using [upgrade-zulip-from-git][].  Before
 upgrading to master, make sure you understand:
 
+* In Zulip's version numbering scheme, `master` will always be "newer"
+  than the latest maintenance release (E.g. `3.1` or `2.1.6`) and
+  "older" than the next major release (E.g. `3.0` or `4.0`).
 * The `master` branch is under very active development; dozens of new
-  changes are integrated into it on most days.  Master can have
-  thousands of changes not present in the latest release (all of which
-  will be included in our next release).  There are probably some
-  bugs.
-* We deploy master to chat.zulip.org and zulip.com on a regular
+  changes are integrated into it on most days.  The `master` branch
+  can have thousands of changes not present in the latest release (all
+  of which will be included in our next major release).  On average
+  `master` usually has fewer total bugs than the latest release
+  (because we fix hundreds of bugs in every major release) but it
+  might have some bugs that are more severe than we would consider
+  acceptable for a release.
+* We deploy `master` to chat.zulip.org and zulip.com on a regular
   basis (often daily), so it's very important to the project that it
   be stable.  Most regressions will be minor UX issues or be fixed
-  quickly, because we need them to be fixed.
+  quickly, because we need them to be fixed for Zulip Cloud.
 * The development community is very interested in helping debug issues
   that arise when upgrading from the latest release to master, since
   they provide us an opportunity to fix that category of issue before
@@ -579,13 +596,22 @@ upgrading to master, make sure you understand:
   debug other custom changes).  That said, we cannot make any
   guarantees about how quickly we'll resolve an issue to folks without
   a formal support contract.
-* We do not support downgrading from master to earlier versions, so if downtime
-  for your Zulip server is unacceptable, make sure you have a current
-  backup in case the upgrade fails.
+* We do not support downgrading from `master` to earlier versions, so
+  if downtime for your Zulip server is unacceptable, make sure you
+  have a current
+  [backup](../production/export-and-import.html#backups) in case the
+  upgrade fails.
 * Our changelog contains [draft release
   notes](../overview/changelog.md) available listing major changes
   since the last release.  The **Upgrade notes** section will always
   be current, even if some new features aren't documented.
+* Whenever we push a security or maintenance release, the changes in
+  that release will always be merged to master; so you can get the
+  security fixes by upgrading to master.
+* You can always upgrade from master to the next major release when it
+  comes out, using either [upgrade-zulip-from-git][] or the release
+  tarball.  So there's no risk of upgrading to `master` resulting in
+  a system that's not upgradeable back to a normal release.
 
 ## Contributing patches
 
