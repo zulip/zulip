@@ -593,11 +593,11 @@ exports.initialize = function () {
         e.preventDefault();
         e.stopPropagation();
 
-        const stream_name = narrow_state.stream();
-        if (stream_name === undefined) {
+        const sub = narrow_state.stream_sub();
+        if (sub === undefined) {
             return;
         }
-        const sub = stream_data.get_sub(stream_name);
+
         subs.sub_or_unsub(sub);
     });
 
