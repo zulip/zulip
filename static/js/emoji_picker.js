@@ -214,15 +214,16 @@ function filter_emojis() {
                 for (const alias of emoji_dict.aliases) {
                     const match = search_terms.every((search_term) => alias.includes(search_term));
                     if (match) {
-                        search_results.push({ ...emoji_dict, name: alias });
+                        search_results.push({ ...emoji_dict, emoji_name: alias });
                         break;  // We only need the first matching alias per emoji.
                     }
                 }
             }
         }
 
+        const sorted_search_results = typeahead.sort_emojis(search_results, query);
         const rendered_search_results = render_emoji_popover_search_results({
-            search_results: search_results,
+            search_results: sorted_search_results,
             message_id: message_id,
         });
         $('.emoji-search-results').html(rendered_search_results);
