@@ -38,7 +38,7 @@ body {
 
 /* Common background color */
 body,
-#tab_bar_underpadding {
+#message_view_header_underpadding {
     background-color: hsl(0, 0%, 100%);
     transition: background-color 200ms linear;
 }
@@ -557,7 +557,7 @@ li.actual-dropdown-menu i {
 }
 
 .message_area_padder {
-    /* The height of the header and the tabbar plus a small gap */
+    /* The height of the header and the message_view_header plus a small gap */
     margin-top: 57px;
     /* This is needed for the floating recipient bar
        in Firefox only, for some reason;
@@ -1470,7 +1470,7 @@ div.focused_table {
     }
 }
 
-#tab_bar {
+#message_view_header {
     z-index: 2;
     float: left;
     height: $header_height;
@@ -1787,7 +1787,7 @@ div.focused_table {
     }
 }
 
-#tab_bar_underpadding {
+#message_view_header_underpadding {
     position: absolute;
     width: 100%;
     top: $header_height;
@@ -2722,7 +2722,7 @@ select.inline_select_topic_edit {
     #streamlist-toggle,
     #navbar-buttons,
     .navbar-search,
-    #tab_bar,
+    #message_view_header,
     #searchbox,
     #searchbox_legacy,
     .header {
@@ -2758,7 +2758,7 @@ select.inline_select_topic_edit {
         }
     }
 
-    #tab_bar_underpadding {
+    #message_view_header_underpadding {
         top: 30px;
     }
 
@@ -2795,7 +2795,7 @@ select.inline_select_topic_edit {
         line-height: 15px;
     }
 
-    #tab_bar_underpadding {
+    #message_view_header_underpadding {
         height: 10px;
     }
 

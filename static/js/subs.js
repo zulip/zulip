@@ -144,7 +144,7 @@ exports.update_stream_name = function (sub, new_name) {
     }
 
     // Update navbar if needed
-    tab_bar.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub);
 };
 
 exports.update_stream_description = function (sub, description, rendered_description) {
@@ -159,7 +159,7 @@ exports.update_stream_description = function (sub, description, rendered_descrip
     stream_edit.update_stream_description(sub);
 
     // Update navbar if needed
-    tab_bar.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub);
 };
 
 exports.update_stream_privacy = function (sub, values) {
@@ -176,7 +176,7 @@ exports.update_stream_privacy = function (sub, values) {
     stream_list.redraw_stream_privacy(sub);
 
     // Update navbar if needed
-    tab_bar.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub);
 };
 
 exports.update_stream_post_policy = function (sub, new_value) {
@@ -212,7 +212,7 @@ exports.update_subscribers_ui = function (sub) {
     // We rely on rerender_subscriptions_settings to complete the
     // stream_data subscribers count update
     exports.rerender_subscriptions_settings(sub);
-    tab_bar.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub);
 };
 
 exports.add_sub_to_table = function (sub) {

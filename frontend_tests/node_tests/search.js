@@ -4,7 +4,7 @@ set_global("page_params", {
 zrequire("search");
 zrequire("search_pill");
 zrequire("Filter", "js/filter");
-zrequire("tab_bar");
+zrequire("message_view_header");
 
 const noop = () => {};
 const return_true = () => true;

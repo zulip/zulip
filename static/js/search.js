@@ -108,7 +108,7 @@ exports.initialize = function () {
         },
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.
-        on_escape: tab_bar.exit_search,
+        on_escape: message_view_header.exit_search,
     });
 
     searchbox_form.on("compositionend", () => {
@@ -195,7 +195,7 @@ exports.initialize = function () {
         // while we want to add box-shadow to `#searchbox`. This could have been done
         // with `:focus-within` CSS selector, but it is not supported in IE or Opera.
         searchbox.on("focusout", () => {
-            tab_bar.close_search_bar_and_open_narrow_description();
+            message_view_header.close_search_bar_and_open_narrow_description();
             searchbox.css({"box-shadow": "unset"});
         });
     }
@@ -207,7 +207,7 @@ exports.focus_search = function () {
 };
 
 exports.initiate_search = function () {
-    tab_bar.open_search_bar_and_close_narrow_description();
+    message_view_header.open_search_bar_and_close_narrow_description();
     $("#searchbox").css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
     $("#search_query").typeahead("lookup").trigger("select");
     if (page_params.search_pills_enabled) {

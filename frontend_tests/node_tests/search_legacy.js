@@ -2,7 +2,7 @@ set_global("page_params", {
     search_pills_enabled: false,
 });
 zrequire("search");
-zrequire("tab_bar");
+zrequire("message_view_header");
 
 const noop = () => {};
 const return_true = () => true;

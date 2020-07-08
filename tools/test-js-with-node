@@ -139,7 +139,7 @@ EXEMPT_FILES = {
     'static/js/stream_ui_updates.js',
     'static/js/submessage.js',
     'static/js/subs.js',
-    'static/js/tab_bar.js',
+    'static/js/message_view_header.js',
     'static/js/templates.js',
     'static/js/tictactoe_widget.js',
     'static/js/timerender.js',

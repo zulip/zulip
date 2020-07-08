@@ -86,7 +86,7 @@ zrequire("spoilers");
 zrequire("lightbox");
 zrequire("overlays");
 zrequire("invite");
-zrequire("tab_bar");
+zrequire("message_view_header");
 zrequire("narrow_state");
 zrequire("people");
 zrequire("presence");
@@ -161,8 +161,8 @@ page_params.realm_filters = [];
 page_params.starred_messages = [];
 page_params.presences = [];
 
-const $tab_bar = $.create("#tab_bar");
-$tab_bar.append = () => {};
+const $message_view_header = $.create("#message_view_header");
+$message_view_header.append = () => {};
 upload.setup_upload = () => {};
 
 server_events.home_view_loaded = () => true;
@@ -180,10 +180,10 @@ const count_stub = $.create("count");
 count_stub.set_find_results(".value", value_stub);
 $(".top_left_starred_messages").set_find_results(".count", count_stub);
 
-$("#tab_bar .stream").length = 0;
+$("#message_view_header .stream").length = 0;
 
 // set find results doesn't work here since we call .empty() in the code.
-$tab_bar.find = () => false;
+$message_view_header.find = () => false;
 
 compose.compute_show_video_chat_button = () => {};
 $("#below-compose-content .video_link").toggle = () => {};

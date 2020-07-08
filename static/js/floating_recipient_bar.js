@@ -1,7 +1,7 @@
 let is_floating_recipient_bar_showing = false;
 
 function top_offset(elem) {
-    return elem.offset().top - $("#tab_bar").safeOuterHeight();
+    return elem.offset().top - $("#message_view_header").safeOuterHeight();
 }
 
 exports.first_visible_message = function (bar) {

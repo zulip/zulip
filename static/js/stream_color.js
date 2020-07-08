@@ -95,7 +95,7 @@ exports.update_stream_color = function (sub, color, opts) {
         update_historical_message_color(sub.name, color);
     }
     update_stream_sidebar_swatch_color(stream_id, color);
-    tab_bar.colorize_tab_bar();
+    message_view_header.colorize_message_view_header();
 };
 
 function picker_do_change_color(color) {
