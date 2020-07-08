@@ -5,7 +5,7 @@ It will contain schemas (aka validators) for Zulip events.
 
 Right now it's only intended to be used by test code.
 """
-from typing import Any, Dict, Sequence, Tuple
+from typing import Any, Dict, Sequence, Tuple, Union
 
 from zerver.lib.validator import (
     Validator,
@@ -297,3 +297,29 @@ def check_update_display_settings(var_name: str, event: Dict[str, Any],) -> None
         assert "language_name" in event.keys()
     else:
         assert "language_name" not in event.keys()
+
+
+_check_update_global_notifications = check_events_dict(
+    required_keys=[
+        ("type", equals("update_global_notifications")),
+        ("notification_name", check_string),
+        ("setting", check_value),
+        ("user", check_string),
+    ]
+)
+
+
+def check_update_global_notifications(
+    var_name: str, event: Dict[str, Any], desired_val: Union[bool, int, str],
+) -> None:
+    """
+    See UserProfile.notification_setting_types for
+    more details.
+    """
+    _check_update_global_notifications(var_name, event)
+    setting_name = event["notification_name"]
+    setting = event["setting"]
+    assert setting == desired_val
+
+    setting_type = UserProfile.notification_setting_types[setting_name]
+    assert isinstance(setting, setting_type)
