@@ -282,11 +282,7 @@ exports.process_enter_key = function (e) {
     }
 
     if (emoji_picker.reactions_popped()) {
-        if (emoji_picker.is_composition(e.target)) {
-            e.target.click();
-        } else {
-            emoji_picker.toggle_selected_emoji();
-        }
+        emoji_picker.navigate('enter', e);
         return true;
     }
 
