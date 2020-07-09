@@ -103,7 +103,7 @@ add_example('send_message', '/messages:post', 200, async (client) => {
     // {code_example|start}
     // Send a stream message
     let params = {
-        to: 'social',
+        to: 'Verona',
         type: 'stream',
         topic: 'Castle',
         content: 'I come not, friends, to steal away your hearts.',
