@@ -665,12 +665,10 @@ exports.show_pm_list_sidebar = function () {
 let current_user_sidebar_user_id;
 let current_user_sidebar_popover;
 
-function user_sidebar_popped() {
-    return current_user_sidebar_popover !== undefined;
-}
+exports.user_sidebar_popped = () => current_user_sidebar_popover !== undefined;
 
 exports.hide_user_sidebar_popover = function () {
-    if (user_sidebar_popped()) {
+    if (exports.user_sidebar_popped()) {
         // this hide_* method looks different from all the others since
         // the presence list may be redrawn. Due to funkiness with jquery's .data()
         // this would confuse $.popover("destroy"), which looks at the .data() attached
@@ -1123,7 +1121,7 @@ exports.any_active = function () {
     // Expanded sidebars on mobile view count as popovers as well.
     return (
         exports.actions_popped() ||
-        user_sidebar_popped() ||
+        exports.user_sidebar_popped() ||
         stream_popover.stream_popped() ||
         stream_popover.topic_popped() ||
         exports.message_info_popped() ||
