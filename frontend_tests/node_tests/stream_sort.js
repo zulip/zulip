@@ -2,7 +2,7 @@ zrequire("stream_data");
 zrequire("stream_sort");
 
 run_test("no_subscribed_streams", () => {
-    assert.equal(stream_sort.sort_groups(""), undefined);
+    assert.equal(stream_sort.sort_groups([]), undefined);
     assert.equal(stream_sort.first_stream_id(), undefined);
 });
 
@@ -44,7 +44,7 @@ stream_data.add_sub(clarinet);
 stream_data.add_sub(weaving);
 
 function sort_groups(query) {
-    const streams = stream_data.subscribed_streams();
+    const streams = stream_data.subscribed_stream_ids();
     return stream_sort.sort_groups(streams, query);
 }
 
@@ -53,9 +53,9 @@ run_test("basics", (override) => {
 
     // Test sorting into categories/alphabetized
     let sorted = sort_groups("");
-    assert.deepEqual(sorted.pinned_streams, ["scalene"]);
-    assert.deepEqual(sorted.normal_streams, ["clarinet", "fast tortoise"]);
-    assert.deepEqual(sorted.dormant_streams, ["pneumonia"]);
+    assert.deepEqual(sorted.pinned_streams, [scalene.stream_id]);
+    assert.deepEqual(sorted.normal_streams, [clarinet.stream_id, fast_tortoise.stream_id]);
+    assert.deepEqual(sorted.dormant_streams, [pneumonia.stream_id]);
 
     // Test cursor helpers.
     assert.equal(stream_sort.first_stream_id(), scalene.stream_id);
@@ -68,7 +68,7 @@ run_test("basics", (override) => {
 
     // Test filtering
     sorted = sort_groups("s");
-    assert.deepEqual(sorted.pinned_streams, ["scalene"]);
+    assert.deepEqual(sorted.pinned_streams, [scalene.stream_id]);
     assert.deepEqual(sorted.normal_streams, []);
     assert.deepEqual(sorted.dormant_streams, []);
 
@@ -80,17 +80,17 @@ run_test("basics", (override) => {
     sorted = sort_groups("PnEuMoNiA");
     assert.deepEqual(sorted.pinned_streams, []);
     assert.deepEqual(sorted.normal_streams, []);
-    assert.deepEqual(sorted.dormant_streams, ["pneumonia"]);
+    assert.deepEqual(sorted.dormant_streams, [pneumonia.stream_id]);
 
     // Test searching part of word
     sorted = sort_groups("tortoise");
     assert.deepEqual(sorted.pinned_streams, []);
-    assert.deepEqual(sorted.normal_streams, ["fast tortoise"]);
+    assert.deepEqual(sorted.normal_streams, [fast_tortoise.stream_id]);
     assert.deepEqual(sorted.dormant_streams, []);
 
     // Test searching stream with spaces
     sorted = sort_groups("fast t");
     assert.deepEqual(sorted.pinned_streams, []);
-    assert.deepEqual(sorted.normal_streams, ["fast tortoise"]);
+    assert.deepEqual(sorted.normal_streams, [fast_tortoise.stream_id]);
     assert.deepEqual(sorted.dormant_streams, []);
 });
