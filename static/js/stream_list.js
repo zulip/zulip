@@ -85,7 +85,7 @@ exports.build_stream_list = function () {
     // sidebar rows.  Our job here is to build the bigger widget,
     // which largely is a matter of arranging the individual rows in
     // the right order.
-    const streams = stream_data.subscribed_streams();
+    const streams = stream_data.subscribed_stream_ids();
     if (streams.length === 0) {
         return;
     }
@@ -101,9 +101,8 @@ exports.build_stream_list = function () {
     const parent = $("#stream_filters");
     const elems = [];
 
-    function add_sidebar_li(stream) {
-        const sub = stream_data.get_sub(stream);
-        const sidebar_row = exports.stream_sidebar.get_row(sub.stream_id);
+    function add_sidebar_li(stream_id) {
+        const sidebar_row = exports.stream_sidebar.get_row(stream_id);
         sidebar_row.update_whether_active();
         elems.push(sidebar_row.get_li());
     }
