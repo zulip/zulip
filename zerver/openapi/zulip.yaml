@@ -2352,6 +2352,7 @@ paths:
                               assumption, as we may change that behavior in the future.
                           first_message_id:
                             type: integer
+                            nullable: true
                             description: |
                               The id of the first message in the stream.
 
