@@ -739,7 +739,7 @@ paths:
                 type: integer
             example: [9, 10]
         required: true
-      - $ref: '#/components/parameters/Content'
+      - $ref: '#/components/parameters/RequiredContent'
       - $ref: '#/components/parameters/Topic'
       - name: queue_id
         in: query
@@ -987,7 +987,7 @@ paths:
 
         `POST {{ api_url }}/v1/messages/render`
       parameters:
-      - $ref: '#/components/parameters/Content'
+      - $ref: '#/components/parameters/RequiredContent'
       responses:
         '200':
           description: Success.
@@ -1247,7 +1247,7 @@ paths:
           type: boolean
           default: true
         example: true
-      - $ref: '#/components/parameters/Content'
+      - $ref: '#/components/parameters/OptionalContent'
       - $ref: '#/components/parameters/StreamIdInQuery'
       responses:
         '200':
@@ -5172,7 +5172,7 @@ components:
         type: boolean
         default: false
       example: true
-    Content:
+    RequiredContent:
       name: content
       in: query
       description: |
@@ -5181,6 +5181,14 @@ components:
         type: string
       example: Hello
       required: true
+    OptionalContent:
+      name: content
+      in: query
+      description: |
+        The content of the message. Maximum message size of 10000 bytes.
+      schema:
+        type: string
+      example: Hello
     MessageId:
       name: message_id
       in: path
