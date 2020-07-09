@@ -83,6 +83,20 @@ const ExamplesHandler = function () {
 
 const {main, add_example} = ExamplesHandler();
 
+const send_test_message = async (client) => {
+    const params = {
+        to: 'Verona',
+        type: 'stream',
+        topic: 'Castle',
+        // Use some random text for easier debugging if needed. We don't
+        // depend on the content of these messages for the tests.
+        content: `Random test message ${Math.random()}`,
+    };
+    const result = await client.messages.send(params);
+    // Only return the message id.
+    return result.id;
+};
+
 // Declare all the examples below.
 
 add_example('send_message', '/messages:post', 200, async (client) => {
@@ -290,7 +304,12 @@ add_example('remove_subscriptions', '/users/me/subscriptions:delete', 200, async
 });
 
 add_example('update_message_flags', '/messages/flags:post', 200, async (client) => {
-    const message_ids = [4, 8, 15];
+    // Send 3 messages to run this example on
+    const message_ids = [...Array(3)];
+    for (let i = 0; i < message_ids.length; i = i + 1) {
+        message_ids[i] = await send_test_message(client);
+    }
+
     // {code_example|start}
     // Add the "read" flag to the messages with IDs in "message_ids"
     const addflag = {
@@ -341,13 +360,7 @@ add_example('get_events', '/events:get', 200, async (client) => {
     const queue_id = res.queue_id;
     // For setup, we send a message to ensure there are events in the
     // queue; this lets the automated tests complete quickly.
-    const params = {
-        to: 'social',
-        type: 'stream',
-        topic: 'Castle',
-        content: 'I come not, friends, to steal away your hearts.',
-    };
-    client.messages.send(params);
+    await send_test_message(client);
 
     // {code_example|start}
     // Retrieve events from a queue with given "queue_id"
