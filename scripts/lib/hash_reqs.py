@@ -6,25 +6,15 @@ import sys
 from typing import Iterable, List, MutableSet
 
 
-def expand_reqs_helper(fpath: str, visited: MutableSet[str]) -> List[str]:
-    if fpath in visited:
-        return []
-    else:
-        visited.add(fpath)
-
-    curr_dir = os.path.dirname(fpath)
+def expand_reqs_helper(fpath: str) -> List[str]:
     result = []  # type: List[str]
 
     for line in open(fpath):
-        if line.startswith('#'):
+        if line.strip().startswith(('#', '--hash')):
             continue
-        dep = line.split(" #", 1)[0].strip()  # remove comments and strip whitespace
+        dep = line.split(" \\", 1)[0].strip()
         if dep:
-            if dep.startswith('-r'):
-                child = os.path.join(curr_dir, dep[3:])
-                result += expand_reqs_helper(child, visited)
-            else:
-                result.append(dep)
+            result.append(dep)
     return result
 
 def expand_reqs(fpath: str) -> List[str]:
@@ -34,7 +24,7 @@ def expand_reqs(fpath: str) -> List[str]:
     `fpath` can be either an absolute path or a relative path.
     """
     absfpath = os.path.abspath(fpath)
-    output = expand_reqs_helper(absfpath, set())
+    output = expand_reqs_helper(absfpath)
     return sorted(set(output))
 
 def hash_deps(deps: Iterable[str]) -> str:
