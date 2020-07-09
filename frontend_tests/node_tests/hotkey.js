@@ -212,6 +212,7 @@ run_test("basic_chars", () => {
     });
     set_global("stream_popover", {
         stream_popped: return_false,
+        topic_popped: return_false,
     });
     set_global("emoji_picker", {
         reactions_popped: return_false,
