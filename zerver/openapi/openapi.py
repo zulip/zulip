@@ -4,6 +4,9 @@ import os
 import re
 from typing import Any, Dict, List, Optional, Set
 
+from openapi_core import create_spec
+from openapi_core.testing import MockRequest
+from openapi_core.validation.request.validators import RequestValidator
 from openapi_schema_validator import OAS30Validator
 
 OPENAPI_SPEC_PATH = os.path.abspath(os.path.join(
@@ -12,7 +15,7 @@ OPENAPI_SPEC_PATH = os.path.abspath(os.path.join(
 
 # A list of endpoint-methods such that the endpoint
 # has documentation but not with this particular method.
-EXCLUDE_UNDOCUMENTED_ENDPOINTS = {"/realm/emoji/{emoji_name}:delete"}
+EXCLUDE_UNDOCUMENTED_ENDPOINTS = {"/realm/emoji/{emoji_name}:delete", "/users:patch"}
 # Consists of endpoints with some documentation remaining.
 # These are skipped but return true as the validator cannot exclude objects
 EXCLUDE_DOCUMENTED_ENDPOINTS = {"/events:get", "/register:post", "/settings/notifications:patch"}
@@ -22,6 +25,7 @@ class OpenAPISpec():
         self.last_update: Optional[float] = None
         self.data: Dict[str, Any] = {}
         self.regex_dict: Dict[str, str] = {}
+        self.core_data: Any = None
 
     def reload(self) -> None:
         # Because importing yamole (and in turn, yaml) takes
@@ -37,8 +41,9 @@ class OpenAPISpec():
         from yamole import YamoleParser
         with open(self.path) as f:
             yaml_parser = YamoleParser(f)
-
         self.data = yaml_parser.data
+        validator_spec = create_spec(self.data)
+        self.core_data = RequestValidator(validator_spec)
         self.create_regex_dict()
         self.last_update = os.path.getmtime(self.path)
 
@@ -104,6 +109,17 @@ class OpenAPISpec():
         assert(len(self.regex_dict) > 0)
         return self.regex_dict
 
+    def core_validator(self) -> Any:
+        """Reload the OpenAPI file if it has been modified after the last time
+        it was read, and then return the openapi_core validator object. Similar
+        to preceding functions. Used for proper access to OpenAPI objects.
+        """
+        last_modified = os.path.getmtime(self.path)
+        # Using != rather than < to cover the corner case of users placing an
+        # earlier version than the current one
+        if self.last_update != last_modified:
+            self.reload()
+        return self.core_data
 
 class SchemaError(Exception):
     pass
