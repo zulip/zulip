@@ -741,29 +741,29 @@ def get_realm_config() -> Config:
     )
 
     #
-    stream_subscription_config = Config(
-        table='_stream_subscription',
-        model=Subscription,
-        normal_parent=user_profile_config,
-        filter_args={'recipient__type': Recipient.STREAM},
-        parent_key='user_profile__in',
+
+    stream_config = Config(
+        table='zerver_stream',
+        model=Stream,
+        exclude=['email_token'],
+        post_process_data=sanity_check_stream_data,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
     )
 
     stream_recipient_config = Config(
         table='_stream_recipient',
         model=Recipient,
-        virtual_parent=stream_subscription_config,
-        id_source=('_stream_subscription', 'recipient'),
+        normal_parent=stream_config,
+        parent_key='type_id__in',
+        filter_args={'type': Recipient.STREAM},
     )
 
     Config(
-        table='zerver_stream',
-        model=Stream,
-        virtual_parent=stream_recipient_config,
-        id_source=('_stream_recipient', 'type_id'),
-        source_filter=lambda r: r['type'] == Recipient.STREAM,
-        exclude=['email_token'],
-        post_process_data=sanity_check_stream_data,
+        table='_stream_subscription',
+        model=Subscription,
+        normal_parent=stream_recipient_config,
+        parent_key='recipient_id__in',
     )
 
     #
@@ -781,7 +781,7 @@ def get_realm_config() -> Config:
     # Now build permanent tables from our temp tables.
     Config(
         table='zerver_recipient',
-        virtual_parent=user_profile_config,
+        virtual_parent=realm_config,
         concat_and_destroy=[
             '_user_recipient',
             '_stream_recipient',
@@ -791,7 +791,7 @@ def get_realm_config() -> Config:
 
     Config(
         table='zerver_subscription',
-        virtual_parent=user_profile_config,
+        virtual_parent=realm_config,
         concat_and_destroy=[
             '_user_subscription',
             '_stream_subscription',
