@@ -2,8 +2,9 @@
 import argparse
 import hashlib
 import os
+import subprocess
 import sys
-from typing import Iterable, List, MutableSet
+from typing import Iterable, List
 
 
 def expand_reqs_helper(fpath: str) -> List[str]:
@@ -27,8 +28,14 @@ def expand_reqs(fpath: str) -> List[str]:
     output = expand_reqs_helper(absfpath)
     return sorted(set(output))
 
+def python_version() -> str:
+    """
+    Returns the Python version as string 'Python major.minor.patchlevel'
+    """
+    return subprocess.check_output(["/usr/bin/python3", "-VV"], universal_newlines=True)
+
 def hash_deps(deps: Iterable[str]) -> str:
-    deps_str = "\n".join(deps) + "\n"
+    deps_str = "\n".join(deps) + "\n" + python_version()
     return hashlib.sha1(deps_str.encode('utf-8')).hexdigest()
 
 def main() -> int:
