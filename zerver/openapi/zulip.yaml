@@ -805,160 +805,6 @@ paths:
                           "msg": "Invalid email 'eeshan@zulip.com'",
                           "result": "error"
                       }
-  /messages/{message_id}:
-    get:
-      operationId: get_raw_message
-      tags: ["messages"]
-      description: |
-        Get the raw content of a message.
-
-        `GET {{ api_url }}/v1/messages/{msg_id}`
-
-        This is a rarely-used endpoint relevant for clients that primarily
-        work with HTML-rendered messages but might need to occasionally fetch
-        the message's raw markdown (e.g. for pre-filling a message-editing
-        UI).
-      parameters:
-      - $ref: '#/components/parameters/MessageId'
-      responses:
-        '200':
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/JsonSuccess'
-                - properties:
-                    raw_content:
-                      type: string
-                      description: |
-                        The raw content of the message.
-                - example:
-                    {
-                        "raw_content": "**Don't** forget your towel!",
-                        "result": "success",
-                        "msg": ""
-                    }
-        '400':
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InvalidMessageError'
-    patch:
-      operationId: update_message
-      tags: ["messages"]
-      description: |
-        Edit/update the content or topic of a message.
-
-        `PATCH {{ api_url }}/v1/messages/{msg_id}`
-
-        `{msg_id}` in the above URL should be replaced with the ID of the
-        message you wish you update.
-      parameters:
-      - $ref: '#/components/parameters/MessageId'
-      - $ref: '#/components/parameters/Topic'
-      - name: propagate_mode
-        in: query
-        description: |
-          Which message(s) should be edited: just the one indicated in
-          `message_id`, messages in the same topic that had been sent after this
-          one, or all of them.
-        schema:
-          type: string
-          enum:
-          - change_one
-          - change_later
-          - change_all
-          default: change_one
-        example: change_all
-      - name: send_notification_to_old_thread
-        in: query
-        description: |
-          Whether to send breadcrumb message to the old thread to
-          notify users where the messages were moved to.
-
-          **Changes**: New in Zulip 3.0 (feature level 9).
-        schema:
-          type: boolean
-          default: true
-        example: true
-      - name: send_notification_to_new_thread
-        in: query
-        description: |
-          Whether to send a notification message to the new thread to
-          notify users where the messages came from.
-
-          **Changes**: New in Zulip 3.0 (feature level 9).
-        schema:
-          type: boolean
-          default: true
-        example: true
-      - $ref: '#/components/parameters/Content'
-      - $ref: '#/components/parameters/StreamIdInQuery'
-      responses:
-        '200':
-          description: Success.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/JsonSuccess'
-        '400':
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/CodedError'
-                - properties:
-                    msg:
-                      enum:
-                      - Your organization has turned off message editing
-                      - You don't have permission to edit this message
-                      - The time limit for editing this message has past
-                      - Nothing to change
-                      - Topic can't be empty
-                - example:
-                    {
-                        "code": "BAD_REQUEST",
-                        "msg": "You don't have permission to edit this message",
-                        "result": "error"
-                    }
-    delete:
-      operationId: delete_message
-      tags: ["messages"]
-      description: |
-        Permanently delete a message.
-
-        `DELETE {{ api_url }}/v1/messages/{msg_id}`
-
-        This API corresponds to the
-        [delete a message completely][delete-completely] feature documented in
-        the Zulip Help Center.
-      parameters:
-      - $ref: '#/components/parameters/MessageId'
-      responses:
-        '200':
-          description: Success.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/JsonSuccess'
-        '400':
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                oneOf:
-                - $ref: '#/components/schemas/InvalidMessageError'
-                - allOf:
-                  - $ref: '#/components/schemas/CodedError'
-                  - example:
-                      {
-                          "code": "BAD_REQUEST",
-                          "msg": "You don't have permission to delete this message",
-                          "result": "error"
-                      }
   /messages/{message_id}/history:
     get:
       operationId: get_message_history
@@ -1310,6 +1156,160 @@ paths:
                         }
                       }
                     }
+  /messages/{message_id}:
+    get:
+      operationId: get_raw_message
+      tags: ["messages"]
+      description: |
+        Get the raw content of a message.
+
+        `GET {{ api_url }}/v1/messages/{msg_id}`
+
+        This is a rarely-used endpoint relevant for clients that primarily
+        work with HTML-rendered messages but might need to occasionally fetch
+        the message's raw markdown (e.g. for pre-filling a message-editing
+        UI).
+      parameters:
+      - $ref: '#/components/parameters/MessageId'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    raw_content:
+                      type: string
+                      description: |
+                        The raw content of the message.
+                - example:
+                    {
+                        "raw_content": "**Don't** forget your towel!",
+                        "result": "success",
+                        "msg": ""
+                    }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidMessageError'
+    patch:
+      operationId: update_message
+      tags: ["messages"]
+      description: |
+        Edit/update the content or topic of a message.
+
+        `PATCH {{ api_url }}/v1/messages/{msg_id}`
+
+        `{msg_id}` in the above URL should be replaced with the ID of the
+        message you wish you update.
+      parameters:
+      - $ref: '#/components/parameters/MessageId'
+      - $ref: '#/components/parameters/Topic'
+      - name: propagate_mode
+        in: query
+        description: |
+          Which message(s) should be edited: just the one indicated in
+          `message_id`, messages in the same topic that had been sent after this
+          one, or all of them.
+        schema:
+          type: string
+          enum:
+          - change_one
+          - change_later
+          - change_all
+          default: change_one
+        example: change_all
+      - name: send_notification_to_old_thread
+        in: query
+        description: |
+          Whether to send breadcrumb message to the old thread to
+          notify users where the messages were moved to.
+
+          **Changes**: New in Zulip 3.0 (feature level 9).
+        schema:
+          type: boolean
+          default: true
+        example: true
+      - name: send_notification_to_new_thread
+        in: query
+        description: |
+          Whether to send a notification message to the new thread to
+          notify users where the messages came from.
+
+          **Changes**: New in Zulip 3.0 (feature level 9).
+        schema:
+          type: boolean
+          default: true
+        example: true
+      - $ref: '#/components/parameters/Content'
+      - $ref: '#/components/parameters/StreamIdInQuery'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - properties:
+                    msg:
+                      enum:
+                      - Your organization has turned off message editing
+                      - You don't have permission to edit this message
+                      - The time limit for editing this message has past
+                      - Nothing to change
+                      - Topic can't be empty
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "You don't have permission to edit this message",
+                        "result": "error"
+                    }
+    delete:
+      operationId: delete_message
+      tags: ["messages"]
+      description: |
+        Permanently delete a message.
+
+        `DELETE {{ api_url }}/v1/messages/{msg_id}`
+
+        This API corresponds to the
+        [delete a message completely][delete-completely] feature documented in
+        the Zulip Help Center.
+      parameters:
+      - $ref: '#/components/parameters/MessageId'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/InvalidMessageError'
+                - allOf:
+                  - $ref: '#/components/schemas/CodedError'
+                  - example:
+                      {
+                          "code": "BAD_REQUEST",
+                          "msg": "You don't have permission to delete this message",
+                          "result": "error"
+                      }
   /user_uploads:
     post:
       operationId: upload_file
