@@ -394,7 +394,6 @@ class Config:
                  filter_args: Optional[FilterArgs]=None,
                  custom_fetch: Optional[CustomFetch]=None,
                  custom_tables: Optional[List[TableName]]=None,
-                 post_process_data: Optional[PostProcessData]=None,
                  concat_and_destroy: Optional[List[TableName]]=None,
                  id_source: Optional[IdSource]=None,
                  source_filter: Optional[SourceFilter]=None,
@@ -414,7 +413,6 @@ class Config:
         self.exclude = exclude
         self.custom_fetch = custom_fetch
         self.custom_tables = custom_tables
-        self.post_process_data = post_process_data
         self.concat_and_destroy = concat_and_destroy
         self.id_source = id_source
         self.source_filter = source_filter
@@ -551,13 +549,6 @@ def export_from_config(response: TableData, config: Config, seed_object: Optiona
         response[table] = make_raw(rows, exclude=config.exclude)
         if table in DATE_FIELDS:
             floatify_datetime_fields(response, table)
-
-    if config.post_process_data:
-        config.post_process_data(
-            response=response,
-            config=config,
-            context=context,
-        )
 
     # Now walk our children.  It's extremely important to respect
     # the order of children here.
@@ -746,7 +737,6 @@ def get_realm_config() -> Config:
         table='zerver_stream',
         model=Stream,
         exclude=['email_token'],
-        post_process_data=sanity_check_stream_data,
         normal_parent=realm_config,
         parent_key='realm_id__in',
     )
@@ -800,30 +790,6 @@ def get_realm_config() -> Config:
     )
 
     return realm_config
-
-def sanity_check_stream_data(response: TableData, config: Config, context: Context) -> None:
-
-    if context['exportable_user_ids'] is not None:
-        # If we restrict which user ids are exportable,
-        # the way that we find # streams is a little too
-        # complex to have a sanity check.
-        return
-
-    actual_streams = {stream.name for stream in Stream.objects.filter(
-        realm=response["zerver_realm"][0]['id'])}
-    streams_in_response = {stream['name'] for stream in response['zerver_stream']}
-
-    if len(streams_in_response - actual_streams) > 0:
-        print("Error: Streams not present in the realm were exported:")
-        print("   ", streams_in_response - actual_streams)
-        print("This is likely due to a bug in the export tool.")
-        raise AssertionError("Aborting!  Please investigate.")
-    if len(actual_streams - streams_in_response) > 0:
-        print("Error: Some streams present in the realm were not exported:")
-        print("    ", actual_streams - streams_in_response)
-        print("Usually, this is caused by a stream having been created that never had subscribers.")
-        print("(Due to a bug elsewhere in Zulip, not in the export tool)")
-        raise AssertionError("Aborting!  Please investigate.")
 
 def fetch_user_profile(response: TableData, config: Config, context: Context) -> None:
     realm = context['realm']
