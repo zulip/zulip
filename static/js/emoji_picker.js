@@ -396,7 +396,8 @@ exports.navigate = function (event_name, e) {
 
     // If search is active and results are empty then return immediately.
     if (search_is_active === true && search_results.length === 0) {
-        return true;
+        // We don't want to prevent default for keys like backspace and space.
+        return false;
     }
 
     if (event_name === 'enter') {
