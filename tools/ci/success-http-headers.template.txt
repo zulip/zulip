@@ -1,5 +1,6 @@
   Self-signed certificate encountered.
-    WARNING: certificate common name ‘127.0.0.1’ doesn't match requested host name ‘localhost’.
+WARNING: no certificate subject alternative name matches
+	requested host name ‘localhost’.
   HTTP/1.1 302 Found
   Server: {nginx_version_string}
   Content-Type: text/html; charset=utf-8
