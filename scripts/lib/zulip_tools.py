@@ -8,12 +8,12 @@ import json
 import logging
 import os
 import pwd
+import random
 import re
 import shlex
 import shutil
 import subprocess
 import sys
-import tempfile
 import time
 import uuid
 from typing import Any, Dict, List, Sequence, Set
@@ -40,10 +40,12 @@ MAGENTA = '\x1b[35m'
 CYAN = '\x1b[36m'
 
 def overwrite_symlink(src: str, dst: str) -> None:
+    dir, base = os.path.split(dst)
     while True:
-        tmp = tempfile.mktemp(
-            prefix='.' + os.path.basename(dst) + '.',
-            dir=os.path.dirname(dst))
+        # Note: creating a temporary filename like this is not generally
+        # secure.  It’s fine in this case because os.symlink refuses to
+        # overwrite an existing target; we handle the error and try again.
+        tmp = os.path.join(dir, ".{}.{:010x}".format(base, random.randrange(1 << 40)))
         try:
             os.symlink(src, tmp)
         except FileExistsError:
