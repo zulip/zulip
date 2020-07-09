@@ -24,11 +24,10 @@ fakeldap
 responses
 
 # For sorting imports
-https://github.com/timothycrosley/isort/archive/a26a58423b183217d0defdb6b67e5fd285be7186.zip#egg=isort==5.0.0+git
+isort
 
-# For doing highly usable Python profiling (temporary fork of
-# line_profiler: https://github.com/rkern/line_profiler/issues/127)
-lp37
+# For doing highly usable Python profiling
+line-profiler
 
 # for pep8 linter
 pycodestyle
@@ -55,7 +54,7 @@ python-digitalocean
 pip-tools
 
 # zulip's linting framework - zulint
-https://github.com/zulip/zulint/archive/87ecebe3c7315ceef2236ccdf89b345dec22042e.zip#egg=zulint==0.0.1
+https://github.com/zulip/zulint/archive/f47a5e0d3ae1e077ee356b21e40f497c8e9255bb.zip#egg=zulint==0.0.1
 
 -r mypy.in
 

@@ -115,9 +115,9 @@ sphinx-rtd-theme==0.5.0 \
     --hash=sha256:22c795ba2832a169ca301cd0a083f7a434e09c538c70beb42782c073651b707d \
     --hash=sha256:373413d0f82425aaa28fb288009bf0d0964711d347763af2f1b65cafcb028c82 \
     # via -r requirements/docs.in
-sphinx==3.1.1 \
-    --hash=sha256:74fbead182a611ce1444f50218a1c5fc70b6cc547f64948f5182fb30a2a20258 \
-    --hash=sha256:97c9e3bcce2f61d9f5edf131299ee9d1219630598d9f9a8791459a4d9e815be5 \
+sphinx==3.1.2 \
+    --hash=sha256:97dbf2e31fc5684bb805104b8ad34434ed70e6c588f6896991b2fdfd2bef8c00 \
+    --hash=sha256:b9daeb9b39aa1ffefc2809b43604109825300300b987a24f45976c001ba1a8fd \
     # via -r requirements/docs.in, recommonmark, sphinx-rtd-theme
 sphinxcontrib-applehelp==1.0.2 \
     --hash=sha256:806111e5e962be97c29ec4c1e7fe277bfd19e9652fb1a4392105b43e01af885a \
