@@ -638,9 +638,23 @@ class Command(BaseCommand):
                 ]
                 create_users(zulip_realm, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
 
-            # Mark all messages as read
-            UserMessage.objects.all().update(flags=UserMessage.flags.read)
+            mark_all_messages_as_read()
             self.stdout.write("Successfully populated test database.\n")
+
+def mark_all_messages_as_read() -> None:
+    '''
+    We want to keep these two flags intact after we
+    create messages:
+
+        has_alert_word
+        is_private
+
+    But we will mark all messages as read to save a step for users.
+    '''
+    # Mark all messages as read
+    UserMessage.objects.all().update(
+        flags=F('flags').bitor(UserMessage.flags.read),
+    )
 
 recipient_hash: Dict[int, Recipient] = {}
 def get_recipient_by_id(rid: int) -> Recipient:
