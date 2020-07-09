@@ -298,3 +298,56 @@ def likely_deprecated_parameter(parameter_description: str) -> bool:
         return True
 
     return "**Deprecated**" in parameter_description
+
+# Skip those JSON endpoints whose query parameters are different from
+# their `/api/v1` counterpart.  This is a legacy code issue that we
+# plan to fix by changing the implementation.
+SKIP_JSON = {'/fetch_api_key:post'}
+
+def validate_request(url: str, method: str, data: Dict[str, Any],
+                     http_headers: Dict[str, Any], json_url: bool,
+                     uses_invalid_parameters: bool) -> None:
+    # Some JSON endpoints have different parameters compared to
+    # their `/api/v1` counterparts.
+    if json_url and url + ':' + method in SKIP_JSON:
+        return
+
+    # TODO: Add support for file upload endpoints that lack the /json/
+    # or /api/v1/ prefix.
+    if url == '/user_uploads' or url.startswith('/realm/emoji/'):
+        return
+
+    # Now using the openapi_core APIs, validate the request schema
+    # against the OpenAPI documentation.
+    mock_request = MockRequest('http://localhost:9991/', method, '/api/v1' + url,
+                               headers=http_headers, args=data)
+    result = openapi_spec.core_validator().validate(mock_request)
+
+    if uses_invalid_parameters:
+        # This assertion helps us avoid unnecessary use of the
+        # uses_invalid_parameters argument.
+        assert(len(result.errors) != 0)
+        return
+
+    # If no errors are raised, then validation is successful
+    if len(result.errors) == 0:
+        return
+
+    # Show a block error message explaining the options for fixing it.
+    msg = f"""
+
+Error!  The OpenAPI schema for {method} {url} is not consistent
+with the parameters passed in this HTTP request.  Consider:
+
+* Updating the OpenAPI schema defined in zerver/openapi/zulip.yaml
+* Adjusting the test to pass valid parameters.  If the test
+  deliberately passes invalid parameters, you need to pass
+  `uses_invalid_parameters=True` to self.client_{method.lower()} or
+  self.api_{method.lower()} to document your intent.
+
+See https://zulip.readthedocs.io/en/latest/documentation/api.html for help.
+
+The errors logged by the OpenAPI validator are below:\n"""
+    for error in result.errors:
+        msg += f"* {str(error)}\n"
+    raise SchemaError(msg)

@@ -41,6 +41,7 @@ from zerver.openapi.openapi import (
     openapi_spec,
     to_python_type,
     validate_against_openapi_schema,
+    validate_request,
     validate_schema,
 )
 
@@ -1067,3 +1068,22 @@ class OpenAPIRegexTest(ZulipTestCase):
                '/messages/{message_id}')
         assert(match_against_openapi_regex('/realm/emoji/realm_emoji_1') ==
                '/realm/emoji/{emoji_name}')
+
+class OpenAPIRequestValidatorTest(ZulipTestCase):
+    def test_validator(self) -> None:
+        """
+        Test to make sure the request validator works properly
+        The tests cover both cases such as catching valid requests marked
+        as invalid and making sure invalid requests are markded properly
+        """
+        # `/users/me/subscriptions` doesn't require any parameters
+        validate_request('/users/me/subscriptions', 'get', {}, {}, False,
+                         uses_invalid_parameters=False)
+        with self.assertRaises(AssertionError):
+            validate_request('/users/me/subscriptions', 'get', {}, {},
+                             False, uses_invalid_parameters=True)
+        validate_request('/dev_fetch_api_key', 'post', {}, {}, False,
+                         uses_invalid_parameters=True)
+        with self.assertRaises(SchemaError):
+            validate_request('/dev_fetch_api_key', 'post', {}, {},
+                             False, uses_invalid_parameters=False)
