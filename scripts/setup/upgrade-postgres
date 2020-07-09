@@ -23,11 +23,6 @@ if pg_lsclusters -h | grep -qE "^$UPGRADE_TO\s+main\b"; then
     pg_dropcluster "$UPGRADE_TO" main --stop
 fi
 
-# Work around `systemctl stop postgresql` being asynchronous, since
-# the pg_upgradecluster command fails if it is still running
-# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=759725
-pg_ctlcluster "$UPGRADE_FROM" main stop
-
 (
     # Two-stage application of puppet; we apply the bare-bones
     # postgresql configuration first, so that FTS will be configured
