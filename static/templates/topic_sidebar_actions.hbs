@@ -8,8 +8,9 @@
 
     <hr>
 
+    {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
     <li>
-        <a class="narrow_to_topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+        <a tabindex="0" class="narrow_to_topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-bullhorn" aria-hidden="true"></i>
             {{t "Narrow to topic"}}
         </a>
@@ -18,7 +19,7 @@
 
     {{#if can_mute_topic}}
     <li>
-        <a href="#" class="sidebar-popover-mute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+        <a tabindex="0" class="sidebar-popover-mute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-bell-slash" aria-hidden="true"></i>
             {{t "Mute topic"}}
         </a>
@@ -27,14 +28,14 @@
 
     {{#if can_unmute_topic}}
     <li>
-        <a href="#" class="sidebar-popover-unmute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+        <a tabindex="0" class="sidebar-popover-unmute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-bell" aria-hidden="true"></i>
             {{t "Unmute topic"}}
         </a>
     </li>
     {{/if}}
     <li>
-        <a class="sidebar-popover-mark-topic-read" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+        <a tabindex="0" class="sidebar-popover-mark-topic-read" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-book" aria-hidden="true"></i>
             {{t "Mark all messages as read"}}
         </a>
@@ -45,7 +46,7 @@
     <div class="admin-separator">{{#tr this}}ADMIN ACTIONS{{/tr}}</div>
 
     <li>
-        <a class="sidebar-popover-delete-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+        <a tabindex="0" class="sidebar-popover-delete-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-trash" aria-hidden="true"></i>
             {{t "Delete all messages in topic"}}
         </a>
@@ -54,7 +55,7 @@
 
     {{#if is_admin}}
     <li>
-        <a class="sidebar-popover-move-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+        <a tabindex="0" class="sidebar-popover-move-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-arrows" aria-hidden="true"></i>
             {{t "Move topic"}}
         </a>
