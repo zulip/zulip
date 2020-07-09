@@ -43,12 +43,35 @@ pg_ctlcluster "$UPGRADE_FROM" main stop
     rm -rf "$TEMP_CONF_DIR"
 )
 
-pg_upgradecluster "$UPGRADE_FROM" main
+# Capture the output so we know where the path to the post-upgrade scripts is
+UPGRADE_LOG=$(mktemp "/var/log/zulip/postgres-upgrade-$UPGRADE_FROM-$UPGRADE_TO.XXXXXXXXX.log")
+pg_upgradecluster "$UPGRADE_FROM" main --method=upgrade --link | tee "$UPGRADE_LOG"
+SCRIPTS_PATH=$(grep -o "/var/log/postgresql/pg_upgradecluster-$UPGRADE_FROM-$UPGRADE_TO-main.*" "$UPGRADE_LOG" || true)
 
 crudini --set /etc/zulip/zulip.conf postgresql version "$UPGRADE_TO"
+
+# Update the statistics
+[ -n "$SCRIPTS_PATH" ] && su postgres -c "$SCRIPTS_PATH/analyze_new_cluster.sh"
+
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
 service memcached restart
 
 pg_dropcluster "$UPGRADE_FROM" main
 apt remove -y "postgresql-$UPGRADE_FROM"
+if [ -n "$SCRIPTS_PATH" ]; then
+    su postgres -c "$SCRIPTS_PATH/delete_old_cluster.sh"
+    rm -rf "$SCRIPTS_PATH"
+else
+    set +x
+    echo
+    echo
+    echo ">>>>> pg_upgradecluster succeeded, but post-upgrade scripts path could not"
+    echo "      be parsed out!  Please read the pg_upgradecluster output to understand"
+    echo "      the current status of your cluster:"
+    echo "          $UPGRADE_LOG"
+    echo "      and report this bug with the Postgres $UPGRADE_FROM -> $UPGRADE_TO upgrade to:"
+    echo "          https://github.com/zulip/zulip/issues"
+    echo
+    echo
+fi
