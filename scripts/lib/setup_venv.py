@@ -262,16 +262,19 @@ def do_patch_activate_script(venv_path: str) -> None:
     with open(script_path, 'w') as f:
         f.write("".join(lines))
 
+def generate_hash(requirements_file: str) -> str:
+    path = os.path.join(ZULIP_PATH, 'scripts', 'lib', 'hash_reqs.py')
+    output = subprocess.check_output([path, requirements_file], universal_newlines=True)
+    return output.split()[0]
+
 def setup_virtualenv(
     target_venv_path: Optional[str],
     requirements_file: str,
     patch_activate_script: bool = False,
 ) -> str:
 
+    sha1sum = generate_hash(requirements_file)
     # Check if a cached version already exists
-    path = os.path.join(ZULIP_PATH, 'scripts', 'lib', 'hash_reqs.py')
-    output = subprocess.check_output([path, requirements_file], universal_newlines=True)
-    sha1sum = output.split()[0]
     if target_venv_path is None:
         cached_venv_path = os.path.join(VENV_CACHE_PATH, sha1sum, 'venv')
     else:
