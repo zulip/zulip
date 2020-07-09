@@ -9,6 +9,7 @@ import * as compose_ui from "./compose_ui";
 import {csrf_token} from "./csrf";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
+import * as rows from "./rows";
 
 // Show the upload button only if the browser supports it.
 export function feature_check(upload_button) {
@@ -234,6 +235,47 @@ export function setup_upload(config) {
             files.push(file);
         }
         upload_files(uppy, config, files);
+    });
+
+    $("#main_div").on("dragover", (event) => event.preventDefault());
+    $("#main_div").on("dragenter", (event) => event.preventDefault());
+
+    $("#main_div").on("drop", (event) => {
+        event.preventDefault();
+        if (!drag_drop_container.closest("html").length) {
+            return;
+        }
+
+        const drag_drop_edit_containers = $(".edit_form");
+        for (const container of drag_drop_edit_containers) {
+            if (container.contains(event.target)) {
+                return;
+            }
+        }
+
+        // If the main compose box and edit boxes are all closed, open the compose box in reply mode and upload file.
+        // If compose box and edit box(es) are both open, the upload goes to main compose box.
+        // If only edit message boxes are open, the upload goes to the edit box at the bottom.
+        const last_drag_drop_edit_container = drag_drop_edit_containers.last();
+        const img = event.originalEvent.dataTransfer.files;
+        if (config.mode === "compose") {
+            if (compose_state.composing()) {
+                upload_files(uppy, config, img);
+            } else if (last_drag_drop_edit_container.length === 0) {
+                compose_actions.respond_to_message({trigger: "drag and drop file"});
+                upload_files(uppy, config, img);
+            }
+        } else {
+            if (compose_state.composing()) {
+                return;
+            }
+            if (
+                last_drag_drop_edit_container.length !== 0 &&
+                rows.get_message_id(last_drag_drop_edit_container) === config.row
+            ) {
+                upload_files(uppy, config, img);
+            }
+        }
     });
 
     uppy.on("upload-success", (file, response) => {

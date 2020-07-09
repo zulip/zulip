@@ -19,6 +19,12 @@ set_global("navigator", {
 document.location.protocol = "https:";
 document.location.host = "foo.com";
 
+const compose_ui = zrequire("compose_ui");
+const compose_state = zrequire("compose_state");
+const compose_actions = zrequire("compose_actions");
+const rows = zrequire("rows");
+const upload = zrequire("upload");
+
 let uppy_stub;
 function Uppy(options) {
     return uppy_stub.call(this, options);
@@ -31,10 +37,6 @@ Uppy.Plugin = {
 mock_cjs("@uppy/core", Uppy);
 
 mock_esm("../../static/js/csrf", {csrf_token: "csrf_token"});
-
-const compose_ui = zrequire("compose_ui");
-const compose_actions = zrequire("compose_actions");
-const upload = zrequire("upload");
 
 function test(label, f) {
     run_test(label, ({override}) => {
@@ -430,6 +432,206 @@ test("file_drop", ({override}) => {
     });
     drop_handler(drop_event);
     assert.equal(prevent_default_counter, 3);
+    assert.equal(upload_files_called, true);
+});
+
+test("main_file_drop_compose_mode", ({override}) => {
+    uppy_stub = function () {
+        return {
+            setMeta: () => {},
+            use: () => {},
+            cancelAll: () => {},
+            on: () => {},
+            getFiles: () => {},
+            removeFile: () => {},
+            getState: () => ({}),
+        };
+    };
+
+    upload.setup_upload({mode: "compose"});
+    let prevent_default_counter = 0;
+    const drag_event = {
+        preventDefault: () => {
+            prevent_default_counter += 1;
+        },
+    };
+    const drag_drop_container = $(`#compose`);
+    drag_drop_container.closest = (element) => {
+        assert.equal(element, "html");
+        return {length: 1};
+    };
+    const dragover_handler = $("#main_div").get_on_handler("dragover");
+    dragover_handler(drag_event);
+    assert.equal(prevent_default_counter, 1);
+
+    const dragenter_handler = $("#main_div").get_on_handler("dragenter");
+    dragenter_handler(drag_event);
+    assert.equal(prevent_default_counter, 2);
+
+    const files = ["file1", "file2"];
+    const drop_event = {
+        target: "target",
+        preventDefault: () => {
+            prevent_default_counter += 1;
+        },
+        originalEvent: {
+            dataTransfer: {
+                files,
+            },
+        },
+    };
+    const drop_handler = $("#main_div").get_on_handler("drop");
+    let upload_files_called = false;
+    let contains_called = false;
+    override(upload, "upload_files", () => {
+        upload_files_called = true;
+    });
+    $(".edit_form").last = () => ({length: 1});
+
+    // Drag and dropped in one of the edit boxes. The event would be handled by the event handler of edit box
+    // drag_drop_container.
+    $(".edit_form")[Symbol.iterator] = function* () {
+        yield {
+            contains: (elem) => {
+                assert.equal(elem, "target");
+                contains_called = true;
+                return true;
+            },
+        };
+    };
+    drop_handler(drop_event);
+    assert.equal(prevent_default_counter, 3);
+    assert.equal(contains_called, true);
+    assert.equal(upload_files_called, false);
+
+    // Both compose and edit boxes are open. Compose box gets the preference.
+    $(".edit_form")[Symbol.iterator] = function* () {
+        yield {
+            contains: () => false,
+        };
+    };
+    compose_state.composing = () => true;
+    drop_handler(drop_event);
+    assert.equal(upload_files_called, true);
+
+    // Compose box is closed and edit boxes are open. The upload should be handled by the handler
+    // registered by the edit boxes.
+    upload_files_called = false;
+    compose_state.composing = () => false;
+    drop_handler(drop_event);
+    assert.equal(upload_files_called, false);
+
+    // Compose box is closed and edit boxes are closed. A new reply compose box should be created
+    // and the file should be uploaded.
+    compose_state.composing = () => false;
+    let compose_respond_to_message = false;
+    compose_actions.respond_to_message = () => {
+        compose_respond_to_message = true;
+    };
+    $(".edit_form").last = () => ({length: 0});
+    drop_handler(drop_event);
+    assert.equal(upload_files_called, true);
+    assert.equal(compose_respond_to_message, true);
+});
+
+test("main_file_drop_edit_mode", ({override}) => {
+    uppy_stub = function () {
+        return {
+            setMeta: () => {},
+            use: () => {},
+            cancelAll: () => {},
+            on: () => {},
+            getFiles: () => {},
+            removeFile: () => {},
+            getState: () => ({}),
+        };
+    };
+
+    upload.setup_upload({mode: "edit", row: 40});
+    let prevent_default_counter = 0;
+    const drag_event = {
+        preventDefault: () => {
+            prevent_default_counter += 1;
+        },
+    };
+    const drag_drop_container = $(`#edit_form_${CSS.escape(40)}`);
+    const dragover_handler = $("#main_div").get_on_handler("dragover");
+    dragover_handler(drag_event);
+    assert.equal(prevent_default_counter, 1);
+
+    const dragenter_handler = $("#main_div").get_on_handler("dragenter");
+    dragenter_handler(drag_event);
+    assert.equal(prevent_default_counter, 2);
+
+    const files = ["file1", "file2"];
+    const drop_event = {
+        target: "target",
+        preventDefault: () => {
+            prevent_default_counter += 1;
+        },
+        originalEvent: {
+            dataTransfer: {
+                files,
+            },
+        },
+    };
+    const drop_handler = $("#main_div").get_on_handler("drop");
+    let upload_files_called = false;
+    override(upload, "upload_files", () => {
+        upload_files_called = true;
+    });
+    $(".edit_form").last = () => ({length: 1});
+
+    // Edit box which registered the event handler no longer exists.
+    drag_drop_container.closest = (element) => {
+        assert.equal(element, "html");
+        return {length: 0};
+    };
+    drop_handler(drop_event);
+    assert.equal(upload_files_called, false);
+
+    drag_drop_container.closest = (element) => {
+        assert.equal(element, "html");
+        return {length: 1};
+    };
+    // Drag and dropped in one of the edit boxes. The event would be taken care of by
+    // drag_drop_container event handlers.
+    $(".edit_form")[Symbol.iterator] = function* () {
+        yield {
+            contains: (elem) => {
+                assert.equal(elem, "target");
+                return true;
+            },
+        };
+    };
+    drop_handler(drop_event);
+    assert.equal(upload_files_called, false);
+
+    $(".edit_form")[Symbol.iterator] = function* () {
+        yield {
+            contains: () => false,
+        };
+    };
+    // Compose box gets the preference whenever it's open. So the upload should be handled
+    // by the compose box and not the edit box.
+    compose_state.composing = () => true;
+    drop_handler(drop_event);
+    assert.equal(upload_files_called, false);
+
+    compose_state.composing = () => false;
+    // Won't trigger upload since the upload should be handled by the last open edit box.
+    rows.get_message_id = () => 22;
+    drop_handler(drop_event);
+    assert.equal(upload_files_called, false);
+
+    rows.get_message_id = () => 40;
+    // No edit boxes are open
+    $(".edit_form").last = () => ({length: 0});
+    drop_handler(drop_event);
+    assert.equal(upload_files_called, false);
+
+    $(".edit_form").last = () => ({length: 1});
+    drop_handler(drop_event);
     assert.equal(upload_files_called, true);
 });
 
