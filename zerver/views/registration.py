@@ -170,8 +170,17 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     full_name = None
     require_ldap_password = False
     user_avatar_url = ''
-    if prereg_user.user_avatar_url and request.POST.get('use_social_avatar') == 'on':
+    avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+    if prereg_user.user_avatar_url:
         user_avatar_url = prereg_user.user_avatar_url
+        # If the key use_social_avatar isn't present on the request, we set the default
+        # as 'on' because to be here, the user authenticated using Github. So, as soon
+        # as they are redirected from confirmation, their Github avatar should be
+        # displayed and thus 'use_social_avatar' is 'on'.
+        use_social_avatar = request.POST.get('use_social_avatar', default='on')
+
+        if use_social_avatar == 'on':
+            avatar_source = UserProfile.AVATAR_FROM_USER
 
     if request.POST.get('from_confirmation'):
         try:
@@ -384,6 +393,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                           role=role,
                                           tos_version=settings.TOS_VERSION,
                                           timezone=timezone,
+                                          avatar_source=avatar_source,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']},
                                           default_stream_groups=default_stream_groups,
                                           source_profile=source_profile,

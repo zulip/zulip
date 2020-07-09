@@ -163,7 +163,14 @@ def create_user(email: str,
 
     Subscription.objects.create(user_profile=user_profile, recipient=recipient)
 
-    if user_avatar_url:
+    # If there is a user_avatar_url in the prereg_user object but the avatar_source is
+    # AVATAR_FROM_GRAVATAR, this means that the user chose not to use their GitHub
+    # avatar, thus we'll use Gravatar.
+    if user_avatar_url and avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
+        user_profile.avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+        user_profile.save(update_fields=["avatar_source"])
+
+    elif user_avatar_url:
         from zerver.lib.actions import do_change_avatar_fields
         from zerver.lib.upload import upload_avatar_image_from_url
 
