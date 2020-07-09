@@ -47,17 +47,18 @@ function rerender_ui() {
 
     const unmatched_streams = stream_data.get_unmatched_streams_for_notification_settings();
 
-    list_render.create(unmatched_streams_table, unmatched_streams, {
-        name: "unmatched-streams-list",
-        modifier: function (unmatched_streams) {
-            return render_stream_specific_notification_row({
-                stream: unmatched_streams,
+    unmatched_streams_table.find('.stream-row').remove();
+
+    for (const stream of unmatched_streams) {
+        unmatched_streams_table.append(
+            render_stream_specific_notification_row({
+                stream: stream,
                 stream_specific_notification_settings:
                 settings_config.stream_specific_notification_settings,
                 is_disabled: settings_config.all_notifications().show_push_notifications_tooltip,
-            });
-        },
-    });
+            }),
+        );
+    }
 
     if (unmatched_streams.length === 0) {
         unmatched_streams_table.css("display", "none");
