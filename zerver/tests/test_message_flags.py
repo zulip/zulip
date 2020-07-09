@@ -30,6 +30,16 @@ from zerver.models import (
 )
 
 
+def check_flags(flags: List[str], expected: Set[str]) -> None:
+    '''
+    The has_alert_word flag can be ignored for most tests.
+    '''
+    assert 'has_alert_word' not in expected
+    flag_set = set(flags)
+    flag_set.discard('has_alert_word')
+    if flag_set != expected:
+        raise AssertionError(f'expected flags (ignoring has_alert_word) to be {expected}')
+
 class FirstUnreadAnchorTests(ZulipTestCase):
     '''
     HISTORICAL NOTE:
@@ -167,7 +177,7 @@ class UnreadCountTests(ZulipTestCase):
         found = 0
         for msg in self.get_messages():
             if msg['id'] in self.unread_msg_ids:
-                self.assertEqual(msg['flags'], ['read'])
+                check_flags(msg['flags'], {'read'})
                 found += 1
         self.assertEqual(found, 2)
 
@@ -179,9 +189,9 @@ class UnreadCountTests(ZulipTestCase):
         # Ensure we properly remove just one flag
         for msg in self.get_messages():
             if msg['id'] == self.unread_msg_ids[0]:
-                self.assertEqual(msg['flags'], ['read'])
+                check_flags(msg['flags'], {'read'})
             elif msg['id'] == self.unread_msg_ids[1]:
-                self.assertEqual(msg['flags'], [])
+                check_flags(msg['flags'], set())
 
     def test_mark_all_in_stream_read(self) -> None:
         self.login('hamlet')
@@ -914,17 +924,17 @@ class MessageAccessTests(ZulipTestCase):
 
         for msg in self.get_messages():
             if msg['id'] in message_ids:
-                self.assertEqual(msg['flags'], ['starred'])
+                check_flags(msg['flags'], {'starred'})
             else:
-                self.assertEqual(msg['flags'], ['read'])
+                check_flags(msg['flags'], {'read'})
 
+        # Remove the stars.
         result = self.change_star(message_ids, False)
         self.assert_json_success(result)
 
-        # Remove the stars.
         for msg in self.get_messages():
             if msg['id'] in message_ids:
-                self.assertEqual(msg['flags'], [])
+                check_flags(msg['flags'], set())
 
     def test_change_star_public_stream_historical(self) -> None:
         """
@@ -981,11 +991,11 @@ class MessageAccessTests(ZulipTestCase):
 
         for msg in self.get_messages():
             if msg['id'] in message_ids:
-                self.assertEqual(set(msg['flags']), {'starred', 'historical', 'read'})
+                check_flags(msg['flags'], {'starred', 'historical', 'read'})
             elif msg['id'] in received_message_ids:
-                self.assertEqual(msg['flags'], [])
+                check_flags(msg['flags'], set())
             else:
-                self.assertEqual(msg['flags'], ['read'])
+                check_flags(msg['flags'], {'read'})
             self.assertNotIn(msg['id'], other_message_ids)
 
         result = self.change_star(message_ids, False)

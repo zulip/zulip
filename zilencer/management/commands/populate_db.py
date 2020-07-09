@@ -37,6 +37,7 @@ from zerver.lib.user_groups import create_user_group
 from zerver.lib.users import add_service
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
+    AlertWord,
     Client,
     CustomProfileField,
     DefaultStream,
@@ -122,6 +123,41 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, An
             all_subscription_logs.append(log)
     Subscription.objects.bulk_create(subscriptions_to_add)
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
+
+def create_alert_words(realm_id: int) -> None:
+    user_ids = UserProfile.objects.filter(
+        realm_id=realm_id,
+        is_bot=False,
+        is_active=True,
+    ).values_list('id', flat=True)
+
+    alert_words = [
+        'algorithms',
+        'complexity',
+        'founded',
+        'galaxy',
+        'grammar',
+        'illustrious',
+        'natural',
+        'objective',
+        'people',
+        'robotics',
+        'study',
+    ]
+
+    recs: List[AlertWord] = []
+    for user_id in user_ids:
+        random.shuffle(alert_words)
+        for i in range(4):
+            recs.append(
+                AlertWord(
+                    realm_id=realm_id,
+                    user_profile_id=user_id,
+                    word = alert_words[i],
+                )
+            )
+
+    AlertWord.objects.bulk_create(recs)
 
 class Command(BaseCommand):
     help = "Populate a test database"
@@ -521,6 +557,8 @@ class Command(BaseCommand):
         # Create several initial pairs for personals
         personals_pairs = [random.sample(user_profiles_ids, 2)
                            for i in range(options["num_personals"])]
+
+        create_alert_words(zulip_realm.id)
 
         # Generate a new set of test data.
         create_test_data()
