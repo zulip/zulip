@@ -3664,13 +3664,15 @@ paths:
           * 1 - All unreads
           * 2 - Private messages and mentions
           * 3 - None
-        schema:
-          type: integer
-          enum:
-            - 1
-            - 2
-            - 3
-        example: 1
+        content:
+          application/json:
+            schema:
+              type: integer
+              enum:
+                - 1
+                - 2
+                - 3
+            example: 1
       - name: realm_name_in_notifications
         in: query
         description: |
