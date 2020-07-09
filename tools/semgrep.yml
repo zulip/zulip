@@ -116,7 +116,6 @@ rules:
     languages: [python]
     pattern-either:
       - pattern: '"..." % ...'
-      - pattern: '("...") % ...'
       - pattern: django.utils.translation.ugettext(...) % ...
     severity: ERROR
     message: "Prefer f-strings or .format for string formatting"
