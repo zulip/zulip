@@ -1,0 +1,8 @@
+<div stream_id="{{sub.stream_id}}" class="preset_container">
+    {{#each stream_color_presets.color }}
+    <div class="presets" style="background-color: #{{this}};"></div>
+    {{/each}}
+</div>
+<hr>
+<input stream_id="{{sub.stream_id}}" id="stream_color_picker" type="color" value="{{sub.color}}"/>
+<div id="custom_color">{{t "Custom input" }}</div>

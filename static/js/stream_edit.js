@@ -288,9 +288,6 @@ function show_subscription_settings(sub_row) {
     const sub = stream_data.get_sub_by_id(stream_id);
     const sub_settings = exports.settings_for_sub(sub);
 
-    const colorpicker = sub_settings.find(".colorpicker");
-    const color = stream_data.get_color(sub.name);
-    stream_color.set_colorpicker_color(colorpicker, color);
     stream_ui_updates.update_add_subscriptions_elements(sub);
 
     const container = $(
@@ -392,6 +389,7 @@ exports.show_settings_for = function (node) {
         settings: exports.stream_settings(sub),
         stream_post_policy_values: stream_data.stream_post_policy_values,
         message_retention_text: exports.get_retention_policy_text_for_subscription_type(sub),
+        stream_color_presets: stream_color.presets,
     });
     ui.get_content_element($(".subscriptions .right .settings")).html(html);
 

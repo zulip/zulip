@@ -406,6 +406,125 @@ input {
     }
 }
 
+input[type="color"] {
+    height: 25px;
+    width: 25px;
+    margin-top: 5px;
+    margin-bottom: 0;
+    border: none;
+    border-radius: 5px;
+    padding: 0;
+
+    &::-webkit-color-swatch-wrapper {
+        padding: 0;
+    }
+
+    &::-webkit-color-swatch {
+        border: solid 1px hsl(0, 0%, 75%); /* change color of the swatch border here */
+        border-radius: 5px;
+    }
+}
+
+#color_picker_parent {
+    vertical-align: middle;
+
+    #color_picker {
+        height: 29px;
+        margin-top: 5px;
+        margin-bottom: 0;
+        border: 1px solid hsl(0, 0%, 43%);
+        border-radius: 5px;
+        padding: 0;
+        user-select: none;
+        cursor: pointer;
+
+        div {
+            display: inline-block;
+        }
+
+        #color_swatch {
+            user-select: none;
+            float: left;
+            margin: 2px;
+            height: 25px;
+            width: 25px;
+            border-radius: 3px;
+        }
+
+        #color_dropdown {
+            user-select: none;
+            margin-top: 5px;
+            margin-right: 1px;
+        }
+    }
+}
+
+.color_picker_body {
+    display: none;
+    position: absolute;
+    overflow: auto;
+    z-index: 10;
+    background-color: hsl(0, 0%, 98%);
+    border: 1px solid hsl(0, 0%, 43%);
+    border-radius: 5px;
+
+    > * {
+        user-select: none;
+    }
+}
+
+#stream_color_picker {
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+    height: 23px;
+}
+
+#custom_color {
+    border-radius: 4px;
+    margin: 0 2px 2px 2px;
+    padding: 3px;
+    padding-left: 5px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: hsl(0, 0%, 75%);
+    }
+}
+.preset_container {
+    padding: 5px;
+    width: 160px;
+    height: 98px;
+
+    .presets {
+        display: inline-block;
+        height: 20px;
+        width: 20px;
+        border-radius: 5px;
+        margin-right: 5px;
+        cursor: pointer;
+        line-height: 20px;
+        transition: box-shadow 0.5s;
+
+        &:hover {
+            box-shadow: 0px 0px 5px hsl(215, 47%, 50%);
+        }
+
+        &:nth-child(6n) {
+            margin-right: 0px;
+        }
+    }
+}
+
+hr {
+    border: 1px solid hsl(0, 0%, 43%);
+    margin: 2px;
+}
+
+.visible {
+    display: block !important;
+}
+
 li,
 .table th,
 .table td {
@@ -864,7 +983,7 @@ td.pointer {
         border-width: 11px 0 11px 5px;
         border-color: inherit;
         z-index: 2;
-        transform: scale(.9999);
+        transform: scale(0.9999);
     }
 
     &::before {
@@ -878,9 +997,9 @@ td.pointer {
         margin-top: -14px;
         border-style: solid;
         border-width: 14px 0 14px 6px;
-        border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) transparent;
+        border-color: hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0) transparent;
         z-index: 1;
-        transform: scale(.9999);
+        transform: scale(0.9999);
     }
 }
 
@@ -1025,9 +1144,7 @@ td.pointer {
     .messagebox,
     .date_row {
         background-color: hsla(192, 19%, 75%, 0.2);
-        box-shadow:
-            inset 2px 0px 0px 0px hsl(0, 0%, 27%),
-            -1px 0px 0px 0px hsl(0, 0%, 27%);
+        box-shadow: inset 2px 0px 0px 0px hsl(0, 0%, 27%), -1px 0px 0px 0px hsl(0, 0%, 27%);
     }
 }
 
@@ -2056,7 +2173,7 @@ div.floating_recipient {
     .checkbox {
         display: block;
 
-        input[type=checkbox] {
+        input[type="checkbox"] {
             margin: 5px 0px;
             float: none;
         }
@@ -2427,6 +2544,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
     color: inherit;
     margin-left: 2px;
     font-size: .9em;
+}
+
+.popover.right .arrow {
+    top: 100px;
 }
 
 .no-drag {

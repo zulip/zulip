@@ -603,6 +603,10 @@ html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
          'templates/analytics/realm_summary_table.html',
          'templates/corporate/zephyr.html',
          'templates/corporate/zephyr-mirror.html',
+
+         # Color picker preset swatches are generated using HBS each loop
+         'static/templates/stream_sidebar_color_picker.hbs',
+         'static/templates/subscription_color_picker.hbs'
      },
      'good_lines': ['#my-style {color: blue;}', 'style="display: none"', "style='display: none"],
      'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},

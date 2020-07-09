@@ -190,6 +190,9 @@ exports.update_message_retention_setting = function (sub, new_value) {
 };
 
 exports.set_color = function (stream_id, color) {
+    const swatch_color = $(document).find('#color_swatch');
+    $(swatch_color).css("background-color", color);
+
     const sub = stream_data.get_sub_by_id(stream_id);
     stream_edit.set_stream_property(sub, "color", color);
 };

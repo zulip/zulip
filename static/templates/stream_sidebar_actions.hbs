@@ -53,11 +53,13 @@
         </a>
     </li>
     <li>
-        <span class="colorpicker-container"><input stream_id="{{stream.stream_id}}" class="colorpicker" type="text" value="{{stream.color}}" /></span>
         <a class="choose_stream_color">
             <i class="fa fa-eyedropper" aria-hidden="true"></i>
             {{t "Change color" }}
         </a>
+        <div class="sidebar_color_picker">
+            {{> stream_sidebar_color_picker }}
+        </div>
     </li>
 
 </ul>

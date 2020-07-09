@@ -66,8 +66,15 @@
                     {{/each}}
                     <li>
                         <label for="streamcolor" class="subscription-control-label">{{t "Stream color" }}</label>
-                        <span class="sub_setting_control">
-                            <input stream_id="{{sub.stream_id}}" class="colorpicker" id="streamcolor" type="text" value="{{sub.color}}" tabindex="-1" />
+                        <span class="sub_setting_control" id="color_picker_parent">
+                            {{!-- <input stream_id="{{sub.stream_id}}" id="stream_color_picker" type="color" value="{{sub.color}}"/> --}}
+                            <div id="color_picker" stream_id="{{sub.stream_id}}">
+                                <div id="color_swatch" style="background-color: {{sub.color}};"></div>
+                                <div id="color_dropdown">▼</div>
+                            </div>
+                            <div class="color_picker_body">
+                                {{> subscription_color_picker }}
+                            </div>
                         </span>
                     </li>
                 </ul>

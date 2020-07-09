@@ -107,6 +107,10 @@
     border-radius: 4px;
 }
 
+label[for="streamcolor"] {
+    padding-top: 9px;
+}
+
 .subscription-control-label {
     display: inline-block;
     vertical-align: middle;
@@ -1005,6 +1009,11 @@ form#add_new_subscription {
 
         &.show {
             display: block;
+        }
+
+        // Fix for color picker body to display the overflown content.
+        .collapse {
+            position: static;
         }
     }
 
