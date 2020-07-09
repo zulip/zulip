@@ -43,13 +43,17 @@ UPGRADE_LOG=$(mktemp "/var/log/zulip/postgres-upgrade-$UPGRADE_FROM-$UPGRADE_TO.
 pg_upgradecluster "$UPGRADE_FROM" main --method=upgrade --link | tee "$UPGRADE_LOG"
 SCRIPTS_PATH=$(grep -o "/var/log/postgresql/pg_upgradecluster-$UPGRADE_FROM-$UPGRADE_TO-main.*" "$UPGRADE_LOG" || true)
 
+# If the upgrade completed successfully, lock in the new version in
+# our configuration immediately
 crudini --set /etc/zulip/zulip.conf postgresql version "$UPGRADE_TO"
 
 # Update the statistics
 [ -n "$SCRIPTS_PATH" ] && su postgres -c "$SCRIPTS_PATH/analyze_new_cluster.sh"
 
+# Start the database up cleanly
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
+# Drop the old data, binaries, and scripts
 pg_dropcluster "$UPGRADE_FROM" main
 apt remove -y "postgresql-$UPGRADE_FROM"
 if [ -n "$SCRIPTS_PATH" ]; then
