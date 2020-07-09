@@ -156,7 +156,7 @@ exports.open_edit_panel_for_row = function (stream_row) {
 };
 
 exports.open_edit_panel_empty = function () {
-    const tab_key = subs.get_active_data().tab.attr("data-tab-key");
+    const tab_key = $(subs.get_active_data().tabs[0]).attr("data-tab-key");
     clear_edit_panel();
     subs.show_subs_pane.nothing_selected();
     exports.setup_subscriptions_tab_hash(tab_key);

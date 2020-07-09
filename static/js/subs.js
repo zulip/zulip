@@ -48,11 +48,11 @@ function get_row_data(row) {
 exports.get_active_data = function () {
     const active_row = $("div.stream-row.active");
     const valid_active_id = parseInt(active_row.attr("data-stream-id"), 10);
-    const active_tab = $(".subscriptions-container").find("div.ind-tab.selected");
+    const active_tabs = $(".subscriptions-container").find("div.ind-tab.selected");
     return {
         row: active_row,
         id: valid_active_id,
-        tab: active_tab,
+        tabs: active_tabs,
     };
 };
 
@@ -754,10 +754,11 @@ exports.switch_rows = function (event) {
 
 exports.keyboard_sub = function () {
     const active_data = exports.get_active_data();
+    const stream_filter_tab = $(active_data.tabs[0]).text();
     const row_data = get_row_data(active_data.row);
     if (row_data) {
         exports.sub_or_unsub(row_data.object);
-        if (row_data.object.subscribed && active_data.tab.text() === "Subscribed") {
+        if (row_data.object.subscribed && stream_filter_tab === "Subscribed") {
             active_data.row.addClass("notdisplayed");
             active_data.row.removeClass("active");
         }
@@ -766,10 +767,11 @@ exports.keyboard_sub = function () {
 
 exports.toggle_view = function (event) {
     const active_data = exports.get_active_data();
+    const stream_filter_tab = $(active_data.tabs[0]).text();
 
-    if (event === "right_arrow" && active_data.tab.text() === "Subscribed") {
+    if (event === "right_arrow" && stream_filter_tab === "Subscribed") {
         exports.toggler.goto("all-streams");
-    } else if (event === "left_arrow" && active_data.tab.text() === "All streams") {
+    } else if (event === "left_arrow" && stream_filter_tab === "All streams") {
         exports.toggler.goto("subscribed");
     }
 };
