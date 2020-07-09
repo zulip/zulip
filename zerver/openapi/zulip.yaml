@@ -524,6 +524,7 @@ paths:
           The number of messages with IDs less than the anchor to retrieve.
         schema:
           type: integer
+          minimum: 0
         example: 4
         required: true
       - name: num_after
@@ -532,6 +533,7 @@ paths:
           The number of messages with IDs greater than the anchor to retrieve.
         schema:
           type: integer
+          minimum: 0
         example: 8
         required: true
       - name: narrow
