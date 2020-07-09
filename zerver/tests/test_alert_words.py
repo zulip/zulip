@@ -4,7 +4,7 @@ from zerver.lib.actions import do_add_alert_words, do_remove_alert_words
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
-from zerver.models import UserProfile
+from zerver.models import AlertWord, UserProfile
 
 
 class AlertWordTests(ZulipTestCase):
@@ -13,7 +13,9 @@ class AlertWordTests(ZulipTestCase):
     def get_user(self) -> UserProfile:
         # One nice thing about Hamlet is that he is
         # already subscribed to Denmark.
-        return self.example_user('hamlet')
+        user = self.example_user('hamlet')
+        AlertWord.objects.filter(user_profile=user).delete()
+        return user
 
     def test_internal_endpoint(self) -> None:
         user = self.get_user()
@@ -91,6 +93,8 @@ class AlertWordTests(ZulipTestCase):
         alert_words_in_realm. Alerts added for one user do not impact other
         users.
         """
+        AlertWord.objects.all().delete()
+
         user1 = self.get_user()
 
         do_add_alert_words(user1, self.interesting_alert_word_list)
