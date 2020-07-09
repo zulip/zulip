@@ -306,6 +306,11 @@ exports.process_enter_key = function (e) {
         return true;
     }
 
+    if (stream_popover.topic_popped()) {
+        stream_popover.topic_sidebar_menu_handle_keyboard("enter");
+        return true;
+    }
+
     if (overlays.settings_open()) {
         // On the settings page just let the browser handle
         // the Enter key for things like submitting forms.
@@ -561,6 +566,11 @@ exports.process_hotkey = function (e, hotkey) {
 
         if (stream_popover.stream_popped()) {
             stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
+            return true;
+        }
+
+        if (stream_popover.topic_popped()) {
+            stream_popover.topic_sidebar_menu_handle_keyboard(event_name);
             return true;
         }
     }
