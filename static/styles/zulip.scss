@@ -400,6 +400,25 @@ input {
     }
 }
 
+input[type="color"] {
+    height: 25px;
+    width: 25px;
+    margin-top: 5px;
+    margin-bottom: 0;
+    border: none;
+    border-radius: 5px;
+    padding: 0;
+
+    &::-webkit-color-swatch-wrapper {
+        padding: 0;
+    }
+
+    &::-webkit-color-swatch {
+        border: solid 1px hsl(0, 0%, 75%); /* change color of the swatch border here */
+        border-radius: 5px;
+    }
+}
+
 li,
 .table th,
 .table td {

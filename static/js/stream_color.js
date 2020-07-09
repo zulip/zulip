@@ -37,36 +37,12 @@ function update_historical_message_color(stream_name, color) {
     }
 }
 
-const stream_color_palette = [
-    ['a47462', 'c2726a', 'e4523d', 'e7664d', 'ee7e4a', 'f4ae55'],
-    ['76ce90', '53a063', '94c849', 'bfd56f', 'fae589', 'f5ce6e'],
-    ['a6dcbf', 'addfe5', 'a6c7e5', '4f8de4', '95a5fd', 'b0a5fd'],
-    ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1'],
-];
-
-const subscriptions_table_colorpicker_options = {
-    clickoutFiresChange: true,
-    showPalette: true,
-    showInput: true,
-    palette: stream_color_palette,
-};
-
-exports.set_colorpicker_color = function (colorpicker, color) {
-    colorpicker.spectrum({
-        ...subscriptions_table_colorpicker_options,
-        color: color,
-        container: "#subscription_overlay .subscription_settings.show",
-    });
-};
-
 exports.update_stream_color = function (sub, color, opts) {
     opts = { update_historical: false, ...opts };
     sub.color = color;
     const stream_id = sub.stream_id;
     // The swatch in the subscription row header.
     $(".stream-row[data-stream-id='" + stream_id + "'] .icon").css('background-color', color);
-    // The swatch in the color picker.
-    exports.set_colorpicker_color($("#subscription_overlay .subscription_settings[data-stream-id='" + stream_id + "'] .colorpicker"), color);
     $("#subscription_overlay .subscription_settings[data-stream-id='" + stream_id + "'] .large-icon").css("color", color);
 
     if (opts.update_historical) {
@@ -76,33 +52,11 @@ exports.update_stream_color = function (sub, color, opts) {
     tab_bar.colorize_tab_bar();
 };
 
-function picker_do_change_color(color) {
-    const stream_id = parseInt($(this).attr('stream_id'), 10);
-    const hex_color = color.toHexString();
-    subs.set_color(stream_id, hex_color);
-}
-subscriptions_table_colorpicker_options.change = picker_do_change_color;
-
-exports.sidebar_popover_colorpicker_options = {
-    clickoutFiresChange: true,
-    showPaletteOnly: true,
-    showPalette: true,
-    showInput: true,
-    flat: true,
-    palette: stream_color_palette,
-    change: picker_do_change_color,
-};
-
-exports.sidebar_popover_colorpicker_options_full = {
-    clickoutFiresChange: false,
-    showPalette: true,
-    showInput: true,
-    flat: true,
-    cancelText: "",
-    chooseText: i18n.t("Confirm"),
-    palette: stream_color_palette,
-    change: picker_do_change_color,
-};
+$(document).on("change", "#stream_color_picker", function (e) {
+    const color = e.target.value;
+    const stream_id = parseInt(e.target.getAttribute("stream_id"), 10);
+    subs.set_color(stream_id, color);
+});
 
 let lightness_threshold;
 exports.initialize = function () {

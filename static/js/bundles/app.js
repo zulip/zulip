@@ -5,7 +5,6 @@ import "../../third/bootstrap-notify/js/bootstrap-notify.js";
 import "../../third/bootstrap-typeahead/typeahead.js";
 import "jquery-caret-plugin/src/jquery.caret.js";
 import "../../third/jquery-idle/jquery.idle.js";
-import "spectrum-colorpicker";
 import "../../third/marked/lib/marked.js";
 import "xdate/src/xdate.js";
 import "jquery-validation/dist/jquery.validate.js";
@@ -203,7 +202,6 @@ import "../spoilers.js";
 // Import Styles
 
 import "../../third/bootstrap-notify/css/bootstrap-notify.css";
-import "spectrum-colorpicker/spectrum.css";
 import "katex/dist/katex.css";
 import "flatpickr/dist/flatpickr.css";
 import "flatpickr/dist/plugins/confirmDate/confirmDate.css";

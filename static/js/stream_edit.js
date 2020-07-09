@@ -271,9 +271,6 @@ function show_subscription_settings(sub_row) {
     const sub = stream_data.get_sub_by_id(stream_id);
     const sub_settings = exports.settings_for_sub(sub);
 
-    const colorpicker = sub_settings.find('.colorpicker');
-    const color = stream_data.get_color(sub.name);
-    stream_color.set_colorpicker_color(colorpicker, color);
     stream_ui_updates.update_add_subscriptions_elements(sub);
 
     const container = $("#subscription_overlay .subscription_settings[data-stream-id='" + stream_id + "'] .pill-container");
