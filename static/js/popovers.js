@@ -690,6 +690,20 @@ function focus_user_info_popover_item() {
     exports.focus_first_popover_item(items);
 }
 
+function get_user_sidebar_popover_items() {
+    if (!current_user_sidebar_popover) {
+        blueslip.error("Trying to get menu items when user sidebar popover is closed.");
+        return;
+    }
+
+    return $("li:not(.divider):visible > a", current_user_sidebar_popover.$tip);
+}
+
+exports.user_sidebar_popover_handle_keyboard = function (key) {
+    const items = get_user_sidebar_popover_items();
+    exports.popover_items_handle_keyboard(key, items);
+};
+
 exports.user_info_popover_handle_keyboard = function (key) {
     const items = get_user_info_popover_items();
     exports.popover_items_handle_keyboard(key, items);
