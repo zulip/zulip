@@ -30,7 +30,7 @@ gear_instructions = """
 1. From your desktop, click on the **gear**
    (<i class="fa fa-cog"></i>) in the upper right corner.
 
-1. Select %(item)s.
+1. Select {item}.
 """
 
 def gear_handle_match(key: str) -> str:
@@ -38,7 +38,7 @@ def gear_handle_match(key: str) -> str:
         item = f'[{gear_info[key][0]}]({gear_info[key][1]})'
     else:
         item = f'**{gear_info[key][0]}**'
-    return gear_instructions % {'item': item}
+    return gear_instructions.format(item=item)
 
 
 stream_info = {

@@ -113,8 +113,8 @@ FENCE_RE = re.compile("""
     """, re.VERBOSE)
 
 
-CODE_WRAP = '<pre><code%s>%s\n</code></pre>'
-LANG_TAG = ' class="%s"'
+CODE_WRAP = '<pre><code{}>{}\n</code></pre>'
+LANG_TAG = ' class="{}"'
 
 def validate_curl_content(lines: List[str]) -> None:
     error_msg = """
@@ -363,7 +363,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
     def format_code(self, lang: str, text: str) -> str:
         if lang:
-            langclass = LANG_TAG % (lang,)
+            langclass = LANG_TAG.format(lang)
         else:
             langclass = ''
 
@@ -390,7 +390,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
             code = highliter.hilite()
         else:
-            code = CODE_WRAP % (langclass, self._escape(text))
+            code = CODE_WRAP.format(langclass, self._escape(text))
 
         return code
 

@@ -20,12 +20,12 @@ def get_version_file() -> str:
 PREAMBLE = '''
 Before we run tests, we make sure your provisioning version
 is correct by looking at var/provision_version, which is at
-version %s, and we compare it to the version in source
-control (version.py), which is %s.
+version {}, and we compare it to the version in source
+control (version.py), which is {}.
 '''
 
 def preamble(version: str) -> str:
-    text = PREAMBLE % (version, PROVISION_VERSION)
+    text = PREAMBLE.format(version, PROVISION_VERSION)
     text += '\n'
     return text
 

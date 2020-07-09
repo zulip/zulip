@@ -56,9 +56,9 @@ settings_markdown = """
 1. From your desktop, click on the **gear**
    (<i class="fa fa-cog"></i>) in the upper right corner.
 
-1. Select **%(setting_type_name)s**.
+1. Select **{setting_type_name}**.
 
-1. On the left, click %(setting_reference)s.
+1. On the left, click {setting_reference}.
 """
 
 
@@ -105,8 +105,10 @@ class Setting(Preprocessor):
         setting_link = link_mapping[setting_identifier][2]
         if relative_settings_links:
             return f"1. Go to [{setting_name}]({setting_link})."
-        return settings_markdown % {'setting_type_name': setting_type_name,
-                                    'setting_reference': f"**{setting_name}**"}
+        return settings_markdown.format(
+            setting_type_name=setting_type_name,
+            setting_reference=f"**{setting_name}**",
+        )
 
 def makeExtension(*args: Any, **kwargs: Any) -> SettingHelpExtension:
     return SettingHelpExtension(*args, **kwargs)

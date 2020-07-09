@@ -47,32 +47,32 @@ NODE_MODULES_PATH = os.path.join(ZULIP_PATH, 'node_modules')
 SPRITE_CSS_FILE_TEMPLATE = """\
 div.emoji,
 span.emoji
-{
+{{
     display: inline-block;
-    background-image: url(~emoji-datasource-%(emojiset)s/img/%(alt_name)s/sheets-256/64.png);
-    background-size: %(background_size)s;
+    background-image: url(~emoji-datasource-{emojiset}/img/{alt_name}/sheets-256/64.png);
+    background-size: {background_size};
     background-repeat: no-repeat;
 
     /* Hide the text. */
-    text-indent: 100%%;
+    text-indent: 100%;
     white-space: nowrap;
     overflow: hidden;
-}
+}}
 
 .emoji-1f419
-{
+{{
     background-image: url(../emoji/images-google-64/1f419.png) !important;
-    background-position: 0%% 0%% !important;
+    background-position: 0% 0% !important;
     background-size: contain !important;
-}
+}}
 
-%(emoji_positions)s
+{emoji_positions}
 """
 
 EMOJI_POS_INFO_TEMPLATE = """\
-.emoji-%(codepoint)s {
-    background-position: %(pos_x)s %(pos_y)s;
-}
+.emoji-{codepoint} {{
+    background-position: {pos_x} {pos_y};
+}}
 """
 
 # change directory
@@ -207,19 +207,22 @@ def generate_sprite_css_files(cache_path: str,
             will get more complicated.
             """
 
-            emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
-                'codepoint': get_emoji_code(emoji),
-                'pos_x': percent(emoji["sheet_x"] / (n - 1)),
-                'pos_y': percent(emoji["sheet_y"] / (n - 1)),
-            }
+            emoji_positions += EMOJI_POS_INFO_TEMPLATE.format(
+                codepoint=get_emoji_code(emoji),
+                pos_x=percent(emoji["sheet_x"] / (n - 1)),
+                pos_y=percent(emoji["sheet_y"] / (n - 1)),
+            )
 
     SPRITE_CSS_PATH = os.path.join(cache_path, f'{emojiset}-sprite.css')
     with open(SPRITE_CSS_PATH, 'w') as f:
-        f.write(SPRITE_CSS_FILE_TEMPLATE % {'emojiset': emojiset,
-                                            'alt_name': alt_name,
-                                            'emoji_positions': emoji_positions,
-                                            'background_size': background_size,
-                                            })
+        f.write(
+            SPRITE_CSS_FILE_TEMPLATE.format(
+                emojiset=emojiset,
+                alt_name=alt_name,
+                emoji_positions=emoji_positions,
+                background_size=background_size,
+            ),
+        )
 
 def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
     def ensure_emoji_image(emoji_dict: Dict[str, Any],

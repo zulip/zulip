@@ -29,18 +29,18 @@ with open(EMOJI_MAP_FILE) as fp:
     EMOJI_MAP = ujson.load(fp)
 
 EMOJI_IMAGE_TEMPLATE = """
-    <img class="emoji" src="images-%(emojiset)s-64/%(emoji_code)s.png" title=%(emojiset)s>
+    <img class="emoji" src="images-{emojiset}-64/{emoji_code}.png" title={emojiset}>
 """
 
 TABLE_ROW_TEMPLATE = """
     <tr>
-        <td class="new-sorting-info">%(sorting_info)s</td>
-        <td class="emoji-code">%(emoji_code)s</td>
-        <td class="emoji-images">%(images_html)s</td>
-        <td class="zulip-emoji-names">%(zulip_names)s</td>
-        <td class="iamcal-emoji-names">%(iamcal_names)s</td>
-        <td class="gemoji-emoji-names">%(gemoji_names)s</td>
-        <td class="unicode-name">%(unicode_name)s</td>
+        <td class="new-sorting-info">{sorting_info}</td>
+        <td class="emoji-code">{emoji_code}</td>
+        <td class="emoji-images">{images_html}</td>
+        <td class="zulip-emoji-names">{zulip_names}</td>
+        <td class="iamcal-emoji-names">{iamcal_names}</td>
+        <td class="gemoji-emoji-names">{gemoji_names}</td>
+        <td class="unicode-name">{unicode_name}</td>
     </tr>
 """
 
@@ -48,7 +48,7 @@ EMOJI_LISTING_TEMPLATE = """
 <html>
     <head>
         <style>
-            %(table_css)s
+            {table_css}
         </style>
         <title>Zulip emoji names</title>
     </head>
@@ -66,7 +66,7 @@ EMOJI_LISTING_TEMPLATE = """
                 </tr>
             </thead>
             <tbody>
-                %(tbody)s
+                {tbody}
             </tbody>
         </table>
     </body>
@@ -156,10 +156,10 @@ def get_sorting_info(category: str, sort_order: int) -> str:
 def get_images_html(emoji_code: str) -> str:
     images_html = ''
     for emojiset in EMOJISETS:
-        images_html += (EMOJI_IMAGE_TEMPLATE % {
-            'emoji_code': emoji_code,
-            'emojiset': emojiset,
-        })
+        images_html += EMOJI_IMAGE_TEMPLATE.format(
+            emoji_code=emoji_code,
+            emojiset=emojiset,
+        )
 
     return images_html
 
@@ -194,14 +194,13 @@ def main() -> None:
     tbody = ""
     for category in SORTED_CATEGORIES:
         for emoji_entry in emoji_collection[category]:
-            # We need to use the weird `dict(**kwargs)` format to avoid lint errors.
-            tbody += TABLE_ROW_TEMPLATE % dict(**emoji_entry)
+            tbody += TABLE_ROW_TEMPLATE.format(**emoji_entry)
 
     with open(OUTPUT_FILE, 'w') as fp:
-        fp.write(EMOJI_LISTING_TEMPLATE % {
-            'tbody': tbody,
-            'table_css': TABLE_CSS,
-        })
+        fp.write(EMOJI_LISTING_TEMPLATE.format(
+            tbody=tbody,
+            table_css=TABLE_CSS,
+        ))
 
     print("Done! Open http://localhost:9991/static/generated/emoji/emoji_names_table.html "
           "to view(after starting the dev server).")
