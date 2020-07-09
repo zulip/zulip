@@ -504,7 +504,7 @@ exports.update_calculated_fields = function (sub) {
 
     // Apply the defaults for our notification settings for rendering.
     for (const setting of settings_config.stream_specific_notification_settings) {
-        sub[setting + "_display"] = exports.receives_notifications(sub.name, setting);
+        sub[setting + "_display"] = exports.receives_notifications(sub.stream_id, setting);
     }
 };
 
