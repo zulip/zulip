@@ -33,5 +33,4 @@ class zulip::voyager {
     include zulip::localhost_camo
   }
   include zulip::static_asset_compiler
-  include zulip::thumbor
 }
