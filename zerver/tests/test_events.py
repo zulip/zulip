@@ -92,6 +92,7 @@ from zerver.lib.actions import (
 from zerver.lib.event_schema import (
     basic_stream_fields,
     check_events_dict,
+    check_message,
     check_realm_bot_add,
     check_realm_bot_delete,
     check_realm_bot_remove,
@@ -119,9 +120,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.validator import (
-    Validator,
     check_bool,
-    check_dict,
     check_dict_only,
     check_float,
     check_int,
@@ -130,7 +129,6 @@ from zerver.lib.validator import (
     check_none_or,
     check_string,
     check_tuple,
-    check_url,
     equals,
 )
 from zerver.models import (
@@ -343,47 +341,19 @@ class NormalActionsTest(BaseAction):
         )
 
     def test_stream_send_message_events(self) -> None:
-        def get_checker(check_gravatar: Validator[Optional[str]]) -> Validator[Dict[str, object]]:
-            schema_checker = check_events_dict([
-                ('type', equals('message')),
-                ('flags', check_list(check_string)),
-                ('message', check_dict_only([
-                    ('avatar_url', check_gravatar),
-                    ('client', check_string),
-                    ('content', check_string),
-                    ('content_type', equals('text/html')),
-                    ('display_recipient', check_string),
-                    ('id', check_int),
-                    ('is_me_message', check_bool),
-                    ('reactions', check_list(check_dict([]))),
-                    ('recipient_id', check_int),
-                    ('sender_realm_str', check_string),
-                    ('sender_email', check_string),
-                    ('sender_full_name', check_string),
-                    ('sender_id', check_int),
-                    ('stream_id', check_int),
-                    (TOPIC_NAME, check_string),
-                    (TOPIC_LINKS, check_list(check_string)),
-                    ('submessages', check_list(check_dict([]))),
-                    ('timestamp', check_int),
-                    ('type', check_string),
-                ])),
-            ])
-            return schema_checker
-
         events = self.verify_action(
             lambda: self.send_stream_message(self.example_user("hamlet"), "Verona", "hello"),
             client_gravatar=False,
         )
-        schema_checker = get_checker(check_gravatar=check_string)
-        schema_checker('events[0]', events[0])
+        check_message('events[0]', events[0])
+        assert isinstance(events[0]['message']['avatar_url'], str)
 
         events = self.verify_action(
             lambda: self.send_stream_message(self.example_user("hamlet"), "Verona", "hello"),
             client_gravatar=True,
         )
-        schema_checker = get_checker(check_gravatar=equals(None))
-        schema_checker('events[0]', events[0])
+        check_message('events[0]', events[0])
+        assert events[0]['message']['avatar_url'] is None
 
         # Verify message editing
         schema_checker = check_events_dict([
@@ -1923,32 +1893,22 @@ class NormalActionsTest(BaseAction):
         check_stream_update('events[1]', events[1])
         self.assertEqual(events[1]['name'], 'old_name')
 
-        schema_checker = check_events_dict([
-            ('flags', check_list(check_string)),
-            ('type', equals('message')),
-            ('message', check_dict_only([
-                ('timestamp', check_int),
-                ('content', equals(notification)),
-                ('content_type', equals('text/html')),
-                ('sender_email', equals('notification-bot@zulip.com')),
-                ('sender_id', check_int),
-                ('display_recipient', equals(new_name)),
-                ('id', check_int),
-                ('stream_id', check_int),
-                ('sender_realm_str', check_string),
-                ('sender_full_name', equals('Notification Bot')),
-                ('is_me_message', equals(False)),
-                ('type', equals('stream')),
-                ('submessages', check_list(check_dict([]))),
-                (TOPIC_LINKS, check_list(check_string)),
-                ('avatar_url', check_none_or(check_url)),
-                ('reactions', check_list(check_dict([]))),
-                ('client', equals('Internal')),
-                (TOPIC_NAME, equals('stream events')),
-                ('recipient_id', check_int),
-            ])),
-        ])
-        schema_checker('events[2]', events[2])
+        check_message('events[2]', events[2])
+
+        fields = dict(
+            sender_email='notification-bot@zulip.com',
+            display_recipient=new_name,
+            sender_full_name='Notification Bot',
+            is_me_message=False,
+            type='stream',
+            client='Internal',
+        )
+
+        fields[TOPIC_NAME] = 'stream events'
+
+        msg = events[2]['message']
+        for k, v in fields.items():
+            self.assertEqual(msg[k], v)
 
     def test_deactivate_stream_neversubscribed(self) -> None:
         stream = self.make_stream('old_name')
