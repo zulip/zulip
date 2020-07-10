@@ -1,7 +1,8 @@
 {{! Contents of the "all messages sidebar" popup }}
 <ul class="nav nav-list">
     <li>
-        <a id="mark_all_messages_as_read">
+        {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
+        <a tabindex="0" id="mark_all_messages_as_read">
             <i class="fa fa-book" aria-hidden="true"></i>
             {{#tr this}}Mark all messages as read{{/tr}}
         </a>
