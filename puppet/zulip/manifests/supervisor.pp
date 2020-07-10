@@ -81,4 +81,18 @@ class zulip::supervisor {
     source  => 'puppet:///modules/zulip/supervisor/supervisord.conf',
     notify  => Exec['supervisor-restart'],
   }
+
+  # We need a block here to handle deleting the old thumbor.conf file,
+  # unless zulip::thumbor has been enabled. It would be cleaner
+  # to use tidy instead of exec here, but notify is broken with it
+  # (https://tickets.puppetlabs.com/browse/PUP-6021)
+  # so we wouldn't be able to notify the supervisor service.
+  $thumbor_enabled = defined(Class['zulip::thumbor'])
+  if !$thumbor_enabled {
+    exec { 'cleanup_thumbor_supervisor_conf_file':
+      command => "rm ${zulip::common::supervisor_conf_dir}/thumbor.conf",
+      onlyif  => "test -e ${zulip::common::supervisor_conf_dir}/thumbor.conf",
+      notify  => Service[$zulip::common::supervisor_service],
+    }
+  }
 }
