@@ -44,6 +44,11 @@ exports.all_messages_sidebar_menu_handle_keyboard = (key) => {
     popovers.popover_items_handle_keyboard(key, items);
 };
 
+exports.starred_messages_sidebar_menu_handle_keyboard = (key) => {
+    const items = get_popover_menu_items(starred_messages_sidebar_elem);
+    popovers.popover_items_handle_keyboard(key, items);
+};
+
 function elem_to_stream_id(elem) {
     const stream_id = parseInt(elem.attr("data-stream-id"), 10);
 

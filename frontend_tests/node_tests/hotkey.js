@@ -214,6 +214,7 @@ run_test("basic_chars", () => {
         stream_popped: return_false,
         topic_popped: return_false,
         all_messages_popped: return_false,
+        starred_messages_popped: return_false,
     });
     set_global("emoji_picker", {
         reactions_popped: return_false,
