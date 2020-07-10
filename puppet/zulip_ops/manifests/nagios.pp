@@ -19,7 +19,7 @@ class zulip_ops::nagios {
   $nagios_mail_password = zulipsecret('secrets', 'nagios_mail_password', '')
   $nagios_camo_check_url = zulipconf('nagios', 'camo_check_url', undef)
 
-  $hosts_domain = zulipconf('nagios', 'hosts_domain', undef)
+  $default_host_domain = zulipconf('nagios', 'default_host_domain', undef)
   $hosts_zmirror = split(zulipconf('nagios', 'hosts_zmirror', undef), ',')
   $hosts_zmirrorp = split(zulipconf('nagios', 'hosts_zmirrorp', undef), ',')
   $hosts_app_prod = split(zulipconf('nagios', 'hosts_app_prod', undef), ',')

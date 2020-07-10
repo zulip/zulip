@@ -3,7 +3,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @hosts_domain %>
+       address          <%= host %>.<%= @default_host_domain %>
        hostgroups       all,pageable_servers
        }
 <% end -%>
@@ -13,7 +13,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @hosts_domain %>
+       address          <%= host %>.<%= @default_host_domain %>
        hostgroups       all,web,frontends,prod_frontends,singletornado_frontends,pageable_servers
        }
 <% end -%>
@@ -33,7 +33,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @hosts_domain %>
+       address          <%= host %>.<%= @default_host_domain %>
        hostgroups       all,web,frontends,staging_frontends,singletornado_frontends,not_pageable_servers
        }
 <% end -%>
@@ -43,7 +43,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @hosts_domain %>
+       address          <%= host %>.<%= @default_host_domain %>
        hostgroups       all,zmirror,zmirror_main
        }
 <% end -%>
@@ -53,7 +53,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @hosts_domain %>
+       address          <%= host %>.<%= @default_host_domain %>
        hostgroups       all,zmirror,zmirrorp
        }
 <% end -%>
@@ -63,7 +63,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @hosts_domain %>
+       address          <%= host %>.<%= @default_host_domain %>
        hostgroups       all,postgres,postgres_appdb_primary,pageable_servers
        }
 <% end -%>
@@ -73,7 +73,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @hosts_domain %>
+       address          <%= host %>.<%= @default_host_domain %>
        hostgroups       all,postgres_appdb,pageable_servers
        }
 <% end -%>
@@ -83,7 +83,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @hosts_domain %>
+       address          <%= host %>.<%= @default_host_domain %>
        hostgroups       all,not_pageable_servers
        }
 <% end -%>
@@ -93,7 +93,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @hosts_domain %>
+       address          <%= host %>.<%= @default_host_domain %>
        hostgroups       all,not_pageable_servers, redis
        }
 <% end -%>
