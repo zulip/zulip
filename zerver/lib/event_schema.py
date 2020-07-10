@@ -7,9 +7,11 @@ Right now it's only intended to be used by test code.
 """
 from typing import Any, Dict, Sequence, Tuple, Union
 
+from zerver.lib.topic import TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.validator import (
     Validator,
     check_bool,
+    check_dict,
     check_dict_only,
     check_int,
     check_list,
@@ -96,6 +98,36 @@ check_optional_value = check_union(
         check_int,
         check_string,
         equals(None),
+    ]
+)
+
+message_fields = [
+    ("avatar_url", check_none_or(check_string)),
+    ("client", check_string),
+    ("content", check_string),
+    ("content_type", equals("text/html")),
+    ("display_recipient", check_string),
+    ("id", check_int),
+    ("is_me_message", check_bool),
+    ("reactions", check_list(check_dict([]))),
+    ("recipient_id", check_int),
+    ("sender_realm_str", check_string),
+    ("sender_email", check_string),
+    ("sender_full_name", check_string),
+    ("sender_id", check_int),
+    ("stream_id", check_int),
+    (TOPIC_NAME, check_string),
+    (TOPIC_LINKS, check_list(check_string)),
+    ("submessages", check_list(check_dict([]))),
+    ("timestamp", check_int),
+    ("type", check_string),
+]
+
+check_message = check_events_dict(
+    required_keys=[
+        ("type", equals("message")),
+        ("flags", check_list(check_string)),
+        ("message", check_dict_only(message_fields)),
     ]
 )
 
