@@ -7,15 +7,15 @@
 # Hrotkó Gábor <hrotko.gabor@gmail.com>, 2016-2017
 # klucsik <klucsik.krisztian@gmail.com>, 2020
 # klucsik <klucsik.krisztian@gmail.com>, 2020
-# Stuntsman, 2020
+# stuntsman, 2020
 # Tim Abbott <tabbott@kandralabs.com>, 2020
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-01 18:06+0000\n"
-"PO-Revision-Date: 2020-07-01 18:06+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"POT-Creation-Date: 2020-07-10 19:39+0000\n"
+"PO-Revision-Date: 2020-07-10 19:40+0000\n"
+"Last-Translator: Hrotkó Gábor <hrotko.gabor@gmail.com>\n"
 "Language-Team: Hungarian (http://www.transifex.com/zulip/zulip/language/hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -23,40 +23,40 @@ msgstr ""
 "Language: hu\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: analytics/views.py:109 zerver/decorator.py:503 zerver/decorator.py:512
+#: analytics/views.py:114 zerver/decorator.py:503 zerver/decorator.py:512
 msgid "Not allowed for guest users"
 msgstr "Vendég felhasználóknak nem engedélyezett"
 
-#: analytics/views.py:139
+#: analytics/views.py:144
 msgid "Invalid organization"
 msgstr "Hibás szervezet"
 
-#: analytics/views.py:224
+#: analytics/views.py:229
 msgid "Public streams"
 msgstr "Nyilvános üzenetfolyamok"
 
-#: analytics/views.py:225
+#: analytics/views.py:230
 msgid "Private streams"
 msgstr "Privát üzenetfolyamok"
 
-#: analytics/views.py:226 templates/zerver/app/left_sidebar.html:25
+#: analytics/views.py:231 templates/zerver/app/left_sidebar.html:25
 msgid "Private messages"
 msgstr "Privát üzenetek"
 
-#: analytics/views.py:227
+#: analytics/views.py:232
 msgid "Group private messages"
 msgstr "Csoport privát üzenetei"
 
-#: analytics/views.py:245
+#: analytics/views.py:250
 msgid "Unknown chart name: {}"
 msgstr ""
 
-#: analytics/views.py:254
+#: analytics/views.py:259
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
 msgstr ""
 
-#: analytics/views.py:269 analytics/views.py:291
+#: analytics/views.py:274 analytics/views.py:296
 msgid "No analytics data available. Please contact your server administrator."
 msgstr "Nincs elemzési adat. Lépj kapcsolatba a szerver adminisztrátorával!"
 
@@ -73,26 +73,26 @@ msgstr "Valami gond van. Töltsd újra az oldalt!"
 msgid "Something went wrong. Please wait a few seconds and try again."
 msgstr "Valami gond van. Várj pár másodpercet és próbáld újra."
 
-#: corporate/views.py:74
+#: corporate/views.py:77
 msgid "You must invoice for at least {} users."
 msgstr "Legalább {} felhasználóhoz kell számlát készítened."
 
-#: corporate/views.py:77
+#: corporate/views.py:80
 msgid ""
 "Invoices with more than {} licenses can't be processed from this page. To "
 "complete the upgrade, please contact {}."
 msgstr ""
 
-#: corporate/views.py:86
+#: corporate/views.py:89
 msgid "No payment method on file"
 msgstr "Nincs fizetési mód eltárolva."
 
-#: corporate/views.py:89
+#: corporate/views.py:92
 #, python-brace-format
 msgid "{brand} ending in {last4}"
 msgstr ""
 
-#: corporate/views.py:96
+#: corporate/views.py:99
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
 msgstr ""
@@ -221,37 +221,61 @@ msgstr "Számlázás"
 msgid "Upgrade to %(plan)s"
 msgstr "Váltás %(plan)s csomagra"
 
-#: templates/corporate/upgrade.html:55 templates/corporate/upgrade.html:175
+#: templates/corporate/upgrade.html:56 templates/corporate/upgrade.html:176
 msgid "Payment schedule"
 msgstr "Fizetési ütemezés"
 
-#: templates/corporate/upgrade.html:65
+#: templates/corporate/upgrade.html:66
 msgid "Pay monthly"
 msgstr "Havi"
 
-#: templates/corporate/upgrade.html:72 templates/corporate/upgrade.html:179
+#: templates/corporate/upgrade.html:73 templates/corporate/upgrade.html:180
 msgid "Pay annually"
 msgstr "Évenkénti"
 
-#: templates/corporate/upgrade.html:84
+#: templates/corporate/upgrade.html:85
 msgid "License management"
 msgstr "Licensz kezelés"
 
-#: templates/corporate/upgrade.html:88
+#: templates/corporate/upgrade.html:89
 msgid "Automatic"
 msgstr "Automatikus"
 
-#: templates/corporate/upgrade.html:89
+#: templates/corporate/upgrade.html:90
 msgid "Most convenient"
 msgstr "Legkényelmesebb"
 
-#: templates/corporate/upgrade.html:95
+#: templates/corporate/upgrade.html:96
 msgid "Manual"
 msgstr "Manuális"
 
-#: templates/corporate/upgrade.html:96
+#: templates/corporate/upgrade.html:97
 msgid "Most control"
 msgstr "Legjobban felügyelhető"
+
+#: templates/corporate/upgrade.html:232
+msgid "Open source"
+msgstr ""
+
+#: templates/corporate/upgrade.html:233
+msgid "Academic research"
+msgstr ""
+
+#: templates/corporate/upgrade.html:234
+msgid "Education"
+msgstr ""
+
+#: templates/corporate/upgrade.html:235
+msgid "Non-Profit"
+msgstr ""
+
+#: templates/corporate/upgrade.html:236
+msgid "Event (hackathons, conferences, etc.)"
+msgstr ""
+
+#: templates/corporate/upgrade.html:237
+msgid "Other"
+msgstr "Egyéb"
 
 #: templates/two_factor/_wizard_forms.html:26
 msgid "Or, alternatively, use one of your backup phones:"
@@ -1363,7 +1387,7 @@ msgstr "Szervezeti beállítások"
 msgid "Organization permissions"
 msgstr "Szervezeti engedélyek"
 
-#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1900
+#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1909
 msgid "Custom emoji"
 msgstr "Egyedi hangulatjel"
 
@@ -2620,6 +2644,11 @@ msgid ""
 "feedback, or just want to chat!"
 msgstr ""
 
+#: templates/zerver/emails/sponsorship_request.subject.txt:1
+#, python-format
+msgid "Sponsorship request (%(organization_type)s) for %(string_id)s"
+msgstr ""
+
 #: templates/zerver/find_account.html:8
 msgid "Find your Zulip accounts"
 msgstr ""
@@ -3376,241 +3405,241 @@ msgstr ""
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr ""
 
-#: zerver/lib/actions.py:1032
+#: zerver/lib/actions.py:1059
 msgid "Congratulations on your first reply!"
 msgstr ""
 
-#: zerver/lib/actions.py:1037
+#: zerver/lib/actions.py:1064
 msgid ""
 "Feel free to continue using this space to practice your new messaging "
 "skills. Or, try clicking on some of the stream names to your left!"
 msgstr ""
 
-#: zerver/lib/actions.py:1060
+#: zerver/lib/actions.py:1087
 msgid "Unable to render message"
 msgstr ""
 
-#: zerver/lib/actions.py:1795 zerver/lib/actions.py:1817
+#: zerver/lib/actions.py:1822 zerver/lib/actions.py:1844
 #: zerver/views/reactions.py:48
 msgid "Reaction already exists."
 msgstr ""
 
-#: zerver/lib/actions.py:1865
+#: zerver/lib/actions.py:1892
 msgid "Missing parameter: 'to' (recipient)"
 msgstr ""
 
-#: zerver/lib/actions.py:1867
+#: zerver/lib/actions.py:1894
 msgid "Invalid 'op' value (should be start or stop)"
 msgstr ""
 
-#: zerver/lib/actions.py:1894 zerver/lib/addressee.py:31
+#: zerver/lib/actions.py:1921 zerver/lib/addressee.py:31
 msgid "Invalid user ID {}"
 msgstr ""
 
-#: zerver/lib/actions.py:1934 zerver/lib/actions.py:5471
+#: zerver/lib/actions.py:1963 zerver/lib/actions.py:5519
 #: zerver/views/message_send.py:210 zerver/views/message_send.py:217
 #: zerver/views/message_send.py:240
 msgid "User not authorized for this query"
 msgstr ""
 
-#: zerver/lib/actions.py:1966
+#: zerver/lib/actions.py:1995
 #, python-brace-format
 msgid "'{email}' is no longer using Zulip."
 msgstr ""
 
-#: zerver/lib/actions.py:1972
+#: zerver/lib/actions.py:2001
 msgid "You can't send private messages outside of your organization."
 msgstr ""
 
-#: zerver/lib/actions.py:2028
+#: zerver/lib/actions.py:2057
 msgid "Expected exactly one stream"
 msgstr ""
 
-#: zerver/lib/actions.py:2039
+#: zerver/lib/actions.py:2068
 msgid "Invalid data type for stream"
 msgstr ""
 
-#: zerver/lib/actions.py:2054 zerver/lib/actions.py:2064
+#: zerver/lib/actions.py:2083 zerver/lib/actions.py:2093
 msgid "Invalid data type for recipients"
 msgstr ""
 
-#: zerver/lib/actions.py:2071 zerver/lib/actions.py:2078
+#: zerver/lib/actions.py:2100 zerver/lib/actions.py:2107
 msgid "Recipient lists may contain emails or user IDs, but not both."
 msgstr ""
 
-#: zerver/lib/actions.py:2143
+#: zerver/lib/actions.py:2172
 msgid "Reminders can only be set for streams."
 msgstr ""
 
-#: zerver/lib/actions.py:2150
+#: zerver/lib/actions.py:2179
 msgid "Invalid default stream group name '{}'"
 msgstr ""
 
-#: zerver/lib/actions.py:2152
+#: zerver/lib/actions.py:2181
 msgid "Default stream group name too long (limit: {} characters)"
 msgstr ""
 
-#: zerver/lib/actions.py:2157
+#: zerver/lib/actions.py:2186
 msgid "Default stream group name '{}' contains NULL (0x00) characters."
 msgstr ""
 
-#: zerver/lib/actions.py:2217
+#: zerver/lib/actions.py:2246
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
 msgstr ""
 
-#: zerver/lib/actions.py:2221
+#: zerver/lib/actions.py:2250
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
 msgstr ""
 
-#: zerver/lib/actions.py:2227
+#: zerver/lib/actions.py:2256
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
 msgstr ""
 
-#: zerver/lib/actions.py:2267
+#: zerver/lib/actions.py:2296
 msgid "Private messages are disabled in this organization."
 msgstr "A privát üzenetek nem engedélyezettek ebben a szervezetben."
 
-#: zerver/lib/actions.py:2286
+#: zerver/lib/actions.py:2315
 msgid "Message must not be empty"
 msgstr "Az üzenet nem lehet üres"
 
-#: zerver/lib/actions.py:2288
+#: zerver/lib/actions.py:2317
 msgid "Message must not contain null bytes"
 msgstr "Az üzenet nem tartalmazhat null byteokat."
 
-#: zerver/lib/actions.py:2368
+#: zerver/lib/actions.py:2397
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "Widgetek: az API programozó érvénytelen JSON tartalmat küldött"
 
-#: zerver/lib/actions.py:2373
+#: zerver/lib/actions.py:2402
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr ""
 
-#: zerver/lib/actions.py:2585
+#: zerver/lib/actions.py:2611
 msgid "Subscriber data is not available for this stream"
 msgstr "Ennél az üzenetfolyamnál nem érhetők el a feliratkozók adatai."
 
-#: zerver/lib/actions.py:2592
+#: zerver/lib/actions.py:2618
 msgid "Unable to retrieve subscribers for private stream"
 msgstr "Privát üzenetfolyamnál nem érhetők el a feliratkozók adatai."
 
-#: zerver/lib/actions.py:3616
+#: zerver/lib/actions.py:3646
 #, python-brace-format
 msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
 msgstr ""
 
-#: zerver/lib/actions.py:3699
+#: zerver/lib/actions.py:3729
 msgid "Signups enabled"
 msgstr ""
 
-#: zerver/lib/actions.py:3781
+#: zerver/lib/actions.py:3811
 msgid "Invalid default stream group {}"
 msgstr ""
 
-#: zerver/lib/actions.py:3818 zerver/lib/actions.py:3838
+#: zerver/lib/actions.py:3848 zerver/lib/actions.py:3868
 #, python-brace-format
 msgid ""
 "'{stream_name}' is a default stream and cannot be added to '{group_name}'"
 msgstr ""
 
-#: zerver/lib/actions.py:3826
+#: zerver/lib/actions.py:3856
 #, python-brace-format
 msgid "Default stream group '{group_name}' already exists"
 msgstr ""
 
-#: zerver/lib/actions.py:3842
+#: zerver/lib/actions.py:3872
 #, python-brace-format
 msgid ""
 "Stream '{stream_name}' is already present in default stream group "
 "'{group_name}'"
 msgstr ""
 
-#: zerver/lib/actions.py:3854
+#: zerver/lib/actions.py:3884
 #, python-brace-format
 msgid ""
 "Stream '{stream_name}' is not present in default stream group '{group_name}'"
 msgstr ""
 
-#: zerver/lib/actions.py:3864
+#: zerver/lib/actions.py:3894
 msgid "This default stream group is already named '{}'"
 msgstr ""
 
-#: zerver/lib/actions.py:3867
+#: zerver/lib/actions.py:3897
 msgid "Default stream group '{}' already exists"
 msgstr ""
 
-#: zerver/lib/actions.py:4204
+#: zerver/lib/actions.py:4234
 msgid "Invalid flag: '{}'"
 msgstr ""
 
-#: zerver/lib/actions.py:4206
+#: zerver/lib/actions.py:4236
 msgid "Flag not editable: '{}'"
 msgstr ""
 
-#: zerver/lib/actions.py:4221 zerver/lib/actions.py:4223
-#: zerver/lib/message.py:585 zerver/lib/message.py:591
+#: zerver/lib/actions.py:4251 zerver/lib/actions.py:4253
+#: zerver/lib/message.py:583 zerver/lib/message.py:589
 msgid "Invalid message(s)"
 msgstr "Érvénytelen üzenet(ek)"
 
-#: zerver/lib/actions.py:4283
+#: zerver/lib/actions.py:4313
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}"
 msgstr ""
 
-#: zerver/lib/actions.py:4293
+#: zerver/lib/actions.py:4323
 #, python-brace-format
 msgid "This topic was moved by {user} to {new_location}"
 msgstr ""
 
-#: zerver/lib/actions.py:5105
+#: zerver/lib/actions.py:5153
 #, python-brace-format
 msgid ""
 "You do not have enough remaining invites. Please contact {email} to have "
 "your limit raised. No invitations were sent."
 msgstr ""
 
-#: zerver/lib/actions.py:5152
+#: zerver/lib/actions.py:5200
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
 msgstr "A fiókod túl új ahhoz, hogy meghívókat küldhess ehhez a szervezethez. Kérj meg egy szervezeti adminisztrátort vagy egy tapasztaltabb felhasználót."
 
-#: zerver/lib/actions.py:5189
+#: zerver/lib/actions.py:5237
 msgid "Some emails did not validate, so we didn't send any invitations."
 msgstr "Néhány e-mail nem volt érvényes, ezért egy meghívót sem küldtünk ki."
 
-#: zerver/lib/actions.py:5194
+#: zerver/lib/actions.py:5242
 msgid "We weren't able to invite anyone."
 msgstr "Senki sem sikerült meghívnunk."
 
-#: zerver/lib/actions.py:5218
+#: zerver/lib/actions.py:5266
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
 msgstr "Néhány címzett már használja a Zulipot, ezért nem küldtünk nekik meghívót. Mindenki másnak viszont igen!"
 
-#: zerver/lib/actions.py:5653
+#: zerver/lib/actions.py:5701
 msgid "Invalid order mapping."
 msgstr "Érvénytelen sorrend megfeleltetés."
 
-#: zerver/lib/actions.py:5710 zerver/lib/users.py:288
+#: zerver/lib/actions.py:5758 zerver/lib/users.py:288
 #: zerver/views/custom_profile_fields.py:126
 #: zerver/views/custom_profile_fields.py:145
 #, python-brace-format
 msgid "Field id {id} not found."
 msgstr ""
 
-#: zerver/lib/actions.py:5731 zerver/lib/actions.py:5742
+#: zerver/lib/actions.py:5779 zerver/lib/actions.py:5790
 msgid "User group '{}' already exists."
 msgstr ""
 
@@ -3696,7 +3725,7 @@ msgstr "Érvénytelen cím."
 msgid "Outside your domain."
 msgstr "Kívül van a tartományodon."
 
-#: zerver/lib/email_validation.py:111 zerver/views/users.py:509
+#: zerver/lib/email_validation.py:111 zerver/views/users.py:510
 msgid "Email addresses containing + are not allowed."
 msgstr "A + jeleket tartalmazó e-mail címek nem megengedettek."
 
@@ -3749,7 +3778,7 @@ msgstr "Érvénytelen hangulatjel típus."
 msgid "Must be an organization administrator or emoji author"
 msgstr ""
 
-#: zerver/lib/emoji.py:112 zerver/models.py:657
+#: zerver/lib/emoji.py:112 zerver/models.py:661
 msgid "Invalid characters in emoji name"
 msgstr "Érvénytelen karakter a hangulatjel nevében."
 
@@ -3761,7 +3790,7 @@ msgstr ""
 msgid "Invalid type parameter"
 msgstr "Érvénytelen type paraméter."
 
-#: zerver/lib/events.py:863
+#: zerver/lib/events.py:870
 msgid "Could not allocate event queue"
 msgstr "Az esemény sor allokálása nem sikerült."
 
@@ -4026,30 +4055,30 @@ msgid ""
 "a         previous message."
 msgstr ""
 
-#: zerver/lib/push_notifications.py:242
+#: zerver/lib/push_notifications.py:243
 msgid "Invalid GCM option to bouncer: priority {!r}"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:250
+#: zerver/lib/push_notifications.py:251
 msgid "Invalid GCM options to bouncer: {}"
 msgstr ""
 
 #. error
-#: zerver/lib/push_notifications.py:419 zilencer/views.py:135
+#: zerver/lib/push_notifications.py:420 zilencer/views.py:135
 msgid "Token does not exist"
 msgstr "A token nem létezik"
 
-#: zerver/lib/push_notifications.py:613
+#: zerver/lib/push_notifications.py:614
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:615
+#: zerver/lib/push_notifications.py:616
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr ""
 
-#: zerver/lib/remote_server.py:80
+#: zerver/lib/remote_server.py:82
 msgid "Push notifications bouncer error: {}"
 msgstr ""
 
@@ -4080,61 +4109,61 @@ msgstr ""
 msgid "Zulip Account Security"
 msgstr ""
 
-#: zerver/lib/streams.py:121 zerver/lib/streams.py:289
-#: zerver/lib/streams.py:351
+#: zerver/lib/streams.py:131 zerver/lib/streams.py:299
+#: zerver/lib/streams.py:361
 msgid "Invalid stream name '{}'"
 msgstr ""
 
-#: zerver/lib/streams.py:123
+#: zerver/lib/streams.py:133
 msgid "Stream name too long (limit: {} characters)."
 msgstr ""
 
-#: zerver/lib/streams.py:126
+#: zerver/lib/streams.py:136
 msgid "Stream name '{}' contains NULL (0x00) characters."
 msgstr ""
 
-#: zerver/lib/streams.py:148
+#: zerver/lib/streams.py:158
 msgid "Only organization administrators can send to this stream."
 msgstr "Erre az üzenetfolyamra csak szervezeti adminisztrátorok írhatnak!"
 
-#: zerver/lib/streams.py:152 zerver/lib/streams.py:154
+#: zerver/lib/streams.py:162 zerver/lib/streams.py:164
 msgid "New members cannot send to this stream."
 msgstr ""
 
-#: zerver/lib/streams.py:183
+#: zerver/lib/streams.py:193
 msgid "Not authorized to send to stream '{}'"
 msgstr ""
 
-#: zerver/lib/streams.py:187
+#: zerver/lib/streams.py:197
 msgid "Please supply 'stream'."
 msgstr ""
 
-#: zerver/lib/streams.py:190
+#: zerver/lib/streams.py:200
 msgid "Please choose one: 'stream' or 'stream_id'."
 msgstr ""
 
-#: zerver/lib/streams.py:199 zerver/lib/streams.py:260
-#: zerver/lib/streams.py:271
+#: zerver/lib/streams.py:209 zerver/lib/streams.py:270
+#: zerver/lib/streams.py:281
 msgid "Invalid stream id"
 msgstr "Hibás üzenetfolyam-azonosító!"
 
-#: zerver/lib/streams.py:282
+#: zerver/lib/streams.py:292
 msgid "Stream name '{}' is already taken."
 msgstr ""
 
-#: zerver/lib/streams.py:447
+#: zerver/lib/streams.py:457
 msgid "User cannot create streams."
 msgstr "A felhasználó nem tud üzenetfolyamokat létrehozni!"
 
-#: zerver/lib/streams.py:449
+#: zerver/lib/streams.py:459
 msgid "Stream(s) ({}) do not exist"
 msgstr ""
 
-#: zerver/lib/streams.py:454
+#: zerver/lib/streams.py:464
 msgid "User cannot create stream with this settings."
 msgstr ""
 
-#: zerver/lib/streams.py:472
+#: zerver/lib/streams.py:483
 msgid "Default stream group with id '{}' does not exist."
 msgstr ""
 
@@ -4180,7 +4209,7 @@ msgstr ""
 msgid "Name is already in use!"
 msgstr "A név már használatban van!"
 
-#: zerver/lib/users.py:68 zerver/views/users.py:347 zerver/views/users.py:494
+#: zerver/lib/users.py:68 zerver/views/users.py:347 zerver/views/users.py:495
 msgid "Bad name or username"
 msgstr "Hibás név vagy felhasználói név"
 
@@ -4377,71 +4406,71 @@ msgstr ""
 msgid "API usage exceeded rate limit"
 msgstr "Az API használat túllépte a limitet"
 
-#: zerver/models.py:302
+#: zerver/models.py:304
 msgid "stream events"
 msgstr "üzenetfolyam eseményei"
 
-#: zerver/models.py:328
+#: zerver/models.py:330
 msgid "Available on Zulip Standard. Upgrade to access."
 msgstr ""
 
-#: zerver/models.py:713
+#: zerver/models.py:717
 #, python-format
 msgid "Invalid filter pattern.  Valid characters are %s."
 msgstr ""
 
-#: zerver/models.py:729
+#: zerver/models.py:733
 msgid "Invalid URL format string."
 msgstr "Érvénytelen URL formátum sztring."
 
-#: zerver/models.py:1899
+#: zerver/models.py:1908
 msgid "Unicode emoji"
 msgstr "Unicode hangulatjel"
 
-#: zerver/models.py:1901
+#: zerver/models.py:1910
 msgid "Zulip extra emoji"
 msgstr "Zulip extra hangulatjel"
 
-#: zerver/models.py:2777
+#: zerver/models.py:2808
 #, python-format
 msgid "Invalid user ID: %d"
 msgstr ""
 
-#: zerver/models.py:2781
+#: zerver/models.py:2812
 #, python-format
 msgid "User with ID %d is deactivated"
 msgstr ""
 
-#: zerver/models.py:2784
+#: zerver/models.py:2815
 #, python-format
 msgid "User with ID %d is a bot"
 msgstr ""
 
-#: zerver/models.py:2814
+#: zerver/models.py:2846
 msgid "List of options"
 msgstr "Opciók listája"
 
-#: zerver/models.py:2817
+#: zerver/models.py:2849
 msgid "Person picker"
 msgstr "Személy kiválasztó"
 
-#: zerver/models.py:2829
+#: zerver/models.py:2861
 msgid "Short text"
 msgstr "Rövid szöveg"
 
-#: zerver/models.py:2830
+#: zerver/models.py:2862
 msgid "Long text"
 msgstr "Hosszú szöveg"
 
-#: zerver/models.py:2831
+#: zerver/models.py:2863
 msgid "Date picker"
 msgstr "Dátum kiválasztó"
 
-#: zerver/models.py:2832
+#: zerver/models.py:2864
 msgid "Link"
 msgstr "Link"
 
-#: zerver/models.py:2833
+#: zerver/models.py:2865
 msgid "External account"
 msgstr "Külső fiók"
 
@@ -4457,24 +4486,24 @@ msgstr "egy ismeretlen operációs rendszer"
 msgid "An unknown browser"
 msgstr "Egy ismeretlen böngésző"
 
-#: zerver/tornado/event_queue.py:555
+#: zerver/tornado/event_queue.py:559
 msgid "Missing 'queue_id' argument"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:558
+#: zerver/tornado/event_queue.py:562
 msgid "Missing 'last_event_id' argument"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:563
+#: zerver/tornado/event_queue.py:565
 msgid "You are not authorized to get events from this queue"
 msgstr "Nincs jogosultságod hozzáférni az eseményekhez ebben a sorban"
 
-#: zerver/tornado/event_queue.py:568
+#: zerver/tornado/event_queue.py:570
 #, python-brace-format
 msgid "An event newer than {event_id} has already been pruned!"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:576
+#: zerver/tornado/event_queue.py:578
 #, python-brace-format
 msgid "Event {event_id} was not in this queue"
 msgstr ""
@@ -4832,11 +4861,11 @@ msgstr ""
 msgid "You must upload exactly one logo."
 msgstr ""
 
-#: zerver/views/registration.py:497
+#: zerver/views/registration.py:498
 msgid "The organization creation link has expired or is not valid."
 msgstr ""
 
-#: zerver/views/registration.py:502
+#: zerver/views/registration.py:503
 msgid "New organization creation disabled"
 msgstr ""
 
@@ -5048,16 +5077,16 @@ msgstr ""
 msgid "Username already in use"
 msgstr ""
 
-#: zerver/views/users.py:503
+#: zerver/views/users.py:504
 #, python-brace-format
 msgid "Email '{email}' not allowed in this organization"
 msgstr ""
 
-#: zerver/views/users.py:507
+#: zerver/views/users.py:508
 msgid "Disposable email addresses are not allowed in this organization"
 msgstr ""
 
-#: zerver/views/users.py:513
+#: zerver/views/users.py:514
 msgid "Email '{}' already in use"
 msgstr ""
 
@@ -5149,7 +5178,7 @@ msgstr ""
 msgid "Invalid payload"
 msgstr ""
 
-#: zerver/worker/queue_processors.py:740
+#: zerver/worker/queue_processors.py:746
 #, python-brace-format
 msgid ""
 "Your data export is complete and has been uploaded here:\n"
