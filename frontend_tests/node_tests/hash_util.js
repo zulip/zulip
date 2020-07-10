@@ -1,10 +1,18 @@
-
 zrequire('hash_util');
 zrequire('stream_data');
 zrequire('people');
 zrequire('Filter', 'js/filter');
 zrequire('narrow_state');
 
+set_global('$', global.make_zjquery({
+    silent: true,
+}));
+set_global('ui_report', {
+    displayed_error: false,
+    error: () => {
+        ui_report.displayed_error = true;
+    },
+});
 set_global('location', {
     protocol: "https:",
     host: "example.com",
@@ -60,6 +68,11 @@ run_test('hash_util', () => {
     operand = 'testing 123';
 
     encode_decode_operand(operator, operand, 'testing.20123');
+
+    // Test invalid url decode.
+    const result = hash_util.decodeHashComponent("foo.foo");
+    assert.equal(result, "");
+    assert.equal(ui_report.displayed_error, true);
 });
 
 run_test('test_get_hash_category', () => {
