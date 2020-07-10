@@ -21,7 +21,7 @@ Mirror an IRC channel in Zulip!
    cd zulip/integrations/bridge_with_irc
    ```
 
-1. Install the bridge software in your virtualenv, by running:
+1. Install the bridge dependencies in your virtualenv, by running:
     ```
     pip install -r requirements.txt
     ```
