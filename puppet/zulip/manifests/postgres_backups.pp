@@ -1,4 +1,6 @@
 class zulip::postgres_backups {
+  include zulip::postgres_common
+
   $wal_g_version = '0.2.15'
   $wal_g_hash = 'ea33c2341d7bfb203c6948590c29834c013ab06a28c7a2b236a73d906f785c84'
   exec {'install-wal-g':
@@ -24,7 +26,13 @@ class zulip::postgres_backups {
     group   => 'postgres',
     mode    => '0754',
     source  => 'puppet:///modules/zulip/postgresql/pg_backup_and_purge',
-    require => File['/usr/local/bin/env-wal-g'],
+    require => [
+      File['/usr/local/bin/env-wal-g'],
+      Package[
+        $zulip::postgres_common::postgresql,
+        'python3-dateutil',
+      ],
+    ],
   }
 
   cron { 'pg_backup_and_purge':
@@ -35,13 +43,7 @@ class zulip::postgres_backups {
     minute      => 0,
     target      => 'postgres',
     user        => 'postgres',
-    require     => [
-      File['/usr/local/bin/pg_backup_and_purge'],
-      Package[
-        "postgresql-${zulip::base::postgres_version}",
-        'python3-dateutil',
-      ],
-    ],
+    require     => File['/usr/local/bin/pg_backup_and_purge'],
   }
 
   file { "${zulip::common::nagios_plugins_dir}/zulip_postgres_backups":
