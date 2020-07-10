@@ -50,8 +50,6 @@ crudini --set /etc/zulip/zulip.conf postgresql version "$UPGRADE_TO"
 
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
-service memcached restart
-
 pg_dropcluster "$UPGRADE_FROM" main
 apt remove -y "postgresql-$UPGRADE_FROM"
 if [ -n "$SCRIPTS_PATH" ]; then
