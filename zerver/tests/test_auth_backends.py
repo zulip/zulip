@@ -3966,8 +3966,7 @@ class TestJWTLogin(ZulipTestCase):
     def test_login_failure_due_to_wrong_subdomain(self) -> None:
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}
         with self.settings(JWT_AUTH_KEYS={'acme': {'key': 'key', 'algorithms': ['HS256']}}):
-            with mock.patch('zerver.views.auth.get_subdomain', return_value='acme'), \
-                    mock.patch('logging.warning'):
+            with mock.patch('zerver.views.auth.get_subdomain', return_value='acme'):
                 key = settings.JWT_AUTH_KEYS['acme']['key']
                 [algorithm] = settings.JWT_AUTH_KEYS['acme']['algorithms']
                 web_token = jwt.encode(payload, key, algorithm).decode('utf8')
@@ -3980,8 +3979,7 @@ class TestJWTLogin(ZulipTestCase):
     def test_login_failure_due_to_empty_subdomain(self) -> None:
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}
         with self.settings(JWT_AUTH_KEYS={'': {'key': 'key', 'algorithms': ['HS256']}}):
-            with mock.patch('zerver.views.auth.get_subdomain', return_value=''), \
-                    mock.patch('logging.warning'):
+            with mock.patch('zerver.views.auth.get_subdomain', return_value=''):
                 key = settings.JWT_AUTH_KEYS['']['key']
                 [algorithm] = settings.JWT_AUTH_KEYS['']['algorithms']
                 web_token = jwt.encode(payload, key, algorithm).decode('utf8')
