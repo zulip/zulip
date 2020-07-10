@@ -1,13 +1,14 @@
 {{! Contents of the "starred messages sidebar" popup }}
 <ul class="nav nav-list">
+    {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
     <li>
-        <a id="unstar_all_messages">
+        <a tabindex="0" id="unstar_all_messages">
             <i class="fa fa-star-o" aria-hidden="true"></i>
             {{#tr this}}Unstar all messages{{/tr}}
         </a>
     </li>
     <li>
-        <a id="toggle_display_starred_msg_count">
+        <a tabindex="0" id="toggle_display_starred_msg_count">
             {{#if starred_message_counts}}
                 <i class="fa fa-eye-slash" aria-hidden="true"></i>
                 {{#tr this}}Hide starred message count{{/tr}}
