@@ -15,13 +15,13 @@ exports.message = function (response, status_box, cls, remove_after) {
         .html(response).stop(true).fadeTo(0, 1);
     if (remove_after) {
         setTimeout(() => {
-            status_box.fadeTo(200, 0);
+            status_box.fadeOut(400);
         }, remove_after);
     }
     status_box.addClass("show");
 };
 
-exports.error = function (response, xhr, status_box) {
+exports.error = function (response, xhr, status_box, remove_after) {
     if (xhr && xhr.status.toString().charAt(0) === "4") {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
@@ -33,7 +33,7 @@ exports.error = function (response, xhr, status_box) {
         }
     }
 
-    exports.message(response, status_box, 'alert-error');
+    exports.message(response, status_box, 'alert-error', remove_after);
 };
 
 exports.success = function (response, status_box, remove_after) {
