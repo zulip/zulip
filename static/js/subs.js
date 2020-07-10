@@ -176,7 +176,7 @@ exports.update_stream_privacy = function (sub, values) {
     // Update UI elements
     stream_ui_updates.update_stream_privacy_type_icon(sub);
     stream_ui_updates.update_stream_subscription_type_text(sub);
-    stream_ui_updates.update_change_stream_privacy_settings(sub);
+    stream_ui_updates.update_policy_ui("privacy", sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
     stream_ui_updates.update_subscribers_count(sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
@@ -191,11 +191,13 @@ exports.update_stream_post_policy = function (sub, new_value) {
     stream_data.update_calculated_fields(sub);
 
     stream_ui_updates.update_stream_subscription_type_text(sub);
+    stream_ui_updates.update_policy_ui("stream-post-policy", sub);
 };
 
 exports.update_message_retention_setting = function (sub, new_value) {
     stream_data.update_message_retention_setting(sub, new_value);
     stream_ui_updates.update_stream_subscription_type_text(sub);
+    stream_ui_updates.update_stream_message_retention_ui(sub);
 };
 
 exports.set_color = function (stream_id, color) {
@@ -289,7 +291,7 @@ exports.update_settings_for_subscribed = function (sub) {
         stream_ui_updates.update_subscribers_count(sub, true);
         stream_ui_updates.update_check_button_for_sub(sub);
         stream_ui_updates.update_settings_button_for_sub(sub);
-        stream_ui_updates.update_change_stream_privacy_settings(sub);
+        stream_ui_updates.update_change_stream_permissions(sub);
     } else {
         exports.add_sub_to_table(sub);
     }
@@ -323,7 +325,7 @@ exports.update_settings_for_unsubscribed = function (sub) {
     stream_ui_updates.update_check_button_for_sub(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
     stream_ui_updates.update_regular_sub_settings(sub);
-    stream_ui_updates.update_change_stream_privacy_settings(sub);
+    stream_ui_updates.update_change_stream_permissions(sub);
 
     stream_data.update_stream_email_address(sub, "");
     // If user unsubscribed from private stream then user cannot subscribe to

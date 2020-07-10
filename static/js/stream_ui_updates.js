@@ -95,14 +95,65 @@ exports.update_regular_sub_settings = function (sub) {
     }
 };
 
-exports.update_change_stream_privacy_settings = function (sub) {
-    const stream_privacy_btn = $(".change-stream-privacy");
-
-    if (sub.can_change_stream_permissions) {
-        stream_privacy_btn.show();
-    } else {
-        stream_privacy_btn.hide();
+exports.update_policy_ui = function (policy, sub) {
+    const stream_id = sub.stream_id;
+    const stream_row = $("#subscriptions_table .stream-row.active");
+    if (!stream_row.length || stream_row.data("stream-id") !== stream_id) {
+        return;
     }
+
+    let policy_value;
+    let policy_btn_number;
+    if (policy === "privacy") {
+        const convert_code = {
+            public: 0,
+            "invite-only-public-history": 1,
+            "invite-only": 2,
+        };
+        policy_value = stream_data.get_stream_privacy_policy(stream_id);
+        policy_btn_number = convert_code[policy_value];
+    } else {
+        policy_value = stream_data.get_sub_by_id(stream_id).stream_post_policy;
+        policy_btn_number = policy_value - 1;
+    }
+
+    const stream_policy_btn = $("#stream_privacy_modal input[name='" + policy + "']");
+    $(stream_policy_btn[policy_btn_number]).prop("checked", true);
+};
+
+exports.update_stream_message_retention_ui = function (sub) {
+    const stream_row = $("#subscriptions_table .stream-row.active");
+    if (!stream_row.length || stream_row.data("stream-id") !== sub.stream_id) {
+        return;
+    }
+
+    const message_retention_days_from_sub = stream_edit.get_message_retention_days_from_sub(sub);
+    if (typeof message_retention_days_from_sub !== "number") {
+        $("#stream_privacy_modal select[name=stream_message_retention_setting]").val(
+            message_retention_days_from_sub,
+        );
+        $(".stream-message-retention-days-input").hide();
+    } else {
+        $("#stream_privacy_modal select[name=stream_message_retention_setting]").val(
+            "retain_for_period",
+        );
+        $(".stream-message-retention-days-input").show();
+        $("#stream_privacy_modal .stream-message-retention-days-input input[type='text']").val(
+            message_retention_days_from_sub,
+        );
+    }
+};
+
+exports.update_change_stream_permissions = function (sub) {
+    const stream_privacy_btn = $("#stream_privacy_modal input[name='privacy']");
+    const stream_post_btn = $("#stream_privacy_modal input[name='stream-post-policy']");
+
+    stream_privacy_btn.attr("disabled", !sub.can_change_stream_permissions);
+    stream_post_btn.attr("disabled", !sub.can_change_stream_permissions);
+
+    exports.update_policy_ui("privacy", sub);
+    exports.update_policy_ui("stream-post-policy", sub);
+    exports.update_stream_message_retention_ui(sub);
 };
 
 exports.update_notification_setting_checkbox = function (notification_name) {

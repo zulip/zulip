@@ -489,7 +489,7 @@ exports.save_discard_widget_status_handler = (name) => {
     settings_org.change_save_button_state(save_btn_controls, "unsaved");
 };
 
-function get_message_retention_days_from_sub(sub) {
+exports.get_message_retention_days_from_sub = function (sub) {
     if (sub.message_retention_days === null) {
         return "realm_default";
     }
@@ -497,7 +497,7 @@ function get_message_retention_days_from_sub(sub) {
         return "forever";
     }
     return sub.message_retention_days;
-}
+};
 
 function change_stream_privacy(sub) {
     const privacy_setting = $("#stream_privacy_modal input[name=privacy]:checked").val();
@@ -551,7 +551,7 @@ function change_stream_message_retention(sub) {
     }
 
     const data = {};
-    const message_retention_days_from_sub = get_message_retention_days_from_sub(sub);
+    const message_retention_days_from_sub = exports.get_message_retention_days_from_sub(sub);
     if (message_retention_days_from_sub !== message_retention_days) {
         data.message_retention_days = JSON.stringify(message_retention_days);
     }
@@ -698,6 +698,7 @@ exports.initialize = function () {
             realm_message_retention_setting: exports.get_display_text_for_realm_message_retention_setting(),
             upgrade_text_for_wide_organization_logo:
                 page_params.upgrade_text_for_wide_organization_logo,
+            is_disabled: !stream.can_change_stream_permissions,
             is_stream_edit: true,
         };
         const change_privacy_modal = render_subscription_stream_privacy_modal(template_data);
@@ -740,6 +741,22 @@ exports.initialize = function () {
         (e) => {
             e.preventDefault();
             e.stopPropagation();
+            const stream_id = $(".stream-row.active").data("stream-id");
+            const sub = stream_data.get_sub_by_id(stream_id);
+            const subsection = $(e.target).closest(".org-subsection-parent");
+            const subsection_name = subsection
+                .find(".save-button")
+                .attr("id")
+                .replace("org-submit-", "");
+
+            if (subsection_name === "privacy") {
+                stream_ui_updates.update_policy_ui("privacy", sub);
+            } else if (subsection_name === "stream-post-policy") {
+                stream_ui_updates.update_policy_ui("stream-post-policy", sub);
+            } else if (subsection_name === "stream-message-retention") {
+                stream_ui_updates.update_stream_message_retention_ui(sub);
+            }
+
             const save_btn_controls = $(e.target).closest(".save-button-controls");
             settings_org.change_save_button_state(save_btn_controls, "discarded");
         },
