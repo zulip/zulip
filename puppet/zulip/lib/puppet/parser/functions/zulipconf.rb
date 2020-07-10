@@ -1,5 +1,5 @@
 module Puppet::Parser::Functions
-  newfunction(:zulipconf, :type => :rvalue) do |args|
+  newfunction(:zulipconf, :type => :rvalue, :arity => -2) do |args|
     default = args.pop
     joined = args.join(" ")
     zulip_conf_path = lookupvar('zulip_conf_path')
