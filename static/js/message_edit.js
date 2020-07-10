@@ -878,10 +878,7 @@ exports.move_topic_containing_message_to_stream =
             },
             error: function (xhr) {
                 ui_report.error(i18n.t("Error moving the topic"), xhr,
-                                $("#home-error"));
-                // The fadeTo method used by ui_report.message doesn't work
-                // on this. Hence we fadeOut it here.
-                setTimeout(() => { $("#home-error").fadeOut('slow'); }, 4000);
+                                $("#home-error"), 4000);
             },
         });
     };
