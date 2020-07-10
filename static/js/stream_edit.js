@@ -480,6 +480,15 @@ exports.set_stream_property = function (sub, property, value, status_element) {
     exports.bulk_set_stream_property([sub_data], status_element);
 };
 
+exports.save_discard_widget_status_handler = (name) => {
+    const subsection = $("#stream_privacy_modal").find("." + name);
+    subsection.find(".subsection-failed-status p").hide();
+    subsection.find(".save-button").show();
+
+    const save_btn_controls = subsection.find(".save-button-controls");
+    settings_org.change_save_button_state(save_btn_controls, "unsaved");
+};
+
 function get_message_retention_days_from_sub(sub) {
     if (sub.message_retention_days === null) {
         return "realm_default";
@@ -490,10 +499,7 @@ function get_message_retention_days_from_sub(sub) {
     return sub.message_retention_days;
 }
 
-function change_stream_privacy(e) {
-    const stream_id = $(e.target).data("stream-id");
-    const sub = stream_data.get_sub_by_id(stream_id);
-
+function change_stream_privacy(sub) {
     const privacy_setting = $("#stream_privacy_modal input[name=privacy]:checked").val();
     let invite_only;
     let history_public_to_subscribers;
@@ -517,13 +523,10 @@ function change_stream_privacy(e) {
         data.is_private = JSON.stringify(invite_only);
         data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
     }
-    change_stream_permissions(e, data);
+    return data;
 }
 
-function change_stream_post_policy(e) {
-    const stream_id = $(e.target).data("stream-id");
-    const sub = stream_data.get_sub_by_id(stream_id);
-
+function change_stream_post_policy(sub) {
     const stream_post_policy = parseInt(
         $("#stream_privacy_modal input[name=stream-post-policy]:checked").val(),
         10,
@@ -533,13 +536,10 @@ function change_stream_post_policy(e) {
     if (sub.stream_post_policy !== stream_post_policy) {
         data.stream_post_policy = JSON.stringify(stream_post_policy);
     }
-    change_stream_permissions(e, data);
+    return data;
 }
 
-function change_stream_message_retention(e) {
-    const stream_id = $(e.target).data("stream-id");
-    const sub = stream_data.get_sub_by_id(stream_id);
-
+function change_stream_message_retention(sub) {
     let message_retention_days = $(
         "#stream_privacy_modal select[name=stream_message_retention_setting]",
     ).val();
@@ -555,29 +555,19 @@ function change_stream_message_retention(e) {
     if (message_retention_days_from_sub !== message_retention_days) {
         data.message_retention_days = JSON.stringify(message_retention_days);
     }
-    change_stream_permissions(e, data);
+    return data;
 }
 
 function change_stream_permissions(e, data) {
-    const stream_id = $(e.target).data("stream-id");
+    const stream_id = $(e.target).closest("#stream_privacy_modal").data("stream-id");
     $(".stream_change_property_info").hide();
 
     if (Object.keys(data).length === 0) {
         return;
     }
 
-    channel.patch({
-        url: "/json/streams/" + stream_id,
-        data,
-        success() {
-            overlays.close_modal("#stream_privacy_modal");
-            $("#stream_privacy_modal").remove();
-            // The rest will be done by update stream event we will get.
-        },
-        error() {
-            $("#change-stream-privacy-button").text(i18n.t("Try again"));
-        },
-    });
+    const save_button = $(e.currentTarget);
+    settings_ui.save_subsection_settings("/json/streams/" + stream_id, data, save_button);
 }
 
 exports.change_stream_name = function (e) {
@@ -719,11 +709,57 @@ exports.initialize = function () {
         e.stopPropagation();
     });
 
-    $("#subscriptions_table").on("click", "#change-stream-privacy-button", (e) => {
+    $("#subscriptions_table").on(
+        "click",
+        ".subsection-header .subsection-changes-save .button",
+        (e) => {
+            e.stopPropagation();
+            const stream_id = $(e.target).closest("#stream_privacy_modal").data("stream-id");
+            const sub = stream_data.get_sub_by_id(stream_id);
+            const subsection = $(e.target).closest(".org-subsection-parent");
+            const subsection_name = subsection
+                .find(".save-button")
+                .attr("id")
+                .replace("org-submit-", "");
+
+            let data;
+            if (subsection_name === "privacy") {
+                data = change_stream_privacy(sub);
+            } else if (subsection_name === "stream-post-policy") {
+                data = change_stream_post_policy(sub);
+            } else if (subsection_name === "stream-message-retention") {
+                data = change_stream_message_retention(sub);
+            }
+            change_stream_permissions(e, data);
+        },
+    );
+
+    $("#subscriptions_table").on(
+        "click",
+        ".subsection-header .subsection-changes-discard .button",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const save_btn_controls = $(e.target).closest(".save-button-controls");
+            settings_org.change_save_button_state(save_btn_controls, "discarded");
+        },
+    );
+
+    $("#subscriptions_table").on("change", ".prop-element", (e) => {
         e.stopPropagation();
-        change_stream_privacy(e);
-        change_stream_post_policy(e);
-        change_stream_message_retention(e);
+        e.preventDefault();
+        if (e.target.id === "id_stream_message_retention_setting") {
+            const message_retention_setting_dropdown_value = e.target.value;
+            if (
+                message_retention_setting_dropdown_value === "retain_for_period" &&
+                $(e.target).attr("name") === "stream_message_retention_setting"
+            ) {
+                // Dont submit on this change as number of days have not been entered yet.
+                return;
+            }
+        }
+
+        exports.save_discard_widget_status_handler($(e.target).attr("name"));
     });
 
     $("#subscriptions_table").on("click", ".close-privacy-modal", (e) => {

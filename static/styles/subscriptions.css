@@ -339,6 +339,12 @@ form#add_new_subscription {
     margin: 0 0 0 0;
 }
 
+#stream_privacy_modal {
+    h4 {
+        display: inline;
+    }
+}
+
 #subscription-status {
     width: 200px;
     position: absolute;
