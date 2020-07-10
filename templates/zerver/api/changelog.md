@@ -273,7 +273,7 @@ below features are supported.
   `demote_inactive_streams` display settings.
 * `enable_stream_sounds` was renamed to
   `enable_stream_audible_notifications`.
-* Deprecated `is_home_view`, replacing it with the more readable
+* Deprecated `in_home_view`, replacing it with the more readable
   `is_muted` (with the opposite meaning).
 * Custom profile fields: Added `EXTERNAL_ACCOUNT` field type.
 
