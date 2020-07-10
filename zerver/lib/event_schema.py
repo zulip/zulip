@@ -7,7 +7,7 @@ Right now it's only intended to be used by test code.
 """
 from typing import Any, Dict, Sequence, Tuple, Union
 
-from zerver.lib.topic import TOPIC_LINKS, TOPIC_NAME
+from zerver.lib.topic import ORIG_TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.validator import (
     Validator,
     check_bool,
@@ -501,3 +501,90 @@ def check_update_global_notifications(
 
     setting_type = UserProfile.notification_setting_types[setting_name]
     assert isinstance(setting, setting_type)
+
+
+update_message_required_fields = [
+    ("type", equals("update_message")),
+    ("user_id", check_int),
+    ("edit_timestamp", check_int),
+    ("message_id", check_int),
+]
+
+update_message_content_fields = [
+    ("content", check_string),
+    ("is_me_message", check_bool),
+    ("mention_user_ids", check_list(check_int)),
+    ("orig_content", check_string),
+    ("orig_rendered_content", check_string),
+    ("presence_idle_user_ids", check_list(check_int)),
+    ("prev_rendered_content_version", check_int),
+    ("prior_mention_user_ids", check_list(check_int)),
+    ("push_notify_user_ids", check_list(check_int)),
+    ("rendered_content", check_string),
+    ("stream_email_user_ids", check_list(check_int)),
+    ("stream_push_user_ids", check_list(check_int)),
+    ("wildcard_mention_user_ids", check_list(check_int)),
+]
+
+update_message_topic_fields = [
+    ("flags", check_list(check_string)),
+    ("message_ids", check_list(check_int)),
+    ("new_stream_id", check_int),
+    (ORIG_TOPIC, check_string),
+    ("propagate_mode", check_string),
+    ("stream_id", check_int),
+    ("stream_name", check_string),
+    (TOPIC_LINKS, check_list(check_string)),
+    (TOPIC_NAME, check_string),
+]
+
+update_message_optional_fields = (
+    update_message_content_fields + update_message_topic_fields
+)
+
+# The schema here does not include the "embedded"
+# variant of update_message; it is for message
+# and topic editing.
+_check_update_message = check_events_dict(
+    required_keys=update_message_required_fields,
+    optional_keys=update_message_optional_fields,
+)
+
+
+def check_update_message(
+    var_name: str,
+    event: Dict[str, Any],
+    has_content: bool,
+    has_topic: bool,
+    has_new_stream_id: bool,
+) -> None:
+    # Always check the basic schema first.
+    _check_update_message(var_name, event)
+
+    actual_keys = set(event.keys())
+    expected_keys = {"id"}
+    expected_keys.update(tup[0] for tup in update_message_required_fields)
+
+    if has_content:
+        expected_keys.update(tup[0] for tup in update_message_content_fields)
+
+    if has_topic:
+        expected_keys.update(tup[0] for tup in update_message_topic_fields)
+
+    if not has_new_stream_id:
+        expected_keys.discard("new_stream_id")
+
+    assert expected_keys == actual_keys
+
+
+check_update_message_embedded = check_events_dict(
+    required_keys=[
+        ("type", equals("update_message")),
+        ("flags", check_list(check_string)),
+        ("content", check_string),
+        ("message_id", check_int),
+        ("message_ids", check_list(check_int)),
+        ("rendered_content", check_string),
+        ("sender", check_string),
+    ]
+)

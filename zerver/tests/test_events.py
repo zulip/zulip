@@ -106,6 +106,8 @@ from zerver.lib.event_schema import (
     check_subscription_remove,
     check_update_display_settings,
     check_update_global_notifications,
+    check_update_message,
+    check_update_message_embedded,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import MentionData
@@ -118,7 +120,7 @@ from zerver.lib.test_helpers import (
     reset_emails_in_zulip_realm,
     stdout_suppressed,
 )
-from zerver.lib.topic import ORIG_TOPIC, TOPIC_LINKS, TOPIC_NAME
+from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.validator import (
     check_bool,
     check_dict_only,
@@ -356,34 +358,6 @@ class NormalActionsTest(BaseAction):
         assert events[0]['message']['avatar_url'] is None
 
         # Verify message editing
-        schema_checker = check_events_dict([
-            ('type', equals('update_message')),
-            ('flags', check_list(check_string)),
-            ('content', check_string),
-            ('edit_timestamp', check_int),
-            ('message_id', check_int),
-            ('message_ids', check_list(check_int)),
-            ('prior_mention_user_ids', check_list(check_int)),
-            ('mention_user_ids', check_list(check_int)),
-            ('wildcard_mention_user_ids', check_list(check_int)),
-            ('presence_idle_user_ids', check_list(check_int)),
-            ('stream_push_user_ids', check_list(check_int)),
-            ('stream_email_user_ids', check_list(check_int)),
-            ('push_notify_user_ids', check_list(check_int)),
-            ('orig_content', check_string),
-            ('orig_rendered_content', check_string),
-            (ORIG_TOPIC, check_string),
-            ('prev_rendered_content_version', check_int),
-            ('propagate_mode', check_string),
-            ('rendered_content', check_string),
-            ('stream_id', check_int),
-            ('stream_name', check_string),
-            (TOPIC_NAME, check_string),
-            (TOPIC_LINKS, check_list(check_string)),
-            ('user_id', check_int),
-            ('is_me_message', check_bool),
-        ])
-
         message = Message.objects.order_by('-id')[0]
         topic = 'new_topic'
         propagate_mode = 'change_all'
@@ -412,42 +386,22 @@ class NormalActionsTest(BaseAction):
                 mention_data),
             state_change_expected=True,
         )
-        schema_checker('events[0]', events[0])
-
-        # Verify do_update_embedded_data
-        schema_checker = check_events_dict([
-            ('type', equals('update_message')),
-            ('flags', check_list(check_string)),
-            ('content', check_string),
-            ('message_id', check_int),
-            ('message_ids', check_list(check_int)),
-            ('rendered_content', check_string),
-            ('sender', check_string),
-        ])
+        check_update_message(
+            'events[0]',
+            events[0],
+            has_content=True,
+            has_topic=True,
+            has_new_stream_id=False,
+        )
 
         events = self.verify_action(
             lambda: do_update_embedded_data(self.user_profile, message,
                                             "embed_content", "<p>embed_content</p>"),
             state_change_expected=False,
         )
-        schema_checker('events[0]', events[0])
+        check_update_message_embedded('events[0]', events[0])
 
         # Verify move topic to different stream.
-        schema_checker = check_events_dict([
-            ('type', equals('update_message')),
-            ('flags', check_list(check_string)),
-            ('edit_timestamp', check_int),
-            ('message_id', check_int),
-            ('message_ids', check_list(check_int)),
-            (ORIG_TOPIC, check_string),
-            ('propagate_mode', check_string),
-            ('stream_id', check_int),
-            ('new_stream_id', check_int),
-            ('stream_name', check_string),
-            (TOPIC_NAME, check_string),
-            (TOPIC_LINKS, check_list(check_string)),
-            ('user_id', check_int),
-        ])
 
         # Send 2 messages in "test" topic.
         self.send_stream_message(self.user_profile, "Verona")
@@ -478,7 +432,13 @@ class NormalActionsTest(BaseAction):
             # * 2 new message events: Breadcrumb messages in the new and old topics.
             num_events=3,
         )
-        schema_checker('events[0]', events[0])
+        check_update_message(
+            'events[0]',
+            events[0],
+            has_content=False,
+            has_topic=True,
+            has_new_stream_id=True,
+        )
 
     def test_update_message_flags(self) -> None:
         # Test message flag update events
