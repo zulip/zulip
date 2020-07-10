@@ -474,14 +474,14 @@ function change_stream_privacy(e) {
     let invite_only;
     let history_public_to_subscribers;
 
-    if (privacy_setting === "invite-only") {
+    if (privacy_setting === stream_data.stream_privacy_policy_values.public.code) {
+        invite_only = false;
+        history_public_to_subscribers = true;
+    } else if (privacy_setting === stream_data.stream_privacy_policy_values.private.code) {
         invite_only = true;
         history_public_to_subscribers = false;
-    } else if (privacy_setting === "invite-only-public-history") {
-        invite_only = true;
-        history_public_to_subscribers = true;
     } else {
-        invite_only = false;
+        invite_only = true;
         history_public_to_subscribers = true;
     }
 
@@ -621,15 +621,14 @@ exports.initialize = function () {
     $("#subscriptions_table").on("click", ".change-stream-privacy", (e) => {
         const stream_id = get_stream_id(e.target);
         const stream = stream_data.get_sub_by_id(stream_id);
+
         const template_data = {
             stream_id,
             stream_name: stream.name,
+            stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
+            stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
             stream_post_policy_values: stream_data.stream_post_policy_values,
             stream_post_policy: stream.stream_post_policy,
-            is_public: !stream.invite_only,
-            is_private: stream.invite_only && !stream.history_public_to_subscribers,
-            is_private_with_public_history:
-                stream.invite_only && stream.history_public_to_subscribers,
             is_owner: page_params.is_owner,
             zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
             disable_message_retention_setting:

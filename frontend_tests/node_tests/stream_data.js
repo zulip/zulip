@@ -47,6 +47,8 @@ run_test("basics", () => {
         name: "Denmark",
         stream_id: 1,
         is_muted: true,
+        invite_only: true,
+        history_public_to_subscribers: true,
     };
     const social = {
         subscribed: true,
@@ -55,6 +57,7 @@ run_test("basics", () => {
         stream_id: 2,
         is_muted: false,
         invite_only: true,
+        history_public_to_subscribers: false,
         stream_post_policy: stream_data.stream_post_policy_values.admins.code,
     };
     const test = {
@@ -83,6 +86,10 @@ run_test("basics", () => {
     assert(stream_data.is_subscribed("Social"));
     assert(!stream_data.is_subscribed("Denmark"));
     assert(!stream_data.is_subscribed("Rome"));
+
+    assert(stream_data.get_stream_privacy_policy(test.stream_id), "public");
+    assert(stream_data.get_stream_privacy_policy(social.stream_id), "invite-only");
+    assert(stream_data.get_stream_privacy_policy(denmark.stream_id), "invite-only-public-history");
 
     assert(stream_data.get_invite_only("social"));
     assert(!stream_data.get_invite_only("unknown"));

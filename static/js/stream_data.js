@@ -92,6 +92,30 @@ let filter_out_inactives = false;
 const stream_ids_by_name = new FoldDict();
 const default_stream_ids = new Set();
 
+exports.stream_privacy_policy_values = {
+    public: {
+        code: "public",
+        name: i18n.t("Public"),
+        description: i18n.t(
+            "Anyone can join; anyone can view complete message history without joining",
+        ),
+    },
+    private_with_public_history: {
+        code: "invite-only-public-history",
+        name: i18n.t("Private, shared history"),
+        description: i18n.t(
+            "Must be invited by a member; new members can view complete message history; hidden from non-administrator users",
+        ),
+    },
+    private: {
+        code: "invite-only",
+        name: i18n.t("Private, protected history"),
+        description: i18n.t(
+            "Must be invited by a member; new members can only see messages sent after they join; hidden from non-administrator users",
+        ),
+    },
+};
+
 exports.stream_post_policy_values = {
     everyone: {
         code: 1,
@@ -567,6 +591,18 @@ exports.is_subscribed = function (stream_name) {
 exports.id_is_subscribed = function (stream_id) {
     const sub = subs_by_stream_id.get(stream_id);
     return sub !== undefined && sub.subscribed;
+};
+
+exports.get_stream_privacy_policy = function (stream_id) {
+    const sub = exports.get_sub_by_id(stream_id);
+
+    if (!sub.invite_only) {
+        return exports.stream_privacy_policy_values.public.code;
+    }
+    if (sub.invite_only && !sub.history_public_to_subscribers) {
+        return exports.stream_privacy_policy_values.private.code;
+    }
+    return exports.stream_privacy_policy_values.private_with_public_history.code;
 };
 
 exports.get_invite_only = function (stream_name) {
