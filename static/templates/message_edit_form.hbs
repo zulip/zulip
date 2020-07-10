@@ -10,14 +10,14 @@
         <div class="controls edit-controls">
             <div class="message_edit_header">
                 <div class="stream_header_colorblock" {{#unless show_edit_stream}}style="display:none"{{/unless}}></div>
-                <select class="select_edit_stream" id="select_stream_id_{{ message_id }}" {{#unless show_edit_stream}}style="display:none"{{/unless}}>
+                <select class="select_edit_stream" id="select_stream_id_{{ message_id }}" {{#unless show_edit_stream}}style="display:none"{{/unless}} {{#if is_stream_unsubscribed}}disabled{{/if}}>
                     <option value="{{ stream_id }}" selected='selected'>#{{ stream_name }}</option>
                     {{#each available_streams}}
                     <option value="{{ this.stream_id }}">#{{this.name}}</option>
                     {{/each}}
                 </select>
                 <i class="fa fa-angle-right" aria-hidden="true" {{#unless show_edit_stream}}style="display:none"{{/unless}}></i>
-                <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" />
+                <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" {{#if is_stream_unsubscribed}}disabled{{/if}}/>
                 <div class="message_edit_breadcrumb_messages"  style='display:none;'>
                     <label class="checkbox">
                         <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}}>

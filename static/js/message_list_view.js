@@ -111,6 +111,15 @@ function set_topic_edit_properties(group, message) {
     group.realm_allow_message_editing = page_params.realm_allow_message_editing;
     group.always_visible_topic_edit = false;
     group.on_hover_topic_edit = false;
+    // Since message events are disabled for unsubscribed streams by
+    // server; if user edits the topic, the change will not be updated
+    // in the UI, since the event for it will not be received the user.
+    // This makes the topic edit look broken. So, for unsubed streams,
+    // we hide topic editing icon.
+    group.is_stream_unsubscribed = true;
+    if (message.is_stream) {
+        group.is_stream_unsubscribed = stream_data.is_subscribed(message.stream);
+    }
 
     // Messages with no topics should always have an edit icon visible
     // to encourage updating them. Admins can also edit any topic.

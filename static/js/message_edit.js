@@ -272,7 +272,7 @@ function edit_message(row, raw_content) {
     // current message's stream has been already been added and selected in handlebar
     const available_streams = show_edit_stream ? stream_data.subscribed_subs()
         .filter((s) => s.stream_id !== message.stream_id) : null;
-
+    const is_stream_unsubscribed = message.is_stream && !stream_data.is_subscribed(message.stream);
     const form = $(render_message_edit_form({
         is_stream: message.type === 'stream',
         message_id: message.id,
@@ -290,6 +290,7 @@ function edit_message(row, raw_content) {
         stream_name: message.stream,
         notify_new_thread: exports.notify_new_thread_default,
         notify_old_thread: exports.notify_old_thread_default,
+        is_stream_unsubscribed: is_stream_unsubscribed,
     }));
 
     const edit_obj = {form: form, raw_content: raw_content};
@@ -330,7 +331,11 @@ function edit_message(row, raw_content) {
     } else if (editability === editability_types.TOPIC_ONLY) {
         message_edit_content.attr("readonly", "readonly");
         // Hint why you can edit the topic but not the message content
-        message_edit_countdown_timer.text(i18n.t("Topic editing only"));
+        if (is_stream_unsubscribed) {
+            message_edit_countdown_timer.text(i18n.t("Subscribe to edit topic"));
+        } else {
+            message_edit_countdown_timer.text(i18n.t("Topic editing only"));
+        }
         new ClipboardJS(copy_message[0]);
     } else if (editability === editability_types.FULL) {
         copy_message.remove();
