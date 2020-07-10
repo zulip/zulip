@@ -4,7 +4,7 @@ import shutil
 import subprocess
 from typing import List, Optional, Set, Tuple
 
-from scripts.lib.hash_reqs import expand_reqs
+from scripts.lib.hash_reqs import expand_reqs, python_version
 from scripts.lib.zulip_tools import ENDC, WARNING, os_families, run, run_as_root
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -163,6 +163,7 @@ def try_to_copy_venv(venv_path: str, new_packages: Set[str]) -> bool:
     if not os.path.exists(VENV_CACHE_PATH):
         return False
 
+    desired_python_version = python_version()
     venv_name = os.path.basename(venv_path)
 
     overlaps = []  # type: List[Tuple[int, str, Set[str]]]
@@ -171,6 +172,15 @@ def try_to_copy_venv(venv_path: str, new_packages: Set[str]) -> bool:
         curr_venv_path = os.path.join(VENV_CACHE_PATH, sha1sum, venv_name)
         if (curr_venv_path == venv_path or
                 not os.path.exists(get_index_filename(curr_venv_path))):
+            continue
+
+        # Check the Python version in the venv matches the version we want to use.
+        venv_python3 = os.path.join(curr_venv_path, "bin", "python3")
+        if not os.path.exists(venv_python3):
+            continue
+        venv_python_version = subprocess.check_output([
+            venv_python3, "-VV"], universal_newlines=True)
+        if desired_python_version != venv_python_version:
             continue
 
         old_packages = get_venv_packages(curr_venv_path)
