@@ -105,7 +105,7 @@ class zulip_ops::nagios {
     notify => Service['nagios3'],
   }
 
-  $hosts = $zulip_ops::base::hosts
+  $hosts = zulipconf_nagios_hosts()
   file { '/etc/nagios3/conf.d/zulip_autossh.cfg':
     ensure  => file,
     mode    => '0644',

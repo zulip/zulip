@@ -10,7 +10,7 @@ class zulip_ops::munin {
   package { $munin_packages: ensure => 'installed' }
 
   $default_host_domain = zulipconf('nagios', 'default_host_domain', undef)
-  $hosts = $zulip_ops::base::hosts
+  $hosts = zulipconf_nagios_hosts()
 
   file { '/etc/munin':
     require => Package['munin'],
