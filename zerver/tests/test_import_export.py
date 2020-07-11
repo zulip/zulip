@@ -280,7 +280,7 @@ class ImportExportTest(ZulipTestCase):
 
         with get_test_image_file('img.png') as img_file:
             upload.upload_backend.upload_realm_icon_image(img_file, user_profile)
-            do_change_icon_source(realm, Realm.ICON_UPLOADED, False)
+            do_change_icon_source(realm, Realm.ICON_UPLOADED)
 
         with get_test_image_file('img.png') as img_file:
             upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=False)
