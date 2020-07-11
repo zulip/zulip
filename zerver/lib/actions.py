@@ -3361,15 +3361,17 @@ def do_delete_avatar_image(user: UserProfile, acting_user: Optional[UserProfile]
     do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=acting_user)
     delete_avatar_image(user)
 
-def do_change_icon_source(realm: Realm, icon_source: str, log: bool=True) -> None:
+def do_change_icon_source(realm: Realm, icon_source: str, acting_user: Optional[UserProfile]=None) -> None:
     realm.icon_source = icon_source
     realm.icon_version += 1
     realm.save(update_fields=["icon_source", "icon_version"])
 
-    if log:
-        log_event({'type': 'realm_change_icon',
-                   'realm': realm.string_id,
-                   'icon_source': icon_source})
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(realm=realm,
+                                 event_type=RealmAuditLog.REALM_ICON_SOURCE_CHANGED,
+                                 extra_data={'icon_source': icon_source,
+                                             'icon_version': realm.icon_version},
+                                 event_time=event_time, acting_user=acting_user)
 
     send_event(realm,
                dict(type='realm',

@@ -12,6 +12,7 @@ from zerver.lib.actions import (
     do_activate_user,
     do_change_avatar_fields,
     do_change_bot_owner,
+    do_change_icon_source,
     do_change_password,
     do_change_tos_version,
     do_change_user_delivery_email,
@@ -326,3 +327,19 @@ class TestRealmAuditLog(ZulipTestCase):
                 RealmAuditLog.OLD_VALUE: {'property': 'signup_notifications_stream', 'value': old_value},
                 RealmAuditLog.NEW_VALUE: {'property': 'signup_notifications_stream', 'value': stream.id}
             })).count(), 1)
+
+    def test_change_icon_source(self) -> None:
+        test_start = timezone_now()
+        realm = get_realm('zulip')
+        user = self.example_user('hamlet')
+        icon_source = 'G'
+        do_change_icon_source(realm, icon_source, acting_user=user)
+        audit_entries = RealmAuditLog.objects.filter(
+            realm=realm,
+            event_type=RealmAuditLog.REALM_ICON_SOURCE_CHANGED,
+            acting_user=user,
+            event_time__gte=test_start)
+        self.assertEqual(len(audit_entries), 1)
+        self.assertEqual(icon_source, realm.icon_source)
+        self.assertEqual(audit_entries.first().extra_data,
+                         "{'icon_source': 'G', 'icon_version': 2}")

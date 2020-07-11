@@ -24,7 +24,7 @@ def upload_icon(request: HttpRequest, user_profile: UserProfile) -> HttpResponse
             settings.MAX_ICON_FILE_SIZE,
         ))
     upload_icon_image(icon_file, user_profile)
-    do_change_icon_source(user_profile.realm, user_profile.realm.ICON_UPLOADED)
+    do_change_icon_source(user_profile.realm, user_profile.realm.ICON_UPLOADED, acting_user=user_profile)
     icon_url = realm_icon_url(user_profile.realm)
 
     json_result = dict(
@@ -38,7 +38,7 @@ def delete_icon_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     # We don't actually delete the icon because it might still
     # be needed if the URL was cached and it is rewrited
     # in any case after next update.
-    do_change_icon_source(user_profile.realm, user_profile.realm.ICON_FROM_GRAVATAR)
+    do_change_icon_source(user_profile.realm, user_profile.realm.ICON_FROM_GRAVATAR, acting_user=user_profile)
     gravatar_url = realm_icon_url(user_profile.realm)
     json_result = dict(
         icon_url=gravatar_url,
