@@ -544,7 +544,7 @@ input[type=checkbox] {
     }
 }
 
-.organization-settings-parent div:first-of-type {
+.organization-settings-parent > div:first-of-type {
     margin-top: 10px;
 }
 
@@ -1592,11 +1592,17 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
         bottom: auto;
     }
 
-    .dropdown-list-body {
+    .dropdown-list-wrapper {
         position: relative;
         height: auto;
         max-height: 200px;
         overflow-y: auto;
+        margin-top: 0;
+        display: block;
+    }
+
+    .dropdown-list-body {
+        position: relative;
         margin-top: 0;
         display: block;
     }
