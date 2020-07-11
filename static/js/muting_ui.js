@@ -20,7 +20,9 @@ exports.rerender = function () {
     if (current_msg_list !== home_msg_list) {
         home_msg_list.update_muting_and_rerender();
     }
-    exports.set_up_muted_topics_ui();
+    if (overlays.settings_open() && settings_muting.loaded) {
+        exports.set_up_muted_topics_ui();
+    }
 };
 
 exports.persist_mute = function (stream_id, topic_name) {

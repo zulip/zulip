@@ -1,4 +1,7 @@
+exports.loaded = false;
+
 exports.set_up = function () {
+    exports.loaded = true;
     $('body').on('click', '.settings-unmute-topic', function (e) {
         const $row = $(this).closest("tr");
         const stream_id = parseInt($row.attr("data-stream-id"), 10);
@@ -11,6 +14,10 @@ exports.set_up = function () {
     });
 
     muting_ui.set_up_muted_topics_ui();
+};
+
+exports.reset = function () {
+    exports.loaded = false;
 };
 
 window.settings_muting = exports;

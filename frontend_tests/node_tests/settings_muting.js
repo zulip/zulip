@@ -32,7 +32,10 @@ run_test('settings', () => {
         set_up_ui_called = true;
     };
 
+    assert.equal(settings_muting.loaded, false);
+
     settings_muting.set_up();
+    assert.equal(settings_muting.loaded, true);
 
     const click_handler = $('body').get_on_handler('click', '.settings-unmute-topic');
     assert.equal(typeof click_handler, 'function');
@@ -70,4 +73,9 @@ run_test('settings', () => {
     assert(unmute_called);
     assert(set_up_ui_called);
     assert.equal(data_called, 2);
+});
+
+run_test('reset', () => {
+    settings_muting.reset();
+    assert.equal(settings_muting.loaded, false);
 });
