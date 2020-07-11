@@ -77,6 +77,7 @@ exports.reset_sections = function () {
     settings_profile_fields.reset();
     settings_streams.reset();
     settings_user_groups.reset();
+    settings_muting.reset();
     // settings_users doesn't need a reset()
 };
 
