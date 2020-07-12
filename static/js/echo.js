@@ -4,6 +4,11 @@ const util = require("./util");
 const waiting_for_id = new Map();
 let waiting_for_ack = new Map();
 
+function failed_message_success(message_id) {
+    message_store.get(message_id).failed_request = false;
+    ui.show_failed_message_success(message_id);
+}
+
 function resend_message(message, row) {
     message.content = message.raw_content;
     const retry_spinner = row.find('.refresh-failed-message');
@@ -24,8 +29,7 @@ function resend_message(message, row) {
         compose.send_message_success(local_id, message_id, locally_echoed);
 
         // Resend succeeded, so mark as no longer failed
-        message_store.get(message_id).failed_request = false;
-        ui.show_failed_message_success(message_id);
+        failed_message_success(message_id);
     }
 
     function on_error(response) {
@@ -294,6 +298,10 @@ exports.process_from_server = function (messages) {
         }
 
         exports.reify_message_id(local_id, message.id);
+
+        if (message_store.get(message.id).failed_request) {
+            failed_message_success(message.id);
+        }
 
         if (client_message.content !== message.content) {
             client_message.content = message.content;

@@ -29,7 +29,7 @@ exports.get = function get(message_id) {
     if (typeof message_id !== 'number') {
         blueslip.error('message_store got non-number: ' + message_id);
 
-        // Try to solider on, assuming the caller treats message
+        // Try to soldier on, assuming the caller treats message
         // ids as strings.
         message_id = parseFloat(message_id);
     }
