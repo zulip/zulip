@@ -156,6 +156,7 @@ function populate_group_from_message_container(group, message_container) {
     }
     group.display_recipient = message_container.msg.display_recipient;
     group.topic_links = message_container.msg.topic_links;
+    group.is_single_stream_view = narrow_state.stream_id() !== undefined;
 
     set_topic_edit_properties(group, message_container.msg);
     render_group_display_date(group, message_container);

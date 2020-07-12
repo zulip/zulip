@@ -805,9 +805,6 @@ td.pointer {
 }
 
 .floating_recipient {
-    .recipient_row {
-        border-top: 1px solid hsl(0, 0%, 88%);
-    }
 
     .recipient_row_date.hide-date {
         display: block;
@@ -827,6 +824,20 @@ td.pointer {
     }
 }
 
+.recipient_color_bar {
+    margin-left: 1px;
+    height: 100%;
+    display: inline-block;
+    position: absolute;
+    border-top-left-radius: 7px;
+
+    .color_bar {
+        margin-top: 6px;
+        margin-left: 10px;
+        font-size: 11px;
+    }
+}
+
 .stream_label {
     display: inline-block;
     padding: 4px 6px 3px 6px;
@@ -839,8 +850,9 @@ td.pointer {
     background-color: hsl(0, 0%, 88%);
     border-left-color: hsl(0, 0%, 88%);
     border-width: 0px;
-    position: relative;
-    text-decoration: none;
+    border-top-right-radius: 7px;
+    border-bottom-right-radius: 7px;
+    border-top-left-radius: 7px;
 
     .invite-stream-icon {
         font-size: 12px;
@@ -1037,6 +1049,7 @@ td.pointer {
     justify-content: space-between;
     border-right: 1px solid hsl(0, 0%, 88%);
     background-color: hsl(0, 0%, 88%);
+    border-top-left-radius: 7px;
 }
 
 .mention .messagebox {

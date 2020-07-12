@@ -556,6 +556,7 @@ html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
          'static/templates/draft.hbs',
          'static/templates/subscription.hbs',
          'static/templates/single_message.hbs',
+         'static/templates/recipient_row.hbs',
 
          # Old-style email templates need to use inline style
          # attributes; it should be possible to clean these up
