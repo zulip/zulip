@@ -25,6 +25,8 @@ from zerver.lib.actions import (
     do_regenerate_api_key,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
+    do_set_realm_notifications_stream,
+    do_set_realm_signup_notifications_stream,
     get_last_message_id,
     get_streams_traffic,
 )
@@ -291,3 +293,37 @@ class TestRealmAuditLog(ZulipTestCase):
 
         self.assertEqual(new_values_seen, new_values_expected)
         self.assertEqual(old_values_seen, old_values_expected)
+
+    def test_set_realm_notifications_stream(self) -> None:
+        now = timezone_now()
+        realm = get_realm('zulip')
+        user = self.example_user('hamlet')
+        old_value = getattr(realm, 'notifications_stream')
+        stream_name = 'test'
+        stream = self.make_stream(stream_name, realm)
+
+        do_set_realm_notifications_stream(realm, stream, stream.id, acting_user=user)
+        self.assertEqual(RealmAuditLog.objects.filter(
+            realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+            event_time__gte=now, acting_user=user,
+            extra_data=ujson.dumps({
+                RealmAuditLog.OLD_VALUE: {'property': 'notifications_stream', 'value': old_value},
+                RealmAuditLog.NEW_VALUE: {'property': 'notifications_stream', 'value': stream.id}
+            })).count(), 1)
+
+    def test_set_realm_signup_notifications_stream(self) -> None:
+        now = timezone_now()
+        realm = get_realm('zulip')
+        user = self.example_user('hamlet')
+        old_value = getattr(realm, 'signup_notifications_stream')
+        stream_name = 'test'
+        stream = self.make_stream(stream_name, realm)
+
+        do_set_realm_signup_notifications_stream(realm, stream, stream.id, acting_user=user)
+        self.assertEqual(RealmAuditLog.objects.filter(
+            realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+            event_time__gte=now, acting_user=user,
+            extra_data=ujson.dumps({
+                RealmAuditLog.OLD_VALUE: {'property': 'signup_notifications_stream', 'value': old_value},
+                RealmAuditLog.NEW_VALUE: {'property': 'signup_notifications_stream', 'value': stream.id}
+            })).count(), 1)
