@@ -13,7 +13,6 @@ from zerver.lib.actions import (
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
-    do_set_realm_message_deleting,
     do_set_realm_message_editing,
     do_set_realm_notifications_stream,
     do_set_realm_property,
@@ -160,10 +159,6 @@ def update_realm(
         data['message_content_edit_limit_seconds'] = message_content_edit_limit_seconds
         data['allow_community_topic_editing'] = allow_community_topic_editing
 
-    if (message_content_delete_limit_seconds is not None and
-            realm.message_content_delete_limit_seconds != message_content_delete_limit_seconds):
-        do_set_realm_message_deleting(realm, message_content_delete_limit_seconds)
-        data['message_content_delete_limit_seconds'] = message_content_delete_limit_seconds
     # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
     # str or integer field, and thus doesn't fit into the do_set_realm_property framework.
     if notifications_stream_id is not None:

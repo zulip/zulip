@@ -513,6 +513,7 @@ class RealmTest(ZulipTestCase):
             digest_weekday=10,
             user_group_edit_policy=10,
             private_message_policy=10,
+            message_content_delete_limit_seconds=-10,
         )
 
         # We need an admin user.
@@ -723,6 +724,7 @@ class RealmAPITest(ZulipTestCase):
                     video_chat_provider=ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id']),
                 ),
             ],
+            message_content_delete_limit_seconds=[1000, 1100, 1200]
         )
 
         vals = test_values.get(name)
