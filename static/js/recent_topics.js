@@ -154,6 +154,10 @@ function format_topic(topic_data) {
     const stream = last_msg.stream;
     const stream_id = last_msg.stream_id;
     const stream_info = stream_data.get_sub_by_id(stream_id);
+    if (stream_info === undefined) {
+        // stream was deleted
+        return {};
+    }
     const topic = last_msg.topic;
     const time = new XDate(last_msg.timestamp * 1000);
     const last_msg_time = timerender.last_seen_status_from_date(time);
@@ -232,8 +236,13 @@ exports.topic_in_search_results = function (keyword, stream, topic) {
     });
 };
 
-function filters_should_hide_topic(topic_data) {
+exports.filters_should_hide_topic = function (topic_data) {
     const msg = message_store.get(topic_data.last_msg_id);
+
+    if (stream_data.get_sub_by_id(msg.stream_id) === undefined) {
+        // Never try to process deactivated streams.
+        return true;
+    }
 
     if (filters.has('unread')) {
         const unreadCount = unread.unread_topic_counter.get(msg.stream_id, msg.topic);
@@ -260,7 +269,7 @@ function filters_should_hide_topic(topic_data) {
     }
 
     return false;
-}
+};
 
 exports.inplace_rerender = function (topic_key) {
     if (!overlays.recent_topics_open()) {
@@ -274,7 +283,7 @@ exports.inplace_rerender = function (topic_key) {
     topics_widget.render_item(topic_data);
     const topic_row = get_topic_row(topic_data);
 
-    if (filters_should_hide_topic(topic_data)) {
+    if (exports.filters_should_hide_topic(topic_data)) {
         topic_row.hide();
     } else {
         topic_row.show();
@@ -402,7 +411,7 @@ exports.complete_rerender = function () {
             // We use update_filters_view & filters_should_hide_topic to do all the
             // filtering for us, which is called using click_handlers.
             predicate: function (topic_data) {
-                return !filters_should_hide_topic(topic_data);
+                return !exports.filters_should_hide_topic(topic_data);
             },
         },
         sort_fields: {

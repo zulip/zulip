@@ -7,18 +7,6 @@ set_global('$', global.make_zjquery({
 set_global('hashchange', {
     exit_overlay: noop,
 });
-set_global('stream_data', {
-    get_sub_by_id: () => ({
-        color: "",
-        invite_only: false,
-        is_web_public: true,
-    }),
-    is_muted: () =>
-        // We only test via muted topics for now.
-        // TODO: Make muted streams and test them.
-        false
-    ,
-});
 set_global('overlays', {
     open_overlay: (opts) => {
         overlays.close_callback = opts.on_close;
@@ -89,6 +77,7 @@ const stream1 = 1;
 const stream2 = 2;
 const stream3 = 3;
 const stream4 = 4;
+const stream5 = 5; // Deleted stream
 
 // Topics in the stream, all unread except topic1 & stream1.
 const topic1 = "topic-1";  // No Other sender & read.
@@ -127,6 +116,25 @@ set_global('message_list', {
 });
 set_global('message_store', {
     get: (msg_id) => messages[msg_id - 1],
+});
+set_global('stream_data', {
+    get_sub_by_id: (stream) => {
+        if (stream === stream5) {
+            // No data is available for deactivated streams
+            return;
+        }
+
+        return {
+            color: "",
+            invite_only: false,
+            is_web_public: true,
+        };
+    },
+    is_muted: () =>
+        // We only test via muted topics for now.
+        // TODO: Make muted streams and test them.
+        false
+    ,
 });
 
 let id = 0;
@@ -681,6 +689,13 @@ run_test('test_topic_edit', () => {
 
     assert.equal(all_topics.get(get_topic_key(stream2, topic1)), undefined);
     verify_topic_data(all_topics, stream3, topic9, messages[0].id, true);
+
+    // Message was moveed to a deleted stream, hence hidden regardless of filter.
+    messages[0].stream_id = stream5;
+    messages[0].topic = topic8;
+    rt.process_topic_edit(stream3, topic9, topic8, stream5);
+    all_topics = rt.get();
+    assert.equal(rt.filters_should_hide_topic(all_topics.get('5:topic-8')), true);
 });
 
 run_test('test_search', () => {
