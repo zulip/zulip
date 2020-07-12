@@ -2716,14 +2716,7 @@ def get_subscriber_emails(stream: Stream,
 def notify_subscriptions_added(user_profile: UserProfile,
                                sub_pairs: Iterable[Tuple[Subscription, Stream]],
                                stream_user_ids: Callable[[Stream], List[int]],
-                               recent_traffic: Dict[int, int],
-                               no_log: bool=False) -> None:
-    if not no_log:
-        log_event({'type': 'subscription_added',
-                   'user': user_profile.email,
-                   'names': [stream.name for sub, stream in sub_pairs],
-                   'realm': user_profile.realm.string_id})
-
+                               recent_traffic: Dict[int, int]) -> None:
     sub_dicts = []
     for (subscription, stream) in sub_pairs:
         sub_dict = stream.to_dict()
@@ -2991,13 +2984,7 @@ def get_available_notification_sounds() -> List[str]:
 
     return available_notification_sounds
 
-def notify_subscriptions_removed(user_profile: UserProfile, streams: Iterable[Stream],
-                                 no_log: bool=False) -> None:
-    if not no_log:
-        log_event({'type': 'subscription_removed',
-                   'user': user_profile.email,
-                   'names': [stream.name for stream in streams],
-                   'realm': user_profile.realm.string_id})
+def notify_subscriptions_removed(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
 
     payload = [dict(name=stream.name, stream_id=stream.id) for stream in streams]
     event = dict(type="subscription", op="remove",
