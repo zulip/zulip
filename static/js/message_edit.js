@@ -433,7 +433,7 @@ function edit_message(row, raw_content) {
         const is_topic_edited = new_topic !== original_topic && new_topic !== "";
         const is_stream_edited = new_stream_id !== original_stream_id;
         message_edit_topic_propagate.toggle(is_topic_edited || is_stream_edited);
-        message_edit_breadcrumb_messages.toggle(is_stream_edited);
+        message_edit_breadcrumb_messages.toggle(is_topic_edited || is_stream_edited);
     }
 
     if (!message.locally_echoed) {
@@ -574,6 +574,8 @@ exports.save_inline_topic_edit = function (row) {
         message_id: message.id,
         topic: new_topic,
         propagate_mode: "change_later",
+        send_notification_to_old_thread: false,
+        send_notification_to_new_thread: false,
     };
 
     channel.patch({

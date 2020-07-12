@@ -4560,10 +4560,23 @@ def do_update_message(user_profile: UserProfile, message: Message,
         event["propagate_mode"] = propagate_mode
         event["stream_id"] = message.recipient.type_id
 
+        if new_stream is None:
+            # In case of topic edit, new_stream is just the stream where the topic will live now,
+            # it does not have to be different from the current stream.
+            new_stream = stream_being_edited
+
+    has_stream_changed: bool = False
     if new_stream is not None:
+        assert message.is_stream_message()
+        assert stream_being_edited is not None
+
+        has_stream_changed = new_stream.id != stream_being_edited.id
+
+    if has_stream_changed:
         assert content is None
         assert message.is_stream_message()
         assert stream_being_edited is not None
+        assert new_stream is not None
 
         edit_history_event['prev_stream'] = stream_being_edited.id
         event[ORIG_TOPIC] = orig_topic_name
@@ -4626,7 +4639,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
         )
         changed_messages += messages_list
 
-        if new_stream is not None:
+        if has_stream_changed:
             assert stream_being_edited is not None
 
             message_ids = [msg.id for msg in changed_messages]
@@ -4697,7 +4710,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
             # Subscriber
             subscribers = subscribers.exclude(user_profile_id__in=[um.user_profile_id for um in ums])
 
-            if new_stream is not None:
+            if has_stream_changed:
                 assert delete_event_notify_user_ids is not None
                 subscribers = subscribers.exclude(user_profile_id__in=delete_event_notify_user_ids)
 
@@ -4705,7 +4718,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
             # notified when a message is edited
             subscriber_ids = [user.user_profile_id for user in subscribers]
 
-            if new_stream is not None:
+            if has_stream_changed:
                 # TODO: Guest users don't see the new moved topic
                 # unless breadcrumb message for new stream is
                 # enabled. Excluding these users from receiving this
@@ -4733,6 +4746,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
     if (len(changed_messages) > 0 and new_stream is not None and
             stream_being_edited is not None):
         # Notify users that the topic was moved.
+        # Note: new_stream can be equal to stream_being_edited here.
         notify_topic_moved_streams(user_profile, stream_being_edited, orig_topic_name,
                                    new_stream, topic_name, send_notification_to_old_thread,
                                    send_notification_to_new_thread)
