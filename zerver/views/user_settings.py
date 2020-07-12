@@ -229,7 +229,7 @@ def json_change_notify_settings(
 
     for k, v in list(req_vars.items()):
         if v is not None and getattr(user_profile, k) != v:
-            do_change_notification_settings(user_profile, k, v)
+            do_change_notification_settings(user_profile, k, v, acting_user=user_profile)
             result[k] = v
 
     return json_success(result)
