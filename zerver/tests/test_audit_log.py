@@ -14,6 +14,7 @@ from zerver.lib.actions import (
     do_change_bot_owner,
     do_change_icon_source,
     do_change_password,
+    do_change_subscription_property,
     do_change_tos_version,
     do_change_user_delivery_email,
     do_change_user_role,
@@ -33,7 +34,16 @@ from zerver.lib.actions import (
 )
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, RealmAuditLog, UserProfile, get_client, get_realm
+from zerver.models import (
+    Message,
+    RealmAuditLog,
+    Recipient,
+    Subscription,
+    UserProfile,
+    get_client,
+    get_realm,
+    get_stream,
+)
 
 
 class TestRealmAuditLog(ZulipTestCase):
@@ -338,3 +348,34 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(RealmAuditLog.objects.filter(realm=realm, event_type=RealmAuditLog.REALM_ICON_SOURCE_CHANGED,
                                                       acting_user=user, event_time__gte=now).count(), 1)
         self.assertEqual(icon_source, realm.icon_source)
+
+    def test_change_subscription_property(self) -> None:
+        user = self.example_user('hamlet')
+        # Fetch the Denmark stream for testing
+        stream = get_stream("Denmark", user.realm)
+        sub = Subscription.objects.get(user_profile=user, recipient__type=Recipient.STREAM,
+                                       recipient__type_id=stream.id)
+        properties = {"color": True,
+                      "in_home_view": False,
+                      "is_muted": True,
+                      "desktop_notifications": False,
+                      "audible_notifications": False,
+                      "push_notifications": True,
+                      "email_notifications": True,
+                      "pin_to_top": True,
+                      "wildcard_mentions_notify": False}
+
+        for property, value in properties.items():
+            now = timezone_now()
+            if property == "in_home_view":
+                property = "is_muted"
+
+            old_value = getattr(sub, property)
+            do_change_subscription_property(user, sub, stream, property, value, acting_user=user)
+            expected_extra_data = {RealmAuditLog.OLD_VALUE: {'property': property, 'value': old_value},
+                                   RealmAuditLog.NEW_VALUE: {'property': property, 'value': value}}
+            self.assertEqual(RealmAuditLog.objects.filter(
+                realm=user.realm, event_type=RealmAuditLog.SUBSCRIPTION_PROPERTY_CHANGED,
+                event_time__gte=now, acting_user=user, modified_user=user,
+                extra_data=ujson.dumps(expected_extra_data)).count(), 1)
+            self.assertEqual(getattr(sub, property), value)

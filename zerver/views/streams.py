@@ -736,7 +736,7 @@ def update_subscription_properties_backend(
             return json_error(error.message)
 
         do_change_subscription_property(user_profile, sub, stream,
-                                        property, value)
+                                        property, value, acting_user=user_profile)
 
         response_data.append({'stream_id': stream_id,
                               'property': property,
