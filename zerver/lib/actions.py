@@ -772,9 +772,20 @@ def do_set_realm_message_editing(realm: Realm,
     )
     send_event(realm, event, active_user_ids(realm.id))
 
-def do_set_realm_notifications_stream(realm: Realm, stream: Optional[Stream], stream_id: int) -> None:
+def do_set_realm_notifications_stream(realm: Realm, stream: Optional[Stream], stream_id: int,
+                                      acting_user: Optional[UserProfile]=None) -> None:
+    old_value = getattr(realm, 'notifications_stream')
     realm.notifications_stream = stream
     realm.save(update_fields=['notifications_stream'])
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED, event_time=event_time,
+        acting_user=acting_user, extra_data=ujson.dumps({
+            RealmAuditLog.OLD_VALUE: {'property': 'notifications_stream', 'value': old_value},
+            RealmAuditLog.NEW_VALUE: {'property': 'notifications_stream', 'value': stream_id}
+        }))
+
     event = dict(
         type="realm",
         op="update",
@@ -783,10 +794,19 @@ def do_set_realm_notifications_stream(realm: Realm, stream: Optional[Stream], st
     )
     send_event(realm, event, active_user_ids(realm.id))
 
-def do_set_realm_signup_notifications_stream(realm: Realm, stream: Optional[Stream],
-                                             stream_id: int) -> None:
+def do_set_realm_signup_notifications_stream(realm: Realm, stream: Optional[Stream], stream_id: int,
+                                             acting_user: Optional[UserProfile]=None) -> None:
+    old_value = getattr(realm, 'signup_notifications_stream')
     realm.signup_notifications_stream = stream
     realm.save(update_fields=['signup_notifications_stream'])
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED, event_time=event_time,
+        acting_user=acting_user, extra_data=ujson.dumps({
+            RealmAuditLog.OLD_VALUE: {'property': 'signup_notifications_stream', 'value': old_value},
+            RealmAuditLog.NEW_VALUE: {'property': 'signup_notifications_stream', 'value': stream_id}
+        }))
     event = dict(
         type="realm",
         op="update",
