@@ -12,6 +12,9 @@ from zerver.lib.actions import (
     do_activate_user,
     do_change_avatar_fields,
     do_change_bot_owner,
+    do_change_default_all_public_streams,
+    do_change_default_events_register_stream,
+    do_change_default_sending_stream,
     do_change_icon_source,
     do_change_password,
     do_change_subscription_property,
@@ -379,3 +382,41 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_time__gte=now, acting_user=user, modified_user=user,
                 extra_data=ujson.dumps(expected_extra_data)).count(), 1)
             self.assertEqual(getattr(sub, property), value)
+
+    def test_change_default_streams(self) -> None:
+        now = timezone_now()
+        user = self.example_user('hamlet')
+        stream = get_stream("Denmark", user.realm)
+
+        old_value = getattr(user, 'default_sending_stream')
+        do_change_default_sending_stream(user, stream, acting_user=user)
+        self.assertEqual(RealmAuditLog.objects.filter(
+            realm=user.realm, event_type=RealmAuditLog.USER_DEFAULT_SENDING_STREAM_CHANGED,
+            event_time__gte=now, acting_user=user,
+            extra_data=ujson.dumps({
+                RealmAuditLog.OLD_VALUE: old_value,
+                RealmAuditLog.NEW_VALUE: stream
+            })).count(), 1)
+        self.assertEqual(getattr(user, 'default_sending_stream'), stream)
+
+        old_value = getattr(user, 'default_events_register_stream')
+        do_change_default_events_register_stream(user, stream, acting_user=user)
+        self.assertEqual(RealmAuditLog.objects.filter(
+            realm=user.realm, event_type=RealmAuditLog.USER_DEFAULT_REGISTER_STREAM_CHANGED,
+            event_time__gte=now, acting_user=user,
+            extra_data=ujson.dumps({
+                RealmAuditLog.OLD_VALUE: old_value,
+                RealmAuditLog.NEW_VALUE: stream
+            })).count(), 1)
+        self.assertEqual(getattr(user, 'default_events_register_stream'), stream)
+
+        old_value = getattr(user, 'default_all_public_streams')
+        do_change_default_all_public_streams(user, False, acting_user=user)
+        self.assertEqual(RealmAuditLog.objects.filter(
+            realm=user.realm, event_type=RealmAuditLog.USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED,
+            event_time__gte=now, acting_user=user,
+            extra_data=ujson.dumps({
+                RealmAuditLog.OLD_VALUE: old_value,
+                RealmAuditLog.NEW_VALUE: False
+            })).count(), 1)
+        self.assertEqual(getattr(user, 'default_all_public_streams'), False)

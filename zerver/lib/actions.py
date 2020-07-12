@@ -3434,13 +3434,20 @@ def do_change_plan_type(realm: Realm, plan_type: int) -> None:
     send_event(realm, event, active_user_ids(realm.id))
 
 def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional[Stream],
-                                     log: bool=True) -> None:
+                                     acting_user: Optional[UserProfile]=None) -> None:
+    old_value = getattr(user_profile, 'default_sending_stream')
     user_profile.default_sending_stream = stream
     user_profile.save(update_fields=['default_sending_stream'])
-    if log:
-        log_event({'type': 'user_change_default_sending_stream',
-                   'user': user_profile.email,
-                   'stream': str(stream)})
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm, event_type=RealmAuditLog.USER_DEFAULT_SENDING_STREAM_CHANGED,
+        event_time=event_time, modified_user=user_profile,
+        acting_user=acting_user, extra_data=ujson.dumps({
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: stream,
+        }))
+
     if user_profile.is_bot:
         if stream:
             stream_name: Optional[str] = stream.name
@@ -3456,13 +3463,20 @@ def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional
 
 def do_change_default_events_register_stream(user_profile: UserProfile,
                                              stream: Optional[Stream],
-                                             log: bool=True) -> None:
+                                             acting_user: Optional[UserProfile]=None) -> None:
+    old_value = getattr(user_profile, 'default_events_register_stream')
     user_profile.default_events_register_stream = stream
     user_profile.save(update_fields=['default_events_register_stream'])
-    if log:
-        log_event({'type': 'user_change_default_events_register_stream',
-                   'user': user_profile.email,
-                   'stream': str(stream)})
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm, event_type=RealmAuditLog.USER_DEFAULT_REGISTER_STREAM_CHANGED,
+        event_time=event_time, modified_user=user_profile,
+        acting_user=acting_user, extra_data=ujson.dumps({
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: stream,
+        }))
+
     if user_profile.is_bot:
         if stream:
             stream_name: Optional[str] = stream.name
@@ -3477,13 +3491,20 @@ def do_change_default_events_register_stream(user_profile: UserProfile,
                    bot_owner_user_ids(user_profile))
 
 def do_change_default_all_public_streams(user_profile: UserProfile, value: bool,
-                                         log: bool=True) -> None:
+                                         acting_user: Optional[UserProfile]=None) -> None:
+    old_value = getattr(user_profile, 'default_all_public_streams')
     user_profile.default_all_public_streams = value
     user_profile.save(update_fields=['default_all_public_streams'])
-    if log:
-        log_event({'type': 'user_change_default_all_public_streams',
-                   'user': user_profile.email,
-                   'value': str(value)})
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm, event_type=RealmAuditLog.USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED,
+        event_time=event_time, modified_user=user_profile,
+        acting_user=acting_user, extra_data=ujson.dumps({
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: value,
+        }))
+
     if user_profile.is_bot:
         send_event(user_profile.realm,
                    dict(type='realm_bot',
