@@ -3128,18 +3128,9 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
         not_subscribed,
     )
 
-def log_subscription_property_change(user_email: str, stream_name: str, property: str,
-                                     value: Any) -> None:
-    event = {'type': 'subscription_property',
-             'property': property,
-             'user': user_email,
-             'stream_name': stream_name,
-             'value': value}
-    log_event(event)
-
 def do_change_subscription_property(user_profile: UserProfile, sub: Subscription,
                                     stream: Stream, property_name: str, value: Any,
-                                    ) -> None:
+                                    acting_user: Optional[UserProfile]=None) -> None:
     database_property_name = property_name
     event_property_name = property_name
     database_value = value
@@ -3155,10 +3146,18 @@ def do_change_subscription_property(user_profile: UserProfile, sub: Subscription
         event_property_name = "in_home_view"
         event_value = not value
 
+    old_value = getattr(sub, database_property_name)
     setattr(sub, database_property_name, database_value)
     sub.save(update_fields=[database_property_name])
-    log_subscription_property_change(user_profile.email, stream.name,
-                                     database_property_name, database_value)
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm, event_type=RealmAuditLog.SUBSCRIPTION_PROPERTY_CHANGED,
+        event_time=event_time, modified_user=user_profile, acting_user=acting_user,
+        modified_stream=stream, extra_data=ujson.dumps({
+            RealmAuditLog.OLD_VALUE: {'property': database_property_name, 'value': old_value},
+            RealmAuditLog.NEW_VALUE: {'property': database_property_name, 'value': database_value}
+        }))
+
     event = dict(type="subscription",
                  op="update",
                  email=user_profile.email,
