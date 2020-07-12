@@ -77,6 +77,7 @@ from zerver.views.auth import (
     redirect_and_log_into_subdomain,
     redirect_to_deactivation_notice,
 )
+from zerver.views.user_settings import set_avatar_backend
 from zproject.backends import (
     ExternalAuthResult,
     ZulipLDAPAuthBackend,
@@ -181,7 +182,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         # displayed and thus 'use_social_avatar' is 'on'.
         use_social_avatar = request.POST.get('use_social_avatar', default='on')
 
-        if use_social_avatar == 'on':
+        if use_social_avatar == 'on' or request.FILES:
             avatar_source = UserProfile.AVATAR_FROM_USER
 
     if request.POST.get('from_confirmation'):
@@ -401,6 +402,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                           source_profile=source_profile,
                                           realm_creation=realm_creation,
                                           acting_user=None)
+            if request.FILES:
+                set_avatar_backend(request, user_profile)
 
         if realm_creation:
             bulk_add_subscriptions([realm.signup_notifications_stream], [user_profile])

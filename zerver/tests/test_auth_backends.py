@@ -1121,6 +1121,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                                   user_avatar_url: str='',
                                   use_social_avatar: bool=False,
                                   avatar_upload_error: bool=False,
+                                  uploaded_avatar_image: Optional[str]=None,
                                   mobile_flow_otp: Optional[str]=None,
                                   desktop_flow_otp: Optional[str]=None,
                                   expect_confirm_registration_page: bool=False,
@@ -1161,7 +1162,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         confirmation_data: Dict[str, str] = {"from_confirmation": "1",
                                              "key": confirmation_key}
         result = self.client_post('/accounts/register/', confirmation_data)
-        expected_social_avatar_hash = ''
+        expected_avatar_hash = ''
         if not skip_registration_form:
             self.assert_in_response("We just need you to do one last thing", result)
 
@@ -1195,10 +1196,15 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                              'key': confirmation_key,
                              'terms': True}
                 post_dict['use_social_avatar'] = 'on' if use_social_avatar else ''
+                if uploaded_avatar_image:
+                    test_image_file = get_test_image_file('img.png')
+                    post_dict['file'] = test_image_file
+                    expected_avatar_hash = user_avatar_content_hash(open(test_image_file.name, 'rb').read())
+
                 result = self.client_post('/accounts/register/', post_dict)
 
                 if use_social_avatar:
-                    expected_social_avatar_hash = user_avatar_content_hash(expected_social_avatar_content)
+                    expected_avatar_hash = user_avatar_content_hash(expected_social_avatar_content)
 
         user = get_user_by_delivery_email(email, realm)
         # Mobile and desktop flow have additional steps:
@@ -1214,7 +1220,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             user_api_keys = get_all_api_keys(get_user_by_delivery_email(email, realm))
             self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), user_api_keys)
             self.verify_user_avatar(user, user_avatar_url, use_social_avatar,
-                                    expected_social_avatar_hash, avatar_upload_error)
+                                    expected_avatar_hash, avatar_upload_error, uploaded_avatar_image)
 
             return
         elif desktop_flow_otp:
@@ -1229,19 +1235,30 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
         self.assertFalse(user_profile.has_usable_password())
         self.verify_user_avatar(user, user_avatar_url, use_social_avatar,
-                                expected_social_avatar_hash, avatar_upload_error)
+                                expected_avatar_hash, avatar_upload_error, uploaded_avatar_image)
 
     def verify_user_avatar(self, user: UserProfile, user_avatar_url: str='', use_social_avatar: bool=False,
-                           expected_social_avatar_hash: str='', avatar_upload_error: bool=False) -> None:
+                           expected_avatar_hash: str='', avatar_upload_error: bool=False,
+                           uploaded_avatar_image: Optional[str]=None,) -> None:
         if user_avatar_url:
-            user_avatar_hash = user.avatar_hash
             if use_social_avatar and not avatar_upload_error:
-                self.assertEqual(expected_social_avatar_hash, user_avatar_hash)
+                self.assertEqual(expected_avatar_hash, user.avatar_hash)
                 self.assertEqual(UserProfile.AVATAR_FROM_USER, user.avatar_source)
+
+            elif uploaded_avatar_image:
+                user_avatar_url = avatar_url(user) or ''
+                self.assertTrue(user_avatar_url != '')
+                response = self.client_get(user_avatar_url)
+                avatar_hash = user_avatar_content_hash(response.getvalue())
+
+                self.assertEqual(response.status_code, 200)
+                self.assertTrue(expected_avatar_hash, avatar_hash)
+                self.assertEqual(UserProfile.AVATAR_FROM_USER, user.avatar_source)
+
             else:
                 # If the user doesn't want to use the avatar provided on social auth,
                 # then it will use Gravatar.
-                self.assertNotEqual(expected_social_avatar_hash, user_avatar_hash)
+                self.assertNotEqual(expected_avatar_hash, user.avatar_hash)
                 self.assertEqual(UserProfile.AVATAR_FROM_GRAVATAR, user.avatar_source)
 
         else:
@@ -2593,6 +2610,25 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                        user_avatar_url=mocked_user_avatar_url,
                                        use_social_avatar=True,
                                        expected_social_avatar_content_path=mocked_github_avatar_image_path)
+
+    def test_register_user_and_upload_avatar(self) -> None:
+        email = 'newuser@zulip.com'
+        name = 'Full Name'
+        subdomain = 'zulip'
+        mocked_user_avatar_url = 'https://github.com/user/mock_avatar_url/image.jpeg'
+        realm = get_realm("zulip")
+
+        user_uploaded_avatar_image = 'img.png'
+        account_data_dict = self.get_account_data_dict(email=email, name=name, user_avatar_url=mocked_user_avatar_url)
+
+        result = self.social_auth_test(account_data_dict,
+                                       expect_choose_email_screen=True,
+                                       subdomain=subdomain, is_signup=True)
+        self.stage_two_of_registration(result, realm, subdomain, email, name, name,
+                                       self.BACKEND_CLASS.full_name_validated,
+                                       user_avatar_url=mocked_user_avatar_url,
+                                       use_social_avatar=False,
+                                       uploaded_avatar_image=user_uploaded_avatar_image)
 
     def test_social_auth_email_not_verified(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
