@@ -1277,14 +1277,13 @@ class NormalActionsTest(BaseAction):
                     lambda: do_change_notification_settings(
                         self.user_profile,
                         notification_setting,
-                        setting_value,
-                        log=False))
+                        setting_value))
                 check_update_global_notifications('events[0]', events[0], setting_value)
 
                 # Also test with notification_settings_null=True
                 events = self.verify_action(
                     lambda: do_change_notification_settings(
-                        self.user_profile, notification_setting, setting_value, log=False),
+                        self.user_profile, notification_setting, setting_value),
                     notification_settings_null=True,
                     state_change_expected=False)
                 check_update_global_notifications('events[0]', events[0], setting_value)
@@ -1296,8 +1295,7 @@ class NormalActionsTest(BaseAction):
             lambda: do_change_notification_settings(
                 self.user_profile,
                 notification_setting,
-                'ding',
-                log=False))
+                'ding'))
         check_update_global_notifications('events[0]', events[0], 'ding')
 
     def test_change_desktop_icon_count_display(self) -> None:
@@ -1307,16 +1305,14 @@ class NormalActionsTest(BaseAction):
             lambda: do_change_notification_settings(
                 self.user_profile,
                 notification_setting,
-                2,
-                log=False))
+                2))
         check_update_global_notifications('events[0]', events[0], 2)
 
         events = self.verify_action(
             lambda: do_change_notification_settings(
                 self.user_profile,
                 notification_setting,
-                1,
-                log=False))
+                1))
         check_update_global_notifications('events[0]', events[0], 1)
 
     def test_realm_update_plan_type(self) -> None:

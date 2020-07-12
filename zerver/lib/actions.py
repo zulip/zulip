@@ -3752,11 +3752,13 @@ def do_create_realm(string_id: str, name: str,
     return realm
 
 def do_change_notification_settings(user_profile: UserProfile, name: str,
-                                    value: Union[bool, int, str], log: bool=True) -> None:
+                                    value: Union[bool, int, str],
+                                    acting_user: Optional[UserProfile]=None) -> None:
     """Takes in a UserProfile object, the name of a global notification
     preference to update, and the value to update to
     """
 
+    old_value = getattr(user_profile, name)
     notification_setting_type = UserProfile.notification_setting_types[name]
     assert isinstance(value, notification_setting_type), (
         f'Cannot update {name}: {value} is not an instance of {notification_setting_type}')
@@ -3772,8 +3774,14 @@ def do_change_notification_settings(user_profile: UserProfile, name: str,
              'user': user_profile.email,
              'notification_name': name,
              'setting': value}
-    if log:
-        log_event(event)
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm, event_type=RealmAuditLog.USER_NOTIFICATION_SETTINGS_CHANGED, event_time=event_time,
+        acting_user=acting_user, modified_user=user_profile, extra_data=ujson.dumps({
+            RealmAuditLog.OLD_VALUE: {'property': name, 'value': old_value},
+            RealmAuditLog.NEW_VALUE: {'property': name, 'value': value}
+        }))
+
     send_event(user_profile.realm, event, [user_profile.id])
 
 def do_change_enter_sends(user_profile: UserProfile, enter_sends: bool) -> None:
