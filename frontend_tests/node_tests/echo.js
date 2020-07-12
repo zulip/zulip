@@ -11,6 +11,10 @@ zrequire('people');
 let disparities = [];
 let messages_to_rerender = [];
 
+set_global('ui', {
+    show_failed_message_success: () => {},
+});
+
 set_global('sent_messages', {
     mark_disparity: (local_id) => {
         disparities.push(local_id);
@@ -18,6 +22,7 @@ set_global('sent_messages', {
 });
 
 set_global('message_store', {
+    get: () => ({ failed_request: true }),
     update_booleans: () => {},
 });
 
