@@ -28,6 +28,7 @@ from zerver.lib.actions import (
     do_reactivate_realm,
     do_reactivate_user,
     do_regenerate_api_key,
+    do_rename_stream,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
     do_set_realm_notifications_stream,
@@ -420,3 +421,18 @@ class TestRealmAuditLog(ZulipTestCase):
                 RealmAuditLog.NEW_VALUE: False
             })).count(), 1)
         self.assertEqual(getattr(user, 'default_all_public_streams'), False)
+
+    def test_rename_stream(self) -> None:
+        now = timezone_now()
+        user = self.example_user('hamlet')
+        stream = self.make_stream('test', user.realm)
+        old_name = stream.name
+        do_rename_stream(stream, 'updated name', user)
+        self.assertEqual(RealmAuditLog.objects.filter(
+            realm=user.realm, event_type=RealmAuditLog.STREAM_NAME_CHANGED,
+            event_time__gte=now, acting_user=user, modified_stream=stream,
+            extra_data=ujson.dumps({
+                RealmAuditLog.OLD_VALUE: old_name,
+                RealmAuditLog.NEW_VALUE: 'updated name'
+            })).count(), 1)
+        self.assertEqual(stream.name, 'updated name')

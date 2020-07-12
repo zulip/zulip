@@ -3588,16 +3588,18 @@ def do_change_stream_post_policy(stream: Stream, stream_post_policy: int) -> Non
 
 def do_rename_stream(stream: Stream,
                      new_name: str,
-                     user_profile: UserProfile,
-                     log: bool=True) -> Dict[str, str]:
+                     user_profile: UserProfile) -> Dict[str, str]:
     old_name = stream.name
     stream.name = new_name
     stream.save(update_fields=["name"])
 
-    if log:
-        log_event({'type': 'stream_name_change',
-                   'realm': stream.realm.string_id,
-                   'new_name': new_name})
+    RealmAuditLog.objects.create(
+        realm=stream.realm, acting_user=user_profile, modified_stream=stream,
+        event_type=RealmAuditLog.STREAM_NAME_CHANGED, event_time=timezone_now(),
+        extra_data=ujson.dumps({
+            RealmAuditLog.OLD_VALUE: old_name,
+            RealmAuditLog.NEW_VALUE: new_name,
+        }))
 
     recipient_id = stream.recipient_id
     messages = Message.objects.filter(recipient_id=recipient_id).only("id")
