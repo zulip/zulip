@@ -80,6 +80,10 @@ class CommonUtils {
         });
     }
 
+    async assert_selector_doesnt_exist(page, selector) {
+        await page.waitForFunction((selector) => $(selector === null), {}, selector);
+    }
+
     /**
      * This function takes a params object whose fields
      * are referenced by name attribute of an input field and
