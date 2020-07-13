@@ -3,7 +3,7 @@
     height: 95%;
     background-color: hsl(0, 0%, 100%);
     border-radius: 4px;
-    padding: 0px;
+    padding: 0;
     width: 58%;
     overflow: hidden;
     max-width: 1200px;
@@ -105,7 +105,7 @@
             line-height: 1;
             padding-top: 10px;
             padding-bottom: 10px;
-            margin-left: 0px;
+            margin-left: 0;
         }
 
         .draft_controls {
@@ -116,7 +116,7 @@
             font-size: 0.9em;
 
             @media (max-width: 500px) {
-                right: 0px;
+                right: 0;
             }
 
             .restore-draft {

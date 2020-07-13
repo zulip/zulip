@@ -59,9 +59,12 @@
 
         "comment-whitespace-inside": "always",
         "indentation": 4,
-        
+
         # Limit language features
         "color-no-hex": true,
         "color-named": "never",
+
+        "unit-no-unknown": true,
+        "length-zero-no-unit": true,
     }
 }

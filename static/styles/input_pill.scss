@@ -56,7 +56,7 @@
         cursor: not-allowed;
         border: none;
         background-color: transparent;
-        padding: 0px;
+        padding: 0;
 
         .pill {
             padding-right: 4px;
@@ -93,7 +93,7 @@
 }
 
 .pm_recipient .pill-container {
-    padding: 0px 2px;
+    padding: 0 2px;
     border: none;
     flex-grow: 1;
     align-content: center;

@@ -67,14 +67,14 @@
 .compose_table {
     .stream-selection-header-colorblock {
         &.message_header_private_message {
-            border-radius: 3px 0px 0px 3px;
-            border-bottom: 0px;
+            border-radius: 3px 0 0 3px;
+            border-bottom: 0;
             background-color: hsl(0, 0%, 27%);
         }
     }
 
     .right_part {
-        padding: 0px;
+        padding: 0;
         display: flex;
         align-items: center;
         width: 100%;
@@ -83,7 +83,7 @@
             font-size: 0.9em;
             -webkit-text-stroke: 0.05em;
             position: relative;
-            margin: 0px 5px;
+            margin: 0 5px;
         }
     }
 
@@ -107,14 +107,14 @@
     #compose-lock-icon {
         position: relative;
         left: 5px;
-        width: 0px;
+        width: 0;
     }
 
     .message_header {
         background: none;
         background-color: hsl(0, 0%, 92%);
         border: none;
-        border-radius: 0px;
+        border-radius: 0;
         box-shadow: none !important;
     }
 
@@ -131,19 +131,19 @@
 }
 
 #send_message_form {
-    margin: 0px;
+    margin: 0;
 
     .messagebox {
         /* normally 5px 14px; pull in the right and bottom a bit */
         cursor: default;
-        padding: 0px;
+        padding: 0;
         background: none;
         box-shadow: none;
         border: none;
     }
 
     .message_content {
-        margin-right: 0px;
+        margin-right: 0;
     }
 }
 
@@ -154,8 +154,8 @@
 
 #compose {
     position: fixed;
-    bottom: 0px;
-    left: 0px;
+    bottom: 0;
+    left: 0;
     z-index: 2;
     width: 100%;
 
@@ -182,7 +182,7 @@
 #compose_close {
     display: none;
     position: absolute;
-    right: 0px;
+    right: 0;
 }
 
 #compose_invite_users,
@@ -196,7 +196,7 @@
 .compose-all-everyone,
 .compose-announce,
 .compose_not_subscribed {
-    padding: 4px 0px 4px 0px;
+    padding: 4px 0 4px 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -225,7 +225,7 @@
 
 .compose_invite_user p,
 .compose_not_subscribed p {
-    margin: 0px;
+    margin: 0;
     display: inline-block;
     max-width: calc(100% - 100px);
 }
@@ -310,7 +310,7 @@ textarea.new_message_textarea {
     padding: 5px;
     height: 1.5em;
     max-height: 22em;
-    margin-bottom: 0px;
+    margin-bottom: 0;
     resize: vertical !important;
     margin-top: 5px;
 }
@@ -328,15 +328,15 @@ textarea.new_message_textarea,
 }
 
 input.recipient_box {
-    margin: 0px;
+    margin: 0;
     height: 1.1em;
     border-radius: 3px;
 }
 
 #stream_message_recipient_stream.recipient_box {
     width: 20%;
-    border-radius: 0px 3px 3px 0px;
-    border-left: 0px;
+    border-radius: 0 3px 3px 0;
+    border-left: 0;
     min-width: 120px;
 
     &:focus {
@@ -379,7 +379,7 @@ input.recipient_box {
         color: hsl(0, 0%, 100%);
 
         &:focus {
-            box-shadow: 0px 0px 10px hsl(170, 48%, 54%), 0px 0px 5px hsl(170, 48%, 54%);
+            box-shadow: 0 0 10px hsl(170, 48%, 54%), 0 0 5px hsl(170, 48%, 54%);
         }
     }
 }

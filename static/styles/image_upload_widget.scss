@@ -2,7 +2,7 @@
 .avatar-icon-logo-settings {
     position: relative;
     border-radius: 5px;
-    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
+    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
 
 
     transition: all 0.3s ease;
@@ -107,7 +107,7 @@
     position: relative;
 
     .inline-block {
-        margin: 5px 20px 0px 0px;
+        margin: 5px 20px 0 0;
         vertical-align: top;
         border-radius: 4px;
     }
@@ -118,7 +118,7 @@
 
     .image_upload_button {
         border-radius: 5px;
-        box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
+        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
         z-index: 99;
     }
 
@@ -145,10 +145,10 @@
 
     .image-block {
         border-radius: 5px;
-        box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
+        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
         width: 200px;
         height: 200px;
-        top: 0px;
+        top: 0;
     }
 }
 
@@ -166,7 +166,7 @@
     width: 100px;
     height: 100px;
     border-radius: 5px;
-    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
+    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
 
     .settings-page-delete-text {
         top: 40px;
@@ -198,7 +198,7 @@
     width: 220px;
     height: 55px;
     text-align: center;
-    margin: 0px 80px 0px 20px;
+    margin: 0 80px 0 20px;
 
     .settings-page-upload-text,
     .settings-page-delete-text {

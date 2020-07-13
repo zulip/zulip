@@ -77,7 +77,7 @@ a {
 }
 
 p.n-margin {
-    margin: 10px 0px 0px 0px;
+    margin: 10px 0 0 0;
 }
 
 .small-line-height {
@@ -163,13 +163,13 @@ p.n-margin {
     display: none;
     position: absolute;
     width: 400px;
-    top: 0px;
+    top: 0;
     left: calc(50vw - 220px);
     padding: 15px;
 
     background-color: hsl(0, 0%, 98%);
     border-radius: 5px;
-    box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.25);
+    box-shadow: 0 0 30px hsla(0, 0%, 0%, 0.25);
     z-index: 110;
 
     animation-name: pulse;
@@ -191,22 +191,22 @@ p.n-margin {
     .exit-me {
         font-size: 30pt;
         font-weight: 200;
-        margin: 5px 0px 0px 10px;
+        margin: 5px 0 0 10px;
         cursor: pointer;
     }
 }
 
 @keyframes pulse {
     0% {
-        box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.35);
+        box-shadow: 0 0 30px hsla(0, 0%, 0%, 0.35);
     }
 
     50% {
-        box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.15);
+        box-shadow: 0 0 30px hsla(0, 0%, 0%, 0.15);
     }
 
     100% {
-        box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.35);
+        box-shadow: 0 0 30px hsla(0, 0%, 0%, 0.35);
     }
 }
 
@@ -276,7 +276,7 @@ p.n-margin {
         }
 
         .buttons .alert-link {
-            margin: 0px 5px;
+            margin: 0 5px;
         }
     }
 }
@@ -304,8 +304,8 @@ p.n-margin {
     // misplaced before the JS code can fix it.
     max-width: 1400px;
     min-width: 950px;
-    margin: 0px auto;
-    padding: 0px;
+    margin: 0 auto;
+    padding: 0;
     position: relative;
     background-color: hsl(0, 0%, 100%);
 }
@@ -314,7 +314,7 @@ p.n-margin {
     width: 100%;
     position: fixed;
     z-index: 98;
-    left: 0px;
+    left: 0;
 }
 
 .column-left,
@@ -325,14 +325,14 @@ p.n-margin {
 
 .column-left {
     position: absolute;
-    left: 0px;
-    top: 0px;
+    left: 0;
+    top: 0;
 }
 
 .column-right {
     position: absolute;
-    right: 0px;
-    top: 0px;
+    right: 0;
+    top: 0;
 }
 
 .app-main {
@@ -348,7 +348,7 @@ p.n-margin {
 
     .column-left .left-sidebar {
         width: 242px;
-        padding-left: 0px;
+        padding-left: 0;
     }
 
     .column-right .right-sidebar {
@@ -451,10 +451,10 @@ li,
 
 .notvisible {
     visibility: hidden !important;
-    width: 0px !important;
-    min-width: 0px !important;
-    min-height: 0px !important;
-    height: 0px !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: 0 !important;
     overflow: hidden !important;
     position: absolute !important;
 }
@@ -579,9 +579,9 @@ td.pointer {
         display: inline-block;
         vertical-align: top;
         line-height: 14px;
-        margin-left: 0px;
+        margin-left: 0;
         position: static;
-        padding: 0px;
+        padding: 0;
         width: auto;
     }
 
@@ -612,7 +612,7 @@ td.pointer {
 
 .sender-status {
     display: inline-block;
-    margin: 8px 0px 8px -3px;
+    margin: 8px 0 8px -3px;
     /* this normalizes the margin of the emoji reactions with normal messages. */
     padding-bottom: 5px;
     vertical-align: middle;
@@ -633,7 +633,7 @@ td.pointer {
     text-align: right;
     width: 45px;
     position: absolute;
-    left: 0px;
+    left: 0;
     top: 16px;
     user-select: none;
 }
@@ -687,7 +687,7 @@ td.pointer {
         opacity: 0;
         visibility: hidden;
         transition: all 0.2s ease;
-        padding: 0px 1px;
+        padding: 0 1px;
     }
 
     > .reaction_button {
@@ -806,8 +806,8 @@ td.pointer {
     }
 
     .message_header_private_message {
-        border-bottom: 0px;
-        border-left: 0px;
+        border-bottom: 0;
+        border-left: 0;
     }
 }
 
@@ -822,7 +822,7 @@ td.pointer {
     border-bottom-color: hsla(0, 0%, 0%, 0.0);
     background-color: hsl(0, 0%, 88%);
     border-left-color: hsl(0, 0%, 88%);
-    border-width: 0px;
+    border-width: 0;
     position: relative;
     text-decoration: none;
 
@@ -840,8 +840,8 @@ td.pointer {
         left: 100%;
         top: 50%;
         content: " ";
-        height: 0px;
-        width: 0px;
+        height: 0;
+        width: 0;
         position: absolute;
         pointer-events: none;
         margin-top: -11px;
@@ -856,8 +856,8 @@ td.pointer {
         left: 100%;
         top: 50%;
         content: " ";
-        height: 0px;
-        width: 0px;
+        height: 0;
+        width: 0;
         position: absolute;
         pointer-events: none;
         margin-top: -14px;
@@ -902,7 +902,7 @@ td.pointer {
 
 .summary_row {
     .message_header {
-        padding: 5px 0px 4px 5px;
+        padding: 5px 0 4px 5px;
     }
 
     .message_header {
@@ -913,9 +913,9 @@ td.pointer {
         .message_header {
             border-bottom-right-radius: 3px;
             box-shadow:
-                inset 0px 2px 1px -2px hsl(0, 0%, 20%),
-                inset -2px 0px 1px -2px hsl(0, 0%, 20%),
-                inset 0px -2px 1px -2px hsl(0, 0%, 20%);
+                inset 0 2px 1px -2px hsl(0, 0%, 20%),
+                inset -2px 0 1px -2px hsl(0, 0%, 20%),
+                inset 0 -2px 1px -2px hsl(0, 0%, 20%);
         }
 
         .summary_colorblock {
@@ -939,7 +939,7 @@ td.pointer {
     position: absolute;
     text-indent: -99999px;
     float: left;
-    width: 0px;
+    width: 0;
 }
 
 .summary_row_private_message .summary_colorblock {
@@ -977,7 +977,7 @@ td.pointer {
     }
 
     100% {
-        transform: translateX(0px);
+        transform: translateX(0);
     }
 }
 
@@ -998,7 +998,7 @@ td.pointer {
 
     .message-header-contents {
         background-color: hsla(192, 19%, 75%, 0.2);
-        box-shadow: inset 1px 1px 0px hsl(0, 0%, 88%);
+        box-shadow: inset 1px 1px 0 hsl(0, 0%, 88%);
     }
 }
 
@@ -1011,8 +1011,8 @@ td.pointer {
     .date_row {
         background-color: hsla(192, 19%, 75%, 0.2);
         box-shadow:
-            inset 2px 0px 0px 0px hsl(0, 0%, 27%),
-            -1px 0px 0px 0px hsl(0, 0%, 27%);
+            inset 2px 0 0 0 hsl(0, 0%, 27%),
+            -1px 0 0 0 hsl(0, 0%, 27%);
     }
 }
 
@@ -1028,14 +1028,14 @@ td.pointer {
 }
 
 .recipient_row .message_row:first-child .unread_marker {
-    top: 0px;
+    top: 0;
 }
 
 .unread_marker {
     display: block;
     position: absolute;
     left: 2px;
-    top: 0px;
+    top: 0;
     opacity: 0;
     z-index: 1;
     bottom: 1px;
@@ -1078,16 +1078,16 @@ td.pointer {
 
     .messagebox-content {
         box-shadow:
-            inset 0px 0px 0px 2px hsl(215, 47%, 50%),
-            -1px -1px 0px 0px hsl(215, 47%, 50%),
-            1px 1px 0px 0px hsl(215, 47%, 50%),
-            -1px 1px 0px 0px hsl(215, 47%, 50%),
-            1px -1px 0px 0px hsl(215, 47%, 50%);
+            inset 0 0 0 2px hsl(215, 47%, 50%),
+            -1px -1px 0 0 hsl(215, 47%, 50%),
+            1px 1px 0 0 hsl(215, 47%, 50%),
+            -1px 1px 0 0 hsl(215, 47%, 50%),
+            1px -1px 0 0 hsl(215, 47%, 50%);
     }
 }
 
 .message_sender {
-    height: 0px;
+    height: 0;
     vertical-align: top;
     position: relative;
 
@@ -1224,7 +1224,7 @@ div.message_table {
 
     .date_row {
         /* We only want padding for the date rows between recipient blocks */
-        padding-bottom: 0px;
+        padding-bottom: 0;
     }
 }
 
@@ -1247,13 +1247,13 @@ div.focused_table {
 
     &.condensed {
         max-height: 8.5em;
-        min-height: 0em;
+        min-height: 0;
         overflow: hidden;
     }
 
     &.collapsed {
-        max-height: 0em;
-        min-height: 0em;
+        max-height: 0;
+        min-height: 0;
         overflow: hidden;
     }
 }
@@ -1309,7 +1309,7 @@ div.focused_table {
     &.header-v {
         height: 18px;
         display: inline-block;
-        padding: 0px 3px;
+        padding: 0 3px;
         vertical-align: baseline;
 
         line-height: 0px;
@@ -1331,8 +1331,8 @@ div.focused_table {
 
 .select_edit_stream {
     margin-bottom: 5px !important;
-    border-left: 0px;
-    padding-left: 0px;
+    border-left: 0;
+    padding-left: 0;
     border-radius: 3px;
     margin-left: -10px;
     text-indent: 10px;
@@ -1402,8 +1402,8 @@ div.focused_table {
 }
 
 .next_is_same_sender {
-    border-bottom: 0px;
-    padding-bottom: 0px;
+    border-bottom: 0;
+    padding-bottom: 0;
 }
 
 .inline_profile_picture {
@@ -1435,9 +1435,9 @@ div.focused_table {
 
 .brand.skinny-user-gravatar {
     display: table-cell;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    margin-bottom: 0px;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
     white-space: nowrap;
 }
 
@@ -1457,7 +1457,7 @@ div.focused_table {
 #tab_bar {
     width: 100%;
     z-index: 2;
-    padding-top: 0px;
+    padding-top: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     float: left;
@@ -1467,7 +1467,7 @@ div.focused_table {
         display: flex;
         align-content: flex-start;
         flex-wrap: nowrap;
-        margin: 0px 0px 0px 0px;
+        margin: 0 0 0 0;
         height: $header_height;
         line-height: $header_height;
         font-size: 16px;
@@ -1499,15 +1499,15 @@ div.focused_table {
                 margin-right: 3px;
             }
             .fa {
-                margin: 0px 3px 0px 5px;
+                margin: 0 3px 0 5px;
                 .fa-envelope {
                     font-size: 14px;
-                    margin: 0px 5px 0px 5px;
+                    margin: 0 5px 0 5px;
                 }
                 .fa-hashtag {
                     font-size: 1.2rem;
                     // font-weight: 800;
-                    margin: 0px 2px 0px 5px;
+                    margin: 0 2px 0 5px;
                 }
             }
         }
@@ -1536,7 +1536,7 @@ div.focused_table {
             padding-right: 10px;
             margin-right: 1px;
             .fa.fa-user-o {
-                margin-left: 0px;
+                margin-left: 0;
             }
 
             &::before,
@@ -1557,7 +1557,7 @@ div.focused_table {
                 @media (max-width: 500px) {
                     // this ensures the before "|" doesn't overlap
                     // with the stream name text on small narrows
-                    left: 0px;
+                    left: 0;
                 }
             }
 
@@ -1577,7 +1577,7 @@ div.focused_table {
             overflow: hidden;
             white-space: nowrap;
             margin: 0;
-            padding: 12px 0px;
+            padding: 12px 0;
             padding-left: 10px;
 
             @media (max-width: 500px) {
@@ -1586,7 +1586,7 @@ div.focused_table {
             }
 
             & > a {
-                padding: 12px 0px;
+                padding: 12px 0;
             }
         }
 
@@ -1596,9 +1596,9 @@ div.focused_table {
             cursor: pointer;
             font-size: 20px;
 
-            padding: 10px 15px 0px 0px;
+            padding: 10px 15px 0 0;
             @media (max-width: 500px) {
-                padding: 5px 15px 0px 0px;
+                padding: 5px 15px 0 0;
             }
         }
 
@@ -1639,7 +1639,7 @@ div.focused_table {
 
     .navbar-search.expanded {
         overflow: hidden;
-        margin-top: 0px;
+        margin-top: 0;
         right: 2px;
         width: calc(100% - 2px);
         position: absolute;
@@ -1656,7 +1656,7 @@ div.focused_table {
         min-width: 100%;
 
         .fa-search {
-            padding: 0px;
+            padding: 0;
             font-size: 20px;
             position: absolute;
             left: 10px;
@@ -1673,18 +1673,18 @@ div.focused_table {
         width: 100%;
         font-size: 16px;
         height: $header_height;
-        padding: 0px;
+        padding: 0;
         padding-left: 5px;
         padding-right: 20px;
         border: none;
-        border-radius: 0px;
+        border-radius: 0;
         font-family: 'Source Sans Pro';
         font-weight: 300;
         line-height: $header_height;
     }
 
     #search_arrows:focus {
-        box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 74%);
+        box-shadow: inset 0 0 0 2px hsl(204, 20%, 74%);
     }
 
     .search_button,
@@ -1693,7 +1693,7 @@ div.focused_table {
         right: 35px;
         top: 6px;
         background: none;
-        border-radius: 0px;
+        border-radius: 0;
         border: none;
         height: 30px;
         text-align: center;
@@ -1721,7 +1721,7 @@ div.focused_table {
         padding: 0 10px;
         font-size: 20px;
         z-index: 5;
-        left: 0px;
+        left: 0;
     }
 
     .search_icon:hover {
@@ -1740,12 +1740,12 @@ div.focused_table {
         flex-wrap: nowrap;
         align-items: center;
         border: none;
-        padding: 0px;
+        padding: 0;
     }
 
     @media (min-width: 500px) {
         .pill {
-            padding: 2px 0px 2px 0px !important;
+            padding: 2px 0 2px 0 !important;
             font-size: 14px;
         }
     }
@@ -1762,13 +1762,13 @@ div.focused_table {
 
 #searchbox_legacy {
     #search_arrows {
-        padding-left: 0px;
+        padding-left: 0;
     }
     #search_query {
         padding-left: 35px;
     }
     .search_button {
-        right: 0px;
+        right: 0;
     }
     .navbar-search.expanded {
         .search_button {
@@ -1793,7 +1793,7 @@ div.focused_table {
     float: right;
 
     ul.nav {
-        margin: 0px;
+        margin: 0;
 
         .dropdown-toggle,
         li.active .dropdown-toggle {
@@ -1801,7 +1801,7 @@ div.focused_table {
             color: inherit;
             opacity: 0.5;
             text-shadow: none;
-            padding-left: 0px !important;
+            padding-left: 0 !important;
             background-color: inherit;
             box-shadow: inherit;
             display: block;
@@ -1831,8 +1831,8 @@ div.focused_table {
 #streamlist-toggle {
     display: none;
     position: absolute;
-    top: 0px;
-    left: 0px;
+    top: 0;
+    left: 0;
     text-align: center;
     vertical-align: middle;
     // border-right: 2px solid hsl(204, 20%, 74%);
@@ -1861,7 +1861,7 @@ div.focused_table {
     top: 4px;
     right: 4px;
     border: 1px solid hsl(0, 0%, 93%);
-    box-shadow: 0px 0px 1px hsla(0, 0%, 0%, 0.2);
+    box-shadow: 0 0 1px hsla(0, 0%, 0%, 0.2);
     border-radius: 12px;
     padding: 1px 1px 1px 1px;
     font-size: 9px;
@@ -1872,15 +1872,15 @@ div.focused_table {
 
 .nav .dropdown-menu {
     left: auto;
-    right: 0px;
+    right: 0;
     top: 30px;
     min-width: 180px;
-    box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
+    box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
 
     &::after {
         position: absolute;
-        width: 0px;
-        height: 0px;
+        width: 0;
+        height: 0;
         top: -7px;
         right: 19px;
         display: inline-block;
@@ -2047,7 +2047,7 @@ div.floating_recipient {
         display: block;
 
         input[type=checkbox] {
-            margin: 5px 0px;
+            margin: 5px 0;
             float: none;
         }
     }
@@ -2062,7 +2062,7 @@ div.floating_recipient {
     }
 
     input[type=checkbox] {
-        margin: 5px 0px;
+        margin: 5px 0;
         float: none;
     }
 }
@@ -2137,7 +2137,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     outline: 0;
 
     form {
-        margin-bottom: 0px;
+        margin-bottom: 0;
     }
 }
 
@@ -2182,7 +2182,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
     .modal-footer {
         position: absolute;
-        bottom: 0px;
+        bottom: 0;
         width: calc(100% - 30px);
     }
 
@@ -2231,7 +2231,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 #notifications-area {
     position: fixed;
     z-index: 10;
-    bottom: 0px;
+    bottom: 0;
     right: 20px;
     width: 200px;
     height: auto;
@@ -2272,7 +2272,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 #pw_strength {
     width: 100%;
     height: 10px;
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
 /* Override padding-top on form labels when they label only text */
@@ -2304,7 +2304,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
         width: 33%;
         border-top: 1px solid hsl(0, 0%, 88%);
         border-bottom: 1px solid hsl(0, 0%, 100%);
-        margin: 0px 5px 0px 5px;
+        margin: 0 5px 0 5px;
     }
 }
 
@@ -2332,7 +2332,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     content: " ";
     vertical-align: middle;
     width: 50%;
-    height: 0px;
+    height: 0;
     border-top: 1px solid hsl(0, 0%, 88%);
     border-bottom: 1px solid hsl(0, 0%, 100%);
 }
@@ -2362,8 +2362,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
     cursor: default;
 
     .edit-controls {
-        margin-left: 0px;
-        margin-top: 0px;
+        margin-left: 0;
+        margin-top: 0;
     }
 
     textarea {
@@ -2373,11 +2373,11 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 
     .control-group.no-margin {
-        margin-bottom: 0px;
+        margin-bottom: 0;
     }
 
     .action-buttons {
-        margin: 10px 0px;
+        margin: 10px 0;
     }
 }
 
@@ -2518,11 +2518,11 @@ select.inline_select_topic_edit {
             position: absolute;
             float: none;
             right: 15px;
-            top: 0px;
+            top: 0;
 
             .right-sidebar {
                 background-color: hsla(0, 0%, 100%, 1.0);
-                box-shadow: 0px -2px 3px 0px hsla(0, 0%, 0%, 0.1);
+                box-shadow: 0 -2px 3px 0 hsla(0, 0%, 0%, 0.1);
                 border-left: 1px solid hsl(0, 0%, 87%);
 
                 // We use both margin and padding to
@@ -2531,11 +2531,11 @@ select.inline_select_topic_edit {
                 margin-top: $header_height;
                 padding-top: $header_padding_bottom;
 
-                padding-bottom: 0px;
+                padding-bottom: 0;
                 padding-left: 15px;
                 padding-right: 15px;
                 height: 100%;
-                right: 0px;
+                right: 0;
             }
         }
     }
@@ -2552,7 +2552,7 @@ select.inline_select_topic_edit {
 
     .nav .dropdown-menu {
         min-width: 180px;
-        box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
+        box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
 
         &::after {
             right: 10px;
@@ -2591,7 +2591,7 @@ select.inline_select_topic_edit {
 
 @media (max-width: 775px) {
     body {
-        padding: 0px;
+        padding: 0;
     }
 
     .column-left {
@@ -2601,12 +2601,12 @@ select.inline_select_topic_edit {
             display: block;
             position: absolute;
             float: none;
-            left: 0px;
-            top: 0px;
+            left: 0;
+            top: 0;
 
             .left-sidebar {
                 background-color: hsla(0, 0%, 100%, 1.0);
-                box-shadow: 0px 2px 3px 0px hsla(0, 0%, 0%, 0.1);
+                box-shadow: 0 2px 3px 0 hsla(0, 0%, 0%, 0.1);
                 border-right: 1px solid hsl(0, 0%, 87%);
 
                 // We use both margin and padding to
@@ -2636,21 +2636,21 @@ select.inline_select_topic_edit {
     }
 
     .header-main .column-middle {
-        margin-left: 0px;
+        margin-left: 0;
     }
 
     .column-middle-inner {
-        margin-left: 0px;
+        margin-left: 0;
         margin-right: 15px;
     }
 
     .app-main .column-middle .column-middle-inner {
-        margin-right: 0px;
+        margin-right: 0;
     }
 
     .skinny-user-gravatar {
         position: absolute;
-        top: 0px;
+        top: 0;
     }
 
     #streamlist-toggle {
@@ -2695,7 +2695,7 @@ select.inline_select_topic_edit {
 
     .column-left.expanded {
         .left-sidebar {
-            padding: 0px;
+            padding: 0;
 
             #streams_header {
                 padding-right: 10px;
@@ -2731,8 +2731,8 @@ select.inline_select_topic_edit {
 
     #streamlist-toggle-button {
         height: 30px;
-        padding-top: 0px;
-        padding-bottom: 0px;
+        padding-top: 0;
+        padding-bottom: 0;
     }
 
     #navbar-buttons ul.nav .dropdown-toggle,
@@ -2748,7 +2748,7 @@ select.inline_select_topic_edit {
 
         .search_button,
         .search_button[disabled]:hover {
-            top: 0px;
+            top: 0;
         }
     }
 
@@ -2768,7 +2768,7 @@ select.inline_select_topic_edit {
     .message_controls {
         width: 56px;
         right: 40px;
-        top: 0px;
+        top: 0;
     }
 
     .include-sender .message_controls {

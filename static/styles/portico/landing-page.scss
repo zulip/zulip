@@ -17,7 +17,7 @@ body {
 h1,
 h2,
 h3 {
-    margin: 10px 0px;
+    margin: 10px 0;
 
     font-weight: 300;
     line-height: 1.2;
@@ -32,7 +32,7 @@ h2 {
 }
 
 p {
-    margin: 10px 0px;
+    margin: 10px 0;
     font-weight: normal;
     line-height: 1.5;
 }
@@ -108,7 +108,7 @@ ol a:hover {
 }
 
 .box-shadow {
-    box-shadow: 0px 0px 80px hsla(0, 0%, 0%, 0.12);
+    box-shadow: 0 0 80px hsla(0, 0%, 0%, 0.12);
 }
 
 .grey {
@@ -379,7 +379,7 @@ nav {
 .portico-landing.features-app {
     position: relative;
     overflow-x: hidden;
-    padding-top: 0px;
+    padding-top: 0;
 
     z-index: 2;
 
@@ -390,7 +390,7 @@ nav {
         flex-flow: row wrap;
         justify-content: space-around;
         margin: 40px auto;
-        padding: 0px 30px;
+        padding: 0 30px;
         color: hsl(219, 21%, 21%);
 
         &.hero {
@@ -444,14 +444,14 @@ nav {
             max-width: none;
             padding: 50px;
             /* this should only be a thing if the section above is not white */
-            margin-top: 0px;
+            margin-top: 0;
             background-color: hsl(219, 21%, 21%);
             color: hsl(219, 76%, 93%);
 
             img {
                 &.overflow-wave {
                     width: 685px;
-                    right: 0px;
+                    right: 0;
                     top: -168px;
                     position: absolute;
                 }
@@ -486,11 +486,11 @@ nav {
             align-items: center;
 
             margin: 50px auto;
-            padding: 0px 50px;
+            padding: 0 50px;
 
             .image {
                 width: calc(100% - 500px - 100px);
-                margin: 50px 0px 50px 50px;
+                margin: 50px 0 50px 50px;
                 max-width: 500px;
             }
 
@@ -503,7 +503,7 @@ nav {
 
                 .feature-block {
                     display: block;
-                    margin: 30px 0px;
+                    margin: 30px 0;
                 }
             }
         }
@@ -533,7 +533,7 @@ nav {
                 position: relative;
 
                 margin-bottom: 120px;
-                top: -0px;
+                top: 0;
             }
 
             .feature-list {
@@ -543,14 +543,14 @@ nav {
                 vertical-align: top;
                 text-align: left;
 
-                margin: 35px 0px 0px 20px;
+                margin: 35px 0 0 20px;
 
                 z-index: 1;
 
                 h3 {
                     position: relative;
 
-                    margin: 15px 0px 15px 50px;
+                    margin: 15px 0 15px 50px;
 
                     font-size: 1.2em;
                     font-weight: 400;
@@ -563,7 +563,7 @@ nav {
                         position: absolute;
 
                         left: -35px;
-                        top: 0px;
+                        top: 0;
                         width: 20px;
                         height: 20px;
 
@@ -600,7 +600,7 @@ nav {
 
         .headliner {
             .feature-block {
-                margin: 0px 10px;
+                margin: 0 10px;
                 width: calc(100% - 250px - 20px);
             }
         }
@@ -608,7 +608,7 @@ nav {
         h2 {
             font-size: 2.5em;
             text-align: center;
-            margin: 0px 10px;
+            margin: 0 10px;
             line-height: 1.6;
             flex: 1 0 100%;
         }
@@ -622,11 +622,11 @@ nav {
         a {
             &.feature-block {
                 &:hover {
-                    box-shadow: 0px 3px 10px hsl(0, 0%, 75%);
+                    box-shadow: 0 3px 10px hsl(0, 0%, 75%);
                 }
 
                 &:active {
-                    box-shadow: 0px 3px 10px hsl(0, 0%, 50%);
+                    box-shadow: 0 3px 10px hsl(0, 0%, 50%);
                 }
             }
         }
@@ -743,26 +743,26 @@ nav {
             font-size: 3em;
             font-weight: 400;
 
-            text-shadow: 0px 0px 20px hsla(0, 0%, 100%, 0.2);
+            text-shadow: 0 0 20px hsla(0, 0%, 100%, 0.2);
         }
 
         p {
-            margin: 30px 0px;
+            margin: 30px 0;
 
             font-size: 1.5em;
             font-weight: 300;
             line-height: 1.4;
-            text-shadow: 0px 0px 5px hsla(164, 74%, 15%, 0.3), 0px 0px 20px hsla(0, 0%, 100%, 0.2);
+            text-shadow: 0 0 5px hsla(164, 74%, 15%, 0.3), 0 0 20px hsla(0, 0%, 100%, 0.2);
         }
 
         a {
             display: block;
-            margin: 20px auto 0px auto;
+            margin: 20px auto 0 auto;
             text-align: center;
         }
 
         button {
-            margin-top: 0px;
+            margin-top: 0;
             padding: 12px 20px;
 
             background-color: hsl(0, 0%, 100%);
@@ -772,16 +772,16 @@ nav {
             font-weight: 500;
             color: hsl(148, 23%, 51%);
 
-            box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.2);
+            box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.2);
 
             transition: all 0.2s ease;
 
             &:hover {
-                box-shadow: 0px 3px 10px hsla(0, 0%, 100%, 0.2);
+                box-shadow: 0 3px 10px hsla(0, 0%, 100%, 0.2);
             }
 
             &:active {
-                box-shadow: 0px 3px 20px hsla(0, 0%, 100%, 0.5);
+                box-shadow: 0 3px 20px hsla(0, 0%, 100%, 0.5);
             }
         }
 
@@ -884,7 +884,7 @@ nav {
 }
 
 .compare .text-header .text-content h1 {
-    margin-top: 0px;
+    margin-top: 0;
 }
 
 .compare .padded-content {
@@ -921,7 +921,7 @@ nav {
 
 .compare thead th {
     font-weight: 600;
-    padding: 15px 0px;
+    padding: 15px 0;
 
     color: hsl(0, 0%, 100%);
 }
@@ -936,7 +936,7 @@ nav {
 }
 
 .compare tbody tr td {
-    padding: 10px 0px;
+    padding: 10px 0;
 }
 
 .compare tbody tr td.no {
@@ -1031,14 +1031,14 @@ nav {
 }
 
 .faqs .faq .answer {
-    margin: 20px 0px 0px 0px;
+    margin: 20px 0 0 0;
     font-weight: 400;
 }
 
 .screen .line {
     width: 100%;
     height: 6px;
-    margin: 8px 0px;
+    margin: 8px 0;
 
     background-color: hsl(0, 0%, 93%);
     border-radius: 3px;
@@ -1075,7 +1075,7 @@ nav {
 }
 
 .screen .col-4 .action-block .sub-block {
-    margin: 0px 10px;
+    margin: 0 10px;
 }
 
 .screen .line.red {
@@ -1109,7 +1109,7 @@ nav {
     vertical-align: top;
 
     width: 50px;
-    margin-top: 0px;
+    margin-top: 0;
 
     background-color: hsl(0, 0%, 73%);
 }
@@ -1140,13 +1140,13 @@ nav {
 }
 
 .screen .message-feed .stream {
-    padding: 3px 5px 0px 5px;
-    margin: 0px 5px;
+    padding: 3px 5px 0 5px;
+    margin: 0 5px;
 
     background-color: hsl(0, 0%, 100%);
     border-radius: 4px;
 
-    box-shadow: 0px 0px 15px hsla(0, 0%, 0%, 0.01);
+    box-shadow: 0 0 15px hsla(0, 0%, 0%, 0.01);
 }
 
 .portico-landing.hello .screen.hero-screen {
@@ -1173,7 +1173,7 @@ nav {
 
 .portico-landing.hello .screen {
     position: relative;
-    margin: -300px auto 0px auto;
+    margin: -300px auto 0 auto;
 
     width: 600px;
     background-color: hsl(0, 0%, 98%);
@@ -1182,7 +1182,7 @@ nav {
     padding: 10px 30px 10px 30px;
 
     border-radius: 12px;
-    box-shadow: 0px 0px 50px hsla(0, 0%, 0%, 0.2);
+    box-shadow: 0 0 50px hsla(0, 0%, 0%, 0.2);
 
     background-color: hsl(0, 0%, 27%);
 
@@ -1229,7 +1229,7 @@ nav {
 }
 
 .portico-landing.hello .features {
-    padding: 50px 0px 100px 0px;
+    padding: 50px 0 100px 0;
 
     background-color: hsl(0, 0%, 100%);
 }
@@ -1267,12 +1267,12 @@ nav {
 }
 
 .portico-landing.hello .open-source .flex {
-    min-height: 0px;
-    padding: 50px 0px;
+    min-height: 0;
+    padding: 50px 0;
 }
 
 .portico-landing.hello .open-source img {
-    margin: 0px 2%;
+    margin: 0 2%;
     width: 28%;
     max-width: 500px;
 }
@@ -1344,7 +1344,7 @@ nav {
     background-color: hsla(220, 20%, 97%, 0.6);
     background: linear-gradient(hsla(220, 20%, 97%, 0.4), hsla(220, 20%, 97%, 0.9));
     border-radius: 12px;
-    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.02);
+    box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.02);
     position: relative;
 }
 
@@ -1355,7 +1355,7 @@ nav {
     color: hsl(0, 0%, 100%);
     background-color: hsl(185, 38%, 55%);
     background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
-    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.2);
+    box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.2);
     border: 0;
     position: absolute;
     left: 50%;
@@ -1369,7 +1369,7 @@ nav {
 
 .tour .carousel-inner .start-button:hover {
     background-color: hsl(169, 65%, 42%);
-    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.3);
+    box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.3);
 }
 
 .tour .carousel-inner .start-image {
@@ -1530,13 +1530,13 @@ nav {
 
     background-color: hsl(185, 38%, 55%);
     background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
-    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.2);
+    box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.2);
     border-radius: 4px;
 }
 
 .tour .carousel-inner .call-to-action:hover {
     background-color: hsl(169, 65%, 42%);
-    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.3);
+    box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.3);
 }
 
 .tour .carousel-control {
@@ -1687,7 +1687,7 @@ nav {
 }
 
 .portico-landing .testimonials blockquote {
-    padding: 0px;
+    padding: 0;
 
     font-weight: 400;
     line-height: 1.6;
@@ -1843,8 +1843,8 @@ nav {
 
 .portico-landing.hello .apps .triangle {
     position: absolute;
-    top: 0px;
-    left: 0px;
+    top: 0;
+    left: 0;
     width: 0;
     height: 0;
     border-style: solid;
@@ -1892,7 +1892,7 @@ nav {
 .portico-landing.hello .apps .left-side .platform-icons .group {
     display: inline-block;
     vertical-align: top;
-    margin: 0px 30px;
+    margin: 0 30px;
 
     text-align: center;
 }
@@ -1968,8 +1968,8 @@ nav {
 
 .portico-landing.hello .call-to-action-bottom {
     position: relative;
-    padding: 100px 100px 0px 100px;
-    margin-top: 0px;
+    padding: 100px 100px 0 100px;
+    margin-top: 0;
 }
 
 .portico-landing.hello .call-to-action-bottom .button {
@@ -2016,7 +2016,7 @@ nav {
 
 /* -- apps page -- */
 .portico-landing.apps {
-    padding-top: 0px;
+    padding-top: 0;
 }
 
 .portico-landing.apps .main,
@@ -2043,11 +2043,11 @@ nav {
 
 .portico-landing.apps .hero h1 {
     font-size: 3em;
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
 .portico-landing.apps .hero h1 {
-    margin-top: 0px;
+    margin-top: 0;
 }
 
 .portico-landing.apps .hero #waves {
@@ -2074,11 +2074,11 @@ nav {
 }
 
 .portico-landing.apps .hero .image img {
-    border-radius: 4px 4px 0px 0px;
+    border-radius: 4px 4px 0 0;
 }
 
 .portico-landing.apps .hero .info .cta {
-    text-shadow: 0px 0px 60px hsla(0, 0%, 0%, 0.3);
+    text-shadow: 0 0 60px hsla(0, 0%, 0%, 0.3);
     max-width: 600px;
 }
 
@@ -2094,7 +2094,7 @@ nav {
 .portico-landing.apps .hero .info .flex,
 .portico-landing.apps .hero .image .flex {
     height: 500px;
-    min-height: 0px;
+    min-height: 0;
 }
 
 .portico-landing.apps .hero .info .flex {
@@ -2125,7 +2125,7 @@ nav {
 
 .portico-landing.apps .other-apps .apps {
     display: inline-block;
-    margin: 50px 0px 0px 0px;
+    margin: 50px 0 0 0;
 }
 
 .portico-landing.apps .other-apps .apps .icon {
@@ -2179,7 +2179,7 @@ nav {
 
 /* -- /for/open-source/ -- */
 .portico-landing.why-page {
-    padding-top: 0px;
+    padding-top: 0;
     color: hsl(223, 6%, 25%);
 }
 
@@ -2199,7 +2199,7 @@ nav {
 }
 
 .portico-landing.why-page .hero h1 {
-    margin: 0px 0px 20px 0px;
+    margin: 0 0 20px 0;
 
     font-size: 3.5em;
     font-weight: 300;
@@ -2363,7 +2363,7 @@ nav {
 }
 
 .portico-landing.why-page .testimonials blockquote {
-    padding: 0px;
+    padding: 0;
 
     font-weight: 400;
     line-height: 1.6;
@@ -2376,14 +2376,14 @@ nav {
 /* -- hello page styling -- */
 .portico-landing.hello .apps .screen {
     display: inline-block;
-    margin: 0px 10px;
+    margin: 0 10px;
     text-align: left;
 }
 
 .portico-landing.hello .apps .screen.ios {
     width: 200px;
     height: 350px;
-    padding: 30px 0px;
+    padding: 30px 0;
     border-radius: 20px;
 
     transform: translateY(50px);
@@ -2394,7 +2394,7 @@ nav {
 .portico-landing.hello .apps .screen.android {
     width: 200px;
     height: 370px;
-    padding: 10px 0px 30px 0px;
+    padding: 10px 0 30px 0;
     border-radius: 20px;
 
     transform: translateY(-110px);
@@ -2493,7 +2493,7 @@ nav {
 .portico-landing.plans .main .padded-content > h1 {
     text-align: center;
     font-size: 2.5em;
-    margin: 0px;
+    margin: 0;
 
     color: hsl(0, 0%, 100%);
 }
@@ -2532,11 +2532,11 @@ nav {
     position: relative;
     display: inline-block;
     vertical-align: bottom;
-    margin: 0px;
+    margin: 0;
     width: 300px;
     height: 500px;
 
-    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
+    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
 
 
     text-align: left;
@@ -2552,13 +2552,13 @@ nav {
 }
 
 .pricing-model .padded-content .text-header .text-content h1 {
-    margin-top: 0px;
+    margin-top: 0;
 }
 
 .pricing-model .pricing-container .text-content h2 {
     font-size: 1.5em;
     font-weight: 400;
-    margin-bottom: 0px;
+    margin-bottom: 0;
 
     text-align: left;
 }
@@ -2566,7 +2566,7 @@ nav {
 .pricing-model .pricing-container hr {
     border: none;
     border-bottom: 2px solid hsl(170, 47%, 53%);
-    margin: 15px 0px 15px 0px;
+    margin: 15px 0 15px 0;
 }
 
 .pricing-model .pricing-container .text-content .description {
@@ -2577,13 +2577,13 @@ nav {
 
 .pricing-model .pricing-container ul.feature-list {
     list-style: none;
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
 }
 
 .pricing-model .pricing-container ul.feature-list li {
     position: relative;
-    padding: 10px 0px 10px 25px;
+    padding: 10px 0 10px 25px;
 
     font-size: 0.9em;
     font-weight: 500;
@@ -2607,7 +2607,7 @@ nav {
 
 .pricing-model .pricing-container .bottom {
     position: absolute;
-    bottom: 0px;
+    bottom: 0;
     width: 100%;
     height: 150px;
 
@@ -2663,7 +2663,7 @@ nav {
 }
 
 .pricing-model .pricing-container .price-box:focus .button {
-    box-shadow: 0px 0px 25px hsl(169, 48%, 60%);
+    box-shadow: 0 0 25px hsl(169, 48%, 60%);
     animation: box-shadow-pulse 2s infinite;
 }
 
@@ -2685,7 +2685,7 @@ nav {
 .pricing-overlay.pricing-model {
     position: fixed;
     top: -140px;
-    left: 0px;
+    left: 0;
     width: 100vw;
     height: 100vh;
 
@@ -2743,7 +2743,7 @@ nav {
 }
 
 .pricing-overlay.pricing-model .info-box .text-content h1 {
-    margin-top: 0px;
+    margin-top: 0;
 }
 
 .pricing-overlay.pricing-model .info-box .text-content p {
@@ -2753,7 +2753,7 @@ nav {
 .pricing-overlay.pricing-model .info-box .text-content .feature-detail-box {
     position: absolute;
     width: 100%;
-    bottom: 0px;
+    bottom: 0;
     text-align: center;
 }
 
@@ -2766,7 +2766,7 @@ nav {
 }
 
 .text-content .pricing-details {
-    padding: 15px 0px 15px 0px;
+    padding: 15px 0 15px 0;
     height: 25px;
 
     font-weight: 400;
@@ -2809,15 +2809,15 @@ nav {
 
 @keyframes box-shadow-pulse {
     0% {
-        box-shadow: 0px 0px 0px hsla(170, 47%, 60%, 1);
+        box-shadow: 0 0 0 hsla(170, 47%, 60%, 1);
     }
 
     50% {
-        box-shadow: 0px 0px 25px hsla(170, 47%, 60%, 0.8);
+        box-shadow: 0 0 25px hsla(170, 47%, 60%, 0.8);
     }
 
     100% {
-        box-shadow: 0px 0px 0px hsla(170, 47%, 60%, 1);
+        box-shadow: 0 0 0 hsla(170, 47%, 60%, 1);
     }
 }
 
@@ -2858,7 +2858,7 @@ nav {
     }
 
     .portico-landing.apps .main .details-container .details-box h1 {
-        margin-top: 0px;
+        margin-top: 0;
         padding-top: 20px;
     }
 
@@ -2902,11 +2902,11 @@ nav {
 
     .portico-landing.hello .integrations .integration-icons {
         max-width: 600px;
-        margin: 0px auto;
+        margin: 0 auto;
     }
 
     .portico-landing.hello .apps .left-side .content {
-        margin: 0px auto 50px;
+        margin: 0 auto 50px;
     }
 
     .portico-landing .testimonials .company-box .company {
@@ -3079,7 +3079,7 @@ nav {
 
     .screen.hero-screen .line {
         height: 4px;
-        margin: 4px 0px;
+        margin: 4px 0;
     }
 
     .screen .message-feed .message .content {
@@ -3245,7 +3245,7 @@ nav {
 
     .portico-landing.why-page .main {
         width: auto;
-        margin: 0px;
+        margin: 0;
     }
 
     .portico-landing.why-page .hero {
@@ -3309,7 +3309,7 @@ nav {
 
     .portico-landing.features-app {
         section {
-            padding: 0px 20px;
+            padding: 0 20px;
 
             &.hero {
                 padding: 50px;
@@ -3346,7 +3346,7 @@ nav {
     .portico-landing.apps .hero .info .flex,
     .portico-landing.apps .hero .image .flex {
         height: 200px;
-        min-height: 0px;
+        min-height: 0;
         width: 100%;
     }
 
@@ -3360,10 +3360,10 @@ nav {
     }
 
     .portico-landing.apps .other-apps .apps .icon {
-        padding: 0px 14px;
+        padding: 0 14px;
         width: 30px;
         padding-top: 8px;
-        padding-bottom: 0px;
+        padding-bottom: 0;
         font-size: 2.3em;
     }
 
@@ -3413,7 +3413,7 @@ nav {
 
     nav {
         ul {
-            margin-top: 0px;
+            margin-top: 0;
             text-align: left;
         }
 
@@ -3443,14 +3443,14 @@ nav {
             padding-left: 30px;
 
             background-color: hsl(0, 0%, 100%);
-            transform: translate(-350px, 0px);
+            transform: translate(-350px, 0);
 
-            box-shadow: 0px 0px 80px hsla(0, 0%, 0%, 0.12);
+            box-shadow: 0 0 80px hsla(0, 0%, 0%, 0.12);
 
             transition: all 0.5s ease;
 
             &.show {
-                transform: translate(0px, 0px);
+                transform: translate(0, 0);
             }
 
             .exit {
@@ -3596,7 +3596,7 @@ nav {
             }
 
             &.messages {
-                padding: 0px 20px;
+                padding: 0 20px;
 
                 h2 {
                     font-size: 2em;
@@ -3604,7 +3604,7 @@ nav {
 
                 .features {
                     .feature-block {
-                        margin: 20px 0px;
+                        margin: 20px 0;
                     }
                 }
             }
@@ -3671,7 +3671,7 @@ nav {
         height: auto;
         max-width: 300px;
         width: auto;
-        margin: 10px 0px;
+        margin: 10px 0;
     }
 
     .pricing-model .pricing-container .text-content {

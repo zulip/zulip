@@ -36,7 +36,7 @@ $alert-error-red: hsl(0, 80%, 40%);
     }
 
     &.stream_create_info {
-        margin: 10px 10px 0px 10px;
+        margin: 10px 10px 0 10px;
     }
 
     .bankruptcy_unread_count {
@@ -47,8 +47,8 @@ $alert-error-red: hsl(0, 80%, 40%);
 /* alert box component changes */
 .alert-box {
     position: absolute;
-    top: 0px;
-    left: 0px;
+    top: 0;
+    left: 0;
     width: 900px;
     margin-left: calc(50% - 450px);
     z-index: 220;
@@ -125,8 +125,8 @@ $alert-error-red: hsl(0, 80%, 40%);
             background-color: hsl(0, 7%, 98%);
             background-color: hsl(0, 7%, 98%);
             box-shadow:
-                inset 0px 11px 10px -10px hsl(0, 7%, 70%),
-                inset 0px -11px 10px -10px hsl(0, 7%, 70%);
+                inset 0 11px 10px -10px hsl(0, 7%, 70%),
+                inset 0 -11px 10px -10px hsl(0, 7%, 70%);
 
             margin-top: 1em;
             margin-bottom: 1em;
@@ -196,7 +196,7 @@ $alert-error-red: hsl(0, 80%, 40%);
         .exit {
             position: absolute;
             top: 10px;
-            right: 0px;
+            right: 0;
 
             font-size: 2.5em;
             font-weight: 300;
@@ -221,14 +221,14 @@ $alert-error-red: hsl(0, 80%, 40%);
 
     100% {
         opacity: 1;
-        transform: translateY(0px);
+        transform: translateY(0);
     }
 }
 
 @keyframes fadeOut {
     0% {
         opacity: 1;
-        transform: translateY(0px);
+        transform: translateY(0);
     }
 
     100% {
@@ -243,6 +243,6 @@ $alert-error-red: hsl(0, 80%, 40%);
     .alert-box {
         width: 80%;
         left: 10%;
-        margin-left: 0px;
+        margin-left: 0;
     }
 }

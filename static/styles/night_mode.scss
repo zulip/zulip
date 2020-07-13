@@ -281,7 +281,7 @@ on a dark background, and don't change the dark labels dark either. */
     .dropdown-menu.typeahead,
     #settings_page,
     .informational-overlays .overlay-content {
-        box-shadow: 0px 0px 30px hsl(212, 32%, 7%);
+        box-shadow: 0 0 30px hsl(212, 32%, 7%);
     }
 
     .dropdown-menu ul,
@@ -517,12 +517,12 @@ on a dark background, and don't change the dark labels dark either. */
         .user-mention,
         .user-group-mention {
             background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
-            box-shadow: 0px 0px 0px 1px hsla(0, 0%, 0%, 0.4);
+            box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.4);
         }
 
         .user-mention-me :not(.silent) {
             background-color: hsla(355, 37%, 31%, 1);
-            box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
+            box-shadow: 0 0 0 1px hsla(330, 40%, 20%, 1);
         }
 
         .codehilite code,
@@ -718,7 +718,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     time {
         background: hsla(0, 0%, 0%, 0.2);
-        box-shadow: 0px 0px 0px 1px hsla(0, 0%, 0%, 0.4);
+        box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.4);
     }
 
     .tip {
@@ -782,8 +782,8 @@ on a dark background, and don't change the dark labels dark either. */
                 color: hsl(314, 27%, 82%);
                 background-color: hsl(312, 7%, 14%);
                 box-shadow:
-                    inset 0px 11px 10px -10px hsl(0, 0%, 6%),
-                    inset 0px -11px 10px -10px hsl(0, 0%, 6%);
+                    inset 0 11px 10px -10px hsl(0, 0%, 6%),
+                    inset 0 -11px 10px -10px hsl(0, 0%, 6%);
 
                 .line-number {
                     color: hsl(318, 14%, 44%);
@@ -933,7 +933,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     .simplebar-track .simplebar-scrollbar::before {
         background-color: hsl(0, 0%, 100%);
-        box-shadow: 0px 0px 0px 1px hsla(0, 0%, 0%, 0.33);
+        box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.33);
     }
 
     .collapse-settings-btn:hover {
