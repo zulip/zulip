@@ -1124,20 +1124,22 @@ nav {
     }
 }
 
-.screen .message-feed .message .content {
-    margin-left: 24px;
-    position: relative;
-    top: -15px;
-}
+.screen .message-feed {
+    .message .content {
+        margin-left: 24px;
+        position: relative;
+        top: -15px;
+    }
 
-.screen .message-feed .stream {
-    padding: 3px 5px 0px 5px;
-    margin: 0px 5px;
+    .stream {
+        padding: 3px 5px 0px 5px;
+        margin: 0px 5px;
 
-    background-color: hsl(0, 0%, 100%);
-    border-radius: 4px;
+        background-color: hsl(0, 0%, 100%);
+        border-radius: 4px;
 
-    box-shadow: 0px 0px 15px hsla(0, 0%, 0%, 0.01);
+        box-shadow: 0px 0px 15px hsla(0, 0%, 0%, 0.01);
+    }
 }
 
 .portico-landing.hello .screen.hero-screen {
