@@ -1077,10 +1077,10 @@ nav {
 
 .screen .col-4 .action-block {
     margin: 20px;
-}
 
-.screen .col-4 .action-block .sub-block {
-    margin: 0px 10px;
+    .sub-block {
+        margin: 0px 10px;
+    }
 }
 
 .screen .top .avatar {
