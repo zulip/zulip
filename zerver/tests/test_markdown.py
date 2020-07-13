@@ -837,6 +837,17 @@ class MarkdownTest(ZulipTestCase):
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315457', normal_tweet_html),
             make_inline_twitter_preview('https://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
+        # Test smart in-place inlining behavior:
+        msg = ('Paragraph 1: http://twitter.com/wdaher/status/287977969287315456\n\n'
+               'Paragraph 2\n\n'
+               'Paragraph 3: http://twitter.com/wdaher/status/287977969287315457')
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(converted, '<p>Paragraph 1: {}</p>\n{}<p>Paragraph 2</p>\n<p>Paragraph 3: {}</p>\n{}'.format(
+            make_link('http://twitter.com/wdaher/status/287977969287315456'),
+            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html),
+            make_link('http://twitter.com/wdaher/status/287977969287315457'),
+            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315457', normal_tweet_html)))
+
         # Tweet has a mention in a URL, only the URL is linked
         msg = 'http://twitter.com/wdaher/status/287977969287315458'
 

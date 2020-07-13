@@ -1054,6 +1054,23 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if info['remove'] is not None:
             info['parent'].remove(info['remove'])
 
+    def handle_tweet_inlining(
+        self,
+        root: Element,
+        found_url: ResultWithFamily[Tuple[str, Optional[str]]],
+        twitter_data: Element,
+    ) -> None:
+        info = self.get_inlining_information(root, found_url)
+
+        if info['index'] is not None:
+            div = Element("div")
+            root.insert(info['index'], div)
+        else:
+            div = SubElement(root, "div")
+
+        div.set("class", "inline-preview-twitter")
+        div.insert(0, twitter_data)
+
     def find_proper_insertion_index(self, grandparent: Element, parent: Element,
                                     parent_index_in_grandparent: int) -> int:
         # If there are several inline images from same paragraph, ensure that
@@ -1069,7 +1086,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 return insertion_index
 
             uncle = grandparent[insertion_index]
-            inline_image_classes = ['message_inline_image', 'message_inline_ref']
+            inline_image_classes = ['message_inline_image', 'message_inline_ref', 'inline-preview-twitter']
             if (
                 uncle.tag != 'div' or
                 'class' not in uncle.keys() or
@@ -1173,9 +1190,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     # This link is not actually a tweet known to twitter
                     continue
                 rendered_tweet_count += 1
-                div = SubElement(root, "div")
-                div.set("class", "inline-preview-twitter")
-                div.insert(0, twitter_data)
+                self.handle_tweet_inlining(root, found_url, twitter_data)
                 continue
             youtube = self.youtube_image(url)
             if youtube is not None:
