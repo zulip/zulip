@@ -1019,6 +1019,7 @@ td.pointer {
 .message-header-contents {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     border-right: 1px solid hsl(0, 0%, 88%);
     background-color: hsl(0, 0%, 88%);
 }
