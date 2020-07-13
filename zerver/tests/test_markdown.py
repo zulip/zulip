@@ -790,21 +790,21 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>{}</p>'.format(make_link('http://www.twitter.com/wdaher/status/999999999999999999')))
 
-        msg = 'http://www.twitter.com/wdaher/status/287977969287315456'
+        msg = 'Tweet: http://www.twitter.com/wdaher/status/287977969287315456'
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
+        self.assertEqual(converted, '<p>Tweet: {}</p>\n{}'.format(
             make_link('http://www.twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('http://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
-        msg = 'https://www.twitter.com/wdaher/status/287977969287315456'
+        msg = 'Tweet: https://www.twitter.com/wdaher/status/287977969287315456'
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
+        self.assertEqual(converted, '<p>Tweet: {}</p>\n{}'.format(
             make_link('https://www.twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('https://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
-        msg = 'http://twitter.com/wdaher/status/287977969287315456'
+        msg = 'Tweet: http://twitter.com/wdaher/status/287977969287315456'
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
+        self.assertEqual(converted, '<p>Tweet: {}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
@@ -839,28 +839,27 @@ class MarkdownTest(ZulipTestCase):
 
         # Test smart in-place inlining behavior:
         msg = ('Paragraph 1: http://twitter.com/wdaher/status/287977969287315456\n\n'
-               'Paragraph 2\n\n'
-               'Paragraph 3: http://twitter.com/wdaher/status/287977969287315457')
+               'Paragraph 2. Below paragraph will be removed.\n\n'
+               'http://twitter.com/wdaher/status/287977969287315457')
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p>Paragraph 1: {}</p>\n{}<p>Paragraph 2</p>\n<p>Paragraph 3: {}</p>\n{}'.format(
+        self.assertEqual(converted, '<p>Paragraph 1: {}</p>\n{}<p>Paragraph 2. Below paragraph will be removed.</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html),
-            make_link('http://twitter.com/wdaher/status/287977969287315457'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315457', normal_tweet_html)))
 
         # Tweet has a mention in a URL, only the URL is linked
-        msg = 'http://twitter.com/wdaher/status/287977969287315458'
+        msg = 'Tweet: http://twitter.com/wdaher/status/287977969287315458'
 
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
+        self.assertEqual(converted, '<p>Tweet: {}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315458'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315458', mention_in_link_tweet_html)))
 
         # Tweet with an image
-        msg = 'http://twitter.com/wdaher/status/287977969287315459'
+        msg = 'Tweet: http://twitter.com/wdaher/status/287977969287315459'
 
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
+        self.assertEqual(converted, '<p>Tweet: {}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315459'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315459',
                                         media_tweet_html,
@@ -870,9 +869,9 @@ class MarkdownTest(ZulipTestCase):
                                          '</a>'
                                          '</div>'))))
 
-        msg = 'http://twitter.com/wdaher/status/287977969287315460'
+        msg = 'Tweet: http://twitter.com/wdaher/status/287977969287315460'
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
+        self.assertEqual(converted, '<p>Tweet: {}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315460'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315460', emoji_in_tweet_html)))
 

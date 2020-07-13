@@ -1070,6 +1070,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         div.set("class", "inline-preview-twitter")
         div.insert(0, twitter_data)
+        if info['remove'] is not None:
+            info['parent'].remove(info['remove'])
 
     def find_proper_insertion_index(self, grandparent: Element, parent: Element,
                                     parent_index_in_grandparent: int) -> int:
