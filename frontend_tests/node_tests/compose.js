@@ -1065,33 +1065,38 @@ run_test('trigger_submit_compose_form', () => {
 });
 
 run_test('needs_subscribe_warning', () => {
-    people.get_by_user_id = function () {
-        return;
+    const invalid_user_id = 999;
+
+    const test_bot = {
+        full_name: 'Test Bot',
+        email: 'test-bot@example.com',
+        user_id: 135,
+        is_bot: true,
+    };
+    people.add_active_user(test_bot);
+
+    const sub = {
+        stream_id: 110,
+        name: 'stream',
+        can_access_subscribers: true,
     };
 
-    assert.equal(compose.needs_subscribe_warning(), false);
+    stream_data.add_sub(sub);
+    stream_data.set_subscribers(sub, [bob.user_id, me.user_id]);
 
-    people.get_by_user_id = function () {
-        return {
-            is_bot: true,
-        };
-    };
-    assert.equal(compose.needs_subscribe_warning(), false);
+    blueslip.expect('error', 'Unknown user_id in get_by_user_id: 999');
+    // Test with an invalid user id.
+    assert.equal(compose.needs_subscribe_warning(invalid_user_id, sub.stream_id), false);
 
-    people.get_by_user_id = function () {
-        return {
-            is_bot: false,
-        };
-    };
-    stream_data.is_user_subscribed = function () {
-        return true;
-    };
-    assert.equal(compose.needs_subscribe_warning(), false);
+    // Test with bot user.
+    assert.equal(compose.needs_subscribe_warning(test_bot.user_id, sub.stream_id), false);
 
-    stream_data.is_user_subscribed = function () {
-        return false;
-    };
-    assert.equal(compose.needs_subscribe_warning(), true);
+    // Test when user is subscribed to the stream.
+    assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), false);
+
+    stream_data.remove_subscriber(sub.stream_id, bob.user_id);
+    // Test when the user is not subscribed.
+    assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
 });
 
 run_test('warn_if_mentioning_unsubscribed_user', () => {
