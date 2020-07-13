@@ -5,6 +5,7 @@ from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 
+from zerver.lib.exceptions import StreamAdministratorRequired
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.request import JsonableError
 from zerver.models import (
@@ -203,22 +204,37 @@ def check_for_exactly_one_stream_arg(stream_id: Optional[int], stream: Optional[
     if stream_id is not None and stream is not None:
         raise JsonableError(_("Please choose one: 'stream' or 'stream_id'."))
 
-def access_stream_for_delete_or_update(user_profile: UserProfile, stream_id: int) -> Stream:
-    # We should only ever use this for realm admins, who are allowed
-    # to delete or update all streams on their realm, even private streams
-    # to which they are not subscribed.  We do an assert here, because
-    # all callers should have the require_realm_admin decorator.
-    assert(user_profile.is_realm_admin)
-
+def check_stream_access_for_delete_or_update(user_profile: UserProfile, stream: Stream,
+                                             sub: Optional[Subscription]=None) -> None:
     error = _("Invalid stream id")
-    try:
-        stream = Stream.objects.get(id=stream_id)
-    except Stream.DoesNotExist:
-        raise JsonableError(error)
-
     if stream.realm_id != user_profile.realm_id:
         raise JsonableError(error)
 
+    if user_profile.is_realm_admin:
+        return
+
+    if sub is None and stream.invite_only:
+        raise JsonableError(error)
+
+    if sub is not None and sub.is_stream_admin:
+        return
+
+    raise StreamAdministratorRequired()
+
+def access_stream_for_delete_or_update(user_profile: UserProfile, stream_id: int) -> Stream:
+    try:
+        stream = Stream.objects.get(id=stream_id)
+    except Stream.DoesNotExist:
+        raise JsonableError(_("Invalid stream id"))
+
+    try:
+        sub = Subscription.objects.get(user_profile=user_profile,
+                                       recipient=stream.recipient,
+                                       active=True)
+    except Subscription.DoesNotExist:
+        sub = None
+
+    check_stream_access_for_delete_or_update(user_profile, stream, sub)
     return stream
 
 # Only set allow_realm_admin flag to True when you want to allow realm admin to
@@ -431,7 +447,8 @@ def filter_stream_authorization(user_profile: UserProfile,
 
 def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
                     user_profile: UserProfile,
-                    autocreate: bool=False) -> Tuple[List[Stream], List[Stream]]:
+                    autocreate: bool=False,
+                    admin_access_required: bool=False) -> Tuple[List[Stream], List[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
     For each stream name, we validate it to ensure it meets our
@@ -458,6 +475,20 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
     existing_streams: List[Stream] = []
     missing_stream_dicts: List[Mapping[str, Any]] = []
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
+
+    if admin_access_required:
+        existing_stream_ids = [stream.id for stream in existing_stream_map.values()]
+        subs = Subscription.objects.select_related("recipient").filter(
+            user_profile=user_profile,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id__in=existing_stream_ids,
+            active=True)
+        sub_dict_by_stream_ids = {sub.recipient.type_id: sub for sub in subs}
+        for stream in existing_stream_map.values():
+            sub = None
+            if stream.id in sub_dict_by_stream_ids:
+                sub = sub_dict_by_stream_ids[stream.id]
+            check_stream_access_for_delete_or_update(user_profile, stream, sub)
 
     message_retention_days_not_none = False
     for stream_dict in streams_raw:

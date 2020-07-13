@@ -24,6 +24,7 @@ from zerver.lib.actions import (
     do_change_default_stream_group_name,
     do_change_plan_type,
     do_change_stream_post_policy,
+    do_change_subscription_property,
     do_change_user_role,
     do_create_default_stream_group,
     do_create_realm,
@@ -349,30 +350,50 @@ class StreamAdminTest(ZulipTestCase):
     def test_make_stream_public(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login_user(user_profile)
-        self.make_stream('private_stream', invite_only=True)
+        self.make_stream('private_stream_1', invite_only=True)
+        self.make_stream('private_stream_2', invite_only=True)
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         params = {
-            'stream_name': orjson.dumps('private_stream').decode(),
+            'stream_name': orjson.dumps('private_stream_1').decode(),
             'is_private': orjson.dumps(False).decode(),
         }
-        stream_id = get_stream('private_stream', user_profile.realm).id
+        stream_id = get_stream('private_stream_1', user_profile.realm).id
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, 'Invalid stream id')
 
-        stream = self.subscribe(user_profile, 'private_stream')
+        stream = self.subscribe(user_profile, 'private_stream_1')
         self.assertFalse(stream.is_in_zephyr_realm)
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         params = {
-            'stream_name': orjson.dumps('private_stream').decode(),
+            'stream_name': orjson.dumps('private_stream_1').decode(),
             'is_private': orjson.dumps(False).decode(),
         }
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_success(result)
 
         realm = user_profile.realm
-        stream = get_stream('private_stream', realm)
+        stream = get_stream('private_stream_1', realm)
+        self.assertFalse(stream.invite_only)
+        self.assertTrue(stream.history_public_to_subscribers)
+
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        params = {
+            'stream_name': orjson.dumps('private_stream_2').decode(),
+            'is_private': orjson.dumps(False).decode(),
+        }
+        stream = self.subscribe(user_profile, 'private_stream_2')
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assertTrue(stream.invite_only)
+        self.assert_json_error(result, "Must be an organization or stream administrator")
+
+        sub = get_subscription('private_stream_2', user_profile)
+        do_change_subscription_property(user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR)
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+
+        stream = get_stream('private_stream_2', realm)
         self.assertFalse(stream.invite_only)
         self.assertTrue(stream.history_public_to_subscribers)
 
@@ -380,17 +401,37 @@ class StreamAdminTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         self.login_user(user_profile)
         realm = user_profile.realm
-        self.make_stream('public_stream', realm=realm)
+        self.make_stream('public_stream_1', realm=realm)
+        self.make_stream('public_stream_2')
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         params = {
-            'stream_name': orjson.dumps('public_stream').decode(),
+            'stream_name': orjson.dumps('public_stream_1').decode(),
             'is_private': orjson.dumps(True).decode(),
         }
-        stream_id = get_stream('public_stream', realm).id
+        stream_id = get_stream('public_stream_1', realm).id
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_success(result)
-        stream = get_stream('public_stream', realm)
+        stream = get_stream('public_stream_1', realm)
+        self.assertTrue(stream.invite_only)
+        self.assertFalse(stream.history_public_to_subscribers)
+
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        params = {
+            'stream_name': orjson.dumps('public_stream_2').decode(),
+            'is_private': orjson.dumps(True).decode(),
+        }
+        stream = self.subscribe(user_profile, 'public_stream_2')
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assertFalse(stream.invite_only)
+        self.assert_json_error(result, "Must be an organization or stream administrator")
+
+        sub = get_subscription('public_stream_2', user_profile)
+        do_change_subscription_property(user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR)
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+
+        stream = get_stream('public_stream_2', realm)
         self.assertTrue(stream.invite_only)
         self.assertFalse(stream.history_public_to_subscribers)
 
@@ -455,9 +496,22 @@ class StreamAdminTest(ZulipTestCase):
     def test_deactivate_stream_backend(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login_user(user_profile)
-        stream = self.make_stream('new_stream')
+        stream = self.make_stream('new_stream_1')
         self.subscribe(user_profile, stream.name)
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+        result = self.client_delete(f'/json/streams/{stream.id}')
+        self.assert_json_success(result)
+        subscription_exists = get_active_subscriptions_for_stream_id(stream.id).filter(
+            user_profile=user_profile,
+        ).exists()
+        self.assertFalse(subscription_exists)
+
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        stream = self.make_stream('new_stream_2')
+        self.subscribe(user_profile, stream.name)
+        sub = get_subscription(stream.name, user_profile)
+        do_change_subscription_property(user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR)
 
         result = self.client_delete(f'/json/streams/{stream.id}')
         self.assert_json_success(result)
@@ -518,14 +572,15 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_delete('/json/streams/999999999')
         self.assert_json_error(result, 'Invalid stream id')
 
-    def test_deactivate_stream_backend_requires_realm_admin(self) -> None:
+    def test_deactivate_stream_backend_requires_admin(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login_user(user_profile)
-        self.subscribe(user_profile, 'new_stream')
+        stream = self.subscribe(user_profile, 'new_stream')
+        sub = get_subscription('new_stream', user_profile)
+        self.assertFalse(sub.is_stream_admin)
 
-        stream_id = get_stream('new_stream', user_profile.realm).id
-        result = self.client_delete(f'/json/streams/{stream_id}')
-        self.assert_json_error(result, 'Must be an organization administrator')
+        result = self.client_delete(f'/json/streams/{stream.id}')
+        self.assert_json_error(result, 'Must be an organization or stream administrator')
 
     def test_private_stream_live_updates(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -690,15 +745,35 @@ class StreamAdminTest(ZulipTestCase):
         self.assertNotIn(self.example_user('prospero').id,
                          notified_user_ids)
 
-    def test_rename_stream_requires_realm_admin(self) -> None:
+        # Test renaming of stream by stream admin.
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        new_stream = self.make_stream('new_stream', realm=user_profile.realm)
+        self.subscribe(user_profile, 'new_stream')
+        sub = get_subscription('new_stream', user_profile)
+        do_change_subscription_property(user_profile, sub, new_stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR)
+        del events[:]
+        with tornado_redirected_to_list(events):
+            result = self.client_patch(f'/json/streams/{new_stream.id}',
+                                       {'new_name': orjson.dumps('stream_rename').decode()})
+        self.assert_json_success(result)
+        self.assertEqual(len(events), 3)
+
+        stream_rename_exists = get_stream('stream_rename', realm)
+        self.assertTrue(stream_rename_exists)
+
+    def test_rename_stream_requires_admin(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login_user(user_profile)
         self.make_stream('stream_name1')
+        self.subscribe(user_profile, 'stream_name1')
+
+        sub = get_subscription('stream_name1', user_profile)
+        self.assertFalse(sub.is_stream_admin)
 
         stream_id = get_stream('stream_name1', user_profile.realm).id
         result = self.client_patch(f'/json/streams/{stream_id}',
                                    {'new_name': orjson.dumps('stream_name2').decode()})
-        self.assert_json_error(result, 'Must be an organization administrator')
+        self.assert_json_error(result, 'Must be an organization or stream administrator')
 
     def test_notify_on_stream_rename(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -745,6 +820,34 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(f'/json/streams/{stream_id}',
                                    {'stream_name': orjson.dumps('private_stream').decode(),
                                     'is_private': orjson.dumps(True).decode()})
+        self.assert_json_error(result, "Invalid stream id")
+
+    def test_non_admin_cannot_access_unsub_private_stream(self) -> None:
+        iago = self.example_user('iago')
+        hamlet = self.example_user('hamlet')
+
+        self.login_user(hamlet)
+        result = self.common_subscribe_to_streams(hamlet, ["private_stream_1"],
+                                                  dict(principals=orjson.dumps([iago.id]).decode()),
+                                                  invite_only=True)
+        self.assert_json_success(result)
+
+        stream_id = get_stream('private_stream_1', hamlet.realm).id
+
+        result = self.client_patch(f'/json/streams/{stream_id}',
+                                   {'new_name': orjson.dumps('private_stream_2').decode()})
+        self.assert_json_error(result, "Invalid stream id")
+
+        result = self.client_patch(f'/json/streams/{stream_id}',
+                                   {'new_description': orjson.dumps('new description').decode()})
+        self.assert_json_error(result, "Invalid stream id")
+
+        result = self.client_patch(f'/json/streams/{stream_id}',
+                                   {'stream_name': orjson.dumps('private_stream_1').decode(),
+                                    'is_private': orjson.dumps(True).decode()})
+        self.assert_json_error(result, "Invalid stream id")
+
+        result = self.client_delete(f'/json/streams/{stream_id}')
         self.assert_json_error(result, "Invalid stream id")
 
     def test_change_stream_description(self) -> None:
@@ -807,17 +910,33 @@ class StreamAdminTest(ZulipTestCase):
             '<p>See <a href="https://zulip.com/team">https://zulip.com/team</a></p>',
         )
 
-    def test_change_stream_description_requires_realm_admin(self) -> None:
+        # Test changing stream description by stream admin.
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        sub = get_subscription('stream_name1', user_profile)
+        do_change_subscription_property(user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR)
+
+        with tornado_redirected_to_list(events):
+            stream_id = get_stream('stream_name1', realm).id
+            result = self.client_patch(f'/json/streams/{stream_id}',
+                                       {'description': orjson.dumps('Test description').decode()})
+        self.assert_json_success(result)
+        stream = get_stream('stream_name1', realm)
+        self.assertEqual(stream.description, 'Test description')
+
+    def test_change_stream_description_requires_admin(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login_user(user_profile)
 
-        self.subscribe(user_profile, 'stream_name1')
+        stream = self.subscribe(user_profile, 'stream_name1')
+        sub = get_subscription('stream_name1', user_profile)
+
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        do_change_subscription_property(user_profile, sub, stream, "role", Subscription.ROLE_MEMBER)
 
         stream_id = get_stream('stream_name1', user_profile.realm).id
         result = self.client_patch(f'/json/streams/{stream_id}',
                                    {'description': orjson.dumps('Test description').decode()})
-        self.assert_json_error(result, 'Must be an organization administrator')
+        self.assert_json_error(result, 'Must be an organization or stream administrator')
 
     def test_change_to_stream_post_policy_admins(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -833,12 +952,15 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream('stream_name1', user_profile.realm)
         self.assertTrue(stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS)
 
-    def test_change_stream_post_policy_requires_realm_admin(self) -> None:
+    def test_change_stream_post_policy_requires_admin(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login_user(user_profile)
 
-        self.subscribe(user_profile, 'stream_name1')
+        stream = self.subscribe(user_profile, 'stream_name1')
+        sub = get_subscription('stream_name1', user_profile)
+
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        do_change_subscription_property(user_profile, sub, stream, "role", Subscription.ROLE_MEMBER)
 
         do_set_realm_property(user_profile.realm, 'waiting_period_threshold', 10)
 
@@ -849,13 +971,22 @@ class StreamAdminTest(ZulipTestCase):
             stream_id = get_stream('stream_name1', user_profile.realm).id
             result = self.client_patch(f'/json/streams/{stream_id}',
                                        {'stream_post_policy': orjson.dumps(policy).decode()})
-            self.assert_json_error(result, 'Must be an organization administrator')
-
+            self.assert_json_error(result, 'Must be an organization or stream administrator')
         policies = [Stream.STREAM_POST_POLICY_ADMINS, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS]
 
         for policy in policies:
             test_non_admin(how_old=15, is_new=False, policy=policy)
             test_non_admin(how_old=5, is_new=True, policy=policy)
+
+        do_change_subscription_property(user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR)
+
+        for policy in policies:
+            stream_id = get_stream('stream_name1', user_profile.realm).id
+            result = self.client_patch(f'/json/streams/{stream_id}',
+                                       {'stream_post_policy': orjson.dumps(policy).decode()})
+            self.assert_json_success(result)
+            stream = get_stream('stream_name1', user_profile.realm)
+            self.assertEqual(stream.stream_post_policy, policy)
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
@@ -1105,7 +1236,7 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.make_stream('other_realm_stream', realm=other_realm)
 
         result = self.client_delete('/json/streams/' + str(stream.id))
-        self.assert_json_error(result, 'Must be an organization administrator')
+        self.assert_json_error(result, 'Invalid stream id')
 
         # Even becoming a realm admin doesn't help us for an out-of-realm
         # stream.
@@ -1142,12 +1273,13 @@ class StreamAdminTest(ZulipTestCase):
         self.delete_stream(priv_stream)
 
     def attempt_unsubscribe_of_principal(self, query_count: int, target_users: List[UserProfile],
-                                         is_admin: bool=False, is_subbed: bool=True, invite_only: bool=False,
+                                         is_realm_admin: bool=False, is_stream_admin: bool=False,
+                                         is_subbed: bool=True, invite_only: bool=False,
                                          target_users_subbed: bool=True, using_legacy_emails: bool=False,
                                          other_sub_users: Sequence[UserProfile]=[]) -> HttpResponse:
 
         # Set up the main user, who is in most cases an admin.
-        if is_admin:
+        if is_realm_admin:
             user_profile = self.example_user('iago')
         else:
             user_profile = self.example_user('hamlet')
@@ -1168,7 +1300,11 @@ class StreamAdminTest(ZulipTestCase):
 
         # Subscribe the admin and/or principal as specified in the flags.
         if is_subbed:
-            self.subscribe(user_profile, stream_name)
+            stream = self.subscribe(user_profile, stream_name)
+            if is_stream_admin:
+                sub = get_subscription(stream_name, user_profile)
+                do_change_subscription_property(user_profile, sub, stream, "role",
+                                                Subscription.ROLE_STREAM_ADMINISTRATOR)
         if target_users_subbed:
             for user in target_users:
                 self.subscribe(user, stream_name)
@@ -1195,78 +1331,113 @@ class StreamAdminTest(ZulipTestCase):
         If you're not an admin, you can't remove other people from streams.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=3, target_users=[self.example_user('cordelia')], is_admin=False, is_subbed=True,
-            invite_only=False, target_users_subbed=True)
+            query_count=5, target_users=[self.example_user('cordelia')], is_realm_admin=False,
+            is_stream_admin=False, is_subbed=True, invite_only=False, target_users_subbed=True)
         self.assert_json_error(
-            result, "This action requires administrative rights")
+            result, "Must be an organization or stream administrator")
 
-    def test_admin_remove_others_from_public_stream(self) -> None:
+    def test_realm_admin_remove_others_from_public_stream(self) -> None:
         """
-        If you're an admin, you can remove people from public streams, even
+        If you're a realm admin, you can remove people from public streams, even
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21, target_users=[self.example_user('cordelia')], is_admin=True, is_subbed=True,
-            invite_only=False, target_users_subbed=True)
+            query_count=22, target_users=[self.example_user('cordelia')], is_realm_admin=True,
+            is_subbed=True, invite_only=False, target_users_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
         self.assertEqual(len(json["not_removed"]), 0)
 
-    def test_admin_remove_multiple_users_from_stream(self) -> None:
+    def test_realm_admin_remove_multiple_users_from_stream(self) -> None:
         """
-        If you're an admin, you can remove multiple users from a stream,
+        If you're a realm admin, you can remove multiple users from a stream,
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=30, target_users=[self.example_user('cordelia'), self.example_user('prospero')],
-            is_admin=True, is_subbed=True, invite_only=False, target_users_subbed=True)
+            query_count=31, target_users=[self.example_user('cordelia'), self.example_user('prospero')],
+            is_realm_admin=True, is_subbed=True, invite_only=False, target_users_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 2)
         self.assertEqual(len(json["not_removed"]), 0)
 
-    def test_admin_remove_others_from_subbed_private_stream(self) -> None:
+    def test_realm_admin_remove_others_from_subbed_private_stream(self) -> None:
         """
-        If you're an admin, you can remove other people from private streams you
+        If you're a realm admin, you can remove other people from private streams you
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21, target_users=[self.example_user('cordelia')], is_admin=True, is_subbed=True,
-            invite_only=True, target_users_subbed=True)
+            query_count=22, target_users=[self.example_user('cordelia')], is_realm_admin=True,
+            is_subbed=True, invite_only=True, target_users_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
         self.assertEqual(len(json["not_removed"]), 0)
 
-    def test_admin_remove_others_from_unsubbed_private_stream(self) -> None:
+    def test_realm_admin_remove_others_from_unsubbed_private_stream(self) -> None:
         """
-        If you're an admin, you can remove people from private
+        If you're a realm admin, you can remove people from private
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21, target_users=[self.example_user('cordelia')], is_admin=True, is_subbed=False,
-            invite_only=True, target_users_subbed=True, other_sub_users=[self.example_user("othello")])
+            query_count=22, target_users=[self.example_user('cordelia')], is_realm_admin=True,
+            is_subbed=False, invite_only=True, target_users_subbed=True, other_sub_users=[self.example_user("othello")])
+        json = self.assert_json_success(result)
+        self.assertEqual(len(json["removed"]), 1)
+        self.assertEqual(len(json["not_removed"]), 0)
+
+    def test_stream_admin_remove_others_from_public_stream(self) -> None:
+        """
+        You can remove others from public streams you're a stream administrator of.
+        """
+        result = self.attempt_unsubscribe_of_principal(
+            query_count=22, target_users=[self.example_user('cordelia')], is_realm_admin=False,
+            is_stream_admin=True, is_subbed=True, invite_only=False, target_users_subbed=True)
+        json = self.assert_json_success(result)
+        self.assertEqual(len(json["removed"]), 1)
+        self.assertEqual(len(json["not_removed"]), 0)
+
+    def test_stream_admin_remove_multiple_users_from_stream(self) -> None:
+        """
+        You can remove multiple users from public streams you're a stream administrator of.
+        """
+        result = self.attempt_unsubscribe_of_principal(
+            query_count=31, target_users=[self.example_user('cordelia'), self.example_user('prospero')],
+            is_realm_admin=False, is_stream_admin=True, is_subbed=True, invite_only=False,
+            target_users_subbed=True)
+        json = self.assert_json_success(result)
+        self.assertEqual(len(json["removed"]), 2)
+        self.assertEqual(len(json["not_removed"]), 0)
+
+    def test_stream_admin_remove_others_from_private_stream(self) -> None:
+        """
+        You can remove others from private streams you're a stream administrator of.
+        """
+        result = self.attempt_unsubscribe_of_principal(
+            query_count=22, target_users=[self.example_user('cordelia')], is_realm_admin=False,
+            is_stream_admin=True, is_subbed=True, invite_only=True, target_users_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
         self.assertEqual(len(json["not_removed"]), 0)
 
     def test_cant_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=3, is_admin=False, is_subbed=True, invite_only=False,
-            target_users=[self.example_user('cordelia')], target_users_subbed=True,
+            query_count=5, is_realm_admin=False, is_stream_admin=False, is_subbed=True,
+            invite_only=False, target_users=[self.example_user('cordelia')], target_users_subbed=True,
             using_legacy_emails=True)
         self.assert_json_error(
-            result, "This action requires administrative rights")
+            result, "Must be an organization or stream administrator")
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21, target_users=[self.example_user('cordelia')], is_admin=True, is_subbed=True,
-            invite_only=False, target_users_subbed=True, using_legacy_emails=True)
+            query_count=22, target_users=[self.example_user('cordelia')], is_realm_admin=True,
+            is_subbed=True, invite_only=False, target_users_subbed=True, using_legacy_emails=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
         self.assertEqual(len(json["not_removed"]), 0)
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=30, target_users=[self.example_user('cordelia'), self.example_user('prospero')],
-            is_admin=True, is_subbed=True, invite_only=False, target_users_subbed=True, using_legacy_emails=True)
+            query_count=31, target_users=[self.example_user('cordelia'), self.example_user('prospero')],
+            is_realm_admin=True, is_subbed=True, invite_only=False, target_users_subbed=True,
+            using_legacy_emails=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 2)
         self.assertEqual(len(json["not_removed"]), 0)
@@ -1402,8 +1573,8 @@ class StreamAdminTest(ZulipTestCase):
         fails gracefully.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=11, target_users=[self.example_user('cordelia')], is_admin=True, is_subbed=False,
-            invite_only=False, target_users_subbed=False)
+            query_count=12, target_users=[self.example_user('cordelia')], is_realm_admin=True,
+            is_subbed=False, invite_only=False, target_users_subbed=False)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 0)
         self.assertEqual(len(json["not_removed"]), 1)
