@@ -1083,24 +1083,26 @@ nav {
     }
 }
 
-.screen .top .avatar {
-    display: inline-block;
-    vertical-align: top;
+.screen .top {
+    .avatar {
+        display: inline-block;
+        vertical-align: top;
 
-    width: 20px;
-    height: 20px;
-    background-color: hsl(0, 0%, 73%);
-    border-radius: 4px;
-}
+        width: 20px;
+        height: 20px;
+        background-color: hsl(0, 0%, 73%);
+        border-radius: 4px;
+    }
 
-.screen .top .top-line {
-    display: inline-block;
-    vertical-align: top;
+    .top-line {
+        display: inline-block;
+        vertical-align: top;
 
-    width: 50px;
-    margin-top: 0px;
+        width: 50px;
+        margin-top: 0px;
 
-    background-color: hsl(0, 0%, 73%);
+        background-color: hsl(0, 0%, 73%);
+    }
 }
 
 .screen .navbar {
