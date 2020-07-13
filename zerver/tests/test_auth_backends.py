@@ -1408,16 +1408,22 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_social_auth_complete(self) -> None:
         with mock.patch('social_core.backends.oauth.BaseOAuth2.process_error',
-                        side_effect=AuthFailed('Not found')):
+                        side_effect=AuthFailed('Not found')), self.assertLogs(self.logger_string, level='INFO') as m:
             result = self.client_get(reverse('social:complete', args=[self.backend.name]))
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
+        self.assertEqual(m.output, [
+            self.logger_output("AuthFailed: Authentication failed: ", 'info'),
+        ])
 
         with mock.patch('social_core.backends.oauth.BaseOAuth2.auth_complete',
-                        side_effect=requests.exceptions.HTTPError):
+                        side_effect=requests.exceptions.HTTPError), self.assertLogs(self.logger_string, level='INFO') as m:
             result = self.client_get(reverse('social:complete', args=[self.backend.name]))
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
+        self.assertEqual(m.output, [
+            self.logger_output("HTTPError: ", 'info'),
+        ])
 
     def test_social_auth_complete_when_base_exc_is_raised(self) -> None:
         with mock.patch('social_core.backends.oauth.BaseOAuth2.auth_complete',
