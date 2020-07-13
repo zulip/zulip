@@ -1031,32 +1031,48 @@ nav {
 
     background-color: hsl(0, 0%, 93%);
     border-radius: 3px;
-}
 
-.screen .line.small {
-    width: 60%;
-}
+    &.small {
+        width: 60%;
+    }
 
-.screen .line.micro {
-    display: inline-block;
-    vertical-align: top;
+    &.micro {
+        display: inline-block;
+        vertical-align: top;
 
-    width: 15%;
-}
+        width: 15%;
+    }
 
-.screen .line.darker {
-    background-color: hsl(0, 0%, 73%);
-}
+    &.darker {
+        background-color: hsl(0, 0%, 73%);
+    }
 
-.screen .line.nano {
-    display: inline-block;
-    vertical-align: top;
+    &.nano {
+        display: inline-block;
+        vertical-align: top;
 
-    width: 10%;
-}
+        width: 10%;
+    }
 
-.screen .line.med {
-    width: 80%;
+    &.med {
+        width: 80%;
+    }
+
+    &.red {
+        background-color: hsl(350, 42%, 77%);
+    }
+
+    &.blue {
+        background-color: hsl(193, 42%, 77%);
+    }
+
+    &.green {
+        background-color: hsl(119, 42%, 77%);
+    }
+
+    &.orange {
+        background-color: hsl(30, 42%, 77%);
+    }
 }
 
 .screen .col-4 .action-block {
@@ -1065,22 +1081,6 @@ nav {
 
 .screen .col-4 .action-block .sub-block {
     margin: 0px 10px;
-}
-
-.screen .line.red {
-    background-color: hsl(350, 42%, 77%);
-}
-
-.screen .line.blue {
-    background-color: hsl(193, 42%, 77%);
-}
-
-.screen .line.green {
-    background-color: hsl(119, 42%, 77%);
-}
-
-.screen .line.orange {
-    background-color: hsl(30, 42%, 77%);
 }
 
 .screen .top .avatar {
