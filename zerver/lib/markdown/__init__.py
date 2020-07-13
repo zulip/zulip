@@ -94,6 +94,12 @@ class FullNameInfo(TypedDict):
     email: str
     full_name: str
 
+class LinkInfo(TypedDict):
+    parent: Element
+    title: Optional[str]
+    index: Optional[int]
+    remove: Optional[Element]
+
 DbData = Dict[str, Any]
 
 # Format version of the markdown rendering; stored along with rendered
@@ -988,25 +994,31 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return (url, e.text)
         return None
 
-    def handle_image_inlining(
+    def get_inlining_information(
         self,
         root: Element,
         found_url: ResultWithFamily[Tuple[str, Optional[str]]],
-    ) -> None:
+    ) -> LinkInfo:
+
         grandparent = found_url.family.grandparent
         parent = found_url.family.parent
         ahref_element = found_url.family.child
         (url, text) = found_url.result
-        actual_url = self.get_actual_image_url(url)
 
         # url != text usually implies a named link, which we opt not to remove
         url_eq_text = text is None or url == text
         title = None if url_eq_text else text
+        info: LinkInfo = {
+            'parent': root,
+            'title': title,
+            'index': None,
+            'remove': None,
+        }
 
         if parent.tag == 'li':
-            self.add_a(parent, self.get_actual_image_url(url), url, title=title)
+            info['parent'] = parent
             if not parent.text and not ahref_element.tail and url_eq_text:
-                parent.remove(ahref_element)
+                info['remove'] = ahref_element
 
         elif parent.tag == 'p':
             assert grandparent is not None
@@ -1016,25 +1028,31 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     parent_index = index
                     break
 
-            if parent_index is not None:
-                ins_index = self.find_proper_insertion_index(grandparent, parent, parent_index)
-                self.add_a(grandparent, actual_url, url, title=title, insertion_index=ins_index)
+            # Append to end of list of grandparent's children as normal
+            info['parent'] = grandparent
 
-            else:
-                # We're not inserting after parent, since parent not found.
-                # Append to end of list of grandparent's children as normal
-                self.add_a(grandparent, actual_url, url, title=title)
-
-            # If link is alone in a paragraph, delete paragraph containing it
             if (len(parent) == 1 and
                     (not parent.text or parent.text == "\n") and
                     not ahref_element.tail and
                     url_eq_text):
-                grandparent.remove(parent)
+                info['remove'] = parent
 
-        else:
-            # If none of the above criteria match, fall back to old behavior
-            self.add_a(root, actual_url, url, title=title)
+            if parent_index is not None:
+                info['index'] = self.find_proper_insertion_index(grandparent, parent, parent_index)
+
+        return info
+
+    def handle_image_inlining(
+        self,
+        root: Element,
+        found_url: ResultWithFamily[Tuple[str, Optional[str]]],
+    ) -> None:
+        info = self.get_inlining_information(root, found_url)
+        (url, text) = found_url.result
+        actual_url = self.get_actual_image_url(url)
+        self.add_a(info['parent'], actual_url, url, title=info['title'], insertion_index=info['index'])
+        if info['remove'] is not None:
+            info['parent'].remove(info['remove'])
 
     def find_proper_insertion_index(self, grandparent: Element, parent: Element,
                                     parent_index_in_grandparent: int) -> int:
