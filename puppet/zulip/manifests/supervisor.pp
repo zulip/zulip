@@ -27,7 +27,7 @@ class zulip::supervisor {
       hasstatus  => true,
       status     => '/bin/true',
       hasrestart => true,
-      restart    => '/bin/true'
+      restart    => '/bin/true',
     }
     exec { 'supervisor-restart':
       refreshonly => true,
@@ -63,7 +63,7 @@ class zulip::supervisor {
       # don't match.
       hasrestart => true,
       # lint:ignore:140chars
-      restart    => "bash -c 'if pgrep -f supervisor[d] >/dev/null; then supervisorctl reread && supervisorctl update; else ${zulip::common::supervisor_start}; fi'"
+      restart    => "bash -c 'if pgrep -f supervisor[d] >/dev/null; then supervisorctl reread && supervisorctl update; else ${zulip::common::supervisor_start}; fi'",
       # lint:endignore
     }
     exec { 'supervisor-restart':

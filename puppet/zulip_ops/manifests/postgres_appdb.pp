@@ -28,8 +28,8 @@ class zulip_ops::postgres_appdb {
       Package[
         "postgresql-${zulip::base::postgres_version}",
         'python3-dateutil',
-      ]
-    ]
+      ],
+    ],
   }
 
   file { '/etc/sysctl.d/40-postgresql.conf':

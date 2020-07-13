@@ -92,7 +92,7 @@ class zulip::nginx {
     ensure => 'directory',
     owner  => 'zulip',
     group  => 'adm',
-    mode   => '0650'
+    mode   => '0650',
   }
 
   $certbot_auto_renew = zulipconf('certbot', 'auto_renew', '')
