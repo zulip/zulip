@@ -136,13 +136,13 @@ def run() -> None:
 
     @linter_config.lint
     def pep8_1of2() -> int:
-        """Standard Python style linter on 50% of files (config: tools/linter_lib/pep8.py)"""
+        """Standard Python style linter on 50% of files (config: setup.cfg)"""
         failed = check_pep8(list(python_part1))
         return 1 if failed else 0
 
     @linter_config.lint
     def pep8_2of2() -> int:
-        """Standard Python style linter on other 50% of files (config: tools/linter_lib/pep8.py)"""
+        """Standard Python style linter on other 50% of files (config: setup.cfg)"""
         failed = check_pep8(list(python_part2))
         return 1 if failed else 0
 
