@@ -1115,13 +1115,13 @@ nav {
     position: relative;
 
     overflow: hidden;
-}
 
-.screen .center-page .message-feed {
-    height: calc(100% - 20px);
-    margin-top: 20px;
+    .message-feed {
+        height: calc(100% - 20px);
+        margin-top: 20px;
 
-    transition: all 0.1s ease;
+        transition: all 0.1s ease;
+    }
 }
 
 .screen .message-feed .message .content {
