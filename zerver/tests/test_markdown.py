@@ -875,6 +875,15 @@ class MarkdownTest(ZulipTestCase):
             make_link('http://twitter.com/wdaher/status/287977969287315460'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315460', emoji_in_tweet_html)))
 
+        # Test twitter previews in spoiler tags.
+        msg = '```spoiler secret tweet\nTweet: http://twitter.com/wdaher/status/287977969287315456\n```'
+        converted = markdown_convert_wrapper(msg)
+
+        rendered_spoiler = "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>secret tweet</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>Tweet: {}</p>\n{}</div></div>"
+        self.assertEqual(converted, rendered_spoiler.format(
+            make_link('http://twitter.com/wdaher/status/287977969287315456'),
+            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
+
     def test_fetch_tweet_data_settings_validation(self) -> None:
         with self.settings(TEST_SUITE=False, TWITTER_CONSUMER_KEY=None):
             self.assertIs(None, fetch_tweet_data('287977969287315459'))
