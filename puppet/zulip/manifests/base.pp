@@ -47,7 +47,7 @@ class zulip::base {
         'moreutils',
         'nmap-ncat',
         'nagios-plugins',  # there is no dummy package on CentOS 7
-        'cronie'
+        'cronie',
       ]
     }
     default: {

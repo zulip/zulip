@@ -37,7 +37,7 @@ class zulip::postgres_common {
         # 'check-postgres',  # TODO
       ]
       exec {'pip3_deps':
-        command => 'python3 -m pip install python-dateutil'
+        command => 'python3 -m pip install python-dateutil',
       }
       group { 'ssl-cert':
         ensure => present,

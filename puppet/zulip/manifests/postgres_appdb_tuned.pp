@@ -36,6 +36,6 @@ class zulip::postgres_appdb_tuned {
   exec { $zulip::postgres_appdb_base::postgres_restart:
     require     => Package[$zulip::postgres_appdb_base::postgresql],
     refreshonly => true,
-    subscribe   => [ File[$postgres_conf_file] ]
+    subscribe   => [ File[$postgres_conf_file] ],
   }
 }
