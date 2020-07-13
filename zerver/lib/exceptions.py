@@ -224,6 +224,18 @@ class OrganizationOwnerRequired(JsonableError):
     def msg_format() -> str:
         return OrganizationOwnerRequired.OWNER_REQUIRED_MESSAGE
 
+class StreamAdministratorRequired(JsonableError):
+    code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
+
+    ADMIN_REQUIRED_MESSAGE = _("Must be an organization or stream administrator")
+
+    def __init__(self) -> None:
+        super().__init__(self.ADMIN_REQUIRED_MESSAGE)
+
+    @staticmethod
+    def msg_format() -> str:
+        return StreamAdministratorRequired.ADMIN_REQUIRED_MESSAGE
+
 class MarkdownRenderingException(Exception):
     pass
 
