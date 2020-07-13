@@ -518,8 +518,12 @@ class AuthBackendTest(ZulipTestCase):
                                    response=token_data_dict,
                                    subdomain='zulip')
                 bad_kwargs = dict(subdomain='acme')
-                with mock.patch('zerver.views.auth.redirect_and_log_into_subdomain',
-                                return_value=user):
+                logger_name = f'zulip.auth.{backend.name}'
+
+                with mock.patch(
+                    'zerver.views.auth.redirect_and_log_into_subdomain',
+                    return_value=user
+                ), self.assertLogs(logger_name, level="INFO") as info_log:
                     self.verify_backend(backend,
                                         good_kwargs=good_kwargs,
                                         bad_kwargs=bad_kwargs)
@@ -527,6 +531,12 @@ class AuthBackendTest(ZulipTestCase):
                     self.verify_backend(backend,
                                         good_kwargs=good_kwargs,
                                         bad_kwargs=bad_kwargs)
+                # Verify logging for deactivated users
+                self.assertEqual(info_log.output, [
+                    f'INFO:{logger_name}:Failed login attempt for deactivated account: {user.id}@{user.realm.string_id}',
+                    f'INFO:{logger_name}:Failed login attempt for deactivated account: {user.id}@{user.realm.string_id}'
+                ])
+
 
 class RateLimitAuthenticationTests(ZulipTestCase):
     @override_settings(RATE_LIMITING_AUTHENTICATE=True)
@@ -964,11 +974,13 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_social_auth_invalid_email(self) -> None:
         account_data_dict = self.get_account_data_dict(email="invalid", name=self.name)
-        result = self.social_auth_test(account_data_dict,
-                                       expect_choose_email_screen=True,
-                                       subdomain='zulip', next='/user_uploads/image')
+        with self.assertLogs(self.logger_string, level='INFO') as m:
+            result = self.social_auth_test(account_data_dict,
+                                           expect_choose_email_screen=True,
+                                           subdomain='zulip', next='/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "/login/?next=/user_uploads/image")
+        self.assertEqual(m.output, [self.logger_output("{} got invalid email argument.".format(self.backend.auth_backend_name), 'warning')])
 
     def test_user_cannot_log_into_nonexisting_realm(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
@@ -1352,7 +1364,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                 AUTHENTICATION_BACKENDS=(backend_path,
                                          'zproject.backends.ZulipLDAPUserPopulator',
                                          'zproject.backends.ZulipDummyBackend'),
-        ):
+        ), self.assertLogs(level='WARNING') as log_warn:
             result = self.social_auth_test(account_data_dict,
                                            expect_choose_email_screen=True,
                                            subdomain=subdomain, is_signup=True)
@@ -1371,6 +1383,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             # this user isn't in the ldap dictionary:
             self.stage_two_of_registration(result, realm, subdomain, email, name, name,
                                            skip_registration_form=self.BACKEND_CLASS.full_name_validated)
+        self.assertEqual(log_warn.output, [f'WARNING:root:New account email {email} could not be found in LDAP'])
 
     @override_settings(TERMS_OF_SERVICE=None)
     def test_social_auth_with_ldap_auth_registration_from_confirmation(self) -> None:
@@ -1394,7 +1407,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                 AUTHENTICATION_BACKENDS=(backend_path,
                                          'zproject.backends.ZulipLDAPAuthBackend',
                                          'zproject.backends.ZulipDummyBackend'),
-        ):
+        ), self.assertLogs('zulip.ldap', level='DEBUG') as log_debug, self.assertLogs(level='WARNING') as log_warn:
             account_data_dict = self.get_account_data_dict(email=email, name=name)
             result = self.social_auth_test(account_data_dict,
                                            expect_choose_email_screen=True,
@@ -1403,19 +1416,27 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             # this user isn't in the ldap dictionary:
             self.stage_two_of_registration(result, realm, subdomain, email, name, name,
                                            skip_registration_form=self.BACKEND_CLASS.full_name_validated)
+        self.assertEqual(log_warn.output, [f'WARNING:root:New account email {email} could not be found in LDAP'])
+        self.assertEqual(log_debug.output, [f'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No ldap user matching django_to_ldap_username result: {email}. Input username: {email}'])
 
     def test_social_auth_complete(self) -> None:
         with mock.patch('social_core.backends.oauth.BaseOAuth2.process_error',
-                        side_effect=AuthFailed('Not found')):
+                        side_effect=AuthFailed('Not found')), self.assertLogs(self.logger_string, level='INFO') as m:
             result = self.client_get(reverse('social:complete', args=[self.backend.name]))
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
+        self.assertEqual(m.output, [
+            self.logger_output("AuthFailed: Authentication failed: ", 'info'),
+        ])
 
         with mock.patch('social_core.backends.oauth.BaseOAuth2.auth_complete',
-                        side_effect=requests.exceptions.HTTPError):
+                        side_effect=requests.exceptions.HTTPError), self.assertLogs(self.logger_string, level='INFO') as m:
             result = self.client_get(reverse('social:complete', args=[self.backend.name]))
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
+        self.assertEqual(m.output, [
+            self.logger_output("HTTPError: ", 'info'),
+        ])
 
     def test_social_auth_complete_when_base_exc_is_raised(self) -> None:
         with mock.patch('social_core.backends.oauth.BaseOAuth2.auth_complete',
@@ -1755,9 +1776,12 @@ class SAMLAuthBackendTest(SocialAuthBase):
         if the authentication attempt failed. See SAMLAuthBackend.auth_complete for details.
         """
         account_data_dict = self.get_account_data_dict(email="invalid", name=self.name)
-        result = self.social_auth_test(account_data_dict,
-                                       expect_choose_email_screen=True,
-                                       subdomain='zulip', next='/user_uploads/image')
+        with self.assertLogs(self.logger_string, "WARNING") as warn_log:
+            result = self.social_auth_test(account_data_dict,
+                                           expect_choose_email_screen=True,
+                                           subdomain='zulip', next='/user_uploads/image')
+        self.assertEqual(warn_log.output, [
+            self.logger_output('SAML got invalid email argument.', 'warning')])
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "/login/")
 
@@ -2269,15 +2293,25 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
             result = self.client_get(url, **headers)
             self.assertEqual(result.status_code, 302)
 
-        # Start Apple auth with mobile_flow_otp param. It should get saved into the session
-        # on SOCIAL_AUTH_SUBDOMAIN.
-        initiate_auth(mobile_flow_otp)
-        self.assertEqual(self.client.session['mobile_flow_otp'], mobile_flow_otp)
+        with self.assertLogs(level='INFO') as info_log:
+            # Start Apple auth with mobile_flow_otp param. It should get saved into the session
+            # on SOCIAL_AUTH_SUBDOMAIN.
+            initiate_auth(mobile_flow_otp)
 
-        # Make a request without mobile_flow_otp param and verify the field doesn't persist
-        # in the session from the previous request.
-        initiate_auth()
+        self.assertEqual(self.client.session['mobile_flow_otp'], mobile_flow_otp)
+        self.assertEqual(info_log.output, [
+            'INFO:root:/complete/apple/: Authentication failed: Token validation failed'
+        ])
+
+        with self.assertLogs(level='INFO') as info_log:
+            # Make a request without mobile_flow_otp param and verify the field doesn't persist
+            # in the session from the previous request.
+            initiate_auth()
+
         self.assertEqual(self.client.session.get('mobile_flow_otp'), None)
+        self.assertEqual(info_log.output, [
+            'INFO:root:/complete/apple/: Authentication failed: Token validation failed'
+        ])
 
     def test_id_token_with_invalid_aud_sent(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
@@ -4167,11 +4201,15 @@ class TestLDAP(ZulipLDAPTestCase):
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_nonexistent_user(self) -> None:
-        with self.settings(LDAP_APPEND_DOMAIN='zulip.com'):
+        with self.settings(LDAP_APPEND_DOMAIN='zulip.com'), \
+                self.assertLogs('zulip.ldap', level='DEBUG') as log_debug:
             user = self.backend.authenticate(request=mock.MagicMock(),
                                              username='nonexistent@zulip.com',
                                              password="doesnt_matter",
                                              realm=get_realm('zulip'))
+            self.assertEqual(log_debug.output, [
+                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No ldap user matching django_to_ldap_username result: nonexistent. Input username: nonexistent@zulip.com'
+            ])
             self.assertIs(user, None)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
@@ -4296,12 +4334,15 @@ class TestLDAP(ZulipLDAPTestCase):
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_when_domain_does_not_match(self) -> None:
-        with self.settings(LDAP_APPEND_DOMAIN='acme.com'):
+        with self.settings(LDAP_APPEND_DOMAIN='acme.com'), self.assertLogs('zulip.ldap', 'DEBUG') as debug_log:
             user_profile = self.backend.authenticate(request=mock.MagicMock(),
                                                      username=self.example_email("hamlet"),
                                                      password=self.ldap_password('hamlet'),
                                                      realm=get_realm('zulip'))
             self.assertIs(user_profile, None)
+        self.assertEqual(debug_log.output, [
+            'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: Email hamlet@zulip.com does not match LDAP domain acme.com.'
+        ])
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success_with_different_subdomain(self) -> None:
@@ -4452,35 +4493,49 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_too_short_name(self) -> None:
         self.change_ldap_user_attr('hamlet', 'cn', 'a')
 
-        with self.assertRaises(ZulipLDAPException):
+        with self.assertRaises(ZulipLDAPException), \
+                self.assertLogs('django_auth_ldap', 'WARNING') as warn_log:
             self.perform_ldap_sync(self.example_user('hamlet'))
+        self.assertEqual(warn_log.output, ['WARNING:django_auth_ldap:Name too short! while authenticating hamlet'])
 
     def test_deactivate_user(self) -> None:
         self.change_ldap_user_attr('hamlet', 'userAccountControl', '2')
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
-                                                    'userAccountControl': 'userAccountControl'}):
+                                                    'userAccountControl': 'userAccountControl'}), \
+                self.assertLogs('zulip.ldap') as info_logs:
             self.perform_ldap_sync(self.example_user('hamlet'))
         hamlet = self.example_user('hamlet')
         self.assertFalse(hamlet.is_active)
+        self.assertEqual(info_logs.output, [
+            'INFO:zulip.ldap:Deactivating user hamlet@zulip.com because they are disabled in LDAP.'
+        ])
 
     @mock.patch("zproject.backends.ZulipLDAPAuthBackendBase.sync_full_name_from_ldap")
     def test_dont_sync_disabled_ldap_user(self, fake_sync: mock.MagicMock) -> None:
         self.change_ldap_user_attr('hamlet', 'userAccountControl', '2')
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
-                                                    'userAccountControl': 'userAccountControl'}):
+                                                    'userAccountControl': 'userAccountControl'}), \
+                self.assertLogs('zulip.ldap') as info_logs:
             self.perform_ldap_sync(self.example_user('hamlet'))
             fake_sync.assert_not_called()
+        self.assertEqual(info_logs.output, [
+            'INFO:zulip.ldap:Deactivating user hamlet@zulip.com because they are disabled in LDAP.'
+        ])
 
     def test_reactivate_user(self) -> None:
         do_deactivate_user(self.example_user('hamlet'))
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
-                                                    'userAccountControl': 'userAccountControl'}):
+                                                    'userAccountControl': 'userAccountControl'}), \
+                self.assertLogs('zulip.ldap') as info_logs:
             self.perform_ldap_sync(self.example_user('hamlet'))
         hamlet = self.example_user('hamlet')
         self.assertTrue(hamlet.is_active)
+        self.assertEqual(info_logs.output, [
+            'INFO:zulip.ldap:Reactivating user hamlet@zulip.com because they are not disabled in LDAP.'
+        ])
 
     def test_user_in_multiple_realms(self) -> None:
         test_realm = do_create_realm('test', 'test', False)
@@ -4622,16 +4677,24 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_update_non_existent_profile_field(self) -> None:
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
                                                     'custom_profile_field__non_existent': 'homePhone'}):
-            with self.assertRaisesRegex(ZulipLDAPException, 'Custom profile field with name non_existent not found'):
+            with self.assertRaisesRegex(ZulipLDAPException, 'Custom profile field with name non_existent not found'), \
+                    self.assertLogs('django_auth_ldap', 'WARNING') as warn_log:
                 self.perform_ldap_sync(self.example_user('hamlet'))
+            self.assertEqual(warn_log.output, [
+                'WARNING:django_auth_ldap:Custom profile field with name non_existent not found. while authenticating hamlet'
+            ])
 
     def test_update_custom_profile_field_invalid_data(self) -> None:
         self.change_ldap_user_attr('hamlet', 'birthDate', '9999')
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
                                                     'custom_profile_field__birthday': 'birthDate'}):
-            with self.assertRaisesRegex(ZulipLDAPException, 'Invalid data for birthday field'):
+            with self.assertRaisesRegex(ZulipLDAPException, 'Invalid data for birthday field'), \
+                    self.assertLogs('django_auth_ldap', 'WARNING') as warn_log:
                 self.perform_ldap_sync(self.example_user('hamlet'))
+            self.assertEqual(warn_log.output, [
+                'WARNING:django_auth_ldap:Invalid data for birthday field: Birthday is not a date while authenticating hamlet'
+            ])
 
     def test_update_custom_profile_field_no_mapping(self) -> None:
         hamlet = self.example_user('hamlet')
@@ -4672,11 +4735,14 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         expected_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=no_op_field).value
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
-                                                    'custom_profile_field__birthday': 'nonExistantAttr'}):
+                                                    'custom_profile_field__birthday': 'nonExistantAttr'}), self.assertLogs('django_auth_ldap', 'WARNING') as warn_log:
             self.perform_ldap_sync(self.example_user('hamlet'))
 
         actual_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=no_op_field).value
         self.assertEqual(actual_value, expected_value)
+        self.assertEqual(warn_log.output, [
+            'WARNING:django_auth_ldap:uid=hamlet,ou=users,dc=zulip,dc=com does not have a value for the attribute nonExistantAttr'
+        ])
 
 class TestQueryLDAP(ZulipLDAPTestCase):
 
@@ -4912,7 +4978,8 @@ class LDAPBackendTest(ZulipTestCase):
         error = ZulipLDAPConfigurationError('Realm is None', error_type)
         with mock.patch('zproject.backends.ZulipLDAPAuthBackend.get_or_build_user',
                         side_effect=error), \
-                mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'):
+                mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), \
+                self.assertLogs('django_auth_ldap', 'WARNING') as warn_log:
             response = self.client_post('/login/', data)
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.url, reverse('config_error', kwargs={'error_category_name': 'ldap'}))
@@ -4920,3 +4987,6 @@ class LDAPBackendTest(ZulipTestCase):
             self.assert_in_response('You are trying to login using LDAP '
                                     'without creating an',
                                     response)
+        self.assertEqual(warn_log.output, [
+            "WARNING:django_auth_ldap:('Realm is None', 1) while authenticating hamlet"
+        ])
