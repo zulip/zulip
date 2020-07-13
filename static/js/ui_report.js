@@ -15,7 +15,9 @@ exports.message = function (response, status_box, cls, remove_after) {
         .html(response).stop(true).fadeTo(0, 1);
     if (remove_after) {
         setTimeout(() => {
-            status_box.fadeOut(400);
+            status_box.fadeOut(400, () => {
+                status_box.attr('style', (index, prev_attr) => (prev_attr || '') + 'display: none !important;');
+            });
         }, remove_after);
     }
     status_box.addClass("show");
