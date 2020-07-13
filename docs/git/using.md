@@ -72,7 +72,7 @@ This will rollback any changes you've made to master, update it from
 history clean and readable.
 
 When you're ready, [push your changes][github-help-push] to your remote fork.
-Make sure you're in branch `master` and the run `git push`:
+Make sure you're in branch `master` and then run `git push`:
 
 ```
 $ git checkout master
