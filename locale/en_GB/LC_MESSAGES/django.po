@@ -10,8 +10,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-10 19:39+0000\n"
-"PO-Revision-Date: 2020-07-10 19:40+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"PO-Revision-Date: 2020-07-10 21:51+0000\n"
+"Last-Translator: David Wood <ZXFEIIKBVHB0Y6EIYWUMV68EL@david.davidtw.co>\n"
 "Language-Team: English (United Kingdom) (http://www.transifex.com/zulip/zulip/language/en_GB/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -251,27 +251,27 @@ msgstr "Most control"
 
 #: templates/corporate/upgrade.html:232
 msgid "Open source"
-msgstr ""
+msgstr "Open source"
 
 #: templates/corporate/upgrade.html:233
 msgid "Academic research"
-msgstr ""
+msgstr "Academic research"
 
 #: templates/corporate/upgrade.html:234
 msgid "Education"
-msgstr ""
+msgstr "Education"
 
 #: templates/corporate/upgrade.html:235
 msgid "Non-Profit"
-msgstr ""
+msgstr "Non-Profit"
 
 #: templates/corporate/upgrade.html:236
 msgid "Event (hackathons, conferences, etc.)"
-msgstr ""
+msgstr "Event (hackathons, conferences, etc.)"
 
 #: templates/corporate/upgrade.html:237
 msgid "Other"
-msgstr ""
+msgstr "Other"
 
 #: templates/two_factor/_wizard_forms.html:26
 msgid "Or, alternatively, use one of your backup phones:"
@@ -2643,7 +2643,7 @@ msgstr "Contact us any time at %(support_email)s if you run into trouble, have a
 #: templates/zerver/emails/sponsorship_request.subject.txt:1
 #, python-format
 msgid "Sponsorship request (%(organization_type)s) for %(string_id)s"
-msgstr ""
+msgstr "Sponsorship request (%(organization_type)s) for %(string_id)s"
 
 #: templates/zerver/find_account.html:8
 msgid "Find your Zulip accounts"
