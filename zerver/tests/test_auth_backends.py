@@ -964,11 +964,13 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_social_auth_invalid_email(self) -> None:
         account_data_dict = self.get_account_data_dict(email="invalid", name=self.name)
-        result = self.social_auth_test(account_data_dict,
-                                       expect_choose_email_screen=True,
-                                       subdomain='zulip', next='/user_uploads/image')
+        with self.assertLogs(self.logger_string, level='INFO') as m:
+            result = self.social_auth_test(account_data_dict,
+                                           expect_choose_email_screen=True,
+                                           subdomain='zulip', next='/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "/login/?next=/user_uploads/image")
+        self.assertEqual(m.output, [self.logger_output("{} got invalid email argument.".format(self.backend.auth_backend_name), 'warning')])
 
     def test_user_cannot_log_into_nonexisting_realm(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
