@@ -13,22 +13,25 @@ below features are supported.
 **Feature level 24**
 
 * The `!avatar()` and `!gravatar()` markdown syntax, which was never
-  documented and rarely used, was removed.
+  documented, had inconsistent syntax, and was rarely used, was
+  removed.
 
 **Feature level 23**
 
-* `GET/PUT/POST /users/me/pointer`: Eliminated.  We eliminated
-  the whole concept of the "global" user pointer leading up to
-  this commit.
+* `GET/PUT/POST /users/me/pointer`: Removed.  Zulip 3.0 removes the
+  `pointer` concept from Zulip; this legacy data structure was
+  replaced by tracking unread messages and loading views centered on
+  the first unread message.
 
 **Feature level 22**
 
-* `GET /attachments`: The date when a message using the attachment was
-  sent is now correctly encoded as `date_sent`, replacing the
-  confusingly named `name` field.  The `date_sent` and `create_time`
-  fields of attachment objects are now encoded as integers;
-  (previously the implementation could send floats incorrectly
-  suggesting that microsecond precision is relevant).
+* [`GET /attachments`](/api/get-attachments): The date when a message
+  using the attachment was sent is now correctly encoded as
+  `date_sent`, replacing the confusingly named `name` field.  The
+  `date_sent` and `create_time` fields of attachment objects are now
+  encoded as integers; (previously the implementation could send
+  floats incorrectly suggesting that microsecond precision is
+  relevant).
 * `GET /invites`: Now encodes the user ID of the person who created
    the invitation as `invited_by_user_id`, replacing the previous
    `ref` field (which had that user's Zulip display email address).
