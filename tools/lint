@@ -93,9 +93,10 @@ def run() -> None:
     linter_config.external_linter('isort', ['isort'], ['py'],
                                   description="Sorts Python import statements",
                                   check_arg=['--check-only', '--diff'])
-    linter_config.external_linter('prettier', ['node_modules/.bin/prettier'], ['yaml', 'yml'],
+    linter_config.external_linter('prettier', ['node_modules/.bin/prettier'],
+                                  ['js', 'ts', 'yaml', 'yml'],
                                   check_arg=['--check'], fix_arg=['--write'],
-                                  description="Formats YAML files",
+                                  description="Formats JavaScript and YAML",
                                   # https://github.com/prettier/prettier/pull/8703
                                   suppress_line=lambda line: line in ["Checking formatting...\n", "All matched files use Prettier code style!\n"])
 
