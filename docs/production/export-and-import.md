@@ -161,7 +161,7 @@ data includes:
 * The postgres database.  You can back it up like any postgres
 database. We have some example tooling for doing that incrementally
 into S3 using [wal-g](https://github.com/wal-g/wal-g) in
-`puppet/zulip_ops/manifests/postgres_common.pp`.
+`puppet/zulip/manifests/postgres_backups.pp`.
 In short, this requires:
   - Zulip 1.4 or newer release.
   - An Amazon S3 bucket for storing the backups.
@@ -173,9 +173,9 @@ In short, this requires:
     s3_backups_bucket = # name of S3 backup
     ```
   - A cron job to run `/usr/local/bin/pg_backup_and_purge.py`. There's puppet
-  config for this in `puppet/zulip_internal/manifests/postgres_common.pp`.
+  config for this in `puppet/zulip/manifests/postgres_backups.pp`.
   - Verification that backups are running via
-  `/usr/lib/nagios/plugins/zulip_postgres_common/check_postgres_backup`.
+  `/usr/lib/nagios/plugins/zulip_postgres_backups/check_postgres_backup`.
 
 * Any user-uploaded files.  If you're using S3 as storage for file
 uploads, this is backed up in S3. But if you have instead set
@@ -224,7 +224,7 @@ installation from one server to another.
 We recommend running a disaster recovery after setting up your backups to
 confirm that your backups are working. You may also want to monitor
 that they are up to date using the Nagios plugin at:
-`puppet/zulip_ops/files/nagios_plugins/check_postgres_backup`.
+`puppet/zulip/files/nagios_plugins/zulip_postgres_backups/check_postgres_backup`.
 
 ## Postgres streaming replication
 

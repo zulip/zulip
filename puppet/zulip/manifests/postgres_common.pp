@@ -70,33 +70,6 @@ class zulip::postgres_common {
       creates => '/etc/logrotate.d/postgresql-common.disabled',
     }
   }
-  file { "${zulip::common::nagios_plugins_dir}/zulip_postgres_common":
-    require => Package[$zulip::common::nagios_plugins],
-    recurse => true,
-    purge   => true,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
-    source  => 'puppet:///modules/zulip/nagios_plugins/zulip_postgres_common',
-  }
-
-  file { '/usr/local/bin/env-wal-g':
-    ensure  => file,
-    owner   => 'root',
-    group   => 'postgres',
-    mode    => '0750',
-    source  => 'puppet:///modules/zulip/postgresql/env-wal-g',
-    require => Package[$postgresql],
-  }
-
-  file { '/usr/local/bin/pg_backup_and_purge':
-    ensure  => file,
-    owner   => 'root',
-    group   => 'postgres',
-    mode    => '0754',
-    source  => 'puppet:///modules/zulip/postgresql/pg_backup_and_purge',
-    require => File['/usr/local/bin/env-wal-g'],
-  }
 
   # Use arcane puppet virtual resources to add postgres user to zulip group
   @user { 'postgres':
