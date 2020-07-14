@@ -69,7 +69,9 @@ function revive_current_focus() {
     if (!filter_button) {
         set_default_focus();
     } else {
-        current_focus_elem = $("#recent_topics_filter_buttons").find("[data-filter='" + filter_button + "']");
+        current_focus_elem = $("#recent_topics_filter_buttons").find(
+            "[data-filter='" + filter_button + "']",
+        );
         current_focus_elem.focus();
     }
     return true;
@@ -147,7 +149,6 @@ function get_sorted_topics() {
 exports.get = function () {
     return get_sorted_topics();
 };
-
 
 function format_topic(topic_data) {
     const last_msg = message_store.get(topic_data.last_msg_id);
@@ -331,16 +332,15 @@ exports.set_filter = function (filter) {
     // set `filters`.
 
     // Get the button which was clicked.
-    const filter_elem = $("#recent_topics_filter_buttons")
-        .find('[data-filter="' + filter + '"]');
+    const filter_elem = $("#recent_topics_filter_buttons").find('[data-filter="' + filter + '"]');
 
     // If user clicks `All`, we clear all filters.
     if (filter === "all" && filters.size !== 0) {
         filters = new Set();
-    // If the button was already selected, remove the filter.
+        // If the button was already selected, remove the filter.
     } else if (filter_elem.hasClass("btn-recent-selected")) {
         filters.delete(filter);
-    // If the button was not selected, we add the filter.
+        // If the button was not selected, we add the filter.
     } else {
         filters.add(filter);
     }
@@ -504,12 +504,12 @@ exports.change_focused_element = function (e, input_key) {
                 set_table_focus(row_focus, col_focus);
                 return true;
             case "click":
-            // Note: current_focus_elem can be different here, so we just
-            // set current_focus_elem to the input box, we don't want .focus() on
-            // it since it is already focused.
-            // We only do this for search beacuse we don't want the focus to
-            // go away from the input box when `revive_current_focus` is called
-            // on rerender when user is typing.
+                // Note: current_focus_elem can be different here, so we just
+                // set current_focus_elem to the input box, we don't want .focus() on
+                // it since it is already focused.
+                // We only do this for search beacuse we don't want the focus to
+                // go away from the input box when `revive_current_focus` is called
+                // on rerender when user is typing.
                 current_focus_elem = $("#recent_topics_search");
                 return true;
         }

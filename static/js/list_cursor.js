@@ -8,9 +8,7 @@ const list_cursor = function (opts) {
         opts.list.find_li &&
         opts.list.first_key &&
         opts.list.prev_key &&
-        opts.list.next_key
-    ;
-
+        opts.list.next_key;
     if (!config_ok) {
         blueslip.error("Programming error");
         return;

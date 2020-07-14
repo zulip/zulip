@@ -7,7 +7,9 @@ const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 let jquery_init;
 
-global.$ = (f) => {jquery_init = f;};
+global.$ = (f) => {
+    jquery_init = f;
+};
 
 set_global("helpers", {
     set_tab: noop,
@@ -88,11 +90,14 @@ run_test("initialize", () => {
         assert.equal(schedule, "monthly");
     };
 
-    $("input[type=radio][name=license_management]:checked").val = () => document.querySelector("input[type=radio][name=license_management]:checked").value;
+    $("input[type=radio][name=license_management]:checked").val = () =>
+        document.querySelector("input[type=radio][name=license_management]:checked").value;
 
-    $("input[type=radio][name=schedule]:checked").val = () => document.querySelector("input[type=radio][name=schedule]:checked").value;
+    $("input[type=radio][name=schedule]:checked").val = () =>
+        document.querySelector("input[type=radio][name=schedule]:checked").value;
 
-    $("#autopay-form").data = (key) => document.querySelector("#autopay-form").getAttribute("data-" + key);
+    $("#autopay-form").data = (key) =>
+        document.querySelector("#autopay-form").getAttribute("data-" + key);
 
     jquery_init();
 
@@ -118,7 +123,9 @@ run_test("initialize", () => {
     helpers.show_license_section = (section) => {
         assert.equal(section, "manual");
     };
-    const license_change_handler = $("input[type=radio][name=license_management]").get_on_handler("change");
+    const license_change_handler = $("input[type=radio][name=license_management]").get_on_handler(
+        "change",
+    );
     license_change_handler.call({value: "manual"});
 
     helpers.update_charged_amount = (prices, schedule) => {
@@ -135,43 +142,76 @@ run_test("initialize", () => {
     assert.equal($("#invoice_annual_price").text(), "64");
     assert.equal($("#invoice_annual_price_per_month").text(), "5.34");
 
-    const organization_type_change_handler = $("select[name=organization-type]").get_on_handler("change");
+    const organization_type_change_handler = $("select[name=organization-type]").get_on_handler(
+        "change",
+    );
     organization_type_change_handler.call({value: "open_source"});
-    assert.equal($("#sponsorship-discount-details").text(),
-                 "Open source projects are eligible for fully sponsored (free) Zulip Standard.");
+    assert.equal(
+        $("#sponsorship-discount-details").text(),
+        "Open source projects are eligible for fully sponsored (free) Zulip Standard.",
+    );
     organization_type_change_handler.call({value: "research"});
-    assert.equal($("#sponsorship-discount-details").text(),
-                 "Academic research organizations are eligible for fully sponsored (free) Zulip Standard.");
+    assert.equal(
+        $("#sponsorship-discount-details").text(),
+        "Academic research organizations are eligible for fully sponsored (free) Zulip Standard.",
+    );
     organization_type_change_handler.call({value: "event"});
-    assert.equal($("#sponsorship-discount-details").text(),
-                 "Events are eligible for fully sponsored (free) Zulip Standard.");
+    assert.equal(
+        $("#sponsorship-discount-details").text(),
+        "Events are eligible for fully sponsored (free) Zulip Standard.",
+    );
     organization_type_change_handler.call({value: "education"});
-    assert.equal($("#sponsorship-discount-details").text(),
-                 "Education use is eligible for an 85%-100% discount.");
+    assert.equal(
+        $("#sponsorship-discount-details").text(),
+        "Education use is eligible for an 85%-100% discount.",
+    );
     organization_type_change_handler.call({value: "non_profit"});
-    assert.equal($("#sponsorship-discount-details").text(),
-                 "Nonprofits are eligible for an 85%-100% discount.");
+    assert.equal(
+        $("#sponsorship-discount-details").text(),
+        "Nonprofits are eligible for an 85%-100% discount.",
+    );
     organization_type_change_handler.call({value: "other"});
-    assert.equal($("#sponsorship-discount-details").text(),
-                 "Your organization might be eligible for a discount or sponsorship.");
+    assert.equal(
+        $("#sponsorship-discount-details").text(),
+        "Your organization might be eligible for a discount or sponsorship.",
+    );
 });
 
 run_test("autopay_form_fields", () => {
     assert.equal(document.querySelector("#autopay-form").dataset.key, "{{ publishable_key }}");
     assert.equal(document.querySelector("#autopay-form").dataset.email, "{{ email }}");
-    assert.equal(document.querySelector("#autopay-form [name=seat_count]").value, "{{ seat_count }}");
-    assert.equal(document.querySelector("#autopay-form [name=signed_seat_count]").value, "{{ signed_seat_count }}");
+    assert.equal(
+        document.querySelector("#autopay-form [name=seat_count]").value,
+        "{{ seat_count }}",
+    );
+    assert.equal(
+        document.querySelector("#autopay-form [name=signed_seat_count]").value,
+        "{{ signed_seat_count }}",
+    );
     assert.equal(document.querySelector("#autopay-form [name=salt]").value, "{{ salt }}");
-    assert.equal(document.querySelector("#autopay-form [name=billing_modality]").value, "charge_automatically");
-    assert.equal(document.querySelector("#autopay-form #automatic_license_count").value, "{{ seat_count }}");
-    assert.equal(document.querySelector("#autopay-form #manual_license_count").min, "{{ seat_count }}");
+    assert.equal(
+        document.querySelector("#autopay-form [name=billing_modality]").value,
+        "charge_automatically",
+    );
+    assert.equal(
+        document.querySelector("#autopay-form #automatic_license_count").value,
+        "{{ seat_count }}",
+    );
+    assert.equal(
+        document.querySelector("#autopay-form #manual_license_count").min,
+        "{{ seat_count }}",
+    );
 
-    const license_options = document.querySelectorAll("#autopay-form input[type=radio][name=license_management]");
+    const license_options = document.querySelectorAll(
+        "#autopay-form input[type=radio][name=license_management]",
+    );
     assert.equal(license_options.length, 2);
     assert.equal(license_options[0].value, "automatic");
     assert.equal(license_options[1].value, "manual");
 
-    const schedule_options = document.querySelectorAll("#autopay-form input[type=radio][name=schedule]");
+    const schedule_options = document.querySelectorAll(
+        "#autopay-form input[type=radio][name=schedule]",
+    );
     assert.equal(schedule_options.length, 2);
     assert.equal(schedule_options[0].value, "monthly");
     assert.equal(schedule_options[1].value, "annual");
@@ -188,12 +228,23 @@ run_test("autopay_form_fields", () => {
 });
 
 run_test("invoice_form_fields", () => {
-    assert.equal(document.querySelector("#invoice-form [name=signed_seat_count]").value, "{{ signed_seat_count }}");
+    assert.equal(
+        document.querySelector("#invoice-form [name=signed_seat_count]").value,
+        "{{ signed_seat_count }}",
+    );
     assert.equal(document.querySelector("#invoice-form [name=salt]").value, "{{ salt }}");
-    assert.equal(document.querySelector("#invoice-form [name=billing_modality]").value, "send_invoice");
-    assert.equal(document.querySelector("#invoice-form [name=licenses]").min, "{{ min_invoiced_licenses }}");
+    assert.equal(
+        document.querySelector("#invoice-form [name=billing_modality]").value,
+        "send_invoice",
+    );
+    assert.equal(
+        document.querySelector("#invoice-form [name=licenses]").min,
+        "{{ min_invoiced_licenses }}",
+    );
 
-    const schedule_options = document.querySelectorAll("#invoice-form input[type=radio][name=schedule]");
+    const schedule_options = document.querySelectorAll(
+        "#invoice-form input[type=radio][name=schedule]",
+    );
     assert.equal(schedule_options.length, 1);
     assert.equal(schedule_options[0].value, "annual");
 

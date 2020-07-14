@@ -14,7 +14,8 @@ exports.maybe_disable_widgets = function () {
     }
 
     $(".organization-box [data-name='default-streams-list']")
-        .find("input:not(.search), button, select").attr("disabled", true);
+        .find("input:not(.search), button, select")
+        .attr("disabled", true);
 };
 
 exports.build_default_stream_table = function () {
@@ -49,8 +50,7 @@ exports.build_default_stream_table = function () {
 };
 
 exports.update_default_streams_table = function () {
-    if (/#*organization/.test(window.location.hash) ||
-        /#*settings/.test(window.location.hash)) {
+    if (/#*organization/.test(window.location.hash) || /#*settings/.test(window.location.hash)) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
         exports.build_default_stream_table();
     }

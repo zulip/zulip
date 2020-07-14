@@ -1,4 +1,3 @@
-
 zrequire("keydown_util");
 zrequire("components");
 
@@ -98,10 +97,10 @@ run_test("basics", () => {
 
         self.find = function (sel) {
             switch (sel) {
-            case ".ind-tab":
-                return ind_tab;
-            default:
-                throw Error("unknown selector: " + sel);
+                case ".ind-tab":
+                    return ind_tab;
+                default:
+                    throw Error("unknown selector: " + sel);
             }
         };
 
@@ -115,18 +114,18 @@ run_test("basics", () => {
         }
 
         switch (sel) {
-        case "<div class='tab-switcher'></div>":
-            return switcher;
-        case "<div class='tab-switcher stream_sorter_toggle'></div>":
-            return switcher;
-        case "<div class='ind-tab' data-tab-key='keyboard-shortcuts' data-tab-id='0' tabindex='0'>translated: Keyboard shortcuts</div>":
-            return make_tab(0);
-        case "<div class='ind-tab' data-tab-key='message-formatting' data-tab-id='1' tabindex='0'>translated: Message formatting</div>":
-            return make_tab(1);
-        case "<div class='ind-tab' data-tab-key='search-operators' data-tab-id='2' tabindex='0'>translated: Search operators</div>":
-            return make_tab(2);
-        default:
-            throw Error("unknown selector: " + sel);
+            case "<div class='tab-switcher'></div>":
+                return switcher;
+            case "<div class='tab-switcher stream_sorter_toggle'></div>":
+                return switcher;
+            case "<div class='ind-tab' data-tab-key='keyboard-shortcuts' data-tab-id='0' tabindex='0'>translated: Keyboard shortcuts</div>":
+                return make_tab(0);
+            case "<div class='ind-tab' data-tab-key='message-formatting' data-tab-id='1' tabindex='0'>translated: Message formatting</div>":
+                return make_tab(1);
+            case "<div class='ind-tab' data-tab-key='search-operators' data-tab-id='2' tabindex='0'>translated: Search operators</div>":
+                return make_tab(2);
+            default:
+                throw Error("unknown selector: " + sel);
         }
     });
 

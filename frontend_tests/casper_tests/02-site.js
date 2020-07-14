@@ -18,9 +18,11 @@ casper.then(function () {
     var msg = common.get_rendered_messages("zhome");
 
     msg.headings.forEach(function (heading) {
-        casper.test.assertMatch(common.normalize_spaces(heading),
-                                /(^You and )|( )/,
-                                "Heading is well-formed");
+        casper.test.assertMatch(
+            common.normalize_spaces(heading),
+            /(^You and )|( )/,
+            "Heading is well-formed"
+        );
     });
 
     casper.test.info("Sending messages");
@@ -29,48 +31,45 @@ casper.then(function () {
 // Send some messages.
 
 common.then_send_many([
-    {stream: "Verona", subject: "frontend test",
-     content: "test verona A"},
+    {stream: "Verona", subject: "frontend test", content: "test verona A"},
 
-    {stream: "Verona", subject: "frontend test",
-     content: "test verona B"},
+    {stream: "Verona", subject: "frontend test", content: "test verona B"},
 
-    {stream: "Verona", subject: "other subject",
-     content: "test verona C"},
+    {stream: "Verona", subject: "other subject", content: "test verona C"},
 
-    {recipient: "cordelia@zulip.com, hamlet@zulip.com",
-     content: "personal A"},
+    {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "personal A"},
 
-    {recipient: "cordelia@zulip.com, hamlet@zulip.com",
-     content: "personal B"},
+    {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "personal B"},
 
-    {recipient: "cordelia@zulip.com",
-     content: "personal C"}]);
+    {recipient: "cordelia@zulip.com", content: "personal C"},
+]);
 
 common.wait_for_receive(function () {
-    common.expected_messages("zhome", [
-        "Verona > frontend test",
-        "Verona > other subject",
-        "You and Cordelia Lear, King Hamlet",
-        "You and Cordelia Lear",
-    ], [
-        "<p>test verona A</p>",
-        "<p>test verona B</p>",
-        "<p>test verona C</p>",
-        "<p>personal A</p>",
-        "<p>personal B</p>",
-        "<p>personal C</p>",
-    ]);
+    common.expected_messages(
+        "zhome",
+        [
+            "Verona > frontend test",
+            "Verona > other subject",
+            "You and Cordelia Lear, King Hamlet",
+            "You and Cordelia Lear",
+        ],
+        [
+            "<p>test verona A</p>",
+            "<p>test verona B</p>",
+            "<p>test verona C</p>",
+            "<p>personal A</p>",
+            "<p>personal B</p>",
+            "<p>personal C</p>",
+        ]
+    );
 
     casper.test.info("Sending more messages");
 });
 
 common.then_send_many([
-    {stream: "Verona", subject: "frontend test",
-     content: "test verona D"},
+    {stream: "Verona", subject: "frontend test", content: "test verona D"},
 
-    {recipient: "cordelia@zulip.com, hamlet@zulip.com",
-     content: "personal D"},
+    {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "personal D"},
 ]);
 
 common.then_log_out();

@@ -115,5 +115,4 @@ run_test("timers", () => {
         timer_cleared: false,
         timer_set: false,
     });
-
 });

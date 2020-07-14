@@ -27,12 +27,9 @@ function get_events_success(events) {
 
     for (const event of events) {
         try {
-            get_events_params.last_event_id = Math.max(get_events_params.last_event_id,
-                                                       event.id);
+            get_events_params.last_event_id = Math.max(get_events_params.last_event_id, event.id);
         } catch (ex) {
-            blueslip.error("Failed to update last_event_id",
-                           {event: clean_event(event)},
-                           ex.stack);
+            blueslip.error("Failed to update last_event_id", {event: clean_event(event)}, ex.stack);
         }
     }
 
@@ -82,10 +79,11 @@ function get_events_success(events) {
         try {
             dispatch_event(event);
         } catch (ex1) {
-            blueslip.error("Failed to process an event\n" +
-                           blueslip.exception_msg(ex1),
-                           {event: clean_event(event)},
-                           ex1.stack);
+            blueslip.error(
+                "Failed to process an event\n" + blueslip.exception_msg(ex1),
+                {event: clean_event(event)},
+                ex1.stack,
+            );
         }
     }
 
@@ -113,10 +111,11 @@ function get_events_success(events) {
                 message_events.insert_new_messages(messages, sent_by_this_client);
             }
         } catch (ex2) {
-            blueslip.error("Failed to insert new messages\n" +
-                           blueslip.exception_msg(ex2),
-                           undefined,
-                           ex2.stack);
+            blueslip.error(
+                "Failed to insert new messages\n" + blueslip.exception_msg(ex2),
+                undefined,
+                ex2.stack,
+            );
         }
     }
 
@@ -128,10 +127,11 @@ function get_events_success(events) {
         try {
             message_events.update_messages(update_message_events);
         } catch (ex3) {
-            blueslip.error("Failed to update messages\n" +
-                           blueslip.exception_msg(ex3),
-                           undefined,
-                           ex3.stack);
+            blueslip.error(
+                "Failed to update messages\n" + blueslip.exception_msg(ex3),
+                undefined,
+                ex3.stack,
+            );
         }
     }
 
@@ -199,10 +199,11 @@ function get_events(options) {
 
                 get_events_success(data.events);
             } catch (ex) {
-                blueslip.error("Failed to handle get_events success\n" +
-                               blueslip.exception_msg(ex),
-                               undefined,
-                               ex.stack);
+                blueslip.error(
+                    "Failed to handle get_events success\n" + blueslip.exception_msg(ex),
+                    undefined,
+                    ex.stack,
+                );
             }
             get_events_timeout = setTimeout(get_events, 0);
         },
@@ -211,13 +212,17 @@ function get_events(options) {
                 get_events_xhr = undefined;
                 // If we're old enough that our message queue has been
                 // garbage collected, immediately reload.
-                if (xhr.status === 400 &&
-                    JSON.parse(xhr.responseText).code === "BAD_EVENT_QUEUE_ID") {
+                if (
+                    xhr.status === 400 &&
+                    JSON.parse(xhr.responseText).code === "BAD_EVENT_QUEUE_ID"
+                ) {
                     page_params.event_queue_expired = true;
-                    reload.initiate({immediate: true,
-                                     save_pointer: false,
-                                     save_narrow: true,
-                                     save_compose: true});
+                    reload.initiate({
+                        immediate: true,
+                        save_pointer: false,
+                        save_narrow: true,
+                        save_compose: true,
+                    });
                 }
 
                 if (error_type === "abort") {
@@ -237,10 +242,11 @@ function get_events(options) {
                     hide_ui_connection_error();
                 }
             } catch (ex) {
-                blueslip.error("Failed to handle get_events error\n" +
-                               blueslip.exception_msg(ex),
-                               undefined,
-                               ex.stack);
+                blueslip.error(
+                    "Failed to handle get_events error\n" + blueslip.exception_msg(ex),
+                    undefined,
+                    ex.stack,
+                );
             }
             const retry_sec = Math.min(90, Math.exp(get_events_failures / 2));
             get_events_timeout = setTimeout(get_events, retry_sec * 1000);
@@ -269,11 +275,11 @@ exports.home_view_loaded = function home_view_loaded() {
     $(document).trigger("home_view_loaded.zulip");
 };
 
-
 let watchdog_time = $.now();
 exports.check_for_unsuspend = function () {
     const new_time = $.now();
-    if (new_time - watchdog_time > 20000) { // 20 seconds.
+    if (new_time - watchdog_time > 20000) {
+        // 20 seconds.
         // Defensively reset watchdog_time here in case there's an
         // exception in one of the event handlers
         watchdog_time = new_time;

@@ -108,7 +108,6 @@ run_test("finding_related_objects", () => {
     elem.set_parents_result(".folder", my_parents);
     elem.parents(".folder").addClass("active");
     assert(my_parents.hasClass("active"));
-
 });
 
 run_test("clicks", () => {
@@ -138,7 +137,6 @@ run_test("clicks", () => {
     // and keydown
     $(".some-class").keydown();
     assert.equal(state.keydown, true);
-
 });
 
 run_test("events", () => {

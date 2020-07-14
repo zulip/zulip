@@ -18,7 +18,13 @@ function change_display_setting(data, status_element, success_msg, sticky) {
         $status_el.data("is_sticky", true);
         $status_el.data("sticky_msg", success_msg);
     }
-    settings_ui.do_settings_change(channel.patch, "/json/settings/display", data, status_element, opts);
+    settings_ui.do_settings_change(
+        channel.patch,
+        "/json/settings/display",
+        data,
+        status_element,
+        opts,
+    );
 }
 
 exports.set_up = function () {
@@ -49,7 +55,11 @@ exports.set_up = function () {
                 change_display_setting(
                     data,
                     "#display-settings-status",
-                    i18n.t("Saved. Please <a class='reload_link'>reload</a> for the change to take effect."), true);
+                    i18n.t(
+                        "Saved. Please <a class='reload_link'>reload</a> for the change to take effect.",
+                    ),
+                    true,
+                );
             } else {
                 change_display_setting(data, "#display-settings-status");
             }
@@ -68,9 +78,14 @@ exports.set_up = function () {
         const new_language = $link.attr("data-name");
         $("#default_language_name").text(new_language);
 
-        change_display_setting(data, "#language-settings-status",
-                               i18n.t("Saved. Please <a class='reload_link'>reload</a> for the change to take effect."), true);
-
+        change_display_setting(
+            data,
+            "#language-settings-status",
+            i18n.t(
+                "Saved. Please <a class='reload_link'>reload</a> for the change to take effect.",
+            ),
+            true,
+        );
     });
 
     $("#default_language").on("click", (e) => {
@@ -93,7 +108,6 @@ exports.set_up = function () {
         window.location.reload();
     });
 
-
     $("#twenty_four_hour_time").change(function () {
         const data = {twenty_four_hour_time: this.value};
         change_display_setting(data, "#time-settings-status");
@@ -115,10 +129,13 @@ exports.set_up = function () {
         channel.patch({
             url: "/json/settings/display",
             data: data,
-            success: function () {
-            },
+            success: function () {},
             error: function (xhr) {
-                ui_report.error(settings_ui.strings.failure, xhr, $("#emoji-settings-status").expectOne());
+                ui_report.error(
+                    settings_ui.strings.failure,
+                    xhr,
+                    $("#emoji-settings-status").expectOne(),
+                );
             },
         });
     });
@@ -142,8 +159,10 @@ exports.report_emojiset_change = async function () {
     if ($("#emoji-settings-status").length) {
         loading.destroy_indicator($("#emojiset_spinner"));
         $("#emojiset_select").val(page_params.emojiset);
-        ui_report.success(i18n.t("Emojiset changed successfully!"),
-                          $("#emoji-settings-status").expectOne());
+        ui_report.success(
+            i18n.t("Emojiset changed successfully!"),
+            $("#emoji-settings-status").expectOne(),
+        );
         const spinner = $("#emoji-settings-status").expectOne();
         settings_ui.display_checkmark(spinner);
     }

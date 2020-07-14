@@ -12,9 +12,11 @@ exports.update_property = function (stream_id, property, value, other_values) {
     const sub = stream_data.get_sub_by_id(stream_id);
     if (sub === undefined) {
         // This isn't a stream we know about, so ignore it.
-        blueslip.warn("Update for an unknown subscription", {stream_id: stream_id,
-                                                             property: property,
-                                                             value: value});
+        blueslip.warn("Update for an unknown subscription", {
+            stream_id: stream_id,
+            property: property,
+            value: value,
+        });
         return;
     }
 
@@ -59,8 +61,10 @@ exports.update_property = function (stream_id, property, value, other_values) {
             subs.update_message_retention_setting(sub, value);
             break;
         default:
-            blueslip.warn("Unexpected subscription property type", {property: property,
-                                                                    value: value});
+            blueslip.warn("Unexpected subscription property type", {
+                property: property,
+                value: value,
+            });
     }
 };
 
@@ -147,6 +151,5 @@ exports.remove_deactivated_user_from_all_streams = function (user_id) {
         }
     }
 };
-
 
 window.stream_events = exports;

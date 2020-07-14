@@ -10,7 +10,10 @@ const hello_events = function () {
     let counter = 0;
     $(window).scroll(function () {
         if (counter % 2 === 0) {
-            $(".screen.hero-screen .message-feed").css("transform", "translateY(-" + $(this).scrollTop() / 5 + "px)");
+            $(".screen.hero-screen .message-feed").css(
+                "transform",
+                "translateY(-" + $(this).scrollTop() / 5 + "px)",
+            );
         }
         counter += 1;
     });
@@ -20,15 +23,31 @@ const hello_events = function () {
 
 const apps_events = function () {
     const ELECTRON_APP_VERSION = page_params.electron_app_version;
-    const ELECTRON_APP_URL_LINUX = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + "-x86_64.AppImage";
-    const ELECTRON_APP_URL_MAC = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + ".dmg";
-    const ELECTRON_APP_URL_WINDOWS = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-Web-Setup-" + ELECTRON_APP_VERSION + ".exe";
+    const ELECTRON_APP_URL_LINUX =
+        "https://github.com/zulip/zulip-desktop/releases/download/v" +
+        ELECTRON_APP_VERSION +
+        "/Zulip-" +
+        ELECTRON_APP_VERSION +
+        "-x86_64.AppImage";
+    const ELECTRON_APP_URL_MAC =
+        "https://github.com/zulip/zulip-desktop/releases/download/v" +
+        ELECTRON_APP_VERSION +
+        "/Zulip-" +
+        ELECTRON_APP_VERSION +
+        ".dmg";
+    const ELECTRON_APP_URL_WINDOWS =
+        "https://github.com/zulip/zulip-desktop/releases/download/v" +
+        ELECTRON_APP_VERSION +
+        "/Zulip-Web-Setup-" +
+        ELECTRON_APP_VERSION +
+        ".exe";
 
     const info = {
         windows: {
             image: "/static/images/landing-page/microsoft.png",
             alt: "Windows",
-            description: "Zulip for Windows is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
+            description:
+                "Zulip for Windows is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_WINDOWS,
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide",
@@ -37,7 +56,8 @@ const apps_events = function () {
         mac: {
             image: "/static/images/landing-page/macbook.png",
             alt: "macOS",
-            description: "Zulip on macOS is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
+            description:
+                "Zulip on macOS is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_MAC,
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide",
@@ -62,7 +82,8 @@ const apps_events = function () {
         linux: {
             image: "/static/images/landing-page/ubuntu.png",
             alt: "Linux",
-            description: "Zulip on the Linux desktop is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
+            description:
+                "Zulip on the Linux desktop is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_LINUX,
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide",
@@ -129,9 +150,7 @@ const apps_events = function () {
     });
 
     $(".apps a .icon").click((e) => {
-        const next_version = $(e.target).closest("a")
-            .attr("href")
-            .replace("/apps/", "");
+        const next_version = $(e.target).closest("a").attr("href").replace("/apps/", "");
         version = next_version;
 
         update_path();
@@ -182,10 +201,8 @@ const events = function () {
     }
 };
 
-
 // run this callback when the page is determined to have loaded.
 const load = function () {
-
     // Initiate the bootstrap carousel logic
     $(".carousel").carousel({
         interval: false,
@@ -196,7 +213,9 @@ const load = function () {
         const get_tag_name = e.target.tagName.toLowerCase();
         const is_button = get_tag_name === "button";
         const is_link = get_tag_name === "a";
-        const is_last_slide = $("#tour-carousel .carousel-inner .item:last-child").hasClass("active");
+        const is_last_slide = $("#tour-carousel .carousel-inner .item:last-child").hasClass(
+            "active",
+        );
 
         // Do not trigger this event if user clicks on a button, link
         // or if it's the last slide

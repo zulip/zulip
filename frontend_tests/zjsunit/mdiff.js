@@ -108,13 +108,16 @@ function diff_strings(string_0, string_1) {
         } else if (line.startsWith("?")) {
             changes_list = parse_questionmark_line(line);
             output_lines[output_lines.length - 1] = apply_color(
-                output_lines[output_lines.length - 1], changes_list);
+                output_lines[output_lines.length - 1],
+                changes_list,
+            );
         } else {
             output_lines.push(line);
         }
     });
 
-    const emphasize_codes = (string) => "\u001b[34m" + string.slice(0, 1) + "\u001b[0m" + string.slice(1);
+    const emphasize_codes = (string) =>
+        "\u001b[34m" + string.slice(0, 1) + "\u001b[0m" + string.slice(1);
     output_lines = output_lines.map(emphasize_codes);
 
     return output_lines.join("\n");
@@ -129,12 +132,15 @@ if (require.main === module) {
     const argv = require("minimist")(process.argv.slice(2));
 
     if (Object.prototype.hasOwnProperty.call(argv, "help")) {
-        console.log(process.argv[0] + " " + process.argv[1] +
-            " [ --help ]" +
-            " string_0" +
-            " string_1" +
-            "\n" +
-            "Where string_0 and string_1 are the strings to be diffed",
+        console.log(
+            process.argv[0] +
+                " " +
+                process.argv[1] +
+                " [ --help ]" +
+                " string_0" +
+                " string_1" +
+                "\n" +
+                "Where string_0 and string_1 are the strings to be diffed",
         );
     }
 

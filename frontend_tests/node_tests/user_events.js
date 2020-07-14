@@ -48,8 +48,7 @@ set_global("settings_account", {
     update_full_name: function () {},
 });
 
-set_global("message_live_update", {
-});
+set_global("message_live_update", {});
 
 const me = {
     email: "me@example.com",
@@ -76,23 +75,31 @@ run_test("updates", () => {
     };
     people.add_active_user(isaac);
 
-    user_events.update_person({user_id: isaac.user_id,
-                               role: settings_config.user_role_values.guest.code});
+    user_events.update_person({
+        user_id: isaac.user_id,
+        role: settings_config.user_role_values.guest.code,
+    });
     person = people.get_by_email(isaac.email);
     assert(person.is_guest);
-    user_events.update_person({user_id: isaac.user_id,
-                               role: settings_config.user_role_values.member.code});
+    user_events.update_person({
+        user_id: isaac.user_id,
+        role: settings_config.user_role_values.member.code,
+    });
     person = people.get_by_email(isaac.email);
     assert(!person.is_guest);
 
-    user_events.update_person({user_id: isaac.user_id,
-                               role: settings_config.user_role_values.admin.code});
+    user_events.update_person({
+        user_id: isaac.user_id,
+        role: settings_config.user_role_values.admin.code,
+    });
     person = people.get_by_email(isaac.email);
     assert.equal(person.full_name, "Isaac Newton");
     assert.equal(person.is_admin, true);
 
-    user_events.update_person({user_id: isaac.user_id,
-                               role: settings_config.user_role_values.owner.code});
+    user_events.update_person({
+        user_id: isaac.user_id,
+        role: settings_config.user_role_values.owner.code,
+    });
     assert.equal(person.is_admin, true);
     assert.equal(person.is_owner, true);
 
@@ -110,8 +117,10 @@ run_test("updates", () => {
     assert.equal(user_id, isaac.user_id);
     assert.equal(full_name, "Sir Isaac");
 
-    user_events.update_person({user_id: me.user_id,
-                               role: settings_config.user_role_values.member.code});
+    user_events.update_person({
+        user_id: me.user_id,
+        role: settings_config.user_role_values.member.code,
+    });
     assert(!global.page_params.is_admin);
 
     user_events.update_person({user_id: me.user_id, full_name: "Me V2"});
@@ -163,7 +172,10 @@ run_test("updates", () => {
     assert(!user_events.update_person({user_id: 29, full_name: "Sir Isaac Newton"}));
 
     me.profile_data = {};
-    user_events.update_person({user_id: me.user_id, custom_profile_field: {id: 3, value: "Value", rendered_value: "<p>Value</p>"}});
+    user_events.update_person({
+        user_id: me.user_id,
+        custom_profile_field: {id: 3, value: "Value", rendered_value: "<p>Value</p>"},
+    });
     person = people.get_by_email(me.email);
     assert.equal(person.profile_data[3].value, "Value");
     assert.equal(person.profile_data[3].rendered_value, "<p>Value</p>");

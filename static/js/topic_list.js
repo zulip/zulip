@@ -70,12 +70,12 @@ exports.keyed_topic_li = (convo) => {
 };
 
 exports.more_li = (more_topics_unreads) => {
-    const render = () => render_more_topics({
-        more_topics_unreads: more_topics_unreads,
-    });
+    const render = () =>
+        render_more_topics({
+            more_topics_unreads: more_topics_unreads,
+        });
 
-    const eq = (other) => other.more_items &&
-            more_topics_unreads === other.more_topics_unreads;
+    const eq = (other) => other.more_items && more_topics_unreads === other.more_topics_unreads;
 
     const key = "more";
 
@@ -109,8 +109,7 @@ exports.widget = function (parent_elem, my_stream_id) {
     self.prior_dom = undefined;
 
     self.build_list = function (spinner) {
-        const list_info = topic_list_data.get_list_info(
-            my_stream_id, zoomed);
+        const list_info = topic_list_data.get_list_info(my_stream_id, zoomed);
 
         const num_possible_topics = list_info.num_possible_topics;
         const more_topics_unreads = list_info.more_topics_unreads;
@@ -119,9 +118,7 @@ exports.widget = function (parent_elem, my_stream_id) {
             list_info.items.length === num_possible_topics &&
             stream_topic_history.is_complete_for_stream_id(my_stream_id);
 
-        const attrs = [
-            ["class", "topic-list"],
-        ];
+        const attrs = [["class", "topic-list"]];
 
         const nodes = list_info.items.map(exports.keyed_topic_li);
 
@@ -264,14 +261,16 @@ exports.initialize = function () {
         const sub = stream_data.get_sub_by_id(stream_id);
         const topic = $(e.target).parents("li").attr("data-topic-name");
 
-        narrow.activate([
-            {operator: "stream", operand: sub.name},
-            {operator: "topic", operand: topic}],
-                        {trigger: "sidebar"});
+        narrow.activate(
+            [
+                {operator: "stream", operand: sub.name},
+                {operator: "topic", operand: topic},
+            ],
+            {trigger: "sidebar"},
+        );
 
         e.preventDefault();
     });
 };
-
 
 window.topic_list = exports;

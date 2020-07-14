@@ -15,10 +15,19 @@ function update_table_stream_color(table, stream_name, color) {
         const $label = $(label);
         if ($.trim($label.text()) === stream_name) {
             const messages = $label.closest(".recipient_row").children(".message_row");
-            messages.children(".messagebox").css("box-shadow", "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style);
-            messages.children(".date_row").css("box-shadow", "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style);
-            $label.css({background: style,
-                        "border-left-color": style});
+            messages
+                .children(".messagebox")
+                .css(
+                    "box-shadow",
+                    "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style,
+                );
+            messages
+                .children(".date_row")
+                .css(
+                    "box-shadow",
+                    "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style,
+                );
+            $label.css({background: style, "border-left-color": style});
             $label.removeClass(exports.color_classes);
             $label.addClass(color_class);
         }
@@ -66,8 +75,19 @@ exports.update_stream_color = function (sub, color, opts) {
     // The swatch in the subscription row header.
     $(".stream-row[data-stream-id='" + stream_id + "'] .icon").css("background-color", color);
     // The swatch in the color picker.
-    exports.set_colorpicker_color($("#subscription_overlay .subscription_settings[data-stream-id='" + stream_id + "'] .colorpicker"), color);
-    $("#subscription_overlay .subscription_settings[data-stream-id='" + stream_id + "'] .large-icon").css("color", color);
+    exports.set_colorpicker_color(
+        $(
+            "#subscription_overlay .subscription_settings[data-stream-id='" +
+                stream_id +
+                "'] .colorpicker",
+        ),
+        color,
+    );
+    $(
+        "#subscription_overlay .subscription_settings[data-stream-id='" +
+            stream_id +
+            "'] .large-icon",
+    ).css("color", color);
 
     if (opts.update_historical) {
         update_historical_message_color(sub.name, color);
@@ -109,8 +129,7 @@ exports.initialize = function () {
     // sRGB color component for dark label text.
     // 0x33 to match the color #333333 set by Bootstrap.
     const label_color = 0x33;
-    const lightness = colorspace.luminance_to_lightness(
-        colorspace.sRGB_to_linear(label_color));
+    const lightness = colorspace.luminance_to_lightness(colorspace.sRGB_to_linear(label_color));
 
     // Compute midpoint lightness between that and white (100).
     lightness_threshold = (lightness + 100) / 2;
@@ -151,8 +170,7 @@ exports.get_color_class = _.memoize((color) => {
     }
 
     // Compute perceived lightness as CIE L*.
-    const lightness = colorspace.luminance_to_lightness(
-        colorspace.rgb_luminance(channel));
+    const lightness = colorspace.luminance_to_lightness(colorspace.rgb_luminance(channel));
 
     // Determine if we're past the midpoint between the
     // dark and light label lightness.

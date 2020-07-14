@@ -6,28 +6,36 @@ const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
 function report_narrow_time(initial_core_time, initial_free_time, network_time) {
     channel.post({
         url: "/json/report/narrow_times",
-        data: {initial_core: initial_core_time.toString(),
-               initial_free: initial_free_time.toString(),
-               network: network_time.toString()},
+        data: {
+            initial_core: initial_core_time.toString(),
+            initial_free: initial_free_time.toString(),
+            network: network_time.toString(),
+        },
     });
 }
 
 function maybe_report_narrow_time(msg_list) {
-    if (msg_list.network_time === undefined || msg_list.initial_core_time === undefined ||
-        msg_list.initial_free_time === undefined) {
+    if (
+        msg_list.network_time === undefined ||
+        msg_list.initial_core_time === undefined ||
+        msg_list.initial_free_time === undefined
+    ) {
         return;
     }
-    report_narrow_time(msg_list.initial_core_time - msg_list.start_time,
-                       msg_list.initial_free_time - msg_list.start_time,
-                       msg_list.network_time - msg_list.start_time);
-
+    report_narrow_time(
+        msg_list.initial_core_time - msg_list.start_time,
+        msg_list.initial_free_time - msg_list.start_time,
+        msg_list.network_time - msg_list.start_time,
+    );
 }
 
 function report_unnarrow_time() {
-    if (unnarrow_times === undefined ||
+    if (
+        unnarrow_times === undefined ||
         unnarrow_times.start_time === undefined ||
         unnarrow_times.initial_core_time === undefined ||
-        unnarrow_times.initial_free_time === undefined) {
+        unnarrow_times.initial_free_time === undefined
+    ) {
         return;
     }
 
@@ -36,8 +44,10 @@ function report_unnarrow_time() {
 
     channel.post({
         url: "/json/report/unnarrow_times",
-        data: {initial_core: initial_core_time.toString(),
-               initial_free: initial_free_time.toString()},
+        data: {
+            initial_core: initial_core_time.toString(),
+            initial_free: initial_free_time.toString(),
+        },
     });
 
     unnarrow_times = {};
@@ -49,8 +59,9 @@ exports.save_pre_narrow_offset_for_reload = function () {
             blueslip.debug("narrow.activate missing selected row", {
                 selected_id: current_msg_list.selected_id(),
                 selected_idx: current_msg_list.selected_idx(),
-                selected_idx_exact: current_msg_list.all_messages().indexOf(
-                    current_msg_list.get(current_msg_list.selected_id())),
+                selected_idx_exact: current_msg_list
+                    .all_messages()
+                    .indexOf(current_msg_list.get(current_msg_list.selected_id())),
                 render_start: current_msg_list.view._render_win_start,
                 render_end: current_msg_list.view._render_win_end,
             });
@@ -151,9 +162,11 @@ exports.activate = function (raw_operators, opts) {
     message_scroll.hide_top_of_narrow_notices();
     message_scroll.hide_indicators();
 
-    blueslip.debug("Narrowed", {operators: operators.map((e) => e.operator),
-                                trigger: opts ? opts.trigger : undefined,
-                                previous_id: current_msg_list.selected_id()});
+    blueslip.debug("Narrowed", {
+        operators: operators.map((e) => e.operator),
+        trigger: opts ? opts.trigger : undefined,
+        previous_id: current_msg_list.selected_id(),
+    });
 
     opts = {
         then_select_id: -1,
@@ -425,18 +438,17 @@ exports.maybe_add_local_messages = function (opts) {
     // We can now assume narrow_state.filter().can_apply_locally(),
     // because !can_apply_locally => cannot_compute
 
-    if (unread_info.flavor === "found" &&
-            narrow_state.filter().allow_use_first_unread_when_narrowing()) {
+    if (
+        unread_info.flavor === "found" &&
+        narrow_state.filter().allow_use_first_unread_when_narrowing()
+    ) {
         // We have at least one unread message in this narrow, and the
         // narrow is one where we use the first unread message in
         // narrowing positioning decisions.  So either we aim for the
         // first unread message, or the target_id (if any), whichever
         // is earlier.  See #2091 for a detailed explanation of why we
         // need to look at unread here.
-        id_info.final_select_id = min_defined(
-            id_info.target_id,
-            unread_info.msg_id,
-        );
+        id_info.final_select_id = min_defined(id_info.target_id, unread_info.msg_id);
 
         if (!load_local_messages(msg_data)) {
             return;
@@ -493,9 +505,11 @@ exports.maybe_add_local_messages = function (opts) {
     // come up with e.g. `near: 0` in a small organization.
     //
     // And similarly for `near: max_int` with has_found_newest.
-    if (message_list.all.empty() ||
+    if (
+        message_list.all.empty() ||
         id_info.target_id < message_list.all.first().id ||
-        id_info.target_id > message_list.all.last().id) {
+        id_info.target_id > message_list.all.last().id
+    ) {
         // If the target message is outside the range that we had
         // available for local population, we must go to the server.
         return;
@@ -532,8 +546,7 @@ exports.update_selection = function (opts) {
     }
 
     const preserve_pre_narrowing_screen_position =
-        message_list.narrowed.get(msg_id) !== undefined &&
-        select_offset !== undefined;
+        message_list.narrowed.get(msg_id) !== undefined && select_offset !== undefined;
 
     const then_scroll = !preserve_pre_narrowing_screen_position;
 
@@ -554,12 +567,9 @@ exports.update_selection = function (opts) {
 
 exports.activate_stream_for_cycle_hotkey = function (stream_name) {
     // This is the common code for A/D hotkeys.
-    const filter_expr = [
-        {operator: "stream", operand: stream_name},
-    ];
+    const filter_expr = [{operator: "stream", operand: stream_name}];
     exports.activate(filter_expr, {});
 };
-
 
 exports.stream_cycle_backward = function () {
     const curr_stream = narrow_state.stream();
@@ -599,10 +609,7 @@ exports.narrow_to_next_topic = function () {
         topic: narrow_state.topic(),
     };
 
-    const next_narrow = topic_generator.get_next_topic(
-        curr_info.stream,
-        curr_info.topic,
-    );
+    const next_narrow = topic_generator.get_next_topic(curr_info.stream, curr_info.topic);
 
     if (!next_narrow) {
         return;
@@ -617,7 +624,6 @@ exports.narrow_to_next_topic = function () {
 };
 
 exports.narrow_to_next_pm_string = function () {
-
     const curr_pm = narrow_state.pm_string();
 
     const next_pm = topic_generator.get_next_unread_pm_string(curr_pm);
@@ -630,9 +636,7 @@ exports.narrow_to_next_pm_string = function () {
     // mapping back to emails.
     const pm_with = people.user_ids_string_to_emails_string(next_pm);
 
-    const filter_expr = [
-        {operator: "pm-with", operand: pm_with},
-    ];
+    const filter_expr = [{operator: "pm-with", operand: pm_with}];
 
     // force_close parameter is true to not auto open compose_box
     const opts = {
@@ -641,7 +645,6 @@ exports.narrow_to_next_pm_string = function () {
 
     exports.activate(filter_expr, opts);
 };
-
 
 // Activate narrowing with a single operator.
 // This is just for syntactic convenience.
@@ -906,8 +909,11 @@ function show_search_query() {
     }
 
     if (query_contains_stop_words) {
-        search_string_display.html(i18n.t(
-            "Some common words were excluded from your search.") + "<br/>" + search_string_display.html());
+        search_string_display.html(
+            i18n.t("Some common words were excluded from your search.") +
+                "<br/>" +
+                search_string_display.html(),
+        );
     }
 }
 
@@ -932,15 +938,21 @@ function pick_empty_narrow_banner() {
         let invalid_narrow_message = "";
         // No message can have multiple streams
         if (streams.length > 1) {
-            invalid_narrow_message = i18n.t("You are searching for messages that belong to more than one stream, which is not possible.");
+            invalid_narrow_message = i18n.t(
+                "You are searching for messages that belong to more than one stream, which is not possible.",
+            );
         }
         // No message can have multiple topics
         if (current_filter.operands("topic").length > 1) {
-            invalid_narrow_message = i18n.t("You are searching for messages that belong to more than one topic, which is not possible.");
+            invalid_narrow_message = i18n.t(
+                "You are searching for messages that belong to more than one topic, which is not possible.",
+            );
         }
         // No message can have multiple senders
         if (current_filter.operands("sender").length > 1) {
-            invalid_narrow_message = i18n.t("You are searching for messages that are sent by more than one person, which is not possible.");
+            invalid_narrow_message = i18n.t(
+                "You are searching for messages that are sent by more than one person, which is not possible.",
+            );
         }
         if (invalid_narrow_message !== "") {
             set_invalid_narrow_message(invalid_narrow_message);
@@ -1020,7 +1032,10 @@ function pick_empty_narrow_banner() {
 exports.show_empty_narrow_message = function () {
     $(".empty_feed_notice").hide();
     pick_empty_narrow_banner().show();
-    $("#left_bar_compose_reply_button_big").attr("title", i18n.t("There are no messages to reply to."));
+    $("#left_bar_compose_reply_button_big").attr(
+        "title",
+        i18n.t("There are no messages to reply to."),
+    );
     $("#left_bar_compose_reply_button_big").attr("disabled", "disabled");
 };
 

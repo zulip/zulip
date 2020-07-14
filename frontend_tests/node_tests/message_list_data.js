@@ -104,7 +104,9 @@ run_test("muting enabled", () => {
         filter: undefined,
     });
 
-    muting.is_topic_muted = function () { return true; };
+    muting.is_topic_muted = function () {
+        return true;
+    };
     mld.add_anywhere(make_msgs([35, 25, 15, 45]));
     assert_contents(mld, []);
 
@@ -187,17 +189,10 @@ run_test("more muting", () => {
     );
 
     assert.deepEqual(more_info, {
-        top_messages: [
-            {id: 2, topic: "whatever"},
-        ],
-        interior_messages: [
-            {id: 6, topic: "whatever"},
-        ],
-        bottom_messages: [
-            {id: 10, topic: "whatever"},
-        ],
+        top_messages: [{id: 2, topic: "whatever"}],
+        interior_messages: [{id: 6, topic: "whatever"}],
+        bottom_messages: [{id: 10, topic: "whatever"}],
     });
-
 });
 
 run_test("errors", () => {
@@ -207,9 +202,12 @@ run_test("errors", () => {
     });
     assert.equal(mld.get("bogus-id"), undefined);
 
-    assert.throws(() => {
-        mld._add_to_hash(["asdf"]);
-    }, {message: "Bad message id"});
+    assert.throws(
+        () => {
+            mld._add_to_hash(["asdf"]);
+        },
+        {message: "Bad message id"},
+    );
 
     blueslip.expect("error", "Duplicate message added to MessageListData");
     mld._hash.set(1, "taken");

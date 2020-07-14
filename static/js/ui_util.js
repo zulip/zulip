@@ -9,8 +9,7 @@ exports.change_tab_to = function (tabname) {
 exports.place_caret_at_end = function (el) {
     el.focus();
 
-    if (typeof window.getSelection !== "undefined"
-            && typeof document.createRange !== "undefined") {
+    if (typeof window.getSelection !== "undefined" && typeof document.createRange !== "undefined") {
         const range = document.createRange();
         range.selectNodeContents(el);
         range.collapse(false);
@@ -54,7 +53,8 @@ exports.decorate_stream_bar = function (stream_name, element, is_compose) {
     if (is_compose) {
         update_lock_icon_for_stream(stream_name);
     }
-    element.css("background-color", color)
+    element
+        .css("background-color", color)
         .removeClass(stream_color.color_classes)
         .addClass(stream_color.get_color_class(color));
 };

@@ -29,7 +29,6 @@ function elem_to_user_id(elem) {
 // this is needed so that when we try to unload popovers, we can kill all dead
 // ones that no longer have valid parents in the DOM.
 (function (popover) {
-
     $.fn.popover = function (...args) {
         // apply the jQuery object as `this`, and popover function arguments.
         popover.apply(this, args);
@@ -103,8 +102,7 @@ function load_medium_avatar(user, elt) {
 function calculate_info_popover_placement(size, elt) {
     const ypos = elt.offset().top;
 
-    if (!(ypos + size / 2 < message_viewport.height() &&
-          ypos > size / 2)) {
+    if (!(ypos + size / 2 < message_viewport.height() && ypos > size / 2)) {
         if (ypos + size < message_viewport.height()) {
             return "bottom";
         } else if (ypos > size) {
@@ -160,8 +158,14 @@ function get_custom_profile_field_data(user, field, field_types, dateFormat) {
     return profile_field;
 }
 
-function render_user_info_popover(user, popover_element, is_sender_popover, private_msg_class,
-                                  template_class, popover_placement) {
+function render_user_info_popover(
+    user,
+    popover_element,
+    is_sender_popover,
+    private_msg_class,
+    template_class,
+    popover_placement,
+) {
     const is_me = people.is_my_user_id(user.user_id);
 
     let can_set_away = false;
@@ -240,8 +244,7 @@ exports._test_calculate_info_popover_placement = calculate_info_popover_placemen
 function show_user_info_popover(element, user, message) {
     const last_popover_elem = current_message_info_popover_elem;
     exports.hide_all();
-    if (last_popover_elem !== undefined
-        && last_popover_elem.get()[0] === element) {
+    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
         // by clicking on the same element that caused the popover.
         return;
@@ -257,8 +260,14 @@ function show_user_info_popover(element, user, message) {
         }
 
         const is_sender_popover = message.sender_id === user.user_id;
-        render_user_info_popover(user, elt, is_sender_popover, "respond_personal_button",
-                                 "message-info-popover", "right");
+        render_user_info_popover(
+            user,
+            elt,
+            is_sender_popover,
+            "respond_personal_button",
+            "message-info-popover",
+            "right",
+        );
 
         current_message_info_popover_elem = elt;
     }
@@ -267,8 +276,7 @@ function show_user_info_popover(element, user, message) {
 function show_mobile_message_buttons_popover(element) {
     const last_popover_elem = current_mobile_message_buttons_popover_elem;
     exports.hide_all();
-    if (last_popover_elem !== undefined
-        && last_popover_elem.get()[0] === element) {
+    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
         // by clicking on the same element that caused the popover.
         return;
@@ -326,7 +334,12 @@ exports.show_user_profile = function (user) {
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
     $("#user-profile-modal").modal("show");
 
-    settings_account.initialize_custom_user_type_fields("#user-profile-modal #content", user.user_id, false, false);
+    settings_account.initialize_custom_user_type_fields(
+        "#user-profile-modal #content",
+        user.user_id,
+        false,
+        false,
+    );
 };
 
 function get_user_info_popover_items() {
@@ -348,16 +361,17 @@ function fetch_group_members(member_ids) {
     return member_ids
         .map((m) => people.get_by_user_id(m))
         .filter((m) => m !== undefined)
-        .map((p) => Object.assign({}, p, {
-            user_circle_class: buddy_data.get_user_circle_class(p.user_id),
-            is_active: people.is_active_user_for_popover(p.user_id),
-            user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
-        }));
+        .map((p) =>
+            Object.assign({}, p, {
+                user_circle_class: buddy_data.get_user_circle_class(p.user_id),
+                is_active: people.is_active_user_for_popover(p.user_id),
+                user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
+            }),
+        );
 }
 
 function sort_group_members(members) {
-    return members
-        .sort((a, b) => a.full_name.localeCompare(b.full_name));
+    return members.sort((a, b) => a.full_name.localeCompare(b.full_name));
 }
 
 // exporting these functions for testing purposes
@@ -373,8 +387,7 @@ function show_user_group_info_popover(element, group, message) {
     // note that the actual size varies (in group size), but this is about as big as it gets
     const popover_size = 390;
     exports.hide_all();
-    if (last_popover_elem !== undefined
-        && last_popover_elem.get()[0] === element) {
+    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
         // by clicking on the same element that caused the popover.
         return;
@@ -402,8 +415,7 @@ function show_user_group_info_popover(element, group, message) {
 exports.toggle_actions_popover = function (element, id) {
     const last_popover_elem = current_actions_popover_elem;
     exports.hide_all();
-    if (last_popover_elem !== undefined
-        && last_popover_elem.get()[0] === element) {
+    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
         // by clicking on the same element that caused the popover.
         return;
@@ -429,37 +441,35 @@ exports.toggle_actions_popover = function (element, id) {
         }
         const topic = message.topic;
         const can_mute_topic =
-                message.stream &&
-                topic &&
-                !muting.is_topic_muted(message.stream_id, topic);
+            message.stream && topic && !muting.is_topic_muted(message.stream_id, topic);
         const can_unmute_topic =
-                message.stream &&
-                topic &&
-                muting.is_topic_muted(message.stream_id, topic);
+            message.stream && topic && muting.is_topic_muted(message.stream_id, topic);
 
         const should_display_edit_history_option =
             message.edit_history &&
-            message.edit_history.some((entry) => entry.prev_content !== undefined ||
-            util.get_edit_event_prev_topic(entry) !== undefined) &&
+            message.edit_history.some(
+                (entry) =>
+                    entry.prev_content !== undefined ||
+                    util.get_edit_event_prev_topic(entry) !== undefined,
+            ) &&
             page_params.realm_allow_edit_history;
 
         // Disabling this for /me messages is a temporary workaround
         // for the fact that we don't have a styling for how that
         // should look.  See also condense.js.
-        const should_display_collapse = !message.locally_echoed &&
-                                      !message.is_me_message &&
-                                      !message.collapsed;
-        const should_display_uncollapse = !message.locally_echoed &&
-                                        !message.is_me_message &&
-                                        message.collapsed;
+        const should_display_collapse =
+            !message.locally_echoed && !message.is_me_message && !message.collapsed;
+        const should_display_uncollapse =
+            !message.locally_echoed && !message.is_me_message && message.collapsed;
 
         const should_display_edit_and_view_source =
-                message.content !== "<p>(deleted)</p>" ||
-                editability === message_edit.editability_types.FULL ||
-                editability === message_edit.editability_types.TOPIC_ONLY;
+            message.content !== "<p>(deleted)</p>" ||
+            editability === message_edit.editability_types.FULL ||
+            editability === message_edit.editability_types.TOPIC_ONLY;
         const should_display_quote_and_reply = message.content !== "<p>(deleted)</p>";
 
-        const conversation_time_uri = hash_util.by_conversation_and_time_uri(message)
+        const conversation_time_uri = hash_util
+            .by_conversation_and_time_uri(message)
             .replace(/\(/g, "%28")
             .replace(/\)/g, "%29");
 
@@ -519,7 +529,9 @@ exports.render_actions_remind_popover = function (element, id) {
             trigger: "manual",
         });
         elt.popover("show");
-        current_flatpickr_instance = $('.remind.custom[data-message-id="' + message.id + '"]').flatpickr({
+        current_flatpickr_instance = $(
+            '.remind.custom[data-message-id="' + message.id + '"]',
+        ).flatpickr({
             enableTime: true,
             clickOpens: false,
             defaultDate: moment().format(),
@@ -709,14 +721,18 @@ exports.register_click_handlers = function () {
         exports.toggle_actions_popover(this, rows.id(row));
     });
 
-    $("#main_div").on("click", ".sender_name, .sender_name-in-status, .inline_profile_picture", function (e) {
-        const row = $(this).closest(".message_row");
-        e.stopPropagation();
-        const message = current_msg_list.get(rows.id(row));
-        const user = people.get_by_user_id(message.sender_id);
+    $("#main_div").on(
+        "click",
+        ".sender_name, .sender_name-in-status, .inline_profile_picture",
+        function (e) {
+            const row = $(this).closest(".message_row");
+            e.stopPropagation();
+            const message = current_msg_list.get(rows.id(row));
+            const user = people.get_by_user_id(message.sender_id);
 
-        show_user_info_popover(this, user, message);
-    });
+            show_user_info_popover(this, user, message);
+        },
+    );
 
     $("#main_div").on("click", ".user-mention", function (e) {
         const id_string = $(this).attr("data-user-id");
@@ -752,7 +768,6 @@ exports.register_click_handlers = function () {
             show_user_group_info_popover(this, group, message);
         }
     });
-
 
     $("body").on("click", ".info_popover_actions .narrow_to_private_messages", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
@@ -884,8 +899,14 @@ exports.register_click_handlers = function () {
         const user = people.get_by_user_id(user_id);
         const popover_placement = userlist_placement === "left" ? "right" : "left";
 
-        render_user_info_popover(user, target, false, "compose_private_message",
-                                 "user_popover", popover_placement);
+        render_user_info_popover(
+            user,
+            target,
+            false,
+            "compose_private_message",
+            "user_popover",
+            popover_placement,
+        );
 
         current_user_sidebar_user_id = user.user_id;
         current_user_sidebar_popover = target.data("popover");
@@ -974,7 +995,8 @@ exports.register_click_handlers = function () {
         const email = people.get_by_user_id(user_id).email;
         compose_actions.start("private", {
             trigger: "popover send private",
-            private_message_recipient: email});
+            private_message_recipient: email,
+        });
         exports.hide_all();
         e.stopPropagation();
         e.preventDefault();
@@ -1055,7 +1077,8 @@ exports.register_click_handlers = function () {
         row.find(".alert-msg")
             .text(i18n.t("Copied!"))
             .css("display", "block")
-            .delay(1000).fadeOut(300);
+            .delay(1000)
+            .fadeOut(300);
 
         setTimeout(() => {
             // The Cliboard library works by focusing to a hidden textarea.
@@ -1094,10 +1117,15 @@ exports.register_click_handlers = function () {
 exports.any_active = function () {
     // True if any popover (that this module manages) is currently shown.
     // Expanded sidebars on mobile view count as popovers as well.
-    return exports.actions_popped() || user_sidebar_popped() ||
-        stream_popover.stream_popped() || stream_popover.topic_popped() ||
-        exports.message_info_popped() || emoji_picker.reactions_popped() ||
-        $("[class^='column-'].expanded").length;
+    return (
+        exports.actions_popped() ||
+        user_sidebar_popped() ||
+        stream_popover.stream_popped() ||
+        stream_popover.topic_popped() ||
+        exports.message_info_popped() ||
+        emoji_picker.reactions_popped() ||
+        $("[class^='column-'].expanded").length
+    );
 };
 
 // This function will hide all true popovers (the streamlist and
@@ -1137,8 +1165,12 @@ exports.set_userlist_placement = function (placement) {
     userlist_placement = placement || "right";
 };
 
-exports.compute_placement = function (elt, popover_height, popover_width,
-                                      prefer_vertical_positioning) {
+exports.compute_placement = function (
+    elt,
+    popover_height,
+    popover_width,
+    prefer_vertical_positioning,
+) {
     const client_rect = elt.get(0).getBoundingClientRect();
     const distance_from_top = client_rect.top;
     const distance_from_bottom = message_viewport.height() - client_rect.bottom;

@@ -32,7 +32,9 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
     }
 
     if (less === undefined) {
-        less = function (a, b) { return a < b; };
+        less = function (a, b) {
+            return a < b;
+        };
     }
 
     let len = last - first;
@@ -58,8 +60,7 @@ function lower_same(a, b) {
 
 exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
     // Streams and topics are case-insensitive.
-    return a.stream_id === b.stream_id &&
-        lower_same(a.topic, b.topic);
+    return a.stream_id === b.stream_id && lower_same(a.topic, b.topic);
 };
 
 exports.is_pm_recipient = function (user_id, message) {
@@ -94,8 +95,11 @@ exports.same_recipient = function util_same_recipient(a, b) {
 };
 
 exports.same_sender = function util_same_sender(a, b) {
-    return a !== undefined && b !== undefined &&
-            a.sender_email.toLowerCase() === b.sender_email.toLowerCase();
+    return (
+        a !== undefined &&
+        b !== undefined &&
+        a.sender_email.toLowerCase() === b.sender_email.toLowerCase()
+    );
 };
 
 exports.normalize_recipients = function (recipients) {
@@ -325,7 +329,10 @@ exports.clean_user_content_links = function (html) {
             title = url;
             legacy_title = href;
         }
-        elt.setAttribute("title", ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`);
+        elt.setAttribute(
+            "title",
+            ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
+        );
     }
     return content.innerHTML;
 };

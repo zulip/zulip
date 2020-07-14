@@ -68,5 +68,4 @@ exports.kickstart_inbound_timer = function (group, delay, callback) {
     inbound_timer_dict.set(key, timer);
 };
 
-
 window.typing_data = exports;

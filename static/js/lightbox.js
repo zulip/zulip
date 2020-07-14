@@ -59,7 +59,9 @@ function display_image(payload) {
 function display_video(payload) {
     render_lightbox_list_images(payload.preview);
 
-    $("#lightbox_overlay .image-preview, .image-description, .download, .lightbox-canvas-trigger").hide();
+    $(
+        "#lightbox_overlay .image-preview, .image-description, .download, .lightbox-canvas-trigger",
+    ).hide();
 
     let source;
     if (payload.type === "youtube-video") {
@@ -68,14 +70,19 @@ function display_video(payload) {
         source = "https://player.vimeo.com/video/" + payload.source;
     } else if (payload.type === "embed-video") {
         // Use data: to load the player in a unique origin for security.
-        source = "data:text/html," + window.encodeURIComponent(
-            "<!DOCTYPE html><style>iframe{position:absolute;left:0;top:0;width:100%;height:100%;box-sizing:border-box}</style>" +
-                payload.source,
-        );
+        source =
+            "data:text/html," +
+            window.encodeURIComponent(
+                "<!DOCTYPE html><style>iframe{position:absolute;left:0;top:0;width:100%;height:100%;box-sizing:border-box}</style>" +
+                    payload.source,
+            );
     }
 
     const iframe = $("<iframe></iframe>");
-    iframe.attr("sandbox", "allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts");
+    iframe.attr(
+        "sandbox",
+        "allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts",
+    );
     iframe.attr("src", source);
     iframe.attr("frameborder", 0);
     iframe.attr("allowfullscreen", true);
@@ -286,9 +293,12 @@ exports.initialize = function () {
 
         if (coords.right > parentOffset) {
             // add 2px margin
-            $image_list.animate({
-                scrollLeft: coords.right - this.parentNode.clientWidth + 2,
-            }, 100);
+            $image_list.animate(
+                {
+                    scrollLeft: coords.right - this.parentNode.clientWidth + 2,
+                },
+                100,
+            );
         } else if (coords.left < this.parentNode.scrollLeft) {
             // subtract 2px margin
             $image_list.animate({scrollLeft: coords.left - 2}, 100);

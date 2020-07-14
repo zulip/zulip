@@ -36,7 +36,9 @@ export default (env?: string): webpack.Configuration[] => {
                         {
                             loader: "webfonts-loader",
                             options: {
-                                fileName: production ? "files/[fontname].[chunkhash].[ext]" : "files/[fontname].[ext]",
+                                fileName: production
+                                    ? "files/[fontname].[chunkhash].[ext]"
+                                    : "files/[fontname].[ext]",
                                 publicPath: "",
                             },
                         },
@@ -115,10 +117,19 @@ export default (env?: string): webpack.Configuration[] => {
                             options: {
                                 // Tell webpack not to explicitly require these.
                                 knownHelpers: [
-                                    "if", "unless", "each", "with",
+                                    "if",
+                                    "unless",
+                                    "each",
+                                    "with",
                                     // The ones below are defined in static/js/templates.js
-                                    "plural", "eq", "and", "or", "not",
-                                    "t", "tr", "rendered_markdown",
+                                    "plural",
+                                    "eq",
+                                    "and",
+                                    "or",
+                                    "not",
+                                    "t",
+                                    "tr",
+                                    "rendered_markdown",
                                 ],
                                 preventIndent: true,
                             },
@@ -128,13 +139,15 @@ export default (env?: string): webpack.Configuration[] => {
                 // load fonts and files
                 {
                     test: /\.(woff(2)?|ttf|eot|svg|otf|png)$/,
-                    use: [{
-                        loader: "file-loader",
-                        options: {
-                            name: production ? "[name].[hash].[ext]" : "[path][name].[ext]",
-                            outputPath: "files/",
+                    use: [
+                        {
+                            loader: "file-loader",
+                            options: {
+                                name: production ? "[name].[hash].[ext]" : "[path][name].[ext]",
+                                outputPath: "files/",
+                            },
                         },
-                    }],
+                    ],
                 },
             ],
         },
@@ -203,14 +216,14 @@ export default (env?: string): webpack.Configuration[] => {
                     ? "webpack-stats-production.json"
                     : "var/webpack-stats-dev.json",
             }),
-            ...production
+            ...(production
                 ? []
                 : [
-                    // Better logging from console for hot reload
-                    new webpack.NamedModulesPlugin(),
-                    // script-loader should load sourceURL in dev
-                    new webpack.LoaderOptionsPlugin({debug: true}),
-                ],
+                      // Better logging from console for hot reload
+                      new webpack.NamedModulesPlugin(),
+                      // script-loader should load sourceURL in dev
+                      new webpack.LoaderOptionsPlugin({debug: true}),
+                  ]),
             // Extract CSS from files
             new MiniCssExtractPlugin({
                 filename: production ? "[name].[contenthash].css" : "[name].css",

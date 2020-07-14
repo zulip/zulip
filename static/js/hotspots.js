@@ -12,33 +12,48 @@ const VIEWPORT_CENTER = "viewport_center";
 // popover orientation can optionally be fixed here (property: popover),
 // otherwise popovers.compute_placement is used to compute orientation
 const HOTSPOT_LOCATIONS = new Map([
-    ["intro_reply", {
-        element: ".selected_message .messagebox-content",
-        offset_x: 0.85,
-        offset_y: 0.7,
-        popover: BOTTOM,
-    }],
-    ["intro_streams", {
-        element: "#streams_header .sidebar-title",
-        offset_x: 1.35,
-        offset_y: 0.39,
-    }],
-    ["intro_topics", {
-        element: ".topic-name",
-        offset_x: 0.8,
-        offset_y: 0.39,
-    }],
-    ["intro_gear", {
-        element: "#settings-dropdown",
-        offset_x: -0.4,
-        offset_y: 1.2,
-        popover: LEFT_BOTTOM,
-    }],
-    ["intro_compose", {
-        element: "#left_bar_compose_stream_button_big",
-        offset_x: 0,
-        offset_y: 0,
-    }],
+    [
+        "intro_reply",
+        {
+            element: ".selected_message .messagebox-content",
+            offset_x: 0.85,
+            offset_y: 0.7,
+            popover: BOTTOM,
+        },
+    ],
+    [
+        "intro_streams",
+        {
+            element: "#streams_header .sidebar-title",
+            offset_x: 1.35,
+            offset_y: 0.39,
+        },
+    ],
+    [
+        "intro_topics",
+        {
+            element: ".topic-name",
+            offset_x: 0.8,
+            offset_y: 0.39,
+        },
+    ],
+    [
+        "intro_gear",
+        {
+            element: "#settings-dropdown",
+            offset_x: -0.4,
+            offset_y: 1.2,
+            popover: LEFT_BOTTOM,
+        },
+    ],
+    [
+        "intro_compose",
+        {
+            element: "#left_bar_compose_stream_button_big",
+            offset_x: 0,
+            offset_y: 0,
+        },
+    ],
 ]);
 
 // popover illustration url(s)
@@ -58,8 +73,12 @@ function place_icon(hotspot) {
     const element = $(hotspot.location.element);
     const icon = $("#hotspot_" + hotspot.name + "_icon");
 
-    if (element.length === 0 || element.css("display") === "none" ||
-        !element.is(":visible") || element.is(":hidden")) {
+    if (
+        element.length === 0 ||
+        element.css("display") === "none" ||
+        !element.is(":visible") ||
+        element.is(":hidden")
+    ) {
         icon.css("display", "none");
         return false;
     }
@@ -84,14 +103,17 @@ function place_popover(hotspot) {
     }
 
     const popover_width = $("#hotspot_" + hotspot.name + "_overlay .hotspot-popover").outerWidth();
-    const popover_height = $("#hotspot_" + hotspot.name + "_overlay .hotspot-popover").outerHeight();
+    const popover_height = $(
+        "#hotspot_" + hotspot.name + "_overlay .hotspot-popover",
+    ).outerHeight();
     const el_width = $(hotspot.location.element).outerWidth();
     const el_height = $(hotspot.location.element).outerHeight();
     const arrow_offset = 20;
 
     let popover_offset;
     let arrow_placement;
-    const orientation = hotspot.location.popover ||
+    const orientation =
+        hotspot.location.popover ||
         popovers.compute_placement(
             $(hotspot.location.element),
             popover_height,
@@ -149,10 +171,7 @@ function place_popover(hotspot) {
             break;
 
         default:
-            blueslip.error(
-                "Invalid popover placement value for hotspot '" +
-                hotspot.name + "'",
-            );
+            blueslip.error("Invalid popover placement value for hotspot '" + hotspot.name + "'");
             break;
     }
 
@@ -179,8 +198,7 @@ function place_popover(hotspot) {
         };
     }
 
-    $("#hotspot_" + hotspot.name + "_overlay .hotspot-popover")
-        .css(popover_placement);
+    $("#hotspot_" + hotspot.name + "_overlay .hotspot-popover").css(popover_placement);
 }
 
 function insert_hotspot_into_DOM(hotspot) {
@@ -197,10 +215,12 @@ function insert_hotspot_into_DOM(hotspot) {
     });
 
     const hotspot_icon_HTML =
-        '<div class="hotspot-icon" id="hotspot_' + hotspot.name + '_icon">' +
-            '<span class="dot"></span>' +
-            '<span class="pulse"></span>' +
-            '<div class="bounce"><span class="bounce-icon">?</span></div>' +
+        '<div class="hotspot-icon" id="hotspot_' +
+        hotspot.name +
+        '_icon">' +
+        '<span class="dot"></span>' +
+        '<span class="pulse"></span>' +
+        '<div class="bounce"><span class="bounce-icon">?</span></div>' +
         "</div>";
 
     setTimeout(() => {
@@ -212,11 +232,15 @@ function insert_hotspot_into_DOM(hotspot) {
 
         // reposition on any event that might update the UI
         ["resize", "scroll", "onkeydown", "click"].forEach((event_name) => {
-            window.addEventListener(event_name, _.debounce(() => {
-                if (place_icon(hotspot)) {
-                    place_popover(hotspot);
-                }
-            }, 10), true);
+            window.addEventListener(
+                event_name,
+                _.debounce(() => {
+                    if (place_icon(hotspot)) {
+                        place_popover(hotspot);
+                    }
+                }, 10),
+                true,
+            );
         });
     }, hotspot.delay * 1000);
 }
@@ -226,12 +250,15 @@ exports.is_open = function () {
 };
 
 exports.close_hotspot_icon = function (elem) {
-    $(elem).animate({opacity: 0}, {
-        duration: 300,
-        done: function () {
-            $(elem).css({display: "none"});
-        }.bind(elem),
-    });
+    $(elem).animate(
+        {opacity: 0},
+        {
+            duration: 300,
+            done: function () {
+                $(elem).css({display: "none"});
+            }.bind(elem),
+        },
+    );
 };
 
 function close_read_hotspots(new_hotspots) {

@@ -2,8 +2,7 @@ zrequire("people");
 set_global("md5", (s) => "md5-" + s);
 zrequire("user_pill");
 
-set_global("page_params", {
-});
+set_global("page_params", {});
 
 const alice = {
     email: "alice@example.com",
@@ -35,7 +34,6 @@ run_test("setup", () => {
 });
 
 run_test("create_item", () => {
-
     function test_create_item(email, current_items, expected_item) {
         const item = user_pill.create_item_from_email(email, current_items);
         assert.deepEqual(item, expected_item);
@@ -94,7 +92,9 @@ run_test("get_items", () => {
     const items = [isaac_item, bogus_item];
 
     const pill_widget = {
-        items: function () { return items; },
+        items: function () {
+            return items;
+        },
     };
 
     assert.deepEqual(user_pill.get_user_ids(pill_widget), [isaac.user_id]);
@@ -104,7 +104,9 @@ run_test("typeahead", () => {
     const items = [isaac_item, bogus_item];
 
     const pill_widget = {
-        items: function () { return items; },
+        items: function () {
+            return items;
+        },
     };
 
     // Both alice and isaac are in our realm, but isaac will be

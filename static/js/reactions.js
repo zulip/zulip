@@ -3,10 +3,7 @@ const render_message_reaction = require("../templates/message_reaction.hbs");
 exports.view = {}; // function namespace
 
 exports.get_local_reaction_id = function (reaction_info) {
-    return [
-        reaction_info.reaction_type,
-        reaction_info.emoji_code,
-    ].join(",");
+    return [reaction_info.reaction_type, reaction_info.emoji_code].join(",");
 };
 
 exports.open_reactions_popover = function () {
@@ -51,10 +48,7 @@ function create_reaction(message_id, reaction_info) {
 function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
     const message = get_message(message_id);
     const local_id = exports.get_local_reaction_id(reaction_info);
-    const has_reacted = exports.current_user_has_reacted_to_emoji(
-        message,
-        local_id,
-    );
+    const has_reacted = exports.current_user_has_reacted_to_emoji(message, local_id);
     const operation = has_reacted ? "remove" : "add";
     const reaction = create_reaction(message_id, reaction_info);
 
@@ -127,8 +121,8 @@ exports.process_reaction_click = function (message_id, local_id) {
 
     if (!r) {
         blueslip.error(
-            "Data integrity problem for reaction " + local_id +
-            " (message " + message_id + ")");
+            "Data integrity problem for reaction " + local_id + " (message " + message_id + ")",
+        );
         return;
     }
 
@@ -361,7 +355,6 @@ exports.remove_reaction = function (event) {
 };
 
 exports.view.remove_reaction = function (opts) {
-
     const message_id = opts.message_id;
     const emoji_name = opts.emoji_name;
     const user_list = opts.user_list;
@@ -438,8 +431,7 @@ exports.set_clean_reactions = function (message) {
         const user_id = reaction.user_id;
 
         if (!people.is_known_user_id(user_id)) {
-            blueslip.warn("Unknown user_id " + user_id +
-                          " in reaction for message " + message.id);
+            blueslip.warn("Unknown user_id " + user_id + " in reaction for message " + message.id);
             continue;
         }
 
@@ -451,8 +443,9 @@ exports.set_clean_reactions = function (message) {
         const user_ids = user_map.get(local_id);
 
         if (user_ids.includes(user_id)) {
-            blueslip.error("server sent duplicate reactions for user " +
-                user_id + " (key=" + local_id + ")");
+            blueslip.error(
+                "server sent duplicate reactions for user " + user_id + " (key=" + local_id + ")",
+            );
             continue;
         }
 

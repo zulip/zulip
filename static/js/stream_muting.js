@@ -7,8 +7,10 @@ exports.update_is_muted = function (sub, value) {
         // Save our current scroll position
         if (overlays.is_active()) {
             saved_ypos = message_viewport.scrollTop();
-        } else if (home_msg_list === current_msg_list &&
-                   current_msg_list.selected_row().offset() !== null) {
+        } else if (
+            home_msg_list === current_msg_list &&
+            current_msg_list.selected_row().offset() !== null
+        ) {
             msg_offset = current_msg_list.selected_row().offset().top;
         }
 
@@ -24,8 +26,10 @@ exports.update_is_muted = function (sub, value) {
             // We pass use_closest to handle the case where the
             // currently selected message is being hidden from the
             // home view
-            home_msg_list.select_id(home_msg_list.selected_id(),
-                                    {use_closest: true, empty_ok: true});
+            home_msg_list.select_id(home_msg_list.selected_id(), {
+                use_closest: true,
+                empty_ok: true,
+            });
             if (current_msg_list.selected_id() !== -1) {
                 current_msg_list.view.set_message_offset(msg_offset);
             }
@@ -46,7 +50,11 @@ exports.update_is_muted = function (sub, value) {
 
     stream_list.set_in_home_view(sub.stream_id, !sub.is_muted);
 
-    const is_muted_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_is_muted_setting .sub_setting_control");
+    const is_muted_checkbox = $(
+        ".subscription_settings[data-stream-id='" +
+            sub.stream_id +
+            "'] #sub_is_muted_setting .sub_setting_control",
+    );
     is_muted_checkbox.prop("checked", value);
 };
 

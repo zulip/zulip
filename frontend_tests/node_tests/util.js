@@ -20,7 +20,6 @@ run_test("CachedValue", () => {
     assert.equal(cv.get(), 10);
     cv.reset();
     assert.equal(cv.get(), 12);
-
 });
 
 run_test("get_reload_topic", () => {
@@ -58,41 +57,44 @@ run_test("lower_bound", () => {
     assert.equal(util.lower_bound(arr, 5, compare), 0);
     assert.equal(util.lower_bound(arr, 10, compare), 0);
     assert.equal(util.lower_bound(arr, 15, compare), 1);
-
 });
 
 run_test("same_recipient", () => {
-    assert(util.same_recipient(
-        {type: "stream", stream_id: 101, topic: "Bar"},
-        {type: "stream", stream_id: 101, topic: "bar"}));
+    assert(
+        util.same_recipient(
+            {type: "stream", stream_id: 101, topic: "Bar"},
+            {type: "stream", stream_id: 101, topic: "bar"},
+        ),
+    );
 
-    assert(!util.same_recipient(
-        {type: "stream", stream_id: 101, topic: "Bar"},
-        {type: "stream", stream_id: 102, topic: "whatever"}));
+    assert(
+        !util.same_recipient(
+            {type: "stream", stream_id: 101, topic: "Bar"},
+            {type: "stream", stream_id: 102, topic: "whatever"},
+        ),
+    );
 
-    assert(util.same_recipient(
-        {type: "private", to_user_ids: "101,102"},
-        {type: "private", to_user_ids: "101,102"}));
+    assert(
+        util.same_recipient(
+            {type: "private", to_user_ids: "101,102"},
+            {type: "private", to_user_ids: "101,102"},
+        ),
+    );
 
-    assert(!util.same_recipient(
-        {type: "private", to_user_ids: "101,102"},
-        {type: "private", to_user_ids: "103"}));
+    assert(
+        !util.same_recipient(
+            {type: "private", to_user_ids: "101,102"},
+            {type: "private", to_user_ids: "103"},
+        ),
+    );
 
-    assert(!util.same_recipient(
-        {type: "stream", stream_id: 101, topic: "Bar"},
-        {type: "private"}));
+    assert(!util.same_recipient({type: "stream", stream_id: 101, topic: "Bar"}, {type: "private"}));
 
-    assert(!util.same_recipient(
-        {type: "private", to_user_ids: undefined},
-        {type: "private"}));
+    assert(!util.same_recipient({type: "private", to_user_ids: undefined}, {type: "private"}));
 
-    assert(!util.same_recipient(
-        {type: "unknown type"},
-        {type: "unknown type"}));
+    assert(!util.same_recipient({type: "unknown type"}, {type: "unknown type"}));
 
-    assert(!util.same_recipient(
-        undefined,
-        {type: "private"}));
+    assert(!util.same_recipient(undefined, {type: "private"}));
 
     assert(!util.same_recipient(undefined, undefined));
 });
@@ -101,7 +103,9 @@ run_test("robust_uri_decode", () => {
     assert.equal(util.robust_uri_decode("xxx%3Ayyy"), "xxx:yyy");
     assert.equal(util.robust_uri_decode("xxx%3"), "xxx");
 
-    set_global("decodeURIComponent", () => { throw "foo"; });
+    set_global("decodeURIComponent", () => {
+        throw "foo";
+    });
     try {
         util.robust_uri_decode("%E0%A4%A");
     } catch (e) {
@@ -144,7 +148,8 @@ run_test("array_compare", () => {
 run_test("normalize_recipients", () => {
     assert.equal(
         util.normalize_recipients("ZOE@foo.com, bob@foo.com, alice@foo.com, AARON@foo.com "),
-        "aaron@foo.com,alice@foo.com,bob@foo.com,zoe@foo.com");
+        "aaron@foo.com,alice@foo.com,bob@foo.com,zoe@foo.com",
+    );
 });
 
 run_test("random_int", () => {
@@ -235,22 +240,9 @@ run_test("all_and_everyone_mentions_regexp", () => {
 });
 
 run_test("move_array_elements_to_front", () => {
-    const strings = [
-        "string1",
-        "string3",
-        "string2",
-        "string4",
-    ];
-    const strings_selection = [
-        "string4",
-        "string1",
-    ];
-    const strings_expected = [
-        "string1",
-        "string4",
-        "string3",
-        "string2",
-    ];
+    const strings = ["string1", "string3", "string2", "string4"];
+    const strings_selection = ["string4", "string1"];
+    const strings_expected = ["string1", "string4", "string3", "string2"];
     const strings_no_selection = util.move_array_elements_to_front(strings, []);
     const strings_no_array = util.move_array_elements_to_front([], strings_selection);
     const strings_actual = util.move_array_elements_to_front(strings, strings_selection);
@@ -261,11 +253,7 @@ run_test("move_array_elements_to_front", () => {
         "test@invalid@email",
         "something@zulip.com",
     ];
-    const emails_selection = [
-        "test@test.com",
-        "test@localhost",
-        "test@invalid@email",
-    ];
+    const emails_selection = ["test@test.com", "test@localhost", "test@invalid@email"];
     const emails_expected = [
         "test@test.com",
         "test@localhost",
@@ -296,15 +284,15 @@ run_test("clean_user_content_links", () => {
     assert.equal(
         util.clean_user_content_links(
             '<a href="http://example.com">good</a> ' +
-            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png">upload</a> ' +
-            '<a href="http://localhost:NNNN">invalid</a> ' +
-            '<a href="javascript:alert(1)">unsafe</a> ' +
-            '<a href="/#fragment" target="_blank">fragment</a>',
+                '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png">upload</a> ' +
+                '<a href="http://localhost:NNNN">invalid</a> ' +
+                '<a href="javascript:alert(1)">unsafe</a> ' +
+                '<a href="/#fragment" target="_blank">fragment</a>',
         ),
         '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a> ' +
-        '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png" target="_blank" rel="noopener noreferrer" title="file.png">upload</a> ' +
-        "<a>invalid</a> " +
-        "<a>unsafe</a> " +
-        '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>',
+            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png" target="_blank" rel="noopener noreferrer" title="file.png">upload</a> ' +
+            "<a>invalid</a> " +
+            "<a>unsafe</a> " +
+            '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>',
     );
 });

@@ -284,8 +284,10 @@ exports.make_new_elem = function (selector, opts) {
         },
         parents: function (parents_selector) {
             const result = parents_result.get(parents_selector);
-            assert(result, "You need to call set_parents_result for " +
-                            parents_selector + " in " + selector);
+            assert(
+                result,
+                "You need to call set_parents_result for " + parents_selector + " in " + selector,
+            );
             return result;
         },
         prepend: function (arg) {
@@ -416,7 +418,8 @@ exports.make_zjquery = function (opts) {
                 // we can infer by assert.equal trying to access the
                 // "stack" key.
                 if (key === "stack") {
-                    const error = "\nInstead of doing equality checks on a full object, " +
+                    const error =
+                        "\nInstead of doing equality checks on a full object, " +
                         'do `assert_equal(foo.selector, ".some_class")\n';
                     throw Error(error);
                 }
@@ -493,12 +496,9 @@ exports.make_zjquery = function (opts) {
             selector.location ||
             selector.includes("#") ||
             selector.includes(".") ||
-            selector.includes("[") && selector.indexOf("]") >= selector.indexOf("[");
+            (selector.includes("[") && selector.indexOf("]") >= selector.indexOf("["));
 
-        assert(valid_selector,
-               "Invalid selector: " + selector +
-               " Use $.create() maybe?");
-
+        assert(valid_selector, "Invalid selector: " + selector + " Use $.create() maybe?");
 
         if (!elems.has(selector)) {
             const elem = new_elem(selector);
@@ -508,8 +508,7 @@ exports.make_zjquery = function (opts) {
     };
 
     zjquery.create = function (name) {
-        assert(!elems.has(name),
-               "You already created an object with this name!!");
+        assert(!elems.has(name), "You already created an object with this name!!");
         const elem = new_elem(name);
         elems.set(name, elem);
         return elem;
@@ -519,7 +518,9 @@ exports.make_zjquery = function (opts) {
         elems.set(selector, stub);
     };
 
-    zjquery.trim = function (s) { return s; };
+    zjquery.trim = function (s) {
+        return s;
+    };
 
     zjquery.state = function () {
         // useful for debugging

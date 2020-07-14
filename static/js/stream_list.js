@@ -24,7 +24,6 @@ exports.update_count_in_dom = function (unread_count_elem, count) {
     value_span.text(count);
 };
 
-
 exports.stream_sidebar = (function () {
     const self = {};
 
@@ -253,7 +252,6 @@ function build_stream_sidebar_row(sub) {
     self.remove = function () {
         list_item.remove();
     };
-
 
     self.update_unread_count = function () {
         const count = unread.num_unread_for_stream(sub.stream_id);
@@ -496,9 +494,11 @@ exports.set_event_handlers = function () {
 
     $("#clear_search_stream_button").on("click", exports.clear_search);
 
-    $("#streams_header").expectOne().click((e) => {
-        exports.toggle_filter_displayed(e);
-    });
+    $("#streams_header")
+        .expectOne()
+        .click((e) => {
+            exports.toggle_filter_displayed(e);
+        });
 
     // check for user scrolls on streams list for first time
     ui.get_scroll_element($("#stream-filters-container")).on("scroll", function () {

@@ -20,8 +20,13 @@ casper.then(function () {
     casper.test.info('Changing notifications stream to Verona by filtering with "verona"');
     casper.click("#realm_notifications_stream_id_widget button.dropdown-toggle");
     casper.waitUntilVisible("#realm_notifications_stream_id_widget ul.dropdown-menu", function () {
-        casper.sendKeys("#realm_notifications_stream_id_widget  .dropdown-search > input[type=text]", "verona");
-        casper.click("#realm_notifications_stream_id_widget .dropdown-list-body > li:nth-of-type(1)");
+        casper.sendKeys(
+            "#realm_notifications_stream_id_widget  .dropdown-search > input[type=text]",
+            "verona"
+        );
+        casper.click(
+            "#realm_notifications_stream_id_widget .dropdown-list-body > li:nth-of-type(1)"
+        );
     });
 });
 
@@ -51,10 +56,18 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info('Changing signup notifications stream to Verona by filtering with "verona"');
     casper.click("#id_realm_signup_notifications_stream_id > button.dropdown-toggle");
-    casper.waitUntilVisible("#realm_signup_notifications_stream_id_widget  ul.dropdown-menu", function () {
-        casper.sendKeys("#realm_signup_notifications_stream_id_widget  .dropdown-search > input[type=text]", "verona");
-        casper.click("#realm_signup_notifications_stream_id_widget  .dropdown-list-body li.list_item");
-    });
+    casper.waitUntilVisible(
+        "#realm_signup_notifications_stream_id_widget  ul.dropdown-menu",
+        function () {
+            casper.sendKeys(
+                "#realm_signup_notifications_stream_id_widget  .dropdown-search > input[type=text]",
+                "verona"
+            );
+            casper.click(
+                "#realm_signup_notifications_stream_id_widget  .dropdown-list-body li.list_item"
+            );
+        }
+    );
 });
 
 submit_notifications_stream_settings();
@@ -253,10 +266,14 @@ casper.then(function () {
     // Test custom realm emoji
     casper.click("li[data-section='emoji-settings']");
     casper.waitUntilVisible(".admin-emoji-form", function () {
-        casper.fill("form.admin-emoji-form", {
-            name: "new mouse face",
-            emoji_file_input: "static/images/logo/zulip-icon-128x128.png",
-        }, true);
+        casper.fill(
+            "form.admin-emoji-form",
+            {
+                name: "new mouse face",
+                emoji_file_input: "static/images/logo/zulip-icon-128x128.png",
+            },
+            true
+        );
     });
 });
 
@@ -294,13 +311,16 @@ function get_suggestions(str) {
 
 function select_from_suggestions(item) {
     casper.then(function () {
-        casper.evaluate(function (item) {
-            var tah = $(".create_default_stream").data().typeahead;
-            tah.mouseenter({
-                currentTarget: $('.typeahead:visible li:contains("' + item + '")')[0],
-            });
-            tah.select();
-        }, {item: item});
+        casper.evaluate(
+            function (item) {
+                var tah = $(".create_default_stream").data().typeahead;
+                tah.mouseenter({
+                    currentTarget: $('.typeahead:visible li:contains("' + item + '")')[0],
+                });
+                tah.select();
+            },
+            {item: item}
+        );
         casper.click(".default-stream-form #do_submit_stream");
     });
 }
@@ -335,19 +355,35 @@ casper.then(function () {
 // Test uploading realm icon image
 casper.then(function () {
     casper.click("li[data-section='organization-profile']");
-    var selector = '#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]';
+    var selector =
+        '#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]';
     casper.waitUntilVisible(selector, function () {
-        casper.test.assertEqual(casper.visible("#realm-icon-upload-widget .settings-page-delete-button"), false);
+        casper.test.assertEqual(
+            casper.visible("#realm-icon-upload-widget .settings-page-delete-button"),
+            false
+        );
         // Hack: Rather than submitting the form, we just fill the
         // form and then trigger a click event by clicking the button.
-        casper.fill("form.admin-realm-form", {
-            file_input: "static/images/logo/zulip-icon-128x128.png",
-        }, false);
+        casper.fill(
+            "form.admin-realm-form",
+            {
+                file_input: "static/images/logo/zulip-icon-128x128.png",
+            },
+            false
+        );
         casper.click("#realm-icon-upload-widget .image_upload_button");
-        casper.waitWhileVisible("#realm-icon-upload-widget .upload-spinner-background", function () {
-            casper.test.assertExists('#realm-icon-upload-widget .image-block[src^="/user_avatars/2/realm/icon.png?version=2"]');
-            casper.test.assertEqual(casper.visible("#realm-icon-upload-widget .settings-page-delete-button"), true);
-        });
+        casper.waitWhileVisible(
+            "#realm-icon-upload-widget .upload-spinner-background",
+            function () {
+                casper.test.assertExists(
+                    '#realm-icon-upload-widget .image-block[src^="/user_avatars/2/realm/icon.png?version=2"]'
+                );
+                casper.test.assertEqual(
+                    casper.visible("#realm-icon-upload-widget .settings-page-delete-button"),
+                    true
+                );
+            }
+        );
     });
 });
 
@@ -355,13 +391,20 @@ casper.then(function () {
 casper.then(function () {
     casper.click("li[data-section='organization-profile']");
     casper.click("#realm-icon-upload-widget .settings-page-delete-button");
-    casper.test.assertEqual(casper.visible("#realm-icon-upload-widget .settings-page-delete-button"), true);
+    casper.test.assertEqual(
+        casper.visible("#realm-icon-upload-widget .settings-page-delete-button"),
+        true
+    );
     casper.waitWhileVisible("#realm-icon-upload-widget .settings-page-delete-button", function () {
-        casper.test.assertExists('#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]');
-        casper.test.assertEqual(casper.visible("#realm-icon-upload-widget .settings-page-delete-button"), false);
+        casper.test.assertExists(
+            '#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]'
+        );
+        casper.test.assertEqual(
+            casper.visible("#realm-icon-upload-widget .settings-page-delete-button"),
+            false
+        );
     });
 });
-
 
 casper.then(function () {
     casper.click("li[data-section='organization-settings']");
@@ -377,19 +420,21 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#org-submit-user-defaults[data-status="saved"]', function () {
-        casper.test.assertSelectorHasText("#org-submit-user-defaults",
-                                          "Saved");
+        casper.test.assertSelectorHasText("#org-submit-user-defaults", "Saved");
     });
 });
 
 // Test authentication methods setting
 casper.then(function () {
     casper.click("li[data-section='auth-methods']");
-    casper.waitUntilVisible(".method_row[data-method='Google'] input[type='checkbox'] + span", function () {
-        casper.click(".method_row[data-method='Google'] input[type='checkbox'] + span");
-        casper.test.assertSelectorHasText("#org-submit-auth_settings", "Save");
-        casper.click("#org-submit-auth_settings");
-    });
+    casper.waitUntilVisible(
+        ".method_row[data-method='Google'] input[type='checkbox'] + span",
+        function () {
+            casper.click(".method_row[data-method='Google'] input[type='checkbox'] + span");
+            casper.test.assertSelectorHasText("#org-submit-auth_settings", "Save");
+            casper.click("#org-submit-auth_settings");
+        }
+    );
 });
 
 casper.then(function () {
@@ -400,12 +445,17 @@ casper.then(function () {
     casper.click('a[href^="#organization"]');
     casper.click("li[data-section='auth-methods']");
 
-    casper.waitUntilVisible(".method_row[data-method='Google'] input[type='checkbox'] + span", function () {
-        // Test Setting was saved
-        casper.test.assertEval(function () {
-            return !document.querySelector(".method_row[data-method='Google'] input[type='checkbox']").checked;
-        });
-    });
+    casper.waitUntilVisible(
+        ".method_row[data-method='Google'] input[type='checkbox'] + span",
+        function () {
+            // Test Setting was saved
+            casper.test.assertEval(function () {
+                return !document.querySelector(
+                    ".method_row[data-method='Google'] input[type='checkbox']"
+                ).checked;
+            });
+        }
+    );
 });
 
 common.then_log_out();

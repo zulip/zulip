@@ -24,7 +24,9 @@ run_test("basic_functions", () => {
         widget_name: "my_setting",
         data: ["one", "two", "three"].map((x) => ({name: x, value: x})),
         value: "one",
-        on_update: (val) => { updated_value = val; },
+        on_update: (val) => {
+            updated_value = val;
+        },
         default_text: i18n.t("not set"),
         render_text: (text) => `rendered: ${text}`,
     };
@@ -59,7 +61,10 @@ run_test("no_default_value", () => {
         null_value: "null-value",
     };
 
-    blueslip.expect("warn", "dropdown-list-widget: Called without a default value; using null value");
+    blueslip.expect(
+        "warn",
+        "dropdown-list-widget: Called without a default value; using null value",
+    );
     setup_zjquery_data(opts.widget_name);
     const widget = dropdown_list_widget(opts);
     assert.equal(widget.value(), "null-value");

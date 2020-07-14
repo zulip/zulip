@@ -166,7 +166,8 @@ function get_group_suggestions(last, operators) {
             negated: negated,
         };
         const name = highlight_person(person);
-        const description = prefix + " " + Handlebars.Utils.escapeExpression(all_but_last_part) + "," + name;
+        const description =
+            prefix + " " + Handlebars.Utils.escapeExpression(all_but_last_part) + "," + name;
         let terms = [term];
         if (negated) {
             terms = [{operator: "is", operand: "private"}, term];
@@ -242,11 +243,13 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
     const objs = persons.map((person) => {
         const name = highlight_person(person);
         const description = prefix + " " + name;
-        const terms = [{
-            operator: autocomplete_operator,
-            operand: person.email,
-            negated: last.negated,
-        }];
+        const terms = [
+            {
+                operator: autocomplete_operator,
+                operand: person.email,
+                negated: last.negated,
+            },
+        ];
         if (autocomplete_operator === "pm-with" && last.negated) {
             // In the special case of '-pm-with', add 'is:private' before it
             // because we assume the user still wants to narrow to PMs
@@ -322,7 +325,6 @@ function get_topic_suggestions(last, operators) {
     if (!stream) {
         return [];
     }
-
 
     const stream_id = stream_data.get_stream_id(stream);
     if (!stream_id) {
@@ -401,11 +403,13 @@ function get_special_filter_suggestions(last, operators, suggestions) {
         // returns the substring after the ":" symbol.
         const suggestion_operand = s.search_string.substring(s.search_string.indexOf(":") + 1);
         // e.g for `att` search query, `has:attachment` should be suggested.
-        const show_operator_suggestions = last.operator === "search" &&
-            suggestion_operand.toLowerCase().startsWith(last_string);
-        return s.search_string.toLowerCase().startsWith(last_string) ||
-               show_operator_suggestions ||
-               s.description.toLowerCase().startsWith(last_string);
+        const show_operator_suggestions =
+            last.operator === "search" && suggestion_operand.toLowerCase().startsWith(last_string);
+        return (
+            s.search_string.toLowerCase().startsWith(last_string) ||
+            show_operator_suggestions ||
+            s.description.toLowerCase().startsWith(last_string)
+        );
     });
 
     // Only show home if there's an empty bar
@@ -428,7 +432,6 @@ function get_streams_filter_suggestions(last, operators) {
                 {operator: "in"},
                 {operator: "streams"},
             ],
-
         },
     ];
     return get_special_filter_suggestions(last, operators, suggestions);
@@ -444,35 +447,26 @@ function get_is_filter_suggestions(last, operators) {
                 {operator: "pm-with"},
                 {operator: "in"},
             ],
-
         },
         {
             search_string: "is:starred",
             description: "starred messages",
-            invalid: [
-                {operator: "is", operand: "starred"},
-            ],
+            invalid: [{operator: "is", operand: "starred"}],
         },
         {
             search_string: "is:mentioned",
             description: "@-mentions",
-            invalid: [
-                {operator: "is", operand: "mentioned"},
-            ],
+            invalid: [{operator: "is", operand: "mentioned"}],
         },
         {
             search_string: "is:alerted",
             description: "alerted messages",
-            invalid: [
-                {operator: "is", operand: "alerted"},
-            ],
+            invalid: [{operator: "is", operand: "alerted"}],
         },
         {
             search_string: "is:unread",
             description: "unread messages",
-            invalid: [
-                {operator: "is", operand: "unread"},
-            ],
+            invalid: [{operator: "is", operand: "unread"}],
         },
     ];
     return get_special_filter_suggestions(last, operators, suggestions);
@@ -483,32 +477,25 @@ function get_has_filter_suggestions(last, operators) {
         {
             search_string: "has:link",
             description: "messages with one or more link",
-            invalid: [
-                {operator: "has", operand: "link"},
-            ],
+            invalid: [{operator: "has", operand: "link"}],
         },
         {
             search_string: "has:image",
             description: "messages with one or more image",
-            invalid: [
-                {operator: "has", operand: "image"},
-            ],
+            invalid: [{operator: "has", operand: "image"}],
         },
         {
             search_string: "has:attachment",
             description: "messages with one or more attachment",
-            invalid: [
-                {operator: "has", operand: "attachment"},
-            ],
+            invalid: [{operator: "has", operand: "attachment"}],
         },
     ];
     return get_special_filter_suggestions(last, operators, suggestions);
 }
 
-
 function get_sent_by_me_suggestions(last, operators) {
     const last_string = Filter.unparse([last]).toLowerCase();
-    const negated = last.negated || last.operator === "search" && last.operand[0] === "-";
+    const negated = last.negated || (last.operator === "search" && last.operand[0] === "-");
     const negated_symbol = negated ? "-" : "";
     const verb = negated ? "exclude " : "";
 
@@ -519,16 +506,14 @@ function get_sent_by_me_suggestions(last, operators) {
     const sent_string = negated_symbol + "sent";
     const description = verb + "sent by me";
 
-    const invalid = [
-        {operator: "sender"},
-        {operator: "from"},
-    ];
+    const invalid = [{operator: "sender"}, {operator: "from"}];
 
     if (match_criteria(operators, invalid)) {
         return [];
     }
 
-    if (last.operator === "" ||
+    if (
+        last.operator === "" ||
         sender_query.startsWith(last_string) ||
         sender_me_query.startsWith(last_string) ||
         last_string === sent_string
@@ -539,9 +524,7 @@ function get_sent_by_me_suggestions(last, operators) {
                 description: description,
             },
         ];
-    } else if (from_query.startsWith(last_string) ||
-        from_me_query.startsWith(last_string)
-    ) {
+    } else if (from_query.startsWith(last_string) || from_me_query.startsWith(last_string)) {
         return [
             {
                 search_string: from_query,
@@ -641,9 +624,11 @@ exports.get_search_result = function (base_query, query) {
     // and second last is {operator: 'sender', operand: 'sm'....}. If the second last operand
     // is an email of a user, both of these operators remain unchanged. Otherwise search operator
     // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
-    if (search_operators_len > 1 &&
+    if (
+        search_operators_len > 1 &&
         last.operator === "search" &&
-        person_suggestion_ops.includes(search_operators[search_operators_len - 2].operator)) {
+        person_suggestion_ops.includes(search_operators[search_operators_len - 2].operator)
+    ) {
         const person_op = search_operators[search_operators_len - 2];
         if (!people.reply_to_to_user_ids_string(person_op.operand)) {
             last = {

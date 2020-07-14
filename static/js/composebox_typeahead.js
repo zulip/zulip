@@ -69,7 +69,12 @@ exports.query_matches_person = function (query, person) {
 };
 
 function query_matches_name_description(query, user_group_or_stream) {
-    return typeahead.query_matches_source_attrs(query, user_group_or_stream, ["name", "description"], " ");
+    return typeahead.query_matches_source_attrs(
+        query,
+        user_group_or_stream,
+        ["name", "description"],
+        " ",
+    );
 }
 
 function get_stream_or_user_group_matcher(query) {
@@ -144,7 +149,6 @@ exports.handle_enter = function (textarea, e) {
     // We do this using caret and range from jquery-caret.
     const has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
     if (has_non_shift_modifier_key) {
-
         // To properly emulate browser "enter", if the
         // user had selected something in the textarea,
         // we need those characters to be cleared.
@@ -166,7 +170,8 @@ exports.handle_enter = function (textarea, e) {
 function handle_keydown(e) {
     const code = e.keyCode || e.which;
 
-    if (code === 13 || code === 9 && !e.shiftKey) { // Enter key or tab key
+    if (code === 13 || (code === 9 && !e.shiftKey)) {
+        // Enter key or tab key
         let target_sel;
 
         if (e.target.id) {
@@ -209,11 +214,14 @@ function handle_keydown(e) {
         }
 
         // If no typeaheads are shown...
-        if (!($("#stream_message_recipient_topic").data().typeahead.shown ||
-              $("#stream_message_recipient_stream").data().typeahead.shown ||
-              $("#private_message_recipient").data().typeahead.shown ||
-              $("#compose-textarea").data().typeahead.shown)) {
-
+        if (
+            !(
+                $("#stream_message_recipient_topic").data().typeahead.shown ||
+                $("#stream_message_recipient_stream").data().typeahead.shown ||
+                $("#private_message_recipient").data().typeahead.shown ||
+                $("#compose-textarea").data().typeahead.shown
+            )
+        ) {
             // If no typeaheads are shown and the user is tabbing from the message content box,
             // then there's no need to wait and we can change the focus right away.
             // Without this code to change the focus right away, if the user presses enter
@@ -243,7 +251,8 @@ function handle_keydown(e) {
 
 function handle_keyup(e) {
     const code = e.keyCode || e.which;
-    if (code === 13 || code === 9 && !e.shiftKey) { // Enter key or tab key
+    if (code === 13 || (code === 9 && !e.shiftKey)) {
+        // Enter key or tab key
         if (nextFocus) {
             $(nextFocus).focus();
             nextFocus = false;
@@ -262,9 +271,11 @@ function select_on_focus(field_id) {
             return;
         }
         in_handler = true;
-        $("#" + field_id).select().one("mouseup", (e) => {
-            e.preventDefault();
-        });
+        $("#" + field_id)
+            .select()
+            .one("mouseup", (e) => {
+                e.preventDefault();
+            });
         in_handler = false;
     });
 }
@@ -293,7 +304,7 @@ exports.tokenize_compose_str = function (s) {
         switch (s[i]) {
             case "`":
             case "~":
-            // Code block must start on a new line
+                // Code block must start on a new line
                 if (i === 2) {
                     return s;
                 } else if (i > 2 && s[i - 3] === "\n") {
@@ -316,14 +327,14 @@ exports.tokenize_compose_str = function (s) {
                 }
                 break;
             case ">":
-            // topic_jump
-            //
-            // If you hit `>` immediately after completing the typeahead for mentioning a stream,
-            // this will reposition the user from.  If | is the cursor, implements:
-            //
-            // `#**stream name** >|` => `#**stream name>|`.
+                // topic_jump
+                //
+                // If you hit `>` immediately after completing the typeahead for mentioning a stream,
+                // this will reposition the user from.  If | is the cursor, implements:
+                //
+                // `#**stream name** >|` => `#**stream name>|`.
                 if (s.substring(i - 2, i) === "**" || s.substring(i - 3, i) === "** ") {
-                // return any string as long as its not ''.
+                    // return any string as long as its not ''.
                     return ">topic_jump";
                 }
                 // maybe topic_list; let's let the stream_topic_regex decide later.
@@ -341,8 +352,9 @@ exports.tokenize_compose_str = function (s) {
 
 exports.broadcast_mentions = function () {
     return ["all", "everyone", "stream"].map((mention, idx) => ({
-        special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
-                                  {wildcard_mention_token: mention}),
+        special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)", {
+            wildcard_mention_token: mention,
+        }),
 
         email: mention,
 
@@ -495,18 +507,14 @@ exports.get_person_suggestions = function (query, opts) {
     */
     const cutoff_length = exports.max_num_items;
 
-    const filtered_message_persons = filter_persons(
-        people.get_active_message_people(),
-    );
+    const filtered_message_persons = filter_persons(people.get_active_message_people());
 
     let filtered_persons;
 
     if (filtered_message_persons.length >= cutoff_length) {
         filtered_persons = filtered_message_persons;
     } else {
-        filtered_persons = filter_persons(
-            people.get_realm_users(),
-        );
+        filtered_persons = filter_persons(people.get_realm_users());
     }
 
     return typeahead_helper.sort_recipients(
@@ -576,8 +584,7 @@ exports.get_sorted_filtered_items = function (query) {
     const opts = exports.get_stream_topic_data(hacky_this);
 
     if (completing === "mention" || completing === "silent_mention") {
-        return exports.filter_and_sort_mentions(
-            big_results.is_silent, token, opts);
+        return exports.filter_and_sort_mentions(big_results.is_silent, token, opts);
     }
 
     return exports.filter_and_sort_candidates(completing, big_results, token);
@@ -607,7 +614,7 @@ exports.get_candidates = function (query) {
     // already-completed object.
 
     // We will likely want to extend this list to be more i18n-friendly.
-    const terminal_symbols = ',.;?!()[]> "\'\n\t';
+    const terminal_symbols = ",.;?!()[]> \"'\n\t";
     if (rest !== "" && !terminal_symbols.includes(rest[0])) {
         return false;
     }
@@ -807,12 +814,22 @@ exports.content_typeahead_selected = function (item, event) {
     if (this.completing === "emoji") {
         // leading and trailing spaces are required for emoji,
         // except if it begins a message or a new line.
-        if (beginning.lastIndexOf(":") === 0 ||
+        if (
+            beginning.lastIndexOf(":") === 0 ||
             beginning.charAt(beginning.lastIndexOf(":") - 1) === " " ||
-            beginning.charAt(beginning.lastIndexOf(":") - 1) === "\n") {
-            beginning = beginning.substring(0, beginning.length - this.token.length - 1) + ":" + item.emoji_name + ": ";
+            beginning.charAt(beginning.lastIndexOf(":") - 1) === "\n"
+        ) {
+            beginning =
+                beginning.substring(0, beginning.length - this.token.length - 1) +
+                ":" +
+                item.emoji_name +
+                ": ";
         } else {
-            beginning = beginning.substring(0, beginning.length - this.token.length - 1) + " :" + item.emoji_name + ": ";
+            beginning =
+                beginning.substring(0, beginning.length - this.token.length - 1) +
+                " :" +
+                item.emoji_name +
+                ": ";
         }
     } else if (this.completing === "mention" || this.completing === "silent_mention") {
         const is_silent = this.completing === "silent_mention";
@@ -839,7 +856,11 @@ exports.content_typeahead_selected = function (item, event) {
             }
         }
     } else if (this.completing === "slash") {
-        beginning = beginning.substring(0, beginning.length - this.token.length - 1) + "/" + item.name + " ";
+        beginning =
+            beginning.substring(0, beginning.length - this.token.length - 1) +
+            "/" +
+            item.name +
+            " ";
     } else if (this.completing === "stream") {
         beginning = beginning.substring(0, beginning.length - this.token.length - 1);
         if (beginning.endsWith("#*")) {
@@ -892,7 +913,8 @@ exports.content_typeahead_selected = function (item, event) {
 
         const on_timestamp_selection = (val) => {
             const datestr = val;
-            beginning = beginning.substring(0, beginning.lastIndexOf("<time")) + `<time:${datestr}> `;
+            beginning =
+                beginning.substring(0, beginning.lastIndexOf("<time")) + `<time:${datestr}> `;
             if (rest.startsWith(">")) {
                 rest = rest.slice(1);
             }
@@ -932,7 +954,7 @@ exports.compose_content_matcher = function (completing, token) {
         switch (completing) {
             case "topic_jump":
             case "time_jump":
-            // these don't actually have a typeahead popover, so we return quickly here.
+                // these don't actually have a typeahead popover, so we return quickly here.
                 return true;
         }
     };
@@ -950,7 +972,7 @@ exports.sort_results = function (completing, matches, token) {
             return typeahead_helper.sort_languages(matches, token);
         case "topic_jump":
         case "time_jump":
-        // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
+            // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
             return matches;
         case "topic_list":
             return typeahead_helper.sorter(token, matches, (x) => x);
@@ -985,8 +1007,9 @@ function get_header_text() {
             break;
         case "syntax":
             if (page_params.realm_default_code_block_language !== null) {
-                tip_text = i18n.t("Default is __language__. Use 'text' to disable highlighting.",
-                                  {language: page_params.realm_default_code_block_language});
+                tip_text = i18n.t("Default is __language__. Use 'text' to disable highlighting.", {
+                    language: page_params.realm_default_code_block_language,
+                });
                 break;
             }
             return false;

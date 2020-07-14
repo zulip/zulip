@@ -24,8 +24,7 @@ function clear() {
 
 function get_list_info(zoomed) {
     const stream_id = general.stream_id;
-    return topic_list_data.get_list_info(
-        stream_id, zoomed);
+    return topic_list_data.get_list_info(stream_id, zoomed);
 }
 
 run_test("get_list_info w/real stream_topic_history", () => {
@@ -107,15 +106,8 @@ run_test("get_list_info unreads", () => {
 
     assert.deepEqual(
         list_info.items.map((li) => li.topic_name),
-        [
-            "topic 0",
-            "topic 1",
-            "topic 2",
-            "topic 3",
-            "topic 4",
-            "topic 8",
-            "topic 9",
-        ]);
+        ["topic 0", "topic 1", "topic 2", "topic 3", "topic 4", "topic 8", "topic 9"],
+    );
 
     unread_cnt.set("topic 6", 6);
     unread_cnt.set("topic 7", 7);
@@ -127,16 +119,8 @@ run_test("get_list_info unreads", () => {
 
     assert.deepEqual(
         list_info.items.map((li) => li.topic_name),
-        [
-            "topic 0",
-            "topic 1",
-            "topic 2",
-            "topic 3",
-            "topic 4",
-            "topic 6",
-            "topic 7",
-            "topic 8",
-        ]);
+        ["topic 0", "topic 1", "topic 2", "topic 3", "topic 4", "topic 6", "topic 7", "topic 8"],
+    );
 
     unread_cnt.set("topic 4", 4);
     unread_cnt.set("topic 5", 5);
@@ -154,14 +138,6 @@ run_test("get_list_info unreads", () => {
 
     assert.deepEqual(
         list_info.items.map((li) => li.topic_name),
-        [
-            "topic 0",
-            "topic 1",
-            "topic 2",
-            "topic 3",
-            "topic 5",
-            "topic 6",
-            "topic 7",
-            "topic 8",
-        ]);
+        ["topic 0", "topic 1", "topic 2", "topic 3", "topic 5", "topic 6", "topic 7", "topic 8"],
+    );
 });

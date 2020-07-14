@@ -59,7 +59,10 @@ casper.then(function () {
 });
 
 casper.waitWhileVisible("textarea.message_edit_content", function () {
-    casper.test.assertSelectorHasText(".last_message .sender-status", "test edited one line with me");
+    casper.test.assertSelectorHasText(
+        ".last_message .sender-status",
+        "test edited one line with me"
+    );
 });
 
 common.then_send_message("private", {

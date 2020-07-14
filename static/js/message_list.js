@@ -68,8 +68,7 @@ exports.MessageList.prototype = {
             narrow.hide_empty_narrow_message();
         }
 
-        if (self === exports.narrowed && !self.empty() &&
-            self.selected_id() === -1) {
+        if (self === exports.narrowed && !self.empty() && self.selected_id() === -1) {
             // And also select the newly arrived message.
             self.select_id(self.selected_id(), {then_scroll: true, use_closest: true});
         }
@@ -176,8 +175,7 @@ exports.MessageList.prototype = {
                 id: id,
                 closest_id: closest_id,
             };
-            blueslip.error("Selected message id not in MessageList",
-                           error_data);
+            blueslip.error("Selected message id not in MessageList", error_data);
         }
 
         if (closest_id === -1 && !opts.empty_ok) {
@@ -227,18 +225,15 @@ exports.MessageList.prototype = {
     },
 
     subscribed_bookend_content: function (stream_name) {
-        return i18n.t("You subscribed to stream __stream__",
-                      {stream: stream_name});
+        return i18n.t("You subscribed to stream __stream__", {stream: stream_name});
     },
 
     unsubscribed_bookend_content: function (stream_name) {
-        return i18n.t("You unsubscribed from stream __stream__",
-                      {stream: stream_name});
+        return i18n.t("You unsubscribed from stream __stream__", {stream: stream_name});
     },
 
     not_subscribed_bookend_content: function (stream_name) {
-        return i18n.t("You are not subscribed to stream __stream__",
-                      {stream: stream_name});
+        return i18n.t("You are not subscribed to stream __stream__", {stream: stream_name});
     },
 
     // Maintains a trailing bookend element explaining any changes in

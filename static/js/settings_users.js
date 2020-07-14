@@ -22,10 +22,7 @@ function compare_a_b(a, b) {
 function sort_email(a, b) {
     const email_a = settings_data.email_for_user_settings(a) || "";
     const email_b = settings_data.email_for_user_settings(b) || "";
-    return compare_a_b(
-        email_a.toLowerCase(),
-        email_b.toLowerCase(),
-    );
+    return compare_a_b(email_a.toLowerCase(), email_b.toLowerCase());
 }
 
 function sort_bot_email(a, b) {
@@ -38,8 +35,12 @@ function sort_bot_email(a, b) {
 
 function sort_role(a, b) {
     function role(user) {
-        if (user.is_admin) { return 0; }
-        if (user.is_guest) { return 2; }
+        if (user.is_admin) {
+            return 0;
+        }
+        if (user.is_guest) {
+            return 2;
+        }
         return 1; // member
     }
     return compare_a_b(role(a), role(b));
@@ -50,10 +51,7 @@ function sort_bot_owner(a, b) {
         return (bot.bot_owner_full_name || "").toLowerCase();
     }
 
-    return compare_a_b(
-        owner_name(a),
-        owner_name(b),
-    );
+    return compare_a_b(owner_name(a), owner_name(b));
 }
 
 function sort_last_active(a, b) {
@@ -93,8 +91,11 @@ function update_view_on_deactivate(row) {
 
     if (user_role) {
         const user_id = row.data("user-id");
-        user_role.text("%state (%role)".replace("%state", i18n.t("Deactivated")).
-            replace("%role", people.get_user_type(user_id)));
+        user_role.text(
+            "%state (%role)"
+                .replace("%state", i18n.t("Deactivated"))
+                .replace("%role", people.get_user_type(user_id)),
+        );
     }
 }
 
@@ -228,7 +229,7 @@ function human_info(person) {
 
     info.can_modify = page_params.is_admin;
     info.is_current_user = people.is_my_user_id(person.user_id);
-    info.cannot_deactivate = info.is_current_user || person.is_owner && !page_params.is_owner;
+    info.cannot_deactivate = info.is_current_user || (person.is_owner && !page_params.is_owner);
     info.display_email = settings_data.email_for_user_settings(person);
 
     if (info.is_active) {
@@ -260,8 +261,10 @@ section.bots.create_table = () => {
                 if (!item) {
                     return false;
                 }
-                return item.full_name.toLowerCase().includes(value) ||
-                item.display_email.toLowerCase().includes(value);
+                return (
+                    item.full_name.toLowerCase().includes(value) ||
+                    item.display_email.toLowerCase().includes(value)
+                );
             },
             onupdate: reset_scrollbar($bots_table),
         },
@@ -370,7 +373,9 @@ exports.update_user_data = function (user_id, new_data) {
 
 function start_data_load() {
     loading.make_indicator($("#admin_page_users_loading_indicator"), {text: "Loading..."});
-    loading.make_indicator($("#admin_page_deactivated_users_loading_indicator"), {text: "Loading..."});
+    loading.make_indicator($("#admin_page_deactivated_users_loading_indicator"), {
+        text: "Loading...",
+    });
     $("#admin_deactivated_users_table").hide();
     $("#admin_users_table").hide();
 
@@ -393,7 +398,9 @@ function open_human_form(person) {
     overlays.open_modal("#admin-human-form");
     set_user_role_dropdown(person);
     if (!page_params.is_owner) {
-        $("#user-role-select").find("option[value=" + settings_config.user_role_values.owner.code + "]").hide();
+        $("#user-role-select")
+            .find("option[value=" + settings_config.user_role_values.owner.code + "]")
+            .hide();
     }
 
     const element = "#admin-human-form .custom-profile-field-form";
@@ -504,7 +511,6 @@ function confirm_deactivation(row, user_id, status_field) {
         };
         const url = "/json/users/" + encodeURIComponent(user_id);
         settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
-
     }
 
     modal_elem.modal("hide");
@@ -546,7 +552,6 @@ function handle_bot_deactivation(tbody, status_field) {
             },
         };
         settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
-
     });
 }
 

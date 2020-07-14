@@ -111,9 +111,7 @@ run_test("huddle_fraction_present", () => {
     presence_info.set(mark.user_id, {status: "offline"}); // does not count
     presence.presence_info = presence_info;
 
-    assert.equal(
-        buddy_data.huddle_fraction_present(huddle),
-        0.5);
+    assert.equal(buddy_data.huddle_fraction_present(huddle), 0.5);
 
     presence_info = new Map();
     for (const user of [alice, fred, jill, mark]) {
@@ -121,9 +119,7 @@ run_test("huddle_fraction_present", () => {
     }
     presence.presence_info = presence_info;
 
-    assert.equal(
-        buddy_data.huddle_fraction_present(huddle),
-        1);
+    assert.equal(buddy_data.huddle_fraction_present(huddle), 1);
 
     huddle = "alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com";
     huddle = people.emails_strings_to_user_ids_string(huddle);
@@ -134,9 +130,7 @@ run_test("huddle_fraction_present", () => {
     presence_info.set(mark.user_id, {status: "offline"}); // does not count
     presence.presence_info = presence_info;
 
-    assert.equal(
-        buddy_data.huddle_fraction_present(huddle),
-        undefined);
+    assert.equal(buddy_data.huddle_fraction_present(huddle), undefined);
 });
 
 function activate_people() {
@@ -212,8 +206,10 @@ run_test("title_data", () => {
         second_line: "translated: Owner: Human Myself",
         third_line: "",
     };
-    assert.deepEqual(buddy_data.get_title_data(bot_with_owner.user_id, is_group),
-                     expected_group_data);
+    assert.deepEqual(
+        buddy_data.get_title_data(bot_with_owner.user_id, is_group),
+        expected_group_data,
+    );
 
     // Bots without owners.
     expected_group_data = {
@@ -233,7 +229,6 @@ run_test("title_data", () => {
         first_line: "Human Myself",
         second_line: "out to lunch",
         third_line: "translated: Active now",
-
     };
     assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group), expected_data);
 
@@ -320,15 +315,15 @@ run_test("level", () => {
 });
 
 run_test("user_last_seen_time_status", () => {
-    assert.equal(buddy_data.user_last_seen_time_status(selma.user_id),
-                 "translated: Active now");
+    assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Active now");
 
     page_params.realm_is_zephyr_mirror_realm = true;
-    assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id),
-                 "translated: Unknown");
+    assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id), "translated: Unknown");
     page_params.realm_is_zephyr_mirror_realm = false;
-    assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id),
-                 "translated: More than 2 weeks ago");
+    assert.equal(
+        buddy_data.user_last_seen_time_status(old_user.user_id),
+        "translated: More than 2 weeks ago",
+    );
 
     presence.last_active_date = (user_id) => {
         assert.equal(user_id, old_user.user_id);
@@ -343,9 +338,7 @@ run_test("user_last_seen_time_status", () => {
         return "May 12";
     };
 
-    assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id),
-                 "May 12");
-
+    assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id), "May 12");
 });
 
 run_test("error handling", () => {

@@ -4,7 +4,6 @@ const DEFAULTS = {
     instances: new Map(),
 };
 
-
 // ----------------------------------------------------
 // This function describes (programatically) how to use
 // the list_render widget.
@@ -41,10 +40,7 @@ exports.get_filtered_items = (value, list, opts) => {
 
     if (opts.filter.filterer) {
         if (get_item) {
-            return opts.filter.filterer(
-                list.map(get_item),
-                value,
-            );
+            return opts.filter.filterer(list.map(get_item), value);
         }
         return opts.filter.filterer(list, value);
     }
@@ -67,29 +63,31 @@ exports.get_filtered_items = (value, list, opts) => {
     return list.filter(predicate);
 };
 
-exports.alphabetic_sort = (prop) => function (a, b) {
-    // The conversion to uppercase helps make the sorting case insensitive.
-    const str1 = a[prop].toUpperCase();
-    const str2 = b[prop].toUpperCase();
+exports.alphabetic_sort = (prop) =>
+    function (a, b) {
+        // The conversion to uppercase helps make the sorting case insensitive.
+        const str1 = a[prop].toUpperCase();
+        const str2 = b[prop].toUpperCase();
 
-    if (str1 === str2) {
-        return 0;
-    } else if (str1 > str2) {
-        return 1;
-    }
+        if (str1 === str2) {
+            return 0;
+        } else if (str1 > str2) {
+            return 1;
+        }
 
-    return -1;
-};
+        return -1;
+    };
 
-exports.numeric_sort = (prop) => function (a, b) {
-    if (parseFloat(a[prop]) > parseFloat(b[prop])) {
-        return 1;
-    } else if (parseFloat(a[prop]) === parseFloat(b[prop])) {
-        return 0;
-    }
+exports.numeric_sort = (prop) =>
+    function (a, b) {
+        if (parseFloat(a[prop]) > parseFloat(b[prop])) {
+            return 1;
+        } else if (parseFloat(a[prop]) === parseFloat(b[prop])) {
+            return 0;
+        }
 
-    return -1;
-};
+        return -1;
+    };
 
 exports.valid_filter_opts = (opts) => {
     if (!opts.filter) {
@@ -160,16 +158,10 @@ exports.create = function ($container, list, opts) {
     const widget = {};
 
     widget.filter_and_sort = function () {
-        meta.filtered_list = exports.get_filtered_items(
-            meta.filter_value,
-            meta.list,
-            opts,
-        );
+        meta.filtered_list = exports.get_filtered_items(meta.filter_value, meta.list, opts);
 
         if (meta.sorting_function) {
-            meta.filtered_list.sort(
-                meta.sorting_function,
-            );
+            meta.filtered_list.sort(meta.sorting_function);
         }
 
         if (meta.reverse_mode) {

@@ -14,7 +14,6 @@ zrequire("people");
 zrequire("transmit");
 
 run_test("transmit_message_ajax", () => {
-
     let success_func_called;
     const success = function () {
         success_func_called = true;
@@ -54,7 +53,9 @@ run_test("transmit_message_ajax", () => {
 });
 
 run_test("transmit_message_ajax_reload_pending", () => {
-    const success = function () { throw "unexpected success"; };
+    const success = function () {
+        throw "unexpected success";
+    };
 
     reload_state.is_pending = function () {
         return true;
@@ -141,9 +142,7 @@ run_test("reply_message_private", () => {
 
     const pm_message = {
         type: "private",
-        display_recipient: [
-            {id: fred.user_id},
-        ],
+        display_recipient: [{id: fred.user_id}],
     };
 
     const content = "hello";
@@ -183,5 +182,4 @@ run_test("reply_message_errors", () => {
     transmit.reply_message({
         message: bogus_message,
     });
-
 });

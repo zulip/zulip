@@ -60,13 +60,16 @@ run_test("process_from_server for differently rendered messages", () => {
     const old_value = "old_value";
     const new_value = "new_value";
     const waiting_for_ack = new Map([
-        ["100.1", {
-            content: "<p>A client rendered message</p>",
-            timestamp: old_value,
-            is_me_message: old_value,
-            submessages: old_value,
-            topic_links: old_value,
-        }],
+        [
+            "100.1",
+            {
+                content: "<p>A client rendered message</p>",
+                timestamp: old_value,
+                is_me_message: old_value,
+                submessages: old_value,
+                topic_links: old_value,
+            },
+        ],
     ]);
     const server_messages = [
         {
@@ -84,13 +87,15 @@ run_test("process_from_server for differently rendered messages", () => {
     const non_echo_messages = echo.process_from_server(server_messages);
     assert.deepEqual(non_echo_messages, []);
     assert.equal(disparities.length, 1);
-    assert.deepEqual(messages_to_rerender, [{
-        content: server_messages[0].content,
-        timestamp: new_value,
-        is_me_message: new_value,
-        submessages: new_value,
-        topic_links: new_value,
-    }]);
+    assert.deepEqual(messages_to_rerender, [
+        {
+            content: server_messages[0].content,
+            timestamp: new_value,
+            is_me_message: new_value,
+            submessages: new_value,
+            topic_links: new_value,
+        },
+    ]);
 });
 
 run_test("build_display_recipient", () => {
@@ -137,7 +142,9 @@ run_test("build_display_recipient", () => {
     assert.equal(iago.full_name, "Iago");
     assert.equal(iago.id, 123);
 
-    const cordelia = display_recipient.find((recipient) => recipient.email === "cordelia@zulip.com");
+    const cordelia = display_recipient.find(
+        (recipient) => recipient.email === "cordelia@zulip.com",
+    );
     assert.equal(cordelia.full_name, "Cordelia");
     assert.equal(cordelia.id, 21);
 
@@ -159,7 +166,6 @@ run_test("build_display_recipient", () => {
     iago = display_recipient.find((recipient) => recipient.email === "iago@zulip.com");
     assert.equal(iago.full_name, "Iago");
     assert.equal(iago.id, 123);
-
 });
 
 run_test("insert_local_message", () => {
@@ -233,5 +239,4 @@ run_test("insert_local_message", () => {
     assert(add_topic_links_called);
     assert(apply_markdown_called);
     assert(insert_message_called);
-
 });

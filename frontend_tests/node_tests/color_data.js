@@ -1,12 +1,7 @@
 zrequire("color_data");
 
 run_test("pick_color", () => {
-    color_data.colors = [
-        "blue",
-        "orange",
-        "red",
-        "yellow",
-    ];
+    color_data.colors = ["blue", "orange", "red", "yellow"];
 
     color_data.reset();
 

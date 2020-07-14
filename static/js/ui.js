@@ -64,7 +64,8 @@ exports.show_error_for_unsupported_platform = function () {
         // We don't internationalize this string because it is long,
         // and few users will have both the old desktop app and an
         // internationalized version of Zulip anyway.
-        const error = "Hello! You're using the unsupported old Zulip desktop app," +
+        const error =
+            "Hello! You're using the unsupported old Zulip desktop app," +
             " which is no longer developed. We recommend switching to the new, " +
             "modern desktop app, which you can download at " +
             "<a href='https://zulip.com/apps'>zulip.com/apps</a>.";
@@ -144,8 +145,8 @@ exports.show_failed_message_success = function (message_id) {
 
 exports.get_hotkey_deprecation_notice = function (originalHotkey, replacementHotkey) {
     return i18n.t(
-        'We\'ve replaced the "__originalHotkey__" hotkey with "__replacementHotkey__" '
-            + "to make this common shortcut easier to trigger.",
+        'We\'ve replaced the "__originalHotkey__" hotkey with "__replacementHotkey__" ' +
+            "to make this common shortcut easier to trigger.",
         {originalHotkey: originalHotkey, replacementHotkey: replacementHotkey},
     );
 };
@@ -180,7 +181,10 @@ exports.maybe_show_deprecation_notice = function (key) {
         $("#close-deprecation-notice").focus();
         shown_deprecation_notices.push(key);
         if (localstorage.supported()) {
-            localStorage.setItem("shown_deprecation_notices", JSON.stringify(shown_deprecation_notices));
+            localStorage.setItem(
+                "shown_deprecation_notices",
+                JSON.stringify(shown_deprecation_notices),
+            );
         }
     }
 };
@@ -202,9 +206,7 @@ exports.set_compose_textarea_handlers = function () {
 };
 
 exports.restore_compose_cursor = function () {
-    $("#compose-textarea")
-        .focus()
-        .caret(saved_compose_cursor);
+    $("#compose-textarea").focus().caret(saved_compose_cursor);
 };
 
 exports.initialize = function () {

@@ -16,7 +16,6 @@ exports.insert_message = function (message) {
 };
 
 exports.get_next_id_float = (function () {
-
     const already_used = new Set();
 
     return function () {

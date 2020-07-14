@@ -40,16 +40,21 @@ function make_tab_data(filter) {
         tab_data.sub_count = get_sub_count(current_stream);
         tab_data.formatted_sub_count = get_formatted_sub_count(current_stream);
         // the "title" is passed as a variable and doesn't get translated (nor should it)
-        tab_data.sub_count_tooltip_text =
-            i18n.t("__count__ users are subscribed to #__title__", {count: tab_data.sub_count, title: tab_data.title});
-        tab_data.stream_settings_link = "#streams/" + current_stream.stream_id + "/" + current_stream.name;
+        tab_data.sub_count_tooltip_text = i18n.t("__count__ users are subscribed to #__title__", {
+            count: tab_data.sub_count,
+            title: tab_data.title,
+        });
+        tab_data.stream_settings_link =
+            "#streams/" + current_stream.stream_id + "/" + current_stream.name;
     }
     return tab_data;
 }
 
 exports.colorize_tab_bar = function () {
     const filter = narrow_state.filter();
-    if (filter === undefined || !filter._sub) {return;}
+    if (filter === undefined || !filter._sub) {
+        return;
+    }
     $("#tab_bar .stream > .fa").css("color", filter._sub.color);
 };
 
@@ -92,11 +97,14 @@ function bind_title_area_handlers() {
 
     // handler that makes sure that hover plays nicely
     // with whether search is being opened or not.
-    $("#tab_bar .narrow_description > a").hover(() => {
-        $("#tab_bar .search_closed").addClass("search_icon_hover_highlight");
-    }, () => {
-        $("#tab_bar .search_closed").removeClass("search_icon_hover_highlight");
-    });
+    $("#tab_bar .narrow_description > a").hover(
+        () => {
+            $("#tab_bar .search_closed").addClass("search_icon_hover_highlight");
+        },
+        () => {
+            $("#tab_bar .search_closed").removeClass("search_icon_hover_highlight");
+        },
+    );
 }
 
 function build_tab_bar(filter) {

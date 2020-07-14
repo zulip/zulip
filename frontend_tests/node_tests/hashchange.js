@@ -63,15 +63,11 @@ run_test("operators_round_trip", () => {
         stream_id: 987,
     };
     stream_data.add_sub(florida_stream);
-    operators = [
-        {operator: "stream", operand: "Florida, USA"},
-    ];
+    operators = [{operator: "stream", operand: "Florida, USA"}];
     hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, "#narrow/stream/987-Florida.2C-USA");
     narrow = hash_util.parse_narrow(hash.split("/"));
-    assert.deepEqual(narrow, [
-        {operator: "stream", operand: "Florida, USA", negated: false},
-    ]);
+    assert.deepEqual(narrow, [{operator: "stream", operand: "Florida, USA", negated: false}]);
 });
 
 run_test("operators_trailing_slash", () => {
@@ -94,19 +90,13 @@ run_test("people_slugs", () => {
     };
 
     people.add_active_user(alice);
-    operators = [
-        {operator: "sender", operand: "alice@example.com"},
-    ];
+    operators = [{operator: "sender", operand: "alice@example.com"}];
     hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, "#narrow/sender/42-alice");
     const narrow = hash_util.parse_narrow(hash.split("/"));
-    assert.deepEqual(narrow, [
-        {operator: "sender", operand: "alice@example.com", negated: false},
-    ]);
+    assert.deepEqual(narrow, [{operator: "sender", operand: "alice@example.com", negated: false}]);
 
-    operators = [
-        {operator: "pm-with", operand: "alice@example.com"},
-    ];
+    operators = [{operator: "pm-with", operand: "alice@example.com"}];
     hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, "#narrow/pm-with/42-alice");
 });
@@ -212,10 +202,7 @@ run_test("hash_interactions", () => {
 
     helper.clear_events();
     $(window).trigger($.Event("hashchange", {}));
-    helper.assert_events([
-        "overlays.close_for_hash_change",
-        "subs.launch",
-    ]);
+    helper.assert_events(["overlays.close_for_hash_change", "subs.launch"]);
 
     window.location.hash = "#keyboard-shortcuts/whatever";
 
@@ -251,28 +238,19 @@ run_test("hash_interactions", () => {
 
     helper.clear_events();
     $(window).trigger($.Event("hashchange", {}));
-    helper.assert_events([
-        "overlays.close_for_hash_change",
-        "drafts.launch",
-    ]);
+    helper.assert_events(["overlays.close_for_hash_change", "drafts.launch"]);
 
     window.location.hash = "#settings/alert-words";
 
     helper.clear_events();
     $(window).trigger($.Event("hashchange", {}));
-    helper.assert_events([
-        "overlays.close_for_hash_change",
-        "settings.launch",
-    ]);
+    helper.assert_events(["overlays.close_for_hash_change", "settings.launch"]);
 
     window.location.hash = "#organization/user-list-admin";
 
     helper.clear_events();
     $(window).trigger($.Event("hashchange", {}));
-    helper.assert_events([
-        "overlays.close_for_hash_change",
-        "admin.launch",
-    ]);
+    helper.assert_events(["overlays.close_for_hash_change", "admin.launch"]);
 
     let called_back;
 
@@ -281,26 +259,19 @@ run_test("hash_interactions", () => {
         called_back = true;
     });
 
-    helper.assert_events([
-        "ui_util.blur_active_element",
-    ]);
+    helper.assert_events(["ui_util.blur_active_element"]);
     assert(called_back);
-
 });
 
 run_test("save_narrow", () => {
     const helper = test_helper();
 
-    let operators = [
-        {operator: "is", operand: "private"},
-    ];
+    let operators = [{operator: "is", operand: "private"}];
 
     blueslip.expect("warn", "browser does not support pushState");
     hashchange.save_narrow(operators);
 
-    helper.assert_events([
-        "message_viewport.stop_auto_scrolling",
-    ]);
+    helper.assert_events(["message_viewport.stop_auto_scrolling"]);
     assert.equal(window.location.hash, "#narrow/is/private");
 
     let url_pushed;
@@ -308,14 +279,10 @@ run_test("save_narrow", () => {
         url_pushed = url;
     };
 
-    operators = [
-        {operator: "is", operand: "starred"},
-    ];
+    operators = [{operator: "is", operand: "starred"}];
 
     helper.clear_events();
     hashchange.save_narrow(operators);
-    helper.assert_events([
-        "message_viewport.stop_auto_scrolling",
-    ]);
+    helper.assert_events(["message_viewport.stop_auto_scrolling"]);
     assert.equal(url_pushed, "http://example.com/#narrow/is/starred");
 });

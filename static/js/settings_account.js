@@ -68,10 +68,16 @@ exports.update_email_change_display = function () {
 exports.update_avatar_change_display = function () {
     if (!exports.user_can_change_avatar()) {
         $("#user-avatar-upload-widget .image_upload_button").attr("disabled", "disabled");
-        $("#user-avatar-upload-widget .settings-page-delete-button .button").attr("disabled", "disabled");
+        $("#user-avatar-upload-widget .settings-page-delete-button .button").attr(
+            "disabled",
+            "disabled",
+        );
     } else {
         $("#user-avatar-upload-widget .image_upload_button").attr("disabled", false);
-        $("#user-avatar-upload-widget .settings-page-delete-button .button").attr("disabled", false);
+        $("#user-avatar-upload-widget .settings-page-delete-button .button").attr(
+            "disabled",
+            false,
+        );
     }
 };
 
@@ -88,7 +94,6 @@ function display_avatar_upload_started() {
     $("#user-avatar-upload-widget .settings-page-delete-button").hide();
 }
 
-
 function settings_change_error(message, xhr) {
     ui_report.error(message, xhr, $("#account-settings-status").expectOne());
 }
@@ -101,10 +106,15 @@ function update_custom_profile_field(field, method) {
         field_id = field.id;
     }
 
-    const spinner_element = $('.custom_user_field[data-field-id="' + field_id +
-        '"] .custom-field-status').expectOne();
-    settings_ui.do_settings_change(method, "/json/users/me/profile_data",
-                                   {data: JSON.stringify([field])}, spinner_element);
+    const spinner_element = $(
+        '.custom_user_field[data-field-id="' + field_id + '"] .custom-field-status',
+    ).expectOne();
+    settings_ui.do_settings_change(
+        method,
+        "/json/users/me/profile_data",
+        {data: JSON.stringify([field])},
+        spinner_element,
+    );
 }
 
 function update_user_custom_profile_fields(fields, method) {
@@ -177,21 +187,29 @@ exports.initialize_custom_date_type_fields = function (element_id) {
         allowInput: true,
     });
 
-    $(element_id).find(".custom_user_field .datepicker").on("mouseenter", function () {
-        if ($(this).val().length <= 0) {
-            $(this).parent().find(".remove_date").hide();
-        } else {
-            $(this).parent().find(".remove_date").show();
-        }
-    });
+    $(element_id)
+        .find(".custom_user_field .datepicker")
+        .on("mouseenter", function () {
+            if ($(this).val().length <= 0) {
+                $(this).parent().find(".remove_date").hide();
+            } else {
+                $(this).parent().find(".remove_date").show();
+            }
+        });
 
-    $(element_id).find(".custom_user_field .remove_date").on("click", function () {
-        $(this).parent().find(".custom_user_field_value").val("");
-    });
+    $(element_id)
+        .find(".custom_user_field .remove_date")
+        .on("click", function () {
+            $(this).parent().find(".custom_user_field_value").val("");
+        });
 };
 
-exports.initialize_custom_user_type_fields = function (element_id, user_id, is_editable,
-                                                       set_handler_on_update) {
+exports.initialize_custom_user_type_fields = function (
+    element_id,
+    user_id,
+    is_editable,
+    set_handler_on_update,
+) {
     const field_types = page_params.custom_profile_field_types;
     const user_pills = new Map();
 
@@ -210,8 +228,9 @@ exports.initialize_custom_user_type_fields = function (element_id, user_id, is_e
         // If field is not editable and field value is null, we don't expect
         // pill container for that field and proceed further
         if (field.type === field_types.USER.id && (field_value_raw || is_editable)) {
-            const pill_container = $(element_id).find('.custom_user_field[data-field-id="' +
-                                         field.id + '"] .pill-container').expectOne();
+            const pill_container = $(element_id)
+                .find('.custom_user_field[data-field-id="' + field.id + '"] .pill-container')
+                .expectOne();
             const pills = user_pill.create_pills(pill_container);
 
             function update_custom_user_field() {
@@ -383,20 +402,26 @@ exports.set_up = function () {
         }
     });
 
-    $("#change_password_modal").find("[data-dismiss=modal]").on("click", () => {
-        clear_password_change();
-    });
+    $("#change_password_modal")
+        .find("[data-dismiss=modal]")
+        .on("click", () => {
+            clear_password_change();
+        });
 
     // If the modal is closed using the 'close' button or the 'Cancel' button
-    $(".modal").find("[data-dismiss=modal]").on("click", () => {
-        // Enable mouse events for the background on closing modal
-        $(".overlay.show").attr("style", null);
-    });
+    $(".modal")
+        .find("[data-dismiss=modal]")
+        .on("click", () => {
+            // Enable mouse events for the background on closing modal
+            $(".overlay.show").attr("style", null);
+        });
 
     $("#change_password_button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const change_password_error = $("#change_password_modal").find(".change_password_info").expectOne();
+        const change_password_error = $("#change_password_modal")
+            .find(".change_password_info")
+            .expectOne();
 
         const data = {
             old_password: $("#old_password").val(),
@@ -412,7 +437,8 @@ exports.set_up = function () {
                 // zxcvbn.js didn't load, for whatever reason.
                 settings_change_error(
                     "An internal error occurred; try reloading the page. " +
-                        "Sorry for the trouble!");
+                        "Sorry for the trouble!",
+                );
                 return;
             } else if (!password_ok) {
                 settings_change_error(i18n.t("New password is too weak"));
@@ -426,8 +452,13 @@ exports.set_up = function () {
             },
             error_msg_element: change_password_error,
         };
-        settings_ui.do_settings_change(channel.patch, "/json/settings", data,
-                                       $("#account-settings-status").expectOne(), opts);
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/settings",
+            data,
+            $("#account-settings-status").expectOne(),
+            opts,
+        );
         clear_password_change();
     });
 
@@ -439,7 +470,9 @@ exports.set_up = function () {
     $("#change_full_name_button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const change_full_name_error = $("#change_full_name_modal").find(".change_full_name_info").expectOne();
+        const change_full_name_error = $("#change_full_name_modal")
+            .find(".change_full_name_info")
+            .expectOne();
         const data = {};
 
         data.full_name = $(".full_name_change_container").find("input[name='full_name']").val();
@@ -450,8 +483,13 @@ exports.set_up = function () {
             },
             error_msg_element: change_full_name_error,
         };
-        settings_ui.do_settings_change(channel.patch, "/json/settings", data,
-                                       $("#account-settings-status").expectOne(), opts);
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/settings",
+            data,
+            $("#account-settings-status").expectOne(),
+            opts,
+        );
     });
 
     $("#change_email_button").on("click", (e) => {
@@ -465,16 +503,26 @@ exports.set_up = function () {
             success_continuation: function () {
                 if (page_params.development_environment) {
                     const email_msg = render_settings_dev_env_email_access();
-                    ui_report.success(email_msg, $("#dev-account-settings-status").expectOne(), 4000);
+                    ui_report.success(
+                        email_msg,
+                        $("#dev-account-settings-status").expectOne(),
+                        4000,
+                    );
                 }
                 overlays.close_modal("#change_email_modal");
             },
             error_msg_element: change_email_error,
-            success_msg: i18n.t("Check your email (%s) to confirm the new address.").replace(
-                "%s", data.email),
+            success_msg: i18n
+                .t("Check your email (%s) to confirm the new address.")
+                .replace("%s", data.email),
         };
-        settings_ui.do_settings_change(channel.patch, "/json/settings", data,
-                                       $("#account-settings-status").expectOne(), opts);
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/settings",
+            data,
+            $("#account-settings-status").expectOne(),
+            opts,
+        );
     });
 
     $("#change_email").on("click", (e) => {
@@ -506,7 +554,10 @@ exports.set_up = function () {
     $("#account-settings").on("change", ".custom_user_field_value", function (e) {
         const fields = [];
         const value = $(this).val();
-        const field_id = parseInt($(e.target).closest(".custom_user_field").attr("data-field-id"), 10);
+        const field_id = parseInt(
+            $(e.target).closest(".custom_user_field").attr("data-field-id"),
+            10,
+        );
         if (value) {
             fields.push({id: field_id, value: value});
             update_user_custom_profile_fields(fields, channel.patch);
@@ -533,8 +584,12 @@ exports.set_up = function () {
                     window.location.href = "/login/";
                 },
                 error: function (xhr) {
-                    const error_last_admin = i18n.t("Error: Cannot deactivate the only organization administrator.");
-                    const error_last_user = i18n.t("Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <a target=\"_blank\" href=\"/#organization/organization-profile\">Organization profile settings</a>.");
+                    const error_last_admin = i18n.t(
+                        "Error: Cannot deactivate the only organization administrator.",
+                    );
+                    const error_last_user = i18n.t(
+                        'Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <a target="_blank" href="/#organization/organization-profile">Organization profile settings</a>.',
+                    );
                     let rendered_error_msg;
                     if (xhr.responseJSON.code === "CANNOT_DEACTIVATE_LAST_USER") {
                         if (xhr.responseJSON.is_last_admin) {
@@ -544,7 +599,10 @@ exports.set_up = function () {
                         }
                     }
                     $("#deactivate_self_modal").modal("hide");
-                    $("#account-settings-status").addClass("alert-error").html(rendered_error_msg).show();
+                    $("#account-settings-status")
+                        .addClass("alert-error")
+                        .html(rendered_error_msg)
+                        .show();
                 },
             });
         }, 5000);
@@ -572,7 +630,6 @@ exports.set_up = function () {
             }, 100);
         });
     });
-
 
     function upload_avatar(file_input) {
         const form_data = new FormData();
@@ -604,7 +661,6 @@ exports.set_up = function () {
                 $error.show();
             },
         });
-
     }
 
     avatar.build_user_avatar_widget(upload_avatar);
@@ -612,8 +668,6 @@ exports.set_up = function () {
     if (page_params.realm_name_changes_disabled) {
         $(".name_change_container").hide();
     }
-
 };
-
 
 window.settings_account = exports;

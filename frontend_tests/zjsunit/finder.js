@@ -8,7 +8,7 @@ exports.find_files_to_run = function () {
     if (process.argv[2]) {
         oneFileFilter = process.argv
             .slice(2)
-            .filter((filename) => (/[.]js$/).test(filename))
+            .filter((filename) => /[.]js$/.test(filename))
             .map((filename) => filename.replace(/\.js$/i, ""));
     }
 
@@ -16,9 +16,10 @@ exports.find_files_to_run = function () {
     // to framework code)
     const tests_dir = __dirname.replace(/zjsunit/, "node_tests");
 
-    let tests = fs.readdirSync(tests_dir)
-        .filter((filename) => !(/^\./i).test(filename))
-        .filter((filename) => (/\.js$/i).test(filename))
+    let tests = fs
+        .readdirSync(tests_dir)
+        .filter((filename) => !/^\./i.test(filename))
+        .filter((filename) => /\.js$/i.test(filename))
         .map((filename) => filename.replace(/\.js$/i, ""));
 
     if (oneFileFilter.length > 0) {

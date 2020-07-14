@@ -107,10 +107,10 @@ run_test("changing_topics", () => {
 
     assert.deepEqual(unread.get_all_msg_ids(), [15, 16]);
     assert.deepEqual(unread.get_unread_message_ids([15, 16]), [15, 16]);
-    assert.deepEqual(
-        unread.get_unread_messages([message, other_message]),
-        [message, other_message],
-    );
+    assert.deepEqual(unread.get_unread_messages([message, other_message]), [
+        message,
+        other_message,
+    ]);
 
     count = unread.num_unread_for_topic(stream_id, "Lunch");
     assert.equal(count, 2);
@@ -292,9 +292,7 @@ run_test("num_unread_for_topic", () => {
         topic_dict: topic_dict,
     });
 
-    assert.deepEqual(missing_topics, [
-        {pretty_name: "LuncH", message_id: 500},
-    ]);
+    assert.deepEqual(missing_topics, [{pretty_name: "LuncH", message_id: 500}]);
 
     topic_dict.set("lUNCh", "whatever");
 
@@ -371,7 +369,6 @@ run_test("home_messages", () => {
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
     test_notifiable_count(counts.home_unread_messages, 0);
-
 });
 
 run_test("phantom_messages", () => {
@@ -382,7 +379,9 @@ run_test("phantom_messages", () => {
         topic: "phantom",
     };
 
-    stream_data.get_sub_by_id = function () { return; };
+    stream_data.get_sub_by_id = function () {
+        return;
+    };
 
     unread.mark_as_read(message.id);
     const counts = unread.get_counts();
@@ -404,10 +403,7 @@ run_test("private_messages", () => {
     const message = {
         id: 15,
         type: "private",
-        display_recipient: [
-            {id: anybody.user_id},
-            {id: me.user_id},
-        ],
+        display_recipient: [{id: anybody.user_id}, {id: me.user_id}],
         unread: true,
     };
 
@@ -538,11 +534,15 @@ run_test("mentions", () => {
 
     counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 2);
-    assert.deepEqual(unread.get_msg_ids_for_mentions(), [mention_me_message.id,
-                                                         mention_all_message.id]);
-    assert.deepEqual(unread.get_all_msg_ids(), [mention_me_message.id,
-                                                mention_all_message.id,
-                                                muted_mention_all_message.id]);
+    assert.deepEqual(unread.get_msg_ids_for_mentions(), [
+        mention_me_message.id,
+        mention_all_message.id,
+    ]);
+    assert.deepEqual(unread.get_all_msg_ids(), [
+        mention_me_message.id,
+        mention_all_message.id,
+        muted_mention_all_message.id,
+    ]);
     test_notifiable_count(counts.home_unread_messages, 2);
 
     unread.mark_as_read(mention_me_message.id);
@@ -561,10 +561,7 @@ run_test("mention updates", () => {
 
     function test_counted(counted) {
         unread.update_message_for_mention(message);
-        assert.equal(
-            unread.unread_mentions_counter.has(message.id),
-            counted,
-        );
+        assert.equal(unread.unread_mentions_counter.has(message.id), counted);
     }
 
     test_counted(false);
@@ -624,26 +621,20 @@ run_test("server_counts", () => {
         pms: [
             {
                 sender_id: 101,
-                unread_message_ids: [
-                    31, 32, 60, 61, 62, 63,
-                ],
+                unread_message_ids: [31, 32, 60, 61, 62, 63],
             },
         ],
         huddles: [
             {
                 user_ids_string: "4,6,30,101",
-                unread_message_ids: [
-                    34, 50,
-                ],
+                unread_message_ids: [34, 50],
             },
         ],
         streams: [
             {
                 stream_id: 1,
                 topic: "test",
-                unread_message_ids: [
-                    33, 35, 36,
-                ],
+                unread_message_ids: [33, 35, 36],
             },
         ],
         mentions: [31, 34, 40, 41],
@@ -688,7 +679,6 @@ run_test("empty_cases", () => {
         topic_dict: "should-never-be-referenced",
     });
     assert.deepEqual(missing_topics, []);
-
 });
 
 run_test("errors", () => {

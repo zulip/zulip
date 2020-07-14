@@ -29,9 +29,11 @@ run_test("build_emoji_upload_widget", () => {
 });
 
 run_test("get_canonical_name", () => {
-    emoji.active_realm_emojis = new Map(Object.entries({
-        realm_emoji: "TBD",
-    }));
+    emoji.active_realm_emojis = new Map(
+        Object.entries({
+            realm_emoji: "TBD",
+        }),
+    );
     let canonical_name = emoji.get_canonical_name("realm_emoji");
     assert.equal(canonical_name, "realm_emoji");
 

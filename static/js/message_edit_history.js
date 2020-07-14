@@ -48,13 +48,18 @@ exports.fetch_and_render_message_history = function (message) {
                 prev_datestamp = datestamp;
             }
             $("#message-history").attr("data-message-id", message.id);
-            $("#message-history").html(render_message_edit_history({
-                edited_messages: content_edit_history,
-            }));
+            $("#message-history").html(
+                render_message_edit_history({
+                    edited_messages: content_edit_history,
+                }),
+            );
         },
         error: function (xhr) {
-            ui_report.error(i18n.t("Error fetching message edit history"), xhr,
-                            $("#message-history-error"));
+            ui_report.error(
+                i18n.t("Error fetching message edit history"),
+                xhr,
+                $("#message-history-error"),
+            );
         },
     });
 };

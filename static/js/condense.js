@@ -10,7 +10,6 @@ This library implements two related, similar concepts:
 
 */
 
-
 const _message_content_height_cache = new Map();
 
 function show_more_link(row) {

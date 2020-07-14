@@ -15,23 +15,32 @@ run_test("get_editability", () => {
     // You can't edit a null message
     assert.equal(get_editability(null), editability_types.NO);
     // You can't edit a message you didn't send
-    assert.equal(get_editability({
-        sent_by_me: false,
-    }), editability_types.NO);
+    assert.equal(
+        get_editability({
+            sent_by_me: false,
+        }),
+        editability_types.NO,
+    );
 
     // Failed request are currently not editable (though we want to
     // change this back).
-    assert.equal(get_editability({
-        sent_by_me: true,
-        failed_request: true,
-    }), editability_types.NO);
+    assert.equal(
+        get_editability({
+            sent_by_me: true,
+            failed_request: true,
+        }),
+        editability_types.NO,
+    );
 
     // Locally echoed messages are not editable, since the message hasn't
     // finished being sent yet.
-    assert.equal(get_editability({
-        sent_by_me: true,
-        local_id: "25",
-    }), editability_types.NO);
+    assert.equal(
+        get_editability({
+            sent_by_me: true,
+            local_id: "25",
+        }),
+        editability_types.NO,
+    );
 
     // For the rest of these tests, we only consider messages sent by the
     // user, and that were successfully sent (i.e. no failed_request or local_id)

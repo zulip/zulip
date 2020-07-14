@@ -94,7 +94,11 @@ exports.set_up = function () {
         channel.post({
             url: "/json/export/realm",
             success: function () {
-                ui_report.success(i18n.t("Export started. Check back in a few minutes."), export_status, 4000);
+                ui_report.success(
+                    i18n.t("Export started. Check back in a few minutes."),
+                    export_status,
+                    4000,
+                );
             },
             error: function (xhr) {
                 ui_report.error(i18n.t("Export failed"), xhr, export_status);

@@ -220,7 +220,10 @@ run_test("nth_most_recent_id", () => {
 
 run_test("change_message_id", () => {
     const list = new MessageList({});
-    list.data._add_to_hash([{id: 10.5, content: "good job"}, {id: 20.5, content: "ok!"}]);
+    list.data._add_to_hash([
+        {id: 10.5, content: "good job"},
+        {id: 20.5, content: "ok!"},
+    ]);
 
     // local to local
     list.change_message_id(10.5, 11.5);
@@ -261,8 +264,16 @@ run_test("last_sent_by_me", () => {
 
 run_test("local_echo", () => {
     let list = new MessageList({});
-    list.append([{id: 10}, {id: 20}, {id: 30}, {id: 20.02},
-                 {id: 20.03}, {id: 40}, {id: 50}, {id: 60}]);
+    list.append([
+        {id: 10},
+        {id: 20},
+        {id: 30},
+        {id: 20.02},
+        {id: 20.03},
+        {id: 40},
+        {id: 50},
+        {id: 60},
+    ]);
     list._local_only = {20.02: {id: 20.02}, 20.03: {id: 20.03}};
 
     assert.equal(list.closest_id(10), 10);
@@ -284,10 +295,23 @@ run_test("local_echo", () => {
 
     list = new MessageList({});
     list.append([
-        {id: 10}, {id: 20}, {id: 30}, {id: 20.02}, {id: 20.03}, {id: 40},
-        {id: 50}, {id: 50.01}, {id: 50.02}, {id: 60}]);
-    list._local_only = {20.02: {id: 20.02}, 20.03: {id: 20.03},
-                        50.01: {id: 50.01}, 50.02: {id: 50.02}};
+        {id: 10},
+        {id: 20},
+        {id: 30},
+        {id: 20.02},
+        {id: 20.03},
+        {id: 40},
+        {id: 50},
+        {id: 50.01},
+        {id: 50.02},
+        {id: 60},
+    ]);
+    list._local_only = {
+        20.02: {id: 20.02},
+        20.03: {id: 20.03},
+        50.01: {id: 50.01},
+        50.02: {id: 50.02},
+    };
 
     assert.equal(list.closest_id(10), 10);
     assert.equal(list.closest_id(20), 20);
@@ -418,7 +442,9 @@ run_test("add_remove_rerender", () => {
 
     const messages = [{id: 1}, {id: 2}, {id: 3}];
 
-    list.data.unmuted_messages = function (msgs) { return msgs; };
+    list.data.unmuted_messages = function (msgs) {
+        return msgs;
+    };
     list.add_messages(messages);
     assert.equal(list.num_items(), 3);
 

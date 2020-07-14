@@ -1,4 +1,3 @@
-
 zrequire("user_groups");
 
 run_test("user_groups", () => {
@@ -68,12 +67,10 @@ run_test("user_groups", () => {
     assert(user_groups.is_member_of(admins.id, 3));
 
     user_groups.add_members(all.id, [5, 4]);
-    assert.deepEqual(user_groups.get_user_group_from_id(all.id).members,
-                     new Set([1, 2, 3, 5, 4]));
+    assert.deepEqual(user_groups.get_user_group_from_id(all.id).members, new Set([1, 2, 3, 5, 4]));
 
     user_groups.remove_members(all.id, [1, 4]);
-    assert.deepEqual(user_groups.get_user_group_from_id(all.id).members,
-                     new Set([2, 3, 5]));
+    assert.deepEqual(user_groups.get_user_group_from_id(all.id).members, new Set([2, 3, 5]));
 
     assert(user_groups.is_user_group(admins));
     const object = {

@@ -24,12 +24,16 @@ people.add_active_user(fred);
 people.initialize_current_user(me.user_id);
 
 const bot_data_params = {
-    realm_bots: [{email: "bot0@zulip.com", user_id: 42, full_name: "Bot 0",
-                  services: []},
-                 {email: "outgoingwebhook@zulip.com", user_id: 314, full_name: "Outgoing webhook",
-                  services: [{base_url: "http://foo.com", interface: 1}]}],
+    realm_bots: [
+        {email: "bot0@zulip.com", user_id: 42, full_name: "Bot 0", services: []},
+        {
+            email: "outgoingwebhook@zulip.com",
+            user_id: 314,
+            full_name: "Outgoing webhook",
+            services: [{base_url: "http://foo.com", interface: 1}],
+        },
+    ],
 };
-
 
 bot_data.initialize(bot_data_params);
 // Our startup logic should have added Bot 0 from page_params.
@@ -51,8 +55,7 @@ run_test("test_basics", () => {
         user_id: 143,
         avatar_url: "",
         full_name: "Embedded bot 1",
-        services: [{config_data: {key: "12345678"},
-                    service_name: "giphy"}],
+        services: [{config_data: {key: "12345678"}, service_name: "giphy"}],
         owner: "cordelia@zulip.com",
     };
 
@@ -72,9 +75,10 @@ run_test("test_basics", () => {
 
         let bot = bot_data.get(43);
         assert.equal("Bot 1", bot.full_name);
-        bot_data.update(43, {full_name: "New Bot 1",
-                             services: [{interface: 2,
-                                         base_url: "http://baz.com"}]});
+        bot_data.update(43, {
+            full_name: "New Bot 1",
+            services: [{interface: 2, base_url: "http://baz.com"}],
+        });
         bot = bot_data.get(43);
         const services = bot_data.get_services(43);
         assert.equal("New Bot 1", bot.full_name);
@@ -132,10 +136,21 @@ run_test("test_basics", () => {
     })();
 
     (function test_get_editable() {
-
         bot_data.add({...test_bot, user_id: 44, owner_id: me.user_id, is_active: true});
-        bot_data.add({...test_bot, user_id: 45, email: "bot2@zulip.com", owner_id: me.user_id, is_active: true});
-        bot_data.add({...test_bot, user_id: 46, email: "bot3@zulip.com", owner_id: fred.user_id, is_active: true});
+        bot_data.add({
+            ...test_bot,
+            user_id: 45,
+            email: "bot2@zulip.com",
+            owner_id: me.user_id,
+            is_active: true,
+        });
+        bot_data.add({
+            ...test_bot,
+            user_id: 46,
+            email: "bot3@zulip.com",
+            owner_id: fred.user_id,
+            is_active: true,
+        });
 
         const editable_bots = bot_data.get_editable().map((bot) => bot.email);
         assert.deepEqual(["bot1@zulip.com", "bot2@zulip.com"], editable_bots);

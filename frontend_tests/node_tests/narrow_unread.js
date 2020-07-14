@@ -1,4 +1,3 @@
-
 zrequire("Filter", "js/filter");
 zrequire("people");
 zrequire("stream_data");
@@ -60,9 +59,7 @@ run_test("get_unread_ids", () => {
         id: 102,
         type: "private",
         unread: true,
-        display_recipient: [
-            {id: alice.user_id},
-        ],
+        display_recipient: [{id: alice.user_id}],
     };
 
     stream_data.add_sub(sub);
@@ -70,32 +67,24 @@ run_test("get_unread_ids", () => {
     unread_ids = candidate_ids();
     assert.equal(unread_ids, undefined);
 
-    terms = [
-        {operator: "search", operand: "whatever"},
-    ];
+    terms = [{operator: "search", operand: "whatever"}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.equal(unread_ids, undefined);
     assert_unread_info({flavor: "cannot_compute"});
 
-    terms = [
-        {operator: "bogus_operator", operand: "me@example.com"},
-    ];
+    terms = [{operator: "bogus_operator", operand: "me@example.com"}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
     assert_unread_info({flavor: "not_found"});
 
-    terms = [
-        {operator: "stream", operand: "bogus"},
-    ];
+    terms = [{operator: "stream", operand: "bogus"}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
 
-    terms = [
-        {operator: "stream", operand: sub.name},
-    ];
+    terms = [{operator: "stream", operand: sub.name}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
@@ -130,16 +119,12 @@ run_test("get_unread_ids", () => {
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [stream_msg.id]);
 
-    terms = [
-        {operator: "is", operand: "mentioned"},
-    ];
+    terms = [{operator: "is", operand: "mentioned"}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [stream_msg.id]);
 
-    terms = [
-        {operator: "sender", operand: "me@example.com"},
-    ];
+    terms = [{operator: "sender", operand: "me@example.com"}];
     set_filter(terms);
     // note that our candidate ids are just "all" ids now
     unread_ids = candidate_ids();
@@ -148,9 +133,7 @@ run_test("get_unread_ids", () => {
     // this actually does filtering
     assert_unread_info({flavor: "not_found"});
 
-    terms = [
-        {operator: "pm-with", operand: "alice@example.com"},
-    ];
+    terms = [{operator: "pm-with", operand: "alice@example.com"}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
@@ -170,40 +153,30 @@ run_test("get_unread_ids", () => {
         msg_id: private_msg.id,
     });
 
-    terms = [
-        {operator: "is", operand: "private"},
-    ];
+    terms = [{operator: "is", operand: "private"}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [private_msg.id]);
 
     // For a negated search, our candidate ids will be all
     // unread messages, even ones that don't pass the filter.
-    terms = [
-        {operator: "is", operand: "private", negated: true},
-    ];
+    terms = [{operator: "is", operand: "private", negated: true}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [stream_msg.id, private_msg.id]);
 
-    terms = [
-        {operator: "pm-with", operand: "bob@example.com"},
-    ];
+    terms = [{operator: "pm-with", operand: "bob@example.com"}];
     set_filter(terms);
 
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
 
-    terms = [
-        {operator: "is", operand: "starred"},
-    ];
+    terms = [{operator: "is", operand: "starred"}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
 
-    terms = [
-        {operator: "search", operand: "needle"},
-    ];
+    terms = [{operator: "search", operand: "needle"}];
     set_filter(terms);
 
     assert_unread_info({
@@ -223,9 +196,7 @@ run_test("defensive code", () => {
     // couldn't compute the unread message ids, but that
     // invariant is hard to future-proof.
     narrow_state._possible_unread_message_ids = () => undefined;
-    const terms = [
-        {operator: "some-unhandled-case", operand: "whatever"},
-    ];
+    const terms = [{operator: "some-unhandled-case", operand: "whatever"}];
     set_filter(terms);
     assert_unread_info({
         flavor: "cannot_compute",

@@ -16,7 +16,6 @@ const frontend = {
 stream_data.add_sub(frontend);
 
 run_test("settings", () => {
-
     muting.add_muted_topic(frontend.stream_id, "js", 1577836800);
     let set_up_ui_called = false;
     muting_ui.set_up_muted_topics_ui = function () {
@@ -28,7 +27,8 @@ run_test("settings", () => {
                 stream: frontend.name,
                 stream_id: frontend.stream_id,
                 topic: "js",
-            }]);
+            },
+        ]);
         set_up_ui_called = true;
     };
 

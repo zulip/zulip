@@ -75,8 +75,12 @@ exports.open_overlay = function (opts) {
     }
 
     if (active_overlay || open_overlay_name || close_handler) {
-        blueslip.error("Programming error — trying to open " + opts.name +
-            " before closing " + open_overlay_name);
+        blueslip.error(
+            "Programming error — trying to open " +
+                opts.name +
+                " before closing " +
+                open_overlay_name,
+        );
         return;
     }
 
@@ -117,8 +121,9 @@ exports.open_modal = function (selector) {
     }
 
     if (exports.is_modal_open()) {
-        blueslip.error("open_modal() was called while " + exports.active_modal() +
-            " modal was open.");
+        blueslip.error(
+            "open_modal() was called while " + exports.active_modal() + " modal was open.",
+        );
         return;
     }
 
@@ -182,8 +187,9 @@ exports.close_modal = function (selector) {
     }
 
     if (exports.active_modal() !== selector) {
-        blueslip.error("Trying to close " + selector +
-            " modal when " + exports.active_modal() + " is open.");
+        blueslip.error(
+            "Trying to close " + selector + " modal when " + exports.active_modal() + " is open.",
+        );
         return;
     }
 
@@ -193,7 +199,6 @@ exports.close_modal = function (selector) {
     elem.modal("hide").attr("aria-hidden", true);
     // Enable mouse events for the background as the modal closes.
     exports.enable_background_mouse_events();
-
 };
 
 exports.close_active_modal = function () {

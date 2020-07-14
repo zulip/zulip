@@ -17,8 +17,7 @@ exports.deferred_message_types = deferred_message_types;
 exports.is_deferred_delivery = function (message_content) {
     const reminders_test = deferred_message_types.reminders.test;
     const scheduled_test = deferred_message_types.scheduled.test;
-    return reminders_test.test(message_content) ||
-            scheduled_test.test(message_content);
+    return reminders_test.test(message_content) || scheduled_test.test(message_content);
 };
 
 function patch_request_for_scheduling(request, message_content, deliver_at, delivery_type) {
@@ -52,12 +51,19 @@ exports.schedule_message = function (request) {
 
     const deliver_at = command_line.slice(command.length + 1);
 
-    if (message.trim() === "" || deliver_at.trim() === "" ||
-        command_line.slice(command.length, command.length + 1) !== " ") {
-
+    if (
+        message.trim() === "" ||
+        deliver_at.trim() === "" ||
+        command_line.slice(command.length, command.length + 1) !== " "
+    ) {
         $("#compose-textarea").attr("disabled", false);
         if (command_line.slice(command.length, command.length + 1) !== " ") {
-            compose.compose_error(i18n.t("Invalid slash command. Check if you are missing a space after the command."), $("#compose-textarea"));
+            compose.compose_error(
+                i18n.t(
+                    "Invalid slash command. Check if you are missing a space after the command.",
+                ),
+                $("#compose-textarea"),
+            );
         } else if (deliver_at.trim() === "") {
             compose.compose_error(i18n.t("Please specify a date or time"), $("#compose-textarea"));
         } else {
@@ -67,12 +73,17 @@ exports.schedule_message = function (request) {
     }
 
     request = patch_request_for_scheduling(
-        request, message, deliver_at, deferred_message_type.delivery_type,
+        request,
+        message,
+        deliver_at,
+        deferred_message_type.delivery_type,
     );
 
     const success = function (data) {
         if (request.delivery_type === deferred_message_types.scheduled.delivery_type) {
-            notifications.notify_above_composebox("Scheduled your Message to be delivered at: " + data.deliver_at);
+            notifications.notify_above_composebox(
+                "Scheduled your Message to be delivered at: " + data.deliver_at,
+            );
         }
         $("#compose-textarea").attr("disabled", false);
         compose.clear_compose_box();
@@ -95,7 +106,8 @@ exports.do_set_reminder_for_message = function (message_id, timestamp) {
             .text(i18n.t("Reminder not set!"))
             .css("display", "block")
             .css("color", "#b94a48")
-            .delay(1000).fadeOut(300, function () {
+            .delay(1000)
+            .fadeOut(300, function () {
                 $(this).css("color", "");
             });
     }
@@ -119,7 +131,8 @@ exports.do_set_reminder_for_message = function (message_id, timestamp) {
     }
 
     const link_to_msg = hash_util.by_conversation_and_time_uri(message);
-    const reminder_msg_content = message.raw_content + "\n\n[Link to conversation](" + link_to_msg + ")";
+    const reminder_msg_content =
+        message.raw_content + "\n\n[Link to conversation](" + link_to_msg + ")";
     let reminder_message = {
         type: "private",
         sender_id: page_params.user_id,
@@ -138,11 +151,14 @@ exports.do_set_reminder_for_message = function (message_id, timestamp) {
         row.find(".alert-msg")
             .text(i18n.t("Reminder set!"))
             .css("display", "block")
-            .delay(1000).fadeOut(300);
+            .delay(1000)
+            .fadeOut(300);
     }
 
     reminder_message = patch_request_for_scheduling(
-        reminder_message, reminder_msg_content, timestamp,
+        reminder_message,
+        reminder_msg_content,
+        timestamp,
         deferred_message_types.reminders.delivery_type,
     );
     transmit.send_message(reminder_message, success, error);

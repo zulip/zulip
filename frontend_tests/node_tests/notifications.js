@@ -1,7 +1,10 @@
 // Dependencies
-set_global("$", global.make_zjquery({
-    silent: true,
-}));
+set_global(
+    "$",
+    global.make_zjquery({
+        silent: true,
+    }),
+);
 set_global("document", {
     hasFocus: function () {
         return true;
@@ -250,7 +253,6 @@ run_test("message_is_notifiable", () => {
 });
 
 run_test("basic_notifications", () => {
-
     let n; // Object for storing all notification data for assertions.
     let last_closed_message_id = null;
     let last_shown_message_id = null;

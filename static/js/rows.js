@@ -111,10 +111,7 @@ exports.local_echo_id = function (message_row) {
     return zid;
 };
 
-const valid_table_names = new Set([
-    "zhome",
-    "zfilt",
-]);
+const valid_table_names = new Set(["zhome", "zfilt"]);
 
 exports.get_table = function (table_name) {
     if (!valid_table_names.has(table_name)) {
@@ -153,7 +150,9 @@ exports.get_message_recipient_header = function (message_row) {
 };
 
 exports.recipient_from_group = function (message_group) {
-    return message_store.get(exports.id($(message_group).children(".message_row").first().expectOne()));
+    return message_store.get(
+        exports.id($(message_group).children(".message_row").first().expectOne()),
+    );
 };
 
 exports.id_for_recipient_row = function (recipient_row) {

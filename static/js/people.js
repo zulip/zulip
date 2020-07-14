@@ -44,7 +44,6 @@ function split_to_ints(lst) {
     return lst.split(",").map((s) => parseInt(s, 10));
 }
 
-
 exports.get_by_user_id = function (user_id, ignore_missing) {
     if (!people_by_user_id_dict.has(user_id) && !ignore_missing) {
         blueslip.error("Unknown user_id in get_by_user_id: " + user_id);
@@ -62,8 +61,7 @@ exports.get_by_email = function (email) {
 
     if (person.email.toLowerCase() !== email.toLowerCase()) {
         blueslip.warn(
-            "Obsolete email passed to get_by_email: " + email +
-            " new email = " + person.email,
+            "Obsolete email passed to get_by_email: " + email + " new email = " + person.email,
         );
     }
 
@@ -152,9 +150,7 @@ exports.huddle_string = function (message) {
     let user_ids = message.display_recipient.map((recip) => recip.id);
 
     function is_huddle_recip(user_id) {
-        return user_id &&
-            people_by_user_id_dict.has(user_id) &&
-            !exports.is_my_user_id(user_id);
+        return user_id && people_by_user_id_dict.has(user_id) && !exports.is_my_user_id(user_id);
     }
 
     user_ids = user_ids.filter(is_huddle_recip);
@@ -848,9 +844,10 @@ exports.get_message_people = function () {
         at the message_store code to see the precise
         semantics
     */
-    const message_people = message_store.user_ids().map(
-        (user_id) => people_by_user_id_dict.get(user_id),
-    ).filter(Boolean);
+    const message_people = message_store
+        .user_ids()
+        .map((user_id) => people_by_user_id_dict.get(user_id))
+        .filter(Boolean);
 
     return message_people;
 };
@@ -1018,9 +1015,11 @@ exports.get_people_for_stream_create = function () {
     const people_minus_you = [];
     for (const person of active_user_dict.values()) {
         if (!exports.is_my_user_id(person.user_id)) {
-            people_minus_you.push({email: person.email,
-                                   user_id: person.user_id,
-                                   full_name: person.full_name});
+            people_minus_you.push({
+                email: person.email,
+                user_id: person.user_id,
+                full_name: person.full_name,
+            });
         }
     }
     return people_minus_you.sort(people_cmp);
@@ -1136,9 +1135,13 @@ exports.extract_people_from_message = function (message) {
 
     switch (message.type) {
         case "stream":
-            involved_people = [{full_name: message.sender_full_name,
-                                user_id: message.sender_id,
-                                email: message.sender_email}];
+            involved_people = [
+                {
+                    full_name: message.sender_full_name,
+                    user_id: message.sender_id,
+                    email: message.sender_email,
+                },
+            ];
             break;
 
         case "private":
@@ -1180,8 +1183,7 @@ function safe_lower(s) {
 exports.matches_user_settings_search = function (person, value) {
     const email = settings_data.email_for_user_settings(person);
 
-    return safe_lower(person.full_name).includes(value) ||
-    safe_lower(email).includes(value);
+    return safe_lower(person.full_name).includes(value) || safe_lower(email).includes(value);
 };
 
 exports.filter_for_user_settings_search = function (persons, query) {
@@ -1210,7 +1212,6 @@ exports.maybe_incr_recipient_count = function (message) {
 
     // Track the number of PMs we've sent to this person to improve autocomplete
     for (const recip of message.display_recipient) {
-
         if (recip.unknown_local_echo_user) {
             continue;
         }

@@ -9,8 +9,12 @@ zrequire("stream_topic_history");
 zrequire("stream_sort");
 const tg = zrequire("topic_generator");
 
-function is_even(i) { return i % 2 === 0; }
-function is_odd(i) { return i % 2 === 1; }
+function is_even(i) {
+    return i % 2 === 0;
+}
+function is_odd(i) {
+    return i % 2 === 1;
+}
 
 run_test("basics", () => {
     let gen = tg.list_generator([10, 20, 30]);
@@ -72,7 +76,9 @@ run_test("basics", () => {
 
     ints = tg.list_generator([10, 20, 30]);
 
-    function mult10(x) { return x * 10; }
+    function mult10(x) {
+        return x * 10;
+    }
 
     gen = tg.map(ints, mult10);
     assert.equal(gen.next(), 100);
@@ -206,7 +212,6 @@ run_test("streams", () => {
     assert_prev_stream(undefined, "test here");
     assert_prev_stream("test here", "devel");
     assert_prev_stream("announce", "test here");
-
 });
 
 run_test("topics", () => {
@@ -227,26 +232,15 @@ run_test("topics", () => {
     }
 
     function next_topic(curr_stream, curr_topic) {
-        return tg.next_topic(
-            streams,
-            get_topics,
-            has_unread_messages,
-            curr_stream,
-            curr_topic);
+        return tg.next_topic(streams, get_topics, has_unread_messages, curr_stream, curr_topic);
     }
 
-    assert.deepEqual(next_topic(1, "1a"),
-                     {stream: 1, topic: "1b"});
-    assert.deepEqual(next_topic(1, undefined),
-                     {stream: 1, topic: "1a"});
-    assert.deepEqual(next_topic(2, "bogus"),
-                     {stream: 3, topic: "3a"});
-    assert.deepEqual(next_topic(3, "3b"),
-                     {stream: 3, topic: "3a"});
-    assert.deepEqual(next_topic(4, "4a"),
-                     {stream: 1, topic: "1a"});
-    assert.deepEqual(next_topic(undefined, undefined),
-                     {stream: 1, topic: "1a"});
+    assert.deepEqual(next_topic(1, "1a"), {stream: 1, topic: "1b"});
+    assert.deepEqual(next_topic(1, undefined), {stream: 1, topic: "1a"});
+    assert.deepEqual(next_topic(2, "bogus"), {stream: 3, topic: "3a"});
+    assert.deepEqual(next_topic(3, "3b"), {stream: 3, topic: "3a"});
+    assert.deepEqual(next_topic(4, "4a"), {stream: 1, topic: "1a"});
+    assert.deepEqual(next_topic(undefined, undefined), {stream: 1, topic: "1a"});
 
     // Now test the deeper function that is wired up to
     // real functions stream_data/stream_sort/unread.
@@ -265,10 +259,10 @@ run_test("topics", () => {
 
     stream_topic_history.get_recent_topic_names = function (stream_id) {
         switch (stream_id) {
-        case muted_stream_id:
-            return ["ms-topic1", "ms-topic2"];
-        case devel_stream_id:
-            return ["muted", "python"];
+            case muted_stream_id:
+                return ["ms-topic1", "ms-topic2"];
+            case devel_stream_id:
+                return ["muted", "python"];
         }
 
         return [];

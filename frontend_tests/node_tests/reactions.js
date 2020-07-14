@@ -61,8 +61,12 @@ const message = {
         {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "263a"},
         {emoji_name: "smile", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "263a"},
         {emoji_name: "frown", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f641"},
-        {emoji_name: "inactive_realm_emoji", user_id: 5, reaction_type: "realm_emoji",
-         emoji_code: "992"},
+        {
+            emoji_name: "inactive_realm_emoji",
+            user_id: 5,
+            reaction_type: "realm_emoji",
+            emoji_code: "992",
+        },
 
         // add some bogus user_ids
         {emoji_name: "octopus", user_id: 8888, reaction_type: "unicode_emoji", emoji_code: "1f419"},
@@ -103,7 +107,9 @@ run_test("open_reactions_popover", () => {
     assert(reactions.open_reactions_popover());
     assert(called);
 
-    current_msg_list.selected_message = function () { return {sent_by_me: false}; };
+    current_msg_list.selected_message = function () {
+        return {sent_by_me: false};
+    };
 
     called = false;
     emoji_picker.toggle_emoji_popover = function (target, id) {
@@ -190,7 +196,9 @@ run_test("sending", () => {
         // similarly, we only exercise the failure codepath
         // Since this path calls blueslip.warn, we need to handle it.
         blueslip.expect("warn", "XHR Error Message.");
-        global.channel.xhr_error_message = function () {return "XHR Error Message.";};
+        global.channel.xhr_error_message = function () {
+            return "XHR Error Message.";
+        };
         args.error();
     });
     emoji_name = "alien"; // not set yet
@@ -271,8 +279,10 @@ run_test("emoji_reaction_title", () => {
     const message_id = 1001;
     const local_id = "unicode_emoji,263a";
 
-    assert.equal(reactions.get_reaction_title_data(message_id, local_id),
-                 "You (click to remove) and Bob van Roberts reacted with :smile:");
+    assert.equal(
+        reactions.get_reaction_title_data(message_id, local_id),
+        "You (click to remove) and Bob van Roberts reacted with :smile:",
+    );
 });
 
 run_test("add_and_remove_reaction", () => {
@@ -320,8 +330,10 @@ run_test("add_and_remove_reaction", () => {
 
     // Testing tooltip title data for added reaction.
     const local_id = "unicode_emoji,1f3b1";
-    assert.equal(reactions.get_reaction_title_data(alice_event.message_id, local_id),
-                 "You (click to remove) reacted with :8ball:");
+    assert.equal(
+        reactions.get_reaction_title_data(alice_event.message_id, local_id),
+        "You (click to remove) reacted with :8ball:",
+    );
 
     // Running add_reaction again should not result in any changes
     template_called = false;
@@ -582,7 +594,6 @@ run_test("with_view_stubs", () => {
             },
         ],
     });
-
 });
 
 run_test("error_handling", () => {
@@ -601,7 +612,9 @@ run_test("error_handling", () => {
     };
 
     const original_func = reactions.current_user_has_reacted_to_emoji;
-    reactions.current_user_has_reacted_to_emoji = function () { return true; };
+    reactions.current_user_has_reacted_to_emoji = function () {
+        return true;
+    };
     reactions.toggle_emoji_reaction(55, bogus_event.emoji_name);
     reactions.current_user_has_reacted_to_emoji = original_func;
 
@@ -722,9 +735,7 @@ run_test("duplicates", () => {
         ],
     };
 
-    blueslip.expect(
-        "error",
-        "server sent duplicate reactions for user 5 (key=unicode_emoji,263a)");
+    blueslip.expect("error", "server sent duplicate reactions for user 5 (key=unicode_emoji,263a)");
     reactions.set_clean_reactions(dup_reaction_message);
 });
 
@@ -735,6 +746,9 @@ run_test("process_reaction_click errors", () => {
     reactions.process_reaction_click(55, "whatever");
 
     global.message_store.get = () => message;
-    blueslip.expect("error", "Data integrity problem for reaction bad-local-id (message some-msg-id)");
+    blueslip.expect(
+        "error",
+        "Data integrity problem for reaction bad-local-id (message some-msg-id)",
+    );
     reactions.process_reaction_click("some-msg-id", "bad-local-id");
 });

@@ -1,11 +1,14 @@
 const DropdownListWidget = function (opts) {
     const init = () => {
         // Run basic sanity checks on opts, and set up sane defaults.
-        opts = Object.assign({
-            null_value: null,
-            render_text: (item_name) => item_name,
-            on_update: () => {},
-        }, opts);
+        opts = Object.assign(
+            {
+                null_value: null,
+                render_text: (item_name) => item_name,
+                on_update: () => {},
+            },
+            opts,
+        );
         opts.container_id = `${opts.widget_name}_widget`;
         opts.value_id = `id_${opts.widget_name}`;
         if (opts.value === undefined) {
@@ -43,7 +46,9 @@ const DropdownListWidget = function (opts) {
     };
 
     const register_event_handlers = () => {
-        $(`#${opts.container_id} .dropdown-list-body`).on("click keypress", ".list_item", function (e) {
+        $(`#${opts.container_id} .dropdown-list-body`).on("click keypress", ".list_item", function (
+            e,
+        ) {
             const setting_elem = $(this).closest(`.${opts.widget_name}_setting`);
             if (e.type === "keypress") {
                 if (e.which === 13) {

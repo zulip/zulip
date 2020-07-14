@@ -55,9 +55,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
         case "hotspots":
             hotspots.load_new(event.hotspots);
-            page_params.hotspots = page_params.hotspots ?
-                page_params.hotspots.concat(event.hotspots) :
-                event.hotspots;
+            page_params.hotspots = page_params.hotspots
+                ? page_params.hotspots.concat(event.hotspots)
+                : event.hotspots;
             break;
 
         case "invites_changed":
@@ -136,18 +136,21 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 video_chat_provider: compose.update_video_chat_button_display,
                 waiting_period_threshold: noop,
             };
-            if (event.op === "update" && Object.prototype.hasOwnProperty.call(realm_settings, event.property)) {
+            if (
+                event.op === "update" &&
+                Object.prototype.hasOwnProperty.call(realm_settings, event.property)
+            ) {
                 page_params["realm_" + event.property] = event.value;
                 realm_settings[event.property]();
                 settings_org.sync_realm_settings(event.property);
                 if (event.property === "create_stream_policy") {
-                // TODO: Add waiting_period_threshold logic here.
-                    page_params.can_create_streams = page_params.is_admin ||
-                    page_params.realm_create_stream_policy === 1;
+                    // TODO: Add waiting_period_threshold logic here.
+                    page_params.can_create_streams =
+                        page_params.is_admin || page_params.realm_create_stream_policy === 1;
                 } else if (event.property === "invite_to_stream_policy") {
-                // TODO: Add waiting_period_threshold logic here.
-                    page_params.can_invite_to_stream = page_params.is_admin ||
-                    page_params.realm_invite_to_stream_policy === 1;
+                    // TODO: Add waiting_period_threshold logic here.
+                    page_params.can_invite_to_stream =
+                        page_params.is_admin || page_params.realm_invite_to_stream_policy === 1;
                 }
 
                 if (event.property === "name" && window.electron_bridge !== undefined) {
@@ -188,8 +191,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             }
 
             if (page_params.is_admin) {
-            // Update the UI notice about the user's profile being
-            // incomplete, as we might have filled in the missing field(s).
+                // Update the UI notice about the user's profile being
+                // incomplete, as we might have filled in the missing field(s).
                 panels.check_profile_incomplete();
             }
             break;
@@ -211,8 +214,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             break;
 
         case "realm_emoji":
-        // Update `page_params.realm_emoji` so that settings page
-        // can display it properly when reopened without refresh.
+            // Update `page_params.realm_emoji` so that settings page
+            // can display it properly when reopened without refresh.
             page_params.realm_emoji = event.realm_emoji;
             emoji.update_emojis(event.realm_emoji);
             settings_emoji.populate_emoji(event.realm_emoji);
@@ -234,7 +237,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 for (i = 0; i < page_params.realm_domains.length; i += 1) {
                     if (page_params.realm_domains[i].domain === event.realm_domain.domain) {
                         page_params.realm_domains[i].allow_subdomains =
-                        event.realm_domain.allow_subdomains;
+                            event.realm_domain.allow_subdomains;
                         break;
                     }
                 }
@@ -263,15 +266,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
         case "stream":
             if (event.op === "update") {
-            // Legacy: Stream properties are still managed by subs.js on the client side.
-                stream_events.update_property(
-                    event.stream_id,
-                    event.property,
-                    event.value,
-                    {
-                        rendered_description: event.rendered_description,
-                        history_public_to_subscribers: event.history_public_to_subscribers,
-                    });
+                // Legacy: Stream properties are still managed by subs.js on the client side.
+                stream_events.update_property(event.stream_id, event.property, event.value, {
+                    rendered_description: event.rendered_description,
+                    history_public_to_subscribers: event.history_public_to_subscribers,
+                });
                 settings_streams.update_default_streams_table();
             } else if (event.op === "create") {
                 stream_data.create_streams(event.streams);
@@ -306,9 +305,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             break;
 
         case "submessage": {
-        // The fields in the event don't quite exactly
-        // match the layout of a submessage, since there's
-        // an event id.  We also want to be explicit here.
+            // The fields in the event don't quite exactly
+            // match the layout of a submessage, since there's
+            // an event id.  We also want to be explicit here.
             const submsg = {
                 id: event.submessage_id,
                 sender_id: event.sender_id,
@@ -373,18 +372,14 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     stream_events.mark_unsubscribed(sub);
                 }
             } else if (event.op === "update") {
-                stream_events.update_property(
-                    event.stream_id,
-                    event.property,
-                    event.value,
-                );
+                stream_events.update_property(event.stream_id, event.property, event.value);
             }
             break;
 
         case "typing":
             if (event.sender.user_id === page_params.user_id) {
-            // typing notifications are sent to the user who is typing
-            // as well as recipients; we ignore such self-generated events.
+                // typing notifications are sent to the user who is typing
+                // as well as recipients; we ignore such self-generated events.
                 return;
             }
 
@@ -414,11 +409,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 page_params[event.setting_name] = event.setting;
             }
             if (event.setting_name === "default_language") {
-            // We additionally need to set the language name.
+                // We additionally need to set the language name.
                 page_params.default_language_name = event.language_name;
             }
             if (event.setting_name === "twenty_four_hour_time") {
-            // Rerender the whole message list UI
+                // Rerender the whole message list UI
                 home_msg_list.rerender();
                 if (current_msg_list === message_list.narrowed) {
                     message_list.narrowed.rerender();
@@ -458,15 +453,15 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 scroll_bar.set_layout_width();
             }
             if (event.setting_name === "left_side_userlist") {
-            // TODO: Make this change the view immediately rather
-            // than requiring a reload or page resize.
+                // TODO: Make this change the view immediately rather
+                // than requiring a reload or page resize.
             }
             if (event.setting_name === "default_language") {
-            // TODO: Make this change the view immediately rather than
-            // requiring a reload.  This is likely fairly difficult,
-            // because various i18n strings are rendered by the
-            // server; we may want to instead just trigger a page
-            // reload.
+                // TODO: Make this change the view immediately rather than
+                // requiring a reload.  This is likely fairly difficult,
+                // because various i18n strings are rendered by the
+                // server; we may want to instead just trigger a page
+                // reload.
             }
             if (event.setting_name === "emojiset") {
                 settings_display.report_emojiset_change();
@@ -482,8 +477,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
 
         case "update_global_notifications":
-            notifications.handle_global_notification_updates(event.notification_name,
-                                                             event.setting);
+            notifications.handle_global_notification_updates(
+                event.notification_name,
+                event.setting,
+            );
             settings_notifications.update_page();
             // TODO: This should also do a refresh of the stream_edit UI
             // if it's currently displayed, possibly reusing some code
@@ -546,7 +543,6 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             settings_exports.populate_exports_table(event.exports);
             break;
     }
-
 };
 
 window.server_events_dispatch = exports;

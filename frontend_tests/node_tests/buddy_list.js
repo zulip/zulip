@@ -158,9 +158,7 @@ run_test("find_li w/force_render", () => {
         return stub_li;
     };
 
-    buddy_list.keys = [
-        "foo", "bar", key, "baz",
-    ];
+    buddy_list.keys = ["foo", "bar", key, "baz"];
 
     let shown;
 

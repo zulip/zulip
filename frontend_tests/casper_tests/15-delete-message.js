@@ -5,7 +5,6 @@ common.start_and_log_in();
 var last_message_id;
 var msgs_qty;
 
-
 casper.then(function () {
     casper.waitUntilVisible("#zhome");
 });

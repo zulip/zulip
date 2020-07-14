@@ -189,9 +189,7 @@ run_test("update_dom_with_unread_counts", () => {
 run_test("get_active_user_ids_string", () => {
     narrow_state.filter = () => {};
 
-    assert.equal(
-        pm_list.get_active_user_ids_string(),
-        undefined);
+    assert.equal(pm_list.get_active_user_ids_string(), undefined);
 
     function set_filter_result(emails) {
         narrow_state.filter = () => ({
@@ -203,22 +201,16 @@ run_test("get_active_user_ids_string", () => {
     }
 
     set_filter_result([]);
-    assert.equal(
-        pm_list.get_active_user_ids_string(),
-        undefined);
+    assert.equal(pm_list.get_active_user_ids_string(), undefined);
 
     set_filter_result(["bob@zulip.com,alice@zulip.com"]);
-    assert.equal(
-        pm_list.get_active_user_ids_string(),
-        "101,102");
+    assert.equal(pm_list.get_active_user_ids_string(), "101,102");
 });
 
 run_test("is_all_privates", () => {
     narrow_state.filter = () => {};
 
-    assert.equal(
-        pm_list.is_all_privates(),
-        false);
+    assert.equal(pm_list.is_all_privates(), false);
 
     narrow_state.filter = () => ({
         operands: (operand) => {
@@ -227,9 +219,7 @@ run_test("is_all_privates", () => {
         },
     });
 
-    assert.equal(
-        pm_list.is_all_privates(),
-        true);
+    assert.equal(pm_list.is_all_privates(), true);
 });
 
 function with_fake_list(f) {

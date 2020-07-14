@@ -32,11 +32,18 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    common.wait_for_text(".compose-all-everyone-msg", "Are you sure you want to mention all", function () {
-        casper.test.info("Warning message appears when mentioning @**all**");
-        casper.test.assertSelectorHasText(".compose-all-everyone-msg", "Are you sure you want to mention all");
-        casper.click(".compose-all-everyone-confirm");
-    });
+    common.wait_for_text(
+        ".compose-all-everyone-msg",
+        "Are you sure you want to mention all",
+        function () {
+            casper.test.info("Warning message appears when mentioning @**all**");
+            casper.test.assertSelectorHasText(
+                ".compose-all-everyone-msg",
+                "Are you sure you want to mention all"
+            );
+            casper.click(".compose-all-everyone-confirm");
+        }
+    );
 
     casper.waitWhileVisible(".compose-all-everyone-confirm", function () {
         casper.test.info("Check that error messages are gone.");
@@ -46,11 +53,12 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    common.expected_messages("zhome", ["Verona > Test mention all"],
-                             ["<p><span class=\"user-mention user-mention-me\" " +
-                              "data-user-id=\"*\">@all</span></p>"]);
+    common.expected_messages(
+        "zhome",
+        ["Verona > Test mention all"],
+        ['<p><span class="user-mention user-mention-me" ' + 'data-user-id="*">@all</span></p>']
+    );
 });
-
 
 common.then_log_out();
 

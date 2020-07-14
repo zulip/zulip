@@ -108,7 +108,6 @@ run_test("user-mention", () => {
     assert.equal($cordelia.text(), `@${cordelia.full_name}`);
 });
 
-
 run_test("user-group-mention", () => {
     // Setup
     const $content = get_content_element();
@@ -175,7 +174,10 @@ run_test("timestamp", () => {
 
     // Final asserts
     assert.equal($timestamp.text(), "Thu, Jan 1 1970, 12:00 AM");
-    assert.equal($timestamp.attr("title"), "This time is in your timezone. Original text was 'never-been-set'.");
+    assert.equal(
+        $timestamp.attr("title"),
+        "This time is in your timezone. Original text was 'never-been-set'.",
+    );
     assert.equal($timestamp_invalid.text(), "never-been-set");
 });
 
@@ -246,7 +248,8 @@ run_test("spoiler-header", () => {
 
     // Test that the show/hide button gets added to a spoiler header.
     const label = "My Spoiler Header";
-    const toggle_button_html = '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
+    const toggle_button_html =
+        '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
     $header.html(label);
     rm.update_elements($content);
     assert.equal(toggle_button_html + label, $header.html());
@@ -259,7 +262,8 @@ run_test("spoiler-header-empty-fill", () => {
     $content.set_find_results("div.spoiler-header", $array([$header]));
 
     // Test that an empty header gets the default text applied (through i18n filter).
-    const toggle_button_html = '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
+    const toggle_button_html =
+        '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
     $header.html("");
     rm.update_elements($content);
     assert.equal(toggle_button_html + "<p>translated: Spoiler</p>", $header.html());

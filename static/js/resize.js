@@ -37,24 +37,26 @@ function get_new_heights() {
 
     res.main_div_min_height = viewport_height - top_navbar_height;
 
-    res.stream_filters_max_height = viewport_height
-        - parseInt($("#left-sidebar").css("marginTop"), 10)
-        - parseInt($(".narrows_panel").css("marginTop"), 10)
-        - parseInt($(".narrows_panel").css("marginBottom"), 10)
-        - $("#global_filters").safeOuterHeight(true)
-        - $("#streams_header").safeOuterHeight(true);
+    res.stream_filters_max_height =
+        viewport_height -
+        parseInt($("#left-sidebar").css("marginTop"), 10) -
+        parseInt($(".narrows_panel").css("marginTop"), 10) -
+        parseInt($(".narrows_panel").css("marginBottom"), 10) -
+        $("#global_filters").safeOuterHeight(true) -
+        $("#streams_header").safeOuterHeight(true);
 
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
 
     // RIGHT SIDEBAR
 
-    const usable_height = viewport_height
-        - parseInt($("#right-sidebar").css("marginTop"), 10)
-        - $("#userlist-header").safeOuterHeight(true)
-        - $("#user_search_section").safeOuterHeight(true)
-        - invite_user_link_height
-        - $("#sidebar-keyboard-shortcuts").safeOuterHeight(true);
+    const usable_height =
+        viewport_height -
+        parseInt($("#right-sidebar").css("marginTop"), 10) -
+        $("#userlist-header").safeOuterHeight(true) -
+        $("#user_search_section").safeOuterHeight(true) -
+        invite_user_link_height -
+        $("#sidebar-keyboard-shortcuts").safeOuterHeight(true);
 
     res.buddy_list_wrapper_max_height = Math.max(80, usable_height);
 
@@ -62,7 +64,6 @@ function get_new_heights() {
 }
 
 function left_userlist_get_new_heights() {
-
     const res = {};
     const viewport_height = message_viewport.height();
     const viewport_width = message_viewport.width();
@@ -74,7 +75,6 @@ function left_userlist_get_new_heights() {
     res.bottom_whitespace_height = viewport_height * 0.4;
     res.main_div_min_height = viewport_height - top_navbar_height;
 
-
     // left sidebar
     const stream_filters = $("#stream_filters").expectOne();
     const buddy_list_wrapper = $("#buddy_list_wrapper").expectOne();
@@ -82,15 +82,16 @@ function left_userlist_get_new_heights() {
     const stream_filters_real_height = stream_filters.prop("scrollHeight");
     const user_list_real_height = ui.get_scroll_element(buddy_list_wrapper).prop("scrollHeight");
 
-    res.total_leftlist_height = viewport_height
-                                - parseInt($("#left-sidebar").css("marginTop"), 10)
-                                - parseInt($(".narrows_panel").css("marginTop"), 10)
-                                - parseInt($(".narrows_panel").css("marginBottom"), 10)
-                                - $("#global_filters").safeOuterHeight(true)
-                                - $("#streams_header").safeOuterHeight(true)
-                                - $("#userlist-header").safeOuterHeight(true)
-                                - $("#user_search_section").safeOuterHeight(true)
-                                - parseInt(stream_filters.css("marginBottom"), 10);
+    res.total_leftlist_height =
+        viewport_height -
+        parseInt($("#left-sidebar").css("marginTop"), 10) -
+        parseInt($(".narrows_panel").css("marginTop"), 10) -
+        parseInt($(".narrows_panel").css("marginBottom"), 10) -
+        $("#global_filters").safeOuterHeight(true) -
+        $("#streams_header").safeOuterHeight(true) -
+        $("#userlist-header").safeOuterHeight(true) -
+        $("#user_search_section").safeOuterHeight(true) -
+        parseInt(stream_filters.css("marginBottom"), 10);
 
     const blocks = [
         {
@@ -147,8 +148,7 @@ exports.watch_manual_resize = function (element) {
     })((height) => {
         // This callback disables autosize on the textarea.  It
         // will be re-enabled when this component is next opened.
-        autosize.destroy($(element))
-            .height(height + "px");
+        autosize.destroy($(element)).height(height + "px");
     });
 };
 

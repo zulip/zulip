@@ -24,7 +24,8 @@ async function run() {
     const browser = await puppeteer.launch({
         args: [
             "--window-size=1400,1024",
-            "--no-sandbox", "--disable-setuid-sandbox",
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
             // Helps render fonts correctly on Ubuntu: https://github.com/puppeteer/puppeteer/issues/661
             "--font-render-hinting=none",
         ],

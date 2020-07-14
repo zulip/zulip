@@ -69,27 +69,36 @@ function fade_messages() {
     }
 
     // Defer updating all message groups so that the compose box can open sooner
-    setTimeout((expected_msg_list, expected_recipient) => {
-        const all_groups = rows.get_table(current_msg_list.table_name).find(".recipient_row");
+    setTimeout(
+        (expected_msg_list, expected_recipient) => {
+            const all_groups = rows.get_table(current_msg_list.table_name).find(".recipient_row");
 
-        if (current_msg_list !== expected_msg_list ||
-            !compose_state.composing() ||
-            compose_state.private_message_recipient() !== expected_recipient) {
-            return;
-        }
+            if (
+                current_msg_list !== expected_msg_list ||
+                !compose_state.composing() ||
+                compose_state.private_message_recipient() !== expected_recipient
+            ) {
+                return;
+            }
 
-        should_fade_group = false;
+            should_fade_group = false;
 
-        // Note: The below algorithm relies on the fact that all_elts is
-        // sorted as it would be displayed in the message view
-        for (i = 0; i < all_groups.length; i += 1) {
-            const group_elt = $(all_groups[i]);
-            should_fade_group = exports.should_fade_message(rows.recipient_from_group(group_elt));
-            change_fade_state(group_elt, should_fade_group);
-        }
+            // Note: The below algorithm relies on the fact that all_elts is
+            // sorted as it would be displayed in the message view
+            for (i = 0; i < all_groups.length; i += 1) {
+                const group_elt = $(all_groups[i]);
+                should_fade_group = exports.should_fade_message(
+                    rows.recipient_from_group(group_elt),
+                );
+                change_fade_state(group_elt, should_fade_group);
+            }
 
-        floating_recipient_bar.update();
-    }, 0, current_msg_list, compose_state.private_message_recipient());
+            floating_recipient_bar.update();
+        },
+        0,
+        current_msg_list,
+        compose_state.private_message_recipient(),
+    );
 }
 
 exports.would_receive_message = function (user_id) {

@@ -166,8 +166,10 @@ add_example("get_messages", "/messages:get", 200, async (client) => {
         anchor: "newest",
         num_before: 100,
         num_after: 0,
-        narrow: [{operator: "sender", operand: "iago@zulip.com"},
-                 {operator: "stream", operand: "Verona"}],
+        narrow: [
+            {operator: "sender", operand: "iago@zulip.com"},
+            {operator: "stream", operand: "Verona"},
+        ],
     };
 
     // Get the 100 last messages sent by "iago@zulip.com" to the stream "Verona"
@@ -258,10 +260,7 @@ add_example("add_subscriptions", "/users/me/subscriptions:post", 200, async (cli
     // {code_example|start}
     // Subscribe to the streams "Verona" and "Denmark"
     const meParams = {
-        subscriptions: JSON.stringify([
-            {name: "Verona"},
-            {name: "Denmark"},
-        ]),
+        subscriptions: JSON.stringify([{name: "Verona"}, {name: "Denmark"}]),
     };
     const result_1 = await client.users.me.subscriptions.add(meParams);
     // {code_example|end}
@@ -271,10 +270,7 @@ add_example("add_subscriptions", "/users/me/subscriptions:post", 200, async (cli
     // the `principals` parameter, like so:
     const user_id = 7;
     const anotherUserParams = {
-        subscriptions: JSON.stringify([
-            {name: "Verona"},
-            {name: "Denmark"},
-        ]),
+        subscriptions: JSON.stringify([{name: "Verona"}, {name: "Denmark"}]),
         principals: JSON.stringify([user_id]),
     };
     const result_2 = await client.users.me.subscriptions.add(anotherUserParams);

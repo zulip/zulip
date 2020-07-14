@@ -100,7 +100,10 @@ run_test("filter_table", () => {
         sub_stubs.push(sub_row);
 
         $(sub_row).attr("data-stream-id", data.stream_id);
-        $(sub_row).set_find_results('.sub-info-box [class$="-bar"] [class$="-count"]', $(".tooltip"));
+        $(sub_row).set_find_results(
+            '.sub-info-box [class$="-bar"] [class$="-count"]',
+            $(".tooltip"),
+        );
         $(sub_row).detach = function () {
             return sub_row;
         };

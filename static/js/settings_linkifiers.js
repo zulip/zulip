@@ -52,8 +52,9 @@ exports.populate_filters = function (filters_data) {
         filter: {
             element: filters_table.closest(".settings-section").find(".search"),
             predicate: function (item, value) {
-                return item[0].toLowerCase().includes(value) ||
-                item[1].toLowerCase().includes(value);
+                return (
+                    item[0].toLowerCase().includes(value) || item[1].toLowerCase().includes(value)
+                );
             },
             onupdate: function () {
                 ui.reset_scrollbar(filters_table);
@@ -102,53 +103,53 @@ exports.build_page = function () {
         });
     });
 
-    $(".organization form.admin-filter-form").off("submit").on("submit", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const filter_status = $("#admin-filter-status");
-        const pattern_status = $("#admin-filter-pattern-status");
-        const format_status = $("#admin-filter-format-status");
-        const add_filter_button = $(".new-filter-form button");
-        add_filter_button.attr("disabled", "disabled");
-        filter_status.hide();
-        pattern_status.hide();
-        format_status.hide();
-        const filter = {};
+    $(".organization form.admin-filter-form")
+        .off("submit")
+        .on("submit", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const filter_status = $("#admin-filter-status");
+            const pattern_status = $("#admin-filter-pattern-status");
+            const format_status = $("#admin-filter-format-status");
+            const add_filter_button = $(".new-filter-form button");
+            add_filter_button.attr("disabled", "disabled");
+            filter_status.hide();
+            pattern_status.hide();
+            format_status.hide();
+            const filter = {};
 
-        for (const obj of $(this).serializeArray()) {
-            filter[obj.name] = obj.value;
-        }
+            for (const obj of $(this).serializeArray()) {
+                filter[obj.name] = obj.value;
+            }
 
-        channel.post({
-            url: "/json/realm/filters",
-            data: $(this).serialize(),
-            success: function (data) {
-                $("#filter_pattern").val("");
-                $("#filter_format_string").val("");
-                add_filter_button.removeAttr("disabled");
-                filter.id = data.id;
-                ui_report.success(i18n.t("Custom filter added!"), filter_status);
-            },
-            error: function (xhr) {
-                const errors = JSON.parse(xhr.responseText).errors;
-                add_filter_button.removeAttr("disabled");
-                if (errors.pattern !== undefined) {
-                    xhr.responseText = JSON.stringify({msg: errors.pattern});
-                    ui_report.error(i18n.t("Failed"), xhr, pattern_status);
-                }
-                if (errors.url_format_string !== undefined) {
-                    xhr.responseText = JSON.stringify({msg: errors.url_format_string});
-                    ui_report.error(i18n.t("Failed"), xhr, format_status);
-                }
-                if (errors.__all__ !== undefined) {
-                    xhr.responseText = JSON.stringify({msg: errors.__all__});
-                    ui_report.error(i18n.t("Failed"), xhr, filter_status);
-                }
-            },
+            channel.post({
+                url: "/json/realm/filters",
+                data: $(this).serialize(),
+                success: function (data) {
+                    $("#filter_pattern").val("");
+                    $("#filter_format_string").val("");
+                    add_filter_button.removeAttr("disabled");
+                    filter.id = data.id;
+                    ui_report.success(i18n.t("Custom filter added!"), filter_status);
+                },
+                error: function (xhr) {
+                    const errors = JSON.parse(xhr.responseText).errors;
+                    add_filter_button.removeAttr("disabled");
+                    if (errors.pattern !== undefined) {
+                        xhr.responseText = JSON.stringify({msg: errors.pattern});
+                        ui_report.error(i18n.t("Failed"), xhr, pattern_status);
+                    }
+                    if (errors.url_format_string !== undefined) {
+                        xhr.responseText = JSON.stringify({msg: errors.url_format_string});
+                        ui_report.error(i18n.t("Failed"), xhr, format_status);
+                    }
+                    if (errors.__all__ !== undefined) {
+                        xhr.responseText = JSON.stringify({msg: errors.__all__});
+                        ui_report.error(i18n.t("Failed"), xhr, filter_status);
+                    }
+                },
+            });
         });
-    });
-
-
 };
 
 window.settings_linkifiers = exports;

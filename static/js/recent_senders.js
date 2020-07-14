@@ -133,9 +133,7 @@ exports.get_topic_recent_senders = function (stream_id, topic) {
         return [];
     }
 
-    const sorted_senders = Array.from(sender_message_ids.entries()).sort(
-        (s1, s2) => s1[1] - s2[1],
-    );
+    const sorted_senders = Array.from(sender_message_ids.entries()).sort((s1, s2) => s1[1] - s2[1]);
     const recent_senders = [];
     for (const item of sorted_senders) {
         recent_senders.push(item[0]);

@@ -38,7 +38,7 @@ export function clean_path(full_path: string): string {
 
 export function clean_function_name(
     function_name: string | undefined,
-): { scope: string; name: string } | undefined {
+): {scope: string; name: string} | undefined {
     if (function_name === undefined) {
         return undefined;
     }
@@ -49,7 +49,7 @@ export function clean_function_name(
     };
 }
 
-const sourceCache: { [source: string]: string | Promise<string> } = {};
+const sourceCache: {[source: string]: string | Promise<string>} = {};
 
 const stack_trace_gps = new StackTraceGPS({sourceCache});
 

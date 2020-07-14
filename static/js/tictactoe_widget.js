@@ -28,9 +28,7 @@ const tictactoe_data_holder = function () {
                 return false;
             }
 
-            return (
-                square_values.get(line[1]) === token &&
-                square_values.get(line[2]) === token);
+            return square_values.get(line[1]) === token && square_values.get(line[2]) === token;
         }
 
         const board = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -105,7 +103,6 @@ const tictactoe_data_holder = function () {
             },
         },
     };
-
 
     self.handle_event = function (sender_id, data) {
         const type = data.type;

@@ -22,8 +22,12 @@ set_global("page_params", {
 stream_color.initialize();
 
 const noop = function () {};
-const return_false = function () { return false; };
-const return_true = function () { return true; };
+const return_false = function () {
+    return false;
+};
+const return_true = function () {
+    return true;
+};
 
 set_global("topic_list", {});
 set_global("overlays", {});
@@ -379,7 +383,9 @@ run_test("narrowing", () => {
     initialize_stream_data();
 
     set_global("narrow_state", {
-        stream: function () { return "devel"; },
+        stream: function () {
+            return "devel";
+        },
         topic: noop,
     });
 
@@ -399,9 +405,7 @@ run_test("narrowing", () => {
 
     let filter;
 
-    filter = new Filter([
-        {operator: "stream", operand: "devel"},
-    ]);
+    filter = new Filter([{operator: "stream", operand: "devel"}]);
     stream_list.handle_narrow_activated(filter);
     assert($("<devel sidebar row html>").hasClass("active-filter"));
 
@@ -413,9 +417,7 @@ run_test("narrowing", () => {
     assert(!$("ul.filters li").hasClass("active-filter"));
     assert(!$("<cars sidebar row html>").hasClass("active-filter")); // false because of topic
 
-    filter = new Filter([
-        {operator: "stream", operand: "cars"},
-    ]);
+    filter = new Filter([{operator: "stream", operand: "cars"}]);
     stream_list.handle_narrow_activated(filter);
     assert(!$("ul.filters li").hasClass("active-filter"));
     assert($("<cars sidebar row html>").hasClass("active-filter"));
@@ -436,7 +438,7 @@ run_test("narrowing", () => {
 });
 
 run_test("focusout_user_filter", () => {
-    const e = { };
+    const e = {};
     const click_handler = $(".stream-list-filter").get_on_handler("focusout");
     click_handler(e);
 });
@@ -504,7 +506,6 @@ run_test("sort_streams", () => {
 });
 
 run_test("separators_only_pinned_and_dormant", () => {
-
     // Test only pinned and dormant streams
 
     stream_data.clear_subscriptions();
@@ -562,11 +563,9 @@ run_test("separators_only_pinned_and_dormant", () => {
     ];
 
     assert.deepEqual(appended_elems, expected_elems);
-
 });
 
 run_test("separators_only_pinned", () => {
-
     // Test only pinned streams
 
     stream_data.clear_subscriptions();
@@ -608,7 +607,6 @@ run_test("separators_only_pinned", () => {
     ];
 
     assert.deepEqual(appended_elems, expected_elems);
-
 });
 
 run_test("update_count_in_dom", () => {
@@ -622,11 +620,7 @@ run_test("update_count_in_dom", () => {
         return elem;
     }
 
-    const stream_li = make_elem(
-        $("<stream li>"),
-        "<stream-count>",
-        "<stream-value>",
-    );
+    const stream_li = make_elem($("<stream li>"), "<stream-count>", "<stream-value>");
 
     $("<stream li>").length = 0;
     stream_li.addClass("subscription_block");
@@ -637,7 +631,9 @@ run_test("update_count_in_dom", () => {
     const stream_id = 11;
 
     const stream_row = {
-        get_li: function () { return stream_li; },
+        get_li: function () {
+            return stream_li;
+        },
     };
 
     stream_list.stream_sidebar.set_row(stream_id, stream_row);

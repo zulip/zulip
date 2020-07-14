@@ -19,9 +19,7 @@ exports.get_hash_section = function (hash) {
 // window.location.hash.  So we hide our URI-encoding
 // by replacing % with . (like MediaWiki).
 exports.encodeHashComponent = function (str) {
-    return encodeURIComponent(str)
-        .replace(/\./g, "%2E")
-        .replace(/%/g, ".");
+    return encodeURIComponent(str).replace(/\./g, "%2E").replace(/%/g, ".");
 };
 
 exports.encode_operand = function (operator, operand) {
@@ -92,8 +90,12 @@ exports.by_stream_uri = function (stream_id) {
 };
 
 exports.by_stream_topic_uri = function (stream_id, topic) {
-    return "#narrow/stream/" + exports.encode_stream_id(stream_id) +
-           "/topic/" + exports.encodeHashComponent(topic);
+    return (
+        "#narrow/stream/" +
+        exports.encode_stream_id(stream_id) +
+        "/topic/" +
+        exports.encodeHashComponent(topic)
+    );
 };
 
 // Encodes an operator list into the
@@ -111,8 +113,12 @@ exports.operators_to_hash = function (operators) {
             const operand = elem.operand;
 
             const sign = elem.negated ? "-" : "";
-            hash += "/" + sign + exports.encodeHashComponent(operator)
-                  + "/" + exports.encode_operand(operator, operand);
+            hash +=
+                "/" +
+                sign +
+                exports.encodeHashComponent(operator) +
+                "/" +
+                exports.encode_operand(operator, operand);
         }
     }
 
@@ -120,9 +126,7 @@ exports.operators_to_hash = function (operators) {
 };
 
 exports.by_sender_uri = function (reply_to) {
-    return exports.operators_to_hash([
-        {operator: "sender", operand: reply_to},
-    ]);
+    return exports.operators_to_hash([{operator: "sender", operand: reply_to}]);
 };
 
 exports.pm_with_uri = function (reply_to) {
@@ -139,16 +143,19 @@ exports.huddle_with_uri = function (user_ids_string) {
 };
 
 exports.by_conversation_and_time_uri = function (message) {
-    const absolute_url = window.location.protocol + "//" +
-        window.location.host + "/" +
+    const absolute_url =
+        window.location.protocol +
+        "//" +
+        window.location.host +
+        "/" +
         window.location.pathname.split("/")[1];
 
     const suffix = "/near/" + exports.encodeHashComponent(message.id);
 
     if (message.type === "stream") {
-        return absolute_url +
-            exports.by_stream_topic_uri(message.stream_id, message.topic) +
-            suffix;
+        return (
+            absolute_url + exports.by_stream_topic_uri(message.stream_id, message.topic) + suffix
+        );
     }
 
     return absolute_url + people.pm_perma_link(message) + suffix;

@@ -21,7 +21,15 @@ exports.toggle = function (opts) {
         opts.values.forEach((value, i) => {
             // create a tab with a tab-id so they don't have to be referenced
             // by text value which can be inconsistent.
-            const tab = $("<div class='ind-tab' data-tab-key='" + value.key + "' data-tab-id='" + i + "' tabindex='0'>" + value.label + "</div>");
+            const tab = $(
+                "<div class='ind-tab' data-tab-key='" +
+                    value.key +
+                    "' data-tab-id='" +
+                    i +
+                    "' tabindex='0'>" +
+                    value.label +
+                    "</div>",
+            );
 
             // add proper classes for styling in CSS.
             if (i === 0) {
@@ -53,10 +61,7 @@ exports.toggle = function (opts) {
 
         meta.idx = idx;
         if (opts.callback) {
-            opts.callback(
-                opts.values[idx].label,
-                opts.values[idx].key,
-            );
+            opts.callback(opts.values[idx].label, opts.values[idx].key);
         }
 
         if (!opts.child_wants_focus) {

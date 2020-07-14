@@ -12,11 +12,15 @@ zrequire("sent_messages");
 set_global("channel", {});
 set_global("home_msg_list", {
     select_id: noop,
-    selected_id: function () {return 1;},
+    selected_id: function () {
+        return 1;
+    },
 });
 set_global("page_params", {test_suite: false});
 set_global("reload_state", {
-    is_in_progress: function () {return false;},
+    is_in_progress: function () {
+        return false;
+    },
 });
 
 // we also directly write to pointer
@@ -29,8 +33,12 @@ set_global("echo", {
     update_realm_filter_rules: noop,
 });
 set_global("ui_report", {
-    hide_error: function () { return false; },
-    show_error: function () { return false; },
+    hide_error: function () {
+        return false;
+    },
+    show_error: function () {
+        return false;
+    },
 });
 
 server_events.home_view_loaded();

@@ -9,7 +9,9 @@ zrequire("stream_color");
 zrequire("colorspace");
 
 const ls_container = new Map();
-const noop = function () { return; };
+const noop = function () {
+    return;
+};
 
 set_global("localStorage", {
     getItem: function (key) {
@@ -91,10 +93,7 @@ const short_msg = {
 };
 
 run_test("legacy", () => {
-    assert.deepEqual(
-        drafts.restore_message(legacy_draft),
-        compose_args_for_legacy_draft,
-    );
+    assert.deepEqual(drafts.restore_message(legacy_draft), compose_args_for_legacy_draft);
 });
 
 run_test("draft_model", () => {
@@ -194,7 +193,9 @@ run_test("initialize", () => {
     global.window.addEventListener = function (event_name, f) {
         assert.equal(event_name, "beforeunload");
         let called = false;
-        drafts.update_draft = function () { called = true; };
+        drafts.update_draft = function () {
+            called = true;
+        };
         f();
         assert(called);
     };

@@ -11,9 +11,13 @@ casper.start("http://" + host + "/new/");
 casper.then(function () {
     // Submit the email for realm creation
     this.waitUntilVisible('form[name="email_form"]', function () {
-        this.fill('form[name="email_form"]', {
-            email: email,
-        }, true);
+        this.fill(
+            'form[name="email_form"]',
+            {
+                email: email,
+            },
+            true
+        );
     });
     // Make sure confirmation email is send
     this.waitWhileVisible('form[name="email_form"]', function () {
@@ -51,14 +55,18 @@ casper.then(function () {
 
 casper.then(function () {
     this.waitUntilVisible('form[action^="/accounts/register/"]', function () {
-        this.fill('form[action^="/accounts/register/"]', {
-            full_name: "Alice",
-            realm_name: organization_name,
-            realm_subdomain: subdomain,
-            password: "passwordwhichisreallyreallyreallycomplexandnotguessable",
-            terms: true,
-            realm_in_root_domain: false,
-        }, true);
+        this.fill(
+            'form[action^="/accounts/register/"]',
+            {
+                full_name: "Alice",
+                realm_name: organization_name,
+                realm_subdomain: subdomain,
+                password: "passwordwhichisreallyreallyreallycomplexandnotguessable",
+                terms: true,
+                realm_in_root_domain: false,
+            },
+            true
+        );
     });
 
     this.waitWhileVisible('form[action^="/accounts/register/"]', function () {
@@ -68,9 +76,14 @@ casper.then(function () {
 
 casper.then(function () {
     // The user is logged in to the newly created realm and the app is loaded
-    casper.waitUntilVisible(".message_row", function () {
-        this.test.assertTitleMatch(/ - Zulip$/, "Successfully logged into Zulip webapp");
-    }, null, 20000);
+    casper.waitUntilVisible(
+        ".message_row",
+        function () {
+            this.test.assertTitleMatch(/ - Zulip$/, "Successfully logged into Zulip webapp");
+        },
+        null,
+        20000
+    );
 });
 
 common.then_log_out();

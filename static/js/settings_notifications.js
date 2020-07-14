@@ -54,7 +54,7 @@ function rerender_ui() {
             render_stream_specific_notification_row({
                 stream: stream,
                 stream_specific_notification_settings:
-                settings_config.stream_specific_notification_settings,
+                    settings_config.stream_specific_notification_settings,
                 is_disabled: settings_config.all_notifications().show_push_notifications_tooltip,
             }),
         );
@@ -70,7 +70,12 @@ function rerender_ui() {
 function change_notification_setting(setting, setting_data, status_element) {
     const data = {};
     data[setting] = JSON.stringify(setting_data);
-    settings_ui.do_settings_change(channel.patch, "/json/settings/notifications", data, status_element);
+    settings_ui.do_settings_change(
+        channel.patch,
+        "/json/settings/notifications",
+        data,
+        status_element,
+    );
 }
 
 function update_desktop_icon_count_display() {
@@ -97,9 +102,11 @@ exports.set_up = function () {
             return;
         }
         const setting_name = input_elem.attr("name");
-        change_notification_setting(setting_name,
-                                    settings_org.get_input_element_value(this),
-                                    input_elem.closest(".subsection-parent").find(".alert-notification"));
+        change_notification_setting(
+            setting_name,
+            settings_org.get_input_element_value(this),
+            input_elem.closest(".subsection-parent").find(".alert-notification"),
+        );
     });
 
     update_desktop_icon_count_display();
@@ -118,7 +125,10 @@ exports.set_up = function () {
     notification_sound_dropdown.val(page_params.notification_sound);
 
     $("#enable_sounds, #enable_stream_audible_notifications").change(() => {
-        if ($("#enable_stream_audible_notifications").prop("checked") || $("#enable_sounds").prop("checked")) {
+        if (
+            $("#enable_stream_audible_notifications").prop("checked") ||
+            $("#enable_sounds").prop("checked")
+        ) {
             notification_sound_dropdown.prop("disabled", false);
             notification_sound_dropdown.parent().removeClass("control-label-disabled");
         } else {
@@ -132,8 +142,10 @@ exports.set_up = function () {
 
 exports.update_page = function () {
     for (const setting of settings_config.all_notification_settings) {
-        if (setting === "enable_offline_push_notifications"
-            && !page_params.realm_push_notifications_enabled) {
+        if (
+            setting === "enable_offline_push_notifications" &&
+            !page_params.realm_push_notifications_enabled
+        ) {
             // If push notifications are disabled at the realm level,
             // we should just leave the checkbox always off.
             continue;

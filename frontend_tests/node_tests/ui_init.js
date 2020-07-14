@@ -122,14 +122,11 @@ zrequire("starred_messages");
 zrequire("user_status");
 zrequire("user_status_ui");
 
-const ui_init = rewiremock.proxy(
-    () => zrequire("ui_init"),
-    {
-        "../../static/js/emojisets": {
-            initialize: () => {},
-        },
+const ui_init = rewiremock.proxy(() => zrequire("ui_init"), {
+    "../../static/js/emojisets": {
+        initialize: () => {},
     },
-);
+});
 
 set_global("$", global.make_zjquery());
 

@@ -32,8 +32,7 @@ exports.t = function (str, context) {
     });
 
     for (const item of substitutions) {
-        str = str.replace(item.prefix + item.keyword + item.suffix,
-                          context[item.keyword]);
+        str = str.replace(item.prefix + item.keyword + item.suffix, context[item.keyword]);
     }
 
     return "translated: " + str;

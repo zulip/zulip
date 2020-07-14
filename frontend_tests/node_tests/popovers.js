@@ -137,45 +137,45 @@ run_test("sender_hover", () => {
 
     global.stub_templates((fn, opts) => {
         switch (fn) {
-        case "no_arrow_popover":
-            assert.deepEqual(opts, {
-                class: "message-info-popover",
-            });
-            return "popover-html";
+            case "no_arrow_popover":
+                assert.deepEqual(opts, {
+                    class: "message-info-popover",
+                });
+                return "popover-html";
 
-        case "user_info_popover_title":
-            assert.deepEqual(opts, {
-                user_avatar: "avatar/alice@example.com",
-                user_is_guest: false,
-            });
-            return "title-html";
+            case "user_info_popover_title":
+                assert.deepEqual(opts, {
+                    user_avatar: "avatar/alice@example.com",
+                    user_is_guest: false,
+                });
+                return "title-html";
 
-        case "user_info_popover_content":
-            assert.deepEqual(opts, {
-                can_set_away: false,
-                can_revoke_away: false,
-                user_full_name: "Alice Smith",
-                user_email: "alice@example.com",
-                user_id: 42,
-                user_time: undefined,
-                user_type: i18n.t("Member"),
-                user_circle_class: "user_circle_empty",
-                user_last_seen_time_status: "translated: More than 2 weeks ago",
-                pm_with_uri: "#narrow/pm-with/42-alice",
-                sent_by_uri: "#narrow/sender/42-alice",
-                private_message_class: "respond_personal_button",
-                show_email: false,
-                show_user_profile: false,
-                is_me: false,
-                is_active: true,
-                is_bot: undefined,
-                is_sender_popover: true,
-                status_text: "on the beach",
-            });
-            return "content-html";
+            case "user_info_popover_content":
+                assert.deepEqual(opts, {
+                    can_set_away: false,
+                    can_revoke_away: false,
+                    user_full_name: "Alice Smith",
+                    user_email: "alice@example.com",
+                    user_id: 42,
+                    user_time: undefined,
+                    user_type: i18n.t("Member"),
+                    user_circle_class: "user_circle_empty",
+                    user_last_seen_time_status: "translated: More than 2 weeks ago",
+                    pm_with_uri: "#narrow/pm-with/42-alice",
+                    sent_by_uri: "#narrow/sender/42-alice",
+                    private_message_class: "respond_personal_button",
+                    show_email: false,
+                    show_user_profile: false,
+                    is_me: false,
+                    is_active: true,
+                    is_bot: undefined,
+                    is_sender_popover: true,
+                    status_text: "on the beach",
+                });
+                return "content-html";
 
-        default:
-            throw Error("unrecognized template: " + fn);
+            default:
+                throw Error("unrecognized template: " + fn);
         }
     });
 
@@ -232,13 +232,14 @@ run_test("actions_popover", () => {
     global.stub_templates((fn, opts) => {
         // TODO: Test all the properties of the popover
         switch (fn) {
-        case "actions_popover_content":
-            assert.equal(
-                opts.conversation_time_uri,
-                "http://chat.zulip.org/#narrow/stream/Bracket.20%28.20stream/topic/Actions.20%281%29/near/999");
-            return "actions-content";
-        default:
-            throw Error("unrecognized template: " + fn);
+            case "actions_popover_content":
+                assert.equal(
+                    opts.conversation_time_uri,
+                    "http://chat.zulip.org/#narrow/stream/Bracket.20%28.20stream/topic/Actions.20%281%29/near/999",
+                );
+                return "actions-content";
+            default:
+                throw Error("unrecognized template: " + fn);
         }
     });
 

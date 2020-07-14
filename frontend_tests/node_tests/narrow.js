@@ -13,7 +13,6 @@ set_global("resize", {
     resize_stream_filters_container: () => {},
 });
 
-
 zrequire("narrow");
 
 function set_filter(operators) {
@@ -168,7 +167,10 @@ run_test("show_search_stopwords", () => {
     assert.equal(items[2], "<span>grail");
 
     items = [];
-    set_filter([["stream", "streamA"], ["search", "what about grail"]]);
+    set_filter([
+        ["stream", "streamA"],
+        ["search", "what about grail"],
+    ]);
     narrow.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
 
@@ -179,7 +181,11 @@ run_test("show_search_stopwords", () => {
     assert.equal(items[3], "<span>grail");
 
     items = [];
-    set_filter([["stream", "streamA"], ["topic", "topicA"], ["search", "what about grail"]]);
+    set_filter([
+        ["stream", "streamA"],
+        ["topic", "topicA"],
+        ["search", "what about grail"],
+    ]);
     narrow.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
 
@@ -197,23 +203,41 @@ run_test("show_invalid_narrow_message", () => {
     stream_data.add_sub({name: "streamA", stream_id: 88});
     stream_data.add_sub({name: "streamB", stream_id: 77});
 
-    set_filter([["stream", "streamA"], ["stream", "streamB"]]);
+    set_filter([
+        ["stream", "streamA"],
+        ["stream", "streamB"],
+    ]);
     narrow.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
-    assert.equal(display.text(), "translated: You are searching for messages that belong to more than one stream, which is not possible.");
+    assert.equal(
+        display.text(),
+        "translated: You are searching for messages that belong to more than one stream, which is not possible.",
+    );
 
-    set_filter([["topic", "topicA"], ["topic", "topicB"]]);
+    set_filter([
+        ["topic", "topicA"],
+        ["topic", "topicB"],
+    ]);
     narrow.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
-    assert.equal(display.text(), "translated: You are searching for messages that belong to more than one topic, which is not possible.");
+    assert.equal(
+        display.text(),
+        "translated: You are searching for messages that belong to more than one topic, which is not possible.",
+    );
 
     people.add_active_user(ray);
     people.add_active_user(alice);
 
-    set_filter([["sender", "alice@example.com"], ["sender", "ray@example.com"]]);
+    set_filter([
+        ["sender", "alice@example.com"],
+        ["sender", "ray@example.com"],
+    ]);
     narrow.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
-    assert.equal(display.text(), "translated: You are searching for messages that are sent by more than one person, which is not possible.");
+    assert.equal(
+        display.text(),
+        "translated: You are searching for messages that are sent by more than one person, which is not possible.",
+    );
 });
 
 run_test("narrow_to_compose_target", () => {
@@ -262,27 +286,21 @@ run_test("narrow_to_compose_target", () => {
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [
-        {operator: "stream", operand: "ROME"},
-    ]);
+    assert.deepEqual(args.operators, [{operator: "stream", operand: "ROME"}]);
 
     // Test with blank topic
     global.compose_state.topic = () => "";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [
-        {operator: "stream", operand: "ROME"},
-    ]);
+    assert.deepEqual(args.operators, [{operator: "stream", operand: "ROME"}]);
 
     // Test with no topic
     global.compose_state.topic = () => {};
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [
-        {operator: "stream", operand: "ROME"},
-    ]);
+    assert.deepEqual(args.operators, [{operator: "stream", operand: "ROME"}]);
 
     // --- Tests for PMs ---
     global.compose_state.get_message_type = () => "private";
@@ -295,9 +313,7 @@ run_test("narrow_to_compose_target", () => {
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [
-        {operator: "pm-with", operand: "alice@example.com"},
-    ]);
+    assert.deepEqual(args.operators, [{operator: "pm-with", operand: "alice@example.com"}]);
 
     // Test with valid persons
     global.compose_state.private_message_recipient = () => "alice@example.com,ray@example.com";
@@ -309,31 +325,26 @@ run_test("narrow_to_compose_target", () => {
     ]);
 
     // Test with some invalid persons
-    global.compose_state.private_message_recipient = () => "alice@example.com,random,ray@example.com";
+    global.compose_state.private_message_recipient = () =>
+        "alice@example.com,random,ray@example.com";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [
-        {operator: "is", operand: "private"},
-    ]);
+    assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
 
     // Test with all invalid persons
     global.compose_state.private_message_recipient = () => "alice,random,ray";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [
-        {operator: "is", operand: "private"},
-    ]);
+    assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
 
     // Test with no persons
     global.compose_state.private_message_recipient = () => "";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [
-        {operator: "is", operand: "private"},
-    ]);
+    assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
 
     narrow.activate = activate_backup;
 });

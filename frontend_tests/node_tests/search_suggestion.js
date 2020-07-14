@@ -37,22 +37,19 @@ const bob = {
     user_id: 42,
 };
 
-const ted =
-{
+const ted = {
     email: "ted@zulip.com",
     user_id: 101,
     full_name: "Ted Smith",
 };
 
-const alice =
-{
+const alice = {
     email: "alice@zulip.com",
     user_id: 102,
     full_name: "Alice Ignore",
 };
 
-const jeff =
-{
+const jeff = {
     email: "jeff@zulip.com",
     user_id: 103,
     full_name: "Jeff Zoolipson",
@@ -94,9 +91,7 @@ run_test("basic_get_suggestions", () => {
 
     const suggestions = get_suggestions("", query);
 
-    const expected = [
-        "fred",
-    ];
+    const expected = ["fred"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -114,9 +109,7 @@ run_test("subset_suggestions", () => {
 
     const suggestions = get_suggestions(base_query, query);
 
-    const expected = [
-        "shakespeare",
-    ];
+    const expected = ["shakespeare"];
 
     assert.deepEqual(suggestions.strings, expected);
 });
@@ -156,65 +149,43 @@ run_test("private_suggestions", () => {
 
     query = "pm-with:t";
     suggestions = get_suggestions("", query);
-    expected = [
-        "pm-with:t",
-        "pm-with:ted@zulip.com",
-    ];
+    expected = ["pm-with:t", "pm-with:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-pm-with:t";
     suggestions = get_suggestions("", query);
-    expected = [
-        "-pm-with:t",
-        "is:private -pm-with:ted@zulip.com",
-    ];
+    expected = ["-pm-with:t", "is:private -pm-with:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "pm-with:ted@zulip.com";
     suggestions = get_suggestions("", query);
-    expected = [
-        "pm-with:ted@zulip.com",
-    ];
+    expected = ["pm-with:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:ted";
     suggestions = get_suggestions("", query);
-    expected = [
-        "sender:ted",
-        "sender:ted@zulip.com",
-    ];
+    expected = ["sender:ted", "sender:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:te";
     suggestions = get_suggestions("", query);
-    expected = [
-        "sender:te",
-        "sender:ted@zulip.com",
-    ];
+    expected = ["sender:te", "sender:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-sender:te";
     suggestions = get_suggestions("", query);
-    expected = [
-        "-sender:te",
-        "-sender:ted@zulip.com",
-    ];
+    expected = ["-sender:te", "-sender:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:ted@zulip.com";
     suggestions = get_suggestions("", query);
-    expected = [
-        "sender:ted@zulip.com",
-    ];
+    expected = ["sender:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "from:ted";
     base_query = "is:unread";
     suggestions = get_suggestions(base_query, query);
-    expected = [
-        "from:ted",
-        "from:ted@zulip.com",
-    ];
+    expected = ["from:ted", "from:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     // Users can enter bizarre queries, and if they do, we want to
@@ -222,26 +193,20 @@ run_test("private_suggestions", () => {
     query = "near:3";
     base_query = "is:private";
     suggestions = get_suggestions(base_query, query);
-    expected = [
-        "near:3",
-    ];
+    expected = ["near:3"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "near:3";
     base_query = "pm-with:ted@zulip.com";
     suggestions = get_suggestions(base_query, query);
-    expected = [
-        "near:3",
-    ];
+    expected = ["near:3"];
     assert.deepEqual(suggestions.strings, expected);
 
     // Make sure suggestions still work if preceding tokens
     query = "sender:ted@zulip.com";
     base_query = "is:alerted";
     suggestions = get_suggestions(base_query, query);
-    expected = [
-        "sender:ted@zulip.com",
-    ];
+    expected = ["sender:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "al";
@@ -260,17 +225,13 @@ run_test("private_suggestions", () => {
     query = "pm-with:";
     base_query = "stream:Denmark";
     suggestions = get_suggestions(base_query, query);
-    expected = [
-        "pm-with:",
-    ];
+    expected = ["pm-with:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:";
     base_query = "sender:ted@zulip.com";
     suggestions = get_suggestions(base_query, query);
-    expected = [
-        "sender:",
-    ];
+    expected = ["sender:"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -299,35 +260,25 @@ run_test("group_suggestions", () => {
     // generate suggestions.
     query = "pm-with:bob@zulip.com,t";
     suggestions = get_suggestions("", query);
-    expected = [
-        "pm-with:bob@zulip.com,t",
-        "pm-with:bob@zulip.com,ted@zulip.com",
-    ];
+    expected = ["pm-with:bob@zulip.com,t", "pm-with:bob@zulip.com,ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     // Smit should also generate ted@zulip.com (Ted Smith) as a suggestion.
     query = "pm-with:bob@zulip.com,Smit";
     suggestions = get_suggestions("", query);
-    expected = [
-        "pm-with:bob@zulip.com,Smit",
-        "pm-with:bob@zulip.com,ted@zulip.com",
-    ];
+    expected = ["pm-with:bob@zulip.com,Smit", "pm-with:bob@zulip.com,ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     // Do not suggest "myself@zulip.com" (the name of the current user)
     query = "pm-with:ted@zulip.com,mys";
     suggestions = get_suggestions("", query);
-    expected = [
-        "pm-with:ted@zulip.com,mys",
-    ];
+    expected = ["pm-with:ted@zulip.com,mys"];
     assert.deepEqual(suggestions.strings, expected);
 
     // No superfluous suggestions should be generated.
     query = "pm-with:bob@zulip.com,red";
     suggestions = get_suggestions("", query);
-    expected = [
-        "pm-with:bob@zulip.com,red",
-    ];
+    expected = ["pm-with:bob@zulip.com,red"];
     assert.deepEqual(suggestions.strings, expected);
 
     // is:private should be properly prepended to each suggestion if the pm-with
@@ -345,43 +296,30 @@ run_test("group_suggestions", () => {
 
     query = "-pm-with:bob@zulip.com,t";
     suggestions = get_suggestions("", query);
-    expected = [
-        "-pm-with:bob@zulip.com,t",
-        "is:private -pm-with:bob@zulip.com,ted@zulip.com",
-    ];
+    expected = ["-pm-with:bob@zulip.com,t", "is:private -pm-with:bob@zulip.com,ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-pm-with:bob@zulip.com,Smit";
     suggestions = get_suggestions("", query);
-    expected = [
-        "-pm-with:bob@zulip.com,Smit",
-        "is:private -pm-with:bob@zulip.com,ted@zulip.com",
-    ];
+    expected = ["-pm-with:bob@zulip.com,Smit", "is:private -pm-with:bob@zulip.com,ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-pm-with:bob@zulip.com,red";
     suggestions = get_suggestions("", query);
-    expected = [
-        "-pm-with:bob@zulip.com,red",
-    ];
+    expected = ["-pm-with:bob@zulip.com,red"];
     assert.deepEqual(suggestions.strings, expected);
 
     // Test multiple operators
     query = "pm-with:bob@zulip.com,Smit";
     let base_query = "is:starred has:link";
     suggestions = get_suggestions(base_query, query);
-    expected = [
-        "pm-with:bob@zulip.com,Smit",
-        "pm-with:bob@zulip.com,ted@zulip.com",
-    ];
+    expected = ["pm-with:bob@zulip.com,Smit", "pm-with:bob@zulip.com,ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "pm-with:bob@zulip.com,Smit";
     base_query = "stream:Denmark has:link";
     suggestions = get_suggestions(base_query, query);
-    expected = [
-        "pm-with:bob@zulip.com,Smit",
-    ];
+    expected = ["pm-with:bob@zulip.com,Smit"];
     assert.deepEqual(suggestions.strings, expected);
 
     function message(user_ids, timestamp) {
@@ -434,9 +372,7 @@ run_test("group_suggestions", () => {
 
     query = "pm-with:jeff@zulip.com,ted@zulip.com hi";
     suggestions = get_suggestions("", query);
-    expected = [
-        "pm-with:jeff@zulip.com,ted@zulip.com hi",
-    ];
+    expected = ["pm-with:jeff@zulip.com,ted@zulip.com hi"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -499,12 +435,7 @@ run_test("has_suggestions", () => {
     };
 
     let suggestions = get_suggestions("", query);
-    let expected = [
-        "h",
-        "has:link",
-        "has:image",
-        "has:attachment",
-    ];
+    let expected = ["h", "has:link", "has:image", "has:attachment"];
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
@@ -517,12 +448,7 @@ run_test("has_suggestions", () => {
 
     query = "-h";
     suggestions = get_suggestions("", query);
-    expected = [
-        "-h",
-        "-has:link",
-        "-has:image",
-        "-has:attachment",
-    ];
+    expected = ["-h", "-has:link", "-has:image", "-has:attachment"];
     assert.deepEqual(suggestions.strings, expected);
     assert.equal(describe("-has:link"), "Exclude messages with one or more link");
     assert.equal(describe("-has:image"), "Exclude messages with one or more image");
@@ -532,41 +458,28 @@ run_test("has_suggestions", () => {
 
     query = "has:";
     suggestions = get_suggestions("", query);
-    expected = [
-        "has:link",
-        "has:image",
-        "has:attachment",
-    ];
+    expected = ["has:link", "has:image", "has:attachment"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "has:im";
     suggestions = get_suggestions("", query);
-    expected = [
-        "has:image",
-    ];
+    expected = ["has:image"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-has:im";
     suggestions = get_suggestions("", query);
-    expected = [
-        "-has:image",
-    ];
+    expected = ["-has:image"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "att";
     suggestions = get_suggestions("", query);
-    expected = [
-        "att",
-        "has:attachment",
-    ];
+    expected = ["att", "has:attachment"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "has:lin";
     const base_query = "stream:Denmark is:alerted";
     suggestions = get_suggestions(base_query, query);
-    expected = [
-        "has:link",
-    ];
+    expected = ["has:link"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -606,14 +519,7 @@ run_test("check_is_suggestions", () => {
 
     query = "-i";
     suggestions = get_suggestions("", query);
-    expected = [
-        "-i",
-        "-is:private",
-        "-is:starred",
-        "-is:mentioned",
-        "-is:alerted",
-        "-is:unread",
-    ];
+    expected = ["-i", "-is:private", "-is:starred", "-is:mentioned", "-is:alerted", "-is:unread"];
     assert.deepEqual(suggestions.strings, expected);
 
     assert.equal(describe("-is:private"), "Exclude private messages");
@@ -660,45 +566,28 @@ run_test("check_is_suggestions", () => {
 
     query = "is:";
     suggestions = get_suggestions("", query);
-    expected = [
-        "is:private",
-        "is:starred",
-        "is:mentioned",
-        "is:alerted",
-        "is:unread",
-    ];
+    expected = ["is:private", "is:starred", "is:mentioned", "is:alerted", "is:unread"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "is:st";
     suggestions = get_suggestions("", query);
-    expected = [
-        "is:starred",
-    ];
+    expected = ["is:starred"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-is:st";
     suggestions = get_suggestions("", query);
-    expected = [
-        "-is:starred",
-    ];
+    expected = ["-is:starred"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "st";
     suggestions = get_suggestions("", query);
-    expected = [
-        "st",
-        "streams:public",
-        "is:starred",
-        "stream:",
-    ];
+    expected = ["st", "streams:public", "is:starred", "stream:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "is:sta";
     base_query = "stream:Denmark has:link";
     suggestions = get_suggestions(base_query, query);
-    expected = [
-        "is:starred",
-    ];
+    expected = ["is:starred"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -714,91 +603,58 @@ run_test("sent_by_me_suggestions", () => {
     let query = "";
     let suggestions = get_suggestions("", query);
     assert(suggestions.strings.includes("sender:myself@zulip.com"));
-    assert.equal(suggestions.lookup_table.get("sender:myself@zulip.com").description,
-                 "Sent by me");
+    assert.equal(suggestions.lookup_table.get("sender:myself@zulip.com").description, "Sent by me");
 
     query = "sender";
     suggestions = get_suggestions("", query);
-    let expected = [
-        "sender",
-        "sender:myself@zulip.com",
-        "sender:",
-    ];
+    let expected = ["sender", "sender:myself@zulip.com", "sender:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-sender";
     suggestions = get_suggestions("", query);
-    expected = [
-        "-sender",
-        "-sender:myself@zulip.com",
-        "-sender:",
-    ];
+    expected = ["-sender", "-sender:myself@zulip.com", "-sender:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "from";
     suggestions = get_suggestions("", query);
-    expected = [
-        "from",
-        "from:myself@zulip.com",
-        "from:",
-    ];
+    expected = ["from", "from:myself@zulip.com", "from:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-from";
     suggestions = get_suggestions("", query);
-    expected = [
-        "-from",
-        "-from:myself@zulip.com",
-        "-from:",
-    ];
+    expected = ["-from", "-from:myself@zulip.com", "-from:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:bob@zulip.com";
     suggestions = get_suggestions("", query);
-    expected = [
-        "sender:bob@zulip.com",
-    ];
+    expected = ["sender:bob@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "from:bob@zulip.com";
     suggestions = get_suggestions("", query);
-    expected = [
-        "from:bob@zulip.com",
-    ];
+    expected = ["from:bob@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sent";
     suggestions = get_suggestions("", query);
-    expected = [
-        "sent",
-        "sender:myself@zulip.com",
-    ];
+    expected = ["sent", "sender:myself@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-sent";
     suggestions = get_suggestions("", query);
-    expected = [
-        "-sent",
-        "-sender:myself@zulip.com",
-    ];
+    expected = ["-sent", "-sender:myself@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sent";
     let base_query = "stream:Denmark topic:Denmark1";
     suggestions = get_suggestions(base_query, query);
-    expected = [
-        "sent",
-        "sender:myself@zulip.com",
-    ];
+    expected = ["sent", "sender:myself@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:m";
     base_query = "is:starred";
     suggestions = get_suggestions(base_query, query);
-    expected = [
-        "sender:m",
-        "sender:myself@zulip.com",
-    ];
+    expected = ["sender:m", "sender:myself@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:";
@@ -832,8 +688,10 @@ run_test("topic_suggestions", () => {
 
     global.stream_data.get_stream_id = function (stream_name) {
         switch (stream_name) {
-        case "office": return office_id;
-        case "devel": return devel_id;
+            case "office":
+                return office_id;
+            case "devel":
+                return devel_id;
         }
     };
 
@@ -877,50 +735,31 @@ run_test("topic_suggestions", () => {
     assert.equal(describe("stream:office topic:team"), "Stream office &gt; team");
 
     suggestions = get_suggestions("topic:staplers", "stream:office");
-    expected = [
-        "stream:office",
-    ];
+    expected = ["stream:office"];
     assert.deepEqual(suggestions.strings, expected);
 
     suggestions = get_suggestions("stream:devel", "topic:");
-    expected = [
-        "topic:",
-        "topic:REXX",
-    ];
+    expected = ["topic:", "topic:REXX"];
     assert.deepEqual(suggestions.strings, expected);
 
     suggestions = get_suggestions("stream:devel", "-topic:");
-    expected = [
-        "-topic:",
-        "-topic:REXX",
-    ];
+    expected = ["-topic:", "-topic:REXX"];
     assert.deepEqual(suggestions.strings, expected);
 
     suggestions = get_suggestions("", "-topic:te");
-    expected = [
-        "-topic:te",
-        "stream:office -topic:team",
-        "stream:office -topic:test",
-    ];
+    expected = ["-topic:te", "stream:office -topic:team", "stream:office -topic:test"];
     assert.deepEqual(suggestions.strings, expected);
 
     suggestions = get_suggestions("is:alerted stream:devel is:starred", "topic:");
-    expected = [
-        "topic:",
-        "topic:REXX",
-    ];
+    expected = ["topic:", "topic:REXX"];
     assert.deepEqual(suggestions.strings, expected);
 
     suggestions = get_suggestions("is:private stream:devel", "topic:");
-    expected = [
-        "topic:",
-    ];
+    expected = ["topic:"];
     assert.deepEqual(suggestions.strings, expected);
 
     suggestions = get_suggestions("topic:REXX stream:devel", "topic:");
-    expected = [
-        "topic:",
-    ];
+    expected = ["topic:"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -939,9 +778,7 @@ run_test("whitespace_glitch", () => {
 
     const suggestions = get_suggestions("", query);
 
-    const expected = [
-        "stream:office",
-    ];
+    const expected = ["stream:office"];
 
     assert.deepEqual(suggestions.strings, expected);
 });
@@ -959,26 +796,17 @@ run_test("stream_completion", () => {
 
     let query = "stream:of";
     let suggestions = get_suggestions("", query);
-    let expected = [
-        "stream:of",
-        "stream:office",
-    ];
+    let expected = ["stream:of", "stream:office"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-stream:of";
     suggestions = get_suggestions("", query);
-    expected = [
-        "-stream:of",
-        "-stream:office",
-    ];
+    expected = ["-stream:of", "-stream:office"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "hel";
     suggestions = get_suggestions("", query);
-    expected = [
-        "hel",
-        "stream:dev+help",
-    ];
+    expected = ["hel", "stream:dev+help"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -1028,10 +856,14 @@ run_test("people_suggestions", () => {
 
     const describe = (q) => suggestions.lookup_table.get(q).description;
 
-    assert.equal(describe("pm-with:ted@zulip.com"),
-                 "Private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
-    assert.equal(describe("sender:ted@zulip.com"),
-                 "Sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
+    assert.equal(
+        describe("pm-with:ted@zulip.com"),
+        "Private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;",
+    );
+    assert.equal(
+        describe("sender:ted@zulip.com"),
+        "Sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;",
+    );
 
     suggestions = get_suggestions("", "Ted "); // note space
     expected = [
@@ -1045,34 +877,25 @@ run_test("people_suggestions", () => {
 
     query = "sender:ted sm";
     let base_query = "";
-    expected = [
-        "sender:ted+sm",
-        "sender:ted@zulip.com",
-    ];
+    expected = ["sender:ted+sm", "sender:ted@zulip.com"];
     suggestions = get_suggestions(base_query, query);
     assert.deepEqual(suggestions.strings, expected);
 
     query = "new";
     base_query = "sender:ted@zulip.com";
-    expected = [
-        "new",
-    ];
+    expected = ["new"];
     suggestions = get_suggestions(base_query, query);
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:ted@tulip.com new";
     base_query = "";
-    expected = [
-        "sender:ted@tulip.com+new",
-    ];
+    expected = ["sender:ted@tulip.com+new"];
     suggestions = get_suggestions(base_query, query);
     assert.deepEqual(suggestions.strings, expected);
 
     query = "new";
     base_query = "sender:ted@tulip.com";
-    expected = [
-        "new",
-    ];
+    expected = ["new"];
     suggestions = get_suggestions(base_query, query);
     assert.deepEqual(suggestions.strings, expected);
 });
@@ -1098,58 +921,39 @@ run_test("people_suggestion (Admin only email visibility)", () => {
 
     const describe = (q) => suggestions.lookup_table.get(q).description;
 
-    assert.equal(describe("pm-with:ted@zulip.com"),
-                 "Private messages with <strong>Te</strong>d Smith");
-    assert.equal(describe("sender:ted@zulip.com"),
-                 "Sent by <strong>Te</strong>d Smith");
+    assert.equal(
+        describe("pm-with:ted@zulip.com"),
+        "Private messages with <strong>Te</strong>d Smith",
+    );
+    assert.equal(describe("sender:ted@zulip.com"), "Sent by <strong>Te</strong>d Smith");
 });
 
 run_test("operator_suggestions", () => {
     // Completed operator should return nothing
     let query = "stream:";
     let suggestions = get_suggestions("", query);
-    let expected = [
-        "stream:",
-    ];
+    let expected = ["stream:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "st";
     suggestions = get_suggestions("", query);
-    expected = [
-        "st",
-        "streams:public",
-        "is:starred",
-        "stream:",
-    ];
+    expected = ["st", "streams:public", "is:starred", "stream:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "group-";
     suggestions = get_suggestions("", query);
-    expected = [
-        "group-",
-        "group-pm-with:",
-    ];
+    expected = ["group-", "group-pm-with:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-s";
     suggestions = get_suggestions("", query);
-    expected = [
-        "-s",
-        "-streams:public",
-        "-sender:myself@zulip.com",
-        "-stream:",
-        "-sender:",
-    ];
+    expected = ["-s", "-streams:public", "-sender:myself@zulip.com", "-stream:", "-sender:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-f";
     const base_query = "stream:Denmark is:alerted";
     suggestions = get_suggestions(base_query, query);
-    expected = [
-        "-f",
-        "-from:myself@zulip.com",
-        "-from:",
-    ];
+    expected = ["-f", "-from:myself@zulip.com", "-from:"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -1167,28 +971,19 @@ run_test("queries_with_spaces", () => {
     // test allowing spaces with quotes surrounding operand
     let query = 'stream:"dev he"';
     let suggestions = get_suggestions("", query);
-    let expected = [
-        "stream:dev+he",
-        "stream:dev+help",
-    ];
+    let expected = ["stream:dev+he", "stream:dev+help"];
     assert.deepEqual(suggestions.strings, expected);
 
     // test mismatched quote
     query = 'stream:"dev h';
     suggestions = get_suggestions("", query);
-    expected = [
-        "stream:dev+h",
-        "stream:dev+help",
-    ];
+    expected = ["stream:dev+h", "stream:dev+help"];
     assert.deepEqual(suggestions.strings, expected);
 
     // test extra space after operator still works
     query = "stream: offi";
     suggestions = get_suggestions("", query);
-    expected = [
-        "stream:offi",
-        "stream:office",
-    ];
+    expected = ["stream:offi", "stream:office"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -1210,8 +1005,6 @@ run_test("multiple_operators_without_pills", () => {
     query = "abc is:alerted sender:ted@zulip.com";
     base_query = "";
     suggestions = get_suggestions(base_query, query);
-    expected = [
-        "is:alerted sender:ted@zulip.com abc",
-    ];
+    expected = ["is:alerted sender:ted@zulip.com abc"];
     assert.deepEqual(suggestions.strings, expected);
 });

@@ -14,7 +14,6 @@ const is_private_item = {
 };
 
 run_test("create_item", () => {
-
     function test_create_item(search_string, current_items, expected_item) {
         const item = search_pill.create_item_from_search_string(search_string, current_items);
         assert.deepEqual(item, expected_item);
@@ -55,11 +54,15 @@ run_test("get_items", () => {
     const items = [is_starred_item, is_private_item];
 
     const pill_widget = {
-        items: function () { return items; },
+        items: function () {
+            return items;
+        },
     };
 
-    assert.deepEqual(search_pill.get_search_string_for_current_filter(pill_widget),
-                     is_starred_item.display_value + " " + is_private_item.display_value);
+    assert.deepEqual(
+        search_pill.get_search_string_for_current_filter(pill_widget),
+        is_starred_item.display_value + " " + is_private_item.display_value,
+    );
 });
 
 run_test("create_pills", () => {

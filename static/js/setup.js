@@ -12,7 +12,10 @@ $(() => {
     // Display loading indicator.  This disappears after the first
     // get_events completes.
     if (!page_params.needs_tutorial) {
-        loading.make_indicator($("#page_loading_indicator"), {text: "Loading...", abs_positioned: true});
+        loading.make_indicator($("#page_loading_indicator"), {
+            text: "Loading...",
+            abs_positioned: true,
+        });
     }
 
     // This is an issue fix where in jQuery v3 the result of outerHeight on a node

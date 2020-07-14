@@ -60,7 +60,10 @@ function add_bot_row(info) {
 
 function is_local_part(value, element) {
     // Adapted from Django's EmailValidator
-    return this.optional(element) || /^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*$/i.test(value);
+    return (
+        this.optional(element) ||
+        /^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*$/i.test(value)
+    );
 }
 
 exports.type_id_to_string = function (type_id) {
@@ -127,22 +130,33 @@ exports.generate_zuliprc_content = function (bot) {
     if (bot.bot_type === 3) {
         token = bot_data.get_services(bot.user_id)[0].token;
     }
-    return "[api]" +
-           "\nemail=" + bot.email +
-           "\nkey=" + bot.api_key +
-           "\nsite=" + page_params.realm_uri +
-           (token === undefined ? "" : "\ntoken=" + token) +
-           // Some tools would not work in files without a trailing new line.
-           "\n";
+    return (
+        "[api]" +
+        "\nemail=" +
+        bot.email +
+        "\nkey=" +
+        bot.api_key +
+        "\nsite=" +
+        page_params.realm_uri +
+        (token === undefined ? "" : "\ntoken=" + token) +
+        // Some tools would not work in files without a trailing new line.
+        "\n"
+    );
 };
 
 exports.generate_botserverrc_content = function (email, api_key, token) {
-    return "[]" +
-           "\nemail=" + email +
-           "\nkey=" + api_key +
-           "\nsite=" + page_params.realm_uri +
-           "\ntoken=" + token +
-           "\n";
+    return (
+        "[]" +
+        "\nemail=" +
+        email +
+        "\nkey=" +
+        api_key +
+        "\nsite=" +
+        page_params.realm_uri +
+        "\ntoken=" +
+        token +
+        "\n"
+    );
 };
 
 exports.bot_creation_policy_values = {
@@ -169,8 +183,10 @@ exports.can_create_new_bots = function () {
         return false;
     }
 
-    return page_params.realm_bot_creation_policy !==
-        exports.bot_creation_policy_values.admins_only.code;
+    return (
+        page_params.realm_bot_creation_policy !==
+        exports.bot_creation_policy_values.admins_only.code
+    );
 };
 
 exports.update_bot_settings_tip = function () {
@@ -222,17 +238,21 @@ exports.set_up = function () {
             }
         }
 
-        $(this).attr("href", "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content));
+        $(this).attr(
+            "href",
+            "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content),
+        );
     });
 
     exports.render_bots();
 
-    $.validator.addMethod("bot_local_part",
-                          function (value, element) {
-                              return is_local_part.call(this, value + "-bot", element);
-                          },
-                          "Please only use characters that are valid in an email address");
-
+    $.validator.addMethod(
+        "bot_local_part",
+        function (value, element) {
+            return is_local_part.call(this, value + "-bot", element);
+        },
+        "Please only use characters that are valid in an email address",
+    );
 
     const create_avatar_widget = avatar.build_bot_create_widget();
     const OUTGOING_WEBHOOK_BOT_TYPE = "3";
@@ -249,7 +269,8 @@ exports.set_up = function () {
         submitHandler: function () {
             const bot_type = $("#create_bot_type :selected").val();
             const full_name = $("#create_bot_name").val();
-            const short_name = $("#create_bot_short_name").val() || $("#create_bot_short_name").text();
+            const short_name =
+                $("#create_bot_short_name").val() || $("#create_bot_short_name").text();
             const payload_url = $("#create_payload_url").val();
             const interface_type = $("#create_interface_type").val();
             const service_name = $("#select_service_name :selected").val();
@@ -273,7 +294,9 @@ exports.set_up = function () {
                 });
                 formData.append("config_data", JSON.stringify(config_data));
             }
-            for (const [i, file] of Array.prototype.entries.call($("#bot_avatar_file_input")[0].files)) {
+            for (const [i, file] of Array.prototype.entries.call(
+                $("#bot_avatar_file_input")[0].files,
+            )) {
                 formData.append("file-" + i, file);
             }
             loading.make_indicator(spinner, {text: i18n.t("Creating bot")});
@@ -324,7 +347,6 @@ exports.set_up = function () {
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
             $("#payload_url_inputbox").show();
             $("#create_payload_url").addClass("required");
-
         } else if (bot_type === EMBEDDED_BOT_TYPE) {
             $("#service_name_list").show();
             $("#select_service_name").addClass("required");
@@ -346,7 +368,9 @@ exports.set_up = function () {
             url: "/json/bots/" + encodeURIComponent(bot_id),
             success: function () {
                 const row = $(e.currentTarget).closest("li");
-                row.hide("slow", () => { row.remove(); });
+                row.hide("slow", () => {
+                    row.remove();
+                });
             },
             error: function (xhr) {
                 exports.bot_error(bot_id, xhr);
@@ -398,10 +422,12 @@ exports.set_up = function () {
         }));
 
         $("#edit_bot_modal").empty();
-        $("#edit_bot_modal").append(render_edit_bot({
-            bot: bot,
-            users_list: users_list,
-        }));
+        $("#edit_bot_modal").append(
+            render_edit_bot({
+                bot: bot,
+                users_list: users_list,
+            }),
+        );
         const avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
         const form = $("#settings_page .edit_bot_form");
         const image = li.find(".image");
@@ -417,15 +443,19 @@ exports.set_up = function () {
 
         const service = bot_data.get_services(bot_id)[0];
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
-            $("#service_data").append(render_settings_edit_outgoing_webhook_service({
-                service: service,
-            }));
+            $("#service_data").append(
+                render_settings_edit_outgoing_webhook_service({
+                    service: service,
+                }),
+            );
             $("#edit_service_interface").val(service.interface);
         }
         if (bot.bot_type.toString() === EMBEDDED_BOT_TYPE) {
-            $("#service_data").append(render_settings_edit_embedded_bot_service({
-                service: service,
-            }));
+            $("#service_data").append(
+                render_settings_edit_embedded_bot_service({
+                    service: service,
+                }),
+            );
         }
 
         avatar_widget.clear();
@@ -484,7 +514,9 @@ exports.set_up = function () {
                             // when the user had a previous uploaded avatar.  Only the content
                             // changes, so we version it to get an uncached copy.
                             image_version += 1;
-                            image.find("img").attr("src", data.avatar_url + "&v=" + image_version.toString());
+                            image
+                                .find("img")
+                                .attr("src", data.avatar_url + "&v=" + image_version.toString());
                         }
                         overlays.close_modal("#edit_bot_modal");
                     },
@@ -532,7 +564,6 @@ exports.set_up = function () {
         e.stopPropagation();
         focus_tab.inactive_bots_tab();
     });
-
 };
 
 window.settings_bots = exports;

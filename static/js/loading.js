@@ -42,8 +42,7 @@ exports.make_indicator = function (outer_container, opts) {
 
     // These width calculations are tied to the spinner width and
     // margins defined via CSS
-    container.css({width: 38 + text_width,
-                   height: 0});
+    container.css({width: 38 + text_width, height: 0});
 
     outer_container.data("destroying", false);
 };
@@ -62,6 +61,5 @@ exports.destroy_indicator = function (container) {
     container.empty();
     container.css({width: 0, height: 0, display: "none"});
 };
-
 
 window.loading = exports;

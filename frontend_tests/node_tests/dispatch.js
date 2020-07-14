@@ -15,7 +15,9 @@ global.patch_builtin("setTimeout", (func) => func());
 set_global("home_msg_list", {
     rerender: noop,
     select_id: noop,
-    selected_id: function () {return 1;},
+    selected_id: function () {
+        return 1;
+    },
 });
 
 set_global("markdown", {
@@ -138,10 +140,7 @@ with_overrides((override) => {
     const event = event_fixtures.alert_words;
     dispatch(event);
 
-    assert.deepEqual(
-        alert_words.get_word_list(),
-        ["fire", "lunch"],
-    );
+    assert.deepEqual(alert_words.get_word_list(), ["fire", "lunch"]);
     assert(alert_words.has_alert_word("fire"));
     assert(alert_words.has_alert_word("lunch"));
 });
@@ -203,7 +202,6 @@ with_overrides((override) => {
     override("settings_profile_fields.report_success", noop);
     dispatch(event);
     assert_same(global.page_params.custom_profile_fields, event.fields);
-
 });
 
 with_overrides((override) => {
@@ -216,7 +214,6 @@ with_overrides((override) => {
         const args = stub.get_args("realm_default_streams");
         assert_same(args.realm_default_streams, event.default_streams);
     });
-
 });
 
 with_overrides((override) => {
@@ -489,7 +486,6 @@ with_overrides((override) => {
     override("settings_linkifiers.populate_filters", noop);
     dispatch(event);
     assert_same(page_params.realm_filters, event.realm_filters);
-
 });
 
 with_overrides((override) => {
@@ -570,7 +566,10 @@ with_overrides((override) => {
         override("subs.add_sub_to_table", noop);
         dispatch(event);
         const args = stub.get_args("streams");
-        assert_same(args.streams.map((stream) => stream.stream_id), [42, 99]);
+        assert_same(
+            args.streams.map((stream) => stream.stream_id),
+            [42, 99],
+        );
     });
 
     // stream delete
@@ -581,7 +580,9 @@ with_overrides((override) => {
         override("settings_streams.update_default_streams_table", noop);
         override("stream_data.remove_default_stream", noop);
 
-        override("stream_data.get_sub_by_id", (id) => id === 42 ? {subscribed: true} : {subscribed: false});
+        override("stream_data.get_sub_by_id", (id) =>
+            id === 42 ? {subscribed: true} : {subscribed: false},
+        );
         override("stream_list.remove_sidebar_row", stub.f);
         dispatch(event);
         const args = stub.get_args("stream_id");
@@ -686,8 +687,12 @@ with_overrides((override) => {
     assert_same(page_params.dense_mode, true);
     assert_same(toggled, ["less_dense_mode", "more_dense_mode"]);
 
-    $("body").fadeOut = (secs) => { assert_same(secs, 300); };
-    $("body").fadeIn = (secs) => { assert_same(secs, 300); };
+    $("body").fadeOut = (secs) => {
+        assert_same(secs, 300);
+    };
+    $("body").fadeIn = (secs) => {
+        assert_same(secs, 300);
+    };
 
     global.with_stub((stub) => {
         event = event_fixtures.update_display_settings__color_scheme_dark;

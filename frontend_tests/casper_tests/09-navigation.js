@@ -98,16 +98,19 @@ casper.then(function () {
 
 casper.then(function () {
     // Confirm that's we've actually reloaded using the page load timestamp.
-    casper.waitFor(function () {
-        return casper.evaluate(function (input) {
-            return page_params.page_load_time > input;
-        }, initial_page_load_time);
-    }, function () {
-        // Verify the hash was preserved
-        hash = casper.evaluate(function () {
-            return window.location.hash;
-        });
-    });
+    casper.waitFor(
+        function () {
+            return casper.evaluate(function (input) {
+                return page_params.page_load_time > input;
+            }, initial_page_load_time);
+        },
+        function () {
+            // Verify the hash was preserved
+            hash = casper.evaluate(function () {
+                return window.location.hash;
+            });
+        }
+    );
 });
 
 casper.then(function () {

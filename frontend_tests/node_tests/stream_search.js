@@ -164,7 +164,6 @@ run_test("basics", () => {
     input.val("");
     stream_list.escape_search();
     verify_collapsed();
-
 });
 
 run_test("expanding_sidebar", () => {
@@ -180,8 +179,5 @@ run_test("expanding_sidebar", () => {
 
     stream_list.initiate_search();
 
-    assert.deepEqual(events, [
-        "popovers.hide_all",
-        "stream_popover.show_streamlist_sidebar",
-    ]);
+    assert.deepEqual(events, ["popovers.hide_all", "stream_popover.show_streamlist_sidebar"]);
 });

@@ -1,11 +1,6 @@
 const default_max_file_size = 5;
 
-const supported_types = [
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "image/tiff",
-];
+const supported_types = ["image/jpeg", "image/png", "image/gif", "image/tiff"];
 
 function is_image_format(file) {
     const type = file.type;
@@ -51,8 +46,6 @@ exports.build_widget = function (
         }
     }
 
-
-
     clear_button.on("click", (e) => {
         clear();
         e.preventDefault();
@@ -75,9 +68,11 @@ exports.build_widget = function (
         } else if (e.target.files.length === 1) {
             const file = e.target.files[0];
             if (file.size > max_file_upload_size * 1024 * 1024) {
-                input_error.text(i18n.t("File size must be < __max_file_size__Mb.", {
-                    max_file_size: max_file_upload_size,
-                }));
+                input_error.text(
+                    i18n.t("File size must be < __max_file_size__Mb.", {
+                        max_file_size: max_file_upload_size,
+                    }),
+                );
                 input_error.show();
                 clear();
             } else if (!is_image_format(file)) {
@@ -157,9 +152,11 @@ exports.build_direct_upload_widget = function (
         } else if (e.target.files.length === 1) {
             const file = e.target.files[0];
             if (file.size > max_file_upload_size * 1024 * 1024) {
-                input_error.text(i18n.t("File size must be < __max_file_size__Mb.", {
-                    max_file_size: max_file_upload_size,
-                }));
+                input_error.text(
+                    i18n.t("File size must be < __max_file_size__Mb.", {
+                        max_file_size: max_file_upload_size,
+                    }),
+                );
                 input_error.show();
                 clear();
             } else if (!is_image_format(file)) {

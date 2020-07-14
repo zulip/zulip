@@ -1,4 +1,10 @@
-exports.create_ajax_request = function (url, form_name, stripe_token = null, numeric_inputs = [], redirect_to = "/billing") {
+exports.create_ajax_request = function (
+    url,
+    form_name,
+    stripe_token = null,
+    numeric_inputs = [],
+    redirect_to = "/billing",
+) {
     const form = $("#" + form_name + "-form");
     const form_loading_indicator = "#" + form_name + "_loading_indicator";
     const form_input_section = "#" + form_name + "-input-section";
@@ -9,8 +15,10 @@ exports.create_ajax_request = function (url, form_name, stripe_token = null, num
     const zulip_limited_section = "#zulip-limited-section";
     const free_trial_alert_message = "#free-trial-alert-message";
 
-    loading.make_indicator($(form_loading_indicator),
-                           {text: "Processing ...", abs_positioned: true});
+    loading.make_indicator($(form_loading_indicator), {
+        text: "Processing ...",
+        abs_positioned: true,
+    });
     $(form_input_section).hide();
     $(form_error).hide();
     $(form_loading).show();
@@ -70,15 +78,14 @@ exports.format_money = function (cents) {
 };
 
 exports.update_charged_amount = function (prices, schedule) {
-    $("#charged_amount").text(
-        exports.format_money(page_params.seat_count * prices[schedule]),
-    );
+    $("#charged_amount").text(exports.format_money(page_params.seat_count * prices[schedule]));
 };
 
 exports.update_discount_details = function (organization_type) {
     const discount_details = {
         open_source: "Open source projects are eligible for fully sponsored (free) Zulip Standard.",
-        research: "Academic research organizations are eligible for fully sponsored (free) Zulip Standard.",
+        research:
+            "Academic research organizations are eligible for fully sponsored (free) Zulip Standard.",
         non_profit: "Nonprofits are eligible for an 85%-100% discount.",
         event: "Events are eligible for fully sponsored (free) Zulip Standard.",
         education: "Education use is eligible for an 85%-100% discount.",

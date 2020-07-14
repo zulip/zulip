@@ -75,14 +75,20 @@ run_test("initialize", () => {
         {
             const search_suggestions = {
                 lookup_table: new Map([
-                    ["stream:Verona", {
-                        description: "Stream <strong>Ver</strong>ona",
-                        search_string: "stream:Verona",
-                    }],
-                    ["ver", {
-                        description: "Search for ver",
-                        search_string: "ver",
-                    }],
+                    [
+                        "stream:Verona",
+                        {
+                            description: "Stream <strong>Ver</strong>ona",
+                            search_string: "stream:Verona",
+                        },
+                    ],
+                    [
+                        "ver",
+                        {
+                            description: "Search for ver",
+                            search_string: "ver",
+                        },
+                    ],
                 ]),
                 strings: ["ver", "stream:Verona"],
             };
@@ -124,20 +130,24 @@ run_test("initialize", () => {
                 };
             };
 
-            operators = [{
-                negated: false,
-                operator: "search",
-                operand: "ver",
-            }];
+            operators = [
+                {
+                    negated: false,
+                    operator: "search",
+                    operand: "ver",
+                },
+            ];
             _setup("ver");
             assert.equal(opts.updater("ver"), "ver");
             assert(is_blurred);
 
-            operators = [{
-                negated: false,
-                operator: "stream",
-                operand: "Verona",
-            }];
+            operators = [
+                {
+                    negated: false,
+                    operator: "stream",
+                    operand: "Verona",
+                },
+            ];
             _setup("stream:Verona");
             assert.equal(opts.updater("stream:Verona"), "stream:Verona");
             assert(is_blurred);
@@ -189,11 +199,13 @@ run_test("initialize", () => {
             };
         };
 
-        operators = [{
-            negated: false,
-            operator: "search",
-            operand: "",
-        }];
+        operators = [
+            {
+                negated: false,
+                operator: "search",
+                operand: "",
+            },
+        ];
         _setup("");
 
         ev.which = 15;

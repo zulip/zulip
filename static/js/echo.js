@@ -144,7 +144,6 @@ exports.is_slash_command = function (content) {
     return !content.startsWith("/me") && content.startsWith("/");
 };
 
-
 exports.try_deliver_locally = function (message_request) {
     if (markdown.contains_backend_only_syntax(message_request.content)) {
         return;
@@ -374,7 +373,10 @@ exports.initialize = function () {
             // otherwise send would not have failed
             const message = waiting_for_ack.get(local_id);
             if (message === undefined) {
-                blueslip.warn("Got resend or retry on failure request but did not find message in ack list " + local_id);
+                blueslip.warn(
+                    "Got resend or retry on failure request but did not find message in ack list " +
+                        local_id,
+                );
                 return;
             }
             callback(message, row);

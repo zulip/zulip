@@ -93,7 +93,6 @@ run_test("initialize", () => {
 
     search_suggestion.max_num_of_search_results = 99;
     search_query_box.typeahead = (opts) => {
-
         assert.equal(opts.fixed, true);
         assert.equal(opts.items, 99);
         assert.equal(opts.naturalSearch, true);
@@ -104,14 +103,20 @@ run_test("initialize", () => {
         {
             const search_suggestions = {
                 lookup_table: new Map([
-                    ["stream:Verona", {
-                        description: "Stream <strong>Ver</strong>ona",
-                        search_string: "stream:Verona",
-                    }],
-                    ["ver", {
-                        description: "Search for ver",
-                        search_string: "ver",
-                    }],
+                    [
+                        "stream:Verona",
+                        {
+                            description: "Stream <strong>Ver</strong>ona",
+                            search_string: "stream:Verona",
+                        },
+                    ],
+                    [
+                        "ver",
+                        {
+                            description: "Search for ver",
+                            search_string: "ver",
+                        },
+                    ],
                 ]),
                 strings: ["ver", "stream:Verona"],
             };
@@ -159,22 +164,26 @@ run_test("initialize", () => {
                 search_pill.get_search_string_for_current_filter = () => search_box_val;
             };
 
-            operators = [{
-                negated: false,
-                operator: "search",
-                operand: "ver",
-            }];
+            operators = [
+                {
+                    negated: false,
+                    operator: "search",
+                    operand: "ver",
+                },
+            ];
             _setup("ver");
 
             assert.equal(opts.updater("ver"), "ver");
             assert(!is_blurred);
             assert(is_append_search_string_called);
 
-            operators = [{
-                negated: false,
-                operator: "stream",
-                operand: "Verona",
-            }];
+            operators = [
+                {
+                    negated: false,
+                    operator: "stream",
+                    operand: "Verona",
+                },
+            ];
             _setup("stream:Verona");
 
             assert.equal(opts.updater("stream:Verona"), "stream:Verona");
@@ -231,11 +240,13 @@ run_test("initialize", () => {
             search_pill.get_search_string_for_current_filter = () => search_box_val;
         };
 
-        operators = [{
-            negated: false,
-            operator: "search",
-            operand: "",
-        }];
+        operators = [
+            {
+                negated: false,
+                operator: "search",
+                operand: "",
+            },
+        ];
         _setup("");
 
         ev.which = 15;
@@ -294,7 +305,9 @@ run_test("initialize", () => {
         if (event === "focusin") {
             searchbox.css({"box-shadow": "unset"});
             callback();
-            assert.deepEqual(searchbox.css(), {"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
+            assert.deepEqual(searchbox.css(), {
+                "box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)",
+            });
         } else if (event === "focusout") {
             searchbox.css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
             callback();

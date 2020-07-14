@@ -21,7 +21,9 @@ set_global("hashchange", {});
 set_global("home_msg_list", {});
 set_global("message_fetch", {});
 set_global("message_list", {
-    set_narrowed: function (value) { this.narrowed = value; },
+    set_narrowed: function (value) {
+        this.narrowed = value;
+    },
 });
 set_global("message_scroll", {});
 set_global("message_util", {});
@@ -36,8 +38,12 @@ set_global("ui_util", {});
 set_global("unread_ops", {});
 set_global("search_pill_widget", {
     widget: {
-        clear: function () {return true;},
-        appendValue: function () {return true;},
+        clear: function () {
+            return true;
+        },
+        appendValue: function () {
+            return true;
+        },
     },
 });
 
@@ -133,9 +139,7 @@ run_test("basics", () => {
     stub_message_list();
 
     const helper = test_helper();
-    const terms = [
-        {operator: "stream", operand: "Denmark"},
-    ];
+    const terms = [{operator: "stream", operand: "Denmark"}];
 
     const selected_id = 1000;
 
@@ -225,8 +229,5 @@ run_test("basics", () => {
 
     helper.clear();
     cont();
-    helper.assert_events([
-        "report narrow times",
-    ]);
-
+    helper.assert_events(["report narrow times"]);
 });

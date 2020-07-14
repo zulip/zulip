@@ -13,7 +13,6 @@ function all_message_timestamps_to_human_readable() {
     });
 }
 
-
 exports.initialize = function () {
     const all_message_groups = [];
     let current_message_group = {};
@@ -37,8 +36,11 @@ exports.initialize = function () {
         all_message_groups.push(current_message_group);
         current_message_group = {};
         current_message_group.message_containers = [];
-        current_message_group.group_date_divider_html =
-            timerender.render_date(time, prev_time, today)[0].outerHTML;
+        current_message_group.group_date_divider_html = timerender.render_date(
+            time,
+            prev_time,
+            today,
+        )[0].outerHTML;
         current_message_group.show_group_date_divider = true;
         current_message_group.display_recipient = stream_name;
         current_message_group.topic = topic;
@@ -48,7 +50,10 @@ exports.initialize = function () {
     $(".message_row").each(function () {
         const current_message_row = $(this);
         const cur_msg_time = parseInt(current_message_row.find(".message_time").first().html(), 10);
-        const next_msg_time = parseInt(current_message_row.next().find(".message_time").first().html(), 10);
+        const next_msg_time = parseInt(
+            current_message_row.next().find(".message_time").first().html(),
+            10,
+        );
 
         if (current_message_row.next().length === 0) {
             separate_into_groups(current_message_row, cur_msg_time);
@@ -124,8 +129,10 @@ $(() => {
     $.fn.safeOuterWidth = function (...args) {
         return this.outerWidth(...args) || 0;
     };
-    $(".app").scroll(_.throttle(() => {
-        scroll_finish();
-    }, 50));
+    $(".app").scroll(
+        _.throttle(() => {
+            scroll_finish();
+        }, 50),
+    );
     exports.initialize();
 });
