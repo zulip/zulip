@@ -6,13 +6,13 @@ const document = dom.window.document;
 
 let jquery_init;
 global.$ = (f) => {jquery_init = f;};
-zrequire('support', "js/analytics/support");
-set_global('$', global.make_zjquery());
+zrequire("support", "js/analytics/support");
+set_global("$", global.make_zjquery());
 
-run_test('scrub_realm', () => {
+run_test("scrub_realm", () => {
     jquery_init();
-    const click_handler = $('body').get_on_handler('click', '.scrub-realm-button');
-    assert.equal(typeof click_handler, 'function');
+    const click_handler = $("body").get_on_handler("click", ".scrub-realm-button");
+    assert.equal(typeof click_handler, "function");
 
     assert.equal(document.querySelectorAll(".scrub-realm-button").length, 1);
 });

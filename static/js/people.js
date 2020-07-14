@@ -1,6 +1,6 @@
 const util = require("./util");
 require("unorm");  // String.prototype.normalize polyfill for IE11
-const FoldDict = require('./fold_dict').FoldDict;
+const FoldDict = require("./fold_dict").FoldDict;
 const typeahead = require("../shared/js/typeahead");
 const settings_data = require("./settings_data");
 
@@ -41,13 +41,13 @@ exports.init = function () {
 exports.init();
 
 function split_to_ints(lst) {
-    return lst.split(',').map((s) => parseInt(s, 10));
+    return lst.split(",").map((s) => parseInt(s, 10));
 }
 
 
 exports.get_by_user_id = function (user_id, ignore_missing) {
     if (!people_by_user_id_dict.has(user_id) && !ignore_missing) {
-        blueslip.error('Unknown user_id in get_by_user_id: ' + user_id);
+        blueslip.error("Unknown user_id in get_by_user_id: " + user_id);
         return;
     }
     return people_by_user_id_dict.get(user_id);
@@ -62,8 +62,8 @@ exports.get_by_email = function (email) {
 
     if (person.email.toLowerCase() !== email.toLowerCase()) {
         blueslip.warn(
-            'Obsolete email passed to get_by_email: ' + email +
-            ' new email = ' + person.email,
+            "Obsolete email passed to get_by_email: " + email +
+            " new email = " + person.email,
         );
     }
 
@@ -87,7 +87,7 @@ exports.id_matches_email_operand = function (user_id, email) {
     if (!person) {
         // The user may type bad data into the search bar, so
         // we don't complain too loud here.
-        blueslip.debug('User email operand unknown: ' + email);
+        blueslip.debug("User email operand unknown: " + email);
         return false;
     }
 
@@ -114,13 +114,13 @@ exports.get_visible_email = function (user) {
 exports.get_user_id = function (email) {
     const person = exports.get_by_email(email);
     if (person === undefined) {
-        const error_msg = 'Unknown email for get_user_id: ' + email;
+        const error_msg = "Unknown email for get_user_id: " + email;
         blueslip.error(error_msg);
         return;
     }
     const user_id = person.user_id;
     if (!user_id) {
-        blueslip.error('No user_id found for ' + email);
+        blueslip.error("No user_id found for " + email);
         return;
     }
 
@@ -145,7 +145,7 @@ function sort_numerically(user_ids) {
 }
 
 exports.huddle_string = function (message) {
-    if (message.type !== 'private') {
+    if (message.type !== "private") {
         return;
     }
 
@@ -165,7 +165,7 @@ exports.huddle_string = function (message) {
 
     user_ids = sort_numerically(user_ids);
 
-    return user_ids.join(',');
+    return user_ids.join(",");
 };
 
 exports.user_ids_string_to_emails_string = function (user_ids_string) {
@@ -177,7 +177,7 @@ exports.user_ids_string_to_emails_string = function (user_ids_string) {
     });
 
     if (!emails.every(Boolean)) {
-        blueslip.warn('Unknown user ids: ' + user_ids_string);
+        blueslip.warn("Unknown user ids: " + user_ids_string);
         return;
     }
 
@@ -185,11 +185,11 @@ exports.user_ids_string_to_emails_string = function (user_ids_string) {
 
     emails.sort();
 
-    return emails.join(',');
+    return emails.join(",");
 };
 
 exports.user_ids_string_to_ids_array = function (user_ids_string) {
-    const user_ids = user_ids_string.split(',');
+    const user_ids = user_ids_string.split(",");
     const ids = user_ids.map((id) => Number(id));
     return ids;
 };
@@ -208,7 +208,7 @@ exports.reply_to_to_user_ids_string = function (emails_string) {
     // This is basically emails_strings_to_user_ids_string
     // without blueslip warnings, since it can be called with
     // invalid data.
-    const emails = emails_string.split(',');
+    const emails = emails_string.split(",");
 
     let user_ids = emails.map((email) => {
         const person = exports.get_by_email(email);
@@ -221,7 +221,7 @@ exports.reply_to_to_user_ids_string = function (emails_string) {
 
     user_ids = sort_numerically(user_ids);
 
-    return user_ids.join(',');
+    return user_ids.join(",");
 };
 
 exports.get_user_time_preferences = function (user_id) {
@@ -254,7 +254,7 @@ exports.get_user_type = function (user_id) {
 };
 
 exports.emails_strings_to_user_ids_string = function (emails_string) {
-    const emails = emails_string.split(',');
+    const emails = emails_string.split(",");
     return exports.email_list_to_user_ids_string(emails);
 };
 
@@ -265,13 +265,13 @@ exports.email_list_to_user_ids_string = function (emails) {
     });
 
     if (!user_ids.every(Boolean)) {
-        blueslip.warn('Unknown emails: ' + emails);
+        blueslip.warn("Unknown emails: " + emails);
         return;
     }
 
     user_ids = sort_numerically(user_ids);
 
-    return user_ids.join(',');
+    return user_ids.join(",");
 };
 
 exports.safe_full_names = function (user_ids) {
@@ -282,7 +282,7 @@ exports.safe_full_names = function (user_ids) {
 
     names = names.filter(Boolean);
 
-    return names.join(', ');
+    return names.join(", ");
 };
 
 exports.get_full_name = function (user_id) {
@@ -301,7 +301,7 @@ exports.get_recipients = function (user_ids_string) {
     }
 
     const names = other_ids.map(exports.get_full_name).sort();
-    return names.join(', ');
+    return names.join(", ");
 };
 
 exports.pm_reply_user_string = function (message) {
@@ -311,7 +311,7 @@ exports.pm_reply_user_string = function (message) {
         return;
     }
 
-    return user_ids.join(',');
+    return user_ids.join(",");
 };
 
 exports.pm_reply_to = function (message) {
@@ -324,15 +324,15 @@ exports.pm_reply_to = function (message) {
     const emails = user_ids.map((user_id) => {
         const person = people_by_user_id_dict.get(user_id);
         if (!person) {
-            blueslip.error('Unknown user id in message: ' + user_id);
-            return '?';
+            blueslip.error("Unknown user id in message: " + user_id);
+            return "?";
         }
         return person.email;
     });
 
     emails.sort();
 
-    const reply_to = emails.join(',');
+    const reply_to = emails.join(",");
 
     return reply_to;
 };
@@ -363,7 +363,7 @@ exports.concat_huddle = function (user_ids, user_id) {
         how to encode huddles.
     */
     const sorted_ids = sort_numerically([...user_ids, user_id]);
-    return sorted_ids.join(',');
+    return sorted_ids.join(",");
 };
 
 exports.pm_lookup_key = function (user_ids_string) {
@@ -374,16 +374,16 @@ exports.pm_lookup_key = function (user_ids_string) {
     */
     let user_ids = split_to_ints(user_ids_string);
     user_ids = sorted_other_user_ids(user_ids);
-    return user_ids.join(',');
+    return user_ids.join(",");
 };
 
 exports.all_user_ids_in_pm = function (message) {
-    if (message.type !== 'private') {
+    if (message.type !== "private") {
         return;
     }
 
     if (message.display_recipient.length === 0) {
-        blueslip.error('Empty recipient list in message');
+        blueslip.error("Empty recipient list in message");
         return;
     }
 
@@ -394,12 +394,12 @@ exports.all_user_ids_in_pm = function (message) {
 };
 
 exports.pm_with_user_ids = function (message) {
-    if (message.type !== 'private') {
+    if (message.type !== "private") {
         return;
     }
 
     if (message.display_recipient.length === 0) {
-        blueslip.error('Empty recipient list in message');
+        blueslip.error("Empty recipient list in message");
         return;
     }
 
@@ -409,12 +409,12 @@ exports.pm_with_user_ids = function (message) {
 };
 
 exports.group_pm_with_user_ids = function (message) {
-    if (message.type !== 'private') {
+    if (message.type !== "private") {
         return;
     }
 
     if (message.display_recipient.length === 0) {
-        blueslip.error('Empty recipient list in message');
+        blueslip.error("Empty recipient list in message");
         return;
     }
 
@@ -439,12 +439,12 @@ exports.pm_perma_link = function (message) {
     let suffix;
 
     if (user_ids.length >= 3) {
-        suffix = 'group';
+        suffix = "group";
     } else {
-        suffix = 'pm';
+        suffix = "pm";
     }
 
-    const slug = user_ids.join(',') + '-' + suffix;
+    const slug = user_ids.join(",") + "-" + suffix;
     const uri = "#narrow/pm-with/" + slug;
     return uri;
 };
@@ -459,18 +459,18 @@ exports.pm_with_url = function (message) {
     let suffix;
 
     if (user_ids.length > 1) {
-        suffix = 'group';
+        suffix = "group";
     } else {
         const person = exports.get_by_user_id(user_ids[0]);
         if (person && person.email) {
-            suffix = person.email.split('@')[0].toLowerCase();
+            suffix = person.email.split("@")[0].toLowerCase();
         } else {
-            blueslip.error('Unknown people in message');
-            suffix = 'unk';
+            blueslip.error("Unknown people in message");
+            suffix = "unk";
         }
     }
 
-    const slug = user_ids.join(',') + '-' + suffix;
+    const slug = user_ids.join(",") + "-" + suffix;
     const uri = "#narrow/pm-with/" + slug;
     return uri;
 };
@@ -479,7 +479,7 @@ exports.update_email_in_reply_to = function (reply_to, user_id, new_email) {
     // We try to replace an old email with a new email in a reply_to,
     // but we try to avoid changing the reply_to if we don't have to,
     // and we don't warn on any errors.
-    let emails = reply_to.split(',');
+    let emails = reply_to.split(",");
 
     const persons = emails.map((email) => people_dict.get(email.trim()));
 
@@ -500,11 +500,11 @@ exports.update_email_in_reply_to = function (reply_to, user_id, new_email) {
         return person.email;
     });
 
-    return emails.join(',');
+    return emails.join(",");
 };
 
 exports.pm_with_operand_ids = function (operand) {
-    let emails = operand.split(',');
+    let emails = operand.split(",");
     emails = emails.map((email) => email.trim());
     let persons = emails.map((email) => people_dict.get(email));
 
@@ -531,14 +531,14 @@ exports.emails_to_slug = function (emails_string) {
         return;
     }
 
-    slug += '-';
+    slug += "-";
 
-    const emails = emails_string.split(',');
+    const emails = emails_string.split(",");
 
     if (emails.length === 1) {
-        slug += emails[0].split('@')[0].toLowerCase();
+        slug += emails[0].split("@")[0].toLowerCase();
     } else {
-        slug += 'group';
+        slug += "group";
     }
 
     return slug;
@@ -574,12 +574,12 @@ exports.exclude_me_from_string = function (user_ids_string) {
         // We either have a message to ourself, an empty
         // slug, or a message to somebody else where we weren't
         // part of the slug.
-        return user_ids.join(',');
+        return user_ids.join(",");
     }
 
     user_ids = user_ids.filter((user_id) => !exports.is_my_user_id(user_id));
 
-    return user_ids.join(',');
+    return user_ids.join(",");
 };
 
 exports.format_small_avatar_url = function (raw_url) {
@@ -605,7 +605,7 @@ exports.sender_is_guest = function (message) {
 
 function gravatar_url_for_email(email) {
     const hash = md5(email.toLowerCase());
-    const avatar_url = 'https://secure.gravatar.com/avatar/' + hash + '?d=identicon';
+    const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
     const small_avatar_url = exports.format_small_avatar_url(avatar_url);
     return small_avatar_url;
 }
@@ -619,7 +619,7 @@ exports.small_avatar_url_for_person = function (person) {
         return gravatar_url_for_email(person.email);
     }
 
-    return exports.format_small_avatar_url('/avatar/' + person.user_id);
+    return exports.format_small_avatar_url("/avatar/" + person.user_id);
 };
 
 exports.sender_info_with_small_avatar_urls_for_sender_ids = function (sender_ids) {
@@ -668,7 +668,7 @@ exports.small_avatar_url = function (message) {
         // required to take advantage of the user_avatar_url_field_optional
         // optimization, which saves a huge amount of network traffic on
         // servers with 10,000s of user accounts.
-        return exports.format_small_avatar_url('/avatar/' + person.user_id);
+        return exports.format_small_avatar_url("/avatar/" + person.user_id);
     }
 
     // For computing the user's email, we first trust the person
@@ -888,7 +888,7 @@ exports.build_termlet_matcher = function (termlet) {
             // Only ignore diacritics if the query is plain ascii
             full_name = typeahead.remove_diacritics(full_name);
         }
-        const names = full_name.toLowerCase().split(' ');
+        const names = full_name.toLowerCase().split(" ");
 
         return names.some((name) => name.startsWith(termlet));
     };
@@ -957,7 +957,7 @@ exports.get_actual_name_from_user_id = (user_id) => {
     const person = people_by_user_id_dict.get(user_id);
 
     if (!person) {
-        blueslip.error('Unknown user_id: ' + user_id);
+        blueslip.error("Unknown user_id: " + user_id);
         return;
     }
 
@@ -1049,20 +1049,20 @@ exports.is_duplicate_full_name = function (full_name) {
 };
 
 exports.get_mention_syntax = function (full_name, user_id, silent) {
-    let mention = '';
+    let mention = "";
     if (silent) {
-        mention += '@_**';
+        mention += "@_**";
     } else {
-        mention += '@**';
+        mention += "@**";
     }
     mention += full_name;
     if (!user_id) {
-        blueslip.warn('get_mention_syntax called without user_id.');
+        blueslip.warn("get_mention_syntax called without user_id.");
     }
     if (exports.is_duplicate_full_name(full_name) && user_id) {
-        mention += '|' + user_id;
+        mention += "|" + user_id;
     }
-    mention += '**';
+    mention += "**";
     return mention;
 };
 
@@ -1081,7 +1081,7 @@ exports._add_user = function add(person) {
         // with cross-realm bots, zephyr users, etc., deactivated
         // users, where we are probably fine for now not to
         // find them via user_id lookups.
-        blueslip.warn('No user_id provided for ' + person.email);
+        blueslip.warn("No user_id provided for " + person.email);
     }
 
     exports.track_duplicate_full_name(person.full_name, person.user_id);
@@ -1122,7 +1122,7 @@ exports.report_late_add = function (user_id, email) {
     // This function is extracted to make unit testing easier,
     // plus we may fine-tune our reporting here for different
     // types of realms.
-    const msg = 'Added user late: user_id=' + user_id + ' email=' + email;
+    const msg = "Added user late: user_id=" + user_id + " email=" + email;
 
     if (reload_state.is_in_progress()) {
         blueslip.log(msg);
@@ -1135,13 +1135,13 @@ exports.extract_people_from_message = function (message) {
     let involved_people;
 
     switch (message.type) {
-    case 'stream':
+    case "stream":
         involved_people = [{full_name: message.sender_full_name,
                             user_id: message.sender_id,
                             email: message.sender_email}];
         break;
 
-    case 'private':
+    case "private":
         involved_people = message.display_recipient;
         break;
 
@@ -1174,7 +1174,7 @@ exports.extract_people_from_message = function (message) {
 };
 
 function safe_lower(s) {
-    return (s || '').toLowerCase();
+    return (s || "").toLowerCase();
 }
 
 exports.matches_user_settings_search = function (person, value) {
@@ -1200,7 +1200,7 @@ exports.filter_for_user_settings_search = function (persons, query) {
 };
 
 exports.maybe_incr_recipient_count = function (message) {
-    if (message.type !== 'private') {
+    if (message.type !== "private") {
         return;
     }
 
@@ -1287,8 +1287,8 @@ exports.is_my_user_id = function (user_id) {
         return false;
     }
 
-    if (typeof user_id !== 'number') {
-        blueslip.error('user_id is a string in my_user_id: ' + user_id);
+    if (typeof user_id !== "number") {
+        blueslip.error("user_id is a string in my_user_id: " + user_id);
         user_id = parseInt(user_id, 10);
     }
 

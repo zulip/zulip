@@ -18,8 +18,8 @@ exports.set_focused_recipient = function (msg_type) {
     };
 
     if (focused_recipient.type === "stream") {
-        const stream_name = $('#stream_message_recipient_stream').val();
-        focused_recipient.topic = $('#stream_message_recipient_topic').val();
+        const stream_name = $("#stream_message_recipient_stream").val();
+        focused_recipient.topic = $("#stream_message_recipient_topic").val();
         focused_recipient.stream = stream_name;
         const sub = stream_data.get_sub(stream_name);
         if (sub) {
@@ -36,7 +36,7 @@ exports.set_focused_recipient = function (msg_type) {
 
 function display_messages_normally() {
     const table = rows.get_table(current_msg_list.table_name);
-    table.find('.recipient_row').removeClass("message-fade");
+    table.find(".recipient_row").removeClass("message-fade");
 
     normal_display = true;
     floating_recipient_bar.update();
@@ -93,7 +93,7 @@ function fade_messages() {
 }
 
 exports.would_receive_message = function (user_id) {
-    if (focused_recipient.type === 'stream') {
+    if (focused_recipient.type === "stream") {
         const sub = stream_data.get_sub_by_id(focused_recipient.stream_id);
         if (!sub) {
             // If the stream isn't valid, there is no risk of a mix
@@ -114,10 +114,10 @@ const user_fade_config = {
         return buddy_list.get_key_from_li({li: li});
     },
     fade: function (li) {
-        return li.addClass('user-fade');
+        return li.addClass("user-fade");
     },
     unfade: function (li) {
-        return li.removeClass('user-fade');
+        return li.removeClass("user-fade");
     },
 };
 

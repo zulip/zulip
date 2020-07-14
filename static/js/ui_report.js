@@ -6,7 +6,7 @@
 
 exports.message = function (response, status_box, cls, remove_after) {
     if (cls === undefined) {
-        cls = 'alert';
+        cls = "alert";
     }
 
     // Note we use html() below, since we can rely on our callers escaping HTML
@@ -33,11 +33,11 @@ exports.error = function (response, xhr, status_box, remove_after) {
         }
     }
 
-    exports.message(response, status_box, 'alert-error', remove_after);
+    exports.message(response, status_box, "alert-error", remove_after);
 };
 
 exports.success = function (response, status_box, remove_after) {
-    exports.message(response, status_box, 'alert-success', remove_after);
+    exports.message(response, status_box, "alert-success", remove_after);
 };
 
 exports.generic_embed_error = function (error) {

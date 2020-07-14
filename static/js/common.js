@@ -3,7 +3,7 @@ if (module.hot) {
     module.hot.accept();
 }
 
-exports.status_classes = 'alert-error alert-success alert-info alert-warning';
+exports.status_classes = "alert-error alert-success alert-info alert-warning";
 
 exports.autofocus = function (selector) {
     $(() => {
@@ -21,12 +21,12 @@ exports.autofocus = function (selector) {
 // and also from the in-app password change interface.
 exports.password_quality = function (password, bar, password_field) {
     // We load zxcvbn.js asynchronously, so the variable might not be set.
-    if (typeof zxcvbn === 'undefined') {
+    if (typeof zxcvbn === "undefined") {
         return;
     }
 
-    const min_length = password_field.data('minLength');
-    const min_guesses = password_field.data('minGuesses');
+    const min_length = password_field.data("minLength");
+    const min_guesses = password_field.data("minGuesses");
 
     const result = zxcvbn(password);
     const acceptable = password.length >= min_length
@@ -44,23 +44,23 @@ exports.password_quality = function (password, bar, password_field) {
 
         // The bar bottoms out at 10% so there's always something
         // for the user to see.
-        bar.width(90 * bar_progress + 10 + '%')
-            .removeClass('bar-success bar-danger')
-            .addClass(acceptable ? 'bar-success' : 'bar-danger');
+        bar.width(90 * bar_progress + 10 + "%")
+            .removeClass("bar-success bar-danger")
+            .addClass(acceptable ? "bar-success" : "bar-danger");
     }
 
     return acceptable;
 };
 
 exports.password_warning = function (password, password_field) {
-    if (typeof zxcvbn === 'undefined') {
+    if (typeof zxcvbn === "undefined") {
         return;
     }
 
-    const min_length = password_field.data('minLength');
+    const min_length = password_field.data("minLength");
 
     if (password.length < min_length) {
-        return i18n.t('Password should be at least __length__ characters long', {length: min_length});
+        return i18n.t("Password should be at least __length__ characters long", {length: min_length});
     }
     return zxcvbn(password).feedback.warning || i18n.t("Password is too weak");
 };
@@ -75,7 +75,7 @@ exports.phrase_match = function (query, phrase) {
         return true;
     }
 
-    const parts = phrase.split(' ');
+    const parts = phrase.split(" ");
     for (i = 0; i < parts.length; i += 1) {
         if (parts[i].startsWith(query)) {
             return true;
@@ -87,7 +87,7 @@ exports.phrase_match = function (query, phrase) {
 exports.copy_data_attribute_value = function (elem, key) {
     // function to copy the value of data-key
     // attribute of the element to clipboard
-    const temp = $(document.createElement('input'));
+    const temp = $(document.createElement("input"));
     $("body").append(temp);
     temp.val(elem.data(key)).select();
     document.execCommand("copy");
@@ -106,20 +106,20 @@ exports.adjust_mac_shortcuts = function (key_elem_class, require_cmd_style) {
     }
 
     const keys_map = new Map([
-        ['Backspace', 'Delete'],
-        ['Enter', 'Return'],
-        ['Home', 'Fn + ←'],
-        ['End', 'Fn + →'],
-        ['PgUp', 'Fn + ↑'],
-        ['PgDn', 'Fn + ↓'],
-        ['Ctrl', '⌘'],
+        ["Backspace", "Delete"],
+        ["Enter", "Return"],
+        ["Home", "Fn + ←"],
+        ["End", "Fn + →"],
+        ["PgUp", "Fn + ↑"],
+        ["PgDn", "Fn + ↓"],
+        ["Ctrl", "⌘"],
     ]);
 
     $(key_elem_class).each(function () {
         let key_text = $(this).text();
         const keys = key_text.match(/[^\s+]+/g) || [];
 
-        if (key_text.includes('Ctrl') && require_cmd_style) {
+        if (key_text.includes("Ctrl") && require_cmd_style) {
             $(this).addClass("mac-cmd-key");
         }
 

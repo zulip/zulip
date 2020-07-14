@@ -20,46 +20,46 @@ const rewiremock = require("rewiremock/node");
     some things can happen later in a `launch` method.
 
 */
-const util = zrequire('util');
-set_global('document', {
+const util = zrequire("util");
+set_global("document", {
     location: {
-        protocol: 'http',
+        protocol: "http",
     },
 });
 
-set_global('csrf_token', 'whatever');
+set_global("csrf_token", "whatever");
 
-set_global('$', () => {});
-set_global('resize', {});
-set_global('page_params', {});
+set_global("$", () => {});
+set_global("resize", {});
+set_global("page_params", {});
 
 const ignore_modules = [
-    'activity',
-    'click_handlers',
-    'compose_pm_pill',
-    'copy_and_paste',
-    'drafts',
-    'emoji',
-    'emoji_picker',
-    'gear_menu',
-    'hashchange',
-    'hotspots',
+    "activity",
+    "click_handlers",
+    "compose_pm_pill",
+    "copy_and_paste",
+    "drafts",
+    "emoji",
+    "emoji_picker",
+    "gear_menu",
+    "hashchange",
+    "hotspots",
     // Accesses home_msg_list, which is a lot of complexity to setup
-    'message_fetch',
-    'message_scroll',
-    'message_viewport',
-    'panels',
-    'popovers',
-    'reload',
-    'scroll_bar',
-    'server_events',
-    'settings_sections',
-    'settings_panel_menu',
-    'settings_toggle',
-    'subs',
-    'timerender',
-    'ui',
-    'unread_ui',
+    "message_fetch",
+    "message_scroll",
+    "message_viewport",
+    "panels",
+    "popovers",
+    "reload",
+    "scroll_bar",
+    "server_events",
+    "settings_sections",
+    "settings_panel_menu",
+    "settings_toggle",
+    "subs",
+    "timerender",
+    "ui",
+    "unread_ui",
 ];
 
 for (const mod of ignore_modules) {
@@ -71,56 +71,56 @@ for (const mod of ignore_modules) {
 emoji.emojis_by_name = new Map();
 
 util.is_mobile = () => false;
-global.stub_templates(() => 'some-html');
+global.stub_templates(() => "some-html");
 ui.get_scroll_element = (element) => element;
 
-zrequire('alert_words');
-zrequire('hash_util');
-zrequire('echo');
-zrequire('colorspace');
-zrequire('stream_color');
-zrequire('stream_edit');
-zrequire('color_data');
-zrequire('stream_data');
-zrequire('muting');
-zrequire('condense');
-zrequire('spoilers');
-zrequire('lightbox');
-zrequire('overlays');
-zrequire('invite');
-zrequire('tab_bar');
-zrequire('narrow_state');
-zrequire('people');
-zrequire('presence');
-zrequire('search_pill_widget');
-zrequire('user_groups');
-zrequire('unread');
-zrequire('bot_data');
-set_global('marked', zrequire('marked', 'third/marked/lib/marked'));
-zrequire('fenced_code');
-zrequire('markdown');
-zrequire('upload');
-zrequire('compose');
-zrequire('composebox_typeahead');
-zrequire('narrow');
-zrequire('search_suggestion');
-zrequire('search');
-zrequire('tutorial');
-zrequire('notifications');
-zrequire('pm_conversations');
-zrequire('pm_list');
-zrequire('list_cursor');
-zrequire('keydown_util');
-zrequire('stream_sort');
-zrequire('stream_list');
-zrequire('topic_list');
-zrequire('topic_zoom');
-zrequire('sent_messages');
-zrequire('typing');
-zrequire('top_left_corner');
-zrequire('starred_messages');
-zrequire('user_status');
-zrequire('user_status_ui');
+zrequire("alert_words");
+zrequire("hash_util");
+zrequire("echo");
+zrequire("colorspace");
+zrequire("stream_color");
+zrequire("stream_edit");
+zrequire("color_data");
+zrequire("stream_data");
+zrequire("muting");
+zrequire("condense");
+zrequire("spoilers");
+zrequire("lightbox");
+zrequire("overlays");
+zrequire("invite");
+zrequire("tab_bar");
+zrequire("narrow_state");
+zrequire("people");
+zrequire("presence");
+zrequire("search_pill_widget");
+zrequire("user_groups");
+zrequire("unread");
+zrequire("bot_data");
+set_global("marked", zrequire("marked", "third/marked/lib/marked"));
+zrequire("fenced_code");
+zrequire("markdown");
+zrequire("upload");
+zrequire("compose");
+zrequire("composebox_typeahead");
+zrequire("narrow");
+zrequire("search_suggestion");
+zrequire("search");
+zrequire("tutorial");
+zrequire("notifications");
+zrequire("pm_conversations");
+zrequire("pm_list");
+zrequire("list_cursor");
+zrequire("keydown_util");
+zrequire("stream_sort");
+zrequire("stream_list");
+zrequire("topic_list");
+zrequire("topic_zoom");
+zrequire("sent_messages");
+zrequire("typing");
+zrequire("top_left_corner");
+zrequire("starred_messages");
+zrequire("user_status");
+zrequire("user_status_ui");
 
 const ui_init = rewiremock.proxy(
     () => zrequire("ui_init"),
@@ -131,15 +131,15 @@ const ui_init = rewiremock.proxy(
     },
 );
 
-set_global('$', global.make_zjquery());
+set_global("$", global.make_zjquery());
 
-const document_stub = $.create('document-stub');
+const document_stub = $.create("document-stub");
 document.to_$ = () => document_stub;
 document_stub.on = () => {};
 document_stub.idle = () => {};
 
-const window_stub = $.create('window-stub');
-set_global('to_$', () => window_stub);
+const window_stub = $.create("window-stub");
+set_global("to_$", () => window_stub);
 window_stub.idle = () => {};
 
 ui_init.initialize_kitchen_sink_stuff = () => {};
@@ -167,7 +167,7 @@ page_params.realm_filters = [];
 page_params.starred_messages = [];
 page_params.presences = [];
 
-const $tab_bar = $.create('#tab_bar');
+const $tab_bar = $.create("#tab_bar");
 $tab_bar.append = () => {};
 upload.setup_upload = () => {};
 
@@ -181,10 +181,10 @@ $("#private_message_recipient").typeahead = () => {};
 $("#compose-textarea").typeahead = () => {};
 $("#search_query").typeahead = () => {};
 
-const value_stub = $.create('value');
-const count_stub = $.create('count');
-count_stub.set_find_results('.value', value_stub);
-$(".top_left_starred_messages").set_find_results('.count', count_stub);
+const value_stub = $.create("value");
+const count_stub = $.create("count");
+count_stub.set_find_results(".value", value_stub);
+$(".top_left_starred_messages").set_find_results(".count", count_stub);
 
 $("#tab_bar .stream").length = 0;
 
@@ -196,6 +196,6 @@ $("#below-compose-content .video_link").toggle = () => {};
 
 $("#tab_bar .narrow_description > a").hover = () => {};
 
-run_test('initialize_everything', () => {
+run_test("initialize_everything", () => {
     ui_init.initialize_everything();
 });

@@ -1,30 +1,30 @@
-set_global('$', global.make_zjquery());
-zrequire('input_pill');
+set_global("$", global.make_zjquery());
+zrequire("input_pill");
 
-set_global('Handlebars', global.make_handlebars());
-zrequire('templates');
+set_global("Handlebars", global.make_handlebars());
+zrequire("templates");
 
-set_global('document', {});
+set_global("document", {});
 
 const noop = function () {};
-const example_img_link = 'http://example.com/example.png';
+const example_img_link = "http://example.com/example.png";
 
-set_global('ui_util', {
+set_global("ui_util", {
     place_caret_at_end: noop,
 });
 
-set_global('getSelection', () => ({
+set_global("getSelection", () => ({
     anchorOffset: 0,
 }));
 
 let id_seq = 0;
-run_test('set_up_ids', () => {
+run_test("set_up_ids", () => {
     // just get coverage on a simple one-liner:
     input_pill.random_id();
 
     input_pill.random_id = function () {
         id_seq += 1;
-        return 'some_id' + id_seq;
+        return "some_id" + id_seq;
     };
 });
 
@@ -41,24 +41,24 @@ function pill_html(value, data_id, img_src) {
         opts.img_src = img_src;
     }
 
-    return require('../../static/templates/input_pill.hbs')(opts);
+    return require("../../static/templates/input_pill.hbs")(opts);
 }
 
-run_test('basics', () => {
+run_test("basics", () => {
     const config = {};
 
-    blueslip.expect('error', 'Pill needs container.');
+    blueslip.expect("error", "Pill needs container.");
     input_pill.create(config);
 
-    const pill_input = $.create('pill_input');
-    const container = $.create('container');
-    container.set_find_results('.input', pill_input);
+    const pill_input = $.create("pill_input");
+    const container = $.create("container");
+    container.set_find_results(".input", pill_input);
 
-    blueslip.expect('error', 'Pill needs create_item_from_text');
+    blueslip.expect("error", "Pill needs create_item_from_text");
     config.container = container;
     input_pill.create(config);
 
-    blueslip.expect('error', 'Pill needs get_text_from_item');
+    blueslip.expect("error", "Pill needs get_text_from_item");
     config.create_item_from_text = noop;
     input_pill.create(config);
 
@@ -66,13 +66,13 @@ run_test('basics', () => {
     const widget = input_pill.create(config);
 
     const item = {
-        display_value: 'JavaScript',
-        language: 'js',
+        display_value: "JavaScript",
+        language: "js",
         img_src: example_img_link,
     };
 
     let inserted_before;
-    const expected_html = pill_html('JavaScript', 'some_id1', example_img_link);
+    const expected_html = pill_html("JavaScript", "some_id1", example_img_link);
 
     pill_input.before = function (elem) {
         inserted_before = true;
@@ -86,26 +86,26 @@ run_test('basics', () => {
 });
 
 function set_up() {
-    set_global('$', global.make_zjquery());
+    set_global("$", global.make_zjquery());
     const items = {
         blue: {
-            display_value: 'BLUE',
-            description: 'color of the sky',
+            display_value: "BLUE",
+            description: "color of the sky",
             img_src: example_img_link,
         },
 
         red: {
-            display_value: 'RED',
-            description: 'color of stop signs',
+            display_value: "RED",
+            description: "color of stop signs",
         },
 
         yellow: {
-            display_value: 'YELLOW',
-            description: 'color of bananas',
+            display_value: "YELLOW",
+            description: "color of bananas",
         },
     };
 
-    const pill_input = $.create('pill_input');
+    const pill_input = $.create("pill_input");
 
     pill_input.before = () => {};
 
@@ -113,8 +113,8 @@ function set_up() {
         return items[text];
     };
 
-    const container = $.create('container');
-    container.set_find_results('.input', pill_input);
+    const container = $.create("container");
+    container.set_find_results(".input", pill_input);
 
     const config = {
         container: container,
@@ -132,22 +132,22 @@ function set_up() {
     };
 }
 
-run_test('copy from pill', () => {
+run_test("copy from pill", () => {
     const info = set_up();
     const config = info.config;
     const container = info.container;
 
     const widget = input_pill.create(config);
-    widget.appendValue('blue,red');
+    widget.appendValue("blue,red");
 
-    const copy_handler = container.get_on_handler('copy', '.pill');
+    const copy_handler = container.get_on_handler("copy", ".pill");
 
     let copied_text;
 
     const pill_stub = {
         data: (field) => {
-            assert.equal(field, 'id');
-            return 'some_id2';
+            assert.equal(field, "id");
+            return "some_id2";
         },
     };
 
@@ -155,7 +155,7 @@ run_test('copy from pill', () => {
         originalEvent: {
             clipboardData: {
                 setData: (format, text) => {
-                    assert.equal(format, 'text/plain');
+                    assert.equal(format, "text/plain");
                     copied_text = text;
                 },
             },
@@ -163,14 +163,14 @@ run_test('copy from pill', () => {
         preventDefault: noop,
     };
 
-    container.set_find_results(':focus', pill_stub);
+    container.set_find_results(":focus", pill_stub);
 
     copy_handler(e);
 
-    assert.equal(copied_text, 'RED');
+    assert.equal(copied_text, "RED");
 });
 
-run_test('paste to input', () => {
+run_test("paste to input", () => {
     const info = set_up();
     const config = info.config;
     const container = info.container;
@@ -178,15 +178,15 @@ run_test('paste to input', () => {
 
     const widget = input_pill.create(config);
 
-    const paste_handler = container.get_on_handler('paste', '.input');
+    const paste_handler = container.get_on_handler("paste", ".input");
 
-    const paste_text = 'blue,yellow';
+    const paste_text = "blue,yellow";
 
     const e = {
         originalEvent: {
             clipboardData: {
                 getData: (format) => {
-                    assert.equal(format, 'text/plain');
+                    assert.equal(format, "text/plain");
                     return paste_text;
                 },
             },
@@ -195,8 +195,8 @@ run_test('paste to input', () => {
     };
 
     document.execCommand = (cmd, _, text) => {
-        assert.equal(cmd, 'insertText');
-        container.find('.input').text(text);
+        assert.equal(cmd, "insertText");
+        container.find(".input").text(text);
     };
 
     paste_handler(e);
@@ -215,15 +215,15 @@ run_test('paste to input', () => {
     assert(entered);
 });
 
-run_test('arrows on pills', () => {
+run_test("arrows on pills", () => {
     const info = set_up();
     const config = info.config;
     const container = info.container;
 
     const widget = input_pill.create(config);
-    widget.appendValue('blue,red');
+    widget.appendValue("blue,red");
 
-    const key_handler = container.get_on_handler('keydown', '.pill');
+    const key_handler = container.get_on_handler("keydown", ".pill");
 
     function test_key(c) {
         key_handler({
@@ -250,7 +250,7 @@ run_test('arrows on pills', () => {
         }),
     };
 
-    container.set_find_results('.pill:focus', pill_stub);
+    container.set_find_results(".pill:focus", pill_stub);
 
     // We use the same stub to test both arrows, since we don't
     // actually cause any real state changes here.  We stub out
@@ -262,20 +262,20 @@ run_test('arrows on pills', () => {
     assert(next_focused);
 });
 
-run_test('left arrow on input', () => {
+run_test("left arrow on input", () => {
     const info = set_up();
     const config = info.config;
     const container = info.container;
 
     const widget = input_pill.create(config);
-    widget.appendValue('blue,red');
+    widget.appendValue("blue,red");
 
     const LEFT_ARROW = 37;
-    const key_handler = container.get_on_handler('keydown', '.input');
+    const key_handler = container.get_on_handler("keydown", ".input");
 
     let last_pill_focused = false;
 
-    container.set_find_results('.pill', {
+    container.set_find_results(".pill", {
         last: () => ({
             focus: () => {
                 last_pill_focused = true;
@@ -290,7 +290,7 @@ run_test('left arrow on input', () => {
     assert(last_pill_focused);
 });
 
-run_test('comma', () => {
+run_test("comma", () => {
     const info = set_up();
     const config = info.config;
     const items = info.items;
@@ -298,7 +298,7 @@ run_test('comma', () => {
     const container = info.container;
 
     const widget = input_pill.create(config);
-    widget.appendValue('blue,red');
+    widget.appendValue("blue,red");
 
     assert.deepEqual(widget.items(), [
         items.blue,
@@ -306,9 +306,9 @@ run_test('comma', () => {
     ]);
 
     const COMMA = 188;
-    const key_handler = container.get_on_handler('keydown', '.input');
+    const key_handler = container.get_on_handler("keydown", ".input");
 
-    pill_input.text = () => ' yel';
+    pill_input.text = () => " yel";
 
     key_handler({
         keyCode: COMMA,
@@ -320,7 +320,7 @@ run_test('comma', () => {
         items.red,
     ]);
 
-    pill_input.text = () => ' yellow';
+    pill_input.text = () => " yellow";
 
     key_handler({
         keyCode: COMMA,
@@ -334,14 +334,14 @@ run_test('comma', () => {
     ]);
 });
 
-run_test('enter key with text', () => {
+run_test("enter key with text", () => {
     const info = set_up();
     const config = info.config;
     const items = info.items;
     const container = info.container;
 
     const widget = input_pill.create(config);
-    widget.appendValue('blue,red');
+    widget.appendValue("blue,red");
 
     assert.deepEqual(widget.items(), [
         items.blue,
@@ -349,14 +349,14 @@ run_test('enter key with text', () => {
     ]);
 
     const ENTER = 13;
-    const key_handler = container.get_on_handler('keydown', '.input');
+    const key_handler = container.get_on_handler("keydown", ".input");
 
     key_handler({
         keyCode: ENTER,
         preventDefault: noop,
         stopPropagation: noop,
         target: {
-            innerText: ' yellow ',
+            innerText: " yellow ",
         },
     });
 
@@ -367,7 +367,7 @@ run_test('enter key with text', () => {
     ]);
 });
 
-run_test('insert_remove', () => {
+run_test("insert_remove", () => {
     const info = set_up();
 
     const config = info.config;
@@ -393,15 +393,15 @@ run_test('insert_remove', () => {
         removed = true;
     });
 
-    widget.appendValue('blue,chartreuse,red,yellow,mauve');
+    widget.appendValue("blue,chartreuse,red,yellow,mauve");
 
     assert(created);
     assert(!removed);
 
     assert.deepEqual(inserted_html, [
-        pill_html('BLUE', 'some_id1', example_img_link),
-        pill_html('RED', 'some_id2'),
-        pill_html('YELLOW', 'some_id3'),
+        pill_html("BLUE", "some_id1", example_img_link),
+        pill_html("RED", "some_id2"),
+        pill_html("YELLOW", "some_id3"),
     ]);
 
     assert.deepEqual(widget.items(), [
@@ -410,20 +410,20 @@ run_test('insert_remove', () => {
         items.yellow,
     ]);
 
-    assert.equal(pill_input.text(), 'chartreuse, mauve');
+    assert.equal(pill_input.text(), "chartreuse, mauve");
 
     assert.equal(widget.is_pending(), true);
     widget.clear_text();
-    assert.equal(pill_input.text(), '');
+    assert.equal(pill_input.text(), "");
     assert.equal(widget.is_pending(), false);
 
     const BACKSPACE = 8;
-    let key_handler = container.get_on_handler('keydown', '.input');
+    let key_handler = container.get_on_handler("keydown", ".input");
 
     key_handler({
         keyCode: BACKSPACE,
         target: {
-            innerText: '',
+            innerText: "",
         },
         preventDefault: noop,
     });
@@ -446,14 +446,14 @@ run_test('insert_remove', () => {
     const focus_pill_stub = {
         next: () => next_pill_stub,
         data: (field) => {
-            assert.equal(field, 'id');
-            return 'some_id1';
+            assert.equal(field, "id");
+            return "some_id1";
         },
     };
 
-    container.set_find_results('.pill:focus', focus_pill_stub);
+    container.set_find_results(".pill:focus", focus_pill_stub);
 
-    key_handler = container.get_on_handler('keydown', '.pill');
+    key_handler = container.get_on_handler("keydown", ".pill");
     key_handler({
         keyCode: BACKSPACE,
         preventDefault: noop,
@@ -462,7 +462,7 @@ run_test('insert_remove', () => {
     assert(next_pill_focused);
 });
 
-run_test('exit button on pill', () => {
+run_test("exit button on pill", () => {
     const info = set_up();
 
     const config = info.config;
@@ -471,7 +471,7 @@ run_test('exit button on pill', () => {
 
     const widget = input_pill.create(config);
 
-    widget.appendValue('blue,red');
+    widget.appendValue("blue,red");
 
     let next_pill_focused = false;
 
@@ -484,15 +484,15 @@ run_test('exit button on pill', () => {
     const curr_pill_stub = {
         next: () => next_pill_stub,
         data: (field) => {
-            assert.equal(field, 'id');
-            return 'some_id1';
+            assert.equal(field, "id");
+            return "some_id1";
         },
     };
 
     const exit_button_stub = {
         to_$: () => ({
             closest: (sel) => {
-                assert.equal(sel, '.pill');
+                assert.equal(sel, ".pill");
                 return curr_pill_stub;
             },
         }),
@@ -501,7 +501,7 @@ run_test('exit button on pill', () => {
     const e = {
         stopPropagation: noop,
     };
-    const exit_click_handler = container.get_on_handler('click', '.exit');
+    const exit_click_handler = container.get_on_handler("click", ".exit");
 
     exit_click_handler.call(exit_button_stub, e);
 
@@ -513,7 +513,7 @@ run_test('exit button on pill', () => {
 
 });
 
-run_test('misc things', () => {
+run_test("misc things", () => {
     const info = set_up();
 
     const config = info.config;
@@ -523,14 +523,14 @@ run_test('misc things', () => {
     const widget = input_pill.create(config);
 
     // animation
-    const animation_end_handler = container.get_on_handler('animationend', '.input');
+    const animation_end_handler = container.get_on_handler("animationend", ".input");
 
     let shake_class_removed = false;
 
     const input_stub = {
         to_$: () => ({
             removeClass: (cls) => {
-                assert.equal(cls, 'shake');
+                assert.equal(cls, "shake");
                 shake_class_removed = true;
             },
         }),
@@ -540,16 +540,16 @@ run_test('misc things', () => {
     assert(shake_class_removed);
 
     // bad data
-    blueslip.expect('error', 'no display_value returned');
-    widget.appendValidatedData('this-has-no-item-attribute');
+    blueslip.expect("error", "no display_value returned");
+    widget.appendValidatedData("this-has-no-item-attribute");
 
     // click on container
-    const container_click_handler = container.get_on_handler('click');
+    const container_click_handler = container.get_on_handler("click");
 
-    const stub = $.create('the-pill-container');
-    stub.set_find_results('.input', pill_input);
+    const stub = $.create("the-pill-container");
+    stub.set_find_results(".input", pill_input);
     stub.is = (sel) => {
-        assert.equal(sel, '.pill-container');
+        assert.equal(sel, ".pill-container");
         return true;
     };
 

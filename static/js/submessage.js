@@ -27,7 +27,7 @@ exports.process_submessages = function (in_opts) {
     try {
         return exports.do_process_submessages(in_opts);
     } catch (err) {
-        blueslip.error('in process_submessages: ' + err.message);
+        blueslip.error("in process_submessages: " + err.message);
     }
 };
 
@@ -107,8 +107,8 @@ exports.handle_event = function (submsg) {
     // Right now, our only use of submessages is widgets.
     const msg_type = submsg.msg_type;
 
-    if (msg_type !== 'widget') {
-        blueslip.warn('unknown msg_type: ' + msg_type);
+    if (msg_type !== "widget") {
+        blueslip.warn("unknown msg_type: " + msg_type);
         return;
     }
 
@@ -117,7 +117,7 @@ exports.handle_event = function (submsg) {
     try {
         data = JSON.parse(submsg.content);
     } catch (err) {
-        blueslip.error('server sent us invalid json in handle_event: ' + submsg.content);
+        blueslip.error("server sent us invalid json in handle_event: " + submsg.content);
         return;
     }
 
@@ -130,7 +130,7 @@ exports.handle_event = function (submsg) {
 
 exports.make_server_callback = function (message_id) {
     return function (opts) {
-        const url = '/json/submessage';
+        const url = "/json/submessage";
 
         channel.post({
             url: url,

@@ -41,11 +41,11 @@ exports.build_default_stream_table = function () {
             },
         },
         parent_container: $("#admin-default-streams-list").expectOne(),
-        init_sort: ['alphabetic', 'name'],
-        simplebar_container: $('#admin-default-streams-list .progressive-table-wrapper'),
+        init_sort: ["alphabetic", "name"],
+        simplebar_container: $("#admin-default-streams-list .progressive-table-wrapper"),
     });
 
-    loading.destroy_indicator($('#admin_page_default_streams_loading_indicator'));
+    loading.destroy_indicator($("#admin_page_default_streams_loading_indicator"));
 };
 
 exports.update_default_streams_table = function () {
@@ -64,7 +64,7 @@ function make_stream_default(stream_id) {
     default_stream_status.hide();
 
     channel.post({
-        url: '/json/default_streams',
+        url: "/json/default_streams",
         data: data,
         error: function (xhr) {
             if (xhr.status.toString().charAt(0) === "4") {
@@ -99,7 +99,7 @@ exports.build_page = function () {
 
     exports.update_default_streams_table();
 
-    $('.create_default_stream').keypress((e) => {
+    $(".create_default_stream").keypress((e) => {
         if (e.which === 13) {
             e.preventDefault();
             e.stopPropagation();
@@ -109,7 +109,7 @@ exports.build_page = function () {
         }
     });
 
-    $('.create_default_stream').typeahead({
+    $(".create_default_stream").typeahead({
         items: 5,
         fixed: true,
         source: function () {

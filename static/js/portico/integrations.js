@@ -1,7 +1,7 @@
-import * as google_analytics from './google-analytics.js';
-import blueslip from './../blueslip';
+import * as google_analytics from "./google-analytics.js";
+import blueslip from "./../blueslip";
 
-import { path_parts } from './landing-page';
+import { path_parts } from "./landing-page";
 
 
 // these constants are populated immediately with data from the DOM on page load
@@ -10,17 +10,17 @@ const INTEGRATIONS = new Map();
 const CATEGORIES = new Map();
 
 function load_data() {
-    $('.integration-lozenge').toArray().forEach((integration) => {
-        const name = $(integration).data('name');
-        const display_name = $(integration).find('.integration-name').text().trim();
+    $(".integration-lozenge").toArray().forEach((integration) => {
+        const name = $(integration).data("name");
+        const display_name = $(integration).find(".integration-name").text().trim();
 
         if (display_name && name) {
             INTEGRATIONS.set(name, display_name);
         }
     });
 
-    $('.integration-category').toArray().forEach((category) => {
-        const name = $(category).data('category');
+    $(".integration-category").toArray().forEach((category) => {
+        const name = $(category).data("category");
         const display_name = $(category).text().trim();
 
         if (display_name && name) {
@@ -30,31 +30,31 @@ function load_data() {
 }
 
 const INITIAL_STATE = {
-    category: 'all',
+    category: "all",
     integration: null,
-    query: '',
+    query: "",
 };
 
 let state = Object.assign({}, INITIAL_STATE);
 
 
 function adjust_font_sizing() {
-    $('.integration-lozenge').toArray().forEach((integration) => {
-        const $integration_name = $(integration).find('.integration-name');
-        const $integration_category = $(integration).find('.integration-category');
+    $(".integration-lozenge").toArray().forEach((integration) => {
+        const $integration_name = $(integration).find(".integration-name");
+        const $integration_category = $(integration).find(".integration-category");
 
         // if the text has wrapped to two lines, decrease font-size
         if ($integration_name.height() > 30) {
-            $integration_name.css('font-size', '1em');
+            $integration_name.css("font-size", "1em");
             if ($integration_name.height() > 30) {
-                $integration_name.css('font-size', '.95em');
+                $integration_name.css("font-size", ".95em");
             }
         }
 
         if ($integration_category.height() > 30) {
-            $integration_category.css('font-size', '.8em');
+            $integration_category.css("font-size", ".8em");
             if ($integration_category.height() > 30) {
-                $integration_category.css('font-size', '.75em');
+                $integration_category.css("font-size", ".75em");
             }
         }
     });
@@ -64,32 +64,32 @@ function update_path() {
     let next_path;
     if (state.integration) {
         next_path = $('.integration-lozenge[data-name="' + state.integration + '"]')
-            .closest('a').attr('href');
+            .closest("a").attr("href");
     } else if (state.category) {
         next_path = $('.integration-category[data-category="' + state.category + '"]')
-            .closest('a').attr('href');
+            .closest("a").attr("href");
     } else {
-        next_path = '/';
+        next_path = "/";
     }
 
-    window.history.pushState(state, '', next_path);
+    window.history.pushState(state, "", next_path);
     google_analytics.config({page_path: next_path});
 }
 
 function update_categories() {
-    $('.integration-lozenges').css('opacity', 0);
+    $(".integration-lozenges").css("opacity", 0);
 
-    $('.integration-category').removeClass('selected');
-    $('[data-category="' + state.category + '"]').addClass('selected');
+    $(".integration-category").removeClass("selected");
+    $('[data-category="' + state.category + '"]').addClass("selected");
 
-    const $dropdown_label = $('.integration-categories-dropdown .dropdown-category-label');
+    const $dropdown_label = $(".integration-categories-dropdown .dropdown-category-label");
     if (state.category === INITIAL_STATE.category) {
-        $dropdown_label.text(i18n.t('Filter by category'));
+        $dropdown_label.text(i18n.t("Filter by category"));
     } else {
         $dropdown_label.text(CATEGORIES.get(state.category));
     }
 
-    $('.integration-lozenges').animate(
+    $(".integration-lozenges").animate(
         { opacity: 1 },
         { duration: 400 },
     );
@@ -100,30 +100,30 @@ function update_categories() {
 const update_integrations = _.debounce(() => {
     const max_scrollY = window.scrollY;
 
-    const integrations = $('.integration-lozenges').children().toArray();
+    const integrations = $(".integration-lozenges").children().toArray();
     integrations.forEach((integration) => {
-        const $integration = $(integration).find('.integration-lozenge');
-        const $integration_category = $integration.find('.integration-category');
+        const $integration = $(integration).find(".integration-lozenge");
+        const $integration_category = $integration.find(".integration-category");
 
-        if (state.category !== 'all') {
-            $integration_category.css('display', 'none');
-            $integration.addClass('without-category');
+        if (state.category !== "all") {
+            $integration_category.css("display", "none");
+            $integration.addClass("without-category");
         } else {
-            $integration_category.css('display', '');
-            $integration.removeClass('without-category');
+            $integration_category.css("display", "");
+            $integration.removeClass("without-category");
         }
 
-        if (!$integration.hasClass('integration-create-your-own')) {
-            const display_name = INTEGRATIONS.get($integration.data('name'));
+        if (!$integration.hasClass("integration-create-your-own")) {
+            const display_name = INTEGRATIONS.get($integration.data("name"));
             const display =
                 common.phrase_match(state.query, display_name) &&
-                ($integration.data('categories').includes(CATEGORIES.get(state.category)) ||
-                 state.category === 'all');
+                ($integration.data("categories").includes(CATEGORIES.get(state.category)) ||
+                 state.category === "all");
 
             if (display) {
-                $integration.css('display', 'inline-block');
+                $integration.css("display", "inline-block");
             } else {
-                $integration.css('display', 'none');
+                $integration.css("display", "none");
             }
         }
 
@@ -135,16 +135,16 @@ const update_integrations = _.debounce(() => {
 
 function hide_catalog_show_integration() {
     const $lozenge_icon = $(".integration-lozenge.integration-" + state.integration).clone(false);
-    $lozenge_icon.removeClass('legacy');
+    $lozenge_icon.removeClass("legacy");
 
-    const categories = $('.integration-' + state.integration).data('categories')
+    const categories = $(".integration-" + state.integration).data("categories")
         .slice(1, -1)
-        .split(',')
+        .split(",")
         .map((category) => category.trim().slice(1, -1));
 
     function show_integration(doc) {
-        $('#integration-instructions-group .name').text(INTEGRATIONS.get(state.integration));
-        $('#integration-instructions-group .categories .integration-category').remove();
+        $("#integration-instructions-group .name").text(INTEGRATIONS.get(state.integration));
+        $("#integration-instructions-group .categories .integration-category").remove();
         categories.forEach((category) => {
             let link;
             for (const [name, display_name] of CATEGORIES) {
@@ -152,31 +152,31 @@ function hide_catalog_show_integration() {
                     link = name;
                 }
             }
-            const category_el = $('<a></a>')
-                .attr('href', '/integrations/' + link)
+            const category_el = $("<a></a>")
+                .attr("href", "/integrations/" + link)
                 .append('<h3 class="integration-category"></h3>');
-            category_el.find('.integration-category')
-                .attr('data-category', link)
+            category_el.find(".integration-category")
+                .attr("data-category", link)
                 .text(category);
-            $('#integration-instructions-group .categories').append(category_el);
+            $("#integration-instructions-group .categories").append(category_el);
         });
-        $('#integration-instructions-group').css({
+        $("#integration-instructions-group").css({
             opacity: 0,
-            display: 'flex',
+            display: "flex",
         });
-        $('.integration-instructions').css('display', 'none');
-        $('#' + state.integration + '.integration-instructions .help-content').html(doc);
-        $('#integration-instruction-block .integration-lozenge').remove();
+        $(".integration-instructions").css("display", "none");
+        $("#" + state.integration + ".integration-instructions .help-content").html(doc);
+        $("#integration-instruction-block .integration-lozenge").remove();
         $("#integration-instruction-block")
             .append($lozenge_icon)
-            .css('display', 'flex');
-        $('.integration-instructions#' + state.integration).css('display', 'block');
+            .css("display", "flex");
+        $(".integration-instructions#" + state.integration).css("display", "block");
 
         $("html, body").animate(
             { scrollTop: 0 },
             { duration: 200 },
         );
-        $('#integration-instructions-group').animate(
+        $("#integration-instructions-group").animate(
             { opacity: 1 },
             { duration: 300 },
         );
@@ -185,8 +185,8 @@ function hide_catalog_show_integration() {
     }
 
     function hide_catalog(doc) {
-        $(".integration-categories-dropdown").css('display', 'none');
-        $(".integrations .catalog").addClass('hide');
+        $(".integration-categories-dropdown").css("display", "none");
+        $(".integrations .catalog").addClass("hide");
         $(".extra, #integration-main-text, #integration-search").css("display", "none");
 
         show_integration(doc);
@@ -194,8 +194,8 @@ function hide_catalog_show_integration() {
     }
 
     $.get({
-        url: '/integrations/doc-html/' + state.integration,
-        dataType: 'html',
+        url: "/integrations/doc-html/" + state.integration,
+        dataType: "html",
         success: hide_catalog,
         error: function (err) {
             blueslip.error("Integration documentation for '" + state.integration + "' not found.", err);
@@ -210,16 +210,16 @@ function hide_integration_show_catalog() {
             { duration: 200 },
         );
 
-        $(".integration-categories-dropdown").css('display', '');
-        $(".integrations .catalog").removeClass('hide');
+        $(".integration-categories-dropdown").css("display", "");
+        $(".integrations .catalog").removeClass("hide");
         $(".extra, #integration-main-text, #integration-search").css("display", "block");
         adjust_font_sizing();
     }
 
     function hide_integration() {
-        $('#integration-instruction-block').css('display', 'none');
-        $('#integration-instructions-group').css('display', 'none');
-        $('.inner-content').css({ padding: '' });
+        $("#integration-instruction-block").css("display", "none");
+        $("#integration-instructions-group").css("display", "none");
+        $(".inner-content").css({ padding: "" });
         $("#integration-instruction-block .integration-lozenge").remove();
         show_catalog();
     }
@@ -232,7 +232,7 @@ function get_state_from_path() {
     result.query = state.query;
 
     const parts = path_parts();
-    if (parts[1] === 'doc' && INTEGRATIONS.get(parts[2])) {
+    if (parts[1] === "doc" && INTEGRATIONS.get(parts[2])) {
         result.integration = parts[2];
     } else if (CATEGORIES.has(parts[1])) {
         result.category = parts[1];
@@ -269,28 +269,28 @@ function render(next_state) {
 
 function dispatch(action, payload) {
     switch (action) {
-    case 'CHANGE_CATEGORY':
+    case "CHANGE_CATEGORY":
         render(Object.assign({}, state, {
             category: payload.category,
         }));
         update_path();
         break;
 
-    case 'SHOW_INTEGRATION':
+    case "SHOW_INTEGRATION":
         render(Object.assign({}, state, {
             integration: payload.integration,
         }));
         update_path();
         break;
 
-    case 'HIDE_INTEGRATION':
+    case "HIDE_INTEGRATION":
         render(Object.assign({}, state, {
             integration: null,
         }));
         update_path();
         break;
 
-    case 'SHOW_CATEGORY':
+    case "SHOW_CATEGORY":
         render(Object.assign({}, state, {
             integration: null,
             category: payload.category,
@@ -298,70 +298,70 @@ function dispatch(action, payload) {
         update_path();
         break;
 
-    case 'UPDATE_QUERY':
+    case "UPDATE_QUERY":
         render(Object.assign({}, state, {
             query: payload.query,
         }));
         break;
 
-    case 'LOAD_PATH':
+    case "LOAD_PATH":
         render(get_state_from_path());
         google_analytics.config({page_path: window.location.pathname});
         break;
 
     default:
-        blueslip.error('Invalid action dispatched on /integrations.');
+        blueslip.error("Invalid action dispatched on /integrations.");
         break;
     }
 }
 
 function toggle_categories_dropdown() {
-    const $dropdown_list = $('.integration-categories-dropdown .dropdown-list');
+    const $dropdown_list = $(".integration-categories-dropdown .dropdown-list");
     $dropdown_list.slideToggle(250);
 }
 
 function integration_events() {
     $('#integration-search input[type="text"]').keypress((e) => {
-        const integrations = $('.integration-lozenges').children().toArray();
-        if (e.which === 13 && e.target.value !== '') {
+        const integrations = $(".integration-lozenges").children().toArray();
+        if (e.which === 13 && e.target.value !== "") {
             for (let i = 0; i < integrations.length; i += 1) {
-                const integration = $(integrations[i]).find('.integration-lozenge');
+                const integration = $(integrations[i]).find(".integration-lozenge");
 
-                if ($(integration).css('display') !== 'none') {
-                    $(integration).closest('a')[0].click();
+                if ($(integration).css("display") !== "none") {
+                    $(integration).closest("a")[0].click();
                     break;
                 }
             }
         }
     });
 
-    $('.integration-categories-dropdown .dropdown-toggle').click(() => {
+    $(".integration-categories-dropdown .dropdown-toggle").click(() => {
         toggle_categories_dropdown();
     });
 
-    $('.integration-instruction-block').on('click', 'a .integration-category', (e) => {
-        const category = $(e.target).data('category');
-        dispatch('SHOW_CATEGORY', { category: category });
+    $(".integration-instruction-block").on("click", "a .integration-category", (e) => {
+        const category = $(e.target).data("category");
+        dispatch("SHOW_CATEGORY", { category: category });
         return false;
     });
 
-    $('.integrations a .integration-category').on('click', (e) => {
-        const category = $(e.target).data('category');
-        dispatch('CHANGE_CATEGORY', { category: category });
+    $(".integrations a .integration-category").on("click", (e) => {
+        const category = $(e.target).data("category");
+        dispatch("CHANGE_CATEGORY", { category: category });
         toggle_categories_dropdown();
         return false;
     });
 
-    $('.integrations a .integration-lozenge').on('click', (e) => {
-        if (!$(e.target).closest('.integration-lozenge').hasClass('integration-create-your-own')) {
-            const integration = $(e.target).closest('.integration-lozenge').data('name');
-            dispatch('SHOW_INTEGRATION', { integration: integration });
+    $(".integrations a .integration-lozenge").on("click", (e) => {
+        if (!$(e.target).closest(".integration-lozenge").hasClass("integration-create-your-own")) {
+            const integration = $(e.target).closest(".integration-lozenge").data("name");
+            dispatch("SHOW_INTEGRATION", { integration: integration });
             return false;
         }
     });
 
-    $('a#integration-list-link span, a#integration-list-link i').on('click', () => {
-        dispatch('HIDE_INTEGRATION');
+    $("a#integration-list-link span, a#integration-list-link i").on("click", () => {
+        dispatch("HIDE_INTEGRATION");
         return false;
     });
 
@@ -369,25 +369,25 @@ function integration_events() {
     // the input event.
     $(".integrations .searchbar input[type='text']")
         .focus()
-        .on('input', (e) => {
-            dispatch('UPDATE_QUERY', { query: e.target.value.toLowerCase() });
+        .on("input", (e) => {
+            dispatch("UPDATE_QUERY", { query: e.target.value.toLowerCase() });
         });
 
     $(window).scroll(() => {
         if (document.body.scrollTop > 330) {
-            $('.integration-categories-sidebar').addClass('sticky');
+            $(".integration-categories-sidebar").addClass("sticky");
         } else {
-            $('.integration-categories-sidebar').removeClass('sticky');
+            $(".integration-categories-sidebar").removeClass("sticky");
         }
     });
 
-    $(window).on('resize', () => {
+    $(window).on("resize", () => {
         adjust_font_sizing();
     });
 
-    $(window).on('popstate', () => {
-        if (window.location.pathname.startsWith('/integrations')) {
-            dispatch('LOAD_PATH');
+    $(window).on("popstate", () => {
+        if (window.location.pathname.startsWith("/integrations")) {
+            dispatch("LOAD_PATH");
         } else {
             window.location = window.location.href;
         }
@@ -398,5 +398,5 @@ function integration_events() {
 $(() => {
     integration_events();
     load_data();
-    dispatch('LOAD_PATH');
+    dispatch("LOAD_PATH");
 });

@@ -1,17 +1,17 @@
-set_global('narrow_state', {});
-set_global('unread', {});
-set_global('muting', {});
-set_global('message_list', {});
+set_global("narrow_state", {});
+set_global("unread", {});
+set_global("muting", {});
+set_global("message_list", {});
 
-zrequire('hash_util');
-zrequire('stream_data');
-zrequire('unread');
-zrequire('stream_topic_history');
-const topic_list_data = zrequire('topic_list_data');
+zrequire("hash_util");
+zrequire("stream_data");
+zrequire("unread");
+zrequire("stream_topic_history");
+const topic_list_data = zrequire("topic_list_data");
 
 const general = {
     stream_id: 556,
-    name: 'general',
+    name: "general",
 };
 
 stream_data.add_sub(general);
@@ -28,7 +28,7 @@ function get_list_info(zoomed) {
         stream_id, zoomed);
 }
 
-run_test('get_list_info w/real stream_topic_history', () => {
+run_test("get_list_info w/real stream_topic_history", () => {
     clear();
 
     let list_info;
@@ -41,7 +41,7 @@ run_test('get_list_info w/real stream_topic_history', () => {
     });
 
     for (const i of _.range(7)) {
-        const topic_name = 'topic ' + i;
+        const topic_name = "topic " + i;
         stream_topic_history.add_message({
             stream_id: general.stream_id,
             topic_name: topic_name,
@@ -49,7 +49,7 @@ run_test('get_list_info w/real stream_topic_history', () => {
         });
     }
 
-    narrow_state.topic = () => 'topic 6';
+    narrow_state.topic = () => "topic 6";
 
     list_info = get_list_info();
     assert.equal(list_info.items.length, 5);
@@ -60,9 +60,9 @@ run_test('get_list_info w/real stream_topic_history', () => {
         is_active_topic: true,
         is_muted: false,
         is_zero: true,
-        topic_name: 'topic 6',
+        topic_name: "topic 6",
         unread: 0,
-        url: '#narrow/stream/556-general/topic/topic.206',
+        url: "#narrow/stream/556-general/topic/topic.206",
     });
 
     // If we zoom in, we'll show all 7 topics.
@@ -73,14 +73,14 @@ run_test('get_list_info w/real stream_topic_history', () => {
     assert.equal(list_info.num_possible_topics, 7);
 });
 
-run_test('get_list_info unreads', () => {
+run_test("get_list_info unreads", () => {
     clear();
 
     let list_info;
 
     // Going forward, we just stub get_recent_topic_names
     // for simpler test setup.
-    stream_topic_history.get_recent_topic_names = () => _.range(15).map((i) => 'topic ' + i);
+    stream_topic_history.get_recent_topic_names = () => _.range(15).map((i) => "topic " + i);
 
     const unread_cnt = new Map();
     unread.num_unread_for_topic = (stream_id, topic_name) => {
@@ -97,8 +97,8 @@ run_test('get_list_info unreads', () => {
         So first we'll get 7 topics, where 2 are
         unread.
     */
-    unread_cnt.set('topic 8', 8);
-    unread_cnt.set('topic 9', 9);
+    unread_cnt.set("topic 8", 8);
+    unread_cnt.set("topic 9", 9);
 
     list_info = get_list_info();
     assert.equal(list_info.items.length, 7);
@@ -108,17 +108,17 @@ run_test('get_list_info unreads', () => {
     assert.deepEqual(
         list_info.items.map((li) => li.topic_name),
         [
-            'topic 0',
-            'topic 1',
-            'topic 2',
-            'topic 3',
-            'topic 4',
-            'topic 8',
-            'topic 9',
+            "topic 0",
+            "topic 1",
+            "topic 2",
+            "topic 3",
+            "topic 4",
+            "topic 8",
+            "topic 9",
         ]);
 
-    unread_cnt.set('topic 6', 6);
-    unread_cnt.set('topic 7', 7);
+    unread_cnt.set("topic 6", 6);
+    unread_cnt.set("topic 7", 7);
 
     list_info = get_list_info();
     assert.equal(list_info.items.length, 8);
@@ -128,23 +128,23 @@ run_test('get_list_info unreads', () => {
     assert.deepEqual(
         list_info.items.map((li) => li.topic_name),
         [
-            'topic 0',
-            'topic 1',
-            'topic 2',
-            'topic 3',
-            'topic 4',
-            'topic 6',
-            'topic 7',
-            'topic 8',
+            "topic 0",
+            "topic 1",
+            "topic 2",
+            "topic 3",
+            "topic 4",
+            "topic 6",
+            "topic 7",
+            "topic 8",
         ]);
 
-    unread_cnt.set('topic 4', 4);
-    unread_cnt.set('topic 5', 5);
-    unread_cnt.set('topic 13', 13);
+    unread_cnt.set("topic 4", 4);
+    unread_cnt.set("topic 5", 5);
+    unread_cnt.set("topic 13", 13);
 
     muting.is_topic_muted = (stream_id, topic_name) => {
         assert.equal(stream_id, general.stream_id);
-        return topic_name === 'topic 4';
+        return topic_name === "topic 4";
     };
 
     list_info = get_list_info();
@@ -155,13 +155,13 @@ run_test('get_list_info unreads', () => {
     assert.deepEqual(
         list_info.items.map((li) => li.topic_name),
         [
-            'topic 0',
-            'topic 1',
-            'topic 2',
-            'topic 3',
-            'topic 5',
-            'topic 6',
-            'topic 7',
-            'topic 8',
+            "topic 0",
+            "topic 1",
+            "topic 2",
+            "topic 3",
+            "topic 5",
+            "topic 6",
+            "topic 7",
+            "topic 8",
         ]);
 });

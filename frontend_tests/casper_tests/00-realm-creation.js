@@ -1,12 +1,12 @@
-var common = require('../casper_lib/common.js');
+var common = require("../casper_lib/common.js");
 
-var email = 'alice@test.example.com';
-var subdomain = 'testsubdomain';
-var organization_name = 'Awesome Organization';
+var email = "alice@test.example.com";
+var subdomain = "testsubdomain";
+var organization_name = "Awesome Organization";
 var host = "zulipdev.com:9981";
-var realm_host = "testsubdomain" + '.' + host;
+var realm_host = "testsubdomain" + "." + host;
 
-casper.start('http://' + host + '/new/');
+casper.start("http://" + host + "/new/");
 
 casper.then(function () {
     // Submit the email for realm creation
@@ -17,58 +17,58 @@ casper.then(function () {
     });
     // Make sure confirmation email is send
     this.waitWhileVisible('form[name="email_form"]', function () {
-        var regex = new RegExp('^http://[^/]+/accounts/new/send_confirm/' + email);
-        this.test.assertUrlMatch(regex, 'Confirmation mail send');
+        var regex = new RegExp("^http://[^/]+/accounts/new/send_confirm/" + email);
+        this.test.assertUrlMatch(regex, "Confirmation mail send");
     });
 });
 
 // Special endpoint enabled only during tests for extracting confirmation key
-casper.thenOpen('http://' + host + '/confirmation_key/');
+casper.thenOpen("http://" + host + "/confirmation_key/");
 
 // Open the confirmation URL
 casper.then(function () {
     var confirmation_key = JSON.parse(this.getPageContent()).confirmation_key;
-    var confirmation_url = 'http://' + host + '/accounts/do_confirm/' + confirmation_key;
+    var confirmation_url = "http://" + host + "/accounts/do_confirm/" + confirmation_key;
     this.thenOpen(confirmation_url);
 });
 
 // Make sure the realm creation page is loaded correctly
 casper.then(function () {
-    this.waitUntilVisible('.pitch', function () {
-        this.test.assertSelectorContains('.pitch', "We just need you to do one last thing.");
+    this.waitUntilVisible(".pitch", function () {
+        this.test.assertSelectorContains(".pitch", "We just need you to do one last thing.");
     });
 
-    this.waitUntilVisible('#id_email', function () {
+    this.waitUntilVisible("#id_email", function () {
         this.test.assertEvalEquals(function () {
-            return $('#id_email').attr('placeholder');
+            return $("#id_email").attr("placeholder");
         }, email);
     });
 
-    this.waitUntilVisible('label[for=id_team_name]', function () {
-        this.test.assertSelectorHasText('label[for=id_team_name]', 'Organization name');
+    this.waitUntilVisible("label[for=id_team_name]", function () {
+        this.test.assertSelectorHasText("label[for=id_team_name]", "Organization name");
     });
 });
 
 casper.then(function () {
     this.waitUntilVisible('form[action^="/accounts/register/"]', function () {
         this.fill('form[action^="/accounts/register/"]', {
-            full_name: 'Alice',
+            full_name: "Alice",
             realm_name: organization_name,
             realm_subdomain: subdomain,
-            password: 'passwordwhichisreallyreallyreallycomplexandnotguessable',
+            password: "passwordwhichisreallyreallyreallycomplexandnotguessable",
             terms: true,
             realm_in_root_domain: false,
         }, true);
     });
 
     this.waitWhileVisible('form[action^="/accounts/register/"]', function () {
-        casper.test.assertUrlMatch(realm_host + '/', 'Home page loaded');
+        casper.test.assertUrlMatch(realm_host + "/", "Home page loaded");
     });
 });
 
 casper.then(function () {
     // The user is logged in to the newly created realm and the app is loaded
-    casper.waitUntilVisible('.message_row', function () {
+    casper.waitUntilVisible(".message_row", function () {
         this.test.assertTitleMatch(/ - Zulip$/, "Successfully logged into Zulip webapp");
     }, null, 20000);
 });

@@ -24,9 +24,9 @@ let uppy;
 exports.all_everyone_warn_threshold = 15;
 exports.announce_warn_threshold = 60;
 
-exports.uploads_domain = document.location.protocol + '//' + document.location.host;
-exports.uploads_path = '/user_uploads';
-exports.uploads_re = new RegExp("\\]\\(" + exports.uploads_domain + "(" + exports.uploads_path + "[^\\)]+)\\)", 'g');
+exports.uploads_domain = document.location.protocol + "//" + document.location.host;
+exports.uploads_path = "/user_uploads";
+exports.uploads_re = new RegExp("\\]\\(" + exports.uploads_domain + "(" + exports.uploads_path + "[^\\)]+)\\)", "g");
 
 function make_uploads_relative(content) {
     // Rewrite uploads in markdown links back to domain-relative form
@@ -41,7 +41,7 @@ function show_all_everyone_warnings(stream_id) {
     const error_area_all_everyone = $("#compose-all-everyone");
 
     // only show one error for any number of @all or @everyone mentions
-    if (!error_area_all_everyone.is(':visible')) {
+    if (!error_area_all_everyone.is(":visible")) {
         error_area_all_everyone.append(all_everyone_template);
     }
 
@@ -86,7 +86,7 @@ function show_announce_warnings(stream_id) {
     const announce_template = render_compose_announce({count: stream_count});
     const error_area_announce = $("#compose-announce");
 
-    if (!error_area_announce.is(':visible')) {
+    if (!error_area_announce.is(":visible")) {
         error_area_announce.append(announce_template);
     }
 
@@ -199,9 +199,9 @@ function create_message_object() {
         content: content,
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
-        stream: '',
+        stream: "",
     };
-    message.topic = '';
+    message.topic = "";
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
@@ -233,7 +233,7 @@ function create_message_object() {
             // user started composing to the old stream name and
             // manually entered the stream name, and it got past
             // validation. We should try to kill this code off eventually.
-            blueslip.error('Trying to send message with bad stream name: ' + stream_name);
+            blueslip.error("Trying to send message with bad stream name: " + stream_name);
             message.to = stream_name;
         }
         message.topic = topic;
@@ -244,11 +244,11 @@ function create_message_object() {
 exports.create_message_object = create_message_object;
 
 function compose_error(error_text, bad_input) {
-    $('#compose-send-status').removeClass(common.status_classes)
-        .addClass('alert-error')
+    $("#compose-send-status").removeClass(common.status_classes)
+        .addClass("alert-error")
         .stop(true).fadeTo(0, 1);
-    $('#compose-error-msg').html(error_text);
-    $("#compose-send-button").prop('disabled', false);
+    $("#compose-error-msg").html(error_text);
+    $("#compose-send-button").prop("disabled", false);
     $("#sending-indicator").hide();
     if (bad_input !== undefined) {
         bad_input.focus().select();
@@ -266,11 +266,11 @@ function nonexistent_stream_reply_error() {
 }
 
 function compose_not_subscribed_error(error_text, bad_input) {
-    $('#compose-send-status').removeClass(common.status_classes)
-        .addClass('home-error-bar')
+    $("#compose-send-status").removeClass(common.status_classes)
+        .addClass("home-error-bar")
         .stop(true).fadeTo(0, 1);
-    $('#compose-error-msg').html(error_text);
-    $("#compose-send-button").prop('disabled', false);
+    $("#compose-error-msg").html(error_text);
+    $("#compose-send-button").prop("disabled", false);
     $("#sending-indicator").hide();
     $(".compose-send-status-close").hide();
     if (bad_input !== undefined) {
@@ -281,11 +281,11 @@ function compose_not_subscribed_error(error_text, bad_input) {
 exports.nonexistent_stream_reply_error = nonexistent_stream_reply_error;
 
 function clear_compose_box() {
-    $("#compose-textarea").val('').focus();
+    $("#compose-textarea").val("").focus();
     drafts.delete_draft_after_send();
     compose_ui.autosize_textarea();
     $("#compose-send-status").hide(0);
-    $("#compose-send-button").prop('disabled', false);
+    $("#compose-send-button").prop("disabled", false);
     $("#sending-indicator").hide();
 }
 
@@ -346,7 +346,7 @@ exports.send_message = function send_message(request) {
         // If we're not local echo'ing messages, or if this message was not
         // locally echoed, show error in compose box
         if (!locally_echoed) {
-            compose_error(response, $('#compose-textarea'));
+            compose_error(response, $("#compose-textarea"));
             return;
         }
 
@@ -405,7 +405,7 @@ exports.do_post_send_tasks = function () {
     exports.clear_preview_area();
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
-    $(document).trigger($.Event('compose_finished.zulip'));
+    $(document).trigger($.Event("compose_finished.zulip"));
 };
 
 exports.update_email = function (user_id, new_email) {
@@ -472,7 +472,7 @@ function validate_stream_message_mentions(stream_id) {
             // user has not seen a warning message yet if undefined
             show_all_everyone_warnings(stream_id);
 
-            $("#compose-send-button").prop('disabled', false);
+            $("#compose-send-button").prop("disabled", false);
             $("#sending-indicator").hide();
             return false;
         }
@@ -496,7 +496,7 @@ function validate_stream_message_announce(sub) {
             // user has not seen a warning message yet if undefined
             show_announce_warnings(sub.stream_id);
 
-            $("#compose-send-button").prop('disabled', false);
+            $("#compose-send-button").prop("disabled", false);
             $("#sending-indicator").hide();
             return false;
         }
@@ -545,7 +545,7 @@ exports.validation_error = function (error_type, stream_name) {
     switch (error_type) {
     case "does-not-exist":
         response = i18n.t("<p>The stream <b>__stream_name__</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>", context);
-        compose_error(response, $('#stream_message_recipient_stream'));
+        compose_error(response, $("#stream_message_recipient_stream"));
         return false;
     case "error":
         compose_error(i18n.t("Error checking subscription"),
@@ -555,7 +555,7 @@ exports.validation_error = function (error_type, stream_name) {
         const sub = stream_data.get_sub(stream_name);
         const new_row = render_compose_not_subscribed({
             should_display_sub_button: sub.should_display_subscription_button});
-        compose_not_subscribed_error(new_row, $('#stream_message_recipient_stream'));
+        compose_not_subscribed_error(new_row, $("#stream_message_recipient_stream"));
         return false;
     }
     }
@@ -657,12 +657,12 @@ function validate_private_message() {
 }
 
 exports.validate = function () {
-    $("#compose-send-button").attr('disabled', 'disabled').blur();
+    $("#compose-send-button").attr("disabled", "disabled").blur();
     const message_content = compose_state.message_content();
     if (reminder.is_deferred_delivery(message_content)) {
-        show_sending_indicator(i18n.t('Scheduling...'));
+        show_sending_indicator(i18n.t("Scheduling..."));
     } else {
-        show_sending_indicator(i18n.t('Sending...'));
+        show_sending_indicator(i18n.t("Sending..."));
     }
 
     if (/^\s*$/.test(message_content)) {
@@ -675,7 +675,7 @@ exports.validate = function () {
         return false;
     }
 
-    if (compose_state.get_message_type() === 'private') {
+    if (compose_state.get_message_type() === "private") {
         return validate_private_message();
     }
     return validate_stream_message();
@@ -693,7 +693,7 @@ exports.handle_keydown = function (event, textarea) {
     if ((isBold || isItalic || isLink) && isCmdOrCtrl) {
         const range = textarea.range();
         function wrap_text_with_markdown(prefix, suffix) {
-            if (!document.execCommand('insertText', false, prefix + range.text + suffix)) {
+            if (!document.execCommand("insertText", false, prefix + range.text + suffix)) {
                 textarea.range(range.start, range.end).range(prefix + range.text + suffix);
             }
             event.preventDefault();
@@ -724,7 +724,7 @@ exports.handle_keydown = function (event, textarea) {
             // Position of cursor depends on whether browser supports exec
             // command or not. So set cursor position accordingly.
             if (range.length > 0) {
-                if (document.queryCommandEnabled('insertText')) {
+                if (document.queryCommandEnabled("insertText")) {
                     txt.selectionStart = position - 4;
                     txt.selectionEnd = position - 1;
                 } else {
@@ -781,7 +781,7 @@ exports.needs_subscribe_warning = function (user_id, stream_id) {
 };
 
 function insert_video_call_url(url, target_textarea) {
-    const video_call_link_text = '[' + _('Click to join video call') + '](' + url + ')';
+    const video_call_link_text = "[" + _("Click to join video call") + "](" + url + ")";
     compose_ui.insert_syntax_and_focus(video_call_link_text, target_textarea);
 }
 
@@ -824,7 +824,7 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
             markdown.apply_markdown(message_obj);
         }
         channel.post({
-            url: '/json/messages/render',
+            url: "/json/messages/render",
             idempotent: true,
             data: {content: content},
             success: function (response_data) {
@@ -848,7 +848,7 @@ exports.warn_if_private_stream_is_linked = function (linked_stream) {
     // streams, since you are specifically sharing the existence of
     // the private stream with someone.  One could imagine changing
     // this policy if user feedback suggested it was useful.
-    if (compose_state.get_message_type() !== 'stream') {
+    if (compose_state.get_message_type() !== "stream") {
         return;
     }
 
@@ -890,7 +890,7 @@ exports.warn_if_private_stream_is_linked = function (linked_stream) {
 };
 
 exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
-    if (compose_state.get_message_type() !== 'stream') {
+    if (compose_state.get_message_type() !== "stream") {
         return;
     }
 
@@ -919,9 +919,9 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
 
     if (exports.needs_subscribe_warning(user_id, sub.stream_id)) {
         const error_area = $("#compose_invite_users");
-        const existing_invites_area = $('#compose_invite_users .compose_invite_user');
+        const existing_invites_area = $("#compose_invite_users .compose_invite_user");
 
-        const existing_invites = Array.from($(existing_invites_area), (user_row) => parseInt($(user_row).data('user-id'), 10));
+        const existing_invites = Array.from($(existing_invites_area), (user_row) => parseInt($(user_row).data("user-id"), 10));
 
         if (!existing_invites.includes(user_id)) {
             const context = {
@@ -941,12 +941,12 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
 
 exports.initialize = function () {
     $("#below-compose-content .video_link").toggle(exports.compute_show_video_chat_button());
-    $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('keyup', update_fade);
-    $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('change', update_fade);
-    $('#compose-textarea').on('keydown', (event) => {
+    $("#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient").on("keyup", update_fade);
+    $("#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient").on("change", update_fade);
+    $("#compose-textarea").on("keydown", (event) => {
         exports.handle_keydown(event, $("#compose-textarea").expectOne());
     });
-    $('#compose-textarea').on('keyup', (event) => {
+    $("#compose-textarea").on("keyup", (event) => {
         exports.handle_keyup(event, $("#compose-textarea").expectOne());
     });
 
@@ -959,28 +959,28 @@ exports.initialize = function () {
 
     upload.feature_check($("#compose #attach_files"));
 
-    $("#compose-all-everyone").on('click', '.compose-all-everyone-confirm', (event) => {
+    $("#compose-all-everyone").on("click", ".compose-all-everyone-confirm", (event) => {
         event.preventDefault();
 
-        $(event.target).parents('.compose-all-everyone').remove();
+        $(event.target).parents(".compose-all-everyone").remove();
         user_acknowledged_all_everyone = true;
         exports.clear_all_everyone_warnings();
         exports.finish();
     });
 
-    $("#compose-announce").on('click', '.compose-announce-confirm', (event) => {
+    $("#compose-announce").on("click", ".compose-announce-confirm", (event) => {
         event.preventDefault();
 
-        $(event.target).parents('.compose-announce').remove();
+        $(event.target).parents(".compose-announce").remove();
         user_acknowledged_announce = true;
         exports.clear_announce_warnings();
         exports.finish();
     });
 
-    $("#compose-send-status").on('click', '.sub_unsub_button', (event) => {
+    $("#compose-send-status").on("click", ".sub_unsub_button", (event) => {
         event.preventDefault();
 
-        const stream_name = $('#stream_message_recipient_stream').val();
+        const stream_name = $("#stream_message_recipient_stream").val();
         if (stream_name === undefined) {
             return;
         }
@@ -989,19 +989,19 @@ exports.initialize = function () {
         $("#compose-send-status").hide();
     });
 
-    $("#compose-send-status").on('click', '#compose_not_subscribed_close', (event) => {
+    $("#compose-send-status").on("click", "#compose_not_subscribed_close", (event) => {
         event.preventDefault();
 
         $("#compose-send-status").hide();
     });
 
-    $("#compose_invite_users").on('click', '.compose_invite_link', (event) => {
+    $("#compose_invite_users").on("click", ".compose_invite_link", (event) => {
         event.preventDefault();
 
-        const invite_row = $(event.target).parents('.compose_invite_user');
+        const invite_row = $(event.target).parents(".compose_invite_user");
 
-        const user_id = parseInt($(invite_row).data('user-id'), 10);
-        const stream_id = parseInt($(invite_row).data('stream-id'), 10);
+        const user_id = parseInt($(invite_row).data("user-id"), 10);
+        const stream_id = parseInt($(invite_row).data("stream-id"), 10);
 
         function success() {
             const all_invites = $("#compose_invite_users");
@@ -1015,7 +1015,7 @@ exports.initialize = function () {
         function failure(error_msg) {
             exports.clear_invites();
             compose_error(error_msg, $("#compose-textarea"));
-            $(event.target).attr('disabled', true);
+            $(event.target).attr("disabled", true);
         }
 
         function xhr_failure(xhr) {
@@ -1028,8 +1028,8 @@ exports.initialize = function () {
         stream_edit.invite_user_to_stream([user_id], sub, success, xhr_failure);
     });
 
-    $("#compose_invite_users").on('click', '.compose_invite_close', (event) => {
-        const invite_row = $(event.target).parents('.compose_invite_user');
+    $("#compose_invite_users").on("click", ".compose_invite_close", (event) => {
+        const invite_row = $(event.target).parents(".compose_invite_user");
         const all_invites = $("#compose_invite_users");
 
         invite_row.remove();
@@ -1039,8 +1039,8 @@ exports.initialize = function () {
         }
     });
 
-    $("#compose_private_stream_alert").on('click', '.compose_private_stream_alert_close', (event) => {
-        const stream_alert_row = $(event.target).parents('.compose_private_stream_alert');
+    $("#compose_private_stream_alert").on("click", ".compose_private_stream_alert_close", (event) => {
+        const stream_alert_row = $(event.target).parents(".compose_private_stream_alert");
         const stream_alert = $("#compose_private_stream_alert");
 
         stream_alert_row.remove();
@@ -1058,7 +1058,7 @@ exports.initialize = function () {
         $("#compose #file_input").trigger("click");
     });
 
-    $('body').on('click', '.video_link', (e) => {
+    $("body").on("click", ".video_link", (e) => {
         e.preventDefault();
 
         let target_textarea;
@@ -1066,7 +1066,7 @@ exports.initialize = function () {
         // call icon present in the message edit form.  If present,
         // the request is for the edit UI; otherwise, it's for the
         // compose box.
-        const edit_message_id = $(e.target).attr('data-message-id');
+        const edit_message_id = $(e.target).attr("data-message-id");
         if (edit_message_id !== undefined) {
             target_textarea = $("#message_edit_content_" + edit_message_id);
         }
@@ -1125,7 +1125,7 @@ exports.initialize = function () {
         ) {
 
             channel.get({
-                url: '/json/calls/bigbluebutton/create',
+                url: "/json/calls/bigbluebutton/create",
                 success: function (response) {
                     insert_video_call_url(response.url, target_textarea);
                 },
@@ -1159,8 +1159,8 @@ exports.initialize = function () {
     $("#compose-textarea").focus(() => {
         const opts = {
             message_type: compose_state.get_message_type(),
-            stream: $('#stream_message_recipient_stream').val(),
-            topic: $('#stream_message_recipient_topic').val(),
+            stream: $("#stream_message_recipient_stream").val(),
+            topic: $("#stream_message_recipient_topic").val(),
             private_message_recipient: compose_pm_pill.get_emails(),
         };
         compose_actions.update_placeholder_text(opts);

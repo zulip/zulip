@@ -1,4 +1,4 @@
-const render_widgets_zform_choices = require('../templates/widgets/zform_choices.hbs');
+const render_widgets_zform_choices = require("../templates/widgets/zform_choices.hbs");
 
 exports.validate_extra_data = function (data) {
     function check(data) {
@@ -19,17 +19,17 @@ exports.validate_extra_data = function (data) {
                 );
             }
 
-            return schema.check_record('zform data', data, {
+            return schema.check_record("zform data", data, {
                 heading: schema.check_string,
                 choices: check_choices,
             });
         }
 
-        if (data.type === 'choices') {
+        if (data.type === "choices") {
             return check_choice_data(data);
         }
 
-        return 'unknown zform type: ' + data.type;
+        return "unknown zform type: " + data.type;
     }
 
 
@@ -65,11 +65,11 @@ exports.activate = function (opts) {
         const html = render_widgets_zform_choices(data);
         const elem = $(html);
 
-        elem.find('button').on('click', (e) => {
+        elem.find("button").on("click", (e) => {
             e.stopPropagation();
 
             // Grab our index from the markup.
-            const idx = $(e.target).attr('data-idx');
+            const idx = $(e.target).attr("data-idx");
 
             // Use the index from the markup to dereference our
             // data structure.
@@ -87,7 +87,7 @@ exports.activate = function (opts) {
     function render() {
         let rendered_widget;
 
-        if (data.type === 'choices') {
+        if (data.type === "choices") {
             rendered_widget = make_choices(data);
             outer_elem.html(rendered_widget);
         }
@@ -95,7 +95,7 @@ exports.activate = function (opts) {
 
     self.handle_events = function (events) {
         if (events) {
-            blueslip.info('unexpected');
+            blueslip.info("unexpected");
         }
         render();
     };

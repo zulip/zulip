@@ -22,7 +22,7 @@ exports.get_next_id_float = (function () {
     return function () {
         const local_id_increment = 0.01;
         let latest = page_params.max_message_id;
-        if (typeof message_list.all !== 'undefined' && message_list.all.last() !== undefined) {
+        if (typeof message_list.all !== "undefined" && message_list.all.last() !== undefined) {
             latest = message_list.all.last().id;
         }
         latest = Math.max(0, latest);

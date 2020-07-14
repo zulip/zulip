@@ -12,7 +12,7 @@ let loading_older_messages_indicator_showing = false;
 let loading_newer_messages_indicator_showing = false;
 exports.show_loading_older = function () {
     if (!loading_older_messages_indicator_showing) {
-        loading.make_indicator($('#loading_older_messages_indicator'),
+        loading.make_indicator($("#loading_older_messages_indicator"),
                                {abs_positioned: true});
         loading_older_messages_indicator_showing = true;
         floating_recipient_bar.hide();
@@ -29,7 +29,7 @@ exports.hide_loading_older = function () {
 exports.show_loading_newer = function () {
     if (!loading_newer_messages_indicator_showing) {
         $(".bottom-messages-logo").show();
-        loading.make_indicator($('#loading_newer_messages_indicator'),
+        loading.make_indicator($("#loading_newer_messages_indicator"),
                                {abs_positioned: true});
         loading_newer_messages_indicator_showing = true;
         floating_recipient_bar.hide();
@@ -114,7 +114,7 @@ exports.actively_scrolling = function () {
 exports.scroll_finished = function () {
     actively_scrolling = false;
 
-    if (!$('#home').hasClass('active')) {
+    if (!$("#home").hasClass("active")) {
         return;
     }
 
@@ -159,7 +159,7 @@ exports.initialize = function () {
     }, 50));
 
     // Scroll handler that marks messages as read when you scroll past them.
-    $(document).on('message_selected.zulip', (event) => {
+    $(document).on("message_selected.zulip", (event) => {
         if (event.id === -1) {
             return;
         }
@@ -173,7 +173,7 @@ exports.initialize = function () {
                 messages = event.msg_list.message_range(event.previously_selected, event.id);
             }
             if (event.msg_list.can_mark_messages_read()) {
-                unread_ops.notify_server_messages_read(messages, {from: 'pointer'});
+                unread_ops.notify_server_messages_read(messages, {from: "pointer"});
             }
         }
     });

@@ -1,9 +1,9 @@
 const util = require("./util");
-const render_draft_table_body = require('../templates/draft_table_body.hbs');
+const render_draft_table_body = require("../templates/draft_table_body.hbs");
 
 function set_count(count) {
     const draft_count = count.toString();
-    const text = i18n.t('Drafts (__draft_count__)', {draft_count: draft_count});
+    const text = i18n.t("Drafts (__draft_count__)", {draft_count: draft_count});
     $(".compose_drafts_button").text(text);
 }
 
@@ -101,7 +101,7 @@ exports.restore_message = function (draft) {
 
     if (draft.type === "stream") {
         compose_args = {
-            type: 'stream',
+            type: "stream",
             stream: draft.stream,
             topic: util.get_draft_topic(draft),
             content: draft.content,
@@ -229,7 +229,7 @@ exports.format_draft = function (draft) {
         let draft_topic = util.get_draft_topic(draft);
         const draft_stream_color = stream_data.get_color(draft.stream);
 
-        if (draft_topic === '') {
+        if (draft_topic === "") {
             draft_topic = compose.empty_topic_placeholder();
         }
 
@@ -252,7 +252,7 @@ exports.format_draft = function (draft) {
                 return person.full_name;
             }
             return email;
-        }).join(', ');
+        }).join(", ");
 
         formatted = {
             draft_id: draft.id,
@@ -306,7 +306,7 @@ function remove_draft(draft_row) {
     draft_row.remove();
 
     if ($("#drafts_table .draft-row").length === 0) {
-        $('#drafts_table .no-drafts').show();
+        $("#drafts_table .no-drafts").show();
     }
 }
 
@@ -328,14 +328,14 @@ exports.launch = function () {
     }
 
     function render_widgets(drafts) {
-        $('#drafts_table').empty();
+        $("#drafts_table").empty();
         const rendered = render_draft_table_body({
             drafts: drafts,
             draft_lifetime: DRAFT_LIFETIME,
         });
-        $('#drafts_table').append(rendered);
+        $("#drafts_table").append(rendered);
         if ($("#drafts_table .draft-row").length > 0) {
-            $('#drafts_table .no-drafts').hide();
+            $("#drafts_table .no-drafts").hide();
         }
     }
 
@@ -365,7 +365,7 @@ exports.launch = function () {
 
     // We need to force a style calculation on the newly created
     // element in order for the CSS transition to take effect.
-    $('#draft_overlay').css('opacity');
+    $("#draft_overlay").css("opacity");
 
     exports.open_overlay();
     exports.set_initial_element(drafts);
@@ -373,8 +373,8 @@ exports.launch = function () {
 };
 
 function activate_element(elem) {
-    $('.draft-info-box').removeClass('active');
-    $(elem).expectOne().addClass('active');
+    $(".draft-info-box").removeClass("active");
+    $(elem).expectOne().addClass("active");
     elem.focus();
 }
 
@@ -418,7 +418,7 @@ function drafts_scroll(next_focus_draft_row) {
 
     // If focused draft is the last draft, scroll to the bottom.
     if ($(".draft-info-box").last()[0].parentElement === next_focus_draft_row[0]) {
-        $(".drafts-list")[0].scrollTop = $('.drafts-list')[0].scrollHeight - $('.drafts-list').height();
+        $(".drafts-list")[0].scrollTop = $(".drafts-list")[0].scrollHeight - $(".drafts-list").height();
     }
 
     // If focused draft is cut off from the top, scroll up halfway in draft modal.
@@ -494,8 +494,8 @@ exports.drafts_handle_events = function (e, event_key) {
 
 exports.open_overlay = function () {
     overlays.open_overlay({
-        name: 'drafts',
-        overlay: $('#draft_overlay'),
+        name: "drafts",
+        overlay: $("#draft_overlay"),
         on_close: function () {
             hashchange.exit_overlay();
         },
@@ -522,7 +522,7 @@ exports.initialize = function () {
 
     $("#compose-textarea").focusout(exports.update_draft);
 
-    $('body').on('focus', '.draft-info-box', (e) => {
+    $("body").on("focus", ".draft-info-box", (e) => {
         activate_element(e.target);
     });
 };

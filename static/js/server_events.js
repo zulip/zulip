@@ -22,7 +22,7 @@ function get_events_success(events) {
 
     const clean_event = function clean_event(event) {
         // Only log a whitelist of the event to remove private data
-        return _.pick(event, 'id', 'type', 'op');
+        return _.pick(event, "id", "type", "op");
     };
 
     for (const event of events) {
@@ -30,7 +30,7 @@ function get_events_success(events) {
             get_events_params.last_event_id = Math.max(get_events_params.last_event_id,
                                                        event.id);
         } catch (ex) {
-            blueslip.error('Failed to update last_event_id',
+            blueslip.error("Failed to update last_event_id",
                            {event: clean_event(event)},
                            ex.stack);
         }
@@ -52,7 +52,7 @@ function get_events_success(events) {
     // rarely modified logic for non-normal events.
     const dispatch_event = function dispatch_event(event) {
         switch (event.type) {
-        case 'message': {
+        case "message": {
             const msg = event.message;
             msg.flags = event.flags;
             if (event.local_message_id) {
@@ -63,13 +63,13 @@ function get_events_success(events) {
             break;
         }
 
-        case 'update_message':
+        case "update_message":
             update_message_events.push(event);
             break;
 
-        case 'delete_message':
-        case 'submessage':
-        case 'update_message_flags':
+        case "delete_message":
+        case "submessage":
+        case "update_message_flags":
             post_message_events.push(event);
             break;
 
@@ -82,7 +82,7 @@ function get_events_success(events) {
         try {
             dispatch_event(event);
         } catch (ex1) {
-            blueslip.error('Failed to process an event\n' +
+            blueslip.error("Failed to process an event\n" +
                            blueslip.exception_msg(ex1),
                            {event: clean_event(event)},
                            ex1.stack);
@@ -93,7 +93,7 @@ function get_events_success(events) {
         // Sort by ID, so that if we get multiple messages back from
         // the server out-of-order, we'll still end up with our
         // message lists in order.
-        messages = _.sortBy(messages, 'id');
+        messages = _.sortBy(messages, "id");
         try {
             messages = echo.process_from_server(messages);
             if (messages.length > 0) {
@@ -113,7 +113,7 @@ function get_events_success(events) {
                 message_events.insert_new_messages(messages, sent_by_this_client);
             }
         } catch (ex2) {
-            blueslip.error('Failed to insert new messages\n' +
+            blueslip.error("Failed to insert new messages\n" +
                            blueslip.exception_msg(ex2),
                            undefined,
                            ex2.stack);
@@ -128,7 +128,7 @@ function get_events_success(events) {
         try {
             message_events.update_messages(update_message_events);
         } catch (ex3) {
-            blueslip.error('Failed to update messages\n' +
+            blueslip.error("Failed to update messages\n" +
                            blueslip.exception_msg(ex3),
                            undefined,
                            ex3.stack);
@@ -145,12 +145,12 @@ function get_events_success(events) {
 
 function show_ui_connection_error() {
     ui_report.show_error($("#connection-error"));
-    $("#connection-error").addClass('get-events-error');
+    $("#connection-error").addClass("get-events-error");
 }
 
 function hide_ui_connection_error() {
     ui_report.hide_error($("#connection-error"));
-    $("#connection-error").removeClass('get-events-error');
+    $("#connection-error").removeClass("get-events-error");
 }
 
 function get_events(options) {
@@ -186,7 +186,7 @@ function get_events(options) {
 
     get_events_timeout = undefined;
     get_events_xhr = channel.get({
-        url: '/json/events',
+        url: "/json/events",
         data: get_events_params,
         idempotent: true,
         timeout: page_params.poll_timeout,
@@ -199,7 +199,7 @@ function get_events(options) {
 
                 get_events_success(data.events);
             } catch (ex) {
-                blueslip.error('Failed to handle get_events success\n' +
+                blueslip.error("Failed to handle get_events success\n" +
                                blueslip.exception_msg(ex),
                                undefined,
                                ex.stack);
@@ -212,7 +212,7 @@ function get_events(options) {
                 // If we're old enough that our message queue has been
                 // garbage collected, immediately reload.
                 if (xhr.status === 400 &&
-                    JSON.parse(xhr.responseText).code === 'BAD_EVENT_QUEUE_ID') {
+                    JSON.parse(xhr.responseText).code === "BAD_EVENT_QUEUE_ID") {
                     page_params.event_queue_expired = true;
                     reload.initiate({immediate: true,
                                      save_pointer: false,
@@ -220,10 +220,10 @@ function get_events(options) {
                                      save_compose: true});
                 }
 
-                if (error_type === 'abort') {
+                if (error_type === "abort") {
                     // Don't restart if we explicitly aborted
                     return;
-                } else if (error_type === 'timeout') {
+                } else if (error_type === "timeout") {
                     // Retry indefinitely on timeout.
                     get_events_failures = 0;
                     hide_ui_connection_error();
@@ -237,7 +237,7 @@ function get_events(options) {
                     hide_ui_connection_error();
                 }
             } catch (ex) {
-                blueslip.error('Failed to handle get_events error\n' +
+                blueslip.error("Failed to handle get_events error\n" +
                                blueslip.exception_msg(ex),
                                undefined,
                                ex.stack);
@@ -279,14 +279,14 @@ exports.check_for_unsuspend = function () {
         watchdog_time = new_time;
         // Our app's JS wasn't running, which probably means the machine was
         // asleep.
-        $(document).trigger($.Event('unsuspend'));
+        $(document).trigger($.Event("unsuspend"));
     }
     watchdog_time = new_time;
 };
 setInterval(exports.check_for_unsuspend, 5000);
 
 exports.initialize = function () {
-    $(document).on('unsuspend', () => {
+    $(document).on("unsuspend", () => {
         // Immediately poll for new events on unsuspend
         blueslip.log("Restarting get_events due to unsuspend");
         get_events_failures = 0;
@@ -304,7 +304,7 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
     // Set expired because in a reload we may be called twice.
     page_params.event_queue_expired = true;
     channel.del({
-        url: '/json/events',
+        url: "/json/events",
         data: {queue_id: page_params.queue_id},
         ignore_reload: true,
     });

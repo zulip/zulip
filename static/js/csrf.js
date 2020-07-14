@@ -3,7 +3,7 @@ $(() => {
     // This requires that we used Jinja2's {% csrf_input %} somewhere on the page.
     const csrf_input = $('input[name="csrfmiddlewaretoken"]');
     if (csrf_input.length > 0) {
-        csrf_token = csrf_input.attr('value');
+        csrf_token = csrf_input.attr("value");
     } else {
         csrf_token = undefined;
     }

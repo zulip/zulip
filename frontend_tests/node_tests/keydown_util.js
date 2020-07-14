@@ -1,14 +1,14 @@
-set_global('$', global.make_zjquery());
+set_global("$", global.make_zjquery());
 
-zrequire('keydown_util');
+zrequire("keydown_util");
 
-run_test('test_early_returns', () => {
-    const stub = $.create('stub');
+run_test("test_early_returns", () => {
+    const stub = $.create("stub");
     const opts = {
         elem: stub,
         handlers: {
             left_arrow: () => {
-                throw Error('do not dispatch this with alt key');
+                throw Error("do not dispatch this with alt key");
             },
         },
     };

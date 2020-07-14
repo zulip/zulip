@@ -44,5 +44,5 @@ export function initialize() {
     //
     // TODO: We should probably just make this work just like the Zulip emoji.
     const octopus_image = new Image();
-    octopus_image.src = '/static/generated/emoji/images-google-64/1f419.png';
+    octopus_image.src = "/static/generated/emoji/images-google-64/1f419.png";
 }

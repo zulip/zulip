@@ -104,7 +104,7 @@ exports.append_user = function (user, pills) {
             person: user,
         });
     } else {
-        blueslip.warn('Undefined user in function append_user');
+        blueslip.warn("Undefined user in function append_user");
     }
 };
 

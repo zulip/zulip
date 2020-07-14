@@ -10,7 +10,7 @@ function to_int(s) {
 
 function get_key(group) {
     const ids = util.sorted_ids(group);
-    return ids.join(',');
+    return ids.join(",");
 }
 
 exports.add_typist = function (group, typist) {

@@ -3,11 +3,11 @@
 */
 
 const keys = {
-    13: 'enter_key',
-    37: 'left_arrow',
-    38: 'up_arrow',
-    39: 'right_arrow',
-    40: 'down_arrow',
+    13: "enter_key",
+    37: "left_arrow",
+    38: "up_arrow",
+    39: "right_arrow",
+    40: "down_arrow",
 };
 
 exports.handle = function (opts) {

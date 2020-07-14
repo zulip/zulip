@@ -1,13 +1,13 @@
-const render_user_presence_row = require('../templates/user_presence_row.hbs');
-const render_user_presence_rows = require('../templates/user_presence_rows.hbs');
+const render_user_presence_row = require("../templates/user_presence_row.hbs");
+const render_user_presence_rows = require("../templates/user_presence_rows.hbs");
 
 function buddy_list_conf() {
     const conf = {};
 
-    conf.container_sel = '#user_presences';
-    conf.scroll_container_sel = '#buddy_list_wrapper';
-    conf.item_sel = 'li.user_sidebar_entry';
-    conf.padding_sel = '#buddy_list_wrapper_padding';
+    conf.container_sel = "#user_presences";
+    conf.scroll_container_sel = "#buddy_list_wrapper";
+    conf.item_sel = "li.user_sidebar_entry";
+    conf.padding_sel = "#buddy_list_wrapper_padding";
 
     conf.items_to_html = function (opts) {
         const user_info = opts.items;
@@ -28,7 +28,7 @@ function buddy_list_conf() {
     };
 
     conf.get_key_from_li = function (opts) {
-        return parseInt(opts.li.expectOne().attr('data-user-id'), 10);
+        return parseInt(opts.li.expectOne().attr("data-user-id"), 10);
     };
 
     conf.get_data_from_keys = function (opts) {
@@ -63,13 +63,13 @@ function buddy_list_create() {
     self.padding_sel = conf.padding_sel;
 
     const func_names = [
-        'items_to_html',
-        'item_to_html',
-        'get_li_from_key',
-        'get_key_from_li',
-        'get_data_from_keys',
-        'compare_function',
-        'height_to_fill',
+        "items_to_html",
+        "item_to_html",
+        "get_li_from_key",
+        "get_key_from_li",
+        "get_data_from_keys",
+        "compare_function",
+        "height_to_fill",
     ];
 
     for (const func_name of func_names) {
@@ -80,7 +80,7 @@ function buddy_list_create() {
 
     self.populate = function (opts) {
         self.render_count = 0;
-        self.container.html('');
+        self.container.html("");
 
         // We rely on our caller to give us items
         // in already-sorted order.
@@ -190,7 +190,7 @@ function buddy_list_create() {
         const chunk_size = pos + cushion_size - self.render_count;
 
         if (chunk_size <= 0) {
-            blueslip.error('cannot show key at this position: ' + pos);
+            blueslip.error("cannot show key at this position: " + pos);
         }
 
         self.render_more({

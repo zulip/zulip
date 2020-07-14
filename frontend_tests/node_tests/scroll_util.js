@@ -1,9 +1,9 @@
-zrequire('scroll_util');
-set_global('ui', {
+zrequire("scroll_util");
+set_global("ui", {
     get_scroll_element: (element) => element,
 });
 
-run_test('scroll_delta', () => {
+run_test("scroll_delta", () => {
     // If we are entirely on-screen, don't scroll
     assert.equal(0, scroll_util.scroll_delta({
         elem_top: 1,
@@ -57,7 +57,7 @@ run_test('scroll_delta', () => {
 
 });
 
-run_test('scroll_element_into_container', () => {
+run_test("scroll_element_into_container", () => {
     const container = (function () {
         let top = 3;
         return {

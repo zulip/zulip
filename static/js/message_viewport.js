@@ -41,7 +41,7 @@ exports.message_viewport_info = function () {
 
 exports.at_bottom = function () {
     const bottom = exports.scrollTop() + exports.height();
-    const full_height = exports.message_pane.prop('scrollHeight');
+    const full_height = exports.message_pane.prop("scrollHeight");
 
     // We only know within a pixel or two if we're
     // exactly at the bottom, due to browser quirkiness,
@@ -262,8 +262,8 @@ function make_dimen_wrapper(dimen_name, dimen_func) {
     };
 }
 
-exports.height = make_dimen_wrapper('height', $(exports.message_pane).height);
-exports.width = make_dimen_wrapper('width', $(exports.message_pane).width);
+exports.height = make_dimen_wrapper("height", $(exports.message_pane).height);
+exports.width = make_dimen_wrapper("width", $(exports.message_pane).width);
 
 exports.stop_auto_scrolling = function () {
     if (in_stoppable_autoscroll) {
@@ -426,7 +426,7 @@ exports.initialize = function () {
         bottom_of_feed.reset();
     });
 
-    $(document).on('compose_started compose_canceled compose_finished', () => {
+    $(document).on("compose_started compose_canceled compose_finished", () => {
         bottom_of_feed.reset();
     });
 };

@@ -36,7 +36,7 @@ const emoticon_translations = (() => {
 
     const translations = [];
     for (const [emoticon, replacement_text] of Object.entries(emoji_codes.emoticon_conversions)) {
-        const regex = new RegExp('(' + util.escape_regexp(emoticon) + ')', 'g');
+        const regex = new RegExp("(" + util.escape_regexp(emoticon) + ")", "g");
 
         translations.push({
             regex: regex,
@@ -48,9 +48,9 @@ const emoticon_translations = (() => {
 })();
 
 const zulip_emoji = {
-    id: 'zulip',
-    emoji_name: 'zulip',
-    emoji_url: '/static/generated/emoji/images/emoji/unicode/zulip.png',
+    id: "zulip",
+    emoji_name: "zulip",
+    emoji_url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
     is_realm_emoji: true,
     deactivated: false,
 };

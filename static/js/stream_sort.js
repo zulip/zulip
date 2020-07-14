@@ -11,7 +11,7 @@ exports.get_streams = function () {
 };
 
 function filter_streams_by_search(streams, search_term) {
-    if (search_term === '') {
+    if (search_term === "") {
         return streams;
     }
 

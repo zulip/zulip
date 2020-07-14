@@ -6,7 +6,7 @@ const host = "localhost:9991";
 const options = {};
 
 commander
-    .arguments('<message_id> <image_path>')
+    .arguments("<message_id> <image_path>")
     .action((messageId, imagePath) => {
         options.messageId = messageId;
         options.imagePath = imagePath;
@@ -15,7 +15,7 @@ commander
     .parse(process.argv);
 
 if (options.messageId === undefined) {
-    console.error('no messageId specified!');
+    console.error("no messageId specified!");
     process.exit(1);
 }
 
@@ -23,10 +23,10 @@ if (options.messageId === undefined) {
 async function run() {
     const browser = await puppeteer.launch({
         args: [
-            '--window-size=1400,1024',
-            '--no-sandbox', '--disable-setuid-sandbox',
+            "--window-size=1400,1024",
+            "--no-sandbox", "--disable-setuid-sandbox",
             // Helps render fonts correctly on Ubuntu: https://github.com/puppeteer/puppeteer/issues/661
-            '--font-render-hinting=none',
+            "--font-render-hinting=none",
         ],
         defaultViewport: null,
         headless: true,
@@ -35,13 +35,13 @@ async function run() {
         const page = await browser.newPage();
         // deviceScaleFactor:2 gives better quality screenshots (higher pixel density)
         await page.setViewport({ width: 1280, height: 1024, deviceScaleFactor: 2 });
-        await page.goto('http://' + host);
+        await page.goto("http://" + host);
         // wait for Iago devlogin button and click on it.
         await page.waitForSelector('[value="iago@zulip.com"]');
 
         // By waiting till DOMContentLoaded we're confirming that Iago is logged in.
         await Promise.all([
-            page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+            page.waitForNavigation({ waitUntil: "domcontentloaded" }),
             page.click('[value="iago@zulip.com"]'),
         ]);
 
@@ -54,7 +54,7 @@ async function run() {
         await page.evaluate((sel) => $(sel).remove(), marker);  // eslint-disable-line no-undef
         await page.evaluate(() => navigate.up());  // eslint-disable-line no-undef
         const messageBox = await page.$(messageSelector);
-        const messageGroup = (await messageBox.$x('..'))[0];
+        const messageGroup = (await messageBox.$x(".."))[0];
         // Compute screenshot area, with some padding around the message group
         const clip = Object.assign({}, await messageGroup.boundingBox());
         clip.y -= 5;

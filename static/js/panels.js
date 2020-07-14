@@ -6,7 +6,7 @@ const resize_app = function () {
     // the floating recipient bar is usually positioned right below
     // the `.header` element (including padding).
     const frb_top = panels_height
-                    + $('.header').height()
+                    + $(".header").height()
                     + parseInt($(".header").css("paddingBottom"), 10);
     $("#floating_recipient_bar").css("top", frb_top + "px");
 };
@@ -50,7 +50,7 @@ exports.check_profile_incomplete = function () {
     // Eventually, we might also check page_params.realm_icon_source,
     // but it feels too aggressive to ask users to do change that
     // since their organization might not have a logo yet.
-    if (page_params.realm_description === '' ||
+    if (page_params.realm_description === "" ||
         page_params.realm_description.startsWith("Organization imported from")) {
         $("[data-process='profile-incomplete']").show();
     } else {
@@ -93,7 +93,7 @@ exports.initialize = function () {
     $(".accept-bankruptcy").on("click", function (e) {
         e.preventDefault();
         $(this).closest(".alert").hide();
-        $('.bankruptcy-loader').show();
+        $(".bankruptcy-loader").show();
         setTimeout(unread_ops.mark_all_as_read, 1000);
         resize_app();
     });

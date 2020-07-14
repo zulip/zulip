@@ -1,6 +1,6 @@
-import * as google_analytics from './google-analytics.js';
-import SimpleBar from 'simplebar';
-import {activate_correct_tab} from './tabbed-instructions.js';
+import * as google_analytics from "./google-analytics.js";
+import SimpleBar from "simplebar";
+import {activate_correct_tab} from "./tabbed-instructions.js";
 
 function registerCodeSection($codeSection) {
     const $li = $codeSection.find("ul.nav li");
@@ -18,7 +18,7 @@ function registerCodeSection($codeSection) {
 }
 
 function highlight_current_article() {
-    $('.help .sidebar a').removeClass('highlighted');
+    $(".help .sidebar a").removeClass("highlighted");
     const path = window.location.pathname;
 
     if (!path) {
@@ -34,8 +34,8 @@ function highlight_current_article() {
         article = $('.help .sidebar a[href="' + path + '"]');
     }
     // Highlight current article link and the heading of the same
-    article.closest('ul').css('display', 'block');
-    article.addClass('highlighted');
+    article.closest("ul").css("display", "block");
+    article.addClass("highlighted");
 }
 
 function render_code_sections() {
@@ -56,7 +56,7 @@ function render_code_sections() {
 function scrollToHash(simplebar) {
     const hash = window.location.hash;
     const scrollbar = simplebar.getScrollElement();
-    if (hash !== '' && $(hash).length > 0) {
+    if (hash !== "" && $(hash).length > 0) {
         const position = $(hash).position().top - $(scrollbar.firstChild).position().top;
         scrollbar.scrollTop = position;
     } else {
@@ -104,7 +104,7 @@ $(".sidebar.slide h2").click((e) => {
 
     if ($next.is("ul")) {
         // Close other article's headings first
-        $('.sidebar ul').not($next).hide();
+        $(".sidebar ul").not($next).hide();
         // Toggle the heading
         $next.slideToggle("fast", "swing");
     }
@@ -112,8 +112,8 @@ $(".sidebar.slide h2").click((e) => {
 
 $(".sidebar a").click(function (e) {
     const path = $(this).attr("href");
-    const path_dir = path.split('/')[1];
-    const current_dir = window.location.pathname.split('/')[1];
+    const path_dir = path.split("/")[1];
+    const current_dir = window.location.pathname.split("/")[1];
 
     // Do not block redirecting to external URLs
     if (path_dir !== current_dir) {
@@ -133,15 +133,15 @@ $(".sidebar a").click(function (e) {
     e.preventDefault();
 });
 
-if (window.location.pathname === '/help/') {
+if (window.location.pathname === "/help/") {
     // Expand the Guides user docs section in sidebar in the /help/ homepage.
-    $('.help .sidebar h2#guides + ul').show();
+    $(".help .sidebar h2#guides + ul").show();
 }
 // Remove ID attributes from sidebar links so they don't conflict with index page anchor links
-$('.help .sidebar h1, .help .sidebar h2, .help .sidebar h3').removeAttr('id');
+$(".help .sidebar h1, .help .sidebar h2, .help .sidebar h3").removeAttr("id");
 
 // Scroll to anchor link when clicked
-$(document).on('click', '.markdown .content h1, .markdown .content h2, .markdown .content h3', function () {
+$(document).on("click", ".markdown .content h1, .markdown .content h2, .markdown .content h3", function () {
     window.location.hash = $(this).attr("id");
     scrollToHash(markdownSB);
 });
@@ -167,4 +167,4 @@ window.addEventListener("popstate", () => {
     update_page(html_map, path);
 });
 
-$('body').addClass('noscroll');
+$("body").addClass("noscroll");

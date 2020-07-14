@@ -63,7 +63,7 @@ exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
 };
 
 exports.is_pm_recipient = function (user_id, message) {
-    const recipients = message.to_user_ids.split(',');
+    const recipients = message.to_user_ids.split(",");
     return recipients.includes(user_id.toString());
 };
 
@@ -80,12 +80,12 @@ exports.same_recipient = function util_same_recipient(a, b) {
     }
 
     switch (a.type) {
-    case 'private':
+    case "private":
         if (a.to_user_ids === undefined) {
             return false;
         }
         return a.to_user_ids === b.to_user_ids;
-    case 'stream':
+    case "stream":
         return exports.same_stream_and_topic(a, b);
     }
 
@@ -102,11 +102,11 @@ exports.normalize_recipients = function (recipients) {
     // Converts a string listing emails of message recipients
     // into a canonical formatting: emails sorted ASCIIbetically
     // with exactly one comma and no spaces between each.
-    recipients = recipients.split(',').map((s) => s.trim());
+    recipients = recipients.split(",").map((s) => s.trim());
     recipients = recipients.map((s) => s.toLowerCase());
     recipients = recipients.filter((s) => s.length > 0);
     recipients.sort();
-    return recipients.join(',');
+    return recipients.join(",");
 };
 
 // Avoid URI decode errors by removing characters from the end
@@ -125,7 +125,7 @@ exports.robust_uri_decode = function (str) {
             end -= 1;
         }
     }
-    return '';
+    return "";
 };
 
 // If we can, use a locale-aware sorter.  However, if the browser
@@ -239,14 +239,14 @@ exports.get_match_topic = function (obj) {
 
 exports.get_draft_topic = function (obj) {
     // We will need to support subject for old drafts.
-    return obj.topic || obj.subject || '';
+    return obj.topic || obj.subject || "";
 };
 
 exports.get_reload_topic = function (obj) {
     // When we first upgrade to releases that have
     // topic=foo in the code, the user's reload URL
     // may still have subject=foo from the prior version.
-    return obj.topic || obj.subject || '';
+    return obj.topic || obj.subject || "";
 };
 
 exports.get_edit_event_topic = function (obj) {
@@ -268,7 +268,7 @@ exports.get_edit_event_prev_topic = function (obj) {
 };
 
 exports.is_topic_synonym = function (operator) {
-    return operator === 'subject';
+    return operator === "subject";
 };
 
 exports.convert_message_topic = function (message) {

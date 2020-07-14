@@ -7,7 +7,7 @@ exports.reset_id_state = function () {
 exports.get_new_local_id = function () {
     exports.next_local_id += 1;
     const local_id = exports.next_local_id;
-    return 'loc-' + local_id.toString();
+    return "loc-" + local_id.toString();
 };
 
 function report_send_time(send_time, receive_time,
@@ -23,7 +23,7 @@ function report_send_time(send_time, receive_time,
     }
 
     channel.post({
-        url: '/json/report/send_times',
+        url: "/json/report/send_times",
         data: data,
     });
 }
@@ -32,12 +32,12 @@ exports.start_tracking_message = function (opts) {
     const local_id = opts.local_id;
 
     if (!opts.local_id) {
-        blueslip.error('You must supply a local_id');
+        blueslip.error("You must supply a local_id");
         return;
     }
 
     if (exports.messages.has(local_id)) {
-        blueslip.error('We are re-using a local_id');
+        blueslip.error("We are re-using a local_id");
         return;
     }
 
@@ -126,7 +126,7 @@ exports.get_message_state = function (local_id) {
     const state = exports.messages.get(local_id);
 
     if (!state) {
-        blueslip.warn('Unknown local_id: ' + local_id);
+        blueslip.warn("Unknown local_id: " + local_id);
     }
 
     return state;

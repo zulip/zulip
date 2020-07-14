@@ -5,7 +5,7 @@ const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
 
 function report_narrow_time(initial_core_time, initial_free_time, network_time) {
     channel.post({
-        url: '/json/report/narrow_times',
+        url: "/json/report/narrow_times",
         data: {initial_core: initial_core_time.toString(),
                initial_free: initial_free_time.toString(),
                network: network_time.toString()},
@@ -35,7 +35,7 @@ function report_unnarrow_time() {
     const initial_free_time = unnarrow_times.initial_free_time - unnarrow_times.start_time;
 
     channel.post({
-        url: '/json/report/unnarrow_times',
+        url: "/json/report/unnarrow_times",
         data: {initial_core: initial_core_time.toString(),
                initial_free: initial_free_time.toString()},
     });
@@ -84,7 +84,7 @@ function update_narrow_title(filter) {
                 exports.narrow_title = names + " and others";
             }
         } else {
-            if (emails.includes(',')) {
+            if (emails.includes(",")) {
                 exports.narrow_title = "Invalid users";
             } else {
                 exports.narrow_title = "Invalid user";
@@ -159,7 +159,7 @@ exports.activate = function (raw_operators, opts) {
         then_select_id: -1,
         then_select_offset: undefined,
         change_hash: true,
-        trigger: 'unknown',
+        trigger: "unknown",
         ...opts,
     };
 
@@ -234,7 +234,7 @@ exports.activate = function (raw_operators, opts) {
 
     const msg_list = new message_list.MessageList({
         data: msg_data,
-        table_name: 'zfilt',
+        table_name: "zfilt",
         collapse_messages: !narrow_state.filter().is_search(),
     });
 
@@ -247,7 +247,7 @@ exports.activate = function (raw_operators, opts) {
     $("#zfilt").addClass("focused_table");
     $("#zhome").removeClass("focused_table");
 
-    ui_util.change_tab_to('#home');
+    ui_util.change_tab_to("#home");
     message_list.set_narrowed(msg_list);
     current_msg_list = message_list.narrowed;
 
@@ -307,7 +307,7 @@ exports.activate = function (raw_operators, opts) {
         hashchange.save_narrow(operators);
     }
 
-    if (page_params.search_pills_enabled && opts.trigger !== 'search') {
+    if (page_params.search_pills_enabled && opts.trigger !== "search") {
         search_pill_widget.widget.clear(true);
 
         for (const operator of operators) {
@@ -406,7 +406,7 @@ exports.maybe_add_local_messages = function (opts) {
         id_info.final_select_id = LARGER_THAN_MAX_MESSAGE_ID;
     }
 
-    if (unread_info.flavor === 'cannot_compute') {
+    if (unread_info.flavor === "cannot_compute") {
         // Full-text search and potentially other future cases where
         // we can't check which messages match on the frontend, so it
         // doesn't matter what's in our cache, we must go to the server.
@@ -425,7 +425,7 @@ exports.maybe_add_local_messages = function (opts) {
     // We can now assume narrow_state.filter().can_apply_locally(),
     // because !can_apply_locally => cannot_compute
 
-    if (unread_info.flavor === 'found' &&
+    if (unread_info.flavor === "found" &&
             narrow_state.filter().allow_use_first_unread_when_narrowing()) {
         // We have at least one unread message in this narrow, and the
         // narrow is one where we use the first unread message in
@@ -555,7 +555,7 @@ exports.update_selection = function (opts) {
 exports.activate_stream_for_cycle_hotkey = function (stream_name) {
     // This is the common code for A/D hotkeys.
     const filter_expr = [
-        {operator: 'stream', operand: stream_name},
+        {operator: "stream", operand: stream_name},
     ];
     exports.activate(filter_expr, {});
 };
@@ -609,8 +609,8 @@ exports.narrow_to_next_topic = function () {
     }
 
     const filter_expr = [
-        {operator: 'stream', operand: next_narrow.stream},
-        {operator: 'topic', operand: next_narrow.topic},
+        {operator: "stream", operand: next_narrow.stream},
+        {operator: "topic", operand: next_narrow.topic},
     ];
 
     exports.activate(filter_expr, {});
@@ -631,7 +631,7 @@ exports.narrow_to_next_pm_string = function () {
     const pm_with = people.user_ids_string_to_emails_string(next_pm);
 
     const filter_expr = [
-        {operator: 'pm-with', operand: pm_with},
+        {operator: "pm-with", operand: pm_with},
     ];
 
     // force_close parameter is true to not auto open compose_box
@@ -652,7 +652,7 @@ exports.by = function (operator, operand, opts) {
 exports.by_topic = function (target_id, opts) {
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
     const original = message_store.get(target_id);
-    if (original.type !== 'stream') {
+    if (original.type !== "stream") {
         // Only stream messages have topics, but the
         // user wants us to narrow in some way.
         exports.by_recipient(target_id, opts);
@@ -665,8 +665,8 @@ exports.by_topic = function (target_id, opts) {
     unread_ops.notify_server_message_read(original);
 
     const search_terms = [
-        {operator: 'stream', operand: original.stream},
-        {operator: 'topic', operand: original.topic},
+        {operator: "stream", operand: original.stream},
+        {operator: "topic", operand: original.topic},
     ];
     opts = { then_select_id: target_id, ...opts };
     exports.activate(search_terms, opts);
@@ -684,12 +684,12 @@ exports.by_recipient = function (target_id, opts) {
     unread_ops.notify_server_message_read(message);
 
     switch (message.type) {
-    case 'private':
-        exports.by('pm-with', message.reply_to, opts);
+    case "private":
+        exports.by("pm-with", message.reply_to, opts);
         break;
 
-    case 'stream':
-        exports.by('stream', message.stream, opts);
+    case "stream":
+        exports.by("stream", message.stream, opts);
         break;
     }
 };
@@ -701,10 +701,10 @@ exports.to_compose_target = function () {
     }
 
     const opts = {
-        trigger: 'narrow_to_compose_target',
+        trigger: "narrow_to_compose_target",
     };
 
-    if (compose_state.get_message_type() === 'stream') {
+    if (compose_state.get_message_type() === "stream") {
         const stream_name = compose_state.stream_name();
         const stream_id = stream_data.get_stream_id(stream_name);
         if (!stream_id) {
@@ -713,26 +713,26 @@ exports.to_compose_target = function () {
         // If we are composing to a new topic, we narrow to the stream but
         // grey-out the message view instead of narrowing to an empty view.
         const topics = stream_topic_history.get_recent_topic_names(stream_id);
-        const operators = [{operator: 'stream', operand: stream_name}];
+        const operators = [{operator: "stream", operand: stream_name}];
         const topic = compose_state.topic();
         if (topics.includes(topic)) {
-            operators.push({operator: 'topic', operand: topic});
+            operators.push({operator: "topic", operand: topic});
         }
         exports.activate(operators, opts);
         return;
     }
 
-    if (compose_state.get_message_type() === 'private') {
+    if (compose_state.get_message_type() === "private") {
         const recipient_string = compose_state.private_message_recipient();
         const emails = util.extract_pm_recipients(recipient_string);
         const invalid = emails.filter((email) => !people.is_valid_email_for_compose(email));
         // If there are no recipients or any recipient is
         // invalid, narrow to all PMs.
         if (emails.length === 0 || invalid.length > 0) {
-            exports.by('is', 'private', opts);
+            exports.by("is", "private", opts);
             return;
         }
-        exports.by('pm-with', util.normalize_recipients(recipient_string), opts);
+        exports.by("pm-with", util.normalize_recipients(recipient_string), opts);
     }
 };
 
@@ -793,9 +793,9 @@ exports.deactivate = function () {
 
     exports.hide_empty_narrow_message();
 
-    $("body").removeClass('narrowed_view');
-    $("#zfilt").removeClass('focused_table');
-    $("#zhome").addClass('focused_table');
+    $("body").removeClass("narrowed_view");
+    $("#zfilt").removeClass("focused_table");
+    $("#zhome").addClass("focused_table");
     current_msg_list = home_msg_list;
     condense.condense_and_collapse($("#zhome div.message_row"));
 
@@ -878,8 +878,8 @@ function show_search_query() {
     // Add in stream:foo and topic:bar if present
     if (current_filter.has_operator("stream") || current_filter.has_operator("topic")) {
         let stream_topic_string = "";
-        const stream = current_filter.operands('stream')[0];
-        const topic = current_filter.operands('topic')[0];
+        const stream = current_filter.operands("stream")[0];
+        const topic = current_filter.operands("topic")[0];
         if (stream) {
             stream_topic_string = "stream: " + stream;
         }
@@ -887,21 +887,21 @@ function show_search_query() {
             stream_topic_string = stream_topic_string + " topic: " + topic;
         }
 
-        search_string_display.append(' ');
-        search_string_display.append($('<span>').text(stream_topic_string));
+        search_string_display.append(" ");
+        search_string_display.append($("<span>").text(stream_topic_string));
     }
 
     for (const query_word of query_words) {
-        search_string_display.append(' ');
+        search_string_display.append(" ");
 
         // if query contains stop words, it is enclosed by a <del> tag
         if (page_params.stop_words.includes(query_word)) {
             // stop_words do not need sanitization so this is unnecessary but it is fail-safe.
-            search_string_display.append($('<del>').text(query_word));
+            search_string_display.append($("<del>").text(query_word));
             query_contains_stop_words = true;
         } else {
             // We use .text("...") to sanitize the user-given query_string.
-            search_string_display.append($('<span>').text(query_word));
+            search_string_display.append($("<span>").text(query_word));
         }
     }
 
@@ -912,7 +912,7 @@ function show_search_query() {
 }
 
 function pick_empty_narrow_banner() {
-    const default_banner = $('#empty_narrow_message');
+    const default_banner = $("#empty_narrow_message");
 
     const current_filter = narrow_state.filter();
 
@@ -992,13 +992,13 @@ function pick_empty_narrow_banner() {
         show_search_query();
         return $("#empty_search_narrow_message");
     } else if (first_operator === "pm-with") {
-        if (!people.is_valid_bulk_emails_for_compose(first_operand.split(','))) {
-            if (!first_operand.includes(',')) {
+        if (!people.is_valid_bulk_emails_for_compose(first_operand.split(","))) {
+            if (!first_operand.includes(",")) {
                 return $("#non_existing_user");
             }
             return $("#non_existing_users");
         }
-        if (!first_operand.includes(',')) {
+        if (!first_operand.includes(",")) {
             // You have no private messages with this person
             if (people.is_current_user(first_operand)) {
                 return $("#empty_narrow_self_private_message");

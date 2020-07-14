@@ -1,5 +1,5 @@
 const util = require("./util");
-const FoldDict = require('./fold_dict').FoldDict;
+const FoldDict = require("./fold_dict").FoldDict;
 
 // The unread module tracks the message IDs and locations of the
 // user's unread messages.  The tracking is initialized with
@@ -422,11 +422,11 @@ exports.process_loaded_messages = function (messages) {
 
         unread_messages.add(message.id);
 
-        if (message.type === 'private') {
+        if (message.type === "private") {
             exports.unread_pm_counter.add(message);
         }
 
-        if (message.type === 'stream') {
+        if (message.type === "stream") {
             exports.unread_topic_counter.add(
                 message.stream_id,
                 message.topic,
@@ -445,7 +445,7 @@ exports.update_message_for_mention = function (message) {
     }
 
     const is_unmuted_mention =
-        message.type === 'stream' &&
+        message.type === "stream" &&
         message.mentioned &&
         !muting.is_topic_muted(message.stream_id, message.topic);
 

@@ -1,4 +1,4 @@
-var common = require('../casper_lib/common.js');
+var common = require("../casper_lib/common.js");
 
 function star_count() {
     return casper.evaluate(function () {
@@ -11,22 +11,22 @@ function toggle_test_star_message() {
         var msg = $('.message_content:contains("test star"):visible').last();
 
         if (msg.length !== 1) {
-            return 'cannot find test star message';
+            return "cannot find test star message";
         }
 
         var star_icon = msg
-            .closest('.messagebox')
-            .find('.star');
+            .closest(".messagebox")
+            .find(".star");
 
         if (star_icon.length !== 1) {
-            return 'cannot find star icon';
+            return "cannot find star icon";
         }
 
         star_icon.click();
     });
 
     if (error) {
-        casper.test.info('\n\nERROR: ' + error);
+        casper.test.info("\n\nERROR: " + error);
     }
 
     casper.test.assert(!error);
@@ -38,10 +38,10 @@ casper.then(function () {
     casper.test.info("Sending test message");
 });
 
-common.then_send_message('stream', {
-    stream: 'Verona',
-    subject: 'stars',
-    content: 'test star',
+common.then_send_message("stream", {
+    stream: "Verona",
+    subject: "stars",
+    content: "test star",
 });
 
 casper.then(function () {
@@ -60,7 +60,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#zhome .fa-star', function () {
+    casper.waitUntilVisible("#zhome .fa-star", function () {
         casper.test.assertEquals(star_count(), 1,
                                  "Got expected single star count.");
 
@@ -68,9 +68,9 @@ casper.then(function () {
     });
 });
 
-casper.waitUntilVisible('#zfilt', function () {
+casper.waitUntilVisible("#zfilt", function () {
     // You can narrow to your starred messages.
-    common.expected_messages('zfilt', ['Verona > stars'], ['<p>test star</p>']);
+    common.expected_messages("zfilt", ["Verona > stars"], ["<p>test star</p>"]);
     common.un_narrow();
 });
 

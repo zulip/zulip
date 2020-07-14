@@ -5,8 +5,8 @@ const user_search = function (opts) {
 
     const self = {};
 
-    const $widget = $('#user_search_section').expectOne();
-    const $input = $('.user-list-filter').expectOne();
+    const $widget = $("#user_search_section").expectOne();
+    const $input = $(".user-list-filter").expectOne();
 
     self.input_field = function () {
         return $input;
@@ -17,11 +17,11 @@ const user_search = function (opts) {
     };
 
     self.searching = function () {
-        return $input.is(':focus');
+        return $input.is(":focus");
     };
 
     self.empty = function () {
-        return self.text() === '';
+        return self.text() === "";
     };
 
     self.clear_search = function () {
@@ -30,7 +30,7 @@ const user_search = function (opts) {
             return;
         }
 
-        $input.val('');
+        $input.val("");
         $input.blur();
         opts.reset_items();
     };
@@ -41,12 +41,12 @@ const user_search = function (opts) {
             return;
         }
 
-        $input.val('');
+        $input.val("");
         opts.update_list();
     };
 
     self.hide_widget = function () {
-        $widget.addClass('notdisplayed');
+        $widget.addClass("notdisplayed");
         resize.resize_sidebars();
     };
 
@@ -54,17 +54,17 @@ const user_search = function (opts) {
         // Hide all the popovers but not userlist sidebar
         // when the user wants to search.
         popovers.hide_all_except_sidebars();
-        $widget.removeClass('notdisplayed');
+        $widget.removeClass("notdisplayed");
         resize.resize_sidebars();
     };
 
     self.widget_shown = function () {
-        return $widget.hasClass('notdisplayed');
+        return $widget.hasClass("notdisplayed");
     };
 
     self.clear_and_hide_search = function () {
         if (!self.empty()) {
-            $input.val('');
+            $input.val("");
             opts.update_list();
         }
         self.close_widget();
@@ -80,9 +80,9 @@ const user_search = function (opts) {
         const column = $input.closest(".app-main [class^='column-']");
         if (!column.hasClass("expanded")) {
             popovers.hide_all();
-            if (column.hasClass('column-left')) {
+            if (column.hasClass("column-left")) {
                 stream_popover.show_streamlist_sidebar();
-            } else if (column.hasClass('column-right')) {
+            } else if (column.hasClass("column-right")) {
                 popovers.show_userlist_sidebar();
             }
         }
@@ -107,11 +107,11 @@ const user_search = function (opts) {
         e.stopPropagation();
     }
 
-    $('#clear_search_people_button').on('click', self.clear_search);
-    $('#userlist-header').on('click', self.toggle_filter_displayed);
+    $("#clear_search_people_button").on("click", self.clear_search);
+    $("#userlist-header").on("click", self.toggle_filter_displayed);
 
-    $input.on('input', opts.update_list);
-    $input.on('focus', on_focus);
+    $input.on("input", opts.update_list);
+    $input.on("focus", on_focus);
 
     return self;
 };

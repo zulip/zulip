@@ -1,9 +1,9 @@
-set_global('$', global.make_zjquery());
-set_global('poll_widget', {});
-set_global('tictactoe_widget', {});
-set_global('todo_widget', {});
-set_global('zform', {});
-set_global('document', 'document-stub');
+set_global("$", global.make_zjquery());
+set_global("poll_widget", {});
+set_global("tictactoe_widget", {});
+set_global("todo_widget", {});
+set_global("zform", {});
+set_global("document", "document-stub");
 
 const noop = () => {};
 const return_true = () => true;
@@ -11,18 +11,18 @@ const return_false = () => false;
 
 $(document).on = noop;
 
-zrequire('widgetize');
+zrequire("widgetize");
 
-set_global('narrow_state', {});
-set_global('current_msg_list', {});
+set_global("narrow_state", {});
+set_global("current_msg_list", {});
 
-run_test('activate', () => {
+run_test("activate", () => {
     // Both widgetize.activate and widgetize.handle_event are tested
     // here to use the "caching" of widgets
-    const row = $.create('<stub message row>');
-    row.attr('id', 'zhome2909');
-    const message_content = $.create('#zhome2909');
-    row.set_find_results('.message_content', message_content);
+    const row = $.create("<stub message row>");
+    row.attr("id", "zhome2909");
+    const message_content = $.create("#zhome2909");
+    row.set_find_results(".message_content", message_content);
 
     const events = [
         {
@@ -53,16 +53,16 @@ run_test('activate', () => {
 
     const opts = {
         events: events.slice(),
-        extra_data: '',
+        extra_data: "",
         message: {
             id: 2001,
         },
         post_to_server: (data) => {
-            assert.equal(data.msg_type, 'widget');
-            assert.equal(data.data, 'test_data');
+            assert.equal(data.msg_type, "widget");
+            assert.equal(data.data, "test_data");
         },
         row: row,
-        widget_type: 'poll',
+        widget_type: "poll",
     };
 
     narrow_state.active = return_false;
@@ -75,20 +75,20 @@ run_test('activate', () => {
     poll_widget.activate = (data) => {
         is_widget_activated = true;
         widget_elem = data.elem;
-        assert(widget_elem.hasClass('widget-content'));
+        assert(widget_elem.hasClass("widget-content"));
         widget_elem.handle_events = (e) => {
             is_event_handled = true;
             assert.notDeepStrictEqual(e, events);
             events.shift();
             assert.deepStrictEqual(e, events);
         };
-        data.callback('test_data');
+        data.callback("test_data");
     };
 
     message_content.append = (elem) => {
         is_widget_elem_inserted = true;
         assert.equal(elem, widget_elem);
-        assert(elem.hasClass('widget-content'));
+        assert(elem.hasClass("widget-content"));
     };
 
     is_widget_elem_inserted = false;
@@ -124,18 +124,18 @@ run_test('activate', () => {
     assert(!is_widget_activated);
     assert(!is_event_handled);
 
-    blueslip.expect('warn', 'unknown widget_type');
+    blueslip.expect("warn", "unknown widget_type");
     narrow_state.active = return_false;
     is_widget_elem_inserted = false;
     is_widget_activated = false;
     is_event_handled = false;
-    opts.widget_type = 'invalid_widget';
+    opts.widget_type = "invalid_widget";
 
     widgetize.activate(opts);
     assert(!is_widget_elem_inserted);
     assert(!is_widget_activated);
     assert(!is_event_handled);
-    assert.equal(blueslip.get_test_logs('warn')[0].more_info, 'invalid_widget');
+    assert.equal(blueslip.get_test_logs("warn")[0].more_info, "invalid_widget");
 
     /* Testing widgetize.handle_events */
     const post_activate_event = {

@@ -25,7 +25,7 @@ exports.get_scroll_element = function (element_selector) {
     const sb = SimpleBar.instances.get(element);
     if (sb) {
         return $(sb.getScrollElement());
-    } else if ('simplebar' in element.dataset) {
+    } else if ("simplebar" in element.dataset) {
         // The SimpleBar mutation observer hasn’t processed this element yet.
         // Create the SimpleBar early in case we need to add event listeners.
         return $(new SimpleBar(element).getScrollElement());
@@ -60,7 +60,7 @@ function update_message_in_all_views(message_id, callback) {
 
 exports.show_error_for_unsupported_platform = function () {
     // Check if the user is using old desktop app
-    if (typeof bridge !== 'undefined') {
+    if (typeof bridge !== "undefined") {
         // We don't internationalize this string because it is long,
         // and few users will have both the old desktop app and an
         // internationalized version of Zulip anyway.
@@ -111,9 +111,9 @@ exports.update_starred_view = function (message_id, new_value) {
 exports.show_message_failed = function (message_id, failed_msg) {
     // Failed to send message, so display inline retry/cancel
     update_message_in_all_views(message_id, (row) => {
-        const failed_div = row.find('.message_failed');
-        failed_div.toggleClass('notvisible', false);
-        failed_div.find('.failed_text').attr('title', failed_msg);
+        const failed_div = row.find(".message_failed");
+        failed_div.toggleClass("notvisible", false);
+        failed_div.find(".failed_text").attr("title", failed_msg);
     });
 };
 
@@ -138,14 +138,14 @@ exports.remove_messages = function (message_ids) {
 exports.show_failed_message_success = function (message_id) {
     // Previously failed message succeeded
     update_message_in_all_views(message_id, (row) => {
-        row.find('.message_failed').toggleClass('notvisible', true);
+        row.find(".message_failed").toggleClass("notvisible", true);
     });
 };
 
 exports.get_hotkey_deprecation_notice = function (originalHotkey, replacementHotkey) {
     return i18n.t(
         'We\'ve replaced the "__originalHotkey__" hotkey with "__replacementHotkey__" '
-            + 'to make this common shortcut easier to trigger.',
+            + "to make this common shortcut easier to trigger.",
         { originalHotkey: originalHotkey, replacementHotkey: replacementHotkey },
     );
 };
@@ -154,9 +154,9 @@ let shown_deprecation_notices = [];
 exports.maybe_show_deprecation_notice = function (key) {
     let message;
     const isCmdOrCtrl = common.has_mac_keyboard() ? "Cmd" : "Ctrl";
-    if (key === 'C') {
-        message = exports.get_hotkey_deprecation_notice('C', 'x');
-    } else if (key === '*') {
+    if (key === "C") {
+        message = exports.get_hotkey_deprecation_notice("C", "x");
+    } else if (key === "*") {
         message = exports.get_hotkey_deprecation_notice("*", isCmdOrCtrl + " + s");
     } else {
         blueslip.error("Unexpected deprecation notice for hotkey:", key);
@@ -166,7 +166,7 @@ exports.maybe_show_deprecation_notice = function (key) {
     // Here we handle the tracking for showing deprecation notices,
     // whether or not local storage is available.
     if (localstorage.supported()) {
-        const notices_from_storage = JSON.parse(localStorage.getItem('shown_deprecation_notices'));
+        const notices_from_storage = JSON.parse(localStorage.getItem("shown_deprecation_notices"));
         if (notices_from_storage !== null) {
             shown_deprecation_notices = notices_from_storage;
         } else {
@@ -175,12 +175,12 @@ exports.maybe_show_deprecation_notice = function (key) {
     }
 
     if (!shown_deprecation_notices.includes(key)) {
-        $('#deprecation-notice-modal').modal('show');
-        $('#deprecation-notice-message').text(message);
-        $('#close-deprecation-notice').focus();
+        $("#deprecation-notice-modal").modal("show");
+        $("#deprecation-notice-message").text(message);
+        $("#close-deprecation-notice").focus();
         shown_deprecation_notices.push(key);
         if (localstorage.supported()) {
-            localStorage.setItem('shown_deprecation_notices', JSON.stringify(shown_deprecation_notices));
+            localStorage.setItem("shown_deprecation_notices", JSON.stringify(shown_deprecation_notices));
         }
     }
 };
@@ -190,7 +190,7 @@ exports.maybe_show_deprecation_notice = function (key) {
 let saved_compose_cursor = 0;
 
 exports.set_compose_textarea_handlers = function () {
-    $('#compose-textarea').blur(function () {
+    $("#compose-textarea").blur(function () {
         saved_compose_cursor = $(this).caret();
     });
 
@@ -202,7 +202,7 @@ exports.set_compose_textarea_handlers = function () {
 };
 
 exports.restore_compose_cursor = function () {
-    $('#compose-textarea')
+    $("#compose-textarea")
         .focus()
         .caret(saved_compose_cursor);
 };

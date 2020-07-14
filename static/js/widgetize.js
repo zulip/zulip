@@ -9,7 +9,7 @@ const widget_contents = new Map();
 exports.widget_contents = widget_contents;
 
 function set_widget_in_message(row, widget_elem) {
-    const content_holder = row.find('.message_content');
+    const content_holder = row.find(".message_content");
     content_holder.empty().append(widget_elem);
 }
 
@@ -24,18 +24,18 @@ exports.activate = function (in_opts) {
     events.shift();
 
     if (!widgets.has(widget_type)) {
-        blueslip.warn('unknown widget_type', widget_type);
+        blueslip.warn("unknown widget_type", widget_type);
         return;
     }
 
     const callback = function (data) {
         post_to_server({
-            msg_type: 'widget',
+            msg_type: "widget",
             data: data,
         });
     };
 
-    if (row.attr('id').startsWith('zhome') && narrow_state.active()) {
+    if (row.attr("id").startsWith("zhome") && narrow_state.active()) {
         // Don't place widget in a home message row if we are narrowed
         // to active state
         return;
@@ -49,7 +49,7 @@ exports.activate = function (in_opts) {
 
     // We depend on our widgets to use templates to build
     // the HTML that will eventually go in this div.
-    widget_elem = $('<div>').addClass('widget-content');
+    widget_elem = $("<div>").addClass("widget-content");
 
     widgets.get(widget_type).activate({
         elem: widget_elem,

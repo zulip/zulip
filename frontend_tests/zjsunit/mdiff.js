@@ -11,7 +11,7 @@
  * unicode string containing their diff.
  */
 
-const difflib = require('difflib');
+const difflib = require("difflib");
 
 function apply_color(input_string, changes) {
     let previous_index = 0;
@@ -126,7 +126,7 @@ module.exports = { diff_strings };
 // Only run this code if called as a command-line utility
 if (require.main === module) {
     // First two args are just "node" and "mdiff.js"
-    const argv = require('minimist')(process.argv.slice(2));
+    const argv = require("minimist")(process.argv.slice(2));
 
     if (Object.prototype.hasOwnProperty.call(argv, "help")) {
         console.log(process.argv[0] + " " + process.argv[1] +

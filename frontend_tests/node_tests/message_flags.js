@@ -1,19 +1,19 @@
-zrequire('unread');
-zrequire('unread_ops');
-zrequire('message_flags');
+zrequire("unread");
+zrequire("unread_ops");
+zrequire("message_flags");
 
-set_global('ui', {});
-set_global('channel', {});
-set_global('starred_messages', {
+set_global("ui", {});
+set_global("channel", {});
+set_global("starred_messages", {
     add: () => {},
     remove: () => {},
 });
 
-run_test('starred', () => {
+run_test("starred", () => {
     const message = {
         id: 50,
     };
-    set_global('current_msg_list', {
+    set_global("current_msg_list", {
         all_messages: () => [message],
         is_search: () => false,
     });
@@ -26,7 +26,7 @@ run_test('starred', () => {
     let posted_data;
 
     channel.post = (opts) => {
-        assert.equal(opts.url, '/json/messages/flags');
+        assert.equal(opts.url, "/json/messages/flags");
         posted_data = opts.data;
     };
 
@@ -35,9 +35,9 @@ run_test('starred', () => {
     assert(ui_updated);
 
     assert.deepEqual(posted_data, {
-        messages: '[50]',
-        flag: 'starred',
-        op: 'add',
+        messages: "[50]",
+        flag: "starred",
+        op: "add",
     });
 
     assert.deepEqual(message, {
@@ -52,9 +52,9 @@ run_test('starred', () => {
     assert(ui_updated);
 
     assert.deepEqual(posted_data, {
-        messages: '[50]',
-        flag: 'starred',
-        op: 'remove',
+        messages: "[50]",
+        flag: "starred",
+        op: "remove",
     });
 
     assert.deepEqual(message, {
@@ -62,7 +62,7 @@ run_test('starred', () => {
         starred: false,
     });
 });
-run_test('read', () => {
+run_test("read", () => {
     // Way to capture posted info in every request
     let channel_post_opts;
     channel.post = (opts) => {
@@ -82,12 +82,12 @@ run_test('read', () => {
     ];
     message_flags.send_read(msgs_to_flag_read);
     assert.deepEqual(channel_post_opts, {
-        url: '/json/messages/flags',
+        url: "/json/messages/flags",
         idempotent: true,
         data: {
-            messages: '[1,2,3,4,5]',
-            op: 'add',
-            flag: 'read',
+            messages: "[1,2,3,4,5]",
+            op: "add",
+            flag: "read",
         },
         success: channel_post_opts.success,
     });
@@ -98,12 +98,12 @@ run_test('read', () => {
     };
     channel_post_opts.success(success_response_data);
     assert.deepEqual(channel_post_opts, {
-        url: '/json/messages/flags',
+        url: "/json/messages/flags",
         idempotent: true,
         data: {
-            messages: '[6,7]',
-            op: 'add',
-            flag: 'read',
+            messages: "[6,7]",
+            op: "add",
+            flag: "read",
         },
         success: channel_post_opts.success,
     });
@@ -126,12 +126,12 @@ run_test('read', () => {
     ];
     message_flags.send_read(msgs_to_flag_read);
     assert.deepEqual(channel_post_opts, {
-        url: '/json/messages/flags',
+        url: "/json/messages/flags",
         idempotent: true,
         data: {
-            messages: '[3,4,5,6,7]',
-            op: 'add',
-            flag: 'read',
+            messages: "[3,4,5,6,7]",
+            op: "add",
+            flag: "read",
         },
         success: channel_post_opts.success,
     });
@@ -148,12 +148,12 @@ run_test('read', () => {
 
     // Former locally echoed messages flagging retried
     assert.deepEqual(channel_post_opts, {
-        url: '/json/messages/flags',
+        url: "/json/messages/flags",
         idempotent: true,
         data: {
-            messages: '[1,2]',
-            op: 'add',
-            flag: 'read',
+            messages: "[1,2]",
+            op: "add",
+            flag: "read",
         },
         success: channel_post_opts.success,
     });

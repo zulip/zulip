@@ -1,9 +1,9 @@
 const render_settings_custom_user_profile_field = require("../templates/settings/custom_user_profile_field.hbs");
-const render_settings_dev_env_email_access = require('../templates/settings/dev_env_email_access.hbs');
-const render_settings_api_key_modal = require('../templates/settings/api_key_modal.hbs');
+const render_settings_dev_env_email_access = require("../templates/settings/dev_env_email_access.hbs");
+const render_settings_api_key_modal = require("../templates/settings/api_key_modal.hbs");
 
 exports.update_email = function (new_email) {
-    const email_input = $('#email_value');
+    const email_input = $("#email_value");
 
     if (email_input) {
         email_input.text(new_email);
@@ -47,50 +47,50 @@ exports.user_can_change_avatar = function () {
 
 exports.update_name_change_display = function () {
     if (!exports.user_can_change_name()) {
-        $('#full_name').attr('disabled', 'disabled');
+        $("#full_name").attr("disabled", "disabled");
         $(".change_name_tooltip").show();
     } else {
-        $('#full_name').attr('disabled', false);
+        $("#full_name").attr("disabled", false);
         $(".change_name_tooltip").hide();
     }
 };
 
 exports.update_email_change_display = function () {
     if (page_params.realm_email_changes_disabled && !page_params.is_admin) {
-        $('#change_email .button').attr('disabled', 'disabled');
+        $("#change_email .button").attr("disabled", "disabled");
         $(".change_email_tooltip").show();
     } else {
-        $('#change_email .button').attr('disabled', false);
+        $("#change_email .button").attr("disabled", false);
         $(".change_email_tooltip").hide();
     }
 };
 
 exports.update_avatar_change_display = function () {
     if (!exports.user_can_change_avatar()) {
-        $('#user-avatar-upload-widget .image_upload_button').attr('disabled', 'disabled');
-        $("#user-avatar-upload-widget .settings-page-delete-button .button").attr('disabled', 'disabled');
+        $("#user-avatar-upload-widget .image_upload_button").attr("disabled", "disabled");
+        $("#user-avatar-upload-widget .settings-page-delete-button .button").attr("disabled", "disabled");
     } else {
-        $('#user-avatar-upload-widget .image_upload_button').attr('disabled', false);
-        $('#user-avatar-upload-widget .settings-page-delete-button .button').attr('disabled', false);
+        $("#user-avatar-upload-widget .image_upload_button").attr("disabled", false);
+        $("#user-avatar-upload-widget .settings-page-delete-button .button").attr("disabled", false);
     }
 };
 
 function display_avatar_upload_complete() {
-    $('#user-avatar-upload-widget .upload-spinner-background').css({visibility: 'hidden'});
-    $('#user-avatar-upload-widget .settings-page-upload-text').show();
-    $('#user-avatar-upload-widget .settings-page-delete-button').show();
+    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
+    $("#user-avatar-upload-widget .settings-page-upload-text").show();
+    $("#user-avatar-upload-widget .settings-page-delete-button").show();
 }
 
 function display_avatar_upload_started() {
     $("#user-avatar-source").hide();
-    $('#user-avatar-upload-widget .upload-spinner-background').css({visibility: 'visible'});
-    $('#user-avatar-upload-widget .settings-page-upload-text').hide();
-    $('#user-avatar-upload-widget .settings-page-delete-button').hide();
+    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
+    $("#user-avatar-upload-widget .settings-page-upload-text").hide();
+    $("#user-avatar-upload-widget .settings-page-delete-button").hide();
 }
 
 
 function settings_change_error(message, xhr) {
-    ui_report.error(message, xhr, $('#account-settings-status').expectOne());
+    ui_report.error(message, xhr, $("#account-settings-status").expectOne());
 }
 
 function update_custom_profile_field(field, method) {
@@ -237,7 +237,7 @@ exports.initialize_custom_user_type_fields = function (element_id, user_id, is_e
             }
 
             if (is_editable) {
-                const input = pill_container.children('.input');
+                const input = pill_container.children(".input");
                 if (set_handler_on_update) {
                     user_pill.set_up_typeahead_on_pills(input, pills, update_custom_user_field);
                     pills.onPillRemove(() => {
@@ -280,7 +280,7 @@ exports.set_up = function () {
     const setup_api_key_modal = _.once(() => {
         function request_api_key(data) {
             channel.post({
-                url: '/json/fetch_api_key',
+                url: "/json/fetch_api_key",
                 data: data,
                 success: function (data) {
                     $("#get_api_key_password").val("");
@@ -288,19 +288,19 @@ exports.set_up = function () {
                     // The display property on the error bar is set to important
                     // so instead of making display: none !important we just
                     // remove it.
-                    $('#api_key_status').remove();
+                    $("#api_key_status").remove();
                     $("#password_confirmation").hide();
                     $("#show_api_key").show();
                 },
                 error: function (xhr) {
-                    ui_report.error(i18n.t("Error"), xhr, $('#api_key_status').expectOne());
+                    ui_report.error(i18n.t("Error"), xhr, $("#api_key_status").expectOne());
                     $("#show_api_key").hide();
                     $("#api_key_modal").show();
                 },
             });
         }
 
-        $('.account-settings-form').append(render_settings_api_key_modal());
+        $(".account-settings-form").append(render_settings_api_key_modal());
         $("#api_key_value").text("");
         $("#show_api_key").hide();
 
@@ -320,12 +320,12 @@ exports.set_up = function () {
 
         $("#show_api_key").on("click", "button.regenerate_api_key", (e) => {
             channel.post({
-                url: '/json/users/me/api_key/regenerate',
+                url: "/json/users/me/api_key/regenerate",
                 success: function (data) {
-                    $('#api_key_value').text(data.api_key);
+                    $("#api_key_value").text(data.api_key);
                 },
                 error: function (xhr) {
-                    $('#user_api_key_error').text(JSON.parse(xhr.responseText).msg).show();
+                    $("#user_api_key_error").text(JSON.parse(xhr.responseText).msg).show();
                 },
             });
             e.preventDefault();
@@ -343,9 +343,9 @@ exports.set_up = function () {
         });
     });
 
-    $('#api_key_button').click((e) => {
+    $("#api_key_button").click((e) => {
         setup_api_key_modal();
-        overlays.open_modal('#api_key_modal');
+        overlays.open_modal("#api_key_modal");
         e.preventDefault();
         e.stopPropagation();
     });
@@ -353,69 +353,69 @@ exports.set_up = function () {
     function clear_password_change() {
         // Clear the password boxes so that passwords don't linger in the DOM
         // for an XSS attacker to find.
-        $('#old_password, #new_password').val('');
-        common.password_quality('', $('#pw_strength .bar'), $('#new_password'));
+        $("#old_password, #new_password").val("");
+        common.password_quality("", $("#pw_strength .bar"), $("#new_password"));
     }
 
     clear_password_change();
 
-    $("#change_full_name").on('click', (e) => {
+    $("#change_full_name").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (exports.user_can_change_name()) {
-            $('#change_full_name_modal').find("input[name='full_name']").val(page_params.full_name);
-            overlays.open_modal('#change_full_name_modal');
+            $("#change_full_name_modal").find("input[name='full_name']").val(page_params.full_name);
+            overlays.open_modal("#change_full_name_modal");
         }
     });
 
-    $('#change_password').on('click', (e) => {
+    $("#change_password").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        overlays.open_modal('#change_password_modal');
-        $('#pw_change_controls').show();
+        overlays.open_modal("#change_password_modal");
+        $("#pw_change_controls").show();
         if (page_params.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
-            require(['zxcvbn'], (zxcvbn) => {
+            require(["zxcvbn"], (zxcvbn) => {
                 window.zxcvbn = zxcvbn;
-                $('#pw_strength .bar').removeClass("fade");
+                $("#pw_strength .bar").removeClass("fade");
             });
         }
     });
 
-    $('#change_password_modal').find('[data-dismiss=modal]').on('click', () => {
+    $("#change_password_modal").find("[data-dismiss=modal]").on("click", () => {
         clear_password_change();
     });
 
     // If the modal is closed using the 'close' button or the 'Cancel' button
-    $('.modal').find('[data-dismiss=modal]').on('click', () => {
+    $(".modal").find("[data-dismiss=modal]").on("click", () => {
         // Enable mouse events for the background on closing modal
-        $('.overlay.show').attr("style", null);
+        $(".overlay.show").attr("style", null);
     });
 
-    $('#change_password_button').on('click', (e) => {
+    $("#change_password_button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const change_password_error = $('#change_password_modal').find(".change_password_info").expectOne();
+        const change_password_error = $("#change_password_modal").find(".change_password_info").expectOne();
 
         const data = {
-            old_password: $('#old_password').val(),
-            new_password: $('#new_password').val(),
-            confirm_password: $('#confirm_password').val(),
+            old_password: $("#old_password").val(),
+            new_password: $("#new_password").val(),
+            confirm_password: $("#confirm_password").val(),
         };
 
-        const new_pw_field = $('#new_password');
+        const new_pw_field = $("#new_password");
         const new_pw = data.new_password;
-        if (new_pw !== '') {
+        if (new_pw !== "") {
             const password_ok = common.password_quality(new_pw, undefined, new_pw_field);
             if (password_ok === undefined) {
                 // zxcvbn.js didn't load, for whatever reason.
                 settings_change_error(
-                    'An internal error occurred; try reloading the page. ' +
-                        'Sorry for the trouble!');
+                    "An internal error occurred; try reloading the page. " +
+                        "Sorry for the trouble!");
                 return;
             } else if (!password_ok) {
-                settings_change_error(i18n.t('New password is too weak'));
+                settings_change_error(i18n.t("New password is too weak"));
                 return;
             }
         }
@@ -426,23 +426,23 @@ exports.set_up = function () {
             },
             error_msg_element: change_password_error,
         };
-        settings_ui.do_settings_change(channel.patch, '/json/settings', data,
-                                       $('#account-settings-status').expectOne(), opts);
+        settings_ui.do_settings_change(channel.patch, "/json/settings", data,
+                                       $("#account-settings-status").expectOne(), opts);
         clear_password_change();
     });
 
-    $('#new_password').on('input', () => {
-        const field = $('#new_password');
-        common.password_quality(field.val(), $('#pw_strength .bar'), field);
+    $("#new_password").on("input", () => {
+        const field = $("#new_password");
+        common.password_quality(field.val(), $("#pw_strength .bar"), field);
     });
 
-    $("#change_full_name_button").on('click', (e) => {
+    $("#change_full_name_button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const change_full_name_error = $('#change_full_name_modal').find(".change_full_name_info").expectOne();
+        const change_full_name_error = $("#change_full_name_modal").find(".change_full_name_info").expectOne();
         const data = {};
 
-        data.full_name = $('.full_name_change_container').find("input[name='full_name']").val();
+        data.full_name = $(".full_name_change_container").find("input[name='full_name']").val();
 
         const opts = {
             success_continuation: function () {
@@ -450,16 +450,16 @@ exports.set_up = function () {
             },
             error_msg_element: change_full_name_error,
         };
-        settings_ui.do_settings_change(channel.patch, '/json/settings', data,
-                                       $('#account-settings-status').expectOne(), opts);
+        settings_ui.do_settings_change(channel.patch, "/json/settings", data,
+                                       $("#account-settings-status").expectOne(), opts);
     });
 
-    $('#change_email_button').on('click', (e) => {
+    $("#change_email_button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const change_email_error = $('#change_email_modal').find(".change_email_info").expectOne();
+        const change_email_error = $("#change_email_modal").find(".change_email_info").expectOne();
         const data = {};
-        data.email = $('.email_change_container').find("input[name='email']").val();
+        data.email = $(".email_change_container").find("input[name='email']").val();
 
         const opts = {
             success_continuation: function () {
@@ -467,27 +467,27 @@ exports.set_up = function () {
                     const email_msg = render_settings_dev_env_email_access();
                     ui_report.success(email_msg, $("#dev-account-settings-status").expectOne(), 4000);
                 }
-                overlays.close_modal('#change_email_modal');
+                overlays.close_modal("#change_email_modal");
             },
             error_msg_element: change_email_error,
-            success_msg: i18n.t('Check your email (%s) to confirm the new address.').replace(
+            success_msg: i18n.t("Check your email (%s) to confirm the new address.").replace(
                 "%s", data.email),
         };
-        settings_ui.do_settings_change(channel.patch, '/json/settings', data,
-                                       $('#account-settings-status').expectOne(), opts);
+        settings_ui.do_settings_change(channel.patch, "/json/settings", data,
+                                       $("#account-settings-status").expectOne(), opts);
     });
 
-    $('#change_email').on('click', (e) => {
+    $("#change_email").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (!page_params.realm_email_changes_disabled || page_params.is_admin) {
-            overlays.open_modal('#change_email_modal');
-            const email = $('#email_value').text().trim();
-            $('.email_change_container').find("input[name='email']").val(email);
+            overlays.open_modal("#change_email_modal");
+            const email = $("#email_value").text().trim();
+            $(".email_change_container").find("input[name='email']").val(email);
         }
     });
 
-    $("#user_deactivate_account_button").on('click', (e) => {
+    $("#user_deactivate_account_button").on("click", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
@@ -495,18 +495,18 @@ exports.set_up = function () {
         $("#deactivate_self_modal").modal("show");
     });
 
-    $('#account-settings').on('click', '.custom_user_field .remove_date', (e) => {
+    $("#account-settings").on("click", ".custom_user_field .remove_date", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const field = $(e.target).closest('.custom_user_field').expectOne();
+        const field = $(e.target).closest(".custom_user_field").expectOne();
         const field_id = parseInt($(field).attr("data-field-id"), 10);
         update_user_custom_profile_fields([field_id], channel.del);
     });
 
-    $('#account-settings').on('change', '.custom_user_field_value', function (e) {
+    $("#account-settings").on("change", ".custom_user_field_value", function (e) {
         const fields = [];
         const value = $(this).val();
-        const field_id = parseInt($(e.target).closest('.custom_user_field').attr("data-field-id"), 10);
+        const field_id = parseInt($(e.target).closest(".custom_user_field").attr("data-field-id"), 10);
         if (value) {
             fields.push({id: field_id, value: value});
             update_user_custom_profile_fields(fields, channel.patch);
@@ -516,8 +516,8 @@ exports.set_up = function () {
         }
     });
 
-    $("#do_deactivate_self_button").on('click', () => {
-        $("#do_deactivate_self_button .loader").css('display', 'inline-block');
+    $("#do_deactivate_self_button").on("click", () => {
+        $("#do_deactivate_self_button .loader").css("display", "inline-block");
         $("#do_deactivate_self_button span").hide();
         $("#do_deactivate_self_button object").on("load", function () {
             const doc = this.getSVGDocument();
@@ -527,7 +527,7 @@ exports.set_up = function () {
 
         setTimeout(() => {
             channel.del({
-                url: '/json/users/me',
+                url: "/json/users/me",
                 success: function () {
                     $("#deactivate_self_modal").modal("hide");
                     window.location.href = "/login/";
@@ -550,7 +550,7 @@ exports.set_up = function () {
         }, 5000);
     });
 
-    $("#show_my_user_profile_modal").on('click', () => {
+    $("#show_my_user_profile_modal").on("click", () => {
         overlays.close_overlay("settings");
         const user = people.get_by_user_id(people.my_current_user_id());
         setTimeout(() => {
@@ -560,7 +560,7 @@ exports.set_up = function () {
         // If user opened the "preview profile" modal from user
         // settings, then closing preview profile modal should
         // send them back to the settings modal.
-        $('body').one('hidden.bs.modal', '#user-profile-modal', (e) => {
+        $("body").one("hidden.bs.modal", "#user-profile-modal", (e) => {
             e.preventDefault();
             e.stopPropagation();
             popovers.hide_user_profile();
@@ -577,13 +577,13 @@ exports.set_up = function () {
     function upload_avatar(file_input) {
         const form_data = new FormData();
 
-        form_data.append('csrfmiddlewaretoken', csrf_token);
+        form_data.append("csrfmiddlewaretoken", csrf_token);
         for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
-            form_data.append('file-' + i, file);
+            form_data.append("file-" + i, file);
         }
         display_avatar_upload_started();
         channel.post({
-            url: '/json/users/me/avatar',
+            url: "/json/users/me/avatar",
             data: form_data,
             cache: false,
             processData: false,
@@ -596,7 +596,7 @@ exports.set_up = function () {
             },
             error: function (xhr) {
                 display_avatar_upload_complete();
-                if (page_params.avatar_source === 'G') {
+                if (page_params.avatar_source === "G") {
                     $("#user-avatar-source").show();
                 }
                 const $error = $("#user-avatar-upload-widget .image_file_input_error");

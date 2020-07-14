@@ -1,9 +1,9 @@
 const util = require("./util");
-const rendered_markdown = require('./rendered_markdown');
-const render_bookend = require('../templates/bookend.hbs');
-const render_message_group = require('../templates/message_group.hbs');
-const render_recipient_row = require('../templates/recipient_row.hbs');
-const render_single_message = require('../templates/single_message.hbs');
+const rendered_markdown = require("./rendered_markdown");
+const render_bookend = require("../templates/bookend.hbs");
+const render_message_group = require("../templates/message_group.hbs");
+const render_recipient_row = require("../templates/recipient_row.hbs");
+const render_single_message = require("../templates/single_message.hbs");
 
 function MessageListView(list, table_name, collapse_messages) {
     this.list = list;
@@ -228,7 +228,7 @@ MessageListView.prototype = {
         function start_group() {
             return {
                 message_containers: [],
-                message_group_id: _.uniqueId('message_group_'),
+                message_group_id: _.uniqueId("message_group_"),
             };
         }
 
@@ -393,7 +393,7 @@ MessageListView.prototype = {
         let curr_msg_container;
         let prev_msg_container;
 
-        if (where === 'top') {
+        if (where === "top") {
             first_group = _.last(new_message_groups);
             second_group = _.first(this._message_groups);
         } else {
@@ -419,7 +419,7 @@ MessageListView.prototype = {
             clear_message_date_divider(curr_msg_container);
         }
 
-        if (where === 'top') {
+        if (where === "top") {
             if (was_joined) {
                 // join_message_groups moved the old message to the end of the
                 // new group. We need to replace the old rendered message
@@ -466,7 +466,7 @@ MessageListView.prototype = {
 
     _put_row: function (row) {
         // row is a jQuery object wrapping one message row
-        if (row.hasClass('message_row')) {
+        if (row.hasClass("message_row")) {
             this._rows.set(rows.id(row), row);
         }
     },
@@ -476,7 +476,7 @@ MessageListView.prototype = {
 
         if ($message_rows.constructor !== jQuery) {
             // An assertion check that we're calling this properly
-            blueslip.error('programming error--pass in jQuery objects');
+            blueslip.error("programming error--pass in jQuery objects");
         }
 
         const self = this;
@@ -497,10 +497,10 @@ MessageListView.prototype = {
         // HTML and CSS.
 
         if (row.length !== 1) {
-            blueslip.error('programming error--expected single element');
+            blueslip.error("programming error--expected single element");
         }
 
-        const content = row.find('.message_content');
+        const content = row.find(".message_content");
 
         rendered_markdown.update_elements(content);
 
@@ -614,14 +614,14 @@ MessageListView.prototype = {
                 table_name: self.table_name,
             });
 
-            dom_messages = rendered_groups.find('.message_row');
+            dom_messages = rendered_groups.find(".message_row");
             new_dom_elements = new_dom_elements.concat(rendered_groups);
 
             self._post_process(dom_messages);
 
             // The date row will be included in the message groups or will be
             // added in a rerenderd in the group below
-            table.find('.recipient_row').first().prev('.date_row').remove();
+            table.find(".recipient_row").first().prev(".date_row").remove();
             table.prepend(rendered_groups);
             condense.condense_and_collapse(dom_messages);
         }
@@ -631,9 +631,9 @@ MessageListView.prototype = {
             save_scroll_position();
 
             for (const message_group of message_actions.rerender_groups) {
-                const old_message_group = $('#' + message_group.message_group_id);
+                const old_message_group = $("#" + message_group.message_group_id);
                 // Remove the top date_row, we'll re-add it after rendering
-                old_message_group.prev('.date_row').remove();
+                old_message_group.prev(".date_row").remove();
 
                 rendered_groups = self._render_group({
                     message_groups: [message_group],
@@ -641,7 +641,7 @@ MessageListView.prototype = {
                     table_name: self.table_name,
                 });
 
-                dom_messages = rendered_groups.find('.message_row');
+                dom_messages = rendered_groups.find(".message_row");
                 // Not adding to new_dom_elements it is only used for autoscroll
 
                 self._post_process(dom_messages);
@@ -669,9 +669,9 @@ MessageListView.prototype = {
 
         // Insert new messages in to the last message group
         if (message_actions.append_messages.length > 0) {
-            last_message_row = table.find('.message_row').last().expectOne();
+            last_message_row = table.find(".message_row").last().expectOne();
             last_group_row = rows.get_message_recipient_row(last_message_row);
-            dom_messages = $(message_actions.append_messages.map((message_container) => self._get_message_template(message_container)).join('')).filter('.message_row');
+            dom_messages = $(message_actions.append_messages.map((message_container) => self._get_message_template(message_container)).join("")).filter(".message_row");
 
             self._post_process(dom_messages);
             last_group_row.append(dom_messages);
@@ -691,7 +691,7 @@ MessageListView.prototype = {
                 table_name: self.table_name,
             });
 
-            dom_messages = rendered_groups.find('.message_row');
+            dom_messages = rendered_groups.find(".message_row");
             new_dom_elements = new_dom_elements.concat(rendered_groups);
 
             self._post_process(dom_messages);
@@ -815,7 +815,7 @@ MessageListView.prototype = {
         if (scroll_limit < 0) {
             // This shouldn't happen, but if we're off by a pixel or
             // something, we can deal with it, and just warn.
-            blueslip.warn('Selected row appears too high on screen.');
+            blueslip.warn("Selected row appears too high on screen.");
             scroll_limit = 0;
         }
 
@@ -1000,7 +1000,7 @@ MessageListView.prototype = {
         // viewable window and the selected message
         this.clear_table();
         this.render(this.list.all_messages().slice(this._render_win_start,
-                                                   this._render_win_end), 'bottom');
+                                                   this._render_win_end), "bottom");
 
         // If we could see the newly selected message, scroll the
         // window such that the newly selected message is at the
@@ -1045,7 +1045,7 @@ MessageListView.prototype = {
         }
 
         const recipient_row = rows.get_message_recipient_row(first_row);
-        const header = recipient_row.find('.message_header');
+        const header = recipient_row.find(".message_header");
         const message_group_id = recipient_row.attr("id");
 
         // Since there might be multiple dates within the message
@@ -1132,7 +1132,7 @@ MessageListView.prototype = {
 
         if (cur_window_size < this._RENDER_WINDOW_SIZE) {
             const slice_to_render = messages.slice(0, this._RENDER_WINDOW_SIZE - cur_window_size);
-            render_info = this.render(slice_to_render, 'bottom', messages_are_new);
+            render_info = this.render(slice_to_render, "bottom", messages_are_new);
             this._render_win_end += slice_to_render.length;
         }
 
@@ -1158,7 +1158,7 @@ MessageListView.prototype = {
         if (cur_window_size < this._RENDER_WINDOW_SIZE) {
             const msgs_to_render_count = this._RENDER_WINDOW_SIZE - cur_window_size;
             const slice_to_render = messages.slice(messages.length - msgs_to_render_count);
-            this.render(slice_to_render, 'top', false);
+            this.render(slice_to_render, "top", false);
             this._render_win_start -= slice_to_render.length;
         }
 
@@ -1189,7 +1189,7 @@ MessageListView.prototype = {
     },
 
     clear_trailing_bookend: function () {
-        const trailing_bookend = rows.get_table(this.table_name).find('.trailing_bookend');
+        const trailing_bookend = rows.get_table(this.table_name).find(".trailing_bookend");
         trailing_bookend.remove();
     },
 
@@ -1215,9 +1215,9 @@ MessageListView.prototype = {
             const row = this._rows.get(old_id);
             this._rows.delete(old_id);
 
-            row.attr('zid', new_id);
-            row.attr('id', this.table_name + new_id);
-            row.removeClass('local');
+            row.attr("zid", new_id);
+            row.attr("id", this.table_name + new_id);
+            row.removeClass("local");
             this._rows.set(new_id, row);
         }
 
@@ -1235,9 +1235,9 @@ MessageListView.prototype = {
             // 'p' tag is sliced off to get sender in the same line as the
             // first line of the message
             const msg_content = message_container.msg.content;
-            const p_index = msg_content.indexOf('</p>');
-            message_container.status_message = msg_content.slice('<p>/me '.length, p_index) +
-                                                msg_content.slice(p_index + '</p>'.length);
+            const p_index = msg_content.indexOf("</p>");
+            message_container.status_message = msg_content.slice("<p>/me ".length, p_index) +
+                                                msg_content.slice(p_index + "</p>".length);
             message_container.include_sender = true;
         } else {
             message_container.status_message = false;

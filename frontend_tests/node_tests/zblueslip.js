@@ -22,10 +22,10 @@ Read the following contents for an overview of how zblueslip works. Also take a
 look at `node_tests/people_errors.js` for actual usage of this module.
 */
 
-run_test('basics', () => {
+run_test("basics", () => {
     // Let's create a sample piece of code to test:
     function throw_an_error() {
-        blueslip.error('world');
+        blueslip.error("world");
     }
 
     // Since the error 'world' is not being expected, blueslip will
@@ -34,7 +34,7 @@ run_test('basics', () => {
     // zblueslip logs all the calls made to it, and they can be used in asserts like:
 
     // Now, let's add our error to the list of expected errors.
-    blueslip.expect('error', 'world', 2);
+    blueslip.expect("error", "world", 2);
     // This time, blueslip will just log the error, which is
     // being verified by the assert call on the length of the log.
     // We can also check for which specific error was logged, but since
@@ -44,7 +44,7 @@ run_test('basics', () => {
     throw_an_error();
     // The following check is redundant; blueslip.reset() already asserts that
     // we got the expected number of errors.
-    assert.equal(blueslip.get_test_logs('error').length, 2);
+    assert.equal(blueslip.get_test_logs("error").length, 2);
 
     // Let's clear the array of valid errors as well as the log. Now, all errors
     // should be thrown directly by blueslip.
@@ -60,7 +60,7 @@ run_test('basics', () => {
     // behaviour is slightly different.
 
     function throw_a_warning() {
-        blueslip.warn('world');
+        blueslip.warn("world");
     }
 
     assert.throws(throw_a_warning);
@@ -76,12 +76,12 @@ run_test('basics', () => {
     // Now, let's add our warning to the list of expected warnings.
     // This time, we shouldn't throw an error. However, to confirm that we
     // indeed had logged a warning, we can check the length of the warning logs
-    blueslip.expect('warn', 'world');
+    blueslip.expect("warn", "world");
     throw_a_warning();
     blueslip.reset();
 
     // However, we detect when we have more or less of the expected errors/warnings.
-    blueslip.expect('warn', 'world');
+    blueslip.expect("warn", "world");
     assert.throws(() => {
         blueslip.reset();
     });

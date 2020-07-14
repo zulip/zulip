@@ -20,10 +20,10 @@
  * HTML.  This makes it easier to spot relevant differences.
  */
 
-const { JSDOM } = require('jsdom');
-const _ = require('underscore');
+const { JSDOM } = require("jsdom");
+const _ = require("underscore");
 
-const mdiff = require('./mdiff.js');
+const mdiff = require("./mdiff.js");
 
 // Module-level global instance of MarkdownComparer, initialized when needed
 let _markdownComparerInstance = null;
@@ -36,7 +36,7 @@ class MarkdownComparer {
                 actual,
                 "!=",
                 expected,
-            ].join('\n');
+            ].join("\n");
         };
         this._document = new JSDOM().window.document;
     }
@@ -46,8 +46,8 @@ class MarkdownComparer {
     }
 
     _htmlToElement(html, id) {
-        const template = this._document.createElement('template');
-        const id_node = this._document.createAttribute('id');
+        const template = this._document.createElement("template");
+        const id_node = this._document.createAttribute("id");
         id_node.value = id;
         template.setAttributeNode(id_node);
         template.innerHTML = html;
@@ -131,8 +131,8 @@ class MarkdownComparer {
     assertEqual(actual, expected, message) {
         const comparison_results = this._compare(actual, expected);
 
-        message = message || '';
-        message += '\n';
+        message = message || "";
+        message += "\n";
 
         if (comparison_results.are_equivalent === false) {
             throw new assert.AssertionError({
@@ -147,8 +147,8 @@ class MarkdownComparer {
     assertNotEqual(actual, expected, message) {
         const comparison_results = this._compare(actual, expected);
 
-        message = message || '';
-        message += '\n';
+        message = message || "";
+        message += "\n";
 
         if (comparison_results.are_equivalent) {
             throw new assert.AssertionError({
@@ -157,7 +157,7 @@ class MarkdownComparer {
                     actual,
                     "==",
                     expected,
-                ].join('\n'),
+                ].join("\n"),
             });
         }
     }
@@ -168,7 +168,7 @@ function returnComparer() {
         _markdownComparerInstance = new MarkdownComparer((actual, expected) => [
             "Actual and expected output do not match.  Showing diff",
             mdiff.diff_strings(actual, expected),
-        ].join('\n'));
+        ].join("\n"));
     }
     return _markdownComparerInstance;
 }

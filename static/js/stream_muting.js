@@ -47,7 +47,7 @@ exports.update_is_muted = function (sub, value) {
     stream_list.set_in_home_view(sub.stream_id, !sub.is_muted);
 
     const is_muted_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_is_muted_setting .sub_setting_control");
-    is_muted_checkbox.prop('checked', value);
+    is_muted_checkbox.prop("checked", value);
 };
 
 window.stream_muting = exports;

@@ -431,7 +431,7 @@ MessageListData.prototype = {
                 const item = items[potential_idx];
 
                 if (item === undefined) {
-                    blueslip.warn('Invalid potential_idx: ' + potential_idx);
+                    blueslip.warn("Invalid potential_idx: " + potential_idx);
                     continue;
                 }
 

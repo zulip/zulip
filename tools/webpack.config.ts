@@ -1,17 +1,17 @@
-import { basename, resolve } from 'path';
-import { cacheLoader, getExposeLoaders } from './webpack-helpers';
-import BundleTracker from 'webpack4-bundle-tracker';
-import CleanCss from 'clean-css';
-import DebugRequirePlugin from './debug-require-webpack-plugin';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
-import TerserPlugin from 'terser-webpack-plugin';
+import { basename, resolve } from "path";
+import { cacheLoader, getExposeLoaders } from "./webpack-helpers";
+import BundleTracker from "webpack4-bundle-tracker";
+import CleanCss from "clean-css";
+import DebugRequirePlugin from "./debug-require-webpack-plugin";
+import HtmlWebpackPlugin from "html-webpack-plugin";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import OptimizeCssAssetsPlugin from "optimize-css-assets-webpack-plugin";
+import TerserPlugin from "terser-webpack-plugin";
 // The devServer member of webpack.Configuration is managed by the
 // webpack-dev-server package. We are only importing the type here.
-import _webpackDevServer from 'webpack-dev-server';
-import assets from './webpack.assets.json';
-import webpack from 'webpack';
+import _webpackDevServer from "webpack-dev-server";
+import assets from "./webpack.assets.json";
+import webpack from "webpack";
 
 export default (env?: string): webpack.Configuration[] => {
     const production: boolean = env === "production";
@@ -28,16 +28,16 @@ export default (env?: string): webpack.Configuration[] => {
                     use: [
                         MiniCssExtractPlugin.loader,
                         {
-                            loader: 'css-loader',
+                            loader: "css-loader",
                             options: {
                                 url: false,  // webfonts-loader generates public relative URLs
                             },
                         },
                         {
-                            loader: 'webfonts-loader',
+                            loader: "webfonts-loader",
                             options: {
-                                fileName: production ? 'files/[fontname].[chunkhash].[ext]' : 'files/[fontname].[ext]',
-                                publicPath: '',
+                                fileName: production ? "files/[fontname].[chunkhash].[ext]" : "files/[fontname].[ext]",
+                                publicPath: "",
                             },
                         },
                     ],
@@ -46,10 +46,10 @@ export default (env?: string): webpack.Configuration[] => {
                 {
                     test: /\.(js|ts)$/,
                     include: [
-                        resolve(__dirname, '../static/shared/js'),
-                        resolve(__dirname, '../static/js'),
+                        resolve(__dirname, "../static/shared/js"),
+                        resolve(__dirname, "../static/js"),
                     ],
-                    use: [cacheLoader, 'babel-loader'],
+                    use: [cacheLoader, "babel-loader"],
                 },
                 // Uses script-loader on minified files so we don't change global variables in them.
                 // Also has the effect of making processing these files fast
@@ -58,7 +58,7 @@ export default (env?: string): webpack.Configuration[] => {
                 {
                     // We dont want to match admin.js
                     test: /(\.min|min\.|zxcvbn)\.js/,
-                    use: [cacheLoader, 'script-loader'],
+                    use: [cacheLoader, "script-loader"],
                 },
                 // regular css files
                 {
@@ -72,7 +72,7 @@ export default (env?: string): webpack.Configuration[] => {
                         },
                         cacheLoader,
                         {
-                            loader: 'css-loader',
+                            loader: "css-loader",
                             options: {
                                 sourceMap: true,
                             },
@@ -82,7 +82,7 @@ export default (env?: string): webpack.Configuration[] => {
                 // scss loader
                 {
                     test: /\.scss$/,
-                    include: resolve(__dirname, '../static/styles'),
+                    include: resolve(__dirname, "../static/styles"),
                     use: [
                         {
                             loader: MiniCssExtractPlugin.loader,
@@ -92,14 +92,14 @@ export default (env?: string): webpack.Configuration[] => {
                         },
                         cacheLoader,
                         {
-                            loader: 'css-loader',
+                            loader: "css-loader",
                             options: {
                                 importLoaders: 1,
                                 sourceMap: true,
                             },
                         },
                         {
-                            loader: 'postcss-loader',
+                            loader: "postcss-loader",
                             options: {
                                 sourceMap: true,
                             },
@@ -111,14 +111,14 @@ export default (env?: string): webpack.Configuration[] => {
                     use: [
                         cacheLoader,
                         {
-                            loader: 'handlebars-loader',
+                            loader: "handlebars-loader",
                             options: {
                                 // Tell webpack not to explicitly require these.
                                 knownHelpers: [
-                                    'if', 'unless', 'each', 'with',
+                                    "if", "unless", "each", "with",
                                     // The ones below are defined in static/js/templates.js
-                                    'plural', 'eq', 'and', 'or', 'not',
-                                    't', 'tr', 'rendered_markdown',
+                                    "plural", "eq", "and", "or", "not",
+                                    "t", "tr", "rendered_markdown",
                                 ],
                                 preventIndent: true,
                             },
@@ -129,19 +129,19 @@ export default (env?: string): webpack.Configuration[] => {
                 {
                     test: /\.(woff(2)?|ttf|eot|svg|otf|png)$/,
                     use: [{
-                        loader: 'file-loader',
+                        loader: "file-loader",
                         options: {
-                            name: production ? '[name].[hash].[ext]' : '[path][name].[ext]',
-                            outputPath: 'files/',
+                            name: production ? "[name].[hash].[ext]" : "[path][name].[ext]",
+                            outputPath: "files/",
                         },
                     }],
                 },
             ],
         },
         output: {
-            path: resolve(__dirname, '../static/webpack-bundles'),
-            filename: production ? '[name].[contenthash].js' : '[name].js',
-            chunkFilename: production ? '[contenthash].js' : '[id].js',
+            path: resolve(__dirname, "../static/webpack-bundles"),
+            filename: production ? "[name].[contenthash].js" : "[name].js",
+            chunkFilename: production ? "[contenthash].js" : "[id].js",
         },
         resolve: {
             extensions: [".ts", ".js"],
@@ -151,7 +151,7 @@ export default (env?: string): webpack.Configuration[] => {
         // source mapped in error stack traces
         // We prefer it over eval since eval has trouble setting
         // breakpoints in chrome.
-        devtool: production ? 'source-map' : 'cheap-module-source-map',
+        devtool: production ? "source-map" : "cheap-module-source-map",
         optimization: {
             minimizer: [
                 // Based on a comment in NMFR/optimize-css-assets-webpack-plugin#10.
@@ -200,8 +200,8 @@ export default (env?: string): webpack.Configuration[] => {
             new DebugRequirePlugin(),
             new BundleTracker({
                 filename: production
-                    ? 'webpack-stats-production.json'
-                    : 'var/webpack-stats-dev.json',
+                    ? "webpack-stats-production.json"
+                    : "var/webpack-stats-dev.json",
             }),
             ...production
                 ? []
@@ -236,18 +236,18 @@ export default (env?: string): webpack.Configuration[] => {
         { path: "../static/js/debug.js" },
         { path: "../static/js/blueslip.js" },
         { path: "../static/js/common.js" },
-        { path: "jquery/dist/jquery.js", name: ['$', 'jQuery'] },
-        { path: "underscore/underscore.js", name: '_' },
-        { path: "handlebars/dist/cjs/handlebars.runtime.js", name: 'Handlebars' },
+        { path: "jquery/dist/jquery.js", name: ["$", "jQuery"] },
+        { path: "underscore/underscore.js", name: "_" },
+        { path: "handlebars/dist/cjs/handlebars.runtime.js", name: "Handlebars" },
         { path: "sortablejs/Sortable.js"},
-        { path: "winchan/winchan.js", name: 'WinChan'},
+        { path: "winchan/winchan.js", name: "WinChan"},
     ];
     config.module.rules.unshift(...getExposeLoaders(exposeOptions));
 
     if (!production) {
         // Out JS debugging tools
         for (const paths of Object.values(assets)) {
-            paths.push('./static/js/debug.js');
+            paths.push("./static/js/debug.js");
         }
         config.devServer = {
             clientLogLevel: "error",

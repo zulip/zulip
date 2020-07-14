@@ -44,7 +44,7 @@ exports.toggle = function (opts) {
 
     function select_tab(idx) {
         const elem = meta.$ind_tab.eq(idx);
-        if (elem.hasClass('disabled')) {
+        if (elem.hasClass("disabled")) {
             return;
         }
         meta.$ind_tab.removeClass("selected");
@@ -106,7 +106,7 @@ exports.toggle = function (opts) {
             const value = opts.values.find((o) => o.key === name);
 
             const idx = opts.values.indexOf(value);
-            meta.$ind_tab.eq(idx).addClass('disabled');
+            meta.$ind_tab.eq(idx).addClass("disabled");
         },
 
         value: function () {

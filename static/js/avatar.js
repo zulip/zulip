@@ -4,13 +4,13 @@ exports.build_bot_create_widget = function () {
     // where we replace it wholesale, so we generalize the file input with
     // a callback function.
     const get_file_input = function () {
-        return $('#bot_avatar_file_input');
+        return $("#bot_avatar_file_input");
     };
 
-    const file_name_field = $('#bot_avatar_file');
-    const input_error = $('#bot_avatar_file_input_error');
-    const clear_button = $('#bot_avatar_clear_button');
-    const upload_button = $('#bot_avatar_upload_button');
+    const file_name_field = $("#bot_avatar_file");
+    const input_error = $("#bot_avatar_file_input_error");
+    const clear_button = $("#bot_avatar_clear_button");
+    const upload_button = $("#bot_avatar_upload_button");
 
     return upload_widget.build_widget(
         get_file_input,
@@ -23,13 +23,13 @@ exports.build_bot_create_widget = function () {
 
 exports.build_bot_edit_widget = function (target) {
     const get_file_input = function () {
-        return target.find('.edit_bot_avatar_file_input');
+        return target.find(".edit_bot_avatar_file_input");
     };
 
-    const file_name_field = target.find('.edit_bot_avatar_file');
-    const input_error = target.find('.edit_bot_avatar_error');
-    const clear_button = target.find('.edit_bot_avatar_clear_button');
-    const upload_button = target.find('.edit_bot_avatar_upload_button');
+    const file_name_field = target.find(".edit_bot_avatar_file");
+    const input_error = target.find(".edit_bot_avatar_error");
+    const clear_button = target.find(".edit_bot_avatar_clear_button");
+    const upload_button = target.find(".edit_bot_avatar_upload_button");
 
     return upload_widget.build_widget(
         get_file_input,
@@ -42,27 +42,27 @@ exports.build_bot_edit_widget = function (target) {
 
 exports.build_user_avatar_widget = function (upload_function) {
     const get_file_input = function () {
-        return $('#user-avatar-upload-widget .image_file_input').expectOne();
+        return $("#user-avatar-upload-widget .image_file_input").expectOne();
     };
 
-    if (page_params.avatar_source === 'G') {
+    if (page_params.avatar_source === "G") {
         $("#user-avatar-upload-widget .settings-page-delete-button").hide();
         $("#user-avatar-source").show();
     } else {
         $("#user-avatar-source").hide();
     }
 
-    $("#user-avatar-upload-widget .settings-page-delete-button").on('click keydown', (e) => {
+    $("#user-avatar-upload-widget .settings-page-delete-button").on("click keydown", (e) => {
         e.preventDefault();
         e.stopPropagation();
         channel.del({
-            url: '/json/users/me/avatar',
+            url: "/json/users/me/avatar",
             success: function () {
                 $("#user-avatar-upload-widget .settings-page-delete-button").hide();
                 $("#user-avatar-source").show();
                 // Need to clear input because of a small edge case
                 // where you try to upload the same image you just deleted.
-                get_file_input().val('');
+                get_file_input().val("");
                 // Rest of the work is done via the user_events -> avatar_url event we will get
             },
         });

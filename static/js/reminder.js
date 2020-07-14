@@ -1,14 +1,14 @@
 const util = require("./util");
 const deferred_message_types = {
     scheduled: {
-        delivery_type: 'send_later',
+        delivery_type: "send_later",
         test: /^\/schedule/,
-        slash_command: '/schedule',
+        slash_command: "/schedule",
     },
     reminders: {
-        delivery_type: 'remind',
+        delivery_type: "remind",
         test: /^\/remind/,
-        slash_command: '/remind',
+        slash_command: "/remind",
     },
 };
 
@@ -41,9 +41,9 @@ exports.schedule_message = function (request) {
         request = compose.create_message_object();
     }
 
-    const raw_message = request.content.split('\n');
+    const raw_message = request.content.split("\n");
     const command_line = raw_message[0];
-    const message = raw_message.slice(1).join('\n');
+    const message = raw_message.slice(1).join("\n");
 
     const deferred_message_type = deferred_message_types.filter(
         (props) => command_line.match(props.test) !== null,
@@ -52,16 +52,16 @@ exports.schedule_message = function (request) {
 
     const deliver_at = command_line.slice(command.length + 1);
 
-    if (message.trim() === '' || deliver_at.trim() === '' ||
-        command_line.slice(command.length, command.length + 1) !== ' ') {
+    if (message.trim() === "" || deliver_at.trim() === "" ||
+        command_line.slice(command.length, command.length + 1) !== " ") {
 
-        $("#compose-textarea").attr('disabled', false);
-        if (command_line.slice(command.length, command.length + 1) !== ' ') {
-            compose.compose_error(i18n.t('Invalid slash command. Check if you are missing a space after the command.'), $('#compose-textarea'));
-        } else if (deliver_at.trim() === '') {
-            compose.compose_error(i18n.t('Please specify a date or time'), $('#compose-textarea'));
+        $("#compose-textarea").attr("disabled", false);
+        if (command_line.slice(command.length, command.length + 1) !== " ") {
+            compose.compose_error(i18n.t("Invalid slash command. Check if you are missing a space after the command."), $("#compose-textarea"));
+        } else if (deliver_at.trim() === "") {
+            compose.compose_error(i18n.t("Please specify a date or time"), $("#compose-textarea"));
         } else {
-            compose.compose_error(i18n.t('Your reminder note is empty!'), $('#compose-textarea'));
+            compose.compose_error(i18n.t("Your reminder note is empty!"), $("#compose-textarea"));
         }
         return;
     }
@@ -72,18 +72,18 @@ exports.schedule_message = function (request) {
 
     const success = function (data) {
         if (request.delivery_type === deferred_message_types.scheduled.delivery_type) {
-            notifications.notify_above_composebox('Scheduled your Message to be delivered at: ' + data.deliver_at);
+            notifications.notify_above_composebox("Scheduled your Message to be delivered at: " + data.deliver_at);
         }
-        $("#compose-textarea").attr('disabled', false);
+        $("#compose-textarea").attr("disabled", false);
         compose.clear_compose_box();
     };
     const error = function (response) {
-        $("#compose-textarea").attr('disabled', false);
-        compose.compose_error(response, $('#compose-textarea'));
+        $("#compose-textarea").attr("disabled", false);
+        compose.compose_error(response, $("#compose-textarea"));
     };
     /* We are adding a disable on compose under this block because we
     want slash commands to be blocking in nature. */
-    $("#compose-textarea").attr('disabled', true);
+    $("#compose-textarea").attr("disabled", true);
 
     transmit.send_message(request, success, error);
 };
@@ -105,7 +105,7 @@ exports.do_set_reminder_for_message = function (message_id, timestamp) {
     if (!message.raw_content) {
         const msg_list = current_msg_list;
         channel.get({
-            url: '/json/messages/' + message.id,
+            url: "/json/messages/" + message.id,
             idempotent: true,
             success: function (data) {
                 if (current_msg_list === msg_list) {
@@ -119,13 +119,13 @@ exports.do_set_reminder_for_message = function (message_id, timestamp) {
     }
 
     const link_to_msg = hash_util.by_conversation_and_time_uri(message);
-    const reminder_msg_content = message.raw_content + '\n\n[Link to conversation](' + link_to_msg + ')';
+    const reminder_msg_content = message.raw_content + "\n\n[Link to conversation](" + link_to_msg + ")";
     let reminder_message = {
         type: "private",
         sender_id: page_params.user_id,
-        stream: '',
+        stream: "",
     };
-    reminder_message.topic = '';
+    reminder_message.topic = "";
 
     const recipient = page_params.email;
     const emails = util.extract_pm_recipients(recipient);

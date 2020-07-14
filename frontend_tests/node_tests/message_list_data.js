@@ -1,13 +1,13 @@
-zrequire('unread');
+zrequire("unread");
 
-zrequire('Filter', 'js/filter');
-zrequire('FetchStatus', 'js/fetch_status');
-zrequire('MessageListData', 'js/message_list_data');
+zrequire("Filter", "js/filter");
+zrequire("FetchStatus", "js/fetch_status");
+zrequire("MessageListData", "js/message_list_data");
 
-set_global('page_params', {});
-set_global('muting', {});
+set_global("page_params", {});
+set_global("muting", {});
 
-global.patch_builtin('setTimeout', (f, delay) => {
+global.patch_builtin("setTimeout", (f, delay) => {
     assert.equal(delay, 0);
     return f();
 });
@@ -16,7 +16,7 @@ function make_msg(msg_id) {
     return {
         id: msg_id,
         unread: true,
-        topic: 'whatever',
+        topic: "whatever",
     };
 }
 
@@ -29,7 +29,7 @@ function assert_contents(mld, msg_ids) {
     assert.deepEqual(msgs, make_msgs(msg_ids));
 }
 
-run_test('basics', () => {
+run_test("basics", () => {
     const mld = new MessageListData({
         muting_enabled: false,
         filter: undefined,
@@ -98,7 +98,7 @@ run_test('basics', () => {
     assert.equal(mld.first_unread_message_id(), 145);
 });
 
-run_test('muting enabled', () => {
+run_test("muting enabled", () => {
     const mld = new MessageListData({
         muting_enabled: true,
         filter: undefined,
@@ -126,9 +126,9 @@ run_test('muting enabled', () => {
     assert.deepEqual(mld._all_items, []);
 });
 
-run_test('more muting', () => {
+run_test("more muting", () => {
     muting.is_topic_muted = function (stream_id, topic) {
-        return topic === 'muted';
+        return topic === "muted";
     };
 
     const mld = new MessageListData({
@@ -137,10 +137,10 @@ run_test('more muting', () => {
     });
 
     const orig_messages = [
-        {id: 3, topic: 'muted'},
-        {id: 4, topic: 'whatever'},
-        {id: 7, topic: 'muted'},
-        {id: 8, topic: 'whatever'},
+        {id: 3, topic: "muted"},
+        {id: 4, topic: "whatever"},
+        {id: 7, topic: "muted"},
+        {id: 8, topic: "whatever"},
     ];
 
     const orig_info = mld.add_messages(orig_messages);
@@ -149,8 +149,8 @@ run_test('more muting', () => {
         top_messages: [],
         interior_messages: [],
         bottom_messages: [
-            {id: 4, topic: 'whatever'},
-            {id: 8, topic: 'whatever'},
+            {id: 4, topic: "whatever"},
+            {id: 8, topic: "whatever"},
         ],
     });
 
@@ -165,13 +165,13 @@ run_test('more muting', () => {
     );
 
     const more_messages = [
-        {id: 1, topic: 'muted'},
-        {id: 2, topic: 'whatever'},
-        {id: 3, topic: 'muted'}, // dup
-        {id: 5, topic: 'muted'},
-        {id: 6, topic: 'whatever'},
-        {id: 9, topic: 'muted'},
-        {id: 10, topic: 'whatever'},
+        {id: 1, topic: "muted"},
+        {id: 2, topic: "whatever"},
+        {id: 3, topic: "muted"}, // dup
+        {id: 5, topic: "muted"},
+        {id: 6, topic: "whatever"},
+        {id: 9, topic: "muted"},
+        {id: 10, topic: "whatever"},
     ];
 
     const more_info = mld.add_messages(more_messages);
@@ -188,30 +188,30 @@ run_test('more muting', () => {
 
     assert.deepEqual(more_info, {
         top_messages: [
-            {id: 2, topic: 'whatever'},
+            {id: 2, topic: "whatever"},
         ],
         interior_messages: [
-            {id: 6, topic: 'whatever'},
+            {id: 6, topic: "whatever"},
         ],
         bottom_messages: [
-            {id: 10, topic: 'whatever'},
+            {id: 10, topic: "whatever"},
         ],
     });
 
 });
 
-run_test('errors', () => {
+run_test("errors", () => {
     const mld = new MessageListData({
         muting_enabled: false,
         filter: undefined,
     });
-    assert.equal(mld.get('bogus-id'), undefined);
+    assert.equal(mld.get("bogus-id"), undefined);
 
     assert.throws(() => {
-        mld._add_to_hash(['asdf']);
-    }, {message: 'Bad message id'});
+        mld._add_to_hash(["asdf"]);
+    }, {message: "Bad message id"});
 
-    blueslip.expect('error', 'Duplicate message added to MessageListData');
-    mld._hash.set(1, 'taken');
+    blueslip.expect("error", "Duplicate message added to MessageListData");
+    mld._hash.set(1, "taken");
     mld._add_to_hash(make_msgs([1]));
 });
