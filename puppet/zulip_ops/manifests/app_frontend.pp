@@ -79,5 +79,5 @@ class zulip_ops::app_frontend {
     'rabbitmq_queue_memory',
     'zulip_send_receive_timing',
   ]
-  munin_plugin { $munin_plugins: }
+  zulip::munin_plugin { $munin_plugins: }
 }
