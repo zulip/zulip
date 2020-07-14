@@ -125,6 +125,4 @@ $(".markdown").on("click", () => {
 
 render_code_sections();
 
-$("body").addClass("noscroll");
-
 $(".highlighted")[0]?.scrollIntoView({block: "center"});
