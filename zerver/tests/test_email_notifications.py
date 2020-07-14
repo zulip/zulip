@@ -15,6 +15,7 @@ from zerver.lib.actions import do_change_notification_settings, do_change_user_r
 from zerver.lib.email_notifications import (
     enqueue_welcome_emails,
     fix_emojis,
+    fix_spoilers_in_html,
     handle_missedmessage_emails,
     relative_to_full_url,
 )
@@ -940,6 +941,39 @@ class TestMissedMessages(ZulipTestCase):
                           'target="_blank" title="https://www.google.com/images/srpr/logo4w.png">' + \
                           'https://www.google.com/images/srpr/logo4w.png</a></p>'
         self.assertEqual(actual_output, expected_output)
+
+    def test_spoilers_in_html_emails(self) -> None:
+        test_data = "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p><a>header</a> text</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>content</p>\n</div></div>\n\n<p>outside spoiler</p>"
+        actual_output = fix_spoilers_in_html(test_data, 'en')
+        expected_output = "<div><div class=\"spoiler-block\">\n\n<p><a>header</a> text<span> </span><span class=\"spoiler-title\" title=\"Open Zulip to see the spoiler content\">(Open Zulip to see the spoiler content)</span></p>\n</div>\n\n<p>outside spoiler</p></div>"
+        self.assertEqual(actual_output, expected_output)
+
+        # test against our markdown_test_cases so these features do not get out of sync.
+        fixtures = ujson.loads(self.fixture_data("markdown_test_cases.json"))
+        test_fixtures = {}
+        for test in fixtures['regular_tests']:
+            if 'spoiler' in test['name']:
+                test_fixtures[test['name']] = test
+        for test_name in test_fixtures:
+            test_data = test_fixtures[test_name]["expected_output"]
+            output_data = fix_spoilers_in_html(test_data, 'en')
+            assert('spoiler-header' not in output_data)
+            assert('spoiler-content' not in output_data)
+            assert('spoiler-block' in output_data)
+            assert('spoiler-title' in output_data)
+
+    def test_spoilers_in_text_emails(self) -> None:
+        content = "@**King Hamlet**\n\n```spoiler header text\nsecret-text\n```"
+        msg_id = self.send_stream_message(self.example_user('othello'), "Denmark", content)
+        verify_body_include = [
+            "header text",
+            "Open Zulip to see the spoiler content"
+        ]
+        verify_body_does_not_include = ["secret-text"]
+        email_subject = '#Denmark > test'
+        send_as_user = False
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user, trigger='mentioned',
+                         verify_body_does_not_include=verify_body_does_not_include)
 
     def test_fix_emoji(self) -> None:
         # An emoji.
