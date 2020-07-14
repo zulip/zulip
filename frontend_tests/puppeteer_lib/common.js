@@ -98,6 +98,9 @@ class CommonUtils {
      * });
      */
     async fill_form(page, form_selector, params) {
+        async function is_dropdown(page, name) {
+            return (await page.$(`select[name="${name}"]`)) !== null;
+        }
         for (const name of Object.keys(params)) {
             const name_selector = `${form_selector} [name="${name}"]`;
             const value = params[name];
@@ -107,6 +110,8 @@ class CommonUtils {
                         el.click();
                     }
                 });
+            } else if (await is_dropdown(page, name)) {
+                await page.select(name_selector, params[name]);
             } else {
                 // clear any existing text in the input field before filling.
                 await page.$eval(name_selector, (el) => {
