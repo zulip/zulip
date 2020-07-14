@@ -1,4 +1,11 @@
 <h4>From: {{ from_email }}</h4>
+{% if reply_to %}
+<h4>Reply To:
+    {% for email in reply_to %}
+    {{ email }}&nbsp;
+    {% endfor %}
+</h4>
+{% endif %}
 <h4>To:
     {% for recipient in recipients %}
     {{ recipient }}&nbsp;
