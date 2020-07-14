@@ -193,7 +193,7 @@ exports.initialize = function () {
         // Uses jquery instead of pure css as the `:focus` event occurs on `#search_query`,
         // while we want to add box-shadow to `#searchbox`. This could have been done
         // with `:focus-within` CSS selector, but it is not supported in IE or Opera.
-        searchbox.on('focusout', function () {
+        searchbox.on('focusout', () => {
             tab_bar.close_search_bar_and_open_narrow_description();
             searchbox.css({"box-shadow": "unset"});
         });
