@@ -56,7 +56,7 @@ function render_code_sections() {
 function scrollToHash(simplebar) {
     const hash = window.location.hash;
     const scrollbar = simplebar.getScrollElement();
-    if (hash !== '') {
+    if (hash !== '' && $(hash).length > 0) {
         const position = $(hash).position().top - $(scrollbar.firstChild).position().top;
         scrollbar.scrollTop = position;
     } else {
