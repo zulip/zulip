@@ -326,6 +326,7 @@ on a dark background, and don't change the dark labels dark either. */
     .clear_search_button:active,
     .clear_search_button[disabled]:hover,
     #user-groups .save-instructions,
+    #tab_bar .search_icon,
     #searchbox_legacy .search_icon,
     #searchbox_legacy .search_button,
     #searchbox .search_icon,
@@ -341,6 +342,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     #message_edit_tooltip:hover,
     .clear_search_button:hover,
+    #tab_bar .search_icon:hover,
     #searchbox_legacy .search_icon:hover,
     #searchbox_legacy .search_button:hover,
     #searchbox .search_icon:hover,
