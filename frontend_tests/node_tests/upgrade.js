@@ -9,24 +9,24 @@ let jquery_init;
 
 global.$ = (f) => {jquery_init = f;};
 
-set_global('helpers', {
+set_global("helpers", {
     set_tab: noop,
 });
 
-set_global('StripeCheckout', {
+set_global("StripeCheckout", {
     configure: noop,
 });
 
-set_global('page_params', {
+set_global("page_params", {
     annual_price: 8000,
     monthly_price: 800,
     seat_count: 8,
     percent_off: 20,
 });
 
-zrequire('helpers', "js/billing/helpers");
-zrequire('upgrade', "js/billing/upgrade");
-set_global('$', global.make_zjquery());
+zrequire("helpers", "js/billing/helpers");
+zrequire("upgrade", "js/billing/upgrade");
+set_global("$", global.make_zjquery());
 
 run_test("initialize", () => {
     let token_func;
@@ -68,9 +68,9 @@ run_test("initialize", () => {
     };
 
     StripeCheckout.configure = (config_opts) => {
-        assert.equal(config_opts.image, '/static/images/logo/zulip-icon-128x128.png');
-        assert.equal(config_opts.locale, 'auto');
-        assert.equal(config_opts.key, '{{ publishable_key }}');
+        assert.equal(config_opts.image, "/static/images/logo/zulip-icon-128x128.png");
+        assert.equal(config_opts.locale, "auto");
+        assert.equal(config_opts.key, "{{ publishable_key }}");
         token_func = config_opts.token;
 
         return {
@@ -88,9 +88,9 @@ run_test("initialize", () => {
         assert.equal(schedule, "monthly");
     };
 
-    $('input[type=radio][name=license_management]:checked').val = () => document.querySelector("input[type=radio][name=license_management]:checked").value;
+    $("input[type=radio][name=license_management]:checked").val = () => document.querySelector("input[type=radio][name=license_management]:checked").value;
 
-    $('input[type=radio][name=schedule]:checked').val = () => document.querySelector("input[type=radio][name=schedule]:checked").value;
+    $("input[type=radio][name=schedule]:checked").val = () => document.querySelector("input[type=radio][name=schedule]:checked").value;
 
     $("#autopay-form").data = (key) => document.querySelector("#autopay-form").getAttribute("data-" + key);
 
@@ -100,9 +100,9 @@ run_test("initialize", () => {
         preventDefault: noop,
     };
 
-    const add_card_click_handler = $('#add-card-button').get_on_handler('click');
-    const invoice_click_handler = $('#invoice-button').get_on_handler('click');
-    const request_sponsorship_click_handler = $('#sponsorship-button').get_on_handler('click');
+    const add_card_click_handler = $("#add-card-button").get_on_handler("click");
+    const invoice_click_handler = $("#invoice-button").get_on_handler("click");
+    const request_sponsorship_click_handler = $("#sponsorship-button").get_on_handler("click");
 
     helpers.is_valid_input = () => true;
 
@@ -118,7 +118,7 @@ run_test("initialize", () => {
     helpers.show_license_section = (section) => {
         assert.equal(section, "manual");
     };
-    const license_change_handler = $('input[type=radio][name=license_management]').get_on_handler('change');
+    const license_change_handler = $("input[type=radio][name=license_management]").get_on_handler("change");
     license_change_handler.call({value: "manual"});
 
     helpers.update_charged_amount = (prices, schedule) => {
@@ -126,7 +126,7 @@ run_test("initialize", () => {
         assert.equal(prices.monthly, 640);
         assert.equal(schedule, "monthly");
     };
-    const schedule_change_handler = $('input[type=radio][name=schedule]').get_on_handler('change');
+    const schedule_change_handler = $("input[type=radio][name=schedule]").get_on_handler("change");
     schedule_change_handler.call({value: "monthly"});
 
     assert.equal($("#autopay_annual_price").text(), "64");
@@ -135,7 +135,7 @@ run_test("initialize", () => {
     assert.equal($("#invoice_annual_price").text(), "64");
     assert.equal($("#invoice_annual_price_per_month").text(), "5.34");
 
-    const organization_type_change_handler = $('select[name=organization-type]').get_on_handler('change');
+    const organization_type_change_handler = $("select[name=organization-type]").get_on_handler("change");
     organization_type_change_handler.call({value: "open_source"});
     assert.equal($("#sponsorship-discount-details").text(),
                  "Open source projects are eligible for fully sponsored (free) Zulip Standard.");

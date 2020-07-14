@@ -1,4 +1,4 @@
-const autosize = require('autosize');
+const autosize = require("autosize");
 
 exports.narrowed = undefined;
 exports.set_narrowed = function (value) {
@@ -199,7 +199,7 @@ exports.MessageList.prototype = {
             this.view.maybe_rerender();
         }
 
-        $(document).trigger($.Event('message_selected.zulip', opts));
+        $(document).trigger($.Event("message_selected.zulip", opts));
     },
 
     reselect_selected_id: function MessageList_select_closest_id() {
@@ -321,28 +321,28 @@ exports.MessageList.prototype = {
 
     show_edit_topic_on_recipient_row: function (recipient_row, form) {
         recipient_row.find(".topic_edit_form").append(form);
-        recipient_row.find('.on_hover_topic_edit').hide();
-        recipient_row.find('.edit_content_button').hide();
+        recipient_row.find(".on_hover_topic_edit").hide();
+        recipient_row.find(".edit_content_button").hide();
         recipient_row.find(".stream_topic").hide();
         recipient_row.find(".topic_edit").show();
     },
 
     hide_edit_topic_on_recipient_row: function (recipient_row) {
         recipient_row.find(".stream_topic").show();
-        recipient_row.find('.on_hover_topic_edit').show();
-        recipient_row.find('.edit_content_button').show();
+        recipient_row.find(".on_hover_topic_edit").show();
+        recipient_row.find(".edit_content_button").show();
         recipient_row.find(".topic_edit_form").empty();
         recipient_row.find(".topic_edit").hide();
     },
 
     show_message_as_read: function (message, options) {
         const row = this.get_row(message.id);
-        if (options.from === 'pointer' || options.from === "server") {
-            row.find('.unread_marker').addClass('fast_fade');
+        if (options.from === "pointer" || options.from === "server") {
+            row.find(".unread_marker").addClass("fast_fade");
         } else {
-            row.find('.unread_marker').addClass('slow_fade');
+            row.find(".unread_marker").addClass("slow_fade");
         }
-        row.removeClass('unread');
+        row.removeClass("unread");
     },
 
     rerender: function MessageList_rerender() {
@@ -445,7 +445,7 @@ exports.all = new exports.MessageList({
 // doing something.  Be careful, though, if you try to capture
 // mousemove, then you will have to contend with the autoscroll
 // itself generating mousemove events.
-$(document).on('message_selected.zulip wheel', () => {
+$(document).on("message_selected.zulip wheel", () => {
     message_viewport.stop_auto_scrolling();
 });
 

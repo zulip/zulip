@@ -16,7 +16,7 @@ const consts = {
 function process_result(data, opts) {
     let messages = data.messages;
 
-    if (!$('#connection-error').hasClass('get-events-error')) {
+    if (!$("#connection-error").hasClass("get-events-error")) {
         ui_report.hide_error($("#connection-error"));
     }
 
@@ -123,8 +123,8 @@ function get_messages_success(data, opts) {
 // or convert the emails string to user IDs directly into the Filter code
 // because doing so breaks the app in various modules that expect emails string.
 function handle_operators_supporting_id_based_api(data) {
-    const operators_supporting_ids = ['pm-with'];
-    const operators_supporting_id = ['sender', 'group-pm-with', 'stream'];
+    const operators_supporting_ids = ["pm-with"];
+    const operators_supporting_id = ["sender", "group-pm-with", "stream"];
 
     if (data.narrow === undefined) {
         return data;
@@ -137,7 +137,7 @@ function handle_operators_supporting_id_based_api(data) {
         }
 
         if (operators_supporting_id.includes(filter.operator)) {
-            if (filter.operator === 'stream') {
+            if (filter.operator === "stream") {
                 const stream_id = stream_data.get_stream_id(filter.operand);
                 if (stream_id !== undefined) {
                     filter.operand = stream_id;
@@ -212,7 +212,7 @@ exports.load_messages = function (opts) {
     data = handle_operators_supporting_id_based_api(data);
 
     channel.get({
-        url: '/json/messages',
+        url: "/json/messages",
         data: data,
         idempotent: true,
         success: function (data) {
@@ -238,7 +238,7 @@ exports.load_messages = function (opts) {
             }
 
             // We might want to be more clever here
-            $('#connection-error').addClass("show");
+            $("#connection-error").addClass("show");
             setTimeout(() => {
                 exports.load_messages(opts);
             }, consts.error_retry_time);

@@ -1,6 +1,6 @@
 var util = require("util");
 
-var test_credentials = require('../../var/casper/test_credentials.js').test_credentials;
+var test_credentials = require("../../var/casper/test_credentials.js").test_credentials;
 
 casper.options.clientScripts.push("frontend_tests/casper_lib/polyfill.js");
 
@@ -14,7 +14,7 @@ var last_send_or_update = -1;
 function log_in() {
     var credentials = test_credentials.default_user;
 
-    casper.test.info('Logging in');
+    casper.test.info("Logging in");
     casper.fill('form[action^="/accounts/login/"]', {
         username: credentials.username,
         password: credentials.password,
@@ -55,16 +55,16 @@ exports.initialize_casper = function () {
     // set this at the PhantomJS level.
     casper.page.onError = function (msg, trace) {
         casper.test.error(msg);
-        casper.echo('Traceback:');
+        casper.echo("Traceback:");
         trace.forEach(function (item) {
-            casper.echo('  ' + item.file + ':' + item.line);
+            casper.echo("  " + item.file + ":" + item.line);
         });
         casper.exit(1);
     };
 
     // Capture screens from all failures
     var casper_failure_count = 1;
-    casper.test.on('fail', function failure() {
+    casper.test.on("fail", function failure() {
         if (casper_failure_count <= 10) {
             casper.capture("var/casper/casper-failure" + casper_failure_count + ".png");
             casper_failure_count += 1;
@@ -72,14 +72,14 @@ exports.initialize_casper = function () {
     });
 
     // Update last_send_or_update whenever get_events returns.
-    casper.on('resource.received', function (resource) {
+    casper.on("resource.received", function (resource) {
         if (/\/json\/get_events/.test(resource.url)) {
             last_send_or_update = timestamp();
         }
     });
 
-    casper.on('load.finished', function () {
-        casper.test.info('page load finished');
+    casper.on("load.finished", function () {
+        casper.test.info("page load finished");
     });
 
     casper.evaluate(function () {
@@ -87,7 +87,7 @@ exports.initialize_casper = function () {
     });
 
     // This captures console messages from the app.
-    casper.on('remote.message', function (msg) {
+    casper.on("remote.message", function (msg) {
         casper.echo("app console: " + msg);
     });
 };
@@ -116,14 +116,14 @@ exports.then_log_in = function () {
 };
 
 exports.then_log_out = function () {
-    var menu_selector = '#settings-dropdown';
+    var menu_selector = "#settings-dropdown";
     var logout_selector = 'a[href="#logout"]';
 
     casper.waitUntilVisible(menu_selector, function () {
         casper.click(menu_selector);
 
         casper.waitUntilVisible(logout_selector, function () {
-            casper.test.info('Logging out');
+            casper.test.info("Logging out");
             casper.click(logout_selector);
 
         });
@@ -139,7 +139,7 @@ exports.then_log_out = function () {
 // select the menu item matching item by typing str.
 exports.select_item_via_typeahead = function (field_selector, str, item) {
     casper.then(function () {
-        casper.test.info('Looking in ' + field_selector + ' to select ' + str + ', ' + item);
+        casper.test.info("Looking in " + field_selector + " to select " + str + ", " + item);
 
         casper.evaluate(function (field_selector, str, item) {
             // Set the value and then send a bogus keyup event to trigger
@@ -147,7 +147,7 @@ exports.select_item_via_typeahead = function (field_selector, str, item) {
             $(field_selector)
                 .focus()
                 .val(str)
-                .trigger($.Event('keyup', { which: 0 }));
+                .trigger($.Event("keyup", { which: 0 }));
 
             // You might think these steps should be split by casper.then,
             // but apparently that's enough to make the typeahead close (??),
@@ -227,13 +227,13 @@ exports.wait_for_message_fully_processed = function (content) {
                 don't add the star icon until the server
                 responds.
             */
-            return row.find('.star').length === 1;
+            return row.find(".star").length === 1;
         }, { content: content});
     });
 };
 
 exports.turn_off_press_enter_to_send = function () {
-    var enter_send_selector = '#enter_sends';
+    var enter_send_selector = "#enter_sends";
     casper.waitForSelector(enter_send_selector);
 
     var is_checked = casper.evaluate(function (enter_send_selector) {
@@ -269,15 +269,15 @@ exports.then_send_message = function (type, params) {
     delete params.outside_view;
 
     casper.then(function () {
-        casper.waitForSelector('#compose-send-button:enabled');
-        casper.waitForSelector('#compose-textarea');
+        casper.waitForSelector("#compose-send-button:enabled");
+        casper.waitForSelector("#compose-textarea");
     });
 
     casper.then(function () {
         if (type === "stream") {
-            casper.page.sendEvent('keypress', "c");
+            casper.page.sendEvent("keypress", "c");
         } else if (type === "private") {
-            casper.page.sendEvent('keypress', "x");
+            casper.page.sendEvent("keypress", "x");
         } else {
             casper.test.assertTrue(false, "send_message got valid message type");
         }
@@ -300,13 +300,13 @@ exports.then_send_message = function (type, params) {
         exports.turn_off_press_enter_to_send();
 
         casper.then(function () {
-            casper.click('#compose-send-button');
+            casper.click("#compose-send-button");
         });
     });
 
     casper.then(function () {
         casper.waitFor(function emptyComposeBox() {
-            return casper.getFormValues('form[action^="/json/messages"]').content === '';
+            return casper.getFormValues('form[action^="/json/messages"]').content === "";
         });
         if (!outside_view) {
             exports.wait_for_message_fully_processed(params.content);
@@ -328,16 +328,16 @@ exports.then_send_message = function (type, params) {
 // 'table' here).
 exports.get_rendered_messages = function (table) {
     return casper.evaluate(function (table) {
-        var tbl = $('#' + table);
+        var tbl = $("#" + table);
         return {
-            headings: $.map(tbl.find('.recipient_row .message-header-contents'), function (elem) {
+            headings: $.map(tbl.find(".recipient_row .message-header-contents"), function (elem) {
                 var $clone = $(elem).clone(true);
                 $clone.find(".recipient_row_date").remove();
 
-                return $clone.text().trim().replace(/\s+/g, ' ');
+                return $clone.text().trim().replace(/\s+/g, " ");
             }),
 
-            bodies: $.map(tbl.find('.message_content'), function (elem) {
+            bodies: $.map(tbl.find(".message_content"), function (elem) {
                 return elem.innerHTML;
             }),
         };
@@ -373,7 +373,7 @@ exports.get_stream_id = function (stream_name) {
 // presses by code, only strings of printable characters.
 exports.keypress = function (code) {
     casper.evaluate(function (code) {
-        $('body').trigger($.Event('keydown', { which: code }));
+        $("body").trigger($.Event("keydown", { which: code }));
     }, {
         code: code,
     });
@@ -382,7 +382,7 @@ exports.keypress = function (code) {
 exports.then_send_many = function (msgs) {
     msgs.forEach(function (msg) {
         exports.then_send_message(
-            msg.stream !== undefined ? 'stream' : 'private',
+            msg.stream !== undefined ? "stream" : "private",
             msg);
     });
 };
@@ -397,21 +397,21 @@ exports.wait_for_receive = function (step) {
 
 // Wait until the loading spinner goes away (helpful just after logging in).
 exports.wait_for_load = function (step) {
-    casper.waitWhileVisible('#page_loading_indicator', step);
+    casper.waitWhileVisible("#page_loading_indicator", step);
 };
 
 // innerText sometimes gives us non-breaking space characters, and occasionally
 // a different number of spaces than we expect.
 exports.normalize_spaces = function (str) {
-    return str.replace(/\s+/g, ' ');
+    return str.replace(/\s+/g, " ");
 };
 
 exports.ltrim = function (str) {
-    return str.replace(/^\s+/g, '');
+    return str.replace(/^\s+/g, "");
 };
 
 exports.rtrim = function (str) {
-    return str.replace(/\s+$/g, '');
+    return str.replace(/\s+$/g, "");
 };
 
 exports.trim = function (str) {
@@ -421,24 +421,24 @@ exports.trim = function (str) {
 // Call get_rendered_messages and then check that the last few headings and
 // bodies match the specified arrays.
 exports.expected_messages = function (table, headings, bodies) {
-    casper.test.assertVisible('#' + table, table + ' is visible');
+    casper.test.assertVisible("#" + table, table + " is visible");
 
     var msg = exports.get_rendered_messages(table);
 
     casper.test.assertEquals(
         msg.headings.slice(-headings.length),
         headings.map(exports.trim),
-        'Got expected message headings');
+        "Got expected message headings");
 
     casper.test.assertEquals(
         msg.bodies.slice(-bodies.length),
         bodies,
-        'Got expected message bodies');
+        "Got expected message bodies");
 };
 
 exports.un_narrow = function () {
-    casper.test.info('Un-narrowing');
-    if (casper.visible('.message_comp')) {
+    casper.test.info("Un-narrowing");
+    if (casper.visible(".message_comp")) {
         // close the compose box
         common.keypress(27); // Esc
     }
@@ -447,20 +447,20 @@ exports.un_narrow = function () {
 
 exports.manage_organization = function () {
     casper.then(function () {
-        var menu_selector = '#settings-dropdown';
+        var menu_selector = "#settings-dropdown";
         casper.waitUntilVisible(menu_selector, function () {
             casper.click(menu_selector);
         });
     });
 
     casper.then(function () {
-        casper.test.info('Organization page');
+        casper.test.info("Organization page");
         casper.click('a[href^="#organization"]');
     });
 
-    casper.waitForSelector('#settings_overlay_container.show', function () {
-        casper.test.info('Organization page is active');
-        casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#organization/, 'URL suggests we are on organization page');
+    casper.waitForSelector("#settings_overlay_container.show", function () {
+        casper.test.info("Organization page is active");
+        casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#organization/, "URL suggests we are on organization page");
     });
 
     casper.then(function () {

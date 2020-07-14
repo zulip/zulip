@@ -1,38 +1,38 @@
-set_global('$', global.make_zjquery());
-set_global('document', 'document-stub');
+set_global("$", global.make_zjquery());
+set_global("document", "document-stub");
 
-set_global('XDate', zrequire('XDate', 'xdate/src/xdate'));
-zrequire('Filter', 'js/filter');
-zrequire('FetchStatus', 'js/fetch_status');
-zrequire('MessageListData', 'js/message_list_data');
-zrequire('MessageListView', 'js/message_list_view');
-zrequire('message_list');
+set_global("XDate", zrequire("XDate", "xdate/src/xdate"));
+zrequire("Filter", "js/filter");
+zrequire("FetchStatus", "js/fetch_status");
+zrequire("MessageListData", "js/message_list_data");
+zrequire("MessageListView", "js/message_list_view");
+zrequire("message_list");
 
 const noop = function () {};
 
-set_global('page_params', {
+set_global("page_params", {
     twenty_four_hour_time: false,
 });
-set_global('home_msg_list', null);
-set_global('people', {small_avatar_url: function () { return ''; }});
-set_global('unread', {message_unread: function () {}});
+set_global("home_msg_list", null);
+set_global("people", {small_avatar_url: function () { return ""; }});
+set_global("unread", {message_unread: function () {}});
 // timerender calls setInterval when imported
-set_global('timerender', {
+set_global("timerender", {
     render_date: function (time1, time2) {
         if (time2 === undefined) {
             return [{outerHTML: String(time1.getTime())}];
         }
-        return [{outerHTML: String(time1.getTime()) + ' - ' + String(time2.getTime())}];
+        return [{outerHTML: String(time1.getTime()) + " - " + String(time2.getTime())}];
     },
     stringify_time: function (time) {
         if (page_params.twenty_four_hour_time) {
-            return time.toString('HH:mm');
+            return time.toString("HH:mm");
         }
-        return time.toString('h:mm TT');
+        return time.toString("h:mm TT");
     },
 });
 
-set_global('rows', {
+set_global("rows", {
     get_table: function () {
         return {
             children: function () {
@@ -46,7 +46,7 @@ set_global('rows', {
 
 let next_timestamp = 1500000000;
 
-run_test('msg_edited_vars', () => {
+run_test("msg_edited_vars", () => {
     // This is a test to verify that only one of the three bools,
     // `edited_in_left_col`, `edited_alongside_sender`, `edited_status_msg`
     // is not false; Tests for three different kinds of messages:
@@ -123,7 +123,7 @@ run_test('msg_edited_vars', () => {
     }());
 });
 
-run_test('merge_message_groups', () => {
+run_test("merge_message_groups", () => {
     // MessageListView has lots of DOM code, so we are going to test the message
     // group mearging logic on its own.
 
@@ -139,12 +139,12 @@ run_test('merge_message_groups', () => {
             ...message_context,
         };
         message_context.msg = {
-            id: _.uniqueId('test_message_'),
+            id: _.uniqueId("test_message_"),
             status_message: false,
-            type: 'stream',
-            stream: 'Test Stream 1',
-            topic: 'Test Subject 1',
-            sender_email: 'test@example.com',
+            type: "stream",
+            stream: "Test Stream 1",
+            topic: "Test Subject 1",
+            sender_email: "test@example.com",
             timestamp: next_timestamp += 1,
             ...message,
         };
@@ -154,7 +154,7 @@ run_test('merge_message_groups', () => {
     function build_message_group(messages) {
         return {
             message_containers: messages,
-            message_group_id: _.uniqueId('test_message_group_'),
+            message_group_id: _.uniqueId("test_message_group_"),
         };
     }
 
@@ -196,7 +196,7 @@ run_test('merge_message_groups', () => {
             build_message_context(),
         ]);
 
-        const result = list.merge_message_groups([message_group], 'bottom');
+        const result = list.merge_message_groups([message_group], "bottom");
 
         assert_message_groups_list_equal(list._message_groups, [message_group]);
         assert_message_groups_list_equal(result.append_groups, [message_group]);
@@ -219,7 +219,7 @@ run_test('merge_message_groups', () => {
         ]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], 'bottom');
+        const result = list.merge_message_groups([message_group2], "bottom");
 
         assert_message_groups_list_equal(
             list._message_groups,
@@ -238,13 +238,13 @@ run_test('merge_message_groups', () => {
             message1,
         ]);
 
-        const message2 = build_message_context({topic: 'Test subject 2'});
+        const message2 = build_message_context({topic: "Test subject 2"});
         const message_group2 = build_message_group([
             message2,
         ]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], 'bottom');
+        const result = list.merge_message_groups([message_group2], "bottom");
 
         assert(!message_group2.group_date_divider_html);
         assert_message_groups_list_equal(
@@ -264,14 +264,14 @@ run_test('merge_message_groups', () => {
             message1,
         ]);
 
-        const message2 = build_message_context({topic: 'Test subject 2',
+        const message2 = build_message_context({topic: "Test subject 2",
                                                 timestamp: 900000});
         const message_group2 = build_message_group([
             message2,
         ]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], 'bottom');
+        const result = list.merge_message_groups([message_group2], "bottom");
 
         assert_message_groups_list_equal(
             list._message_groups,
@@ -283,7 +283,7 @@ run_test('merge_message_groups', () => {
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
         assert.equal(
             message_group2.group_date_divider_html,
-            '900000000 - 1000000');
+            "900000000 - 1000000");
     }());
 
     (function test_append_message_different_day() {
@@ -299,7 +299,7 @@ run_test('merge_message_groups', () => {
         ]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], 'bottom');
+        const result = list.merge_message_groups([message_group2], "bottom");
 
         assert_message_groups_list_equal(list._message_groups, [message_group1]);
         assert.deepEqual(result.append_groups, []);
@@ -323,7 +323,7 @@ run_test('merge_message_groups', () => {
         ]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], 'bottom');
+        const result = list.merge_message_groups([message_group2], "bottom");
 
         assert(message_group2.bookend_top);
         assert_message_groups_list_equal(
@@ -349,7 +349,7 @@ run_test('merge_message_groups', () => {
         ]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], 'bottom');
+        const result = list.merge_message_groups([message_group2], "bottom");
 
         assert(message2.include_sender);
         assert_message_groups_list_equal(
@@ -375,7 +375,7 @@ run_test('merge_message_groups', () => {
         ]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], 'top');
+        const result = list.merge_message_groups([message_group2], "top");
 
         assert_message_groups_list_equal(
             list._message_groups,
@@ -395,13 +395,13 @@ run_test('merge_message_groups', () => {
             message1,
         ]);
 
-        const message2 = build_message_context({topic: 'Test Subject 2'});
+        const message2 = build_message_context({topic: "Test Subject 2"});
         const message_group2 = build_message_group([
             message2,
         ]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], 'top');
+        const result = list.merge_message_groups([message_group2], "top");
 
         assert_message_groups_list_equal(
             list._message_groups,
@@ -420,19 +420,19 @@ run_test('merge_message_groups', () => {
             message1,
         ]);
 
-        const message2 = build_message_context({topic: 'Test Subject 2',
+        const message2 = build_message_context({topic: "Test Subject 2",
                                                 timestamp: 1000});
         const message_group2 = build_message_group([
             message2,
         ]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], 'top');
+        const result = list.merge_message_groups([message_group2], "top");
 
         // We should have a group date divider between the recipient blocks.
         assert.equal(
             message_group1.group_date_divider_html,
-            '900000000 - 1000000');
+            "900000000 - 1000000");
         assert_message_groups_list_equal(
             list._message_groups,
             [message_group2, message_group1]);
@@ -456,12 +456,12 @@ run_test('merge_message_groups', () => {
         ]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], 'top');
+        const result = list.merge_message_groups([message_group2], "top");
 
         // We should have a group date divider within the single recipient block.
         assert.equal(
             message_group2.message_containers[1].date_divider_html,
-            '900000000 - 1000000');
+            "900000000 - 1000000");
         assert_message_groups_list_equal(
             list._message_groups,
             [message_group2]);
@@ -485,7 +485,7 @@ run_test('merge_message_groups', () => {
         ]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], 'top');
+        const result = list.merge_message_groups([message_group2], "top");
 
         assert(message_group1.bookend_top);
         assert_message_groups_list_equal(
@@ -504,14 +504,14 @@ run_test('merge_message_groups', () => {
 // where new messages added via local echo have a different date from
 // the older messages.
 
-run_test('render_windows', () => {
+run_test("render_windows", () => {
     // We only render up to 400 messages at a time in our message list,
     // and we only change the window (which is a range, really, with
     // start/end) when the pointer moves outside of the window or close
     // to the edges.
 
     const view = (function make_view() {
-        const table_name = 'zfilt';
+        const table_name = "zfilt";
         const filter = new Filter();
 
         const list = new message_list.MessageList({

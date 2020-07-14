@@ -1,7 +1,7 @@
 const util = require("./util");
 const pygments_data = require("../generated/pygments_data.json");
 const typeahead = require("../shared/js/typeahead");
-const render_typeahead_list_item = require('../templates/typeahead_list_item.hbs');
+const render_typeahead_list_item = require("../templates/typeahead_list_item.hbs");
 const settings_data = require("./settings_data");
 
 // Returns an array of private message recipients, removing empty elements.
@@ -14,8 +14,8 @@ exports.get_cleaned_pm_recipients = function (query_string) {
 
 exports.build_highlight_regex = function (query) {
     // the regex below is based on bootstrap code
-    query = query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-    const regex = new RegExp('(' + query + ')', 'ig');
+    query = query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+    const regex = new RegExp("(" + query + ")", "ig");
     return regex;
 };
 
@@ -47,7 +47,7 @@ exports.make_query_highlighter = function (query) {
 
     return function (phrase) {
         let result = "";
-        const parts = phrase.split(' ');
+        const parts = phrase.split(" ");
         for (i = 0; i < parts.length; i += 1) {
             if (i > 0) {
                 result += " ";

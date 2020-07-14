@@ -50,7 +50,7 @@ exports.fchain = function (outer_gen, get_inner_gen) {
                 if (inner_gen === undefined) {
                     inner_gen = get_inner_gen(outer_val);
                     if (!inner_gen || !inner_gen.next) {
-                        blueslip.error('Invalid generator returned.');
+                        blueslip.error("Invalid generator returned.");
                         return;
                     }
                 }

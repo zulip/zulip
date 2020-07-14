@@ -1,7 +1,7 @@
 exports.t = function (str, context) {
     // HAPPY PATH: most translations are a simple string:
     if (context === undefined) {
-        return 'translated: ' + str;
+        return "translated: " + str;
     }
 
     /*
@@ -36,5 +36,5 @@ exports.t = function (str, context) {
                           context[item.keyword]);
     }
 
-    return 'translated: ' + str;
+    return "translated: " + str;
 };

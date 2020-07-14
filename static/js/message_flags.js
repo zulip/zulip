@@ -1,6 +1,6 @@
 function send_flag_update(message, flag, op) {
     channel.post({
-        url: '/json/messages/flags',
+        url: "/json/messages/flags",
         idempotent: true,
         data: {
             messages: JSON.stringify([message.id]),
@@ -30,11 +30,11 @@ exports.send_read = (function () {
         // call finishes, they will be handled in the success callback.
 
         channel.post({
-            url: '/json/messages/flags',
+            url: "/json/messages/flags",
             idempotent: true,
             data: {messages: JSON.stringify(real_msg_ids_batch),
-                   op: 'add',
-                   flag: 'read'},
+                   op: "add",
+                   flag: "read"},
             success: on_success,
         });
     }
@@ -62,11 +62,11 @@ exports.send_read = (function () {
 }());
 
 exports.save_collapsed = function (message) {
-    send_flag_update(message, 'collapsed', 'add');
+    send_flag_update(message, "collapsed", "add");
 };
 
 exports.save_uncollapsed = function (message) {
-    send_flag_update(message, 'collapsed', 'remove');
+    send_flag_update(message, "collapsed", "remove");
 };
 
 // This updates the state of the starred flag in local data
@@ -101,10 +101,10 @@ exports.toggle_starred_and_update_server = function (message) {
     ui.update_starred_view(message.id, message.starred);
 
     if (message.starred) {
-        send_flag_update(message, 'starred', 'add');
+        send_flag_update(message, "starred", "add");
         starred_messages.add([message.id]);
     } else {
-        send_flag_update(message, 'starred', 'remove');
+        send_flag_update(message, "starred", "remove");
         starred_messages.remove([message.id]);
     }
 };
@@ -112,12 +112,12 @@ exports.toggle_starred_and_update_server = function (message) {
 exports.unstar_all_messages = function () {
     const starred_msg_ids = starred_messages.get_starred_msg_ids();
     channel.post({
-        url: '/json/messages/flags',
+        url: "/json/messages/flags",
         idempotent: true,
         data: {
             messages: JSON.stringify(starred_msg_ids),
-            flag: 'starred',
-            op: 'remove',
+            flag: "starred",
+            op: "remove",
         },
     });
 };

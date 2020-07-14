@@ -1,4 +1,4 @@
-var common = require('../casper_lib/common.js');
+var common = require("../casper_lib/common.js");
 var realm_url = "http://zulip.zulipdev.com:9981/";
 
 // Start of test script.
@@ -6,7 +6,7 @@ common.init_viewport();
 casper.start(realm_url, common.initialize_casper);
 
 casper.then(function () {
-    casper.test.assertUrlMatch(/^http:\/\/[^/]+\/login\/$/, 'Redirected to /login/');
+    casper.test.assertUrlMatch(/^http:\/\/[^/]+\/login\/$/, "Redirected to /login/");
 });
 
 common.then_log_in();

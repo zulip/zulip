@@ -126,7 +126,7 @@ exports.open = function ($image) {
     }
 
     overlays.open_overlay({
-        name: 'lightbox',
+        name: "lightbox",
         overlay: $("#lightbox_overlay"),
         on_close: lightbox_close_overlay,
     });
@@ -270,7 +270,7 @@ exports.initialize = function () {
 
     $("#lightbox_overlay").on("click", ".image-list .image", function () {
         const $image_list = $(this).parent();
-        const $original_image = $(".message_row img[src='" + $(this).attr('data-src') + "']");
+        const $original_image = $(".message_row img[src='" + $(this).attr("data-src") + "']");
 
         exports.open($original_image);
 
@@ -298,9 +298,9 @@ exports.initialize = function () {
     $("#lightbox_overlay").on("click", ".center .arrow", function () {
         const direction = $(this).attr("data-direction");
 
-        if (direction === 'next') {
+        if (direction === "next") {
             exports.next();
-        } else if (direction === 'prev') {
+        } else if (direction === "prev") {
             exports.prev();
         }
     });

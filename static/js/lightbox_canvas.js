@@ -32,9 +32,9 @@ window.onload = function () {
 const funcs = {
     setZoom: function (meta, zoom) {
         // condition to handle zooming event by zoom hotkeys
-        if (zoom === '+') {
+        if (zoom === "+") {
             zoom = meta.zoom * 1.2;
-        } else if (zoom === '-') {
+        } else if (zoom === "-") {
             zoom = meta.zoom / 1.2;
         }
         // make sure the zoom is above 1 and below the maxZoom.
@@ -145,18 +145,18 @@ const funcs = {
         // that the LightboxCanvas instance created in lightbox.js can be
         // accessed from hotkey.js. Major code refactoring is required in lightbox.js
         // to implement these keyboard shortcuts in hotkey.js
-        document.addEventListener('keydown', (e) => {
+        document.addEventListener("keydown", (e) => {
             if (!overlays.lightbox_open()) {
                 return;
             }
-            if (e.key === "Z" || e.key === '+') {
-                funcs.setZoom(meta, '+');
+            if (e.key === "Z" || e.key === "+") {
+                funcs.setZoom(meta, "+");
                 funcs.displayImage(canvas, context, meta);
-            } else if (e.key === "z" || e.key === '-') {
-                funcs.setZoom(meta, '-');
+            } else if (e.key === "z" || e.key === "-") {
+                funcs.setZoom(meta, "-");
                 funcs.displayImage(canvas, context, meta);
-            } else if (e.key === 'v') {
-                overlays.close_overlay('lightbox');
+            } else if (e.key === "v") {
+                overlays.close_overlay("lightbox");
             }
             e.preventDefault();
             e.stopPropagation();

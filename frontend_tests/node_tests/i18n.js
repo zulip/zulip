@@ -1,10 +1,10 @@
-set_global('Handlebars', global.make_handlebars());
-zrequire('templates');
+set_global("Handlebars", global.make_handlebars());
+zrequire("templates");
 
 // We download our translations in `page_params` (which
 // are for the user's chosen language), so we simulate
 // that here for the tests.
-set_global('page_params', {
+set_global("page_params", {
     translation_data: {
         "Quote and reply": "French translation",
         "Notification triggers": "Some French text",
@@ -16,9 +16,9 @@ set_global('page_params', {
 // We use `i18n.js` to initialize `i18next` and
 // to set `i18n` to `i18next` on the global namespace
 // for `templates.js`.
-zrequire('i18n');
+zrequire("i18n");
 
-run_test('t_tag', () => {
+run_test("t_tag", () => {
     const args = {
         message: {
             is_stream: true,
@@ -33,11 +33,11 @@ run_test('t_tag', () => {
         narrowed: true,
     };
 
-    const html = require('../../static/templates/actions_popover_content.hbs')(args);
+    const html = require("../../static/templates/actions_popover_content.hbs")(args);
     assert(html.indexOf("French translation") > 0);
 });
 
-run_test('tr_tag', () => {
+run_test("tr_tag", () => {
     const args = {
         page_params: {
             full_name: "John Doe",
@@ -57,6 +57,6 @@ run_test('tr_tag', () => {
         },
     };
 
-    const html = require('../../static/templates/settings_tab.hbs')(args);
-    assert(html.indexOf('Some French text') > 0);
+    const html = require("../../static/templates/settings_tab.hbs")(args);
+    assert(html.indexOf("Some French text") > 0);
 });

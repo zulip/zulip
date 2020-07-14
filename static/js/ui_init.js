@@ -1,5 +1,5 @@
 const emojisets = require("./emojisets");
-const markdown_config = require('./markdown_config');
+const markdown_config = require("./markdown_config");
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -14,7 +14,7 @@ function message_unhover() {
     if (current_message_hover === undefined) {
         return;
     }
-    current_message_hover.find('span.edit_content').html("");
+    current_message_hover.find("span.edit_content").html("");
     current_message_hover = undefined;
 }
 
@@ -24,7 +24,7 @@ function message_hover(message_row) {
         return;
     }
     // Don't allow on-hover editing for local-only messages
-    if (message_row.hasClass('local')) {
+    if (message_row.hasClass("local")) {
         return;
     }
     const message = current_msg_list.get(rows.id(message_row));
@@ -70,7 +70,7 @@ exports.initialize_kitchen_sink_stuff = function () {
         message_viewport.set_last_movement_direction(delta);
     }, 50);
 
-    message_viewport.message_pane.on('wheel', (e) => {
+    message_viewport.message_pane.on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
         if (!overlays.is_active()) {
             // In the message view, we use a throttled mousewheel handler.
@@ -87,7 +87,7 @@ exports.initialize_kitchen_sink_stuff = function () {
     // propagation in all cases.  Also, ignore the event if the
     // element is already at the top or bottom.  Otherwise we get a
     // new scroll event on the parent (?).
-    $('.modal-body, .scrolling_list, input, textarea').on('wheel', function (e) {
+    $(".modal-body, .scrolling_list, input, textarea").on("wheel", function (e) {
         const self = ui.get_scroll_element($(this));
         const scroll = self.scrollTop();
         const delta = e.originalEvent.deltaY;
@@ -104,7 +104,7 @@ exports.initialize_kitchen_sink_stuff = function () {
     });
 
     // Ignore wheel events in the compose area which weren't already handled above.
-    $('#compose').on('wheel', (e) => {
+    $("#compose").on("wheel", (e) => {
         e.stopPropagation();
         e.preventDefault();
     });
@@ -186,19 +186,19 @@ exports.initialize_kitchen_sink_stuff = function () {
         $(this).removeClass("active");
     });
 
-    $("#stream_message_recipient_stream").on('blur', function () {
+    $("#stream_message_recipient_stream").on("blur", function () {
         ui_util.decorate_stream_bar(this.value, $("#stream-message .message_header_stream"), true);
     });
 
-    $(window).on('blur', () => {
-        $(document.body).addClass('window_blurred');
+    $(window).on("blur", () => {
+        $(document.body).addClass("window_blurred");
     });
 
-    $(window).on('focus', () => {
-        $(document.body).removeClass('window_blurred');
+    $(window).on("focus", () => {
+        $(document.body).removeClass("window_blurred");
     });
 
-    $(document).on('message_selected.zulip', (event) => {
+    $(document).on("message_selected.zulip", (event) => {
         if (current_msg_list !== event.msg_list) {
             return;
         }
@@ -207,8 +207,8 @@ exports.initialize_kitchen_sink_stuff = function () {
             return;
         }
         const row = event.msg_list.get_row(event.id);
-        $('.selected_message').removeClass('selected_message');
-        row.addClass('selected_message');
+        $(".selected_message").removeClass("selected_message");
+        row.addClass("selected_message");
 
         if (event.then_scroll) {
             if (row.length === 0) {
@@ -224,7 +224,7 @@ exports.initialize_kitchen_sink_stuff = function () {
                     selected_id_from_idx: messages[event.msg_list.selected_idx()].id,
                     msg_list_sorted: _.isEqual(
                         messages.map((message) => message.id),
-                        _.chain(current_msg_list.all_messages()).pluck('id').clone().value().sort(),
+                        _.chain(current_msg_list.all_messages()).pluck("id").clone().value().sort(),
                     ),
                     found_in_dom: row_from_dom.length,
                 });
@@ -249,16 +249,16 @@ exports.initialize_kitchen_sink_stuff = function () {
         timerender.set_full_datetime(message, time_elem);
     });
 
-    $('#streams_header h4').tooltip({placement: 'right',
+    $("#streams_header h4").tooltip({placement: "right",
                                      animation: false});
 
-    $('#streams_header i[data-toggle="tooltip"]').tooltip({placement: 'left',
+    $('#streams_header i[data-toggle="tooltip"]').tooltip({placement: "left",
                                                            animation: false});
 
-    $('#userlist-header #userlist-title').tooltip({placement: 'right',
+    $("#userlist-header #userlist-title").tooltip({placement: "right",
                                                    animation: false});
 
-    $('#userlist-header #user_filter_icon').tooltip({placement: 'left',
+    $("#userlist-header #user_filter_icon").tooltip({placement: "left",
                                                      animation: false});
 
     $('.message_failed i[data-toggle="tooltip"]').tooltip();
@@ -267,7 +267,7 @@ exports.initialize_kitchen_sink_stuff = function () {
 
     // We disable animations here because they can cause the tooltip
     // to change shape while fading away in weird way.
-    $('#keyboard-icon').tooltip({animation: false});
+    $("#keyboard-icon").tooltip({animation: false});
 
     $("body").on("mouseover", ".message_edit_content", function () {
         $(this).closest(".message_row").find(".copy_message").show();
@@ -279,11 +279,11 @@ exports.initialize_kitchen_sink_stuff = function () {
 
     $("body").on("mouseenter", ".copy_message", function () {
         $(this).show();
-        $(this).tooltip('show');
+        $(this).tooltip("show");
     });
 
     $("body").on("mouseleave", ".copy_message", function () {
-        $(this).tooltip('hide');
+        $(this).tooltip("hide");
     });
 
     if (!page_params.realm_allow_message_editing) {
@@ -386,41 +386,41 @@ exports.initialize_everything = function () {
     }
 
     const alert_words_params = pop_fields(
-        'alert_words',
+        "alert_words",
     );
 
     const bot_params = pop_fields(
-        'realm_bots',
+        "realm_bots",
     );
 
     const people_params = pop_fields(
-        'realm_users',
-        'realm_non_active_users',
-        'cross_realm_bots',
+        "realm_users",
+        "realm_non_active_users",
+        "cross_realm_bots",
     );
 
     const pm_conversations_params = pop_fields(
-        'recent_private_conversations',
+        "recent_private_conversations",
     );
 
     const presence_params = pop_fields(
-        'presences',
-        'initial_servertime',
+        "presences",
+        "initial_servertime",
     );
 
     const stream_data_params = pop_fields(
-        'subscriptions',
-        'unsubscribed',
-        'never_subscribed',
-        'realm_default_streams',
+        "subscriptions",
+        "unsubscribed",
+        "never_subscribed",
+        "realm_default_streams",
     );
 
     const user_groups_params = pop_fields(
-        'realm_user_groups',
+        "realm_user_groups",
     );
 
     const user_status_params = pop_fields(
-        'user_status',
+        "user_status",
     );
 
     alert_words.initialize(alert_words_params);
@@ -489,7 +489,7 @@ exports.initialize_everything = function () {
 };
 
 $(() => {
-    const finish = blueslip.start_timing('initialize_everything');
+    const finish = blueslip.start_timing("initialize_everything");
     exports.initialize_everything();
     finish();
 });

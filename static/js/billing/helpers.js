@@ -10,7 +10,7 @@ exports.create_ajax_request = function (url, form_name, stripe_token = null, num
     const free_trial_alert_message =  "#free-trial-alert-message";
 
     loading.make_indicator($(form_loading_indicator),
-                           {text: 'Processing ...', abs_positioned: true});
+                           {text: "Processing ...", abs_positioned: true});
     $(form_input_section).hide();
     $(form_error).hide();
     $(form_loading).show();
@@ -91,8 +91,8 @@ exports.show_license_section = function (license) {
     $("#license-automatic-section").hide();
     $("#license-manual-section").hide();
 
-    $("#automatic_license_count").prop('disabled', true);
-    $("#manual_license_count").prop('disabled', true);
+    $("#automatic_license_count").prop("disabled", true);
+    $("#manual_license_count").prop("disabled", true);
 
     const section_id = "#license-" + license + "-section";
     $(section_id).show();
@@ -103,17 +103,17 @@ exports.show_license_section = function (license) {
 exports.set_tab = function (page) {
     const hash = location.hash;
     if (hash) {
-        $('#' + page + '-tabs.nav a[href="' + hash + '"]').tab('show');
-        $('html').scrollTop(0);
+        $("#" + page + '-tabs.nav a[href="' + hash + '"]').tab("show");
+        $("html").scrollTop(0);
     }
 
-    $('#' + page + '-tabs.nav-tabs a').on("click", function () {
+    $("#" + page + "-tabs.nav-tabs a").on("click", function () {
         location.hash = this.hash;
     });
 
     window.onhashchange = function () {
-        $('#' + page + '-tabs.nav a[href="' + location.hash + '"]').tab('show');
-        $('html').scrollTop(0);
+        $("#" + page + '-tabs.nav a[href="' + location.hash + '"]').tab("show");
+        $("html").scrollTop(0);
     };
 };
 

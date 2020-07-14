@@ -1,20 +1,20 @@
-zrequire('list_render');
+zrequire("list_render");
 
 // We need these stubs to get by instanceof checks.
 // The list_render library allows you to insert objects
 // that are either jQuery, Element, or just raw HTML
 // strings.  We initially test with raw strings.
-set_global('jQuery', 'stub');
+set_global("jQuery", "stub");
 function Element() {
     return { };
 }
-set_global('Element', Element);
-set_global('ui', {});
+set_global("Element", Element);
+set_global("ui", {});
 
 // We only need very simple jQuery wrappers for when the
 // "real" code wraps html or sets up click handlers.
 // We'll simulate most other objects ourselves.
-set_global('$', (arg) => {
+set_global("$", (arg) => {
     if (arg.to_jquery) {
         return arg.to_jquery();
     }
@@ -41,8 +41,8 @@ function make_container() {
     container.length = () => 1;
     container.is = () => false;
     container.css = (prop) => {
-        assert.equal(prop, 'max-height');
-        return 'none';
+        assert.equal(prop, "max-height");
+        return "none";
     };
 
     // Make our append function just set a field we can
@@ -62,14 +62,14 @@ function make_scroll_container() {
     // Capture the scroll callback so we can call it in
     // our tests.
     scroll_container.on = (ev, f) => {
-        assert.equal(ev, 'scroll.list_widget_container');
+        assert.equal(ev, "scroll.list_widget_container");
         scroll_container.call_scroll = () => {
             f.call(scroll_container);
         };
     };
 
     scroll_container.off = (ev) => {
-        assert.equal(ev, 'scroll.list_widget_container');
+        assert.equal(ev, "scroll.list_widget_container");
         scroll_container.cleared = true;
     };
 
@@ -82,13 +82,13 @@ function make_sort_container() {
     sort_container.cleared = false;
 
     sort_container.on = (ev, sel, f) => {
-        assert.equal(ev, 'click.list_widget_sort');
-        assert.equal(sel, '[data-sort]');
+        assert.equal(ev, "click.list_widget_sort");
+        assert.equal(sel, "[data-sort]");
         sort_container.f = f;
     };
 
     sort_container.off = (ev) => {
-        assert.equal(ev, 'click.list_widget_sort');
+        assert.equal(ev, "click.list_widget_sort");
         sort_container.cleared = true;
     };
 
@@ -101,12 +101,12 @@ function make_filter_element() {
     element.cleared = false;
 
     element.on = (ev, f) => {
-        assert.equal(ev, 'input.list_widget_filter');
+        assert.equal(ev, "input.list_widget_filter");
         element.f = f;
     };
 
     element.off = (ev) => {
-        assert.equal(ev, 'input.list_widget_filter');
+        assert.equal(ev, "input.list_widget_filter");
         element.cleared = true;
     };
 
@@ -121,7 +121,7 @@ function make_search_input() {
     $element.to_jquery = () => $element;
 
     $element.on = (event_name, f) => {
-        assert.equal(event_name, 'input.list_widget_filter');
+        assert.equal(event_name, "input.list_widget_filter");
         $element.simulate_input_event = () => {
             const elem = {
                 value: $element.val(),
@@ -134,10 +134,10 @@ function make_search_input() {
 }
 
 function div(item) {
-    return '<div>' + item + '</div>';
+    return "<div>" + item + "</div>";
 }
 
-run_test('scrolling', () => {
+run_test("scrolling", () => {
     const container = make_container();
     const scroll_container = make_scroll_container();
 
@@ -150,7 +150,7 @@ run_test('scrolling', () => {
     };
 
     for (let i = 0; i < 200; i += 1) {
-        items.push('item ' + i);
+        items.push("item " + i);
     }
 
     const opts = {
@@ -158,12 +158,12 @@ run_test('scrolling', () => {
         simplebar_container: scroll_container,
     };
 
-    container.html = (html) => { assert.equal(html, ''); };
+    container.html = (html) => { assert.equal(html, ""); };
     list_render.create(container, items, opts);
 
     assert.deepEqual(
         container.appended_data.html(),
-        items.slice(0, 80).join(''),
+        items.slice(0, 80).join(""),
     );
     assert.equal(get_scroll_element_called, true);
 
@@ -177,24 +177,24 @@ run_test('scrolling', () => {
     scroll_container.call_scroll();
     assert.deepEqual(
         container.appended_data.html(),
-        items.slice(80, 100).join(''),
+        items.slice(80, 100).join(""),
     );
 });
 
-run_test('filtering', () => {
+run_test("filtering", () => {
     const container = make_container();
     const scroll_container = make_scroll_container();
 
     const search_input = make_search_input();
 
     const list = [
-        'apple',
-        'banana',
-        'carrot',
-        'dog',
-        'egg',
-        'fence',
-        'grape',
+        "apple",
+        "banana",
+        "carrot",
+        "dog",
+        "egg",
+        "fence",
+        "grape",
     ];
     const opts = {
         filter: {
@@ -205,47 +205,47 @@ run_test('filtering', () => {
         simplebar_container: scroll_container,
     };
 
-    container.html = (html) => { assert.equal(html, ''); };
+    container.html = (html) => { assert.equal(html, ""); };
     const widget = list_render.create(container, list, opts);
 
     let expected_html =
-        '<div>apple</div>' +
-        '<div>banana</div>' +
-        '<div>carrot</div>' +
-        '<div>dog</div>' +
-        '<div>egg</div>' +
-        '<div>fence</div>' +
-        '<div>grape</div>';
+        "<div>apple</div>" +
+        "<div>banana</div>" +
+        "<div>carrot</div>" +
+        "<div>dog</div>" +
+        "<div>egg</div>" +
+        "<div>fence</div>" +
+        "<div>grape</div>";
 
     assert.deepEqual(container.appended_data.html(), expected_html);
 
     // Filtering will pick out dog/egg/grape when we put "g"
     // into our search input.  (This uses the default filter, which
     // is a glorified indexOf call.)
-    search_input.val = () => 'g';
+    search_input.val = () => "g";
     search_input.simulate_input_event();
-    expected_html = '<div>dog</div><div>egg</div><div>grape</div>';
+    expected_html = "<div>dog</div><div>egg</div><div>grape</div>";
     assert.deepEqual(container.appended_data.html(), expected_html);
 
     // We can insert new data into the widget.
     const new_data = [
-        'greta',
-        'faye',
-        'gary',
-        'frank',
-        'giraffe',
-        'fox',
+        "greta",
+        "faye",
+        "gary",
+        "frank",
+        "giraffe",
+        "fox",
     ];
 
     widget.replace_list_data(new_data);
     expected_html =
-        '<div>greta</div>' +
-        '<div>gary</div>' +
-        '<div>giraffe</div>';
+        "<div>greta</div>" +
+        "<div>gary</div>" +
+        "<div>giraffe</div>";
     assert.deepEqual(container.appended_data.html(), expected_html);
 });
 
-run_test('no filtering', () => {
+run_test("no filtering", () => {
     const container = make_container();
     const scroll_container = make_scroll_container();
     container.html = () => {};
@@ -255,12 +255,12 @@ run_test('no filtering', () => {
         modifier: (item) => div(item),
         simplebar_container: scroll_container,
     };
-    const widget = list_render.create(container, ['apple', 'banana'], opts);
+    const widget = list_render.create(container, ["apple", "banana"], opts);
     widget.render();
 
     const expected_html =
-        '<div>apple</div>' +
-        '<div>banana</div>';
+        "<div>apple</div>" +
+        "<div>banana</div>";
     assert.deepEqual(container.appended_data.html(), expected_html);
 });
 
@@ -274,7 +274,7 @@ function sort_button(opts) {
         switch (sel) {
         case "sort": return opts.sort_type;
         case "sort-prop": return opts.prop_name;
-        default: throw Error('unknown selector: ' + sel);
+        default: throw Error("unknown selector: " + sel);
         }
     }
 
@@ -289,8 +289,8 @@ function sort_button(opts) {
 
     const button = {
         data: data,
-        closest: lookup('.progressive-table-wrapper', {
-            data: lookup('list-render', opts.list_name),
+        closest: lookup(".progressive-table-wrapper", {
+            data: lookup("list-render", opts.list_name),
         }),
         addClass: (cls) => {
             classList.add(cls);
@@ -299,9 +299,9 @@ function sort_button(opts) {
         removeClass: (cls) => {
             classList.delete(cls);
         },
-        siblings: lookup('.active', {
+        siblings: lookup(".active", {
             removeClass: (cls) => {
-                assert.equal(cls, 'active');
+                assert.equal(cls, "active");
                 button.siblings_deactivated = true;
             },
         }),
@@ -312,14 +312,14 @@ function sort_button(opts) {
     return button;
 }
 
-run_test('wire up filter element', () => {
+run_test("wire up filter element", () => {
     const lst = [
-        'alice',
-        'JESSE',
-        'moses',
-        'scott',
-        'Sean',
-        'Xavier',
+        "alice",
+        "JESSE",
+        "moses",
+        "scott",
+        "Sean",
+        "Xavier",
     ];
 
     const container = make_container();
@@ -334,39 +334,39 @@ run_test('wire up filter element', () => {
             filterer: (list, value) => list.filter((item) => item.toLowerCase().includes(value)),
             element: filter_element,
         },
-        modifier: (s) => '(' + s + ')',
+        modifier: (s) => "(" + s + ")",
         simplebar_container: scroll_container,
     };
 
     list_render.create(container, lst, opts);
-    filter_element.f.apply({value: 'se'});
+    filter_element.f.apply({value: "se"});
     assert.equal(
         container.appended_data.html(),
-        '(JESSE)(moses)(Sean)',
+        "(JESSE)(moses)(Sean)",
     );
 });
 
-run_test('sorting', () => {
+run_test("sorting", () => {
     const container = make_container();
     const scroll_container = make_scroll_container();
     const sort_container = make_sort_container();
 
     let cleared;
     container.html = (html) => {
-        assert.equal(html, '');
+        assert.equal(html, "");
         cleared = true;
     };
 
-    const alice = { name: 'alice', salary: 50 };
-    const bob = { name: 'Bob', salary: 40 };
-    const cal = { name: 'cal', salary: 30 };
-    const dave = { name: 'dave', salary: 25 };
-    const ellen = { name: 'ellen', salary: 95 };
+    const alice = { name: "alice", salary: 50 };
+    const bob = { name: "Bob", salary: 40 };
+    const cal = { name: "cal", salary: 30 };
+    const dave = { name: "dave", salary: 25 };
+    const ellen = { name: "ellen", salary: 95 };
 
     const list = [bob, ellen, dave, alice, cal];
 
     const opts = {
-        name: 'sorting-list',
+        name: "sorting-list",
         parent_container: sort_container,
         modifier: (item) => div(item.name) + div(item.salary),
         filter: {
@@ -376,7 +376,7 @@ run_test('sorting', () => {
     };
 
     function html_for(people) {
-        return people.map(opts.modifier).join('');
+        return people.map(opts.modifier).join("");
     }
 
     list_render.create(container, list, opts);
@@ -386,9 +386,9 @@ run_test('sorting', () => {
     let expected_html;
 
     button_opts = {
-        sort_type: 'alphabetic',
-        prop_name: 'name',
-        list_name: 'my-list',
+        sort_type: "alphabetic",
+        prop_name: "name",
+        list_name: "my-list",
         active: false,
     };
 
@@ -420,7 +420,7 @@ run_test('sorting', () => {
         alice,
     ]);
     assert.deepEqual(container.appended_data.html(), expected_html);
-    assert(button.hasClass('descend'));
+    assert(button.hasClass("descend"));
 
     // And then hit a third time to go back to the forward sort.
     cleared = false;
@@ -434,13 +434,13 @@ run_test('sorting', () => {
         ellen,
     ]);
     assert.deepEqual(container.appended_data.html(), expected_html);
-    assert(!button.hasClass('descend'));
+    assert(!button.hasClass("descend"));
 
     // Now try a numeric sort.
     button_opts = {
-        sort_type: 'numeric',
-        prop_name: 'salary',
-        list_name: 'my-list',
+        sort_type: "numeric",
+        prop_name: "salary",
+        list_name: "my-list",
         active: false,
     };
 
@@ -475,10 +475,10 @@ run_test('sorting', () => {
         dave,
     ]);
     assert.deepEqual(container.appended_data.html(), expected_html);
-    assert(button.hasClass('descend'));
+    assert(button.hasClass("descend"));
 });
 
-run_test('custom sort', () => {
+run_test("custom sort", () => {
     const container = make_container();
     const scroll_container = make_scroll_container();
     container.html = () => {};
@@ -498,8 +498,8 @@ run_test('custom sort', () => {
     }
 
     list_render.create(container, list, {
-        name: 'custom-sort-list',
-        modifier: (n) => '(' + n.x  + ', ' + n.y + ')',
+        name: "custom-sort-list",
+        modifier: (n) => "(" + n.x  + ", " + n.y + ")",
         sort_fields: {
             product: sort_by_product,
             x_value: sort_by_x,
@@ -510,15 +510,15 @@ run_test('custom sort', () => {
 
     assert.deepEqual(
         container.appended_data.html(),
-        '(6, 7)(1, 43)(4, 11)',
+        "(6, 7)(1, 43)(4, 11)",
     );
 
-    const widget = list_render.get('custom-sort-list');
+    const widget = list_render.get("custom-sort-list");
 
-    widget.sort('x_value');
+    widget.sort("x_value");
     assert.deepEqual(
         container.appended_data.html(),
-        '(1, 43)(4, 11)(6, 7)',
+        "(1, 43)(4, 11)(6, 7)",
     );
 
     // We can sort without registering the function, too.
@@ -529,11 +529,11 @@ run_test('custom sort', () => {
     widget.sort(sort_by_y);
     assert.deepEqual(
         container.appended_data.html(),
-        '(6, 7)(4, 11)(1, 43)',
+        "(6, 7)(4, 11)(1, 43)",
     );
 });
 
-run_test('clear_event_handlers', () => {
+run_test("clear_event_handlers", () => {
     const container = make_container();
     const scroll_container = make_scroll_container();
     const sort_container = make_sort_container();
@@ -544,7 +544,7 @@ run_test('clear_event_handlers', () => {
     container.html = () => {};
 
     const opts = {
-        name: 'list-we-create-twice',
+        name: "list-we-create-twice",
         parent_container: sort_container,
         modifier: () => {},
         filter: {
@@ -567,39 +567,39 @@ run_test('clear_event_handlers', () => {
     assert.equal(filter_element.cleared, true);
 });
 
-run_test('errors', () => {
+run_test("errors", () => {
     // We don't care about actual data for this test.
-    const list = 'stub';
+    const list = "stub";
     const container = make_container();
     const scroll_container = make_scroll_container();
 
-    blueslip.expect('error', 'Need opts to create widget.');
+    blueslip.expect("error", "Need opts to create widget.");
     list_render.create(container, list);
     blueslip.reset();
 
-    blueslip.expect('error', 'simplebar_container is missing.');
+    blueslip.expect("error", "simplebar_container is missing.");
     list_render.create(container, list, {
-        modifier: 'hello world',
+        modifier: "hello world",
     });
     blueslip.reset();
 
-    blueslip.expect('error', 'get_item should be a function');
+    blueslip.expect("error", "get_item should be a function");
     list_render.create(container, list, {
-        get_item: 'not a function',
+        get_item: "not a function",
         simplebar_container: scroll_container,
     });
     blueslip.reset();
 
-    blueslip.expect('error', 'Filter predicate is not a function.');
+    blueslip.expect("error", "Filter predicate is not a function.");
     list_render.create(container, list, {
         filter: {
-            predicate: 'wrong type',
+            predicate: "wrong type",
         },
         simplebar_container: scroll_container,
     });
     blueslip.reset();
 
-    blueslip.expect('error', 'Filterer and predicate are mutually exclusive.');
+    blueslip.expect("error", "Filterer and predicate are mutually exclusive.");
     list_render.create(container, list, {
         filter: {
             filterer: () => true,
@@ -609,7 +609,7 @@ run_test('errors', () => {
     });
     blueslip.reset();
 
-    blueslip.expect('error', 'Filter filterer is not a function (or missing).');
+    blueslip.expect("error", "Filter filterer is not a function (or missing).");
     list_render.create(container, list, {
         filter: {
         },
@@ -618,7 +618,7 @@ run_test('errors', () => {
     blueslip.reset();
 
     container.html = () => {};
-    blueslip.expect('error', 'List item is not a string: 999');
+    blueslip.expect("error", "List item is not a string: 999");
     list_render.create(container, list, {
         modifier: () => 999,
         simplebar_container: scroll_container,
@@ -626,19 +626,19 @@ run_test('errors', () => {
     blueslip.reset();
 });
 
-run_test('sort helpers', () => {
+run_test("sort helpers", () => {
     /*
         We mostly test our sorting helpers using the
         actual widget, but this test gets us a bit
         more line coverage.
     */
-    const alice2 = {name: 'alice', id: 2};
-    const alice10 = {name: 'alice', id: 10};
-    const bob2 = {name: 'bob', id: 2};
-    const bob10 = {name: 'bob', id: 10};
+    const alice2 = {name: "alice", id: 2};
+    const alice10 = {name: "alice", id: 10};
+    const bob2 = {name: "bob", id: 2};
+    const bob10 = {name: "bob", id: 10};
 
-    const alpha_cmp = list_render.alphabetic_sort('name');
-    const num_cmp = list_render.numeric_sort('id');
+    const alpha_cmp = list_render.alphabetic_sort("name");
+    const num_cmp = list_render.numeric_sort("id");
 
     assert.equal(alpha_cmp(alice2, alice10), 0);
     assert.equal(alpha_cmp(alice2, bob2), -1);
@@ -648,7 +648,7 @@ run_test('sort helpers', () => {
     assert.equal(num_cmp(alice10, bob2), 1);
 });
 
-run_test('replace_list_data w/filter update', () => {
+run_test("replace_list_data w/filter update", () => {
     const container = make_container();
     const scroll_container = make_scroll_container();
     container.html = () => {};
@@ -657,8 +657,8 @@ run_test('replace_list_data w/filter update', () => {
     let num_updates = 0;
 
     list_render.create(container, list, {
-        name: 'replace-list',
-        modifier: (n) => '(' + n.toString() + ')',
+        name: "replace-list",
+        modifier: (n) => "(" + n.toString() + ")",
         filter: {
             predicate: (n) => n % 2 === 0,
             onupdate: () => {
@@ -672,27 +672,27 @@ run_test('replace_list_data w/filter update', () => {
 
     assert.deepEqual(
         container.appended_data.html(),
-        '(2)(4)',
+        "(2)(4)",
     );
 
-    const widget = list_render.get('replace-list');
+    const widget = list_render.get("replace-list");
     widget.replace_list_data([5, 6, 7, 8]);
 
     assert.equal(num_updates, 1);
 
     assert.deepEqual(
         container.appended_data.html(),
-        '(6)(8)',
+        "(6)(8)",
     );
 });
 
-run_test('opts.get_item', () => {
+run_test("opts.get_item", () => {
     const items = {};
 
-    items[1] = 'one';
-    items[2] = 'two';
-    items[3] = 'three';
-    items[4] = 'four';
+    items[1] = "one";
+    items[2] = "two";
+    items[3] = "three";
+    items[4] = "four";
 
     const list = [1, 2, 3, 4];
 
@@ -702,9 +702,9 @@ run_test('opts.get_item', () => {
 
     assert.deepEqual(
         list_render.get_filtered_items(
-            'whatever', list, boring_opts,
+            "whatever", list, boring_opts,
         ),
-        ['one', 'two', 'three', 'four'],
+        ["one", "two", "three", "four"],
     );
 
     const predicate = (item, value) => item.startsWith(value);
@@ -718,9 +718,9 @@ run_test('opts.get_item', () => {
 
     assert.deepEqual(
         list_render.get_filtered_items(
-            't', list, predicate_opts,
+            "t", list, predicate_opts,
         ),
-        ['two', 'three'],
+        ["two", "three"],
     );
 
     const filterer_opts = {
@@ -732,13 +732,13 @@ run_test('opts.get_item', () => {
 
     assert.deepEqual(
         list_render.get_filtered_items(
-            't', list, filterer_opts,
+            "t", list, filterer_opts,
         ),
-        ['two', 'three'],
+        ["two", "three"],
     );
 });
 
-run_test('render item', () => {
+run_test("render item", () => {
     const container = make_container();
     const scroll_container =  make_scroll_container();
     const INITIAL_RENDER_COUNT = 80; // Keep this in sync with the actual code.
@@ -768,11 +768,11 @@ run_test('render item', () => {
 
     const list = [...Array(100).keys()];
 
-    let text = 'initial';
+    let text = "initial";
     const get_item = (item) => ({text: `${text}: ${item}`, value: item});
 
     const widget = list_render.create(container, list, {
-        name: 'replace-list',
+        name: "replace-list",
         modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
         get_item: get_item,
         html_selector: (item) => `tr[data-item='${item}']`,
@@ -780,13 +780,13 @@ run_test('render item', () => {
     });
     const item = INITIAL_RENDER_COUNT - 1;
 
-    assert(container.appended_data.html().includes('<tr data-item=2>initial: 2</tr>'));
-    assert(container.appended_data.html().includes('<tr data-item=3>initial: 3</tr>'));
-    text = 'updated';
+    assert(container.appended_data.html().includes("<tr data-item=2>initial: 2</tr>"));
+    assert(container.appended_data.html().includes("<tr data-item=3>initial: 3</tr>"));
+    text = "updated";
     called = false;
     widget.render_item(INITIAL_RENDER_COUNT - 1);
     assert(called);
-    assert(container.appended_data.html().includes('<tr data-item=2>initial: 2</tr>'));
+    assert(container.appended_data.html().includes("<tr data-item=2>initial: 2</tr>"));
     assert(container.appended_data.html().includes(`<tr data-item=${item}>updated: ${item}</tr>`));
 
     // Item 80 should not be in the rendered list. (0 indexed)
@@ -799,19 +799,19 @@ run_test('render item', () => {
 
     // Tests below this are for the corner cases, where we abort the rerender.
 
-    blueslip.expect('error', 'html_selector should be a function.');
+    blueslip.expect("error", "html_selector should be a function.");
     list_render.create(container, list, {
-        name: 'replace-list',
+        name: "replace-list",
         modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
         get_item: get_item,
-        html_selector: 'hello world',
+        html_selector: "hello world",
         simplebar_container: scroll_container,
     });
     blueslip.reset();
 
     let get_item_called;
     const widget_2 = list_render.create(container, list, {
-        name: 'replace-list',
+        name: "replace-list",
         modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
         get_item: (item) => {
             get_item_called = true;
@@ -826,7 +826,7 @@ run_test('render item', () => {
 
     let rendering_item = false;
     const widget_3 = list_render.create(container, list, {
-        name: 'replace-list',
+        name: "replace-list",
         modifier: (item) => rendering_item ? undefined : `${item}\n`,
         get_item: get_item,
         html_selector: (item) => `tr[data-item='${item}']`,
@@ -835,7 +835,7 @@ run_test('render item', () => {
     // Once we have initially rendered the widget, change the
     // behavior of the modifier function.
     rendering_item = true;
-    blueslip.expect('error', 'List item is not a string: undefined');
+    blueslip.expect("error", "List item is not a string: undefined");
     widget_3.render_item(item);
     blueslip.reset();
 });

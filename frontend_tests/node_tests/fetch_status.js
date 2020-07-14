@@ -1,5 +1,5 @@
-const FetchStatus = zrequire('fetch_status');
-set_global('message_scroll', {
+const FetchStatus = zrequire("fetch_status");
+set_global("message_scroll", {
     hide_loading_older: () => {},
     show_loading_older: () => {},
     hide_loading_newer: () => {},
@@ -52,7 +52,7 @@ function blocked_history() {
     assert.equal(fetch_status.history_limited(), true);
 }
 
-run_test('basics', () => {
+run_test("basics", () => {
     reset();
 
     fetch_status.start_newer_batch({ update_loading_indicator: false });

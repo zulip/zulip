@@ -7,12 +7,12 @@ exports.mobile_deactivate_section = function () {
 exports.make_menu = function (opts) {
     const main_elem = opts.main_elem;
     const hash_prefix = opts.hash_prefix;
-    let curr_li = main_elem.children('li').eq(0);
+    let curr_li = main_elem.children("li").eq(0);
 
     const self = {};
 
     function two_column_mode() {
-        return $('#settings_overlay_container').css('--single-column') === undefined;
+        return $("#settings_overlay_container").css("--single-column") === undefined;
     }
 
     self.show = function () {
@@ -30,7 +30,7 @@ exports.make_menu = function (opts) {
     };
 
     self.current_tab = function () {
-        return curr_li.data('section');
+        return curr_li.data("section");
     };
 
     self.li_for_section = function (section) {
@@ -63,7 +63,7 @@ exports.make_menu = function (opts) {
 
     self.enter_panel = function () {
         const panel = self.get_panel();
-        const sel = 'input:visible,button:visible,select:visible';
+        const sel = "input:visible,button:visible,select:visible";
         const panel_elem = panel.find(sel).first();
 
         panel_elem.focus();
@@ -90,14 +90,14 @@ exports.make_menu = function (opts) {
         main_elem.children("li").removeClass("active");
         curr_li.addClass("active");
 
-        const settings_section_hash = '#' + hash_prefix + section;
+        const settings_section_hash = "#" + hash_prefix + section;
         hashchange.update_browser_history(settings_section_hash);
 
         $(".settings-section").removeClass("show");
 
         settings_sections.load_settings_section(section);
 
-        self.get_panel().addClass('show');
+        self.get_panel().addClass("show");
 
         ui.reset_scrollbar($("#settings_content"));
 
@@ -109,14 +109,14 @@ exports.make_menu = function (opts) {
     };
 
     self.get_panel = function () {
-        const section = curr_li.data('section');
+        const section = curr_li.data("section");
         const sel = "[data-name='" + section + "']";
         const panel = $(".settings-section" + sel);
         return panel;
     };
 
     main_elem.on("click", "li[data-section]", function (e) {
-        const section = $(this).attr('data-section');
+        const section = $(this).attr("data-section");
 
         self.activate_section_or_default(section);
 
@@ -131,11 +131,11 @@ exports.make_menu = function (opts) {
 
 exports.initialize = function () {
     exports.normal_settings = exports.make_menu({
-        main_elem: $('.normal-settings-list'),
+        main_elem: $(".normal-settings-list"),
         hash_prefix: "settings/",
     });
     exports.org_settings = exports.make_menu({
-        main_elem: $('.org-settings-list'),
+        main_elem: $(".org-settings-list"),
         hash_prefix: "organization/",
     });
 };

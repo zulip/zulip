@@ -20,11 +20,11 @@ exports.set_up_toggler = function () {
 
     exports.toggler = components.toggle(opts);
     const elem = exports.toggler.get();
-    elem.addClass('large allow-overflow');
+    elem.addClass("large allow-overflow");
 
     const modals = opts.values.map((item) => {
         const key = item.key; // e.g. message-formatting
-        const modal = $('#' + key).find('.modal-body');
+        const modal = $("#" + key).find(".modal-body");
         return modal;
     });
 
@@ -54,7 +54,7 @@ exports.show = function (target) {
 
     if (!overlay.hasClass("show")) {
         overlays.open_overlay({
-            name: 'informationalOverlays',
+            name: "informationalOverlays",
             overlay: overlay,
             on_close: function () {
                 hashchange.changehash("");

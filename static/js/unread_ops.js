@@ -3,7 +3,7 @@ exports.mark_all_as_read = function () {
     unread_ui.update_unread_counts();
 
     channel.post({
-        url: '/json/mark_all_as_read',
+        url: "/json/mark_all_as_read",
         idempotent: true,
         success: () => {
             // After marking all messages as read, we reload the browser.
@@ -34,7 +34,7 @@ exports.process_read_messages_event = function (message_ids) {
         actually read locally (and which we may not have even
         loaded locally).
     */
-    const options = {from: 'server'};
+    const options = {from: "server"};
 
     message_ids = unread.get_unread_message_ids(message_ids);
     if (message_ids.length === 0) {
@@ -107,7 +107,7 @@ exports.mark_current_list_as_read = function (options) {
 
 exports.mark_stream_as_read = function (stream_id, cont) {
     channel.post({
-        url: '/json/mark_stream_as_read',
+        url: "/json/mark_stream_as_read",
         idempotent: true,
         data: {stream_id: stream_id},
         success: cont,
@@ -116,7 +116,7 @@ exports.mark_stream_as_read = function (stream_id, cont) {
 
 exports.mark_topic_as_read = function (stream_id, topic, cont) {
     channel.post({
-        url: '/json/mark_topic_as_read',
+        url: "/json/mark_topic_as_read",
         idempotent: true,
         data: {stream_id: stream_id, topic_name: topic},
         success: cont,

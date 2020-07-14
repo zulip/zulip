@@ -7,12 +7,12 @@ exports.get_hash_section = function (hash) {
     // given "#settings/your-account", returns "your-account"
     // given '#streams/5/social", returns "5"
     if (!hash) {
-        return '';
+        return "";
     }
 
     const parts = hash.replace(/\/$/, "").split(/\//);
 
-    return parts[1] || '';
+    return parts[1] || "";
 };
 
 // Some browsers zealously URI-decode the contents of
@@ -20,19 +20,19 @@ exports.get_hash_section = function (hash) {
 // by replacing % with . (like MediaWiki).
 exports.encodeHashComponent = function (str) {
     return encodeURIComponent(str)
-        .replace(/\./g, '%2E')
-        .replace(/%/g, '.');
+        .replace(/\./g, "%2E")
+        .replace(/%/g, ".");
 };
 
 exports.encode_operand = function (operator, operand) {
-    if (operator === 'group-pm-with' || operator === 'pm-with' || operator === 'sender') {
+    if (operator === "group-pm-with" || operator === "pm-with" || operator === "sender") {
         const slug = people.emails_to_slug(operand);
         if (slug) {
             return slug;
         }
     }
 
-    if (operator === 'stream') {
+    if (operator === "stream") {
         return exports.encode_stream_name(operand);
     }
 
@@ -63,7 +63,7 @@ exports.decodeHashComponent = function (str) {
         // fail independent of our fault, so just tell the user
         // that the url is invalid.
         // TODO: Show possible valid urls to the user.
-        return decodeURIComponent(str.replace(/\./g, '%'));
+        return decodeURIComponent(str.replace(/\./g, "%"));
     } catch (e) {
         ui_report.error(i18n.t("Invalid URL"), undefined, $("#home-error"), 2000);
         return "";
@@ -71,7 +71,7 @@ exports.decodeHashComponent = function (str) {
 };
 
 exports.decode_operand = function (operator, operand) {
-    if (operator === 'group-pm-with' || operator === 'pm-with' || operator === 'sender') {
+    if (operator === "group-pm-with" || operator === "pm-with" || operator === "sender") {
         const emails = people.slug_to_emails(operand);
         if (emails) {
             return emails;
@@ -80,7 +80,7 @@ exports.decode_operand = function (operator, operand) {
 
     operand = exports.decodeHashComponent(operand);
 
-    if (operator === 'stream') {
+    if (operator === "stream") {
         return stream_data.slug_to_name(operand);
     }
 
@@ -100,19 +100,19 @@ exports.by_stream_topic_uri = function (stream_id, topic) {
 // corresponding hash: the # component
 // of the narrow URL
 exports.operators_to_hash = function (operators) {
-    let hash = '#';
+    let hash = "#";
 
     if (operators !== undefined) {
-        hash = '#narrow';
+        hash = "#narrow";
 
         for (const elem of operators) {
             // Support legacy tuples.
             const operator = elem.operator;
             const operand = elem.operand;
 
-            const sign = elem.negated ? '-' : '';
-            hash += '/' + sign + exports.encodeHashComponent(operator)
-                  + '/' + exports.encode_operand(operator, operand);
+            const sign = elem.negated ? "-" : "";
+            hash += "/" + sign + exports.encodeHashComponent(operator)
+                  + "/" + exports.encode_operand(operator, operand);
         }
     }
 
@@ -121,7 +121,7 @@ exports.operators_to_hash = function (operators) {
 
 exports.by_sender_uri = function (reply_to) {
     return exports.operators_to_hash([
-        {operator: 'sender', operand: reply_to},
+        {operator: "sender", operand: reply_to},
     ]);
 };
 
@@ -135,13 +135,13 @@ exports.huddle_with_uri = function (user_ids_string) {
     // that have already converted emails to a comma-delimited
     // list of user_ids.  We should be careful to keep this
     // consistent with hash_util.decode_operand.
-    return "#narrow/pm-with/" + user_ids_string + '-group';
+    return "#narrow/pm-with/" + user_ids_string + "-group";
 };
 
 exports.by_conversation_and_time_uri = function (message) {
     const absolute_url = window.location.protocol + "//" +
         window.location.host + "/" +
-        window.location.pathname.split('/')[1];
+        window.location.pathname.split("/")[1];
 
     const suffix = "/near/" + exports.encodeHashComponent(message.id);
 
@@ -162,7 +162,7 @@ exports.stream_edit_uri = function (sub) {
 exports.search_public_streams_notice_url = function () {
     // Computes the URL of the current narrow if streams:public were added.
     const operators = narrow_state.filter().operators();
-    const public_operator = {operator: 'streams', operand: 'public'};
+    const public_operator = {operator: "streams", operand: "public"};
     return exports.operators_to_hash([public_operator].concat(operators));
 };
 
@@ -174,7 +174,7 @@ exports.parse_narrow = function (hash) {
         // but the user might write one.
         let operator = exports.decodeHashComponent(hash[i]);
         // Do not parse further if empty operator encountered.
-        if (operator === '') {
+        if (operator === "") {
             break;
         }
 
@@ -185,7 +185,7 @@ exports.parse_narrow = function (hash) {
         }
 
         let negated = false;
-        if (operator[0] === '-') {
+        if (operator[0] === "-") {
             negated = true;
             operator = operator.slice(1);
         }

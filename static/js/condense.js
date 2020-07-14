@@ -221,7 +221,7 @@ exports.condense_and_collapse = function (elems) {
             // By default, condense a long message.
             condense_row($(elem));
         } else {
-            content.removeClass('condensed');
+            content.removeClass("condensed");
             $(elem).find(".message_expander").hide();
         }
 

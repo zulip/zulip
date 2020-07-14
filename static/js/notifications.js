@@ -1,5 +1,5 @@
-const render_compose_notification = require('../templates/compose_notification.hbs');
-const render_notification = require('../templates/notification.hbs');
+const render_compose_notification = require("../templates/compose_notification.hbs");
+const render_notification = require("../templates/notification.hbs");
 const settings_config = require("./settings_config");
 
 const notice_memory = new Map();
@@ -10,7 +10,7 @@ let window_has_focus = document.hasFocus && document.hasFocus();
 
 let supports_sound;
 
-const unread_pms_favicon = '/static/images/favicon/favicon-pms.png?v=4';
+const unread_pms_favicon = "/static/images/favicon/favicon-pms.png?v=4";
 let current_favicon;
 let previous_favicon;
 let flashing = false;
@@ -155,19 +155,19 @@ exports.redraw_title = function () {
             // 'infinite'.
             n = +new_message_count;
             if (n > 99) {
-                n = 'infinite';
+                n = "infinite";
             }
 
-            current_favicon = previous_favicon = '/static/images/favicon/favicon-' + n + '.png?v=4';
+            current_favicon = previous_favicon = "/static/images/favicon/favicon-" + n + ".png?v=4";
         } else {
-            current_favicon = previous_favicon = '/static/images/favicon.svg?v=4';
+            current_favicon = previous_favicon = "/static/images/favicon.svg?v=4";
         }
         favicon.set(current_favicon);
     }
 
     // Notify the current desktop app's UI about the new unread count.
     if (window.electron_bridge !== undefined) {
-        window.electron_bridge.send_event('total_unread_count', new_message_count);
+        window.electron_bridge.send_event("total_unread_count", new_message_count);
     }
 };
 
@@ -238,8 +238,8 @@ exports.notify_above_composebox = function (note, link_class, link_msg_id, link_
         link_text: link_text,
     }));
     exports.clear_compose_notifications();
-    $('#out-of-view-notification').append(notification_html);
-    $('#out-of-view-notification').show();
+    $("#out-of-view-notification").append(notification_html);
+    $("#out-of-view-notification").show();
 };
 
 if (window.electron_bridge !== undefined) {
@@ -250,25 +250,25 @@ if (window.electron_bridge !== undefined) {
     if (window.electron_bridge.set_send_notification_reply_message_supported !== undefined) {
         window.electron_bridge.set_send_notification_reply_message_supported(true);
     }
-    window.electron_bridge.on_event('send_notification_reply_message', (message_id, reply) => {
+    window.electron_bridge.on_event("send_notification_reply_message", (message_id, reply) => {
         const message = message_store.get(message_id);
         const data = {
             type: message.type,
             content: reply,
-            to: message.type === 'private' ? message.reply_to : message.stream,
+            to: message.type === "private" ? message.reply_to : message.stream,
             topic: message.topic,
         };
 
         function success() {
-            if (message.type === 'stream') {
-                narrow.by_topic(message_id, {trigger: 'desktop_notification_reply'});
+            if (message.type === "stream") {
+                narrow.by_topic(message_id, {trigger: "desktop_notification_reply"});
             } else {
-                narrow.by_recipient(message_id, {trigger: 'desktop_notification_reply'});
+                narrow.by_recipient(message_id, {trigger: "desktop_notification_reply"});
             }
         }
 
         function error(error) {
-            window.electron_bridge.send_event('send_notification_reply_message_failed', {
+            window.electron_bridge.send_event("send_notification_reply_message_failed", {
                 data: data,
                 message_id: message_id,
                 error: error,
@@ -276,7 +276,7 @@ if (window.electron_bridge !== undefined) {
         }
 
         channel.post({
-            url: '/json/messages',
+            url: "/json/messages",
             data: data,
             success: success,
             error: error,
@@ -297,7 +297,7 @@ function process_notification(notification) {
     let raw_operators = [];
     const opts = {trigger: "notification click"};
     // Convert the content to plain text, replacing emoji with their alt text
-    content = $('<div/>').html(message.content);
+    content = $("<div/>").html(message.content);
     ui.replace_emoji_with_text(content);
     spoilers.hide_spoilers_in_notification(content);
     content = content.text();
@@ -318,16 +318,16 @@ function process_notification(notification) {
         // Remove the sender from the list of other recipients
         other_recipients = other_recipients.replace(", " + message.sender_full_name, "");
         other_recipients = other_recipients.replace(message.sender_full_name + ", ", "");
-        notification_source = 'pm';
+        notification_source = "pm";
     } else {
         key = message.sender_full_name + " to " +
               message.stream + " > " + topic;
         if (message.mentioned) {
-            notification_source = 'mention';
+            notification_source = "mention";
         } else if (message.alerted) {
-            notification_source = 'alert';
+            notification_source = "alert";
         } else {
-            notification_source = 'stream';
+            notification_source = "stream";
         }
     }
     blueslip.debug("Desktop notification from source " + notification_source);
@@ -335,7 +335,7 @@ function process_notification(notification) {
     if (content.length > 150) {
         // Truncate content at a word boundary
         for (i = 150; i > 0; i -= 1) {
-            if (content[i] === ' ') {
+            if (content[i] === " ") {
                 break;
             }
         }
@@ -397,7 +397,7 @@ function process_notification(notification) {
             notification_object.addEventListener("click", () => {
                 notification_object.close();
                 if (message.type !== "test-notification") {
-                    narrow.by_topic(message.id, {trigger: 'notification'});
+                    narrow.by_topic(message.id, {trigger: "notification"});
                 }
                 window.focus();
             });
@@ -649,7 +649,7 @@ exports.notify_local_mixes = function (messages, need_user_to_scroll) {
             // This can happen if the client is offline for a while
             // around the time this client sends a message; see the
             // caller of message_events.insert_new_messages.
-            blueslip.info('Slightly unexpected: A message not sent by us batches with those that were.');
+            blueslip.info("Slightly unexpected: A message not sent by us batches with those that were.");
             continue;
         }
 
@@ -660,7 +660,7 @@ exports.notify_local_mixes = function (messages, need_user_to_scroll) {
                 reason = i18n.t("Sent! Scroll down to view your message.");
                 exports.notify_above_composebox(reason, "", null, "");
                 setTimeout(() => {
-                    $('#out-of-view-notification').hide();
+                    $("#out-of-view-notification").hide();
                 }, 3000);
             }
 
@@ -695,9 +695,9 @@ exports.notify_messages_outside_current_search = function (messages) {
 };
 
 exports.clear_compose_notifications = function () {
-    $('#out-of-view-notification').empty();
-    $('#out-of-view-notification').stop(true, true);
-    $('#out-of-view-notification').hide();
+    $("#out-of-view-notification").empty();
+    $("#out-of-view-notification").stop(true, true);
+    $("#out-of-view-notification").hide();
 };
 
 exports.reify_message_id = function (opts) {
@@ -706,31 +706,31 @@ exports.reify_message_id = function (opts) {
 
     // If a message ID that we're currently storing (as a link) has changed,
     // update that link as well
-    for (const e of $('#out-of-view-notification a')) {
+    for (const e of $("#out-of-view-notification a")) {
         const elem = $(e);
-        const message_id = elem.data('message-id');
+        const message_id = elem.data("message-id");
 
         if (message_id === old_id) {
-            elem.data('message-id', new_id);
+            elem.data("message-id", new_id);
         }
     }
 };
 
 exports.register_click_handlers = function () {
-    $('#out-of-view-notification').on('click', '.compose_notification_narrow_by_topic', (e) => {
-        const message_id = $(e.currentTarget).data('message-id');
-        narrow.by_topic(message_id, {trigger: 'compose_notification'});
+    $("#out-of-view-notification").on("click", ".compose_notification_narrow_by_topic", (e) => {
+        const message_id = $(e.currentTarget).data("message-id");
+        narrow.by_topic(message_id, {trigger: "compose_notification"});
         e.stopPropagation();
         e.preventDefault();
     });
-    $('#out-of-view-notification').on('click', '.compose_notification_scroll_to_message', (e) => {
-        const message_id = $(e.currentTarget).data('message-id');
+    $("#out-of-view-notification").on("click", ".compose_notification_scroll_to_message", (e) => {
+        const message_id = $(e.currentTarget).data("message-id");
         current_msg_list.select_id(message_id);
         navigate.scroll_to_selected();
         e.stopPropagation();
         e.preventDefault();
     });
-    $('#out-of-view-notification').on('click', '.out-of-view-notification-close', (e) => {
+    $("#out-of-view-notification").on("click", ".out-of-view-notification-close", (e) => {
         exports.clear_compose_notifications();
         e.stopPropagation();
         e.preventDefault();

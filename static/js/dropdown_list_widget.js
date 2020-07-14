@@ -10,7 +10,7 @@ const DropdownListWidget = function (opts) {
         opts.value_id = `id_${opts.widget_name}`;
         if (opts.value === undefined) {
             opts.value = opts.null_value;
-            blueslip.warn('dropdown-list-widget: Called without a default value; using null value');
+            blueslip.warn("dropdown-list-widget: Called without a default value; using null value");
         }
     };
     init();
@@ -25,7 +25,7 @@ const DropdownListWidget = function (opts) {
         if (!value || value === opts.null_value) {
             elem.text(opts.default_text);
             elem.addClass("text-warning");
-            elem.closest('.input-group').find('.dropdown_list_reset_button:not([disabled])').hide();
+            elem.closest(".input-group").find(".dropdown_list_reset_button:not([disabled])").hide();
             return;
         }
 
@@ -33,8 +33,8 @@ const DropdownListWidget = function (opts) {
         const item = opts.data.find((x) => x.value === value.toString());
         const text = opts.render_text(item.name);
         elem.text(text);
-        elem.removeClass('text-warning');
-        elem.closest('.input-group').find('.dropdown_list_reset_button:not([disabled])').show();
+        elem.removeClass("text-warning");
+        elem.closest(".input-group").find(".dropdown_list_reset_button:not([disabled])").show();
     };
 
     const update = (value) => {
@@ -52,7 +52,7 @@ const DropdownListWidget = function (opts) {
                     return;
                 }
             }
-            const value = $(this).attr('data-value');
+            const value = $(this).attr("data-value");
             update(value);
         });
         $(`#${opts.container_id} .dropdown_list_reset_button`).click((e) => {
@@ -112,9 +112,9 @@ const DropdownListWidget = function (opts) {
     };
 
     const value = () => {
-        let val = $(`#${opts.container_id} #${opts.value_id}`).data('value');
+        let val = $(`#${opts.container_id} #${opts.value_id}`).data("value");
         if (val === null) {
-            val = '';
+            val = "";
         }
         return val;
     };

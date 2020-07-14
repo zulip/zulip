@@ -1,9 +1,9 @@
-import * as google_analytics from './google-analytics.js';
-import { detect_user_os } from './tabbed-instructions.js';
-import render_tabs from './team.js';
+import * as google_analytics from "./google-analytics.js";
+import { detect_user_os } from "./tabbed-instructions.js";
+import render_tabs from "./team.js";
 
 export function path_parts() {
-    return window.location.pathname.split('/').filter((chunk) => chunk !== '');
+    return window.location.pathname.split("/").filter((chunk) => chunk !== "");
 }
 
 const hello_events = function () {
@@ -32,7 +32,7 @@ const apps_events = function () {
             link: ELECTRON_APP_URL_WINDOWS,
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide",
-            app_type: 'desktop',
+            app_type: "desktop",
         },
         mac: {
             image: "/static/images/landing-page/macbook.png",
@@ -87,12 +87,12 @@ const apps_events = function () {
     }
 
     function get_path_from_version() {
-        return '/apps/' + version;
+        return "/apps/" + version;
     }
 
     function update_path() {
         const next_path = get_path_from_version();
-        history.pushState(version, '', next_path);
+        history.pushState(version, "", next_path);
     }
 
     const update_page = function () {
@@ -121,7 +121,7 @@ const apps_events = function () {
         $download_from_apple_app_store.toggle(version === "ios");
     };
 
-    $(window).on('popstate', () => {
+    $(window).on("popstate", () => {
         version = get_version_from_path();
         update_page();
         $("body").animate({ scrollTop: 0 }, 200);
@@ -129,9 +129,9 @@ const apps_events = function () {
     });
 
     $(".apps a .icon").click((e) => {
-        const next_version = $(e.target).closest('a')
-            .attr('href')
-            .replace('/apps/', '');
+        const next_version = $(e.target).closest("a")
+            .attr("href")
+            .replace("/apps/", "");
         version = next_version;
 
         update_path();
@@ -144,7 +144,7 @@ const apps_events = function () {
 
     // init
     version = get_version_from_path();
-    history.replaceState(version, '', get_path_from_version());
+    history.replaceState(version, "", get_path_from_version());
     update_page();
 };
 
@@ -177,7 +177,7 @@ const events = function () {
         apps_events();
     }
 
-    if (path_parts().includes('hello')) {
+    if (path_parts().includes("hello")) {
         hello_events();
     }
 };
@@ -187,7 +187,7 @@ const events = function () {
 const load = function () {
 
     // Initiate the bootstrap carousel logic
-    $('.carousel').carousel({
+    $(".carousel").carousel({
         interval: false,
     });
 
@@ -203,17 +203,17 @@ const load = function () {
         const move_slide_forward = !is_button && !is_link && !is_last_slide;
 
         if (move_slide_forward) {
-            $(this).closest('.carousel').carousel('next');
+            $(this).closest(".carousel").carousel("next");
         }
     });
 
-    $('.carousel').on('slid', function () {
+    $(".carousel").on("slid", function () {
         const $this = $(this);
-        $this.find('.visibility-control').show();
-        if ($this.find('.carousel-inner .item').first().hasClass('active')) {
-            $this.find('.left.visibility-control').hide();
-        } else if ($this.find('.carousel-inner .item').last().hasClass('active')) {
-            $this.find('.right.visibility-control').hide();
+        $this.find(".visibility-control").show();
+        if ($this.find(".carousel-inner .item").first().hasClass("active")) {
+            $this.find(".left.visibility-control").hide();
+        } else if ($this.find(".carousel-inner .item").last().hasClass("active")) {
+            $this.find(".right.visibility-control").hide();
         }
     });
 
@@ -228,7 +228,7 @@ if (document.readyState === "complete") {
 }
 
 $(() => {
-    if (window.location.pathname === '/team/') {
+    if (window.location.pathname === "/team/") {
         render_tabs();
     }
 });
@@ -237,6 +237,6 @@ $(() => {
 // According to https://developer.mozilla.org/en-US/docs/DOM/window.onunload
 // Using this event handler in your page prevents Firefox from caching the
 // page in the in-memory bfcache (backward/forward cache).
-$(window).on('unload', () => {
-    $(window).unbind('unload');
+$(window).on("unload", () => {
+    $(window).unbind("unload");
 });

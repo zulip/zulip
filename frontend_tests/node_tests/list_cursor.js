@@ -1,13 +1,13 @@
-zrequire('list_cursor');
+zrequire("list_cursor");
 
-run_test('config errors', () => {
-    blueslip.expect('error', 'Programming error');
+run_test("config errors", () => {
+    blueslip.expect("error", "Programming error");
     list_cursor({});
 });
 
 function basic_conf() {
     const list = {
-        scroll_container_sel: 'whatever',
+        scroll_container_sel: "whatever",
         find_li: () => {},
         first_key: () => {},
         prev_key: () => {},
@@ -16,13 +16,13 @@ function basic_conf() {
 
     const conf = {
         list: list,
-        highlight_class: 'highlight',
+        highlight_class: "highlight",
     };
 
     return conf;
 }
 
-run_test('misc errors', () => {
+run_test("misc errors", () => {
     const conf = basic_conf();
 
     const cursor = list_cursor(conf);
@@ -30,28 +30,28 @@ run_test('misc errors', () => {
     // Test that we just ignore empty
     // lists for unknown keys.
     conf.list.find_li = (opts) => {
-        assert.equal(opts.key, 'nada');
+        assert.equal(opts.key, "nada");
         assert.equal(opts.force_render, true);
         return [];
     };
 
-    cursor.get_row('nada');
+    cursor.get_row("nada");
 
-    blueslip.expect('error', 'Caller is not checking keys for list_cursor.go_to');
+    blueslip.expect("error", "Caller is not checking keys for list_cursor.go_to");
     cursor.go_to(undefined);
 
-    blueslip.expect('error', 'Cannot highlight key for list_cursor: nada');
-    cursor.go_to('nada');
+    blueslip.expect("error", "Cannot highlight key for list_cursor: nada");
+    cursor.go_to("nada");
 
     cursor.prev();
     cursor.next();
 });
 
-run_test('single item list', () => {
+run_test("single item list", () => {
     const conf = basic_conf();
     const cursor = list_cursor(conf);
 
-    const valid_key = '42';
+    const valid_key = "42";
     const li_stub = {
         length: 1,
         addClass: () => {},

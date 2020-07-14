@@ -1,4 +1,4 @@
-const render_input_pill = require('../templates/input_pill.hbs');
+const render_input_pill = require("../templates/input_pill.hbs");
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 exports.random_id = function () {
@@ -17,17 +17,17 @@ exports.create = function (opts) {
     };
 
     if (!opts.container) {
-        blueslip.error('Pill needs container.');
+        blueslip.error("Pill needs container.");
         return;
     }
 
     if (!opts.create_item_from_text) {
-        blueslip.error('Pill needs create_item_from_text');
+        blueslip.error("Pill needs create_item_from_text");
         return;
     }
 
     if (!opts.get_text_from_item) {
-        blueslip.error('Pill needs get_text_from_item');
+        blueslip.error("Pill needs get_text_from_item");
         return;
     }
 
@@ -64,7 +64,7 @@ exports.create = function (opts) {
             // in out widget that hasn't been turned into
             // pills.  We use it to decide things like
             // whether we're ready to send typing indicators.
-            return store.$input.text().trim() !== '';
+            return store.$input.text().trim() !== "";
         },
 
         create_item: function (text) {
@@ -89,7 +89,7 @@ exports.create = function (opts) {
             const id = exports.random_id();
 
             if (!item.display_value) {
-                blueslip.error('no display_value returned');
+                blueslip.error("no display_value returned");
                 return;
             }
 
@@ -330,7 +330,7 @@ exports.create = function (opts) {
             e.preventDefault();
 
             // get text representation of clipboard
-            const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+            const text = (e.originalEvent || e).clipboardData.getData("text/plain");
 
             // insert text manually
             document.execCommand("insertText", false, text);

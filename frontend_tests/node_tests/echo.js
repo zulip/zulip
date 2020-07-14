@@ -1,36 +1,36 @@
-set_global('$', global.make_zjquery());
-set_global('markdown', {});
-set_global('local_message', {
+set_global("$", global.make_zjquery());
+set_global("markdown", {});
+set_global("local_message", {
     now: () => "timestamp",
 });
-set_global('page_params', {});
+set_global("page_params", {});
 
-zrequire('echo');
-zrequire('people');
+zrequire("echo");
+zrequire("people");
 
 let disparities = [];
 let messages_to_rerender = [];
 
-set_global('ui', {
+set_global("ui", {
     show_failed_message_success: () => {},
 });
 
-set_global('sent_messages', {
+set_global("sent_messages", {
     mark_disparity: (local_id) => {
         disparities.push(local_id);
     },
 });
 
-set_global('message_store', {
+set_global("message_store", {
     get: () => ({ failed_request: true }),
     update_booleans: () => {},
 });
 
-set_global('alert_words', {
+set_global("alert_words", {
     process_message: () => {},
 });
 
-set_global('home_msg_list', {
+set_global("home_msg_list", {
     view: {
         rerender_messages: (msgs) => {
             messages_to_rerender = msgs;
@@ -38,11 +38,11 @@ set_global('home_msg_list', {
     },
 });
 
-set_global('message_list', {});
+set_global("message_list", {});
 
-set_global('current_msg_list', '');
+set_global("current_msg_list", "");
 
-run_test('process_from_server for un-echoed messages', () => {
+run_test("process_from_server for un-echoed messages", () => {
     const waiting_for_ack = new Map();
     const server_messages = [
         {
@@ -54,11 +54,11 @@ run_test('process_from_server for un-echoed messages', () => {
     assert.deepEqual(non_echo_messages, server_messages);
 });
 
-run_test('process_from_server for differently rendered messages', () => {
+run_test("process_from_server for differently rendered messages", () => {
     // Test that we update all the booleans and the content of the message
     // in local echo.
-    const old_value = 'old_value';
-    const new_value = 'new_value';
+    const old_value = "old_value";
+    const new_value = "new_value";
     const waiting_for_ack = new Map([
         ["100.1", {
             content: "<p>A client rendered message</p>",
@@ -93,7 +93,7 @@ run_test('process_from_server for differently rendered messages', () => {
     }]);
 });
 
-run_test('build_display_recipient', () => {
+run_test("build_display_recipient", () => {
     page_params.user_id = 123;
 
     const params = {};
@@ -162,7 +162,7 @@ run_test('build_display_recipient', () => {
 
 });
 
-run_test('insert_local_message', () => {
+run_test("insert_local_message", () => {
     const local_id_float = 1;
 
     page_params.user_id = 123;

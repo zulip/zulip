@@ -28,10 +28,10 @@ exports.make_zblueslip = function () {
 
     lib.expect = (name, message, count = 1) => {
         if (opts[name] === undefined) {
-            throw Error('unexpected arg for expect: ' + name);
+            throw Error("unexpected arg for expect: " + name);
         }
         if (count <= 0 && Number.isInteger(count)) {
-            throw Error('expected count should be a positive integer');
+            throw Error("expected count should be a positive integer");
         }
         const obj = {message, count, expected_count: count};
         lib.test_data[name].push(obj);
@@ -87,13 +87,13 @@ exports.make_zblueslip = function () {
             continue;
         }
         lib[name] = function (message, more_info, stack) {
-            if (typeof message !== 'string') {
+            if (typeof message !== "string") {
                 // We may catch exceptions in blueslip, and if
                 // so our stub should include that.
-                if (message.toString().includes('exception')) {
+                if (message.toString().includes("exception")) {
                     message = message.toString();
                 } else {
-                    throw Error('message should be string: ' + message);
+                    throw Error("message should be string: " + message);
                 }
             }
             lib.test_logs[name].push({message, more_info, stack});
@@ -113,7 +113,7 @@ exports.make_zblueslip = function () {
 
     lib.start_timing = () => () => {};
 
-    lib.preview_node = (node) => 'node:' + node;
+    lib.preview_node = (node) => "node:" + node;
 
     return lib;
 };

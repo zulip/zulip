@@ -112,6 +112,11 @@
             }
         ],
         "quote-props": [ "error", "as-needed" ],
+        "quotes": [
+            "error",
+            "double",
+            { "avoidEscape": true, "allowTemplateLiterals": false }
+        ],
         "radix": "error",
         "semi": "error",
         "semi-spacing": "error",

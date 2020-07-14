@@ -1,4 +1,4 @@
-const autosize = require('autosize');
+const autosize = require("autosize");
 
 exports.autosize_textarea = function () {
     autosize.update($("#compose-textarea"));
@@ -6,7 +6,7 @@ exports.autosize_textarea = function () {
 
 exports.smart_insert = function (textarea, syntax) {
     function is_space(c) {
-        return c === ' ' || c === '\t' || c === '\n';
+        return c === " " || c === "\t" || c === "\n";
     }
 
     const pos = textarea.caret();
@@ -18,7 +18,7 @@ exports.smart_insert = function (textarea, syntax) {
         // before the insert or (unlikely) at the start of the syntax,
         // add one.
         if (!is_space(before_str.slice(-1)) && !is_space(syntax[0])) {
-            syntax = ' ' + syntax;
+            syntax = " " + syntax;
         }
     }
 
@@ -26,7 +26,7 @@ exports.smart_insert = function (textarea, syntax) {
     // start of the content after the syntax, add one.
     if (!(after_str.length > 0 && is_space(after_str[0]) ||
           syntax.length > 0 && is_space(syntax.slice(-1)))) {
-        syntax += ' ';
+        syntax += " ";
     }
 
     textarea.focus();
@@ -48,7 +48,7 @@ exports.insert_syntax_and_focus = function (syntax, textarea) {
     // where the cursor was and focusing the area.  Mostly a thin
     // wrapper around smart_insert.
     if (textarea === undefined) {
-        textarea = $('#compose-textarea');
+        textarea = $("#compose-textarea");
     }
     exports.smart_insert(textarea, syntax);
 };
@@ -60,7 +60,7 @@ exports.replace_syntax = function (old_syntax, new_syntax, textarea) {
     // a RegExp with a global flag, it will replace all instances.
 
     if (textarea === undefined) {
-        textarea = $('#compose-textarea');
+        textarea = $("#compose-textarea");
     }
 
     textarea.val(textarea.val().replace(old_syntax, () =>
@@ -79,7 +79,7 @@ exports.compute_placeholder_text = function (opts) {
     // We return text with the stream and topic name unescaped,
     // because the caller is expected to insert this into the
     // placeholder field in a way that does HTML escaping.
-    if (opts.message_type === 'stream') {
+    if (opts.message_type === "stream") {
         if (opts.topic) {
             return i18n.t("Message #__- stream_name__ > __- topic_name__",
                           {stream_name: opts.stream,

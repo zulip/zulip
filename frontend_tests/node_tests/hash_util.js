@@ -1,19 +1,19 @@
-zrequire('hash_util');
-zrequire('stream_data');
-zrequire('people');
-zrequire('Filter', 'js/filter');
-zrequire('narrow_state');
+zrequire("hash_util");
+zrequire("stream_data");
+zrequire("people");
+zrequire("Filter", "js/filter");
+zrequire("narrow_state");
 
-set_global('$', global.make_zjquery({
+set_global("$", global.make_zjquery({
     silent: true,
 }));
-set_global('ui_report', {
+set_global("ui_report", {
     displayed_error: false,
     error: () => {
         ui_report.displayed_error = true;
     },
 });
-set_global('location', {
+set_global("location", {
     protocol: "https:",
     host: "example.com",
     pathname: "/",
@@ -21,24 +21,24 @@ set_global('location', {
 
 const hamlet = {
     user_id: 15,
-    email: 'hamlet@example.com',
-    full_name: 'Hamlet',
+    email: "hamlet@example.com",
+    full_name: "Hamlet",
 };
 
 people.add_active_user(hamlet);
 
 const frontend = {
     stream_id: 99,
-    name: 'frontend',
+    name: "frontend",
 };
 
 stream_data.add_sub(frontend);
 
-run_test('hash_util', () => {
+run_test("hash_util", () => {
     // Test encodeHashComponent
-    const str = 'https://www.zulipexample.com';
+    const str = "https://www.zulipexample.com";
     const result1 = hash_util.encodeHashComponent(str);
-    assert.equal(result1, 'https.3A.2F.2Fwww.2Ezulipexample.2Ecom');
+    assert.equal(result1, "https.3A.2F.2Fwww.2Ezulipexample.2Ecom");
 
     // Test decodeHashComponent
     const result2 = hash_util.decodeHashComponent(result1);
@@ -54,20 +54,20 @@ run_test('hash_util', () => {
         assert.equal(decode_result, operand);
     }
 
-    let operator = 'sender';
+    let operator = "sender";
     let operand = hamlet.email;
 
-    encode_decode_operand(operator, operand, '15-hamlet');
+    encode_decode_operand(operator, operand, "15-hamlet");
 
-    operator = 'stream';
-    operand = 'frontend';
+    operator = "stream";
+    operand = "frontend";
 
-    encode_decode_operand(operator, operand, '99-frontend');
+    encode_decode_operand(operator, operand, "99-frontend");
 
-    operator = 'topic';
-    operand = 'testing 123';
+    operator = "topic";
+    operand = "testing 123";
 
-    encode_decode_operand(operator, operand, 'testing.20123');
+    encode_decode_operand(operator, operand, "testing.20123");
 
     // Test invalid url decode.
     const result = hash_util.decodeHashComponent("foo.foo");
@@ -75,96 +75,96 @@ run_test('hash_util', () => {
     assert.equal(ui_report.displayed_error, true);
 });
 
-run_test('test_get_hash_category', () => {
+run_test("test_get_hash_category", () => {
     assert.deepEqual(
-        hash_util.get_hash_category('streams/subscribed'),
-        'streams',
+        hash_util.get_hash_category("streams/subscribed"),
+        "streams",
     );
     assert.deepEqual(
-        hash_util.get_hash_category('#settings/display-settings'),
-        'settings',
+        hash_util.get_hash_category("#settings/display-settings"),
+        "settings",
     );
     assert.deepEqual(
-        hash_util.get_hash_category('#drafts'),
-        'drafts',
+        hash_util.get_hash_category("#drafts"),
+        "drafts",
     );
     assert.deepEqual(
-        hash_util.get_hash_category('invites'),
-        'invites',
+        hash_util.get_hash_category("invites"),
+        "invites",
     );
 });
 
-run_test('test_get_hash_section', () => {
+run_test("test_get_hash_section", () => {
     assert.equal(
-        hash_util.get_hash_section('streams/subscribed'),
-        'subscribed',
+        hash_util.get_hash_section("streams/subscribed"),
+        "subscribed",
     );
     assert.equal(
-        hash_util.get_hash_section('#settings/your-account'),
-        'your-account',
-    );
-
-    assert.equal(
-        hash_util.get_hash_section('settings/10/general/'),
-        '10',
+        hash_util.get_hash_section("#settings/your-account"),
+        "your-account",
     );
 
     assert.equal(
-        hash_util.get_hash_section('#drafts'),
-        '',
+        hash_util.get_hash_section("settings/10/general/"),
+        "10",
+    );
+
+    assert.equal(
+        hash_util.get_hash_section("#drafts"),
+        "",
     );
     assert.equal(
-        hash_util.get_hash_section(''),
-        '',
+        hash_util.get_hash_section(""),
+        "",
     );
 });
 
-run_test('test_parse_narrow', () => {
+run_test("test_parse_narrow", () => {
     assert.deepEqual(
-        hash_util.parse_narrow(['narrow', 'stream', '99-frontend']),
-        [{negated: false, operator: 'stream', operand: 'frontend'}],
+        hash_util.parse_narrow(["narrow", "stream", "99-frontend"]),
+        [{negated: false, operator: "stream", operand: "frontend"}],
     );
 
     assert.deepEqual(
-        hash_util.parse_narrow(['narrow', '-stream', '99-frontend']),
-        [{negated: true, operator: 'stream', operand: 'frontend'}],
+        hash_util.parse_narrow(["narrow", "-stream", "99-frontend"]),
+        [{negated: true, operator: "stream", operand: "frontend"}],
     );
 
     assert.equal(
-        hash_util.parse_narrow(['narrow', 'BOGUS']),
+        hash_util.parse_narrow(["narrow", "BOGUS"]),
         undefined,
     );
 
     // For nonexistent streams, we get the full slug.
     // We possibly should remove the prefix and fix this test.
     assert.deepEqual(
-        hash_util.parse_narrow(['narrow', 'stream', '42-bogus']),
-        [{negated: false, operator: 'stream', operand: '42-bogus'}],
+        hash_util.parse_narrow(["narrow", "stream", "42-bogus"]),
+        [{negated: false, operator: "stream", operand: "42-bogus"}],
     );
 });
 
-run_test('test_stream_edit_uri', () => {
+run_test("test_stream_edit_uri", () => {
     const sub = {
-        name: 'research & development',
+        name: "research & development",
         stream_id: 42,
     };
     assert.equal(hash_util.stream_edit_uri(sub),
-                 '#streams/42/research.20.26.20development');
+                 "#streams/42/research.20.26.20development");
 });
 
-run_test('test_by_conversation_and_time_uri', () => {
+run_test("test_by_conversation_and_time_uri", () => {
     let message = {
-        type: 'stream',
+        type: "stream",
         stream_id: frontend.stream_id,
-        topic: 'testing',
+        topic: "testing",
         id: 42,
     };
 
     assert.equal(hash_util.by_conversation_and_time_uri(message),
-                 'https://example.com/#narrow/stream/99-frontend/topic/testing/near/42');
+                 "https://example.com/#narrow/stream/99-frontend/topic/testing/near/42");
 
     message = {
-        type: 'private',
+        type: "private",
         display_recipient: [
             {
                 id: hamlet.user_id,
@@ -174,12 +174,12 @@ run_test('test_by_conversation_and_time_uri', () => {
     };
 
     assert.equal(hash_util.by_conversation_and_time_uri(message),
-                 'https://example.com/#narrow/pm-with/15-pm/near/43');
+                 "https://example.com/#narrow/pm-with/15-pm/near/43");
 });
 
-run_test('test_search_public_streams_notice_url', () => {
+run_test("test_search_public_streams_notice_url", () => {
     function set_uri(uri) {
-        const operators = hash_util.parse_narrow(uri.split('/'));
+        const operators = hash_util.parse_narrow(uri.split("/"));
         narrow_state.set_current_filter(new Filter(operators));
     }
 

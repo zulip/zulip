@@ -1,6 +1,6 @@
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
-const render_admin_tab = require('../templates/admin_tab.hbs');
+const render_admin_tab = require("../templates/admin_tab.hbs");
 const render_settings_organization_settings_tip = require("../templates/settings/organization_settings_tip.hbs");
 
 const admin_settings_label = {
@@ -61,9 +61,9 @@ exports.build_page = function () {
         can_add_emojis: settings_emoji.can_add_emoji(),
         realm_allow_community_topic_editing: page_params.realm_allow_community_topic_editing,
         realm_message_content_edit_limit_minutes:
-            settings_org.get_realm_time_limits_in_minutes('realm_message_content_edit_limit_seconds'),
+            settings_org.get_realm_time_limits_in_minutes("realm_message_content_edit_limit_seconds"),
         realm_message_content_delete_limit_minutes:
-            settings_org.get_realm_time_limits_in_minutes('realm_message_content_delete_limit_seconds'),
+            settings_org.get_realm_time_limits_in_minutes("realm_message_content_delete_limit_seconds"),
         realm_message_retention_days: page_params.realm_message_retention_days,
         realm_allow_edit_history: page_params.realm_allow_edit_history,
         language_list: page_params.language_list,
@@ -103,7 +103,7 @@ exports.build_page = function () {
     options.email_address_visibility_values = settings_config.email_address_visibility_values;
     Object.assign(options, settings_org.get_organization_settings_options());
 
-    if (options.realm_logo_source !== 'D' && options.realm_night_logo_source === 'D') {
+    if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
         // If no night mode logo is specified but a day mode one is,
         // use the day mode one.  See also similar code in realm_logo.js.
         options.realm_night_logo_url = options.realm_logo_url;
@@ -137,7 +137,7 @@ exports.launch = function (section) {
 
     overlays.open_settings();
     settings_panel_menu.org_settings.activate_section_or_default(section);
-    settings_toggle.highlight_toggle('organization');
+    settings_toggle.highlight_toggle("organization");
 };
 
 window.admin = exports;

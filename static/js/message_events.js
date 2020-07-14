@@ -9,7 +9,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
     }
 
     channel.get({
-        url: '/json/messages/matches_narrow',
+        url: "/json/messages/matches_narrow",
         data: {msg_ids: JSON.stringify(ids),
                narrow: JSON.stringify(narrow_state.public_operators())},
         timeout: 5000,
@@ -150,7 +150,7 @@ exports.update_messages = function update_messages(events) {
         topic_edited = new_topic !== undefined;
         stream_changed = new_stream_id !== undefined;
         if (topic_edited || stream_changed) {
-            const going_forward_change = ['change_later', 'change_all'].includes(event.propagate_mode);
+            const going_forward_change = ["change_later", "change_all"].includes(event.propagate_mode);
 
             const stream_name = stream_data.get_sub_by_id(event.stream_id).name;
             const compose_stream_name = compose_state.stream_name();
@@ -256,7 +256,7 @@ exports.update_messages = function update_messages(events) {
                             // The fix is likely somewhat involved, so punting for now.
                             const new_stream_name = stream_data.get_sub_by_id(new_stream_id).name;
                             new_filter = new_filter.filter_with_new_params({
-                                operator: 'stream',
+                                operator: "stream",
                                 operand: new_stream_name,
                             });
                             changed_narrow = true;
@@ -264,7 +264,7 @@ exports.update_messages = function update_messages(events) {
 
                         if (new_filter && topic_edited) {
                             new_filter = new_filter.filter_with_new_params({
-                                operator: 'topic',
+                                operator: "topic",
                                 operand: new_topic,
                             });
                             changed_narrow = true;
@@ -276,7 +276,7 @@ exports.update_messages = function update_messages(events) {
                         if (changed_narrow) {
                             const operators = new_filter.operators();
                             const opts = {
-                                trigger: 'stream/topic change',
+                                trigger: "stream/topic change",
                                 then_select_id: current_selected_id,
                             };
                             narrow.activate(operators, opts);
@@ -346,8 +346,8 @@ exports.update_messages = function update_messages(events) {
         }
 
         // Rerender "Message edit history" if it was open to the edited message.
-        if ($('#message-edit-history').hasClass('in') &&
-            msg.id === parseInt($('#message-history').attr('data-message-id'), 10)) {
+        if ($("#message-edit-history").hasClass("in") &&
+            msg.id === parseInt($("#message-history").attr("data-message-id"), 10)) {
             message_edit_history.fetch_and_render_message_history(msg);
         }
     }

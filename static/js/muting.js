@@ -1,4 +1,4 @@
-const FoldDict = require('./fold_dict').FoldDict;
+const FoldDict = require("./fold_dict").FoldDict;
 
 const muted_topics = new Map();
 
@@ -60,7 +60,7 @@ exports.set_muted_topics = function (tuples) {
         const stream_id = stream_data.get_stream_id(stream_name);
 
         if (!stream_id) {
-            blueslip.warn('Unknown stream in set_muted_topics: ' + stream_name);
+            blueslip.warn("Unknown stream in set_muted_topics: " + stream_name);
             continue;
         }
 

@@ -29,18 +29,18 @@ Logger.prototype = (function () {
         return function Logger_func(...args) {
             const now = new Date();
             const date_str =
-                now.getUTCFullYear() + '-' +
-                pad(now.getUTCMonth() + 1, 2) + '-' +
-                pad(now.getUTCDate(), 2) + ' ' +
-                pad(now.getUTCHours(), 2) + ':' +
-                pad(now.getUTCMinutes(), 2) + ':' +
-                pad(now.getUTCSeconds(), 2) + '.' +
-                pad(now.getUTCMilliseconds(), 3) + ' UTC';
+                now.getUTCFullYear() + "-" +
+                pad(now.getUTCMonth() + 1, 2) + "-" +
+                pad(now.getUTCDate(), 2) + " " +
+                pad(now.getUTCHours(), 2) + ":" +
+                pad(now.getUTCMinutes(), 2) + ":" +
+                pad(now.getUTCSeconds(), 2) + "." +
+                pad(now.getUTCMilliseconds(), 3) + " UTC";
 
             const str_args = args.map((x) => typeof x === "object" ? JSON.stringify(x) : x);
 
             const log_entry = date_str + " " + name.toUpperCase() +
-                ': ' + str_args.join("");
+                ": " + str_args.join("");
             this._memory_log.push(log_entry);
 
             // Don't let the log grow without bound
@@ -61,7 +61,7 @@ Logger.prototype = (function () {
         },
     };
 
-    const methods = ['debug', 'log', 'info', 'warn', 'error'];
+    const methods = ["debug", "log", "info", "warn", "error"];
     let i;
     for (i = 0; i < methods.length; i += 1) {
         proto[methods[i]] = make_logger_func(methods[i]);
@@ -83,7 +83,7 @@ function report_error(msg, stack, opts) {
     opts = { show_ui_msg: false, ...opts };
 
     if (stack === undefined) {
-        stack = 'No stacktrace available';
+        stack = "No stacktrace available";
     }
 
     if (page_params.debug_mode) {
@@ -92,7 +92,7 @@ function report_error(msg, stack, opts) {
         blueslip_stacktrace.display_stacktrace(msg, stack);
     }
 
-    const key = ':' + msg + stack;
+    const key = ":" + msg + stack;
     if (reported_errors.has(key)
         || last_report_attempt.has(key)
             // Only try to report a given error once every 5 minutes
@@ -110,9 +110,9 @@ function report_error(msg, stack, opts) {
     // Important: We don't use channel.js here so that exceptions
     // always make it to the server even if reload_state.is_in_progress.
     $.ajax({
-        type: 'POST',
-        url: '/json/report/error',
-        dataType: 'json',
+        type: "POST",
+        url: "/json/report/error",
+        dataType: "json",
         data: {
             message: msg,
             stacktrace: stack,
@@ -178,7 +178,7 @@ function BlueslipError(msg, more_info) {
     self.name = "BlueslipError";
 
     // Indirect access to __proto__ keeps jslint quiet
-    const proto = '__proto__';
+    const proto = "__proto__";
     self[proto] = BlueslipError.prototype;
 
     if (more_info !== undefined) {
@@ -200,7 +200,7 @@ exports.exception_msg = function blueslip_exception_msg(ex) {
     return message;
 };
 
-$(window).on('error', (event) => {
+$(window).on("error", (event) => {
     const ex = event.originalEvent.error;
     if (!ex || ex instanceof BlueslipError) {
         return;

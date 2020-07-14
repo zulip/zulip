@@ -1,13 +1,13 @@
 // Dependencies
-set_global('$', global.make_zjquery({
+set_global("$", global.make_zjquery({
     silent: true,
 }));
-set_global('document', {
+set_global("document", {
     hasFocus: function () {
         return true;
     },
 });
-set_global('page_params', {
+set_global("page_params", {
     is_admin: false,
     realm_users: [],
     enable_desktop_notifications: true,
@@ -15,24 +15,24 @@ set_global('page_params', {
     wildcard_mentions_notify: true,
 });
 const _navigator = {
-    userAgent: 'Mozilla/5.0 AppleWebKit/537.36 Chrome/64.0.3282.167 Safari/537.36',
+    userAgent: "Mozilla/5.0 AppleWebKit/537.36 Chrome/64.0.3282.167 Safari/537.36",
 };
-set_global('navigator', _navigator);
+set_global("navigator", _navigator);
 
-zrequire('alert_words');
-zrequire('muting');
-zrequire('stream_data');
-zrequire('people');
-zrequire('ui');
-zrequire('spoilers');
+zrequire("alert_words");
+zrequire("muting");
+zrequire("stream_data");
+zrequire("people");
+zrequire("ui");
+zrequire("spoilers");
 spoilers.hide_spoilers_in_notification = () => {};
 
-zrequire('notifications');
+zrequire("notifications");
 
 // Not muted streams
 const general = {
     subscribed: true,
-    name: 'general',
+    name: "general",
     stream_id: 10,
     is_muted: false,
     wildcard_mentions_notify: null,
@@ -41,7 +41,7 @@ const general = {
 // Muted streams
 const muted = {
     subscribed: true,
-    name: 'muted',
+    name: "muted",
     stream_id: 20,
     is_muted: true,
     wildcard_mentions_notify: null,
@@ -50,9 +50,9 @@ const muted = {
 stream_data.add_sub(general);
 stream_data.add_sub(muted);
 
-muting.add_muted_topic(general.stream_id, 'muted topic');
+muting.add_muted_topic(general.stream_id, "muted topic");
 
-run_test('message_is_notifiable', () => {
+run_test("message_is_notifiable", () => {
     // A notification is sent if both message_is_notifiable(message)
     // and the appropriate should_send_*_notification function return
     // true.
@@ -63,15 +63,15 @@ run_test('message_is_notifiable', () => {
     // EXCEPT sent_by_me, which should trump them
     let message = {
         id: muted.stream_id,
-        content: 'message number 1',
+        content: "message number 1",
         sent_by_me: true,
         notification_sent: false,
         mentioned: true,
         mentioned_me_directly: true,
-        type: 'stream',
-        stream: 'general',
+        type: "stream",
+        stream: "general",
         stream_id: general.stream_id,
-        topic: 'whatever',
+        topic: "whatever",
     };
     assert.equal(notifications.should_send_desktop_notification(message), true);
     assert.equal(notifications.should_send_audible_notification(message), true);
@@ -85,15 +85,15 @@ run_test('message_is_notifiable', () => {
     // (ie: it mentions user, it's not muted, etc)
     message = {
         id: general.stream_id,
-        content: 'message number 2',
+        content: "message number 2",
         sent_by_me: false,
         notification_sent: true,
         mentioned: true,
         mentioned_me_directly: true,
-        type: 'stream',
-        stream: 'general',
+        type: "stream",
+        stream: "general",
         stream_id: general.stream_id,
-        topic: 'whatever',
+        topic: "whatever",
     };
     assert.equal(notifications.should_send_desktop_notification(message), true);
     assert.equal(notifications.should_send_audible_notification(message), true);
@@ -104,15 +104,15 @@ run_test('message_is_notifiable', () => {
     // Mentioning trumps muting
     message = {
         id: 30,
-        content: 'message number 3',
+        content: "message number 3",
         sent_by_me: false,
         notification_sent: false,
         mentioned: true,
         mentioned_me_directly: true,
-        type: 'stream',
-        stream: 'muted',
+        type: "stream",
+        stream: "muted",
         stream_id: muted.stream_id,
-        topic: 'topic_three',
+        topic: "topic_three",
     };
     assert.equal(notifications.should_send_desktop_notification(message), true);
     assert.equal(notifications.should_send_audible_notification(message), true);
@@ -122,15 +122,15 @@ run_test('message_is_notifiable', () => {
     // Mentioning should trigger notification in unmuted topic
     message = {
         id: 40,
-        content: 'message number 4',
+        content: "message number 4",
         sent_by_me: false,
         notification_sent: false,
         mentioned: true,
         mentioned_me_directly: true,
-        type: 'stream',
-        stream: 'general',
+        type: "stream",
+        stream: "general",
         stream_id: general.stream_id,
-        topic: 'vanilla',
+        topic: "vanilla",
     };
     assert.equal(notifications.should_send_desktop_notification(message), true);
     assert.equal(notifications.should_send_audible_notification(message), true);
@@ -141,15 +141,15 @@ run_test('message_is_notifiable', () => {
     // if wildcard_mentions_notify
     message = {
         id: 40,
-        content: 'message number 4',
+        content: "message number 4",
         sent_by_me: false,
         notification_sent: false,
         mentioned: true,
         mentioned_me_directly: false,
-        type: 'stream',
-        stream: 'general',
+        type: "stream",
+        stream: "general",
         stream_id: general.stream_id,
-        topic: 'vanilla',
+        topic: "vanilla",
     };
     assert.equal(notifications.should_send_desktop_notification(message), true);
     assert.equal(notifications.should_send_audible_notification(message), true);
@@ -176,15 +176,15 @@ run_test('message_is_notifiable', () => {
     //  DO NOT notify the user
     message = {
         id: 50,
-        content: 'message number 5',
+        content: "message number 5",
         sent_by_me: false,
         notification_sent: false,
         mentioned: true,
         mentioned_me_directly: false,
-        type: 'stream',
-        stream: 'muted',
+        type: "stream",
+        stream: "muted",
         stream_id: muted.stream_id,
-        topic: 'whatever',
+        topic: "whatever",
     };
     assert.equal(notifications.should_send_desktop_notification(message), true);
     assert.equal(notifications.should_send_audible_notification(message), true);
@@ -195,15 +195,15 @@ run_test('message_is_notifiable', () => {
     //  DO notify the user
     message = {
         id: 50,
-        content: 'message number 5',
+        content: "message number 5",
         sent_by_me: false,
         notification_sent: false,
         mentioned: true,
         mentioned_me_directly: true,
-        type: 'stream',
-        stream: 'muted',
+        type: "stream",
+        stream: "muted",
         stream_id: muted.stream_id,
-        topic: 'whatever',
+        topic: "whatever",
     };
     assert.equal(notifications.should_send_desktop_notification(message), true);
     assert.equal(notifications.should_send_audible_notification(message), true);
@@ -214,15 +214,15 @@ run_test('message_is_notifiable', () => {
     //  DO NOT notify the user
     message = {
         id: 50,
-        content: 'message number 6',
+        content: "message number 6",
         sent_by_me: false,
         notification_sent: false,
         mentioned: true,
         mentioned_me_directly: false,
-        type: 'stream',
-        stream: 'general',
+        type: "stream",
+        stream: "general",
         stream_id: general.stream_id,
-        topic: 'muted topic',
+        topic: "muted topic",
     };
     assert.equal(notifications.should_send_desktop_notification(message), true);
     assert.equal(notifications.should_send_audible_notification(message), true);
@@ -234,22 +234,22 @@ run_test('message_is_notifiable', () => {
     // return true to pass it to notifications settings, which will return false.
     message = {
         id: 60,
-        content: 'message number 7',
+        content: "message number 7",
         sent_by_me: false,
         notification_sent: false,
         mentioned: false,
         mentioned_me_directly: false,
-        type: 'stream',
-        stream: 'general',
+        type: "stream",
+        stream: "general",
         stream_id: general.stream_id,
-        topic: 'whatever',
+        topic: "whatever",
     };
     assert.equal(notifications.should_send_desktop_notification(message), false);
     assert.equal(notifications.should_send_audible_notification(message), false);
     assert.equal(notifications.message_is_notifiable(message), true);
 });
 
-run_test('basic_notifications', () => {
+run_test("basic_notifications", () => {
 
     let n; // Object for storing all notification data for assertions.
     let last_closed_message_id = null;
@@ -279,43 +279,43 @@ run_test('basic_notifications', () => {
 
     const message_1 = {
         id: 1000,
-        content: '@-mentions the user',
-        avatar_url: 'url',
+        content: "@-mentions the user",
+        avatar_url: "url",
         sent_by_me: false,
-        sender_full_name: 'Jesse Pinkman',
+        sender_full_name: "Jesse Pinkman",
         notification_sent: false,
         mentioned_me_directly: true,
-        type: 'stream',
-        stream: 'general',
+        type: "stream",
+        stream: "general",
         stream_id: muted.stream_id,
-        topic: 'whatever',
+        topic: "whatever",
     };
 
     const message_2 = {
         id: 1500,
-        avatar_url: 'url',
-        content: '@-mentions the user',
+        avatar_url: "url",
+        content: "@-mentions the user",
         sent_by_me: false,
-        sender_full_name: 'Gus Fring',
+        sender_full_name: "Gus Fring",
         notification_sent: false,
         mentioned_me_directly: true,
-        type: 'stream',
-        stream: 'general',
+        type: "stream",
+        stream: "general",
         stream_id: muted.stream_id,
-        topic: 'lunch',
+        topic: "lunch",
     };
 
     // Send notification.
     notifications.process_notification({message: message_1, desktop_notify: true});
     n = notifications.get_notifications();
-    assert.equal(n.has('Jesse Pinkman to general > whatever'), true);
+    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
     assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id);
 
     // Remove notification.
     notifications.close_notification(message_1);
     n = notifications.get_notifications();
-    assert.equal(n.has('Jesse Pinkman to general > whatever'), false);
+    assert.equal(n.has("Jesse Pinkman to general > whatever"), false);
     assert.equal(n.size, 0);
     assert.equal(last_closed_message_id, message_1.id);
 
@@ -323,7 +323,7 @@ run_test('basic_notifications', () => {
     message_1.id = 1001;
     notifications.process_notification({message: message_1, desktop_notify: true});
     n = notifications.get_notifications();
-    assert.equal(n.has('Jesse Pinkman to general > whatever'), true);
+    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
     assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id);
 
@@ -331,15 +331,15 @@ run_test('basic_notifications', () => {
     message_1.id = 1002;
     notifications.process_notification({message: message_1, desktop_notify: true});
     n = notifications.get_notifications();
-    assert.equal(n.has('Jesse Pinkman to general > whatever'), true);
+    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
     assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id);
 
     // Send another message. Notification count should increase.
     notifications.process_notification({message: message_2, desktop_notify: true});
     n = notifications.get_notifications();
-    assert.equal(n.has('Gus Fring to general > lunch'), true);
-    assert.equal(n.has('Jesse Pinkman to general > whatever'), true);
+    assert.equal(n.has("Gus Fring to general > lunch"), true);
+    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
     assert.equal(n.size, 2);
     assert.equal(last_shown_message_id, message_2.id);
 
@@ -347,7 +347,7 @@ run_test('basic_notifications', () => {
     notifications.close_notification(message_1);
     notifications.close_notification(message_2);
     n = notifications.get_notifications();
-    assert.equal(n.has('Jesse Pinkman to general > whatever'), false);
+    assert.equal(n.has("Jesse Pinkman to general > whatever"), false);
     assert.equal(n.size, 0);
     assert.equal(last_closed_message_id, message_2.id);
 });

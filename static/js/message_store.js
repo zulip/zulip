@@ -22,12 +22,12 @@ exports.user_ids = function () {
 
 exports.get = function get(message_id) {
     if (message_id === undefined || message_id === null) {
-        blueslip.error('message_store.get got bad value: ' + message_id);
+        blueslip.error("message_store.get got bad value: " + message_id);
         return;
     }
 
-    if (typeof message_id !== 'number') {
-        blueslip.error('message_store got non-number: ' + message_id);
+    if (typeof message_id !== "number") {
+        blueslip.error("message_store got non-number: " + message_id);
 
         // Try to soldier on, assuming the caller treats message
         // ids as strings.
@@ -46,8 +46,8 @@ exports.get_pm_emails = function (message) {
     function email(user_id) {
         const person = people.get_by_user_id(user_id);
         if (!person) {
-            blueslip.error('Unknown user id ' + user_id);
-            return '?';
+            blueslip.error("Unknown user id " + user_id);
+            return "?";
         }
         return person.email;
     }
@@ -55,7 +55,7 @@ exports.get_pm_emails = function (message) {
     const user_ids = people.pm_with_user_ids(message);
     const emails = user_ids.map(email).sort();
 
-    return emails.join(', ');
+    return emails.join(", ");
 };
 
 exports.get_pm_full_names = function (message) {
@@ -63,8 +63,8 @@ exports.get_pm_full_names = function (message) {
     function name(user_id) {
         const person = people.get_by_user_id(user_id);
         if (!person) {
-            blueslip.error('Unknown user id ' + user_id);
-            return '?';
+            blueslip.error("Unknown user id " + user_id);
+            return "?";
         }
         return person.full_name;
     }
@@ -72,7 +72,7 @@ exports.get_pm_full_names = function (message) {
     const user_ids = people.pm_with_user_ids(message);
     const names = user_ids.map(name).sort();
 
-    return names.join(', ');
+    return names.join(", ");
 };
 
 exports.process_message_for_recent_private_messages = function (message) {
@@ -95,13 +95,13 @@ exports.set_message_booleans = function (message) {
         return flags.includes(flag_name);
     }
 
-    message.unread = !convert_flag('read');
-    message.historical = convert_flag('historical');
-    message.starred = convert_flag('starred');
-    message.mentioned = convert_flag('mentioned') || convert_flag('wildcard_mentioned');
-    message.mentioned_me_directly =  convert_flag('mentioned');
-    message.collapsed = convert_flag('collapsed');
-    message.alerted = convert_flag('has_alert_word');
+    message.unread = !convert_flag("read");
+    message.historical = convert_flag("historical");
+    message.starred = convert_flag("starred");
+    message.mentioned = convert_flag("mentioned") || convert_flag("wildcard_mentioned");
+    message.mentioned_me_directly =  convert_flag("mentioned");
+    message.collapsed = convert_flag("collapsed");
+    message.alerted = convert_flag("has_alert_word");
 
     // Once we have set boolean flags here, the `flags` attribute is
     // just a distraction, so we delete it.  (All the downstream code
@@ -132,9 +132,9 @@ exports.update_booleans = function (message, flags) {
         return flags.includes(flag_name);
     }
 
-    message.mentioned = convert_flag('mentioned') || convert_flag('wildcard_mentioned');
-    message.mentioned_me_directly =  convert_flag('mentioned');
-    message.alerted = convert_flag('has_alert_word');
+    message.mentioned = convert_flag("mentioned") || convert_flag("wildcard_mentioned");
+    message.mentioned_me_directly =  convert_flag("mentioned");
+    message.alerted = convert_flag("has_alert_word");
 };
 
 exports.add_message_metadata = function (message) {
@@ -164,7 +164,7 @@ exports.add_message_metadata = function (message) {
     util.convert_message_topic(message);
 
     switch (message.type) {
-    case 'stream':
+    case "stream":
         message.is_stream = true;
         message.stream = message.display_recipient;
         message.reply_to = message.sender_email;
@@ -179,7 +179,7 @@ exports.add_message_metadata = function (message) {
         message_user_ids.add(message.sender_id);
         break;
 
-    case 'private':
+    case "private":
         message.is_private = true;
         message.reply_to = util.normalize_recipients(
             exports.get_pm_emails(message));

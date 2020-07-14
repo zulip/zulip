@@ -1,6 +1,6 @@
-const render_recent_topics_body = require('../templates/recent_topics_table.hbs');
-const render_recent_topic_row = require('../templates/recent_topic_row.hbs');
-const render_recent_topics_filters = require('../templates/recent_topics_filters.hbs');
+const render_recent_topics_body = require("../templates/recent_topics_table.hbs");
+const render_recent_topic_row = require("../templates/recent_topic_row.hbs");
+const render_recent_topics_filters = require("../templates/recent_topics_filters.hbs");
 const topics = new Map(); // Key is stream-id:topic.
 let topics_widget;
 // Sets the number of avatars to display.
@@ -46,8 +46,8 @@ function set_table_focus(row, col) {
         return true;
     }
 
-    topic_rows.eq(row).find('.recent_topics_focusable').eq(col).children().focus();
-    current_focus_elem = 'table';
+    topic_rows.eq(row).find(".recent_topics_focusable").eq(col).children().focus();
+    current_focus_elem = "table";
     return true;
 }
 
@@ -60,12 +60,12 @@ function revive_current_focus() {
         return false;
     }
 
-    if (current_focus_elem === 'table') {
+    if (current_focus_elem === "table") {
         set_table_focus(row_focus, col_focus);
         return true;
     }
 
-    const filter_button = current_focus_elem.data('filter');
+    const filter_button = current_focus_elem.data("filter");
     if (!filter_button) {
         set_default_focus();
     } else {
@@ -93,7 +93,7 @@ exports.process_messages = function (messages) {
 };
 
 exports.process_message = function (msg) {
-    if (msg.type !== 'stream') {
+    if (msg.type !== "stream") {
         return false;
     }
     // Initialize topic data
@@ -196,7 +196,7 @@ function format_topic(topic_data) {
         muted: muted,
         topic_muted: topic_muted,
         participated: topic_data.participated,
-        full_last_msg_date_time: full_datetime.date + ' ' + full_datetime.time,
+        full_last_msg_date_time: full_datetime.date + " " + full_datetime.time,
     };
 }
 
@@ -225,9 +225,9 @@ exports.topic_in_search_results = function (keyword, stream, topic) {
     }
     // Escape speacial characters from input.
     // https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
-    keyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const text = (stream + ' ' + topic).toLowerCase().replace(/\s+/g, ' ');
-    const search_words = keyword.toLowerCase().replace(/\s+/g, ' ').split(' ');
+    keyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const text = (stream + " " + topic).toLowerCase().replace(/\s+/g, " ");
+    const search_words = keyword.toLowerCase().replace(/\s+/g, " ").split(" ");
     return search_words.every((word) => {
         if (text.search(word) !== -1) {
             return true;
@@ -259,18 +259,18 @@ exports.filters_should_hide_topic = function (topic_data) {
         return true;
     }
 
-    if (filters.has('unread')) {
+    if (filters.has("unread")) {
         const unreadCount = unread.unread_topic_counter.get(msg.stream_id, msg.topic);
         if (unreadCount === 0) {
             return true;
         }
     }
 
-    if (!topic_data.participated && filters.has('participated')) {
+    if (!topic_data.participated && filters.has("participated")) {
         return true;
     }
 
-    if (!filters.has('include_muted')) {
+    if (!filters.has("include_muted")) {
         const topic_muted = !!muting.is_topic_muted(msg.stream_id, msg.topic);
         const stream_muted = stream_data.is_muted(msg.stream_id);
         if (topic_muted || stream_muted) {
@@ -331,14 +331,14 @@ exports.set_filter = function (filter) {
     // set `filters`.
 
     // Get the button which was clicked.
-    const filter_elem = $('#recent_topics_filter_buttons')
+    const filter_elem = $("#recent_topics_filter_buttons")
         .find('[data-filter="' + filter + '"]');
 
     // If user clicks `All`, we clear all filters.
-    if (filter === 'all' && filters.size !== 0) {
+    if (filter === "all" && filters.size !== 0) {
         filters = new Set();
     // If the button was already selected, remove the filter.
-    } else if (filter_elem.hasClass('btn-recent-selected')) {
+    } else if (filter_elem.hasClass("btn-recent-selected")) {
         filters.delete(filter);
     // If the button was not selected, we add the filter.
     } else {
@@ -350,23 +350,23 @@ function show_selected_filters() {
     // Add `btn-selected-filter` to the buttons to show
     // which filters are applied.
     if (filters.size === 0) {
-        $('#recent_topics_filter_buttons')
+        $("#recent_topics_filter_buttons")
             .find('[data-filter="all"]')
-            .addClass('btn-recent-selected');
+            .addClass("btn-recent-selected");
     } else {
         for (const filter of filters) {
-            $('#recent_topics_filter_buttons')
+            $("#recent_topics_filter_buttons")
                 .find('[data-filter="' + filter + '"]')
-                .addClass('btn-recent-selected');
+                .addClass("btn-recent-selected");
         }
     }
 }
 
 exports.update_filters_view = function () {
     const rendered_filters = render_recent_topics_filters({
-        filter_participated: filters.has('participated'),
-        filter_unread: filters.has('unread'),
-        filter_muted: filters.has('include_muted'),
+        filter_participated: filters.has("participated"),
+        filter_unread: filters.has("unread"),
+        filter_muted: filters.has("include_muted"),
     });
     $("#recent_filters_group").html(rendered_filters);
     show_selected_filters();
@@ -403,16 +403,16 @@ exports.complete_rerender = function () {
     }
     // Prepare header
     const rendered_body = render_recent_topics_body({
-        filter_participated: filters.has('participated'),
-        filter_unread: filters.has('unread'),
-        filter_muted: filters.has('include_muted'),
+        filter_participated: filters.has("participated"),
+        filter_unread: filters.has("unread"),
+        filter_muted: filters.has("include_muted"),
         search_val: $("#recent_topics_search").val() || "",
     });
-    $('#recent_topics_table').html(rendered_body);
+    $("#recent_topics_table").html(rendered_body);
     show_selected_filters();
 
     // Show topics list
-    const container = $('.recent_topics_table table tbody');
+    const container = $(".recent_topics_table table tbody");
     container.empty();
     const mapped_topic_values = Array.from(exports.get().values()).map((value) => value);
 
@@ -434,15 +434,15 @@ exports.complete_rerender = function () {
             topic_sort: topic_sort,
         },
         html_selector: get_topic_row,
-        simplebar_container: $('#recent_topics_table .table_fix_head'),
+        simplebar_container: $("#recent_topics_table .table_fix_head"),
     });
     revive_current_focus();
 };
 
 exports.launch = function () {
     overlays.open_overlay({
-        name: 'recent_topics',
-        overlay: $('#recent_topics_overlay'),
+        name: "recent_topics",
+        overlay: $("#recent_topics_overlay"),
         on_close: function () {
             hashchange.exit_overlay();
         },
@@ -451,7 +451,7 @@ exports.launch = function () {
 };
 
 function filter_buttons() {
-    return $('#recent_filters_group').children();
+    return $("#recent_filters_group").children();
 }
 
 exports.change_focused_element = function (e, input_key) {
@@ -459,22 +459,22 @@ exports.change_focused_element = function (e, input_key) {
     // returning true will cause the caller to do
     // preventDefault/stopPropagation; false will let the browser
     // handle the key.
-    if (input_key === 'tab') {
-        input_key = 'right_arrow';
-    } else if (input_key === 'shift_tab') {
-        input_key = 'left_arrow';
+    if (input_key === "tab") {
+        input_key = "right_arrow";
+    } else if (input_key === "shift_tab") {
+        input_key = "left_arrow";
     }
 
     const $elem = $(e.target);
 
-    if ($("#recent_topics_table").find(':focus').length === 0) {
+    if ($("#recent_topics_table").find(":focus").length === 0) {
         // This is a failsafe to return focus back to recent topics overlay,
         // in case it loses focus due to some unknown reason.
         set_default_focus();
         return false;
     }
 
-    if (e.target.id === 'recent_topics_search') {
+    if (e.target.id === "recent_topics_search") {
         // Since the search box a text area, we want the browser to handle
         // Left/Right and selection within the widget; but if the user
         // arrows off the edges, we should move focus to the adjacent widgets..
@@ -488,22 +488,22 @@ exports.change_focused_element = function (e, input_key) {
         }
 
         switch (input_key) {
-        case 'left_arrow':
+        case "left_arrow":
             if (start !== 0 || is_selected) {
                 return false;
             }
             current_focus_elem = filter_buttons().last();
             break;
-        case 'right_arrow':
+        case "right_arrow":
             if (end !== text_length || is_selected) {
                 return false;
             }
             current_focus_elem = filter_buttons().first();
             break;
-        case 'down_arrow':
+        case "down_arrow":
             set_table_focus(row_focus, col_focus);
             return true;
-        case 'click':
+        case "click":
             // Note: current_focus_elem can be different here, so we just
             // set current_focus_elem to the input box, we don't want .focus() on
             // it since it is already focused.
@@ -513,47 +513,47 @@ exports.change_focused_element = function (e, input_key) {
             current_focus_elem = $("#recent_topics_search");
             return true;
         }
-    } else if ($elem.hasClass('btn-recent-filters')) {
+    } else if ($elem.hasClass("btn-recent-filters")) {
         switch (input_key) {
-        case 'left_arrow':
+        case "left_arrow":
             if (filter_buttons().first()[0] === $elem[0]) {
                 current_focus_elem = $("#recent_topics_search");
             } else {
                 current_focus_elem = $elem.prev();
             }
             break;
-        case 'right_arrow':
+        case "right_arrow":
             if (filter_buttons().last()[0] === $elem[0]) {
                 current_focus_elem = $("#recent_topics_search");
             } else {
                 current_focus_elem = $elem.next();
             }
             break;
-        case 'down_arrow':
+        case "down_arrow":
             set_table_focus(row_focus, col_focus);
             return true;
         }
-    } else if (current_focus_elem === 'table') {
+    } else if (current_focus_elem === "table") {
         // For arrowing around the table of topics, we implement left/right
         // wraparound.  Going off the top or the bottom takes one
         // to the navigation at the top (see set_table_focus).
         switch (input_key) {
-        case 'left_arrow':
+        case "left_arrow":
             col_focus -= 1;
             if (col_focus < 0) {
                 col_focus = MAX_SELECTABLE_COLS - 1;
             }
             break;
-        case 'right_arrow':
+        case "right_arrow":
             col_focus += 1;
             if (col_focus >= MAX_SELECTABLE_COLS) {
                 col_focus = 0;
             }
             break;
-        case 'down_arrow':
+        case "down_arrow":
             row_focus += 1;
             break;
-        case 'up_arrow':
+        case "up_arrow":
             row_focus -= 1;
         }
         set_table_focus(row_focus, col_focus);

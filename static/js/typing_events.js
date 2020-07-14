@@ -1,4 +1,4 @@
-const render_typing_notifications = require('../templates/typing_notifications.hbs');
+const render_typing_notifications = require("../templates/typing_notifications.hbs");
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
@@ -22,7 +22,7 @@ function get_users_typing_for_narrow() {
     }
 
     const first_term = narrow_state.operators()[0];
-    if (first_term.operator === 'pm-with') {
+    if (first_term.operator === "pm-with") {
         // Get list of users typing in this conversation
         const narrow_emails_string = first_term.operand;
         // TODO: Create people.emails_strings_to_user_ids.
@@ -30,7 +30,7 @@ function get_users_typing_for_narrow() {
         if (!narrow_user_ids_string) {
             return [];
         }
-        const narrow_user_ids = narrow_user_ids_string.split(',').map((user_id_string) => parseInt(user_id_string, 10));
+        const narrow_user_ids = narrow_user_ids_string.split(",").map((user_id_string) => parseInt(user_id_string, 10));
         const group = narrow_user_ids.concat([page_params.user_id]);
         return typing_data.get_group_typists(group);
     }
@@ -42,10 +42,10 @@ exports.render_notifications_for_narrow = function () {
     const user_ids = get_users_typing_for_narrow();
     const users_typing = user_ids.map(people.get_by_user_id);
     if (users_typing.length === 0) {
-        $('#typing_notifications').hide();
+        $("#typing_notifications").hide();
     } else {
-        $('#typing_notifications').html(render_typing_notifications({users: users_typing}));
-        $('#typing_notifications').show();
+        $("#typing_notifications").html(render_typing_notifications({users: users_typing}));
+        $("#typing_notifications").show();
     }
 };
 

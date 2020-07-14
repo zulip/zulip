@@ -20,12 +20,12 @@
     prefix matches trumping "popularity".
 */
 export const popular_emojis = [
-    '1f44d', // +1
-    '1f389', // tada
-    '1f642', // slight_smile
-    '2764', // heart
-    '1f6e0', // working_on_it
-    '1f419', // octopus
+    "1f44d", // +1
+    "1f389", // tada
+    "1f642", // slight_smile
+    "2764", // heart
+    "1f6e0", // working_on_it
+    "1f419", // octopus
 ];
 
 const unicode_marks = /\p{M}/gu;
@@ -150,7 +150,7 @@ export function sort_emojis(objs, query) {
     const lowerQuery = query.toLowerCase();
 
     function decent_match(name) {
-        const pieces = name.toLowerCase().split('_');
+        const pieces = name.toLowerCase().split("_");
         return pieces.some((piece) => piece.startsWith(lowerQuery));
     }
 

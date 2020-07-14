@@ -1,8 +1,8 @@
 const settings_data = require("./settings_data");
 const settings_config = require("./settings_config");
 const render_admin_user_list = require("../templates/admin_user_list.hbs");
-const render_admin_human_form = require('../templates/admin_human_form.hbs');
-const render_admin_bot_form = require('../templates/admin_bot_form.hbs');
+const render_admin_human_form = require("../templates/admin_human_form.hbs");
+const render_admin_bot_form = require("../templates/admin_bot_form.hbs");
 
 const section = {
     active: {},
@@ -20,8 +20,8 @@ function compare_a_b(a, b) {
 }
 
 function sort_email(a, b) {
-    const email_a = settings_data.email_for_user_settings(a) || '';
-    const email_b = settings_data.email_for_user_settings(b) || '';
+    const email_a = settings_data.email_for_user_settings(a) || "";
+    const email_b = settings_data.email_for_user_settings(b) || "";
     return compare_a_b(
         email_a.toLowerCase(),
         email_b.toLowerCase(),
@@ -30,7 +30,7 @@ function sort_email(a, b) {
 
 function sort_bot_email(a, b) {
     function email(bot) {
-        return (bot.display_email || '').toLowerCase();
+        return (bot.display_email || "").toLowerCase();
     }
 
     return compare_a_b(email(a), email(b));
@@ -47,7 +47,7 @@ function sort_role(a, b) {
 
 function sort_bot_owner(a, b) {
     function owner_name(bot) {
-        return (bot.bot_owner_full_name || '').toLowerCase();
+        return (bot.bot_owner_full_name || "").toLowerCase();
     }
 
     return compare_a_b(
@@ -76,23 +76,23 @@ function set_user_role_dropdown(person) {
     } else if (person.is_guest) {
         role_value = settings_config.user_role_values.guest.code;
     }
-    $('#user-role-select').val(role_value);
+    $("#user-role-select").val(role_value);
 }
 
 function update_view_on_deactivate(row) {
     const button = row.find("button.deactivate");
     const user_role = row.find(".user_role");
     button.prop("disabled", false);
-    row.find('button.open-user-form').hide();
-    row.find('i.deactivated-user-icon').show();
+    row.find("button.open-user-form").hide();
+    row.find("i.deactivated-user-icon").show();
     button.addClass("btn-warning reactivate");
     button.removeClass("deactivate btn-danger");
     button.html("<i class='fa fa-user-plus' aria-hidden='true'></i>");
-    button.attr('title', 'Reactivate');
+    button.attr("title", "Reactivate");
     row.addClass("deactivated_user");
 
     if (user_role) {
-        const user_id = row.data('user-id');
+        const user_id = row.data("user-id");
         user_role.text("%state (%role)".replace("%state", i18n.t("Deactivated")).
             replace("%role", people.get_user_type(user_id)));
     }
@@ -102,15 +102,15 @@ function update_view_on_reactivate(row) {
     const button = row.find("button.reactivate");
     const user_role = row.find(".user_role");
     row.find("button.open-user-form").show();
-    row.find('i.deactivated-user-icon').hide();
+    row.find("i.deactivated-user-icon").hide();
     button.addClass("btn-danger deactivate");
     button.removeClass("btn-warning reactivate");
-    button.attr('title', 'Deactivate');
+    button.attr("title", "Deactivate");
     button.html('<i class="fa fa-user-plus" aria-hidden="true"></i>');
     row.removeClass("deactivated_user");
 
     if (user_role) {
-        const user_id = row.data('user-id');
+        const user_id = row.data("user-id");
         user_role.text(people.get_user_type(user_id));
     }
 }
@@ -118,11 +118,11 @@ function update_view_on_reactivate(row) {
 function get_status_field() {
     const current_tab = settings_panel_menu.org_settings.current_tab();
     switch (current_tab) {
-    case 'deactivated-users-admin':
+    case "deactivated-users-admin":
         return $("#deactivated-user-field-status").expectOne();
-    case 'user-list-admin':
+    case "user-list-admin":
         return $("#user-field-status").expectOne();
-    case 'bot-list-admin':
+    case "bot-list-admin":
         return $("#bot-field-status").expectOne();
     default:
         blueslip.fatal("Invalid admin settings page");
@@ -130,10 +130,10 @@ function get_status_field() {
 }
 
 function failed_listing_users() {
-    loading.destroy_indicator($('#subs_page_loading_indicator'));
+    loading.destroy_indicator($("#subs_page_loading_indicator"));
     const status = get_status_field();
     const user_id = people.my_current_user_id();
-    blueslip.error('Error while listing users for user_id ' + user_id, status);
+    blueslip.error("Error while listing users for user_id " + user_id, status);
 }
 
 function populate_users() {
@@ -244,7 +244,7 @@ function human_info(person) {
 let bot_list_widget;
 
 section.bots.create_table = () => {
-    loading.make_indicator($('#admin_page_bots_loading_indicator'), {text: 'Loading...'});
+    loading.make_indicator($("#admin_page_bots_loading_indicator"), {text: "Loading..."});
     const $bots_table = $("#admin_bots_table");
     $bots_table.hide();
     const bot_user_ids = bot_data.all_user_ids();
@@ -266,15 +266,15 @@ section.bots.create_table = () => {
             onupdate: reset_scrollbar($bots_table),
         },
         parent_container: $("#admin-bot-list").expectOne(),
-        init_sort: ['alphabetic', 'full_name'],
+        init_sort: ["alphabetic", "full_name"],
         sort_fields: {
             email: sort_bot_email,
             bot_owner: sort_bot_owner,
         },
-        simplebar_container: $('#admin-bot-list .progressive-table-wrapper'),
+        simplebar_container: $("#admin-bot-list .progressive-table-wrapper"),
     });
 
-    loading.destroy_indicator($('#admin_page_bots_loading_indicator'));
+    loading.destroy_indicator($("#admin_page_bots_loading_indicator"));
     $bots_table.show();
 };
 
@@ -293,16 +293,16 @@ section.active.create_table = (active_users) => {
             onupdate: reset_scrollbar($users_table),
         },
         parent_container: $("#admin-user-list").expectOne(),
-        init_sort: ['alphabetic', 'full_name'],
+        init_sort: ["alphabetic", "full_name"],
         sort_fields: {
             email: sort_email,
             last_active: sort_last_active,
             role: sort_role,
         },
-        simplebar_container: $('#admin-user-list .progressive-table-wrapper'),
+        simplebar_container: $("#admin-user-list .progressive-table-wrapper"),
     });
 
-    loading.destroy_indicator($('#admin_page_users_loading_indicator'));
+    loading.destroy_indicator($("#admin_page_users_loading_indicator"));
     $("#admin_users_table").show();
 };
 
@@ -321,15 +321,15 @@ section.deactivated.create_table = (deactivated_users) => {
             onupdate: reset_scrollbar($deactivated_users_table),
         },
         parent_container: $("#admin-deactivated-users-list").expectOne(),
-        init_sort: ['alphabetic', 'full_name'],
+        init_sort: ["alphabetic", "full_name"],
         sort_fields: {
             email: sort_email,
             role: sort_role,
         },
-        simplebar_container: $('#admin-deactivated-users-list .progressive-table-wrapper'),
+        simplebar_container: $("#admin-deactivated-users-list .progressive-table-wrapper"),
     });
 
-    loading.destroy_indicator($('#admin_page_deactivated_users_loading_indicator'));
+    loading.destroy_indicator($("#admin_page_deactivated_users_loading_indicator"));
     $("#admin_deactivated_users_table").show();
 };
 
@@ -369,8 +369,8 @@ exports.update_user_data = function (user_id, new_data) {
 };
 
 function start_data_load() {
-    loading.make_indicator($('#admin_page_users_loading_indicator'), {text: 'Loading...'});
-    loading.make_indicator($('#admin_page_deactivated_users_loading_indicator'), {text: 'Loading...'});
+    loading.make_indicator($("#admin_page_users_loading_indicator"), {text: "Loading..."});
+    loading.make_indicator($("#admin_page_deactivated_users_loading_indicator"), {text: "Loading..."});
     $("#admin_deactivated_users_table").hide();
     $("#admin_users_table").hide();
 
@@ -388,12 +388,12 @@ function open_human_form(person) {
         disable_role_dropdown: person.is_owner && !page_params.is_owner,
     });
     const div = $(html);
-    const modal_container = $('#user-info-form-modal-container');
+    const modal_container = $("#user-info-form-modal-container");
     modal_container.empty().append(div);
-    overlays.open_modal('#admin-human-form');
+    overlays.open_modal("#admin-human-form");
     set_user_role_dropdown(person);
     if (!page_params.is_owner) {
-        $('#user-role-select').find('option[value=' + settings_config.user_role_values.owner.code + ']').hide();
+        $("#user-role-select").find("option[value=" + settings_config.user_role_values.owner.code + "]").hide();
     }
 
     const element = "#admin-human-form .custom-profile-field-form";
@@ -453,9 +453,9 @@ function open_bot_form(person) {
         full_name: person.full_name,
     });
     const div = $(html);
-    const modal_container = $('#user-info-form-modal-container');
+    const modal_container = $("#user-info-form-modal-container");
     modal_container.empty().append(div);
-    overlays.open_modal('#admin-bot-form');
+    overlays.open_modal("#admin-bot-form");
 
     // NOTE: building `owner_dropdown` is quite expensive!
     const owner_id = bot_data.get(person.user_id).owner_id;
@@ -466,7 +466,7 @@ function open_bot_form(person) {
         value: user_id.toString(),
     }));
     const opts = {
-        widget_name: 'edit_bot_owner',
+        widget_name: "edit_bot_owner",
         data: users_list,
         default_text: i18n.t("No owner"),
         value: owner_id,
@@ -502,15 +502,15 @@ function confirm_deactivation(row, user_id, status_field) {
                 row_deactivate_button.text(i18n.t("Deactivate"));
             },
         };
-        const url = '/json/users/' + encodeURIComponent(user_id);
+        const url = "/json/users/" + encodeURIComponent(user_id);
         settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
 
     }
 
     modal_elem.modal("hide");
-    modal_elem.off('click', '.do_deactivate_button');
+    modal_elem.off("click", ".do_deactivate_button");
     set_fields();
-    modal_elem.on('click', '.do_deactivate_button', handle_confirm);
+    modal_elem.on("click", ".do_deactivate_button", handle_confirm);
     modal_elem.modal("show");
 }
 
@@ -522,7 +522,7 @@ function handle_deactivation(tbody, status_field) {
         e.stopPropagation();
 
         const row = $(e.target).closest(".user_row");
-        const user_id = row.data('user-id');
+        const user_id = row.data("user-id");
         confirm_deactivation(row, user_id, status_field);
     });
 }
@@ -535,7 +535,7 @@ function handle_bot_deactivation(tbody, status_field) {
         const button_elem = $(e.target);
         const row = button_elem.closest(".user_row");
         const bot_id = parseInt(row.attr("data-user-id"), 10);
-        const url = '/json/bots/' + encodeURIComponent(bot_id);
+        const url = "/json/bots/" + encodeURIComponent(bot_id);
 
         const opts = {
             success_continuation: function () {
@@ -558,7 +558,7 @@ function handle_reactivation(tbody, status_field) {
         const button_elem = $(e.target);
         const row = button_elem.closest(".user_row");
         const user_id = parseInt(row.attr("data-user-id"), 10);
-        const url = '/json/users/' + encodeURIComponent(user_id) + "/reactivate";
+        const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
         const data = {};
 
         const opts = {
@@ -575,8 +575,8 @@ function handle_reactivation(tbody, status_field) {
 }
 
 function handle_bot_owner_profile(tbody) {
-    tbody.on('click', '.user_row .view_user_profile', (e) => {
-        const owner_id = parseInt($(e.target).attr('data-owner-id'), 10);
+    tbody.on("click", ".user_row .view_user_profile", (e) => {
+        const owner_id = parseInt($(e.target).attr("data-owner-id"), 10);
         const owner = people.get_by_user_id(owner_id);
         popovers.show_user_profile(owner);
         e.stopPropagation();
@@ -599,11 +599,11 @@ function handle_human_form(tbody, status_field) {
         const modal = ret.modal;
         const fields_user_pills = ret.fields_user_pills;
 
-        modal.find('.submit_human_change').on("click", (e) => {
+        modal.find(".submit_human_change").on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
 
-            const role = parseInt(modal.find('#user-role-select').val().trim(), 10);
+            const role = parseInt(modal.find("#user-role-select").val().trim(), 10);
             const full_name = modal.find("input[name='full_name']");
             const profile_data = get_human_profile_data(fields_user_pills);
 
@@ -615,7 +615,7 @@ function handle_human_form(tbody, status_field) {
             };
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal('#admin-human-form');
+            overlays.close_modal("#admin-human-form");
         });
     });
 }
@@ -633,7 +633,7 @@ function handle_bot_form(tbody, status_field) {
 
         const {modal, owner_widget} = open_bot_form(bot);
 
-        modal.find('.submit_bot_change').on("click", (e) => {
+        modal.find(".submit_bot_change").on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
 
@@ -650,14 +650,14 @@ function handle_bot_form(tbody, status_field) {
             }
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal('#admin-bot-form');
+            overlays.close_modal("#admin-bot-form");
         });
     });
 }
 
 section.active.handle_events = () => {
-    const tbody = $('#admin_users_table').expectOne();
-    const status_field = $('#user-field-status').expectOne();
+    const tbody = $("#admin_users_table").expectOne();
+    const status_field = $("#user-field-status").expectOne();
 
     handle_deactivation(tbody, status_field);
     handle_reactivation(tbody, status_field);
@@ -665,7 +665,7 @@ section.active.handle_events = () => {
 };
 
 section.deactivated.handle_events = () => {
-    const tbody = $('#admin_deactivated_users_table').expectOne();
+    const tbody = $("#admin_deactivated_users_table").expectOne();
     const status_field = $("#deactivated-user-field-status").expectOne();
 
     handle_deactivation(tbody, status_field);
@@ -674,7 +674,7 @@ section.deactivated.handle_events = () => {
 };
 
 section.bots.handle_events = () => {
-    const tbody = $('#admin_bots_table').expectOne();
+    const tbody = $("#admin_bots_table").expectOne();
     const status_field = $("#bot-field-status").expectOne();
 
     handle_bot_owner_profile(tbody);

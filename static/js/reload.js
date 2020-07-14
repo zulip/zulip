@@ -22,11 +22,11 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 
     if (save_compose) {
         const msg_type = compose_state.get_message_type();
-        if (msg_type === 'stream') {
+        if (msg_type === "stream") {
             url += "+msg_type=stream";
             url += "+stream=" + encodeURIComponent(compose_state.stream_name());
             url += "+topic=" + encodeURIComponent(compose_state.topic());
-        } else if (msg_type === 'private') {
+        } else if (msg_type === "private") {
             url += "+msg_type=private";
             url += "+recipient=" + encodeURIComponent(compose_state.private_message_recipient());
         }
@@ -64,14 +64,14 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     }
 
     let oldhash = window.location.hash;
-    if (oldhash.length !== 0 && oldhash[0] === '#') {
+    if (oldhash.length !== 0 && oldhash[0] === "#") {
         oldhash = oldhash.slice(1);
     }
     url += "+oldhash=" + encodeURIComponent(oldhash);
 
     const ls = localstorage();
     // Delete all the previous preserved states.
-    ls.removeRegex('reload:\\d+');
+    ls.removeRegex("reload:\\d+");
 
     // To protect the browser against CSRF type attacks, the reload
     // logic uses a random token (to distinct this browser from
@@ -92,7 +92,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 // done before the first call to get_events
 exports.initialize = function () {
     const location = window.location.toString();
-    const hash_fragment = location.substring(location.indexOf('#') + 1);
+    const hash_fragment = location.substring(location.indexOf("#") + 1);
 
     // hash_fragment should be e.g. `reload:12345123412312`
     if (hash_fragment.search("reload:") !== 0) {
@@ -131,10 +131,10 @@ exports.initialize = function () {
             // TODO: preserve focus
             const topic = util.get_reload_topic(vars);
 
-            compose_actions.start(vars.msg_type, {stream: vars.stream || '',
-                                                  topic: topic || '',
-                                                  private_message_recipient: vars.recipient || '',
-                                                  content: vars.msg || ''});
+            compose_actions.start(vars.msg_type, {stream: vars.stream || "",
+                                                  topic: topic || "",
+                                                  private_message_recipient: vars.recipient || "",
+                                                  content: vars.msg || ""});
             if (send_now) {
                 compose.finish();
             }
@@ -179,7 +179,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
         try {
             preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
         } catch (ex) {
-            blueslip.error('Failed to preserve state',
+            blueslip.error("Failed to preserve state",
                            undefined, ex.stack);
         }
     }
@@ -190,7 +190,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
 
     // TODO: We need a better API for showing messages.
     ui_report.message(message, $("#reloading-application"));
-    blueslip.log('Starting server requested page reload');
+    blueslip.log("Starting server requested page reload");
     reload_state.set_state_to_in_progress();
 
     // Sometimes the window.location.reload that we attempt has no
@@ -199,7 +199,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     // broken state and cause lots of confusing tracebacks.  So, we
     // set ourselves to try reloading a bit later, both periodically
     // and when the user focuses the window.
-    $(window).on('focus', () => {
+    $(window).on("focus", () => {
         blueslip.log("Retrying on-focus page reload");
         window.location.reload(true);
     });
@@ -211,7 +211,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     try {
         server_events.cleanup_event_queue();
     } catch (ex) {
-        blueslip.error('Failed to cleanup before reloading',
+        blueslip.error("Failed to cleanup before reloading",
                        undefined, ex.stack);
     }
 
@@ -295,9 +295,9 @@ exports.initiate = function (options) {
         idle_control.cancel();
         idle_control = $(document).idle({idle: basic_idle_timeout,
                                          onIdle: reload_from_idle});
-        $(document).off('compose_canceled.zulip compose_finished.zulip',
+        $(document).off("compose_canceled.zulip compose_finished.zulip",
                         compose_done_handler);
-        $(document).on('compose_started.zulip', compose_started_handler);
+        $(document).on("compose_started.zulip", compose_started_handler);
     };
     compose_started_handler = function () {
         // If the user stops being idle and starts composing a
@@ -305,24 +305,24 @@ exports.initiate = function (options) {
         idle_control.cancel();
         idle_control = $(document).idle({idle: composing_idle_timeout,
                                          onIdle: reload_from_idle});
-        $(document).off('compose_started.zulip', compose_started_handler);
-        $(document).on('compose_canceled.zulip compose_finished.zulip',
+        $(document).off("compose_started.zulip", compose_started_handler);
+        $(document).on("compose_canceled.zulip compose_finished.zulip",
                        compose_done_handler);
     };
 
     if (compose_state.composing()) {
         idle_control = $(document).idle({idle: composing_idle_timeout,
                                          onIdle: reload_from_idle});
-        $(document).on('compose_canceled.zulip compose_finished.zulip',
+        $(document).on("compose_canceled.zulip compose_finished.zulip",
                        compose_done_handler);
     } else {
         idle_control = $(document).idle({idle: basic_idle_timeout,
                                          onIdle: reload_from_idle});
-        $(document).on('compose_started.zulip', compose_started_handler);
+        $(document).on("compose_started.zulip", compose_started_handler);
     }
 };
 
-window.addEventListener('beforeunload', () => {
+window.addEventListener("beforeunload", () => {
     // When navigating away from the page do not try to reload.
     // The polling get_events call will fail after we delete the event queue.
     // When that happens we reload the page to correct the problem. If this

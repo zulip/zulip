@@ -1,5 +1,5 @@
 exports.set = function (url) {
-    $('#favicon').attr('href', url);
+    $("#favicon").attr("href", url);
 };
 
 

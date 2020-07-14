@@ -65,10 +65,10 @@ exports.populate_filters = function (filters_data) {
             pattern: sort_pattern,
             url: sort_url,
         },
-        simplebar_container: $('#filter-settings .progressive-table-wrapper'),
+        simplebar_container: $("#filter-settings .progressive-table-wrapper"),
     });
 
-    loading.destroy_indicator($('#admin_page_filters_loading_indicator'));
+    loading.destroy_indicator($("#admin_page_filters_loading_indicator"));
 };
 
 exports.set_up = function () {
@@ -80,35 +80,35 @@ exports.build_page = function () {
     meta.loaded = true;
 
     // create loading indicators
-    loading.make_indicator($('#admin_page_filters_loading_indicator'));
+    loading.make_indicator($("#admin_page_filters_loading_indicator"));
 
     // Populate filters table
     exports.populate_filters(page_params.realm_filters);
 
-    $('.admin_filters_table').on('click', '.delete', function (e) {
+    $(".admin_filters_table").on("click", ".delete", function (e) {
         e.preventDefault();
         e.stopPropagation();
         const btn = $(this);
 
         channel.del({
-            url: '/json/realm/filters/' + encodeURIComponent(btn.attr('data-filter-id')),
+            url: "/json/realm/filters/" + encodeURIComponent(btn.attr("data-filter-id")),
             error: function (xhr) {
                 ui_report.generic_row_button_error(xhr, btn);
             },
             success: function () {
-                const row = btn.parents('tr');
+                const row = btn.parents("tr");
                 row.remove();
             },
         });
     });
 
-    $(".organization form.admin-filter-form").off('submit').on('submit', function (e) {
+    $(".organization form.admin-filter-form").off("submit").on("submit", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        const filter_status = $('#admin-filter-status');
-        const pattern_status = $('#admin-filter-pattern-status');
-        const format_status = $('#admin-filter-format-status');
-        const add_filter_button = $('.new-filter-form button');
+        const filter_status = $("#admin-filter-status");
+        const pattern_status = $("#admin-filter-pattern-status");
+        const format_status = $("#admin-filter-format-status");
+        const add_filter_button = $(".new-filter-form button");
         add_filter_button.attr("disabled", "disabled");
         filter_status.hide();
         pattern_status.hide();
@@ -123,8 +123,8 @@ exports.build_page = function () {
             url: "/json/realm/filters",
             data: $(this).serialize(),
             success: function (data) {
-                $('#filter_pattern').val('');
-                $('#filter_format_string').val('');
+                $("#filter_pattern").val("");
+                $("#filter_format_string").val("");
                 add_filter_button.removeAttr("disabled");
                 filter.id = data.id;
                 ui_report.success(i18n.t("Custom filter added!"), filter_status);

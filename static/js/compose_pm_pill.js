@@ -44,7 +44,7 @@ exports.has_unconverted_data = function () {
 exports.get_user_ids_string = function () {
     const user_ids = exports.get_user_ids();
     const sorted_user_ids = util.sorted_ids(user_ids);
-    const user_ids_string = sorted_user_ids.join(',');
+    const user_ids_string = sorted_user_ids.join(",");
     return user_ids_string;
 };
 

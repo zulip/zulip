@@ -18,7 +18,7 @@ function find_boundary_tr(initial_tr, iterate_row) {
     // To ensure we can't enter an infinite loop, bail out (and let the
     // browser handle the copy-paste on its own) if we don't hit what we
     // are looking for within 10 rows.
-    for (j = 0; !tr.is('.message_row') && j < 10; j += 1) {
+    for (j = 0; !tr.is(".message_row") && j < 10; j += 1) {
         tr = iterate_row(tr);
     }
     if (j === 10) {
@@ -38,7 +38,7 @@ function construct_recipient_header(message_row) {
         .text()
         .replace(/\s+/g, " ")
         .replace(/^\s/, "").replace(/\s$/, "");
-    return $('<p>').append($('<strong>').text(message_header_content));
+    return $("<p>").append($("<strong>").text(message_header_content));
 }
 
 /*
@@ -90,8 +90,8 @@ function construct_copy_div(div, start_id, end_id) {
 
 function select_div(div, selection) {
     div.css({
-        position: 'absolute',
-        left: '-99999px',
+        position: "absolute",
+        left: "-99999px",
         // Color and background is made according to "day mode"
         // exclusively here because when copying the content
         // into, say, Gmail compose box, the styles come along.
@@ -99,11 +99,11 @@ function select_div(div, selection) {
         // background when using the app in night mode.
         // We can avoid other custom styles since they are wrapped
         // inside another parent such as `.message_content`.
-        color: '#333',
-        background: '#FFF',
+        color: "#333",
+        background: "#FFF",
     })
-        .attr('id', 'copytempdiv');
-    $('body').append(div);
+        .attr("id", "copytempdiv");
+    $("body").append(div);
     selection.selectAllChildren(div[0]);
 }
 
@@ -116,7 +116,7 @@ function remove_div(div, ranges, selection) {
             selection.addRange(range);
         }
 
-        $('#copytempdiv').remove();
+        $("#copytempdiv").remove();
     }, 0);
 }
 
@@ -142,21 +142,21 @@ exports.copy_handler = function () {
     const start_id = analysis.start_id;
     const end_id = analysis.end_id;
     const skip_same_td_check = analysis.skip_same_td_check;
-    const div = $('<div>');
+    const div = $("<div>");
 
     if (start_id === undefined || end_id === undefined) {
         // In this case either the starting message or the ending
         // message is not defined, so this is definitely not a
         // multi-message selection and we can let the browser handle
         // the copy.
-        document.execCommand('copy');
+        document.execCommand("copy");
         return;
     }
 
     if (!skip_same_td_check && start_id === end_id) {
         // Check whether the selection both starts and ends in the
         // same message.  If so, Let the browser handle this.
-        document.execCommand('copy');
+        document.execCommand("copy");
         return;
     }
 
@@ -174,7 +174,7 @@ exports.copy_handler = function () {
     // Select div so that the browser will copy it
     // instead of copying the original selection
     select_div(div, selection);
-    document.execCommand('copy');
+    document.execCommand("copy");
     remove_div(div, ranges, selection);
 };
 
@@ -210,7 +210,7 @@ exports.analyze_selection = function (selection) {
         ranges.push(range);
 
         startc = $(range.startContainer);
-        start_data = find_boundary_tr($(startc.parents('.selectable_row, .message_header')[0]), (row) => row.next());
+        start_data = find_boundary_tr($(startc.parents(".selectable_row, .message_header")[0]), (row) => row.next());
         if (start_data === undefined) {
             // Skip any selection sections that don't intersect a message.
             continue;
@@ -227,13 +227,13 @@ exports.analyze_selection = function (selection) {
         // This handles the issue that Chrome seems to like selecting
         // the compose_close button when you go off the end of the
         // last message
-        if (endc.attr('id') === "bottom_whitespace" || endc.attr('id') === "compose_close") {
+        if (endc.attr("id") === "bottom_whitespace" || endc.attr("id") === "compose_close") {
             initial_end_tr = $(".message_row").last();
             // The selection goes off the end of the message feed, so
             // this is a multi-message selection.
             skip_same_td_check = true;
         } else {
-            initial_end_tr = $(endc.parents('.selectable_row')[0]);
+            initial_end_tr = $(endc.parents(".selectable_row")[0]);
         }
         end_data = find_boundary_tr(initial_end_tr, (row) => row.prev());
 
@@ -262,20 +262,20 @@ exports.analyze_selection = function (selection) {
 
 exports.paste_handler_converter = function (paste_html) {
     const turndownService = new TurndownService();
-    turndownService.addRule('headings', {
-        filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+    turndownService.addRule("headings", {
+        filter: ["h1", "h2", "h3", "h4", "h5", "h6"],
         replacement: function (content) {
             return content;
         },
     });
-    turndownService.addRule('emphasis', {
-        filter: ['em', 'i'],
+    turndownService.addRule("emphasis", {
+        filter: ["em", "i"],
         replacement: function (content) {
-            return '*' + content + '*';
+            return "*" + content + "*";
         },
     });
     // Checks for raw links without custom text or title.
-    turndownService.addRule('links', {
+    turndownService.addRule("links", {
         filter: function (node) {
             return node.nodeName === "A" &&
                 node.href === node.innerHTML &&
@@ -289,10 +289,10 @@ exports.paste_handler_converter = function (paste_html) {
     let markdown_text = turndownService.turndown(paste_html);
 
     // Checks for escaped ordered list syntax.
-    markdown_text = markdown_text.replace(/^(\W* {0,3})(\d+)\\\. /gm, '$1$2. ');
+    markdown_text = markdown_text.replace(/^(\W* {0,3})(\d+)\\\. /gm, "$1$2. ");
 
     // Removes newlines before the start of a list and between list elements.
-    markdown_text = markdown_text.replace(/\n+([*+-])/g, '\n$1');
+    markdown_text = markdown_text.replace(/\n+([*+-])/g, "\n$1");
     return markdown_text;
 };
 
@@ -308,7 +308,7 @@ exports.paste_handler = function (event) {
     }
 
     if (clipboardData.getData) {
-        const paste_html = clipboardData.getData('text/html');
+        const paste_html = clipboardData.getData("text/html");
         if (paste_html && page_params.development_environment) {
             const text = exports.paste_handler_converter(paste_html);
             const mdImageRegex = /^!\[.*\]\(.*\)$/;
@@ -325,8 +325,8 @@ exports.paste_handler = function (event) {
 };
 
 exports.initialize = function () {
-    $("#compose-textarea").bind('paste', exports.paste_handler);
-    $('body').on('paste', '#message_edit_form', exports.paste_handler);
+    $("#compose-textarea").bind("paste", exports.paste_handler);
+    $("body").on("paste", "#message_edit_form", exports.paste_handler);
 };
 
 window.copy_and_paste = exports;

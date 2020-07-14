@@ -22,7 +22,7 @@ exports.animate_mention_changes = function (li, new_mention_count) {
 
 exports.set_count_toggle_button = function (elem, count) {
     if (count === 0) {
-        if (elem.is(':animated')) {
+        if (elem.is(":animated")) {
             return elem.stop(true, true).hide();
         }
         return elem.hide(500);

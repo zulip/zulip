@@ -2,7 +2,7 @@ exports.loaded = false;
 
 exports.set_up = function () {
     exports.loaded = true;
-    $('body').on('click', '.settings-unmute-topic', function (e) {
+    $("body").on("click", ".settings-unmute-topic", function (e) {
         const $row = $(this).closest("tr");
         const stream_id = parseInt($row.attr("data-stream-id"), 10);
         const topic = $row.attr("data-topic");

@@ -1,5 +1,5 @@
-const render_tab_bar = require('../templates/tab_bar.hbs');
-const rendered_markdown = require('./rendered_markdown');
+const render_tab_bar = require("../templates/tab_bar.hbs");
+const rendered_markdown = require("./rendered_markdown");
 
 function get_sub_count(current_stream) {
     const sub_count = current_stream.subscriber_count;
@@ -10,7 +10,7 @@ function get_formatted_sub_count(current_stream) {
     let sub_count = get_sub_count(current_stream);
     if (sub_count >= 1000) {
         // parseInt() is used to floor the value of division to an integer
-        sub_count = parseInt(sub_count / 1000, 10) + 'k';
+        sub_count = parseInt(sub_count / 1000, 10) + "k";
     }
     return sub_count;
 }
@@ -19,15 +19,15 @@ function make_tab_data(filter) {
     const tab_data = {};
     if (filter === undefined) {
         return {
-            title: i18n.t('All messages'),
-            icon: 'home',
+            title: i18n.t("All messages"),
+            icon: "home",
         };
     }
     tab_data.title = filter.get_title();
     tab_data.icon = filter.get_icon();
-    if (filter.has_operator('stream') && !filter._sub) {
-        tab_data.sub_count = '0';
-        tab_data.formatted_sub_count = '0';
+    if (filter.has_operator("stream") && !filter._sub) {
+        tab_data.sub_count = "0";
+        tab_data.formatted_sub_count = "0";
         tab_data.rendered_narrow_description = i18n.t("This stream does not exist or is private.");
         return tab_data;
     }
@@ -50,7 +50,7 @@ function make_tab_data(filter) {
 exports.colorize_tab_bar = function () {
     const filter = narrow_state.filter();
     if (filter === undefined || !filter._sub) {return;}
-    $("#tab_bar .stream > .fa").css('color', filter._sub.color);
+    $("#tab_bar .stream > .fa").css("color", filter._sub.color);
 };
 
 function append_and_display_title_area(tab_bar_data) {
@@ -61,8 +61,8 @@ function append_and_display_title_area(tab_bar_data) {
     if (tab_bar_data.stream_settings_link) {
         exports.colorize_tab_bar();
     }
-    tab_bar_elem.removeClass('notdisplayed');
-    const content = tab_bar_elem.find('span.rendered_markdown');
+    tab_bar_elem.removeClass("notdisplayed");
+    const content = tab_bar_elem.find("span.rendered_markdown");
     if (content) {
         // Update syntax like stream names, emojis, mentions, timestamps.
         rendered_markdown.update_elements(content);
@@ -107,7 +107,7 @@ function build_tab_bar(filter) {
         const tab_bar_data = make_tab_data(filter);
         append_and_display_title_area(tab_bar_data);
         bind_title_area_handlers();
-        if (page_params.search_pills_enabled && $('#search_query').is(':focus')) {
+        if (page_params.search_pills_enabled && $("#search_query").is(":focus")) {
             exports.open_search_bar_and_close_narrow_description();
         } else {
             exports.close_search_bar_and_open_narrow_description();
@@ -143,7 +143,7 @@ exports.initialize = function () {
     exports.render_title_area();
 
     // register searchbar click handler
-    $('#search_exit').on("click", (e) => {
+    $("#search_exit").on("click", (e) => {
         tab_bar.exit_search();
         e.preventDefault();
         e.stopPropagation();

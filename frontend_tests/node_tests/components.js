@@ -1,13 +1,13 @@
 
-zrequire('keydown_util');
-zrequire('components');
+zrequire("keydown_util");
+zrequire("components");
 
 const noop = function () {};
 
 const LEFT_KEY = { which: 37, preventDefault: noop, stopPropagation: noop };
 const RIGHT_KEY = { which: 39, preventDefault: noop, stopPropagation: noop };
 
-run_test('basics', () => {
+run_test("basics", () => {
     let keydown_f;
     let click_f;
     const tabs = [];
@@ -23,14 +23,14 @@ run_test('basics', () => {
         self.class = [];
 
         self.addClass = function (c) {
-            self.class += ' ' + c;
+            self.class += " " + c;
             const tokens = self.class.trim().split(/ +/);
-            self.class = _.uniq(tokens).join(' ');
+            self.class = _.uniq(tokens).join(" ");
         };
 
         self.removeClass = function (c) {
             const tokens = self.class.trim().split(/ +/);
-            self.class = _.without(tokens, c).join(' ');
+            self.class = _.without(tokens, c).join(" ");
         };
 
         self.hasClass = function (c) {
@@ -39,7 +39,7 @@ run_test('basics', () => {
         };
 
         self.data = function (name) {
-            assert.equal(name, 'tab-id');
+            assert.equal(name, "tab-id");
             return i;
         };
 
@@ -101,14 +101,14 @@ run_test('basics', () => {
             case ".ind-tab":
                 return ind_tab;
             default:
-                throw Error('unknown selector: ' + sel);
+                throw Error("unknown selector: " + sel);
             }
         };
 
         return self;
     }());
 
-    set_global('$', (sel) => {
+    set_global("$", (sel) => {
         if (sel.stub) {
             // The component often redundantly re-wraps objects.
             return sel;
@@ -126,7 +126,7 @@ run_test('basics', () => {
         case "<div class='ind-tab' data-tab-key='search-operators' data-tab-id='2' tabindex='0'>translated: Search operators</div>":
             return make_tab(2);
         default:
-            throw Error('unknown selector: ' + sel);
+            throw Error("unknown selector: " + sel);
         }
     });
 
@@ -157,69 +157,69 @@ run_test('basics', () => {
 
     assert.deepEqual(switcher.children, tabs);
 
-    assert.equal(switcher.addedClass, 'stream_sorter_toggle');
+    assert.equal(switcher.addedClass, "stream_sorter_toggle");
 
     assert.equal(focused_tab, 0);
-    assert.equal(tabs[0].class, 'first selected');
-    assert.equal(tabs[1].class, 'middle');
-    assert.equal(tabs[2].class, 'last');
-    assert.deepEqual(callback_args, ['translated: Keyboard shortcuts', 'keyboard-shortcuts']);
-    assert.equal(widget.value(), 'translated: Keyboard shortcuts');
+    assert.equal(tabs[0].class, "first selected");
+    assert.equal(tabs[1].class, "middle");
+    assert.equal(tabs[2].class, "last");
+    assert.deepEqual(callback_args, ["translated: Keyboard shortcuts", "keyboard-shortcuts"]);
+    assert.equal(widget.value(), "translated: Keyboard shortcuts");
 
     callback_args = undefined;
 
-    widget.goto('message-formatting');
+    widget.goto("message-formatting");
     assert.equal(focused_tab, 1);
-    assert.equal(tabs[0].class, 'first');
-    assert.equal(tabs[1].class, 'middle selected');
-    assert.equal(tabs[2].class, 'last');
-    assert.deepEqual(callback_args, ['translated: Message formatting', 'message-formatting']);
-    assert.equal(widget.value(), 'translated: Message formatting');
+    assert.equal(tabs[0].class, "first");
+    assert.equal(tabs[1].class, "middle selected");
+    assert.equal(tabs[2].class, "last");
+    assert.deepEqual(callback_args, ["translated: Message formatting", "message-formatting"]);
+    assert.equal(widget.value(), "translated: Message formatting");
 
     // Go to same tab twice and make sure we get callback.
     callback_args = undefined;
-    widget.goto('message-formatting');
-    assert.deepEqual(callback_args, ['translated: Message formatting', 'message-formatting']);
+    widget.goto("message-formatting");
+    assert.deepEqual(callback_args, ["translated: Message formatting", "message-formatting"]);
 
     callback_args = undefined;
     keydown_f.call(tabs[focused_tab], RIGHT_KEY);
     assert.equal(focused_tab, 2);
-    assert.equal(tabs[0].class, 'first');
-    assert.equal(tabs[1].class, 'middle');
-    assert.equal(tabs[2].class, 'last selected');
-    assert.deepEqual(callback_args, ['translated: Search operators', 'search-operators']);
-    assert.equal(widget.value(), 'translated: Search operators');
+    assert.equal(tabs[0].class, "first");
+    assert.equal(tabs[1].class, "middle");
+    assert.equal(tabs[2].class, "last selected");
+    assert.deepEqual(callback_args, ["translated: Search operators", "search-operators"]);
+    assert.equal(widget.value(), "translated: Search operators");
     assert.equal(widget.value(), callback_value);
 
     // try to crash the key handler
     keydown_f.call(tabs[focused_tab], RIGHT_KEY);
-    assert.equal(widget.value(), 'translated: Search operators');
+    assert.equal(widget.value(), "translated: Search operators");
 
     callback_args = undefined;
 
     keydown_f.call(tabs[focused_tab], LEFT_KEY);
-    assert.equal(widget.value(), 'translated: Message formatting');
+    assert.equal(widget.value(), "translated: Message formatting");
 
     callback_args = undefined;
 
     keydown_f.call(tabs[focused_tab], LEFT_KEY);
-    assert.equal(widget.value(), 'translated: Keyboard shortcuts');
+    assert.equal(widget.value(), "translated: Keyboard shortcuts");
 
     // try to crash the key handler
     keydown_f.call(tabs[focused_tab], LEFT_KEY);
-    assert.equal(widget.value(), 'translated: Keyboard shortcuts');
+    assert.equal(widget.value(), "translated: Keyboard shortcuts");
 
     callback_args = undefined;
 
     click_f.call(tabs[1]);
-    assert.equal(widget.value(), 'translated: Message formatting');
+    assert.equal(widget.value(), "translated: Message formatting");
 
     callback_args = undefined;
     widget.disable_tab("search-operators");
-    assert.equal(tabs[2].hasClass('disabled'), true);
+    assert.equal(tabs[2].hasClass("disabled"), true);
     assert.equal(tabs[2].class, "last disabled");
 
-    widget.goto('keyboard-shortcuts');
+    widget.goto("keyboard-shortcuts");
     assert.equal(focused_tab, 0);
     widget.goto("search-operators");
     assert.equal(focused_tab, 0);

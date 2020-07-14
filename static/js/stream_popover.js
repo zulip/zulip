@@ -1,8 +1,8 @@
-const render_all_messages_sidebar_actions = require('../templates/all_messages_sidebar_actions.hbs');
-const render_delete_topic_modal = require('../templates/delete_topic_modal.hbs');
-const render_starred_messages_sidebar_actions = require('../templates/starred_messages_sidebar_actions.hbs');
-const render_stream_sidebar_actions = require('../templates/stream_sidebar_actions.hbs');
-const render_topic_sidebar_actions = require('../templates/topic_sidebar_actions.hbs');
+const render_all_messages_sidebar_actions = require("../templates/all_messages_sidebar_actions.hbs");
+const render_delete_topic_modal = require("../templates/delete_topic_modal.hbs");
+const render_starred_messages_sidebar_actions = require("../templates/starred_messages_sidebar_actions.hbs");
+const render_stream_sidebar_actions = require("../templates/stream_sidebar_actions.hbs");
+const render_topic_sidebar_actions = require("../templates/topic_sidebar_actions.hbs");
 const render_unstar_messages_modal = require("../templates/unstar_messages_modal.hbs");
 const render_move_topic_to_stream = require("../templates/move_topic_to_stream.hbs");
 
@@ -14,10 +14,10 @@ let all_messages_sidebar_elem;
 let starred_messages_sidebar_elem;
 
 function elem_to_stream_id(elem) {
-    const stream_id = parseInt(elem.attr('data-stream-id'), 10);
+    const stream_id = parseInt(elem.attr("data-stream-id"), 10);
 
     if (stream_id === undefined) {
-        blueslip.error('could not find stream id');
+        blueslip.error("could not find stream id");
     }
 
     return stream_id;
@@ -85,11 +85,11 @@ exports.hide_streamlist_sidebar = function () {
 
 
 function stream_popover_sub(e) {
-    const elem = $(e.currentTarget).parents('ul');
+    const elem = $(e.currentTarget).parents("ul");
     const stream_id = elem_to_stream_id(elem);
     const sub = stream_data.get_sub_by_id(stream_id);
     if (!sub) {
-        blueslip.error('Unknown stream: ' + stream_id);
+        blueslip.error("Unknown stream: " + stream_id);
         return;
     }
     return sub;
@@ -102,12 +102,12 @@ function stream_popover_sub(e) {
 function update_spectrum(popover, update_func) {
     const initial_height = popover[0].offsetHeight;
 
-    const colorpicker = popover.find('.colorpicker-container').find('.colorpicker');
+    const colorpicker = popover.find(".colorpicker-container").find(".colorpicker");
     update_func(colorpicker);
     const after_height = popover[0].offsetHeight;
 
     const popover_root = popover.closest(".popover");
-    const current_top_px = parseFloat(popover_root.css('top').replace('px', ''));
+    const current_top_px = parseFloat(popover_root.css("top").replace("px", ""));
     const height_delta = after_height - initial_height;
     let top = current_top_px - height_delta / 2;
 
@@ -122,7 +122,7 @@ function update_spectrum(popover, update_func) {
         popover_root.find("div.arrow").hide();
     }
 
-    popover_root.css('top', top + "px");
+    popover_root.css("top", top + "px");
 }
 
 function build_stream_popover(opts) {
@@ -152,7 +152,7 @@ function build_stream_popover(opts) {
     });
 
     $(elt).popover("show");
-    const popover = $('.streams_popover[data-stream-id=' + stream_id + ']');
+    const popover = $(".streams_popover[data-stream-id=" + stream_id + "]");
 
     update_spectrum(popover, (colorpicker) => {
         colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options);
@@ -175,7 +175,7 @@ function build_topic_popover(opts) {
 
     const sub = stream_data.get_sub_by_id(stream_id);
     if (!sub) {
-        blueslip.error('cannot build topic popover for stream: ' + stream_id);
+        blueslip.error("cannot build topic popover for stream: " + stream_id);
         return;
     }
 
@@ -292,16 +292,16 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
         ui_util.decorate_stream_bar(stream_name, stream_header_colorblock, false);
     });
 
-    $('#move_topic_modal').modal('show');
+    $("#move_topic_modal").modal("show");
     e.stopPropagation();
 }
 
 exports.register_click_handlers = function () {
-    $('#stream_filters').on('click', '.stream-sidebar-menu-icon', (e) => {
+    $("#stream_filters").on("click", ".stream-sidebar-menu-icon", (e) => {
         e.stopPropagation();
 
         const elt = e.target;
-        const stream_li = $(elt).parents('li');
+        const stream_li = $(elt).parents("li");
         const stream_id = elem_to_stream_id(stream_li);
 
         build_stream_popover({
@@ -310,13 +310,13 @@ exports.register_click_handlers = function () {
         });
     });
 
-    $('#stream_filters').on('click', '.topic-sidebar-menu-icon', (e) => {
+    $("#stream_filters").on("click", ".topic-sidebar-menu-icon", (e) => {
         e.stopPropagation();
 
-        const elt = $(e.target).closest('.topic-sidebar-menu-icon').expectOne()[0];
-        const stream_li = $(elt).closest('.narrow-filter').expectOne();
+        const elt = $(e.target).closest(".topic-sidebar-menu-icon").expectOne()[0];
+        const stream_li = $(elt).closest(".narrow-filter").expectOne();
         const stream_id = elem_to_stream_id(stream_li);
-        const topic_name = $(elt).closest('li').expectOne().attr('data-topic-name');
+        const topic_name = $(elt).closest("li").expectOne().attr("data-topic-name");
 
         build_topic_popover({
             elt: elt,
@@ -325,9 +325,9 @@ exports.register_click_handlers = function () {
         });
     });
 
-    $('#global_filters').on('click', '.all-messages-sidebar-menu-icon', build_all_messages_popover);
+    $("#global_filters").on("click", ".all-messages-sidebar-menu-icon", build_all_messages_popover);
 
-    $('#global_filters').on('click', '.starred-messages-sidebar-menu-icon', build_starred_messages_popover);
+    $("#global_filters").on("click", ".starred-messages-sidebar-menu-icon", build_starred_messages_popover);
 
     exports.register_stream_handlers();
     exports.register_topic_handlers();
@@ -335,7 +335,7 @@ exports.register_click_handlers = function () {
 
 exports.register_stream_handlers = function () {
     // Stream settings
-    $('body').on('click', '.open_stream_settings', (e) => {
+    $("body").on("click", ".open_stream_settings", (e) => {
         const sub = stream_popover_sub(e);
         exports.hide_stream_popover();
 
@@ -344,7 +344,7 @@ exports.register_stream_handlers = function () {
     });
 
     // Pin/unpin
-    $('body').on('click', '.pin_to_top', (e) => {
+    $("body").on("click", ".pin_to_top", (e) => {
         const sub = stream_popover_sub(e);
         exports.hide_stream_popover();
         subs.toggle_pin_to_top_stream(sub);
@@ -352,7 +352,7 @@ exports.register_stream_handlers = function () {
     });
 
     // Mark all messages in stream as read
-    $('body').on('click', '.mark_stream_as_read', (e) => {
+    $("body").on("click", ".mark_stream_as_read", (e) => {
         const sub = stream_popover_sub(e);
         exports.hide_stream_popover();
         unread_ops.mark_stream_as_read(sub.stream_id);
@@ -360,14 +360,14 @@ exports.register_stream_handlers = function () {
     });
 
     // Mark all messages as read
-    $('body').on('click', '#mark_all_messages_as_read', (e) => {
+    $("body").on("click", "#mark_all_messages_as_read", (e) => {
         exports.hide_all_messages_popover();
         unread_ops.mark_all_as_read();
         e.stopPropagation();
     });
 
     // Unstar all messages
-    $('body').on('click', '#unstar_all_messages', (e) => {
+    $("body").on("click", "#unstar_all_messages", (e) => {
         exports.hide_starred_messages_popover();
         e.preventDefault();
         e.stopPropagation();
@@ -376,14 +376,14 @@ exports.register_stream_handlers = function () {
         $("#unstar-messages-modal").modal("show");
     });
 
-    $('body').on('click', '#do_unstar_messages_button', (e) => {
+    $("body").on("click", "#do_unstar_messages_button", (e) => {
         $("#unstar-messages-modal").modal("hide");
         message_flags.unstar_all_messages();
         e.stopPropagation();
     });
 
     // Toggle displaying starred message count
-    $('body').on('click', '#toggle_display_starred_msg_count', (e) => {
+    $("body").on("click", "#toggle_display_starred_msg_count", (e) => {
         exports.hide_starred_messages_popover();
         e.preventDefault();
         e.stopPropagation();
@@ -391,12 +391,12 @@ exports.register_stream_handlers = function () {
         const data = {};
         data.starred_message_counts = JSON.stringify(!starred_msg_counts);
         channel.patch({
-            url: '/json/settings/display',
+            url: "/json/settings/display",
             data: data,
         });
     });
     // Mute/unmute
-    $('body').on('click', '.toggle_home', (e) => {
+    $("body").on("click", ".toggle_home", (e) => {
         const sub = stream_popover_sub(e);
         exports.hide_stream_popover();
         subs.toggle_home(sub);
@@ -404,7 +404,7 @@ exports.register_stream_handlers = function () {
     });
 
     // Unsubscribe
-    $('body').on("click", ".popover_sub_unsub_button", function (e) {
+    $("body").on("click", ".popover_sub_unsub_button", function (e) {
         $(this).toggleClass("unsub");
         $(this).closest(".popover").fadeOut(500).delay(500).remove();
 
@@ -415,9 +415,9 @@ exports.register_stream_handlers = function () {
     });
 
     // Choose a different color.
-    $('body').on('click', '.choose_stream_color', (e) => {
-        update_spectrum($(e.target).closest('.streams_popover'), (colorpicker) => {
-            $('.colorpicker-container').show();
+    $("body").on("click", ".choose_stream_color", (e) => {
+        update_spectrum($(e.target).closest(".streams_popover"), (colorpicker) => {
+            $(".colorpicker-container").show();
             colorpicker.spectrum("destroy");
             colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
             // In theory this should clean up the old color picker,
@@ -425,11 +425,11 @@ exports.register_stream_handlers = function () {
             // doesn't fire until you click a button, but the buttons
             // have been hidden.  We work around this by just manually
             // fixing it up here.
-            colorpicker.parent().find('.sp-container').removeClass('sp-buttons-disabled');
+            colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
             $(e.target).hide();
         });
 
-        $('.streams_popover').on('click', 'a.sp-cancel', () => {
+        $(".streams_popover").on("click", "a.sp-cancel", () => {
             exports.hide_stream_popover();
         });
     });
@@ -439,13 +439,13 @@ exports.register_stream_handlers = function () {
 function topic_popover_sub(e) {
     const stream_id = topic_popover_stream_id(e);
     if (!stream_id) {
-        blueslip.error('cannot find stream id');
+        blueslip.error("cannot find stream id");
         return;
     }
 
     const sub = stream_data.get_sub_by_id(stream_id);
     if (!sub) {
-        blueslip.error('Unknown stream: ' + stream_id);
+        blueslip.error("Unknown stream: " + stream_id);
         return;
     }
     return sub;
@@ -453,7 +453,7 @@ function topic_popover_sub(e) {
 
 exports.register_topic_handlers = function () {
     // Narrow to topic
-    $('body').on('click', '.narrow_to_topic', (e) => {
+    $("body").on("click", ".narrow_to_topic", (e) => {
         exports.hide_topic_popover();
 
         const sub = topic_popover_sub(e);
@@ -461,101 +461,101 @@ exports.register_topic_handlers = function () {
             return;
         }
 
-        const topic = $(e.currentTarget).attr('data-topic-name');
+        const topic = $(e.currentTarget).attr("data-topic-name");
 
         const operators = [
-            {operator: 'stream', operand: sub.name},
-            {operator: 'topic', operand: topic},
+            {operator: "stream", operand: sub.name},
+            {operator: "topic", operand: topic},
         ];
-        narrow.activate(operators, {trigger: 'sidebar'});
+        narrow.activate(operators, {trigger: "sidebar"});
 
         e.stopPropagation();
     });
 
     // Mute the topic
-    $('body').on('click', '.sidebar-popover-mute-topic', (e) => {
+    $("body").on("click", ".sidebar-popover-mute-topic", (e) => {
         const stream_id = topic_popover_stream_id(e);
         if (!stream_id) {
             return;
         }
 
-        const topic = $(e.currentTarget).attr('data-topic-name');
+        const topic = $(e.currentTarget).attr("data-topic-name");
         muting_ui.mute(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
 
     // Unmute the topic
-    $('body').on('click', '.sidebar-popover-unmute-topic', (e) => {
+    $("body").on("click", ".sidebar-popover-unmute-topic", (e) => {
         const stream_id = topic_popover_stream_id(e);
         if (!stream_id) {
             return;
         }
 
-        const topic = $(e.currentTarget).attr('data-topic-name');
+        const topic = $(e.currentTarget).attr("data-topic-name");
         muting_ui.unmute(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
 
     // Mark all messages as read
-    $('body').on('click', '.sidebar-popover-mark-topic-read', (e) => {
+    $("body").on("click", ".sidebar-popover-mark-topic-read", (e) => {
         const stream_id = topic_popover_stream_id(e);
         if (!stream_id) {
             return;
         }
 
-        const topic = $(e.currentTarget).attr('data-topic-name');
+        const topic = $(e.currentTarget).attr("data-topic-name");
         exports.hide_topic_popover();
         unread_ops.mark_topic_as_read(stream_id, topic);
         e.stopPropagation();
     });
 
     // Deleting all message in a topic
-    $('body').on('click', '.sidebar-popover-delete-topic-messages', (e) => {
+    $("body").on("click", ".sidebar-popover-delete-topic-messages", (e) => {
         const stream_id = topic_popover_stream_id(e);
         if (!stream_id) {
             return;
         }
 
-        const topic = $(e.currentTarget).attr('data-topic-name');
+        const topic = $(e.currentTarget).attr("data-topic-name");
         const args = {
             topic_name: topic,
         };
 
         exports.hide_topic_popover();
 
-        $('#delete-topic-modal-holder').html(render_delete_topic_modal(args));
+        $("#delete-topic-modal-holder").html(render_delete_topic_modal(args));
 
-        $('#do_delete_topic_button').on('click', () => {
+        $("#do_delete_topic_button").on("click", () => {
             message_edit.delete_topic(stream_id, topic);
         });
 
-        $('#delete_topic_modal').modal('show');
+        $("#delete_topic_modal").modal("show");
 
         e.stopPropagation();
     });
 
-    $('body').on('click', '.sidebar-popover-move-topic-messages', (e) => {
+    $("body").on("click", ".sidebar-popover-move-topic-messages", (e) => {
         const topic_row = $(e.currentTarget);
-        const stream_id = parseInt(topic_row.attr('data-stream-id'), 10);
-        const topic_name = topic_row.attr('data-topic-name');
+        const stream_id = parseInt(topic_row.attr("data-stream-id"), 10);
+        const topic_name = topic_row.attr("data-topic-name");
         build_move_topic_to_stream_popover(e, stream_id, topic_name);
         e.stopPropagation();
         e.preventDefault();
     });
 
-    $('body').on('click', '#topic_stream_edit_form_error .send-status-close', () => {
+    $("body").on("click", "#topic_stream_edit_form_error .send-status-close", () => {
         $("#topic_stream_edit_form_error").hide();
     });
 
-    $('body').on('click', '#do_move_topic_button', (e) => {
+    $("body").on("click", "#do_move_topic_button", (e) => {
         function show_error_msg(msg) {
             $("#topic_stream_edit_form_error .error-msg").text(msg);
             $("#topic_stream_edit_form_error").show();
         }
 
-        const params = $('#move_topic_form').serializeArray().reduce((obj, item) => {
+        const params = $("#move_topic_form").serializeArray().reduce((obj, item) => {
             obj[item.name] = item.value;
             return obj;
         }, {});
@@ -564,8 +564,8 @@ exports.register_topic_handlers = function () {
         let {current_stream_id, new_topic_name,
              send_notification_to_new_thread, send_notification_to_old_thread} = params;
         new_topic_name = new_topic_name.trim();
-        send_notification_to_new_thread = send_notification_to_new_thread === 'on';
-        send_notification_to_old_thread = send_notification_to_old_thread === 'on';
+        send_notification_to_new_thread = send_notification_to_new_thread === "on";
+        send_notification_to_old_thread = send_notification_to_old_thread === "on";
         current_stream_id = parseInt(current_stream_id, 10);
 
         if (current_stream_id === parseInt(select_stream_id, 10) &&
@@ -589,7 +589,7 @@ exports.register_topic_handlers = function () {
         // cost for a rare operation, we just ask the server for the
         // latest message ID in the topic.
         const data = {
-            anchor: 'newest',
+            anchor: "newest",
             num_before: 1,
             num_after: 0,
             narrow: JSON.stringify(
@@ -599,7 +599,7 @@ exports.register_topic_handlers = function () {
         };
 
         channel.get({
-            url: '/json/messages',
+            url: "/json/messages",
             data: data,
             idempotent: true,
             success: function (data) {
@@ -616,7 +616,7 @@ exports.register_topic_handlers = function () {
                         message_id, select_stream_id, new_topic_name,
                         send_notification_to_new_thread,
                         send_notification_to_old_thread);
-                    $('#move_topic_modal').modal('hide');
+                    $("#move_topic_modal").modal("hide");
                 }
             },
             error: function (xhr) {

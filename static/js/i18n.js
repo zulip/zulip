@@ -1,7 +1,7 @@
-import i18next from 'i18next';
+import i18next from "i18next";
 
 i18next.init({
-    lng: 'lang',
+    lng: "lang",
     resources: {
         lang: {
             translation: page_params.translation_data,

@@ -11,14 +11,14 @@ const DEFAULTS = {
 // ----------------------------------------------------
 
 exports.validate_opts = (opts) => {
-    if (opts.html_selector && typeof opts.html_selector !== 'function') {
+    if (opts.html_selector && typeof opts.html_selector !== "function") {
         // We have an html_selector, but it is not a function.
         // This is a programming error.
-        blueslip.error('html_selector should be a function.');
+        blueslip.error("html_selector should be a function.");
         return false;
     }
     if (!opts.simplebar_container) {
-        blueslip.error('simplebar_container is missing.');
+        blueslip.error("simplebar_container is missing.");
         return false;
     }
     return true;
@@ -96,17 +96,17 @@ exports.valid_filter_opts = (opts) => {
         return true;
     }
     if (opts.filter.predicate) {
-        if (typeof opts.filter.predicate !== 'function') {
-            blueslip.error('Filter predicate is not a function.');
+        if (typeof opts.filter.predicate !== "function") {
+            blueslip.error("Filter predicate is not a function.");
             return false;
         }
         if (opts.filter.filterer) {
-            blueslip.error('Filterer and predicate are mutually exclusive.');
+            blueslip.error("Filterer and predicate are mutually exclusive.");
             return false;
         }
     } else {
-        if (typeof opts.filter.filterer !== 'function') {
-            blueslip.error('Filter filterer is not a function (or missing).');
+        if (typeof opts.filter.filterer !== "function") {
+            blueslip.error("Filter filterer is not a function (or missing).");
             return false;
         }
     }
@@ -120,7 +120,7 @@ exports.valid_filter_opts = (opts) => {
 // opts: An object of random preferences.
 exports.create = function ($container, list, opts) {
     if (!opts) {
-        blueslip.error('Need opts to create widget.');
+        blueslip.error("Need opts to create widget.");
         return;
     }
 
@@ -145,15 +145,15 @@ exports.create = function ($container, list, opts) {
         list: list,
         filtered_list: list,
         reverse_mode: false,
-        filter_value: '',
+        filter_value: "",
     };
 
     if (!exports.valid_filter_opts(opts)) {
         return;
     }
 
-    if (opts.get_item && typeof opts.get_item !== 'function') {
-        blueslip.error('get_item should be a function');
+    if (opts.get_item && typeof opts.get_item !== "function") {
+        blueslip.error("get_item should be a function");
         return;
     }
 
@@ -190,13 +190,13 @@ exports.create = function ($container, list, opts) {
 
         const slice = meta.filtered_list.slice(meta.offset, meta.offset + load_count);
 
-        const finish = blueslip.start_timing('list_render ' + opts.name);
+        const finish = blueslip.start_timing("list_render " + opts.name);
         let html = "";
         for (const item of slice) {
             const s = opts.modifier(item);
 
-            if (typeof s !== 'string') {
-                blueslip.error('List item is not a string: ' + s);
+            if (typeof s !== "string") {
+                blueslip.error("List item is not a string: " + s);
                 continue;
             }
 
@@ -228,8 +228,8 @@ exports.create = function ($container, list, opts) {
             item = opts.get_item(item);
         }
         const html = opts.modifier(item);
-        if (typeof html !== 'string') {
-            blueslip.error('List item is not a string: ' + html);
+        if (typeof html !== "string") {
+            blueslip.error("List item is not a string: " + html);
             return;
         }
 
@@ -272,20 +272,20 @@ exports.create = function ($container, list, opts) {
 
         // on scroll of the nearest scrolling container, if it hits the bottom
         // of the container then fetch a new block of items and render them.
-        meta.scroll_container.on('scroll.list_widget_container', function () {
+        meta.scroll_container.on("scroll.list_widget_container", function () {
             if (this.scrollHeight - (this.scrollTop + this.clientHeight) < 10) {
                 widget.render();
             }
         });
 
         if (opts.parent_container) {
-            opts.parent_container.on('click.list_widget_sort', "[data-sort]", function () {
+            opts.parent_container.on("click.list_widget_sort", "[data-sort]", function () {
                 exports.handle_sort($(this), widget);
             });
         }
 
         if (opts.filter && opts.filter.element) {
-            opts.filter.element.on('input.list_widget_filter', function () {
+            opts.filter.element.on("input.list_widget_filter", function () {
                 const value = this.value.toLocaleLowerCase();
                 widget.set_filter_value(value);
                 widget.hard_redraw();
@@ -294,14 +294,14 @@ exports.create = function ($container, list, opts) {
     };
 
     widget.clear_event_handlers = function () {
-        meta.scroll_container.off('scroll.list_widget_container');
+        meta.scroll_container.off("scroll.list_widget_container");
 
         if (opts.parent_container) {
-            opts.parent_container.off('click.list_widget_sort', "[data-sort]");
+            opts.parent_container.off("click.list_widget_sort", "[data-sort]");
         }
 
         if (opts.filter && opts.filter.element) {
-            opts.filter.element.off('input.list_widget_filter');
+            opts.filter.element.off("input.list_widget_filter");
         }
     };
 

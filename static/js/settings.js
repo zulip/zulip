@@ -1,5 +1,5 @@
 const settings_config = require("./settings_config");
-const render_settings_tab = require('../templates/settings_tab.hbs');
+const render_settings_tab = require("../templates/settings_tab.hbs");
 
 $("body").ready(() => {
     $("#settings_overlay_container").click((e) => {
@@ -51,8 +51,8 @@ exports.build_page = function () {
         page_params: page_params,
         enable_sound_select: page_params.enable_sounds ||
             page_params.enable_stream_audible_notifications,
-        zuliprc: 'zuliprc',
-        botserverrc: 'botserverrc',
+        zuliprc: "zuliprc",
+        botserverrc: "botserverrc",
         timezones: moment.tz.names(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
         settings_label: exports.settings_label,
@@ -79,7 +79,7 @@ exports.launch = function (section) {
 
     overlays.open_settings();
     settings_panel_menu.normal_settings.activate_section_or_default(section);
-    settings_toggle.highlight_toggle('settings');
+    settings_toggle.highlight_toggle("settings");
 };
 
 exports.set_settings_header = function (key) {

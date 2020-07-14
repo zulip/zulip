@@ -1,6 +1,6 @@
 const render_subscription_count = require("../templates/subscription_count.hbs");
-const render_subscription_setting_icon = require('../templates/subscription_setting_icon.hbs');
-const render_subscription_type = require('../templates/subscription_type.hbs');
+const render_subscription_setting_icon = require("../templates/subscription_setting_icon.hbs");
+const render_subscription_type = require("../templates/subscription_type.hbs");
 
 exports.update_check_button_for_sub = function (sub) {
     const button = subs.check_button_for_sub(sub);
@@ -31,19 +31,19 @@ exports.initialize_disable_btn_hint_popover = function (btn_wrapper, popover_btn
         animation: false,
     });
 
-    btn_wrapper.on('mouseover', (e) => {
-        popover_btn.popover('show');
+    btn_wrapper.on("mouseover", (e) => {
+        popover_btn.popover("show");
         e.stopPropagation();
     });
 
-    btn_wrapper.on('mouseout', (e) => {
-        popover_btn.popover('hide');
+    btn_wrapper.on("mouseout", (e) => {
+        popover_btn.popover("hide");
         e.stopPropagation();
     });
 };
 
 exports.initialize_cant_subscribe_popover = function (sub) {
-    const button_wrapper = stream_edit.settings_for_sub(sub).find('.sub_unsub_button_wrapper');
+    const button_wrapper = stream_edit.settings_for_sub(sub).find(".sub_unsub_button_wrapper");
     const settings_button = subs.settings_button_for_sub(sub);
     exports.initialize_disable_btn_hint_popover(button_wrapper, settings_button, settings_button,
                                                 i18n.t("Only stream members can add users to a private stream"));
@@ -58,7 +58,7 @@ exports.update_settings_button_for_sub = function (sub) {
     }
     if (sub.should_display_subscription_button) {
         settings_button.prop("disabled", false);
-        settings_button.popover('destroy');
+        settings_button.popover("destroy");
         settings_button.css("pointer-events", "");
     } else {
         settings_button.attr("title", "");
@@ -78,9 +78,9 @@ exports.update_regular_sub_settings = function (sub) {
             $settings.find(".email-address").text(sub.email_address);
             $settings.find(".stream-email-box").show();
         }
-        $settings.find(".regular_subscription_settings").addClass('in');
+        $settings.find(".regular_subscription_settings").addClass("in");
     } else {
-        $settings.find(".regular_subscription_settings").removeClass('in');
+        $settings.find(".regular_subscription_settings").removeClass("in");
         // Clear email address widget
         $settings.find(".email-address").html("");
     }
@@ -97,11 +97,11 @@ exports.update_change_stream_privacy_settings = function (sub) {
 };
 
 exports.update_notification_setting_checkbox = function (notification_name) {
-    const stream_row = $('#subscriptions_table .stream-row.active');
+    const stream_row = $("#subscriptions_table .stream-row.active");
     if (!stream_row.length) {
         return;
     }
-    const stream_id = stream_row.data('stream-id');
+    const stream_id = stream_row.data("stream-id");
     $(`#${notification_name}_${stream_id}`).prop("checked", stream_data.receives_notifications(
         stream_id, notification_name));
 };
@@ -128,10 +128,10 @@ exports.update_stream_privacy_type_icon = function (sub) {
     const html = render_subscription_setting_icon(sub);
 
     if (overlays.streams_open()) {
-        sub_row.find('.icon').expectOne().replaceWith($(html));
+        sub_row.find(".icon").expectOne().replaceWith($(html));
     }
     if (stream_edit.is_sub_settings_active(sub)) {
-        const large_icon = stream_settings.find('.large-icon').expectOne();
+        const large_icon = stream_settings.find(".large-icon").expectOne();
         if (sub.invite_only) {
             large_icon.removeClass("hash").addClass("lock")
                 .html("<i class='fa fa-lock' aria-hidden='true'></i>");
@@ -150,7 +150,7 @@ exports.update_stream_subscription_type_text = function (sub) {
     };
     const html = render_subscription_type(template_data);
     if (stream_edit.is_sub_settings_active(sub)) {
-        stream_settings.find('.subscription-type-text').expectOne().html(html);
+        stream_settings.find(".subscription-type-text").expectOne().html(html);
     }
 };
 
@@ -162,7 +162,7 @@ exports.update_subscribers_count = function (sub, just_subscribed) {
     const stream_row = subs.row_for_stream_id(sub.stream_id);
     if (!sub.can_access_subscribers || just_subscribed && sub.invite_only || page_params.is_guest) {
         const rendered_sub_count = render_subscription_count(sub);
-        stream_row.find('.subscriber-count').expectOne().html(rendered_sub_count);
+        stream_row.find(".subscriber-count").expectOne().html(rendered_sub_count);
     } else {
         stream_row.find(".subscriber-count-text").expectOne().text(sub.subscriber_count);
     }
@@ -206,26 +206,26 @@ exports.update_add_subscriptions_elements = function (sub) {
 
     if (page_params.is_guest) {
         // For guest users, we just hide the add_subscribers feature.
-        $('.add_subscribers_container').hide();
+        $(".add_subscribers_container").hide();
         return;
     }
 
     // Otherwise, we adjust whether the widgets are disabled based on
     // whether this user is authorized to add subscribers.
-    const input_element = $('.add_subscribers_container').find('.input').expectOne();
-    const button_element = $('.add_subscribers_container').find('button[name="add_subscriber"]').expectOne();
+    const input_element = $(".add_subscribers_container").find(".input").expectOne();
+    const button_element = $(".add_subscribers_container").find('button[name="add_subscriber"]').expectOne();
     const allow_user_to_add_subs = sub.can_add_subscribers;
 
     if (allow_user_to_add_subs) {
         input_element.removeAttr("disabled");
         button_element.removeAttr("disabled");
-        button_element.css('pointer-events', "");
-        $('.add_subscribers_container input').popover('destroy');
+        button_element.css("pointer-events", "");
+        $(".add_subscribers_container input").popover("destroy");
     } else {
         input_element.attr("disabled", "disabled");
         button_element.attr("disabled", "disabled");
 
-        exports.initialize_disable_btn_hint_popover($('.add_subscribers_container'), input_element, button_element,
+        exports.initialize_disable_btn_hint_popover($(".add_subscribers_container"), input_element, button_element,
                                                     i18n.t("Only stream members can add users to a private stream"));
     }
 };

@@ -1,53 +1,53 @@
 
-zrequire('unread');
-zrequire('stream_data');
-zrequire('stream_topic_history');
+zrequire("unread");
+zrequire("stream_data");
+zrequire("stream_topic_history");
 
-set_global('channel', {});
-set_global('message_list', {});
+set_global("channel", {});
+set_global("message_list", {});
 
-run_test('basics', () => {
+run_test("basics", () => {
     const stream_id = 55;
 
     stream_topic_history.add_message({
         stream_id: stream_id,
         message_id: 101,
-        topic_name: 'toPic1',
+        topic_name: "toPic1",
     });
 
     let history = stream_topic_history.get_recent_topic_names(stream_id);
     let max_message_id = stream_topic_history.get_max_message_id(stream_id);
-    assert.deepEqual(history, ['toPic1']);
+    assert.deepEqual(history, ["toPic1"]);
     assert.deepEqual(max_message_id, 101);
 
     stream_topic_history.add_message({
         stream_id: stream_id,
         message_id: 102,
-        topic_name: 'Topic1',
+        topic_name: "Topic1",
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
-    assert.deepEqual(history, ['Topic1']);
+    assert.deepEqual(history, ["Topic1"]);
     assert.deepEqual(max_message_id, 102);
 
     stream_topic_history.add_message({
         stream_id: stream_id,
         message_id: 103,
-        topic_name: 'topic2',
+        topic_name: "topic2",
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
-    assert.deepEqual(history, ['topic2', 'Topic1']);
+    assert.deepEqual(history, ["topic2", "Topic1"]);
     assert.deepEqual(max_message_id, 103);
 
     // Removing first topic1 message has no effect.
     stream_topic_history.remove_messages({
         stream_id: stream_id,
-        topic_name: 'toPic1',
+        topic_name: "toPic1",
         num_messages: 1,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ['topic2', 'Topic1']);
+    assert.deepEqual(history, ["topic2", "Topic1"]);
     // Removing a topic message shouldn't effect the max_message_id.
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(max_message_id, 103);
@@ -55,20 +55,20 @@ run_test('basics', () => {
     // Removing second topic1 message removes the topic.
     stream_topic_history.remove_messages({
         stream_id: stream_id,
-        topic_name: 'Topic1',
+        topic_name: "Topic1",
         num_messages: 1,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ['topic2']);
+    assert.deepEqual(history, ["topic2"]);
 
     // Test that duplicate remove does not crash us.
     stream_topic_history.remove_messages({
         stream_id: stream_id,
-        topic_name: 'Topic1',
+        topic_name: "Topic1",
         num_messages: 1,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ['topic2']);
+    assert.deepEqual(history, ["topic2"]);
 
     // get to 100% coverage for defensive code
     stream_topic_history.remove_messages({
@@ -77,9 +77,9 @@ run_test('basics', () => {
     });
 });
 
-run_test('is_complete_for_stream_id', () => {
+run_test("is_complete_for_stream_id", () => {
     const sub = {
-        name: 'devel',
+        name: "devel",
         stream_id: 444,
         first_message_id: 1000,
     };
@@ -117,9 +117,9 @@ run_test('is_complete_for_stream_id', () => {
         false);
 });
 
-run_test('server_history', () => {
+run_test("server_history", () => {
     const sub = {
-        name: 'devel',
+        name: "devel",
         stream_id: 66,
     };
     const stream_id = sub.stream_id;
@@ -134,14 +134,14 @@ run_test('server_history', () => {
     stream_topic_history.add_message({
         stream_id: stream_id,
         message_id: 501,
-        topic_name: 'local',
+        topic_name: "local",
     });
 
     function add_server_history() {
         stream_topic_history.add_history(stream_id, [
-            { name: 'local', max_id: 501 },
-            { name: 'hist2', max_id: 31 },
-            { name: 'hist1', max_id: 30 },
+            { name: "local", max_id: 501 },
+            { name: "hist2", max_id: 31 },
+            { name: "hist1", max_id: 30 },
         ]);
     }
 
@@ -154,82 +154,82 @@ run_test('server_history', () => {
         true);
 
     let history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ['local', 'hist2', 'hist1']);
+    assert.deepEqual(history, ["local", "hist2", "hist1"]);
 
     // If new activity comes in for historical messages,
     // they can bump to the front of the list.
     stream_topic_history.add_message({
         stream_id: stream_id,
         message_id: 502,
-        topic_name: 'hist1',
+        topic_name: "hist1",
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ['hist1', 'local', 'hist2']);
+    assert.deepEqual(history, ["hist1", "local", "hist2"]);
 
     // server history is allowed to backdate hist1
     add_server_history();
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ['local', 'hist2', 'hist1']);
+    assert.deepEqual(history, ["local", "hist2", "hist1"]);
 
     // Removing a local message removes the topic if we have
     // our counts right.
     stream_topic_history.remove_messages({
         stream_id: stream_id,
-        topic_name: 'local',
+        topic_name: "local",
         num_messages: 1,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ['hist2', 'hist1']);
+    assert.deepEqual(history, ["hist2", "hist1"]);
 
     // We can try to remove a historical message, but it should
     // have no effect.
     stream_topic_history.remove_messages({
         stream_id: stream_id,
-        topic_name: 'hist2',
+        topic_name: "hist2",
         num_messages: 1,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ['hist2', 'hist1']);
+    assert.deepEqual(history, ["hist2", "hist1"]);
 
     // If we call back to the server for history, the
     // effect is always additive.  We may decide to prune old
     // topics in the future, if they dropped off due to renames,
     // but that is probably an edge case we can ignore for now.
     stream_topic_history.add_history(stream_id, [
-        { name: 'hist2', max_id: 931 },
-        { name: 'hist3', max_id: 5 },
+        { name: "hist2", max_id: 931 },
+        { name: "hist3", max_id: 5 },
     ]);
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ['hist2', 'hist1', 'hist3']);
+    assert.deepEqual(history, ["hist2", "hist1", "hist3"]);
 });
 
-run_test('test_unread_logic', () => {
+run_test("test_unread_logic", () => {
     const stream_id = 77;
 
     stream_topic_history.add_message({
         stream_id: stream_id,
         message_id: 201,
-        topic_name: 'toPic1',
+        topic_name: "toPic1",
     });
 
     stream_topic_history.add_message({
         stream_id: stream_id,
         message_id: 45,
-        topic_name: 'topic2',
+        topic_name: "topic2",
     });
 
     let history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ['toPic1', 'topic2']);
+    assert.deepEqual(history, ["toPic1", "topic2"]);
 
     const msgs = [
-        { id: 150, topic: 'TOPIC2' }, // will be ignored
-        { id: 61, topic: 'unread1' },
-        { id: 60, topic: 'unread1' },
-        { id: 20, topic: 'UNREAD2' },
+        { id: 150, topic: "TOPIC2" }, // will be ignored
+        { id: 61, topic: "unread1" },
+        { id: 60, topic: "unread1" },
+        { id: 20, topic: "UNREAD2" },
     ];
 
     for (const msg of msgs) {
-        msg.type = 'stream';
+        msg.type = "stream";
         msg.stream_id = stream_id;
         msg.unread = true;
     }
@@ -237,10 +237,10 @@ run_test('test_unread_logic', () => {
     unread.process_loaded_messages(msgs);
 
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ['toPic1', 'unread1', 'topic2', 'UNREAD2']);
+    assert.deepEqual(history, ["toPic1", "unread1", "topic2", "UNREAD2"]);
 });
 
-run_test('test_stream_has_topics', () => {
+run_test("test_stream_has_topics", () => {
     const stream_id = 88;
 
     assert.equal(stream_topic_history.stream_has_topics(stream_id), false);
@@ -254,28 +254,28 @@ run_test('test_stream_has_topics', () => {
     stream_topic_history.add_message({
         stream_id: stream_id,
         message_id: 888,
-        topic_name: 'whatever',
+        topic_name: "whatever",
     });
 
     assert.equal(stream_topic_history.stream_has_topics(stream_id), true);
 });
 
-run_test('server_history_end_to_end', () => {
+run_test("server_history_end_to_end", () => {
     stream_topic_history.reset();
 
     const stream_id = 99;
 
     const topics = [
-        { name: 'topic3', max_id: 501 },
-        { name: 'topic2', max_id: 31 },
-        { name: 'topic1', max_id: 30 },
+        { name: "topic3", max_id: 501 },
+        { name: "topic2", max_id: 31 },
+        { name: "topic1", max_id: 30 },
     ];
 
     let get_success_callback;
     let on_success_called;
 
     channel.get = function (opts) {
-        assert.equal(opts.url, '/json/users/me/99/topics');
+        assert.equal(opts.url, "/json/users/me/99/topics");
         assert.deepEqual(opts.data, {});
         get_success_callback = opts.success;
     };
@@ -289,12 +289,12 @@ run_test('server_history_end_to_end', () => {
     assert(on_success_called);
 
     const history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ['topic3', 'topic2', 'topic1']);
+    assert.deepEqual(history, ["topic3", "topic2", "topic1"]);
 
     // Try getting server history for a second time.
 
     channel.get = () => {
-        throw Error('We should not get more data.');
+        throw Error("We should not get more data.");
     };
 
     on_success_called = false;

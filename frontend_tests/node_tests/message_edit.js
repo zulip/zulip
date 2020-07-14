@@ -1,17 +1,17 @@
-set_global('document', null);
-set_global('page_params', {
+set_global("document", null);
+set_global("page_params", {
     realm_community_topic_editing_limit_seconds: 86400,
 });
 
 global.stub_out_jquery();
 
-set_global('XDate', zrequire('XDate', 'xdate/src/xdate'));
-zrequire('message_edit');
+set_global("XDate", zrequire("XDate", "xdate/src/xdate"));
+zrequire("message_edit");
 
 const get_editability = message_edit.get_editability;
 const editability_types = message_edit.editability_types;
 
-run_test('get_editability', () => {
+run_test("get_editability", () => {
     // You can't edit a null message
     assert.equal(get_editability(null), editability_types.NO);
     // You can't edit a message you didn't send
@@ -62,16 +62,16 @@ run_test('get_editability', () => {
     assert.equal(get_editability(message, 55), editability_types.FULL);
     // It's been 60 > 45+10 since message.timestamp. When realm_allow_message_editing
     // is true, we can edit the topic if there is one.
-    message.type = 'stream';
+    message.type = "stream";
     assert.equal(get_editability(message, 45), editability_types.TOPIC_ONLY);
-    message.type = 'private';
+    message.type = "private";
     assert.equal(get_editability(message, 45), editability_types.NO_LONGER);
     // If we don't pass a second argument, treat it as 0
     assert.equal(get_editability(message), editability_types.NO_LONGER);
 
     message = {
         sent_by_me: false,
-        type: 'stream',
+        type: "stream",
     };
     global.page_params = {
         realm_allow_community_topic_editing: true,
@@ -103,7 +103,7 @@ run_test('get_editability', () => {
     assert.equal(message_edit.is_topic_editable(message), false);
 });
 
-run_test('get_deletability', () => {
+run_test("get_deletability", () => {
     global.page_params = {
         is_admin: true,
         realm_allow_message_deleting: false,

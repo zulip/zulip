@@ -1,4 +1,4 @@
-const FoldDict = require('./fold_dict').FoldDict;
+const FoldDict = require("./fold_dict").FoldDict;
 
 const stream_dict = new Map(); // stream_id -> per_stream_history object
 const fetched_stream_ids = new Set();
@@ -247,7 +247,7 @@ exports.get_server_history = function (stream_id, on_success) {
         return;
     }
 
-    const url = '/json/users/me/' + stream_id + '/topics';
+    const url = "/json/users/me/" + stream_id + "/topics";
 
     channel.get({
         url: url,
