@@ -2310,24 +2310,24 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
             result = self.client_get(url, **headers)
             self.assertEqual(result.status_code, 302)
 
-        with self.assertLogs(level='INFO') as info_log:
+        with self.assertLogs(self.logger_string, level='INFO') as info_log:
             # Start Apple auth with mobile_flow_otp param. It should get saved into the session
             # on SOCIAL_AUTH_SUBDOMAIN.
             initiate_auth(mobile_flow_otp)
 
         self.assertEqual(self.client.session['mobile_flow_otp'], mobile_flow_otp)
         self.assertEqual(info_log.output, [
-            'INFO:root:/complete/apple/: Authentication failed: Token validation failed'
+            self.logger_output("/complete/apple/: Authentication failed: Token validation failed", "info")
         ])
 
-        with self.assertLogs(level='INFO') as info_log:
+        with self.assertLogs(self.logger_string, level='INFO') as info_log:
             # Make a request without mobile_flow_otp param and verify the field doesn't persist
             # in the session from the previous request.
             initiate_auth()
 
         self.assertEqual(self.client.session.get('mobile_flow_otp'), None)
         self.assertEqual(info_log.output, [
-            'INFO:root:/complete/apple/: Authentication failed: Token validation failed'
+            self.logger_output("/complete/apple/: Authentication failed: Token validation failed", "info")
         ])
 
     def test_id_token_with_invalid_aud_sent(self) -> None:
@@ -2337,9 +2337,12 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
             id_token=self.generate_id_token(account_data_dict, audience='com.different.app'),
         )
 
-        with self.apple_jwk_url_mock(),  self.assertLogs(level='INFO') as m:
+        with self.apple_jwk_url_mock(),  self.assertLogs(self.logger_string, level='INFO') as m:
             result = self.client_get(url, **headers)
-        self.assertEqual(m.output, ["INFO:root:/complete/apple/: {}".format("Authentication failed: Token validation failed")])
+
+        self.assertEqual(m.output, [
+            self.logger_output("/complete/apple/: Authentication failed: Token validation failed", "info")
+        ])
         return result
 
     def test_social_auth_desktop_success(self) -> None:

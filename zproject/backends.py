@@ -1673,7 +1673,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
             # though AuthFailed would have been more correct.
             #
             # We have an open PR to python-social-auth to clean this up.
-            logging.info("/complete/apple/: %s", str(e))
+            self.logger.info("/complete/apple/: %s", str(e))
             return None
 
 @external_auth_method
