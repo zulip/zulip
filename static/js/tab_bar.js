@@ -90,19 +90,12 @@ function bind_title_area_handlers() {
         }
     });
 
-    const color = $(".search_closed").css("color");
-    const night_mode_color = $(".nightmode .closed_icon").css("color");
-
-    // make sure that hover plays nicely with whether search is being
-    // opened or not.
-    $(".narrow_description > a").hover(() => {
-        if (night_mode_color) {
-            $(".search_closed").css("color", night_mode_color);
-        } else {
-            $(".search_closed").css("color", color);
-        }
+    // handler that makes sure that hover plays nicely
+    // with whether search is being opened or not.
+    $("#tab_bar .narrow_description > a").hover(() => {
+        $("#tab_bar .search_closed").addClass("search_icon_hover_highlight");
     }, () => {
-        $(".search_closed").css("color", "");
+        $("#tab_bar .search_closed").removeClass("search_icon_hover_highlight");
     });
 }
 
