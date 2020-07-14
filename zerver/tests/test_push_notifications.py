@@ -731,7 +731,40 @@ class HandlePushNotificationTest(PushNotificationTest):
                     "GCM: Sent %s as %s", token, message.id,
                 )
 
-            # Now test the unregistered case
+    def test_unregistered_client(self) -> None:
+        self.setup_apns_tokens()
+        self.setup_gcm_tokens()
+
+        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        UserMessage.objects.create(
+            user_profile=self.user_profile,
+            message=message,
+        )
+
+        missed_message = {
+            'message_id': message.id,
+            'trigger': 'private_message',
+        }
+        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
+                mock.patch('zerver.lib.remote_server.requests.request',
+                           side_effect=self.bounce_request), \
+                mock.patch('zerver.lib.push_notifications.gcm_client') as mock_gcm, \
+                self.mock_apns() as mock_apns, \
+                mock.patch('zerver.lib.push_notifications.logger.info') as mock_info, \
+                mock.patch('zerver.lib.push_notifications.logger.warning'):
+            apns_devices = [
+                (b64_to_hex(device.token), device.ios_app_id, device.token)
+                for device in RemotePushDeviceToken.objects.filter(
+                    kind=PushDeviceToken.APNS)
+            ]
+            gcm_devices = [
+                (b64_to_hex(device.token), device.ios_app_id, device.token)
+                for device in RemotePushDeviceToken.objects.filter(
+                    kind=PushDeviceToken.GCM)
+            ]
+            mock_gcm.json_request.return_value = {
+                'success': {gcm_devices[0][2]: message.id}}
+
             mock_apns.get_notification_result.return_value = ('Unregistered', 1234567)
             handle_push_notification(self.user_profile.id, missed_message)
             for _, _, token in apns_devices:
@@ -1070,6 +1103,26 @@ class HandlePushNotificationTest(PushNotificationTest):
                                                {'apns': True})
             mock_send_android.assert_called_with(android_devices, {'gcm': True}, {})
             mock_push_notifications.assert_called_once()
+
+    @mock.patch('zerver.lib.push_notifications.logger.info')
+    @mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True)
+    def test_user_push_notification_already_active(self, mock_push_notifications: mock.MagicMock, mock_info: mock.MagicMock) -> None:
+        user_profile = self.example_user('hamlet')
+        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        UserMessage.objects.create(
+            user_profile=user_profile,
+            flags=UserMessage.flags.active_mobile_push_notification,
+            message=message,
+        )
+
+        missed_message = {
+            'message_id': message.id,
+            'trigger': 'private_message',
+        }
+        handle_push_notification(user_profile.id, missed_message)
+        mock_push_notifications.assert_called_once()
+        # Check we didn't proceed ahead and function returned.
+        mock_info.assert_not_called()
 
 class TestAPNs(PushNotificationTest):
     def devices(self) -> List[DeviceToken]:

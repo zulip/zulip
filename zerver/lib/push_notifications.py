@@ -765,7 +765,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         # TODO: It feels like this is already handled when things are
         # put in the queue; maybe we should centralize this logic with
         # the `zerver/tornado/event_queue.py` logic?
-        if user_message.flags.read:
+        if user_message.flags.read or user_message.flags.active_mobile_push_notification:
             return
 
         # Otherwise, we mark the message as having an active mobile
