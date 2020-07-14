@@ -123,6 +123,17 @@ exports.process_message = function (msg) {
     return true;
 };
 
+exports.delete_topic = function (stream_id, topic) {
+    const key = get_topic_key(stream_id, topic);
+    if (!topics.has(key)) {
+        return;
+    }
+
+    const topic_data = topics.get(key);
+    topic_data.deleted = true;
+    exports.inplace_rerender(key);
+};
+
 exports.reify_message_id_if_available = function (opts) {
     // We don't need to reify the message_id of the topic
     // if a new message arrives in the topic from another user,
@@ -237,6 +248,9 @@ exports.topic_in_search_results = function (keyword, stream, topic) {
 };
 
 exports.filters_should_hide_topic = function (topic_data) {
+    if (topic_data.deleted) {
+        return true;
+    }
     const msg = message_store.get(topic_data.last_msg_id);
 
     if (stream_data.get_sub_by_id(msg.stream_id) === undefined) {

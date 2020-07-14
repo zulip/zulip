@@ -1,4 +1,5 @@
 zrequire('message_util');
+zrequire('stream_topic_history');
 
 const noop = () => {};
 set_global('$', global.make_zjquery({
@@ -696,6 +697,26 @@ run_test('test_topic_edit', () => {
     rt.process_topic_edit(stream3, topic9, topic8, stream5);
     all_topics = rt.get();
     assert.equal(rt.filters_should_hide_topic(all_topics.get('5:topic-8')), true);
+
+    // Finally, test that deleting a topic will also lead to it getting removed
+    // from recent topics.
+    let key = get_topic_key(messages[6].stream_id, messages[6].topic);
+    assert.equal(rt.filters_should_hide_topic(all_topics.get(key)), false);
+    // We need to set up some appropriate initial state in stream_topic_history to be able
+    // to use its remove_messages().
+    stream_topic_history.add_message({
+        stream_id: messages[6].stream_id,
+        topic_name: messages[6].topic,
+        message_id: messages[6].id,
+    });
+    stream_topic_history.remove_messages({
+        stream_id: messages[6].stream_id,
+        topic_name: messages[6].topic,
+        num_messages: 1,
+    });
+    all_topics = rt.get();
+    key = get_topic_key(messages[6].stream_id, messages[6].topic);
+    assert.equal(rt.filters_should_hide_topic(all_topics.get(key)), true);
 });
 
 run_test('test_search', () => {

@@ -132,6 +132,7 @@ exports.per_stream_history = function (stream_id) {
 
         if (existing.count <= num_messages) {
             topics.delete(topic_name);
+            recent_topics.delete_topic(stream_id, topic_name);
             return;
         }
 

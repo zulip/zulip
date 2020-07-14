@@ -2,6 +2,7 @@
 zrequire('unread');
 zrequire('stream_data');
 zrequire('stream_topic_history');
+zrequire('recent_topics');
 
 set_global('channel', {});
 set_global('message_list', {});
