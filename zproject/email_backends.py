@@ -67,6 +67,7 @@ class EmailLogBackEnd(BaseEmailBackend):
         context = {
             'subject': email.subject,
             'from_email': email.from_email,
+            'reply_to': email.reply_to,
             'recipients': email.to,
             'body': email.body,
             'html_message': html_message,
