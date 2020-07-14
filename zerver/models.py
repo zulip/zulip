@@ -1199,7 +1199,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     @property
     def has_billing_access(self) -> bool:
-        return self.is_realm_admin or self.is_billing_admin
+        return self.is_realm_owner or self.is_billing_admin
 
     @property
     def is_realm_owner(self) -> bool:
