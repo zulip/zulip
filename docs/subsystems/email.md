@@ -51,7 +51,7 @@ All the emails sent in the development environment can be accessed by
 visiting `/emails` in the browser.  The way that this works is that
 we've set the email backend (aka what happens when you call the email
 `.send()` method in Django) in the development environment to be our
-our custom backend, `EmailLogBackEnd`.  It does the following:
+custom backend, `EmailLogBackEnd`.  It does the following:
 
 * Logs any sent emails to `var/log/email_content.log`. This log is
   displayed by the `/emails` endpoint
