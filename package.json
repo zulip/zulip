@@ -92,6 +92,7 @@
     "casperjs": "casperjs/casperjs",
     "difflib": "^0.2.4",
     "eslint": "^7.2.0",
+    "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-empty-returns": "^1.0.2",
     "jsdom": "^16.1.0",
     "nyc": "^15.0.0",
