@@ -9,7 +9,7 @@ const return_true = () => true;
 const return_false = () => false;
 
 set_global('$', global.make_zjquery());
-set_global('narrow_state', {filter: return_false});
+set_global('narrow_state', {});
 set_global('search_suggestion', {});
 set_global('ui_util', {
     change_tab_to: noop,
