@@ -16,8 +16,7 @@ const bot_fields = [
 ];
 
 const services = new Map();
-const services_fields = ["base_url", "interface",
-                         "config_data", "service_name", "token"];
+const services_fields = ["base_url", "interface", "config_data", "service_name", "token"];
 
 const send_change_event = _.debounce(() => {
     settings_bots.render_bots();

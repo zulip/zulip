@@ -63,8 +63,7 @@ exports.rerender = function () {
     const night_file_input = $("#realm-night-logo-upload-widget .realm-logo-file-input");
     $("#realm-day-logo-upload-widget .image-block").attr("src", page_params.realm_logo_url);
 
-    if (page_params.realm_night_logo_source === "D" &&
-            page_params.realm_logo_source !== "D") {
+    if (page_params.realm_night_logo_source === "D" && page_params.realm_logo_source !== "D") {
         // If no night mode logo is uploaded but a day mode one
         // is, use the day mode one; this handles the common case
         // of transparent background logos that look good on both
@@ -72,25 +71,35 @@ exports.rerender = function () {
 
         $("#realm-night-logo-upload-widget .image-block").attr("src", page_params.realm_logo_url);
     } else {
-        $("#realm-night-logo-upload-widget .image-block").attr("src", page_params.realm_night_logo_url);
+        $("#realm-night-logo-upload-widget .image-block").attr(
+            "src",
+            page_params.realm_night_logo_url,
+        );
     }
 
-    if (page_params.color_scheme === settings_config.color_scheme_values.night.code &&
-        page_params.realm_night_logo_source !== "D" ||
-        page_params.color_scheme === settings_config.color_scheme_values.automatic.code &&
-        page_params.realm_night_logo_source !== "D" &&
-        (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+    if (
+        (page_params.color_scheme === settings_config.color_scheme_values.night.code &&
+            page_params.realm_night_logo_source !== "D") ||
+        (page_params.color_scheme === settings_config.color_scheme_values.automatic.code &&
+            page_params.realm_night_logo_source !== "D" &&
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches)
+    ) {
         $("#realm-logo").attr("src", page_params.realm_night_logo_url);
     } else {
         $("#realm-logo").attr("src", page_params.realm_logo_url);
     }
 
-    change_logo_delete_button(page_params.realm_logo_source,
-                              $("#realm-day-logo-upload-widget .settings-page-delete-button"),
-                              file_input);
-    change_logo_delete_button(page_params.realm_night_logo_source,
-                              $("#realm-night-logo-upload-widget .settings-page-delete-button"),
-                              night_file_input);
+    change_logo_delete_button(
+        page_params.realm_logo_source,
+        $("#realm-day-logo-upload-widget .settings-page-delete-button"),
+        file_input,
+    );
+    change_logo_delete_button(
+        page_params.realm_night_logo_source,
+        $("#realm-night-logo-upload-widget .settings-page-delete-button"),
+        night_file_input,
+    );
 };
 
 window.realm_logo = exports;

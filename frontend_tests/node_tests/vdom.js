@@ -15,8 +15,7 @@ run_test("basics", () => {
 
     assert.equal(
         html,
-        '<ul class="foo" title="cats &amp; &lt;&quot;dogs&quot;&gt;">\n\n' +
-        "</ul>",
+        '<ul class="foo" title="cats &amp; &lt;&quot;dogs&quot;&gt;">\n\n' + "</ul>",
     );
 });
 
@@ -40,7 +39,7 @@ run_test("attribute escaping", () => {
     assert.equal(
         html,
         '<ul class="&quot;&gt;something evil&lt;div class=&quot;" ' +
-        'title="apples &amp; oranges">\n\n</ul>',
+            'title="apples &amp; oranges">\n\n</ul>',
     );
 });
 
@@ -58,11 +57,7 @@ run_test("attribute updates", () => {
 
     const html = vdom.render_tag(ul);
 
-    assert.equal(
-        html,
-        '<ul class="same" color="blue" id="101">\n\n' +
-        "</ul>",
-    );
+    assert.equal(html, '<ul class="same" color="blue" id="101">\n\n' + "</ul>");
 
     let updated;
     let removed;
@@ -140,20 +135,14 @@ run_test("children", () => {
 
     assert.equal(
         rendered_html,
-        "<ul>\n" +
-        "<li>foo1</li>\n" +
-        "<li>foo2</li>\n" +
-        "<li>foo3</li>\n" +
-        "</ul>",
+        "<ul>\n" + "<li>foo1</li>\n" + "<li>foo2</li>\n" + "<li>foo3</li>\n" + "</ul>",
     );
 
     // Force a complete redraw.
     const new_nodes = make_children([4, 5]);
     const new_opts = {
         keyed_nodes: new_nodes,
-        attrs: [
-            ["class", "main"],
-        ],
+        attrs: [["class", "main"]],
     };
 
     const new_ul = vdom.ul(new_opts);
@@ -161,10 +150,7 @@ run_test("children", () => {
 
     assert.equal(
         rendered_html,
-        '<ul class="main">\n' +
-        "<li>foo4</li>\n" +
-        "<li>foo5</li>\n" +
-        "</ul>",
+        '<ul class="main">\n' + "<li>foo4</li>\n" + "<li>foo5</li>\n" + "</ul>",
     );
 });
 
@@ -190,11 +176,7 @@ run_test("partial updates", () => {
 
     assert.equal(
         rendered_html,
-        "<ul>\n" +
-        "<li>foo1</li>\n" +
-        "<li>foo2</li>\n" +
-        "<li>foo3</li>\n" +
-        "</ul>",
+        "<ul>\n" + "<li>foo1</li>\n" + "<li>foo2</li>\n" + "<li>foo3</li>\n" + "</ul>",
     );
 
     replace_content = () => {
@@ -235,18 +217,12 @@ run_test("eq_array easy cases", () => {
         throw Error("we should not be comparing elements");
     };
 
-    assert.equal(
-        vdom.eq_array(undefined, undefined, bogus_eq),
-        true);
+    assert.equal(vdom.eq_array(undefined, undefined, bogus_eq), true);
 
     const x = [1, 2, 3];
-    assert.equal(
-        vdom.eq_array(x, undefined, bogus_eq),
-        false);
+    assert.equal(vdom.eq_array(x, undefined, bogus_eq), false);
 
-    assert.equal(
-        vdom.eq_array(undefined, x, bogus_eq),
-        false);
+    assert.equal(vdom.eq_array(undefined, x, bogus_eq), false);
 
     assert.equal(vdom.eq_array(x, x, bogus_eq), true);
 
@@ -268,9 +244,7 @@ run_test("eq_array elementwise", () => {
 });
 
 run_test("error checking", () => {
-    blueslip.expect(
-        "error",
-        "We need keyed_nodes for updates.");
+    blueslip.expect("error", "We need keyed_nodes for updates.");
 
     const replace_content = "whatever";
     const find = "whatever";
@@ -278,9 +252,6 @@ run_test("error checking", () => {
 
     vdom.update(replace_content, find, ul, ul);
 
-    blueslip.expect(
-        "error",
-        "We need keyed_nodes to render innards.");
+    blueslip.expect("error", "We need keyed_nodes to render innards.");
     vdom.render_tag(ul);
-
 });

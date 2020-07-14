@@ -56,7 +56,10 @@ exports.fixtures = {
 
     muted_topics: {
         type: "muted_topics",
-        muted_topics: [["devel", "js"], ["lunch", "burritos"]],
+        muted_topics: [
+            ["devel", "js"],
+            ["lunch", "burritos"],
+        ],
     },
 
     presence: {
@@ -277,9 +280,7 @@ exports.fixtures = {
 
     realm_filters: {
         type: "realm_filters",
-        realm_filters: [
-            ["#[123]", "ticket %(id)s"],
-        ],
+        realm_filters: [["#[123]", "ticket %(id)s"]],
     },
 
     realm_domains__add: {
@@ -352,19 +353,13 @@ exports.fixtures = {
     stream__create: {
         type: "stream",
         op: "create",
-        streams: [
-            {stream_id: 42},
-            {stream_id: 99},
-        ],
+        streams: [{stream_id: 42}, {stream_id: 99}],
     },
 
     stream__delete: {
         type: "stream",
         op: "delete",
-        streams: [
-            {stream_id: 42},
-            {stream_id: 99},
-        ],
+        streams: [{stream_id: 42}, {stream_id: 99}],
     },
 
     submessage: {

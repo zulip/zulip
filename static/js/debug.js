@@ -42,8 +42,17 @@ export function check_duplicate_ids() {
                 collisions.push({
                     id: o.id,
                     count: 1,
-                    node: "<" + tag + " className='" + o.className + "' id='" + o.id + "'>" +
-                          "</" + tag + ">",
+                    node:
+                        "<" +
+                        tag +
+                        " className='" +
+                        o.className +
+                        "' id='" +
+                        o.id +
+                        "'>" +
+                        "</" +
+                        tag +
+                        ">",
                 });
             } else {
                 el.count += 1;

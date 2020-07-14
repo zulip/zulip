@@ -14,9 +14,7 @@ function toggle_test_star_message() {
             return "cannot find test star message";
         }
 
-        var star_icon = msg
-            .closest(".messagebox")
-            .find(".star");
+        var star_icon = msg.closest(".messagebox").find(".star");
 
         if (star_icon.length !== 1) {
             return "cannot find star icon";
@@ -52,8 +50,7 @@ casper.then(function () {
     casper.test.info("Checking star counts");
 
     // Initially, no messages are starred.
-    casper.test.assertEquals(star_count(), 0,
-                             "Got expected empty star count.");
+    casper.test.assertEquals(star_count(), 0, "Got expected empty star count.");
 
     // Clicking on a message star stars it.
     toggle_test_star_message();
@@ -61,8 +58,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible("#zhome .fa-star", function () {
-        casper.test.assertEquals(star_count(), 1,
-                                 "Got expected single star count.");
+        casper.test.assertEquals(star_count(), 1, "Got expected single star count.");
 
         casper.click('a[href^="#narrow/is/starred"]');
     });
@@ -77,8 +73,7 @@ casper.waitUntilVisible("#zfilt", function () {
 casper.then(function () {
     // Clicking on a starred message unstars it.
     toggle_test_star_message();
-    casper.test.assertEquals(star_count(), 0,
-                             "Got expected re-empty star count.");
+    casper.test.assertEquals(star_count(), 0, "Got expected re-empty star count.");
 });
 
 common.then_log_out();

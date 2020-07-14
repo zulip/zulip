@@ -2,7 +2,8 @@ exports.initialize = function () {
     helpers.set_tab("billing");
 
     const stripe_key = $("#payment-method").data("key");
-    const card_change_handler = StripeCheckout.configure({ // eslint-disable-line no-undef
+    const card_change_handler = StripeCheckout.configure({
+        // eslint-disable-line no-undef
         key: stripe_key,
         image: "/static/images/logo/zulip-icon-128x128.png",
         locale: "auto",
@@ -26,7 +27,9 @@ exports.initialize = function () {
     });
 
     $("#change-plan-status").on("click", (e) => {
-        helpers.create_ajax_request("/json/billing/plan/change", "planchange", undefined, ["status"]);
+        helpers.create_ajax_request("/json/billing/plan/change", "planchange", undefined, [
+            "status",
+        ]);
         e.preventDefault();
     });
 };

@@ -41,7 +41,7 @@ function getExposeLoaders(optionsArr: ExportLoaderOptions[]): RuleSetRule[] {
                 for (const exposeName of loaderEntry.name) {
                     useArr.push({loader: "expose-loader", options: exposeName});
                 }
-            // If name is a string
+                // If name is a string
             } else {
                 useArr.push({loader: "expose-loader", options: loaderEntry.name});
             }
@@ -53,6 +53,4 @@ function getExposeLoaders(optionsArr: ExportLoaderOptions[]): RuleSetRule[] {
     }
     return exposeLoaders;
 }
-export {
-    getExposeLoaders,
-};
+export {getExposeLoaders};

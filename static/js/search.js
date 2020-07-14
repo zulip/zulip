@@ -17,7 +17,8 @@ exports.narrow_or_search_for_term = function (search_string) {
         // function, so that the base_query includes the suggestion selected
         // along with query corresponding to the existing pills.
         const base_query = search_pill.get_search_string_for_current_filter(
-            search_pill_widget.widget);
+            search_pill_widget.widget,
+        );
         operators = Filter.parse(base_query);
     } else {
         operators = Filter.parse(search_string);
@@ -41,9 +42,7 @@ function update_buttons_with_focus(focused) {
 
     // Show buttons iff the search input is focused, or has non-empty contents,
     // or we are narrowed.
-    if (focused
-        || search_query_box.val()
-        || narrow_state.active()) {
+    if (focused || search_query_box.val() || narrow_state.active()) {
         $(".search_button").prop("disabled", false);
     }
 }
@@ -69,7 +68,8 @@ exports.initialize = function () {
             let base_query = "";
             if (page_params.search_pills_enabled) {
                 base_query = search_pill.get_search_string_for_current_filter(
-                    search_pill_widget.widget);
+                    search_pill_widget.widget,
+                );
             }
             const suggestions = search_suggestion.get_suggestions(base_query, query);
             // Update our global search_map hash
@@ -89,8 +89,7 @@ exports.initialize = function () {
         },
         updater: function (search_string) {
             if (page_params.search_pills_enabled) {
-                search_pill.append_search_string(search_string,
-                                                 search_pill_widget.widget);
+                search_pill.append_search_string(search_string, search_pill_widget.widget);
                 return search_query_box.val();
             }
             return exports.narrow_or_search_for_term(search_string);
@@ -121,35 +120,37 @@ exports.initialize = function () {
         exports.is_using_input_method = true;
     });
 
-    searchbox_form.keydown((e) => {
-        exports.update_button_visibility();
-        const code = e.which;
-        if (code === 13 && search_query_box.is(":focus")) {
-            // Don't submit the form so that the typeahead can instead
-            // handle our Enter keypress. Any searching that needs
-            // to be done will be handled in the keyup.
-            return false;
-        }
-    }).keyup((e) => {
-        if (exports.is_using_input_method) {
-            exports.is_using_input_method = false;
-            return;
-        }
-        const code = e.which;
-        if (code === 13 && search_query_box.is(":focus")) {
-            // We just pressed enter and the box had focus, which
-            // means we didn't use the typeahead at all.  In that
-            // case, we should act as though we're searching by
-            // operators.  (The reason the other actions don't call
-            // this codepath is that they first all blur the box to
-            // indicate that they've done what they need to do)
+    searchbox_form
+        .keydown((e) => {
+            exports.update_button_visibility();
+            const code = e.which;
+            if (code === 13 && search_query_box.is(":focus")) {
+                // Don't submit the form so that the typeahead can instead
+                // handle our Enter keypress. Any searching that needs
+                // to be done will be handled in the keyup.
+                return false;
+            }
+        })
+        .keyup((e) => {
+            if (exports.is_using_input_method) {
+                exports.is_using_input_method = false;
+                return;
+            }
+            const code = e.which;
+            if (code === 13 && search_query_box.is(":focus")) {
+                // We just pressed enter and the box had focus, which
+                // means we didn't use the typeahead at all.  In that
+                // case, we should act as though we're searching by
+                // operators.  (The reason the other actions don't call
+                // this codepath is that they first all blur the box to
+                // indicate that they've done what they need to do)
 
-            // Pill is already added during keydown event of input pills.
-            exports.narrow_or_search_for_term(search_query_box.val());
-            search_query_box.blur();
-            update_buttons_with_focus(false);
-        }
-    });
+                // Pill is already added during keydown event of input pills.
+                exports.narrow_or_search_for_term(search_query_box.val());
+                search_query_box.blur();
+                update_buttons_with_focus(false);
+            }
+        });
 
     // Some of these functions don't actually need to be exported,
     // but the code was moved here from elsewhere, and it would be

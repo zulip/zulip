@@ -28,7 +28,10 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible("#settings_content .account-settings-form", function () {
-        casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#settings/, "URL suggests we are on settings page");
+        casper.test.assertUrlMatch(
+            /^http:\/\/[^/]+\/#settings/,
+            "URL suggests we are on settings page"
+        );
         casper.test.assertVisible(".account-settings-form", "Settings page is active");
 
         casper.test.assertNotVisible("#pw_change_controls");
@@ -75,7 +78,11 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible("#show_api_key", function () {
-        casper.test.assertMatch(casper.fetchText("#api_key_value"), /[a-zA-Z0-9]{32}/, "Looks like an API key");
+        casper.test.assertMatch(
+            casper.fetchText("#api_key_value"),
+            /[a-zA-Z0-9]{32}/,
+            "Looks like an API key"
+        );
 
         /*
         // Change it all back so the next test can still log in
@@ -101,7 +108,8 @@ casper.then(function () {
         casper.test.assertMatch(
             decodeURIComponent(casper.getElementsAttribute("#download_zuliprc", "href")),
             regex_zuliprc,
-            "Looks like a zuliprc file");
+            "Looks like a zuliprc file"
+        );
     });
 });
 
@@ -141,7 +149,8 @@ casper.then(function () {
         casper.test.assertMatch(
             decodeURIComponent(casper.getElementsAttribute(button_sel, "href")),
             regex_outgoing_webhook_zuliprc,
-            "Looks like an outgoing webhook bot ~/.zuliprc file");
+            "Looks like an outgoing webhook bot ~/.zuliprc file"
+        );
     });
 });
 
@@ -172,7 +181,8 @@ casper.then(function () {
         casper.test.assertMatch(
             decodeURIComponent(casper.getElementsAttribute(second_button_sel, "href")),
             regex_zuliprc,
-            "Looks like a bot ~/.zuliprc file");
+            "Looks like a bot ~/.zuliprc file"
+        );
     });
 });
 
@@ -184,36 +194,44 @@ casper.then(function () {
             casper.test.assertMatch(
                 decodeURIComponent(casper.getElementsAttribute("#download_botserverrc", "href")),
                 regex_botserverrc,
-                "Looks like a botserverrc file");
+                "Looks like a botserverrc file"
+            );
         });
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.open_edit_bot_form[data-email="' + bot_email + '"]', function open_edit_bot_form() {
-        casper.test.info("Opening edit bot form");
-        casper.click('.open_edit_bot_form[data-email="' + bot_email + '"]');
-    });
+    casper.waitUntilVisible(
+        '.open_edit_bot_form[data-email="' + bot_email + '"]',
+        function open_edit_bot_form() {
+            casper.test.info("Opening edit bot form");
+            casper.click('.open_edit_bot_form[data-email="' + bot_email + '"]');
+        }
+    );
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.edit_bot_form[data-email="' + bot_email + '"]', function test_edit_bot_form_values() {
-        var form_sel = '.edit_bot_form[data-email="' + bot_email + '"]';
-        casper.test.info("Testing edit bot form values");
+    casper.waitUntilVisible(
+        '.edit_bot_form[data-email="' + bot_email + '"]',
+        function test_edit_bot_form_values() {
+            var form_sel = '.edit_bot_form[data-email="' + bot_email + '"]';
+            casper.test.info("Testing edit bot form values");
 
-        // casper.test.assertEqual(
-        //     common.get_form_field_value(form_sel + ' [name=bot_name]'),
-        //     'Bot 1');
-        // casper.test.assertEqual(
-        //     common.get_form_field_value(form_sel + ' [name=bot_default_sending_stream]'),
-        //     'Denmark');
-        // casper.test.assertEqual(
-        //     common.get_form_field_value(form_sel + ' [name=bot_default_events_register_stream]'),
-        //     'Rome');
-        casper.test.assertEqual(
-            common.get_form_field_value(form_sel + " [name=bot_name]"),
-            "Bot 1");
-    });
+            // casper.test.assertEqual(
+            //     common.get_form_field_value(form_sel + ' [name=bot_name]'),
+            //     'Bot 1');
+            // casper.test.assertEqual(
+            //     common.get_form_field_value(form_sel + ' [name=bot_default_sending_stream]'),
+            //     'Denmark');
+            // casper.test.assertEqual(
+            //     common.get_form_field_value(form_sel + ' [name=bot_default_events_register_stream]'),
+            //     'Rome');
+            casper.test.assertEqual(
+                common.get_form_field_value(form_sel + " [name=bot_name]"),
+                "Bot 1"
+            );
+        }
+    );
 });
 
 casper.then(function () {
@@ -223,7 +241,10 @@ casper.then(function () {
         casper.click("#create_alert_word_button");
         casper.waitUntilVisible("#alert_word_status", function () {
             casper.test.info("Checking that an error is displayed");
-            casper.test.assertSelectorHasText(".alert_word_status_text", "Alert word can't be empty!");
+            casper.test.assertSelectorHasText(
+                ".alert_word_status_text",
+                "Alert word can't be empty!"
+            );
             casper.test.info("Closing the error message");
             casper.click(".close-alert-word-status");
             casper.test.info("Checking the error is hidden");
@@ -238,7 +259,10 @@ casper.then(function () {
     casper.click("#create_alert_word_button");
     casper.test.info("Checking that a success message is displayed");
     casper.waitUntilVisible("#alert_word_status", function () {
-        casper.test.assertSelectorHasText(".alert_word_status_text", 'Alert word "some phrase" added successfully!');
+        casper.test.assertSelectorHasText(
+            ".alert_word_status_text",
+            'Alert word "some phrase" added successfully!'
+        );
         casper.test.info("Closing the status message");
         casper.click(".close-alert-word-status");
         casper.test.info("Checking the status message is hidden");
@@ -273,7 +297,10 @@ casper.then(function () {
     casper.click("button.remove-alert-word");
     casper.test.info("Checking that a success message is displayed");
     casper.waitUntilVisible("#alert_word_status", function () {
-        casper.test.assertSelectorHasText(".alert_word_status_text", "Alert word removed successfully!");
+        casper.test.assertSelectorHasText(
+            ".alert_word_status_text",
+            "Alert word removed successfully!"
+        );
         casper.test.info("Closing the status message");
         casper.click(".close-alert-word-status");
         casper.test.info("Checking the status message is hidden");
@@ -299,7 +326,10 @@ casper.waitUntilVisible("#default_language_modal");
 casper.thenClick('a[data-code="zh-hans"]');
 
 casper.waitUntilVisible("#language-settings-status a", function () {
-    casper.test.assertSelectorHasText("#language-settings-status", "Saved. Please reload for the change to take effect.");
+    casper.test.assertSelectorHasText(
+        "#language-settings-status",
+        "Saved. Please reload for the change to take effect."
+    );
     casper.test.info("Reloading the page.");
     casper.reload();
 });
@@ -337,7 +367,10 @@ casper.thenClick('a[data-code="en"]');
  * Changing the language back to English so that subsequent tests pass.
  */
 casper.waitUntilVisible("#language-settings-status a", function () {
-    casper.test.assertSelectorHasText("#language-settings-status", "Gespeichert. Bitte lade die Seite neu um die Änderungen zu aktivieren.");
+    casper.test.assertSelectorHasText(
+        "#language-settings-status",
+        "Gespeichert. Bitte lade die Seite neu um die Änderungen zu aktivieren."
+    );
 });
 
 casper.then(function () {
@@ -350,16 +383,28 @@ casper.then(function () {
 casper.then(function () {
     // At the beginning, `#enable_sounds` will be on and `#enable_stream_audible_notifications`
     // will be off by default.
-    casper.test.assertVisible("#notification_sound:enabled", "Notification sound selector is enabled");
+    casper.test.assertVisible(
+        "#notification_sound:enabled",
+        "Notification sound selector is enabled"
+    );
 
     casper.click("#enable_stream_audible_notifications");
-    casper.test.assertVisible("#notification_sound:enabled", "Notification sound selector is enabled");
+    casper.test.assertVisible(
+        "#notification_sound:enabled",
+        "Notification sound selector is enabled"
+    );
 
     casper.click("#enable_sounds");
-    casper.test.assertVisible("#notification_sound:enabled", "Notification sound selector is enabled");
+    casper.test.assertVisible(
+        "#notification_sound:enabled",
+        "Notification sound selector is enabled"
+    );
 
     casper.click("#enable_stream_audible_notifications");
-    casper.test.assertVisible("#notification_sound:disabled", "Notification sound selector is disabled");
+    casper.test.assertVisible(
+        "#notification_sound:disabled",
+        "Notification sound selector is disabled"
+    );
 });
 
 casper.thenOpen("http://zulip.zulipdev.com:9981/");

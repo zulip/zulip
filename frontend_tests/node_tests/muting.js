@@ -1,4 +1,3 @@
-
 zrequire("timerender");
 zrequire("muting");
 zrequire("stream_data");
@@ -79,7 +78,8 @@ run_test("get_and_set_muted_topics", () => {
             stream: office.name,
             stream_id: office.stream_id,
             topic: "gossip",
-        }]);
+        },
+    ]);
 
     blueslip.expect("warn", "Unknown stream in set_muted_topics: BOGUS STREAM");
 
@@ -89,7 +89,6 @@ run_test("get_and_set_muted_topics", () => {
         ["BOGUS STREAM", "whatever", 1577836800],
     ];
     muting.initialize();
-
 
     assert.deepEqual(muting.get_muted_topics().sort(), [
         {
@@ -105,15 +104,14 @@ run_test("get_and_set_muted_topics", () => {
             stream: design.name,
             stream_id: design.stream_id,
             topic: "typography",
-        }]);
+        },
+    ]);
 });
 
 run_test("case_insensitivity", () => {
     muting.set_muted_topics([]);
     assert(!muting.is_topic_muted(social.stream_id, "breakfast"));
-    muting.set_muted_topics([
-        ["SOCial", "breakfast"],
-    ]);
+    muting.set_muted_topics([["SOCial", "breakfast"]]);
     assert(muting.is_topic_muted(social.stream_id, "breakfast"));
     assert(muting.is_topic_muted(social.stream_id, "breakFAST"));
 });

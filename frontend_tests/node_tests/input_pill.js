@@ -201,10 +201,7 @@ run_test("paste to input", () => {
 
     paste_handler(e);
 
-    assert.deepEqual(widget.items(), [
-        items.blue,
-        items.yellow,
-    ]);
+    assert.deepEqual(widget.items(), [items.blue, items.yellow]);
 
     let entered = false;
     widget.createPillonPaste(() => {
@@ -300,10 +297,7 @@ run_test("comma", () => {
     const widget = input_pill.create(config);
     widget.appendValue("blue,red");
 
-    assert.deepEqual(widget.items(), [
-        items.blue,
-        items.red,
-    ]);
+    assert.deepEqual(widget.items(), [items.blue, items.red]);
 
     const COMMA = 188;
     const key_handler = container.get_on_handler("keydown", ".input");
@@ -315,10 +309,7 @@ run_test("comma", () => {
         preventDefault: noop,
     });
 
-    assert.deepEqual(widget.items(), [
-        items.blue,
-        items.red,
-    ]);
+    assert.deepEqual(widget.items(), [items.blue, items.red]);
 
     pill_input.text = () => " yellow";
 
@@ -327,11 +318,7 @@ run_test("comma", () => {
         preventDefault: noop,
     });
 
-    assert.deepEqual(widget.items(), [
-        items.blue,
-        items.red,
-        items.yellow,
-    ]);
+    assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 });
 
 run_test("enter key with text", () => {
@@ -343,10 +330,7 @@ run_test("enter key with text", () => {
     const widget = input_pill.create(config);
     widget.appendValue("blue,red");
 
-    assert.deepEqual(widget.items(), [
-        items.blue,
-        items.red,
-    ]);
+    assert.deepEqual(widget.items(), [items.blue, items.red]);
 
     const ENTER = 13;
     const key_handler = container.get_on_handler("keydown", ".input");
@@ -360,11 +344,7 @@ run_test("enter key with text", () => {
         },
     });
 
-    assert.deepEqual(widget.items(), [
-        items.blue,
-        items.red,
-        items.yellow,
-    ]);
+    assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 });
 
 run_test("insert_remove", () => {
@@ -404,11 +384,7 @@ run_test("insert_remove", () => {
         pill_html("YELLOW", "some_id3"),
     ]);
 
-    assert.deepEqual(widget.items(), [
-        items.blue,
-        items.red,
-        items.yellow,
-    ]);
+    assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 
     assert.equal(pill_input.text(), "chartreuse, mauve");
 
@@ -430,10 +406,7 @@ run_test("insert_remove", () => {
 
     assert(removed);
 
-    assert.deepEqual(widget.items(), [
-        items.blue,
-        items.red,
-    ]);
+    assert.deepEqual(widget.items(), [items.blue, items.red]);
 
     let next_pill_focused = false;
 
@@ -507,10 +480,7 @@ run_test("exit button on pill", () => {
 
     assert(next_pill_focused);
 
-    assert.deepEqual(widget.items(), [
-        items.red,
-    ]);
-
+    assert.deepEqual(widget.items(), [items.red]);
 });
 
 run_test("misc things", () => {

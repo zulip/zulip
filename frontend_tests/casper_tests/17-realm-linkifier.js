@@ -25,7 +25,10 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible(".filter_row", function () {
         casper.test.assertSelectorHasText(".filter_row span.filter_pattern", "#(?P<id>[0-9]+)");
-        casper.test.assertSelectorHasText(".filter_row span.filter_url_format_string", "https://trac.example.com/ticket/%(id)s");
+        casper.test.assertSelectorHasText(
+            ".filter_row span.filter_url_format_string",
+            "https://trac.example.com/ticket/%(id)s"
+        );
         casper.click(".filter_row button");
     });
 });
@@ -48,7 +51,10 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible("div#admin-filter-pattern-status", function () {
-        casper.test.assertSelectorHasText("div#admin-filter-pattern-status", "Failed: Invalid filter pattern");
+        casper.test.assertSelectorHasText(
+            "div#admin-filter-pattern-status",
+            "Failed: Invalid filter pattern"
+        );
     });
 });
 

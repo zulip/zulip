@@ -12,10 +12,12 @@ const util = require("./util");
 // Furthermore, waiting for DOM ready would introduce race conditions with
 // other DOM-ready callbacks that attempt to render templates.
 
-Handlebars.registerHelper("plural", (condition, one, other) => condition === 1 ? one : other);
+Handlebars.registerHelper("plural", (condition, one, other) => (condition === 1 ? one : other));
 
 Handlebars.registerHelper({
-    eq: function (a, b) { return a === b; },
+    eq: function (a, b) {
+        return a === b;
+    },
     and: function (...args) {
         args.pop(); // Handlebars options
         if (args.length === 0) {
@@ -42,7 +44,9 @@ Handlebars.registerHelper({
         }
         return last;
     },
-    not: function (a) { return !a || Handlebars.Utils.isEmpty(a); },
+    not: function (a) {
+        return !a || Handlebars.Utils.isEmpty(a);
+    },
 });
 
 // Note that this i18n caching strategy does not allow us to support
@@ -83,7 +87,15 @@ Handlebars.registerHelper("tr", (context, options) => {
     //     1. `context` is very important. It can be `this` or an
     //        object or key of the current context.
     //     2. Use `__` instead of `{{` and `}}` to declare expressions
-    const result = i18n.t(options.fn(context).trim().split("\n").map((s) => s.trim()).join(" "), context);
+    const result = i18n.t(
+        options
+            .fn(context)
+            .trim()
+            .split("\n")
+            .map((s) => s.trim())
+            .join(" "),
+        context,
+    );
     return new Handlebars.SafeString(result);
 });
 

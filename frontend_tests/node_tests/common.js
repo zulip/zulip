@@ -89,7 +89,9 @@ run_test("adjust_mac_shortcuts", () => {
     let key_no;
     let keys_elem_list = [];
 
-    common.has_mac_keyboard = function () { return false; };
+    common.has_mac_keyboard = function () {
+        return false;
+    };
     key_no = 1;
     keys_to_test_non_mac.forEach((value, key) => {
         keys_elem_list.push(get_key_stub_html(key, value, "hotkey_non_mac_" + key_no));
@@ -103,7 +105,9 @@ run_test("adjust_mac_shortcuts", () => {
 
     keys_elem_list = [];
     key_no = 1;
-    common.has_mac_keyboard = function () { return true; };
+    common.has_mac_keyboard = function () {
+        return true;
+    };
     keys_to_test_mac.forEach((value, key) => {
         keys_elem_list.push(get_key_stub_html(key, value, "hotkey_" + key_no));
         key_no += 1;
@@ -119,7 +123,11 @@ run_test("adjust_mac_shortcuts", () => {
         assert.equal(key_elem.text(), key_elem.expected_key());
     });
 
-    const markdown_hotkey_1 = get_key_stub_html("Ctrl + Backspace", "⌘ + Delete", "markdown_hotkey_1");
+    const markdown_hotkey_1 = get_key_stub_html(
+        "Ctrl + Backspace",
+        "⌘ + Delete",
+        "markdown_hotkey_1",
+    );
     $(".markdown_content").each = (f) => {
         f.call(markdown_hotkey_1);
     };

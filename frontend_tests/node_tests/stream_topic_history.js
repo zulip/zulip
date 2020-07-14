@@ -1,4 +1,3 @@
-
 zrequire("unread");
 zrequire("stream_data");
 zrequire("stream_topic_history");
@@ -95,26 +94,20 @@ run_test("is_complete_for_stream_id", () => {
         first: () => ({id: 5}),
     };
 
-    assert.equal(
-        stream_topic_history.is_complete_for_stream_id(sub.stream_id),
-        true);
+    assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), true);
 
     // Now simulate a more recent message id.
     message_list.all.first = () => ({id: sub.first_message_id + 1});
 
     // Note that we'll return `true` here due to
     // fetched_stream_ids having the stream_id now.
-    assert.equal(
-        stream_topic_history.is_complete_for_stream_id(sub.stream_id),
-        true);
+    assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), true);
 
     // But now clear the data to see what we'd have without
     // the previous call.
     stream_topic_history.reset();
 
-    assert.equal(
-        stream_topic_history.is_complete_for_stream_id(sub.stream_id),
-        false);
+    assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), false);
 });
 
 run_test("server_history", () => {
@@ -127,9 +120,7 @@ run_test("server_history", () => {
 
     message_list.all.data.fetch_status.has_found_newest = () => false;
 
-    assert.equal(
-        stream_topic_history.is_complete_for_stream_id(stream_id),
-        false);
+    assert.equal(stream_topic_history.is_complete_for_stream_id(stream_id), false);
 
     stream_topic_history.add_message({
         stream_id: stream_id,
@@ -149,9 +140,7 @@ run_test("server_history", () => {
 
     // Since we added history, now subsequent calls
     // to is_complete_for_stream_id will return true.
-    assert.equal(
-        stream_topic_history.is_complete_for_stream_id(stream_id),
-        true);
+    assert.equal(stream_topic_history.is_complete_for_stream_id(stream_id), true);
 
     let history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["local", "hist2", "hist1"]);
@@ -302,5 +291,4 @@ run_test("server_history_end_to_end", () => {
         on_success_called = true;
     });
     assert(on_success_called);
-
 });

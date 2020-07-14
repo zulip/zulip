@@ -12,7 +12,7 @@
         - topics
         - etc.
  */
-type KeyValue<V> = { k: string; v: V };
+type KeyValue<V> = {k: string; v: V};
 
 export class FoldDict<V> {
     private _items: Map<string, KeyValue<V>> = new Map();

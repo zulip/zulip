@@ -16,13 +16,8 @@ casper.then(function () {
 
 // Send a message to try replying to
 common.then_send_many([
-    {stream: "Verona",
-     subject: "Reply test",
-     content: "We reply to this message",
-    },
-    {recipient: "cordelia@zulip.com",
-     content: "And reply to this message",
-    },
+    {stream: "Verona", subject: "Reply test", content: "We reply to this message"},
+    {recipient: "cordelia@zulip.com", content: "And reply to this message"},
 ]);
 
 casper.then(function () {
@@ -38,7 +33,6 @@ casper.then(function () {
     casper.click("body");
     casper.page.sendEvent("keypress", "c");
 });
-
 
 function check_compose_is_cleared() {
     common.check_form(
@@ -146,7 +140,10 @@ casper.then(function () {
 
 casper.then(function () {
     var cordelia_user_id = common.get_user_id("cordelia@zulip.com");
-    var pm_li = 'li[data-user-ids-string="' + cordelia_user_id + '"].expanded_private_message.active-sub-filter';
+    var pm_li =
+        'li[data-user-ids-string="' +
+        cordelia_user_id +
+        '"].expanded_private_message.active-sub-filter';
 
     casper.waitUntilVisible(pm_li, function () {
         casper.page.sendEvent("keypress", "c");
@@ -156,7 +153,9 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible("#compose", function () {
         casper.test.assertEval(function () {
-            return document.activeElement === $(".compose_table #stream_message_recipient_stream")[0];
+            return (
+                document.activeElement === $(".compose_table #stream_message_recipient_stream")[0]
+            );
         }, "Stream box focused after narrowing to PMs with a user and pressing `c`");
     });
 });
@@ -172,7 +171,6 @@ common.then_send_message("private", {
     outside_view: true,
     content: "A huddle to check spaces",
 });
-
 
 casper.then(function () {
     common.keypress(27); // escape to dismiss compose box
@@ -200,7 +198,11 @@ casper.then(function () {
 casper.then(function () {
     casper.waitWhileVisible("#markdown_preview", function () {
         casper.test.assertVisible("#undo_markdown_preview", "Write button is visible");
-        casper.test.assertEquals(casper.getHTML("#preview_content"), "Nothing to preview", "Nothing to preview");
+        casper.test.assertEquals(
+            casper.getHTML("#preview_content"),
+            "Nothing to preview",
+            "Nothing to preview"
+        );
         casper.click("#undo_markdown_preview");
     });
 });
@@ -209,11 +211,19 @@ casper.then(function () {
     casper.waitWhileVisible("#undo_markdown_preview", function () {
         casper.test.assertVisible("#markdown_preview", "Preview button is visible.");
         casper.test.assertNotVisible("#undo_markdown_preview", "Write button is hidden.");
-        casper.test.assertEquals(casper.getHTML("#preview_content"), "", "Markdown preview area is empty");
+        casper.test.assertEquals(
+            casper.getHTML("#preview_content"),
+            "",
+            "Markdown preview area is empty"
+        );
 
-        casper.fill('form[action^="/json/messages"]', {
-            content: "**Markdown Preview** >> Test for markdown preview",
-        }, false);
+        casper.fill(
+            'form[action^="/json/messages"]',
+            {
+                content: "**Markdown Preview** >> Test for markdown preview",
+            },
+            false
+        );
 
         casper.click("#markdown_preview");
     });
@@ -221,7 +231,11 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitForSelectorTextChange("#preview_content", function () {
-        casper.test.assertEquals(casper.getHTML("#preview_content"), "<p><strong>Markdown Preview</strong> &gt;&gt; Test for markdown preview</p>", "Check markdown is previewed properly");
+        casper.test.assertEquals(
+            casper.getHTML("#preview_content"),
+            "<p><strong>Markdown Preview</strong> &gt;&gt; Test for markdown preview</p>",
+            "Check markdown is previewed properly"
+        );
     });
 });
 

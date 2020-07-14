@@ -32,7 +32,7 @@ exports.translate_emoticons_to_names = (text) => {
     // Translates emoticons in a string to their colon syntax.
     let translated = text;
     let replacement_text;
-    const terminal_symbols = ',.;?!()[] "\'\n\t'; // From composebox_typeahead
+    const terminal_symbols = ",.;?!()[] \"'\n\t"; // From composebox_typeahead
     const symbols_except_space = terminal_symbols.replace(" ", "");
 
     const emoticon_replacer = function (match, g1, offset, str) {
@@ -46,7 +46,8 @@ exports.translate_emoticons_to_names = (text) => {
         const valid_start = symbol_at_start || offset === 0;
         const valid_end = symbol_at_end || offset === str.length - match.length;
 
-        if (non_space_at_start && non_space_at_end) { // Hello!:)?
+        if (non_space_at_start && non_space_at_end) {
+            // Hello!:)?
             return match;
         }
         if (valid_start && valid_end) {
@@ -91,9 +92,7 @@ exports.apply_markdown = function (message) {
         userMentionHandler: function (mention, silently) {
             if (mention === "all" || mention === "everyone" || mention === "stream") {
                 message.mentioned = true;
-                return '<span class="user-mention" data-user-id="*">' +
-                       "@" + mention +
-                       "</span>";
+                return '<span class="user-mention" data-user-id="*">' + "@" + mention + "</span>";
             }
 
             let full_name;
@@ -167,9 +166,14 @@ exports.apply_markdown = function (message) {
                 if (helpers.is_member_of_user_group(group.id, helpers.my_user_id())) {
                     message.mentioned = true;
                 }
-                return '<span class="user-group-mention" data-user-group-id="' + group.id + '">' +
-                       "@" + _.escape(group.name) +
-                       "</span>";
+                return (
+                    '<span class="user-group-mention" data-user-group-id="' +
+                    group.id +
+                    '">' +
+                    "@" +
+                    _.escape(group.name) +
+                    "</span>"
+                );
             }
             return;
         },
@@ -237,10 +241,19 @@ exports.is_status_message = function (raw_content) {
 };
 
 function make_emoji_span(codepoint, title, alt_text) {
-    return '<span aria-label="' + title + '"' +
-           ' class="emoji emoji-' + codepoint + '"' +
-           ' role="img" title="' + title + '">' + alt_text +
-           "</span>";
+    return (
+        '<span aria-label="' +
+        title +
+        '"' +
+        ' class="emoji emoji-' +
+        codepoint +
+        '"' +
+        ' role="img" title="' +
+        title +
+        '">' +
+        alt_text +
+        "</span>"
+    );
 }
 
 function handleUnicodeEmoji(unicode_emoji) {
@@ -270,9 +283,17 @@ function handleEmoji(emoji_name) {
     const emoji_url = helpers.get_realm_emoji_url(emoji_name);
 
     if (emoji_url) {
-        return '<img alt="' + alt_text + '"' +
-               ' class="emoji" src="' + emoji_url + '"' +
-               ' title="' + title + '">';
+        return (
+            '<img alt="' +
+            alt_text +
+            '"' +
+            ' class="emoji" src="' +
+            emoji_url +
+            '"' +
+            ' title="' +
+            title +
+            '">'
+        );
     }
 
     const codepoint = helpers.get_emoji_codepoint(emoji_name);
@@ -319,9 +340,18 @@ function handleStream(stream_name) {
         return;
     }
     const href = helpers.stream_hash(stream.stream_id);
-    return '<a class="stream" data-stream-id="' + stream.stream_id + '" ' +
-        'href="/' + href + '"' +
-        ">" + "#" + _.escape(stream.name) + "</a>";
+    return (
+        '<a class="stream" data-stream-id="' +
+        stream.stream_id +
+        '" ' +
+        'href="/' +
+        href +
+        '"' +
+        ">" +
+        "#" +
+        _.escape(stream.name) +
+        "</a>"
+    );
 }
 
 function handleStreamTopic(stream_name, topic) {
@@ -331,8 +361,17 @@ function handleStreamTopic(stream_name, topic) {
     }
     const href = helpers.stream_topic_hash(stream.stream_id, topic);
     const text = "#" + _.escape(stream.name) + " > " + _.escape(topic);
-    return '<a class="stream-topic" data-stream-id="' + stream.stream_id + '" ' +
-        'href="/' + href + '"' + ">" + text + "</a>";
+    return (
+        '<a class="stream-topic" data-stream-id="' +
+        stream.stream_id +
+        '" ' +
+        'href="/' +
+        href +
+        '"' +
+        ">" +
+        text +
+        "</a>"
+    );
 }
 
 function handleRealmFilter(pattern, matches) {
@@ -353,7 +392,8 @@ function handleTex(tex, fullmatch) {
     try {
         return katex.renderToString(tex);
     } catch (ex) {
-        if (ex.message.startsWith("KaTeX parse error")) { // TeX syntax error
+        if (ex.message.startsWith("KaTeX parse error")) {
+            // TeX syntax error
             return '<span class="tex-error">' + _.escape(fullmatch) + "</span>";
         }
         blueslip.error(ex);
@@ -444,9 +484,11 @@ exports.initialize = function (realm_filters, helper_config) {
     helpers = helper_config;
 
     function disable_markdown_regex(rules, name) {
-        rules[name] = {exec: function () {
-            return false;
-        }};
+        rules[name] = {
+            exec: function () {
+                return false;
+            },
+        };
     }
 
     // Configure the marked markdown parser for our usage
@@ -520,12 +562,8 @@ exports.initialize = function (realm_filters, helper_config) {
         texHandler: handleTex,
         timestampHandler: handleTimestamp,
         renderer: r,
-        preprocessors: [
-            preprocess_code_blocks,
-            preprocess_translate_emoticons,
-        ],
+        preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
     });
-
 };
 
 window.markdown = exports;

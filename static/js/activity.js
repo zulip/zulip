@@ -134,8 +134,10 @@ exports.compute_active_status = function () {
     //
     // The check for `get_idle_on_system === undefined` is feature
     // detection; older desktop app releases never set that property.
-    if (window.electron_bridge !== undefined
-            && window.electron_bridge.get_idle_on_system !== undefined) {
+    if (
+        window.electron_bridge !== undefined &&
+        window.electron_bridge.get_idle_on_system !== undefined
+    ) {
         if (window.electron_bridge.get_idle_on_system()) {
             return exports.IDLE;
         }
@@ -207,10 +209,12 @@ exports.initialize = function () {
     });
 
     $(window).focus(mark_client_active);
-    $(window).idle({idle: DEFAULT_IDLE_TIMEOUT_MS,
-                    onIdle: mark_client_idle,
-                    onActive: mark_client_active,
-                    keepTracking: true});
+    $(window).idle({
+        idle: DEFAULT_IDLE_TIMEOUT_MS,
+        onIdle: mark_client_idle,
+        onActive: mark_client_active,
+        keepTracking: true,
+    });
 
     exports.set_cursor_and_filter();
 

@@ -13,10 +13,7 @@ class CommonUtils {
     async ensure_browser() {
         if (this.browser === null) {
             this.browser = await puppeteer.launch({
-                args: [
-                    "--window-size=1400,1024",
-                    "--no-sandbox", "--disable-setuid-sandbox",
-                ],
+                args: ["--window-size=1400,1024", "--no-sandbox", "--disable-setuid-sandbox"],
                 defaultViewport: {width: 1280, height: 1024},
                 headless: true,
             });
@@ -134,8 +131,9 @@ class CommonUtils {
     }
 
     async wait_for_fully_processed_message(page, content) {
-        await page.waitFor((content) => {
-            /*
+        await page.waitFor(
+            (content) => {
+                /*
                 The tricky part about making sure that
                 a message has actually been fully processed
                 is that we'll "locally echo" the message
@@ -156,33 +154,36 @@ class CommonUtils {
                     - does it look to have been
                       re-rendered based on server info?
             */
-            const last_msg = current_msg_list.last();
-            if (last_msg === undefined) {
-                return false;
-            }
+                const last_msg = current_msg_list.last();
+                if (last_msg === undefined) {
+                    return false;
+                }
 
-            if (last_msg.raw_content !== content) {
-                return false;
-            }
+                if (last_msg.raw_content !== content) {
+                    return false;
+                }
 
-            if (last_msg.locally_echoed) {
-                return false;
-            }
+                if (last_msg.locally_echoed) {
+                    return false;
+                }
 
-            const row = rows.last_visible();
-            if (rows.id(row) !== last_msg.id) {
-                return false;
-            }
+                const row = rows.last_visible();
+                if (rows.id(row) !== last_msg.id) {
+                    return false;
+                }
 
-            /*
+                /*
                 Make sure the message is completely
                 re-rendered from its original "local echo"
                 version by looking for the star icon.  We
                 don't add the star icon until the server
                 responds.
             */
-            return row.find(".star").length === 1;
-        }, {}, content);
+                return row.find(".star").length === 1;
+            },
+            {},
+            content,
+        );
     }
 
     // Wait for any previous send to finish, then send a message.
@@ -224,8 +225,10 @@ class CommonUtils {
 
         // confirm if compose box is empty.
         const compose_box_element = await page.$("#compose-textarea");
-        const compose_box_content = await page.evaluate((element) => element.textContent,
-                                                        compose_box_element);
+        const compose_box_content = await page.evaluate(
+            (element) => element.textContent,
+            compose_box_element,
+        );
         assert.equal(compose_box_content, "", "Compose box not empty after message sent");
 
         if (!outside_view) {
@@ -241,11 +244,7 @@ class CommonUtils {
     async send_multiple_messages(page, msgs) {
         for (let msg_index = 0; msg_index < msgs.length; msg_index += 1) {
             const msg = msgs[msg_index];
-            await this.send_message(
-                page,
-                msg.stream !== undefined ? "stream" : "private",
-                msg,
-            );
+            await this.send_message(page, msg.stream !== undefined ? "stream" : "private", msg);
         }
     }
 

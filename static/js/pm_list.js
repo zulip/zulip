@@ -152,12 +152,12 @@ exports.expand = function () {
 exports.update_dom_with_unread_counts = function (counts) {
     exports.update_private_messages();
     set_count(counts.private_message_count);
-    unread_ui.set_count_toggle_button($("#userlist-toggle-unreadcount"),
-                                      counts.private_message_count);
+    unread_ui.set_count_toggle_button(
+        $("#userlist-toggle-unreadcount"),
+        counts.private_message_count,
+    );
 };
 
-
-exports.initialize = function () {
-};
+exports.initialize = function () {};
 
 window.pm_list = exports;

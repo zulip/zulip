@@ -19,8 +19,10 @@ function get_focus_area(msg_type, opts) {
     // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
     if (msg_type === "stream" && opts.stream && !opts.topic) {
         return "#stream_message_recipient_topic";
-    } else if (msg_type === "stream" && opts.stream
-               || msg_type === "private" && opts.private_message_recipient) {
+    } else if (
+        (msg_type === "stream" && opts.stream) ||
+        (msg_type === "private" && opts.private_message_recipient)
+    ) {
         if (opts.trigger === "new topic button") {
             return "#stream_message_recipient_topic";
         }
@@ -41,13 +43,11 @@ exports.set_focus = function (msg_type, opts) {
         return;
     }
 
-    if (window.getSelection().toString() === "" ||
-         opts.trigger !== "message click") {
+    if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
         const elt = $(focus_area);
         elt.focus().select();
     }
 };
-
 
 // Show the compose box.
 function show_box(msg_type, opts) {
@@ -135,8 +135,7 @@ exports.maybe_scroll_up_selected_message = function () {
         return;
     }
 
-    const cover = selected_row.offset().top + selected_row.height()
-        - $("#compose").offset().top;
+    const cover = selected_row.offset().top + selected_row.height() - $("#compose").offset().top;
     if (cover > 0) {
         message_viewport.user_initiated_animate_scroll(cover + 20);
     }
@@ -158,12 +157,14 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
 }
 
 function same_recipient_as_before(msg_type, opts) {
-    return compose_state.get_message_type() === msg_type &&
-            (msg_type === "stream" &&
-              opts.stream === compose_state.stream_name() &&
-              opts.topic === compose_state.topic() ||
-             msg_type === "private" &&
-              opts.private_message_recipient === compose_state.private_message_recipient());
+    return (
+        compose_state.get_message_type() === msg_type &&
+        ((msg_type === "stream" &&
+            opts.stream === compose_state.stream_name() &&
+            opts.topic === compose_state.topic()) ||
+            (msg_type === "private" &&
+                opts.private_message_recipient === compose_state.private_message_recipient()))
+    );
 }
 
 exports.update_placeholder_text = function (opts) {
@@ -184,14 +185,17 @@ exports.start = function (msg_type, opts) {
     // If we are invoked by a compose hotkey (c or x) or new topic
     // button, do not assume that we know what the message's topic or
     // PM recipient should be.
-    if (opts.trigger === "compose_hotkey" ||
-        opts.trigger === "new topic button") {
+    if (opts.trigger === "compose_hotkey" || opts.trigger === "new topic button") {
         opts.topic = "";
         opts.private_message_recipient = "";
     }
 
     const subbed_streams = stream_data.subscribed_subs();
-    if (subbed_streams.length === 1 && (opts.trigger === "new topic button" || opts.trigger === "compose_hotkey" && msg_type === "stream")) {
+    if (
+        subbed_streams.length === 1 &&
+        (opts.trigger === "new topic button" ||
+            (opts.trigger === "compose_hotkey" && msg_type === "stream"))
+    ) {
         opts.stream = subbed_streams[0].name;
     }
 
@@ -260,10 +264,13 @@ exports.respond_to_message = function (opts) {
 
     const message = current_msg_list.selected_message();
 
-    if (message === undefined) { // empty narrow implementation
-        if (!narrow_state.narrowed_by_pm_reply() &&
+    if (message === undefined) {
+        // empty narrow implementation
+        if (
+            !narrow_state.narrowed_by_pm_reply() &&
             !narrow_state.narrowed_by_stream_reply() &&
-            !narrow_state.narrowed_by_topic_reply()) {
+            !narrow_state.narrowed_by_topic_reply()
+        ) {
             compose.nonexistent_stream_reply_error();
             return;
         }
@@ -320,10 +327,12 @@ exports.respond_to_message = function (opts) {
         }
     }
 
-    exports.start(msg_type, {stream: stream, topic: topic,
-                             private_message_recipient: pm_recipient,
-                             trigger: opts.trigger});
-
+    exports.start(msg_type, {
+        stream: stream,
+        topic: topic,
+        private_message_recipient: pm_recipient,
+        trigger: opts.trigger,
+    });
 };
 
 exports.reply_with_mention = function (opts) {

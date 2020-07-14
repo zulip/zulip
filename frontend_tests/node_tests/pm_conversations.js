@@ -18,15 +18,9 @@ zrequire("people");
 run_test("insert_recent_private_message", () => {
     const params = {
         recent_private_conversations: [
-            {user_ids: [11, 2],
-             max_message_id: 150,
-            },
-            {user_ids: [1],
-             max_message_id: 111,
-            },
-            {user_ids: [],
-             max_message_id: 7,
-            },
+            {user_ids: [11, 2], max_message_id: 150},
+            {user_ids: [1], max_message_id: 111},
+            {user_ids: [], max_message_id: 7},
         ],
     };
     people.initialize_current_user(15);

@@ -46,8 +46,9 @@ function populate_invites(invites_data) {
         modifier: function (item) {
             item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
             item.is_admin = page_params.is_admin;
-            item.disable_buttons = item.invited_as === settings_config.user_role_values.owner.code
-                && !page_params.is_owner;
+            item.disable_buttons =
+                item.invited_as === settings_config.user_role_values.owner.code &&
+                !page_params.is_owner;
             item.referrer_email = people.get_by_user_id(item.invited_by_user_id).email;
             return render_admin_invites_list({invite: item});
         },
@@ -75,14 +76,21 @@ function populate_invites(invites_data) {
 }
 
 function do_revoke_invite() {
-    const modal_invite_id = $("#revoke_invite_modal #do_revoke_invite_button").attr("data-invite-id");
-    const modal_is_multiuse = $("#revoke_invite_modal #do_revoke_invite_button").attr("data-is-multiuse");
+    const modal_invite_id = $("#revoke_invite_modal #do_revoke_invite_button").attr(
+        "data-invite-id",
+    );
+    const modal_is_multiuse = $("#revoke_invite_modal #do_revoke_invite_button").attr(
+        "data-is-multiuse",
+    );
     const revoke_button = meta.current_revoke_invite_user_modal_row.find("button.revoke");
 
     if (modal_invite_id !== meta.invite_id || modal_is_multiuse !== meta.is_multiuse) {
         blueslip.error("Invite revoking canceled due to non-matching fields.");
-        ui_report.message(i18n.t("Resending encountered an error. Please reload and try again."),
-                          $("#home-error"), "alert-error");
+        ui_report.message(
+            i18n.t("Resending encountered an error. Please reload and try again."),
+            $("#home-error"),
+            "alert-error",
+        );
     }
     $("#revoke_invite_modal").modal("hide");
     revoke_button.prop("disabled", true).text(i18n.t("Working…"));
@@ -140,11 +148,18 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
         meta.current_revoke_invite_user_modal_row = row;
         meta.invite_id = $(e.currentTarget).attr("data-invite-id");
         meta.is_multiuse = $(e.currentTarget).attr("data-is-multiuse");
-        const ctx = {is_multiuse: meta.is_multiuse === "true", email: email, referred_by: referred_by};
+        const ctx = {
+            is_multiuse: meta.is_multiuse === "true",
+            email: email,
+            referred_by: referred_by,
+        };
         const rendered_revoke_modal = render_settings_revoke_invite_modal(ctx);
         $("#revoke_invite_modal_holder").html(rendered_revoke_modal);
         $("#revoke_invite_modal #do_revoke_invite_button").attr("data-invite-id", meta.invite_id);
-        $("#revoke_invite_modal #do_revoke_invite_button").attr("data-is-multiuse", meta.is_multiuse);
+        $("#revoke_invite_modal #do_revoke_invite_button").attr(
+            "data-is-multiuse",
+            meta.is_multiuse,
+        );
         $("#revoke_invite_modal").modal("show");
         $("#do_revoke_invite_button").unbind("click");
         $("#do_revoke_invite_button").click(do_revoke_invite);
@@ -167,13 +182,18 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
     });
 
     $("#do_resend_invite_button").click(() => {
-        const modal_invite_id = $("#resend_invite_modal #do_resend_invite_button").attr("data-invite-id");
+        const modal_invite_id = $("#resend_invite_modal #do_resend_invite_button").attr(
+            "data-invite-id",
+        );
         const resend_button = meta.current_resend_invite_user_modal_row.find("button.resend");
 
         if (modal_invite_id !== meta.invite_id) {
             blueslip.error("Invite resending canceled due to non-matching fields.");
-            ui_report.message(i18n.t("Resending encountered an error. Please reload and try again."),
-                              $("#home-error"), "alert-error");
+            ui_report.message(
+                i18n.t("Resending encountered an error. Please reload and try again."),
+                $("#home-error"),
+                "alert-error",
+            );
         }
         $("#resend_invite_modal").modal("hide");
         resend_button.prop("disabled", true).text(i18n.t("Working…"));

@@ -11,7 +11,8 @@ exports.maybe_disable_widgets = function () {
     }
 
     $(".organization-box [data-name='profile-field-settings']")
-        .find("input, button, select").attr("disabled", true);
+        .find("input, button, select")
+        .attr("disabled", true);
 };
 
 let order = [];
@@ -50,20 +51,24 @@ function delete_profile_field(e) {
     settings_ui.do_settings_change(
         channel.del,
         "/json/realm/profile_fields/" + encodeURIComponent($(this).attr("data-profile-field-id")),
-        {}, $("#admin-profile-field-status").expectOne());
+        {},
+        $("#admin-profile-field-status").expectOne(),
+    );
     update_profile_fields_table_element();
 }
 
 function read_choice_field_data_from_form(field_elem) {
     const field_data = {};
     let field_order = 1;
-    $(field_elem).find("div.choice-row").each(function () {
-        const text = $(this).find("input")[0].value;
-        if (text) {
-            field_data[field_order - 1] = {text: text, order: field_order.toString()};
-            field_order += 1;
-        }
-    });
+    $(field_elem)
+        .find("div.choice-row")
+        .each(function () {
+            const text = $(this).find("input")[0].value;
+            if (text) {
+                field_data[field_order - 1] = {text: text, order: field_order.toString()};
+                field_order += 1;
+            }
+        });
 
     return field_data;
 }
@@ -112,7 +117,8 @@ function clear_form_data() {
     $("#custom_external_account_url_pattern").hide();
     $("#profile_field_external_accounts").hide();
     $("#profile_field_external_accounts_type").val(
-        $("#profile_field_external_accounts_type option:first").val());
+        $("#profile_field_external_accounts_type option:first").val(),
+    );
 }
 
 function set_up_create_field_form() {
@@ -166,8 +172,13 @@ function create_profile_field(e) {
         field_data: JSON.stringify(field_data),
     };
 
-    settings_ui.do_settings_change(channel.post, "/json/realm/profile_fields", form_data,
-                                   $("#admin-add-profile-field-status").expectOne(), opts);
+    settings_ui.do_settings_change(
+        channel.post,
+        "/json/realm/profile_fields",
+        form_data,
+        $("#admin-add-profile-field-status").expectOne(),
+        opts,
+    );
     update_profile_fields_table_element();
 }
 
@@ -297,17 +308,29 @@ function open_edit_form(e) {
 
         data.name = profile_field.form.find("input[name=name]").val();
         data.hint = profile_field.form.find("input[name=hint]").val();
-        data.field_data = JSON.stringify(read_field_data_from_form(parseInt(field.type, 10),
-                                                                   profile_field.form));
+        data.field_data = JSON.stringify(
+            read_field_data_from_form(parseInt(field.type, 10), profile_field.form),
+        );
 
-        settings_ui.do_settings_change(channel.patch, "/json/realm/profile_fields/" + field_id,
-                                       data, profile_field_status);
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/realm/profile_fields/" + field_id,
+            data,
+            profile_field_status,
+        );
     });
 
-    profile_field.form.find(".edit_profile_field_choices_container").on("input", ".choice-row input", add_choice_row);
-    profile_field.form.find(".edit_profile_field_choices_container").on("click", "button.delete-choice", delete_choice_row);
+    profile_field.form
+        .find(".edit_profile_field_choices_container")
+        .on("input", ".choice-row input", add_choice_row);
+    profile_field.form
+        .find(".edit_profile_field_choices_container")
+        .on("click", "button.delete-choice", delete_choice_row);
     $(".profile_field_external_accounts_edit select").on("change", (e) => {
-        const field_id = parseInt($(e.target).closest(".profile-field-form").attr("data-profile-field-id"), 10);
+        const field_id = parseInt(
+            $(e.target).closest(".profile-field-form").attr("data-profile-field-id"),
+            10,
+        );
         const field_form = get_profile_field_info(field_id);
         set_up_external_account_field_edit_form(field_form, "");
     });
@@ -322,9 +345,12 @@ function update_field_order() {
     $(".profile-field-row").each(function () {
         order.push(parseInt($(this).attr("data-profile-field-id"), 10));
     });
-    settings_ui.do_settings_change(channel.patch, "/json/realm/profile_fields",
-                                   {order: JSON.stringify(order)},
-                                   $("#admin-profile-field-status").expectOne());
+    settings_ui.do_settings_change(
+        channel.patch,
+        "/json/realm/profile_fields",
+        {order: JSON.stringify(order)},
+        $("#admin-profile-field-status").expectOne(),
+    );
 }
 
 exports.populate_profile_fields = function (profile_fields_data) {
@@ -364,8 +390,8 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
                     type: exports.field_type_id_to_string(profile_field.type),
                     choices: choices,
                     is_choice_field: profile_field.type === field_types.CHOICE.id,
-                    is_external_account_field: profile_field.type ===
-                                                field_types.EXTERNAL_ACCOUNT.id,
+                    is_external_account_field:
+                        profile_field.type === field_types.EXTERNAL_ACCOUNT.id,
                 },
                 can_modify: page_params.is_admin,
                 realm_default_external_accounts: page_params.realm_default_external_accounts,
@@ -432,8 +458,7 @@ exports.get_external_account_link = function (field) {
     if (field_subtype === "custom") {
         field_url_pattern = field.field_data.url_pattern;
     } else {
-        field_url_pattern =
-            page_params.realm_default_external_accounts[field_subtype].url_pattern;
+        field_url_pattern = page_params.realm_default_external_accounts[field_subtype].url_pattern;
     }
     return field_url_pattern.replace("%(username)s", field.value);
 };

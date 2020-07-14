@@ -9,11 +9,12 @@ function make_time(secs) {
 }
 
 function returns_time(secs) {
-    return function () { return make_time(secs); };
+    return function () {
+        return make_time(secs);
+    };
 }
 
 run_test("basics", () => {
-
     // invalid conversation basically does nothing
     let worker = {};
     typing_status.update(worker, null);

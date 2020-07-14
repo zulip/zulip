@@ -148,7 +148,6 @@ exports.relevant_recipient_bars = function () {
     let elem = next(first_elem);
 
     while (elem.length) {
-
         if (top_offset(elem) < header_height) {
             // If we are close to the top, then the prior
             // elements we found are no longer relevant,
@@ -242,7 +241,6 @@ exports.candidate_recipient_bar = function () {
     }
 
     while (candidate.length) {
-
         if (candidate.hasClass("recipient_row") && top_offset(candidate) < 0) {
             return candidate;
         }
@@ -262,7 +260,6 @@ function show_floating_recipient_bar() {
 
 let old_source;
 function replace_floating_recipient_bar(source_info) {
-
     const source_recipient_bar = source_info.elem;
 
     let new_label;
@@ -325,6 +322,5 @@ exports.update = function () {
 
     replace_floating_recipient_bar(items[0]);
 };
-
 
 window.floating_recipient_bar = exports;

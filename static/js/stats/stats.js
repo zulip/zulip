@@ -52,7 +52,7 @@ function format_date(date, include_hour) {
 
         const str = hour >= 12 ? "PM" : "AM";
 
-        return month_str + " " + day + ", " + hour % 12 + ":00" + str;
+        return month_str + " " + day + ", " + (hour % 12) + ":00" + str;
     }
     return month_str + " " + day + ", " + year;
 }
@@ -64,7 +64,11 @@ function update_last_full_update(end_times) {
 
     last_full_update = Math.min(last_full_update, end_times[end_times.length - 1]);
     const update_time = new Date(last_full_update * 1000);
-    const locale_date = update_time.toLocaleDateString("en-US", {year: "numeric", month: "long", day: "numeric"});
+    const locale_date = update_time.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    });
     const locale_time = update_time.toLocaleTimeString().replace(":00 ", " ");
 
     $("#id_last_full_update").text(locale_time + " on " + locale_date);
@@ -94,16 +98,24 @@ function populate_messages_sent_over_time(data) {
         const text = dates.map((date) => date_formatter(date));
         const common = {x: dates, type: type, hoverinfo: "none", text: text};
         return {
-            human: { // 5062a0
-                name: i18n.t("Humans"), y: values.human, marker: {color: "#5f6ea0"},
+            human: {
+                // 5062a0
+                name: i18n.t("Humans"),
+                y: values.human,
+                marker: {color: "#5f6ea0"},
                 ...common,
             },
-            bot: { // a09b5f bbb56e
-                name: i18n.t("Bots"), y: values.bot, marker: {color: "#b7b867"},
+            bot: {
+                // a09b5f bbb56e
+                name: i18n.t("Bots"),
+                y: values.bot,
+                marker: {color: "#b7b867"},
                 ...common,
             },
             me: {
-                name: i18n.t("Me"), y: values.me, marker: {color: "#be6d68"},
+                name: i18n.t("Me"),
+                y: values.me,
+                marker: {color: "#be6d68"},
                 ...common,
             },
         };
@@ -121,28 +133,39 @@ function populate_messages_sent_over_time(data) {
         },
         yaxis: {fixedrange: true, rangemode: "tozero"},
         legend: {
-            x: 0.62, y: 1.12, orientation: "h", font: font_14pt,
+            x: 0.62,
+            y: 1.12,
+            orientation: "h",
+            font: font_14pt,
         },
         font: font_14pt,
     };
 
     function make_rangeselector(x, y, button1, button2) {
-        return {x: x, y: y,
-                buttons: [
-                    {stepmode: "backward", ...button1},
-                    {stepmode: "backward", ...button2},
-                    {step: "all", label: "All time"}]};
+        return {
+            x: x,
+            y: y,
+            buttons: [
+                {stepmode: "backward", ...button1},
+                {stepmode: "backward", ...button2},
+                {step: "all", label: "All time"},
+            ],
+        };
     }
 
     // This is also the cumulative rangeselector
     const daily_rangeselector = make_rangeselector(
-        0.68, -0.62,
+        0.68,
+        -0.62,
         {count: 10, label: i18n.t("Last 10 days"), step: "day"},
-        {count: 30, label: i18n.t("Last 30 days"), step: "day"});
+        {count: 30, label: i18n.t("Last 30 days"), step: "day"},
+    );
     const weekly_rangeselector = make_rangeselector(
-        0.656, -0.62,
+        0.656,
+        -0.62,
         {count: 2, label: i18n.t("Last 2 months"), step: "month"},
-        {count: 6, label: i18n.t("Last 6 months"), step: "month"});
+        {count: 6, label: i18n.t("Last 6 months"), step: "month"},
+    );
 
     function add_hover_handler() {
         document.getElementById("id_messages_sent_over_time").on("plotly_hover", (data) => {
@@ -168,9 +191,10 @@ function populate_messages_sent_over_time(data) {
         });
     }
 
-    const start_dates = data.end_times.map((timestamp) =>
-        // data.end_times are the ends of hour long intervals.
-        new Date(timestamp * 1000 - 60 * 60 * 1000),
+    const start_dates = data.end_times.map(
+        (timestamp) =>
+            // data.end_times are the ends of hour long intervals.
+            new Date(timestamp * 1000 - 60 * 60 * 1000),
     );
 
     function aggregate_data(aggregation) {
@@ -192,9 +216,11 @@ function populate_messages_sent_over_time(data) {
         let current = {human: 0, bot: 0, me: 0};
         let i_init = 0;
         if (is_boundary(start_dates[0])) {
-            current = {human: data.everyone.human[0],
-                       bot: data.everyone.bot[0],
-                       me: data.user.human[0]};
+            current = {
+                human: data.everyone.human[0],
+                bot: data.everyone.bot[0],
+                me: data.user.human[0],
+            };
             i_init = 1;
         }
         for (let i = i_init; i < start_dates.length; i += 1) {
@@ -213,9 +239,12 @@ function populate_messages_sent_over_time(data) {
         values.bot.push(current.bot);
         values.me.push(current.me);
         return {
-            dates: dates, values: values,
-            last_value_is_partial: !is_boundary(new Date(
-                start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000))};
+            dates: dates,
+            values: values,
+            last_value_is_partial: !is_boundary(
+                new Date(start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000),
+            ),
+        };
     }
 
     // Generate traces
@@ -239,8 +268,11 @@ function populate_messages_sent_over_time(data) {
     const weekly_traces = make_traces(info.dates, info.values, "bar", date_formatter);
 
     const dates = data.end_times.map((timestamp) => new Date(timestamp * 1000));
-    values = {human: partial_sums(data.everyone.human), bot: partial_sums(data.everyone.bot),
-              me: partial_sums(data.user.human)};
+    values = {
+        human: partial_sums(data.everyone.human),
+        bot: partial_sums(data.everyone.bot),
+        me: partial_sums(data.user.human),
+    };
     date_formatter = function (date) {
         return format_date(date, true);
     };
@@ -267,8 +299,12 @@ function populate_messages_sent_over_time(data) {
         }
         layout.xaxis.rangeselector = rangeselector;
         if (clicked_cumulative || initial_draw) {
-            Plotly.newPlot("id_messages_sent_over_time",
-                           [traces.me, traces.human, traces.bot], layout, {displayModeBar: false});
+            Plotly.newPlot(
+                "id_messages_sent_over_time",
+                [traces.me, traces.human, traces.bot],
+                layout,
+                {displayModeBar: false},
+            );
             add_hover_handler();
         } else {
             Plotly.deleteTraces("id_messages_sent_over_time", [0, 1, 2]);
@@ -316,7 +352,7 @@ function round_to_percentages(values, total) {
         if (x === 0) {
             return "0%";
         }
-        const unrounded = x / total * 100;
+        const unrounded = (x / total) * 100;
 
         const precision = Math.min(
             6, // this is the max precision (two #, 4 decimal points; 99.9999%).
@@ -381,7 +417,10 @@ function populate_messages_sent_by_client(data) {
 
     // sort labels so that values are descending in the default view
     const everyone_month = compute_summary_chart_data(
-        data.everyone, 30, data.display_order.slice(0, 12));
+        data.everyone,
+        30,
+        data.display_order.slice(0, 12),
+    );
     const label_values = [];
     for (let i = 0; i < everyone_month.values.length; i += 1) {
         label_values.push({
@@ -391,7 +430,9 @@ function populate_messages_sent_by_client(data) {
     }
     label_values.sort((a, b) => b.value - a.value);
     const labels = [];
-    label_values.forEach((item) => { labels.push(item.label); });
+    label_values.forEach((item) => {
+        labels.push(item.label);
+    });
 
     function make_plot_data(time_series_data, num_steps) {
         const plot_data = compute_summary_chart_data(time_series_data, num_steps, labels);
@@ -403,7 +444,9 @@ function populate_messages_sent_by_client(data) {
             if (plot_data.values[i] > 0) {
                 annotations.values.push(plot_data.values[i]);
                 annotations.labels.push(plot_data.labels[i]);
-                annotations.text.push("   " + plot_data.labels[i] + " (" + plot_data.percentages[i] + ")");
+                annotations.text.push(
+                    "   " + plot_data.labels[i] + " (" + plot_data.percentages[i] + ")",
+                );
             }
         }
         return {
@@ -469,10 +512,12 @@ function populate_messages_sent_by_client(data) {
         const data_ = plot_data[user_button][time_button];
         layout.height = layout.margin.b + data_.trace.x.length * 30;
         layout.xaxis.range = [0, Math.max(...data_.trace.x) * 1.3];
-        Plotly.newPlot("id_messages_sent_by_client",
-                       [data_.trace, data_.trace_annotations],
-                       layout,
-                       {displayModeBar: false, staticPlot: true});
+        Plotly.newPlot(
+            "id_messages_sent_by_client",
+            [data_.trace, data_.trace_annotations],
+            layout,
+            {displayModeBar: false, staticPlot: true},
+        );
     }
 
     draw_plot();
@@ -550,8 +595,9 @@ function populate_messages_sent_by_message_type(data) {
                     colors: ["#68537c", "#be6d68", "#b3b348"],
                 },
             },
-            total_str: "<b>Total messages:</b> " + plot_data.total.toString().
-                replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+            total_str:
+                "<b>Total messages:</b> " +
+                plot_data.total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
         };
     }
 
@@ -593,10 +639,12 @@ function populate_messages_sent_by_message_type(data) {
 
     function draw_plot() {
         $("#id_messages_sent_by_message_type > div").removeClass("spinner");
-        Plotly.newPlot("id_messages_sent_by_message_type",
-                       [plot_data[user_button][time_button].trace],
-                       layout,
-                       {displayModeBar: false});
+        Plotly.newPlot(
+            "id_messages_sent_by_message_type",
+            [plot_data[user_button][time_button].trace],
+            layout,
+            {displayModeBar: false},
+        );
         totaldiv.innerHTML = plot_data[user_button][time_button].total_str;
     }
 
@@ -635,12 +683,15 @@ function populate_number_of_users(data) {
             fixedrange: true,
             rangeslider: {bordercolor: "#D8D8D8", borderwidth: 1},
             rangeselector: {
-                x: 0.64, y: -0.79,
+                x: 0.64,
+                y: -0.79,
                 buttons: [
                     {count: 2, label: i18n.t("Last 2 months"), step: "month", stepmode: "backward"},
                     {count: 6, label: i18n.t("Last 6 months"), step: "month", stepmode: "backward"},
                     {step: "all", label: i18n.t("All time")},
-                ]}},
+                ],
+            },
+        },
         yaxis: {fixedrange: true, rangemode: "tozero"},
         font: font_14pt,
     };
@@ -671,7 +722,10 @@ function populate_number_of_users(data) {
                 values[trace.curveNumber] = trace.y;
             });
             const hover_value_ids = [
-                "users_hover_1day_value", "users_hover_15day_value", "users_hover_all_time_value"];
+                "users_hover_1day_value",
+                "users_hover_15day_value",
+                "users_hover_all_time_value",
+            ];
             for (let i = 0; i < values.length; i += 1) {
                 if (values[i] !== null) {
                     document.getElementById(hover_value_ids[i]).style.display = "inline";
@@ -692,7 +746,9 @@ function populate_number_of_users(data) {
     // Redraw the plot every time for simplicity. If we have perf problems with this in the
     // future, we can copy the update behavior from populate_messages_sent_over_time
     function draw_or_update_plot(trace) {
-        $("#1day_actives_button, #15day_actives_button, #all_time_actives_button").removeClass("selected");
+        $("#1day_actives_button, #15day_actives_button, #all_time_actives_button").removeClass(
+            "selected",
+        );
         Plotly.newPlot("id_number_of_users", [trace], layout, {displayModeBar: false});
         add_hover_handler();
     }
@@ -729,11 +785,15 @@ function populate_messages_read_over_time(data) {
         const common = {x: dates, type: type, hoverinfo: "none", text: text};
         return {
             everyone: {
-                name: i18n.t("Everyone"), y: values.everyone, marker: {color: "#5f6ea0"},
+                name: i18n.t("Everyone"),
+                y: values.everyone,
+                marker: {color: "#5f6ea0"},
                 ...common,
             },
             me: {
-                name: i18n.t("Me"), y: values.me, marker: {color: "#be6d68"},
+                name: i18n.t("Me"),
+                y: values.me,
+                marker: {color: "#be6d68"},
                 ...common,
             },
         };
@@ -751,28 +811,39 @@ function populate_messages_read_over_time(data) {
         },
         yaxis: {fixedrange: true, rangemode: "tozero"},
         legend: {
-            x: 0.62, y: 1.12, orientation: "h", font: font_14pt,
+            x: 0.62,
+            y: 1.12,
+            orientation: "h",
+            font: font_14pt,
         },
         font: font_14pt,
     };
 
     function make_rangeselector(x, y, button1, button2) {
-        return {x: x, y: y,
-                buttons: [
-                    {stepmode: "backward", ...button1},
-                    {stepmode: "backward", ...button2},
-                    {step: "all", label: "All time"}]};
+        return {
+            x: x,
+            y: y,
+            buttons: [
+                {stepmode: "backward", ...button1},
+                {stepmode: "backward", ...button2},
+                {step: "all", label: "All time"},
+            ],
+        };
     }
 
     // This is also the cumulative rangeselector
     const daily_rangeselector = make_rangeselector(
-        0.68, -0.62,
+        0.68,
+        -0.62,
         {count: 10, label: i18n.t("Last 10 days"), step: "day"},
-        {count: 30, label: i18n.t("Last 30 days"), step: "day"});
+        {count: 30, label: i18n.t("Last 30 days"), step: "day"},
+    );
     const weekly_rangeselector = make_rangeselector(
-        0.656, -0.62,
+        0.656,
+        -0.62,
         {count: 2, label: i18n.t("Last 2 months"), step: "month"},
-        {count: 6, label: i18n.t("Last 6 months"), step: "month"});
+        {count: 6, label: i18n.t("Last 6 months"), step: "month"},
+    );
 
     function add_hover_handler() {
         document.getElementById("id_messages_read_over_time").on("plotly_hover", (data) => {
@@ -798,9 +869,10 @@ function populate_messages_read_over_time(data) {
         });
     }
 
-    const start_dates = data.end_times.map((timestamp) =>
-        // data.end_times are the ends of hour long intervals.
-        new Date(timestamp * 1000 - 60 * 60 * 1000),
+    const start_dates = data.end_times.map(
+        (timestamp) =>
+            // data.end_times are the ends of hour long intervals.
+            new Date(timestamp * 1000 - 60 * 60 * 1000),
     );
 
     function aggregate_data(aggregation) {
@@ -822,8 +894,7 @@ function populate_messages_read_over_time(data) {
         let current = {everyone: 0, me: 0};
         let i_init = 0;
         if (is_boundary(start_dates[0])) {
-            current = {everyone: data.everyone.read[0],
-                       me: data.user.read[0]};
+            current = {everyone: data.everyone.read[0], me: data.user.read[0]};
             i_init = 1;
         }
         for (let i = i_init; i < start_dates.length; i += 1) {
@@ -839,9 +910,12 @@ function populate_messages_read_over_time(data) {
         values.everyone.push(current.everyone);
         values.me.push(current.me);
         return {
-            dates: dates, values: values,
-            last_value_is_partial: !is_boundary(new Date(
-                start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000))};
+            dates: dates,
+            values: values,
+            last_value_is_partial: !is_boundary(
+                new Date(start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000),
+            ),
+        };
     }
 
     // Generate traces
@@ -865,8 +939,7 @@ function populate_messages_read_over_time(data) {
     const weekly_traces = make_traces(info.dates, info.values, "bar", date_formatter);
 
     const dates = data.end_times.map((timestamp) => new Date(timestamp * 1000));
-    values = {everyone: partial_sums(data.everyone.read),
-              me: partial_sums(data.user.read)};
+    values = {everyone: partial_sums(data.everyone.read), me: partial_sums(data.user.read)};
     date_formatter = function (date) {
         return format_date(date, true);
     };
@@ -879,7 +952,9 @@ function populate_messages_read_over_time(data) {
     let clicked_cumulative = false;
 
     function draw_or_update_plot(rangeselector, traces, last_value_is_partial, initial_draw) {
-        $("#read_daily_button, #read_weekly_button, #read_cumulative_button").removeClass("selected");
+        $("#read_daily_button, #read_weekly_button, #read_cumulative_button").removeClass(
+            "selected",
+        );
         $("#id_messages_read_over_time > div").removeClass("spinner");
         if (initial_draw) {
             traces.everyone.visible = true;
@@ -891,8 +966,9 @@ function populate_messages_read_over_time(data) {
         }
         layout.xaxis.rangeselector = rangeselector;
         if (clicked_cumulative || initial_draw) {
-            Plotly.newPlot("id_messages_read_over_time",
-                           [traces.me, traces.everyone], layout, {displayModeBar: false});
+            Plotly.newPlot("id_messages_read_over_time", [traces.me, traces.everyone], layout, {
+                displayModeBar: false,
+            });
             add_hover_handler();
         } else {
             Plotly.deleteTraces("id_messages_read_over_time", [0, 1]);
@@ -962,10 +1038,7 @@ get_chart_data(
     populate_messages_sent_by_message_type,
 );
 
-get_chart_data(
-    {chart_name: "number_of_humans", min_length: "10"},
-    populate_number_of_users,
-);
+get_chart_data({chart_name: "number_of_humans", min_length: "10"}, populate_number_of_users);
 
 get_chart_data(
     {chart_name: "messages_read_over_time", min_length: "10"},

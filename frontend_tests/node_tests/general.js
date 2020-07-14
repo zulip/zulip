@@ -164,17 +164,23 @@ run_test("filter", () => {
     // your test, you should not feel guilty about removing them.
     assert.equal(predicate({type: "personal"}), false);
 
-    assert.equal(predicate({
-        type: "stream",
-        stream_id: denmark_stream.stream_id,
-        topic: "does not match filter",
-    }), false);
+    assert.equal(
+        predicate({
+            type: "stream",
+            stream_id: denmark_stream.stream_id,
+            topic: "does not match filter",
+        }),
+        false,
+    );
 
-    assert.equal(predicate({
-        type: "stream",
-        stream_id: denmark_stream.stream_id,
-        topic: "copenhagen",
-    }), true);
+    assert.equal(
+        predicate({
+            type: "stream",
+            stream_id: denmark_stream.stream_id,
+            topic: "copenhagen",
+        }),
+        true,
+    );
 });
 
 // We have a "narrow" abstraction that sits roughly on top of the
@@ -557,7 +563,6 @@ run_test("unread_ops", () => {
         data: {messages: "[50]", op: "add", flag: "read"},
         success: channel_post_opts.success,
     });
-
 });
 
 /*
@@ -625,14 +630,14 @@ function make_jquery_helper() {
 
     function fake_jquery(selector) {
         switch (selector) {
-        case ".stream-list-filter":
-            return stream_list_filter;
-        case "ul#stream_filters li":
-            return jquery_elem();
-        case "#stream_filters":
-            return stream_filters;
-        default:
-            throw Error("unknown selector: " + selector);
+            case ".stream-list-filter":
+                return stream_list_filter;
+            case "ul#stream_filters li":
+                return jquery_elem();
+            case "#stream_filters":
+                return stream_filters;
+            default:
+                throw Error("unknown selector: " + selector);
         }
     }
 
@@ -640,14 +645,9 @@ function make_jquery_helper() {
 
     return {
         verify_actions: () => {
-            const expected_data_to_append = [
-                [
-                    "stream stub",
-                ],
-            ];
+            const expected_data_to_append = [["stream stub"]];
 
-            assert.deepEqual(appended_data,
-                             expected_data_to_append);
+            assert.deepEqual(appended_data, expected_data_to_append);
         },
     };
 }
@@ -704,7 +704,6 @@ function make_sidebar_helper() {
     return {
         verify_actions: () => {
             assert(updated_whether_active);
-
         },
     };
 }

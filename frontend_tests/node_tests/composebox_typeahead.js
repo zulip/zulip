@@ -20,8 +20,7 @@ set_global("md5", (s) => "md5-" + s);
 stream_data.update_calculated_fields = () => {};
 stream_data.set_filter_out_inactives = () => false;
 
-set_global("stream_topic_history", {
-});
+set_global("stream_topic_history", {});
 
 set_global("message_store", {
     user_ids: () => [],
@@ -100,18 +99,20 @@ const emoji_headphones = {
     emoji_code: "1f3a7",
 };
 
-const emojis_by_name = new Map(Object.entries({
-    tada: emoji_tada,
-    moneybag: emoji_moneybag,
-    stadium: emoji_stadium,
-    japanese_post_office: emoji_japanese_post_office,
-    panda_face: emoji_panda_face,
-    see_no_evil: emoji_see_no_evil,
-    thumbs_up: emoji_thumbs_up,
-    thermometer: emoji_thermometer,
-    heart: emoji_heart,
-    headphones: emoji_headphones,
-}));
+const emojis_by_name = new Map(
+    Object.entries({
+        tada: emoji_tada,
+        moneybag: emoji_moneybag,
+        stadium: emoji_stadium,
+        japanese_post_office: emoji_japanese_post_office,
+        panda_face: emoji_panda_face,
+        see_no_evil: emoji_see_no_evil,
+        thumbs_up: emoji_thumbs_up,
+        thermometer: emoji_thermometer,
+        heart: emoji_heart,
+        headphones: emoji_headphones,
+    }),
+);
 const emoji_list = Array.from(emojis_by_name.values(), (emoji_dict) => {
     if (emoji_dict.is_realm_emoji === true) {
         return {
@@ -285,10 +286,11 @@ run_test("topics_seen_for", () => {
         return ["With Twisted Metal", "acceptance", "civil fears"];
     };
 
-    assert.deepEqual(
-        ct.topics_seen_for("Denmark"),
-        ["With Twisted Metal", "acceptance", "civil fears"],
-    );
+    assert.deepEqual(ct.topics_seen_for("Denmark"), [
+        "With Twisted Metal",
+        "acceptance",
+        "civil fears",
+    ]);
 
     // Test when the stream doesn't exist (there are no topics)
     assert.deepEqual(ct.topics_seen_for("non-existing-stream"), []);
@@ -302,7 +304,8 @@ run_test("content_typeahead_selected", () => {
     let caret_called1 = false;
     let caret_called2 = false;
     fake_this.$element.caret = function (...args) {
-        if (args.length === 0) { // .caret() used in split_at_cursor
+        if (args.length === 0) {
+            // .caret() used in split_at_cursor
             caret_called1 = true;
             return fake_this.query.length;
         }
@@ -633,9 +636,21 @@ run_test("initialize", () => {
 
         // This should match the users added at the beginning of this test file.
         let actual_value = options.source("");
-        let expected_value = [alice, cordelia, hal, gael, harry,
-                              hamlet, lear, twin1, twin2, othello,
-                              hamletcharacters, backend, call_center];
+        let expected_value = [
+            alice,
+            cordelia,
+            hal,
+            gael,
+            harry,
+            hamlet,
+            lear,
+            twin1,
+            twin2,
+            othello,
+            hamletcharacters,
+            backend,
+            call_center,
+        ];
         assert.deepEqual(actual_value, expected_value);
 
         // Even though the items passed to .highlighter() are the full
@@ -817,10 +832,7 @@ run_test("initialize", () => {
         fake_this.$element.closest = () => [];
         fake_this.options = options;
         let actual_value = options.source.call(fake_this, "test #s");
-        assert.deepEqual(
-            sorted_names_from(actual_value),
-            ["Denmark", "Sweden", "The Netherlands"],
-        );
+        assert.deepEqual(sorted_names_from(actual_value), ["Denmark", "Sweden", "The Netherlands"]);
         assert(caret_called);
 
         // options.highlighter()
@@ -834,7 +846,8 @@ run_test("initialize", () => {
 
         fake_this = {completing: "mention", token: "hamletcharacters"};
         actual_value = options.highlighter.call(fake_this, hamletcharacters);
-        expected_value = '        <i class="typeahead-image icon fa fa-group" aria-hidden="true"></i>\n<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>\n';
+        expected_value =
+            '        <i class="typeahead-image icon fa fa-group" aria-hidden="true"></i>\n<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>\n';
         assert.equal(actual_value, expected_value);
 
         // matching
@@ -870,20 +883,23 @@ run_test("initialize", () => {
 
         // options.sorter()
         fake_this = {completing: "emoji", token: "ta"};
-        actual_value = sort_items(fake_this, [make_emoji(emoji_stadium),
-                                              make_emoji(emoji_tada)]);
+        actual_value = sort_items(fake_this, [make_emoji(emoji_stadium), make_emoji(emoji_tada)]);
         expected_value = [make_emoji(emoji_tada), make_emoji(emoji_stadium)];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = {completing: "emoji", token: "th"};
-        actual_value = sort_items(fake_this, [make_emoji(emoji_thermometer),
-                                              make_emoji(emoji_thumbs_up)]);
+        actual_value = sort_items(fake_this, [
+            make_emoji(emoji_thermometer),
+            make_emoji(emoji_thumbs_up),
+        ]);
         expected_value = [make_emoji(emoji_thumbs_up), make_emoji(emoji_thermometer)];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = {completing: "emoji", token: "he"};
-        actual_value = sort_items(fake_this, [make_emoji(emoji_headphones),
-                                              make_emoji(emoji_heart)]);
+        actual_value = sort_items(fake_this, [
+            make_emoji(emoji_headphones),
+            make_emoji(emoji_heart),
+        ]);
         expected_value = [make_emoji(emoji_heart), make_emoji(emoji_headphones)];
         assert.deepEqual(actual_value, expected_value);
 
@@ -946,13 +962,15 @@ run_test("initialize", () => {
     let pm_recipient_blur_called = false;
     const old_pm_recipient_blur = $("#private_message_recipient").blur;
     $("#private_message_recipient").blur = function (handler) {
-        if (handler) { // The blur handler is being set.
+        if (handler) {
+            // The blur handler is being set.
             this.val("othello@zulip.com, ");
             handler.call(this);
             const actual_value = this.val();
             const expected_value = "othello@zulip.com";
             assert.equal(actual_value, expected_value);
-        } else { // The element is simply losing the focus.
+        } else {
+            // The element is simply losing the focus.
             old_pm_recipient_blur();
         }
         pm_recipient_blur_called = true;
@@ -1093,12 +1111,16 @@ run_test("initialize", () => {
 
         channel_post_called = true;
     };
-    $("#enter_sends").is = function () { return false; };
+    $("#enter_sends").is = function () {
+        return false;
+    };
     $("#enter_sends").click();
 
     // Now we re-run both .initialize() and the click handler, this time
     // with enter_sends: page_params.enter_sends being true
-    $("#enter_sends").is = function () { return true; };
+    $("#enter_sends").is = function () {
+        return true;
+    };
     $("#enter_sends").click();
     ct.initialize();
 
@@ -1115,26 +1137,27 @@ run_test("initialize", () => {
 });
 
 run_test("begins_typeahead", () => {
-
-    const begin_typehead_this = {options: {completions: {
-        emoji: true,
-        mention: true,
-        silent_mention: true,
-        slash: true,
-        stream: true,
-        syntax: true,
-        topic: true,
-        timestamp: true,
-    }}};
+    const begin_typehead_this = {
+        options: {
+            completions: {
+                emoji: true,
+                mention: true,
+                silent_mention: true,
+                slash: true,
+                stream: true,
+                syntax: true,
+                topic: true,
+                timestamp: true,
+            },
+        },
+    };
 
     function get_values(input, rest) {
         // Stub out split_at_cursor that uses $(':focus')
         ct.split_at_cursor = function () {
             return [input, rest];
         };
-        const values = ct.get_candidates.call(
-            begin_typehead_this, input,
-        );
+        const values = ct.get_candidates.call(begin_typehead_this, input);
         return values;
     }
 
@@ -1156,10 +1179,7 @@ run_test("begins_typeahead", () => {
             rest = "";
         }
         const values = get_values(input, rest);
-        assert.deepEqual(
-            sorted_names_from(values),
-            ["Denmark", "Sweden", "The Netherlands"],
-        );
+        assert.deepEqual(sorted_names_from(values), ["Denmark", "Sweden", "The Netherlands"]);
     }
 
     const people_only = {is_silent: true};
@@ -1317,7 +1337,7 @@ run_test("begins_typeahead", () => {
     assert_typeahead_equals(":test", "ing", false);
     assert_typeahead_equals("```test", "ing", false);
     assert_typeahead_equals("~~~test", "ing", false);
-    const terminal_symbols = ',.;?!()[]> "\'\n\t';
+    const terminal_symbols = ",.;?!()[]> \"'\n\t";
     terminal_symbols.split().forEach((symbol) => {
         assert_stream_list("#test", symbol);
         assert_typeahead_equals("@test", symbol, all_mentions);
@@ -1345,8 +1365,7 @@ run_test("tokenizing", () => {
     assert.equal(ct.tokenize_compose_str("foo ~~~why = why_not\n~~~"), "~~~");
 
     // The following cases are kinda judgment calls...
-    assert.equal(ct.tokenize_compose_str(
-        "foo @toomanycharactersisridiculoustocomplete"), "");
+    assert.equal(ct.tokenize_compose_str("foo @toomanycharactersisridiculoustocomplete"), "");
     assert.equal(ct.tokenize_compose_str("foo #streams@foo"), "#streams@foo");
 });
 
@@ -1420,22 +1439,15 @@ run_test("content_highlighter", () => {
 run_test("filter_and_sort_mentions (normal)", () => {
     const is_silent = false;
 
-    const suggestions = ct.filter_and_sort_mentions(
-        is_silent, "al");
+    const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
-    assert.deepEqual(suggestions, [
-        mention_all,
-        alice,
-        hal,
-        call_center,
-    ]);
+    assert.deepEqual(suggestions, [mention_all, alice, hal, call_center]);
 });
 
 run_test("filter_and_sort_mentions (silent)", () => {
     const is_silent = true;
 
-    const suggestions = ct.filter_and_sort_mentions(
-        is_silent, "al");
+    const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
     assert.deepEqual(suggestions, [alice, hal]);
 });
@@ -1462,17 +1474,27 @@ run_test("typeahead_results", () => {
     }
 
     function assert_slash_matches(input, expected) {
-        const returned = compose_typeahead_results("slash", composebox_typeahead.slash_commands, input);
+        const returned = compose_typeahead_results(
+            "slash",
+            composebox_typeahead.slash_commands,
+            input,
+        );
         assert.deepEqual(returned, expected);
     }
-    assert_emoji_matches("da", [{emoji_name: "tada", emoji_code: "1f389"},
-                                {emoji_name: "panda_face", emoji_code: "1f43c"}]);
+    assert_emoji_matches("da", [
+        {emoji_name: "tada", emoji_code: "1f389"},
+        {emoji_name: "panda_face", emoji_code: "1f43c"},
+    ]);
     assert_emoji_matches("da_", []);
     assert_emoji_matches("da ", []);
     assert_emoji_matches("panda ", [{emoji_name: "panda_face", emoji_code: "1f43c"}]);
     assert_emoji_matches("panda_", [{emoji_name: "panda_face", emoji_code: "1f43c"}]);
-    assert_emoji_matches("japanese_post_", [{emoji_name: "japanese_post_office", emoji_code: "1f3e3"}]);
-    assert_emoji_matches("japanese post ", [{emoji_name: "japanese_post_office", emoji_code: "1f3e3"}]);
+    assert_emoji_matches("japanese_post_", [
+        {emoji_name: "japanese_post_office", emoji_code: "1f3e3"},
+    ]);
+    assert_emoji_matches("japanese post ", [
+        {emoji_name: "japanese_post_office", emoji_code: "1f3e3"},
+    ]);
     assert_emoji_matches("notaemoji", []);
     // Autocomplete user mentions by user name.
     assert_mentions_matches("cordelia", [cordelia]);

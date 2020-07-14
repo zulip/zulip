@@ -8,7 +8,10 @@ function zephyr_stream_name_match(message, operand) {
     if (m !== null && m[1] !== undefined) {
         base_stream_name = m[1];
     }
-    const related_regexp = new RegExp(/^(un)*/.source + util.escape_regexp(base_stream_name) + /(\.d)*$/.source, "i");
+    const related_regexp = new RegExp(
+        /^(un)*/.source + util.escape_regexp(base_stream_name) + /(\.d)*$/.source,
+        "i",
+    );
     return related_regexp.test(message.stream);
 }
 
@@ -22,21 +25,29 @@ function zephyr_topic_name_match(message, operand) {
 
     // Additionally, Zephyr users expect the empty instance and
     // instance "personal" to be the same.
-    if (base_topic === ""
-        || base_topic.toLowerCase() === "personal"
-        || base_topic.toLowerCase() === '(instance "")') {
+    if (
+        base_topic === "" ||
+        base_topic.toLowerCase() === "personal" ||
+        base_topic.toLowerCase() === '(instance "")'
+    ) {
         related_regexp = /^(|personal|\(instance ""\))(\.d)*$/i;
     } else {
-        related_regexp = new RegExp(/^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source, "i");
+        related_regexp = new RegExp(
+            /^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source,
+            "i",
+        );
     }
 
     return related_regexp.test(message.topic);
 }
 
 function message_in_home(message) {
-    if (message.type === "private" || message.mentioned ||
-        page_params.narrow_stream !== undefined &&
-         message.stream.toLowerCase() === page_params.narrow_stream.toLowerCase()) {
+    if (
+        message.type === "private" ||
+        message.mentioned ||
+        (page_params.narrow_stream !== undefined &&
+            message.stream.toLowerCase() === page_params.narrow_stream.toLowerCase())
+    ) {
         return true;
     }
 
@@ -78,7 +89,7 @@ function message_matches_search_term(message, operator, operand) {
             return true; // in:whatever returns true
 
         case "near":
-        // this is all handled server side
+            // this is all handled server side
             return true;
 
         case "id":
@@ -118,7 +129,6 @@ function message_matches_search_term(message, operator, operand) {
             }
             return message.topic.toLowerCase() === operand;
 
-
         case "sender":
             return people.id_matches_email_operand(message.sender_id, operand);
 
@@ -132,12 +142,12 @@ function message_matches_search_term(message, operator, operand) {
                 return false;
             }
             return user_ids.includes(operand_ids[0]);
-        // We should also check if the current user is in the recipient list (user_ids) of the
-        // message, but it is implicit by the fact that the current user has access to the message.
+            // We should also check if the current user is in the recipient list (user_ids) of the
+            // message, but it is implicit by the fact that the current user has access to the message.
         }
 
         case "pm-with": {
-        // TODO: use user_ids, not emails here
+            // TODO: use user_ids, not emails here
             if (message.type !== "private") {
                 return false;
             }
@@ -197,7 +207,7 @@ Filter.canonicalize_term = function (opts) {
 
     switch (operator) {
         case "has":
-        // images -> image, etc.
+            // images -> image, etc.
             operand = operand.replace(/s$/, "");
             break;
 
@@ -217,12 +227,15 @@ Filter.canonicalize_term = function (opts) {
             operand = operand.toString().toLowerCase();
             break;
         case "search":
-        // The mac app automatically substitutes regular quotes with curly
-        // quotes when typing in the search bar.  Curly quotes don't trigger our
-        // phrase search behavior, however.  So, we replace all instances of
-        // curly quotes with regular quotes when doing a search.  This is
-        // unlikely to cause any problems and is probably what the user wants.
-            operand = operand.toString().toLowerCase().replace(/[\u201c\u201d]/g, '"');
+            // The mac app automatically substitutes regular quotes with curly
+            // quotes when typing in the search bar.  Curly quotes don't trigger our
+            // phrase search behavior, however.  So, we replace all instances of
+            // curly quotes with regular quotes when doing a search.  This is
+            // unlikely to cause any problems and is probably what the user wants.
+            operand = operand
+                .toString()
+                .toLowerCase()
+                .replace(/[\u201c\u201d]/g, '"');
             break;
         default:
             operand = operand.toString().toLowerCase();
@@ -244,7 +257,8 @@ Filter.canonicalize_term = function (opts) {
    narrow in the URL fragment.  There we do use full
    URI encoding to avoid problematic characters. */
 function encodeOperand(operand) {
-    return operand.replace(/%/g, "%25")
+    return operand
+        .replace(/%/g, "%25")
         .replace(/\+/g, "%2B")
         .replace(/ /g, "+")
         .replace(/"/g, "%22");
@@ -324,7 +338,6 @@ Filter.parse = function (str) {
 */
 Filter.unparse = function (operators) {
     const parts = operators.map((elem) => {
-
         if (elem.operator === "search") {
             // Search terms are the catch-all case.
             // All tokens that don't start with a known operator and
@@ -339,8 +352,6 @@ Filter.unparse = function (operators) {
     });
     return parts.join(" ");
 };
-
-
 
 Filter.prototype = {
     predicate: function () {
@@ -376,13 +387,13 @@ Filter.prototype = {
 
     has_negated_operand: function (operator, operand) {
         return this._operators.some(
-            (elem) => elem.negated && (elem.operator === operator && elem.operand === operand),
+            (elem) => elem.negated && elem.operator === operator && elem.operand === operand,
         );
     },
 
     has_operand: function (operator, operand) {
         return this._operators.some(
-            (elem) => !elem.negated && (elem.operator === operator && elem.operand === operand),
+            (elem) => !elem.negated && elem.operator === operator && elem.operand === operand,
         );
     },
 
@@ -494,7 +505,12 @@ Filter.prototype = {
             if (!this._sub) {
                 return "#";
             }
-            return "/#narrow/stream/" + stream_data.name_to_slug(this.operands("stream")[0]) + "/topic/" + this.operands("topic")[0];
+            return (
+                "/#narrow/stream/" +
+                stream_data.name_to_slug(this.operands("stream")[0]) +
+                "/topic/" +
+                this.operands("topic")[0]
+            );
         }
 
         // eliminate "complex filters"
@@ -505,11 +521,13 @@ Filter.prototype = {
         if (term_types[1] === "search") {
             switch (term_types[0]) {
                 case "stream":
-                // if stream does not exist, redirect to All
+                    // if stream does not exist, redirect to All
                     if (!this._sub) {
                         return "#";
                     }
-                    return "/#narrow/stream/" + stream_data.name_to_slug(this.operands("stream")[0]);
+                    return (
+                        "/#narrow/stream/" + stream_data.name_to_slug(this.operands("stream")[0])
+                    );
                 case "is-private":
                     return "/#narrow/is/private";
                 case "is-starred":
@@ -519,8 +537,10 @@ Filter.prototype = {
                 case "streams-public":
                     return "/#narrow/streams/public";
                 case "pm-with":
-                // join is used to transform the array to a comma separated string
-                    return "/#narrow/pm-with/" + people.emails_to_slug(this.operands("pm-with").join());
+                    // join is used to transform the array to a comma separated string
+                    return (
+                        "/#narrow/pm-with/" + people.emails_to_slug(this.operands("pm-with").join())
+                    );
                 // TODO: It is ambiguous how we want to handle the 'sender' case,
                 // we may remove it in the future based on design decisions
                 case "sender":
@@ -563,14 +583,16 @@ Filter.prototype = {
     get_title: function () {
         // Nice explanatory titles for common views.
         const term_types = this.sorted_term_types();
-        if (term_types.length === 3 && _.isEqual(term_types, ["stream", "topic", "search"]) ||
-            term_types.length === 2 && _.isEqual(term_types, ["stream", "topic"])) {
+        if (
+            (term_types.length === 3 && _.isEqual(term_types, ["stream", "topic", "search"])) ||
+            (term_types.length === 2 && _.isEqual(term_types, ["stream", "topic"]))
+        ) {
             if (!this._sub) {
                 return i18n.t("Unknown stream");
             }
             return this._sub.name;
         }
-        if (term_types.length === 1 || term_types.length === 2 && term_types[1] === "search") {
+        if (term_types.length === 1 || (term_types.length === 2 && term_types[1] === "search")) {
             switch (term_types[0]) {
                 case "in-home":
                     return i18n.t("All messages");
@@ -612,8 +634,11 @@ Filter.prototype = {
     },
 
     contains_only_private_messages: function () {
-        return this.has_operator("is") && this.operands("is")[0] === "private" ||
-            this.has_operator("pm-with") || this.has_operator("group-pm-with");
+        return (
+            (this.has_operator("is") && this.operands("is")[0] === "private") ||
+            this.has_operator("pm-with") ||
+            this.has_operator("group-pm-with")
+        );
     },
 
     includes_full_stream_history: function () {
@@ -649,8 +674,7 @@ Filter.prototype = {
             return false;
         }
 
-        if (this.has_operator("streams") ||
-            this.has_negated_operand("streams", "public")) {
+        if (this.has_operator("streams") || this.has_negated_operand("streams", "public")) {
             return false;
         }
 
@@ -761,7 +785,9 @@ Filter.prototype = {
         const operators = this._operators;
 
         if (!this.can_apply_locally()) {
-            return function () { return true; };
+            return function () {
+                return true;
+            };
         }
 
         // FIXME: This is probably pretty slow.
@@ -800,12 +826,21 @@ Filter.sorted_term_types = function (term_types) {
     const levels = [
         "in",
         "streams-public",
-        "stream", "topic",
-        "pm-with", "group-pm-with", "sender",
-        "near", "id",
-        "is-alerted", "is-mentioned", "is-private",
-        "is-starred", "is-unread",
-        "has-link", "has-image", "has-attachment",
+        "stream",
+        "topic",
+        "pm-with",
+        "group-pm-with",
+        "sender",
+        "near",
+        "id",
+        "is-alerted",
+        "is-mentioned",
+        "is-private",
+        "is-starred",
+        "is-unread",
+        "has-link",
+        "has-image",
+        "has-attachment",
         "search",
     ];
 
@@ -845,7 +880,7 @@ Filter.operator_to_prefix = function (operator, negated) {
         case "near":
             return verb + "messages around";
 
-            // Note: We hack around using this in "describe" below.
+        // Note: We hack around using this in "describe" below.
         case "has":
             return verb + "messages with one or more";
 
@@ -864,7 +899,7 @@ Filter.operator_to_prefix = function (operator, negated) {
         case "in":
             return verb + "messages in";
 
-            // Note: We hack around using this in "describe" below.
+        // Note: We hack around using this in "describe" below.
         case "is":
             return verb + "messages that are";
 
@@ -917,13 +952,19 @@ function describe_unescaped(operators) {
         if (canonicalized_operator === "has") {
             // search_suggestion.get_suggestions takes care that this message will
             // only be shown if the `has` operator is not at the last.
-            const valid_has_operands = ["image", "images", "link", "links", "attachment", "attachments"];
+            const valid_has_operands = [
+                "image",
+                "images",
+                "link",
+                "links",
+                "attachment",
+                "attachments",
+            ];
             if (!valid_has_operands.includes(operand)) {
                 return "invalid " + operand + " operand for has operator";
             }
         }
-        const prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator,
-                                                              elem.negated);
+        const prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator, elem.negated);
         if (prefix_for_operator !== "") {
             return prefix_for_operator + " " + operand;
         }

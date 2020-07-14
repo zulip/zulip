@@ -26,7 +26,8 @@ $(() => {
         }
     });
     $("#save_smptp_details").on("click", () => {
-        const address = $("input[name=forward]:checked").val() === "enabled" ? $("#address").val() : "";
+        const address =
+            $("input[name=forward]:checked").val() === "enabled" ? $("#address").val() : "";
         const csrf_token = $('input[name="csrfmiddlewaretoken"]').attr("value");
         const data = {forward_address: address, csrfmiddlewaretoken: csrf_token};
 

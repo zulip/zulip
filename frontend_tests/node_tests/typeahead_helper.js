@@ -96,8 +96,8 @@ run_test("sort_streams", () => {
 });
 
 run_test("sort_languages", () => {
-    Object.assign(pygments_data, {langs:
-        {python: 40, javscript: 50, php: 38, pascal: 29, perl: 22, css: 0},
+    Object.assign(pygments_data, {
+        langs: {python: 40, javscript: 50, php: 38, pascal: 29, perl: 22, css: 0},
     });
 
     let test_langs = ["pascal", "perl", "php", "python", "javascript"];
@@ -188,15 +188,7 @@ const zman = {
     user_id: 7,
 };
 
-const matches = [
-    a_bot,
-    a_user,
-    b_user_1,
-    b_user_2,
-    b_user_3,
-    b_bot,
-    zman,
-];
+const matches = [a_bot, a_user, b_user_1, b_user_2, b_user_3, b_bot, zman];
 
 for (const person of matches) {
     people.add_active_user(person);
@@ -258,19 +250,19 @@ run_test("sort_recipients", () => {
         sender_id: 7,
         stream_id: 1,
         topic: "Dev Topic",
-        id: next_id += 1,
+        id: (next_id += 1),
     });
     global.recent_senders.process_message_for_senders({
         sender_id: 5,
         stream_id: 1,
         topic: "Dev Topic",
-        id: next_id += 1,
+        id: (next_id += 1),
     });
     global.recent_senders.process_message_for_senders({
         sender_id: 6,
         stream_id: 1,
         topic: "Dev Topic",
-        id: next_id += 1,
+        id: (next_id += 1),
     });
 
     // Typeahead for stream message [query, stream-name, topic-name]
@@ -288,13 +280,13 @@ run_test("sort_recipients", () => {
         sender_id: 5,
         stream_id: 2,
         topic: "Linux Topic",
-        id: next_id += 1,
+        id: (next_id += 1),
     });
     global.recent_senders.process_message_for_senders({
         sender_id: 7,
         stream_id: 2,
         topic: "Linux Topic",
-        id: next_id += 1,
+        id: (next_id += 1),
     });
 
     // No match
@@ -318,23 +310,9 @@ run_test("sort_recipients all mention", () => {
     // Test person email is "all" or "everyone"
     const test_objs = matches.concat([all_obj]);
 
-    const results = th.sort_recipients(
-        test_objs,
-        "a",
-        "Linux",
-        "Linux Topic",
-    );
+    const results = th.sort_recipients(test_objs, "a", "Linux", "Linux Topic");
 
-    assertSameEmails(results, [
-        all_obj,
-        a_user,
-        a_bot,
-        zman,
-        b_user_3,
-        b_bot,
-        b_user_1,
-        b_user_2,
-    ]);
+    assertSameEmails(results, [all_obj, a_user, a_bot, zman, b_user_3, b_bot, b_user_1, b_user_2]);
 });
 
 run_test("sort_recipients pm counts", () => {
@@ -377,20 +355,11 @@ run_test("sort_recipients dup bots", () => {
 
 run_test("sort_recipients dup alls", () => {
     // full_name starts with same character but emails are 'all'
-    const test_objs = [
-        all_obj,
-        a_user,
-        all_obj,
-    ];
+    const test_objs = [all_obj, a_user, all_obj];
 
-    const recipients = th.sort_recipients(
-        test_objs, "a", "Linux", "Linux Topic");
+    const recipients = th.sort_recipients(test_objs, "a", "Linux", "Linux Topic");
 
-    const expected = [
-        all_obj,
-        all_obj,
-        a_user,
-    ];
+    const expected = [all_obj, all_obj, a_user];
     assertSameEmails(recipients, expected);
 });
 
@@ -399,10 +368,7 @@ run_test("sort_recipients subscribers", () => {
     const small_matches = [b_user_2, b_user_1];
     const recipients = th.sort_recipients(small_matches, "b", "Dev", "Dev Topic");
     const recipients_email = recipients.map((person) => person.email);
-    const expected = [
-        "b_user_2@zulip.net",
-        "b_user_1@zulip.net",
-    ];
+    const expected = ["b_user_2@zulip.net", "b_user_1@zulip.net"];
     assert.deepEqual(recipients_email, expected);
 });
 
@@ -412,10 +378,7 @@ run_test("sort_recipients pm partners", () => {
     const small_matches = [b_user_3, b_user_2];
     const recipients = th.sort_recipients(small_matches, "b", "Linux", "Linux Topic");
     const recipients_email = recipients.map((person) => person.email);
-    const expected = [
-        "b_user_3@zulip.net",
-        "b_user_2@zulip.net",
-    ];
+    const expected = ["b_user_3@zulip.net", "b_user_2@zulip.net"];
     assert.deepEqual(recipients_email, expected);
 });
 
@@ -424,10 +387,7 @@ run_test("sort broadcast mentions", () => {
     // broadcast mentions are already sorted (we
     // actually had a bug where the sort would
     // randomly rearrange them)
-    const results = th.sort_people_for_relevance(
-        ct.broadcast_mentions().reverse(),
-        "",
-        "");
+    const results = th.sort_people_for_relevance(ct.broadcast_mentions().reverse(), "", "");
 
     assert.deepEqual(
         results.map((r) => r.email),
@@ -441,18 +401,11 @@ run_test("sort broadcast mentions", () => {
     test_objs.unshift(zman);
     test_objs.push(a_user);
 
-    const results2 = th.sort_people_for_relevance(
-        test_objs,
-        "",
-        "");
+    const results2 = th.sort_people_for_relevance(test_objs, "", "");
 
     assert.deepEqual(
         results2.map((r) => r.email),
-        ["all",
-         "everyone",
-         "stream",
-         a_user.email,
-         zman.email],
+        ["all", "everyone", "stream", a_user.email, zman.email],
     );
 });
 
@@ -460,17 +413,11 @@ run_test("test compare directly", () => {
     // This is important for ensuring test coverage.
     // We don't technically need it now, but our test
     // coverage is subject to the whims of how JS sorts.
-    assert.equal(
-        th.compare_people_for_relevance(all_obj, all_obj),
-        0);
+    assert.equal(th.compare_people_for_relevance(all_obj, all_obj), 0);
 
-    assert.equal(
-        th.compare_people_for_relevance(all_obj, zman),
-        -1);
+    assert.equal(th.compare_people_for_relevance(all_obj, zman), -1);
 
-    assert.equal(
-        th.compare_people_for_relevance(zman, all_obj),
-        1);
+    assert.equal(th.compare_people_for_relevance(zman, all_obj), 1);
 });
 
 run_test("highlight_with_escaping", () => {
@@ -570,7 +517,6 @@ run_test("clear_rendered_person", () => {
     th.clear_rendered_person(b_bot.user_id);
     assert.equal(th.render_person(b_bot), "typeahead-item-stub");
     assert(rendered);
-
 });
 
 run_test("render_stream", () => {
@@ -644,9 +590,11 @@ run_test("render_emoji", () => {
         emoji_name: "thumbs_up",
         emoji_code: "1f44d",
     };
-    emoji.active_realm_emojis = new Map(Object.entries({
-        realm_emoji: "TBD",
-    }));
+    emoji.active_realm_emojis = new Map(
+        Object.entries({
+            realm_emoji: "TBD",
+        }),
+    );
 
     global.stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");

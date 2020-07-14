@@ -8,10 +8,12 @@ exports.mark_all_as_read = function () {
         success: () => {
             // After marking all messages as read, we reload the browser.
             // This is useful to avoid leaving ourselves deep in the past.
-            reload.initiate({immediate: true,
-                             save_pointer: false,
-                             save_narrow: true,
-                             save_compose: true});
+            reload.initiate({
+                immediate: true,
+                save_pointer: false,
+                save_narrow: true,
+                save_compose: true,
+            });
         },
     });
 };
@@ -60,7 +62,6 @@ exports.process_read_messages_event = function (message_ids) {
     unread_ui.update_unread_counts();
 };
 
-
 // Takes a list of messages and marks them as read.
 // Skips any messages that are already marked as read.
 exports.notify_server_messages_read = function (messages, options) {
@@ -95,8 +96,7 @@ exports.process_visible = function () {
         return;
     }
 
-    if (message_viewport.bottom_message_visible() &&
-            current_msg_list.can_mark_messages_read()) {
+    if (message_viewport.bottom_message_visible() && current_msg_list.can_mark_messages_read()) {
         exports.mark_current_list_as_read();
     }
 };
@@ -122,6 +122,5 @@ exports.mark_topic_as_read = function (stream_id, topic, cont) {
         success: cont,
     });
 };
-
 
 window.unread_ops = exports;

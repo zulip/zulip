@@ -163,7 +163,9 @@ localstorage.supported = function supports_localstorage() {
         return window.localStorage !== undefined && window.localStorage !== null;
     } catch (e) {
         if (!warned_of_localstorage) {
-            blueslip.error("Client browser does not support local storage, will lose socket message on reload");
+            blueslip.error(
+                "Client browser does not support local storage, will lose socket message on reload",
+            );
             warned_of_localstorage = true;
         }
         return false;

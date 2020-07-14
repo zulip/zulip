@@ -1,12 +1,15 @@
 exports.initialize = () => {
     helpers.set_tab("upgrade");
 
-    const add_card_handler = StripeCheckout.configure({ // eslint-disable-line no-undef
+    const add_card_handler = StripeCheckout.configure({
+        // eslint-disable-line no-undef
         key: $("#autopay-form").data("key"),
         image: "/static/images/logo/zulip-icon-128x128.png",
         locale: "auto",
         token: function (stripe_token) {
-            helpers.create_ajax_request("/json/billing/upgrade", "autopay", stripe_token, ["licenses"]);
+            helpers.create_ajax_request("/json/billing/upgrade", "autopay", stripe_token, [
+                "licenses",
+            ]);
         },
     });
 
@@ -38,7 +41,13 @@ exports.initialize = () => {
 
     $("#sponsorship-button").on("click", (e) => {
         e.preventDefault();
-        helpers.create_ajax_request("/json/billing/sponsorship", "sponsorship", undefined, undefined, "/");
+        helpers.create_ajax_request(
+            "/json/billing/sponsorship",
+            "sponsorship",
+            undefined,
+            undefined,
+            "/",
+        );
     });
 
     const prices = {};

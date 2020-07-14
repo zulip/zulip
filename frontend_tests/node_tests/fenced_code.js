@@ -5,8 +5,14 @@ run_test("get_unused_fence", () => {
     assert.equal(fenced_code.get_unused_fence("````\nsomething\n````"), "`".repeat(5));
     assert.equal(fenced_code.get_unused_fence("```\n````\n``````"), "`".repeat(7));
     assert.equal(fenced_code.get_unused_fence("~~~\nsomething\n~~~"), "`".repeat(3));
-    assert.equal(fenced_code.get_unused_fence("```code\nterminating fence is indented and longer\n   ````"), "`".repeat(5));
-    assert.equal(fenced_code.get_unused_fence("```code\nterminating fence is extra indented\n    ````"), "`".repeat(4));
+    assert.equal(
+        fenced_code.get_unused_fence("```code\nterminating fence is indented and longer\n   ````"),
+        "`".repeat(5),
+    );
+    assert.equal(
+        fenced_code.get_unused_fence("```code\nterminating fence is extra indented\n    ````"),
+        "`".repeat(4),
+    );
     let large_testcase = "";
     // ```
     // ````

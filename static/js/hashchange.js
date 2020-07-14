@@ -62,7 +62,14 @@ const state = {
 
 function is_overlay_hash(hash) {
     // Hash changes within this list are overlays and should not unnarrow (etc.)
-    const overlay_list = ["streams", "drafts", "settings", "organization", "invite", "recent_topics"];
+    const overlay_list = [
+        "streams",
+        "drafts",
+        "settings",
+        "organization",
+        "invite",
+        "recent_topics",
+    ];
     const main_hash = hash_util.get_hash_category(hash);
 
     return overlay_list.includes(main_hash);
@@ -81,8 +88,8 @@ function do_hashchange_normal(from_reload) {
             ui_util.change_tab_to("#home");
             const operators = hash_util.parse_narrow(hash);
             if (operators === undefined) {
-            // If the narrow URL didn't parse, clear
-            // window.location.hash and send them to the home tab
+                // If the narrow URL didn't parse, clear
+                // window.location.hash and send them to the home tab
                 set_hash("");
                 activate_home_tab();
                 return false;
@@ -294,7 +301,6 @@ exports.exit_overlay = function (callback) {
         if (typeof callback === "function") {
             callback();
         }
-
     }
 };
 

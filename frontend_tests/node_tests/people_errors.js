@@ -1,7 +1,11 @@
 zrequire("people");
 
-const return_false = function () { return false; };
-const return_true = function () { return true; };
+const return_false = function () {
+    return false;
+};
+const return_true = function () {
+    return true;
+};
 set_global("reload_state", {
     is_in_progress: return_false,
 });
@@ -91,19 +95,19 @@ run_test("blueslip", () => {
 
     message = {
         type: "private",
-        display_recipient: [
-            {id: maria.user_id},
-            {id: 42},
-            {id: charles.user_id},
-        ],
+        display_recipient: [{id: maria.user_id}, {id: 42}, {id: charles.user_id}],
         sender_id: charles.user_id,
     };
     blueslip.expect("error", "Unknown user id in message: 42");
     const reply_to = people.pm_reply_to(message);
     assert(reply_to.includes("?"));
 
-    people.pm_with_user_ids = function () { return [42]; };
-    people.get_by_user_id = function () { return; };
+    people.pm_with_user_ids = function () {
+        return [42];
+    };
+    people.get_by_user_id = function () {
+        return;
+    };
     blueslip.expect("error", "Unknown people in message");
     const uri = people.pm_with_url({});
     assert.equal(uri.indexOf("unk"), uri.length - 3);

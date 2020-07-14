@@ -176,10 +176,10 @@ exports.update_elements = (content) => {
         }
 
         // Add the expand/collapse button to spoiler blocks
-        const toggle_button_html = '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
+        const toggle_button_html =
+            '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
         $(this).prepend(toggle_button_html);
     });
-
 
     // Display emoji (including realm emoji) as text if
     // page_params.emojiset is 'text'.

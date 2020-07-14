@@ -85,9 +85,7 @@ run_test("add_message_metadata", () => {
     message_store.set_message_booleans(message);
     message_store.add_message_metadata(message);
 
-    assert.deepEqual(
-        message_store.user_ids().sort(),
-        [me.user_id, bob.user_id, cindy.user_id]);
+    assert.deepEqual(message_store.user_ids().sort(), [me.user_id, bob.user_id, cindy.user_id]);
 
     assert.equal(message.is_private, true);
     assert.equal(message.reply_to, "bob@example.com,cindy@example.com");
@@ -134,9 +132,12 @@ run_test("add_message_metadata", () => {
     assert.deepEqual(message.flags, undefined);
     assert.equal(message.alerted, false);
 
-    assert.deepEqual(
-        message_store.user_ids().sort(),
-        [me.user_id, bob.user_id, cindy.user_id, denise.user_id]);
+    assert.deepEqual(message_store.user_ids().sort(), [
+        me.user_id,
+        bob.user_id,
+        cindy.user_id,
+        denise.user_id,
+    ]);
 });
 
 run_test("message_booleans_parity", () => {
@@ -149,33 +150,34 @@ run_test("message_booleans_parity", () => {
         message_store.set_message_booleans(set_message);
         message_store.update_booleans(update_message, flags);
         Object.keys(expected_message).forEach((key) => {
-            assert.equal(set_message[key], expected_message[key], `'${key}' != ${expected_message[key]}`);
+            assert.equal(
+                set_message[key],
+                expected_message[key],
+                `'${key}' != ${expected_message[key]}`,
+            );
             assert.equal(update_message[key], expected_message[key]);
         });
         assert.equal(set_message.topic, "set_message_booleans");
         assert.equal(update_message.topic, "update_booleans");
     };
 
-    assert_bool_match(["wildcard_mentioned"],
-                      {
-                          mentioned: true,
-                          mentioned_me_directly: false,
-                          alerted: false,
-                      });
+    assert_bool_match(["wildcard_mentioned"], {
+        mentioned: true,
+        mentioned_me_directly: false,
+        alerted: false,
+    });
 
-    assert_bool_match(["mentioned"],
-                      {
-                          mentioned: true,
-                          mentioned_me_directly: true,
-                          alerted: false,
-                      });
+    assert_bool_match(["mentioned"], {
+        mentioned: true,
+        mentioned_me_directly: true,
+        alerted: false,
+    });
 
-    assert_bool_match(["has_alert_word"],
-                      {
-                          mentioned: false,
-                          mentioned_me_directly: false,
-                          alerted: true,
-                      });
+    assert_bool_match(["has_alert_word"], {
+        mentioned: false,
+        mentioned_me_directly: false,
+        alerted: true,
+    });
 });
 
 run_test("errors", () => {
@@ -268,7 +270,9 @@ run_test("message_id_change", () => {
 
     set_global("pointer", {
         furthest_read: 401,
-        set_furthest_read: function (value) { this.furthest_read = value; },
+        set_furthest_read: function (value) {
+            this.furthest_read = value;
+        },
     });
 
     set_global("message_list", {});
@@ -295,7 +299,6 @@ run_test("message_id_change", () => {
         assert.equal(msg_id.old, 401);
         assert.equal(msg_id.new, 402);
     });
-
 });
 
 run_test("errors", () => {

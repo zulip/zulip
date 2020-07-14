@@ -34,10 +34,12 @@ function find_boundary_tr(initial_tr, iterate_row) {
 }
 
 function construct_recipient_header(message_row) {
-    const message_header_content = rows.get_message_recipient_header(message_row)
+    const message_header_content = rows
+        .get_message_recipient_header(message_row)
         .text()
         .replace(/\s+/g, " ")
-        .replace(/^\s/, "").replace(/\s$/, "");
+        .replace(/^\s/, "")
+        .replace(/\s$/, "");
     return $("<p>").append($("<strong>").text(message_header_content));
 }
 
@@ -101,8 +103,7 @@ function select_div(div, selection) {
         // inside another parent such as `.message_content`.
         color: "#333",
         background: "#FFF",
-    })
-        .attr("id", "copytempdiv");
+    }).attr("id", "copytempdiv");
     $("body").append(div);
     selection.selectAllChildren(div[0]);
 }
@@ -210,7 +211,10 @@ exports.analyze_selection = function (selection) {
         ranges.push(range);
 
         startc = $(range.startContainer);
-        start_data = find_boundary_tr($(startc.parents(".selectable_row, .message_header")[0]), (row) => row.next());
+        start_data = find_boundary_tr(
+            $(startc.parents(".selectable_row, .message_header")[0]),
+            (row) => row.next(),
+        );
         if (start_data === undefined) {
             // Skip any selection sections that don't intersect a message.
             continue;
@@ -277,9 +281,9 @@ exports.paste_handler_converter = function (paste_html) {
     // Checks for raw links without custom text or title.
     turndownService.addRule("links", {
         filter: function (node) {
-            return node.nodeName === "A" &&
-                node.href === node.innerHTML &&
-                node.href === node.title;
+            return (
+                node.nodeName === "A" && node.href === node.innerHTML && node.href === node.title
+            );
         },
         replacement: function (content) {
             return content;

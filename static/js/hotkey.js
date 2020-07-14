@@ -4,13 +4,7 @@ function do_narrow_action(action) {
 }
 
 // For message actions and user profile menu.
-const menu_dropdown_hotkeys = [
-    "down_arrow",
-    "up_arrow",
-    "vim_up",
-    "vim_down",
-    "enter",
-];
+const menu_dropdown_hotkeys = ["down_arrow", "up_arrow", "vim_up", "vim_down", "enter"];
 
 // Note that multiple keys can map to the same event_name, which
 // we'll do in cases where they have the exact same semantics.
@@ -167,12 +161,14 @@ exports.get_keypress_hotkey = function (e) {
 
 exports.processing_text = function () {
     const $focused_elt = $(":focus");
-    return $focused_elt.is("input") ||
+    return (
+        $focused_elt.is("input") ||
         $focused_elt.is("select") ||
         $focused_elt.is("textarea") ||
         $focused_elt.hasClass("editable-section") ||
         $focused_elt.parents(".pill-container").length >= 1 ||
-        $focused_elt.attr("id") === "compose-send-button";
+        $focused_elt.attr("id") === "compose-send-button"
+    );
 };
 
 exports.in_content_editable_widget = function (e) {
@@ -402,8 +398,10 @@ exports.process_shift_tab_key = function () {
     // Shift-tabbing from the edit message save button takes you to the content.
     const focused_message_edit_save = $(".message_edit_save").filter(":focus");
     if (focused_message_edit_save.length > 0) {
-        focused_message_edit_save.closest(".message_edit_form")
-            .find(".message_edit_content").focus();
+        focused_message_edit_save
+            .closest(".message_edit_form")
+            .find(".message_edit_content")
+            .focus();
         return true;
     }
 
@@ -567,7 +565,10 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         }
 
-        if ((event_name === "up_arrow" || event_name === "down_arrow") && compose_state.focus_in_empty_compose()) {
+        if (
+            (event_name === "up_arrow" || event_name === "down_arrow") &&
+            compose_state.focus_in_empty_compose()
+        ) {
             compose_actions.cancel();
             // don't return, as we still want it to be picked up by the code below
         } else if (event_name === "page_up") {
@@ -668,8 +669,8 @@ exports.process_hotkey = function (e, hotkey) {
             drafts.launch();
             return true;
         case "reply_message": // 'r': respond to message
-        // Note that you can "enter" to respond to messages as well,
-        // but that is handled in process_enter_key().
+            // Note that you can "enter" to respond to messages as well,
+            // but that is handled in process_enter_key().
             compose_actions.respond_to_message({trigger: "hotkey"});
             return true;
         case "C_deprecated":
@@ -746,8 +747,9 @@ exports.process_hotkey = function (e, hotkey) {
         case "toggle_reactions_popover": // ':': open reactions to message
             reactions.open_reactions_popover();
             return true;
-        case "thumbs_up_emoji": { // '+': reacts with thumbs up emoji on selected message
-        // Use canonical name.
+        case "thumbs_up_emoji": {
+            // '+': reacts with thumbs up emoji on selected message
+            // Use canonical name.
             const thumbs_up_emoji_code = "1f44d";
             const canonical_name = emoji.get_emoji_name(thumbs_up_emoji_code);
             reactions.toggle_emoji_reaction(msg.id, canonical_name);

@@ -99,9 +99,8 @@ const funcs = {
             // delta = 8
             // normalizedDelta = delta * (1 / 20) * 1 = 0.4
             // zoom = zoom * (0.4 / 100) + 1
-            const zoom = meta.zoom * (
-                meta.speed * meta.internalSpeedMultiplier * delta / 100 + 1
-            );
+            const zoom =
+                meta.zoom * ((meta.speed * meta.internalSpeedMultiplier * delta) / 100 + 1);
 
             funcs.setZoom(meta, zoom);
             funcs.displayImage(canvas, context, meta);
@@ -130,8 +129,8 @@ const funcs = {
                 // add the percentMovement to the meta coordinates but divide
                 // out by the zoom ratio because when zoomed in 10x for example
                 // moving the photo by 1% will appear like 10% on the <canvas>.
-                meta.coords.x += percentMovement.x * 2 / meta.zoom;
-                meta.coords.y += percentMovement.y * 2 / meta.zoom;
+                meta.coords.x += (percentMovement.x * 2) / meta.zoom;
+                meta.coords.y += (percentMovement.y * 2) / meta.zoom;
 
                 // redraw the image.
                 funcs.displayImage(canvas, context, meta);
@@ -162,7 +161,6 @@ const funcs = {
             e.stopPropagation();
         });
 
-
         // make sure that when the mousedown is lifted on <canvas>to prevent
         // panning events.
         canvas.addEventListener("mouseup", () => {
@@ -171,7 +169,6 @@ const funcs = {
             // mousemove and default to a change of (0, 0).
             lastPosition = {};
         });
-
 
         // do so on the document.body as well, though depending on the infra,
         // these are less reliable as preventDefault may prevent these events
@@ -246,8 +243,7 @@ const funcs = {
             canvas.width = parent.width * 2;
             canvas.style.width = parent.width + "px";
 
-
-            canvas.height = parent.width / meta.ratio * 2;
+            canvas.height = (parent.width / meta.ratio) * 2;
             canvas.style.height = parent.width / meta.ratio + "px";
         } else {
             canvas.height = parent.height * 2;

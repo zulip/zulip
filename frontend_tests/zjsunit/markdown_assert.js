@@ -30,14 +30,13 @@ let _markdownComparerInstance = null;
 
 class MarkdownComparer {
     constructor(output_formatter) {
-        this._output_formatter = output_formatter || function (actual, expected) {
-            return [
-                "Actual and expected output do not match.",
-                actual,
-                "!=",
-                expected,
-            ].join("\n");
-        };
+        this._output_formatter =
+            output_formatter ||
+            function (actual, expected) {
+                return ["Actual and expected output do not match.", actual, "!=", expected].join(
+                    "\n",
+                );
+            };
         this._document = new JSDOM().window.document;
     }
 
@@ -73,7 +72,9 @@ class MarkdownComparer {
         }
 
         // If put in above forEach loop, causes issues (possible nodes.attribute invalidation?)
-        attributeList.forEach((attr) => {node.removeAttribute(attr.name);});
+        attributeList.forEach((attr) => {
+            node.removeAttribute(attr.name);
+        });
 
         attributeList.sort((a, b) => {
             const name_a = a.name;
@@ -136,10 +137,12 @@ class MarkdownComparer {
 
         if (comparison_results.are_equivalent === false) {
             throw new assert.AssertionError({
-                message: message + this._output_formatter(
-                    comparison_results.html.actual,
-                    comparison_results.html.expected,
-                ),
+                message:
+                    message +
+                    this._output_formatter(
+                        comparison_results.html.actual,
+                        comparison_results.html.expected,
+                    ),
             });
         }
     }
@@ -152,12 +155,14 @@ class MarkdownComparer {
 
         if (comparison_results.are_equivalent) {
             throw new assert.AssertionError({
-                message: message + [
-                    "actual and expected output produce semantially identical HTML",
-                    actual,
-                    "==",
-                    expected,
-                ].join("\n"),
+                message:
+                    message +
+                    [
+                        "actual and expected output produce semantially identical HTML",
+                        actual,
+                        "==",
+                        expected,
+                    ].join("\n"),
             });
         }
     }
@@ -165,10 +170,12 @@ class MarkdownComparer {
 
 function returnComparer() {
     if (!_markdownComparerInstance) {
-        _markdownComparerInstance = new MarkdownComparer((actual, expected) => [
-            "Actual and expected output do not match.  Showing diff",
-            mdiff.diff_strings(actual, expected),
-        ].join("\n"));
+        _markdownComparerInstance = new MarkdownComparer((actual, expected) =>
+            [
+                "Actual and expected output do not match.  Showing diff",
+                mdiff.diff_strings(actual, expected),
+            ].join("\n"),
+        );
     }
     return _markdownComparerInstance;
 }

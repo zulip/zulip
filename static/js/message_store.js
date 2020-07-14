@@ -42,7 +42,6 @@ exports.each = function (f) {
 };
 
 exports.get_pm_emails = function (message) {
-
     function email(user_id) {
         const person = people.get_by_user_id(user_id);
         if (!person) {
@@ -59,7 +58,6 @@ exports.get_pm_emails = function (message) {
 };
 
 exports.get_pm_full_names = function (message) {
-
     function name(user_id) {
         const person = people.get_by_user_id(user_id);
         if (!person) {
@@ -107,7 +105,6 @@ exports.set_message_booleans = function (message) {
     // just a distraction, so we delete it.  (All the downstream code
     // uses booleans.)
     delete message.flags;
-
 };
 
 exports.init_booleans = function (message) {
@@ -181,8 +178,7 @@ exports.add_message_metadata = function (message) {
 
         case "private":
             message.is_private = true;
-            message.reply_to = util.normalize_recipients(
-                exports.get_pm_emails(message));
+            message.reply_to = util.normalize_recipients(exports.get_pm_emails(message));
             message.display_reply_to = exports.get_pm_full_names(message);
             message.pm_with_url = people.pm_with_url(message);
             message.to_user_ids = people.pm_reply_user_string(message);

@@ -27,7 +27,10 @@ casper.then(function () {
     casper.waitUntilVisible(user_row("cordelia"), function () {
         casper.test.assertExists(".fa-user-times", "Deactivate icon available");
         casper.click(user_row("cordelia") + " .deactivate");
-        casper.test.assertTextExists("Deactivate cordelia@zulip.com", "Deactivate modal has right user");
+        casper.test.assertTextExists(
+            "Deactivate cordelia@zulip.com",
+            "Deactivate modal has right user"
+        );
         casper.test.assertTextExists("Deactivate now", "Deactivate now button available");
         casper.click("#deactivation_user_modal .do_deactivate_button");
     });
@@ -51,7 +54,10 @@ casper.then(function () {
     casper.waitUntilVisible(user_row("cordelia"), function () {
         casper.test.assertExists(".fa-user-times", "Deactivate icon available");
         casper.click(user_row("cordelia") + " .deactivate");
-        casper.test.assertTextExists("Deactivate cordelia@zulip.com", "Deactivate modal has right user");
+        casper.test.assertTextExists(
+            "Deactivate cordelia@zulip.com",
+            "Deactivate modal has right user"
+        );
         casper.test.assertTextExists("Deactivate now", "Deactivate now button available");
         casper.click("#deactivation_user_modal .do_deactivate_button");
     });
@@ -61,25 +67,36 @@ casper.then(function () {
     // Leave the page and return
     casper.reload();
 
-    casper.test.assertSelectorHasText("li[data-section='deactivated-users-admin']", "Deactivated users");
+    casper.test.assertSelectorHasText(
+        "li[data-section='deactivated-users-admin']",
+        "Deactivated users"
+    );
     casper.click("li[data-section='deactivated-users-admin']");
 
-
-    casper.waitUntilVisible("#admin_deactivated_users_table " + user_row("cordelia") + " .reactivate", function () {
-        casper.test.assertExists(".fa-user-plus", "Reactive icon available");
-        casper.click("#admin_deactivated_users_table " + user_row("cordelia") + " .reactivate");
-    });
+    casper.waitUntilVisible(
+        "#admin_deactivated_users_table " + user_row("cordelia") + " .reactivate",
+        function () {
+            casper.test.assertExists(".fa-user-plus", "Reactive icon available");
+            casper.click("#admin_deactivated_users_table " + user_row("cordelia") + " .reactivate");
+        }
+    );
 });
 
 casper.then(function () {
-    casper.waitUntilVisible("#admin_deactivated_users_table " + user_row("cordelia") + " button:not(.reactivate)", function () {
-        casper.test.assertExists(".fa-user-times", "Deactivate icon available");
-    });
+    casper.waitUntilVisible(
+        "#admin_deactivated_users_table " + user_row("cordelia") + " button:not(.reactivate)",
+        function () {
+            casper.test.assertExists(".fa-user-times", "Deactivate icon available");
+        }
+    );
 });
 
 // Test bot deactivation and reactivation
 casper.then(function () {
-    casper.test.assertSelectorHasText("li[data-section='organization-settings']", "Organization settings");
+    casper.test.assertSelectorHasText(
+        "li[data-section='organization-settings']",
+        "Organization settings"
+    );
     casper.click("li[data-section='bot-list-admin']");
 });
 

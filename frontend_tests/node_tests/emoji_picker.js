@@ -41,6 +41,8 @@ run_test("initialize", () => {
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-soccer-ball-o", 63);
 
     // The popular emoji appear twice in the picker, and the zulip emoji is special
-    assert.equal(emoji.emojis_by_name.size,
-                 total_emoji_in_categories - popular_emoji_count + zulip_emoji_count);
+    assert.equal(
+        emoji.emojis_by_name.size,
+        total_emoji_in_categories - popular_emoji_count + zulip_emoji_count,
+    );
 });

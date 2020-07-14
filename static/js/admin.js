@@ -14,8 +14,9 @@ const admin_settings_label = {
     realm_inline_url_embed_preview: i18n.t("Show previews of linked websites"),
     realm_default_twenty_four_hour_time: i18n.t("Time format"),
     realm_send_welcome_emails: i18n.t("Send emails introducing Zulip to new users"),
-    realm_message_content_allowed_in_email_notifications:
-        i18n.t("Allow message content in missed message emails"),
+    realm_message_content_allowed_in_email_notifications: i18n.t(
+        "Allow message content in missed message emails",
+    ),
     realm_digest_emails_enabled: i18n.t("Send weekly digest emails to inactive users"),
     realm_default_code_block_language: i18n.t("Default language for code blocks:"),
 
@@ -30,7 +31,8 @@ function insert_tip_box() {
         return;
     }
     const tip_box = render_settings_organization_settings_tip({is_admin: page_params.is_admin});
-    $(".organization-box").find(".settings-section")
+    $(".organization-box")
+        .find(".settings-section")
         .not("#emoji-settings")
         .not("#user-groups-admin")
         .not("#organization-auth-settings")
@@ -60,10 +62,12 @@ exports.build_page = function () {
         realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
         can_add_emojis: settings_emoji.can_add_emoji(),
         realm_allow_community_topic_editing: page_params.realm_allow_community_topic_editing,
-        realm_message_content_edit_limit_minutes:
-            settings_org.get_realm_time_limits_in_minutes("realm_message_content_edit_limit_seconds"),
-        realm_message_content_delete_limit_minutes:
-            settings_org.get_realm_time_limits_in_minutes("realm_message_content_delete_limit_seconds"),
+        realm_message_content_edit_limit_minutes: settings_org.get_realm_time_limits_in_minutes(
+            "realm_message_content_edit_limit_seconds",
+        ),
+        realm_message_content_delete_limit_minutes: settings_org.get_realm_time_limits_in_minutes(
+            "realm_message_content_delete_limit_seconds",
+        ),
         realm_message_retention_days: page_params.realm_message_retention_days,
         realm_allow_edit_history: page_params.realm_allow_edit_history,
         language_list: page_params.language_list,
@@ -125,10 +129,10 @@ exports.build_page = function () {
     // default_twenty_four_hour time is a boolean in the API but a
     // dropdown, so we need to convert the value to a string for
     // storage in the browser's DOM.
-    $("#id_realm_default_twenty_four_hour_time").val(JSON.stringify(
-        page_params.realm_default_twenty_four_hour_time));
+    $("#id_realm_default_twenty_four_hour_time").val(
+        JSON.stringify(page_params.realm_default_twenty_four_hour_time),
+    );
 };
-
 
 exports.launch = function (section) {
     settings.build_page();

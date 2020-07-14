@@ -8,11 +8,14 @@ set_global("page_params", {
 });
 
 const bot_data_params = {
-    realm_bots: [{api_key: "QadL788EkiottHmukyhHgePUFHREiu8b",
-                  email: "error-bot@zulip.org",
-                  full_name: "Error bot",
-                  user_id: 1,
-                  services: []},
+    realm_bots: [
+        {
+            api_key: "QadL788EkiottHmukyhHgePUFHREiu8b",
+            email: "error-bot@zulip.org",
+            full_name: "Error bot",
+            user_id: 1,
+            services: [],
+        },
     ],
 };
 
@@ -33,11 +36,13 @@ bot_data.initialize(bot_data_params);
 
 run_test("generate_zuliprc_uri", () => {
     const uri = settings_bots.generate_zuliprc_uri(1);
-    const expected = "data:application/octet-stream;charset=utf-8," + encodeURIComponent(
-        "[api]\nemail=error-bot@zulip.org\n" +
-        "key=QadL788EkiottHmukyhHgePUFHREiu8b\n" +
-        "site=https://chat.example.com\n",
-    );
+    const expected =
+        "data:application/octet-stream;charset=utf-8," +
+        encodeURIComponent(
+            "[api]\nemail=error-bot@zulip.org\n" +
+                "key=QadL788EkiottHmukyhHgePUFHREiu8b\n" +
+                "site=https://chat.example.com\n",
+        );
 
     assert.equal(uri, expected);
 });
@@ -45,9 +50,10 @@ run_test("generate_zuliprc_uri", () => {
 run_test("generate_zuliprc_content", () => {
     const bot_user = bot_data.get(1);
     const content = settings_bots.generate_zuliprc_content(bot_user);
-    const expected = "[api]\nemail=error-bot@zulip.org\n" +
-                   "key=QadL788EkiottHmukyhHgePUFHREiu8b\n" +
-                   "site=https://chat.example.com\n";
+    const expected =
+        "[api]\nemail=error-bot@zulip.org\n" +
+        "key=QadL788EkiottHmukyhHgePUFHREiu8b\n" +
+        "site=https://chat.example.com\n";
 
     assert.equal(content, expected);
 });
@@ -60,13 +66,16 @@ run_test("generate_botserverrc_content", () => {
     const service = {
         token: "abcd1234",
     };
-    const content = settings_bots.generate_botserverrc_content(user.email,
-                                                               user.api_key,
-                                                               service.token);
-    const expected = "[]\nemail=vabstest-bot@zulip.com\n" +
-                   "key=nSlA0mUm7G42LP85lMv7syqFTzDE2q34\n" +
-                   "site=https://chat.example.com\n" +
-                   "token=abcd1234\n";
+    const content = settings_bots.generate_botserverrc_content(
+        user.email,
+        user.api_key,
+        service.token,
+    );
+    const expected =
+        "[]\nemail=vabstest-bot@zulip.com\n" +
+        "key=nSlA0mUm7G42LP85lMv7syqFTzDE2q34\n" +
+        "site=https://chat.example.com\n" +
+        "token=abcd1234\n";
 
     assert.equal(content, expected);
 });

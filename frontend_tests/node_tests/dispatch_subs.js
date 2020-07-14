@@ -1,4 +1,3 @@
-
 const events = require("./lib/events.js");
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
@@ -105,7 +104,6 @@ test("add error handling", (override) => {
         dispatch(event);
         assert.deepEqual(stub.get_args("param").param, "Subscribing to unknown stream with ID 42");
     });
-
 });
 
 test("peer event error handling (bad stream_ids)", (override) => {
@@ -162,4 +160,3 @@ test("peer event error handling (add_subscriber)", (override) => {
     blueslip.expect("warn", "Cannot process peer_remove event.");
     dispatch(remove_event);
 });
-

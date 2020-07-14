@@ -27,8 +27,7 @@ exports.update_dom_with_unread_counts = function (counts) {
     exports.update_count_in_dom(mentioned_li, counts.mentioned_message_count);
     exports.update_count_in_dom(home_li, counts.home_unread_messages);
 
-    unread_ui.animate_mention_changes(mentioned_li,
-                                      counts.mentioned_message_count);
+    unread_ui.animate_mention_changes(mentioned_li, counts.mentioned_message_count);
 };
 
 function deselect_top_left_corner_items() {

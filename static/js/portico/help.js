@@ -141,10 +141,14 @@ if (window.location.pathname === "/help/") {
 $(".help .sidebar h1, .help .sidebar h2, .help .sidebar h3").removeAttr("id");
 
 // Scroll to anchor link when clicked
-$(document).on("click", ".markdown .content h1, .markdown .content h2, .markdown .content h3", function () {
-    window.location.hash = $(this).attr("id");
-    scrollToHash(markdownSB);
-});
+$(document).on(
+    "click",
+    ".markdown .content h1, .markdown .content h2, .markdown .content h3",
+    function () {
+        window.location.hash = $(this).attr("id");
+        scrollToHash(markdownSB);
+    },
+);
 
 $(".hamburger").click(() => {
     $(".sidebar").toggleClass("show");

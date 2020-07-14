@@ -88,8 +88,7 @@ exports.with_overrides = function (test_function) {
             // If you get a failure from this, you probably just
             // need to have your test do its own overrides and
             // not cherry-pick off of the prior test's setup.
-            global[module][func_name] =
-                "ATTEMPTED TO REUSE OVERRIDDEN VALUE FROM PRIOR TEST";
+            global[module][func_name] = "ATTEMPTED TO REUSE OVERRIDDEN VALUE FROM PRIOR TEST";
         });
     };
 

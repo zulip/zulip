@@ -47,7 +47,7 @@ export default class DebugRequirePlugin {
                         __dirname,
                         "./debug-require.js",
                         {},
-                        (err?: Error, result?: string) => err ? reject(err) : resolve(result),
+                        (err?: Error, result?: string) => (err ? reject(err) : resolve(result)),
                     ),
                 );
             },

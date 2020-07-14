@@ -15,12 +15,15 @@ function log_in() {
     var credentials = test_credentials.default_user;
 
     casper.test.info("Logging in");
-    casper.fill('form[action^="/accounts/login/"]', {
-        username: credentials.username,
-        password: credentials.password,
-    }, true /* submit form */);
+    casper.fill(
+        'form[action^="/accounts/login/"]',
+        {
+            username: credentials.username,
+            password: credentials.password,
+        },
+        true /* submit form */
+    );
 }
-
 
 exports.init_viewport = function () {
     casper.options.viewportSize = {width: 1280, height: 1024};
@@ -29,15 +32,25 @@ exports.init_viewport = function () {
 // This function should always be enclosed within a then() otherwise
 // it might not exist on casper object.
 exports.wait_for_text = function (selector, text, then, onTimeout, timeout) {
-    casper.waitForSelector(selector, function _then() {
-        casper.waitFor(function _check() {
-            var content = casper.fetchText(selector);
-            if (util.isRegExp(text)) {
-                return text.test(content);
-            }
-            return content.indexOf(text) !== -1;
-        }, then, onTimeout, timeout);
-    }, onTimeout, timeout);
+    casper.waitForSelector(
+        selector,
+        function _then() {
+            casper.waitFor(
+                function _check() {
+                    var content = casper.fetchText(selector);
+                    if (util.isRegExp(text)) {
+                        return text.test(content);
+                    }
+                    return content.indexOf(text) !== -1;
+                },
+                then,
+                onTimeout,
+                timeout
+            );
+        },
+        onTimeout,
+        timeout
+    );
 };
 
 exports.initialize_casper = function () {
@@ -125,9 +138,7 @@ exports.then_log_out = function () {
         casper.waitUntilVisible(logout_selector, function () {
             casper.test.info("Logging out");
             casper.click(logout_selector);
-
         });
-
     });
     casper.waitUntilVisible(".login-page-container", function () {
         casper.test.assertUrlMatch(/accounts\/login\/$/);
@@ -141,28 +152,31 @@ exports.select_item_via_typeahead = function (field_selector, str, item) {
     casper.then(function () {
         casper.test.info("Looking in " + field_selector + " to select " + str + ", " + item);
 
-        casper.evaluate(function (field_selector, str, item) {
-            // Set the value and then send a bogus keyup event to trigger
-            // the typeahead.
-            $(field_selector)
-                .focus()
-                .val(str)
-                .trigger($.Event("keyup", {which: 0}));
+        casper.evaluate(
+            function (field_selector, str, item) {
+                // Set the value and then send a bogus keyup event to trigger
+                // the typeahead.
+                $(field_selector)
+                    .focus()
+                    .val(str)
+                    .trigger($.Event("keyup", {which: 0}));
 
-            // You might think these steps should be split by casper.then,
-            // but apparently that's enough to make the typeahead close (??),
-            // but not the first time.
+                // You might think these steps should be split by casper.then,
+                // but apparently that's enough to make the typeahead close (??),
+                // but not the first time.
 
-            // Trigger the typeahead.
-            // Reaching into the guts of Bootstrap Typeahead like this is not
-            // great, but I found it very hard to do it any other way.
+                // Trigger the typeahead.
+                // Reaching into the guts of Bootstrap Typeahead like this is not
+                // great, but I found it very hard to do it any other way.
 
-            var tah = $(field_selector).data().typeahead;
-            tah.mouseenter({
-                currentTarget: $('.typeahead:visible li:contains("' + item + '")')[0],
-            });
-            tah.select();
-        }, {field_selector: field_selector, str: str, item: item});
+                var tah = $(field_selector).data().typeahead;
+                tah.mouseenter({
+                    currentTarget: $('.typeahead:visible li:contains("' + item + '")')[0],
+                });
+                tah.select();
+            },
+            {field_selector: field_selector, str: str, item: item}
+        );
     });
 };
 
@@ -171,16 +185,20 @@ exports.check_form = function (form_selector, expected, test_name) {
     var k;
     for (k in expected) {
         if (Object.prototype.hasOwnProperty.call(expected, k)) {
-            casper.test.assertEqual(values[k], expected[k],
-                                    test_name ? test_name + ": " + k : undefined);
+            casper.test.assertEqual(
+                values[k],
+                expected[k],
+                test_name ? test_name + ": " + k : undefined
+            );
         }
     }
 };
 
 exports.wait_for_message_fully_processed = function (content) {
     casper.waitFor(function () {
-        return casper.evaluate(function (content) {
-            /*
+        return casper.evaluate(
+            function (content) {
+                /*
                 The tricky part about making sure that
                 a message has actually been fully processed
                 is that we'll "locally echo" the message
@@ -204,31 +222,33 @@ exports.wait_for_message_fully_processed = function (content) {
                     - does it look to have been
                       re-rendered based on server info?
             */
-            const last_msg = current_msg_list.last();
+                const last_msg = current_msg_list.last();
 
-            if (last_msg.raw_content !== content) {
-                return false;
-            }
+                if (last_msg.raw_content !== content) {
+                    return false;
+                }
 
-            if (last_msg.locally_echoed) {
-                return false;
-            }
+                if (last_msg.locally_echoed) {
+                    return false;
+                }
 
-            var row = rows.last_visible();
+                var row = rows.last_visible();
 
-            if (rows.id(row) !== last_msg.id) {
-                return false;
-            }
+                if (rows.id(row) !== last_msg.id) {
+                    return false;
+                }
 
-            /*
+                /*
                 Make sure the message is completely
                 re-rendered from its original "local echo"
                 version by looking for the star icon.  We
                 don't add the star icon until the server
                 responds.
             */
-            return row.find(".star").length === 1;
-        }, {content: content});
+                return row.find(".star").length === 1;
+            },
+            {content: content}
+        );
     });
 };
 
@@ -247,10 +267,14 @@ exports.turn_off_press_enter_to_send = function () {
 
 exports.pm_recipient = {
     set: function (recip) {
-        casper.evaluate(function (recipient) {
-            $("#private_message_recipient").text(recipient)
-                .trigger({type: "keydown", keyCode: 13});
-        }, {recipient: recip});
+        casper.evaluate(
+            function (recipient) {
+                $("#private_message_recipient")
+                    .text(recipient)
+                    .trigger({type: "keydown", keyCode: 13});
+            },
+            {recipient: recip}
+        );
     },
 
     expect: function (expected_value) {
@@ -327,23 +351,28 @@ exports.then_send_message = function (type, params) {
 // script's context is awkward (c.f. the various appearances of
 // 'table' here).
 exports.get_rendered_messages = function (table) {
-    return casper.evaluate(function (table) {
-        var tbl = $("#" + table);
-        return {
-            headings: $.map(tbl.find(".recipient_row .message-header-contents"), function (elem) {
-                var $clone = $(elem).clone(true);
-                $clone.find(".recipient_row_date").remove();
+    return casper.evaluate(
+        function (table) {
+            var tbl = $("#" + table);
+            return {
+                headings: $.map(tbl.find(".recipient_row .message-header-contents"), function (
+                    elem
+                ) {
+                    var $clone = $(elem).clone(true);
+                    $clone.find(".recipient_row_date").remove();
 
-                return $clone.text().trim().replace(/\s+/g, " ");
-            }),
+                    return $clone.text().trim().replace(/\s+/g, " ");
+                }),
 
-            bodies: $.map(tbl.find(".message_content"), function (elem) {
-                return elem.innerHTML;
-            }),
-        };
-    }, {
-        table: table,
-    });
+                bodies: $.map(tbl.find(".message_content"), function (elem) {
+                    return elem.innerHTML;
+                }),
+            };
+        },
+        {
+            table: table,
+        }
+    );
 };
 
 exports.get_form_field_value = function (selector) {
@@ -353,37 +382,44 @@ exports.get_form_field_value = function (selector) {
 };
 
 exports.get_user_id = function (email) {
-    return casper.evaluate(function (email) {
-        return people.get_user_id(email);
-    }, {
-        email: email,
-    });
+    return casper.evaluate(
+        function (email) {
+            return people.get_user_id(email);
+        },
+        {
+            email: email,
+        }
+    );
 };
 
 exports.get_stream_id = function (stream_name) {
-    return casper.evaluate(function (stream_name) {
-        return stream_data.get_stream_id(stream_name);
-    }, {
-        stream_name: stream_name,
-    });
+    return casper.evaluate(
+        function (stream_name) {
+            return stream_data.get_stream_id(stream_name);
+        },
+        {
+            stream_name: stream_name,
+        }
+    );
 };
 
 // Inject key presses by running some jQuery code in page context.
 // PhantomJS and CasperJS don't provide a clean way to insert key
 // presses by code, only strings of printable characters.
 exports.keypress = function (code) {
-    casper.evaluate(function (code) {
-        $("body").trigger($.Event("keydown", {which: code}));
-    }, {
-        code: code,
-    });
+    casper.evaluate(
+        function (code) {
+            $("body").trigger($.Event("keydown", {which: code}));
+        },
+        {
+            code: code,
+        }
+    );
 };
 
 exports.then_send_many = function (msgs) {
     msgs.forEach(function (msg) {
-        exports.then_send_message(
-            msg.stream !== undefined ? "stream" : "private",
-            msg);
+        exports.then_send_message(msg.stream !== undefined ? "stream" : "private", msg);
     });
 };
 
@@ -428,12 +464,14 @@ exports.expected_messages = function (table, headings, bodies) {
     casper.test.assertEquals(
         msg.headings.slice(-headings.length),
         headings.map(exports.trim),
-        "Got expected message headings");
+        "Got expected message headings"
+    );
 
     casper.test.assertEquals(
         msg.bodies.slice(-bodies.length),
         bodies,
-        "Got expected message bodies");
+        "Got expected message bodies"
+    );
 };
 
 exports.un_narrow = function () {
@@ -460,7 +498,10 @@ exports.manage_organization = function () {
 
     casper.waitForSelector("#settings_overlay_container.show", function () {
         casper.test.info("Organization page is active");
-        casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#organization/, "URL suggests we are on organization page");
+        casper.test.assertUrlMatch(
+            /^http:\/\/[^/]+\/#organization/,
+            "URL suggests we are on organization page"
+        );
     });
 
     casper.then(function () {

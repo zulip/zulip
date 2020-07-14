@@ -33,7 +33,9 @@ exports.setup_subscriptions_tab_hash = function (tab_key_value) {
 };
 
 exports.settings_for_sub = function (sub) {
-    return $("#subscription_overlay .subscription_settings[data-stream-id='" + sub.stream_id + "']");
+    return $(
+        "#subscription_overlay .subscription_settings[data-stream-id='" + sub.stream_id + "']",
+    );
 };
 
 exports.is_sub_settings_active = function (sub) {
@@ -56,9 +58,11 @@ exports.get_retention_policy_text_for_subscription_type = function (sub) {
     let message_retention_days = sub.message_retention_days;
     // If both this stream and the organization-level policy are to retain forever,
     // there's no need to comment on retention policies when describing the stream.
-    if (page_params.realm_message_retention_days === settings_config.retain_message_forever
-        && (sub.message_retention_days === null ||
-            sub.message_retention_days === settings_config.retain_message_forever)) {
+    if (
+        page_params.realm_message_retention_days === settings_config.retain_message_forever &&
+        (sub.message_retention_days === null ||
+            sub.message_retention_days === settings_config.retain_message_forever)
+    ) {
         return;
     }
 
@@ -73,7 +77,10 @@ exports.get_retention_policy_text_for_subscription_type = function (sub) {
         message_retention_days = page_params.realm_message_retention_days;
     }
 
-    return i18n.t("Messages in this stream will be automatically deleted after __retention_days__ days.", {retention_days: message_retention_days});
+    return i18n.t(
+        "Messages in this stream will be automatically deleted after __retention_days__ days.",
+        {retention_days: message_retention_days},
+    );
 };
 
 exports.get_display_text_for_realm_message_retention_setting = function () {
@@ -81,7 +88,9 @@ exports.get_display_text_for_realm_message_retention_setting = function () {
     if (realm_message_retention_days === settings_config.retain_message_forever) {
         return i18n.t("(forever)");
     }
-    return i18n.t("(__message_retention_days__ days)", {message_retention_days: realm_message_retention_days});
+    return i18n.t("(__message_retention_days__ days)", {
+        message_retention_days: realm_message_retention_days,
+    });
 };
 
 function change_stream_message_retention_days_block_display_property(value) {
@@ -174,9 +183,9 @@ exports.update_stream_name = function (sub, new_name) {
 exports.update_stream_description = function (sub) {
     const stream_settings = exports.settings_for_sub(sub);
     stream_settings.find("input.description").val(sub.description);
-    stream_settings.find(".stream-description-editable").html(
-        util.clean_user_content_links(sub.rendered_description),
-    );
+    stream_settings
+        .find(".stream-description-editable")
+        .html(util.clean_user_content_links(sub.rendered_description));
 };
 
 exports.invite_user_to_stream = function (user_ids, sub, success, failure) {
@@ -184,8 +193,10 @@ exports.invite_user_to_stream = function (user_ids, sub, success, failure) {
     const stream_name = sub.name;
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([{name: stream_name}]),
-               principals: JSON.stringify(user_ids)},
+        data: {
+            subscriptions: JSON.stringify([{name: stream_name}]),
+            principals: JSON.stringify(user_ids),
+        },
         success: success,
         error: failure,
     });
@@ -203,8 +214,10 @@ function submit_add_subscriber_form(e) {
     const stream_subscription_info_elem = $(".stream_subscription_info").expectOne();
 
     if (user_ids.length === 0) {
-        stream_subscription_info_elem.text(i18n.t("No user to subscribe."))
-            .addClass("text-error").removeClass("text-success");
+        stream_subscription_info_elem
+            .text(i18n.t("No user to subscribe."))
+            .addClass("text-error")
+            .removeClass("text-success");
         return;
     }
 
@@ -216,17 +229,21 @@ function submit_add_subscriber_form(e) {
         } else {
             stream_subscription_info_elem.text(i18n.t("User already subscribed."));
             const already_subscribed_users = Object.keys(data.already_subscribed).join(", ");
-            stream_subscription_info_elem.text(i18n.t(
-                " __already_subscribed_users__ are already subscribed.", {already_subscribed_users: already_subscribed_users}));
+            stream_subscription_info_elem.text(
+                i18n.t(" __already_subscribed_users__ are already subscribed.", {
+                    already_subscribed_users: already_subscribed_users,
+                }),
+            );
         }
-        stream_subscription_info_elem.addClass("text-success")
-            .removeClass("text-error");
+        stream_subscription_info_elem.addClass("text-success").removeClass("text-error");
     }
 
     function invite_failure(xhr) {
         const error = JSON.parse(xhr.responseText);
-        stream_subscription_info_elem.text(error.msg)
-            .addClass("text-error").removeClass("text-success");
+        stream_subscription_info_elem
+            .text(error.msg)
+            .addClass("text-error")
+            .removeClass("text-success");
     }
 
     exports.invite_user_to_stream(user_ids, sub, invite_success, invite_failure);
@@ -237,8 +254,7 @@ exports.remove_user_from_stream = function (user_id, sub, success, failure) {
     const stream_name = sub.name;
     return channel.del({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([stream_name]),
-               principals: JSON.stringify([user_id])},
+        data: {subscriptions: JSON.stringify([stream_name]), principals: JSON.stringify([user_id])},
         success: success,
         error: failure,
     });
@@ -276,7 +292,11 @@ function show_subscription_settings(sub_row) {
     stream_color.set_colorpicker_color(colorpicker, color);
     stream_ui_updates.update_add_subscriptions_elements(sub);
 
-    const container = $("#subscription_overlay .subscription_settings[data-stream-id='" + stream_id + "'] .pill-container");
+    const container = $(
+        "#subscription_overlay .subscription_settings[data-stream-id='" +
+            stream_id +
+            "'] .pill-container",
+    );
     exports.pill_widget = input_pill.create({
         container: container,
         create_item_from_text: user_pill.create_item_from_email,
@@ -312,8 +332,10 @@ function show_subscription_settings(sub_row) {
                 const person = item;
 
                 if (person) {
-                    if (person.email.toLocaleLowerCase().includes(value) &&
-                        settings_data.show_email()) {
+                    if (
+                        person.email.toLocaleLowerCase().includes(value) &&
+                        settings_data.show_email()
+                    ) {
                         return true;
                     }
                     return person.full_name.toLowerCase().includes(value);
@@ -323,10 +345,12 @@ function show_subscription_settings(sub_row) {
         simplebar_container: $(".subscriber_list_container"),
     });
 
-    user_pill.set_up_typeahead_on_pills(sub_settings.find(".input"),
-                                        exports.pill_widget,
-                                        () => {},
-                                        get_users_for_subscriber_typeahead);
+    user_pill.set_up_typeahead_on_pills(
+        sub_settings.find(".input"),
+        exports.pill_widget,
+        () => {},
+        get_users_for_subscriber_typeahead,
+    );
 }
 
 exports.is_notification_setting = function (setting_label) {
@@ -463,7 +487,10 @@ function change_stream_privacy(e) {
     const sub = stream_data.get_sub_by_id(stream_id);
 
     const privacy_setting = $("#stream_privacy_modal input[name=privacy]:checked").val();
-    const stream_post_policy = parseInt($("#stream_privacy_modal input[name=stream-post-policy]:checked").val(), 10);
+    const stream_post_policy = parseInt(
+        $("#stream_privacy_modal input[name=stream-post-policy]:checked").val(),
+        10,
+    );
 
     let invite_only;
     let history_public_to_subscribers;
@@ -489,9 +516,14 @@ function change_stream_privacy(e) {
     };
 
     if (page_params.is_owner) {
-        let message_retention_days = $("#stream_privacy_modal select[name=stream_message_retention_setting]").val();
+        let message_retention_days = $(
+            "#stream_privacy_modal select[name=stream_message_retention_setting]",
+        ).val();
         if (message_retention_days === "retain_for_period") {
-            message_retention_days = parseInt($("#stream_privacy_modal input[name=stream-message-retention-days]").val(), 10);
+            message_retention_days = parseInt(
+                $("#stream_privacy_modal input[name=stream-message-retention-days]").val(),
+                10,
+            );
         }
         data.message_retention_days = JSON.stringify(message_retention_days);
     }
@@ -524,7 +556,10 @@ exports.change_stream_name = function (e) {
         data: {new_name: JSON.stringify(new_name)},
         success: function () {
             new_name_box.val("");
-            ui_report.success(i18n.t("The stream has been renamed!"), $(".stream_change_property_info"));
+            ui_report.success(
+                i18n.t("The stream has been renamed!"),
+                $(".stream_change_property_info"),
+            );
         },
         error: function (xhr) {
             new_name_box.text(stream_data.maybe_get_stream_name(stream_id));
@@ -565,13 +600,15 @@ exports.change_stream_description = function (e) {
         },
         success: function () {
             // The event from the server will update the rest of the UI
-            ui_report.success(i18n.t("The stream description has been updated!"),
-                              $(".stream_change_property_info"));
+            ui_report.success(
+                i18n.t("The stream description has been updated!"),
+                $(".stream_change_property_info"),
+            );
         },
         error: function (xhr) {
-            sub_settings.find(".stream-description-editable").html(
-                util.clean_user_content_links(sub.rendered_description),
-            );
+            sub_settings
+                .find(".stream-description-editable")
+                .html(util.clean_user_content_links(sub.rendered_description));
             ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
         },
     });
@@ -612,15 +649,14 @@ exports.initialize = function () {
             stream_post_policy: stream.stream_post_policy,
             is_public: !stream.invite_only,
             is_private: stream.invite_only && !stream.history_public_to_subscribers,
-            is_private_with_public_history: stream.invite_only &&
-                stream.history_public_to_subscribers,
+            is_private_with_public_history:
+                stream.invite_only && stream.history_public_to_subscribers,
             is_owner: page_params.is_owner,
             zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
-            disable_message_retention_setting: !page_params.zulip_plan_is_not_limited ||
-                !page_params.is_owner,
+            disable_message_retention_setting:
+                !page_params.zulip_plan_is_not_limited || !page_params.is_owner,
             stream_message_retention_days: stream.message_retention_days,
-            realm_message_retention_setting:
-                exports.get_display_text_for_realm_message_retention_setting(),
+            realm_message_retention_setting: exports.get_display_text_for_realm_message_retention_setting(),
             upgrade_text_for_wide_organization_logo:
                 page_params.upgrade_text_for_wide_organization_logo,
             is_stream_edit: true,
@@ -634,8 +670,7 @@ exports.initialize = function () {
         e.stopPropagation();
     });
 
-    $("#subscriptions_table").on("click", "#change-stream-privacy-button",
-                                 change_stream_privacy);
+    $("#subscriptions_table").on("click", "#change-stream-privacy-button", change_stream_privacy);
 
     $("#subscriptions_table").on("click", ".close-privacy-modal", (e) => {
         // Re-enable background mouse events when we close the modal
@@ -654,11 +689,9 @@ exports.initialize = function () {
         e.stopPropagation();
     });
 
-    $("#subscriptions_table").on("click", "#sub_is_muted_setting",
-                                 stream_is_muted_clicked);
+    $("#subscriptions_table").on("click", "#sub_is_muted_setting", stream_is_muted_clicked);
 
-    $("#subscriptions_table").on("click", ".sub_setting_checkbox",
-                                 exports.stream_setting_clicked);
+    $("#subscriptions_table").on("click", ".sub_setting_checkbox", exports.stream_setting_clicked);
 
     $("#subscriptions_table").on("keyup", ".subscriber_list_add form", (e) => {
         if (e.which === 13) {
@@ -695,17 +728,17 @@ exports.initialize = function () {
             } else {
                 stream_subscription_info_elem.text(i18n.t("User is already not subscribed."));
             }
-            stream_subscription_info_elem.addClass("text-success")
-                .removeClass("text-error");
+            stream_subscription_info_elem.addClass("text-success").removeClass("text-error");
         }
 
         function removal_failure() {
-            stream_subscription_info_elem.text(i18n.t("Error removing user from this stream."))
-                .addClass("text-error").removeClass("text-success");
+            stream_subscription_info_elem
+                .text(i18n.t("Error removing user from this stream."))
+                .addClass("text-error")
+                .removeClass("text-success");
         }
 
-        exports.remove_user_from_stream(target_user_id, sub, removal_success,
-                                        removal_failure);
+        exports.remove_user_from_stream(target_user_id, sub, removal_success, removal_failure);
     });
 
     // This handler isn't part of the normal edit interface; it's the convenient
@@ -713,7 +746,9 @@ exports.initialize = function () {
     $("#subscriptions_table").on("click", ".sub_unsub_button", (e) => {
         const sub = get_sub_for_target(e.target);
         // Makes sure we take the correct stream_row.
-        const stream_row = $("#subscriptions_table div.stream-row[data-stream-id='" + sub.stream_id + "']");
+        const stream_row = $(
+            "#subscriptions_table div.stream-row[data-stream-id='" + sub.stream_id + "']",
+        );
         subs.sub_or_unsub(sub, stream_row);
 
         if (!sub.subscribed) {
@@ -731,7 +766,11 @@ exports.initialize = function () {
 
         const stream_id = get_stream_id(e.target);
         if (!stream_id) {
-            ui_report.message(i18n.t("Invalid stream id"), $(".stream_change_property_info"), "alert-error");
+            ui_report.message(
+                i18n.t("Invalid stream id"),
+                $(".stream_change_property_info"),
+                "alert-error",
+            );
             return;
         }
         const stream_name = stream_data.maybe_get_stream_name(stream_id);
@@ -749,7 +788,11 @@ exports.initialize = function () {
         overlays.close_modal("#deactivation_stream_modal");
         $("#deactivation_stream_modal").remove();
         if (!stream_id) {
-            ui_report.message(i18n.t("Invalid stream id"), $(".stream_change_property_info"), "alert-error");
+            ui_report.message(
+                i18n.t("Invalid stream id"),
+                $(".stream_change_property_info"),
+                "alert-error",
+            );
             return;
         }
         const row = $(".stream-row.active");

@@ -1,4 +1,3 @@
-
 zrequire("Filter", "js/filter");
 zrequire("FetchStatus", "js/fetch_status");
 zrequire("MessageListData", "js/message_list_data");
@@ -76,9 +75,7 @@ run_test("near after unreads", () => {
     // Current near: behavior is to ignore the unreads and take you
     // to the target message, with reading disabled.
     const fixture = {
-        filter_terms: [
-            {operator: "near", operand: 42},
-        ],
+        filter_terms: [{operator: "near", operand: 42}],
         target_id: 42,
         unread_info: {
             flavor: "found",
@@ -105,9 +102,7 @@ run_test("near not in message list", () => {
     // Current behavior is to ignore the unreads and take you
     // to the closest messages, with reading disabled.
     const fixture = {
-        filter_terms: [
-            {operator: "near", operand: 42},
-        ],
+        filter_terms: [{operator: "near", operand: 42}],
         target_id: 42,
         unread_info: {
             flavor: "found",
@@ -132,9 +127,7 @@ run_test("near not in message list", () => {
 
 run_test("near before unreads", () => {
     const fixture = {
-        filter_terms: [
-            {operator: "near", operand: 42},
-        ],
+        filter_terms: [{operator: "near", operand: 42}],
         target_id: 42,
         unread_info: {
             flavor: "found",
@@ -159,9 +152,7 @@ run_test("near before unreads", () => {
 
 run_test("near with no unreads", () => {
     const fixture = {
-        filter_terms: [
-            {operator: "near", operand: 42},
-        ],
+        filter_terms: [{operator: "near", operand: 42}],
         target_id: 42,
         unread_info: {
             flavor: "not_found",
@@ -181,9 +172,7 @@ run_test("near with no unreads", () => {
 
 run_test("is private with no target", () => {
     const fixture = {
-        filter_terms: [
-            {operator: "is", operand: "private"},
-        ],
+        filter_terms: [{operator: "is", operand: "private"}],
         unread_info: {
             flavor: "found",
             msg_id: 550,
@@ -207,17 +196,13 @@ run_test("is private with no target", () => {
 
 run_test("pm-with with target outside of range", () => {
     const fixture = {
-        filter_terms: [
-            {operator: "pm-with", operand: "alice@example.com"},
-        ],
+        filter_terms: [{operator: "pm-with", operand: "alice@example.com"}],
         target_id: 5,
         unread_info: {
             flavor: "not_found",
         },
         has_found_newest: false,
-        all_messages: [
-            {id: 999},
-        ],
+        all_messages: [{id: 999}],
         expected_id_info: {
             target_id: 5,
             final_select_id: 5,
@@ -231,9 +216,7 @@ run_test("pm-with with target outside of range", () => {
 
 run_test("is:private with no unreads before fetch", () => {
     const fixture = {
-        filter_terms: [
-            {operator: "is", operand: "private"},
-        ],
+        filter_terms: [{operator: "is", operand: "private"}],
         unread_info: {
             flavor: "not_found",
         },
@@ -252,9 +235,7 @@ run_test("is:private with no unreads before fetch", () => {
 
 run_test("is:private with target and no unreads", () => {
     const fixture = {
-        filter_terms: [
-            {operator: "is", operand: "private"},
-        ],
+        filter_terms: [{operator: "is", operand: "private"}],
         target_id: 450,
         unread_info: {
             flavor: "not_found",
@@ -280,9 +261,7 @@ run_test("is:private with target and no unreads", () => {
 
 run_test("is:mentioned with no unreads and no matches", () => {
     const fixture = {
-        filter_terms: [
-            {operator: "is", operand: "mentioned"},
-        ],
+        filter_terms: [{operator: "is", operand: "mentioned"}],
         unread_info: {
             flavor: "not_found",
         },
@@ -301,9 +280,7 @@ run_test("is:mentioned with no unreads and no matches", () => {
 
 run_test("is:alerted with no unreads and one match", () => {
     const fixture = {
-        filter_terms: [
-            {operator: "is", operand: "alerted"},
-        ],
+        filter_terms: [{operator: "is", operand: "alerted"}],
         unread_info: {
             flavor: "not_found",
         },
@@ -325,9 +302,7 @@ run_test("is:alerted with no unreads and one match", () => {
 
 run_test("search", () => {
     const fixture = {
-        filter_terms: [
-            {operator: "search", operand: "whatever"},
-        ],
+        filter_terms: [{operator: "search", operand: "whatever"}],
         unread_info: {
             flavor: "cannot_compute",
         },
@@ -371,19 +346,14 @@ run_test("stream, no unread, not in all_messages", () => {
     // our new message list.  Note that our target_id is within
     // the range of all_messages.
     const fixture = {
-        filter_terms: [
-            {operator: "stream", operand: "whatever"},
-        ],
+        filter_terms: [{operator: "stream", operand: "whatever"}],
         target_id: 450,
         unread_info: {
             flavor: "not_found",
         },
         has_found_newest: true,
         empty: false,
-        all_messages: [
-            {id: 400},
-            {id: 500},
-        ],
+        all_messages: [{id: 400}, {id: 500}],
         expected_id_info: {
             target_id: 450,
             final_select_id: 450,
@@ -406,10 +376,7 @@ run_test("search, stream, not in all_messages", () => {
         },
         has_found_newest: true,
         empty: false,
-        all_messages: [
-            {id: 400},
-            {id: 500},
-        ],
+        all_messages: [{id: 400}, {id: 500}],
         expected_id_info: {
             target_id: undefined,
             final_select_id: 10000000000000000,
@@ -437,10 +404,7 @@ run_test("stream/topic not in all_messages", () => {
             msg_id: 2,
         },
         has_found_newest: true,
-        all_messages: [
-            {id: 900},
-            {id: 1100},
-        ],
+        all_messages: [{id: 900}, {id: 1100}],
         expected_id_info: {
             target_id: 1000,
             final_select_id: 2,
@@ -457,9 +421,7 @@ run_test("final corner case", () => {
     // the function (as written now).  The data here
     // may be completely contrived.
     const fixture = {
-        filter_terms: [
-            {operator: "is", operand: "starred"},
-        ],
+        filter_terms: [{operator: "is", operand: "starred"}],
         target_id: 450,
         unread_info: {
             flavor: "not_found",

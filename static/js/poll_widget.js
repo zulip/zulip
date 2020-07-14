@@ -106,7 +106,6 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                     return event;
                 }
                 return;
-
             },
 
             inbound: function (sender_id, data) {
@@ -336,7 +335,6 @@ exports.activate = function (opts) {
                 return;
             }
         });
-
     }
 
     function render_results() {
@@ -345,11 +343,13 @@ exports.activate = function (opts) {
         const html = render_widgets_poll_widget_results(widget_data);
         elem.find("ul.poll-widget").html(html);
 
-        elem.find("button.poll-vote").off("click").on("click", (e) => {
-            e.stopPropagation();
-            const key = $(e.target).attr("data-key");
-            submit_vote(key);
-        });
+        elem.find("button.poll-vote")
+            .off("click")
+            .on("click", (e) => {
+                e.stopPropagation();
+                const key = $(e.target).attr("data-key");
+                submit_vote(key);
+            });
     }
 
     elem.handle_events = function (events) {

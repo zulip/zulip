@@ -2,7 +2,15 @@ const contributors_list = page_params.contrib;
 
 // `repos` are repositories to be shown as tabs, whereas `hidden_repos` are
 // repositories that should count towards the total but not have tabs.
-const repos = ["server", "desktop", "mobile", "python-zulip-api", "zulip-js", "zulipbot", "terminal"];
+const repos = [
+    "server",
+    "desktop",
+    "mobile",
+    "python-zulip-api",
+    "zulip-js",
+    "zulipbot",
+    "terminal",
+];
 const hidden_repos = ["zulip-android", "zulip-ios-legacy"];
 
 // Remember the loaded repositories so that HTML is not redundantly edited
@@ -56,11 +64,13 @@ export default function render_tabs() {
                     .filter(repo)
                     .sortBy(repo)
                     .reverse()
-                    .map((c) => template({
-                        name: c.name,
-                        avatar: c.avatar,
-                        commits: c[repo],
-                    }))
+                    .map((c) =>
+                        template({
+                            name: c.name,
+                            avatar: c.avatar,
+                            commits: c[repo],
+                        }),
+                    )
                     .value()
                     .join("");
 

@@ -4,7 +4,11 @@ $(() => {
 
     const password_field = $("#id_password, #id_new_password1");
     if (password_field.length > 0) {
-        $.validator.addMethod("password_strength", (value) => common.password_quality(value, undefined, password_field), () => common.password_warning(password_field.val(), password_field));
+        $.validator.addMethod(
+            "password_strength",
+            (value) => common.password_quality(value, undefined, password_field),
+            () => common.password_warning(password_field.val(), password_field),
+        );
         // Reset the state of the password strength bar if the page
         // was just reloaded due to a validation failure on the backend.
         common.password_quality(password_field.val(), $("#pw_strength .bar"), password_field);
@@ -19,7 +23,8 @@ $(() => {
     function highlight(class_to_add) {
         // Set a class on the enclosing control group.
         return function (element) {
-            $(element).closest(".control-group")
+            $(element)
+                .closest(".control-group")
                 .removeClass("success error")
                 .addClass(class_to_add);
         };
@@ -53,9 +58,13 @@ $(() => {
             const firstInputElement = $("input:not(:hidden, :disabled)").first();
             // Focus on the first input field in the form.
             common.autofocus(firstInputElement);
-        } else { // If input field with errors is present.
+        } else {
+            // If input field with errors is present.
             // Find the input field having errors and stores it in a variable.
-            const inputElementWithError = $(".help-inline:not(:empty)").first().parent().find("input");
+            const inputElementWithError = $(".help-inline:not(:empty)")
+                .first()
+                .parent()
+                .find("input");
             // Focus on the input field having errors.
             common.autofocus(inputElementWithError);
         }
@@ -110,7 +119,9 @@ $(() => {
         },
     });
 
-    $(".register-page #email, .login-page-container #id_username").on("focusout keydown", function (e) {
+    $(".register-page #email, .login-page-container #id_username").on("focusout keydown", function (
+        e,
+    ) {
         // check if it is the "focusout" or if it is a keydown, then check if
         // the keycode was the one for "enter" (13).
         if (e.type === "focusout" || e.which === 13) {
@@ -160,7 +171,10 @@ $(() => {
     }
 
     function update_full_name_section() {
-        if ($("#source_realm_select").length && $("#source_realm_select").find(":selected").val() !== "on") {
+        if (
+            $("#source_realm_select").length &&
+            $("#source_realm_select").find(":selected").val() !== "on"
+        ) {
             $("#full_name_input_section").hide();
             $("#profile_info_section").show();
             const avatar_url = $("#source_realm_select").find(":selected").attr("data-avatar");

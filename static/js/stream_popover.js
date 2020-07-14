@@ -83,7 +83,6 @@ exports.hide_streamlist_sidebar = function () {
     $(".app-main .column-left").removeClass("expanded");
 };
 
-
 function stream_popover_sub(e) {
     const elem = $(e.currentTarget).parents("ul");
     const stream_id = elem_to_stream_id(elem);
@@ -129,8 +128,7 @@ function build_stream_popover(opts) {
     const elt = opts.elt;
     const stream_id = opts.stream_id;
 
-    if (exports.stream_popped()
-        && current_stream_sidebar_elem === elt) {
+    if (exports.stream_popped() && current_stream_sidebar_elem === elt) {
         // If the popover is already shown, clicking again should toggle it.
         exports.hide_stream_popover();
         return;
@@ -166,8 +164,7 @@ function build_topic_popover(opts) {
     const stream_id = opts.stream_id;
     const topic_name = opts.topic_name;
 
-    if (exports.topic_popped()
-        && current_topic_sidebar_elem === elt) {
+    if (exports.topic_popped() && current_topic_sidebar_elem === elt) {
         // If the popover is already shown, clicking again should toggle it.
         exports.hide_topic_popover();
         return;
@@ -211,8 +208,7 @@ function build_topic_popover(opts) {
 function build_all_messages_popover(e) {
     const elt = e.target;
 
-    if (exports.all_messages_popped()
-        && all_messages_sidebar_elem === elt) {
+    if (exports.all_messages_popped() && all_messages_sidebar_elem === elt) {
         exports.hide_all_messages_popover();
         e.stopPropagation();
         return;
@@ -232,14 +228,12 @@ function build_all_messages_popover(e) {
     $(elt).popover("show");
     all_messages_sidebar_elem = elt;
     e.stopPropagation();
-
 }
 
 function build_starred_messages_popover(e) {
     const elt = e.target;
 
-    if (exports.starred_messages_popped()
-        && starred_messages_sidebar_elem === elt) {
+    if (exports.starred_messages_popped() && starred_messages_sidebar_elem === elt) {
         exports.hide_starred_messages_popover();
         e.stopPropagation();
         return;
@@ -261,7 +255,6 @@ function build_starred_messages_popover(e) {
     $(elt).popover("show");
     starred_messages_sidebar_elem = elt;
     e.stopPropagation();
-
 }
 
 function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
@@ -272,11 +265,15 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     // NOTE: Private streams are also included in this list.  We
     // likely will make it possible to move messages to/from private
     // streams in the future.
-    const available_streams = stream_data.subscribed_subs()
+    const available_streams = stream_data
+        .subscribed_subs()
         .filter((s) => s.stream_id !== current_stream_id);
     const current_stream_name = stream_data.maybe_get_stream_name(current_stream_id);
     const args = {
-        available_streams, topic_name, current_stream_id, current_stream_name,
+        available_streams,
+        topic_name,
+        current_stream_id,
+        current_stream_name,
         notify_new_thread: message_edit.notify_new_thread_default,
         notify_old_thread: message_edit.notify_old_thread_default,
     };
@@ -285,7 +282,9 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
 
     $("#move-a-topic-modal-holder").html(render_move_topic_to_stream(args));
 
-    const stream_header_colorblock = $(".topic_stream_edit_header").find(".stream_header_colorblock");
+    const stream_header_colorblock = $(".topic_stream_edit_header").find(
+        ".stream_header_colorblock",
+    );
     ui_util.decorate_stream_bar(current_stream_name, stream_header_colorblock, false);
     $("#select_stream_id").change(function () {
         const stream_name = stream_data.maybe_get_stream_name(parseInt(this.value, 10));
@@ -327,7 +326,11 @@ exports.register_click_handlers = function () {
 
     $("#global_filters").on("click", ".all-messages-sidebar-menu-icon", build_all_messages_popover);
 
-    $("#global_filters").on("click", ".starred-messages-sidebar-menu-icon", build_starred_messages_popover);
+    $("#global_filters").on(
+        "click",
+        ".starred-messages-sidebar-menu-icon",
+        build_starred_messages_popover,
+    );
 
     exports.register_stream_handlers();
     exports.register_topic_handlers();
@@ -433,7 +436,6 @@ exports.register_stream_handlers = function () {
             exports.hide_stream_popover();
         });
     });
-
 };
 
 function topic_popover_sub(e) {
@@ -555,21 +557,29 @@ exports.register_topic_handlers = function () {
             $("#topic_stream_edit_form_error").show();
         }
 
-        const params = $("#move_topic_form").serializeArray().reduce((obj, item) => {
-            obj[item.name] = item.value;
-            return obj;
-        }, {});
+        const params = $("#move_topic_form")
+            .serializeArray()
+            .reduce((obj, item) => {
+                obj[item.name] = item.value;
+                return obj;
+            }, {});
 
         const {old_topic_name, select_stream_id} = params;
-        let {current_stream_id, new_topic_name,
-             send_notification_to_new_thread, send_notification_to_old_thread} = params;
+        let {
+            current_stream_id,
+            new_topic_name,
+            send_notification_to_new_thread,
+            send_notification_to_old_thread,
+        } = params;
         new_topic_name = new_topic_name.trim();
         send_notification_to_new_thread = send_notification_to_new_thread === "on";
         send_notification_to_old_thread = send_notification_to_old_thread === "on";
         current_stream_id = parseInt(current_stream_id, 10);
 
-        if (current_stream_id === parseInt(select_stream_id, 10) &&
-            new_topic_name.toLowerCase() === old_topic_name.toLowerCase()) {
+        if (
+            current_stream_id === parseInt(select_stream_id, 10) &&
+            new_topic_name.toLowerCase() === old_topic_name.toLowerCase()
+        ) {
             show_error_msg("Please select a different stream or change topic name.");
             return false;
         }
@@ -592,10 +602,10 @@ exports.register_topic_handlers = function () {
             anchor: "newest",
             num_before: 1,
             num_after: 0,
-            narrow: JSON.stringify(
-                [{operator: "stream", operand: current_stream_id},
-                 {operator: "topic", operand: old_topic_name}],
-            ),
+            narrow: JSON.stringify([
+                {operator: "stream", operand: current_stream_id},
+                {operator: "topic", operand: old_topic_name},
+            ]),
         };
 
         channel.get({
@@ -613,9 +623,12 @@ exports.register_topic_handlers = function () {
 
                 if (old_topic_name && select_stream_id) {
                     message_edit.move_topic_containing_message_to_stream(
-                        message_id, select_stream_id, new_topic_name,
+                        message_id,
+                        select_stream_id,
+                        new_topic_name,
                         send_notification_to_new_thread,
-                        send_notification_to_old_thread);
+                        send_notification_to_old_thread,
+                    );
                     $("#move_topic_modal").modal("hide");
                 }
             },

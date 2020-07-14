@@ -1,5 +1,7 @@
 const noop = function () {};
-const return_true = function () { return true; };
+const return_true = function () {
+    return true;
+};
 set_global("$", global.make_zjquery());
 const _settings_notifications = {
     update_page: () => {},
@@ -33,10 +35,7 @@ const frontend = {
 
 stream_data.add_sub(frontend);
 
-
-const frontend_filter_terms = [
-    {operator: "stream", operand: "frontend"},
-];
+const frontend_filter_terms = [{operator: "stream", operand: "frontend"}];
 
 const frontend_filter = new Filter(frontend_filter_terms);
 
@@ -122,7 +121,9 @@ run_test("update_property", () => {
     with_overrides((override) => {
         global.with_stub((stub) => {
             override("subs.update_stream_description", stub.f);
-            stream_events.update_property(1, "description", "we write code", {rendered_description: "we write code"});
+            stream_events.update_property(1, "description", "we write code", {
+                rendered_description: "we write code",
+            });
             const args = stub.get_args("sub", "val");
             assert.equal(args.sub.stream_id, 1);
             assert.equal(args.val, "we write code");
@@ -161,7 +162,11 @@ run_test("update_property", () => {
     with_overrides((override) => {
         global.with_stub((stub) => {
             override("subs.update_stream_post_policy", stub.f);
-            stream_events.update_property(1, "stream_post_policy", stream_data.stream_post_policy_values.admins.code);
+            stream_events.update_property(
+                1,
+                "stream_post_policy",
+                stream_data.stream_post_policy_values.admins.code,
+            );
             const args = stub.get_args("sub", "val");
             assert.equal(args.sub.stream_id, 1);
             assert.equal(args.val, stream_data.stream_post_policy_values.admins.code);
@@ -205,7 +210,9 @@ run_test("marked_subscribed", () => {
 
     set_global("message_list", {
         all: {
-            all_messages: function () { return ["msg"]; },
+            all_messages: function () {
+                return ["msg"];
+            },
         },
     });
 

@@ -61,8 +61,7 @@ exports.initialize = function () {
     $(document).on("input", "#compose-textarea", () => {
         // If our previous state was no typing notification, send a
         // start-typing notice immediately.
-        const new_recipient =
-          is_valid_conversation() ? exports.get_recipient() : null;
+        const new_recipient = is_valid_conversation() ? exports.get_recipient() : null;
         typing_status.update(worker, new_recipient);
     });
 

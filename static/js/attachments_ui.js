@@ -16,7 +16,7 @@ exports.bytes_to_size = function (bytes, kb_with_1024_bytes) {
     const i = parseInt(Math.floor(Math.log(bytes) / Math.log(kb_size)), 10);
     let size = Math.round(bytes / Math.pow(kb_size, i));
     if (i > 0 && size < 10) {
-        size = Math.round(bytes / Math.pow(kb_size, i) * 10) / 10;
+        size = Math.round((bytes / Math.pow(kb_size, i)) * 10) / 10;
     }
     return size + " " + sizes[i];
 };
@@ -25,7 +25,7 @@ exports.percentage_used_space = function (uploads_size) {
     if (page_params.realm_upload_quota === null) {
         return null;
     }
-    return (100 * uploads_size / page_params.realm_upload_quota).toFixed(1);
+    return ((100 * uploads_size) / page_params.realm_upload_quota).toFixed(1);
 };
 
 function set_upload_space_stats() {
@@ -59,8 +59,12 @@ function sort_mentioned_in(a, b) {
     const a_m = a.messages[0];
     const b_m = b.messages[0];
 
-    if (!a_m) { return 1; }
-    if (!b_m) { return -1; }
+    if (!a_m) {
+        return 1;
+    }
+    if (!b_m) {
+        return -1;
+    }
 
     if (a_m.id > b_m.id) {
         return 1;

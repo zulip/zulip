@@ -29,18 +29,24 @@ Logger.prototype = (function () {
         return function Logger_func(...args) {
             const now = new Date();
             const date_str =
-                now.getUTCFullYear() + "-" +
-                pad(now.getUTCMonth() + 1, 2) + "-" +
-                pad(now.getUTCDate(), 2) + " " +
-                pad(now.getUTCHours(), 2) + ":" +
-                pad(now.getUTCMinutes(), 2) + ":" +
-                pad(now.getUTCSeconds(), 2) + "." +
-                pad(now.getUTCMilliseconds(), 3) + " UTC";
+                now.getUTCFullYear() +
+                "-" +
+                pad(now.getUTCMonth() + 1, 2) +
+                "-" +
+                pad(now.getUTCDate(), 2) +
+                " " +
+                pad(now.getUTCHours(), 2) +
+                ":" +
+                pad(now.getUTCMinutes(), 2) +
+                ":" +
+                pad(now.getUTCSeconds(), 2) +
+                "." +
+                pad(now.getUTCMilliseconds(), 3) +
+                " UTC";
 
-            const str_args = args.map((x) => typeof x === "object" ? JSON.stringify(x) : x);
+            const str_args = args.map((x) => (typeof x === "object" ? JSON.stringify(x) : x));
 
-            const log_entry = date_str + " " + name.toUpperCase() +
-                ": " + str_args.join("");
+            const log_entry = date_str + " " + name.toUpperCase() + ": " + str_args.join("");
             this._memory_log.push(log_entry);
 
             // Don't let the log grow without bound
@@ -93,10 +99,12 @@ function report_error(msg, stack, opts) {
     }
 
     const key = ":" + msg + stack;
-    if (reported_errors.has(key)
-        || last_report_attempt.has(key)
+    if (
+        reported_errors.has(key) ||
+        (last_report_attempt.has(key) &&
             // Only try to report a given error once every 5 minutes
-            && Date.now() - last_report_attempt.get(key) <= 60 * 5 * 1000) {
+            Date.now() - last_report_attempt.get(key) <= 60 * 5 * 1000)
+    ) {
         return;
     }
 
@@ -145,18 +153,23 @@ function report_error(msg, stack, opts) {
                 // invoked).  In any case, it will pretty clear that
                 // something is wrong with the page and the user will
                 // probably try to reload anyway.
-                ui_report.message("Oops.  It seems something has gone wrong. " +
-                                  "The error has been reported to the fine " +
-                                  "folks at Zulip, but, in the mean time, " +
-                                  "please try reloading the page.",
-                                  $("#home-error"), "alert-error");
+                ui_report.message(
+                    "Oops.  It seems something has gone wrong. " +
+                        "The error has been reported to the fine " +
+                        "folks at Zulip, but, in the mean time, " +
+                        "please try reloading the page.",
+                    $("#home-error"),
+                    "alert-error",
+                );
             }
         },
         error: function () {
             if (opts.show_ui_msg && ui_report !== undefined) {
-                ui_report.message("Oops.  It seems something has gone wrong. " +
-                                  "Please try reloading the page.",
-                                  $("#home-error"), "alert-error");
+                ui_report.message(
+                    "Oops.  It seems something has gone wrong. " + "Please try reloading the page.",
+                    $("#home-error"),
+                    "alert-error",
+                );
             }
         },
     });
@@ -283,10 +296,14 @@ exports.preview_node = function (node) {
     const className = node.className.length ? node.className : false;
     const id = node.id.length ? node.id : false;
 
-    const node_preview = "<" + tag +
-       (id ? " id='" + id + "'" : "") +
-       (className ? " class='" + className + "'" : "") +
-       "></" + tag + ">";
+    const node_preview =
+        "<" +
+        tag +
+        (id ? " id='" + id + "'" : "") +
+        (className ? " class='" + className + "'" : "") +
+        "></" +
+        tag +
+        ">";
 
     return node_preview;
 };

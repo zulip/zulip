@@ -4,9 +4,7 @@ document.querySelector("#form").addEventListener("submit", () => {
 document.querySelector("#token").focus();
 
 async function decrypt_manual() {
-    const key = await crypto.subtle.generateKey({name: "AES-GCM", length: 256}, true, [
-        "decrypt",
-    ]);
+    const key = await crypto.subtle.generateKey({name: "AES-GCM", length: 256}, true, ["decrypt"]);
     return {
         key: new Uint8Array(await crypto.subtle.exportKey("raw", key)),
         pasted: new Promise((resolve) => {

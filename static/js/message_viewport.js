@@ -3,7 +3,6 @@ let jwindow;
 const dimensions = {};
 let in_stoppable_autoscroll = false;
 
-
 // Includes both scroll and arrow events. Negative means scroll up,
 // positive means scroll down.
 exports.last_movement_direction = 1;
@@ -29,8 +28,7 @@ exports.message_viewport_info = function () {
     const element_just_above_us = $(".floating_recipient");
     const element_just_below_us = $("#compose");
 
-    res.visible_top = element_just_above_us.offset().top
-        + element_just_above_us.safeOuterHeight();
+    res.visible_top = element_just_above_us.offset().top + element_just_above_us.safeOuterHeight();
 
     res.visible_bottom = element_just_below_us.position().top;
 
@@ -111,42 +109,39 @@ exports.set_message_position = function (message_top, message_height, viewport_i
         }
     }
 
-    const hidden_top =
-        viewport_info.visible_top
-        - exports.scrollTop();
+    const hidden_top = viewport_info.visible_top - exports.scrollTop();
 
-    const message_offset =
-        how_far_down_in_visible_page
-        + hidden_top;
+    const message_offset = how_far_down_in_visible_page + hidden_top;
 
-    const new_scroll_top =
-        message_top
-        - message_offset;
+    const new_scroll_top = message_top - message_offset;
 
     message_scroll.suppress_selection_update_on_next_scroll();
     exports.scrollTop(new_scroll_top);
 };
 
-function in_viewport_or_tall(rect, top_of_feed, bottom_of_feed,
-                             require_fully_visible) {
+function in_viewport_or_tall(rect, top_of_feed, bottom_of_feed, require_fully_visible) {
     if (require_fully_visible) {
-        return rect.top > top_of_feed && // Message top is in view and
-                (rect.bottom < bottom_of_feed || // message is fully in view or
-                 rect.height > bottom_of_feed - top_of_feed &&
-                  rect.top < bottom_of_feed); // message is tall.
+        return (
+            rect.top > top_of_feed && // Message top is in view and
+            (rect.bottom < bottom_of_feed || // message is fully in view or
+                (rect.height > bottom_of_feed - top_of_feed && rect.top < bottom_of_feed))
+        ); // message is tall.
     }
     return rect.bottom > top_of_feed && rect.top < bottom_of_feed;
 }
 
-function add_to_visible(candidates, visible,
-                        top_of_feed, bottom_of_feed,
-                        require_fully_visible,
-                        row_to_id) {
+function add_to_visible(
+    candidates,
+    visible,
+    top_of_feed,
+    bottom_of_feed,
+    require_fully_visible,
+    row_to_id,
+) {
     for (const row of candidates) {
         const row_rect = row.getBoundingClientRect();
         // Mark very tall messages as read once we've gotten past them
-        if (in_viewport_or_tall(row_rect, top_of_feed, bottom_of_feed,
-                                require_fully_visible)) {
+        if (in_viewport_or_tall(row_rect, top_of_feed, bottom_of_feed, require_fully_visible)) {
             visible.push(row_to_id(row));
         } else {
             break;
@@ -166,8 +161,13 @@ const bottom_of_feed = new util.CachedValue({
     },
 });
 
-function _visible_divs(selected_row, row_min_height, row_to_output, div_class,
-                       require_fully_visible) {
+function _visible_divs(
+    selected_row,
+    row_min_height,
+    row_to_output,
+    div_class,
+    require_fully_visible,
+) {
     // Note that when using getBoundingClientRect() we are getting offsets
     // relative to the visible window, but when using jQuery's offset() we are
     // getting offsets relative to the full scrollable window. You can't try to
@@ -180,12 +180,30 @@ function _visible_divs(selected_row, row_min_height, row_to_output, div_class,
     const visible = [];
     const above_pointer = selected_row.prevAll("div." + div_class).slice(0, num_neighbors);
     const below_pointer = selected_row.nextAll("div." + div_class).slice(0, num_neighbors);
-    add_to_visible(selected_row, visible, top_of_feed.get(), bottom_of_feed.get(),
-                   require_fully_visible, row_to_output);
-    add_to_visible(above_pointer, visible, top_of_feed.get(), bottom_of_feed.get(),
-                   require_fully_visible, row_to_output);
-    add_to_visible(below_pointer, visible, top_of_feed.get(), bottom_of_feed.get(),
-                   require_fully_visible, row_to_output);
+    add_to_visible(
+        selected_row,
+        visible,
+        top_of_feed.get(),
+        bottom_of_feed.get(),
+        require_fully_visible,
+        row_to_output,
+    );
+    add_to_visible(
+        above_pointer,
+        visible,
+        top_of_feed.get(),
+        bottom_of_feed.get(),
+        require_fully_visible,
+        row_to_output,
+    );
+    add_to_visible(
+        below_pointer,
+        visible,
+        top_of_feed.get(),
+        bottom_of_feed.get(),
+        require_fully_visible,
+        row_to_output,
+    );
 
     return visible;
 }
@@ -227,21 +245,31 @@ exports.scrollTop = function viewport_scrollTop(target_scrollTop) {
     const space_to_scroll = $("#bottom_whitespace").offset().top - exports.height();
 
     // Check whether our scrollTop didn't move even though one could have scrolled down
-    if (space_to_scroll > 0 && target_scrollTop > 0 &&
-        orig_scrollTop === 0 && new_scrollTop === 0) {
+    if (
+        space_to_scroll > 0 &&
+        target_scrollTop > 0 &&
+        orig_scrollTop === 0 &&
+        new_scrollTop === 0
+    ) {
         // Chrome has a bug where sometimes calling
         // window.scrollTop(x) has no effect, resulting in the browser
         // staying at 0 -- and afterwards if you call
         // window.scrollTop(x) again, it will still do nothing.  To
         // fix this, we need to first scroll to some other place.
-        blueslip.info("ScrollTop did nothing when scrolling to " + target_scrollTop + ", fixing...");
+        blueslip.info(
+            "ScrollTop did nothing when scrolling to " + target_scrollTop + ", fixing...",
+        );
         // First scroll to 1 in order to clear the stuck state
         exports.message_pane.scrollTop(1);
         // And then scroll where we intended to scroll to
         ret = exports.message_pane.scrollTop(target_scrollTop);
         if (exports.message_pane.scrollTop() === 0) {
-            blueslip.info("ScrollTop fix did not work when scrolling to " + target_scrollTop +
-                          "!  space_to_scroll was " + space_to_scroll);
+            blueslip.info(
+                "ScrollTop fix did not work when scrolling to " +
+                    target_scrollTop +
+                    "!  space_to_scroll was " +
+                    space_to_scroll,
+            );
         }
     }
     return ret;
@@ -342,7 +370,6 @@ exports.recenter_view = function (message, opts) {
     }
 };
 
-
 exports.keep_pointer_in_view = function () {
     // See message_viewport.recenter_view() for related logic to keep the pointer onscreen.
     // This function mostly comes into place for mouse scrollers, and it
@@ -358,8 +385,8 @@ exports.keep_pointer_in_view = function () {
     }
 
     const info = exports.message_viewport_info();
-    const top_threshold = info.visible_top + 1 / 10 * info.visible_height;
-    const bottom_threshold = info.visible_top + 9 / 10 * info.visible_height;
+    const top_threshold = info.visible_top + (1 / 10) * info.visible_height;
+    const bottom_threshold = info.visible_top + (9 / 10) * info.visible_height;
 
     function message_is_far_enough_down() {
         if (exports.at_top()) {
@@ -375,7 +402,6 @@ exports.keep_pointer_in_view = function () {
             return true;
         }
 
-
         // If at least part of the message is below top_threshold (10% from
         // the top), then we also leave it alone.
         const bottom_offset = message_top + next_row.safeOuterHeight(true);
@@ -388,8 +414,7 @@ exports.keep_pointer_in_view = function () {
     }
 
     function message_is_far_enough_up() {
-        return exports.at_bottom() ||
-            next_row.offset().top <= bottom_threshold;
+        return exports.at_bottom() || next_row.offset().top <= bottom_threshold;
     }
 
     function adjust(in_view, get_next_row) {

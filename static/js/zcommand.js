@@ -40,9 +40,11 @@ exports.send = function (opts) {
 exports.tell_user = function (msg) {
     // This is a bit hacky, but we don't have a super easy API now
     // for just telling users stuff.
-    $("#compose-send-status").removeClass(common.status_classes)
+    $("#compose-send-status")
+        .removeClass(common.status_classes)
         .addClass("alert-error")
-        .stop(true).fadeTo(0, 1);
+        .stop(true)
+        .fadeTo(0, 1);
     $("#compose-error-msg").text(msg);
 };
 
@@ -135,7 +137,6 @@ exports.enter_fixed_mode = function () {
 };
 
 exports.process = function (message_content) {
-
     const content = message_content.trim();
 
     if (content === "/ping") {

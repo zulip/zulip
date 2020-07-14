@@ -16,16 +16,19 @@ exports.update_check_button_for_sub = function (sub) {
     }
 };
 
-exports.initialize_disable_btn_hint_popover = function (btn_wrapper, popover_btn,
-                                                        disabled_btn, hint_text) {
+exports.initialize_disable_btn_hint_popover = function (
+    btn_wrapper,
+    popover_btn,
+    disabled_btn,
+    hint_text,
+) {
     // Disabled button blocks mouse events(hover) from reaching
     // to it's parent div element, so popover don't get triggered.
     // Add css to prevent this.
     disabled_btn.css("pointer-events", "none");
     popover_btn.popover({
         placement: "bottom",
-        content: $("<div>", {class: "sub_disable_btn_hint"}).text(hint_text)
-            .prop("outerHTML"),
+        content: $("<div>", {class: "sub_disable_btn_hint"}).text(hint_text).prop("outerHTML"),
         trigger: "manual",
         html: true,
         animation: false,
@@ -45,8 +48,12 @@ exports.initialize_disable_btn_hint_popover = function (btn_wrapper, popover_btn
 exports.initialize_cant_subscribe_popover = function (sub) {
     const button_wrapper = stream_edit.settings_for_sub(sub).find(".sub_unsub_button_wrapper");
     const settings_button = subs.settings_button_for_sub(sub);
-    exports.initialize_disable_btn_hint_popover(button_wrapper, settings_button, settings_button,
-                                                i18n.t("Only stream members can add users to a private stream"));
+    exports.initialize_disable_btn_hint_popover(
+        button_wrapper,
+        settings_button,
+        settings_button,
+        i18n.t("Only stream members can add users to a private stream"),
+    );
 };
 
 exports.update_settings_button_for_sub = function (sub) {
@@ -102,8 +109,10 @@ exports.update_notification_setting_checkbox = function (notification_name) {
         return;
     }
     const stream_id = stream_row.data("stream-id");
-    $(`#${notification_name}_${stream_id}`).prop("checked", stream_data.receives_notifications(
-        stream_id, notification_name));
+    $(`#${notification_name}_${stream_id}`).prop(
+        "checked",
+        stream_data.receives_notifications(stream_id, notification_name),
+    );
 };
 
 exports.update_stream_row_in_settings_tab = function (sub) {
@@ -133,7 +142,9 @@ exports.update_stream_privacy_type_icon = function (sub) {
     if (stream_edit.is_sub_settings_active(sub)) {
         const large_icon = stream_settings.find(".large-icon").expectOne();
         if (sub.invite_only) {
-            large_icon.removeClass("hash").addClass("lock")
+            large_icon
+                .removeClass("hash")
+                .addClass("lock")
                 .html("<i class='fa fa-lock' aria-hidden='true'></i>");
         } else {
             large_icon.addClass("hash").removeClass("lock").html("");
@@ -160,7 +171,11 @@ exports.update_subscribers_count = function (sub, just_subscribed) {
         return;
     }
     const stream_row = subs.row_for_stream_id(sub.stream_id);
-    if (!sub.can_access_subscribers || just_subscribed && sub.invite_only || page_params.is_guest) {
+    if (
+        !sub.can_access_subscribers ||
+        (just_subscribed && sub.invite_only) ||
+        page_params.is_guest
+    ) {
         const rendered_sub_count = render_subscription_count(sub);
         stream_row.find(".subscriber-count").expectOne().html(rendered_sub_count);
     } else {
@@ -213,7 +228,9 @@ exports.update_add_subscriptions_elements = function (sub) {
     // Otherwise, we adjust whether the widgets are disabled based on
     // whether this user is authorized to add subscribers.
     const input_element = $(".add_subscribers_container").find(".input").expectOne();
-    const button_element = $(".add_subscribers_container").find('button[name="add_subscriber"]').expectOne();
+    const button_element = $(".add_subscribers_container")
+        .find('button[name="add_subscriber"]')
+        .expectOne();
     const allow_user_to_add_subs = sub.can_add_subscribers;
 
     if (allow_user_to_add_subs) {
@@ -225,8 +242,12 @@ exports.update_add_subscriptions_elements = function (sub) {
         input_element.attr("disabled", "disabled");
         button_element.attr("disabled", "disabled");
 
-        exports.initialize_disable_btn_hint_popover($(".add_subscribers_container"), input_element, button_element,
-                                                    i18n.t("Only stream members can add users to a private stream"));
+        exports.initialize_disable_btn_hint_popover(
+            $(".add_subscribers_container"),
+            input_element,
+            button_element,
+            i18n.t("Only stream members can add users to a private stream"),
+        );
     }
 };
 

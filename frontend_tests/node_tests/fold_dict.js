@@ -25,7 +25,10 @@ run_test("basic", () => {
 
     assert.deepEqual(Array.from(d.keys()), ["foo", "bar"]);
     assert.deepEqual(Array.from(d.values()), ["baz", "qux"]);
-    assert.deepEqual(Array.from(d), [["foo", "baz"], ["bar", "qux"]]);
+    assert.deepEqual(Array.from(d), [
+        ["foo", "baz"],
+        ["bar", "qux"],
+    ]);
 
     d.delete("bar");
     assert.equal(d.has("bar"), false);
@@ -89,4 +92,3 @@ run_test("undefined_keys", () => {
     assert.equal(d.has(undefined), false);
     assert.strictEqual(d.get(undefined), undefined);
 });
-

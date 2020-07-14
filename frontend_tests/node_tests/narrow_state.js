@@ -1,4 +1,3 @@
-
 zrequire("people");
 zrequire("Filter", "js/filter");
 zrequire("stream_data");
@@ -78,7 +77,10 @@ run_test("narrowed", () => {
     assert(!narrow_state.narrowed_by_stream_reply());
     assert(!narrow_state.narrowed_to_starred());
 
-    set_filter([["stream", "Foo"], ["topic", "bar"]]);
+    set_filter([
+        ["stream", "Foo"],
+        ["topic", "bar"],
+    ]);
     assert(!narrow_state.narrowed_to_pms());
     assert(narrow_state.narrowed_by_reply());
     assert(!narrow_state.narrowed_by_pm_reply());
@@ -110,7 +112,11 @@ run_test("narrowed", () => {
 });
 
 run_test("operators", () => {
-    set_filter([["stream", "Foo"], ["topic", "Bar"], ["search", "Yo"]]);
+    set_filter([
+        ["stream", "Foo"],
+        ["topic", "Bar"],
+        ["search", "Yo"],
+    ]);
     let result = narrow_state.operators();
     assert.equal(result.length, 3);
     assert.equal(result[0].operator, "stream");
@@ -134,7 +140,10 @@ run_test("muting_enabled", () => {
     narrow_state.reset_current_filter(); // not narrowed, basically
     assert(narrow_state.muting_enabled());
 
-    set_filter([["stream", "devel"], ["topic", "mac"]]);
+    set_filter([
+        ["stream", "devel"],
+        ["topic", "mac"],
+    ]);
     assert(!narrow_state.muting_enabled());
 
     set_filter([["search", "whatever"]]);
@@ -148,7 +157,10 @@ run_test("muting_enabled", () => {
 });
 
 run_test("set_compose_defaults", () => {
-    set_filter([["stream", "Foo"], ["topic", "Bar"]]);
+    set_filter([
+        ["stream", "Foo"],
+        ["topic", "Bar"],
+    ]);
 
     const stream_and_subject = narrow_state.set_compose_defaults();
     assert.equal(stream_and_subject.stream, "Foo");
@@ -170,7 +182,10 @@ run_test("set_compose_defaults", () => {
     pm_test = narrow_state.set_compose_defaults();
     assert.equal(pm_test.private_message_recipient, "john@doe.com");
 
-    set_filter([["topic", "duplicate"], ["topic", "duplicate"]]);
+    set_filter([
+        ["topic", "duplicate"],
+        ["topic", "duplicate"],
+    ]);
     assert.deepEqual(narrow_state.set_compose_defaults(), {});
 
     stream_data.add_sub({name: "ROME", stream_id: 99});
@@ -201,10 +216,16 @@ run_test("update_email", () => {
 });
 
 run_test("topic", () => {
-    set_filter([["stream", "Foo"], ["topic", "Bar"]]);
+    set_filter([
+        ["stream", "Foo"],
+        ["topic", "Bar"],
+    ]);
     assert.equal(narrow_state.topic(), "Bar");
 
-    set_filter([["stream", "release"], ["topic", "@#$$^test"]]);
+    set_filter([
+        ["stream", "release"],
+        ["topic", "@#$$^test"],
+    ]);
     assert.equal(narrow_state.topic(), "@#$$^test");
 
     set_filter([]);
@@ -225,7 +246,10 @@ run_test("stream", () => {
     assert.equal(narrow_state.stream(), undefined);
     assert.equal(narrow_state.stream_id(), undefined);
 
-    set_filter([["stream", "Foo"], ["topic", "Bar"]]);
+    set_filter([
+        ["stream", "Foo"],
+        ["topic", "Bar"],
+    ]);
     assert.equal(narrow_state.stream(), "Foo");
     assert.equal(narrow_state.stream_sub(), undefined);
     assert.equal(narrow_state.stream_id(), undefined);
@@ -235,7 +259,10 @@ run_test("stream", () => {
     assert.equal(narrow_state.stream_id(), 55);
     assert.deepEqual(narrow_state.stream_sub(), sub);
 
-    set_filter([["sender", "someone"], ["topic", "random"]]);
+    set_filter([
+        ["sender", "someone"],
+        ["topic", "random"],
+    ]);
     assert.equal(narrow_state.stream(), undefined);
 });
 
@@ -246,7 +273,10 @@ run_test("pm_string", () => {
     narrow_state.set_current_filter(undefined);
     assert.equal(narrow_state.pm_string(), undefined);
 
-    set_filter([["stream", "Foo"], ["topic", "Bar"]]);
+    set_filter([
+        ["stream", "Foo"],
+        ["topic", "Bar"],
+    ]);
     assert.equal(narrow_state.pm_string(), undefined);
 
     set_filter([["pm-with", ""]]);

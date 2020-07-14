@@ -18,7 +18,6 @@ Codewise it's a singleton widget that controls the DOM inside
 
 */
 
-
 const meta = {
     hide_me_time: null,
     alert_hover_state: false,

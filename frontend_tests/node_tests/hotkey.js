@@ -11,18 +11,15 @@
 // it calls any external module other than `ui.foo`, it'll crash.
 // Future work includes making sure it actually does call `ui.foo()`.
 
-set_global("activity", {
-});
+set_global("activity", {});
 
 set_global("navigator", {
     platform: "",
 });
 
-set_global("page_params", {
-});
+set_global("page_params", {});
 
-set_global("overlays", {
-});
+set_global("overlays", {});
 
 const noop = () => {};
 
@@ -36,8 +33,7 @@ zrequire("emoji");
 const hotkey = zrequire("hotkey");
 zrequire("common");
 
-set_global("list_util", {
-});
+set_global("list_util", {});
 
 set_global("current_msg_list", {
     selected_id: function () {
@@ -55,8 +51,12 @@ set_global("current_msg_list", {
     },
 });
 
-function return_true() { return true; }
-function return_false() { return false; }
+function return_true() {
+    return true;
+}
+function return_false() {
+    return false;
+}
 
 function stubbing(func_name_to_stub, test_function) {
     global.with_overrides((override) => {
@@ -264,7 +264,6 @@ run_test("basic_chars", () => {
     test_normal_typing();
     overlays.is_active = return_false;
     assert_mapping("d", "drafts.launch");
-
 
     // Test opening and closing of Recent Topics
     overlays.is_active = return_true;

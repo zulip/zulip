@@ -32,9 +32,7 @@ exports.send_read = (function () {
         channel.post({
             url: "/json/messages/flags",
             idempotent: true,
-            data: {messages: JSON.stringify(real_msg_ids_batch),
-                   op: "add",
-                   flag: "read"},
+            data: {messages: JSON.stringify(real_msg_ids_batch), op: "add", flag: "read"},
             success: on_success,
         });
     }

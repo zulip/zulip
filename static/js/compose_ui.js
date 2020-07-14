@@ -24,8 +24,12 @@ exports.smart_insert = function (textarea, syntax) {
 
     // If there isn't whitespace either at the end of the syntax or the
     // start of the content after the syntax, add one.
-    if (!(after_str.length > 0 && is_space(after_str[0]) ||
-          syntax.length > 0 && is_space(syntax.slice(-1)))) {
+    if (
+        !(
+            (after_str.length > 0 && is_space(after_str[0])) ||
+            (syntax.length > 0 && is_space(syntax.slice(-1)))
+        )
+    ) {
         syntax += " ";
     }
 
@@ -63,13 +67,17 @@ exports.replace_syntax = function (old_syntax, new_syntax, textarea) {
         textarea = $("#compose-textarea");
     }
 
-    textarea.val(textarea.val().replace(old_syntax, () =>
-        // We need this anonymous function to avoid JavaScript's
-        // replace() function treating `$`s in new_syntax as special syntax.  See
-        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Description
-        // for details.
-        new_syntax,
-    ));
+    textarea.val(
+        textarea.val().replace(
+            old_syntax,
+            () =>
+                // We need this anonymous function to avoid JavaScript's
+                // replace() function treating `$`s in new_syntax as special syntax.  See
+                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Description
+                // for details.
+                new_syntax,
+        ),
+    );
 };
 
 exports.compute_placeholder_text = function (opts) {
@@ -81,9 +89,10 @@ exports.compute_placeholder_text = function (opts) {
     // placeholder field in a way that does HTML escaping.
     if (opts.message_type === "stream") {
         if (opts.topic) {
-            return i18n.t("Message #__- stream_name__ > __- topic_name__",
-                          {stream_name: opts.stream,
-                           topic_name: opts.topic});
+            return i18n.t("Message #__- stream_name__ > __- topic_name__", {
+                stream_name: opts.stream,
+                topic_name: opts.topic,
+            });
         } else if (opts.stream) {
             return i18n.t("Message #__- stream_name__", {stream_name: opts.stream});
         }
@@ -92,19 +101,22 @@ exports.compute_placeholder_text = function (opts) {
     // For Private Messages
     if (opts.private_message_recipient) {
         const recipient_list = opts.private_message_recipient.split(",");
-        const recipient_names = recipient_list.map((recipient) => {
-            const user = people.get_by_email(recipient);
-            return user.full_name;
-        }).join(", ");
+        const recipient_names = recipient_list
+            .map((recipient) => {
+                const user = people.get_by_email(recipient);
+                return user.full_name;
+            })
+            .join(", ");
 
         if (recipient_list.length === 1) {
             // If it's a single user, display status text if available
             const user = people.get_by_email(recipient_list[0]);
             const status = user_status.get_status_text(user.user_id);
             if (status) {
-                return i18n.t("Message __- recipient_name__ (__- recipient_status__)",
-                              {recipient_name: recipient_names,
-                               recipient_status: status});
+                return i18n.t("Message __- recipient_name__ (__- recipient_status__)", {
+                    recipient_name: recipient_names,
+                    recipient_status: status,
+                });
             }
         }
         return i18n.t("Message __- recipient_names__", {recipient_names: recipient_names});

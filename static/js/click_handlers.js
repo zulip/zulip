@@ -7,13 +7,13 @@ const render_buddy_list_tooltip_content = require("../templates/buddy_list_toolt
 
 function convert_enter_to_click(e) {
     const key = e.which;
-    if (key === 13) { // enter
+    if (key === 13) {
+        // enter
         $(e.currentTarget).click();
     }
 }
 
 exports.initialize = function () {
-
     // MESSAGE CLICKING
 
     function initialize_long_tap() {
@@ -142,7 +142,7 @@ exports.initialize = function () {
     // selection function which will open the compose box  and select the message.
     if (!util.is_mobile()) {
         $("#main_div").on("click", ".messagebox", select_message_function);
-    // on the other hand, on mobile it should be done with a long tap.
+        // on the other hand, on mobile it should be done with a long tap.
     } else {
         $("#main_div").on("longtap", ".messagebox", function (e) {
             // find the correct selection API for the browser.
@@ -354,7 +354,11 @@ exports.initialize = function () {
         $_("#undo_markdown_preview").show();
         $_("#preview_message_area").show();
 
-        compose.render_and_show_preview($_("#markdown_preview_spinner"), $_("#preview_content"), content);
+        compose.render_and_show_preview(
+            $_("#markdown_preview_spinner"),
+            $_("#preview_content"),
+            content,
+        );
     });
 
     $("body").on("click", "#message_edit_form [id^='undo_markdown_preview_']", function (e) {
@@ -415,10 +419,14 @@ exports.initialize = function () {
     });
 
     // Search for all table rows (this combines stream & topic names)
-    $("body").on("keyup", "#recent_topics_search", _.debounce(() => {
-        recent_topics.update_filters_view();
-    // Wait for user to go idle before initiating search.
-    }, 300));
+    $("body").on(
+        "keyup",
+        "#recent_topics_search",
+        _.debounce(() => {
+            recent_topics.update_filters_view();
+            // Wait for user to go idle before initiating search.
+        }, 300),
+    );
 
     $("body").on("click", "#recent_topics_search_clear", (e) => {
         e.stopPropagation();
@@ -482,16 +490,18 @@ exports.initialize = function () {
         }
     });
 
-    $("#user_presences").expectOne().on("click", ".selectable_sidebar_block", (e) => {
-        const li = $(e.target).parents("li");
+    $("#user_presences")
+        .expectOne()
+        .on("click", ".selectable_sidebar_block", (e) => {
+            const li = $(e.target).parents("li");
 
-        activity.narrow_for_user({li: li});
+            activity.narrow_for_user({li: li});
 
-        e.preventDefault();
-        e.stopPropagation();
-        popovers.hide_all();
-        $(".tooltip").remove();
-    });
+            e.preventDefault();
+            e.stopPropagation();
+            popovers.hide_all();
+            $(".tooltip").remove();
+        });
 
     function do_render_buddy_list_tooltip(elem, title_data) {
         elem.tooltip({
@@ -509,19 +519,31 @@ exports.initialize = function () {
     }
 
     // BUDDY LIST TOOLTIPS
-    $("#user_presences").on("mouseenter", ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block", (e) => {
-        e.stopPropagation();
-        const elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
-        const user_id_string = elem.attr("data-user-id");
-        const title_data = buddy_data.get_title_data(user_id_string, false);
-        do_render_buddy_list_tooltip(elem, title_data);
-    });
+    $("#user_presences").on(
+        "mouseenter",
+        ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block",
+        (e) => {
+            e.stopPropagation();
+            const elem = $(e.currentTarget)
+                .closest(".user_sidebar_entry")
+                .find(".user-presence-link");
+            const user_id_string = elem.attr("data-user-id");
+            const title_data = buddy_data.get_title_data(user_id_string, false);
+            do_render_buddy_list_tooltip(elem, title_data);
+        },
+    );
 
-    $("#user_presences").on("mouseleave click", ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block", (e) => {
-        e.stopPropagation();
-        const elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
-        $(elem).tooltip("destroy");
-    });
+    $("#user_presences").on(
+        "mouseleave click",
+        ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block",
+        (e) => {
+            e.stopPropagation();
+            const elem = $(e.currentTarget)
+                .closest(".user_sidebar_entry")
+                .find(".user-presence-link");
+            $(elem).tooltip("destroy");
+        },
+    );
 
     // PM LIST TOOLTIPS
     $("body").on("mouseenter", "#pm_user_status", (e) => {
@@ -607,13 +629,12 @@ exports.initialize = function () {
 
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
-    $("#compose-send-status .compose-send-status-close").click(
-        () => { $("#compose-send-status").stop(true).fadeOut(500); },
-    );
-    $("#nonexistent_stream_reply_error .compose-send-status-close").click(
-        () => { $("#nonexistent_stream_reply_error").stop(true).fadeOut(500); },
-    );
-
+    $("#compose-send-status .compose-send-status-close").click(() => {
+        $("#compose-send-status").stop(true).fadeOut(500);
+    });
+    $("#nonexistent_stream_reply_error .compose-send-status-close").click(() => {
+        $("#nonexistent_stream_reply_error").stop(true).fadeOut(500);
+    });
 
     $(".compose_stream_button").click(() => {
         popovers.hide_mobile_message_buttons_popover();
@@ -697,34 +718,37 @@ exports.initialize = function () {
     $("body").on("click", ".webathena_login", (e) => {
         $("#zephyr-mirror-error").removeClass("show");
         const principal = ["zephyr", "zephyr"];
-        WinChan.open({
-            url: "https://webathena.mit.edu/#!request_ticket_v1",
-            relay_url: "https://webathena.mit.edu/relay.html",
-            params: {
-                realm: "ATHENA.MIT.EDU",
-                principal: principal,
+        WinChan.open(
+            {
+                url: "https://webathena.mit.edu/#!request_ticket_v1",
+                relay_url: "https://webathena.mit.edu/relay.html",
+                params: {
+                    realm: "ATHENA.MIT.EDU",
+                    principal: principal,
+                },
             },
-        }, (err, r) => {
-            if (err) {
-                blueslip.warn(err);
-                return;
-            }
-            if (r.status !== "OK") {
-                blueslip.warn(r);
-                return;
-            }
+            (err, r) => {
+                if (err) {
+                    blueslip.warn(err);
+                    return;
+                }
+                if (r.status !== "OK") {
+                    blueslip.warn(r);
+                    return;
+                }
 
-            channel.post({
-                url: "/accounts/webathena_kerberos_login/",
-                data: {cred: JSON.stringify(r.session)},
-                success: function () {
-                    $("#zephyr-mirror-error").removeClass("show");
-                },
-                error: function () {
-                    $("#zephyr-mirror-error").addClass("show");
-                },
-            });
-        });
+                channel.post({
+                    url: "/accounts/webathena_kerberos_login/",
+                    data: {cred: JSON.stringify(r.session)},
+                    success: function () {
+                        $("#zephyr-mirror-error").removeClass("show");
+                    },
+                    error: function () {
+                        $("#zephyr-mirror-error").addClass("show");
+                    },
+                });
+            },
+        );
         $("#settings-dropdown").dropdown("toggle");
         e.preventDefault();
         e.stopPropagation();
@@ -743,7 +767,8 @@ exports.initialize = function () {
 
     // Don't focus links on middle click.
     $("body").on("mouseup", "a", (e) => {
-        if (e.which === 2) { // middle click
+        if (e.which === 2) {
+            // middle click
             e.target.blur();
         }
     });
@@ -803,7 +828,8 @@ exports.initialize = function () {
                 $("[data-finish-editing='" + selector + "']").show();
 
                 $(selector).addClass("stream-name-edit-box");
-                edit_area.attr("data-prev-text", edit_area.text().trim())
+                edit_area
+                    .attr("data-prev-text", edit_area.text().trim())
                     .attr("contenteditable", true);
 
                 if (map[selector].on_start) {
@@ -828,7 +854,6 @@ exports.initialize = function () {
         });
     })();
 
-
     // HOTSPOTS
 
     // open
@@ -837,7 +862,8 @@ exports.initialize = function () {
         hotspots.close_hotspot_icon(this);
 
         // show popover
-        const hotspot_name = $(e.target).closest(".hotspot-icon")
+        const hotspot_name = $(e.target)
+            .closest(".hotspot-icon")
             .attr("id")
             .replace("hotspot_", "")
             .replace("_icon", "");
@@ -849,9 +875,12 @@ exports.initialize = function () {
             on_close: function () {
                 // close popover
                 $(this).css({display: "block"});
-                $(this).animate({opacity: 1}, {
-                    duration: 300,
-                });
+                $(this).animate(
+                    {opacity: 1},
+                    {
+                        duration: 300,
+                    },
+                );
             }.bind(this),
         });
 
@@ -866,9 +895,7 @@ exports.initialize = function () {
 
         const overlay_name = $(this).closest(".hotspot.overlay").attr("id");
 
-        const hotspot_name = overlay_name
-            .replace("hotspot_", "")
-            .replace("_overlay", "");
+        const hotspot_name = overlay_name.replace("hotspot_", "").replace("_overlay", "");
 
         // Comment below to disable marking hotspots as read in production
         hotspots.post_hotspot_as_read(hotspot_name);
@@ -890,7 +917,6 @@ exports.initialize = function () {
         e.stopPropagation();
     });
 
-
     // MAIN CLICK HANDLER
 
     $(document).on("click", (e) => {
@@ -902,7 +928,11 @@ exports.initialize = function () {
         }
 
         // Dismiss popovers if the user has clicked outside them
-        if ($('.popover-inner, #user-profile-modal, .emoji-info-popover, .app-main [class^="column-"].expanded').has(e.target).length === 0) {
+        if (
+            $(
+                '.popover-inner, #user-profile-modal, .emoji-info-popover, .app-main [class^="column-"].expanded',
+            ).has(e.target).length === 0
+        ) {
             popovers.hide_all();
         }
 
@@ -917,16 +947,18 @@ exports.initialize = function () {
                 // Refocus compose message text box if link is clicked
                 $("#compose-textarea").focus();
                 return;
-            } else if (!window.getSelection().toString() &&
-                       // Clicks inside an overlay, popover, custom
-                       // modal, or backdrop of one of the above
-                       // should not have any effect on the compose
-                       // state.
-                       !$(e.target).closest(".overlay").length &&
-                       !$(e.target).closest(".popover").length &&
-                       !$(e.target).closest(".modal").length &&
-                       !$(e.target).closest(".modal-backdrop").length &&
-                       $(e.target).closest("body").length) {
+            } else if (
+                !window.getSelection().toString() &&
+                // Clicks inside an overlay, popover, custom
+                // modal, or backdrop of one of the above
+                // should not have any effect on the compose
+                // state.
+                !$(e.target).closest(".overlay").length &&
+                !$(e.target).closest(".popover").length &&
+                !$(e.target).closest(".modal").length &&
+                !$(e.target).closest(".modal-backdrop").length &&
+                $(e.target).closest("body").length
+            ) {
                 // Unfocus our compose area if we click out of it. Don't let exits out
                 // of overlays or selecting text (for copy+paste) trigger cancelling.
                 // Check if the click is within the body to prevent extensions from

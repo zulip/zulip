@@ -77,7 +77,6 @@ const BinaryDict = function (pred) {
         self.falses.delete(k);
     };
 
-
     return self;
 };
 
@@ -113,11 +112,15 @@ exports.clear_subscriptions = function () {
 exports.clear_subscriptions();
 
 exports.set_filter_out_inactives = function () {
-    if (page_params.demote_inactive_streams ===
-            settings_config.demote_inactive_streams_values.automatic.code) {
+    if (
+        page_params.demote_inactive_streams ===
+        settings_config.demote_inactive_streams_values.automatic.code
+    ) {
         filter_out_inactives = exports.num_subscribed_subs() >= 30;
-    } else if (page_params.demote_inactive_streams ===
-            settings_config.demote_inactive_streams_values.always.code) {
+    } else if (
+        page_params.demote_inactive_streams ===
+        settings_config.demote_inactive_streams_values.always.code
+    ) {
         filter_out_inactives = true;
     } else {
         filter_out_inactives = false;
@@ -303,7 +306,6 @@ exports.slug_to_name = function (slug) {
     return slug;
 };
 
-
 exports.delete_sub = function (stream_id) {
     const sub = subs_by_stream_id.get(stream_id);
     if (!sub) {
@@ -430,7 +432,6 @@ exports.potential_subscribers = function (sub) {
     }
 
     return people.filter_all_users(is_potential_subscriber);
-
 };
 
 exports.update_stream_email_address = function (sub, email) {
@@ -484,16 +485,16 @@ exports.update_calculated_fields = function (sub) {
     // If stream is public then any user can subscribe. If stream is private then only
     // subscribed users can unsubscribe.
     // Guest users can't subscribe themselves to any stream.
-    sub.should_display_subscription_button = sub.subscribed ||
-        !page_params.is_guest && !sub.invite_only;
-    sub.should_display_preview_button = sub.subscribed || !sub.invite_only ||
-                                        sub.previously_subscribed;
-    sub.can_change_stream_permissions = page_params.is_admin && (
-        !sub.invite_only || sub.subscribed);
+    sub.should_display_subscription_button =
+        sub.subscribed || (!page_params.is_guest && !sub.invite_only);
+    sub.should_display_preview_button =
+        sub.subscribed || !sub.invite_only || sub.previously_subscribed;
+    sub.can_change_stream_permissions =
+        page_params.is_admin && (!sub.invite_only || sub.subscribed);
     // User can add other users to stream if stream is public or user is subscribed to stream.
     // Guest users can't access subscribers of any(public or private) non-subscribed streams.
-    sub.can_access_subscribers = page_params.is_admin || sub.subscribed || !page_params.is_guest &&
-                                 !sub.invite_only;
+    sub.can_access_subscribers =
+        page_params.is_admin || sub.subscribed || (!page_params.is_guest && !sub.invite_only);
     sub.preview_url = hash_util.by_stream_uri(sub.stream_id);
     sub.can_add_subscribers = !page_params.is_guest && (!sub.invite_only || sub.subscribed);
     sub.is_old_stream = sub.stream_weekly_traffic !== null;
@@ -688,7 +689,9 @@ exports.is_user_subscribed = function (stream_id, user_id) {
     if (typeof sub === "undefined" || !sub.can_access_subscribers) {
         // If we don't know about the stream, or we ourselves cannot access subscriber list,
         // so we return undefined (treated as falsy if not explicitly handled).
-        blueslip.warn("We got a is_user_subscribed call for a non-existent or inaccessible stream.");
+        blueslip.warn(
+            "We got a is_user_subscribed call for a non-existent or inaccessible stream.",
+        );
         return;
     }
     if (typeof user_id === "undefined") {
@@ -775,7 +778,8 @@ exports.get_unmatched_streams_for_notification_settings = function () {
         const settings_values = {};
         let make_table_row = false;
         for (const notification_name of settings_config.stream_specific_notification_settings) {
-            const prepend = notification_name === "wildcard_mentions_notify" ? "" : "enable_stream_";
+            const prepend =
+                notification_name === "wildcard_mentions_notify" ? "" : "enable_stream_";
             const default_setting = page_params[prepend + notification_name];
             const stream_setting = exports.receives_notifications(row.stream_id, notification_name);
 
@@ -852,8 +856,9 @@ exports.sort_for_stream_settings = function (stream_ids, order) {
     }
 
     function by_subscriber_count(id_a, id_b) {
-        const out = exports.get_sub_by_id(id_b).subscribers.size
-            - exports.get_sub_by_id(id_a).subscribers.size;
+        const out =
+            exports.get_sub_by_id(id_b).subscribers.size -
+            exports.get_sub_by_id(id_a).subscribers.size;
         if (out === 0) {
             return by_stream_name(id_a, id_b);
         }

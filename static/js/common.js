@@ -29,8 +29,7 @@ exports.password_quality = function (password, bar, password_field) {
     const min_guesses = password_field.data("minGuesses");
 
     const result = zxcvbn(password);
-    const acceptable = password.length >= min_length
-                      && result.guesses >= min_guesses;
+    const acceptable = password.length >= min_length && result.guesses >= min_guesses;
 
     if (bar !== undefined) {
         const t = result.crack_times_seconds.offline_slow_hashing_1e4_per_second;
@@ -60,7 +59,9 @@ exports.password_warning = function (password, password_field) {
     const min_length = password_field.data("minLength");
 
     if (password.length < min_length) {
-        return i18n.t("Password should be at least __length__ characters long", {length: min_length});
+        return i18n.t("Password should be at least __length__ characters long", {
+            length: min_length,
+        });
     }
     return zxcvbn(password).feedback.warning || i18n.t("Password is too weak");
 };

@@ -106,7 +106,6 @@ exports.restore_message = function (draft) {
             topic: util.get_draft_topic(draft),
             content: draft.content,
         };
-
     } else {
         compose_args = {
             type: draft.type,
@@ -181,9 +180,7 @@ exports.restore_draft = function (draft_id) {
     } else {
         if (compose_args.private_message_recipient !== "") {
             narrow.activate(
-                [
-                    {operator: "pm-with", operand: compose_args.private_message_recipient},
-                ],
+                [{operator: "pm-with", operand: compose_args.private_message_recipient}],
                 {trigger: "restore draft"},
             );
         }
@@ -245,14 +242,16 @@ exports.format_draft = function (draft) {
         };
     } else {
         const emails = util.extract_pm_recipients(draft.private_message_recipient);
-        const recipients = emails.map((email) => {
-            email = email.trim();
-            const person = people.get_by_email(email);
-            if (person !== undefined) {
-                return person.full_name;
-            }
-            return email;
-        }).join(", ");
+        const recipients = emails
+            .map((email) => {
+                email = email.trim();
+                const person = people.get_by_email(email);
+                if (person !== undefined) {
+                    return person.full_name;
+                }
+                return email;
+            })
+            .join(", ");
 
         formatted = {
             draft_id: draft.id,
@@ -273,9 +272,13 @@ exports.format_draft = function (draft) {
         // We also report the exception to the server so that
         // the bug can be fixed.
         draft_model.deleteDraft(id);
-        blueslip.error("Error in rendering draft.", {
-            draft_content: draft.content,
-        }, error.stack);
+        blueslip.error(
+            "Error in rendering draft.",
+            {
+                draft_content: draft.content,
+            },
+            error.stack,
+        );
         return;
     }
 
@@ -381,19 +384,25 @@ function activate_element(elem) {
 function drafts_initialize_focus(event_name) {
     // If a draft is not focused in draft modal, then focus the last draft
     // if up_arrow is clicked or the first draft if down_arrow is clicked.
-    if (event_name !== "up_arrow" && event_name !== "down_arrow" || $(".draft-info-box:focus")[0]) {
+    if (
+        (event_name !== "up_arrow" && event_name !== "down_arrow") ||
+        $(".draft-info-box:focus")[0]
+    ) {
         return;
     }
 
     const draft_arrow = draft_model.get();
     const draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
-    if (draft_id_arrow.length === 0) { // empty drafts modal
+    if (draft_id_arrow.length === 0) {
+        // empty drafts modal
         return;
     }
 
     let draft_element;
     if (event_name === "up_arrow") {
-        draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[draft_id_arrow.length - 1] + '"]');
+        draft_element = document.querySelectorAll(
+            '[data-draft-id="' + draft_id_arrow[draft_id_arrow.length - 1] + '"]',
+        );
     } else if (event_name === "down_arrow") {
         draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[0] + '"]');
     }
@@ -418,7 +427,8 @@ function drafts_scroll(next_focus_draft_row) {
 
     // If focused draft is the last draft, scroll to the bottom.
     if ($(".draft-info-box").last()[0].parentElement === next_focus_draft_row[0]) {
-        $(".drafts-list")[0].scrollTop = $(".drafts-list")[0].scrollHeight - $(".drafts-list").height();
+        $(".drafts-list")[0].scrollTop =
+            $(".drafts-list")[0].scrollHeight - $(".drafts-list").height();
     }
 
     // If focused draft is cut off from the top, scroll up halfway in draft modal.
@@ -471,7 +481,9 @@ exports.drafts_handle_events = function (e, event_key) {
                 draft_to_be_focused_id = prev_draft_row.data("draft-id");
             }
 
-            const new_focus_element = document.querySelectorAll('[data-draft-id="' + draft_to_be_focused_id + '"]');
+            const new_focus_element = document.querySelectorAll(
+                '[data-draft-id="' + draft_to_be_focused_id + '"]',
+            );
             if (new_focus_element[0] !== undefined) {
                 activate_element(new_focus_element[0].children[0]);
             }

@@ -18,7 +18,8 @@ exports.focus_in_empty_compose = function () {
     return (
         exports.composing() &&
         exports.message_content() === "" &&
-        $("#compose-textarea").is(":focus"));
+        $("#compose-textarea").is(":focus")
+    );
 };
 
 function get_or_set(fieldname, keep_leading_whitespace) {

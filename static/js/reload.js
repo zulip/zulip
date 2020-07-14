@@ -87,7 +87,6 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     window.location.replace("#reload:" + token);
 }
 
-
 // Check if we're doing a compose-preserving reload.  This must be
 // done before the first call to get_events
 exports.initialize = function () {
@@ -131,10 +130,12 @@ exports.initialize = function () {
             // TODO: preserve focus
             const topic = util.get_reload_topic(vars);
 
-            compose_actions.start(vars.msg_type, {stream: vars.stream || "",
-                                                  topic: topic || "",
-                                                  private_message_recipient: vars.recipient || "",
-                                                  content: vars.msg || ""});
+            compose_actions.start(vars.msg_type, {
+                stream: vars.stream || "",
+                topic: topic || "",
+                private_message_recipient: vars.recipient || "",
+                content: vars.msg || "",
+            });
             if (send_now) {
                 compose.finish();
             }
@@ -179,8 +180,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
         try {
             preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
         } catch (ex) {
-            blueslip.error("Failed to preserve state",
-                           undefined, ex.stack);
+            blueslip.error("Failed to preserve state", undefined, ex.stack);
         }
     }
 
@@ -211,8 +211,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     try {
         server_events.cleanup_event_queue();
     } catch (ex) {
-        blueslip.error("Failed to cleanup before reloading",
-                       undefined, ex.stack);
+        blueslip.error("Failed to cleanup before reloading", undefined, ex.stack);
     }
 
     window.location.reload(true);
@@ -228,18 +227,22 @@ exports.initiate = function (options) {
         ...options,
     };
 
-    if (options.save_pointer === undefined ||
+    if (
+        options.save_pointer === undefined ||
         options.save_narrow === undefined ||
-        options.save_compose === undefined) {
+        options.save_compose === undefined
+    ) {
         blueslip.error("reload.initiate() called without explicit save options.");
     }
 
     if (options.immediate) {
-        do_reload_app(options.send_after_reload,
-                      options.save_pointer,
-                      options.save_narrow,
-                      options.save_compose,
-                      options.message);
+        do_reload_app(
+            options.send_after_reload,
+            options.save_pointer,
+            options.save_narrow,
+            options.save_compose,
+            options.message,
+        );
     }
 
     if (reload_state.is_pending()) {
@@ -276,11 +279,13 @@ exports.initiate = function (options) {
     let compose_started_handler;
 
     function reload_from_idle() {
-        do_reload_app(false,
-                      options.save_pointer,
-                      options.save_narrow,
-                      options.save_compose,
-                      options.message);
+        do_reload_app(
+            false,
+            options.save_pointer,
+            options.save_narrow,
+            options.save_compose,
+            options.message,
+        );
     }
 
     // Make sure we always do a reload eventually after
@@ -293,31 +298,24 @@ exports.initiate = function (options) {
         // If the user sends their message or otherwise closes
         // compose, we return them to the not-composing timeouts.
         idle_control.cancel();
-        idle_control = $(document).idle({idle: basic_idle_timeout,
-                                         onIdle: reload_from_idle});
-        $(document).off("compose_canceled.zulip compose_finished.zulip",
-                        compose_done_handler);
+        idle_control = $(document).idle({idle: basic_idle_timeout, onIdle: reload_from_idle});
+        $(document).off("compose_canceled.zulip compose_finished.zulip", compose_done_handler);
         $(document).on("compose_started.zulip", compose_started_handler);
     };
     compose_started_handler = function () {
         // If the user stops being idle and starts composing a
         // message, switch to the compose-open timeouts.
         idle_control.cancel();
-        idle_control = $(document).idle({idle: composing_idle_timeout,
-                                         onIdle: reload_from_idle});
+        idle_control = $(document).idle({idle: composing_idle_timeout, onIdle: reload_from_idle});
         $(document).off("compose_started.zulip", compose_started_handler);
-        $(document).on("compose_canceled.zulip compose_finished.zulip",
-                       compose_done_handler);
+        $(document).on("compose_canceled.zulip compose_finished.zulip", compose_done_handler);
     };
 
     if (compose_state.composing()) {
-        idle_control = $(document).idle({idle: composing_idle_timeout,
-                                         onIdle: reload_from_idle});
-        $(document).on("compose_canceled.zulip compose_finished.zulip",
-                       compose_done_handler);
+        idle_control = $(document).idle({idle: composing_idle_timeout, onIdle: reload_from_idle});
+        $(document).on("compose_canceled.zulip compose_finished.zulip", compose_done_handler);
     } else {
-        idle_control = $(document).idle({idle: basic_idle_timeout,
-                                         onIdle: reload_from_idle});
+        idle_control = $(document).idle({idle: basic_idle_timeout, onIdle: reload_from_idle});
         $(document).on("compose_started.zulip", compose_started_handler);
     }
 };
@@ -331,6 +329,5 @@ window.addEventListener("beforeunload", () => {
     blueslip.log("Setting reload_in_progress in beforeunload handler");
     reload_state.set_state_to_in_progress();
 });
-
 
 window.reload = exports;

@@ -1,6 +1,10 @@
 const noop = function () {};
-const return_false = function () { return false; };
-const return_true = function () { return true; };
+const return_false = function () {
+    return false;
+};
+const return_true = function () {
+    return true;
+};
 
 set_global("document", {
     location: {}, // we need this to load compose.js
@@ -10,11 +14,9 @@ set_global("page_params", {});
 
 set_global("$", global.make_zjquery());
 
-set_global("compose_pm_pill", {
-});
+set_global("compose_pm_pill", {});
 
-set_global("hash_util", {
-});
+set_global("hash_util", {});
 
 zrequire("people");
 zrequire("compose_ui");
@@ -254,8 +256,7 @@ run_test("respond_to_message", () => {
     };
     stub_selected_message(msg);
 
-    opts = {
-    };
+    opts = {};
 
     respond_to_message(opts);
     assert.equal($("#stream_message_recipient_stream").val(), "devel");
@@ -277,8 +278,7 @@ run_test("reply_with_mention", () => {
         syntax_to_insert = syntax;
     };
 
-    const opts = {
-    };
+    const opts = {};
 
     reply_with_mention(opts);
     assert.equal($("#stream_message_recipient_stream").val(), "devel");
@@ -330,7 +330,10 @@ run_test("quote_and_reply", () => {
 
     compose_ui.replace_syntax = function (syntax, replacement) {
         assert.equal(syntax, "[Quoting…]");
-        assert.equal(replacement, "@_**Bob Roberts|40** [said](link_to_message):\n```quote\nTesting.\n```");
+        assert.equal(
+            replacement,
+            "@_**Bob Roberts|40** [said](link_to_message):\n```quote\nTesting.\n```",
+        );
     };
 
     const opts = {
@@ -374,25 +377,29 @@ run_test("quote_and_reply", () => {
     };
     compose_ui.replace_syntax = function (syntax, replacement) {
         assert.equal(syntax, "[Quoting…]");
-        assert.equal(replacement, "@_**Bob Roberts|40** [said](link_to_message):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````");
+        assert.equal(
+            replacement,
+            "@_**Bob Roberts|40** [said](link_to_message):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````",
+        );
     };
     quote_and_reply(opts);
 });
 
 run_test("get_focus_area", () => {
     assert.equal(get_focus_area("private", {}), "#private_message_recipient");
-    assert.equal(get_focus_area("private", {
-        private_message_recipient: "bob@example.com"}), "#compose-textarea");
+    assert.equal(
+        get_focus_area("private", {
+            private_message_recipient: "bob@example.com",
+        }),
+        "#compose-textarea",
+    );
     assert.equal(get_focus_area("stream", {}), "#stream_message_recipient_stream");
-    assert.equal(get_focus_area("stream", {stream: "fun"}),
-                 "#stream_message_recipient_topic");
-    assert.equal(get_focus_area("stream", {stream: "fun",
-                                           topic: "more"}),
-                 "#compose-textarea");
-    assert.equal(get_focus_area("stream", {stream: "fun",
-                                           topic: "more",
-                                           trigger: "new topic button"}),
-                 "#stream_message_recipient_topic");
+    assert.equal(get_focus_area("stream", {stream: "fun"}), "#stream_message_recipient_topic");
+    assert.equal(get_focus_area("stream", {stream: "fun", topic: "more"}), "#compose-textarea");
+    assert.equal(
+        get_focus_area("stream", {stream: "fun", topic: "more", trigger: "new topic button"}),
+        "#stream_message_recipient_topic",
+    );
 });
 
 run_test("focus_in_empty_compose", () => {

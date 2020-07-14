@@ -1,5 +1,4 @@
 const FetchStatus = function () {
-
     const self = {};
 
     // The FetchStatus object tracks tracks the state of a
@@ -129,12 +128,10 @@ const FetchStatus = function () {
     };
 
     self.update_expected_max_message_id = function (messages) {
-        expected_max_message_id = Math.max(expected_max_message_id,
-                                           max_id_for_messages(messages));
+        expected_max_message_id = Math.max(expected_max_message_id, max_id_for_messages(messages));
     };
 
     return self;
-
 };
 module.exports = FetchStatus;
 window.FetchStatus = FetchStatus;

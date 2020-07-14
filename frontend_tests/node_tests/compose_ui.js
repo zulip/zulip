@@ -3,7 +3,9 @@ zrequire("people");
 zrequire("user_status");
 
 set_global("document", {
-    execCommand: function () { return false; },
+    execCommand: function () {
+        return false;
+    },
 });
 
 set_global("$", global.make_zjquery());
@@ -84,7 +86,6 @@ run_test("insert_syntax_and_focus", () => {
     assert.equal($("#compose-textarea").caret(), 4);
     assert.equal($("#compose-textarea").val(), "xyz :octopus: ");
     assert($("#compose-textarea").is_focused());
-
 });
 
 run_test("smart_insert", () => {

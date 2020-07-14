@@ -4,8 +4,7 @@ set_global("page_params", {
     is_guest: false,
 });
 
-set_global("$", () => {
-});
+set_global("$", () => {});
 
 set_global("document", null);
 global.stub_out_jquery();
@@ -194,15 +193,12 @@ run_test("subscribers", () => {
         return users.map((u) => u.user_id).sort();
     }
 
-    assert.deepEqual(
-        potential_subscriber_ids(),
-        [
-            me.user_id,
-            fred.user_id,
-            not_fred.user_id,
-            george.user_id,
-        ],
-    );
+    assert.deepEqual(potential_subscriber_ids(), [
+        me.user_id,
+        fred.user_id,
+        not_fred.user_id,
+        george.user_id,
+    ]);
 
     stream_data.set_subscribers(sub, [me.user_id, fred.user_id, george.user_id]);
     stream_data.update_calculated_fields(sub);
@@ -211,12 +207,7 @@ run_test("subscribers", () => {
     assert(stream_data.is_user_subscribed(sub.stream_id, george.user_id));
     assert(!stream_data.is_user_subscribed(sub.stream_id, not_fred.user_id));
 
-    assert.deepEqual(
-        potential_subscriber_ids(),
-        [
-            not_fred.user_id,
-        ],
-    );
+    assert.deepEqual(potential_subscriber_ids(), [not_fred.user_id]);
 
     stream_data.set_subscribers(sub, []);
 
@@ -261,7 +252,10 @@ run_test("subscribers", () => {
 
     // Verify noop for bad stream when removing subscriber
     const bad_stream_id = 999999;
-    blueslip.expect("warn", "We got a remove_subscriber call for a non-existent stream " + bad_stream_id);
+    blueslip.expect(
+        "warn",
+        "We got a remove_subscriber call for a non-existent stream " + bad_stream_id,
+    );
     ok = stream_data.remove_subscriber(bad_stream_id, brutus.user_id);
     assert(!ok);
 
@@ -295,7 +289,9 @@ run_test("subscribers", () => {
 
     blueslip.expect(
         "warn",
-        "We got a is_user_subscribed call for a non-existent or inaccessible stream.", 2);
+        "We got a is_user_subscribed call for a non-existent or inaccessible stream.",
+        2,
+    );
     sub.invite_only = true;
     stream_data.update_calculated_fields(sub);
     assert.equal(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id), undefined);
@@ -303,9 +299,7 @@ run_test("subscribers", () => {
     assert.equal(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id), undefined);
 
     // Verify that we don't crash and return false for a bad stream.
-    blueslip.expect(
-        "warn",
-        "We got an add_subscriber call for a non-existent stream.");
+    blueslip.expect("warn", "We got an add_subscriber call for a non-existent stream.");
     ok = stream_data.add_subscriber(9999999, brutus.user_id);
     assert(!ok);
 
@@ -380,8 +374,7 @@ run_test("is_active", () => {
 
     assert(stream_data.is_active(sub));
 
-    page_params.demote_inactive_streams =
-        settings_config.demote_inactive_streams_values.never.code;
+    page_params.demote_inactive_streams = settings_config.demote_inactive_streams_values.never.code;
     stream_data.set_filter_out_inactives();
 
     sub = {name: "pets", subscribed: false, stream_id: 111};
@@ -499,8 +492,10 @@ run_test("stream_settings", () => {
     assert.equal(sub_rows[2].invite_only, false);
 
     assert.equal(sub_rows[0].history_public_to_subscribers, true);
-    assert.equal(sub_rows[0].stream_post_policy ===
-        stream_data.stream_post_policy_values.admins.code, true);
+    assert.equal(
+        sub_rows[0].stream_post_policy === stream_data.stream_post_policy_values.admins.code,
+        true,
+    );
     assert.equal(sub_rows[0].message_retention_days, 10);
 
     const sub = stream_data.get_sub("a");
@@ -513,8 +508,7 @@ run_test("stream_settings", () => {
     stream_data.update_calculated_fields(sub);
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
-    assert.equal(sub.stream_post_policy,
-                 stream_data.stream_post_policy_values.everyone.code);
+    assert.equal(sub.stream_post_policy, stream_data.stream_post_policy_values.everyone.code);
     assert.equal(sub.message_retention_days, -1);
 
     // For guest user only retrieve subscribed streams
@@ -565,13 +559,7 @@ run_test("default_stream_names", () => {
     assert.deepEqual(names.sort(), ["private", "public"]);
 
     const default_stream_ids = stream_data.get_default_stream_ids();
-    assert.deepEqual(
-        default_stream_ids.sort(),
-        [
-            announce.stream_id,
-            general.stream_id,
-        ],
-    );
+    assert.deepEqual(default_stream_ids.sort(), [announce.stream_id, general.stream_id]);
 });
 
 run_test("delete_sub", () => {
@@ -838,10 +826,7 @@ run_test("remove_default_stream", () => {
 });
 
 run_test("canonicalized_name", () => {
-    assert.deepStrictEqual(
-        stream_data.canonicalized_name("Stream_Bar"),
-        "stream_bar",
-    );
+    assert.deepStrictEqual(stream_data.canonicalized_name("Stream_Bar"), "stream_bar");
 });
 
 run_test("create_sub", () => {
@@ -875,9 +860,12 @@ run_test("create_sub", () => {
     // make sure sub doesn't get created twice
     assert.equal(india_sub, new_sub);
 
-    assert.throws(() => {
-        stream_data.create_sub_from_server_data("Canada", canada);
-    }, {message: "We cannot create a sub without a stream_id"});
+    assert.throws(
+        () => {
+            stream_data.create_sub_from_server_data("Canada", canada);
+        },
+        {message: "We cannot create a sub without a stream_id"},
+    );
 
     const antarctica_sub = stream_data.create_sub_from_server_data(antarctica);
     assert(antarctica_sub);
@@ -888,23 +876,28 @@ run_test("initialize", () => {
     function get_params() {
         const params = {};
 
-        params.subscriptions = [{
-            name: "subscriptions",
-            stream_id: 2001,
-        }];
-
-        params.unsubscribed = [{
-            name: "unsubscribed",
-            stream_id: 2002,
-        }];
-
-        params.never_subscribed = [{
-            name: "never_subscribed",
-            stream_id: 2003,
-        }];
-
-        params.realm_default_streams = [
+        params.subscriptions = [
+            {
+                name: "subscriptions",
+                stream_id: 2001,
+            },
         ];
+
+        params.unsubscribed = [
+            {
+                name: "unsubscribed",
+                stream_id: 2002,
+            },
+        ];
+
+        params.never_subscribed = [
+            {
+                name: "never_subscribed",
+                stream_id: 2003,
+            },
+        ];
+
+        params.realm_default_streams = [];
 
         return params;
     }
@@ -1000,10 +993,7 @@ run_test("is_subscriber_subset", () => {
     ];
 
     for (const row of matrix) {
-        assert.equal(
-            stream_data.is_subscriber_subset(row[0], row[1]),
-            row[2],
-        );
+        assert.equal(stream_data.is_subscriber_subset(row[0], row[1]), row[2]);
     }
 });
 
@@ -1030,12 +1020,14 @@ run_test("get_invite_stream_data", () => {
     stream_data.add_sub(orie);
     stream_data.set_realm_default_streams([orie]);
 
-    const expected_list = [{
-        name: "Orie",
-        stream_id: 320,
-        invite_only: false,
-        default_stream: true,
-    }];
+    const expected_list = [
+        {
+            name: "Orie",
+            stream_id: 320,
+            invite_only: false,
+            default_stream: true,
+        },
+    ];
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
 
     const inviter = {

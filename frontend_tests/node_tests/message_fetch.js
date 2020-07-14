@@ -282,7 +282,9 @@ function simulate_narrow() {
         predicate: () => () => false,
     };
 
-    narrow_state.active = function () { return true; };
+    narrow_state.active = function () {
+        return true;
+    };
     narrow_state.public_operators = function () {
         return [{operator: "pm-with", operand: alice.email}];
     };
@@ -454,7 +456,5 @@ run_test("loading_newer", () => {
         });
 
         assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), false);
-
     })();
-
 });

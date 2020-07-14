@@ -7,11 +7,7 @@ zrequire("channel");
 const default_stub_xhr = "default-stub-xhr";
 
 function test_with_mock_ajax(test_params) {
-    const {
-        xhr = default_stub_xhr,
-        run_code,
-        check_ajax_options,
-    } = test_params;
+    const {xhr = default_stub_xhr, run_code, check_ajax_options} = test_params;
 
     let ajax_called;
     let ajax_options;
@@ -112,7 +108,6 @@ run_test("basics", () => {
             options.simulate_error();
         },
     });
-
 });
 
 run_test("normal_post", () => {
@@ -273,9 +268,11 @@ run_test("too_many_pending", () => {
         return xhr;
     };
 
-    blueslip.expect("warn",
-                    "The length of pending_requests is over 50. " +
-                    "Most likely they are not being correctly removed.");
+    blueslip.expect(
+        "warn",
+        "The length of pending_requests is over 50. " +
+            "Most likely they are not being correctly removed.",
+    );
     _.times(50, () => {
         channel.post({});
     });

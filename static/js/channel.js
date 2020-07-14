@@ -3,8 +3,10 @@ const pending_requests = [];
 function add_pending_request(jqXHR) {
     pending_requests.push(jqXHR);
     if (pending_requests.length > 50) {
-        blueslip.warn("The length of pending_requests is over 50. Most likely " +
-                      "they are not being correctly removed.");
+        blueslip.warn(
+            "The length of pending_requests is over 50. Most likely " +
+                "they are not being correctly removed.",
+        );
     }
 }
 
@@ -44,16 +46,19 @@ function call(args, idempotent) {
         if (xhr.status === 403) {
             try {
                 if (JSON.parse(xhr.responseText).code === "CSRF_FAILED") {
-                    reload.initiate({immediate: true,
-                                     save_pointer: true,
-                                     save_narrow: true,
-                                     save_compose: true});
+                    reload.initiate({
+                        immediate: true,
+                        save_pointer: true,
+                        save_narrow: true,
+                        save_compose: true,
+                    });
                 }
             } catch (ex) {
-                blueslip.error("Unexpected 403 response from server",
-                               {xhr: xhr.responseText,
-                                args: args},
-                               ex.stack);
+                blueslip.error(
+                    "Unexpected 403 response from server",
+                    {xhr: xhr.responseText, args: args},
+                    ex.stack,
+                );
             }
         }
         return orig_error(xhr, error_type, xhn);

@@ -29,10 +29,7 @@ run_test("render_alert_words_ui", () => {
 
     alert_words_ui.render_alert_words_ui();
 
-    assert.deepEqual(appended, [
-        "stub-bar",
-        "stub-foo",
-    ]);
+    assert.deepEqual(appended, ["stub-bar", "stub-foo"]);
     assert(new_alert_word.is_focused());
 });
 
@@ -87,7 +84,7 @@ run_test("add_alert_word", () => {
     // test success
     success_func();
     assert(alert_word_status.hasClass("alert-success"));
-    assert.equal(alert_word_status_text.text(), "translated: Alert word \"zot\" added successfully!");
+    assert.equal(alert_word_status_text.text(), 'translated: Alert word "zot" added successfully!');
     assert(alert_word_status.visible());
 });
 

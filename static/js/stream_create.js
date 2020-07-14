@@ -20,12 +20,18 @@ const stream_subscription_error = (function () {
     const self = {};
 
     self.report_no_subs_to_stream = function () {
-        $("#stream_subscription_error").text(i18n.t("You cannot create a stream with no subscribers!"));
+        $("#stream_subscription_error").text(
+            i18n.t("You cannot create a stream with no subscribers!"),
+        );
         $("#stream_subscription_error").show();
     };
 
     self.cant_create_stream_without_susbscribing = function () {
-        $("#stream_subscription_error").text(i18n.t("You must be an organization administrator to create a stream without subscribing."));
+        $("#stream_subscription_error").text(
+            i18n.t(
+                "You must be an organization administrator to create a stream without subscribing.",
+            ),
+        );
         $("#stream_subscription_error").show();
     };
 
@@ -34,7 +40,6 @@ const stream_subscription_error = (function () {
     };
 
     return self;
-
 })();
 
 const stream_name_error = (function () {
@@ -99,7 +104,6 @@ const stream_name_error = (function () {
 
 // Within the new stream modal...
 function update_announce_stream_state() {
-
     // If there is no notifications_stream, we simply hide the widget.
     if (!stream_data.realm_has_notifications_stream()) {
         $("#announce-new-stream").hide();
@@ -112,7 +116,8 @@ function update_announce_stream_state() {
     const announce_stream_label = $("#announce-new-stream");
     let disable_it = false;
     const privacy_type = $("input:radio[name=privacy]:checked").val();
-    const is_invite_only = privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
+    const is_invite_only =
+        privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
     announce_stream_label.removeClass("control-label-disabled");
 
     if (is_invite_only) {
@@ -142,8 +147,11 @@ function create_stream() {
     // newline characters (by pressing the enter key) it would still be possible to copy
     // and paste over a description with newline characters in it. Prevent that.
     if (description.includes("\n")) {
-        ui_report.message(i18n.t("The stream description cannot contain newline characters."),
-                          $(".stream_create_info"), "alert-error");
+        ui_report.message(
+            i18n.t("The stream description cannot contain newline characters."),
+            $(".stream_create_info"),
+            "alert-error",
+        );
         return;
     }
     data.subscriptions = JSON.stringify([{name: stream_name, description: description}]);
@@ -165,18 +173,27 @@ function create_stream() {
     data.invite_only = JSON.stringify(invite_only);
     data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
 
-    const stream_post_policy = parseInt($("#stream_creation_form input[name=stream-post-policy]:checked").val(), 10);
+    const stream_post_policy = parseInt(
+        $("#stream_creation_form input[name=stream-post-policy]:checked").val(),
+        10,
+    );
 
     data.stream_post_policy = JSON.stringify(stream_post_policy);
 
-    let message_retention_selection = $("#stream_creation_form select[name=stream_message_retention_setting]").val();
+    let message_retention_selection = $(
+        "#stream_creation_form select[name=stream_message_retention_setting]",
+    ).val();
     if (message_retention_selection === "retain_for_period") {
-        message_retention_selection = parseInt($("#stream_creation_form input[name=stream-message-retention-days]").val(), 10);
+        message_retention_selection = parseInt(
+            $("#stream_creation_form input[name=stream-message-retention-days]").val(),
+            10,
+        );
     }
 
     data.message_retention_days = JSON.stringify(message_retention_selection);
 
-    const announce = stream_data.realm_has_notifications_stream() &&
+    const announce =
+        stream_data.realm_has_notifications_stream() &&
         $("#announce-new-stream input").prop("checked");
     data.announce = JSON.stringify(announce);
 
@@ -380,7 +397,6 @@ exports.create_handlers_for_users = function (container) {
     });
 };
 
-
 exports.set_up_handlers = function () {
     const container = $("#stream-creation").expectOne();
 
@@ -442,10 +458,15 @@ exports.set_up_handlers = function () {
                 notifications_stream: stream_data.get_notifications_stream(),
             }),
             html: true,
-            trigger: "manual"});
+            trigger: "manual",
+        });
         announce_stream_docs.popover("show");
         announce_stream_docs.data("popover").tip().css("z-index", 2000);
-        announce_stream_docs.data("popover").tip().find(".popover-content").css("margin", "9px 14px");
+        announce_stream_docs
+            .data("popover")
+            .tip()
+            .find(".popover-content")
+            .css("margin", "9px 14px");
         e.stopPropagation();
     });
     container.on("mouseout", "#announce-stream-docs", (e) => {
@@ -460,7 +481,6 @@ exports.set_up_handlers = function () {
             e.preventDefault();
         }
     });
-
 };
 
 window.stream_create = exports;

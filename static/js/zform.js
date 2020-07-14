@@ -12,11 +12,7 @@ exports.validate_extra_data = function (data) {
             }
 
             function check_choices(field_name, val) {
-                return schema.check_array(
-                    field_name,
-                    val,
-                    check_choice_item,
-                );
+                return schema.check_array(field_name, val, check_choice_item);
             }
 
             return schema.check_record("zform data", data, {
@@ -31,7 +27,6 @@ exports.validate_extra_data = function (data) {
 
         return "unknown zform type: " + data.type;
     }
-
 
     const msg = check(data);
 

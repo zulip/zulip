@@ -30,7 +30,9 @@ function get_users_typing_for_narrow() {
         if (!narrow_user_ids_string) {
             return [];
         }
-        const narrow_user_ids = narrow_user_ids_string.split(",").map((user_id_string) => parseInt(user_id_string, 10));
+        const narrow_user_ids = narrow_user_ids_string
+            .split(",")
+            .map((user_id_string) => parseInt(user_id_string, 10));
         const group = narrow_user_ids.concat([page_params.user_id]);
         return typing_data.get_group_typists(group);
     }
@@ -73,12 +75,8 @@ exports.display_notification = function (event) {
 
     exports.render_notifications_for_narrow();
 
-    typing_data.kickstart_inbound_timer(
-        recipients,
-        TYPING_STARTED_EXPIRY_PERIOD,
-        () => {
-            exports.hide_notification(event);
-        },
-    );
+    typing_data.kickstart_inbound_timer(recipients, TYPING_STARTED_EXPIRY_PERIOD, () => {
+        exports.hide_notification(event);
+    });
 };
 window.typing_events = exports;

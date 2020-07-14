@@ -56,7 +56,9 @@ exports.get_item = function (key, config) {
             case "textarea":
                 return $("#message_edit_content_" + config.row);
             case "send_button":
-                return $("#message_edit_content_" + config.row).closest("#message_edit_form").find(".message_edit_save");
+                return $("#message_edit_content_" + config.row)
+                    .closest("#message_edit_form")
+                    .find(".message_edit_save");
             case "send_status_identifier":
                 return "#message-edit-send-status-" + config.row;
             case "send_status":
@@ -89,7 +91,11 @@ exports.show_error_message = function (config, message) {
         message = i18n.t("An unknown error occurred.");
     }
     exports.get_item("send_button", config).prop("disabled", false);
-    exports.get_item("send_status", config).addClass("alert-error").removeClass("alert-info").show();
+    exports
+        .get_item("send_status", config)
+        .addClass("alert-error")
+        .removeClass("alert-info")
+        .show();
     exports.get_item("send_status_message", config).text(message);
 };
 
@@ -98,15 +104,26 @@ exports.upload_files = function (uppy, config, files) {
         return;
     }
     if (page_params.max_file_upload_size_mib === 0) {
-        exports.show_error_message(config, i18n.t("File and image uploads have been disabled for this organization."));
+        exports.show_error_message(
+            config,
+            i18n.t("File and image uploads have been disabled for this organization."),
+        );
         return;
     }
     exports.get_item("send_button", config).attr("disabled", "");
-    exports.get_item("send_status", config).addClass("alert-info").removeClass("alert-error").show();
+    exports
+        .get_item("send_status", config)
+        .addClass("alert-info")
+        .removeClass("alert-error")
+        .show();
     exports.get_item("send_status_message", config).html($("<p>").text(i18n.t("Uploading…")));
     exports.get_item("send_status_close_button", config).one("click", () => {
         uppy.getFiles().forEach((file) => {
-            compose_ui.replace_syntax(exports.get_translated_status(file), "", exports.get_item("textarea", config));
+            compose_ui.replace_syntax(
+                exports.get_translated_status(file),
+                "",
+                exports.get_item("textarea", config),
+            );
         });
         compose_ui.autosize_textarea();
         uppy.cancelAll();
@@ -118,7 +135,10 @@ exports.upload_files = function (uppy, config, files) {
 
     for (const file of files) {
         try {
-            compose_ui.insert_syntax_and_focus(exports.get_translated_status(file), exports.get_item("textarea", config));
+            compose_ui.insert_syntax_and_focus(
+                exports.get_translated_status(file),
+                exports.get_item("textarea", config),
+            );
             compose_ui.autosize_textarea();
             uppy.addFile({
                 source: exports.get_item("source", config),
@@ -150,20 +170,18 @@ exports.setup_upload = function (config) {
     uppy.setMeta({
         csrfmiddlewaretoken: csrf_token,
     });
-    uppy.use(
-        XHRUpload, {
-            endpoint: "/json/user_uploads",
-            formData: true,
-            fieldName: "file",
-            // Number of concurrent uploads
-            limit: 5,
-            locale: {
-                strings: {
-                    timedOut: i18n.t("Upload stalled for %{seconds} seconds, aborting."),
-                },
+    uppy.use(XHRUpload, {
+        endpoint: "/json/user_uploads",
+        formData: true,
+        fieldName: "file",
+        // Number of concurrent uploads
+        limit: 5,
+        locale: {
+            strings: {
+                timedOut: i18n.t("Upload stalled for %{seconds} seconds, aborting."),
             },
         },
-    );
+    });
 
     uppy.use(ProgressBar, {
         target: exports.get_item("send_status_identifier", config),
@@ -215,7 +233,11 @@ exports.setup_upload = function (config) {
         }
         const absolute_uri = exports.make_upload_absolute(uri);
         const filename_uri = "[" + filename + "](" + absolute_uri + ")";
-        compose_ui.replace_syntax(exports.get_translated_status(file), filename_uri, exports.get_item("textarea", config));
+        compose_ui.replace_syntax(
+            exports.get_translated_status(file),
+            filename_uri,
+            exports.get_item("textarea", config),
+        );
         compose_ui.autosize_textarea();
     });
 
@@ -268,12 +290,20 @@ exports.setup_upload = function (config) {
         const message = response ? response.body.msg : null;
         uppy.cancelAll();
         exports.show_error_message(config, message);
-        compose_ui.replace_syntax(exports.get_translated_status(file), "", exports.get_item("textarea", config));
+        compose_ui.replace_syntax(
+            exports.get_translated_status(file),
+            "",
+            exports.get_item("textarea", config),
+        );
         compose_ui.autosize_textarea();
     });
 
     uppy.on("restriction-failed", (file) => {
-        compose_ui.replace_syntax(exports.get_translated_status(file), "", exports.get_item("textarea", config));
+        compose_ui.replace_syntax(
+            exports.get_translated_status(file),
+            "",
+            exports.get_item("textarea", config),
+        );
         compose_ui.autosize_textarea();
     });
 

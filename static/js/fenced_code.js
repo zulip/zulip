@@ -5,20 +5,21 @@
 // auto-completing code blocks missing a trailing close.
 
 // See backend fenced_code.py:71 for associated regexp
-const fencestr = "^(~{3,}|`{3,})" + // Opening Fence
-               "[ ]*" + // Spaces
-               "(" +
-                   "\\{?\\.?" +
-                   "([a-zA-Z0-9_+-./#]*)" + // Language
-                   "\\}?" +
-               ")" +
-               "[ ]*" + // Spaces
-               "(" +
-                   "\\{?\\.?" +
-                   "([^~`]*)" + // Header (see fenced_code.py)
-                   "\\}?" +
-               ")" +
-               "$";
+const fencestr =
+    "^(~{3,}|`{3,})" + // Opening Fence
+    "[ ]*" + // Spaces
+    "(" +
+    "\\{?\\.?" +
+    "([a-zA-Z0-9_+-./#]*)" + // Language
+    "\\}?" +
+    ")" +
+    "[ ]*" + // Spaces
+    "(" +
+    "\\{?\\.?" +
+    "([^~`]*)" + // Header (see fenced_code.py)
+    "\\}?" +
+    ")" +
+    "$";
 const fence_re = new RegExp(fencestr);
 
 // Default stashing function does nothing
@@ -29,9 +30,11 @@ let stash_func = function (text) {
 exports.wrap_code = function (code) {
     // Trim trailing \n until there's just one left
     // This mirrors how pygments handles code input
-    return '<div class="codehilite"><pre><span></span><code>' +
+    return (
+        '<div class="codehilite"><pre><span></span><code>' +
         _.escape(code.replace(/^\n+|\n+$/g, "")) +
-        "\n</code></pre></div>\n";
+        "\n</code></pre></div>\n"
+    );
 };
 
 function wrap_quote(text) {
@@ -42,7 +45,12 @@ function wrap_quote(text) {
     // beginning of each line
     for (const paragraph of paragraphs) {
         const lines = paragraph.split("\n");
-        quoted_paragraphs.push(lines.filter((line) => line !== "").map((line) => "> " + line).join("\n"));
+        quoted_paragraphs.push(
+            lines
+                .filter((line) => line !== "")
+                .map((line) => "> " + line)
+                .join("\n"),
+        );
     }
 
     return quoted_paragraphs.join("\n\n");

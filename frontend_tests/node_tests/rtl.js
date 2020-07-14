@@ -62,11 +62,30 @@ run_test("get_direction", () => {
     assert.equal(rtl.get_direction("aa" + i_chars.charAt(0) + "ج؛ج"), "ltr");
     assert.equal(rtl.get_direction("12" + i_chars.charAt(0) + "ج؛ج"), "ltr");
     assert.equal(rtl.get_direction("۱۲" + i_chars.charAt(0) + "aaa"), "ltr");
-    assert.equal(rtl.get_direction(",," + i_chars.charAt(0) + "bb" + i_chars.charAt(0) + "جج" + pdi + "ضض" + pdi + ".."), "ltr");
-    assert.equal(rtl.get_direction(",," + i_chars.charAt(0) + "bb" + i_chars.charAt(0) + "جج" + pdi + "ضض" + pdi + "وو"), "rtl");
-    assert.equal(rtl.get_direction(",," + i_chars.charAt(0) + "bb" + pdi + "33" + pdi + ".."), "ltr");
-    assert.equal(rtl.get_direction(",," + i_chars.charAt(0) + "bb" + pdi + "12" + pdi + "وو"), "rtl");
-    assert.equal(rtl.get_direction(",," + i_chars.charAt(0) + "ضج" + pdi + "12" + pdi + "ff"), "ltr");
+    assert.equal(
+        rtl.get_direction(
+            ",," + i_chars.charAt(0) + "bb" + i_chars.charAt(0) + "جج" + pdi + "ضض" + pdi + "..",
+        ),
+        "ltr",
+    );
+    assert.equal(
+        rtl.get_direction(
+            ",," + i_chars.charAt(0) + "bb" + i_chars.charAt(0) + "جج" + pdi + "ضض" + pdi + "وو",
+        ),
+        "rtl",
+    );
+    assert.equal(
+        rtl.get_direction(",," + i_chars.charAt(0) + "bb" + pdi + "33" + pdi + ".."),
+        "ltr",
+    );
+    assert.equal(
+        rtl.get_direction(",," + i_chars.charAt(0) + "bb" + pdi + "12" + pdi + "وو"),
+        "rtl",
+    );
+    assert.equal(
+        rtl.get_direction(",," + i_chars.charAt(0) + "ضج" + pdi + "12" + pdi + "ff"),
+        "ltr",
+    );
 
     assert.equal(rtl.get_direction("aa" + i_chars.charAt(1) + "bb" + pdi + "cc"), "ltr");
     assert.equal(rtl.get_direction("دد" + i_chars.charAt(2) + "bb" + pdi + "cc"), "rtl");
@@ -75,9 +94,28 @@ run_test("get_direction", () => {
     assert.equal(rtl.get_direction("aa" + i_chars.charAt(1) + "ججج"), "ltr");
     assert.equal(rtl.get_direction("12" + i_chars.charAt(2) + "ججج"), "ltr");
     assert.equal(rtl.get_direction("۱۲" + i_chars.charAt(1) + "aaa"), "ltr");
-    assert.equal(rtl.get_direction(",," + i_chars.charAt(1) + "bb" + i_chars.charAt(2) + "جج" + pdi + "ضض" + pdi + ".."), "ltr");
-    assert.equal(rtl.get_direction(",," + i_chars.charAt(2) + "bb" + i_chars.charAt(1) + "؛ج" + pdi + "ضض" + pdi + "وو"), "rtl");
-    assert.equal(rtl.get_direction(",," + i_chars.charAt(1) + "bb" + pdi + "33" + pdi + ".."), "ltr");
-    assert.equal(rtl.get_direction(",," + i_chars.charAt(2) + "bb" + pdi + "12" + pdi + "وو"), "rtl");
-    assert.equal(rtl.get_direction(",," + i_chars.charAt(1) + "ضج" + pdi + "12" + pdi + "ff"), "ltr");
+    assert.equal(
+        rtl.get_direction(
+            ",," + i_chars.charAt(1) + "bb" + i_chars.charAt(2) + "جج" + pdi + "ضض" + pdi + "..",
+        ),
+        "ltr",
+    );
+    assert.equal(
+        rtl.get_direction(
+            ",," + i_chars.charAt(2) + "bb" + i_chars.charAt(1) + "؛ج" + pdi + "ضض" + pdi + "وو",
+        ),
+        "rtl",
+    );
+    assert.equal(
+        rtl.get_direction(",," + i_chars.charAt(1) + "bb" + pdi + "33" + pdi + ".."),
+        "ltr",
+    );
+    assert.equal(
+        rtl.get_direction(",," + i_chars.charAt(2) + "bb" + pdi + "12" + pdi + "وو"),
+        "rtl",
+    );
+    assert.equal(
+        rtl.get_direction(",," + i_chars.charAt(1) + "ضج" + pdi + "12" + pdi + "ff"),
+        "ltr",
+    );
 });

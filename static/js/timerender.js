@@ -31,8 +31,7 @@ exports.render_now = function (time, today) {
     // constants.
     const days_old = Math.round(start_of_other_day.diffDays(start_of_today));
 
-    const is_older_year =
-        start_of_today.getFullYear() - start_of_other_day.getFullYear() > 0;
+    const is_older_year = start_of_today.getFullYear() - start_of_other_day.getFullYear() > 0;
 
     if (days_old === 0) {
         time_str = i18n.t("Today");
@@ -90,12 +89,14 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
     } else if (days > 90 && days < 365) {
         if (current_date.getFullYear() === last_active_date.getFullYear()) {
             // Online more than 90 days ago, in the same year
-            return i18n.t("__last_active_date__",
-                          {last_active_date: last_active_date.toString("MMM\xa0dd")});
+            return i18n.t("__last_active_date__", {
+                last_active_date: last_active_date.toString("MMM\xa0dd"),
+            });
         }
     }
-    return i18n.t("__last_active_date__",
-                  {last_active_date: last_active_date.toString("MMM\xa0dd,\xa0yyyy")});
+    return i18n.t("__last_active_date__", {
+        last_active_date: last_active_date.toString("MMM\xa0dd,\xa0yyyy"),
+    });
 };
 
 // List of the dates that need to be updated when the day changes.
@@ -250,8 +251,18 @@ exports.stringify_time = function (time) {
 // hour time in the format of "%mmm %d, %h:%m %p".
 exports.absolute_time = (function () {
     const MONTHS = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
     ];
 
     const fmt_time = function (date, H_24) {
@@ -298,8 +309,7 @@ exports.get_full_datetime = function (time) {
     const tz_offset = -time.getTimezoneOffset() / 60;
     return {
         date: time.toLocaleDateString(),
-        time: time.toLocaleTimeString() +
-        " (UTC" + (tz_offset < 0 ? "" : "+") + tz_offset + ")",
+        time: time.toLocaleTimeString() + " (UTC" + (tz_offset < 0 ? "" : "+") + tz_offset + ")",
     };
 };
 

@@ -218,10 +218,7 @@ exports.get_title_data = function (user_ids_string, is_group) {
         const bot_owner = people.get_bot_owner_user(person);
 
         if (bot_owner) {
-            const bot_owner_name = i18n.t(
-                "Owner: __name__",
-                {name: bot_owner.full_name},
-            );
+            const bot_owner_name = i18n.t("Owner: __name__", {name: bot_owner.full_name});
 
             return {
                 first_line: person.full_name,
@@ -236,7 +233,6 @@ exports.get_title_data = function (user_ids_string, is_group) {
             second_line: "",
             third_line: "",
         };
-
     }
 
     // For buddy list and individual PMS.  Since is_group=False, it's

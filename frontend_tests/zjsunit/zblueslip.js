@@ -46,7 +46,7 @@ exports.make_zblueslip = function () {
                     // Only throw this for message types we want to explicitly track.
                     // For example, we do not want to throw here for debug messages.
                     if (opts[name]) {
-                        throw Error (`Unexpected '${name}' message: ${message}`);
+                        throw Error(`Unexpected '${name}' message: ${message}`);
                     }
                     continue;
                 }
@@ -56,9 +56,15 @@ exports.make_zblueslip = function () {
             for (const obj of lib.test_data[name]) {
                 const message = obj.message;
                 if (obj.count > 0) {
-                    throw Error(`We did not see expected ${obj.expected_count} of '${name}': ${message}`);
+                    throw Error(
+                        `We did not see expected ${obj.expected_count} of '${name}': ${message}`,
+                    );
                 } else if (obj.count < 0) {
-                    throw Error(`We saw ${obj.expected_count - obj.count} (expected ${obj.expected_count}) of '${name}': ${message}`);
+                    throw Error(
+                        `We saw ${obj.expected_count - obj.count} (expected ${
+                            obj.expected_count
+                        }) of '${name}': ${message}`,
+                    );
                 }
             }
         }

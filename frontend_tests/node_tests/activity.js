@@ -166,11 +166,7 @@ run_test("sort_users", () => {
 
     buddy_data.sort_users(user_ids);
 
-    assert.deepEqual(user_ids, [
-        fred.user_id,
-        jill.user_id,
-        alice.user_id,
-    ]);
+    assert.deepEqual(user_ids, [fred.user_id, jill.user_id, alice.user_id]);
 });
 
 run_test("huddle_data.process_loaded_messages", () => {

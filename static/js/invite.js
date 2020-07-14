@@ -61,7 +61,6 @@ function submit_invitation_form() {
                 const rendered_email_msg = render_settings_dev_env_email_access();
                 $("#dev_env_msg").html(rendered_email_msg).addClass("alert-info").show();
             }
-
         },
         error: function (xhr) {
             const arr = JSON.parse(xhr.responseText);
@@ -110,8 +109,12 @@ function generate_multiuse_invite() {
         data: data,
         beforeSend: beforeSend,
         success: function (data) {
-            ui_report.success(i18n.t('Invitation link: <a href="__link__">__link__</a>',
-                                     {link: data.invite_link}), invite_status);
+            ui_report.success(
+                i18n.t('Invitation link: <a href="__link__">__link__</a>', {
+                    link: data.invite_link,
+                }),
+                invite_status,
+            );
         },
         error: function (xhr) {
             ui_report.error("", xhr, invite_status);

@@ -101,7 +101,6 @@ run_test("create_ajax_request", () => {
         state.free_trial_alert_message_hide += 1;
     };
 
-
     $("#autopay-form").serializeArray = () => jquery("#autopay-form").serializeArray();
 
     $.post = ({url, data, success, error}) => {
@@ -164,8 +163,9 @@ run_test("create_ajax_request", () => {
         assert.equal(state.free_trial_alert_message_show, 1);
     };
 
-    helpers.create_ajax_request("/json/billing/upgrade", "autopay", {id: "stripe_token_id"}, ["licenses"]);
-
+    helpers.create_ajax_request("/json/billing/upgrade", "autopay", {id: "stripe_token_id"}, [
+        "licenses",
+    ]);
 });
 
 run_test("format_money", () => {

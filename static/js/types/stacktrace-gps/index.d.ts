@@ -3,8 +3,8 @@ import StackFrame from "stackframe";
 
 declare namespace StackTraceGPS {
     type StackTraceGPSOptions = {
-        sourceCache?: { [url: string]: string | Promise<string> };
-        sourceMapConsumerCache?: { [sourceMappingUrl: string]: SourceMap.SourceMapConsumer };
+        sourceCache?: {[url: string]: string | Promise<string>};
+        sourceMapConsumerCache?: {[sourceMappingUrl: string]: SourceMap.SourceMapConsumer};
         offline?: boolean;
         ajax?(url: string): Promise<string>;
         atob?(base64: string): string;

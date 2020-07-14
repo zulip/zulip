@@ -16,52 +16,41 @@ casper.then(function () {
 });
 
 common.then_send_many([
-    {stream: "Verona", subject: "frontend test",
-     content: "test message A"},
+    {stream: "Verona", subject: "frontend test", content: "test message A"},
 
-    {stream: "Verona", subject: "frontend test",
-     content: "test message B"},
+    {stream: "Verona", subject: "frontend test", content: "test message B"},
 
-    {stream: "Verona", subject: "other subject",
-     content: "test message C"},
+    {stream: "Verona", subject: "other subject", content: "test message C"},
 
-    {stream: "Denmark", subject: "frontend test",
-     content: "other message"},
+    {stream: "Denmark", subject: "frontend test", content: "other message"},
 
-    {recipient: "cordelia@zulip.com, hamlet@zulip.com",
-     content: "personal A"},
+    {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "personal A"},
 
-    {recipient: "cordelia@zulip.com, hamlet@zulip.com",
-     content: "personal B"},
+    {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "personal B"},
 
-    {recipient: "cordelia@zulip.com",
-     content: "personal C"},
+    {recipient: "cordelia@zulip.com", content: "personal C"},
 
-    {stream: "Verona", subject: "frontend test",
-     content: "test message D"},
+    {stream: "Verona", subject: "frontend test", content: "test message D"},
 
-    {recipient: "cordelia@zulip.com, hamlet@zulip.com",
-     content: "personal D"},
+    {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "personal D"},
 
-    {recipient: "cordelia@zulip.com",
-     content: "personal E"},
+    {recipient: "cordelia@zulip.com", content: "personal E"},
 ]);
-
 
 // Define the messages we expect to see when narrowed.
 
 function expect_home() {
     casper.then(function () {
         casper.waitUntilVisible("#zhome", function () {
-            common.expected_messages("zhome", [
-                "Verona > frontend test",
-                "You and Cordelia Lear, King Hamlet",
-                "You and Cordelia Lear",
-            ], [
-                "<p>test message D</p>",
-                "<p>personal D</p>",
-                "<p>personal E</p>",
-            ]);
+            common.expected_messages(
+                "zhome",
+                [
+                    "Verona > frontend test",
+                    "You and Cordelia Lear, King Hamlet",
+                    "You and Cordelia Lear",
+                ],
+                ["<p>test message D</p>", "<p>personal D</p>", "<p>personal E</p>"]
+            );
         });
     });
 }
@@ -69,16 +58,16 @@ function expect_home() {
 function expect_stream() {
     casper.then(function () {
         casper.waitUntilVisible("#zfilt", function () {
-            common.expected_messages("zfilt", [
-                "Verona > frontend test",
-                "Verona > other subject",
-                "Verona > frontend test",
-            ], [
-                "<p>test message A</p>",
-                "<p>test message B</p>",
-                "<p>test message C</p>",
-                "<p>test message D</p>",
-            ]);
+            common.expected_messages(
+                "zfilt",
+                ["Verona > frontend test", "Verona > other subject", "Verona > frontend test"],
+                [
+                    "<p>test message A</p>",
+                    "<p>test message B</p>",
+                    "<p>test message C</p>",
+                    "<p>test message D</p>",
+                ]
+            );
         });
     });
 }
@@ -86,15 +75,16 @@ function expect_stream() {
 function expect_stream_subject() {
     casper.then(function () {
         casper.waitUntilVisible("#zfilt", function () {
-            common.expected_messages("zfilt", [
-                "Verona > frontend test",
-            ], [
-                "<p>test message A</p>",
-                "<p>test message B</p>",
-                "<p>test message D</p>",
-            ]);
+            common.expected_messages(
+                "zfilt",
+                ["Verona > frontend test"],
+                ["<p>test message A</p>", "<p>test message B</p>", "<p>test message D</p>"]
+            );
 
-            casper.test.assertEquals(casper.fetchText("#left_bar_compose_stream_button_big"), "New topic");
+            casper.test.assertEquals(
+                casper.fetchText("#left_bar_compose_stream_button_big"),
+                "New topic"
+            );
         });
     });
 }
@@ -102,16 +92,16 @@ function expect_stream_subject() {
 function expect_subject() {
     casper.then(function () {
         casper.waitUntilVisible("#zfilt", function () {
-            common.expected_messages("zfilt", [
-                "Verona > frontend test",
-                "Denmark > frontend test",
-                "Verona > frontend test",
-            ], [
-                "<p>test message A</p>",
-                "<p>test message B</p>",
-                "<p>other message</p>",
-                "<p>test message D</p>",
-            ]);
+            common.expected_messages(
+                "zfilt",
+                ["Verona > frontend test", "Denmark > frontend test", "Verona > frontend test"],
+                [
+                    "<p>test message A</p>",
+                    "<p>test message B</p>",
+                    "<p>other message</p>",
+                    "<p>test message D</p>",
+                ]
+            );
         });
     });
 }
@@ -119,13 +109,11 @@ function expect_subject() {
 function expect_huddle() {
     casper.then(function () {
         casper.waitUntilVisible("#zfilt", function () {
-            common.expected_messages("zfilt", [
-                "You and Cordelia Lear, King Hamlet",
-            ], [
-                "<p>personal A</p>",
-                "<p>personal B</p>",
-                "<p>personal D</p>",
-            ]);
+            common.expected_messages(
+                "zfilt",
+                ["You and Cordelia Lear, King Hamlet"],
+                ["<p>personal A</p>", "<p>personal B</p>", "<p>personal D</p>"]
+            );
         });
     });
 }
@@ -133,12 +121,11 @@ function expect_huddle() {
 function expect_1on1() {
     casper.then(function () {
         casper.waitUntilVisible("#zfilt", function () {
-            common.expected_messages("zfilt", [
-                "You and Cordelia Lear",
-            ], [
-                "<p>personal C</p>",
-                "<p>personal E</p>",
-            ]);
+            common.expected_messages(
+                "zfilt",
+                ["You and Cordelia Lear"],
+                ["<p>personal C</p>", "<p>personal E</p>"]
+            );
         });
     });
 }
@@ -146,18 +133,22 @@ function expect_1on1() {
 function expect_all_pm() {
     casper.then(function () {
         casper.waitUntilVisible("#zfilt", function () {
-            common.expected_messages("zfilt", [
-                "You and Cordelia Lear, King Hamlet",
-                "You and Cordelia Lear",
-            ], [
-                "<p>personal A</p>",
-                "<p>personal B</p>",
-                "<p>personal C</p>",
-                "<p>personal D</p>",
-                "<p>personal E</p>",
-            ]);
+            common.expected_messages(
+                "zfilt",
+                ["You and Cordelia Lear, King Hamlet", "You and Cordelia Lear"],
+                [
+                    "<p>personal A</p>",
+                    "<p>personal B</p>",
+                    "<p>personal C</p>",
+                    "<p>personal D</p>",
+                    "<p>personal E</p>",
+                ]
+            );
 
-            casper.test.assertEquals(casper.fetchText("#left_bar_compose_stream_button_big"), "New stream message");
+            casper.test.assertEquals(
+                casper.fetchText("#left_bar_compose_stream_button_big"),
+                "New stream message"
+            );
         });
     });
 }
@@ -166,8 +157,7 @@ function expect_non_existing_user() {
     casper.then(function () {
         casper.waitUntilVisible("#non_existing_user", function () {
             casper.test.info("Empty feed for non existing user visible.");
-            var expected_message = "\n        This user does not exist!" +
-                "\n    ";
+            var expected_message = "\n        This user does not exist!" + "\n    ";
             this.test.assertEquals(casper.fetchText("#non_existing_user"), expected_message);
         });
     });
@@ -177,8 +167,7 @@ function expect_non_existing_users() {
     casper.then(function () {
         casper.waitUntilVisible("#non_existing_users", function () {
             casper.test.info("Empty feed for non existing user visible.");
-            var expected_message = "\n        One or more of these users do not exist!" +
-                "\n    ";
+            var expected_message = "\n        One or more of these users do not exist!" + "\n    ";
             this.test.assertEquals(casper.fetchText("#non_existing_users"), expected_message);
         });
     });
@@ -210,8 +199,8 @@ function search_silent_user(str, item) {
     casper.then(function () {
         casper.waitUntilVisible("#silent_user", function () {
             casper.test.info("Empty feed for silent user visible.");
-            var expected_message = "\n        You haven't received any messages sent by this user yet!" +
-                                    "\n    ";
+            var expected_message =
+                "\n        You haven't received any messages sent by this user yet!" + "\n    ";
             this.test.assertEquals(casper.fetchText("#silent_user"), expected_message);
         });
     });
@@ -277,24 +266,28 @@ expect_home();
 
 // Narrow by typing in search strings or operators.
 // Test stream / recipient autocomplete in the search bar
-search_and_check("Verona", "Stream", expect_stream,
-                 "Verona - Zulip Dev - Zulip");
+search_and_check("Verona", "Stream", expect_stream, "Verona - Zulip Dev - Zulip");
 
-search_and_check("Cordelia", "Private", expect_1on1,
-                 "Cordelia Lear - Zulip Dev - Zulip");
+search_and_check("Cordelia", "Private", expect_1on1, "Cordelia Lear - Zulip Dev - Zulip");
 
 // Test operators
-search_and_check("stream:Verona", "", expect_stream,
-                 "Verona - Zulip Dev - Zulip");
+search_and_check("stream:Verona", "", expect_stream, "Verona - Zulip Dev - Zulip");
 
-search_and_check("stream:Verona subject:frontend+test", "", expect_stream_subject,
-                 "frontend test - Zulip Dev - Zulip");
+search_and_check(
+    "stream:Verona subject:frontend+test",
+    "",
+    expect_stream_subject,
+    "frontend test - Zulip Dev - Zulip"
+);
 
-search_and_check("stream:Verona topic:frontend+test", "", expect_stream_subject,
-                 "frontend test - Zulip Dev - Zulip");
+search_and_check(
+    "stream:Verona topic:frontend+test",
+    "",
+    expect_stream_subject,
+    "frontend test - Zulip Dev - Zulip"
+);
 
-search_and_check("subject:frontend+test", "", expect_subject,
-                 "home - Zulip Dev - Zulip");
+search_and_check("subject:frontend+test", "", expect_subject, "home - Zulip Dev - Zulip");
 
 search_silent_user("sender:emailgateway@zulip.com", "");
 
@@ -302,8 +295,12 @@ search_non_existing_user("sender:dummyuser@zulip.com", "");
 
 search_and_check("pm-with:dummyuser@zulip.com", "", expect_non_existing_user, "Invalid user");
 
-search_and_check("pm-with:dummyuser@zulip.com,dummyuser2@zulip.com", "", expect_non_existing_users,
-                 "Invalid users");
+search_and_check(
+    "pm-with:dummyuser@zulip.com,dummyuser2@zulip.com",
+    "",
+    expect_non_existing_users,
+    "Invalid users"
+);
 
 // Narrow by clicking the left sidebar.
 casper.then(function () {
@@ -332,44 +329,46 @@ un_narrow();
 // Make sure stream search filters the stream list
 casper.then(function () {
     casper.test.info("Search streams using left sidebar");
-    casper.test.assertExists(".input-append.notdisplayed", "Stream filter box not visible initially");
+    casper.test.assertExists(
+        ".input-append.notdisplayed",
+        "Stream filter box not visible initially"
+    );
     casper.click("#streams_header .sidebar-title");
 });
 
 casper.waitWhileSelector("#streams_list .input-append.notdisplayed", function () {
-    casper.test.assertExists(get_stream_li("Denmark"),
-                             "Original stream list contains Denmark");
-    casper.test.assertExists(get_stream_li("Scotland"),
-                             "Original stream list contains Scotland");
-    casper.test.assertExists(get_stream_li("Verona"),
-                             "Original stream list contains Verona");
+    casper.test.assertExists(get_stream_li("Denmark"), "Original stream list contains Denmark");
+    casper.test.assertExists(get_stream_li("Scotland"), "Original stream list contains Scotland");
+    casper.test.assertExists(get_stream_li("Verona"), "Original stream list contains Verona");
 });
 
 // Enter the search box and test highlighted suggestion navigation
 casper.then(function () {
     casper.evaluate(function () {
-        $(".stream-list-filter").expectOne()
-            .focus()
-            .trigger($.Event("click"));
+        $(".stream-list-filter").expectOne().focus().trigger($.Event("click"));
     });
 });
 
 casper.waitForSelector("#stream_filters .highlighted_stream", function () {
     casper.test.info("Suggestion highlighting - initial situation");
-    casper.test.assertExist(get_stream_li("Denmark") + ".highlighted_stream",
-                            "Stream Denmark is highlighted");
-    casper.test.assertDoesntExist(get_stream_li("Scotland") + ".highlighted_stream",
-                                  "Stream Scotland is not highlighted");
-    casper.test.assertDoesntExist(get_stream_li("Verona") + ".highlighted_stream",
-                                  "Stream Verona is not highlighted");
+    casper.test.assertExist(
+        get_stream_li("Denmark") + ".highlighted_stream",
+        "Stream Denmark is highlighted"
+    );
+    casper.test.assertDoesntExist(
+        get_stream_li("Scotland") + ".highlighted_stream",
+        "Stream Scotland is not highlighted"
+    );
+    casper.test.assertDoesntExist(
+        get_stream_li("Verona") + ".highlighted_stream",
+        "Stream Verona is not highlighted"
+    );
 });
 
 // Use arrow keys to navigate through suggestions
 casper.then(function () {
     function arrow(key) {
-        casper.sendKeys(".stream-list-filter",
-                        casper.page.event.key[key],
-                        {keepFocus: true});
+        casper.sendKeys(".stream-list-filter", casper.page.event.key[key], {keepFocus: true});
     }
     arrow("Down"); // Denmark -> Scotland
     arrow("Up"); // Scotland -> Denmark
@@ -382,20 +381,24 @@ casper.then(function () {
         casper.test.info("Suggestion highlighting - after arrow key navigation");
         casper.test.assertDoesntExist(
             get_stream_li("Denmark") + ".highlighted_stream",
-            "Stream Denmark is not highlighted");
+            "Stream Denmark is not highlighted"
+        );
         casper.test.assertExist(
             get_stream_li("Scotland") + ".highlighted_stream",
-            "Stream Scotland is  highlighted");
+            "Stream Scotland is  highlighted"
+        );
         casper.test.assertDoesntExist(
             get_stream_li("Verona") + ".highlighted_stream",
-            "Stream Verona is not highlighted");
+            "Stream Verona is not highlighted"
+        );
     });
 });
 
 // We search for the beginning of "Scotland", not case sensitive
 casper.then(function () {
     casper.evaluate(function () {
-        $(".stream-list-filter").expectOne()
+        $(".stream-list-filter")
+            .expectOne()
             .focus()
             .val("sCoT")
             .trigger($.Event("input"))
@@ -407,61 +410,64 @@ casper.then(function () {
 // expect them to happen in parallel.
 casper.waitWhileVisible(get_stream_li("Denmark"), function () {
     casper.test.info("Search term entered");
-    casper.test.assertDoesntExist(get_stream_li("Denmark"),
-                                  "Filtered stream list does not contain Denmark");
+    casper.test.assertDoesntExist(
+        get_stream_li("Denmark"),
+        "Filtered stream list does not contain Denmark"
+    );
 });
 casper.waitWhileVisible(get_stream_li("Verona"), function () {
-    casper.test.assertDoesntExist(get_stream_li("Verona"),
-                                  "Filtered stream list does not contain Verona");
+    casper.test.assertDoesntExist(
+        get_stream_li("Verona"),
+        "Filtered stream list does not contain Verona"
+    );
 });
 
 casper.then(function () {
-    casper.test.assertExists(get_stream_li("Scotland"),
-                             "Filtered stream list does contain Scotland");
-    casper.test.assertExists(get_stream_li("Scotland") + ".highlighted_stream",
-                             "Stream Scotland is highlighted");
+    casper.test.assertExists(
+        get_stream_li("Scotland"),
+        "Filtered stream list does contain Scotland"
+    );
+    casper.test.assertExists(
+        get_stream_li("Scotland") + ".highlighted_stream",
+        "Stream Scotland is highlighted"
+    );
 });
 
 // Clearing the list should give us back all the streams in the list
 casper.then(function () {
     casper.evaluate(function () {
-        $(".stream-list-filter").expectOne()
-            .focus()
-            .val("")
-            .trigger($.Event("input"));
+        $(".stream-list-filter").expectOne().focus().val("").trigger($.Event("input"));
     });
 });
 
 casper.then(function () {
     casper.waitUntilVisible(get_stream_li("Denmark"), function () {
-        casper.test.assertExists(get_stream_li("Denmark"),
-                                 "Restored stream list contains Denmark");
+        casper.test.assertExists(get_stream_li("Denmark"), "Restored stream list contains Denmark");
     });
     casper.waitUntilVisible(get_stream_li("Scotland"), function () {
-        casper.test.assertExists(get_stream_li("Denmark"),
-                                 "Restored stream list contains Scotland");
+        casper.test.assertExists(
+            get_stream_li("Denmark"),
+            "Restored stream list contains Scotland"
+        );
     });
     casper.waitUntilVisible(get_stream_li("Verona"), function () {
-        casper.test.assertExists(get_stream_li("Denmark"),
-                                 "Restored stream list contains Verona");
+        casper.test.assertExists(get_stream_li("Denmark"), "Restored stream list contains Verona");
     });
 });
-
 
 casper.thenClick("#streams_header .sidebar-title");
 
 casper.waitForSelector(".input-append.notdisplayed", function () {
-    casper.test.assertExists(".input-append.notdisplayed",
-                             "Stream filter box not visible after second click");
+    casper.test.assertExists(
+        ".input-append.notdisplayed",
+        "Stream filter box not visible after second click"
+    );
 });
 
 // We search for the beginning of "Verona", not case sensitive
 casper.then(function () {
     casper.evaluate(function () {
-        $(".stream-list-filter").expectOne()
-            .focus()
-            .val("ver")
-            .trigger($.Event("input"));
+        $(".stream-list-filter").expectOne().focus().val("ver").trigger($.Event("input"));
     });
 });
 
@@ -469,7 +475,11 @@ casper.waitWhileVisible(get_stream_li("Denmark"), function () {
     // Clicking the narrowed list should clear the search
     casper.click(get_stream_li("Verona") + " a");
     expect_stream();
-    casper.test.assertEquals(casper.fetchText(".stream-list-filter"), "", "Clicking on a stream clears the search");
+    casper.test.assertEquals(
+        casper.fetchText(".stream-list-filter"),
+        "",
+        "Clicking on a stream clears the search"
+    );
 });
 
 un_narrow();
@@ -496,7 +506,6 @@ function assert_not_selected(name) {
     );
 }
 
-
 // User search at the right sidebar
 casper.then(function () {
     casper.test.info("Search users using right sidebar");
@@ -510,9 +519,7 @@ casper.then(function () {
 // Click on search icon
 casper.then(function () {
     casper.evaluate(function () {
-        $("#user_filter_icon").expectOne()
-            .focus()
-            .trigger($.Event("click"));
+        $("#user_filter_icon").expectOne().focus().trigger($.Event("click"));
     });
 });
 
@@ -527,9 +534,7 @@ casper.waitForSelector("#user_presences .highlighted_user", function () {
 // Use arrow keys to navigate through suggestions
 casper.then(function () {
     function arrow(key) {
-        casper.sendKeys(".user-list-filter",
-                        casper.page.event.key[key],
-                        {keepFocus: true});
+        casper.sendKeys(".user-list-filter", casper.page.event.key[key], {keepFocus: true});
     }
 
     // go down 2, up 3 (which is really 2), then down 3
@@ -547,12 +552,15 @@ casper.then(function () {
     arrow("Down");
 });
 
-casper.waitForSelector('#user_presences li.highlighted_user [data-name="King Hamlet"]', function () {
-    casper.test.info("Suggestion highlighting - after arrow key navigation");
-    assert_not_selected("Iago");
-    assert_not_selected("Cordelia Lear");
-    assert_selected("King Hamlet");
-});
+casper.waitForSelector(
+    '#user_presences li.highlighted_user [data-name="King Hamlet"]',
+    function () {
+        casper.test.info("Suggestion highlighting - after arrow key navigation");
+        assert_not_selected("Iago");
+        assert_not_selected("Cordelia Lear");
+        assert_selected("King Hamlet");
+    }
+);
 
 common.then_log_out();
 

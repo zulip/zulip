@@ -118,8 +118,7 @@ run_test("populate_profile_fields", () => {
                 is_external_account_field: false,
             },
             can_modify: true,
-            realm_default_external_accounts:
-                page_params.realm_default_external_accounts,
+            realm_default_external_accounts: page_params.realm_default_external_accounts,
         },
         {
             profile_field: {
@@ -135,8 +134,7 @@ run_test("populate_profile_fields", () => {
                 is_external_account_field: false,
             },
             can_modify: true,
-            realm_default_external_accounts:
-                page_params.realm_default_external_accounts,
+            realm_default_external_accounts: page_params.realm_default_external_accounts,
         },
         {
             profile_field: {
@@ -149,8 +147,7 @@ run_test("populate_profile_fields", () => {
                 is_external_account_field: true,
             },
             can_modify: true,
-            realm_default_external_accounts:
-                page_params.realm_default_external_accounts,
+            realm_default_external_accounts: page_params.realm_default_external_accounts,
         },
         {
             profile_field: {
@@ -163,8 +160,7 @@ run_test("populate_profile_fields", () => {
                 is_external_account_field: true,
             },
             can_modify: true,
-            realm_default_external_accounts:
-                page_params.realm_default_external_accounts,
+            realm_default_external_accounts: page_params.realm_default_external_accounts,
         },
     ];
 
