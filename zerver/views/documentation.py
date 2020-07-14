@@ -9,6 +9,9 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.template import loader
 from django.views.generic import TemplateView
+from lxml import html
+from lxml.etree import Element, SubElement, XPath, _Element
+from markupsafe import Markup
 
 from zerver.context_processors import zulip_default_context
 from zerver.decorator import add_google_analytics_context
@@ -63,6 +66,9 @@ class ApiURLView(TemplateView):
         context = super().get_context_data(**kwargs)
         add_api_url_context(context, self.request)
         return context
+
+
+sidebar_links = XPath("//a[@href=$url]")
 
 
 class MarkdownDirectoryView(ApiURLView):
@@ -215,7 +221,6 @@ class MarkdownDirectoryView(ApiURLView):
             )
             context["PAGE_DESCRIPTION"] = request_notes.placeholder_open_graph_description
 
-        context["sidebar_index"] = sidebar_index
         # An "article" might require the api_url_context to be rendered
         api_url_context: Dict[str, Any] = {}
         add_api_url_context(api_url_context, self.request)
@@ -223,6 +228,28 @@ class MarkdownDirectoryView(ApiURLView):
         context["api_url_context"] = api_url_context
         if endpoint_name and endpoint_method:
             context["api_url_context"]["API_ENDPOINT_NAME"] = endpoint_name + ":" + endpoint_method
+
+        sidebar_html = render_markdown_path(sidebar_index)
+        tree = html.fragment_fromstring(sidebar_html, create_parent=True)
+        if not context.get("page_is_policy_center", False):
+            home_h1 = Element("h1")
+            home_link = SubElement(home_h1, "a")
+            home_link.attrib["class"] = "no-underline"
+            home_link.attrib["href"] = context["doc_root"]
+            home_link.text = context["doc_root_title"] + " home"
+            tree.insert(0, home_h1)
+        url = context["doc_root"] + article
+        # Highlight current article link
+        links = sidebar_links(tree, url=url)
+        assert isinstance(links, list)
+        for a in links:
+            assert isinstance(a, _Element)
+            old_class = a.attrib.get("class", "")
+            assert isinstance(old_class, str)
+            a.attrib["class"] = old_class + " highlighted"
+        sidebar_html = "".join(html.tostring(child, encoding="unicode") for child in tree)
+        context["sidebar_html"] = Markup(sidebar_html)
+
         add_google_analytics_context(context)
         return context
 
