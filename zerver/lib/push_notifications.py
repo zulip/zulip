@@ -530,10 +530,19 @@ def get_mobile_push_content(rendered_content: str) -> str:
 
         return '\n'.join(items)
 
+    def render_spoiler(elem: lxml.html.HtmlElement) -> str:
+        header = elem.find_class('spoiler-header')[0]
+        text = process(header).strip()
+        if len(text) == 0:
+            return "(...)\n"
+        return f"{text} (...)\n"
+
     def process(elem: lxml.html.HtmlElement) -> str:
         plain_text = ''
         if elem.tag == 'ol':
             plain_text = render_olist(elem)
+        elif 'spoiler-block' in elem.get("class", ""):
+            plain_text += render_spoiler(elem)
         else:
             plain_text = get_text(elem)
             sub_text = ''
