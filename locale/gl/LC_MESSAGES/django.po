@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-13 20:27+0000\n"
+"POT-Creation-Date: 2020-07-14 07:20+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -207,7 +207,7 @@ msgstr ""
 msgid "Email changed!"
 msgstr ""
 
-#: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:143
+#: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:141
 msgid "Billing"
 msgstr ""
 
@@ -700,7 +700,7 @@ msgid "Invite"
 msgstr ""
 
 #: templates/zerver/app/keyboard_shortcuts.html:2
-#: templates/zerver/app/navbar.html:89
+#: templates/zerver/app/navbar.html:87
 #: templates/zerver/app/right_sidebar.html:23
 msgid "Keyboard shortcuts"
 msgstr ""
@@ -998,7 +998,7 @@ msgid "Download"
 msgstr ""
 
 #: templates/zerver/app/markdown_help.html:2
-#: templates/zerver/app/navbar.html:94
+#: templates/zerver/app/navbar.html:92
 msgid "Message formatting"
 msgstr ""
 
@@ -1042,84 +1042,84 @@ msgid "Stream list"
 msgstr ""
 
 #: templates/zerver/app/navbar.html:23 templates/zerver/app/navbar.html:24
-#: templates/zerver/app/navbar.html:36 templates/zerver/app/navbar.html:37
+#: templates/zerver/app/navbar.html:34 templates/zerver/app/navbar.html:35
 msgid "Search"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:25 templates/zerver/app/navbar.html:38
+#: templates/zerver/app/navbar.html:25 templates/zerver/app/navbar.html:36
 msgid "Exit search"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:47
+#: templates/zerver/app/navbar.html:45
 msgid "User list"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:55
+#: templates/zerver/app/navbar.html:53
 msgid "Menu"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:67
+#: templates/zerver/app/navbar.html:65
 msgid "Manage streams"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:72
+#: templates/zerver/app/navbar.html:70
 #: templates/zerver/app/settings_overlay.html:4
 #: templates/zerver/app/settings_overlay.html:166 zerver/lib/hotspots.py:27
 msgid "Settings"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:78
+#: templates/zerver/app/navbar.html:76
 msgid "Manage organization"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:84 templates/zerver/footer.html:16
+#: templates/zerver/app/navbar.html:82 templates/zerver/footer.html:16
 msgid "Help center"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:99
+#: templates/zerver/app/navbar.html:97
 #: templates/zerver/app/search_operators.html:2
 msgid "Search operators"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:105
+#: templates/zerver/app/navbar.html:103
 msgid "Contact support"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:112
+#: templates/zerver/app/navbar.html:110
 msgid "Desktop & mobile apps"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:117 templates/zerver/footer.html:50
+#: templates/zerver/app/navbar.html:115 templates/zerver/footer.html:50
 msgid "Integrations"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:122
+#: templates/zerver/app/navbar.html:120
 msgid "API documentation"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:129
+#: templates/zerver/app/navbar.html:127
 msgid "Statistics"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:136
+#: templates/zerver/app/navbar.html:134
 msgid "Plans and pricing"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:151
+#: templates/zerver/app/navbar.html:149
 msgid "Invite users"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:157
+#: templates/zerver/app/navbar.html:155
 msgid ""
 "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
 "Webathena"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:159
+#: templates/zerver/app/navbar.html:157
 msgid "Link with Webathena"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:165
+#: templates/zerver/app/navbar.html:163
 msgid "Log out"
 msgstr ""
 

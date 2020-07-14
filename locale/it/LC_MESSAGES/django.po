@@ -13,9 +13,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-10 19:39+0000\n"
-"PO-Revision-Date: 2020-07-10 19:40+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"POT-Creation-Date: 2020-07-13 20:42+0000\n"
+"PO-Revision-Date: 2020-07-14 07:02+0000\n"
+"Last-Translator: Andrea <andrea.soccal@elmospa.com>\n"
 "Language-Team: Italian (http://www.transifex.com/zulip/zulip/language/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -255,27 +255,27 @@ msgstr "Maggior controllo"
 
 #: templates/corporate/upgrade.html:232
 msgid "Open source"
-msgstr ""
+msgstr "Open source"
 
 #: templates/corporate/upgrade.html:233
 msgid "Academic research"
-msgstr ""
+msgstr "Ricerca accademica"
 
 #: templates/corporate/upgrade.html:234
 msgid "Education"
-msgstr ""
+msgstr "Educazione"
 
 #: templates/corporate/upgrade.html:235
 msgid "Non-Profit"
-msgstr ""
+msgstr "Non-Profit"
 
 #: templates/corporate/upgrade.html:236
 msgid "Event (hackathons, conferences, etc.)"
-msgstr ""
+msgstr "Evento (hackathon, conferenze, ecc.)"
 
 #: templates/corporate/upgrade.html:237
 msgid "Other"
-msgstr ""
+msgstr "Altro"
 
 #: templates/two_factor/_wizard_forms.html:26
 msgid "Or, alternatively, use one of your backup phones:"
@@ -885,11 +885,11 @@ msgstr "Argomenti recenti"
 
 #: templates/zerver/app/keyboard_shortcuts.html:243
 msgid "View recent topics"
-msgstr ""
+msgstr "Mostra argomenti recenti"
 
 #: templates/zerver/app/keyboard_shortcuts.html:247
 msgid "Hide recent topics"
-msgstr ""
+msgstr "Nascondi argomenti recenti"
 
 #: templates/zerver/app/keyboard_shortcuts.html:264
 msgid "Edit selected draft"
@@ -2040,14 +2040,14 @@ msgstr "Abbiamo notato un accesso recente per il seguente account Zulip."
 msgid ""
 "Organization: <a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">%(realm_uri)s</a>"
-msgstr ""
+msgstr "Organizzazione: <a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-decoration:underline\">%(realm_uri)s</a>"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:21
 #, python-format
 msgid ""
 "Email: <a href=\"mailto:%(user_email)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">%(user_email)s</a>"
-msgstr ""
+msgstr "Email: <a href=\"mailto:%(user_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(user_email)s</a>"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:24
 #: templates/zerver/emails/notify_new_login.source.html:22
@@ -2084,7 +2084,7 @@ msgid ""
 "style=\"color:#46aa8f; text-decoration:underline\">reset your password</a> "
 "or contact us immediately at <a href=\"mailto:%(support_email)s\" "
 "style=\"color:#46aa8f; text-decoration:underline\">%(support_email)s</a>."
-msgstr ""
+msgstr "Se non riconosci questo accesso, o ritieni che il tuo account sia stato compromesso, <a href=\"%(realm_uri)s/accounts/password/reset/\" style=\"color:#46aa8f; text-decoration:underline\">reimposta la tua password</a> o contattaci immediatamente a <a href=\"mailto:%(support_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(support_email)s</a>."
 
 #: templates/zerver/emails/compiled/notify_new_login.html:43
 #: templates/zerver/emails/notify_new_login.source.html:41
@@ -2564,12 +2564,12 @@ msgstr "L'email associata al tuo account Zulip è stato cambiato recentemente in
 #: templates/zerver/emails/notify_new_login.source.html:16
 #, python-format
 msgid "Organization: <a href=\"%(realm_uri)s\">%(realm_uri)s</a>"
-msgstr ""
+msgstr "Organizzazione: <a href=\"%(realm_uri)s\">%(realm_uri)s</a>"
 
 #: templates/zerver/emails/notify_new_login.source.html:19
 #, python-format
 msgid "Email: <a href=\"mailto:%(user_email)s\">%(user_email)s</a>"
-msgstr ""
+msgstr "Email: <a href=\"mailto:%(user_email)s\">%(user_email)s</a>"
 
 #: templates/zerver/emails/notify_new_login.source.html:36
 #, python-format
@@ -2578,7 +2578,7 @@ msgid ""
 "compromised, please <a href=\"%(realm_uri)s/accounts/password/reset/\">reset"
 " your password</a> or contact us immediately at <a "
 "href=\"mailto:%(support_email)s\">%(support_email)s</a>."
-msgstr ""
+msgstr "Se non riconosci questo accesso, o ritieni che il tuo account sia stato compromesso, <a href=\"%(realm_uri)s/accounts/password/reset/\">reimposta la tua password</a> o contattaci immediatamente a <a href=\"mailto:%(support_email)s\">%(support_email)s</a>."
 
 #: templates/zerver/emails/notify_new_login.subject.txt:1
 #, python-format
@@ -2647,7 +2647,7 @@ msgstr "Contattaci in qualsiasi momento a %(support_email)sse ti trovi nei guai,
 #: templates/zerver/emails/sponsorship_request.subject.txt:1
 #, python-format
 msgid "Sponsorship request (%(organization_type)s) for %(string_id)s"
-msgstr ""
+msgstr "Richiesta di sponsorizzazione (%(organization_type)s) per %(string_id)s"
 
 #: templates/zerver/find_account.html:8
 msgid "Find your Zulip accounts"
@@ -3394,16 +3394,16 @@ msgstr "Non siamo riusciti a trovare questa l'organizzazione Zulip."
 #: zerver/lib/actions.py:346 zerver/lib/actions.py:365
 #, python-brace-format
 msgid "{user} just signed up for Zulip. (total: {user_count})"
-msgstr ""
+msgstr "{user}appena registrato su Zulip. (total: {user_count})"
 
 #: zerver/lib/actions.py:354
 msgid "signups"
-msgstr ""
+msgstr "iscrizioni"
 
 #: zerver/lib/actions.py:470
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
-msgstr ""
+msgstr "{user} ha accettato il tuo invito ad unirti a Zulip!"
 
 #: zerver/lib/actions.py:1059
 msgid "Congratulations on your first reply!"
@@ -3488,21 +3488,21 @@ msgstr "Nome del gruppo del canale '{}' contiene NULL (0x00) caratteri."
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
-msgstr ""
+msgstr "Il tuo bot {bot_identity} ha provato ad inviare un messaggio al canale ID {stream_id}, ma non c'è un canale con questo ID."
 
 #: zerver/lib/actions.py:2250
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
-msgstr ""
+msgstr "Il tuo bot {bot_identity} ha provato ad inviare un messaggio al canale {stream_name}, ma il canale non esiste. Clicca [here]({new_stream_link}) per crearlo."
 
 #: zerver/lib/actions.py:2256
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
-msgstr ""
+msgstr "Il tuo bot {bot_identity} ha provato ad inviare un messaggio al canale {stream_name}. Il canale esiste ma non ha iscritti."
 
 #: zerver/lib/actions.py:2296
 msgid "Private messages are disabled in this organization."
@@ -3536,11 +3536,11 @@ msgstr "Non posso ottenere l'elenco dei sottoscrittori del canale privato"
 #: zerver/lib/actions.py:3646
 #, python-brace-format
 msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
-msgstr ""
+msgstr "{user_name} ha rinominato il canale {old_stream_name} in {new_stream_name}."
 
 #: zerver/lib/actions.py:3729
 msgid "Signups enabled"
-msgstr ""
+msgstr "Registrazioni abilitate"
 
 #: zerver/lib/actions.py:3811
 msgid "Invalid default stream group {}"
@@ -4320,12 +4320,12 @@ msgstr "{container} deve avere esattamente  {length} elementi"
 #: zerver/lib/validator.py:161
 #, python-brace-format
 msgid "{var_name} is not a tuple"
-msgstr ""
+msgstr "{var_name} non è una tuple"
 
 #: zerver/lib/validator.py:165
 #, python-brace-format
 msgid "{var_name} should have exactly {desired_len} items"
-msgstr ""
+msgstr "{var_name} deve avere esattamente {desired_len} elementi"
 
 #: zerver/lib/validator.py:197
 #, python-brace-format
@@ -4897,12 +4897,12 @@ msgstr "L'azione richiede i diritti di amministratore"
 #: zerver/views/streams.py:394
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the stream {stream_name}."
-msgstr ""
+msgstr "{user_full_name} ti ha iscritto al canale {stream_name}."
 
 #: zerver/views/streams.py:400
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following streams:"
-msgstr ""
+msgstr "{user_full_name} ti ha iscritto ai seguenti canali:"
 
 #: zerver/views/streams.py:459
 #, python-brace-format
@@ -4924,12 +4924,12 @@ msgstr "Il tuo account è troppo nuovo per modificare le iscrizioni di altri ute
 #: zerver/views/streams.py:538
 #, python-brace-format
 msgid "{user_name} created the following streams: {stream_str}."
-msgstr ""
+msgstr "{user_name} ha creato i canali seguenti: {stream_str}."
 
 #: zerver/views/streams.py:540
 #, python-brace-format
 msgid "{user_name} created a new stream {stream_str}."
-msgstr ""
+msgstr "{user_name} ha creato un nuovo canale {stream_str}."
 
 #: zerver/views/streams.py:541
 msgid "new streams"
@@ -4938,7 +4938,7 @@ msgstr "nuovi canali"
 #: zerver/views/streams.py:570
 #, python-brace-format
 msgid "Stream created by {user_name}."
-msgstr ""
+msgstr "Canale creato da {user_name}."
 
 #: zerver/views/streams.py:727
 msgid "Unknown subscription property: {}"
@@ -5112,19 +5112,19 @@ msgstr "Creazione della chiamata Zoom fallita"
 
 #: zerver/views/video_calls.py:190
 msgid "Big Blue Button is not configured."
-msgstr ""
+msgstr "Big Blue Button non è configurato."
 
 #: zerver/views/video_calls.py:202
 msgid "Error connecting to the Big Blue Button server."
-msgstr ""
+msgstr "Errore di connessione al Big Blue Button server."
 
 #: zerver/views/video_calls.py:206
 msgid "Error authenticating to the Big Blue Button server."
-msgstr ""
+msgstr "Errore di autenticazione al Big Blue Button server."
 
 #: zerver/views/video_calls.py:209
 msgid "Big Blue Button server returned an unexpected error."
-msgstr ""
+msgstr "Il Big Blue Botton server ha restituito un errore imprevisto."
 
 #: zerver/views/zephyr.py:32
 msgid "Could not find Kerberos credential"
@@ -5184,7 +5184,7 @@ msgid ""
 "Your data export is complete and has been uploaded here:\n"
 "\n"
 "{public_url}"
-msgstr ""
+msgstr "La tua esportazione dei dati è completa e può essere uplodata qui:\n\n{public_url}"
 
 #. error
 #: zilencer/views.py:47

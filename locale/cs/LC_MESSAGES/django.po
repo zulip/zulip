@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-10 19:39+0000\n"
-"PO-Revision-Date: 2020-07-10 19:40+0000\n"
+"POT-Creation-Date: 2020-07-13 20:42+0000\n"
+"PO-Revision-Date: 2020-07-14 06:24+0000\n"
 "Last-Translator: fri\n"
 "Language-Team: Czech (http://www.transifex.com/zulip/zulip/language/cs/)\n"
 "MIME-Version: 1.0\n"
@@ -191,7 +191,7 @@ msgstr "Odeslané zprávy podle typu příjemce"
 
 #: templates/analytics/stats.html:100
 msgid "Messages read over time"
-msgstr ""
+msgstr "Zprávy přečtené v průběhu času"
 
 #: templates/analytics/stats.html:124
 msgid "Last update"
@@ -254,23 +254,23 @@ msgstr "Nejvyšší kontrola"
 
 #: templates/corporate/upgrade.html:232
 msgid "Open source"
-msgstr ""
+msgstr "Otevřený zdrojový kód"
 
 #: templates/corporate/upgrade.html:233
 msgid "Academic research"
-msgstr ""
+msgstr "Vědecký výzkum"
 
 #: templates/corporate/upgrade.html:234
 msgid "Education"
-msgstr ""
+msgstr "Vzdělávání"
 
 #: templates/corporate/upgrade.html:235
 msgid "Non-Profit"
-msgstr ""
+msgstr "Neziskový"
 
 #: templates/corporate/upgrade.html:236
 msgid "Event (hackathons, conferences, etc.)"
-msgstr ""
+msgstr "Událost (setkání, konference, semináře atd.)"
 
 #: templates/corporate/upgrade.html:237
 msgid "Other"
@@ -305,7 +305,7 @@ msgstr "E-mail"
 msgid ""
 "I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
 "rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr ""
+msgstr "Souhlasím s <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener noreferrer\">podmínkami užití</a>."
 
 #: templates/zerver/accounts_accept_terms.html:54
 msgid "Enter"
@@ -499,7 +499,7 @@ msgid ""
 "            <a href=\"/plans/\" target=\"_blank\" rel=\"noopener noreferrer\">Upgrade your organization</a>\n"
 "            to access your full message history.\n"
 "            "
-msgstr ""
+msgstr "\n            Některé starší zprávy nejsou dostupné.\n            <a href=\"/plans/\" target=\"_blank\" rel=\"noopener noreferrer\">Povyšte svou organizaci</a>\n            pro získání přístupu k celé historii zpráv.\n            "
 
 #: templates/zerver/app/home.html:25
 msgid ""
@@ -509,7 +509,7 @@ msgid ""
 "              target=\"_blank\" rel=\"noopener noreferrer\">history</a>.\n"
 "            Consider <a class=\"search-shared-history\" href=\"\">searching all public streams</a>.\n"
 "            "
-msgstr ""
+msgstr "\n            Konec výsledků z vaší\n            <a href=\"/help/search-for-messages#searching-shared-history\"\n              target=\"_blank\" rel=\"noopener noreferrer\">historie</a>.\n            Zvažte <a class=\"search-shared-history\" href=\"\">prohledání všech veřejných kanálů</a>.\n            "
 
 #: templates/zerver/app/home.html:35
 msgid "Nothing's been sent here yet!"
@@ -684,7 +684,7 @@ msgstr "Hosté"
 
 #: templates/zerver/app/invite_user.html:46
 msgid "Organization owners"
-msgstr ""
+msgstr "Vlastníci organizace"
 
 #: templates/zerver/app/invite_user.html:52
 msgid "Streams they should join"
@@ -884,11 +884,11 @@ msgstr "Nedávná témata"
 
 #: templates/zerver/app/keyboard_shortcuts.html:243
 msgid "View recent topics"
-msgstr ""
+msgstr "Zobrazit nedávná témata"
 
 #: templates/zerver/app/keyboard_shortcuts.html:247
 msgid "Hide recent topics"
-msgstr ""
+msgstr "Skrýt nedávná témata"
 
 #: templates/zerver/app/keyboard_shortcuts.html:264
 msgid "Edit selected draft"
@@ -2039,14 +2039,14 @@ msgstr "Zaznamenali jsme nedávné přihlášení pro následující Zulip úče
 msgid ""
 "Organization: <a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">%(realm_uri)s</a>"
-msgstr ""
+msgstr "Organizace: <a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-decoration:underline\">%(realm_uri)s</a>"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:21
 #, python-format
 msgid ""
 "Email: <a href=\"mailto:%(user_email)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">%(user_email)s</a>"
-msgstr ""
+msgstr "E-mail: <a href=\"mailto:%(user_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(user_email)s</a>"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:24
 #: templates/zerver/emails/notify_new_login.source.html:22
@@ -2563,12 +2563,12 @@ msgstr "E-mailová adresa vašeho Zulip účtu byla nedávno změněna na %(new_
 #: templates/zerver/emails/notify_new_login.source.html:16
 #, python-format
 msgid "Organization: <a href=\"%(realm_uri)s\">%(realm_uri)s</a>"
-msgstr ""
+msgstr "Organizace: <a href=\"%(realm_uri)s\">%(realm_uri)s</a>"
 
 #: templates/zerver/emails/notify_new_login.source.html:19
 #, python-format
 msgid "Email: <a href=\"mailto:%(user_email)s\">%(user_email)s</a>"
-msgstr ""
+msgstr "E-mail: <a href=\"mailto:%(user_email)s\">%(user_email)s</a>"
 
 #: templates/zerver/emails/notify_new_login.source.html:36
 #, python-format
@@ -3535,11 +3535,11 @@ msgstr "Nepodařilo se získat odběratele soukromého kanálu"
 #: zerver/lib/actions.py:3646
 #, python-brace-format
 msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
-msgstr ""
+msgstr "{user_name} přejmenoval/a kanál {old_stream_name} na {new_stream_name}."
 
 #: zerver/lib/actions.py:3729
 msgid "Signups enabled"
-msgstr ""
+msgstr "Přihlášení povolena"
 
 #: zerver/lib/actions.py:3811
 msgid "Invalid default stream group {}"
@@ -4160,7 +4160,7 @@ msgstr "Kanál(y) ({}) neexistuje(í)"
 
 #: zerver/lib/streams.py:464
 msgid "User cannot create stream with this settings."
-msgstr ""
+msgstr "Uživatel nemůže vytvořit kanál s tímto nastavením."
 
 #: zerver/lib/streams.py:483
 msgid "Default stream group with id '{}' does not exist."
@@ -4324,7 +4324,7 @@ msgstr ""
 #: zerver/lib/validator.py:165
 #, python-brace-format
 msgid "{var_name} should have exactly {desired_len} items"
-msgstr ""
+msgstr "{var_name} má mít přesně {desired_len} položek"
 
 #: zerver/lib/validator.py:197
 #, python-brace-format
@@ -4896,12 +4896,12 @@ msgstr "Tento krok vyžaduje oprávnění správce"
 #: zerver/views/streams.py:394
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the stream {stream_name}."
-msgstr ""
+msgstr "{user_full_name} vás přidal/a do kanálu {stream_name}."
 
 #: zerver/views/streams.py:400
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following streams:"
-msgstr ""
+msgstr "{user_full_name} vás přidal/a do následujících kanálů:"
 
 #: zerver/views/streams.py:459
 #, python-brace-format
@@ -4923,12 +4923,12 @@ msgstr "Váš účet je příliš nový na to, abyste mohli upravovat odběry da
 #: zerver/views/streams.py:538
 #, python-brace-format
 msgid "{user_name} created the following streams: {stream_str}."
-msgstr ""
+msgstr "{user_name} vytvořil následující kanály: {stream_str}."
 
 #: zerver/views/streams.py:540
 #, python-brace-format
 msgid "{user_name} created a new stream {stream_str}."
-msgstr ""
+msgstr "{user_name} vytvořil nový kanál {stream_str}."
 
 #: zerver/views/streams.py:541
 msgid "new streams"
@@ -4937,7 +4937,7 @@ msgstr "Nové kanály"
 #: zerver/views/streams.py:570
 #, python-brace-format
 msgid "Stream created by {user_name}."
-msgstr ""
+msgstr "Kanál vytvořen {user_name}."
 
 #: zerver/views/streams.py:727
 msgid "Unknown subscription property: {}"
@@ -5111,19 +5111,19 @@ msgstr "Nepodařilo se vytvořit hovor Zoom"
 
 #: zerver/views/video_calls.py:190
 msgid "Big Blue Button is not configured."
-msgstr ""
+msgstr "Velké modré tlačítko není nastaveno."
 
 #: zerver/views/video_calls.py:202
 msgid "Error connecting to the Big Blue Button server."
-msgstr ""
+msgstr "Chyba při připojování se k serveru Velké modré tlačítko."
 
 #: zerver/views/video_calls.py:206
 msgid "Error authenticating to the Big Blue Button server."
-msgstr ""
+msgstr "Chyba při ověřování serveru Velké modré tlačítko."
 
 #: zerver/views/video_calls.py:209
 msgid "Big Blue Button server returned an unexpected error."
-msgstr ""
+msgstr "Server Velké modré tlačítko vrátil neočekávanou chybu."
 
 #: zerver/views/zephyr.py:32
 msgid "Could not find Kerberos credential"
@@ -5183,7 +5183,7 @@ msgid ""
 "Your data export is complete and has been uploaded here:\n"
 "\n"
 "{public_url}"
-msgstr ""
+msgstr "Vyvedení vašich dat bylo dokončeno a bylo nahráno sem:\n\n{public_url}"
 
 #. error
 #: zilencer/views.py:47

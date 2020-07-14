@@ -320,6 +320,7 @@
   "Include organization name in subject of missed message emails": "Incluir o nome da organização no assunto do e-mail de mensagens perdidas",
   "Incoming webhooks can only send messages.": "Webhooks de entrada podem apenas enviar mensagens.",
   "Interface": "Interface",
+  "Invalid URL": "",
   "Invalid slash command. Check if you are missing a space after the command.": "Comando com barra inválido. Verifique se está faltando um espaço após o comando.",
   "Invalid stream id": "ID do fluxo inválido",
   "Invalid time format: __timestamp__": "",

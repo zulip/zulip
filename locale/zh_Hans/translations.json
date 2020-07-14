@@ -320,6 +320,7 @@
   "Include organization name in subject of missed message emails": "在错过消息提醒邮件中包含社群名称",
   "Incoming webhooks can only send messages.": "传入的webhooks只能发送消息。",
   "Interface": "接口",
+  "Invalid URL": "无效网址(URL)",
   "Invalid slash command. Check if you are missing a space after the command.": "无效命令。检查命令结尾是否缺少空格",
   "Invalid stream id": "无效的频道ID",
   "Invalid time format: __timestamp__": "",

@@ -320,6 +320,7 @@
   "Include organization name in subject of missed message emails": "Include numele organizației în subiectul emailurilor notificări la mesaje ratate",
   "Incoming webhooks can only send messages.": "Hook-urile primite doar pot trimite mesaje.",
   "Interface": "Interfață",
+  "Invalid URL": "",
   "Invalid slash command. Check if you are missing a space after the command.": "Comanda slash nevalidă. Verifică să dacă lipsește un spațiu după comandă.",
   "Invalid stream id": "ID de hub nevalid",
   "Invalid time format: __timestamp__": "",

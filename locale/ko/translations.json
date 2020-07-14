@@ -320,6 +320,7 @@
   "Include organization name in subject of missed message emails": "부재중 메시지 이메일 제목에 조직 이름 포함",
   "Incoming webhooks can only send messages.": "들어오는 웹후크는 메시지를 보낼 수 만 있습니다.",
   "Interface": "인터페이스",
+  "Invalid URL": "유효하지 않은 URL",
   "Invalid slash command. Check if you are missing a space after the command.": "슬래시 명령이 유효하지 않습니다. 명령 뒤에 공백이 있는지 확인하십시오.",
   "Invalid stream id": "유효하지 않은 스트림 아이디",
   "Invalid time format: __timestamp__": "",

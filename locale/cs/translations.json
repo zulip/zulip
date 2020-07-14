@@ -320,6 +320,7 @@
   "Include organization name in subject of missed message emails": "Zahrnout název organizace do předmětu e-mailu o zmeškaných zprávách",
   "Incoming webhooks can only send messages.": "Příchozí webhooky mohou pouze odesílat zprávy.",
   "Interface": "Rozhraní",
+  "Invalid URL": "Neplatná adresa (URL)",
   "Invalid slash command. Check if you are missing a space after the command.": "Neplatný příkaz pomocí lomítka. Ověřte, zda za příkazem nechybí mezera.",
   "Invalid stream id": "Neplatné ID kanálu",
   "Invalid time format: __timestamp__": "",

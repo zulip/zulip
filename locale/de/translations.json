@@ -320,6 +320,7 @@
   "Include organization name in subject of missed message emails": "Organisationsnamen im Betreff von \"Nachricht verpasst\"-E-Mails einfügen",
   "Incoming webhooks can only send messages.": "Eingehende Webhooks können ausschließlich Nachrichten senden.",
   "Interface": "Interface",
+  "Invalid URL": "Ungültige URL",
   "Invalid slash command. Check if you are missing a space after the command.": "Ungültiger Slash-Befehl. Überprüfe, ob nach dem Befehl ein Leerzeichen fehlt.",
   "Invalid stream id": "Ungültige Stream-ID",
   "Invalid time format: __timestamp__": "Ungültiges Zeitformat: __timestamp__",

@@ -17,9 +17,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-10 19:39+0000\n"
-"PO-Revision-Date: 2020-07-10 19:40+0000\n"
-"Last-Translator: Piotr Nowak <nowak.piotr77@gmail.com>\n"
+"POT-Creation-Date: 2020-07-13 20:42+0000\n"
+"PO-Revision-Date: 2020-07-14 07:08+0000\n"
+"Last-Translator: Krzysztof\n"
 "Language-Team: Polish (http://www.transifex.com/zulip/zulip/language/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -67,7 +67,7 @@ msgstr "Dane analityczne niedostępne. Skontaktuj się z administratorem serwera
 #: corporate/lib/stripe.py:145
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
-msgstr ""
+msgstr "Coś poszło nie tak. Proszę skontaktuj się z {email}."
 
 #: corporate/lib/stripe.py:148
 msgid "Something went wrong. Please reload the page."
@@ -94,12 +94,12 @@ msgstr "Brak zapisanej metody płatności"
 #: corporate/views.py:92
 #, python-brace-format
 msgid "{brand} ending in {last4}"
-msgstr ""
+msgstr "{brand} kończy się w {last4}"
 
 #: corporate/views.py:99
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
-msgstr ""
+msgstr "Nieznana metoda płatności. Proszę skontaktuj się z {email}."
 
 #: templates/analytics/stats.html:10
 msgid "Analytics are fully available 24 hours after organization creation."
@@ -310,7 +310,7 @@ msgstr "Email"
 msgid ""
 "I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
 "rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr ""
+msgstr "Akceptuję <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener noreferrer\">Warunki korzystania z usługi</a>."
 
 #: templates/zerver/accounts_accept_terms.html:54
 msgid "Enter"
@@ -689,7 +689,7 @@ msgstr "Goście"
 
 #: templates/zerver/app/invite_user.html:46
 msgid "Organization owners"
-msgstr ""
+msgstr "Właściciele organizacji"
 
 #: templates/zerver/app/invite_user.html:52
 msgid "Streams they should join"
@@ -885,15 +885,15 @@ msgstr "Włącz/wyłącz wyciszenie wątku"
 #: templates/zerver/app/keyboard_shortcuts.html:239
 #: templates/zerver/app/left_sidebar.html:65
 msgid "Recent topics"
-msgstr ""
+msgstr "Ostatnie wątki"
 
 #: templates/zerver/app/keyboard_shortcuts.html:243
 msgid "View recent topics"
-msgstr ""
+msgstr "Zobacz ostatnie wątki"
 
 #: templates/zerver/app/keyboard_shortcuts.html:247
 msgid "Hide recent topics"
-msgstr ""
+msgstr "Ukryj ostatnie wątki"
 
 #: templates/zerver/app/keyboard_shortcuts.html:264
 msgid "Edit selected draft"
@@ -1199,11 +1199,11 @@ msgstr "\n        Oznaczanie wszystkich wiadomości jako przeczytane…\n       
 
 #: templates/zerver/app/recent_topics.html:5
 msgid "Recent topics (beta)"
-msgstr ""
+msgstr "Ostatnie wątki (beta)"
 
 #: templates/zerver/app/recent_topics.html:10
 msgid "Pro tip: You can use 't' to view recent topics."
-msgstr ""
+msgstr "Wskazówka: możesz używać klawisza 't', żeby wyświetlić ostatnie wątki."
 
 #: templates/zerver/app/right_sidebar.html:5
 #: templates/zerver/app/right_sidebar.html:6
@@ -1409,7 +1409,7 @@ msgstr "Metody uwierzytelniania"
 
 #: templates/zerver/app/settings_overlay.html:91
 msgid "Only organization owners can edit these settings."
-msgstr ""
+msgstr "Tylko właściciele organizacji mogą edytować te opcje."
 
 #: templates/zerver/app/settings_overlay.html:106
 msgid "Deactivated users"
@@ -1470,7 +1470,7 @@ msgstr "Kontynuuj rejestrację"
 
 #: templates/zerver/confirmation_link_expired_error.html:8
 msgid "The registration link has expired or is not valid."
-msgstr ""
+msgstr "Link do rejestracji wygasł lub jest nieprawidłowy."
 
 #: templates/zerver/confirmation_link_expired_error.html:9
 #: templates/zerver/log_into_subdomain_token_invalid.html:9
@@ -1550,7 +1550,7 @@ msgstr "Lub kontynuuj w przeglądarce."
 
 #: templates/zerver/dev_login.html:22
 msgid "Owners"
-msgstr ""
+msgstr "Właściciele"
 
 #: templates/zerver/dev_login.html:31
 msgid "Administrators"
@@ -1755,7 +1755,7 @@ msgid ""
 "(you'll need these to sign in to the <a href=\"%(apps_page_link)s\" "
 "style=\"color:#46aa8f; text-decoration:underline\">mobile and desktop</a> "
 "apps)"
-msgstr ""
+msgstr "(będziesz ich potrzebował aby zalogować się do <a href=\"%(apps_page_link)s\" style=\"color:#46aa8f; text-decoration:underline\">mobilnej i desktopowej</a> aplikacji)"
 
 #: templates/zerver/emails/compiled/followup_day1.html:41
 #, python-format
@@ -1901,7 +1901,7 @@ msgstr ""
 #: templates/zerver/emails/invitation.source.html:14
 #: templates/zerver/emails/invitation_reminder.source.html:13
 msgid "To get started, click the button below."
-msgstr ""
+msgstr "Naciśnij poniższy przycisk, żeby rozpocząć."
 
 #: templates/zerver/emails/compiled/invitation_reminder.html:9
 #: templates/zerver/emails/invitation_reminder.source.html:8
@@ -2044,14 +2044,14 @@ msgstr "Zauważyliśmy, że ktoś zalogował się następującym kontem Zulip."
 msgid ""
 "Organization: <a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">%(realm_uri)s</a>"
-msgstr ""
+msgstr "Organizacja: <a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-decoration:underline\">%(realm_uri)s</a>"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:21
 #, python-format
 msgid ""
 "Email: <a href=\"mailto:%(user_email)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">%(user_email)s</a>"
-msgstr ""
+msgstr "Email: <a href=\"mailto:%(user_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(user_email)s</a>"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:24
 #: templates/zerver/emails/notify_new_login.source.html:22
@@ -2078,7 +2078,7 @@ msgstr "Adres IP: %(device_ip)s"
 #: templates/zerver/emails/notify_new_login.source.html:33
 #: templates/zerver/emails/notify_new_login.txt:14
 msgid "If this was you, great! There's nothing else you need to do."
-msgstr ""
+msgstr "Jeśli to byłeś Ty, super! Nie musisz nic więcej robić."
 
 #: templates/zerver/emails/compiled/notify_new_login.html:38
 #, python-format
@@ -2088,7 +2088,7 @@ msgid ""
 "style=\"color:#46aa8f; text-decoration:underline\">reset your password</a> "
 "or contact us immediately at <a href=\"mailto:%(support_email)s\" "
 "style=\"color:#46aa8f; text-decoration:underline\">%(support_email)s</a>."
-msgstr ""
+msgstr "Jeśli nie rozpoznajesz tego logowania lub myślisz, że Twoje konto mogło zostać skompromitowane, to proszę  <a href=\"%(realm_uri)s/accounts/password/reset/\" style=\"color:#46aa8f; text-decoration:underline\">zresetuj swoje hasło</a> lub niezwłocznie skontaktuj się z <a href=\"mailto:%(support_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(support_email)s</a>."
 
 #: templates/zerver/emails/compiled/notify_new_login.html:43
 #: templates/zerver/emails/notify_new_login.source.html:41
@@ -2113,7 +2113,7 @@ msgstr ""
 #: templates/zerver/emails/compiled/password_reset.html:14
 #: templates/zerver/emails/password_reset.source.html:13
 msgid "Click the button below to reset your password."
-msgstr ""
+msgstr "Kliknij poniższy przycisk, żeby zresetować hasło."
 
 #: templates/zerver/emails/compiled/password_reset.html:15
 #: templates/zerver/emails/password_reset.source.html:14
@@ -2703,7 +2703,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:20
 msgid "Support"
-msgstr ""
+msgstr "Wsparcie"
 
 #: templates/zerver/footer.html:24
 msgid "Accounts"
@@ -2821,11 +2821,11 @@ msgstr "Zaloguj się teraz"
 
 #: templates/zerver/hello.html:542
 msgid "Sign up now"
-msgstr ""
+msgstr "Zarejestruj się teraz!"
 
 #: templates/zerver/insecure_desktop_app.html:11
 msgid "Update required"
-msgstr ""
+msgstr "Wymagana aktualizacja"
 
 #: templates/zerver/insecure_desktop_app.html:13
 msgid ""
@@ -2833,7 +2833,7 @@ msgid ""
 "                        You are using old version of the Zulip desktop\n"
 "                        app that is no longer supported.\n"
 "                        "
-msgstr ""
+msgstr "\n                        Używasz starej wersji aplikacji Zulip,\n                        która już nie jest wspierana.\n                        "
 
 #: templates/zerver/insecure_desktop_app.html:21
 msgid ""
@@ -2841,11 +2841,11 @@ msgid ""
 "                        The auto-update feature in this old version of\n"
 "                        Zulip desktop app no longer works.\n"
 "                        "
-msgstr ""
+msgstr "\n                        Funkcja automatycznej aktualizacji w tej wersji\n                        aplikacji Zulip już nie działa.\n                        "
 
 #: templates/zerver/insecure_desktop_app.html:30
 msgid "Download the latest release."
-msgstr ""
+msgstr "Pobierz najnowszą wersję."
 
 #: templates/zerver/integrations/index.html:23
 #, python-format
@@ -2905,7 +2905,7 @@ msgstr "Stwórz własną!"
 
 #: templates/zerver/invalid_email.html:4
 msgid "Invalid email"
-msgstr ""
+msgstr "Nieprawidłowy adres email"
 
 #: templates/zerver/invalid_email.html:6
 #: templates/zerver/invalid_realm.html:11
@@ -2962,7 +2962,7 @@ msgstr ""
 
 #: templates/zerver/login.html:13
 msgid "Log in to Zulip"
-msgstr ""
+msgstr "Zaloguje się do Zulip"
 
 #: templates/zerver/login.html:61
 msgid "Email or username"
@@ -2985,11 +2985,11 @@ msgstr "Zarejetrowano już ten adres email. Zaloguj się poniżej."
 #: templates/zerver/login.html:117
 #, python-format
 msgid "Log in with %(identity_provider)s"
-msgstr ""
+msgstr "Zaloguj się przy pomocy %(identity_provider)s"
 
 #: templates/zerver/login.html:125
 msgid "Forgot your password?"
-msgstr ""
+msgstr "Nie pamiętasz hasła?"
 
 #: templates/zerver/login.html:137
 msgid ""
@@ -3035,11 +3035,11 @@ msgstr ""
 
 #: templates/zerver/realm_redirect.html:8
 msgid "Log in to your organization"
-msgstr ""
+msgstr "Zaloguj się do swojej organizacji"
 
 #: templates/zerver/realm_redirect.html:18
 msgid "Enter your organization's Zulip URL:"
-msgstr ""
+msgstr "Wprowadź adres URL swojej organizacji Zulip:"
 
 #: templates/zerver/realm_redirect.html:21
 msgid "your-organization-url"
@@ -3869,7 +3869,7 @@ msgstr ""
 
 #: zerver/lib/hotspots.py:13
 msgid "Click anywhere on a message to reply."
-msgstr ""
+msgstr "Kliknij gdziekolwiek na wiadomości, żeby odpowiedzieć."
 
 #: zerver/lib/hotspots.py:16
 msgid "Catch up on a stream"

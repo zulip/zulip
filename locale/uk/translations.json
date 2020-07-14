@@ -320,6 +320,7 @@
   "Include organization name in subject of missed message emails": "Додавати назву організації до теми листів про пропущені повідомлення",
   "Incoming webhooks can only send messages.": "Вхідні вебхуки можуть надсилати лише повідомлення.",
   "Interface": "Інтерфейс",
+  "Invalid URL": "",
   "Invalid slash command. Check if you are missing a space after the command.": "Недійсна команда косої риски. Перевірте, чи не пропущений пробіл після команди.",
   "Invalid stream id": "Недійсний ідентифікатор каналу",
   "Invalid time format: __timestamp__": "",

@@ -26,8 +26,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-10 19:39+0000\n"
-"PO-Revision-Date: 2020-07-10 19:44+0000\n"
+"POT-Creation-Date: 2020-07-13 20:42+0000\n"
+"PO-Revision-Date: 2020-07-14 04:10+0000\n"
 "Last-Translator: lavamind <jerome@riseup.net>\n"
 "Language-Team: French (http://www.transifex.com/zulip/zulip/language/fr/)\n"
 "MIME-Version: 1.0\n"
@@ -2046,7 +2046,7 @@ msgstr "Organisation : %(organization_url)s Date/heure : %(login_time)s Courriel
 #: templates/zerver/emails/notify_new_login.source.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
 msgid "We noticed a recent login for the following Zulip account."
-msgstr "Nous avons remarqué une connexion récente au compte Zulip suivant."
+msgstr "Nous avons remarqué une connexion récente au compte Zulip suivant :"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:18
 #, python-format
@@ -4937,7 +4937,7 @@ msgstr "Votre compte est trop récent pour modifier les abonnements des autres u
 #: zerver/views/streams.py:538
 #, python-brace-format
 msgid "{user_name} created the following streams: {stream_str}."
-msgstr "{user_name} a créé les nouveaux canaux: {stream_str}."
+msgstr "{user_name} a créé les nouveaux canaux : {stream_str}."
 
 #: zerver/views/streams.py:540
 #, python-brace-format

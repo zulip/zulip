@@ -320,6 +320,7 @@
   "Include organization name in subject of missed message emails": "Sisällytä organisaation nimi sähköpostin otsikkoon jotka kertovat missatusta viestistä",
   "Incoming webhooks can only send messages.": "Sisään tulevat webhookit voivat vain lähettää viestejä.",
   "Interface": "Rajapinta",
+  "Invalid URL": "",
   "Invalid slash command. Check if you are missing a space after the command.": "Virheellinen kauttaviivakomento. Tarkista puuttuuko välilyönti komennon perästä.",
   "Invalid stream id": "Virheellinen kanavan id",
   "Invalid time format: __timestamp__": "",
