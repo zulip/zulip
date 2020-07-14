@@ -297,4 +297,3 @@ below features are supported.
 * [`POST /register`](/api/register-queue): Added `slim_presence`
   parameter.  Changes the format of presence events, but is still
   being changed and should not be used by clients.
-* `message_retention_days` field in stream objects.
