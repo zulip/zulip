@@ -317,7 +317,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.assertEqual(result.status_code, 200)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 40)
+            self.assert_length(queries, 39)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user('hamlet')
@@ -682,19 +682,27 @@ class HomeTest(ZulipTestCase):
 
     def test_show_billing(self) -> None:
         customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
+        user = self.example_user('desdemona')
 
-        # realm admin, but no CustomerPlan -> no billing link
-        user = self.example_user('iago')
+        # realm owner, but no CustomerPlan -> no billing link
+        user.role = UserProfile.ROLE_REALM_OWNER
+        user.save(update_fields=["role"])
         self.login_user(user)
         result_html = self._get_home_page().content.decode('utf-8')
         self.assertNotIn('Billing', result_html)
 
-        # realm admin, with inactive CustomerPlan -> show billing link
+        # realm owner, with inactive CustomerPlan -> show billing link
         CustomerPlan.objects.create(customer=customer, billing_cycle_anchor=timezone_now(),
                                     billing_schedule=CustomerPlan.ANNUAL, next_invoice_date=timezone_now(),
                                     tier=CustomerPlan.STANDARD, status=CustomerPlan.ENDED)
         result_html = self._get_home_page().content.decode('utf-8')
         self.assertIn('Billing', result_html)
+
+        # realm admin, with CustomerPlan -> no billing link
+        user.role = UserProfile.ROLE_REALM_ADMINISTRATOR
+        user.save(update_fields=["role"])
+        result_html = self._get_home_page().content.decode('utf-8')
+        self.assertNotIn('Billing', result_html)
 
         # billing admin, with CustomerPlan -> show billing link
         user.role = UserProfile.ROLE_MEMBER
