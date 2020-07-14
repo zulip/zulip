@@ -9,8 +9,7 @@ exports.make_indicator = function (outer_container, opts) {
     // width calculation, above, returns a result that's a few pixels
     // too small.  The container's div will be slightly too small,
     // but that's probably OK for our purposes.
-    outer_container.css({display: 'block',
-                         'white-space': 'nowrap'});
+    outer_container.css({'white-space': 'nowrap'});
 
     container.empty();
 
