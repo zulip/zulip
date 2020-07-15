@@ -39,7 +39,7 @@
         color: hsl(0, 0%, 100%);
     }
 
-    .image-delete-button:hover ~ .settings-page-upload-text {
+    .image-delete-button:hover ~ .image-upload-text {
         visibility: hidden;
     }
 
@@ -55,7 +55,7 @@
         z-index: 99;
     }
 
-    .settings-page-upload-text {
+    .image-upload-text {
         cursor: pointer;
         font-size: 0.85rem;
         color: hsl(0, 0%, 85%);
@@ -64,7 +64,7 @@
         visibility: hidden;
     }
 
-    .settings-page-upload-text:hover {
+    .image-upload-text:hover {
         color: hsl(0, 0%, 100%);
     }
 
@@ -91,7 +91,7 @@
             opacity: 1;
         }
 
-        .settings-page-upload-text {
+        .image-upload-text {
             visibility: visible;
         }
 
@@ -131,7 +131,7 @@
         right: 40px;
     }
 
-    .settings-page-upload-text {
+    .image-upload-text {
         top: 90px;
         right: 20px;
     }
@@ -173,7 +173,7 @@
         right: 18px;
     }
 
-    .settings-page-upload-text {
+    .image-upload-text {
         top: 40px;
         right: 18px;
     }
@@ -200,7 +200,7 @@
     text-align: center;
     margin: 0px 80px 0px 20px;
 
-    .settings-page-upload-text,
+    .image-upload-text,
     .image-delete-text {
         top: 17px;
         right: 80px;

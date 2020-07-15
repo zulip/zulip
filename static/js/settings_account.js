@@ -77,14 +77,14 @@ exports.update_avatar_change_display = function () {
 
 function display_avatar_upload_complete() {
     $('#user-avatar-upload-widget .upload-spinner-background').css({visibility: 'hidden'});
-    $('#user-avatar-upload-widget .settings-page-upload-text').show();
+    $('#user-avatar-upload-widget .image-upload-text').show();
     $('#user-avatar-upload-widget .image-delete-button').show();
 }
 
 function display_avatar_upload_started() {
     $("#user-avatar-source").hide();
     $('#user-avatar-upload-widget .upload-spinner-background').css({visibility: 'visible'});
-    $('#user-avatar-upload-widget .settings-page-upload-text').hide();
+    $('#user-avatar-upload-widget .image-upload-text').hide();
     $('#user-avatar-upload-widget .image-delete-button').hide();
 }
 
