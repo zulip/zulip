@@ -123,7 +123,6 @@ function test_helper() {
 
     stub('admin', 'launch');
     stub('drafts', 'launch');
-    stub('favicon', 'reset');
     stub('floating_recipient_bar', 'update');
     stub('message_viewport', 'stop_auto_scrolling');
     stub('narrow', 'deactivate');
@@ -301,7 +300,6 @@ run_test('save_narrow', () => {
 
     helper.assert_events([
         'message_viewport.stop_auto_scrolling',
-        'favicon.reset',
     ]);
     assert.equal(window.location.hash, '#narrow/is/private');
 
@@ -318,7 +316,6 @@ run_test('save_narrow', () => {
     hashchange.save_narrow(operators);
     helper.assert_events([
         'message_viewport.stop_auto_scrolling',
-        'favicon.reset',
     ]);
     assert.equal(url_pushed, 'http://example.com/#narrow/is/starred');
 });

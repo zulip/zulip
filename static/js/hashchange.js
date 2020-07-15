@@ -38,7 +38,6 @@ exports.changehash = function (newhash) {
     }
     message_viewport.stop_auto_scrolling();
     set_hash(newhash);
-    favicon.reset();
 };
 
 exports.save_narrow = function (operators) {
