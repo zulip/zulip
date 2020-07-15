@@ -23,7 +23,8 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% endtrans %}
         </div>
 
-        <form method="post" class="form-horizontal white-box" id="registration" action="{{ url('zerver.views.registration.accounts_register') }}">
+        <form method="post" class="form-horizontal white-box" id="registration" action="{{ url('zerver.views.registration.accounts_register') }}"
+          enctype="multipart/form-data">
             {{ csrf_input }}
 
             <fieldset class="org-registration">
@@ -95,6 +96,35 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 <div class="info-box inline-block">
                     <div class="organization-name">{{ realm_name }}</div>
                     <div class="organization-path">{{ realm_uri }}</div>
+                </div>
+                {% endif %}
+
+                {% if user_avatar_url %}
+                <hr>
+                <input id="gravatar_url" type="hidden" value="{{ user_gravatar_url }}" />
+                <div class="user-avatar-box">
+                    <div id="user-avatar-upload-widget-portico" class="image_upload_widget">
+                        <div class="image_upload_button">
+                            <div class="image-upload-background"></div>
+                            <span class="image-delete-button" aria-label="{{ _('Delete profile picture') }}" role="button" tabindex="0"
+                              value="{{ key }}">
+                                &times;
+                            </span>
+                            <input type="hidden" name="use_social_avatar" id="use-social-avatar" value="on">
+                            <span class="image-delete-text" aria-label="{{ _('Delete profile picture') }}" tabindex="0">
+                                {{_('Delete profile picture')}}
+                            </span>
+                            <span class="image-upload-text" aria-label="{{ _('Upload profile picture') }}" role="button" tabindex="0">
+                                {{ _('Upload profile picture') }}
+                            </span>
+                        </div>
+                        <img class="image-block" src="{{ user_avatar_url }}" />
+                        <input type="file" name="file_input" class="notvisible image_file_input" value="{{ _('Upload profile picture')}}" />
+                        <div class="image_file_input_error text-error"></div>
+                        <div id="user-avatar-source">
+                            <a href="https://en.gravatar.com/" target="_blank">{{ _("Avatar from Gravatar") }}</a>
+                        </div>
+                    </div>
                 </div>
                 {% endif %}
 

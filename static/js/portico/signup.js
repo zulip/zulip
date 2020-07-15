@@ -210,4 +210,17 @@ $(() => {
     $("body").on("click", "#choose_email .choose-email-box", function () {
         this.parentNode.submit();
     });
+
+    function upload_avatar(file_input) {
+        const reader = new FileReader();
+        reader.onload = function () {
+            $("#user-avatar-upload-widget-portico .image-block").attr("src", reader.result);
+        };
+
+        reader.readAsDataURL(file_input[0].files[0]);
+        $(".settings-page-delete-button").show();
+        $("#user-avatar-source").hide();
+    }
+
+    avatar.build_user_avatar_widget_portico(upload_avatar);
 });

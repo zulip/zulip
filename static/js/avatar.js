@@ -80,4 +80,29 @@ exports.build_user_avatar_widget = function (upload_function) {
     }
 };
 
+exports.build_user_avatar_widget_portico = function (upload_function) {
+    const get_file_input = function () {
+        return $("#user-avatar-upload-widget-portico .image_file_input");
+    };
+
+    $("#user-avatar-upload-widget-portico .image-delete-button").on("click keydown", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $(".settings-page-delete-button").hide();
+        const user_gravatar_url = $("#gravatar_url").val();
+        $(".image-block").attr("src", user_gravatar_url);
+        $("#use-social-avatar").val("");
+        $("#user-avatar-source").show();
+    });
+
+    return upload_widget.build_direct_upload_widget(
+        get_file_input,
+        $("#user-avatar-upload-widget-portico .image_file_input_error"),
+        $("#user-avatar-upload-widget-portico .image_upload_button"),
+        upload_function,
+        page_params.max_avatar_file_size_mib,
+    );
+};
+
 window.avatar = exports;

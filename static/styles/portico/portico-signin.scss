@@ -803,6 +803,17 @@ button#register_auth_button_gitlab {
         border-radius: 4px;
     }
 
+    hr {
+        border-top: 2px solid hsla(0, 0%, 81.6%, 0.41);
+        margin: 25px 0;
+    }
+
+    .user-avatar-box {
+        display: flex;
+        justify-content: center;
+        height: 175px;
+    }
+
     #id_team_subdomain.subdomain {
         margin-top: 0;
         text-align: right;
