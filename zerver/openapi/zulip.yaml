@@ -4663,6 +4663,44 @@ paths:
                         "code": "BAD_REQUEST",
                         "msg": "Invalid user ID: 500",
                       }
+  /user_groups/{user_group_id}/members:
+    post:
+      operationId: update_user_group_members
+      tags: ["users"]
+      description: |
+        Update the members of a [user group](/help/user-groups).
+
+        `POST {{ api_url }}/v1/user_groups/{user_group_id}/members`
+      parameters:
+        - $ref: "#/components/parameters/UserGroupId"
+          example: 1
+        - name: delete
+          in: query
+          description: |
+            The list of user ids to be removed from the user group.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+              example: [10]
+          required: false
+        - name: add
+          in: query
+          description: |
+            The list of user ids to be added to the user group.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+              example: [12, 13]
+          required: false
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /user_groups/{user_group_id}:
     patch:
       operationId: update_user_group
