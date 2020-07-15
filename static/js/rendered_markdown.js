@@ -153,8 +153,7 @@ exports.update_elements = (content) => {
         const timestamp = moment(time_str);
         if (timestamp.isValid()) {
             const text = $(this).text();
-            const rendered_time = timerender.render_markdown_timestamp(timestamp,
-                                                                       null, text);
+            const rendered_time = timerender.render_markdown_timestamp(timestamp, text);
             $(this).text(rendered_time.text);
             $(this).attr('title', rendered_time.title);
         } else {
