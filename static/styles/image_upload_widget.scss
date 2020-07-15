@@ -12,7 +12,7 @@
         height: 100%;
     }
 
-    .settings-page-image-background {
+    .image-upload-background {
         content: '';
         background-color: hsl(0, 0%, 0%);
         height: 100%;
@@ -95,7 +95,7 @@
             visibility: visible;
         }
 
-        .settings-page-image-background {
+        .image-upload-background {
             display: block;
         }
     }
