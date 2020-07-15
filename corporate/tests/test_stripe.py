@@ -6,7 +6,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from functools import wraps
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, TypeVar, cast
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, TypeVar, cast
 from unittest.mock import Mock, patch
 
 import responses
@@ -380,8 +380,8 @@ class StripeTest(StripeTestCase):
         iago = self.example_user('iago')
         with self.settings(BILLING_ENABLED=False):
             self.login_user(iago)
-            response = self.client_get("/upgrade/")
-            self.assert_in_success_response(["Page not found (404)"], response)
+            response = self.client_get("/upgrade/", follow=True)
+            self.assertEqual(response.status_code, 404)
 
     @mock_stripe(tested_timestamp_fields=["created"])
     def test_upgrade_by_card(self, *mocks: Mock) -> None:
@@ -855,6 +855,11 @@ class StripeTest(StripeTestCase):
 
     @mock_stripe()
     def test_billing_page_permissions(self, *mocks: Mock) -> None:
+        # Guest users can't access /upgrade page
+        self.login_user(self.example_user('polonius'))
+        response = self.client_get("/upgrade/", follow=True)
+        self.assertEqual(response.status_code, 404)
+
         # Check that non-admins can access /upgrade via /billing, when there is no Customer object
         self.login_user(self.example_user('hamlet'))
         response = self.client_get("/billing/")
@@ -1847,34 +1852,35 @@ class RequiresBillingAccessTest(ZulipTestCase):
         mocked2.assert_called()
 
     def test_who_cant_access_json_endpoints(self) -> None:
-        def verify_user_cant_access_endpoint(user: UserProfile, url: str, request_data: Dict[str, Any]={}) -> None:
-            self.login_user(user)
-            response = self.client_post(url, request_data)
-            self.assert_json_error_contains(response, "Must be a billing administrator or an organization owner")
+        def verify_user_cant_access_endpoint(username: str, endpoint: str, request_data: Dict[str, str], error_message: str) -> None:
+            self.login_user(self.example_user(username))
+            response = self.client_post(endpoint, request_data)
+            self.assert_json_error_contains(response, error_message)
 
-        params: List[Tuple[str, Dict[str, Any]]] = [
-            ("/json/billing/sources/change", {'stripe_token': ujson.dumps('token')}),
-            ("/json/billing/plan/change", {'status': ujson.dumps(1)}),
-        ]
+        verify_user_cant_access_endpoint("polonius", "/json/billing/upgrade",
+                                         {'billing_modality': ujson.dumps("charge_automatically"), 'schedule': ujson.dumps("annual"),
+                                          'signed_seat_count': ujson.dumps('signed count'), 'salt': ujson.dumps('salt')},
+                                         "Must be an organization member")
 
-        for (url, data) in params:
-            # Guests can't access
-            verify_user_cant_access_endpoint(self.example_user("polonius"), url, data)
-            # Members (not billing admin) can't access
-            verify_user_cant_access_endpoint(self.example_user("cordelia"), url, data)
-            # Realm admins (not billing admin) can't access
-            verify_user_cant_access_endpoint(self.example_user("iago"), url, data)
+        verify_user_cant_access_endpoint("polonius", "/json/billing/sponsorship",
+                                         {'organization-type': ujson.dumps("event"), 'description': ujson.dumps("event description"),
+                                          'website': ujson.dumps("example.com")},
+                                         "Must be an organization member")
+
+        for username in ["cordelia", "iago"]:
+            self.login_user(self.example_user(username))
+            verify_user_cant_access_endpoint(username, "/json/billing/sources/change", {'stripe_token': ujson.dumps('token')},
+                                             "Must be a billing administrator or an organization owner")
+
+            verify_user_cant_access_endpoint(username, "/json/billing/plan/change",  {'status': ujson.dumps(1)},
+                                             "Must be a billing administrator or an organization owner")
 
         # Make sure that we are testing all the JSON endpoints
         # Quite a hack, but probably fine for now
         string_with_all_endpoints = str(get_resolver('corporate.urls').reverse_dict)
         json_endpoints = {word.strip("\"'()[],$") for word in string_with_all_endpoints.split()
                           if 'json/' in word}
-        # No need to test upgrade and sponsorship endpoints as they only require user to be logged in.
-        json_endpoints.remove("json/billing/upgrade")
-        json_endpoints.remove("json/billing/sponsorship")
-
-        self.assertEqual(len(json_endpoints), len(params))
+        self.assertEqual(len(json_endpoints), 4)
 
 class BillingHelpersTest(ZulipTestCase):
     def test_next_month(self) -> None:

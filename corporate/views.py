@@ -37,7 +37,11 @@ from corporate.models import (
     get_current_plan_by_realm,
     get_customer_by_realm,
 )
-from zerver.decorator import require_billing_access, zulip_login_required
+from zerver.decorator import (
+    require_billing_access,
+    require_organization_member,
+    zulip_login_required,
+)
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.send_email import FromAddress, send_email
@@ -100,6 +104,7 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
         email=settings.ZULIP_ADMINISTRATOR,
     )  # nocoverage
 
+@require_organization_member
 @has_request_variables
 def upgrade(request: HttpRequest, user: UserProfile,
             billing_modality: str=REQ(validator=check_string),
@@ -144,10 +149,10 @@ def upgrade(request: HttpRequest, user: UserProfile,
 
 @zulip_login_required
 def initial_upgrade(request: HttpRequest) -> HttpResponse:
-    if not settings.BILLING_ENABLED:
-        return render(request, "404.html")
-
     user = request.user
+
+    if not settings.BILLING_ENABLED or user.is_guest:
+        return render(request, "404.html", status=404)
 
     customer = get_customer_by_realm(user.realm)
     if customer is not None and (get_current_plan_by_customer(customer) is not None or customer.sponsorship_pending):
@@ -184,6 +189,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     response = render(request, 'corporate/upgrade.html', context=context)
     return response
 
+@require_organization_member
 @has_request_variables
 def sponsorship(request: HttpRequest, user: UserProfile,
                 organization_type: str=REQ("organization-type", validator=check_string),

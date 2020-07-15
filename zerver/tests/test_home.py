@@ -742,11 +742,16 @@ class HomeTest(ZulipTestCase):
 
     def test_show_plans(self) -> None:
         realm = get_realm("zulip")
-        self.login('hamlet')
 
-        # Show plans link to all users if plan_type is LIMITED
+        # Don't show plans to guest users
+        self.login('polonius')
         realm.plan_type = Realm.LIMITED
         realm.save(update_fields=["plan_type"])
+        result_html = self._get_home_page().content.decode('utf-8')
+        self.assertNotIn('Plans', result_html)
+
+        # Show plans link to all other users if plan_type is LIMITED
+        self.login('hamlet')
         result_html = self._get_home_page().content.decode('utf-8')
         self.assertIn('Plans', result_html)
 

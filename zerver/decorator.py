@@ -37,6 +37,7 @@ from zerver.lib.exceptions import (
     InvalidJSONError,
     JsonableError,
     OrganizationAdministratorRequired,
+    OrganizationMemberRequired,
     OrganizationOwnerRequired,
     UnexpectedWebhookEventType,
 )
@@ -127,6 +128,14 @@ def require_realm_admin(func: ViewFuncT) -> ViewFuncT:
     def wrapper(request: HttpRequest, user_profile: UserProfile, *args: object, **kwargs: object) -> HttpResponse:
         if not user_profile.is_realm_admin:
             raise OrganizationAdministratorRequired()
+        return func(request, user_profile, *args, **kwargs)
+    return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
+
+def require_organization_member(func: ViewFuncT) -> ViewFuncT:
+    @wraps(func)
+    def wrapper(request: HttpRequest, user_profile: UserProfile, *args: object, **kwargs: object) -> HttpResponse:
+        if user_profile.role > UserProfile.ROLE_MEMBER:
+            raise OrganizationMemberRequired()
         return func(request, user_profile, *args, **kwargs)
     return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
 
