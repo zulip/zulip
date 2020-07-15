@@ -978,7 +978,7 @@ on a dark background, and don't change the dark labels dark either. */
         }
     }
 
-    div.popover-content a:focus {
+    a:not(:active):focus {
         outline-color: hsl(0, 0%, 100%);
     }
 }

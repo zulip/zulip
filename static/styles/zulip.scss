@@ -380,7 +380,7 @@ label {
 }
 
 /* Bootstrap's focus outline uses -webkit-focus-ring-color which doesn't exist in Firefox */
-div.popover-content a:focus {
+a:not(:active):focus {
     outline: 2px solid hsl(215, 47%, 50%);
     // TODO: change solid to auto once the Chromium bug #1105822 is fixed
 }
