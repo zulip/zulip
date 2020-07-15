@@ -299,7 +299,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                 elif CustomerPlan.objects.filter(customer=customer).exists():
                     show_billing = True
 
-        if user_profile.realm.plan_type == Realm.LIMITED:
+        if not user_profile.is_guest and user_profile.realm.plan_type == Realm.LIMITED:
             show_plans = True
 
     request._log_data['extra'] = "[{}]".format(register_ret["queue_id"])

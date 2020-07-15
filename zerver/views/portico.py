@@ -36,7 +36,8 @@ def plans_view(request: HttpRequest) -> HttpResponse:
             return HttpResponseRedirect('https://zulip.com/plans')
         if not request.user.is_authenticated:
             return redirect_to_login(next="plans")
-
+        if request.user.is_guest:
+            return TemplateResponse(request, "404.html", status=404)
         if settings.CORPORATE_ENABLED:
             from corporate.models import get_customer_by_realm
             customer = get_customer_by_realm(realm)

@@ -188,6 +188,18 @@ class InvalidJSONError(JsonableError):
     def msg_format() -> str:
         return _("Malformed JSON")
 
+class OrganizationMemberRequired(JsonableError):
+    code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
+
+    MEMBER_REQUIRED_MESSAGE = _("Must be an organization member")
+
+    def __init__(self) -> None:
+        super().__init__(self.MEMBER_REQUIRED_MESSAGE)
+
+    @staticmethod
+    def msg_format() -> str:
+        return OrganizationMemberRequired.MEMBER_REQUIRED_MESSAGE
+
 class OrganizationAdministratorRequired(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
