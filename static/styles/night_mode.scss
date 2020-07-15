@@ -964,6 +964,10 @@ on a dark background, and don't change the dark labels dark either. */
             }
         }
     }
+
+    a:focus {
+        outline-color: hsl(0, 0%, 100%);
+    }
 }
 
 @supports (-moz-appearance: none) {

@@ -379,6 +379,12 @@ label {
     line-height: inherit;
 }
 
+/* Bootstrap's focus outline uses -webkit-focus-ring-color which doesn't exist in Firefox */
+a:focus {
+    outline: 2px solid hsl(215, 47%, 50%);
+    // TODO: change solid to auto once the Chromium bug #1105822 is fixed
+}
+
 /* List of text-like input types taken from Bootstrap */
 input {
     &[type="text"],
