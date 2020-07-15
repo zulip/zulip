@@ -33,6 +33,19 @@ function expand_spoiler(spoiler) {
     });
 }
 
+exports.hide_spoilers_in_notification = (content) => {
+    content.find('.spoiler-block').each((i, elem) => {
+        $(elem).find('.spoiler-content').remove();
+        let text = $(elem).find('.spoiler-header').text().trim();
+        if (text.length > 0) {
+            text = `${text} `;
+        }
+        text = `${text}(…)`;
+        $(elem).find('.spoiler-header').text(text);
+    });
+    return content;
+};
+
 exports.initialize = function () {
     $("body").on("click", ".spoiler-header", function (e) {
         const button = $(this).children('.spoiler-button');

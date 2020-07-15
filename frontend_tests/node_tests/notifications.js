@@ -24,6 +24,8 @@ zrequire('muting');
 zrequire('stream_data');
 zrequire('people');
 zrequire('ui');
+zrequire('spoilers');
+spoilers.hide_spoilers_in_notification = () => {};
 
 zrequire('notifications');
 
