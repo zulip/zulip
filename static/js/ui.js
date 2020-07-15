@@ -131,6 +131,8 @@ exports.remove_messages = function (message_ids) {
         }
         list.remove_and_rerender(msg_ids_to_rerender);
     }
+    recent_senders.update_topics_of_message_ids(message_ids);
+    recent_topics.update_topics_of_message_ids(message_ids);
 };
 
 exports.show_failed_message_success = function (message_id) {
