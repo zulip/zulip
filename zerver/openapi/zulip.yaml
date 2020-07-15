@@ -277,7 +277,7 @@ paths:
                         type: integer
                         description: |
                           The ID of the given stream.
-                  - example: { "msg": "", "result": "success", "stream_id": 15 }
+                  - example: {"msg": "", "result": "success", "stream_id": 15}
         "400":
           description: Bad request.
           content:
@@ -444,8 +444,8 @@ paths:
                               "create_time": 1588145417000,
                               "messages":
                                 [
-                                  { "id": 102, "date_sent": 1588145424000 },
-                                  { "id": 103, "date_sent": 1588145448000 },
+                                  {"id": 102, "date_sent": 1588145424000},
+                                  {"id": 103, "date_sent": 1588145448000},
                                 ],
                             },
                           ],
@@ -543,7 +543,7 @@ paths:
                 items:
                   type: object
                 default: []
-              example: [{ "operand": "Denmark", "operator": "stream" }]
+              example: [{"operand": "Denmark", "operator": "stream"}]
         - $ref: "#/components/parameters/ClientGravatar"
         - name: apply_markdown
           in: query
@@ -779,7 +779,7 @@ paths:
                           be sent.  Note that scheduled messages ("Send later") is a beta API and
                           may change before it's a finished feature.
                         example: "2020-06-24 11:19:54.337533+00:00"
-                  - example: { "msg": "", "id": 42, "result": "success" }
+                  - example: {"msg": "", "id": 42, "result": "success"}
         "400":
           description: Bad request.
           content:
@@ -960,11 +960,7 @@ paths:
                         description: |
                           An array with the IDs of the modified messages.
                   - example:
-                      {
-                        "msg": "",
-                        "messages": [4, 18, 15],
-                        "result": "success",
-                      }
+                      {"msg": "", "messages": [4, 18, 15], "result": "success"}
   /messages/render:
     post:
       operationId: render_message
@@ -1100,7 +1096,7 @@ paths:
                 type: array
                 items:
                   type: object
-              example: [{ "operator": "has", "operand": "link" }]
+              example: [{"operator": "has", "operand": "link"}]
           required: true
       responses:
         "200":
@@ -1446,21 +1442,21 @@ paths:
                               "is_guest": false,
                               "profile_data":
                                 {
-                                  "4": { "value": "vim" },
+                                  "4": {"value": "vim"},
                                   "2":
                                     {
                                       "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
                                       "rendered_value": "<p>I am:</p>\n<ul>\n<li>The prince of Denmark</li>\n<li>Nephew to the usurping Claudius</li>\n</ul>",
                                     },
-                                  "5": { "value": "1900-1-1" },
-                                  "7": { "value": "[11]" },
-                                  "6": { "value": "https://blog.zulig.org" },
+                                  "5": {"value": "1900-1-1"},
+                                  "7": {"value": "[11]"},
+                                  "6": {"value": "https://blog.zulig.org"},
                                   "1":
                                     {
                                       "value": "+0-11-23-456-7890",
                                       "rendered_value": "<p>+0-11-23-456-7890</p>",
                                     },
-                                  "8": { "value": "zulipbot" },
+                                  "8": {"value": "zulipbot"},
                                   "3":
                                     {
                                       "rendered_value": "<p>Dark chocolate</p>",
@@ -1578,7 +1574,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
-                  - example: { "msg": "", "result": "success" }
+                  - example: {"msg": "", "result": "success"}
 
   /users/{email}/presence:
     get:
@@ -1652,11 +1648,11 @@ paths:
                         "presence":
                           {
                             "website":
-                              { "timestamp": 1532697622, "status": "active" },
+                              {"timestamp": 1532697622, "status": "active"},
                             "ZulipMobile":
-                              { "timestamp": 1522687421, "status": "active" },
+                              {"timestamp": 1522687421, "status": "active"},
                             "aggregated":
-                              { "timestamp": 1532697622, "status": "active" },
+                              {"timestamp": 1532697622, "status": "active"},
                           },
                         "result": "success",
                         "msg": "",
@@ -1797,9 +1793,9 @@ paths:
                         "user_id": 5,
                         "profile_data":
                           {
-                            "5": { "value": "2000-1-1" },
-                            "4": { "value": "emacs" },
-                            "7": { "value": "[10]" },
+                            "5": {"value": "2000-1-1"},
+                            "4": {"value": "emacs"},
+                            "7": {"value": "[10]"},
                             "1":
                               {
                                 "value": "+1-234-567-8901",
@@ -1810,7 +1806,7 @@ paths:
                                 "rendered_value": "<p>Betrayer of Othello.</p>",
                                 "value": "Betrayer of Othello.",
                               },
-                            "8": { "value": "zulip" },
+                            "8": {"value": "zulip"},
                             "3":
                               {
                                 "value": "Apples",
@@ -1835,7 +1831,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
-                  - example: { "msg": "", "result": "success" }
+                  - example: {"msg": "", "result": "success"}
         "400":
           description: Bad Request
           content:
@@ -1889,9 +1885,9 @@ paths:
                         "result": "success",
                         "topics":
                           [
-                            { "max_id": 26, "name": "Denmark3" },
-                            { "max_id": 23, "name": "Denmark1" },
-                            { "max_id": 6, "name": "Denmark2" },
+                            {"max_id": 26, "name": "Denmark3"},
+                            {"max_id": 23, "name": "Denmark1"},
+                            {"max_id": 6, "name": "Denmark2"},
                           ],
                       }
         "400":
@@ -2193,7 +2189,7 @@ paths:
                 type: array
                 items:
                   type: object
-              example: [{ "name": "Verona", "description": "Italian City" }]
+              example: [{"name": "Verona", "description": "Italian City"}]
           required: true
         - $ref: "#/components/parameters/Principals"
         - name: authorization_errors_fatal
@@ -2250,14 +2246,14 @@ paths:
                             "already_subscribed": {},
                             "msg": "",
                             "result": "success",
-                            "subscribed": { "iago@zulip.com": ["new stream"] },
+                            "subscribed": {"iago@zulip.com": ["new stream"]},
                           }
                   - allOf:
                       - $ref: "#/components/schemas/AddSubscriptionsResponse"
                       - example:
                           {
                             "already_subscribed":
-                              { "newbie@zulip.com": ["new stream"] },
+                              {"newbie@zulip.com": ["new stream"]},
                             "msg": "",
                             "result": "success",
                             "subscribed": {},
@@ -2325,7 +2321,7 @@ paths:
                       type: string
               example:
                 [
-                  { "name": "Verona" },
+                  {"name": "Verona"},
                   {
                     "name": "Denmark",
                     "color": "#e79ab5",
@@ -2393,7 +2389,7 @@ paths:
                       {
                         "msg": "",
                         "subscribed": {},
-                        "already_subscribed": { "iago@zulip.com": ["Verona"] },
+                        "already_subscribed": {"iago@zulip.com": ["Verona"]},
                         "not_removed": [],
                         "removed": ["new stream"],
                         "result": "success",
@@ -2485,7 +2481,7 @@ paths:
                         description: |
                           Whether the user is subscribed to the stream.
                   - example:
-                      { "msg": "", "result": "success", "is_subscribed": false }
+                      {"msg": "", "result": "success", "is_subscribed": false}
   /users/me/subscriptions/muted_topics:
     patch:
       operationId: mute_topic
@@ -2538,11 +2534,11 @@ paths:
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example:
-                          { "msg": "Topic already muted", "result": "error" }
+                          {"msg": "Topic already muted", "result": "error"}
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example:
-                          { "msg": "Topic is not muted", "result": "error" }
+                          {"msg": "Topic is not muted", "result": "error"}
   /realm/emoji/{emoji_name}:
     post:
       operationId: upload_custom_emoji
@@ -2677,8 +2673,8 @@ paths:
                   type: object
               example:
                 [
-                  { "stream_id": 1, "property": "pin_to_top", "value": true },
-                  { "stream_id": 3, "property": "color", "value": "#f00f00" },
+                  {"stream_id": 1, "property": "pin_to_top", "value": true},
+                  {"stream_id": 3, "property": "color", "value": "#f00f00"},
                 ]
           required: true
       responses:
@@ -2811,21 +2807,21 @@ paths:
                             "is_guest": false,
                             "profile_data":
                               {
-                                "4": { "value": "vim" },
+                                "4": {"value": "vim"},
                                 "2":
                                   {
                                     "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
                                     "rendered_value": "<p>I am:</p>\n<ul>\n<li>The prince of Denmark</li>\n<li>Nephew to the usurping Claudius</li>\n</ul>",
                                   },
-                                "5": { "value": "1900-1-1" },
-                                "7": { "value": "[11]" },
-                                "6": { "value": "https://blog.zulig.org" },
+                                "5": {"value": "1900-1-1"},
+                                "7": {"value": "[11]"},
+                                "6": {"value": "https://blog.zulig.org"},
                                 "1":
                                   {
                                     "value": "+0-11-23-456-7890",
                                     "rendered_value": "<p>+0-11-23-456-7890</p>",
                                   },
-                                "8": { "value": "zulipbot" },
+                                "8": {"value": "zulipbot"},
                                 "3":
                                   {
                                     "rendered_value": "<p>Dark chocolate</p>",
@@ -2900,10 +2896,7 @@ paths:
                 items:
                   type: object
               example:
-                [
-                  { "id": 4, "value": "vim" },
-                  { "id": 5, "value": "1909-04-05" },
-                ]
+                [{"id": 4, "value": "vim"}, {"id": 5, "value": "1909-04-05"}]
           required: false
 
       responses:
@@ -2945,7 +2938,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
-                  - example: { "msg": "", "result": "success" }
+                  - example: {"msg": "", "result": "success"}
         "400":
           description: Bad Request
           content:
@@ -3050,7 +3043,7 @@ paths:
                         type: integer
                         description: |
                           The numeric ID assigned to this filter.
-                  - example: { "id": 42, "result": "success", "msg": "" }
+                  - example: {"id": 42, "result": "success", "msg": ""}
   /realm/filters/{filter_id}:
     delete:
       operationId: remove_linkifier
@@ -3155,7 +3148,7 @@ paths:
             application/json:
               schema:
                 type: object
-              example: { "notification_settings_null": true }
+              example: {"notification_settings_null": true}
         - name: fetch_event_types
           in: query
           description: |
@@ -3903,7 +3896,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
-                  - example: { "msg": "", "result": "success" }
+                  - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
           content:
@@ -3987,7 +3980,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
-                  - example: { "msg": "", "result": "success" }
+                  - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
           content:
@@ -4097,7 +4090,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
-                  - example: { "msg": "", "result": "success" }
+                  - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
           content:
@@ -4171,7 +4164,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
-                  - example: { "result": "success", "msg": "" }
+                  - example: {"result": "success", "msg": ""}
 
         "400":
           description: Bad request.
@@ -4781,7 +4774,7 @@ components:
                 - success
             msg:
               type: string
-        - example: { "msg": "", "result": "success" }
+        - example: {"msg": "", "result": "success"}
     JsonError:
       allOf:
         - $ref: "#/components/schemas/JsonResponse"
@@ -4908,7 +4901,7 @@ components:
     InvalidApiKeyError:
       allOf:
         - $ref: "#/components/schemas/JsonError"
-        - example: { "msg": "Invalid API key", "result": "error" }
+        - example: {"msg": "Invalid API key", "result": "error"}
     MissingArgumentError:
       allOf:
         - $ref: "#/components/schemas/CodedError"

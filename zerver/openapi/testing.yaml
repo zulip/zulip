@@ -33,8 +33,8 @@ test1:
             {
               "top_array":
                 [
-                  { "obj": { "str3": "test" } },
-                  [{ "str1": "success", "str2": "success" }],
+                  {"obj": {"str3": "test"}},
+                  [{"str1": "success", "str2": "success"}],
                 ],
             }
 test2:
@@ -73,8 +73,8 @@ test2:
             {
               "top_array":
                 [
-                  { "obj": { "str3": "test", "str4": "extraneous" } },
-                  [{ "str1": "success", "str2": "success" }],
+                  {"obj": {"str3": "test", "str4": "extraneous"}},
+                  [{"str1": "success", "str2": "success"}],
                 ],
             }
 test3:
@@ -109,7 +109,7 @@ test3:
             {
               "top_array":
                 [
-                  { "obj": { "str3": "test" } },
-                  [{ "str1": "success", "str2": "success" }],
+                  {"obj": {"str3": "test"}},
+                  [{"str1": "success", "str2": "success"}],
                 ],
             }
