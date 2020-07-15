@@ -1354,7 +1354,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                 AUTHENTICATION_BACKENDS=(backend_path,
                                          'zproject.backends.ZulipLDAPUserPopulator',
                                          'zproject.backends.ZulipDummyBackend'),
-        ):
+        ), self.assertLogs(level='WARNING') as log_warn:
             result = self.social_auth_test(account_data_dict,
                                            expect_choose_email_screen=True,
                                            subdomain=subdomain, is_signup=True)
@@ -1373,6 +1373,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             # this user isn't in the ldap dictionary:
             self.stage_two_of_registration(result, realm, subdomain, email, name, name,
                                            skip_registration_form=self.BACKEND_CLASS.full_name_validated)
+        self.assertEqual(log_warn.output, [f'WARNING:root:New account email {email} could not be found in LDAP'])
 
     @override_settings(TERMS_OF_SERVICE=None)
     def test_social_auth_with_ldap_auth_registration_from_confirmation(self) -> None:
@@ -1396,7 +1397,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                 AUTHENTICATION_BACKENDS=(backend_path,
                                          'zproject.backends.ZulipLDAPAuthBackend',
                                          'zproject.backends.ZulipDummyBackend'),
-        ):
+        ), self.assertLogs('zulip.ldap', level='DEBUG') as log_debug, self.assertLogs(level='WARNING') as log_warn:
             account_data_dict = self.get_account_data_dict(email=email, name=name)
             result = self.social_auth_test(account_data_dict,
                                            expect_choose_email_screen=True,
@@ -1405,6 +1406,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             # this user isn't in the ldap dictionary:
             self.stage_two_of_registration(result, realm, subdomain, email, name, name,
                                            skip_registration_form=self.BACKEND_CLASS.full_name_validated)
+        self.assertEqual(log_warn.output, [f'WARNING:root:New account email {email} could not be found in LDAP'])
+        self.assertEqual(log_debug.output, [f'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No ldap user matching django_to_ldap_username result: {email}. Input username: {email}'])
 
     def test_social_auth_complete(self) -> None:
         with mock.patch('social_core.backends.oauth.BaseOAuth2.process_error',
