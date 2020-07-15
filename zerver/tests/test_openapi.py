@@ -292,7 +292,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/calls/zoom/create',
 
         #### Documented endpoints not properly detected by tooling.
-        '/user_groups/{user_group_id}/members',
         # Regex with an unnamed capturing group.
         '/users/(?!me/)(?P<email>[^/]*)/presence',
     }

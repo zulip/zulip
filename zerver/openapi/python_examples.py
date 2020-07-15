@@ -1127,7 +1127,7 @@ def remove_user_group(client: Client, user_group_id: int) -> None:
 @openapi_test_function("/user_groups/{user_group_id}/members:post")
 def update_user_group_members(client: Client, user_group_id: int) -> None:
     ensure_users([8, 10, 11], ['cordelia', 'hamlet', 'iago'])
-
+    # {code_example|start}
     request = {
         'group_id': user_group_id,
         'delete': [8, 10],
@@ -1135,8 +1135,8 @@ def update_user_group_members(client: Client, user_group_id: int) -> None:
     }
 
     result = client.update_user_group_members(request)
-
-    assert result['result'] == 'success'
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/user_groups/{group_id}/members', 'post', '200')
 
 def test_invalid_api_key(client_with_invalid_key: Client) -> None:
     result = client_with_invalid_key.list_subscriptions()
