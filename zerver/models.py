@@ -2252,6 +2252,11 @@ class Subscription(models.Model):
     ROLE_STREAM_ADMINISTRATOR = 20
     ROLE_MEMBER = 50
 
+    ROLE_TYPES = [
+        ROLE_STREAM_ADMINISTRATOR,
+        ROLE_MEMBER,
+    ]
+
     role: int = models.PositiveSmallIntegerField(default=ROLE_MEMBER, db_index=True)
 
     # Whether this user had muted this stream.
@@ -2304,6 +2309,7 @@ class Subscription(models.Model):
         "email_notifications",
         "push_notifications",
         "wildcard_mentions_notify",
+        "role",
     ]
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600*24*7)

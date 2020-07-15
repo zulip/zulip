@@ -4513,6 +4513,7 @@ paths:
                               "name": "Denmark",
                               "pin_to_top": false,
                               "push_notifications": false,
+                              "role": 20,
                               "stream_id": 1,
                               "subscribers": [7, 10, 11, 12, 14],
                             },
@@ -4527,6 +4528,7 @@ paths:
                               "name": "Scotland",
                               "pin_to_top": false,
                               "push_notifications": false,
+                              "role": 50,
                               "stream_id": 3,
                               "subscribers": [7, 11, 12, 14],
                             },
@@ -8751,6 +8753,17 @@ components:
           description: |
             Whether the stream has been configured to allow unauthenticated
             access to its message history from the web.
+        role:
+          type: integer
+          description: |
+            The user's role within the stream (distinct from the user's
+            [organization-level role](/help/roles-and-permissions)).
+            Valid values are:
+
+            * 20 => Stream administrator.
+            * 50 => Subscriber.
+
+            **Changes**: New in Zulip 4.0 (feature level 31).
         color:
           type: string
           description: |

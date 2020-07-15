@@ -10,6 +10,19 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 31**
+
+* [`GET users/me/subscriptions`](/api/get-subscriptions): Added a
+  `role` field to Subscription objects representing whether the user
+  is a stream administrator.
+
+* [`GET /events`](/api/get-events): Added `role` field to
+  Subscription objects sent in `subscriptions` events.
+
+Note that as of this feature level, stream administrators are a
+partially completed feature.  In particular, it is impossible for a
+user to be a stream administrator at this feature level.
+
 **Feature Level 30**
 
 * [`GET users/me/subscriptions`](/api/get-subscriptions), [`GET

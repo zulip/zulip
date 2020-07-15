@@ -22,7 +22,7 @@ from zerver.lib.validator import (
     check_url,
     equals,
 )
-from zerver.models import Realm, Stream, UserProfile
+from zerver.models import Realm, Stream, Subscription, UserProfile
 
 # These fields are used for "stream" events, and are included in the
 # larger "subscription" events that also contain personal settings.
@@ -50,6 +50,7 @@ subscription_fields: Sequence[Tuple[str, Validator[object]]] = [
     ("email_notifications", check_none_or(check_bool)),
     ("in_home_view", check_bool),
     ("is_muted", check_bool),
+    ("role", check_int_in(Subscription.ROLE_TYPES)),
     ("pin_to_top", check_bool),
     ("push_notifications", check_none_or(check_bool)),
     ("stream_weekly_traffic", check_none_or(check_int)),
