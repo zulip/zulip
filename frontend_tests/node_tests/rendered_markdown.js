@@ -179,6 +179,27 @@ run_test('timestamp', () => {
     assert.equal($timestamp_invalid.text(), 'never-been-set');
 });
 
+run_test('timestamp-twenty-four-hour-time', () => {
+    const $content = get_content_element();
+    const $timestamp = $.create('timestamp');
+    $timestamp.attr('datetime', '2020-07-15T20:40:00Z');
+    $content.set_find_results('time', $array([$timestamp]));
+
+    // We will temporarily change the 24h setting for this test.
+    const old_page_params = global.page_params;
+
+    set_global('page_params', { ...old_page_params, twenty_four_hour_time: true });
+    rm.update_elements($content);
+    assert.equal($timestamp.text(), 'Wed, Jul 15 2020, 20:40');
+
+    set_global('page_params', { ...old_page_params, twenty_four_hour_time: false });
+    rm.update_elements($content);
+    assert.equal($timestamp.text(), 'Wed, Jul 15 2020, 8:40 PM');
+
+    // Set page_params back to its original value.
+    set_global('page_params', old_page_params);
+});
+
 run_test('timestamp-error', () => {
     // Setup
     const $content = get_content_element();
