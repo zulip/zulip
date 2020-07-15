@@ -1,114 +1,114 @@
 {
   "bg": {
-    "not_translated": 81,
-    "total": 211
+    "not_translated": 83,
+    "total": 213
   },
   "ca": {
     "not_translated": 0,
-    "total": 211
+    "total": 213
   },
   "cs": {
-    "not_translated": 3,
-    "total": 211
+    "not_translated": 5,
+    "total": 213
   },
   "de": {
-    "not_translated": 0,
-    "total": 211
+    "not_translated": 2,
+    "total": 213
   },
   "en_GB": {
     "not_translated": 0,
-    "total": 211
+    "total": 213
   },
   "es": {
     "not_translated": 0,
-    "total": 211
+    "total": 213
   },
   "fa": {
-    "not_translated": 31,
-    "total": 211
+    "not_translated": 33,
+    "total": 213
   },
   "fi": {
-    "not_translated": 85,
-    "total": 211
+    "not_translated": 86,
+    "total": 213
   },
   "fr": {
     "not_translated": 0,
-    "total": 211
+    "total": 213
   },
   "gl": {
-    "not_translated": 88,
-    "total": 211
+    "not_translated": 90,
+    "total": 213
   },
   "hi": {
-    "not_translated": 62,
-    "total": 211
+    "not_translated": 64,
+    "total": 213
   },
   "hu": {
-    "not_translated": 2,
-    "total": 211
+    "not_translated": 4,
+    "total": 213
   },
   "id_ID": {
-    "not_translated": 86,
-    "total": 211
+    "not_translated": 88,
+    "total": 213
   },
   "it": {
     "not_translated": 0,
-    "total": 211
+    "total": 213
   },
   "ja": {
-    "not_translated": 44,
-    "total": 211
+    "not_translated": 46,
+    "total": 213
   },
   "ko": {
-    "not_translated": 79,
-    "total": 211
+    "not_translated": 81,
+    "total": 213
   },
   "ml": {
-    "not_translated": 181,
-    "total": 211
+    "not_translated": 183,
+    "total": 213
   },
   "nl": {
-    "not_translated": 83,
-    "total": 211
+    "not_translated": 85,
+    "total": 213
   },
   "pl": {
-    "not_translated": 2,
-    "total": 211
+    "not_translated": 4,
+    "total": 213
   },
   "pt": {
-    "not_translated": 37,
-    "total": 211
+    "not_translated": 39,
+    "total": 213
   },
   "ro": {
-    "not_translated": 3,
-    "total": 211
+    "not_translated": 0,
+    "total": 213
   },
   "ru": {
-    "not_translated": 0,
-    "total": 211
+    "not_translated": 2,
+    "total": 213
   },
   "sr": {
-    "not_translated": 190,
-    "total": 211
+    "not_translated": 192,
+    "total": 213
   },
   "ta": {
-    "not_translated": 148,
-    "total": 211
+    "not_translated": 150,
+    "total": 213
   },
   "tr": {
-    "not_translated": 0,
-    "total": 211
+    "not_translated": 2,
+    "total": 213
   },
   "uk": {
-    "not_translated": 3,
-    "total": 211
+    "not_translated": 5,
+    "total": 213
   },
   "zh_Hans": {
-    "not_translated": 54,
-    "total": 211
+    "not_translated": 56,
+    "total": 213
   },
   "zh_Hant": {
-    "not_translated": 61,
-    "total": 211
+    "not_translated": 63,
+    "total": 213
   }
 }

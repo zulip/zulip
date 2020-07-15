@@ -4,7 +4,7 @@
 # 
 # Translators:
 # Alessio Schreiber <alessio.schreiber@gmail.com>, 2019
-# Andrea <andrea.soccal@elmospa.com>, 2018-2020
+# Andrea, 2018-2020
 # Biagio Laquale <infingerprinting@gmail.com>, 2019
 # 8d821b430c6446b8644f76c07c39dc73, 2019
 # Matteo Piotto <matteo.piotto@welaika.com>, 2020
@@ -14,8 +14,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-13 20:42+0000\n"
-"PO-Revision-Date: 2020-07-14 07:02+0000\n"
-"Last-Translator: Andrea <andrea.soccal@elmospa.com>\n"
+"PO-Revision-Date: 2020-07-15 12:21+0000\n"
+"Last-Translator: Matteo Piotto <matteo.piotto@welaika.com>\n"
 "Language-Team: Italian (http://www.transifex.com/zulip/zulip/language/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -298,7 +298,7 @@ msgstr "Accetti i nuovi termini di servizio"
 #: templates/zerver/register.html:97 templates/zerver/reset.html:22
 #: templates/zerver/reset_confirm.html:20
 msgid "Email"
-msgstr "E-mail"
+msgstr "Email"
 
 #: templates/zerver/accounts_accept_terms.html:43
 #: templates/zerver/register.html:220
@@ -324,7 +324,7 @@ msgstr "Hai bisogno di un invito per entrare in questa organizzazione."
 #: templates/zerver/login.html:128 templates/zerver/portico-header.html:43
 #: templates/zerver/register.html:230
 msgid "Sign up"
-msgstr "Registrati"
+msgstr "Iscriviti"
 
 #: templates/zerver/accounts_home.html:72 templates/zerver/login.html:107
 #: templates/zerver/register.html:60
@@ -338,7 +338,7 @@ msgstr "Iscriviti con %(identity_provider)s"
 
 #: templates/zerver/accounts_send_confirm.html:13
 msgid "Thanks for signing up!"
-msgstr "Grazie per esserti registrato!"
+msgstr "Grazie per esserti iscritto!"
 
 #: templates/zerver/accounts_send_confirm.html:17
 msgid "Check your email so we can get started."
@@ -1597,7 +1597,7 @@ msgstr "Se non hai richiesto questo cambiamento, ti preghiamo di contattarci imm
 #: templates/zerver/emails/confirm_registration.source.html:9
 #: templates/zerver/emails/confirm_registration.txt:1
 msgid "You recently signed up for Zulip. Awesome!"
-msgstr "Di recente ti sei registrato a Zulip. Eccezionale!"
+msgstr "Di recente ti sei iscritto a Zulip. Eccezionale!"
 
 #: templates/zerver/emails/compiled/confirm_registration.html:13
 #: templates/zerver/emails/confirm_registration.source.html:12
@@ -3540,7 +3540,7 @@ msgstr "{user_name} ha rinominato il canale {old_stream_name} in {new_stream_nam
 
 #: zerver/lib/actions.py:3729
 msgid "Signups enabled"
-msgstr "Registrazioni abilitate"
+msgstr "Iscrizioni abilitate"
 
 #: zerver/lib/actions.py:3811
 msgid "Invalid default stream group {}"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-14 07:20+0000\n"
+"POT-Creation-Date: 2020-07-15 18:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1398,7 +1398,7 @@ msgstr ""
 msgid "Organization permissions"
 msgstr ""
 
-#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1909
+#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1906
 msgid "Custom emoji"
 msgstr ""
 
@@ -4086,12 +4086,12 @@ msgstr ""
 msgid "Token does not exist"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:614
+#: zerver/lib/push_notifications.py:623
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:616
+#: zerver/lib/push_notifications.py:625
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr ""
@@ -4440,54 +4440,54 @@ msgstr ""
 msgid "Invalid URL format string."
 msgstr ""
 
-#: zerver/models.py:1908
+#: zerver/models.py:1905
 msgid "Unicode emoji"
 msgstr ""
 
-#: zerver/models.py:1910
+#: zerver/models.py:1907
 msgid "Zulip extra emoji"
 msgstr ""
 
-#: zerver/models.py:2808
+#: zerver/models.py:2805
 #, python-format
 msgid "Invalid user ID: %d"
 msgstr ""
 
-#: zerver/models.py:2812
+#: zerver/models.py:2809
 #, python-format
 msgid "User with ID %d is deactivated"
 msgstr ""
 
-#: zerver/models.py:2815
+#: zerver/models.py:2812
 #, python-format
 msgid "User with ID %d is a bot"
 msgstr ""
 
-#: zerver/models.py:2846
+#: zerver/models.py:2843
 msgid "List of options"
 msgstr ""
 
-#: zerver/models.py:2849
+#: zerver/models.py:2846
 msgid "Person picker"
 msgstr ""
 
-#: zerver/models.py:2861
+#: zerver/models.py:2858
 msgid "Short text"
 msgstr ""
 
-#: zerver/models.py:2862
+#: zerver/models.py:2859
 msgid "Long text"
 msgstr ""
 
-#: zerver/models.py:2863
+#: zerver/models.py:2860
 msgid "Date picker"
 msgstr ""
 
-#: zerver/models.py:2864
+#: zerver/models.py:2861
 msgid "Link"
 msgstr ""
 
-#: zerver/models.py:2865
+#: zerver/models.py:2862
 msgid "External account"
 msgstr ""
 

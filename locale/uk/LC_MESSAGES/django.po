@@ -12,8 +12,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-13 20:42+0000\n"
-"PO-Revision-Date: 2020-07-10 19:40+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"PO-Revision-Date: 2020-07-14 12:50+0000\n"
+"Last-Translator: Mykola Ronik <mantikor.san@gmail.com>\n"
 "Language-Team: Ukrainian (http://www.transifex.com/zulip/zulip/language/uk/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -720,7 +720,7 @@ msgstr "Нове повідомлення каналу"
 #: templates/zerver/app/keyboard_shortcuts.html:28
 #: templates/zerver/app/keyboard_shortcuts.html:260
 msgid "View drafts"
-msgstr "Огляд чорновиків"
+msgstr "Огляд чернеток"
 
 #: templates/zerver/app/keyboard_shortcuts.html:32
 #: templates/zerver/app/keyboard_shortcuts.html:81
@@ -1861,7 +1861,7 @@ msgstr "Спробуйте з цим погратися зараз."
 #: templates/zerver/emails/notify_new_login.source.html:40
 #: templates/zerver/emails/notify_new_login.txt:19
 msgid "Thanks,"
-msgstr "Дякую,"
+msgstr "Дякуємо,"
 
 #: templates/zerver/emails/compiled/followup_day2.html:28
 #: templates/zerver/emails/followup_day2.source.html:27
@@ -2031,14 +2031,14 @@ msgstr "Організація: %(organization_url)s Час: %(login_time)s Ел
 #: templates/zerver/emails/notify_new_login.source.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
 msgid "We noticed a recent login for the following Zulip account."
-msgstr "Ми побачили нещодавній вхід у наступний обліковий запис Zulip."
+msgstr "Ми помітили нещодавній вхід в обліковий запис Zulip."
 
 #: templates/zerver/emails/compiled/notify_new_login.html:18
 #, python-format
 msgid ""
 "Organization: <a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">%(realm_uri)s</a>"
-msgstr ""
+msgstr "Організація: <a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-decoration:underline\">%(realm_uri)s</a>"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:21
 #, python-format
@@ -2072,7 +2072,7 @@ msgstr "IP адреса: %(device_ip)s"
 #: templates/zerver/emails/notify_new_login.source.html:33
 #: templates/zerver/emails/notify_new_login.txt:14
 msgid "If this was you, great! There's nothing else you need to do."
-msgstr "Якщо це були Ви, супер! Тоді нічого не треба робити."
+msgstr "Якщо це були ви — супер! Тоді нічого не треба робити."
 
 #: templates/zerver/emails/compiled/notify_new_login.html:38
 #, python-format
@@ -2082,7 +2082,7 @@ msgid ""
 "style=\"color:#46aa8f; text-decoration:underline\">reset your password</a> "
 "or contact us immediately at <a href=\"mailto:%(support_email)s\" "
 "style=\"color:#46aa8f; text-decoration:underline\">%(support_email)s</a>."
-msgstr ""
+msgstr "Якщо ви не впізнаєте цей вхід, або вважаєте що ваш обліковий запис міг бути скомпрометований, будь ласка, <a href=\"%(realm_uri)s/accounts/password/reset/\" style=\"color:#46aa8f; text-decoration:underline\">змініть свій пароль</a> або напишіть нам за адресою <a href=\"mailto:%(support_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(support_email)s</a>."
 
 #: templates/zerver/emails/compiled/notify_new_login.html:43
 #: templates/zerver/emails/notify_new_login.source.html:41
@@ -2093,7 +2093,7 @@ msgstr "Безпека Zulip"
 #: templates/zerver/emails/compiled/notify_new_login.html:48
 #: templates/zerver/emails/notify_new_login.source.html:46
 msgid "Unsubscribe from login notifications"
-msgstr "Відписатись від повідомлень про входи у обліковий запис"
+msgstr "Відписатись від повідомлень про вхід в обліковий запис"
 
 #: templates/zerver/emails/compiled/password_reset.html:10
 #: templates/zerver/emails/password_reset.source.html:9
@@ -2149,7 +2149,7 @@ msgstr "Ви можете спробувати увійти або змінит�
 #: templates/zerver/emails/password_reset.txt:24
 msgid ""
 "If you do not recognize this activity, you can safely ignore this email."
-msgstr "Якщо Ви не впізнаєте цієї активності, Ви можете спокійно ігнорувати цей лист."
+msgstr "Якщо ви не впізнаєте цієї активності, можете спокійно проігнорувати цей лист."
 
 #: templates/zerver/emails/compiled/realm_reactivation.html:9
 #: templates/zerver/emails/realm_reactivation.source.html:8
@@ -2576,7 +2576,7 @@ msgid ""
 "compromised, please <a href=\"%(realm_uri)s/accounts/password/reset/\">reset"
 " your password</a> or contact us immediately at <a "
 "href=\"mailto:%(support_email)s\">%(support_email)s</a>."
-msgstr ""
+msgstr "Якщо ви не впізнаєте цей вхід, або вважаєте що ваш обліковий запис міг бути скомпрометований, будь ласка, <a href=\"%(realm_uri)s/accounts/password/reset/\">змінить свій пароль</a> або зв'яжіться з нами за адресою <a href=\"mailto:%(support_email)s\">%(support_email)s</a>."
 
 #: templates/zerver/emails/notify_new_login.subject.txt:1
 #, python-format
@@ -2600,7 +2600,7 @@ msgid ""
 "compromised, please reset your password at "
 "%(realm_uri)s/accounts/password/reset/ or contact us immediately at "
 "%(support_email)s."
-msgstr "Якщо Ви не впізнаєте цей вхід, ябо вважаєте що Ваш обліковий запис було скомпрометовано, будь ласка змінить Ваш пароль %(realm_uri)s/accounts/password/reset/ або зв'яжіться з нами негайно за адресою %(support_email)s. "
+msgstr "Якщо ви не впізнаєте цей вхід, або вважаєте що ваш обліковий запис було скомпрометовано, будь ласка, змініть свій пароль %(realm_uri)s/accounts/password/reset/ або зв'яжіться з нами за адресою%(support_email)s. "
 
 #: templates/zerver/emails/password_reset.source.html:19
 #, python-format

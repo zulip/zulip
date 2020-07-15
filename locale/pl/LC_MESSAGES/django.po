@@ -18,7 +18,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-13 20:42+0000\n"
-"PO-Revision-Date: 2020-07-14 07:08+0000\n"
+"PO-Revision-Date: 2020-07-14 09:22+0000\n"
 "Last-Translator: Krzysztof\n"
 "Language-Team: Polish (http://www.transifex.com/zulip/zulip/language/pl/)\n"
 "MIME-Version: 1.0\n"
@@ -3510,7 +3510,7 @@ msgstr ""
 
 #: zerver/lib/actions.py:2296
 msgid "Private messages are disabled in this organization."
-msgstr ""
+msgstr "Prywatne wiadomości są wyłączone w tej organizacji."
 
 #: zerver/lib/actions.py:2315
 msgid "Message must not be empty"
