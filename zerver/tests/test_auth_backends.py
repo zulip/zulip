@@ -4933,7 +4933,8 @@ class LDAPBackendTest(ZulipTestCase):
         error = ZulipLDAPConfigurationError('Realm is None', error_type)
         with mock.patch('zproject.backends.ZulipLDAPAuthBackend.get_or_build_user',
                         side_effect=error), \
-                mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'):
+                mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), \
+                self.assertLogs('django_auth_ldap', 'WARNING') as warn_log:
             response = self.client_post('/login/', data)
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.url, reverse('config_error', kwargs={'error_category_name': 'ldap'}))
@@ -4941,3 +4942,6 @@ class LDAPBackendTest(ZulipTestCase):
             self.assert_in_response('You are trying to login using LDAP '
                                     'without creating an',
                                     response)
+        self.assertEqual(warn_log.output, [
+            "WARNING:django_auth_ldap:('Realm is None', 1) while authenticating hamlet"
+        ])
