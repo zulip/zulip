@@ -4191,11 +4191,15 @@ class TestLDAP(ZulipLDAPTestCase):
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_nonexistent_user(self) -> None:
-        with self.settings(LDAP_APPEND_DOMAIN='zulip.com'):
+        with self.settings(LDAP_APPEND_DOMAIN='zulip.com'), \
+                self.assertLogs('zulip.ldap', level='DEBUG') as log_debug:
             user = self.backend.authenticate(request=mock.MagicMock(),
                                              username='nonexistent@zulip.com',
                                              password="doesnt_matter",
                                              realm=get_realm('zulip'))
+            self.assertEqual(log_debug.output, [
+                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No ldap user matching django_to_ldap_username result: nonexistent. Input username: nonexistent@zulip.com'
+            ])
             self.assertIs(user, None)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
