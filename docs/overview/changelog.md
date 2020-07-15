@@ -54,6 +54,24 @@ We expect this to become the 3.0 final release in mid July.
 
 - Logged in users will be logged out during this one-time upgrade to
   transition them to more secure session cookies.
+- This release contains dozens of database migrations, but we don't
+  anticipate any of them being particularly expensive compared to
+  those in past major releases.
+- Previous versions had a rare bug that made it possible to create two
+  user accounts with the same email address, preventing either from
+  logging in.  A migration in this release adds a database constraint
+  that will fix this bug.  The new migration will fail if any such
+  duplicate accounts already exist; you can check whether this will
+  happen be running the following in a [management shell][manage-shell]:
+  ```
+  from django.db.models.functions import Lower
+  UserProfile.objects.all().annotate(email_lower=Lower("delivery_email"))
+      .values('realm_id', 'email_lower').annotate(Count('id')).filter(id__count__gte=2)
+  ```
+  If the command returns any accounts, you need to address the
+  duplicate accounts before upgrading.  Zulip Cloud only had two
+  accounts affected by this bug, so we expect the vast majority of
+  installations will have none.
 - This release switches Zulip to install Postgres 12 from the upstream
   postgres repository by default, rather than using the default
   Postgres version included with the operating system.  Existing Zulip
@@ -62,9 +80,6 @@ We expect this to become the 3.0 final release in mid July.
   start requiring Postgres 12, though we do expect it to improve
   performance.  Installations that would like to upgrade can follow
   [our new postgres upgrade guide][postgres upgrade].
-- This release contains dozens of database migrations, but we don't
-  anticipate any of them being particularly expensive compared to
-  those in past major releases.
 - The format of the `JWT_AUTH_KEYS` setting has changed to include an
   [algorithms](https://pyjwt.readthedocs.io/en/latest/algorithms.html)
   list: `{"subdomain": "key"}` becomes `{"subdomain": {"key": "key",
@@ -77,6 +92,7 @@ We expect this to become the 3.0 final release in mid July.
 - The changelog now has a section that makes it easy to find the
   Upgrade notes for all releases one is upgrading across.
 
+[manage-shell]: ../production/management-commands.html#manage-py-shell
 [postgres-upgrade]: ..production/upgrade-or-modify.html#upgrading-postgresql
 
 #### Full feature changelog

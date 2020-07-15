@@ -1127,9 +1127,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         presence_enabled=bool,
     )
 
-    class Meta:
-        unique_together = (('realm', 'email'),)
-
     @property
     def profile_data(self) -> ProfileData:
         values = CustomProfileFieldValue.objects.filter(user_profile=self)
