@@ -358,10 +358,7 @@ casper.then(function () {
     var selector =
         '#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]';
     casper.waitUntilVisible(selector, function () {
-        casper.test.assertEqual(
-            casper.visible("#realm-icon-upload-widget .settings-page-delete-button"),
-            false
-        );
+        casper.test.assertEqual(casper.visible('#realm-icon-upload-widget .image-delete-button'), false);
         // Hack: Rather than submitting the form, we just fill the
         // form and then trigger a click event by clicking the button.
         casper.fill(
@@ -372,37 +369,21 @@ casper.then(function () {
             false
         );
         casper.click("#realm-icon-upload-widget .image_upload_button");
-        casper.waitWhileVisible(
-            "#realm-icon-upload-widget .upload-spinner-background",
-            function () {
-                casper.test.assertExists(
-                    '#realm-icon-upload-widget .image-block[src^="/user_avatars/2/realm/icon.png?version=2"]'
-                );
-                casper.test.assertEqual(
-                    casper.visible("#realm-icon-upload-widget .settings-page-delete-button"),
-                    true
-                );
-            }
-        );
+        casper.waitWhileVisible("#realm-icon-upload-widget .upload-spinner-background", function () {
+            casper.test.assertExists('#realm-icon-upload-widget .image-block[src^="/user_avatars/2/realm/icon.png?version=2"]');
+            casper.test.assertEqual(casper.visible('#realm-icon-upload-widget .image-delete-button'), true);
+        });
     });
 });
 
 // Test deleting realm icon image
 casper.then(function () {
     casper.click("li[data-section='organization-profile']");
-    casper.click("#realm-icon-upload-widget .settings-page-delete-button");
-    casper.test.assertEqual(
-        casper.visible("#realm-icon-upload-widget .settings-page-delete-button"),
-        true
-    );
-    casper.waitWhileVisible("#realm-icon-upload-widget .settings-page-delete-button", function () {
-        casper.test.assertExists(
-            '#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]'
-        );
-        casper.test.assertEqual(
-            casper.visible("#realm-icon-upload-widget .settings-page-delete-button"),
-            false
-        );
+    casper.click("#realm-icon-upload-widget .image-delete-button");
+    casper.test.assertEqual(casper.visible('#realm-icon-upload-widget .image-delete-button'), true);
+    casper.waitWhileVisible('#realm-icon-upload-widget .image-delete-button', function () {
+        casper.test.assertExists('#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]');
+        casper.test.assertEqual(casper.visible('#realm-icon-upload-widget .image-delete-button'), false);
     });
 });
 
