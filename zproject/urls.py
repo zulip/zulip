@@ -180,12 +180,12 @@ from zerver.views.user_groups import (
 )
 from zerver.views.user_settings import (
     change_enter_sends,
-    confirm_email_change,
     delete_avatar_backend,
     json_change_notify_settings,
     json_change_settings,
     regenerate_api_key,
     set_avatar_backend,
+    start_email_change,
     update_display_settings_backend,
 )
 from zerver.views.users import (
@@ -575,8 +575,8 @@ i18n_urls = [
     ),
     path(
         "accounts/confirm_new_email/<confirmation_key>",
-        confirm_email_change,
-        name="confirm_email_change",
+        start_email_change,
+        name="start_email_change",
     ),
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
     # including the welcome emails (day 1 & 2), missed PMs, etc.

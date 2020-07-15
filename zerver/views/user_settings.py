@@ -1,11 +1,13 @@
 from typing import Any, Dict, Optional
+from urllib.parse import urlencode
 
 import pytz
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils.html import escape
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext as _
@@ -43,21 +45,37 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_int, check_int_in, check_string_in
-from zerver.models import UserProfile, avatar_changes_disabled, name_changes_disabled
+from zerver.models import (
+    EmailChangeStatus,
+    UserProfile,
+    avatar_changes_disabled,
+    name_changes_disabled,
+)
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
 AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in this organization.")
 
 
-def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
+def start_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
-        email_change_object = get_object_from_key(confirmation_key, Confirmation.EMAIL_CHANGE)
+        get_object_from_key(confirmation_key, Confirmation.EMAIL_CHANGE)
     except ConfirmationKeyException as exception:
         return render_confirmation_key_error(request, exception)
 
+    return redirect(reverse("login") + "?" + urlencode({"action_key": confirmation_key}))
+
+
+def confirm_email_change(
+    request: HttpRequest, email_change_object: EmailChangeStatus, acting_user: UserProfile
+) -> HttpResponse:
     new_email = email_change_object.new_email
     old_email = email_change_object.old_email
     user_profile = email_change_object.user_profile
+
+    if acting_user != user_profile:
+        raise JsonableError(
+            _("Incorrect login. Login with your old email to change your email address")
+        )
 
     if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
         raise JsonableError(_("Email address changes are disabled in this organization."))

@@ -3,6 +3,8 @@ from unittest import mock
 
 from django.conf import settings
 from django.core import mail
+from django.http import HttpResponse
+from django.urls import reverse
 from django.utils.timezone import now
 
 from confirmation.models import (
@@ -12,16 +14,9 @@ from confirmation.models import (
     generate_key,
 )
 from zerver.lib.actions import do_set_realm_property, do_start_email_change_process
-from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import (
-    EmailChangeStatus,
-    Realm,
-    UserProfile,
-    get_realm,
-    get_user,
-    get_user_by_delivery_email,
-    get_user_profile_by_id,
-)
+from zerver.lib.initial_password import initial_password
+from zerver.lib.test_classes import EmailChangeTestMixin, ZulipTestCase
+from zerver.models import EmailChangeStatus
 
 
 class EmailChangeTestCase(ZulipTestCase):
@@ -61,43 +56,12 @@ class EmailChangeTestCase(ZulipTestCase):
             ["The confirmation link has expired or been deactivated."], response
         )
 
-    def test_confirm_email_change(self) -> None:
-        user_profile = self.example_user("hamlet")
-        do_set_realm_property(
-            user_profile.realm,
-            "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
-            acting_user=None,
-        )
-
-        old_email = user_profile.delivery_email
-        new_email = "hamlet-new@zulip.com"
-        new_realm = get_realm("zulip")
-        self.login("hamlet")
-        obj = EmailChangeStatus.objects.create(
-            new_email=new_email,
-            old_email=old_email,
-            user_profile=user_profile,
-            realm=user_profile.realm,
-        )
-        url = create_confirmation_link(obj, Confirmation.EMAIL_CHANGE)
-        response = self.client_get(url)
-
-        self.assertEqual(response.status_code, 200)
-        self.assert_in_success_response(
-            ["This confirms that the email address for your Zulip"], response
-        )
-        user_profile = get_user_by_delivery_email(new_email, new_realm)
-        self.assertTrue(bool(user_profile))
-        obj.refresh_from_db()
-        self.assertEqual(obj.status, 1)
-
     def test_start_email_change_process(self) -> None:
         user_profile = self.example_user("hamlet")
         do_start_email_change_process(user_profile, "hamlet-new@zulip.com")
         self.assertEqual(EmailChangeStatus.objects.count(), 1)
 
-    def test_end_to_end_flow(self) -> None:
+    def test_email_sent_and_login_page_renders_on_clicking_link(self) -> None:
         data = {"email": "hamlet-new@zulip.com"}
         self.login("hamlet")
         url = "/json/settings"
@@ -122,12 +86,13 @@ class EmailChangeTestCase(ZulipTestCase):
 
         activation_url = [s for s in body.split("\n") if s][2]
         response = self.client_get(activation_url)
+        key = activation_url.split("/")[-1]
 
-        self.assert_in_success_response(["This confirms that the email address"], response)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, f"{reverse('login')}?action_key={key}")
 
-        # Now confirm trying to change your email back doesn't throw an immediate error
-        result = self.client_patch(url, {"email": "hamlet@zulip.com"})
-        self.assert_in_success_response(["Check your email for a confirmation link."], result)
+        response = self.client_get(response.url)
+        self.assert_in_success_response(["Log in to confirm email change"], response)
 
     def test_unauthorized_email_change(self) -> None:
         data = {"email": "hamlet-new@zulip.com"}
@@ -162,38 +127,6 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(result.status_code, 400)
         self.assert_in_response("Already has an account", result)
 
-    def test_unauthorized_email_change_from_email_confirmation_link(self) -> None:
-        data = {"email": "hamlet-new@zulip.com"}
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-        url = "/json/settings"
-        self.assert_length(mail.outbox, 0)
-        result = self.client_patch(url, data)
-        self.assert_length(mail.outbox, 1)
-        self.assert_in_success_response(["Check your email for a confirmation link."], result)
-        email_message = mail.outbox[0]
-        self.assertEqual(
-            email_message.subject,
-            "Verify your new email address",
-        )
-        body = email_message.body
-        self.assertIn("We received a request to change the email", body)
-
-        do_set_realm_property(
-            user_profile.realm,
-            "email_changes_disabled",
-            True,
-            acting_user=None,
-        )
-
-        activation_url = [s for s in body.split("\n") if s][2]
-        response = self.client_get(activation_url)
-
-        self.assertEqual(response.status_code, 400)
-        self.assert_in_response(
-            "Email address changes are disabled in this organization.", response
-        )
-
     def test_post_invalid_email(self) -> None:
         data = {"email": "hamlet-new"}
         self.login("hamlet")
@@ -209,38 +142,36 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual("success", result.json()["result"])
         self.assertEqual("", result.json()["msg"])
 
-    def test_change_delivery_email_end_to_end_with_admins_visibility(self) -> None:
+
+class EmailChangePasswordAuthTest(EmailChangeTestMixin, ZulipTestCase):
+    __unittest_skip__ = False
+
+    def do_email_change(self, email: str, action_key: str, name: str = "") -> HttpResponse:
+        password = initial_password(email)
+        result = self.client_post(
+            reverse("login"),
+            {"username": email, "password": password, "action_key": action_key},
+        )
+
+        return result
+
+    def test_email_change_login_attempt_fails(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_set_realm_property(
-            user_profile.realm,
-            "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
-            acting_user=None,
-        )
-
-        self.login_user(user_profile)
-        old_email = user_profile.delivery_email
         new_email = "hamlet-new@zulip.com"
-        obj = EmailChangeStatus.objects.create(
-            new_email=new_email,
-            old_email=old_email,
-            user_profile=user_profile,
-            realm=user_profile.realm,
-        )
-        url = create_confirmation_link(obj, Confirmation.EMAIL_CHANGE)
-        response = self.client_get(url)
 
-        self.assertEqual(response.status_code, 200)
-        self.assert_in_success_response(
-            ["This confirms that the email address for your Zulip"], response
+        action_key = self.create_email_change_confirmation_key(user_profile, new_email)
+
+        result = self.client_post(
+            reverse("login"),
+            {
+                "username": "random@email.com",
+                "password": "randomPassword",
+                "action_key": action_key,
+            },
         )
-        user_profile = get_user_profile_by_id(user_profile.id)
-        self.assertEqual(user_profile.delivery_email, new_email)
-        self.assertEqual(user_profile.email, f"user{user_profile.id}@zulip.testserver")
-        obj.refresh_from_db()
-        self.assertEqual(obj.status, 1)
-        with self.assertRaises(UserProfile.DoesNotExist):
-            get_user(old_email, user_profile.realm)
-        with self.assertRaises(UserProfile.DoesNotExist):
-            get_user_by_delivery_email(old_email, user_profile.realm)
-        self.assertEqual(get_user_by_delivery_email(new_email, user_profile.realm), user_profile)
+
+        self.assert_in_success_response(["Log in to confirm email change"], result)
+
+    def test_email_change_unregistered_user_login(self) -> None:
+        # Irrelevant for this test class and above test is similar.
+        pass

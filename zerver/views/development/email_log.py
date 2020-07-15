@@ -15,6 +15,7 @@ from zerver.lib.actions import (
     do_send_realm_reactivation_email,
 )
 from zerver.lib.email_notifications import enqueue_welcome_emails
+from zerver.lib.initial_password import initial_password
 from zerver.lib.response import json_success
 from zerver.models import Realm, get_realm, get_realm_stream, get_user_by_delivery_email
 from zproject.email_backends import get_forward_address, set_forward_address
@@ -124,6 +125,12 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     url = confirmation_url(key, realm, Confirmation.EMAIL_CHANGE)
     user_profile = get_user_by_delivery_email(registered_email, realm)
     result = client.get(url)
+    assert result.status_code == 302
+    result = client.post(
+        result.url,
+        {"username": registered_email, "password": initial_password(registered_email)},
+        **host_kwargs,
+    )
     assert result.status_code == 200
 
     # Reset the email value so we can run this again

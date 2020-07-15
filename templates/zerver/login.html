@@ -10,7 +10,11 @@ page can be easily identified in it's respective JavaScript file. -->
 <div class="app login-page split-view new-style flex full-page">
     <div class="inline-block">
         <div class="lead">
-            <h1 class="get-started">{{ _("Log in to Zulip") }}</h1>
+            <h1 class="get-started">
+                {% if action_key %} {{ _("Log in to confirm email change") }} {% else %}
+                {{ _("Log in to Zulip") }}
+                {% endif %}
+            </h1>
         </div>
 
         <div class="app-main login-page-container white-box inline-block">
@@ -43,6 +47,9 @@ page can be easily identified in it's respective JavaScript file. -->
                         <form name="login_form" id="login_form" method="post" class="login-form"
                           action="{{ url('login') }}">
                             <input type="hidden" name="next" value="{{ next }}" />
+                            {% if action_key %}
+                            <input type="hidden" name="action_key" value="{{ action_key }}" />
+                            {% endif %}
 
                             {% if two_factor_authentication_enabled %}
                             {{ wizard.management_form }}
@@ -114,6 +121,9 @@ page can be easily identified in it's respective JavaScript file. -->
                     <div class="login-social">
                         <form class="social_login_form form-inline" action="{{ backend.login_url }}" method="get">
                             <input type="hidden" name="next" value="{{ next }}" />
+                            {% if action_key %}
+                            <input type="hidden" name="action_key" value="{{ action_key }}" />
+                            {% endif %}
                             <button id="login_{{ backend.button_id_suffix }}" class="login-social-button"
                               {% if backend.display_icon %} style="background-image:url({{ backend.display_icon }})"  {% endif %}>                                {{ _('Log in with %(identity_provider)s', identity_provider=backend.display_name) }}
                             </button>

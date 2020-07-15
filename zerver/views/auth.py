@@ -30,6 +30,7 @@ from confirmation.models import (
     MultiuseInvite,
     create_confirmation_link,
     get_object_from_key,
+    render_confirmation_key_error,
 )
 from version import API_FEATURE_LEVEL, ZULIP_VERSION
 from zerver.context_processors import get_realm_from_request, login_context, zulip_default_context
@@ -64,6 +65,7 @@ from zerver.models import (
     remote_user_to_email,
 )
 from zerver.signals import email_on_new_login
+from zerver.views.user_settings import confirm_email_change
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
     AppleAuthBackend,
@@ -252,6 +254,7 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
     kwargs.pop("subdomain", None)
     kwargs.pop("redirect_to", None)
     kwargs.pop("is_realm_creation", None)
+    kwargs.pop("action_key", None)
 
     kwargs["password_required"] = False
     return maybe_send_to_registration(request, **kwargs)
@@ -277,11 +280,20 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
       are doing authentication using the mobile_flow_otp or desktop_flow_otp flow.
     """
     user_profile = result.user_profile
+
+    action_key = result.data_dict.get("action_key")
+
     if user_profile is None or user_profile.is_mirror_dummy:
+        if action_key:
+            raise JsonableError(
+                _("Incorrect login. Login with your old email to change your email address")
+            )
         return register_remote_user(request, result)
     # Otherwise, the user has successfully authenticated to an
     # account, and we need to do the right thing depending whether
     # or not they're using the mobile OTP flow or want a browser session.
+    if action_key:
+        return handle_action_key(request, user_profile, action_key)
     is_realm_creation = result.data_dict.get("is_realm_creation")
     mobile_flow_otp = result.data_dict.get("mobile_flow_otp")
     desktop_flow_otp = result.data_dict.get("desktop_flow_otp")
@@ -298,6 +310,15 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
 
     redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)
+
+
+def handle_action_key(request: HttpRequest, user_profile: UserProfile, key: str) -> HttpResponse:
+    try:
+        email_change_object = get_object_from_key(key, Confirmation.EMAIL_CHANGE)
+    except ConfirmationKeyException as exception:
+        return render_confirmation_key_error(request, exception)
+
+    return confirm_email_change(request, email_change_object, user_profile)
 
 
 def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
@@ -499,11 +520,18 @@ def oauth_redirect_to_root(
     mobile_flow_otp = request.GET.get("mobile_flow_otp")
     desktop_flow_otp = request.GET.get("desktop_flow_otp")
 
+    # Action key is confirmation key used for re-authentication in
+    # some cases like changing email address.
+    action_key = request.GET.get("action_key")
+
     validate_otp_params(mobile_flow_otp, desktop_flow_otp)
     if mobile_flow_otp is not None:
         params["mobile_flow_otp"] = mobile_flow_otp
     if desktop_flow_otp is not None:
         params["desktop_flow_otp"] = desktop_flow_otp
+
+    if action_key is not None:
+        params["action_key"] = action_key
 
     if next:
         params["next"] = next
@@ -717,6 +745,15 @@ def login_page(
     # that disables the default behavior of redirecting logged-in users to the
     # logged-in app.
     is_preview = "preview" in request.GET
+
+    extra_context = kwargs.pop("extra_context", {})
+    extra_context["next"] = next
+
+    action_key = request.GET.get("action_key") or request.POST.get("action_key")
+    if action_key:
+        extra_context["action_key"] = action_key
+        is_preview = True
+
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         if request.user and request.user.is_verified():
             return HttpResponseRedirect(request.user.realm.uri)
@@ -732,8 +769,6 @@ def login_page(
     if realm and realm.deactivated:
         return redirect_to_deactivation_notice()
 
-    extra_context = kwargs.pop("extra_context", {})
-    extra_context["next"] = next
     if dev_auth_enabled() and kwargs.get("template_name") == "zerver/development/dev_login.html":
         from zerver.views.development.dev_login import add_dev_login_context
 
@@ -771,6 +806,8 @@ def login_page(
         # HttpResponse. See django.template.response.SimpleTemplateResponse,
         # https://github.com/django/django/blob/master/django/template/response.py#L19.
         update_login_page_context(request, template_response.context_data)
+    elif action_key and request.user.is_authenticated:
+        return handle_action_key(request, request.user, action_key)
 
     return template_response
 
