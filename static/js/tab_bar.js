@@ -31,6 +31,15 @@ function make_tab_data(filter) {
         tab_data.rendered_narrow_description = i18n.t("This stream does not exist or is private.");
         return tab_data;
     }
+    if (filter.has_operator('pm-with')) {
+        const user_email = filter.operands('pm-with')[0];
+        // We dont fetch user status if the following is a group pm.
+        if (user_email.split(',').length < 2) {
+            const user_id = people.get_user_id(user_email);
+            tab_data.user_status = user_status.get_status_text(user_id);
+        }
+        return tab_data;
+    }
     if (filter._sub) {
         // We can now be certain that the narrow
         // involves a stream which exists and
