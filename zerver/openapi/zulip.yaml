@@ -156,8 +156,39 @@ paths:
                           guaranteed to be increasing, but they are not guaranteed to be
                           consecutive.
                         items:
-                          type: object
-                          additionalProperties: false
+                          oneOf:
+                          - type: object
+                            properties:
+                              type:
+                                description: |
+                                  Alert words
+                                type: string
+                                enum:
+                                - alert_words
+                              alert_words:
+                                type: array
+                                items:
+                                 type: string
+                            additionalProperties: false
+                          - type: object
+                            properties:
+                              type:
+                                description: |
+                                  Global notifications
+                                type: string
+                                enum:
+                                - update_global_notifications
+                              user:
+                                type: string
+                              notification_name:
+                                type: string
+                                description: |
+                                  Notification setting to be changed.
+                              setting:
+                                description: |
+                                  Final value of setting.
+                                type: boolean
+                            additionalProperties: false
                       queue_id:
                         type: string
                         description: |
