@@ -47,6 +47,7 @@
 * [Create a user group](/api/create-user-group)
 * [Update a user group](/api/update-user-group)
 * [Delete a user group](/api/remove-user-group)
+* [Update user group members](/api/update-user-group-members)
 
 #### Server & organizations
 
