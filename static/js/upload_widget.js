@@ -154,7 +154,7 @@ exports.build_direct_upload_widget = function (
             if (file.size > max_file_upload_size * 1024 * 1024) {
                 input_error.text(
                     i18n.t("File size must be < __max_file_size__Mb.", {
-                    max_file_size: max_file_upload_size,
+                        max_file_size: max_file_upload_size,
                     }),
                 );
                 input_error.show();

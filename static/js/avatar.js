@@ -44,20 +44,21 @@ exports.build_user_avatar_widget = function (upload_function) {
         return $("#user-avatar-upload-widget .image_file_input").expectOne();
     };
 
-    if (page_params.avatar_source === "G") {
-        $("#user-avatar-upload-widget .settings-page-delete-button").hide();
+    if (page_params.avatar_source === 'G') {
+        $("#user-avatar-upload-widget .image-delete-button").hide();
         $("#user-avatar-source").show();
     } else {
         $("#user-avatar-source").hide();
     }
 
-    $("#user-avatar-upload-widget .settings-page-delete-button").on("click keydown", (e) => {
+
+    $("#user-avatar-upload-widget .image-delete-button").on('click keydown', (e) => {
         e.preventDefault();
         e.stopPropagation();
         channel.del({
             url: "/json/users/me/avatar",
-            success() {
-                $("#user-avatar-upload-widget .settings-page-delete-button").hide();
+            success () {
+                $("#user-avatar-upload-widget .image-delete-button").hide();
                 $("#user-avatar-source").show();
                 // Need to clear input because of a small edge case
                 // where you try to upload the same image you just deleted.

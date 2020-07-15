@@ -9,7 +9,7 @@ exports.build_realm_logo_widget = function (upload_function, is_night) {
         logo_source = page_params.realm_night_logo_source;
     }
 
-    const delete_button_elem = $(logo_section_id + " .settings-page-delete-button");
+    const delete_button_elem = $(logo_section_id + " .image-delete-button");
     const file_input_elem = $(logo_section_id + " .image_file_input");
     const file_input_error_elem = $(logo_section_id + " .image_file_input_error");
     const upload_button_elem = $(logo_section_id + " .image_upload_button");
@@ -92,12 +92,12 @@ exports.rerender = function () {
 
     change_logo_delete_button(
         page_params.realm_logo_source,
-        $("#realm-day-logo-upload-widget .settings-page-delete-button"),
+        $("#realm-day-logo-upload-widget .image-delete-button"),
         file_input,
     );
     change_logo_delete_button(
         page_params.realm_night_logo_source,
-        $("#realm-night-logo-upload-widget .settings-page-delete-button"),
+        $("#realm-night-logo-upload-widget .image-delete-button"),
         night_file_input,
     );
 };
