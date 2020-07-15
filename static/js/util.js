@@ -80,13 +80,13 @@ exports.same_recipient = function util_same_recipient(a, b) {
     }
 
     switch (a.type) {
-    case "private":
-        if (a.to_user_ids === undefined) {
-            return false;
-        }
-        return a.to_user_ids === b.to_user_ids;
-    case "stream":
-        return exports.same_stream_and_topic(a, b);
+        case "private":
+            if (a.to_user_ids === undefined) {
+                return false;
+            }
+            return a.to_user_ids === b.to_user_ids;
+        case "stream":
+            return exports.same_stream_and_topic(a, b);
     }
 
     // should never get here

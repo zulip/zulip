@@ -488,73 +488,73 @@ exports.change_focused_element = function (e, input_key) {
         }
 
         switch (input_key) {
-        case "left_arrow":
-            if (start !== 0 || is_selected) {
-                return false;
-            }
-            current_focus_elem = filter_buttons().last();
-            break;
-        case "right_arrow":
-            if (end !== text_length || is_selected) {
-                return false;
-            }
-            current_focus_elem = filter_buttons().first();
-            break;
-        case "down_arrow":
-            set_table_focus(row_focus, col_focus);
-            return true;
-        case "click":
+            case "left_arrow":
+                if (start !== 0 || is_selected) {
+                    return false;
+                }
+                current_focus_elem = filter_buttons().last();
+                break;
+            case "right_arrow":
+                if (end !== text_length || is_selected) {
+                    return false;
+                }
+                current_focus_elem = filter_buttons().first();
+                break;
+            case "down_arrow":
+                set_table_focus(row_focus, col_focus);
+                return true;
+            case "click":
             // Note: current_focus_elem can be different here, so we just
             // set current_focus_elem to the input box, we don't want .focus() on
             // it since it is already focused.
             // We only do this for search beacuse we don't want the focus to
             // go away from the input box when `revive_current_focus` is called
             // on rerender when user is typing.
-            current_focus_elem = $("#recent_topics_search");
-            return true;
+                current_focus_elem = $("#recent_topics_search");
+                return true;
         }
     } else if ($elem.hasClass("btn-recent-filters")) {
         switch (input_key) {
-        case "left_arrow":
-            if (filter_buttons().first()[0] === $elem[0]) {
-                current_focus_elem = $("#recent_topics_search");
-            } else {
-                current_focus_elem = $elem.prev();
-            }
-            break;
-        case "right_arrow":
-            if (filter_buttons().last()[0] === $elem[0]) {
-                current_focus_elem = $("#recent_topics_search");
-            } else {
-                current_focus_elem = $elem.next();
-            }
-            break;
-        case "down_arrow":
-            set_table_focus(row_focus, col_focus);
-            return true;
+            case "left_arrow":
+                if (filter_buttons().first()[0] === $elem[0]) {
+                    current_focus_elem = $("#recent_topics_search");
+                } else {
+                    current_focus_elem = $elem.prev();
+                }
+                break;
+            case "right_arrow":
+                if (filter_buttons().last()[0] === $elem[0]) {
+                    current_focus_elem = $("#recent_topics_search");
+                } else {
+                    current_focus_elem = $elem.next();
+                }
+                break;
+            case "down_arrow":
+                set_table_focus(row_focus, col_focus);
+                return true;
         }
     } else if (current_focus_elem === "table") {
         // For arrowing around the table of topics, we implement left/right
         // wraparound.  Going off the top or the bottom takes one
         // to the navigation at the top (see set_table_focus).
         switch (input_key) {
-        case "left_arrow":
-            col_focus -= 1;
-            if (col_focus < 0) {
-                col_focus = MAX_SELECTABLE_COLS - 1;
-            }
-            break;
-        case "right_arrow":
-            col_focus += 1;
-            if (col_focus >= MAX_SELECTABLE_COLS) {
-                col_focus = 0;
-            }
-            break;
-        case "down_arrow":
-            row_focus += 1;
-            break;
-        case "up_arrow":
-            row_focus -= 1;
+            case "left_arrow":
+                col_focus -= 1;
+                if (col_focus < 0) {
+                    col_focus = MAX_SELECTABLE_COLS - 1;
+                }
+                break;
+            case "right_arrow":
+                col_focus += 1;
+                if (col_focus >= MAX_SELECTABLE_COLS) {
+                    col_focus = 0;
+                }
+                break;
+            case "down_arrow":
+                row_focus += 1;
+                break;
+            case "up_arrow":
+                row_focus -= 1;
         }
         set_table_focus(row_focus, col_focus);
         return true;

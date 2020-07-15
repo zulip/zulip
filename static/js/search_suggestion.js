@@ -302,21 +302,21 @@ function get_topic_suggestions(last, operators) {
     // in terms of telling us whether they provided the operator,
     // i.e. "foo" and "search:foo" both become [{operator: 'search', operand: 'foo'}].
     switch (operator) {
-    case "stream":
-        guess = "";
-        stream = operand;
-        suggest_operators.push(last);
-        break;
-    case "topic":
-    case "search":
-        guess = operand;
-        if (filter.has_operator("stream")) {
-            stream = filter.operands("stream")[0];
-        } else {
-            stream = narrow_state.stream();
-            suggest_operators.push({operator: "stream", operand: stream});
-        }
-        break;
+        case "stream":
+            guess = "";
+            stream = operand;
+            suggest_operators.push(last);
+            break;
+        case "topic":
+        case "search":
+            guess = operand;
+            if (filter.has_operator("stream")) {
+                stream = filter.operands("stream")[0];
+            } else {
+                stream = narrow_state.stream();
+                suggest_operators.push({operator: "stream", operand: stream});
+            }
+            break;
     }
 
     if (!stream) {

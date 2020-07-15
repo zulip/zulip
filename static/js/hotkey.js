@@ -423,40 +423,40 @@ exports.process_hotkey = function (e, hotkey) {
 
     // This block needs to be before the `tab` handler.
     switch (event_name) {
-    case "up_arrow":
-    case "down_arrow":
-    case "left_arrow":
-    case "right_arrow":
-    case "tab":
-    case "shift_tab":
-        if (overlays.recent_topics_open()) {
-            return recent_topics.change_focused_element(e, event_name);
-        }
+        case "up_arrow":
+        case "down_arrow":
+        case "left_arrow":
+        case "right_arrow":
+        case "tab":
+        case "shift_tab":
+            if (overlays.recent_topics_open()) {
+                return recent_topics.change_focused_element(e, event_name);
+            }
     }
 
     // We handle the most complex keys in their own functions.
     switch (event_name) {
-    case "escape":
-        return exports.process_escape_key(e);
-    case "enter":
-        return exports.process_enter_key(e);
-    case "tab":
-        return exports.process_tab_key();
-    case "shift_tab":
-        return exports.process_shift_tab_key();
+        case "escape":
+            return exports.process_escape_key(e);
+        case "enter":
+            return exports.process_enter_key(e);
+        case "tab":
+            return exports.process_tab_key();
+        case "shift_tab":
+            return exports.process_shift_tab_key();
     }
 
     // TODO: break out specific handlers for up_arrow,
     //       down_arrow, and backspace
     switch (event_name) {
-    case "up_arrow":
-    case "down_arrow":
-    case "backspace":
-    case "delete":
-        if (overlays.drafts_open()) {
-            drafts.drafts_handle_events(e, event_name);
-            return true;
-        }
+        case "up_arrow":
+        case "down_arrow":
+        case "backspace":
+        case "delete":
+            if (overlays.drafts_open()) {
+                drafts.drafts_handle_events(e, event_name);
+                return true;
+            }
     }
 
     if (hotkey.message_view_only && overlays.is_active()) {
@@ -626,64 +626,64 @@ exports.process_hotkey = function (e, hotkey) {
 
     // Shortcuts that don't require a message
     switch (event_name) {
-    case "compose": // 'c': compose
-        compose_actions.start("stream", {trigger: "compose_hotkey"});
-        return true;
-    case "compose_private_message":
-        compose_actions.start("private", {trigger: "compose_hotkey"});
-        return true;
-    case "narrow_private":
-        return do_narrow_action((target, opts) => {
-            narrow.by("is", "private", opts);
-        });
-    case "query_streams":
-        stream_list.initiate_search();
-        return true;
-    case "query_users":
-        activity.initiate_search();
-        return true;
-    case "search":
-    case "search_with_k":
-        search.initiate_search();
-        return true;
-    case "gear_menu":
-        gear_menu.open();
-        return true;
-    case "show_shortcuts": // Show keyboard shortcuts page
-        info_overlay.maybe_show_keyboard_shortcuts();
-        return true;
-    case "stream_cycle_backward":
-        narrow.stream_cycle_backward();
-        return true;
-    case "stream_cycle_forward":
-        narrow.stream_cycle_forward();
-        return true;
-    case "n_key":
-        narrow.narrow_to_next_topic();
-        return true;
-    case "p_key":
-        narrow.narrow_to_next_pm_string();
-        return true;
-    case "open_drafts":
-        drafts.launch();
-        return true;
-    case "reply_message": // 'r': respond to message
+        case "compose": // 'c': compose
+            compose_actions.start("stream", {trigger: "compose_hotkey"});
+            return true;
+        case "compose_private_message":
+            compose_actions.start("private", {trigger: "compose_hotkey"});
+            return true;
+        case "narrow_private":
+            return do_narrow_action((target, opts) => {
+                narrow.by("is", "private", opts);
+            });
+        case "query_streams":
+            stream_list.initiate_search();
+            return true;
+        case "query_users":
+            activity.initiate_search();
+            return true;
+        case "search":
+        case "search_with_k":
+            search.initiate_search();
+            return true;
+        case "gear_menu":
+            gear_menu.open();
+            return true;
+        case "show_shortcuts": // Show keyboard shortcuts page
+            info_overlay.maybe_show_keyboard_shortcuts();
+            return true;
+        case "stream_cycle_backward":
+            narrow.stream_cycle_backward();
+            return true;
+        case "stream_cycle_forward":
+            narrow.stream_cycle_forward();
+            return true;
+        case "n_key":
+            narrow.narrow_to_next_topic();
+            return true;
+        case "p_key":
+            narrow.narrow_to_next_pm_string();
+            return true;
+        case "open_drafts":
+            drafts.launch();
+            return true;
+        case "reply_message": // 'r': respond to message
         // Note that you can "enter" to respond to messages as well,
         // but that is handled in process_enter_key().
-        compose_actions.respond_to_message({trigger: "hotkey"});
-        return true;
-    case "C_deprecated":
-        ui.maybe_show_deprecation_notice("C");
-        return true;
-    case "star_deprecated":
-        ui.maybe_show_deprecation_notice("*");
-        return true;
-    case "copy_with_c":
-        copy_and_paste.copy_handler();
-        return true;
-    case "open_recent_topics":
-        hashchange.go_to_location("recent_topics");
-        return true;
+            compose_actions.respond_to_message({trigger: "hotkey"});
+            return true;
+        case "C_deprecated":
+            ui.maybe_show_deprecation_notice("C");
+            return true;
+        case "star_deprecated":
+            ui.maybe_show_deprecation_notice("*");
+            return true;
+        case "copy_with_c":
+            copy_and_paste.copy_handler();
+            return true;
+        case "open_recent_topics":
+            hashchange.go_to_location("recent_topics");
+            return true;
     }
 
     if (current_msg_list.empty()) {
@@ -692,81 +692,81 @@ exports.process_hotkey = function (e, hotkey) {
 
     // Navigation shortcuts
     switch (event_name) {
-    case "down_arrow":
-    case "vim_down":
-        navigate.down(true); // with_centering
-        return true;
-    case "up_arrow":
-    case "vim_up":
-        navigate.up();
-        return true;
-    case "home":
-        navigate.to_home();
-        return true;
-    case "end":
-    case "G_end":
-        navigate.to_end();
-        return true;
-    case "page_up":
-    case "vim_page_up":
-    case "shift_spacebar":
-        navigate.page_up();
-        return true;
-    case "page_down":
-    case "vim_page_down":
-    case "spacebar":
-        navigate.page_down();
-        return true;
+        case "down_arrow":
+        case "vim_down":
+            navigate.down(true); // with_centering
+            return true;
+        case "up_arrow":
+        case "vim_up":
+            navigate.up();
+            return true;
+        case "home":
+            navigate.to_home();
+            return true;
+        case "end":
+        case "G_end":
+            navigate.to_end();
+            return true;
+        case "page_up":
+        case "vim_page_up":
+        case "shift_spacebar":
+            navigate.page_up();
+            return true;
+        case "page_down":
+        case "vim_page_down":
+        case "spacebar":
+            navigate.page_down();
+            return true;
     }
 
     const msg = current_msg_list.selected_message();
     // Shortcuts that operate on a message
     switch (event_name) {
-    case "message_actions":
-        return popovers.open_message_menu(msg);
-    case "star_message":
-        message_flags.toggle_starred_and_update_server(msg);
-        return true;
-    case "narrow_by_recipient":
-        return do_narrow_action(narrow.by_recipient);
-    case "narrow_by_topic":
-        return do_narrow_action(narrow.by_topic);
-    case "respond_to_author": // 'R': respond to author
-        compose_actions.respond_to_message({reply_type: "personal", trigger: "hotkey pm"});
-        return true;
-    case "compose_reply_with_mention": // '@': respond to message with mention to author
-        compose_actions.reply_with_mention({trigger: "hotkey"});
-        return true;
-    case "show_lightbox":
-        lightbox.show_from_selected_message();
-        return true;
-    case "show_sender_info":
-        popovers.show_sender_info();
-        return true;
-    case "toggle_reactions_popover": // ':': open reactions to message
-        reactions.open_reactions_popover();
-        return true;
-    case "thumbs_up_emoji": { // '+': reacts with thumbs up emoji on selected message
+        case "message_actions":
+            return popovers.open_message_menu(msg);
+        case "star_message":
+            message_flags.toggle_starred_and_update_server(msg);
+            return true;
+        case "narrow_by_recipient":
+            return do_narrow_action(narrow.by_recipient);
+        case "narrow_by_topic":
+            return do_narrow_action(narrow.by_topic);
+        case "respond_to_author": // 'R': respond to author
+            compose_actions.respond_to_message({reply_type: "personal", trigger: "hotkey pm"});
+            return true;
+        case "compose_reply_with_mention": // '@': respond to message with mention to author
+            compose_actions.reply_with_mention({trigger: "hotkey"});
+            return true;
+        case "show_lightbox":
+            lightbox.show_from_selected_message();
+            return true;
+        case "show_sender_info":
+            popovers.show_sender_info();
+            return true;
+        case "toggle_reactions_popover": // ':': open reactions to message
+            reactions.open_reactions_popover();
+            return true;
+        case "thumbs_up_emoji": { // '+': reacts with thumbs up emoji on selected message
         // Use canonical name.
-        const thumbs_up_emoji_code = "1f44d";
-        const canonical_name = emoji.get_emoji_name(thumbs_up_emoji_code);
-        reactions.toggle_emoji_reaction(msg.id, canonical_name);
-        return true;
-    }
-    case "toggle_mute":
-        muting_ui.toggle_mute(msg);
-        return true;
-    case "toggle_message_collapse":
-        condense.toggle_collapse(msg);
-        return true;
-    case "compose_quote_reply": // > : respond to selected message with quote
-        compose_actions.quote_and_reply({trigger: "hotkey"});
-        return true;
-    case "edit_message": {
-        const row = current_msg_list.get_row(msg.id);
-        message_edit.start(row);
-        return true;
-    }
+            const thumbs_up_emoji_code = "1f44d";
+            const canonical_name = emoji.get_emoji_name(thumbs_up_emoji_code);
+            reactions.toggle_emoji_reaction(msg.id, canonical_name);
+            return true;
+        }
+        case "toggle_mute":
+            muting_ui.toggle_mute(msg);
+            return true;
+        case "toggle_message_collapse":
+            condense.toggle_collapse(msg);
+            return true;
+        case "compose_quote_reply": // > : respond to selected message with quote
+            compose_actions.quote_and_reply({trigger: "hotkey"});
+            return true;
+        case "edit_message": {
+            const row = current_msg_list.get_row(msg.id);
+            message_edit.start(row);
+            return true;
+        }
     }
 
     return false;

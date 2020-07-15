@@ -164,37 +164,37 @@ exports.add_message_metadata = function (message) {
     util.convert_message_topic(message);
 
     switch (message.type) {
-    case "stream":
-        message.is_stream = true;
-        message.stream = message.display_recipient;
-        message.reply_to = message.sender_email;
+        case "stream":
+            message.is_stream = true;
+            message.stream = message.display_recipient;
+            message.reply_to = message.sender_email;
 
-        stream_topic_history.add_message({
-            stream_id: message.stream_id,
-            topic_name: message.topic,
-            message_id: message.id,
-        });
+            stream_topic_history.add_message({
+                stream_id: message.stream_id,
+                topic_name: message.topic,
+                message_id: message.id,
+            });
 
-        recent_senders.process_message_for_senders(message);
-        message_user_ids.add(message.sender_id);
-        break;
+            recent_senders.process_message_for_senders(message);
+            message_user_ids.add(message.sender_id);
+            break;
 
-    case "private":
-        message.is_private = true;
-        message.reply_to = util.normalize_recipients(
-            exports.get_pm_emails(message));
-        message.display_reply_to = exports.get_pm_full_names(message);
-        message.pm_with_url = people.pm_with_url(message);
-        message.to_user_ids = people.pm_reply_user_string(message);
+        case "private":
+            message.is_private = true;
+            message.reply_to = util.normalize_recipients(
+                exports.get_pm_emails(message));
+            message.display_reply_to = exports.get_pm_full_names(message);
+            message.pm_with_url = people.pm_with_url(message);
+            message.to_user_ids = people.pm_reply_user_string(message);
 
-        exports.process_message_for_recent_private_messages(message);
+            exports.process_message_for_recent_private_messages(message);
 
-        if (people.is_my_user_id(message.sender_id)) {
-            for (const recip of message.display_recipient) {
-                message_user_ids.add(recip.id);
+            if (people.is_my_user_id(message.sender_id)) {
+                for (const recip of message.display_recipient) {
+                    message_user_ids.add(recip.id);
+                }
             }
-        }
-        break;
+            break;
     }
 
     alert_words.process_message(message);

@@ -5,21 +5,21 @@ exports.get_group = function (section) {
     // Sometimes several sections all share the same code.
 
     switch (section) {
-    case "organization-profile":
-    case "organization-settings":
-    case "organization-permissions":
-    case "auth-methods":
-        return "org_misc";
+        case "organization-profile":
+        case "organization-settings":
+        case "organization-permissions":
+        case "auth-methods":
+            return "org_misc";
 
-    case "bot-list-admin":
-        return "org_bots";
+        case "bot-list-admin":
+            return "org_bots";
 
-    case "user-list-admin":
-    case "deactivated-users-admin":
-        return "org_users";
+        case "user-list-admin":
+        case "deactivated-users-admin":
+            return "org_users";
 
-    default:
-        return section;
+        default:
+            return section;
     }
 };
 

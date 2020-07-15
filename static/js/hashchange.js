@@ -77,53 +77,53 @@ function do_hashchange_normal(from_reload) {
     // be #ABCD.
     const hash = window.location.hash.split("/");
     switch (hash[0]) {
-    case "#narrow": {
-        ui_util.change_tab_to("#home");
-        const operators = hash_util.parse_narrow(hash);
-        if (operators === undefined) {
+        case "#narrow": {
+            ui_util.change_tab_to("#home");
+            const operators = hash_util.parse_narrow(hash);
+            if (operators === undefined) {
             // If the narrow URL didn't parse, clear
             // window.location.hash and send them to the home tab
-            set_hash("");
-            activate_home_tab();
-            return false;
-        }
-        const narrow_opts = {
-            change_hash: false,  // already set
-            trigger: "hash change",
-        };
-        if (from_reload) {
-            blueslip.debug("We are narrowing as part of a reload.");
-            if (page_params.initial_narrow_pointer !== undefined) {
-                home_msg_list.pre_narrow_offset = page_params.initial_offset;
-                narrow_opts.then_select_id = page_params.initial_narrow_pointer;
-                narrow_opts.then_select_offset = page_params.initial_narrow_offset;
+                set_hash("");
+                activate_home_tab();
+                return false;
             }
+            const narrow_opts = {
+                change_hash: false,  // already set
+                trigger: "hash change",
+            };
+            if (from_reload) {
+                blueslip.debug("We are narrowing as part of a reload.");
+                if (page_params.initial_narrow_pointer !== undefined) {
+                    home_msg_list.pre_narrow_offset = page_params.initial_offset;
+                    narrow_opts.then_select_id = page_params.initial_narrow_pointer;
+                    narrow_opts.then_select_offset = page_params.initial_narrow_offset;
+                }
+            }
+            narrow.activate(operators, narrow_opts);
+            floating_recipient_bar.update();
+            return true;
         }
-        narrow.activate(operators, narrow_opts);
-        floating_recipient_bar.update();
-        return true;
-    }
-    case "":
-    case "#":
-        activate_home_tab();
-        break;
-    case "#keyboard-shortcuts":
-        info_overlay.show("keyboard-shortcuts");
-        break;
-    case "#message-formatting":
-        info_overlay.show("message-formatting");
-        break;
-    case "#search-operators":
-        info_overlay.show("search-operators");
-        break;
-    case "#drafts":
-    case "#invite":
-    case "#streams":
-    case "#organization":
-    case "#settings":
-    case "#recent_topics":
-        blueslip.error("overlay logic skipped for: " + hash);
-        break;
+        case "":
+        case "#":
+            activate_home_tab();
+            break;
+        case "#keyboard-shortcuts":
+            info_overlay.show("keyboard-shortcuts");
+            break;
+        case "#message-formatting":
+            info_overlay.show("message-formatting");
+            break;
+        case "#search-operators":
+            info_overlay.show("search-operators");
+            break;
+        case "#drafts":
+        case "#invite":
+        case "#streams":
+        case "#organization":
+        case "#settings":
+        case "#recent_topics":
+            blueslip.error("overlay logic skipped for: " + hash);
+            break;
     }
     return false;
 }

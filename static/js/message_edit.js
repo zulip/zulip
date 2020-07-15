@@ -169,42 +169,42 @@ exports.end_if_focused_on_message_row_edit = function () {
 function handle_message_row_edit_keydown(e) {
     const code = e.keyCode || e.which;
     switch (code) {
-    case 13:
-        if ($(e.target).hasClass("message_edit_content")) {
+        case 13:
+            if ($(e.target).hasClass("message_edit_content")) {
             // Pressing enter to save edits is coupled with enter to send
-            if (composebox_typeahead.should_enter_send(e)) {
-                const row = $(".message_edit_content").filter(":focus").closest(".message_row");
-                const message_edit_save_button = row.find(".message_edit_save");
-                if (message_edit_save_button.attr("disabled") === "disabled") {
+                if (composebox_typeahead.should_enter_send(e)) {
+                    const row = $(".message_edit_content").filter(":focus").closest(".message_row");
+                    const message_edit_save_button = row.find(".message_edit_save");
+                    if (message_edit_save_button.attr("disabled") === "disabled") {
                     // In cases when the save button is disabled
                     // we need to disable save on pressing enter
                     // Prevent default to avoid new-line on pressing
                     // enter inside the textarea in this case
+                        e.preventDefault();
+                        return;
+                    }
+                    exports.save_message_row_edit(row);
+                    e.stopPropagation();
                     e.preventDefault();
+                } else {
+                    composebox_typeahead.handle_enter($(e.target), e);
                     return;
                 }
+            } else if ($(e.target).hasClass("message_edit_topic") ||
+                    $(e.target).hasClass("message_edit_topic_propagate")) {
+                const row = $(e.target).closest(".message_row");
                 exports.save_message_row_edit(row);
                 e.stopPropagation();
                 e.preventDefault();
-            } else {
-                composebox_typeahead.handle_enter($(e.target), e);
-                return;
             }
-        } else if ($(e.target).hasClass("message_edit_topic") ||
-                    $(e.target).hasClass("message_edit_topic_propagate")) {
-            const row = $(e.target).closest(".message_row");
-            exports.save_message_row_edit(row);
+            return;
+        case 27: // Handle escape keys in the message_edit form.
+            exports.end_if_focused_on_message_row_edit();
             e.stopPropagation();
             e.preventDefault();
-        }
-        return;
-    case 27: // Handle escape keys in the message_edit form.
-        exports.end_if_focused_on_message_row_edit();
-        e.stopPropagation();
-        e.preventDefault();
-        return;
-    default:
-        return;
+            return;
+        default:
+            return;
     }
 }
 
@@ -212,19 +212,19 @@ function handle_inline_topic_edit_keydown(e) {
     let row;
     const code = e.keyCode || e.which;
     switch (code) {
-    case 13: // Handle enter key in the recipient bar/inline topic edit form
-        row = $(e.target).closest(".recipient_row");
-        exports.save_inline_topic_edit(row);
-        e.stopPropagation();
-        e.preventDefault();
-        return;
-    case 27: // handle escape
-        exports.end_if_focused_on_inline_topic_edit();
-        e.stopPropagation();
-        e.preventDefault();
-        return;
-    default:
-        return;
+        case 13: // Handle enter key in the recipient bar/inline topic edit form
+            row = $(e.target).closest(".recipient_row");
+            exports.save_inline_topic_edit(row);
+            e.stopPropagation();
+            e.preventDefault();
+            return;
+        case 27: // handle escape
+            exports.end_if_focused_on_inline_topic_edit();
+            e.stopPropagation();
+            e.preventDefault();
+            return;
+        default:
+            return;
     }
 }
 

@@ -269,49 +269,49 @@ function render(next_state) {
 
 function dispatch(action, payload) {
     switch (action) {
-    case "CHANGE_CATEGORY":
-        render(Object.assign({}, state, {
-            category: payload.category,
-        }));
-        update_path();
-        break;
+        case "CHANGE_CATEGORY":
+            render(Object.assign({}, state, {
+                category: payload.category,
+            }));
+            update_path();
+            break;
 
-    case "SHOW_INTEGRATION":
-        render(Object.assign({}, state, {
-            integration: payload.integration,
-        }));
-        update_path();
-        break;
+        case "SHOW_INTEGRATION":
+            render(Object.assign({}, state, {
+                integration: payload.integration,
+            }));
+            update_path();
+            break;
 
-    case "HIDE_INTEGRATION":
-        render(Object.assign({}, state, {
-            integration: null,
-        }));
-        update_path();
-        break;
+        case "HIDE_INTEGRATION":
+            render(Object.assign({}, state, {
+                integration: null,
+            }));
+            update_path();
+            break;
 
-    case "SHOW_CATEGORY":
-        render(Object.assign({}, state, {
-            integration: null,
-            category: payload.category,
-        }));
-        update_path();
-        break;
+        case "SHOW_CATEGORY":
+            render(Object.assign({}, state, {
+                integration: null,
+                category: payload.category,
+            }));
+            update_path();
+            break;
 
-    case "UPDATE_QUERY":
-        render(Object.assign({}, state, {
-            query: payload.query,
-        }));
-        break;
+        case "UPDATE_QUERY":
+            render(Object.assign({}, state, {
+                query: payload.query,
+            }));
+            break;
 
-    case "LOAD_PATH":
-        render(get_state_from_path());
-        google_analytics.config({page_path: window.location.pathname});
-        break;
+        case "LOAD_PATH":
+            render(get_state_from_path());
+            google_analytics.config({page_path: window.location.pathname});
+            break;
 
-    default:
-        blueslip.error("Invalid action dispatched on /integrations.");
-        break;
+        default:
+            blueslip.error("Invalid action dispatched on /integrations.");
+            break;
     }
 }
 

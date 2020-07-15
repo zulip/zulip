@@ -26,15 +26,15 @@ exports.get_user_circle_class = function (user_id) {
     const status = exports.buddy_status(user_id);
 
     switch (status) {
-    case "active":
-        return "user_circle_green";
-    case "idle":
-        return "user_circle_orange";
-    case "away_them":
-    case "away_me":
-        return "user_circle_empty_line";
-    default:
-        return "user_circle_empty";
+        case "active":
+            return "user_circle_green";
+        case "idle":
+            return "user_circle_orange";
+        case "away_them":
+        case "away_me":
+            return "user_circle_empty_line";
+        default:
+            return "user_circle_empty";
     }
 };
 
@@ -42,15 +42,15 @@ exports.status_description = function (user_id) {
     const status = exports.buddy_status(user_id);
 
     switch (status) {
-    case "active":
-        return i18n.t("Active");
-    case "idle":
-        return i18n.t("Idle");
-    case "away_them":
-    case "away_me":
-        return i18n.t("Unavailable");
-    default:
-        return i18n.t("Offline");
+        case "active":
+            return i18n.t("Active");
+        case "idle":
+            return i18n.t("Idle");
+        case "away_them":
+        case "away_me":
+            return i18n.t("Unavailable");
+        default:
+            return i18n.t("Offline");
     }
 };
 
@@ -63,14 +63,14 @@ exports.level = function (user_id) {
     const status = exports.buddy_status(user_id);
 
     switch (status) {
-    case "active":
-        return 1;
-    case "idle":
-        return 2;
-    case "away_them":
-        return 3;
-    default:
-        return 3;
+        case "active":
+            return 1;
+        case "idle":
+            return 2;
+        case "away_them":
+            return 3;
+        default:
+            return 3;
     }
 };
 

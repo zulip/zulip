@@ -19,48 +19,48 @@ exports.update_property = function (stream_id, property, value, other_values) {
     }
 
     switch (property) {
-    case "color":
-        stream_color.update_stream_color(sub, value, {update_historical: true});
-        break;
-    case "in_home_view":
-        stream_muting.update_is_muted(sub, !value);
-        break;
-    case "desktop_notifications":
-    case "audible_notifications":
-    case "push_notifications":
-    case "email_notifications":
-    case "wildcard_mentions_notify":
-        update_stream_setting(sub, value, property);
-        settings_notifications.update_page();
-        break;
-    case "name":
-        subs.update_stream_name(sub, value);
-        break;
-    case "description":
-        subs.update_stream_description(sub, value, other_values.rendered_description);
-        break;
-    case "email_address":
-        sub.email_address = value;
-        break;
-    case "pin_to_top":
-        update_stream_setting(sub, value, property);
-        stream_list.refresh_pinned_or_unpinned_stream(sub);
-        break;
-    case "invite_only":
-        subs.update_stream_privacy(sub, {
-            invite_only: value,
-            history_public_to_subscribers: other_values.history_public_to_subscribers,
-        });
-        break;
-    case "stream_post_policy":
-        subs.update_stream_post_policy(sub, value);
-        break;
-    case "message_retention_days":
-        subs.update_message_retention_setting(sub, value);
-        break;
-    default:
-        blueslip.warn("Unexpected subscription property type", {property: property,
-                                                                value: value});
+        case "color":
+            stream_color.update_stream_color(sub, value, {update_historical: true});
+            break;
+        case "in_home_view":
+            stream_muting.update_is_muted(sub, !value);
+            break;
+        case "desktop_notifications":
+        case "audible_notifications":
+        case "push_notifications":
+        case "email_notifications":
+        case "wildcard_mentions_notify":
+            update_stream_setting(sub, value, property);
+            settings_notifications.update_page();
+            break;
+        case "name":
+            subs.update_stream_name(sub, value);
+            break;
+        case "description":
+            subs.update_stream_description(sub, value, other_values.rendered_description);
+            break;
+        case "email_address":
+            sub.email_address = value;
+            break;
+        case "pin_to_top":
+            update_stream_setting(sub, value, property);
+            stream_list.refresh_pinned_or_unpinned_stream(sub);
+            break;
+        case "invite_only":
+            subs.update_stream_privacy(sub, {
+                invite_only: value,
+                history_public_to_subscribers: other_values.history_public_to_subscribers,
+            });
+            break;
+        case "stream_post_policy":
+            subs.update_stream_post_policy(sub, value);
+            break;
+        case "message_retention_days":
+            subs.update_message_retention_setting(sub, value);
+            break;
+        default:
+            blueslip.warn("Unexpected subscription property type", {property: property,
+                                                                    value: value});
     }
 };
 

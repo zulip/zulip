@@ -27,52 +27,52 @@ exports.get_item = function (key, config) {
     }
     if (config.mode === "compose") {
         switch (key) {
-        case "textarea":
-            return $("#compose-textarea");
-        case "send_button":
-            return $("#compose-send-button");
-        case "send_status_identifier":
-            return "#compose-send-status";
-        case "send_status":
-            return $("#compose-send-status");
-        case "send_status_close_button":
-            return $(".compose-send-status-close");
-        case "send_status_message":
-            return $("#compose-error-msg");
-        case "file_input_identifier":
-            return "#file_input";
-        case "source":
-            return "compose-file-input";
-        case "drag_drop_container":
-            return $("#compose");
-        default:
-            throw Error(`Invalid key name for mode "${config.mode}"`);
+            case "textarea":
+                return $("#compose-textarea");
+            case "send_button":
+                return $("#compose-send-button");
+            case "send_status_identifier":
+                return "#compose-send-status";
+            case "send_status":
+                return $("#compose-send-status");
+            case "send_status_close_button":
+                return $(".compose-send-status-close");
+            case "send_status_message":
+                return $("#compose-error-msg");
+            case "file_input_identifier":
+                return "#file_input";
+            case "source":
+                return "compose-file-input";
+            case "drag_drop_container":
+                return $("#compose");
+            default:
+                throw Error(`Invalid key name for mode "${config.mode}"`);
         }
     } else if (config.mode === "edit") {
         if (!config.row) {
             throw Error("Missing row in config");
         }
         switch (key) {
-        case "textarea":
-            return $("#message_edit_content_" + config.row);
-        case "send_button":
-            return $("#message_edit_content_" + config.row).closest("#message_edit_form").find(".message_edit_save");
-        case "send_status_identifier":
-            return "#message-edit-send-status-" + config.row;
-        case "send_status":
-            return $("#message-edit-send-status-" + config.row);
-        case "send_status_close_button":
-            return $("#message-edit-send-status-" + config.row).find(".send-status-close");
-        case "send_status_message":
-            return $("#message-edit-send-status-" + config.row).find(".error-msg");
-        case "file_input_identifier":
-            return "#message_edit_file_input_" + config.row;
-        case "source":
-            return "message-edit-file-input";
-        case "drag_drop_container":
-            return $("#message_edit_form");
-        default:
-            throw Error(`Invalid key name for mode "${config.mode}"`);
+            case "textarea":
+                return $("#message_edit_content_" + config.row);
+            case "send_button":
+                return $("#message_edit_content_" + config.row).closest("#message_edit_form").find(".message_edit_save");
+            case "send_status_identifier":
+                return "#message-edit-send-status-" + config.row;
+            case "send_status":
+                return $("#message-edit-send-status-" + config.row);
+            case "send_status_close_button":
+                return $("#message-edit-send-status-" + config.row).find(".send-status-close");
+            case "send_status_message":
+                return $("#message-edit-send-status-" + config.row).find(".error-msg");
+            case "file_input_identifier":
+                return "#message_edit_file_input_" + config.row;
+            case "source":
+                return "message-edit-file-input";
+            case "drag_drop_container":
+                return $("#message_edit_form");
+            default:
+                throw Error(`Invalid key name for mode "${config.mode}"`);
         }
     } else {
         throw Error("Invalid upload mode!");

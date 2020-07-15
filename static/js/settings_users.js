@@ -118,14 +118,14 @@ function update_view_on_reactivate(row) {
 function get_status_field() {
     const current_tab = settings_panel_menu.org_settings.current_tab();
     switch (current_tab) {
-    case "deactivated-users-admin":
-        return $("#deactivated-user-field-status").expectOne();
-    case "user-list-admin":
-        return $("#user-field-status").expectOne();
-    case "bot-list-admin":
-        return $("#bot-field-status").expectOne();
-    default:
-        blueslip.fatal("Invalid admin settings page");
+        case "deactivated-users-admin":
+            return $("#deactivated-user-field-status").expectOne();
+        case "user-list-admin":
+            return $("#user-field-status").expectOne();
+        case "bot-list-admin":
+            return $("#bot-field-status").expectOne();
+        default:
+            blueslip.fatal("Invalid admin settings page");
     }
 }
 
