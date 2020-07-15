@@ -684,13 +684,13 @@ exports.by_recipient = function (target_id, opts) {
     unread_ops.notify_server_message_read(message);
 
     switch (message.type) {
-    case "private":
-        exports.by("pm-with", message.reply_to, opts);
-        break;
+        case "private":
+            exports.by("pm-with", message.reply_to, opts);
+            break;
 
-    case "stream":
-        exports.by("stream", message.stream, opts);
-        break;
+        case "stream":
+            exports.by("stream", message.stream, opts);
+            break;
     }
 };
 

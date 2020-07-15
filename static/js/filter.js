@@ -46,112 +46,112 @@ function message_in_home(message) {
 
 function message_matches_search_term(message, operator, operand) {
     switch (operator) {
-    case "has":
-        if (operand === "image") {
-            return message_util.message_has_image(message);
-        } else if (operand === "link") {
-            return message_util.message_has_link(message);
-        } else if (operand === "attachment") {
-            return message_util.message_has_attachment(message);
-        }
-        return false; // has:something_else returns false
-    case "is":
-        if (operand === "private") {
-            return message.type === "private";
-        } else if (operand === "starred") {
-            return message.starred;
-        } else if (operand === "mentioned") {
-            return message.mentioned;
-        } else if (operand === "alerted") {
-            return message.alerted;
-        } else if (operand === "unread") {
-            return unread.message_unread(message);
-        }
-        return true; // is:whatever returns true
+        case "has":
+            if (operand === "image") {
+                return message_util.message_has_image(message);
+            } else if (operand === "link") {
+                return message_util.message_has_link(message);
+            } else if (operand === "attachment") {
+                return message_util.message_has_attachment(message);
+            }
+            return false; // has:something_else returns false
+        case "is":
+            if (operand === "private") {
+                return message.type === "private";
+            } else if (operand === "starred") {
+                return message.starred;
+            } else if (operand === "mentioned") {
+                return message.mentioned;
+            } else if (operand === "alerted") {
+                return message.alerted;
+            } else if (operand === "unread") {
+                return unread.message_unread(message);
+            }
+            return true; // is:whatever returns true
 
-    case "in":
-        if (operand === "home") {
-            return message_in_home(message);
-        } else if (operand === "all") {
-            return true;
-        }
-        return true; // in:whatever returns true
+        case "in":
+            if (operand === "home") {
+                return message_in_home(message);
+            } else if (operand === "all") {
+                return true;
+            }
+            return true; // in:whatever returns true
 
-    case "near":
+        case "near":
         // this is all handled server side
-        return true;
+            return true;
 
-    case "id":
-        return message.id.toString() === operand;
+        case "id":
+            return message.id.toString() === operand;
 
-    case "stream": {
-        if (message.type !== "stream") {
-            return false;
+        case "stream": {
+            if (message.type !== "stream") {
+                return false;
+            }
+
+            operand = operand.toLowerCase();
+            if (page_params.realm_is_zephyr_mirror_realm) {
+                return zephyr_stream_name_match(message, operand);
+            }
+
+            // Try to match by stream_id if have a valid sub for
+            // the operand.
+            const stream_id = stream_data.get_stream_id(operand);
+            if (stream_id) {
+                return message.stream_id === stream_id;
+            }
+
+            // We need this fallback logic in case we have a message
+            // loaded for a stream that we are no longer
+            // subscribed to (or that was deleted).
+            return message.stream.toLowerCase() === operand;
         }
 
-        operand = operand.toLowerCase();
-        if (page_params.realm_is_zephyr_mirror_realm) {
-            return zephyr_stream_name_match(message, operand);
-        }
+        case "topic":
+            if (message.type !== "stream") {
+                return false;
+            }
 
-        // Try to match by stream_id if have a valid sub for
-        // the operand.
-        const stream_id = stream_data.get_stream_id(operand);
-        if (stream_id) {
-            return message.stream_id === stream_id;
-        }
-
-        // We need this fallback logic in case we have a message
-        // loaded for a stream that we are no longer
-        // subscribed to (or that was deleted).
-        return message.stream.toLowerCase() === operand;
-    }
-
-    case "topic":
-        if (message.type !== "stream") {
-            return false;
-        }
-
-        operand = operand.toLowerCase();
-        if (page_params.realm_is_zephyr_mirror_realm) {
-            return zephyr_topic_name_match(message, operand);
-        }
-        return message.topic.toLowerCase() === operand;
+            operand = operand.toLowerCase();
+            if (page_params.realm_is_zephyr_mirror_realm) {
+                return zephyr_topic_name_match(message, operand);
+            }
+            return message.topic.toLowerCase() === operand;
 
 
-    case "sender":
-        return people.id_matches_email_operand(message.sender_id, operand);
+        case "sender":
+            return people.id_matches_email_operand(message.sender_id, operand);
 
-    case "group-pm-with": {
-        const operand_ids = people.pm_with_operand_ids(operand);
-        if (!operand_ids) {
-            return false;
-        }
-        const user_ids = people.group_pm_with_user_ids(message);
-        if (!user_ids) {
-            return false;
-        }
-        return user_ids.includes(operand_ids[0]);
+        case "group-pm-with": {
+            const operand_ids = people.pm_with_operand_ids(operand);
+            if (!operand_ids) {
+                return false;
+            }
+            const user_ids = people.group_pm_with_user_ids(message);
+            if (!user_ids) {
+                return false;
+            }
+            return user_ids.includes(operand_ids[0]);
         // We should also check if the current user is in the recipient list (user_ids) of the
         // message, but it is implicit by the fact that the current user has access to the message.
-    }
+        }
 
-    case "pm-with": {
+        case "pm-with": {
         // TODO: use user_ids, not emails here
-        if (message.type !== "private") {
-            return false;
-        }
-        const operand_ids = people.pm_with_operand_ids(operand);
-        if (!operand_ids) {
-            return false;
-        }
-        const user_ids = people.pm_with_user_ids(message);
-        if (!user_ids) {
-            return false;
-        }
+            if (message.type !== "private") {
+                return false;
+            }
+            const operand_ids = people.pm_with_operand_ids(operand);
+            if (!operand_ids) {
+                return false;
+            }
+            const user_ids = people.pm_with_user_ids(message);
+            if (!user_ids) {
+                return false;
+            }
 
-        return _.isEqual(operand_ids, user_ids);
-    }
+            return _.isEqual(operand_ids, user_ids);
+        }
     }
 
     return true; // unknown operators return true (effectively ignored)
@@ -196,36 +196,36 @@ Filter.canonicalize_term = function (opts) {
     operator = Filter.canonicalize_operator(operator);
 
     switch (operator) {
-    case "has":
+        case "has":
         // images -> image, etc.
-        operand = operand.replace(/s$/, "");
-        break;
+            operand = operand.replace(/s$/, "");
+            break;
 
-    case "stream":
-        operand = stream_data.get_name(operand);
-        break;
-    case "topic":
-        break;
-    case "sender":
-    case "pm-with":
-        operand = operand.toString().toLowerCase();
-        if (operand === "me") {
-            operand = people.my_current_email();
-        }
-        break;
-    case "group-pm-with":
-        operand = operand.toString().toLowerCase();
-        break;
-    case "search":
+        case "stream":
+            operand = stream_data.get_name(operand);
+            break;
+        case "topic":
+            break;
+        case "sender":
+        case "pm-with":
+            operand = operand.toString().toLowerCase();
+            if (operand === "me") {
+                operand = people.my_current_email();
+            }
+            break;
+        case "group-pm-with":
+            operand = operand.toString().toLowerCase();
+            break;
+        case "search":
         // The mac app automatically substitutes regular quotes with curly
         // quotes when typing in the search bar.  Curly quotes don't trigger our
         // phrase search behavior, however.  So, we replace all instances of
         // curly quotes with regular quotes when doing a search.  This is
         // unlikely to cause any problems and is probably what the user wants.
-        operand = operand.toString().toLowerCase().replace(/[\u201c\u201d]/g, '"');
-        break;
-    default:
-        operand = operand.toString().toLowerCase();
+            operand = operand.toString().toLowerCase().replace(/[\u201c\u201d]/g, '"');
+            break;
+        default:
+            operand = operand.toString().toLowerCase();
     }
 
     // We may want to consider allowing mixed-case operators at some point
@@ -504,27 +504,27 @@ Filter.prototype = {
 
         if (term_types[1] === "search") {
             switch (term_types[0]) {
-            case "stream":
+                case "stream":
                 // if stream does not exist, redirect to All
-                if (!this._sub) {
-                    return "#";
-                }
-                return  "/#narrow/stream/" + stream_data.name_to_slug(this.operands("stream")[0]);
-            case "is-private":
-                return  "/#narrow/is/private";
-            case "is-starred":
-                return  "/#narrow/is/starred";
-            case "is-mentioned":
-                return  "/#narrow/is/mentioned";
-            case "streams-public":
-                return  "/#narrow/streams/public";
-            case "pm-with":
+                    if (!this._sub) {
+                        return "#";
+                    }
+                    return  "/#narrow/stream/" + stream_data.name_to_slug(this.operands("stream")[0]);
+                case "is-private":
+                    return  "/#narrow/is/private";
+                case "is-starred":
+                    return  "/#narrow/is/starred";
+                case "is-mentioned":
+                    return  "/#narrow/is/mentioned";
+                case "streams-public":
+                    return  "/#narrow/streams/public";
+                case "pm-with":
                 // join is used to transform the array to a comma separated string
-                return  "/#narrow/pm-with/" + people.emails_to_slug(this.operands("pm-with").join());
+                    return  "/#narrow/pm-with/" + people.emails_to_slug(this.operands("pm-with").join());
                 // TODO: It is ambiguous how we want to handle the 'sender' case,
                 // we may remove it in the future based on design decisions
-            case "sender":
-                return  "/#narrow/sender/" + people.emails_to_slug(this.operands("sender")[0]);
+                case "sender":
+                    return  "/#narrow/sender/" + people.emails_to_slug(this.operands("sender")[0]);
             }
         }
 
@@ -535,28 +535,28 @@ Filter.prototype = {
         // We have special icons for the simple narrows available for the via sidebars.
         const term_types = this.sorted_term_types();
         switch (term_types[0]) {
-        case "in-home":
-        case "in-all":
-            return "home";
-        case "stream":
-            if (!this._sub) {
-                return "question-circle-o";
-            }
-            if (this._sub.invite_only) {
-                return "lock";
-            }
-            if (this._sub.is_web_public) {
-                return "globe";
-            }
-            return "hashtag";
-        case "is-private":
-            return "envelope";
-        case "is-starred":
-            return "star";
-        case "is-mentioned":
-            return "at";
-        case "pm-with":
-            return "envelope";
+            case "in-home":
+            case "in-all":
+                return "home";
+            case "stream":
+                if (!this._sub) {
+                    return "question-circle-o";
+                }
+                if (this._sub.invite_only) {
+                    return "lock";
+                }
+                if (this._sub.is_web_public) {
+                    return "globe";
+                }
+                return "hashtag";
+            case "is-private":
+                return "envelope";
+            case "is-starred":
+                return "star";
+            case "is-mentioned":
+                return "at";
+            case "pm-with":
+                return "envelope";
         }
     },
 
@@ -572,37 +572,37 @@ Filter.prototype = {
         }
         if (term_types.length === 1 || term_types.length === 2 && term_types[1] === "search") {
             switch (term_types[0]) {
-            case "in-home":
-                return i18n.t("All messages");
-            case "in-all":
-                return i18n.t("All messages including muted streams");
-            case "streams-public":
-                return i18n.t("Public stream messages in organization");
-            case "stream":
-                if (!this._sub) {
-                    return i18n.t("Unknown stream");
-                }
-                return this._sub.name;
-            case "is-starred":
-                return i18n.t("Starred messages");
-            case "is-mentioned":
-                return i18n.t("Mentions");
-            case "is-private":
-                return i18n.t("Private messages");
-            case "pm-with": {
-                const emails = this.operands("pm-with")[0].split(",");
-                const names = emails.map((email) => {
-                    if (!people.get_by_email(email)) {
-                        return email;
+                case "in-home":
+                    return i18n.t("All messages");
+                case "in-all":
+                    return i18n.t("All messages including muted streams");
+                case "streams-public":
+                    return i18n.t("Public stream messages in organization");
+                case "stream":
+                    if (!this._sub) {
+                        return i18n.t("Unknown stream");
                     }
-                    return people.get_by_email(email).full_name;
-                });
+                    return this._sub.name;
+                case "is-starred":
+                    return i18n.t("Starred messages");
+                case "is-mentioned":
+                    return i18n.t("Mentions");
+                case "is-private":
+                    return i18n.t("Private messages");
+                case "pm-with": {
+                    const emails = this.operands("pm-with")[0].split(",");
+                    const names = emails.map((email) => {
+                        if (!people.get_by_email(email)) {
+                            return email;
+                        }
+                        return people.get_by_email(email).full_name;
+                    });
 
-                // We use join to handle the addition of a comma and space after every name
-                // and also to ensure that we return a string and not an array so that we
-                // can have the same return type as other cases.
-                return names.join(", ");
-            }
+                    // We use join to handle the addition of a comma and space after every name
+                    // and also to ensure that we return a string and not an array so that we
+                    // can have the same return type as other cases.
+                    return names.join(", ");
+                }
             }
         }
     },
@@ -743,15 +743,15 @@ Filter.prototype = {
     update_email: function (user_id, new_email) {
         for (const term of this._operators) {
             switch (term.operator) {
-            case "group-pm-with":
-            case "pm-with":
-            case "sender":
-            case "from":
-                term.operand = people.update_email_in_reply_to(
-                    term.operand,
-                    user_id,
-                    new_email,
-                );
+                case "group-pm-with":
+                case "pm-with":
+                case "sender":
+                case "from":
+                    term.operand = people.update_email_in_reply_to(
+                        term.operand,
+                        user_id,
+                        new_email,
+                    );
             }
         }
     },
@@ -838,38 +838,38 @@ Filter.operator_to_prefix = function (operator, negated) {
     const verb = negated ? "exclude " : "";
 
     switch (operator) {
-    case "stream":
-        return verb + "stream";
-    case "streams":
-        return verb + "streams";
-    case "near":
-        return verb + "messages around";
+        case "stream":
+            return verb + "stream";
+        case "streams":
+            return verb + "streams";
+        case "near":
+            return verb + "messages around";
 
-    // Note: We hack around using this in "describe" below.
-    case "has":
-        return verb + "messages with one or more";
+            // Note: We hack around using this in "describe" below.
+        case "has":
+            return verb + "messages with one or more";
 
-    case "id":
-        return verb + "message ID";
+        case "id":
+            return verb + "message ID";
 
-    case "topic":
-        return verb + "topic";
+        case "topic":
+            return verb + "topic";
 
-    case "sender":
-        return verb + "sent by";
+        case "sender":
+            return verb + "sent by";
 
-    case "pm-with":
-        return verb + "private messages with";
+        case "pm-with":
+            return verb + "private messages with";
 
-    case "in":
-        return verb + "messages in";
+        case "in":
+            return verb + "messages in";
 
-    // Note: We hack around using this in "describe" below.
-    case "is":
-        return verb + "messages that are";
+            // Note: We hack around using this in "describe" below.
+        case "is":
+            return verb + "messages that are";
 
-    case "group-pm-with":
-        return verb + "group private messages including";
+        case "group-pm-with":
+            return verb + "group private messages including";
     }
     return "";
 };

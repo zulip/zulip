@@ -52,29 +52,29 @@ function get_events_success(events) {
     // rarely modified logic for non-normal events.
     const dispatch_event = function dispatch_event(event) {
         switch (event.type) {
-        case "message": {
-            const msg = event.message;
-            msg.flags = event.flags;
-            if (event.local_message_id) {
-                msg.local_id = event.local_message_id;
-                sent_messages.report_event_received(event.local_message_id);
+            case "message": {
+                const msg = event.message;
+                msg.flags = event.flags;
+                if (event.local_message_id) {
+                    msg.local_id = event.local_message_id;
+                    sent_messages.report_event_received(event.local_message_id);
+                }
+                messages.push(msg);
+                break;
             }
-            messages.push(msg);
-            break;
-        }
 
-        case "update_message":
-            update_message_events.push(event);
-            break;
+            case "update_message":
+                update_message_events.push(event);
+                break;
 
-        case "delete_message":
-        case "submessage":
-        case "update_message_flags":
-            post_message_events.push(event);
-            break;
+            case "delete_message":
+            case "submessage":
+            case "update_message_flags":
+                post_message_events.push(event);
+                break;
 
-        default:
-            return server_events_dispatch.dispatch_normal_event(event);
+            default:
+                return server_events_dispatch.dispatch_normal_event(event);
         }
     };
 

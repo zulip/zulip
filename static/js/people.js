@@ -1135,18 +1135,18 @@ exports.extract_people_from_message = function (message) {
     let involved_people;
 
     switch (message.type) {
-    case "stream":
-        involved_people = [{full_name: message.sender_full_name,
-                            user_id: message.sender_id,
-                            email: message.sender_email}];
-        break;
+        case "stream":
+            involved_people = [{full_name: message.sender_full_name,
+                                user_id: message.sender_id,
+                                email: message.sender_email}];
+            break;
 
-    case "private":
-        involved_people = message.display_recipient;
-        break;
+        case "private":
+            involved_people = message.display_recipient;
+            break;
 
-    default:
-        involved_people = [];
+        default:
+            involved_people = [];
     }
 
     // Add new people involved in this message to the people list

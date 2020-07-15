@@ -543,21 +543,21 @@ exports.validation_error = function (error_type, stream_name) {
     context.stream_name = Handlebars.Utils.escapeExpression(stream_name);
 
     switch (error_type) {
-    case "does-not-exist":
-        response = i18n.t("<p>The stream <b>__stream_name__</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>", context);
-        compose_error(response, $("#stream_message_recipient_stream"));
-        return false;
-    case "error":
-        compose_error(i18n.t("Error checking subscription"),
-                      $("#stream_message_recipient_stream"));
-        return false;
-    case "not-subscribed": {
-        const sub = stream_data.get_sub(stream_name);
-        const new_row = render_compose_not_subscribed({
-            should_display_sub_button: sub.should_display_subscription_button});
-        compose_not_subscribed_error(new_row, $("#stream_message_recipient_stream"));
-        return false;
-    }
+        case "does-not-exist":
+            response = i18n.t("<p>The stream <b>__stream_name__</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>", context);
+            compose_error(response, $("#stream_message_recipient_stream"));
+            return false;
+        case "error":
+            compose_error(i18n.t("Error checking subscription"),
+                          $("#stream_message_recipient_stream"));
+            return false;
+        case "not-subscribed": {
+            const sub = stream_data.get_sub(stream_name);
+            const new_row = render_compose_not_subscribed({
+                should_display_sub_button: sub.should_display_subscription_button});
+            compose_not_subscribed_error(new_row, $("#stream_message_recipient_stream"));
+            return false;
+        }
     }
     return true;
 };

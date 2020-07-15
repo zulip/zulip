@@ -472,18 +472,18 @@ exports.navigate = function (event_name, e) {
     } else if (!is_filter_focused) {
         let next_coord = {};
         switch (event_name) {
-        case "down_arrow":
-            next_coord = get_next_emoji_coordinates(6);
-            break;
-        case "up_arrow":
-            next_coord = get_next_emoji_coordinates(-6);
-            break;
-        case "left_arrow":
-            next_coord = get_next_emoji_coordinates(-1);
-            break;
-        case "right_arrow":
-            next_coord = get_next_emoji_coordinates(1);
-            break;
+            case "down_arrow":
+                next_coord = get_next_emoji_coordinates(6);
+                break;
+            case "up_arrow":
+                next_coord = get_next_emoji_coordinates(-6);
+                break;
+            case "left_arrow":
+                next_coord = get_next_emoji_coordinates(-1);
+                break;
+            case "right_arrow":
+                next_coord = get_next_emoji_coordinates(1);
+                break;
         }
 
         return maybe_change_focused_emoji($emoji_map, next_coord.section, next_coord.index);

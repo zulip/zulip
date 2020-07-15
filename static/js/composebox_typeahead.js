@@ -291,43 +291,43 @@ exports.tokenize_compose_str = function (s) {
     while (i > min_i) {
         i -= 1;
         switch (s[i]) {
-        case "`":
-        case "~":
+            case "`":
+            case "~":
             // Code block must start on a new line
-            if (i === 2) {
-                return s;
-            } else if (i > 2 && s[i - 3] === "\n") {
-                return s.slice(i - 2);
-            }
-            break;
-        case "/":
-            if (i === 0) {
-                return s;
-            }
-            break;
-        case "#":
-        case "@":
-        case ":":
-        case "_":
-            if (i === 0) {
-                return s;
-            } else if (/[\s(){}[\]]/.test(s[i - 1])) {
-                return s.slice(i);
-            }
-            break;
-        case ">":
+                if (i === 2) {
+                    return s;
+                } else if (i > 2 && s[i - 3] === "\n") {
+                    return s.slice(i - 2);
+                }
+                break;
+            case "/":
+                if (i === 0) {
+                    return s;
+                }
+                break;
+            case "#":
+            case "@":
+            case ":":
+            case "_":
+                if (i === 0) {
+                    return s;
+                } else if (/[\s(){}[\]]/.test(s[i - 1])) {
+                    return s.slice(i);
+                }
+                break;
+            case ">":
             // topic_jump
             //
             // If you hit `>` immediately after completing the typeahead for mentioning a stream,
             // this will reposition the user from.  If | is the cursor, implements:
             //
             // `#**stream name** >|` => `#**stream name>|`.
-            if (s.substring(i - 2, i) === "**" || s.substring(i - 3, i) === "** ") {
+                if (s.substring(i - 2, i) === "**" || s.substring(i - 3, i) === "** ") {
                 // return any string as long as its not ''.
-                return ">topic_jump";
-            }
-            // maybe topic_list; let's let the stream_topic_regex decide later.
-            return ">topic_list";
+                    return ">topic_jump";
+                }
+                // maybe topic_list; let's let the stream_topic_regex decide later.
+                return ">topic_list";
         }
     }
 
@@ -916,44 +916,44 @@ exports.content_typeahead_selected = function (item, event) {
 
 exports.compose_content_matcher = function (completing, token) {
     switch (completing) {
-    case "emoji":
-        return typeahead.get_emoji_matcher(token);
-    case "slash":
-        return get_slash_matcher(token);
-    case "stream":
-        return get_stream_or_user_group_matcher(token);
-    case "syntax":
-        return get_language_matcher(token);
-    case "topic_list":
-        return get_topic_matcher(token);
+        case "emoji":
+            return typeahead.get_emoji_matcher(token);
+        case "slash":
+            return get_slash_matcher(token);
+        case "stream":
+            return get_stream_or_user_group_matcher(token);
+        case "syntax":
+            return get_language_matcher(token);
+        case "topic_list":
+            return get_topic_matcher(token);
     }
 
     return function () {
         switch (completing) {
-        case "topic_jump":
-        case "time_jump":
+            case "topic_jump":
+            case "time_jump":
             // these don't actually have a typeahead popover, so we return quickly here.
-            return true;
+                return true;
         }
     };
 };
 
 exports.sort_results = function (completing, matches, token) {
     switch (completing) {
-    case "emoji":
-        return typeahead.sort_emojis(matches, token);
-    case "slash":
-        return typeahead_helper.sort_slash_commands(matches, token);
-    case "stream":
-        return typeahead_helper.sort_streams(matches, token);
-    case "syntax":
-        return typeahead_helper.sort_languages(matches, token);
-    case "topic_jump":
-    case "time_jump":
+        case "emoji":
+            return typeahead.sort_emojis(matches, token);
+        case "slash":
+            return typeahead_helper.sort_slash_commands(matches, token);
+        case "stream":
+            return typeahead_helper.sort_streams(matches, token);
+        case "syntax":
+            return typeahead_helper.sort_languages(matches, token);
+        case "topic_jump":
+        case "time_jump":
         // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
-        return matches;
-    case "topic_list":
-        return typeahead_helper.sorter(token, matches, (x) => x);
+            return matches;
+        case "topic_list":
+            return typeahead_helper.sorter(token, matches, (x) => x);
     }
 };
 
@@ -977,21 +977,21 @@ exports.compose_trigger_selection = function (event) {
 function get_header_text() {
     let tip_text = "";
     switch (this.completing) {
-    case "stream":
-        tip_text = i18n.t("Press > for list of topics");
-        break;
-    case "silent_mention":
-        tip_text = i18n.t("User will not be notified");
-        break;
-    case "syntax":
-        if (page_params.realm_default_code_block_language !== null) {
-            tip_text = i18n.t("Default is __language__. Use 'text' to disable highlighting.",
-                              {language: page_params.realm_default_code_block_language});
+        case "stream":
+            tip_text = i18n.t("Press > for list of topics");
             break;
-        }
-        return false;
-    default:
-        return false;
+        case "silent_mention":
+            tip_text = i18n.t("User will not be notified");
+            break;
+        case "syntax":
+            if (page_params.realm_default_code_block_language !== null) {
+                tip_text = i18n.t("Default is __language__. Use 'text' to disable highlighting.",
+                                  {language: page_params.realm_default_code_block_language});
+                break;
+            }
+            return false;
+        default:
+            return false;
     }
     return "<em>" + tip_text + "</em>";
 }

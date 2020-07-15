@@ -131,31 +131,31 @@ function get_custom_profile_field_data(user, field, field_types, dateFormat) {
     profile_field.type = field_type;
 
     switch (field_type) {
-    case field_types.DATE.id:
-        profile_field.value = moment(field_value.value).format(dateFormat);
-        break;
-    case field_types.USER.id:
-        profile_field.id = field.id;
-        profile_field.is_user_field = true;
-        profile_field.value = field_value.value;
-        break;
-    case field_types.CHOICE.id: {
-        const field_choice_dict = JSON.parse(field.field_data);
-        profile_field.value = field_choice_dict[field_value.value].text;
-        break;
-    }
-    case field_types.SHORT_TEXT.id:
-    case field_types.LONG_TEXT.id:
-        profile_field.value = field_value.value;
-        profile_field.rendered_value = field_value.rendered_value;
-        break;
-    case field_types.EXTERNAL_ACCOUNT.id:
-        profile_field.value = field_value.value;
-        profile_field.field_data = JSON.parse(field.field_data);
-        profile_field.link = settings_profile_fields.get_external_account_link(profile_field);
-        break;
-    default:
-        profile_field.value = field_value.value;
+        case field_types.DATE.id:
+            profile_field.value = moment(field_value.value).format(dateFormat);
+            break;
+        case field_types.USER.id:
+            profile_field.id = field.id;
+            profile_field.is_user_field = true;
+            profile_field.value = field_value.value;
+            break;
+        case field_types.CHOICE.id: {
+            const field_choice_dict = JSON.parse(field.field_data);
+            profile_field.value = field_choice_dict[field_value.value].text;
+            break;
+        }
+        case field_types.SHORT_TEXT.id:
+        case field_types.LONG_TEXT.id:
+            profile_field.value = field_value.value;
+            profile_field.rendered_value = field_value.rendered_value;
+            break;
+        case field_types.EXTERNAL_ACCOUNT.id:
+            profile_field.value = field_value.value;
+            profile_field.field_data = JSON.parse(field.field_data);
+            profile_field.link = settings_profile_fields.get_external_account_link(profile_field);
+            break;
+        default:
+            profile_field.value = field_value.value;
     }
     return profile_field;
 }

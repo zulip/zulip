@@ -100,60 +100,60 @@ function place_popover(hotspot) {
         );
 
     switch (orientation) {
-    case TOP:
-        popover_offset = {
-            top: -(popover_height + arrow_offset),
-            left: el_width / 2 - popover_width / 2,
-        };
-        arrow_placement = "bottom";
-        break;
+        case TOP:
+            popover_offset = {
+                top: -(popover_height + arrow_offset),
+                left: el_width / 2 - popover_width / 2,
+            };
+            arrow_placement = "bottom";
+            break;
 
-    case LEFT:
-        popover_offset = {
-            top: el_height / 2 - popover_height / 2,
-            left: -(popover_width + arrow_offset),
-        };
-        arrow_placement = "right";
-        break;
+        case LEFT:
+            popover_offset = {
+                top: el_height / 2 - popover_height / 2,
+                left: -(popover_width + arrow_offset),
+            };
+            arrow_placement = "right";
+            break;
 
-    case BOTTOM:
-        popover_offset = {
-            top: el_height + arrow_offset,
-            left: el_width / 2 - popover_width / 2,
-        };
-        arrow_placement = "top";
-        break;
+        case BOTTOM:
+            popover_offset = {
+                top: el_height + arrow_offset,
+                left: el_width / 2 - popover_width / 2,
+            };
+            arrow_placement = "top";
+            break;
 
-    case RIGHT:
-        popover_offset = {
-            top: el_height / 2 - popover_height / 2,
-            left: el_width + arrow_offset,
-        };
-        arrow_placement = "left";
-        break;
+        case RIGHT:
+            popover_offset = {
+                top: el_height / 2 - popover_height / 2,
+                left: el_width + arrow_offset,
+            };
+            arrow_placement = "left";
+            break;
 
-    case LEFT_BOTTOM:
-        popover_offset = {
-            top: 0,
-            left: -(popover_width + arrow_offset / 2),
-        };
-        arrow_placement = "";
-        break;
+        case LEFT_BOTTOM:
+            popover_offset = {
+                top: 0,
+                left: -(popover_width + arrow_offset / 2),
+            };
+            arrow_placement = "";
+            break;
 
-    case VIEWPORT_CENTER:
-        popover_offset = {
-            top: el_height / 2,
-            left: el_width / 2,
-        };
-        arrow_placement = "";
-        break;
+        case VIEWPORT_CENTER:
+            popover_offset = {
+                top: el_height / 2,
+                left: el_width / 2,
+            };
+            arrow_placement = "";
+            break;
 
-    default:
-        blueslip.error(
-            "Invalid popover placement value for hotspot '" +
+        default:
+            blueslip.error(
+                "Invalid popover placement value for hotspot '" +
                 hotspot.name + "'",
-        );
-        break;
+            );
+            break;
     }
 
     // position arrow

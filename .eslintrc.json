@@ -38,6 +38,7 @@
         "indent": ["error", 4, {
             "ArrayExpression": "first",
             "ObjectExpression": "first",
+            "SwitchCase": 1,
             "CallExpression": {"arguments": "first"},
             "FunctionExpression": {"parameters": "first"},
             "FunctionDeclaration": {"parameters": "first"}
