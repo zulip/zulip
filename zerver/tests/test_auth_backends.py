@@ -518,8 +518,12 @@ class AuthBackendTest(ZulipTestCase):
                                    response=token_data_dict,
                                    subdomain='zulip')
                 bad_kwargs = dict(subdomain='acme')
-                with mock.patch('zerver.views.auth.redirect_and_log_into_subdomain',
-                                return_value=user):
+                logger_name = f'zulip.auth.{backend.name}'
+
+                with mock.patch(
+                    'zerver.views.auth.redirect_and_log_into_subdomain',
+                    return_value=user
+                ), self.assertLogs(logger_name, level="INFO") as info_log:
                     self.verify_backend(backend,
                                         good_kwargs=good_kwargs,
                                         bad_kwargs=bad_kwargs)
@@ -527,6 +531,12 @@ class AuthBackendTest(ZulipTestCase):
                     self.verify_backend(backend,
                                         good_kwargs=good_kwargs,
                                         bad_kwargs=bad_kwargs)
+                # Verify logging for deactivated users
+                self.assertEqual(info_log.output, [
+                    f'INFO:{logger_name}:Failed login attempt for deactivated account: {user.id}@{user.realm.string_id}',
+                    f'INFO:{logger_name}:Failed login attempt for deactivated account: {user.id}@{user.realm.string_id}'
+                ])
+
 
 class RateLimitAuthenticationTests(ZulipTestCase):
     @override_settings(RATE_LIMITING_AUTHENTICATE=True)
