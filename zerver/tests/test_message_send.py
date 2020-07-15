@@ -1124,6 +1124,7 @@ class StreamMessagesTest(ZulipTestCase):
             user = UserProfile.objects.create(
                 realm=realm,
                 email=email,
+                delivery_email=email,
                 long_term_idle=long_term_idle,
             )
             Subscription.objects.create(
