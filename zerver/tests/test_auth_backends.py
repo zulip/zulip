@@ -1776,9 +1776,12 @@ class SAMLAuthBackendTest(SocialAuthBase):
         if the authentication attempt failed. See SAMLAuthBackend.auth_complete for details.
         """
         account_data_dict = self.get_account_data_dict(email="invalid", name=self.name)
-        result = self.social_auth_test(account_data_dict,
-                                       expect_choose_email_screen=True,
-                                       subdomain='zulip', next='/user_uploads/image')
+        with self.assertLogs(self.logger_string, "WARNING") as warn_log:
+            result = self.social_auth_test(account_data_dict,
+                                           expect_choose_email_screen=True,
+                                           subdomain='zulip', next='/user_uploads/image')
+        self.assertEqual(warn_log.output, [
+            self.logger_output('SAML got invalid email argument.', 'warning')])
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "/login/")
 
