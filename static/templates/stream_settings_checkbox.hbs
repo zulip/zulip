@@ -2,10 +2,13 @@
 <div id="sub_{{setting_name}}_setting"
   class="sub_setting_checkbox
   {{#if disabled_realm_setting}}control-label-disabled{{else}}
-  {{#if notification_setting}}sub_notification_setting {{#if is_muted}}muted-sub{{/if}}{{/if}}{{/if}}">
-    <input id="{{setting_name}}_{{stream_id}}" name="{{setting_name}}"
-      class="sub_setting_control" type="checkbox" tabindex="-1"
-      {{#if is_checked}}checked{{/if}}{{#if is_disabled}}disabled="disabled"{{/if}} />
+  {{#if notification_setting}}sub_notification_setting {{#if is_muted}}muted-sub{{/if}}{{/if}}{{/if}} new-style">
+    <label class="checkbox">
+        <input id="{{setting_name}}_{{stream_id}}" name="{{setting_name}}"
+          class="sub_setting_control" type="checkbox" tabindex="-1"
+          {{#if is_checked}}checked{{/if}}{{#if is_disabled}}disabled="disabled"{{/if}} />
+        <span></span>
+    </label>
     <label class="subscription-control-label">{{label}}</label>
 
     {{!-- Tooltips for settings --}}

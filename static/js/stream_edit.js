@@ -408,6 +408,7 @@ exports.show_settings_for = function (node) {
 };
 
 function stream_is_muted_clicked(e) {
+    e.preventDefault();
     const sub = get_sub_for_target(e.target);
     if (!sub) {
         blueslip.error("stream_is_muted_clicked() fails");
