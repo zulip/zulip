@@ -43,11 +43,11 @@
         visibility: hidden;
     }
 
-    .image-delete-button:hover ~ .settings-page-delete-text {
+    .image-delete-button:hover ~ .image-delete-text {
         visibility: visible;
     }
 
-    .settings-page-delete-text {
+    .image-delete-text {
         color: hsl(0, 0%, 100%);
         font-size: 0.85rem;
         position: absolute;
@@ -126,7 +126,7 @@
         font-size: 3rem;
     }
 
-    .settings-page-delete-text {
+    .image-delete-text {
         top: 90px;
         right: 40px;
     }
@@ -168,7 +168,7 @@
     border-radius: 5px;
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
 
-    .settings-page-delete-text {
+    .image-delete-text {
         top: 40px;
         right: 18px;
     }
@@ -201,7 +201,7 @@
     margin: 0px 80px 0px 20px;
 
     .settings-page-upload-text,
-    .settings-page-delete-text {
+    .image-delete-text {
         top: 17px;
         right: 80px;
     }
