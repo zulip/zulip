@@ -71,6 +71,26 @@ exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_
     // the messages were moved to another stream or deleted.
 };
 
+exports.update_topics_of_message_ids = function (message_ids) {
+    const topics_to_update = new Map();
+    for (const msg_id of message_ids) {
+        // Note: message_store retians data of msg post deletion.
+        const message = message_store.get(msg_id);
+        // Create unique keys for stream_id and topic.
+        const topic_key = message.stream_id + ":" + message.topic;
+        topics_to_update.set(topic_key, [message.stream_id, message.topic]);
+    }
+
+    for (const [stream_id, topic] of topics_to_update.values()) {
+        const topic_dict = topic_senders.get(stream_id);
+        topic_dict.delete(topic);
+        const topic_msgs = message_util.get_messages_in_topic(stream_id, topic);
+        for (const msg of topic_msgs) {
+            exports.process_message_for_senders(msg);
+        }
+    }
+};
+
 exports.compare_by_recency = function (user_a, user_b, stream_id, topic) {
     let a_message_id;
     let b_message_id;

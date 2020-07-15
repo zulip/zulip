@@ -620,7 +620,58 @@ run_test('test_reify_local_echo_message', () => {
     }), false);
 });
 
+
+run_test('test_delete_messages', () => {
+    const rt = zrequire('recent_topics');
+    rt.set_filter('all');
+    rt.process_messages(messages);
+
+    set_global('message_list', {
+        all: {
+            all_messages: function () {
+                // messages[0] was removed.
+                const reduced_msgs = [...messages];
+                reduced_msgs.splice(0, 1);
+                return reduced_msgs;
+            },
+        },
+    });
+
+    let all_topics = rt.get();
+    assert.equal(Array.from(all_topics.keys()).toString(),
+                 '4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1');
+    rt.update_topics_of_message_ids([messages[0].id]);
+
+    all_topics = rt.get();
+    assert.equal(Array.from(all_topics.keys()).toString(),
+                 '4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2');
+
+    set_global('message_list', {
+        all: {
+            all_messages: function () {
+                // messages[0], messages[1] and message[2] were removed.
+                const reduced_msgs = [...messages];
+                reduced_msgs.splice(0, 3);
+                return reduced_msgs;
+            },
+        },
+    });
+
+    rt.update_topics_of_message_ids([messages[1].id, messages[2].id]);
+
+    all_topics = rt.get();
+    assert.equal(Array.from(all_topics.keys()).toString(),
+                 '4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3');
+});
+
 run_test('test_topic_edit', () => {
+    set_global('message_list', {
+        all: {
+            all_messages: function () {
+                return messages;
+            },
+        },
+    });
     // NOTE: This test should always run in the end as it modified the messages data.
     const rt = zrequire('recent_topics');
     rt.set_filter('all');

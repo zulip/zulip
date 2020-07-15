@@ -236,6 +236,21 @@ exports.topic_in_search_results = function (keyword, stream, topic) {
     });
 };
 
+exports.update_topics_of_message_ids = function (message_ids) {
+    const topics_to_rerender = new Map();
+    for (const msg_id of message_ids) {
+        const message = message_store.get(msg_id);
+        const topic_key = get_topic_key(message.stream_id, message.topic);
+        topics_to_rerender.set(topic_key, [message.stream_id, message.topic]);
+    }
+
+    for (const [stream_id, topic] of topics_to_rerender.values()) {
+        topics.delete(get_topic_key(stream_id, topic));
+        const msgs = message_util.get_messages_in_topic(stream_id, topic);
+        exports.process_messages(msgs);
+    }
+};
+
 exports.filters_should_hide_topic = function (topic_data) {
     const msg = message_store.get(topic_data.last_msg_id);
 
