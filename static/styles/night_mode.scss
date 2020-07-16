@@ -432,12 +432,8 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsl(212, 28%, 18%);
 
         &:hover {
-            background-color: hsl(208, 26%, 11%);
+            background-color: hsl(208, 26%, 11%, 0.6);
         }
-    }
-
-    #recent_topics_table .unread_topic {
-        background-color: hsl(211, 28%, 16%);
     }
 
     .btn-recent-selected,
