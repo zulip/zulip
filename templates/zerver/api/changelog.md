@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 3.0
 
+**Feature level 27**
+
+* The `short_name` field is removed from `display_recipients`
+  in `POST /users`.
+
 **Feature level 26**
 
 * The `sender_short_name` field is no longer included in
