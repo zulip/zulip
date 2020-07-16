@@ -591,3 +591,10 @@ def create_dummy_file(filename: str) -> str:
     with open(filepath, 'w') as f:
         f.write('zulip!')
     return filepath
+
+def zulip_reaction_info() -> Dict[str, str]:
+    return dict(
+        emoji_name='zulip',
+        emoji_code='zulip',
+        reaction_type='zulip_extra_emoji',
+    )

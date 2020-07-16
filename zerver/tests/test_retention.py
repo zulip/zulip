@@ -15,7 +15,7 @@ from zerver.lib.retention import (
     restore_retention_policy_deletions_for_stream,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import queries_captured
+from zerver.lib.test_helpers import queries_captured, zulip_reaction_info
 from zerver.lib.upload import create_attachment
 from zerver.models import (
     ArchivedAttachment,
@@ -37,7 +37,6 @@ from zerver.models import (
     get_user_profile_by_email,
 )
 # Class with helper functions useful for testing archiving of reactions:
-from zerver.tests.test_reactions import EmojiReactionBase
 from zerver.tornado.event_queue import send_event
 
 ZULIP_REALM_DAYS = 30
@@ -459,14 +458,25 @@ class TestArchivingSubMessages(ArchiveMessagesTestingBase):
             set(submessage_ids),
         )
 
-class TestArchivingReactions(ArchiveMessagesTestingBase, EmojiReactionBase):
+class TestArchivingReactions(ArchiveMessagesTestingBase):
     def test_archiving_reactions(self) -> None:
         expired_msg_ids = self._make_expired_zulip_messages(2)
 
-        self.post_zulip_reaction(expired_msg_ids[0], 'hamlet')
-        self.post_zulip_reaction(expired_msg_ids[0], 'cordelia')
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
 
-        self.post_zulip_reaction(expired_msg_ids[1], 'hamlet')
+        for sender in [hamlet, cordelia]:
+            self.api_post(
+                sender,
+                f'/api/v1/messages/{expired_msg_ids[0]}/reactions',
+                zulip_reaction_info(),
+            )
+
+        self.api_post(
+            hamlet,
+            f'/api/v1/messages/{expired_msg_ids[1]}/reactions',
+            zulip_reaction_info(),
+        )
 
         reaction_ids = list(
             Reaction.objects.filter(message_id__in=expired_msg_ids).values_list('id', flat=True),
@@ -747,12 +757,16 @@ class MoveMessageToArchiveWithSubMessages(MoveMessageToArchiveBase):
             set(submessage_ids),
         )
 
-class MoveMessageToArchiveWithReactions(MoveMessageToArchiveBase, EmojiReactionBase):
+class MoveMessageToArchiveWithReactions(MoveMessageToArchiveBase):
     def test_archiving_message_with_reactions(self) -> None:
         msg_id = self.send_stream_message(self.sender, "Verona")
 
-        self.post_zulip_reaction(msg_id, 'hamlet')
-        self.post_zulip_reaction(msg_id, 'cordelia')
+        for name in ['hamlet', 'cordelia']:
+            self.api_post(
+                self.example_user(name),
+                f'/api/v1/messages/{msg_id}/reactions',
+                zulip_reaction_info(),
+            )
 
         reaction_ids = list(
             Reaction.objects.filter(message_id=msg_id).values_list('id', flat=True),
