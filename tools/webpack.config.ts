@@ -30,7 +30,7 @@ export default (env?: string): webpack.Configuration[] => {
                         {
                             loader: "css-loader",
                             options: {
-                                url: false,  // webfonts-loader generates public relative URLs
+                                url: false, // webfonts-loader generates public relative URLs
                             },
                         },
                         {

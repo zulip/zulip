@@ -42,7 +42,7 @@ exports.send_read = (function () {
     start = _.throttle(server_request, 1000);
 
     on_success = function on_success(data) {
-        if (data ===  undefined || data.messages === undefined) {
+        if (data === undefined || data.messages === undefined) {
             return;
         }
 

@@ -213,7 +213,7 @@ function filter_emojis() {
                     const match = search_terms.every((search_term) => alias.includes(search_term));
                     if (match) {
                         search_results.push({...emoji_dict, emoji_name: alias});
-                        break;  // We only need the first matching alias per emoji.
+                        break; // We only need the first matching alias per emoji.
                     }
                 }
             }
@@ -353,7 +353,7 @@ function get_next_emoji_coordinates(move_by) {
             if (move_by === -6) {
                 max_len = get_max_index(next_section);
                 const prev_multiple = round_off_to_previous_multiple(max_len, 6);
-                next_index =  prev_multiple + current_index;
+                next_index = prev_multiple + current_index;
                 next_index = next_index >= max_len
                     ? prev_multiple + current_index - 6
                     : next_index;
@@ -505,9 +505,9 @@ function process_keypress(e) {
             const old_query = emoji_filter.val();
             let new_query = "";
 
-            if (pressed_key === 8) {    // Handles backspace.
+            if (pressed_key === 8) { // Handles backspace.
                 new_query = old_query.slice(0, -1);
-            } else {    // Handles any printable character.
+            } else { // Handles any printable character.
                 const key_str = String.fromCharCode(e.which);
                 new_query = old_query + key_str;
             }

@@ -99,7 +99,7 @@ exports.set_message_booleans = function (message) {
     message.historical = convert_flag("historical");
     message.starred = convert_flag("starred");
     message.mentioned = convert_flag("mentioned") || convert_flag("wildcard_mentioned");
-    message.mentioned_me_directly =  convert_flag("mentioned");
+    message.mentioned_me_directly = convert_flag("mentioned");
     message.collapsed = convert_flag("collapsed");
     message.alerted = convert_flag("has_alert_word");
 
@@ -133,7 +133,7 @@ exports.update_booleans = function (message, flags) {
     }
 
     message.mentioned = convert_flag("mentioned") || convert_flag("wildcard_mentioned");
-    message.mentioned_me_directly =  convert_flag("mentioned");
+    message.mentioned_me_directly = convert_flag("mentioned");
     message.alerted = convert_flag("has_alert_word");
 };
 

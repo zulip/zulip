@@ -6,8 +6,8 @@ exports.create_ajax_request = function (url, form_name, stripe_token = null, num
     const form_error = "#" + form_name + "-error";
     const form_loading = "#" + form_name + "-loading";
 
-    const zulip_limited_section =  "#zulip-limited-section";
-    const free_trial_alert_message =  "#free-trial-alert-message";
+    const zulip_limited_section = "#zulip-limited-section";
+    const free_trial_alert_message = "#free-trial-alert-message";
 
     loading.make_indicator($(form_loading_indicator),
                            {text: "Processing ...", abs_positioned: true});

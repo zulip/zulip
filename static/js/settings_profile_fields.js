@@ -340,8 +340,8 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
     // We should only call this internally or from tests.
     const profile_fields_table = $("#admin_profile_fields_table").expectOne();
 
-    profile_fields_table.find("tr.profile-field-row").remove();  // Clear all rows.
-    profile_fields_table.find("tr.profile-field-form").remove();  // Clear all rows.
+    profile_fields_table.find("tr.profile-field-row").remove(); // Clear all rows.
+    profile_fields_table.find("tr.profile-field-form").remove(); // Clear all rows.
     order = [];
 
     for (const profile_field of profile_fields_data) {

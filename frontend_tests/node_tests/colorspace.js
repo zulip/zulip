@@ -21,7 +21,7 @@ run_test("rgb_luminance", () => {
 
 run_test("luminance_to_lightness", () => {
     let luminance = 0;
-    let expected_value  = 116 * 4 / 29 - 16;
+    let expected_value = 116 * 4 / 29 - 16;
     let actual_value = colorspace.luminance_to_lightness(luminance);
     assert.equal(actual_value, expected_value);
 

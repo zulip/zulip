@@ -49,7 +49,7 @@ const cindy = {
     full_name: "Cindy",
 };
 
-const denise  = {
+const denise = {
     email: "denise@example.com",
     user_id: 105,
     full_name: "Denise ",

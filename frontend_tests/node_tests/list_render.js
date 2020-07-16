@@ -499,7 +499,7 @@ run_test("custom sort", () => {
 
     list_render.create(container, list, {
         name: "custom-sort-list",
-        modifier: (n) => "(" + n.x  + ", " + n.y + ")",
+        modifier: (n) => "(" + n.x + ", " + n.y + ")",
         sort_fields: {
             product: sort_by_product,
             x_value: sort_by_x,
@@ -740,7 +740,7 @@ run_test("opts.get_item", () => {
 
 run_test("render item", () => {
     const container = make_container();
-    const scroll_container =  make_scroll_container();
+    const scroll_container = make_scroll_container();
     const INITIAL_RENDER_COUNT = 80; // Keep this in sync with the actual code.
     container.html = () => {};
     let called = false;

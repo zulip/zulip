@@ -127,7 +127,7 @@ run_test("update_messages", () => {
 
     helper.verify();
 
-    assert.deepEqual(rendered_mgs,  [
+    assert.deepEqual(rendered_mgs, [
         {
             alerted: false,
             collapsed: false,

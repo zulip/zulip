@@ -236,7 +236,7 @@ run_test("sending", () => {
         });
     });
 
-    emoji_name = "unknown-emoji";   // Test sending an emoji unknown to frontend.
+    emoji_name = "unknown-emoji"; // Test sending an emoji unknown to frontend.
     blueslip.expect("warn", "Bad emoji name: " + emoji_name);
     reactions.toggle_emoji_reaction(message_id, emoji_name);
     reactions.add_reaction = orig_add_reaction;
@@ -592,7 +592,7 @@ run_test("error_handling", () => {
 
     blueslip.expect("error", "reactions: Bad message id: 55");
 
-    const bogus_event  = {
+    const bogus_event = {
         message_id: 55,
         reaction_type: "realm_emoji",
         emoji_name: "realm_emoji",

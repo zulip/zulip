@@ -233,7 +233,7 @@ exports.unread_topic_counter = (function () {
     self.get_counts = function () {
         const res = {};
         res.stream_unread_messages = 0;
-        res.stream_count = new Map();  // hash by stream_id -> count
+        res.stream_count = new Map(); // hash by stream_id -> count
         for (const [stream_id, per_stream_bucketer] of bucketer) {
 
             // We track unread counts for streams that may be currently

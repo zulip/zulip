@@ -34,7 +34,7 @@ run_test("basic_functions", () => {
     const widget = dropdown_list_widget(opts);
 
     assert.equal(widget.value(), "one");
-    assert.equal(updated_value, undefined);  // We haven't 'updated' the widget yet.
+    assert.equal(updated_value, undefined); // We haven't 'updated' the widget yet.
     assert(reset_button.visible());
 
     widget.update("two");

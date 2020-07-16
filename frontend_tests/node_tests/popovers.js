@@ -10,7 +10,7 @@ zrequire("user_status");
 zrequire("feature_flags");
 zrequire("message_edit");
 
-const noop =  function () {};
+const noop = function () {};
 $.fn.popover = noop; // this will get wrapped by our code
 
 zrequire("popovers");

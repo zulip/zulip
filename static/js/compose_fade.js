@@ -2,7 +2,7 @@ const util = require("./util");
 let focused_recipient;
 let normal_display = false;
 
-exports.should_fade_message =  function (message) {
+exports.should_fade_message = function (message) {
     return !util.same_recipient(focused_recipient, message);
 };
 

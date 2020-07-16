@@ -78,6 +78,7 @@
         "no-label-var": "error",
         "no-labels": "error",
         "no-loop-func": "error",
+        "no-multi-spaces": "error",
         "no-multi-str": "error",
         "no-native-reassign": "error",
         "no-new-func": "error",

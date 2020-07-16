@@ -174,7 +174,7 @@ function handle_keydown(e) {
         }
 
         const on_stream = target_sel === "#stream_message_recipient_stream";
-        const on_topic = target_sel  === "#stream_message_recipient_topic";
+        const on_topic = target_sel === "#stream_message_recipient_topic";
         const on_pm = target_sel === "#private_message_recipient";
         const on_compose = target_sel === "#compose-textarea";
 
@@ -709,7 +709,7 @@ exports.get_candidates = function (query) {
     if (this.options.completions.topic) {
         // Stream regex modified from marked.js
         // Matches '#**stream name** >' at the end of a split.
-        const stream_regex =  /#\*\*([^*>]+)\*\*\s?>$/;
+        const stream_regex = /#\*\*([^*>]+)\*\*\s?>$/;
         const should_jump_inside_typeahead = stream_regex.test(split[0]);
         if (should_jump_inside_typeahead) {
             this.completing = "topic_jump";
@@ -892,7 +892,7 @@ exports.content_typeahead_selected = function (item, event) {
 
         const on_timestamp_selection = (val) => {
             const datestr = val;
-            beginning = beginning.substring(0, beginning.lastIndexOf("<time")) +  `<time:${datestr}> `;
+            beginning = beginning.substring(0, beginning.lastIndexOf("<time")) + `<time:${datestr}> `;
             if (rest.startsWith(">")) {
                 rest = rest.slice(1);
             }

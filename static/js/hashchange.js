@@ -18,7 +18,7 @@ function get_full_url(hash) {
     }
 
     // Build a full URL to not have same origin problems
-    const url =  location.protocol + "//" + location.host + pathname + hash;
+    const url = location.protocol + "//" + location.host + pathname + hash;
     return url;
 }
 
@@ -88,7 +88,7 @@ function do_hashchange_normal(from_reload) {
                 return false;
             }
             const narrow_opts = {
-                change_hash: false,  // already set
+                change_hash: false, // already set
                 trigger: "hash change",
             };
             if (from_reload) {

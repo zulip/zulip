@@ -60,7 +60,7 @@ exports.render_now = function (time, today) {
 
 // Current date is passed as an argument for unit testing
 exports.last_seen_status_from_date = function (last_active_date, current_date) {
-    if (typeof  current_date === "undefined") {
+    if (typeof current_date === "undefined") {
         current_date = new XDate();
     }
 

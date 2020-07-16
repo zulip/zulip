@@ -164,7 +164,7 @@ casper.then(function () {
 // Make sure multiple PM recipients display properly.
 var recipients = ["cordelia@zulip.com", "othello@zulip.com"];
 casper.then(function () {
-    common.keypress(27);  // escape to dismiss compose box
+    common.keypress(27); // escape to dismiss compose box
 });
 casper.waitWhileVisible(".message_comp");
 common.then_send_message("private", {
@@ -175,7 +175,7 @@ common.then_send_message("private", {
 
 
 casper.then(function () {
-    common.keypress(27);  // escape to dismiss compose box
+    common.keypress(27); // escape to dismiss compose box
 });
 casper.then(function () {
     common.un_narrow();

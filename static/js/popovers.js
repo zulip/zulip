@@ -256,7 +256,7 @@ function show_user_info_popover(element, user, message) {
             return;
         }
 
-        const is_sender_popover =  message.sender_id === user.user_id;
+        const is_sender_popover = message.sender_id === user.user_id;
         render_user_info_popover(user, elt, is_sender_popover, "respond_personal_button",
                                  "message-info-popover", "right");
 

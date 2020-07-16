@@ -116,9 +116,9 @@ run_test("create_sidebar_row", () => {
     assert(topic_list_cleared);
 
     const expected_elems = [
-        devel_sidebar,          //pinned
-        split,                  //separator
-        social_sidebar,         //not pinned
+        devel_sidebar, //pinned
+        split, //separator
+        social_sidebar, //not pinned
     ];
 
     assert.deepEqual(appended_elems, expected_elems);
@@ -229,7 +229,7 @@ function add_row(sub) {
             const html = "<" + sub.name + " sidebar row html>";
             const obj = $(html);
 
-            obj.length = 1;  // bypass blueslip error
+            obj.length = 1; // bypass blueslip error
 
             return obj;
         },

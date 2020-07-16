@@ -91,9 +91,9 @@ function set_results(response) {
     responses.forEach((response) => {
         if (response.fixture_name !== undefined) {
             data += "Fixture:            " + response.fixture_name;
-            data += "\nStatus Code:    "  + response.status_code;
+            data += "\nStatus Code:    " + response.status_code;
         } else {
-            data += "Status Code:    "  + response.status_code;
+            data += "Status Code:    " + response.status_code;
         }
         data += "\nResponse:       " + response.message + "\n\n";
     });

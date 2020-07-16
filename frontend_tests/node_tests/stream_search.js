@@ -174,7 +174,7 @@ run_test("expanding_sidebar", () => {
     popovers.hide_all = () => {
         events.push("popovers.hide_all");
     };
-    stream_popover.show_streamlist_sidebar  = () => {
+    stream_popover.show_streamlist_sidebar = () => {
         events.push("stream_popover.show_streamlist_sidebar");
     };
 

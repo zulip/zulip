@@ -80,13 +80,13 @@ const stream4 = 4;
 const stream5 = 5; // Deleted stream
 
 // Topics in the stream, all unread except topic1 & stream1.
-const topic1 = "topic-1";  // No Other sender & read.
-const topic2 = "topic-2";  // Other sender
-const topic3 = "topic-3";  // User not present
-const topic4 = "topic-4";  // User not present
-const topic5 = "topic-5";  // other sender
-const topic6 = "topic-6";  // other sender
-const topic7 = "topic-7";  // muted topic
+const topic1 = "topic-1"; // No Other sender & read.
+const topic2 = "topic-2"; // Other sender
+const topic3 = "topic-3"; // User not present
+const topic4 = "topic-4"; // User not present
+const topic5 = "topic-5"; // other sender
+const topic6 = "topic-6"; // other sender
+const topic7 = "topic-7"; // muted topic
 const topic8 = "topic-8";
 const topic9 = "topic-9";
 const topic10 = "topic-10";

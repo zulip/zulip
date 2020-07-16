@@ -396,7 +396,7 @@ exports.keep_pointer_in_view = function () {
         // return true only if we make an actual adjustment, so
         // that we know to short circuit the other direction
         if (in_view(next_row)) {
-            return false;  // try other side
+            return false; // try other side
         }
         while (!in_view(next_row)) {
             candidate = get_next_row(next_row);

@@ -357,7 +357,7 @@ MessageListData.prototype = {
         }
 
         const start_idx = this._lower_bound(start);
-        const end_idx   = this._lower_bound(end);
+        const end_idx = this._lower_bound(end);
         return this._items.slice(start_idx, end_idx + 1);
     },
 

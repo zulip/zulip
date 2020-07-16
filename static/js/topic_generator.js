@@ -197,7 +197,7 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
         if (!stream_data.is_stream_muted_by_name(stream_name)) {
             return true;
         }
-        if  (stream_name === curr_stream) {
+        if (stream_name === curr_stream) {
             // We can use n within a muted stream if we are
             // currently narrowed to it.
             return true;

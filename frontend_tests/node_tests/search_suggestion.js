@@ -876,7 +876,7 @@ run_test("topic_suggestions", () => {
     assert.equal(describe("te"), "Search for te");
     assert.equal(describe("stream:office topic:team"), "Stream office &gt; team");
 
-    suggestions = get_suggestions("topic:staplers",  "stream:office");
+    suggestions = get_suggestions("topic:staplers", "stream:office");
     expected = [
         "stream:office",
     ];

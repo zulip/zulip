@@ -311,7 +311,7 @@ exports.create_handlers_for_users = function (container) {
     // 'Check all' and 'Uncheck all' visible users
     container.on("click", ".subs_set_all_users", (e) => {
         $("#user-checkboxes .checkbox").each((idx, li) => {
-            if  (li.style.display !== "none") {
+            if (li.style.display !== "none") {
                 $(li.firstElementChild).prop("checked", true);
             }
         });

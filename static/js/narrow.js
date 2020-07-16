@@ -205,7 +205,7 @@ exports.activate = function (raw_operators, opts) {
     // Save how far from the pointer the top of the message list was.
     exports.save_pre_narrow_offset_for_reload();
 
-    let msg_data =  new MessageListData({
+    let msg_data = new MessageListData({
         filter: narrow_state.filter(),
         muting_enabled: muting_enabled,
     });

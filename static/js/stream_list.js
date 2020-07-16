@@ -353,7 +353,7 @@ exports.refresh_pinned_or_unpinned_stream = function (sub) {
     }
 };
 
-exports.get_sidebar_stream_topic_info  = function (filter) {
+exports.get_sidebar_stream_topic_info = function (filter) {
     const result = {
         stream_id: undefined,
         topic_selected: false,

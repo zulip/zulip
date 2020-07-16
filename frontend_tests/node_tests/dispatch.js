@@ -361,7 +361,7 @@ with_overrides((override) => {
     event = event_fixtures.realm__update_notifications_stream_id;
     dispatch(event);
     assert_same(page_params.realm_notifications_stream_id, 42);
-    page_params.realm_notifications_stream_id = -1;  // make sure to reset for future tests
+    page_params.realm_notifications_stream_id = -1; // make sure to reset for future tests
 
     event = event_fixtures.realm__update_signup_notifications_stream_id;
     dispatch(event);
@@ -687,7 +687,7 @@ with_overrides((override) => {
     assert_same(toggled, ["less_dense_mode", "more_dense_mode"]);
 
     $("body").fadeOut = (secs) => { assert_same(secs, 300); };
-    $("body").fadeIn  = (secs) => { assert_same(secs, 300); };
+    $("body").fadeIn = (secs) => { assert_same(secs, 300); };
 
     global.with_stub((stub) => {
         event = event_fixtures.update_display_settings__color_scheme_dark;

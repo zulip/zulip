@@ -373,7 +373,7 @@ run_test("markdown_rtl", () => {
     const textarea = $("#compose-textarea");
 
     const event = {
-        keyCode: 65,  // A
+        keyCode: 65, // A
     };
 
     rtl.get_direction = (text) => {
@@ -397,7 +397,7 @@ run_test("markdown_ltr", () => {
     const textarea = $("#compose-textarea");
 
     const event = {
-        keyCode: 65,  // A
+        keyCode: 65, // A
     };
 
     assert.equal(textarea.hasClass("rtl"), true);
@@ -1100,7 +1100,7 @@ run_test("needs_subscribe_warning", () => {
 });
 
 run_test("warn_if_mentioning_unsubscribed_user", () => {
-    let mentioned  = {
+    let mentioned = {
         email: "foo@bar.com",
     };
 
@@ -1287,7 +1287,7 @@ run_test("on_events", () => {
             invite_user_to_stream_called = true;
             assert.deepEqual(user_ids, [mentioned.user_id]);
             assert.equal(sub, subscription);
-            success();  // This will check success callback path.
+            success(); // This will check success callback path.
         };
 
         const helper = setup_parents_and_mock_remove(

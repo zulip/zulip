@@ -385,7 +385,7 @@ exports.sync_realm_settings = function (property) {
     } else if (property === "invite_required" || property === "invite_by_admins_only") {
         property = "user_invite_restriction";
     }
-    const element =  $("#id_realm_" + property);
+    const element = $("#id_realm_" + property);
     if (element.length) {
         discard_property_element_changes(element);
     }
@@ -967,7 +967,7 @@ exports.build_page = function () {
             form_data.append("night", JSON.stringify(night));
         }
         const spinner = $(`${widget} .upload-spinner-background`).expectOne();
-        const upload_text =  $(`${widget}  .settings-page-upload-text`).expectOne();
+        const upload_text = $(`${widget}  .settings-page-upload-text`).expectOne();
         const delete_button = $(`${widget}  .settings-page-delete-button`).expectOne();
         const error_field = $(`${widget}  .image_file_input_error`).expectOne();
         realm_icon_logo_upload_start(spinner, upload_text, delete_button);

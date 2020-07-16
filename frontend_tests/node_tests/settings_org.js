@@ -165,7 +165,7 @@ function createSaveButtons(subsection) {
     save_button_controls.set_find_results(
         ".discard-button", stub_discard_button,
     );
-    const props  = {};
+    const props = {};
     props.hidden = false;
     save_button_controls.fadeIn = () => {
         props.hidden = false;
