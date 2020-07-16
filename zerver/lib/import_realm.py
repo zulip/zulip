@@ -33,6 +33,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import BadImageError, guess_type, random_name, sanitize_name
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import (
+    AlertWord,
     Attachment,
     BotConfigData,
     BotStorageData,
@@ -83,6 +84,7 @@ realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
 # Code reviewers: give these tables extra scrutiny, as we need to
 # make sure to reload related tables AFTER we re-map the ids.
 ID_MAP: Dict[str, Dict[int, int]] = {
+    'alertword': {},
     'client': {},
     'user_profile': {},
     'huddle': {},
@@ -941,6 +943,12 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
             recipient = Recipient.objects.get(type=Recipient.HUDDLE, type_id=huddle.id)
             huddle.recipient = recipient
             huddle.save(update_fields=["recipient"])
+
+    if 'zerver_alertword' in data:
+        re_map_foreign_keys(data, 'zerver_alertword', 'user_profile', related_table='user_profile')
+        re_map_foreign_keys(data, 'zerver_alertword', 'realm', related_table='realm')
+        update_model_ids(AlertWord, data, 'alertword')
+        bulk_import_model(data, AlertWord)
 
     if 'zerver_userhotspot' in data:
         fix_datetime_fields(data, 'zerver_userhotspot')

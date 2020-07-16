@@ -33,6 +33,7 @@ from zerver.lib.upload import (
 )
 from zerver.lib.utils import query_chunker
 from zerver.models import (
+    AlertWord,
     Attachment,
     BotConfigData,
     BotStorageData,
@@ -856,6 +857,16 @@ class ImportExportTest(ZulipTestCase):
 
         assert_realm_values(get_huddle_message)
         self.assertEqual(get_huddle_message(imported_realm), 'test huddle message')
+
+        # test alertword
+        def get_alertwords(r: Realm) -> Set[str]:
+            return {
+                rec.word
+                for rec in
+                AlertWord.objects.filter(realm_id=r.id)
+            }
+
+        assert_realm_values(get_alertwords)
 
         # test userhotspot
         def get_user_hotspots(r: str) -> Set[str]:
