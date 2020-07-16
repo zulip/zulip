@@ -1046,11 +1046,11 @@ def create_user_group(client: Client) -> None:
 
     assert result['result'] == 'success'
 
-@openapi_test_function("/user_groups/{group_id}:patch")
-def update_user_group(client: Client, group_id: int) -> None:
+@openapi_test_function("/user_groups/{user_group_id}:patch")
+def update_user_group(client: Client, user_group_id: int) -> None:
     # {code_example|start}
     request = {
-        'group_id': group_id,
+        'group_id': user_group_id,
         'name': 'marketing',
         'description': 'The marketing team.',
     }
@@ -1059,21 +1059,21 @@ def update_user_group(client: Client, group_id: int) -> None:
     # {code_example|end}
     assert result['result'] == 'success'
 
-@openapi_test_function("/user_groups/{group_id}:delete")
-def remove_user_group(client: Client, group_id: int) -> None:
+@openapi_test_function("/user_groups/{user_group_id}:delete")
+def remove_user_group(client: Client, user_group_id: int) -> None:
     # {code_example|start}
-    result = client.remove_user_group(group_id)
+    result = client.remove_user_group(user_group_id)
     # {code_example|end}
 
-    validate_against_openapi_schema(result, '/user_groups/{group_id}', 'delete', '200')
+    validate_against_openapi_schema(result, '/user_groups/{user_group_id}', 'delete', '200')
     assert result['result'] == 'success'
 
-@openapi_test_function("/user_groups/{group_id}/members:post")
-def update_user_group_members(client: Client, group_id: int) -> None:
+@openapi_test_function("/user_groups/{user_group_id}/members:post")
+def update_user_group_members(client: Client, user_group_id: int) -> None:
     ensure_users([8, 10, 11], ['cordelia', 'hamlet', 'iago'])
 
     request = {
-        'group_id': group_id,
+        'group_id': user_group_id,
         'delete': [8, 10],
         'add': [11],
     }
@@ -1179,10 +1179,10 @@ def test_users(client: Client) -> None:
     update_presence(client)
     get_user_presence(client)
     create_user_group(client)
-    group_id = get_user_groups(client)
-    update_user_group(client, group_id)
-    update_user_group_members(client, group_id)
-    remove_user_group(client, group_id)
+    user_group_id = get_user_groups(client)
+    update_user_group(client, user_group_id)
+    update_user_group_members(client, user_group_id)
+    remove_user_group(client, user_group_id)
     get_alert_words(client)
     add_alert_words(client)
     remove_alert_words(client)

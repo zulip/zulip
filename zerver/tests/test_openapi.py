@@ -293,11 +293,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/calls/zoom/create',
 
         #### Documented endpoints not properly detected by tooling.
-        # E.g. '/user_groups/<user_group_id>' in urls.py but fails the
-        # reverse mapping test because of the variable name
-        # mismatch.
-        '/user_groups/{group_id}',  # Equivalent of what's in urls.py
-        '/user_groups/{user_group_id}',  # What's in the OpenAPI docs
         '/user_groups/{user_group_id}/members',
         # Regex with an unnamed capturing group.
         '/users/(?!me/)(?P<email>[^/]*)/presence',

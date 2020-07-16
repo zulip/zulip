@@ -4663,16 +4663,16 @@ paths:
                         "code": "BAD_REQUEST",
                         "msg": "Invalid user ID: 500",
                       }
-  /user_groups/{group_id}:
+  /user_groups/{user_group_id}:
     patch:
       operationId: update_user_group
       tags: ["users"]
       description: |
         Update the name or description of a [user group](/help/user-groups).
 
-        `PATCH {{ api_url }}/v1/user_groups/{group_id}`
+        `PATCH {{ api_url }}/v1/user_groups/{user_group_id}`
       parameters:
-        - $ref: "#/components/parameters/GroupId"
+        - $ref: "#/components/parameters/UserGroupId"
         - name: name
           in: query
           description: |
@@ -4712,9 +4712,9 @@ paths:
       description: |
         Delete a [user group](/help/user-groups).
 
-        `DELETE {{ api_url }}/v1/user_groups/{group_id}`
+        `DELETE {{ api_url }}/v1/user_groups/{user_group_id}`
       parameters:
-        - $ref: "#/components/parameters/GroupId"
+        - $ref: "#/components/parameters/UserGroupId"
       responses:
         "200":
           description: Success.
@@ -5842,8 +5842,8 @@ components:
             default: []
           example: [["stream", "Denmark"]]
       required: false
-    GroupId:
-      name: group_id
+    UserGroupId:
+      name: user_group_id
       in: path
       description: |
         The ID of the target user group.
