@@ -68,7 +68,7 @@ def get_role_for_new_user(invited_as: int, realm_creation: bool=False) -> int:
 # Recipient objects
 def create_user_profile(realm: Realm, email: str, password: Optional[str],
                         active: bool, bot_type: Optional[int], full_name: str,
-                        short_name: str, bot_owner: Optional[UserProfile],
+                        bot_owner: Optional[UserProfile],
                         is_mirror_dummy: bool, tos_version: Optional[str],
                         timezone: Optional[str],
                         tutorial_status: str = UserProfile.TUTORIAL_WAITING,
@@ -77,7 +77,7 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
     email = UserManager.normalize_email(email)
 
     user_profile = UserProfile(is_staff=False, is_active=active,
-                               full_name=full_name, short_name=short_name,
+                               full_name=full_name,
                                last_login=now, date_joined=now, realm=realm,
                                is_bot=bool(bot_type), bot_type=bot_type,
                                bot_owner=bot_owner, is_mirror_dummy=is_mirror_dummy,
@@ -97,21 +97,34 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
     user_profile.api_key = generate_api_key()
     return user_profile
 
-def create_user(email: str, password: Optional[str], realm: Realm,
-                full_name: str, short_name: str, active: bool = True,
+def create_user(email: str,
+                password: Optional[str],
+                realm: Realm,
+                full_name: str,
+                active: bool = True,
                 role: Optional[int] = None,
                 bot_type: Optional[int] = None,
                 bot_owner: Optional[UserProfile] = None,
-                tos_version: Optional[str] = None, timezone: str = "",
+                tos_version: Optional[str] = None,
+                timezone: str = "",
                 avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
                 is_mirror_dummy: bool = False,
                 default_sending_stream: Optional[Stream] = None,
                 default_events_register_stream: Optional[Stream] = None,
                 default_all_public_streams: Optional[bool] = None,
                 source_profile: Optional[UserProfile] = None) -> UserProfile:
-    user_profile = create_user_profile(realm, email, password, active, bot_type,
-                                       full_name, short_name, bot_owner,
-                                       is_mirror_dummy, tos_version, timezone)
+    user_profile = create_user_profile(
+        realm,
+        email,
+        password,
+        active,
+        bot_type,
+        full_name,
+        bot_owner,
+        is_mirror_dummy,
+        tos_version,
+        timezone
+    )
     user_profile.avatar_source = avatar_source
     user_profile.timezone = timezone
     user_profile.default_sending_stream = default_sending_stream

@@ -12,7 +12,11 @@ class TestGetNextHotspots(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user = do_create_user(
-            'user@zulip.com', 'password', get_realm('zulip'), 'user', 'user')
+            'user@zulip.com',
+            'password',
+            get_realm('zulip'),
+            'user',
+        )
 
     def test_first_hotspot(self) -> None:
         hotspots = get_next_hotspots(self.user)

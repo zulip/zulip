@@ -477,7 +477,6 @@ class HomeTest(ZulipTestCase):
             password='123',
             realm=owner.realm,
             full_name=bot_name,
-            short_name=bot_name,
             bot_type=UserProfile.DEFAULT_BOT,
             bot_owner=owner,
         )
@@ -489,7 +488,6 @@ class HomeTest(ZulipTestCase):
             password='123',
             realm=realm,
             full_name=name,
-            short_name=name,
         )
 
         # Doing a full-stack deactivation would be expensive here,

@@ -382,7 +382,6 @@ def add_bot_backend(
 
     bot_profile = do_create_user(email=email, password=None,
                                  realm=user_profile.realm, full_name=full_name,
-                                 short_name=short_name,
                                  bot_type=bot_type,
                                  bot_owner=user_profile,
                                  avatar_source=avatar_source,
@@ -522,9 +521,7 @@ def create_user_backend(
     if not check_password_strength(password):
         return json_error(PASSWORD_TOO_WEAK_ERROR)
 
-    short_name = 'deprecated'
-
-    do_create_user(email, password, realm, full_name, short_name, acting_user=user_profile)
+    do_create_user(email, password, realm, full_name, acting_user=user_profile)
     return json_success()
 
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:

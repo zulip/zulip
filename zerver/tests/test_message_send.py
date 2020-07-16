@@ -183,7 +183,6 @@ class MessagePOSTTest(ZulipTestCase):
             password='',
             realm=non_admin_profile.realm,
             full_name='freebot',
-            short_name='freebot',
             bot_type=UserProfile.DEFAULT_BOT,
         )
         self._send_and_verify_message(bot_without_owner, stream_name,
@@ -248,7 +247,6 @@ class MessagePOSTTest(ZulipTestCase):
             password='',
             realm=non_admin_profile.realm,
             full_name='freebot',
-            short_name='freebot',
             bot_type=UserProfile.DEFAULT_BOT,
         )
         self._send_and_verify_message(bot_without_owner, stream_name,
@@ -1302,7 +1300,6 @@ class StreamMessagesTest(ZulipTestCase):
             password='',
             realm=realm,
             full_name='Normal Bot',
-            short_name='',
             bot_type=UserProfile.DEFAULT_BOT,
             bot_owner=cordelia,
         )
@@ -1903,7 +1900,6 @@ class CheckMessageTest(ZulipTestCase):
             password='',
             realm=parent.realm,
             full_name='',
-            short_name='',
             bot_type=UserProfile.DEFAULT_BOT,
             bot_owner=parent,
         )

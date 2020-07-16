@@ -707,7 +707,6 @@ class ImportExportTest(ZulipTestCase):
             password="test",
             realm=original_realm,
             full_name="bot",
-            short_name="bot",
             bot_type=UserProfile.EMBEDDED_BOT,
             bot_owner=sample_user)
         storage = StateHandler(bot_profile)

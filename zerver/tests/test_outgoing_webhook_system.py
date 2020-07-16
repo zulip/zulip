@@ -165,7 +165,6 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             full_name='Outgoing Webhook Bot',
             email='whatever',
             realm=bot_owner.realm,
-            short_name='',
             password=None,
         )
 

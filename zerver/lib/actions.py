@@ -209,7 +209,6 @@ from zerver.models import (
     active_non_guest_user_ids,
     active_user_ids,
     custom_profile_fields_for_realm,
-    email_to_username,
     filter_to_valid_prereg_users,
     get_active_streams,
     get_bot_dicts_in_realm,
@@ -566,12 +565,11 @@ def notify_created_bot(user_profile: UserProfile) -> None:
 def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]], bot_type: Optional[int]=None) -> None:
     user_set = set()
     for full_name, email in name_list:
-        short_name = email_to_username(email)
-        user_set.add((email, full_name, short_name, True))
+        user_set.add((email, full_name, True))
     bulk_create_users(realm, user_set, bot_type)
 
 def do_create_user(email: str, password: Optional[str], realm: Realm, full_name: str,
-                   short_name: str, bot_type: Optional[int]=None, role: Optional[int]=None,
+                   bot_type: Optional[int]=None, role: Optional[int]=None,
                    bot_owner: Optional[UserProfile]=None, tos_version: Optional[str]=None,
                    timezone: str="", avatar_source: str=UserProfile.AVATAR_FROM_GRAVATAR,
                    default_sending_stream: Optional[Stream]=None,
@@ -585,7 +583,7 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
                    acting_user: Optional[UserProfile]=None) -> UserProfile:
 
     user_profile = create_user(email=email, password=password, realm=realm,
-                               full_name=full_name, short_name=short_name,
+                               full_name=full_name,
                                role=role, bot_type=bot_type, bot_owner=bot_owner,
                                tos_version=tos_version, timezone=timezone, avatar_source=avatar_source,
                                default_sending_stream=default_sending_stream,
@@ -1044,7 +1042,6 @@ def create_mirror_user_if_needed(realm: Realm, email: str,
                 password=None,
                 realm=realm,
                 full_name=email_to_fullname(email),
-                short_name=email_to_username(email),
                 active=False,
                 is_mirror_dummy=True,
             )
