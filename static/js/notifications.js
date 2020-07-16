@@ -10,7 +10,7 @@ let window_has_focus = document.hasFocus && document.hasFocus();
 
 let supports_sound;
 
-const unread_pms_favicon = '/static/images/favicon/favicon-pms.png';
+const unread_pms_favicon = '/static/images/favicon/favicon-pms.png?v=4';
 let current_favicon;
 let previous_favicon;
 let flashing = false;
