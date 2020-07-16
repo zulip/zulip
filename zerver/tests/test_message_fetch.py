@@ -1066,7 +1066,7 @@ class GetOldMessagesTest(ZulipTestCase):
         for message in result["messages"]:
             for field in ("content", "content_type", "display_recipient",
                           "avatar_url", "recipient_id", "sender_full_name",
-                          "sender_short_name", "timestamp", "reactions"):
+                          "timestamp", "reactions"):
                 self.assertIn(field, message)
         return result
 

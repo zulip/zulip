@@ -445,7 +445,6 @@ class MessageDict:
         query = UserProfile.objects.values(
             'id',
             'full_name',
-            'short_name',
             'delivery_email',
             'email',
             'realm__string_id',
@@ -465,7 +464,6 @@ class MessageDict:
             sender_id = obj['sender_id']
             user_row = sender_dict[sender_id]
             obj['sender_full_name'] = user_row['full_name']
-            obj['sender_short_name'] = user_row['short_name']
             obj['sender_email'] = user_row['email']
             obj['sender_delivery_email'] = user_row['delivery_email']
             obj['sender_realm_str'] = user_row['realm__string_id']
@@ -487,7 +485,6 @@ class MessageDict:
         sender_is_mirror_dummy = obj['sender_is_mirror_dummy']
         sender_email = obj['sender_email']
         sender_full_name = obj['sender_full_name']
-        sender_short_name = obj['sender_short_name']
         sender_id = obj['sender_id']
 
         if recipient_type == Recipient.STREAM:
@@ -501,7 +498,6 @@ class MessageDict:
                 recip: UserDisplayRecipient = {
                     'email': sender_email,
                     'full_name': sender_full_name,
-                    'short_name': sender_short_name,
                     'id': sender_id,
                     'is_mirror_dummy': sender_is_mirror_dummy,
                 }

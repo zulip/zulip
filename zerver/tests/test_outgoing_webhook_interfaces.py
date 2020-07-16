@@ -89,7 +89,6 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             'sender_full_name': 'Othello, the Moor of Venice',
             'sender_id': othello.id,
             'sender_realm_str': 'zulip',
-            'sender_short_name': 'othello',
             'stream_id': stream.id,
             TOPIC_NAME: 'test',
             'submessages': [],
