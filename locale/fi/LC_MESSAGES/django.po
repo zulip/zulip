@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-13 20:42+0000\n"
-"PO-Revision-Date: 2020-07-15 17:44+0000\n"
+"PO-Revision-Date: 2020-07-16 02:37+0000\n"
 "Last-Translator: Flammie <flammie@iki.fi>\n"
 "Language-Team: Finnish (http://www.transifex.com/zulip/zulip/language/fi/)\n"
 "MIME-Version: 1.0\n"
@@ -663,7 +663,7 @@ msgstr "tai"
 #: templates/zerver/app/invite_user.html:20
 #: templates/zerver/app/invite_user.html:26
 msgid "Generate invite link"
-msgstr ""
+msgstr "Generoi kutsulinkki"
 
 #: templates/zerver/app/invite_user.html:33
 msgid "User(s) join as"

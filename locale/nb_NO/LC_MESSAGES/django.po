@@ -1,22 +1,21 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-# Translators:
-# R.Kracekumar <kracethekingmaker@gmail.com>, 2017
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-16 03:24+0000\n"
-"PO-Revision-Date: 2018-04-11 21:06+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
-"Language-Team: Tamil (http://www.transifex.com/zulip/zulip/language/ta/)\n"
-"Language: ta\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: analytics/views.py:114 zerver/decorator.py:503 zerver/decorator.py:512
 msgid "Not allowed for guest users"
@@ -27,26 +26,20 @@ msgid "Invalid organization"
 msgstr ""
 
 #: analytics/views.py:229
-#, fuzzy
-#| msgid "All streams"
 msgid "Public streams"
-msgstr "அனைத்து தகவலரங்கங்கள்"
+msgstr ""
 
 #: analytics/views.py:230
-#, fuzzy
-#| msgid "Private messages"
 msgid "Private streams"
-msgstr "தனிப்பட்ட செய்தி"
+msgstr ""
 
 #: analytics/views.py:231 templates/zerver/app/left_sidebar.html:25
 msgid "Private messages"
-msgstr "தனிப்பட்ட செய்தி"
+msgstr ""
 
 #: analytics/views.py:232
-#, fuzzy
-#| msgid "Private messages"
 msgid "Group private messages"
-msgstr "தனிப்பட்ட செய்தி"
+msgstr ""
 
 #: analytics/views.py:250
 msgid "Unknown chart name: {}"
@@ -117,7 +110,7 @@ msgstr ""
 
 #: templates/analytics/stats.html:23 templates/analytics/stats.html:104
 msgid "Daily"
-msgstr "தினசரி"
+msgstr ""
 
 #: templates/analytics/stats.html:24 templates/analytics/stats.html:105
 msgid "Weekly"
@@ -299,7 +292,7 @@ msgstr ""
 #: templates/zerver/register.html:97 templates/zerver/reset.html:22
 #: templates/zerver/reset_confirm.html:20
 msgid "Email"
-msgstr "மின்னஞ்சல்"
+msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:43
 #: templates/zerver/register.html:220
@@ -311,7 +304,7 @@ msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:54
 msgid "Enter"
-msgstr "உள்ளிடு"
+msgstr ""
 
 #: templates/zerver/accounts_home.html:14
 msgid "Sign up for Zulip"
@@ -358,17 +351,15 @@ msgstr ""
 #: templates/zerver/app/compose.html:106
 #: templates/zerver/app/keyboard_shortcuts.html:256
 msgid "Drafts"
-msgstr "வரைவுகள்"
+msgstr ""
 
 #: templates/zerver/app/compose.html:15
 msgid "Saved as draft"
 msgstr ""
 
 #: templates/zerver/app/compose.html:20
-#, fuzzy
-#| msgid "Private messages"
 msgid "New message"
-msgstr "தனிப்பட்ட செய்தி"
+msgstr ""
 
 #: templates/zerver/app/compose.html:27 templates/zerver/app/compose.html:28
 msgid "New topic"
@@ -382,7 +373,7 @@ msgstr ""
 
 #: templates/zerver/app/compose.html:43 templates/zerver/app/compose.html:44
 msgid "Reply"
-msgstr "மறுமொழி"
+msgstr ""
 
 #: templates/zerver/app/compose.html:61
 #: templates/zerver/app/keyboard_shortcuts.html:24
@@ -396,11 +387,11 @@ msgstr ""
 
 #: templates/zerver/app/compose.html:71
 msgid "Stream"
-msgstr "தொடர்"
+msgstr ""
 
 #: templates/zerver/app/compose.html:73
 msgid "Topic"
-msgstr "தலைப்பு"
+msgstr ""
 
 #: templates/zerver/app/compose.html:78
 msgid "To"
@@ -470,7 +461,7 @@ msgstr ""
 #: templates/zerver/app/navbar_alerts.html:41
 #: templates/zerver/app/navbar_alerts.html:52
 msgid "Close"
-msgstr "மூடு"
+msgstr ""
 
 #: templates/zerver/app/delete_message.html:4
 msgid "Delete message"
@@ -483,7 +474,7 @@ msgstr ""
 #: templates/zerver/app/delete_message.html:13
 #: templates/zerver/app/invite_user.html:57
 msgid "Cancel"
-msgstr "இரத்து"
+msgstr ""
 
 #: templates/zerver/app/delete_message.html:14
 msgid "Yes, delete this message"
@@ -586,7 +577,7 @@ msgstr ""
 
 #: templates/zerver/app/home.html:107
 msgid "Subscribe"
-msgstr "சேர்"
+msgstr ""
 
 #: templates/zerver/app/home.html:112
 msgid "This stream does not exist or is private."
@@ -627,10 +618,8 @@ msgid "No search results"
 msgstr ""
 
 #: templates/zerver/app/home.html:141 templates/zerver/app/home.html:143
-#, fuzzy
-#| msgid "Private messages"
 msgid "Messages"
-msgstr "தனிப்பட்ட செய்தி"
+msgstr ""
 
 #: templates/zerver/app/index.html:33
 msgid "Loading..."
@@ -694,10 +683,8 @@ msgid "Guests"
 msgstr ""
 
 #: templates/zerver/app/invite_user.html:46
-#, fuzzy
-#| msgid "Administrators"
 msgid "Organization owners"
-msgstr "நிர்வாகிகள்"
+msgstr ""
 
 #: templates/zerver/app/invite_user.html:52
 msgid "Streams they should join"
@@ -776,7 +763,7 @@ msgstr ""
 #: templates/zerver/app/keyboard_shortcuts.html:73
 #: templates/zerver/app/right_sidebar.html:9
 msgid "Search people"
-msgstr "நபர்களைத் தேடு"
+msgstr ""
 
 #: templates/zerver/app/keyboard_shortcuts.html:77
 msgid "Previous message"
@@ -962,7 +949,7 @@ msgstr ""
 
 #: templates/zerver/app/left_sidebar.html:40
 msgid "Mentions"
-msgstr "குறிப்பிடுகள்"
+msgstr ""
 
 #: templates/zerver/app/left_sidebar.html:52
 msgid "Starred messages"
@@ -983,13 +970,11 @@ msgstr ""
 
 #: templates/zerver/app/left_sidebar.html:81
 msgid "All streams"
-msgstr "அனைத்து தகவலரங்கங்கள்"
+msgstr ""
 
 #: templates/zerver/app/left_sidebar.html:87
-#, fuzzy
-#| msgid "All streams"
 msgid "Add streams"
-msgstr "அனைத்து தகவலரங்கங்கள்"
+msgstr ""
 
 #: templates/zerver/app/lightbox_overlay.html:10
 msgid "Pan &amp; Zoom"
@@ -1001,11 +986,11 @@ msgstr ""
 
 #: templates/zerver/app/lightbox_overlay.html:11
 msgid "Enabled"
-msgstr "செயல்படுத்தப்பட்டது"
+msgstr ""
 
 #: templates/zerver/app/lightbox_overlay.html:13
 msgid "Open"
-msgstr "திற"
+msgstr ""
 
 #: templates/zerver/app/lightbox_overlay.html:14
 msgid "Download"
@@ -1052,15 +1037,13 @@ msgid "Message edit history"
 msgstr ""
 
 #: templates/zerver/app/navbar.html:10
-#, fuzzy
-#| msgid "Stream"
 msgid "Stream list"
-msgstr "தொடர்"
+msgstr ""
 
 #: templates/zerver/app/navbar.html:23 templates/zerver/app/navbar.html:24
 #: templates/zerver/app/navbar.html:34 templates/zerver/app/navbar.html:35
 msgid "Search"
-msgstr "தேடுக"
+msgstr ""
 
 #: templates/zerver/app/navbar.html:25 templates/zerver/app/navbar.html:36
 msgid "Exit search"
@@ -1082,7 +1065,7 @@ msgstr ""
 #: templates/zerver/app/settings_overlay.html:4
 #: templates/zerver/app/settings_overlay.html:166 zerver/lib/hotspots.py:27
 msgid "Settings"
-msgstr "அமைப்புகள்"
+msgstr ""
 
 #: templates/zerver/app/navbar.html:76
 msgid "Manage organization"
@@ -1137,7 +1120,7 @@ msgstr ""
 
 #: templates/zerver/app/navbar.html:163
 msgid "Log out"
-msgstr "விடுபதிகை"
+msgstr ""
 
 #: templates/zerver/app/navbar_alerts.html:5
 msgid ""
@@ -1155,7 +1138,7 @@ msgstr ""
 
 #: templates/zerver/app/navbar_alerts.html:12
 msgid "Enable notifications"
-msgstr "அறிவிப்புகளை இயக்கு"
+msgstr ""
 
 #: templates/zerver/app/navbar_alerts.html:14
 msgid "Ask me later"
@@ -1334,10 +1317,8 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/app/search_operators.html:92
-#, fuzzy
-#| msgid "Username"
 msgid "streamname"
-msgstr "பயனர்பெயர்"
+msgstr ""
 
 #: templates/zerver/app/search_operators.html:93
 msgid "user@example.com"
@@ -1374,7 +1355,7 @@ msgstr ""
 
 #: templates/zerver/app/settings_overlay.html:24
 msgid "Notifications"
-msgstr "அறிவிப்புகள்"
+msgstr ""
 
 #: templates/zerver/app/settings_overlay.html:29
 msgid "Your bots"
@@ -1504,7 +1485,7 @@ msgstr ""
 #: templates/zerver/login.html:102 templates/zerver/portico-header.html:33
 #: templates/zerver/portico-header.html:39
 msgid "Log in"
-msgstr "புகுபதிகை செய்"
+msgstr ""
 
 #: templates/zerver/create_realm.html:12
 msgid "Create a new Zulip organization"
@@ -1583,7 +1564,7 @@ msgstr ""
 
 #: templates/zerver/dev_login.html:31
 msgid "Administrators"
-msgstr "நிர்வாகிகள்"
+msgstr ""
 
 #: templates/zerver/dev_login.html:40
 msgid "Guest users"
@@ -1667,17 +1648,13 @@ msgstr ""
 #: templates/zerver/emails/compiled/custom_email_ed271a34d10d853722568eb6ada75850.html:4
 #: templates/zerver/emails/compiled/markdown_email.html:4
 #: templates/zerver/emails/markdown_email.source.html:4
-#, fuzzy
-#| msgid "Zulip"
 msgid "Zulip logo"
-msgstr "சுலிப்பு"
+msgstr ""
 
 #: templates/zerver/emails/compiled/digest.html:28
 #: templates/zerver/emails/digest.source.html:27
-#, fuzzy
-#| msgid "All streams"
 msgid "New streams"
-msgstr "அனைத்து தகவலரங்கங்கள்"
+msgstr ""
 
 #: templates/zerver/emails/compiled/digest.html:35
 #: templates/zerver/emails/digest.source.html:34
@@ -1695,10 +1672,8 @@ msgstr ""
 
 #: templates/zerver/emails/compiled/digest.html:41
 #: templates/zerver/emails/digest.source.html:40
-#, fuzzy
-#| msgid "Enable notifications"
 msgid "Unsubscribe from digest emails"
-msgstr "அறிவிப்புகளை இயக்கு"
+msgstr ""
 
 #: templates/zerver/emails/compiled/email_base_default.html:87
 #: templates/zerver/emails/custom/custom_email_87e5498dc967c76480e0895fe3f11751.txt:30
@@ -1769,10 +1744,8 @@ msgstr ""
 #: templates/zerver/emails/compiled/followup_day1.html:26
 #: templates/zerver/emails/followup_day1.source.html:23
 #: templates/zerver/emails/followup_day1.txt:14
-#, fuzzy
-#| msgid "Username"
 msgid "Username:"
-msgstr "பயனர்பெயர்"
+msgstr ""
 
 #: templates/zerver/emails/compiled/followup_day1.html:29
 #: templates/zerver/emails/followup_day1.source.html:25
@@ -1783,10 +1756,8 @@ msgstr ""
 #: templates/zerver/emails/compiled/followup_day1.html:33
 #: templates/zerver/emails/followup_day1.source.html:28
 #: templates/zerver/emails/followup_day1.txt:19
-#, fuzzy
-#| msgid "Email"
 msgid "Email:"
-msgstr "மின்னஞ்சல்"
+msgstr ""
 
 #: templates/zerver/emails/compiled/followup_day1.html:36
 #, python-format
@@ -1827,10 +1798,8 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.txt:32
 #: templates/zerver/emails/notify_change_in_email.source.html:14
 #: templates/zerver/emails/notify_change_in_email.txt:7
-#, fuzzy
-#| msgid "Zulip"
 msgid "Team Zulip"
-msgstr "சுலிப்பு"
+msgstr ""
 
 #: templates/zerver/emails/compiled/followup_day1.html:53
 msgid ""
@@ -1914,7 +1883,7 @@ msgstr ""
 #: templates/zerver/emails/followup_day2.txt:17
 #: templates/zerver/portico-header.html:6
 msgid "Zulip"
-msgstr "சுலிப்பு"
+msgstr ""
 
 #: templates/zerver/emails/compiled/followup_day2.html:35
 #: templates/zerver/emails/followup_day2.source.html:34
@@ -2066,11 +2035,10 @@ msgstr ""
 
 #: templates/zerver/emails/compiled/notify_new_login.html:4
 #: templates/zerver/emails/notify_new_login.source.html:4
-#, fuzzy, python-format
-#| msgid "Administrators"
+#, python-format
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: %(user_email)s"
-msgstr "நிர்வாகிகள்"
+msgstr ""
 
 #: templates/zerver/emails/compiled/notify_new_login.html:13
 #: templates/zerver/emails/notify_new_login.source.html:12
@@ -2137,10 +2105,8 @@ msgstr ""
 
 #: templates/zerver/emails/compiled/notify_new_login.html:48
 #: templates/zerver/emails/notify_new_login.source.html:46
-#, fuzzy
-#| msgid "Enable notifications"
 msgid "Unsubscribe from login notifications"
-msgstr "அறிவிப்புகளை இயக்கு"
+msgstr ""
 
 #: templates/zerver/emails/compiled/password_reset.html:10
 #: templates/zerver/emails/password_reset.source.html:9
@@ -2158,10 +2124,8 @@ msgstr ""
 
 #: templates/zerver/emails/compiled/password_reset.html:15
 #: templates/zerver/emails/password_reset.source.html:14
-#, fuzzy
-#| msgid "Password"
 msgid "Reset password"
-msgstr "கடவுச்சொல்"
+msgstr ""
 
 #: templates/zerver/emails/compiled/password_reset.html:20
 #, python-format
@@ -2293,10 +2257,8 @@ msgid "Manage email preferences:"
 msgstr ""
 
 #: templates/zerver/emails/digest.txt:19
-#, fuzzy
-#| msgid "Enable notifications"
 msgid "Unsubscribe from digest emails:"
-msgstr "அறிவிப்புகளை இயக்கு"
+msgstr ""
 
 #: templates/zerver/emails/find_team.subject.txt:1
 msgid "Your Zulip login page"
@@ -2545,10 +2507,8 @@ msgid "PMs with %(sender_str)s"
 msgstr ""
 
 #: templates/zerver/emails/missed_message.subject.txt:7
-#, fuzzy
-#| msgid "Private messages"
 msgid "New missed messages"
-msgstr "தனிப்பட்ட செய்தி"
+msgstr ""
 
 #: templates/zerver/emails/missed_message.txt:11
 #, python-format
@@ -2638,10 +2598,9 @@ msgid "New login from %(device_browser)s on %(device_os)s"
 msgstr ""
 
 #: templates/zerver/emails/notify_new_login.txt:3
-#, fuzzy, python-format
-#| msgid "Administrators"
+#, python-format
 msgid "Organization: %(organization_url)s"
-msgstr "நிர்வாகிகள்"
+msgstr ""
 
 #: templates/zerver/emails/notify_new_login.txt:5
 #, python-format
@@ -2718,7 +2677,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:5
 msgid "Home"
-msgstr "முகப்பு"
+msgstr ""
 
 #: templates/zerver/footer.html:6
 msgid "Why Zulip"
@@ -2766,7 +2725,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:35
 msgid "Login"
-msgstr "புகுபதிகை"
+msgstr ""
 
 #: templates/zerver/footer.html:42 templates/zerver/terms.html:16
 msgid "Terms of Service"
@@ -2863,10 +2822,8 @@ msgid "Pagerduty logo"
 msgstr ""
 
 #: templates/zerver/hello.html:538
-#, fuzzy
-#| msgid "Log in"
 msgid "Log in now"
-msgstr "புகுபதிகை செய்"
+msgstr ""
 
 #: templates/zerver/hello.html:542
 msgid "Sign up now"
@@ -3018,12 +2975,12 @@ msgstr ""
 
 #: templates/zerver/login.html:63
 msgid "Username"
-msgstr "பயனர்பெயர்"
+msgstr ""
 
 #: templates/zerver/login.html:74 templates/zerver/register.html:145
 #: templates/zerver/register.html:157 templates/zerver/reset_confirm.html:27
 msgid "Password"
-msgstr "கடவுச்சொல்"
+msgstr ""
 
 #: templates/zerver/login.html:90
 msgid "You've already registered with this email address. Please log in below."
@@ -3158,7 +3115,7 @@ msgstr ""
 
 #: templates/zerver/register.html:128
 msgid "Full name"
-msgstr "முழு பெயர்"
+msgstr ""
 
 #: templates/zerver/register.html:147
 msgid "Enter your LDAP/Active Directory password."
@@ -3191,7 +3148,7 @@ msgstr ""
 
 #: templates/zerver/reset_confirm.html:47
 msgid "Confirm password"
-msgstr "கடவுச்சொல்லை உறுதிப்படுத்துக"
+msgstr ""
 
 #: templates/zerver/reset_confirm.html:66
 msgid "Sorry, the link you provided is invalid or has already been used."
@@ -3429,10 +3386,8 @@ msgid "Email addresses containing + are not allowed in this organization."
 msgstr ""
 
 #: zerver/forms.py:200
-#, fuzzy
-#| msgid "Password"
 msgid "New password"
-msgstr "கடவுச்சொல்"
+msgstr ""
 
 #: zerver/forms.py:207
 msgid "New password confirmation"
@@ -3707,10 +3662,8 @@ msgid "User group '{}' already exists."
 msgstr ""
 
 #: zerver/lib/addressee.py:21
-#, fuzzy
-#| msgid "Enable notifications"
 msgid "Invalid email '{}'"
-msgstr "அறிவிப்புகளை இயக்கு"
+msgstr ""
 
 #: zerver/lib/addressee.py:39 zerver/views/message_edit.py:157
 #: zerver/webhooks/ifttt/view.py:23 zerver/webhooks/zapier/view.py:33
@@ -3779,10 +3732,8 @@ msgid "Domain can only have letters, numbers, '.' and '-'s."
 msgstr ""
 
 #: zerver/lib/email_notifications.py:415
-#, fuzzy
-#| msgid "Private messages"
 msgid "Zulip missed messages"
-msgstr "தனிப்பட்ட செய்தி"
+msgstr ""
 
 #: zerver/lib/email_validation.py:102
 msgid "Invalid address."
@@ -3872,10 +3823,8 @@ msgid "Stream with ID '{stream_id}' does not exist"
 msgstr ""
 
 #: zerver/lib/exceptions.py:163
-#, fuzzy
-#| msgid "Administrators"
 msgid "organization owner"
-msgstr "நிர்வாகிகள்"
+msgstr ""
 
 #: zerver/lib/exceptions.py:163
 msgid "user"
@@ -3947,10 +3896,8 @@ msgid ""
 msgstr ""
 
 #: zerver/lib/hotspots.py:21
-#, fuzzy
-#| msgid "Topic"
 msgid "Topics"
-msgstr "தலைப்பு"
+msgstr ""
 
 #: zerver/lib/hotspots.py:22
 msgid ""
@@ -4126,16 +4073,12 @@ msgid ""
 msgstr ""
 
 #: zerver/lib/push_notifications.py:243
-#, fuzzy
-#| msgid "Enable notifications"
 msgid "Invalid GCM option to bouncer: priority {!r}"
-msgstr "அறிவிப்புகளை இயக்கு"
+msgstr ""
 
 #: zerver/lib/push_notifications.py:251
-#, fuzzy
-#| msgid "Enable notifications"
 msgid "Invalid GCM options to bouncer: {}"
-msgstr "அறிவிப்புகளை இயக்கு"
+msgstr ""
 
 #. error
 #: zerver/lib/push_notifications.py:420 zilencer/views.py:135
@@ -4185,10 +4128,8 @@ msgstr ""
 
 #: zerver/lib/streams.py:131 zerver/lib/streams.py:299
 #: zerver/lib/streams.py:361
-#, fuzzy
-#| msgid "Enable notifications"
 msgid "Invalid stream name '{}'"
-msgstr "அறிவிப்புகளை இயக்கு"
+msgstr ""
 
 #: zerver/lib/streams.py:133
 msgid "Stream name too long (limit: {} characters)."
@@ -4289,20 +4230,16 @@ msgid "Bad name or username"
 msgstr ""
 
 #: zerver/lib/users.py:82
-#, fuzzy
-#| msgid "Enable notifications"
 msgid "Invalid integration '{}'."
-msgstr "அறிவிப்புகளை இயக்கு"
+msgstr ""
 
 #: zerver/lib/users.py:86
 msgid "Missing configuration parameters: {}"
 msgstr ""
 
 #: zerver/lib/users.py:94
-#, fuzzy
-#| msgid "Enable notifications"
 msgid "Invalid {} value {} ({})"
-msgstr "அறிவிப்புகளை இயக்கு"
+msgstr ""
 
 #: zerver/lib/users.py:109
 msgid "Invalid configuration data!"
@@ -4317,10 +4254,8 @@ msgid "Invalid interface type"
 msgstr ""
 
 #: zerver/lib/users.py:205 zerver/lib/users.py:210
-#, fuzzy
-#| msgid "Enable notifications"
 msgid "Invalid user ID: {}"
-msgstr "அறிவிப்புகளை இயக்கு"
+msgstr ""
 
 #: zerver/lib/users.py:217 zerver/lib/users.py:219
 msgid "No such bot"
@@ -4349,10 +4284,9 @@ msgid "{item} cannot be blank."
 msgstr ""
 
 #: zerver/lib/validator.py:58 zerver/lib/validator.py:109
-#, fuzzy, python-brace-format
-#| msgid "Enable notifications"
+#, python-brace-format
 msgid "Invalid {var_name}"
-msgstr "அறிவிப்புகளை இயக்கு"
+msgstr ""
 
 #: zerver/lib/validator.py:70
 #, python-brace-format
@@ -4489,10 +4423,8 @@ msgid "API usage exceeded rate limit"
 msgstr ""
 
 #: zerver/models.py:304
-#, fuzzy
-#| msgid "Username"
 msgid "stream events"
-msgstr "பயனர்பெயர்"
+msgstr ""
 
 #: zerver/models.py:330
 msgid "Available on Zulip Standard. Upgrade to access."
@@ -4826,10 +4758,8 @@ msgid "Topic already muted"
 msgstr ""
 
 #: zerver/views/muting.py:44
-#, fuzzy
-#| msgid "Topic"
 msgid "Topic is not muted"
-msgstr "தலைப்பு"
+msgstr ""
 
 #: zerver/views/presence.py:29
 msgid "Presence is not supported for bot users."
@@ -4845,10 +4775,8 @@ msgid "Client did not pass any new values."
 msgstr ""
 
 #: zerver/views/presence.py:80
-#, fuzzy
-#| msgid "Enable notifications"
 msgid "Invalid status: {}"
-msgstr "அறிவிப்புகளை இயக்கு"
+msgstr ""
 
 #: zerver/views/push_notifications.py:18
 msgid "Empty or invalid length token"
@@ -4869,10 +4797,8 @@ msgid "Reaction doesn't exist."
 msgstr ""
 
 #: zerver/views/realm.py:96
-#, fuzzy
-#| msgid "Enable notifications"
 msgid "Invalid language '{}'"
-msgstr "அறிவிப்புகளை இயக்கு"
+msgstr ""
 
 #: zerver/views/realm.py:98
 msgid "Organization description is too long."
@@ -5022,10 +4948,8 @@ msgid "{user_name} created a new stream {stream_str}."
 msgstr ""
 
 #: zerver/views/streams.py:541
-#, fuzzy
-#| msgid "All streams"
 msgid "new streams"
-msgstr "அனைத்து தகவலரங்கங்கள்"
+msgstr ""
 
 #: zerver/views/streams.py:570
 #, python-brace-format
@@ -5123,10 +5047,8 @@ msgid "Invalid default_language"
 msgstr ""
 
 #: zerver/views/user_settings.py:226
-#, fuzzy
-#| msgid "Enable notifications"
 msgid "Invalid notification sound '{}'"
-msgstr "அறிவிப்புகளை இயக்கு"
+msgstr ""
 
 #: zerver/views/user_settings.py:239
 msgid "You must upload exactly one avatar."
@@ -5317,18 +5239,3 @@ msgstr ""
 #: zproject/backends.py:2007
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
-
-#, fuzzy
-#~| msgid "Topic"
-#~ msgid "Topic muted"
-#~ msgstr "தலைப்பு"
-
-#, fuzzy
-#~| msgid "Zulip"
-#~ msgid "Why Zulip?"
-#~ msgstr "சுலிப்பு"
-
-#, fuzzy
-#~| msgid "Username"
-#~ msgid "User"
-#~ msgstr "பயனர்பெயர்"
