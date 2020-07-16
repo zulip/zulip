@@ -274,7 +274,7 @@ run_test("error checking", () => {
 
     const replace_content = "whatever";
     const find = "whatever";
-    const ul = {opts: { attrs: [] }};
+    const ul = {opts: {attrs: []}};
 
     vdom.update(replace_content, find, ul, ul);
 

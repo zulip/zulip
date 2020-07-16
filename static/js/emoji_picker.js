@@ -29,17 +29,17 @@ let section_head_offsets = [];
 let edit_message_id = null;
 
 const EMOJI_CATEGORIES = [
-    { name: "Popular", icon: "fa-star-o" },
-    { name: "Smileys & Emotion", icon: "fa-smile-o" },
-    { name: "People & Body", icon: "fa-thumbs-o-up" },
-    { name: "Animals & Nature", icon: "fa-leaf" },
-    { name: "Food & Drink", icon: "fa-cutlery" },
-    { name: "Activities", icon: "fa-soccer-ball-o" },
-    { name: "Travel & Places", icon: "fa-car" },
-    { name: "Objects", icon: "fa-lightbulb-o" },
-    { name: "Symbols", icon: "fa-hashtag" },
-    { name: "Flags", icon: "fa-flag" },
-    { name: "Custom", icon: "fa-cog" },
+    {name: "Popular", icon: "fa-star-o"},
+    {name: "Smileys & Emotion", icon: "fa-smile-o"},
+    {name: "People & Body", icon: "fa-thumbs-o-up"},
+    {name: "Animals & Nature", icon: "fa-leaf"},
+    {name: "Food & Drink", icon: "fa-cutlery"},
+    {name: "Activities", icon: "fa-soccer-ball-o"},
+    {name: "Travel & Places", icon: "fa-car"},
+    {name: "Objects", icon: "fa-lightbulb-o"},
+    {name: "Symbols", icon: "fa-hashtag"},
+    {name: "Flags", icon: "fa-flag"},
+    {name: "Custom", icon: "fa-cog"},
 ];
 
 function get_total_sections() {
@@ -212,7 +212,7 @@ function filter_emojis() {
                 for (const alias of emoji_dict.aliases) {
                     const match = search_terms.every((search_term) => alias.includes(search_term));
                     if (match) {
-                        search_results.push({ ...emoji_dict, emoji_name: alias });
+                        search_results.push({...emoji_dict, emoji_name: alias});
                         break;  // We only need the first matching alias per emoji.
                     }
                 }

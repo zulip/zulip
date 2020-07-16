@@ -122,7 +122,7 @@ exports.MessageList.prototype = {
     },
 
     clear: function  MessageList_clear(opts) {
-        opts = { clear_selected_id: true, ...opts };
+        opts = {clear_selected_id: true, ...opts};
 
         this.data.clear();
         this.view.clear_rendering_state(true);
@@ -290,7 +290,7 @@ exports.MessageList.prototype = {
     },
 
     append_to_view: function (messages, opts) {
-        opts = { messages_are_new: false, ...opts };
+        opts = {messages_are_new: false, ...opts};
 
         this.num_appends += 1;
         const render_info = this.view.append(messages, opts.messages_are_new);

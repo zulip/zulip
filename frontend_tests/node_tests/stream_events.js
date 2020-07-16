@@ -35,7 +35,7 @@ stream_data.add_sub(frontend);
 
 
 const frontend_filter_terms = [
-    { operator: "stream", operand: "frontend" },
+    {operator: "stream", operand: "frontend"},
 ];
 
 const frontend_filter = new Filter(frontend_filter_terms);
@@ -214,8 +214,8 @@ run_test("marked_subscribed", () => {
     stream_data.get_colors = noop;
     stream_data.update_calculated_fields = noop;
 
-    set_global("subs", { update_settings_for_subscribed: noop });
-    set_global("overlays", { streams_open: return_true });
+    set_global("subs", {update_settings_for_subscribed: noop});
+    set_global("overlays", {streams_open: return_true});
 
     // Test basic dispatching and updating stream color
     narrow_state.set_current_filter(frontend_filter);

@@ -4,7 +4,7 @@ set_global("$", global.make_zjquery());
 
 const noop = () => {};
 const _list_render = {
-    create: () => ({ init: noop }),
+    create: () => ({init: noop}),
 };
 set_global("list_render", _list_render);
 

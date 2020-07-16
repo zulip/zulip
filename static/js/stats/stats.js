@@ -64,7 +64,7 @@ function update_last_full_update(end_times) {
 
     last_full_update = Math.min(last_full_update, end_times[end_times.length - 1]);
     const update_time = new Date(last_full_update * 1000);
-    const locale_date = update_time.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    const locale_date = update_time.toLocaleDateString("en-US", {year: "numeric", month: "long", day: "numeric"});
     const locale_time = update_time.toLocaleTimeString().replace(":00 ", " ");
 
     $("#id_last_full_update").text(locale_time + " on " + locale_date);
@@ -92,7 +92,7 @@ function populate_messages_sent_over_time(data) {
     // Helper functions
     function make_traces(dates, values, type, date_formatter) {
         const text = dates.map((date) => date_formatter(date));
-        const common = { x: dates, type: type, hoverinfo: "none", text: text };
+        const common = {x: dates, type: type, hoverinfo: "none", text: text};
         return {
             human: { // 5062a0
                 name: i18n.t("Humans"), y: values.human, marker: {color: "#5f6ea0"},
@@ -113,13 +113,13 @@ function populate_messages_sent_over_time(data) {
         barmode: "group",
         width: 750,
         height: 400,
-        margin: { l: 40, r: 0, b: 40, t: 0 },
+        margin: {l: 40, r: 0, b: 40, t: 0},
         xaxis: {
             fixedrange: true,
-            rangeslider: { bordercolor: "#D8D8D8", borderwidth: 1 },
+            rangeslider: {bordercolor: "#D8D8D8", borderwidth: 1},
             type: "date",
         },
-        yaxis: { fixedrange: true, rangemode: "tozero" },
+        yaxis: {fixedrange: true, rangemode: "tozero"},
         legend: {
             x: 0.62, y: 1.12, orientation: "h", font: font_14pt,
         },
@@ -372,10 +372,10 @@ function populate_messages_sent_by_client(data) {
     const layout = {
         width: 750,
         height: null, // set in draw_plot()
-        margin: { l: 3, r: 40, b: 40, t: 0 },
+        margin: {l: 3, r: 40, b: 40, t: 0},
         font: font_14pt,
-        xaxis: { range: null }, // set in draw_plot()
-        yaxis: { showticklabels: false },
+        xaxis: {range: null}, // set in draw_plot()
+        yaxis: {showticklabels: false},
         showlegend: false,
     };
 
@@ -415,8 +415,8 @@ function populate_messages_sent_by_client(data) {
                 sort: false,
                 textinfo: "text",
                 hoverinfo: "none",
-                marker: { color: "#537c5e" },
-                font: { family: "Source Sans Pro", size: 18, color: "#000000" },
+                marker: {color: "#537c5e"},
+                font: {family: "Source Sans Pro", size: 18, color: "#000000"},
             },
             trace_annotations: {
                 x: annotations.values,
@@ -518,7 +518,7 @@ function populate_messages_sent_by_client(data) {
 
 function populate_messages_sent_by_message_type(data) {
     const layout = {
-        margin: { l: 90, r: 0, b: 0, t: 0 },
+        margin: {l: 90, r: 0, b: 0, t: 0},
         width: 750,
         height: 300,
         font: font_14pt,
@@ -630,18 +630,18 @@ function populate_number_of_users(data) {
     const layout = {
         width: 750,
         height: 370,
-        margin: { l: 40, r: 0, b: 65, t: 20 },
+        margin: {l: 40, r: 0, b: 65, t: 20},
         xaxis: {
             fixedrange: true,
-            rangeslider: { bordercolor: "#D8D8D8", borderwidth: 1 },
+            rangeslider: {bordercolor: "#D8D8D8", borderwidth: 1},
             rangeselector: {
                 x: 0.64, y: -0.79,
                 buttons: [
-                    { count: 2, label: i18n.t("Last 2 months"), step: "month", stepmode: "backward" },
-                    { count: 6, label: i18n.t("Last 6 months"), step: "month", stepmode: "backward" },
-                    { step: "all", label: i18n.t("All time") },
+                    {count: 2, label: i18n.t("Last 2 months"), step: "month", stepmode: "backward"},
+                    {count: 6, label: i18n.t("Last 6 months"), step: "month", stepmode: "backward"},
+                    {step: "all", label: i18n.t("All time")},
                 ]}},
-        yaxis: { fixedrange: true, rangemode: "tozero" },
+        yaxis: {fixedrange: true, rangemode: "tozero"},
         font: font_14pt,
     };
 
@@ -726,7 +726,7 @@ function populate_messages_read_over_time(data) {
     // Helper functions
     function make_traces(dates, values, type, date_formatter) {
         const text = dates.map((date) => date_formatter(date));
-        const common = { x: dates, type: type, hoverinfo: "none", text: text };
+        const common = {x: dates, type: type, hoverinfo: "none", text: text};
         return {
             everyone: {
                 name: i18n.t("Everyone"), y: values.everyone, marker: {color: "#5f6ea0"},
@@ -743,13 +743,13 @@ function populate_messages_read_over_time(data) {
         barmode: "group",
         width: 750,
         height: 400,
-        margin: { l: 40, r: 0, b: 40, t: 0 },
+        margin: {l: 40, r: 0, b: 40, t: 0},
         xaxis: {
             fixedrange: true,
-            rangeslider: { bordercolor: "#D8D8D8", borderwidth: 1 },
+            rangeslider: {bordercolor: "#D8D8D8", borderwidth: 1},
             type: "date",
         },
-        yaxis: { fixedrange: true, rangemode: "tozero" },
+        yaxis: {fixedrange: true, rangemode: "tozero"},
         legend: {
             x: 0.62, y: 1.12, orientation: "h", font: font_14pt,
         },

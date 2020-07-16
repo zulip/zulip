@@ -680,7 +680,7 @@ Filter.prototype = {
 
     filter_with_new_params: function (params) {
         const terms = this._operators.map((term) => {
-            const new_term = { ...term };
+            const new_term = {...term};
             if (new_term.operator === params.operator && !new_term.negated) {
                 new_term.operand = params.operand;
             }

@@ -22,7 +22,7 @@ set_global("sent_messages", {
 });
 
 set_global("message_store", {
-    get: () => ({ failed_request: true }),
+    get: () => ({failed_request: true}),
     update_booleans: () => {},
 });
 

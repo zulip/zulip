@@ -284,7 +284,7 @@ function simulate_narrow() {
 
     narrow_state.active = function () { return true; };
     narrow_state.public_operators = function () {
-        return [{ operator: "pm-with", operand: alice.email }];
+        return [{operator: "pm-with", operand: alice.email}];
     };
 
     const msg_list = new message_list.MessageList({

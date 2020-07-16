@@ -49,7 +49,7 @@ function populate_invites(invites_data) {
             item.disable_buttons = item.invited_as === settings_config.user_role_values.owner.code
                 && !page_params.is_owner;
             item.referrer_email = people.get_by_user_id(item.invited_by_user_id).email;
-            return render_admin_invites_list({ invite: item });
+            return render_admin_invites_list({invite: item});
         },
         filter: {
             element: invites_table.closest(".settings-section").find(".search"),

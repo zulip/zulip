@@ -287,7 +287,7 @@ function get_suggestions(str) {
             $(".create_default_stream")
                 .focus()
                 .val(str)
-                .trigger($.Event("keyup", { which: 0 }));
+                .trigger($.Event("keyup", {which: 0}));
         }, str);
     });
 }

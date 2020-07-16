@@ -882,7 +882,7 @@ exports.warn_if_private_stream_is_linked = function (linked_stream) {
     const stream_name = linked_stream.name;
 
     const warning_area = $("#compose_private_stream_alert");
-    const context = { stream_name: stream_name };
+    const context = {stream_name: stream_name};
     const new_row = render_compose_private_stream_alert(context);
 
     warning_area.append(new_row);

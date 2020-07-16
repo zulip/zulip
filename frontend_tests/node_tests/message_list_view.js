@@ -74,7 +74,7 @@ run_test("msg_edited_vars", () => {
     }
 
     function build_message_group(messages) {
-        return { message_containers: messages };
+        return {message_containers: messages};
     }
 
     function build_list(message_groups) {
@@ -104,8 +104,8 @@ run_test("msg_edited_vars", () => {
     (function test_msg_edited_vars() {
         const messages = [
             build_message_context(),
-            build_message_context({}, { include_sender: false }),
-            build_message_context({ is_me_message: true, content: "<p>/me test</p>" }),
+            build_message_context({}, {include_sender: false}),
+            build_message_context({is_me_message: true, content: "<p>/me test</p>"}),
         ];
         const message_group = build_message_group(messages);
         const list = build_list([message_group]);

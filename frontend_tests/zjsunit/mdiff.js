@@ -120,7 +120,7 @@ function diff_strings(string_0, string_1) {
     return output_lines.join("\n");
 }
 
-module.exports = { diff_strings };
+module.exports = {diff_strings};
 
 // Simple CLI for this module
 // Only run this code if called as a command-line utility

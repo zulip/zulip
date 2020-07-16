@@ -1,4 +1,4 @@
-import { gtag, install } from "ga-gtag";
+import {gtag, install} from "ga-gtag";
 
 export let config;
 

@@ -55,8 +55,8 @@ function blocked_history() {
 run_test("basics", () => {
     reset();
 
-    fetch_status.start_newer_batch({ update_loading_indicator: false });
-    fetch_status.start_older_batch({ update_loading_indicator: false });
+    fetch_status.start_newer_batch({update_loading_indicator: false});
+    fetch_status.start_older_batch({update_loading_indicator: false});
 
     blocked_newer();
     blocked_older();
@@ -81,8 +81,8 @@ run_test("basics", () => {
 
     reset();
 
-    fetch_status.start_newer_batch({ update_loading_indicator: true });
-    fetch_status.start_older_batch({ update_loading_indicator: true });
+    fetch_status.start_newer_batch({update_loading_indicator: true});
+    fetch_status.start_older_batch({update_loading_indicator: true});
 
     blocked_newer();
     blocked_older();
@@ -105,7 +105,7 @@ run_test("basics", () => {
 
     can_load_older();
 
-    fetch_status.start_older_batch({ update_loading_indicator: false });
+    fetch_status.start_older_batch({update_loading_indicator: false});
 
     blocked_older();
     can_load_newer();
@@ -121,7 +121,7 @@ run_test("basics", () => {
     can_load_newer();
     can_load_history();
 
-    fetch_status.start_older_batch({ update_loading_indicator: true });
+    fetch_status.start_older_batch({update_loading_indicator: true});
 
     blocked_older();
     can_load_newer();
@@ -142,7 +142,7 @@ run_test("basics", () => {
     can_load_older();
     can_load_newer();
 
-    fetch_status.start_newer_batch({ update_loading_indicator: false });
+    fetch_status.start_newer_batch({update_loading_indicator: false});
 
     can_load_older();
     blocked_newer();
@@ -155,7 +155,7 @@ run_test("basics", () => {
     can_load_older();
     can_load_newer();
 
-    fetch_status.start_newer_batch({ update_loading_indicator: true });
+    fetch_status.start_newer_batch({update_loading_indicator: true});
 
     can_load_older();
     blocked_newer();

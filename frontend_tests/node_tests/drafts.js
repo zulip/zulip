@@ -103,7 +103,7 @@ run_test("draft_model", () => {
 
     localStorage.clear();
     (function test_get() {
-        const expected = { id1: draft_1, id2: draft_2 };
+        const expected = {id1: draft_1, id2: draft_2};
         ls.set("drafts", expected);
 
         assert.deepEqual(draft_model.get(), expected);
@@ -111,7 +111,7 @@ run_test("draft_model", () => {
 
     localStorage.clear();
     (function test_get() {
-        ls.set("drafts", { id1: draft_1 });
+        ls.set("drafts", {id1: draft_1});
 
         assert.deepEqual(draft_model.getDraft("id1"), draft_1);
         assert.equal(draft_model.getDraft("id2"), false);
@@ -120,9 +120,9 @@ run_test("draft_model", () => {
     localStorage.clear();
     (function test_addDraft() {
         stub_timestamp(1, () => {
-            const expected = { ...draft_1 };
+            const expected = {...draft_1};
             expected.updatedAt = 1;
-            const id = draft_model.addDraft({ ...draft_1 });
+            const id = draft_model.addDraft({...draft_1});
 
             assert.deepEqual(ls.get("drafts")[id], expected);
         });
@@ -131,10 +131,10 @@ run_test("draft_model", () => {
     localStorage.clear();
     (function test_editDraft() {
         stub_timestamp(2, () => {
-            ls.set("drafts", { id1: draft_1 });
-            const expected = { ...draft_2 };
+            ls.set("drafts", {id1: draft_1});
+            const expected = {...draft_2};
             expected.updatedAt = 2;
-            draft_model.editDraft("id1", { ...draft_2 });
+            draft_model.editDraft("id1", {...draft_2});
 
             assert.deepEqual(ls.get("drafts").id1, expected);
         });
@@ -142,7 +142,7 @@ run_test("draft_model", () => {
 
     localStorage.clear();
     (function test_deleteDraft() {
-        ls.set("drafts", { id1: draft_1 });
+        ls.set("drafts", {id1: draft_1});
         draft_model.deleteDraft("id1");
 
         assert.deepEqual(ls.get("drafts"), {});
@@ -304,7 +304,7 @@ run_test("format_drafts", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     localStorage.clear();
-    const data = { id1: draft_1, id2: draft_2, id3: draft_3, id4: draft_4, id5: draft_5 };
+    const data = {id1: draft_1, id2: draft_2, id3: draft_3, id4: draft_4, id5: draft_5};
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
 

@@ -80,7 +80,7 @@ function render_attachments_ui() {
     list_render.create(uploaded_files_table, attachments, {
         name: "uploaded-files-list",
         modifier: function (attachment) {
-            return render_uploaded_files_list({ attachment: attachment });
+            return render_uploaded_files_list({attachment: attachment});
         },
         filter: {
             element: $search_input,

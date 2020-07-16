@@ -477,9 +477,9 @@ run_test("get_people_for_stream_create", () => {
 
     const others = people.get_people_for_stream_create();
     const expected = [
-        { email: "alice1@example.com", user_id: alice1.user_id, full_name: "Alice" },
-        { email: "alice2@example.com", user_id: alice2.user_id, full_name: "Alice" },
-        { email: "bob@example.com", user_id: bob.user_id, full_name: "Bob van Roberts" },
+        {email: "alice1@example.com", user_id: alice1.user_id, full_name: "Alice"},
+        {email: "alice2@example.com", user_id: alice2.user_id, full_name: "Alice"},
+        {email: "bob@example.com", user_id: bob.user_id, full_name: "Bob van Roberts"},
     ];
     assert.deepEqual(others, expected);
 
@@ -702,7 +702,7 @@ run_test("message_methods", () => {
     assert.equal(people.pm_with_url(message), "#narrow/pm-with/30-me");
     assert.equal(people.pm_perma_link(message), "#narrow/pm-with/30-pm");
 
-    message = { type: "stream" };
+    message = {type: "stream"};
     assert.equal(people.pm_with_user_ids(message), undefined);
     assert.equal(people.all_user_ids_in_pm(message), undefined);
 
@@ -715,28 +715,28 @@ run_test("message_methods", () => {
     const bot = bot_botson;
     people.add_active_user(bot);
 
-    message = { sender_id: bot.user_id };
+    message = {sender_id: bot.user_id};
     assert.equal(people.sender_is_bot(message), true);
 
-    message = { sender_id: maria.user_id };
+    message = {sender_id: maria.user_id};
     assert.equal(people.sender_is_bot(message), undefined);
 
-    message = { sender_id: undefined };
+    message = {sender_id: undefined};
     assert.equal(people.sender_is_bot(message), false);
 
     // Test sender_is_guest
     people.add_active_user(guest);
 
-    message = { sender_id: guest.user_id };
+    message = {sender_id: guest.user_id};
     assert.equal(people.sender_is_guest(message), true);
 
-    message = { sender_id: maria.user_id };
+    message = {sender_id: maria.user_id};
     assert.equal(people.sender_is_guest(message), undefined);
 
-    message = { sender_id: charles.user_id };
+    message = {sender_id: charles.user_id};
     assert.equal(people.sender_is_guest(message), false);
 
-    message = { sender_id: undefined };
+    message = {sender_id: undefined};
     assert.equal(people.sender_is_guest(message), false);
 });
 

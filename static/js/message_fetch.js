@@ -344,7 +344,7 @@ exports.maybe_load_newer_messages = function (opts) {
 
     function load_more(data, args) {
         if (args.fetch_again && args.msg_list === current_msg_list) {
-            exports.maybe_load_newer_messages({ msg_list: current_msg_list });
+            exports.maybe_load_newer_messages({msg_list: current_msg_list});
         }
     }
 

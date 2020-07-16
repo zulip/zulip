@@ -357,11 +357,11 @@ run_test("sorting", () => {
         cleared = true;
     };
 
-    const alice = { name: "alice", salary: 50 };
-    const bob = { name: "Bob", salary: 40 };
-    const cal = { name: "cal", salary: 30 };
-    const dave = { name: "dave", salary: 25 };
-    const ellen = { name: "ellen", salary: 95 };
+    const alice = {name: "alice", salary: 50};
+    const bob = {name: "Bob", salary: 40};
+    const cal = {name: "cal", salary: 30};
+    const dave = {name: "dave", salary: 25};
+    const ellen = {name: "ellen", salary: 95};
 
     const list = [bob, ellen, dave, alice, cal];
 

@@ -181,7 +181,7 @@ run_test("set_presence_info", () => {
     presence.initialize(params);
 
     assert.deepEqual(presence.presence_info.get(alice.user_id),
-                     { status: "active", last_active: recent},
+                     {status: "active", last_active: recent},
     );
     assert.equal(presence.get_status(alice.user_id), "active");
     assert.deepEqual(
@@ -190,22 +190,22 @@ run_test("set_presence_info", () => {
     );
 
     assert.deepEqual(presence.presence_info.get(fred.user_id),
-                     { status: "idle", last_active: now},
+                     {status: "idle", last_active: now},
     );
     assert.equal(presence.get_status(fred.user_id), "idle");
 
     assert.deepEqual(presence.presence_info.get(me.user_id),
-                     { status: "active", last_active: now},
+                     {status: "active", last_active: now},
     );
     assert.equal(presence.get_status(me.user_id), "active");
 
     assert.deepEqual(presence.presence_info.get(sally.user_id),
-                     { status: "offline", last_active: a_while_ago},
+                     {status: "offline", last_active: a_while_ago},
     );
     assert.equal(presence.get_status(sally.user_id), "offline");
 
     assert.deepEqual(presence.presence_info.get(zoe.user_id),
-                     { status: "offline", last_active: undefined},
+                     {status: "offline", last_active: undefined},
     );
     assert.equal(presence.get_status(zoe.user_id), "offline");
     assert.equal(presence.last_active_date(zoe.user_id), undefined);
@@ -214,12 +214,12 @@ run_test("set_presence_info", () => {
     assert.equal(presence.get_status(bot.user_id), "offline");
 
     assert.deepEqual(presence.presence_info.get(john.user_id),
-                     { status: "offline", last_active: a_while_ago},
+                     {status: "offline", last_active: a_while_ago},
     );
     assert.equal(presence.get_status(john.user_id), "offline");
 
     assert.deepEqual(presence.presence_info.get(jane.user_id),
-                     { status: "idle", last_active: now},
+                     {status: "idle", last_active: now},
     );
     assert.equal(presence.get_status(jane.user_id), "idle");
 
@@ -250,7 +250,7 @@ run_test("falsy values", () => {
 
         assert.deepEqual(
             presence.presence_info.get(zoe.user_id),
-            { status: "idle", last_active: a_bit_ago },
+            {status: "idle", last_active: a_bit_ago},
         );
 
         presences[zoe.user_id.toString()] = {
@@ -262,7 +262,7 @@ run_test("falsy values", () => {
 
         assert.deepEqual(
             presence.presence_info.get(zoe.user_id),
-            { status: "offline", last_active: undefined },
+            {status: "offline", last_active: undefined},
         );
     }
 });
@@ -289,7 +289,7 @@ run_test("big realms", () => {
 run_test("last_active_date", () => {
     const unknown_id = 42;
     presence.presence_info.clear();
-    presence.presence_info.set(alice.user_id, { last_active: 500 });
+    presence.presence_info.set(alice.user_id, {last_active: 500});
     presence.presence_info.set(fred.user_id, {});
 
     assert.equal(presence.last_active_date(unknown_id), undefined);
@@ -312,7 +312,7 @@ run_test("update_info_from_event", () => {
 
     assert.deepEqual(
         presence.presence_info.get(alice.user_id),
-        { status: "active", last_active: 500 },
+        {status: "active", last_active: 500},
     );
 
     info = {
@@ -325,7 +325,7 @@ run_test("update_info_from_event", () => {
 
     assert.deepEqual(
         presence.presence_info.get(alice.user_id),
-        { status: "active", last_active: 510 },
+        {status: "active", last_active: 510},
     );
 
     info = {
@@ -338,6 +338,6 @@ run_test("update_info_from_event", () => {
 
     assert.deepEqual(
         presence.presence_info.get(alice.user_id),
-        { status: "idle", last_active: 1000 },
+        {status: "idle", last_active: 1000},
     );
 });

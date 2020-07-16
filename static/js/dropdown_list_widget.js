@@ -70,7 +70,7 @@ const DropdownListWidget = function (opts) {
         list_render.create(dropdown_list_body, opts.data, {
             name: `${opts.widget_name}_list`,
             modifier: function (item) {
-                return render_dropdown_list({ item: item });
+                return render_dropdown_list({item: item});
             },
             filter: {
                 element: search_input,

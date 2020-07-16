@@ -17,7 +17,7 @@ class CommonUtils {
                     "--window-size=1400,1024",
                     "--no-sandbox", "--disable-setuid-sandbox",
                 ],
-                defaultViewport: { width: 1280, height: 1024 },
+                defaultViewport: {width: 1280, height: 1024},
                 headless: true,
             });
         }
@@ -104,7 +104,7 @@ class CommonUtils {
         // tag for script tags that load JavaScript which means that whey will be executed after DOM
         // is parsed but before DOMContentLoaded event is fired.
         await Promise.all([
-            page.waitForNavigation({ waitUntil: "domcontentloaded" }),
+            page.waitForNavigation({waitUntil: "domcontentloaded"}),
             page.$eval("#login_form", (form) => form.submit()),
         ]);
     }
@@ -189,7 +189,7 @@ class CommonUtils {
     async send_message(page, type, params) {
         // If a message is outside the view, we do not need
         // to wait for it to be processed later.
-        const { outside_view } = params;
+        const {outside_view} = params;
         delete params.outside_view;
 
         await page.waitForSelector("#compose-textarea");

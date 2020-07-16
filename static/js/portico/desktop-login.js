@@ -4,7 +4,7 @@ document.querySelector("#form").addEventListener("submit", () => {
 document.querySelector("#token").focus();
 
 async function decrypt_manual() {
-    const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, [
+    const key = await crypto.subtle.generateKey({name: "AES-GCM", length: 256}, true, [
         "decrypt",
     ]);
     return {
@@ -21,7 +21,7 @@ async function decrypt_manual() {
                     const iv = data.slice(0, 12);
                     const ciphertext = data.slice(12);
                     const plaintext = await crypto.subtle.decrypt(
-                        { name: "AES-GCM", iv },
+                        {name: "AES-GCM", iv},
                         key,
                         ciphertext,
                     );
@@ -40,7 +40,7 @@ async function decrypt_manual() {
     // key and a promise; as soon as something encrypted to that key is copied
     // to the clipboard, the app decrypts it and resolves the promise to the
     // plaintext.  This lets us skip the manual paste step.
-    const { key, pasted } =
+    const {key, pasted} =
         window.electron_bridge && window.electron_bridge.decrypt_clipboard
             ? window.electron_bridge.decrypt_clipboard(1)
             : await decrypt_manual();

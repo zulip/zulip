@@ -79,7 +79,7 @@ set_global("message_store", {
 
 set_global("current_msg_list", {
     selected_message: function () {
-        return { sent_by_me: true };
+        return {sent_by_me: true};
     },
     selected_row: function () {
         return $(".selected-row");
@@ -103,7 +103,7 @@ run_test("open_reactions_popover", () => {
     assert(reactions.open_reactions_popover());
     assert(called);
 
-    current_msg_list.selected_message = function () { return { sent_by_me: false }; };
+    current_msg_list.selected_message = function () { return {sent_by_me: false}; };
 
     called = false;
     emoji_picker.toggle_emoji_popover = function (target, id) {

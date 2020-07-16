@@ -1,7 +1,7 @@
 import * as google_analytics from "./google-analytics.js";
 import blueslip from "./../blueslip";
 
-import { path_parts } from "./landing-page";
+import {path_parts} from "./landing-page";
 
 
 // these constants are populated immediately with data from the DOM on page load
@@ -90,8 +90,8 @@ function update_categories() {
     }
 
     $(".integration-lozenges").animate(
-        { opacity: 1 },
-        { duration: 400 },
+        {opacity: 1},
+        {duration: 400},
     );
 
     adjust_font_sizing();
@@ -173,12 +173,12 @@ function hide_catalog_show_integration() {
         $(".integration-instructions#" + state.integration).css("display", "block");
 
         $("html, body").animate(
-            { scrollTop: 0 },
-            { duration: 200 },
+            {scrollTop: 0},
+            {duration: 200},
         );
         $("#integration-instructions-group").animate(
-            { opacity: 1 },
-            { duration: 300 },
+            {opacity: 1},
+            {duration: 300},
         );
 
         adjust_font_sizing();
@@ -206,8 +206,8 @@ function hide_catalog_show_integration() {
 function hide_integration_show_catalog() {
     function show_catalog() {
         $("html, body").animate(
-            { scrollTop: 0 },
-            { duration: 200 },
+            {scrollTop: 0},
+            {duration: 200},
         );
 
         $(".integration-categories-dropdown").css("display", "");
@@ -219,7 +219,7 @@ function hide_integration_show_catalog() {
     function hide_integration() {
         $("#integration-instruction-block").css("display", "none");
         $("#integration-instructions-group").css("display", "none");
-        $(".inner-content").css({ padding: "" });
+        $(".inner-content").css({padding: ""});
         $("#integration-instruction-block .integration-lozenge").remove();
         show_catalog();
     }
@@ -341,13 +341,13 @@ function integration_events() {
 
     $(".integration-instruction-block").on("click", "a .integration-category", (e) => {
         const category = $(e.target).data("category");
-        dispatch("SHOW_CATEGORY", { category: category });
+        dispatch("SHOW_CATEGORY", {category: category});
         return false;
     });
 
     $(".integrations a .integration-category").on("click", (e) => {
         const category = $(e.target).data("category");
-        dispatch("CHANGE_CATEGORY", { category: category });
+        dispatch("CHANGE_CATEGORY", {category: category});
         toggle_categories_dropdown();
         return false;
     });
@@ -355,7 +355,7 @@ function integration_events() {
     $(".integrations a .integration-lozenge").on("click", (e) => {
         if (!$(e.target).closest(".integration-lozenge").hasClass("integration-create-your-own")) {
             const integration = $(e.target).closest(".integration-lozenge").data("name");
-            dispatch("SHOW_INTEGRATION", { integration: integration });
+            dispatch("SHOW_INTEGRATION", {integration: integration});
             return false;
         }
     });
@@ -370,7 +370,7 @@ function integration_events() {
     $(".integrations .searchbar input[type='text']")
         .focus()
         .on("input", (e) => {
-            dispatch("UPDATE_QUERY", { query: e.target.value.toLowerCase() });
+            dispatch("UPDATE_QUERY", {query: e.target.value.toLowerCase()});
         });
 
     $(window).scroll(() => {

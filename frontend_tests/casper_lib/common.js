@@ -147,7 +147,7 @@ exports.select_item_via_typeahead = function (field_selector, str, item) {
             $(field_selector)
                 .focus()
                 .val(str)
-                .trigger($.Event("keyup", { which: 0 }));
+                .trigger($.Event("keyup", {which: 0}));
 
             // You might think these steps should be split by casper.then,
             // but apparently that's enough to make the typeahead close (??),
@@ -228,7 +228,7 @@ exports.wait_for_message_fully_processed = function (content) {
                 responds.
             */
             return row.find(".star").length === 1;
-        }, { content: content});
+        }, {content: content});
     });
 };
 
@@ -249,8 +249,8 @@ exports.pm_recipient = {
     set: function (recip) {
         casper.evaluate(function (recipient) {
             $("#private_message_recipient").text(recipient)
-                .trigger({ type: "keydown", keyCode: 13 });
-        }, { recipient: recip });
+                .trigger({type: "keydown", keyCode: 13});
+        }, {recipient: recip});
     },
 
     expect: function (expected_value) {
@@ -373,7 +373,7 @@ exports.get_stream_id = function (stream_name) {
 // presses by code, only strings of printable characters.
 exports.keypress = function (code) {
     casper.evaluate(function (code) {
-        $("body").trigger($.Event("keydown", { which: code }));
+        $("body").trigger($.Event("keydown", {which: code}));
     }, {
         code: code,
     });

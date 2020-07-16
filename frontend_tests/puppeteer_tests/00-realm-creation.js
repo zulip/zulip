@@ -35,7 +35,7 @@ async function realm_creation_tests(page) {
     // first input is focused when we are typing something for other fields causing
     // validation errors. The code for focusing the input is wrapped in jQuery
     // $() calls which runs when DOMContentLoaded is fired.
-    await page.waitForNavigation({ waitUntil: "domcontentloaded" });
+    await page.waitForNavigation({waitUntil: "domcontentloaded"});
 
     // Make sure the realm creation page is loaded correctly by
     // checking the text in <p> tag under pitch class is as expected.

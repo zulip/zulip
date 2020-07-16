@@ -15,7 +15,7 @@ function render_lightbox_list_images(preview_source) {
             const node = $("<div></div>", {
                 class: className,
                 "data-src": src,
-            }).css({ backgroundImage: "url(" + src + ")"});
+            }).css({backgroundImage: "url(" + src + ")"});
 
             $image_list.append(node);
 
@@ -291,7 +291,7 @@ exports.initialize = function () {
             }, 100);
         } else if (coords.left < this.parentNode.scrollLeft) {
             // subtract 2px margin
-            $image_list.animate({ scrollLeft: coords.left - 2 }, 100);
+            $image_list.animate({scrollLeft: coords.left - 2}, 100);
         }
     });
 

@@ -540,9 +540,9 @@ exports.setup_page = function (callback) {
         sort_order = "by-stream-name";
         exports.sort_toggler = components.toggle({
             values: [
-                { label: `<i class="fa fa-sort-alpha-asc" title="${i18n.t("Sort by name")}"></i>`, key: "by-stream-name" },
-                { label: `<i class="fa fa-user-o" title="${i18n.t("Sort by number of subscribers")}"></i>`, key: "by-subscriber-count" },
-                { label: `<i class="fa fa-bar-chart" title="${i18n.t("Sort by estimated weekly traffic")}"></i>`, key: "by-weekly-traffic" },
+                {label: `<i class="fa fa-sort-alpha-asc" title="${i18n.t("Sort by name")}"></i>`, key: "by-stream-name"},
+                {label: `<i class="fa fa-user-o" title="${i18n.t("Sort by number of subscribers")}"></i>`, key: "by-subscriber-count"},
+                {label: `<i class="fa fa-bar-chart" title="${i18n.t("Sort by estimated weekly traffic")}"></i>`, key: "by-weekly-traffic"},
             ],
             html_class: "stream_sorter_toggle",
             callback: function (value, key) {
@@ -557,8 +557,8 @@ exports.setup_page = function (callback) {
         exports.toggler = components.toggle({
             child_wants_focus: true,
             values: [
-                { label: i18n.t("Subscribed"), key: "subscribed" },
-                { label: i18n.t("All streams"), key: "all-streams" },
+                {label: i18n.t("Subscribed"), key: "subscribed"},
+                {label: i18n.t("All streams"), key: "all-streams"},
             ],
             callback: function (value, key) {
                 exports.switch_stream_tab(key);
@@ -801,7 +801,7 @@ function ajaxSubscribe(stream, color, stream_row) {
     }
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([{name: stream, color: color}]) },
+        data: {subscriptions: JSON.stringify([{name: stream, color: color}])},
         success: function (resp, statusText, xhr) {
             if (overlays.streams_open()) {
                 $("#create_stream_name").val("");
@@ -837,7 +837,7 @@ function ajaxUnsubscribe(sub, stream_row) {
     }
     return channel.del({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([sub.name]) },
+        data: {subscriptions: JSON.stringify([sub.name])},
         success: function () {
             $(".stream_change_property_info").hide();
             // The rest of the work is done via the unsubscribe event we will get

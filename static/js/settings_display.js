@@ -110,7 +110,7 @@ exports.set_up = function () {
             return;
         }
         const spinner = $("#emoji-settings-status").expectOne();
-        loading.make_indicator(spinner, {text: settings_ui.strings.saving });
+        loading.make_indicator(spinner, {text: settings_ui.strings.saving});
 
         channel.patch({
             url: "/json/settings/display",

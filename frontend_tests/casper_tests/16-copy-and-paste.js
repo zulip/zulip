@@ -8,26 +8,26 @@ casper.then(function () {
 
 // setup environment: several messages to different topics
 common.then_send_many([
-    { stream: "Verona", subject: "copy-paste-subject #1",
-      content: "copy paste test A" },
+    {stream: "Verona", subject: "copy-paste-subject #1",
+     content: "copy paste test A"},
 
-    { stream: "Verona", subject: "copy-paste-subject #1",
-      content: "copy paste test B" },
+    {stream: "Verona", subject: "copy-paste-subject #1",
+     content: "copy paste test B"},
 
-    { stream: "Verona", subject: "copy-paste-subject #2",
-      content: "copy paste test C" },
+    {stream: "Verona", subject: "copy-paste-subject #2",
+     content: "copy paste test C"},
 
-    { stream: "Verona", subject: "copy-paste-subject #2",
-      content: "copy paste test D" },
+    {stream: "Verona", subject: "copy-paste-subject #2",
+     content: "copy paste test D"},
 
-    { stream: "Verona", subject: "copy-paste-subject #2",
-      content: "copy paste test E" },
+    {stream: "Verona", subject: "copy-paste-subject #2",
+     content: "copy paste test E"},
 
-    { stream: "Verona", subject: "copy-paste-subject #3",
-      content: "copy paste test F" },
+    {stream: "Verona", subject: "copy-paste-subject #3",
+     content: "copy paste test F"},
 
-    { stream: "Verona", subject: "copy-paste-subject #3",
-      content: "copy paste test G" },
+    {stream: "Verona", subject: "copy-paste-subject #3",
+     content: "copy paste test G"},
 ]);
 
 common.wait_for_receive(function () {
@@ -69,7 +69,7 @@ function copy_messages(start_message, end_message) {
         $("#copytempdiv").remove();
 
         // emulate copy event
-        $("body").trigger($.Event("keydown", { which: 67, ctrlKey: true }));
+        $("body").trigger($.Event("keydown", {which: 67, ctrlKey: true}));
 
         // find temp div with copied text
         var temp_div = $("#copytempdiv");

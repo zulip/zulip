@@ -1,7 +1,7 @@
 const fs = require("fs");
 const Handlebars = require("handlebars/dist/cjs/handlebars.js");
 const path = require("path");
-const { SourceMapConsumer, SourceNode } = require("source-map");
+const {SourceMapConsumer, SourceNode} = require("source-map");
 
 const templates_path = path.resolve(__dirname, "../../static/templates");
 
@@ -30,7 +30,7 @@ hb.JavaScriptCompiler = ZJavaScriptCompiler;
 require.extensions[".hbs"] = (module, filename) => {
     const code = fs.readFileSync(filename, "utf-8");
     const name = path.relative(templates_path, filename).slice(0, -".hbs".length);
-    const pc = hb.precompile(code, { preventIndent: true, srcName: filename });
+    const pc = hb.precompile(code, {preventIndent: true, srcName: filename});
     const node = new SourceNode();
     node.add([
         "let hb, template;\n",

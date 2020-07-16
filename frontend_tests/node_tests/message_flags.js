@@ -72,13 +72,13 @@ run_test("read", () => {
     // For testing purpose limit the batch size value to 5 instead of 1000
     message_flags._unread_batch_size = 5;
     let msgs_to_flag_read = [
-        { locally_echoed: false, id: 1 },
-        { locally_echoed: false, id: 2 },
-        { locally_echoed: false, id: 3 },
-        { locally_echoed: false, id: 4 },
-        { locally_echoed: false, id: 5 },
-        { locally_echoed: false, id: 6 },
-        { locally_echoed: false, id: 7 },
+        {locally_echoed: false, id: 1},
+        {locally_echoed: false, id: 2},
+        {locally_echoed: false, id: 3},
+        {locally_echoed: false, id: 4},
+        {locally_echoed: false, id: 5},
+        {locally_echoed: false, id: 6},
+        {locally_echoed: false, id: 7},
     ];
     message_flags.send_read(msgs_to_flag_read);
     assert.deepEqual(channel_post_opts, {
@@ -113,16 +113,16 @@ run_test("read", () => {
     channel_post_opts.success(success_response_data);
 
     // Don't flag locally echoed messages as read
-    const local_msg_1 = { locally_echoed: true, id: 1 };
-    const local_msg_2 = { locally_echoed: true, id: 2 };
+    const local_msg_1 = {locally_echoed: true, id: 1};
+    const local_msg_2 = {locally_echoed: true, id: 2};
     msgs_to_flag_read = [
         local_msg_1,
         local_msg_2,
-        { locally_echoed: false, id: 3 },
-        { locally_echoed: false, id: 4 },
-        { locally_echoed: false, id: 5 },
-        { locally_echoed: false, id: 6 },
-        { locally_echoed: false, id: 7 },
+        {locally_echoed: false, id: 3},
+        {locally_echoed: false, id: 4},
+        {locally_echoed: false, id: 5},
+        {locally_echoed: false, id: 6},
+        {locally_echoed: false, id: 7},
     ];
     message_flags.send_read(msgs_to_flag_read);
     assert.deepEqual(channel_post_opts, {
