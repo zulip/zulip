@@ -4456,7 +4456,17 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assert_in_success_response(["Configuration error", "DevAuthBackend"], response)
 
 
-class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
+class TestZulipRemoteUserBackend(EmailChangeTestMixin, DesktopFlowTestingLib, ZulipTestCase):
+    __unittest_skip__ = False
+
+    def do_email_change(self, email: str, action_key: str) -> HttpResponse:
+        with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)):
+            result = self.client_get(
+                "/accounts/login/sso/", dict(action_key=action_key), REMOTE_USER=email
+            )
+
+        return result
+
     def test_start_remote_user_sso(self) -> None:
         result = self.client_get(
             "/accounts/login/start/sso/", {"param1": "value1", "params": "value2"}
