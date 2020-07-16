@@ -273,7 +273,7 @@ run_test("initialize", () => {
     };
 
     const search_pill_stub = $.create(".pill");
-    search_pill_stub.closest = () => ({ data: noop });
+    search_pill_stub.closest = () => ({data: noop});
     const stub_event = {
         relatedTarget: search_pill_stub,
     };

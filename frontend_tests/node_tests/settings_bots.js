@@ -105,7 +105,7 @@ function set_up() {
 
     // bunch of stubs
 
-    $.validator = { addMethod: () => {} };
+    $.validator = {addMethod: () => {}};
 
     $("#create_bot_form").validate = () => {};
 

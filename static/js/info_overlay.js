@@ -7,9 +7,9 @@ exports.set_up_toggler = function () {
         selected: 0,
         child_wants_focus: true,
         values: [
-            { label: i18n.t("Keyboard shortcuts"), key: "keyboard-shortcuts" },
-            { label: i18n.t("Message formatting"), key: "message-formatting" },
-            { label: i18n.t("Search operators"), key: "search-operators" },
+            {label: i18n.t("Keyboard shortcuts"), key: "keyboard-shortcuts"},
+            {label: i18n.t("Message formatting"), key: "message-formatting"},
+            {label: i18n.t("Search operators"), key: "search-operators"},
         ],
         callback: function (name, key) {
             $(".overlay-modal").hide();

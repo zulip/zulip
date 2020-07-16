@@ -36,9 +36,9 @@ run_test("stream", () => {
     assert(narrow_state.is_for_stream_id(test_stream.stream_id));
 
     const expected_operators = [
-        { negated: false, operator: "stream", operand: "Test" },
-        { negated: false, operator: "topic", operand: "Bar" },
-        { negated: false, operator: "search", operand: "yo" },
+        {negated: false, operator: "stream", operand: "Test"},
+        {negated: false, operator: "topic", operand: "Bar"},
+        {negated: false, operator: "search", operand: "yo"},
     ];
 
     const public_operators = narrow_state.public_operators();

@@ -1,5 +1,5 @@
 const rewiremock = require("rewiremock/node");
-const { JSDOM } = require("jsdom");
+const {JSDOM} = require("jsdom");
 
 set_global("bridge", false);
 
@@ -1470,7 +1470,7 @@ run_test("on_events", () => {
 
         channel.post = function (payload) {
             assert.equal(payload.url, "/json/calls/zoom/create");
-            payload.success({ url: "example.zoom.com" });
+            payload.success({url: "example.zoom.com"});
         };
 
         handler(ev);
@@ -1482,7 +1482,7 @@ run_test("on_events", () => {
 
         channel.get = function (options) {
             assert(options.url === "/json/calls/bigbluebutton/create");
-            options.success({ url: "/calls/bigbluebutton/join?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22" });
+            options.success({url: "/calls/bigbluebutton/join?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22"});
         };
 
         handler(ev);
@@ -1692,7 +1692,7 @@ run_test("create_message_object", () => {
     assert.equal(message.to_user_ids, "31,32");
     assert.equal(message.content, "burrito");
 
-    const { email_list_to_user_ids_string } = people;
+    const {email_list_to_user_ids_string} = people;
     people.email_list_to_user_ids_string = () => undefined;
     message = compose.create_message_object();
     assert.deepEqual(message.to, [alice.email, bob.email]);

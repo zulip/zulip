@@ -757,13 +757,13 @@ exports.content_highlighter = function (item) {
     } else if (this.completing === "stream") {
         return typeahead_helper.render_stream(item);
     } else if (this.completing === "syntax") {
-        return typeahead_helper.render_typeahead_item({ primary: item });
+        return typeahead_helper.render_typeahead_item({primary: item});
     } else if (this.completing === "topic_jump") {
-        return typeahead_helper.render_typeahead_item({ primary: item });
+        return typeahead_helper.render_typeahead_item({primary: item});
     } else if (this.completing === "topic_list") {
-        return typeahead_helper.render_typeahead_item({ primary: item });
+        return typeahead_helper.render_typeahead_item({primary: item});
     } else if (this.completing === "time_jump") {
-        return typeahead_helper.render_typeahead_item({ primary: item });
+        return typeahead_helper.render_typeahead_item({primary: item});
     }
 };
 
@@ -1075,7 +1075,7 @@ exports.initialize = function () {
         items: 3,
         fixed: true,
         highlighter: function (item) {
-            return typeahead_helper.render_typeahead_item({ primary: item });
+            return typeahead_helper.render_typeahead_item({primary: item});
         },
         matcher: function (item) {
             // The matcher for "stream" is strictly prefix-based,
@@ -1093,7 +1093,7 @@ exports.initialize = function () {
         items: 3,
         fixed: true,
         highlighter: function (item) {
-            return typeahead_helper.render_typeahead_item({ primary: item });
+            return typeahead_helper.render_typeahead_item({primary: item});
         },
         sorter: function (items) {
             const sorted = typeahead_helper.sorter(this.query, items, (x) => x);

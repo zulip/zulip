@@ -79,7 +79,7 @@ function make_stream_default(stream_id) {
 
 exports.delete_default_stream = function (stream_id, default_stream_row, alert_element) {
     channel.del({
-        url: "/json/default_streams" + "?" + $.param({ stream_id: stream_id }),
+        url: "/json/default_streams" + "?" + $.param({stream_id: stream_id}),
         error: function (xhr) {
             ui_report.generic_row_button_error(xhr, alert_element);
         },
@@ -116,7 +116,7 @@ exports.build_page = function () {
             return stream_data.get_non_default_stream_names();
         },
         highlighter: function (item) {
-            return typeahead_helper.render_typeahead_item({ primary: item });
+            return typeahead_helper.render_typeahead_item({primary: item});
         },
     });
 

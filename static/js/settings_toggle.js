@@ -10,8 +10,8 @@ exports.initialize = function () {
     toggler = components.toggle({
         child_wants_focus: true,
         values: [
-            { label: i18n.t("Settings"), key: "settings" },
-            { label: i18n.t("Organization"), key: "organization" },
+            {label: i18n.t("Settings"), key: "settings"},
+            {label: i18n.t("Organization"), key: "organization"},
         ],
         callback: function (name, key) {
             if (key === "organization") {

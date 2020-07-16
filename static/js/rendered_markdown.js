@@ -164,7 +164,7 @@ exports.update_elements = (content) => {
 
     content.find("span.timestamp-error").each(function () {
         const time_str = $(this).text().replace("Invalid time format: ", "");
-        const text = i18n.t("Invalid time format: __timestamp__", { timestamp: time_str });
+        const text = i18n.t("Invalid time format: __timestamp__", {timestamp: time_str});
         $(this).text(text);
     });
 

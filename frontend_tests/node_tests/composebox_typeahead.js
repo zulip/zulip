@@ -276,7 +276,7 @@ global.user_groups.add(backend);
 global.user_groups.add(call_center);
 
 const make_emoji = function (emoji_dict) {
-    return { emoji_name: emoji_dict.name, emoji_code: emoji_dict.emoji_code };
+    return {emoji_name: emoji_dict.name, emoji_code: emoji_dict.emoji_code};
 };
 
 run_test("topics_seen_for", () => {
@@ -759,7 +759,7 @@ run_test("initialize", () => {
         actual_value = options.updater(cordelia, event);
         assert.equal(appended_name, "Cordelia Lear");
 
-        const click_event = { type: "click", target: "#doesnotmatter" };
+        const click_event = {type: "click", target: "#doesnotmatter"};
         options.query = "othello";
         // Focus lost (caused by the click event in the typeahead list)
         $("#private_message_recipient").blur();
@@ -827,12 +827,12 @@ run_test("initialize", () => {
         //
         // Again, here we only verify that the highlighter has been set to
         // content_highlighter.
-        fake_this = { completing: "mention", token: "othello" };
+        fake_this = {completing: "mention", token: "othello"};
         actual_value = options.highlighter.call(fake_this, othello);
         expected_value = `        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
         assert.equal(actual_value, expected_value);
 
-        fake_this = { completing: "mention", token: "hamletcharacters" };
+        fake_this = {completing: "mention", token: "hamletcharacters"};
         actual_value = options.highlighter.call(fake_this, hamletcharacters);
         expected_value = '        <i class="typeahead-image icon fa fa-group" aria-hidden="true"></i>\n<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>\n';
         assert.equal(actual_value, expected_value);
@@ -846,19 +846,19 @@ run_test("initialize", () => {
             return ct.compose_content_matcher(completing, token)(item);
         }
 
-        fake_this = { completing: "emoji", token: "ta" };
+        fake_this = {completing: "emoji", token: "ta"};
         assert.equal(match(fake_this, make_emoji(emoji_tada)), true);
         assert.equal(match(fake_this, make_emoji(emoji_moneybag)), false);
 
-        fake_this = { completing: "stream", token: "swed" };
+        fake_this = {completing: "stream", token: "swed"};
         assert.equal(match(fake_this, sweden_stream), true);
         assert.equal(match(fake_this, denmark_stream), false);
 
-        fake_this = { completing: "syntax", token: "py" };
+        fake_this = {completing: "syntax", token: "py"};
         assert.equal(match(fake_this, "python"), true);
         assert.equal(match(fake_this, "javascript"), false);
 
-        fake_this = { completing: "non-existing-completion" };
+        fake_this = {completing: "non-existing-completion"};
         assert.equal(match(fake_this), undefined);
 
         function sort_items(fake_this, item) {
@@ -869,30 +869,30 @@ run_test("initialize", () => {
         }
 
         // options.sorter()
-        fake_this = { completing: "emoji", token: "ta" };
+        fake_this = {completing: "emoji", token: "ta"};
         actual_value = sort_items(fake_this, [make_emoji(emoji_stadium),
                                               make_emoji(emoji_tada)]);
         expected_value = [make_emoji(emoji_tada), make_emoji(emoji_stadium)];
         assert.deepEqual(actual_value, expected_value);
 
-        fake_this = { completing: "emoji", token: "th" };
+        fake_this = {completing: "emoji", token: "th"};
         actual_value = sort_items(fake_this, [make_emoji(emoji_thermometer),
                                               make_emoji(emoji_thumbs_up)]);
         expected_value = [make_emoji(emoji_thumbs_up), make_emoji(emoji_thermometer)];
         assert.deepEqual(actual_value, expected_value);
 
-        fake_this = { completing: "emoji", token: "he" };
+        fake_this = {completing: "emoji", token: "he"};
         actual_value = sort_items(fake_this, [make_emoji(emoji_headphones),
                                               make_emoji(emoji_heart)]);
         expected_value = [make_emoji(emoji_heart), make_emoji(emoji_headphones)];
         assert.deepEqual(actual_value, expected_value);
 
-        fake_this = { completing: "slash", token: "m" };
+        fake_this = {completing: "slash", token: "m"};
         actual_value = sort_items(fake_this, [my_slash, me_slash]);
         expected_value = [me_slash, my_slash];
         assert.deepEqual(actual_value, expected_value);
 
-        fake_this = { completing: "stream", token: "de" };
+        fake_this = {completing: "stream", token: "de"};
         actual_value = sort_items(fake_this, [sweden_stream, denmark_stream]);
         expected_value = [denmark_stream, sweden_stream];
         assert.deepEqual(actual_value, expected_value);
@@ -900,12 +900,12 @@ run_test("initialize", () => {
         // Matches in the descriptions affect the order as well.
         // Testing "co" for "cold", in both streams' description. It's at the
         // beginning of Sweden's description, so that one should go first.
-        fake_this = { completing: "stream", token: "co" };
+        fake_this = {completing: "stream", token: "co"};
         actual_value = sort_items(fake_this, [denmark_stream, sweden_stream]);
         expected_value = [sweden_stream, denmark_stream];
         assert.deepEqual(actual_value, expected_value);
 
-        fake_this = { completing: "syntax", token: "ap" };
+        fake_this = {completing: "syntax", token: "ap"};
         actual_value = sort_items(fake_this, ["abap", "applescript"]);
         expected_value = ["applescript", "abap"];
         assert.deepEqual(actual_value, expected_value);
@@ -920,7 +920,7 @@ run_test("initialize", () => {
         stream_data.is_active = function () {
             return false;
         };
-        fake_this = { completing: "stream", token: "s" };
+        fake_this = {completing: "stream", token: "s"};
         actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
         expected_value = [sweden_stream, serbia_stream];
         assert.deepEqual(actual_value, expected_value);
@@ -932,12 +932,12 @@ run_test("initialize", () => {
         expected_value = [sweden_stream, serbia_stream];
         assert.deepEqual(actual_value, expected_value);
 
-        fake_this = { completing: "stream", token: "ser" };
+        fake_this = {completing: "stream", token: "ser"};
         actual_value = sort_items(fake_this, [denmark_stream, serbia_stream]);
         expected_value = [serbia_stream, denmark_stream];
         assert.deepEqual(actual_value, expected_value);
 
-        fake_this = { completing: "non-existing-completion" };
+        fake_this = {completing: "non-existing-completion"};
         assert.equal(sort_items(fake_this), undefined);
 
         compose_textarea_typeahead_called = true;
@@ -977,12 +977,12 @@ run_test("initialize", () => {
     };
 
     $("#stream_message_recipient_topic").data = function () {
-        return { typeahead: { shown: true }};
+        return {typeahead: {shown: true}};
     };
     $("form#send_message_form").keydown(event);
 
     const stub_typeahead_hidden = function () {
-        return { typeahead: { shown: false }};
+        return {typeahead: {shown: false}};
     };
     $("#stream_message_recipient_topic").data = stub_typeahead_hidden;
     $("#stream_message_recipient_stream").data = stub_typeahead_hidden;
@@ -1057,7 +1057,7 @@ run_test("initialize", () => {
     };
     // We execute .keydown() in order to make nextFocus !== false
     $("#stream_message_recipient_topic").data = function () {
-        return { typeahead: { shown: true }};
+        return {typeahead: {shown: true}};
     };
     $("form#send_message_form").keydown(event);
     $("form#send_message_form").keyup(event);
@@ -1075,7 +1075,7 @@ run_test("initialize", () => {
         // This .one() function emulates the possible infinite recursion that
         // in_handler tries to avoid.
         $("#stream_message_recipient_stream").one = function (event, handler) {
-            handler({ preventDefault: noop });
+            handler({preventDefault: noop});
             f();  // This time in_handler will already be true.
             stream_one_called = true;
         };
@@ -1351,8 +1351,8 @@ run_test("tokenizing", () => {
 });
 
 run_test("content_highlighter", () => {
-    let fake_this = { completing: "emoji" };
-    const emoji = { emoji_name: "person shrugging", emoji_url: "¯\\_(ツ)_/¯" };
+    let fake_this = {completing: "emoji"};
+    const emoji = {emoji_name: "person shrugging", emoji_url: "¯\\_(ツ)_/¯"};
     let th_render_typeahead_item_called = false;
     typeahead_helper.render_emoji = function (item) {
         assert.deepEqual(item, emoji);
@@ -1360,7 +1360,7 @@ run_test("content_highlighter", () => {
     };
     ct.content_highlighter.call(fake_this, emoji);
 
-    fake_this = { completing: "mention" };
+    fake_this = {completing: "mention"};
     let th_render_person_called = false;
     typeahead_helper.render_person = function (person) {
         assert.deepEqual(person, othello);
@@ -1376,7 +1376,7 @@ run_test("content_highlighter", () => {
     ct.content_highlighter.call(fake_this, backend);
 
     // We don't have any fancy rendering for slash commands yet.
-    fake_this = { completing: "slash" };
+    fake_this = {completing: "slash"};
     let th_render_slash_command_called = false;
     const me_slash = {
         text: "/me is excited (Display action text)",
@@ -1389,7 +1389,7 @@ run_test("content_highlighter", () => {
     };
     ct.content_highlighter.call(fake_this, me_slash);
 
-    fake_this = { completing: "stream" };
+    fake_this = {completing: "stream"};
     let th_render_stream_called = false;
     typeahead_helper.render_stream = function (stream) {
         assert.deepEqual(stream, denmark_stream);
@@ -1397,15 +1397,15 @@ run_test("content_highlighter", () => {
     };
     ct.content_highlighter.call(fake_this, denmark_stream);
 
-    fake_this = { completing: "syntax" };
+    fake_this = {completing: "syntax"};
     th_render_typeahead_item_called = false;
     typeahead_helper.render_typeahead_item = function (item) {
-        assert.deepEqual(item, { primary: "py" });
+        assert.deepEqual(item, {primary: "py"});
         th_render_typeahead_item_called = true;
     };
     ct.content_highlighter.call(fake_this, "py");
 
-    fake_this = { completing: "something-else" };
+    fake_this = {completing: "something-else"};
     assert(!ct.content_highlighter.call(fake_this));
 
     // Verify that all stub functions have been called.

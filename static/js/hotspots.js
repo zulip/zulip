@@ -47,7 +47,7 @@ const WHALE = "/static/images/hotspots/whale.svg";
 exports.post_hotspot_as_read = function (hotspot_name) {
     channel.post({
         url: "/json/users/me/hotspots",
-        data: { hotspot: JSON.stringify(hotspot_name) },
+        data: {hotspot: JSON.stringify(hotspot_name)},
         error: function (err) {
             blueslip.error(err.responseText);
         },
@@ -226,10 +226,10 @@ exports.is_open = function () {
 };
 
 exports.close_hotspot_icon = function (elem) {
-    $(elem).animate({ opacity: 0 }, {
+    $(elem).animate({opacity: 0}, {
         duration: 300,
         done: function () {
-            $(elem).css({ display: "none" });
+            $(elem).css({display: "none"});
         }.bind(elem),
     });
 };

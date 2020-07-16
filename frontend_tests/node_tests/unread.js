@@ -293,7 +293,7 @@ run_test("num_unread_for_topic", () => {
     });
 
     assert.deepEqual(missing_topics, [
-        { pretty_name: "LuncH", message_id: 500 },
+        {pretty_name: "LuncH", message_id: 500},
     ]);
 
     topic_dict.set("lUNCh", "whatever");

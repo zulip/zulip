@@ -16,12 +16,12 @@ casper.then(function () {
 
 // Send a message to try replying to
 common.then_send_many([
-    { stream: "Verona",
-      subject: "Reply test",
-      content: "We reply to this message",
+    {stream: "Verona",
+     subject: "Reply test",
+     content: "We reply to this message",
     },
-    { recipient: "cordelia@zulip.com",
-      content: "And reply to this message",
+    {recipient: "cordelia@zulip.com",
+     content: "And reply to this message",
     },
 ]);
 

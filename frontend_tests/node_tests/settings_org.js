@@ -24,8 +24,8 @@ const _loading = {
 const _page_params = {
     is_admin: false,
     realm_domains: [
-        { domain: "example.com", allow_subdomains: true },
-        { domain: "example.org", allow_subdomains: false },
+        {domain: "example.com", allow_subdomains: true},
+        {domain: "example.org", allow_subdomains: false},
     ],
     realm_authentication_methods: {},
 };
@@ -57,7 +57,7 @@ const _realm_logo = {
 };
 
 const _list_render = {
-    create: () => ({ init: noop }),
+    create: () => ({init: noop}),
 };
 
 set_global("channel", _channel);
@@ -1012,7 +1012,7 @@ run_test("misc", () => {
     };
     stream_data.get_sub_by_id = function (stream_id) {
         assert.equal(stream_id, 42);
-        return { name: "some_stream" };
+        return {name: "some_stream"};
     };
     settings_org.notifications_stream_widget.render(42);
     assert.equal(elem.text(), "#some_stream");
@@ -1030,7 +1030,7 @@ run_test("misc", () => {
     };
     stream_data.get_sub_by_id = function (stream_id) {
         assert.equal(stream_id, 75);
-        return { name: "some_stream" };
+        return {name: "some_stream"};
     };
     settings_org.signup_notifications_stream_widget.render(75);
     assert.equal(elem.text(), "#some_stream");

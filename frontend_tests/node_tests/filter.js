@@ -203,41 +203,41 @@ run_test("basics", () => {
 
 function assert_not_mark_read_with_has_operands(additional_operators_to_test) {
     additional_operators_to_test = additional_operators_to_test || [];
-    let has_operator = [{ operator: "has", operand: "link" }];
+    let has_operator = [{operator: "has", operand: "link"}];
     let filter = new Filter(additional_operators_to_test.concat(has_operator));
     assert(!filter.can_mark_messages_read());
 
-    has_operator = [{ operator: "has", operand: "link", negated: true }];
+    has_operator = [{operator: "has", operand: "link", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(has_operator));
     assert(!filter.can_mark_messages_read());
 
-    has_operator = [{ operator: "has", operand: "image" }];
+    has_operator = [{operator: "has", operand: "image"}];
     filter = new Filter(additional_operators_to_test.concat(has_operator));
     assert(!filter.can_mark_messages_read());
 
-    has_operator = [{ operator: "has", operand: "image", negated: true }];
+    has_operator = [{operator: "has", operand: "image", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(has_operator));
     assert(!filter.can_mark_messages_read());
 
-    has_operator = [{ operator: "has", operand: "attachment", negated: true }];
+    has_operator = [{operator: "has", operand: "attachment", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(has_operator));
     assert(!filter.can_mark_messages_read());
 
-    has_operator = [{ operator: "has", operand: "attachment" }];
+    has_operator = [{operator: "has", operand: "attachment"}];
     filter = new Filter(additional_operators_to_test.concat(has_operator));
     assert(!filter.can_mark_messages_read());
 }
 function assert_not_mark_read_with_is_operands(additional_operators_to_test) {
     additional_operators_to_test = additional_operators_to_test || [];
-    let is_operator = [{ operator: "is", operand: "starred" }];
+    let is_operator = [{operator: "is", operand: "starred"}];
     let filter = new Filter(additional_operators_to_test.concat(is_operator));
     assert(!filter.can_mark_messages_read());
 
-    is_operator = [{ operator: "is", operand: "starred", negated: true }];
+    is_operator = [{operator: "is", operand: "starred", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
     assert(!filter.can_mark_messages_read());
 
-    is_operator = [{ operator: "is", operand: "mentioned" }];
+    is_operator = [{operator: "is", operand: "mentioned"}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
     if (additional_operators_to_test.length === 0) {
         assert(filter.can_mark_messages_read());
@@ -245,34 +245,34 @@ function assert_not_mark_read_with_is_operands(additional_operators_to_test) {
         assert(!filter.can_mark_messages_read());
     }
 
-    is_operator = [{ operator: "is", operand: "mentioned", negated: true }];
+    is_operator = [{operator: "is", operand: "mentioned", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
     assert(!filter.can_mark_messages_read());
 
-    is_operator = [{ operator: "is", operand: "alerted" }];
+    is_operator = [{operator: "is", operand: "alerted"}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
     assert(!filter.can_mark_messages_read());
 
-    is_operator = [{ operator: "is", operand: "alerted", negated: true }];
+    is_operator = [{operator: "is", operand: "alerted", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
     assert(!filter.can_mark_messages_read());
 
-    is_operator = [{ operator: "is", operand: "unread" }];
+    is_operator = [{operator: "is", operand: "unread"}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
     assert(!filter.can_mark_messages_read());
 
-    is_operator = [{ operator: "is", operand: "unread", negated: true }];
+    is_operator = [{operator: "is", operand: "unread", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
     assert(!filter.can_mark_messages_read());
 }
 
 function assert_not_mark_read_when_searching(additional_operators_to_test) {
     additional_operators_to_test = additional_operators_to_test || [];
-    let search_op = [{ operator: "search", operand: "keyword" }];
+    let search_op = [{operator: "search", operand: "keyword"}];
     let filter = new Filter(additional_operators_to_test.concat(search_op));
     assert(!filter.can_mark_messages_read());
 
-    search_op = [{ operator: "search", operand: "keyword", negated: true }];
+    search_op = [{operator: "search", operand: "keyword", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(search_op));
     assert(!filter.can_mark_messages_read());
 }
@@ -283,7 +283,7 @@ run_test("can_mark_messages_read", () => {
     assert_not_mark_read_when_searching();
 
     const stream_operator = [
-        { operator: "stream", operand: "foo" },
+        {operator: "stream", operand: "foo"},
     ];
     let filter = new Filter(stream_operator);
     assert(filter.can_mark_messages_read());
@@ -292,14 +292,14 @@ run_test("can_mark_messages_read", () => {
     assert_not_mark_read_when_searching(stream_operator);
 
     const stream_negated_operator = [
-        { operator: "stream", operand: "foo", negated: true },
+        {operator: "stream", operand: "foo", negated: true},
     ];
     filter = new Filter(stream_negated_operator);
     assert(!filter.can_mark_messages_read());
 
     const stream_topic_operators = [
-        { operator: "stream", operand: "foo" },
-        { operator: "topic", operand: "bar" },
+        {operator: "stream", operand: "foo"},
+        {operator: "topic", operand: "bar"},
     ];
     filter = new Filter(stream_topic_operators);
     assert(filter.can_mark_messages_read());
@@ -308,22 +308,22 @@ run_test("can_mark_messages_read", () => {
     assert_not_mark_read_when_searching(stream_topic_operators);
 
     const stream_negated_topic_operators = [
-        { operator: "stream", operand: "foo" },
-        { operator: "topic", operand: "bar", negated: true},
+        {operator: "stream", operand: "foo"},
+        {operator: "topic", operand: "bar", negated: true},
     ];
     filter = new Filter(stream_negated_topic_operators);
     assert(!filter.can_mark_messages_read());
 
     const pm_with = [
-        { operator: "pm-with", operand: "joe@example.com," },
+        {operator: "pm-with", operand: "joe@example.com,"},
     ];
 
     const pm_with_negated = [
-        { operator: "pm-with", operand: "joe@example.com,", negated: true},
+        {operator: "pm-with", operand: "joe@example.com,", negated: true},
     ];
 
     const group_pm = [
-        { operator: "pm-with", operand: "joe@example.com,STEVE@foo.com" },
+        {operator: "pm-with", operand: "joe@example.com,STEVE@foo.com"},
     ];
     filter = new Filter(pm_with);
     assert(filter.can_mark_messages_read());
@@ -339,7 +339,7 @@ run_test("can_mark_messages_read", () => {
     assert_not_mark_read_when_searching(pm_with);
 
     const is_private = [
-        { operator: "is", operand: "private" },
+        {operator: "is", operand: "private"},
     ];
     filter = new Filter(is_private);
     assert(filter.can_mark_messages_read());
@@ -348,7 +348,7 @@ run_test("can_mark_messages_read", () => {
     assert_not_mark_read_when_searching(is_private);
 
     const in_all = [
-        { operator: "in", operand: "all" },
+        {operator: "in", operand: "all"},
     ];
     filter = new Filter(in_all);
     assert(filter.can_mark_messages_read());
@@ -357,10 +357,10 @@ run_test("can_mark_messages_read", () => {
     assert_not_mark_read_when_searching(in_all);
 
     const in_home = [
-        { operator: "in", operand: "home" },
+        {operator: "in", operand: "home"},
     ];
     const in_home_negated = [
-        { operator: "in", operand: "home", negated: true },
+        {operator: "in", operand: "home", negated: true},
     ];
     filter = new Filter(in_home);
     assert(filter.can_mark_messages_read());
@@ -372,10 +372,10 @@ run_test("can_mark_messages_read", () => {
 
     // Do not mark messages as read when in an unsupported 'in:*' filter.
     const in_random = [
-        { operator: "in", operand: "xxxxxxxxx" },
+        {operator: "in", operand: "xxxxxxxxx"},
     ];
     const in_random_negated = [
-        { operator: "in", operand: "xxxxxxxxx", negated: true },
+        {operator: "in", operand: "xxxxxxxxx", negated: true},
     ];
     filter = new Filter(in_random);
     assert(!filter.can_mark_messages_read());
@@ -504,18 +504,18 @@ run_test("redundancies", () => {
     let filter;
 
     terms = [
-        { operator: "pm-with", operand: "joe@example.com," },
-        { operator: "is", operand: "private" },
+        {operator: "pm-with", operand: "joe@example.com,"},
+        {operator: "is", operand: "private"},
     ];
     filter = new Filter(terms);
     assert(filter.can_bucket_by("pm-with"));
 
     terms = [
-        { operator: "pm-with",
-          operand: "joe@example.com,",
-          negated: true,
+        {operator: "pm-with",
+         operand: "joe@example.com,",
+         negated: true,
         },
-        { operator: "is", operand: "private" },
+        {operator: "is", operand: "private"},
     ];
     filter = new Filter(terms);
     assert(filter.can_bucket_by("is-private", "not-pm-with"));
@@ -1338,11 +1338,11 @@ run_test("first_valid_id_from", () => {
     const filter = new Filter(terms);
 
     const messages = {
-        5: { id: 5, alerted: true },
-        10: { id: 10 },
-        20: { id: 20, alerted: true },
-        30: { id: 30, type: "stream" },
-        40: { id: 40, alerted: false },
+        5: {id: 5, alerted: true},
+        10: {id: 10},
+        20: {id: 20, alerted: true},
+        30: {id: 30, type: "stream"},
+        40: {id: 40, alerted: false},
     };
 
     const msg_ids = [10, 20, 30, 40];
@@ -1394,7 +1394,7 @@ run_test("navbar_helpers", () => {
     }
 
     function test_redirect_url_with_search(test_case) {
-        test_case.operator.push({ operator: "search", operand: "fizzbuzz"});
+        test_case.operator.push({operator: "search", operand: "fizzbuzz"});
         const filter = new Filter(test_case.operator);
         assert.equal(
             filter.generate_redirect_url(),
@@ -1425,30 +1425,30 @@ run_test("navbar_helpers", () => {
         test_redirect_url_with_search(test_case);
     }
 
-    const in_home = [{ operator: "in", operand: "home"}];
-    const in_all = [{ operator: "in", operand: "all"}];
-    const is_starred = [{ operator: "is", operand: "starred"}];
-    const is_private = [{ operator: "is", operand: "private"}];
-    const is_mentioned = [{ operator: "is", operand: "mentioned"}];
-    const streams_public = [{ operator: "streams", operand: "public"}];
+    const in_home = [{operator: "in", operand: "home"}];
+    const in_all = [{operator: "in", operand: "all"}];
+    const is_starred = [{operator: "is", operand: "starred"}];
+    const is_private = [{operator: "is", operand: "private"}];
+    const is_mentioned = [{operator: "is", operand: "mentioned"}];
+    const streams_public = [{operator: "streams", operand: "public"}];
     const stream_topic_operators = [
-        { operator: "stream", operand: "foo" },
-        { operator: "topic", operand: "bar" },
+        {operator: "stream", operand: "foo"},
+        {operator: "topic", operand: "bar"},
     ];
     // foo stream exists
-    const stream_operator = [{ operator: "stream", operand: "foo"}];
+    const stream_operator = [{operator: "stream", operand: "foo"}];
     make_private_sub("psub", "22");
-    const private_stream_operator = [{ operator: "stream", operand: "psub"}];
+    const private_stream_operator = [{operator: "stream", operand: "psub"}];
     make_web_public_sub("webPublicSub", "12"); // capitalized just to try be tricky and robust.
-    const web_public_stream_operator = [{ operator: "stream", operand: "webPublicSub"}];
-    const non_existent_stream = [{ operator: "stream", operand: "Elephant" }];
+    const web_public_stream_operator = [{operator: "stream", operand: "webPublicSub"}];
+    const non_existent_stream = [{operator: "stream", operand: "Elephant"}];
     const non_existent_stream_topic = [
-        { operator: "stream", operand: "Elephant" },
-        { operator: "topic", operand: "pink" },
+        {operator: "stream", operand: "Elephant"},
+        {operator: "topic", operand: "pink"},
     ];
-    const pm_with = [{ operator: "pm-with", operand: "joe@example.com"}];
-    const group_pm = [{ operator: "pm-with", operand: "joe@example.com,STEVE@foo.com"}];
-    const group_pm_including_missing_person = [{ operator: "pm-with", operand: "joe@example.com,STEVE@foo.com,sally@doesnotexist.com"}];
+    const pm_with = [{operator: "pm-with", operand: "joe@example.com"}];
+    const group_pm = [{operator: "pm-with", operand: "joe@example.com,STEVE@foo.com"}];
+    const group_pm_including_missing_person = [{operator: "pm-with", operand: "joe@example.com,STEVE@foo.com,sally@doesnotexist.com"}];
 
     const test_cases = [
         {

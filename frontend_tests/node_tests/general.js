@@ -106,7 +106,7 @@ zrequire("overlays");
 zrequire("message_store");
 
 run_test("message_store", () => {
-    const in_message = { ...messages.isaac_to_denmark_stream };
+    const in_message = {...messages.isaac_to_denmark_stream};
 
     assert.equal(in_message.alerted, undefined);
     message_store.set_message_booleans(in_message);
@@ -133,7 +133,7 @@ run_test("unread", () => {
 
     assert.equal(unread.num_unread_for_topic(stream_id, topic_name), 0);
 
-    const in_message = { ...messages.isaac_to_denmark_stream };
+    const in_message = {...messages.isaac_to_denmark_stream};
     message_store.set_message_booleans(in_message);
 
     unread.process_loaded_messages([in_message]);
@@ -554,7 +554,7 @@ run_test("unread_ops", () => {
     assert.deepEqual(channel_post_opts, {
         url: "/json/messages/flags",
         idempotent: true,
-        data: { messages: "[50]", op: "add", flag: "read" },
+        data: {messages: "[50]", op: "add", flag: "read"},
         success: channel_post_opts.success,
     });
 

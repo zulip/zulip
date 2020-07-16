@@ -688,20 +688,20 @@ run_test("render_emoji", () => {
 
 run_test("sort_slash_commands", () => {
     const slash_commands = [
-        { name: "my" },
-        { name: "poll" },
-        { name: "me" },
-        { name: "mine" },
-        { name: "test" },
-        { name: "ping" },
+        {name: "my"},
+        {name: "poll"},
+        {name: "me"},
+        {name: "mine"},
+        {name: "test"},
+        {name: "ping"},
     ];
     assert.deepEqual(th.sort_slash_commands(slash_commands, "m"), [
-        { name: "me" },
-        { name: "mine" },
-        { name: "my" },
-        { name: "ping" },
-        { name: "poll" },
-        { name: "test" },
+        {name: "me"},
+        {name: "mine"},
+        {name: "my"},
+        {name: "ping"},
+        {name: "poll"},
+        {name: "test"},
     ]);
 });
 

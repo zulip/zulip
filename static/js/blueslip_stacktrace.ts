@@ -51,7 +51,7 @@ export function clean_function_name(
 
 const sourceCache: { [source: string]: string | Promise<string> } = {};
 
-const stack_trace_gps = new StackTraceGPS({ sourceCache });
+const stack_trace_gps = new StackTraceGPS({sourceCache});
 
 async function get_context(location: StackFrame): Promise<NumberedLine[] | undefined> {
     const sourceContent = await sourceCache[location.getFileName()];
@@ -91,7 +91,7 @@ export async function display_stacktrace(error: string, stack: string): Promise<
     );
 
     const $alert = $("<div class='stacktrace'>").html(
-        render_blueslip_stacktrace({ error, stackframes }),
+        render_blueslip_stacktrace({error, stackframes}),
     );
     $(".alert-box").append($alert);
     $alert.addClass("show");

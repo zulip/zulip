@@ -134,7 +134,7 @@ run_test("basics", () => {
 
     const helper = test_helper();
     const terms = [
-        { operator: "stream", operand: "Denmark" },
+        {operator: "stream", operand: "Denmark"},
     ];
 
     const selected_id = 1000;
@@ -212,7 +212,7 @@ run_test("basics", () => {
     current_msg_list.get_row = () => row;
     util.sorted_ids = () => [];
 
-    narrow.activate([{ operator: "is", operand: "private" }], {
+    narrow.activate([{operator: "is", operand: "private"}], {
         then_select_id: selected_id,
     });
 

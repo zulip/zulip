@@ -64,7 +64,7 @@ exports.render_typeahead_item = function (args) {
     return render_typeahead_list_item(args);
 };
 
-const rendered = { persons: new Map(), streams: new Map(), user_groups: new Map() };
+const rendered = {persons: new Map(), streams: new Map(), user_groups: new Map()};
 
 exports.render_person = function (person) {
     if (person.special_item_text) {

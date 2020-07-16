@@ -105,10 +105,10 @@ run_test("huddle_fraction_present", () => {
     huddle = people.emails_strings_to_user_ids_string(huddle);
 
     let presence_info = new Map();
-    presence_info.set(alice.user_id, { status: "active" }); // counts as present
-    presence_info.set(fred.user_id, { status: "idle" }); // does not count as present
+    presence_info.set(alice.user_id, {status: "active"}); // counts as present
+    presence_info.set(fred.user_id, {status: "idle"}); // does not count as present
     // jill not in list
-    presence_info.set(mark.user_id, { status: "offline" }); // does not count
+    presence_info.set(mark.user_id, {status: "offline"}); // does not count
     presence.presence_info = presence_info;
 
     assert.equal(
@@ -117,7 +117,7 @@ run_test("huddle_fraction_present", () => {
 
     presence_info = new Map();
     for (const user of [alice, fred, jill, mark]) {
-        presence_info.set(user.user_id, { status: "active" }); // counts as present
+        presence_info.set(user.user_id, {status: "active"}); // counts as present
     }
     presence.presence_info = presence_info;
 
@@ -128,10 +128,10 @@ run_test("huddle_fraction_present", () => {
     huddle = "alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com";
     huddle = people.emails_strings_to_user_ids_string(huddle);
     presence_info = new Map();
-    presence_info.set(alice.user_id, { status: "idle" });
-    presence_info.set(fred.user_id, { status: "idle" }); // does not count as present
+    presence_info.set(alice.user_id, {status: "idle"});
+    presence_info.set(fred.user_id, {status: "idle"}); // does not count as present
     // jill not in list
-    presence_info.set(mark.user_id, { status: "offline" }); // does not count
+    presence_info.set(mark.user_id, {status: "offline"}); // does not count
     presence.presence_info = presence_info;
 
     assert.equal(

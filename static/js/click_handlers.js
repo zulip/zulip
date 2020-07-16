@@ -848,8 +848,8 @@ exports.initialize = function () {
             overlay: $("#" + overlay_name),
             on_close: function () {
                 // close popover
-                $(this).css({ display: "block" });
-                $(this).animate({ opacity: 1 }, {
+                $(this).css({display: "block"});
+                $(this).animate({opacity: 1}, {
                     duration: 300,
                 });
             }.bind(this),

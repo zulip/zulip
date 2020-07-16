@@ -4,8 +4,8 @@ zrequire("components");
 
 const noop = function () {};
 
-const LEFT_KEY = { which: 37, preventDefault: noop, stopPropagation: noop };
-const RIGHT_KEY = { which: 39, preventDefault: noop, stopPropagation: noop };
+const LEFT_KEY = {which: 37, preventDefault: noop, stopPropagation: noop};
+const RIGHT_KEY = {which: 39, preventDefault: noop, stopPropagation: noop};
 
 run_test("basics", () => {
     let keydown_f;
@@ -136,9 +136,9 @@ run_test("basics", () => {
     widget = components.toggle({
         selected: 0,
         values: [
-            { label: i18n.t("Keyboard shortcuts"), key: "keyboard-shortcuts" },
-            { label: i18n.t("Message formatting"), key: "message-formatting" },
-            { label: i18n.t("Search operators"), key: "search-operators" },
+            {label: i18n.t("Keyboard shortcuts"), key: "keyboard-shortcuts"},
+            {label: i18n.t("Message formatting"), key: "message-formatting"},
+            {label: i18n.t("Search operators"), key: "search-operators"},
         ],
         html_class: "stream_sorter_toggle",
         callback: function (name, key) {

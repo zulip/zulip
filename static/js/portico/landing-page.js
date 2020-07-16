@@ -1,5 +1,5 @@
 import * as google_analytics from "./google-analytics.js";
-import { detect_user_os } from "./tabbed-instructions.js";
+import {detect_user_os} from "./tabbed-instructions.js";
 import render_tabs from "./team.js";
 
 export function path_parts() {
@@ -124,7 +124,7 @@ const apps_events = function () {
     $(window).on("popstate", () => {
         version = get_version_from_path();
         update_page();
-        $("body").animate({ scrollTop: 0 }, 200);
+        $("body").animate({scrollTop: 0}, 200);
         google_analytics.config({page_path: window.location.pathname});
     });
 
@@ -136,7 +136,7 @@ const apps_events = function () {
 
         update_path();
         update_page();
-        $("body").animate({ scrollTop: 0 }, 200);
+        $("body").animate({scrollTop: 0}, 200);
         google_analytics.config({page_path: window.location.pathname});
 
         return false;

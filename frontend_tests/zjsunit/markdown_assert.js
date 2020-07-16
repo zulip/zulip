@@ -20,7 +20,7 @@
  * HTML.  This makes it easier to spot relevant differences.
  */
 
-const { JSDOM } = require("jsdom");
+const {JSDOM} = require("jsdom");
 const _ = require("underscore");
 
 const mdiff = require("./mdiff.js");
@@ -125,7 +125,7 @@ class MarkdownComparer {
         element_actual.remove();
         element_expected.remove();
 
-        return { are_equivalent, html };
+        return {are_equivalent, html};
     }
 
     assertEqual(actual, expected, message) {

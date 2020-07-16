@@ -108,7 +108,7 @@ run_test("poll_data_holder my question", () => {
     });
 
     const vote_outbound_event = data_holder.handle.vote.outbound("99,1");
-    assert.deepEqual(vote_outbound_event, { type: "vote", key: "99,1", vote: -1 });
+    assert.deepEqual(vote_outbound_event, {type: "vote", key: "99,1", vote: -1});
 
     vote_event = {
         type: "vote",
@@ -242,7 +242,7 @@ run_test("activate another person poll", () => {
         poll_option_input.val("cool choice");
         out_data = undefined;
         option_button_callback(e);
-        assert.deepEqual(out_data,  { type: "new_option", idx: 1, option: "cool choice" });
+        assert.deepEqual(out_data,  {type: "new_option", idx: 1, option: "cool choice"});
 
         poll_option_input.val("");
         out_data = undefined;
@@ -280,7 +280,7 @@ run_test("activate another person poll", () => {
         };
         out_data = undefined;
         vote_button_callback(e);
-        assert.deepEqual(out_data, { type: "vote", key: "100,1", vote: 1 });
+        assert.deepEqual(out_data, {type: "vote", key: "100,1", vote: 1});
     }
 
     const add_question_event = [
@@ -405,7 +405,7 @@ run_test("activate own poll", () => {
         out_data = undefined;
         show_submit = true;
         question_button_callback(e);
-        assert.deepEqual(out_data,  { type: "question", question: "Is it new?" });
+        assert.deepEqual(out_data,  {type: "question", question: "Is it new?"});
 
         poll_option_input.val("");
         out_data = undefined;

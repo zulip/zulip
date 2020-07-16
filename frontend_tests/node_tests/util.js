@@ -1,4 +1,4 @@
-const { JSDOM } = require("jsdom");
+const {JSDOM} = require("jsdom");
 
 set_global("$", global.make_zjquery());
 set_global("DOMParser", new JSDOM().window.DOMParser);
@@ -34,7 +34,7 @@ run_test("extract_pm_recipients", () => {
 });
 
 run_test("is_pm_recipient", () => {
-    const message = { to_user_ids: "31,32,33" };
+    const message = {to_user_ids: "31,32,33"};
     assert(util.is_pm_recipient(31, message));
     assert(util.is_pm_recipient(32, message));
     assert(!util.is_pm_recipient(34, message));
@@ -126,10 +126,10 @@ run_test("get_edit_event_prev_topic", () => {
 });
 
 run_test("is_mobile", () => {
-    global.window.navigator = { userAgent: "Android" };
+    global.window.navigator = {userAgent: "Android"};
     assert(util.is_mobile());
 
-    global.window.navigator = { userAgent: "Not mobile" };
+    global.window.navigator = {userAgent: "Not mobile"};
     assert(!util.is_mobile());
 });
 

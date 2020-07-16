@@ -102,7 +102,7 @@ run_test("test_basics", () => {
     (function test_remove() {
         let bot;
 
-        bot_data.add({ ...test_bot, is_active: true });
+        bot_data.add({...test_bot, is_active: true});
 
         bot = bot_data.get(43);
         assert.equal("Bot 1", bot.full_name);
@@ -121,7 +121,7 @@ run_test("test_basics", () => {
     (function test_delete() {
         let bot;
 
-        bot_data.add({ ...test_bot, is_active: true });
+        bot_data.add({...test_bot, is_active: true});
 
         bot = bot_data.get(43);
         assert.equal("Bot 1", bot.full_name);

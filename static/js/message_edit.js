@@ -791,7 +791,7 @@ function hide_delete_btn_show_spinner(deleting) {
         $("do_delete_message_button").attr("disabled", "disabled");
         $("#delete_message_modal > div.modal-footer > button").hide();
         const delete_spinner = $("#do_delete_message_spinner");
-        loading.make_indicator(delete_spinner, { abs_positioned: true });
+        loading.make_indicator(delete_spinner, {abs_positioned: true});
     } else {
         loading.destroy_indicator($("#do_delete_message_spinner"));
         $("#do_delete_message_button").prop("disabled", false);

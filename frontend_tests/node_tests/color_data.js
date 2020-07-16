@@ -11,10 +11,10 @@ run_test("pick_color", () => {
     color_data.reset();
 
     color_data.claim_colors([
-        { color: "orange" },
-        { foo: "whatever" },
-        { color: "yellow" },
-        { color: "bogus" },
+        {color: "orange"},
+        {foo: "whatever"},
+        {color: "yellow"},
+        {color: "bogus"},
     ]);
 
     const expected_colors = [

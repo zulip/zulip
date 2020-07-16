@@ -335,7 +335,7 @@ run_test("marked", () => {
         {input: "\ud83d\udca9",
          expected: '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>'},
         {input: "\u{1f6b2}",
-         expected: "<p>\u{1f6b2}</p>" },
+         expected: "<p>\u{1f6b2}</p>"},
         {input: "Silent mention: @_**Cordelia Lear**",
          expected: '<p>Silent mention: <span class="user-mention silent" data-user-id="101">Cordelia Lear</span></p>'},
         {input: "> Mention in quote: @**Cordelia Lear**\n\nMention outside quote: @**Cordelia Lear**",
@@ -583,7 +583,7 @@ run_test("python_to_js_filter", () => {
 run_test("katex_throws_unexpected_exceptions", () => {
     katex.renderToString = function () { throw new Error("some-exception"); };
     blueslip.expect("error", "Error: some-exception");
-    const message = { raw_content: "$$a$$" };
+    const message = {raw_content: "$$a$$"};
     markdown.apply_markdown(message);
 });
 

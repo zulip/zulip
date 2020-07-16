@@ -192,7 +192,7 @@ add_example("get_stream_id", "/get_stream_id:get", 200, async (client) => {
 add_example("get_stream_topics", "/users/me/{stream_id}/topics:get", 200, async (client) => {
     // {code_example|start}
     // Get all the topics in stream with ID 1
-    return client.streams.topics.retrieve({ stream_id: 1 });
+    return client.streams.topics.retrieve({stream_id: 1});
     // {code_example|end}
 });
 

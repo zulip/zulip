@@ -105,6 +105,7 @@
         "no-var": "error",
         "space-unary-ops": "error",
         "no-whitespace-before-property": "error",
+        "object-curly-spacing": ["error", "never"],
         "one-var": [ "error", "never" ],
         "prefer-arrow-callback": "error",
         "prefer-const": [ "error",
