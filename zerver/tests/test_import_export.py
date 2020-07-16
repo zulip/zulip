@@ -827,7 +827,7 @@ class ImportExportTest(ZulipTestCase):
         assert_realm_values(get_realm_audit_log_event_type)
 
         # test huddles
-        def get_huddle_hashes(r: str) -> str:
+        def get_huddle_hashes(r: Realm) -> str:
             short_names = ['cordelia', 'hamlet', 'othello']
             user_id_list = [UserProfile.objects.get(realm=r, short_name=name).id for name in short_names]
             huddle_hash = get_huddle_hash(user_id_list)
@@ -835,7 +835,7 @@ class ImportExportTest(ZulipTestCase):
 
         assert_realm_values(get_huddle_hashes, equal=False)
 
-        def get_huddle_message(r: str) -> str:
+        def get_huddle_message(r: Realm) -> str:
             huddle_hash = get_huddle_hashes(r)
             huddle_id = Huddle.objects.get(huddle_hash=huddle_hash).id
             huddle_recipient = Recipient.objects.get(type_id=huddle_id, type=3)
@@ -846,7 +846,7 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(get_huddle_message(imported_realm), 'test huddle message')
 
         # test userhotspot
-        def get_user_hotspots(r: str) -> Set[str]:
+        def get_user_hotspots(r: Realm) -> Set[str]:
             user_profile = UserProfile.objects.get(realm=r, short_name='hamlet')
             hotspots = UserHotspot.objects.filter(user=user_profile)
             user_hotspots = {hotspot.hotspot for hotspot in hotspots}
@@ -868,7 +868,7 @@ class ImportExportTest(ZulipTestCase):
             lambda r: {group.name for group in UserGroup.objects.filter(realm=r)},
         )
 
-        def get_user_membership(r: str) -> Set[str]:
+        def get_user_membership(r: Realm) -> Set[str]:
             usergroup = UserGroup.objects.get(realm=r, name='hamletcharacters')
             usergroup_membership = UserGroupMembership.objects.filter(user_group=usergroup)
             users = {membership.user_profile.email for membership in usergroup_membership}
