@@ -189,12 +189,12 @@ export function open_edit_panel_empty() {
     setup_subscriptions_tab_hash(tab_key);
 }
 
-function format_member_list_elem(person) {
+function format_member_list_elem(person, can_remove_others) {
     return render_stream_member_list_entry({
         name: person.full_name,
         user_id: person.user_id,
         email: settings_data.email_for_user_settings(person),
-        displaying_for_admin: page_params.is_admin,
+        can_remove_others,
         show_email: settings_data.show_email(),
     });
 }
@@ -395,7 +395,7 @@ function show_subscription_settings(sub) {
     ListWidget.create(list, users, {
         name: "stream_subscribers/" + stream_id,
         modifier(item) {
-            return format_member_list_elem(item);
+            return format_member_list_elem(item, sub.can_administer_stream);
         },
         filter: {
             element: $(`[data-stream-id='${CSS.escape(stream_id)}'] .search`),

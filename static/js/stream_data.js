@@ -149,6 +149,17 @@ export const stream_post_policy_values = {
     },
 };
 
+export const sub_role_values = {
+    member: {
+        code: 50,
+        description: $t({defaultMessage: "Member"}),
+    },
+    stream_admin: {
+        code: 20,
+        description: $t({defaultMessage: "Stream administrator"}),
+    },
+};
+
 export function clear_subscriptions() {
     // This function is only used once at page load, and then
     // it should only be used in tests.
@@ -497,7 +508,7 @@ export function can_preview(sub) {
 }
 
 export function can_change_permissions(sub) {
-    return page_params.is_admin && (!sub.invite_only || sub.subscribed);
+    return sub.can_administer_stream && (!sub.invite_only || sub.subscribed);
 }
 
 export function can_view_subscribers(sub) {
@@ -650,6 +661,7 @@ export function create_sub_from_server_data(attrs) {
         render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only === true,
         subscribed: true,
         newly_subscribed: false,
+        role: sub_role_values.member.code,
         is_muted: false,
         invite_only: false,
         desktop_notifications: page_params.enable_stream_desktop_notifications,

@@ -77,6 +77,7 @@ const frontend = {
     stream_id: 101,
     is_muted: true,
     invite_only: false,
+    role: stream_data.sub_role_values.stream_admin.code,
 };
 
 function narrow_to_frontend() {
@@ -258,7 +259,7 @@ test("marked_(un)subscribed (early return)", () => {
 test("marked_subscribed (error)", () => {
     // Test undefined error
     blueslip.expect("error", "Undefined sub passed to mark_subscribed");
-    stream_events.mark_subscribed(undefined, [], "yellow");
+    stream_events.mark_subscribed(undefined, [], "yellow", stream_data.sub_role_values.member.code);
     blueslip.reset();
 });
 
@@ -284,7 +285,7 @@ test("marked_subscribed (normal)", (override) => {
         list_updated = true;
     });
 
-    stream_events.mark_subscribed(sub, [], "blue");
+    stream_events.mark_subscribed(sub, [], "blue", stream_data.sub_role_values.stream_admin.code);
 
     args = message_util_stub.get_args("messages");
     assert.deepEqual(args.messages, ["msg"]);
@@ -296,6 +297,7 @@ test("marked_subscribed (normal)", (override) => {
     assert.equal(list_updated, true);
 
     assert.equal(sub.color, "blue");
+    assert.equal(sub.role, stream_data.sub_role_values.stream_admin.code);
     narrow_state.reset_current_filter();
 });
 
@@ -319,7 +321,7 @@ test("marked_subscribed (color)", (override) => {
         const stub = make_stub();
         override(subs, "set_color", stub.f);
         blueslip.expect("warn", "Frontend needed to pick a color in mark_subscribed");
-        stream_events.mark_subscribed(sub, [], undefined);
+        stream_events.mark_subscribed(sub, [], undefined, stream_data.sub_role_values.member.code);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("id", "color");
         assert.equal(args.id, sub.stream_id);
@@ -344,12 +346,32 @@ test("marked_subscribed (emails)", (override) => {
     assert(!stream_data.is_subscribed(sub.name));
 
     const user_ids = [15, 20, 25, me.user_id];
-    stream_events.mark_subscribed(sub, user_ids, "");
+    stream_events.mark_subscribed(sub, user_ids, "", stream_data.sub_role_values.member.code);
     assert.deepEqual(new Set(peer_data.get_subscribers(sub.stream_id)), new Set(user_ids));
     assert(stream_data.is_subscribed(sub.name));
 
     const args = subs_stub.get_args("sub");
     assert.deepEqual(sub, args.sub);
+});
+
+test("mark_unsubscribed (update role)", (override) => {
+    const sub = {
+        ...frontend,
+        subscribed: true,
+        role: stream_data.sub_role_values.stream_admin.code,
+    };
+    stream_data.add_sub(sub);
+
+    const stub = make_stub();
+
+    override(stream_data, "unsubscribe_myself", stub.f);
+    override(subs, "update_settings_for_unsubscribed", noop);
+    override(stream_list, "remove_sidebar_row", noop);
+
+    stream_events.mark_unsubscribed(sub);
+    const args = stub.get_args("sub");
+    assert.deepEqual(args.sub, sub);
+    assert.equal(sub.role, stream_data.sub_role_values.member.code);
 });
 
 test("mark_unsubscribed (update_settings_for_unsubscribed)", (override) => {

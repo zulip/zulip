@@ -92,7 +92,7 @@ export function update_property(stream_id, property, value, other_values) {
 // Add yourself to a stream we already know about client-side.
 // It's likely we should be passing in the full sub object from the caller/backend,
 // but for now we just pass in the subscribers and color (things likely to be different).
-export function mark_subscribed(sub, subscribers, color) {
+export function mark_subscribed(sub, subscribers, color, role) {
     if (sub === undefined) {
         blueslip.error("Undefined sub passed to mark_subscribed");
         return;
@@ -114,6 +114,11 @@ export function mark_subscribed(sub, subscribers, color) {
         color = color_data.pick_color();
         subs.set_color(sub.stream_id, color);
     }
+
+    if (sub.role !== role) {
+        sub.role = role;
+    }
+
     stream_data.subscribe_myself(sub);
     if (subscribers) {
         peer_data.set_subscribers(sub.stream_id, subscribers);
@@ -142,6 +147,9 @@ export function mark_unsubscribed(sub) {
         // We don't know about this stream
         return;
     } else if (sub.subscribed) {
+        if (sub.role !== stream_data.sub_role_values.member.code) {
+            sub.role = stream_data.sub_role_values.member.code;
+        }
         stream_data.unsubscribe_myself(sub);
         if (overlays.streams_open()) {
             subs.update_settings_for_unsubscribed(sub);

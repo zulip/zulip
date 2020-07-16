@@ -269,15 +269,21 @@ test("admin_options", () => {
     // just a sanity check that we leave "normal" fields alone
     assert.equal(sub.color, "blue");
 
-    // the remaining cases are for admin users
+    // stream admins can change stream name, description and permissions.
+    sub = make_sub();
+    sub.role = stream_data.sub_role_values.stream_admin.code;
+    assert(!is_realm_admin(sub));
+    assert(can_change_stream_permissions(sub));
+
+    // the remaining cases are for realm admin users
     page_params.is_admin = true;
 
-    // admins can make public streams become private
+    // realm admins can make public streams become private
     sub = make_sub();
     assert(is_realm_admin(sub));
     assert(can_change_stream_permissions(sub));
 
-    // admins can only make private streams become public
+    // realm admins can only make private streams become public
     // if they are subscribed
     sub = make_sub();
     sub.invite_only = true;

@@ -9,11 +9,11 @@
               is_web_public=is_web_public }}
             <div class="stream-name">
                 <span title="{{name}}" class="stream-name-editable editable-section" >{{name}}</span>
-                <span class="editable {{#unless can_change_name_description}}hide{{/unless}}" data-make-editable=".stream-name-editable"></span>
+                <span class="editable stream-settings-header-controls {{#unless can_change_name_description}}hide{{/unless}}" data-make-editable=".stream-name-editable"></span>
                 <span class="checkmark" data-finish-editing=".stream-name-editable">✓</span>
             </div>
             <div class="button-group">
-                <button class="button small rounded btn-danger deactivate {{#unless is_realm_admin}}hide{{/unless}}" type="button" name="delete_button" title="{{t 'Delete stream'}}"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                <button class="button small rounded btn-danger deactivate stream-settings-header-controls {{#unless can_delete_stream}}hide{{/unless}}" type="button" name="delete_button" title="{{t 'Delete stream'}}"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
                 <div class="sub_unsub_button_wrapper inline-block">
                     <button class="button small rounded subscribe-button sub_unsub_button {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" {{#if should_display_subscription_button}}title="{{t 'Toggle subscription'}} (S)" {{else}}disabled="disabled"{{/if}}>
                         {{#if subscribed }}{{t "Unsubscribe"}}{{else}}{{t "Subscribe"}}{{/if}}</button>
@@ -25,7 +25,7 @@
         </div>
         <div class="stream-description">
             <span class="stream-description-editable editable-section description rendered_markdown" data-no-description="{{t 'No description.' }}">{{rendered_markdown rendered_description}}</span>
-            <span class="editable {{#unless can_change_name_description}}hide{{/unless}}" data-make-editable=".stream-description-editable"></span>
+            <span class="editable stream-settings-header-controls {{#unless can_change_name_description}}hide{{/unless}}" data-make-editable=".stream-description-editable"></span>
             <span class="checkmark" data-finish-editing=".stream-description-editable">✓</span>
         </div>
         <div class="subscription-type">

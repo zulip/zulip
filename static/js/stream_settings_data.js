@@ -36,9 +36,12 @@ export function add_settings_fields(sub) {
     // Note that we don't calculate subscriber counts here.
 
     sub.is_realm_admin = page_params.is_admin;
+    sub.is_stream_admin = sub.role === stream_data.sub_role_values.stream_admin.code;
+    sub.can_administer_stream = page_params.is_admin || sub.is_stream_admin;
     // Admin can change any stream's name & description either stream is public or
     // private, subscribed or unsubscribed.
-    sub.can_change_name_description = page_params.is_admin;
+    sub.can_change_name_description = sub.can_administer_stream;
+    sub.can_delete_stream = sub.can_administer_stream;
 
     sub.should_display_subscription_button = stream_data.can_toggle_subscription(sub);
     sub.should_display_preview_button = stream_data.can_preview(sub);

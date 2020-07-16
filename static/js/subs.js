@@ -297,6 +297,7 @@ export function update_settings_for_subscribed(sub) {
         stream_ui_updates.update_stream_row_in_settings_tab(sub);
         stream_ui_updates.update_settings_button_for_sub(sub);
         stream_ui_updates.update_change_stream_privacy_settings(sub);
+        stream_ui_updates.update_stream_properties_edit_elements(sub);
     } else {
         add_sub_to_table(sub);
     }
@@ -322,6 +323,7 @@ export function update_settings_for_unsubscribed(sub) {
     stream_ui_updates.update_settings_button_for_sub(sub);
     stream_ui_updates.update_regular_sub_settings(sub);
     stream_ui_updates.update_change_stream_privacy_settings(sub);
+    stream_ui_updates.update_stream_properties_edit_elements(sub);
 
     stream_data.update_stream_email_address(sub, "");
     // If user unsubscribed from private stream then user cannot subscribe to
