@@ -294,16 +294,10 @@ jobs:
           # or relative path from working_directory.
           # This is a directory on the container which is
           # taken to be the root directory of the workspace.
-          root: /tmp
+          root: /tmp/production-build
           # Must be relative path from root
           paths:
-            - zulip-server-test.tar.gz
-            - success-http-headers.template.txt
-            - production-install
-            - production-verify
-            - production-upgrade-pg
-            - production
-            - production-extract-tarball
+            - "*"
       - *notify_failure_status
 
   "bionic-production-install":
