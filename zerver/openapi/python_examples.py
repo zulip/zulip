@@ -153,7 +153,6 @@ def create_user(client: Client) -> None:
         'email': 'newbie@zulip.com',
         'password': 'temp',
         'full_name': 'New User',
-        'short_name': 'newbie',
     }
     result = client.create_user(request)
     # {code_example|end}

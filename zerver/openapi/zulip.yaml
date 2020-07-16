@@ -1520,14 +1520,6 @@ paths:
             type: string
           example: New User
           required: true
-        - name: short_name
-          in: query
-          description: |
-            The short name of the new user.  Not user-visible.
-          schema:
-            type: string
-          example: newuser
-          required: true
       responses:
         "200":
           description: Success.

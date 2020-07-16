@@ -782,18 +782,19 @@ class AdminCreateUserTest(ZulipTestCase):
         ))
         self.assert_json_error(result, "Missing 'full_name' argument")
 
+        # Test short_name gets properly ignored
         result = self.client_post("/json/users", dict(
-            email='romeo@not-zulip.com',
+            email='romeo@zulip.com',
             password='xxxx',
             full_name='Romeo Montague',
+            short_name='DEPRECATED'
         ))
-        self.assert_json_error(result, "Missing 'short_name' argument")
+        self.assert_json_success(result)
 
         result = self.client_post("/json/users", dict(
             email='broken',
             password='xxxx',
             full_name='Romeo Montague',
-            short_name='Romeo',
         ))
         self.assert_json_error(result, "Bad name or username")
 
@@ -802,7 +803,6 @@ class AdminCreateUserTest(ZulipTestCase):
             email='romeo@not-zulip.com',
             password='xxxx',
             full_name='Romeo Montague',
-            short_name='Romeo',
         ))
         self.assert_json_error(result,
                                "Email 'romeo@not-zulip.com' not allowed in this organization")
@@ -812,7 +812,6 @@ class AdminCreateUserTest(ZulipTestCase):
             email='romeo@zulip.net',
             password='xxxx',
             full_name='Romeo Montague',
-            short_name='Romeo',
         )
         # Check can't use a bad password with zxcvbn enabled
         with self.settings(PASSWORD_MIN_LENGTH=6, PASSWORD_MIN_GUESSES=1000):
@@ -825,7 +824,7 @@ class AdminCreateUserTest(ZulipTestCase):
         # Romeo is a newly registered user
         new_user = get_user_by_delivery_email('romeo@zulip.net', get_realm('zulip'))
         self.assertEqual(new_user.full_name, 'Romeo Montague')
-        self.assertEqual(new_user.short_name, 'Romeo')
+        self.assertEqual(new_user.short_name, 'deprecated')
 
         # Make sure the recipient field is set correctly.
         self.assertEqual(new_user.recipient, Recipient.objects.get(type=Recipient.PERSONAL,

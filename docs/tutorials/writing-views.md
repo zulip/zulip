@@ -153,7 +153,7 @@ from zerver.lib.request import has_request_variables, REQ
 @require_realm_admin
 @has_request_variables
 def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
-                        full_name=REQ(), short_name=REQ()):
+                        full_name=REQ()):
     # ... code here
 ```
 
