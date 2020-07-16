@@ -10,6 +10,10 @@ below features are supported.
 
 ## Changes in Zulip 3.0
 
+**Feature level 25**
+
+No changes; feature level used for Zulip 3.0 release.
+
 **Feature level 24**
 
 * The `!avatar()` and `!gravatar()` markdown syntax, which was never
