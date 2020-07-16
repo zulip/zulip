@@ -835,19 +835,29 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '.set_away_status', (e) => {
+    $('body').on('click', '.status', (e) => {
         exports.hide_all();
-        user_status.server_set_away();
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $('body').on('click', '.revoke_away_status', (e) => {
-        exports.hide_all();
-        user_status.server_revoke_away();
-        e.stopPropagation();
-        e.preventDefault();
-    });
+        if (user_status.server_set_away()){
+            $('body').on('click', '.set_away_status', (e) => {
+            exports.hide_all();
+            user_status.server_set_away();
+            e.stopPropagation();
+            e.preventDefault();
+            
+            });
+            }
+            else if(user_status.server_revoke_away()){
+                $('body').on('click', '.revoke_away_status', (e) => {
+                    exports.hide_all();              
+                    user_status.server_revoke_away();
+                    e.stopPropagation();
+                    e.preventDefault();    
+                });
+            }
+            e.stopPropagation();
+            e.preventDefault();
+        });
+    
 
     $('body').on('click', '.update_status_text', (e) => {
         exports.hide_all();

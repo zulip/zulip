@@ -51,32 +51,45 @@
         {{/if}}
     </div>
 
-    {{#if is_me}}
+      {{#if is_me}}
         <hr>
-        {{#if can_set_away}}
-        <li>
-            <a href="#" class="set_away_status">
-                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as unavailable{{/tr}}
-            </a>
-        </li>
-        {{/if}}
-        {{#if can_revoke_away}}
-        <li>
-            <a href="#" class="revoke_away_status">
-                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as active{{/tr}}
-            </a>
-        </li>
-        {{/if}}
-        <li>
-            <a href="#" class="update_status_text">
-                <i class="fa fa-comments" aria-hidden="true"></i>
-                {{#if status_text}}
-                    {{#tr this}}Edit status message{{/tr}}
-                {{else}}
-                    {{#tr this}}Set a status message{{/tr}}
+         <form class="status">
+            <label>Status -</label>
+            <select selected="option">
+                <option value="unavailable" selected>status:
+                {{#if can_revoke_away}}
+                <li>
+                    <a href="#" class="revoke_away_status">
+                        <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself active{{/tr}}
+                    </a>
+                    
+                </li>
                 {{/if}}
-            </a>
-        </li>
+                </option>
+                <option value="available">Inactive:  
+                    {{#if can_set_away}}
+                    <li>
+                        <a href="#" class="set_away_status">
+                            <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself unavailable{{/tr}}
+                        </a>
+                    </li>
+                    {{/if}}
+                    </option>
+                         
+            </select>
+        </form>
+        <li>
+            <i class="fa fa-comments" aria-hidden="true"></i>
+            {{#if status_text}}
+                <tr>status message:</tr>
+                <h5>Feel free to contact{{#tr this}} <a href="#" class="update_status_text" style="text-decoration: underline;color:red;">(edit)</a>{{/tr}}</h5>
+                
+            {{else}}
+                <tr>status message:</tr>
+                <h5>Feel free to contact{{#tr this}} <a href="#" class="update_status_text" style="text-decoration: underline;color:red;">(edit)</a>{{/tr}}</h5>
+                
+            {{/if}}
+        </li>    
     {{/if}}
 
     {{#if status_text}}
