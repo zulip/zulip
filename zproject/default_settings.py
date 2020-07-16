@@ -110,7 +110,7 @@ LOGGING_SHOW_PID = False
 
 # File uploads and avatars
 DEFAULT_AVATAR_URI = '/static/images/default-avatar.png'
-DEFAULT_LOGO_URI = '/static/images/logo/zulip-org-logo.png'
+DEFAULT_LOGO_URI = '/static/images/logo/zulip-org-logo.svg'
 S3_AVATAR_BUCKET = ''
 S3_AUTH_UPLOADS_BUCKET = ''
 S3_REGION = ''

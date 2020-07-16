@@ -560,31 +560,15 @@ input.text-error {
         position: relative;
         line-height: 0.8;
 
+        svg {
+            vertical-align: -5px;
+        }
+
         .light {
-            display: inline-block;
-            vertical-align: top;
-            margin-top: 8px;
             font-size: 1.2rem;
             font-weight: 400;
             color: hsl(0, 0%, 20%);
             opacity: 0.5;
-        }
-
-        .brand-logo {
-            width: 25px;
-            margin-top: 3px;
-        }
-
-        span {
-            display: inline-block;
-            vertical-align: top;
-            margin-top: 8px;
-            margin-left: 10px;
-            color: hsl(0, 0%, 100%);
-            font-size: 1.2rem;
-            font-weight: 600;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
         }
     }
 

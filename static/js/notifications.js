@@ -158,9 +158,9 @@ exports.redraw_title = function () {
                 n = 'infinite';
             }
 
-            current_favicon = previous_favicon = '/static/images/favicon/favicon-' + n + '.png';
+            current_favicon = previous_favicon = '/static/images/favicon/favicon-' + n + '.png?v=4';
         } else {
-            current_favicon = previous_favicon = '/static/favicon.ico?v=2';
+            current_favicon = previous_favicon = '/static/images/favicon.svg?v=4';
         }
         favicon.set(current_favicon);
     }
