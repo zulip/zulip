@@ -291,13 +291,18 @@ def purge_unused_caches(
         print("Done!")
 
 def generate_sha1sum_emoji(zulip_path: str) -> str:
-    ZULIP_EMOJI_DIR = os.path.join(zulip_path, 'tools', 'setup', 'emoji')
     sha = hashlib.sha1()
 
-    filenames = ['emoji_map.json', 'build_emoji', 'emoji_setup_utils.py', 'emoji_names.py']
+    filenames = [
+        'static/assets/zulip-emoji/zulip.png',
+        'tools/setup/emoji/emoji_map.json',
+        'tools/setup/emoji/build_emoji',
+        'tools/setup/emoji/emoji_setup_utils.py',
+        'tools/setup/emoji/emoji_names.py',
+    ]
 
     for filename in filenames:
-        file_path = os.path.join(ZULIP_EMOJI_DIR, filename)
+        file_path = os.path.join(zulip_path, filename)
         with open(file_path, 'rb') as reader:
             sha.update(reader.read())
 

@@ -771,12 +771,12 @@ class HomeTest(ZulipTestCase):
         page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/static/images/logo/zulip-org-logo.png?version=0")
+                         "/static/images/logo/zulip-org-logo.svg?version=0")
 
         page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/static/images/logo/zulip-org-logo.png?version=0")
+                         "/static/images/logo/zulip-org-logo.svg?version=0")
 
         do_change_logo_source(user_profile.realm, Realm.LOGO_UPLOADED, night=False, acting_user=user_profile)
         page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
@@ -811,7 +811,7 @@ class HomeTest(ZulipTestCase):
         page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/static/images/logo/zulip-org-logo.png?version=0")
+                         "/static/images/logo/zulip-org-logo.svg?version=0")
 
     def test_generate_204(self) -> None:
         self.login('hamlet')

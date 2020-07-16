@@ -237,15 +237,6 @@ nav {
             span {
                 color: hsl(0, 0%, 27%);
             }
-
-            circle {
-                fill: hsl(0, 0%, 27%) !important;
-            }
-
-            path {
-                fill: hsl(0, 0%, 100%) !important;
-                stroke: hsl(0, 0%, 100%) !important;
-            }
         }
 
         .hamburger {
@@ -280,10 +271,6 @@ nav {
             font-size: 1.2rem;
             letter-spacing: 0.1em;
         }
-    }
-
-    .brand-logo {
-        width: 25px;
     }
 
     ul {
@@ -2980,16 +2967,6 @@ nav {
             margin: 20px auto 0 auto;
             float: none;
             text-align: center;
-        }
-
-        svg.brand-logo circle {
-            fill: hsl(0, 0%, 100%) !important;
-            stroke: hsl(0, 0%, 100%) !important;
-        }
-
-        svg.brand-logo path {
-            fill: hsl(182, 34%, 47%) !important;
-            stroke: hsl(182, 34%, 47%) !important;
         }
     }
 
