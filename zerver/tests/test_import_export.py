@@ -839,10 +839,21 @@ class ImportExportTest(ZulipTestCase):
 
         assert_realm_values(get_realm_audit_log_event_type)
 
+        cordelia_full_name = 'Cordelia Lear'
+        hamlet_full_name = 'King Hamlet'
+        othello_full_name = 'Othello, the Moor of Venice'
+
+        def get_user_id(r: Realm, full_name: str) -> int:
+            return UserProfile.objects.get(realm=r, full_name=full_name).id
+
         # test huddles
         def get_huddle_hashes(r: Realm) -> str:
-            short_names = ['cordelia', 'hamlet', 'othello']
-            user_id_list = [UserProfile.objects.get(realm=r, short_name=name).id for name in short_names]
+            user_id_list = [
+                get_user_id(r, cordelia_full_name),
+                get_user_id(r, hamlet_full_name),
+                get_user_id(r, othello_full_name),
+            ]
+
             huddle_hash = get_huddle_hash(user_id_list)
             return huddle_hash
 
@@ -870,8 +881,8 @@ class ImportExportTest(ZulipTestCase):
 
         # test userhotspot
         def get_user_hotspots(r: Realm) -> Set[str]:
-            user_profile = UserProfile.objects.get(realm=r, short_name='hamlet')
-            hotspots = UserHotspot.objects.filter(user=user_profile)
+            user_id = get_user_id(r, hamlet_full_name)
+            hotspots = UserHotspot.objects.filter(user_id=user_id)
             user_hotspots = {hotspot.hotspot for hotspot in hotspots}
             return user_hotspots
 
@@ -879,8 +890,8 @@ class ImportExportTest(ZulipTestCase):
 
         # test muted topics
         def get_muted_topics(r: Realm) -> Set[str]:
-            user_profile = UserProfile.objects.get(realm=r, short_name='hamlet')
-            muted_topics = MutedTopic.objects.filter(user_profile=user_profile)
+            user_profile_id = get_user_id(r, hamlet_full_name)
+            muted_topics = MutedTopic.objects.filter(user_profile_id=user_profile_id)
             topic_names = {muted_topic.topic_name for muted_topic in muted_topics}
             return topic_names
 
