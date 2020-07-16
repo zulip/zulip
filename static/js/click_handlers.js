@@ -732,7 +732,14 @@ exports.initialize = function () {
     // End Webathena code
 
     // disable the draggability for left-sidebar components
-    $('#stream_filters, #global_filters').on('dragstart', () => false);
+    $('#stream_filters, #global_filters').on('dragstart', (e) => {
+        e.target.blur();
+        return false;
+    });
+
+    // Chrome focuses an element when dragging it which can be confusing when
+    // users involuntarily drag something and we show them the focus outline.
+    $('body').on('dragstart', (e) => e.target.blur());
 
     (function () {
         const map = {
