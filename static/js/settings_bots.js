@@ -60,7 +60,7 @@ function add_bot_row(info) {
 
 function is_local_part(value, element) {
     // Adapted from Django's EmailValidator
-    return this.optional(element) || /^[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+(\.[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+)*$/i.test(value);
+    return this.optional(element) || /^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*$/i.test(value);
 }
 
 exports.type_id_to_string = function (type_id) {

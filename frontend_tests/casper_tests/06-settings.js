@@ -238,7 +238,7 @@ casper.then(function () {
     casper.click('#create_alert_word_button');
     casper.test.info('Checking that a success message is displayed');
     casper.waitUntilVisible('#alert_word_status', function () {
-        casper.test.assertSelectorHasText('.alert_word_status_text', 'Alert word \"some phrase\" added successfully!');
+        casper.test.assertSelectorHasText('.alert_word_status_text', 'Alert word "some phrase" added successfully!');
         casper.test.info('Closing the status message');
         casper.click('.close-alert-word-status');
         casper.test.info('Checking the status message is hidden');

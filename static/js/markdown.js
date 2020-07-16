@@ -77,7 +77,7 @@ exports.contains_backend_only_syntax = function (content) {
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
     const false_filter_match = realm_filter_list.find((re) => {
-        const pattern = /(?:[^\s'"\(,:<])/.source + re[0].source + /(?![\w])/.source;
+        const pattern = /(?:[^\s'"(,:<])/.source + re[0].source + /(?![\w])/.source;
         const regex = new RegExp(pattern);
         return regex.test(content);
     });
@@ -487,7 +487,7 @@ exports.initialize = function (realm_filters, helper_config) {
     marked.InlineLexer.rules.zulip.strong = /^\*\*([\s\S]+?)\*\*(?!\*)/;
 
     // Make sure <del> syntax matches the backend processor
-    marked.InlineLexer.rules.zulip.del = /^(?!<\~)\~\~([^~]+)\~\~(?!\~)/;
+    marked.InlineLexer.rules.zulip.del = /^(?!<~)~~([^~]+)~~(?!~)/;
 
     // Disable _emphasis_ (keeping *emphasis*)
     // Text inside ** must start and end with a word character

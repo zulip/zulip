@@ -22,7 +22,7 @@ exports.has_alert_word = function (word) {
 // escape_user_regex taken from jquery-ui/autocomplete.js,
 // licensed under MIT license.
 function escape_user_regex(value) {
-    return value.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&");
+    return value.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 }
 
 exports.process_message = function (message) {
