@@ -148,7 +148,7 @@ class TestServiceBotBasics(ZulipTestCase):
         bot.bot_type = wrong_bot_type
         bot.save()
 
-        with mock.patch('logging.error') as log_mock:
+        with self.assertLogs(level="ERROR") as m:
             event_dict = get_service_bot_events(
                 sender=hamlet,
                 service_bot_tuples=[
@@ -160,8 +160,7 @@ class TestServiceBotBasics(ZulipTestCase):
             )
 
         self.assertEqual(len(event_dict), 0)
-        arg = log_mock.call_args_list[0][0][0]
-        self.assertIn('Unexpected bot_type', arg)
+        self.assertEqual(m.output, [f"ERROR:root:Unexpected bot_type for Service bot id={bot.id}: {wrong_bot_type}"])
 
 class TestServiceBotStateHandler(ZulipTestCase):
     def setUp(self) -> None:
