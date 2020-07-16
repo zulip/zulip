@@ -447,6 +447,18 @@ class ImportExportTest(ZulipTestCase):
             {'Denmark', 'Rome', 'Scotland', 'Venice', 'Verona'},
         )
 
+        exported_alert_words = data['zerver_alertword']
+
+        # We set up 4 alert words for Hamlet, Cordelia, etc.
+        # when we populate the test database.
+        num_zulip_users = 9
+        self.assertEqual(len(exported_alert_words), num_zulip_users * 4)
+
+        self.assertIn(
+            'robotics',
+            {r['word'] for r in exported_alert_words}
+        )
+
         data = full_data['message']
         um = UserMessage.objects.all()[0]
         exported_um = self.find_by_id(data['zerver_usermessage'], um.id)
