@@ -4490,8 +4490,10 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_too_short_name(self) -> None:
         self.change_ldap_user_attr('hamlet', 'cn', 'a')
 
-        with self.assertRaises(ZulipLDAPException):
+        with self.assertRaises(ZulipLDAPException), \
+                self.assertLogs('django_auth_ldap', 'WARNING') as warn_log:
             self.perform_ldap_sync(self.example_user('hamlet'))
+        self.assertEqual(warn_log.output, ['WARNING:django_auth_ldap:Name too short! while authenticating hamlet'])
 
     def test_deactivate_user(self) -> None:
         self.change_ldap_user_attr('hamlet', 'userAccountControl', '2')
