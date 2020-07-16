@@ -27,7 +27,6 @@ def guess_zulip_user_from_harbor(harbor_username: str, realm: Realm) -> Optional
         # and beginning of email address
         user = UserProfile.objects.filter(
             Q(full_name__iexact=harbor_username) |
-            Q(short_name__iexact=harbor_username) |
             Q(email__istartswith=harbor_username),
             is_active=True,
             realm=realm).order_by("id")[0]
