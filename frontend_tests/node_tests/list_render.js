@@ -749,7 +749,7 @@ run_test('render item', () => {
                                   `tr[data-item='${INITIAL_RENDER_COUNT - 1}']`];
         const item = INITIAL_RENDER_COUNT - 1;
         const new_html = `<tr data-item=${item}>updated: ${item}</tr>\n`;
-        const regex = new RegExp(`\\<tr data-item=${item}\\>.*?\<\\/tr\\>`);
+        const regex = new RegExp(`\\<tr data-item=${item}\\>.*?<\\/tr\\>`);
         assert(expected_queries.includes(query));
         if (query.includes(`data-item='${INITIAL_RENDER_COUNT}'`)) {
             return; // This item is not rendered, so we find nothing

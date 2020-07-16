@@ -14,7 +14,7 @@ exports.get_cleaned_pm_recipients = function (query_string) {
 
 exports.build_highlight_regex = function (query) {
     // the regex below is based on bootstrap code
-    query = query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
+    query = query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     const regex = new RegExp('(' + query + ')', 'ig');
     return regex;
 };

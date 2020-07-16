@@ -311,7 +311,7 @@ exports.tokenize_compose_str = function (s) {
         case '_':
             if (i === 0) {
                 return s;
-            } else if (/[\s(){}\[\]]/.test(s[i - 1])) {
+            } else if (/[\s(){}[\]]/.test(s[i - 1])) {
                 return s.slice(i);
             }
             break;
@@ -709,7 +709,7 @@ exports.get_candidates = function (query) {
     if (this.options.completions.topic) {
         // Stream regex modified from marked.js
         // Matches '#**stream name** >' at the end of a split.
-        const stream_regex =  /#\*\*([^\*>]+)\*\*\s?>$/;
+        const stream_regex =  /#\*\*([^*>]+)\*\*\s?>$/;
         const should_jump_inside_typeahead = stream_regex.test(split[0]);
         if (should_jump_inside_typeahead) {
             this.completing = 'topic_jump';
@@ -719,7 +719,7 @@ exports.get_candidates = function (query) {
         }
 
         // Matches '#**stream name>some text' at the end of a split.
-        const stream_topic_regex = /#\*\*([^\*>]+)>([^\*]*)$/;
+        const stream_topic_regex = /#\*\*([^*>]+)>([^*]*)$/;
         const should_begin_typeahead = stream_topic_regex.test(split[0]);
         if (should_begin_typeahead) {
             this.completing = 'topic_list';
@@ -736,7 +736,7 @@ exports.get_candidates = function (query) {
         }
     }
     if (this.options.completions.timestamp) {
-        const time_jump_regex = /<time(\:([^>]*?)>?)?$/;
+        const time_jump_regex = /<time(:([^>]*?)>?)?$/;
         if (time_jump_regex.test(split[0])) {
             this.completing = 'time_jump';
             return [i18n.t('Mention a timezone-aware time')];

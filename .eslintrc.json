@@ -101,11 +101,6 @@
         ],
         "no-use-before-define": "error",
         "no-useless-constructor": "error",
-        // The Zulip codebase complies partially with the "no-useless-escape"
-        // rule; only regex expressions haven't been updated yet.
-        // Updated regex expressions are currently being tested in casper
-        // files and will decide about a potential future enforcement of this rule.
-        "no-useless-escape": "off",
         "no-var": "error",
         "space-unary-ops": "error",
         "no-whitespace-before-property": "error",
