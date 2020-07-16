@@ -10,7 +10,7 @@ let window_has_focus = document.hasFocus && document.hasFocus();
 
 let supports_sound;
 
-const unread_pms_favicon = '/static/images/favicon/favicon-pms.png?v=4';
+const unread_pms_favicon = '/static/images/favicon/favicon-pms.png?v=5';
 let current_favicon;
 let previous_favicon;
 let flashing = false;
@@ -158,9 +158,9 @@ exports.redraw_title = function () {
                 n = 'infinite';
             }
 
-            current_favicon = previous_favicon = '/static/images/favicon/favicon-' + n + '.png?v=4';
+            current_favicon = previous_favicon = '/static/images/favicon/favicon-' + n + '.png?v=5';
         } else {
-            current_favicon = previous_favicon = '/static/images/favicon.svg?v=4';
+            current_favicon = previous_favicon = null;
         }
         favicon.set(current_favicon);
     }
