@@ -2293,15 +2293,25 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
             result = self.client_get(url, **headers)
             self.assertEqual(result.status_code, 302)
 
-        # Start Apple auth with mobile_flow_otp param. It should get saved into the session
-        # on SOCIAL_AUTH_SUBDOMAIN.
-        initiate_auth(mobile_flow_otp)
-        self.assertEqual(self.client.session['mobile_flow_otp'], mobile_flow_otp)
+        with self.assertLogs(level='INFO') as info_log:
+            # Start Apple auth with mobile_flow_otp param. It should get saved into the session
+            # on SOCIAL_AUTH_SUBDOMAIN.
+            initiate_auth(mobile_flow_otp)
 
-        # Make a request without mobile_flow_otp param and verify the field doesn't persist
-        # in the session from the previous request.
-        initiate_auth()
+        self.assertEqual(self.client.session['mobile_flow_otp'], mobile_flow_otp)
+        self.assertEqual(info_log.output, [
+            'INFO:root:/complete/apple/: Authentication failed: Token validation failed'
+        ])
+
+        with self.assertLogs(level='INFO') as info_log:
+            # Make a request without mobile_flow_otp param and verify the field doesn't persist
+            # in the session from the previous request.
+            initiate_auth()
+
         self.assertEqual(self.client.session.get('mobile_flow_otp'), None)
+        self.assertEqual(info_log.output, [
+            'INFO:root:/complete/apple/: Authentication failed: Token validation failed'
+        ])
 
     def test_id_token_with_invalid_aud_sent(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
