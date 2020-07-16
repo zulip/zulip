@@ -531,7 +531,7 @@ run_test("unread_ops", () => {
         message_list.all = {};
         message_list.all.show_message_as_read = noop;
         notifications.close_notification = noop;
-    }());
+    })();
 
     // Set up a way to capture the options passed in to channel.post.
     let channel_post_opts;

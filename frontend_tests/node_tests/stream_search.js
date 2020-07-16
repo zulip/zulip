@@ -125,7 +125,7 @@ run_test("basics", () => {
 
         verify_collapsed();
         assert.deepEqual(cursor_helper.events, ["reset", "clear"]);
-    }());
+    })();
 
     // Expand the widget.
     toggle_filter();

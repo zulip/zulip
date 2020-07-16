@@ -398,7 +398,7 @@ run_test("loading_newer", () => {
         // since the last message event's data had been discarded.
         // This fetch goes on until the newest message has been found.
         assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), false);
-    }());
+    })();
 
     (function test_home() {
         reset_lists();
@@ -455,6 +455,6 @@ run_test("loading_newer", () => {
 
         assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), false);
 
-    }());
+    })();
 
 });

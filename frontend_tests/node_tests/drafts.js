@@ -107,7 +107,7 @@ run_test("draft_model", () => {
         ls.set("drafts", expected);
 
         assert.deepEqual(draft_model.get(), expected);
-    }());
+    })();
 
     localStorage.clear();
     (function test_get() {
@@ -115,7 +115,7 @@ run_test("draft_model", () => {
 
         assert.deepEqual(draft_model.getDraft("id1"), draft_1);
         assert.equal(draft_model.getDraft("id2"), false);
-    }());
+    })();
 
     localStorage.clear();
     (function test_addDraft() {
@@ -126,7 +126,7 @@ run_test("draft_model", () => {
 
             assert.deepEqual(ls.get("drafts")[id], expected);
         });
-    }());
+    })();
 
     localStorage.clear();
     (function test_editDraft() {
@@ -138,7 +138,7 @@ run_test("draft_model", () => {
 
             assert.deepEqual(ls.get("drafts").id1, expected);
         });
-    }());
+    })();
 
     localStorage.clear();
     (function test_deleteDraft() {
@@ -146,7 +146,7 @@ run_test("draft_model", () => {
         draft_model.deleteDraft("id1");
 
         assert.deepEqual(ls.get("drafts"), {});
-    }());
+    })();
 });
 
 run_test("snapshot_message", () => {

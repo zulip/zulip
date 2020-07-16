@@ -76,7 +76,7 @@ run_test("basics", () => {
         };
 
         return self;
-    }());
+    })();
 
     const switcher = (function () {
         const self = {};
@@ -106,7 +106,7 @@ run_test("basics", () => {
         };
 
         return self;
-    }());
+    })();
 
     set_global("$", (sel) => {
         if (sel.stub) {

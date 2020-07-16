@@ -53,7 +53,7 @@ exports.stream_sidebar = (function () {
     };
 
     return self;
-}());
+})();
 
 function get_search_term() {
     const search_box = $(".stream-list-filter");

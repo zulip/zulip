@@ -35,7 +35,7 @@ const stream_subscription_error = (function () {
 
     return self;
 
-}());
+})();
 
 const stream_name_error = (function () {
     const self = {};
@@ -95,7 +95,7 @@ const stream_name_error = (function () {
     };
 
     return self;
-}());
+})();
 
 // Within the new stream modal...
 function update_announce_stream_state() {
@@ -374,7 +374,7 @@ exports.create_handlers_for_users = function (container) {
                 const display = user_checked ? "block" : "none";
                 elem.css({display: display});
             });
-        }());
+        })();
 
         e.preventDefault();
     });

@@ -198,7 +198,7 @@ run_test("populate_user_groups", () => {
                 return fake_person;
             };
             assert.equal(config.highlighter(), fake_person);
-        }());
+        })();
 
         const fake_context = {
             query: "ali",
@@ -212,7 +212,7 @@ run_test("populate_user_groups", () => {
             const result = config.source.call(fake_context, iago);
             const emails = result.map((user) => user.email).sort();
             assert.deepEqual(emails, [alice.email, bob.email]);
-        }());
+        })();
 
         (function test_matcher() {
             /* Here the query doesn't begin with an '@' because typeahead is triggered
@@ -232,7 +232,7 @@ run_test("populate_user_groups", () => {
             page_params.is_admin = true;
             result = config.matcher.call(fake_context_for_email, bob);
             assert(result);
-        }());
+        })();
 
         (function test_sorter() {
             let sort_recipientbox_typeahead_called = false;
@@ -241,7 +241,7 @@ run_test("populate_user_groups", () => {
             };
             config.sorter.call(fake_context);
             assert(sort_recipientbox_typeahead_called);
-        }());
+        })();
 
         (function test_updater() {
             input_field_stub.text("@ali");
@@ -287,7 +287,7 @@ run_test("populate_user_groups", () => {
             assert(cancel_fade_to_called);
             assert(instructions_fade_to_called);
             assert.equal(text_cleared, true);
-        }());
+        })();
         input_typeahead_called = true;
     };
 
@@ -313,7 +313,7 @@ run_test("populate_user_groups", () => {
             const item = handler(iago.email, pills.items());
             assert(get_by_email_called);
             assert.equal(item, undefined);
-        }());
+        })();
 
         (function test_success_path() {
             get_by_email_called = false;
@@ -322,7 +322,7 @@ run_test("populate_user_groups", () => {
             assert.equal(typeof res, "object");
             assert.equal(res.user_id, bob.user_id);
             assert.equal(res.display_value, bob.full_name);
-        }());
+        })();
     }
 
     pills.onPillRemove = function (handler) {
@@ -572,7 +572,7 @@ run_test("on_events", () => {
 
                 assert(!$("#admin-user-group-status").visible());
                 assert.equal($("form.admin-user-group-form input[type='text']").val(), "");
-            }());
+            })();
 
             (function test_post_error() {
                 $("#admin-user-group-status").show();
@@ -590,11 +590,11 @@ run_test("on_events", () => {
                 opts.error(xhr);
 
                 assert(!$("#admin-user-group-status").visible());
-            }());
+            })();
         };
 
         handler.call(fake_this, event);
-    }());
+    })();
 
     (function test_user_groups_delete_click_triggered() {
         const handler = $("#user-groups").get_on_handler("click", ".delete");
@@ -626,7 +626,7 @@ run_test("on_events", () => {
         };
 
         handler.call(fake_this);
-    }());
+    })();
 
     (function test_user_groups_keypress_enter_triggered() {
         const handler = $("#user-groups").get_on_handler("keypress", ".user-group h4 > span");
@@ -639,7 +639,7 @@ run_test("on_events", () => {
         };
         handler(event);
         assert(default_action_for_enter_stopped);
-    }());
+    })();
 
     (function test_do_not_blur() {
         const blur_event_classes = [".name", ".description", ".input"];
@@ -697,7 +697,7 @@ run_test("on_events", () => {
             assert(!api_endpoint_called);
             assert(settings_user_groups_reload_called);
         }
-    }());
+    })();
 
     (function test_update_cancel_button() {
         const handler_name = $(user_group_selector).get_on_handler("input", ".name");
@@ -745,7 +745,7 @@ run_test("on_events", () => {
         handler_desc.call(fake_this);
         assert(cancel_fade_out_called);
         assert(instructions_fade_out_called);
-    }());
+    })();
 
     (function test_user_groups_save_group_changes_triggered() {
         const handler_name = $(user_group_selector).get_on_handler("blur", ".name");
@@ -796,7 +796,7 @@ run_test("on_events", () => {
                 assert(cancel_fade_out_called);
                 assert(instructions_fade_out_called);
                 assert(saved_fade_to_called);
-            }());
+            })();
             (function test_post_error() {
                 const user_group_error = $(user_group_selector + " .user-group-status");
                 user_group_error.show();
@@ -814,7 +814,7 @@ run_test("on_events", () => {
                 opts.error(xhr);
 
                 assert(user_group_error.visible());
-            }());
+            })();
         };
 
         const fake_this = $.create("fake-#user-groups_blur_name");
@@ -841,7 +841,7 @@ run_test("on_events", () => {
         api_endpoint_called = false;
         handler_desc.call(fake_this, event);
         assert(!api_endpoint_called);
-    }());
+    })();
 
     (function test_user_groups_save_member_changes_triggered() {
         const handler = $(user_group_selector).get_on_handler("blur", ".input");
@@ -886,7 +886,7 @@ run_test("on_events", () => {
                 assert(cancel_fade_out_called);
                 assert(instructions_fade_out_called);
                 assert(saved_fade_to_called);
-            }());
+            })();
         };
 
         const fake_this = $.create("fake-#user-groups_blur_input");
@@ -901,5 +901,5 @@ run_test("on_events", () => {
         api_endpoint_called = false;
         handler.call(fake_this, event);
         assert(api_endpoint_called);
-    }());
+    })();
 });

@@ -69,7 +69,7 @@ run_test("scroll_element_into_container", () => {
                 top = arg;
             },
         };
-    }());
+    })();
 
     const elem1 = {
         innerHeight: () => 25,

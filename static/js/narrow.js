@@ -291,7 +291,7 @@ exports.activate = function (raw_operators, opts) {
                 maybe_report_narrow_time(msg_list);
             },
         });
-    }());
+    })();
 
     if (select_immediately) {
         exports.update_selection({

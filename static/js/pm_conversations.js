@@ -75,6 +75,6 @@ exports.recent = (function () {
     };
 
     return self;
-}());
+})();
 
 window.pm_conversations = exports;

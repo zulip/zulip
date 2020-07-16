@@ -179,7 +179,7 @@ exports.unread_pm_counter = (function () {
     };
 
     return self;
-}());
+})();
 
 function make_per_stream_bucketer() {
     return make_bucketer({
@@ -372,7 +372,7 @@ exports.unread_topic_counter = (function () {
     };
 
     return self;
-}());
+})();
 
 exports.unread_mentions_counter = new Set();
 

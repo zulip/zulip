@@ -45,7 +45,7 @@ compose_state.private_message_recipient = (function () {
 
         recipient = arg;
     };
-}());
+})();
 
 set_global("reload_state", {
     is_in_progress: return_false,

@@ -364,7 +364,7 @@ exports.create = function (opts) {
             e.originalEvent.clipboardData.setData("text/plain", store.get_text_from_item(data.item));
             e.preventDefault();
         });
-    }());
+    })();
 
     // the external, user-accessible prototype.
     const prototype = {

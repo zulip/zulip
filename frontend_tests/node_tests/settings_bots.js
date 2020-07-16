@@ -170,7 +170,7 @@ run_test("test tab clicks", () => {
         assert(forms.add.visible());
         assert(!forms.active.visible());
         assert(!forms.inactive.visible());
-    }());
+    })();
 
     (function () {
         click_on_tab(tabs.active);
@@ -181,7 +181,7 @@ run_test("test tab clicks", () => {
         assert(!forms.add.visible());
         assert(forms.active.visible());
         assert(!forms.inactive.visible());
-    }());
+    })();
 
     (function () {
         click_on_tab(tabs.inactive);
@@ -192,7 +192,7 @@ run_test("test tab clicks", () => {
         assert(!forms.add.visible());
         assert(!forms.active.visible());
         assert(forms.inactive.visible());
-    }());
+    })();
 });
 
 run_test("can_create_new_bots", () => {

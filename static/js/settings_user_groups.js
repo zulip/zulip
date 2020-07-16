@@ -256,7 +256,7 @@ exports.populate_user_groups = function () {
                     input.focus();
                 }, 100);
             });
-        }());
+        })();
     }
 };
 
