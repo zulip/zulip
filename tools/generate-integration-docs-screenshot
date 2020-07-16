@@ -67,7 +67,6 @@ def create_integration_bot(integration: WebhookIntegration, bot_name: Optional[s
             password="123",
             realm=owner.realm,
             full_name=bot_name,
-            short_name=bot_name,
             bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
             bot_owner=owner,
             acting_user=owner,

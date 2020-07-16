@@ -208,7 +208,6 @@ class MarkdownMiscTest(ZulipTestCase):
                 password='whatever',
                 realm=realm,
                 full_name=full_name,
-                short_name='whatever',
             )
 
         fred1 = make_user('fred1@example.com', 'Fred Flintstone')
@@ -1576,7 +1575,6 @@ class MarkdownTest(ZulipTestCase):
                 password='whatever',
                 realm=realm,
                 full_name=full_name,
-                short_name='whatever',
             )
 
         sender_user_profile = self.example_user('othello')
@@ -1622,11 +1620,12 @@ class MarkdownTest(ZulipTestCase):
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
             ' https://trac.example.com/ticket/%(id)s>')
         # Create a user that potentially interferes with the pattern.
-        test_user = create_user(email='atomic@example.com',
-                                password='whatever',
-                                realm=realm,
-                                full_name='Atomic #123',
-                                short_name='whatever')
+        test_user = create_user(
+            email='atomic@example.com',
+            password='whatever',
+            realm=realm,
+            full_name='Atomic #123',
+        )
         content = "@**Atomic #123**"
         self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention" '

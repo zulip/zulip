@@ -824,7 +824,6 @@ class AdminCreateUserTest(ZulipTestCase):
         # Romeo is a newly registered user
         new_user = get_user_by_delivery_email('romeo@zulip.net', get_realm('zulip'))
         self.assertEqual(new_user.full_name, 'Romeo Montague')
-        self.assertEqual(new_user.short_name, 'deprecated')
 
         # Make sure the recipient field is set correctly.
         self.assertEqual(new_user.recipient, Recipient.objects.get(type=Recipient.PERSONAL,
@@ -1442,7 +1441,6 @@ class RecipientInfoTest(ZulipTestCase):
             password='',
             realm=realm,
             full_name='',
-            short_name='',
             bot_type=UserProfile.EMBEDDED_BOT,
         )
 
@@ -1462,7 +1460,6 @@ class RecipientInfoTest(ZulipTestCase):
             password='',
             realm=realm,
             full_name='',
-            short_name='',
             bot_type=UserProfile.DEFAULT_BOT,
         )
 

@@ -206,7 +206,6 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
 
         userprofile = UserProfile(
             full_name=get_user_full_name(user),
-            short_name=user['name'],
             is_active=not user.get('deleted', False) and not user["is_mirror_dummy"],
             is_mirror_dummy=user["is_mirror_dummy"],
             id=user_id,

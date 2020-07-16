@@ -61,9 +61,13 @@ class Command(BaseCommand):
         realm = Realm.objects.create(
             string_id='analytics', name='Analytics', date_created=installation_time)
         with mock.patch("zerver.lib.create_user.timezone_now", return_value=installation_time):
-            shylock = create_user('shylock@analytics.ds', 'Shylock', realm,
-                                  full_name='Shylock', short_name='shylock',
-                                  role=UserProfile.ROLE_REALM_ADMINISTRATOR)
+            shylock = create_user(
+                'shylock@analytics.ds',
+                'Shylock',
+                realm,
+                full_name='Shylock',
+                role=UserProfile.ROLE_REALM_ADMINISTRATOR
+            )
         do_change_user_role(shylock, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         stream = Stream.objects.create(
             name='all', realm=realm, date_created=installation_time)

@@ -61,7 +61,6 @@ from zerver.models import (
     Realm,
     Stream,
     UserProfile,
-    email_to_username,
     get_default_stream_groups,
     get_realm,
     get_source_profile,
@@ -286,7 +285,6 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         assert(realm is not None)
 
         full_name = form.cleaned_data['full_name']
-        short_name = email_to_username(email)
         default_stream_group_names = request.POST.getlist('default_stream_group')
         default_stream_groups = lookup_default_stream_groups(default_stream_group_names, realm)
 
@@ -374,7 +372,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # make it respect invited_as_admin / is_realm_admin.
 
         if user_profile is None:
-            user_profile = do_create_user(email, password, realm, full_name, short_name,
+            user_profile = do_create_user(email, password, realm, full_name,
                                           prereg_user=prereg_user,
                                           role=role,
                                           tos_version=settings.TOS_VERSION,

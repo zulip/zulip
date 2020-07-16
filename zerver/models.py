@@ -885,16 +885,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # Foreign key to the Recipient object for PERSONAL type messages to this user.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
-    # The user's name.  We prefer the model of a full_name and
-    # short_name over first+last because cultures vary on how many
+    # The user's name.  We prefer the model of a full_name
+    # over first+last because cultures vary on how many
     # names one has, whether the family name is first or last, etc.
     # It also allows organizations to encode a bit of non-name data in
     # the "name" attribute if desired, like gender pronouns,
-    # graduation year, etc.  The short_name attribute is currently not
-    # used anywhere, but the intent is that it would be used as the
-    # shorter familiar name for addressing the user in the UI.
+    # graduation year, etc.
     full_name: str = models.CharField(max_length=MAX_NAME_LENGTH)
-    short_name: str = models.CharField(max_length=MAX_NAME_LENGTH)
 
     date_joined: datetime.datetime = models.DateTimeField(default=timezone_now)
     tos_version: Optional[str] = models.CharField(null=True, max_length=10)

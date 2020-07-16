@@ -472,7 +472,7 @@ def user_profile_by_api_key_cache_key(api_key: str) -> str:
     return f"user_profile_by_api_key:{api_key}"
 
 realm_user_dict_fields: List[str] = [
-    'id', 'full_name', 'short_name', 'email',
+    'id', 'full_name', 'email',
     'avatar_source', 'avatar_version', 'is_active',
     'role', 'is_bot', 'realm_id', 'timezone',
     'date_joined', 'bot_owner_id', 'delivery_email',
@@ -505,7 +505,6 @@ bot_dict_fields: List[str] = [
     'id',
     'is_active',
     'realm_id',
-    'short_name',
 ]
 
 def bot_dicts_in_realm_cache_key(realm: 'Realm') -> str:
@@ -569,7 +568,7 @@ def flush_user_profile(sender: Any, **kwargs: Any) -> None:
     if changed(kwargs, ['role']):
         cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
 
-    if changed(kwargs, ['email', 'full_name', 'short_name', 'id', 'is_mirror_dummy']):
+    if changed(kwargs, ['email', 'full_name', 'id', 'is_mirror_dummy']):
         delete_display_recipient_cache(user_profile)
 
     # Invalidate our bots_in_realm info dict if any bot has

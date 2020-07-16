@@ -62,7 +62,6 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
-    email_to_username,
     get_huddle_hash,
     get_system_bot,
     get_user_profile_by_id,
@@ -880,6 +879,10 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
         # Since Zulip doesn't use these permissions, drop them
         del user_profile_dict['user_permissions']
         del user_profile_dict['groups']
+        # The short_name field is obsolete in Zulip, but it's
+        # convenient for third party exports to populate it.
+        if 'short_name' in user_profile_dict:
+            del user_profile_dict['short_name']
 
     user_profiles = [UserProfile(**item) for item in data['zerver_userprofile']]
     for user_profile in user_profiles:
@@ -1097,9 +1100,8 @@ def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
                  bot_type: Optional[int]=None) -> None:
     user_set = set()
     for full_name, email in name_list:
-        short_name = email_to_username(email)
         if not UserProfile.objects.filter(email=email):
-            user_set.add((email, full_name, short_name, True))
+            user_set.add((email, full_name, True))
     bulk_create_users(realm, user_set, bot_type)
 
 def update_message_foreign_keys(import_dir: Path,

@@ -68,8 +68,12 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
 
     # Prepare the non-admin client
     email = 'guest@zulip.com'  # guest is not an admin
-    guest_user = do_create_user('guest@zulip.com', 'secret',
-                                get_realm('zulip'), 'Mr. Guest', 'guest')
+    guest_user = do_create_user(
+        'guest@zulip.com',
+        'secret',
+        get_realm('zulip'),
+        'Mr. Guest',
+    )
     api_key = get_api_key(guest_user)
     nonadmin_client = Client(
         email=email,

@@ -4491,7 +4491,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             None,
             test_realm,
             hamlet.full_name,
-            hamlet.short_name)
+        )
 
         self.change_ldap_user_attr('hamlet', 'cn', 'Second Hamlet')
         expected_call_args = [hamlet2, 'Second Hamlet', None]

@@ -749,8 +749,13 @@ class NormalActionsTest(BaseAction):
         prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
 
         events = self.verify_action(
-            lambda: do_create_user('foo@zulip.com', 'password', self.user_profile.realm,
-                                   'full name', 'short name', prereg_user=prereg_user),
+            lambda: do_create_user(
+                'foo@zulip.com',
+                'password',
+                self.user_profile.realm,
+                'full name',
+                prereg_user=prereg_user,
+            ),
             state_change_expected=True,
             num_events=5,
         )

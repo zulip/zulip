@@ -89,7 +89,6 @@ def build_userprofile(timestamp: Any, domain_name: str,
             # Build userprofile object
             userprofile = UserProfile(
                 full_name=user_data['displayName'],
-                short_name=user_data['username'],
                 id=user_id,
                 email=email,
                 delivery_email=email,
@@ -100,6 +99,11 @@ def build_userprofile(timestamp: Any, domain_name: str,
             # Set realm id separately as the corresponding realm is not yet a Realm model
             # instance
             userprofile_dict['realm'] = realm_id
+
+            # We use this later, even though Zulip doesn't
+            # support short_name
+            userprofile_dict['short_name'] = user_data['username']
+
             zerver_userprofile.append(userprofile_dict)
             user_id += 1
     logging.info('######### IMPORTING USERS FINISHED #########\n')
