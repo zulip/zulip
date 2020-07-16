@@ -1176,6 +1176,7 @@ class TestAPNs(PushNotificationTest):
             zerver.lib.push_notifications._apns_client = None
 
     def test_not_configured(self) -> None:
+        self.setup_apns_tokens()
         with mock.patch('zerver.lib.push_notifications.get_apns_client') as mock_get, \
                 mock.patch('zerver.lib.push_notifications.logger') as mock_logging:
             mock_get.return_value = None

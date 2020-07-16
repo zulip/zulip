@@ -106,6 +106,8 @@ APNS_MAX_RETRIES = 3
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
                                  payload_data: Dict[str, Any], remote: bool=False) -> None:
+    if not devices:
+        return
     # We lazily do the APNS imports as part of optimizing Zulip's base
     # import time; since these are only needed in the push
     # notification queue worker, it's best to only import them in the
@@ -265,6 +267,8 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
     options: Additional options to control the GCM message sent.
         For details, see `parse_gcm_options`.
     """
+    if not devices:
+        return
     if not gcm_client:
         logger.debug("Skipping sending a GCM push notification since "
                      "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset")
@@ -819,9 +823,6 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
                                                         kind=PushDeviceToken.APNS))
 
-    if apple_devices:
-        send_apple_push_notification(user_profile.id, apple_devices,
-                                     apns_payload)
+    send_apple_push_notification(user_profile.id, apple_devices, apns_payload)
 
-    if android_devices:
-        send_android_push_notification(android_devices, gcm_payload, gcm_options)
+    send_android_push_notification(android_devices, gcm_payload, gcm_options)
