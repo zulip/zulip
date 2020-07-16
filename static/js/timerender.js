@@ -289,7 +289,7 @@ exports.absolute_time = (function () {
         str += " " + fmt_time(date, H_24);
         return str;
     };
-}());
+})();
 
 exports.get_full_datetime = function (time) {
     // Convert to number of hours ahead/behind UTC.

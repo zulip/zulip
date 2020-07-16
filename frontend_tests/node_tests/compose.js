@@ -684,7 +684,7 @@ run_test("send_message", () => {
         assert(!$("#compose-send-status").visible());
         assert.equal($("#compose-send-button").prop("disabled"), false);
         assert(!$("#sending-indicator").visible());
-    }());
+    })();
 
     // This is the additional setup which is common to both the tests below.
     transmit.send_message = function (payload, success, error) {
@@ -713,7 +713,7 @@ run_test("send_message", () => {
         };
         assert.deepEqual(stub_state, state);
         assert(echo_error_msg_checked);
-    }());
+    })();
 
     (function test_error_codepath_local_id_undefined() {
         stub_state = initialize_state_stub_dict();
@@ -749,7 +749,7 @@ run_test("send_message", () => {
         assert($("#compose-send-status").visible());
         assert.equal($("#compose-send-button").prop("disabled"), false);
         assert(!$("#sending-indicator").visible());
-    }());
+    })();
 });
 
 set_global("document", "document-stub");
@@ -806,7 +806,7 @@ run_test("finish", () => {
         assert(!$("#compose-send-button").is_focused());
         assert.equal($("#compose-send-button").prop("disabled"), false);
         assert.equal($("#compose-error-msg").html(), i18n.t("You have nothing to send!"));
-    }());
+    })();
 
     (function test_when_compose_validation_succeed() {
         $("#compose-textarea").hide();
@@ -835,7 +835,7 @@ run_test("finish", () => {
         assert($("#markdown_preview").visible());
         assert(send_message_called);
         assert(compose_finished_event_checked);
-    }());
+    })();
 });
 
 run_test("warn_if_private_stream_is_linked", () => {
@@ -875,7 +875,7 @@ run_test("warn_if_private_stream_is_linked", () => {
                 return "fake-compose_private_stream_alert-template";
             });
             return function () { assert(called); };
-        }()),
+        })(),
 
         (function () {
             let called;
@@ -884,7 +884,7 @@ run_test("warn_if_private_stream_is_linked", () => {
                 assert.equal(html, "fake-compose_private_stream_alert-template");
             };
             return function () { assert(called); };
-        }()),
+        })(),
     ];
 
     denmark = {
@@ -988,7 +988,7 @@ run_test("initialize", () => {
         compose.initialize();
 
         assert(compose_actions_start_checked);
-    }());
+    })();
 
     (function test_page_params_narrow_topic() {
         page_params.narrow_topic = "testing";
@@ -1000,7 +1000,7 @@ run_test("initialize", () => {
         compose.initialize();
 
         assert(compose_actions_start_checked);
-    }());
+    })();
 
     (function test_abort_xhr() {
         $("#compose-send-button").attr("disabled", "disabled");
@@ -1013,7 +1013,7 @@ run_test("initialize", () => {
 
         assert.equal($("#compose-send-button").attr(), undefined);
         assert(uppy_cancel_all_called);
-    }());
+    })();
 });
 
 run_test("update_fade", () => {
@@ -1150,7 +1150,7 @@ run_test("warn_if_mentioning_unsubscribed_user", () => {
                 return true;
             };
             return function () { assert(called); };
-        }()),
+        })(),
 
         (function () {
             let called;
@@ -1163,7 +1163,7 @@ run_test("warn_if_mentioning_unsubscribed_user", () => {
                 return "fake-compose-invite-user-template";
             });
             return function () { assert(called); };
-        }()),
+        })(),
 
         (function () {
             let called;
@@ -1172,7 +1172,7 @@ run_test("warn_if_mentioning_unsubscribed_user", () => {
                 assert.equal(html, "fake-compose-invite-user-template");
             };
             return function () { assert(called); };
-        }()),
+        })(),
     ];
 
     mentioned = {
@@ -1266,7 +1266,7 @@ run_test("on_events", () => {
         assert(compose_finish_checked);
         assert(!$("#compose-all-everyone").visible());
         assert(!$("#compose-send-status").visible());
-    }());
+    })();
 
     (function test_compose_invite_users_clicked() {
         const handler = $("#compose_invite_users")
@@ -1323,7 +1323,7 @@ run_test("on_events", () => {
         assert(!$("#compose_invite_users").visible());
         assert(invite_user_to_stream_called);
         assert(all_invite_children_called);
-    }());
+    })();
 
     (function test_compose_invite_close_clicked() {
         const handler = $("#compose_invite_users")
@@ -1347,7 +1347,7 @@ run_test("on_events", () => {
         assert(helper.container_was_removed());
         assert(all_invite_children_called);
         assert(!$("#compose_invite_users").visible());
-    }());
+    })();
 
     (function test_compose_not_subscribed_clicked() {
         const handler = $("#compose-send-status")
@@ -1379,7 +1379,7 @@ run_test("on_events", () => {
         handler(helper.event);
 
         assert(!$("#compose-send-status").visible());
-    }());
+    })();
 
     (function test_compose_not_subscribed_close_clicked() {
         const handler = $("#compose-send-status")
@@ -1396,7 +1396,7 @@ run_test("on_events", () => {
         handler(helper.event);
 
         assert(!$("#compose-send-status").visible());
-    }());
+    })();
 
     (function test_attach_files_compose_clicked() {
         const handler = $("#compose")
@@ -1416,7 +1416,7 @@ run_test("on_events", () => {
 
         handler(event);
         assert(compose_file_input_clicked);
-    }());
+    })();
 
     (function test_video_link_compose_clicked() {
         page_params.jitsi_server_url = "https://meet.jit.si";
@@ -1489,7 +1489,7 @@ run_test("on_events", () => {
         video_link_regex = /\[Click to join video call\]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
         assert(video_link_regex.test(syntax_to_insert));
 
-    }());
+    })();
 
     (function test_markdown_preview_compose_clicked() {
         // Tests setup
@@ -1612,7 +1612,7 @@ run_test("on_events", () => {
         assert_visibilities();
         assert.equal($("#preview_content").html(),
                      "Server: foobarfoobar");
-    }());
+    })();
 
     (function test_undo_markdown_preview_clicked() {
         const handler = $("#compose")
@@ -1633,7 +1633,7 @@ run_test("on_events", () => {
         assert(!$("#undo_markdown_preview").visible());
         assert(!$("#preview_message_area").visible());
         assert($("#markdown_preview").visible());
-    }());
+    })();
 
 });
 

@@ -68,7 +68,7 @@ Logger.prototype = (function () {
     }
 
     return proto;
-}());
+})();
 
 const logger = new Logger();
 

@@ -35,7 +35,7 @@ exports.toggle = function (opts) {
             _component.append(tab);
         });
         return _component;
-    }(opts));
+    })(opts);
 
     const meta = {
         $ind_tab: component.find(".ind-tab"),
@@ -96,7 +96,7 @@ exports.toggle = function (opts) {
         if (typeof opts.selected === "number") {
             select_tab(opts.selected);
         }
-    }());
+    })();
 
     const prototype = {
         maybe_go_left: maybe_go_left,

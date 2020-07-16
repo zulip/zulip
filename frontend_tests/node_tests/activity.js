@@ -336,7 +336,7 @@ run_test("handlers", () => {
         activity.user_cursor.go_to(alice.user_id);
         filter_key_handlers.down_arrow();
         filter_key_handlers.up_arrow();
-    }());
+    })();
 
     (function test_click_filter() {
         init();
@@ -346,7 +346,7 @@ run_test("handlers", () => {
 
         const handler = $(".user-list-filter").get_on_handler("focus");
         handler(e);
-    }());
+    })();
 
     (function test_click_header_filter() {
         init();
@@ -358,7 +358,7 @@ run_test("handlers", () => {
         handler(e);
         // and click again
         handler(e);
-    }());
+    })();
 
     (function test_enter_key() {
         init();
@@ -378,7 +378,7 @@ run_test("handlers", () => {
         // get line coverage for cleared case
         activity.user_cursor.clear();
         filter_key_handlers.enter_key();
-    }());
+    })();
 
     (function test_click_handler() {
         init();
@@ -393,14 +393,14 @@ run_test("handlers", () => {
 
         activity.narrow_for_user({li: alice_li});
         assert(narrowed);
-    }());
+    })();
 
     (function test_blur_filter() {
         init();
         const e = {};
         const handler = $(".user-list-filter").get_on_handler("blur");
         handler(e);
-    }());
+    })();
 });
 
 presence.presence_info = new Map();

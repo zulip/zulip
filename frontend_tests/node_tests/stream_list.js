@@ -76,7 +76,7 @@ run_test("create_sidebar_row", () => {
 
         stream_list.create_sidebar_row(devel);
         assert.equal(devel_value.text(), "42");
-    }());
+    })();
 
     (function create_social_sidebar_row() {
         const social_value = $.create("social-value");
@@ -95,7 +95,7 @@ run_test("create_sidebar_row", () => {
 
         stream_list.create_sidebar_row(social);
         assert.equal(social_value.text(), "42");
-    }());
+    })();
 
     const split = '<hr class="stream-split">';
     const devel_sidebar = $("<devel sidebar row>");

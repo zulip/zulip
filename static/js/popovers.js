@@ -43,7 +43,7 @@ function elem_to_user_id(elem) {
 
     // add back all shallow properties of $.fn.popover to the new proxied version.
     Object.assign($.fn.popover, popover);
-}($.fn.popover));
+})($.fn.popover);
 
 function copy_email_handler(e) {
     const email_el = $(e.trigger.parentElement);
@@ -1088,7 +1088,7 @@ exports.register_click_handlers = function () {
             // retrigger `hide_all` while still scrolling.
             last_scroll = date;
         });
-    }());
+    })();
 };
 
 exports.any_active = function () {

@@ -136,7 +136,7 @@
         "strict": "off",
         "template-curly-spacing": "error",
         "valid-typeof": [ "error", { "requireStringLiterals": true } ],
-        "wrap-iife": "error",
+        "wrap-iife": ["error", "inside"],
         "yoda": "error"
     },
     "overrides": [

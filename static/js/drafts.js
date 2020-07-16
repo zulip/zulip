@@ -65,7 +65,7 @@ const draft_model = (function () {
     };
 
     return exports;
-}());
+})();
 
 exports.draft_model = draft_model;
 

@@ -65,7 +65,7 @@ run_test("test_basics", () => {
         assert.equal("http://bar.com", services[0].base_url);
         assert.equal(1, services[0].interface);
         assert.equal(undefined, bot.extra);
-    }());
+    })();
 
     (function test_update() {
         bot_data.add(test_bot);
@@ -88,7 +88,7 @@ run_test("test_basics", () => {
 
         bot = bot_data.get(43);
         assert.equal(bot.owner_id, fred.user_id);
-    }());
+    })();
 
     (function test_embedded_bot_update() {
         bot_data.add(test_embedded_bot);
@@ -97,7 +97,7 @@ run_test("test_basics", () => {
         assert.equal("12345678", services[0].config_data.key);
         bot_data.update(bot_id, {services: [{config_data: {key: "87654321"}}]});
         assert.equal("87654321", services[0].config_data.key);
-    }());
+    })();
 
     (function test_remove() {
         let bot;
@@ -110,13 +110,13 @@ run_test("test_basics", () => {
         bot_data.deactivate(43);
         bot = bot_data.get(43);
         assert.equal(bot.is_active, false);
-    }());
+    })();
 
     (function test_all_user_ids() {
         const all_ids = bot_data.all_user_ids();
         all_ids.sort();
         assert.deepEqual(all_ids, [143, 314, 42, 43]);
-    }());
+    })();
 
     (function test_delete() {
         let bot;
@@ -129,7 +129,7 @@ run_test("test_basics", () => {
         bot_data.del(43);
         bot = bot_data.get(43);
         assert.equal(bot, undefined);
-    }());
+    })();
 
     (function test_get_editable() {
 
@@ -139,7 +139,7 @@ run_test("test_basics", () => {
 
         const editable_bots = bot_data.get_editable().map((bot) => bot.email);
         assert.deepEqual(["bot1@zulip.com", "bot2@zulip.com"], editable_bots);
-    }());
+    })();
 
     (function test_get_all_bots_for_current_user() {
         const bots = bot_data.get_all_bots_for_current_user();
@@ -147,5 +147,5 @@ run_test("test_basics", () => {
         assert.equal(bots.length, 2);
         assert.equal(bots[0].email, "bot1@zulip.com");
         assert.equal(bots[1].email, "bot2@zulip.com");
-    }());
+    })();
 });

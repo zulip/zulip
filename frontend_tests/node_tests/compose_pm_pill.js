@@ -102,7 +102,7 @@ run_test("pills", () => {
             const item = handler(othello.email, pills.items());
             assert(get_by_email_called);
             assert.equal(item, undefined);
-        }());
+        })();
 
         (function test_success_path() {
             get_by_email_called = false;
@@ -111,7 +111,7 @@ run_test("pills", () => {
             assert.equal(typeof res, "object");
             assert.equal(res.user_id, iago.user_id);
             assert.equal(res.display_value, iago.full_name);
-        }());
+        })();
     }
 
     function input_pill_stub(opts) {

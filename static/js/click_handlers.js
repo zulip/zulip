@@ -571,7 +571,7 @@ exports.initialize = function () {
         $(sel).on("click", "a", function () {
             this.blur();
         });
-    }());
+    })();
 
     popovers.register_click_handlers();
     emoji_picker.register_click_handlers();
@@ -826,7 +826,7 @@ exports.initialize = function () {
                 $("[data-make-editable='" + selector + "']").html("");
             }
         });
-    }());
+    })();
 
 
     // HOTSPOTS

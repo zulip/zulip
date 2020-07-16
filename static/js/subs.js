@@ -925,7 +925,7 @@ exports.initialize = function () {
                 stream_edit.open_edit_panel_empty();
             }
         });
-    }());
+    })();
 
 };
 

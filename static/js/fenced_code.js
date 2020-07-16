@@ -167,7 +167,7 @@ exports.process_fenced_code = function (content) {
                     handler_stack.pop();
                 },
             };
-        }());
+        })();
     }
 
     function default_hander() {

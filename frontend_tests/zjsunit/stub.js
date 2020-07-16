@@ -39,4 +39,4 @@ exports.with_stub = function (f) {
         assert.equal(args.color, "blue");
         assert.equal(args.n, 42);
     });
-}());
+})();

@@ -59,7 +59,7 @@ exports.send_read = (function () {
     }
 
     return add;
-}());
+})();
 
 exports.save_collapsed = function (message) {
     send_flag_update(message, "collapsed", "add");

@@ -51,6 +51,6 @@ exports.get_next_id_float = (function () {
 
         return local_id_float;
     };
-}());
+})();
 
 window.local_message = exports;

@@ -25,7 +25,7 @@ run_test("basics", () => {
         };
 
         return self;
-    }());
+    })();
 
     function password_field(min_length, min_guesses) {
         const self = {};

@@ -120,7 +120,7 @@ run_test("msg_edited_vars", () => {
         assert_alongside_sender(result[0]);
         assert_left_col(result[1]);
         assert_status_msg(result[2]);
-    }());
+    })();
 });
 
 run_test("merge_message_groups", () => {
@@ -204,7 +204,7 @@ run_test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, []);
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
-    }());
+    })();
 
     (function test_append_message_same_subject() {
 
@@ -229,7 +229,7 @@ run_test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_groups, []);
         assert_message_list_equal(result.append_messages, [message2]);
         assert_message_list_equal(result.rerender_messages_next_same_sender, [message1]);
-    }());
+    })();
 
     (function test_append_message_different_subject() {
 
@@ -255,7 +255,7 @@ run_test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, []);
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
-    }());
+    })();
 
     (function test_append_message_different_subject_and_days() {
 
@@ -284,7 +284,7 @@ run_test("merge_message_groups", () => {
         assert.equal(
             message_group2.group_date_divider_html,
             "900000000 - 1000000");
-    }());
+    })();
 
     (function test_append_message_different_day() {
 
@@ -308,7 +308,7 @@ run_test("merge_message_groups", () => {
         assert.deepEqual(result.append_messages, [message2]);
         assert.deepEqual(result.rerender_messages_next_same_sender, [message1]);
         assert(list._message_groups[0].message_containers[1].want_date_divider);
-    }());
+    })();
 
     (function test_append_message_historical() {
 
@@ -334,7 +334,7 @@ run_test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, []);
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
-    }());
+    })();
 
     (function test_append_message_same_subject_me_message() {
 
@@ -360,7 +360,7 @@ run_test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_groups, []);
         assert_message_list_equal(result.append_messages, [message2]);
         assert_message_list_equal(result.rerender_messages_next_same_sender, [message1]);
-    }());
+    })();
 
     (function test_prepend_message_same_subject() {
 
@@ -386,7 +386,7 @@ run_test("merge_message_groups", () => {
                                          [build_message_group([message2, message1])]);
         assert.deepEqual(result.append_messages, []);
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
-    }());
+    })();
 
     (function test_prepend_message_different_subject() {
 
@@ -411,7 +411,7 @@ run_test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, []);
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
-    }());
+    })();
 
     (function test_prepend_message_different_subject_and_day() {
 
@@ -441,7 +441,7 @@ run_test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_groups, [message_group1]);
         assert.deepEqual(result.append_messages, []);
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
-    }());
+    })();
 
     (function test_prepend_message_different_day() {
 
@@ -470,7 +470,7 @@ run_test("merge_message_groups", () => {
         assert_message_groups_list_equal(result.rerender_groups, [message_group2]);
         assert.deepEqual(result.append_messages, []);
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
-    }());
+    })();
 
     (function test_prepend_message_historical() {
 
@@ -496,7 +496,7 @@ run_test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, []);
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
-    }());
+    })();
 
 });
 
@@ -533,7 +533,7 @@ run_test("render_windows", () => {
         view.rerender_preserving_scrolltop = noop;
 
         return view;
-    }());
+    })();
 
     const list = view.list;
 
@@ -541,7 +541,7 @@ run_test("render_windows", () => {
         // The function should early exit here.
         const rendered = view.maybe_rerender();
         assert.equal(rendered, false);
-    }());
+    })();
 
     let messages;
 
