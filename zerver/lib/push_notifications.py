@@ -534,8 +534,8 @@ def get_mobile_push_content(rendered_content: str) -> str:
         header = elem.find_class('spoiler-header')[0]
         text = process(header).strip()
         if len(text) == 0:
-            return "(...)\n"
-        return f"{text} (...)\n"
+            return "(…)\n"
+        return f"{text} (…)\n"
 
     def process(elem: lxml.html.HtmlElement) -> str:
         plain_text = ''
