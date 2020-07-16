@@ -95,7 +95,7 @@
 * [View organization statistics](/help/analytics)
 * [Linking to Zulip](/help/linking-to-zulip)
 * [Connect through a proxy](/help/connect-through-a-proxy)
-* [Add a custom certificate](/help/custom-certificates)
+* [Use a custom certificate](/help/custom-certificates)
 
 ## Apps
 * [Desktop installation guides](/help/desktop-app-install-guide)
