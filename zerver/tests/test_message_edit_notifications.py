@@ -4,7 +4,7 @@ from unittest import mock
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import get_client
-from zerver.lib.push_notifications import get_apns_badge_count
+from zerver.lib.push_notifications import get_apns_badge_count, get_apns_badge_count_future
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Subscription, UserPresence
 from zerver.tornado.event_queue import maybe_enqueue_notifications
@@ -498,13 +498,15 @@ class EditMessageSideEffectsTest(ZulipTestCase):
     def test_clear_notification_when_mention_removed(self) -> None:
         mentioned_user = self.example_user('iago')
         self.assertEqual(get_apns_badge_count(mentioned_user), 0)
+        self.assertEqual(get_apns_badge_count_future(mentioned_user), 0)
 
         with mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value=True):
             message_id = self._login_and_send_original_stream_message(
                 content="@**Iago**",
             )
 
-        self.assertEqual(get_apns_badge_count(mentioned_user), 1)
+        self.assertEqual(get_apns_badge_count(mentioned_user), 0)
+        self.assertEqual(get_apns_badge_count_future(mentioned_user), 1)
 
         self._get_queued_data_for_message_update(
             message_id=message_id,
@@ -512,17 +514,20 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         )
 
         self.assertEqual(get_apns_badge_count(mentioned_user), 0)
+        self.assertEqual(get_apns_badge_count_future(mentioned_user), 0)
 
     def test_clear_notification_when_group_mention_removed(self) -> None:
         group_mentioned_user = self.example_user('cordelia')
         self.assertEqual(get_apns_badge_count(group_mentioned_user), 0)
+        self.assertEqual(get_apns_badge_count_future(group_mentioned_user), 0)
 
         with mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value=True):
             message_id = self._login_and_send_original_stream_message(
                 content="Hello @*hamletcharacters*",
             )
 
-        self.assertEqual(get_apns_badge_count(group_mentioned_user), 1)
+        self.assertEqual(get_apns_badge_count(group_mentioned_user), 0)
+        self.assertEqual(get_apns_badge_count_future(group_mentioned_user), 1)
 
         self._get_queued_data_for_message_update(
             message_id=message_id,
@@ -531,6 +536,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         )
 
         self.assertEqual(get_apns_badge_count(group_mentioned_user), 0)
+        self.assertEqual(get_apns_badge_count_future(group_mentioned_user), 0)
 
     def test_not_clear_notification_when_mention_removed_but_stream_notified(self) -> None:
         mentioned_user = self.example_user('iago')
@@ -538,17 +544,20 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         mentioned_user.save()
 
         self.assertEqual(get_apns_badge_count(mentioned_user), 0)
+        self.assertEqual(get_apns_badge_count_future(mentioned_user), 0)
 
         with mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value=True):
             message_id = self._login_and_send_original_stream_message(
                 content="@**Iago**",
             )
 
-        self.assertEqual(get_apns_badge_count(mentioned_user), 1)
+        self.assertEqual(get_apns_badge_count(mentioned_user), 0)
+        self.assertEqual(get_apns_badge_count_future(mentioned_user), 1)
 
         self._get_queued_data_for_message_update(
             message_id=message_id,
             content="Removed mention"
         )
 
-        self.assertEqual(get_apns_badge_count(mentioned_user), 1)
+        self.assertEqual(get_apns_badge_count(mentioned_user), 0)
+        self.assertEqual(get_apns_badge_count_future(mentioned_user), 1)

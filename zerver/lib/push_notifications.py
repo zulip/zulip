@@ -629,6 +629,14 @@ def get_apns_alert_subtitle(message: Message) -> str:
     return message.sender.full_name + ":"
 
 def get_apns_badge_count(user_profile: UserProfile, read_messages_ids: Optional[Sequence[int]]=[]) -> int:
+    # NOTE: We have temporarily set get_apns_badge_count to always
+    # return 0 until we can debug a likely mobile app side issue with
+    # handling notifications while the app is open.
+    return 0
+
+def get_apns_badge_count_future(user_profile: UserProfile, read_messages_ids: Optional[Sequence[int]]=[]) -> int:
+    # Future implementation of get_apns_badge_count; unused but
+    # we expect to use this once we resolve client-side bugs.
     return UserMessage.objects.filter(
         user_profile=user_profile
     ).extra(
