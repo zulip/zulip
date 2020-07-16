@@ -1352,7 +1352,7 @@ run_test('tokenizing', () => {
 
 run_test('content_highlighter', () => {
     let fake_this = { completing: 'emoji' };
-    const emoji = { emoji_name: 'person shrugging', emoji_url: '¯\_(ツ)_/¯' };
+    const emoji = { emoji_name: 'person shrugging', emoji_url: '¯\\_(ツ)_/¯' };
     let th_render_typeahead_item_called = false;
     typeahead_helper.render_emoji = function (item) {
         assert.deepEqual(item, emoji);
