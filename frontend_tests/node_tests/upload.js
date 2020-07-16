@@ -327,7 +327,7 @@ run_test('file_input', () => {
     const event = {
         target: {
             files: files,
-            value: "C:\fakepath\portland.png",
+            value: "C:\\fakepath\\portland.png",
         },
     };
     let upload_files_called = false;
