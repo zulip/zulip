@@ -77,7 +77,7 @@ run_test("render_now_returns_year_with_year_boundary", () => {
 
 run_test("render_date_renders_time_html", () => {
     const today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
-    const message_time  = today.clone();
+    const message_time = today.clone();
     const expected_html = i18n.t("Today");
 
     const attrs = {};

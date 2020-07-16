@@ -59,7 +59,7 @@ async function realm_creation_tests(page) {
 
     // Check if realm is created and user is logged in by checking if
     // element of id `lightbox_overlay` exists.
-    await page.waitForSelector("#lightbox_overlay");  // if element doesn't exist,timeout error raises
+    await page.waitForSelector("#lightbox_overlay"); // if element doesn't exist,timeout error raises
 }
 
 common.run_test(realm_creation_tests);

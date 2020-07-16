@@ -271,8 +271,8 @@ exports.initiate = function (options) {
     let idle_control;
     const random_variance = util.random_int(0, 1000 * 60 * 5);
     const unconditional_timeout = 1000 * 60 * 30 + random_variance;
-    const composing_idle_timeout = 1000 * 60 * 7  + random_variance;
-    const basic_idle_timeout = 1000 * 60 * 1  + random_variance;
+    const composing_idle_timeout = 1000 * 60 * 7 + random_variance;
+    const basic_idle_timeout = 1000 * 60 * 1 + random_variance;
     let compose_started_handler;
 
     function reload_from_idle() {

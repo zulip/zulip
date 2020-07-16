@@ -458,7 +458,7 @@ exports.update_stream_privacy = function (sub, values) {
     sub.history_public_to_subscribers = values.history_public_to_subscribers;
 };
 
-exports.update_message_retention_setting  = function (sub, message_retention_days) {
+exports.update_message_retention_setting = function (sub, message_retention_days) {
     sub.message_retention_days = message_retention_days;
 };
 
@@ -845,7 +845,7 @@ exports.sort_for_stream_settings = function (stream_ids, order) {
         return -1;
     }
 
-    function by_stream_name(id_a, id_b)  {
+    function by_stream_name(id_a, id_b) {
         const stream_a_name = name(id_a);
         const stream_b_name = name(id_b);
         return String.prototype.localeCompare.call(stream_a_name, stream_b_name);

@@ -150,7 +150,7 @@ run_test("update_property", () => {
             });
             const args = stub.get_args("sub", "val");
             assert.equal(args.sub.stream_id, 1);
-            assert.deepEqual(args.val,  {
+            assert.deepEqual(args.val, {
                 invite_only: true,
                 history_public_to_subscribers: true,
             });

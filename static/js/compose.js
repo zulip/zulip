@@ -806,7 +806,7 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
     if (content.length === 0) {
         show_preview(i18n.t("Nothing to preview"));
     } else {
-        if (markdown.contains_backend_only_syntax(content))  {
+        if (markdown.contains_backend_only_syntax(content)) {
             const spinner = preview_spinner.expectOne();
             loading.make_indicator(spinner);
         } else {
@@ -1131,7 +1131,7 @@ exports.initialize = function () {
                 },
             });
         } else {
-            video_call_link = page_params.jitsi_server_url + "/" +  video_call_id;
+            video_call_link = page_params.jitsi_server_url + "/" + video_call_id;
             insert_video_call_url(video_call_link, target_textarea);
         }
     });

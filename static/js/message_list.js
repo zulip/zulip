@@ -121,7 +121,7 @@ exports.MessageList.prototype = {
         return this.data.can_mark_messages_read();
     },
 
-    clear: function  MessageList_clear(opts) {
+    clear: function MessageList_clear(opts) {
         opts = {clear_selected_id: true, ...opts};
 
         this.data.clear();

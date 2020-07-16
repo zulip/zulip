@@ -433,7 +433,7 @@ function get_human_profile_data(fields_user_pills) {
         }
     });
     // Append user type field values also
-    for (const [field_id, field_pills] of  fields_user_pills) {
+    for (const [field_id, field_pills] of fields_user_pills) {
         if (field_pills) {
             const user_ids = user_pill.get_user_ids(field_pills);
             new_profile_data.push({

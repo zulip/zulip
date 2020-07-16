@@ -13,7 +13,7 @@ i18next.init({
         prefix: "__",
         suffix: "__",
     },
-    returnEmptyString: false,  // Empty string is not a valid translation.
+    returnEmptyString: false, // Empty string is not a valid translation.
 });
 
 window.i18n = i18next;

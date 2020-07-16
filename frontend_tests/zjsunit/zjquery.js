@@ -507,7 +507,7 @@ exports.make_zjquery = function (opts) {
         return elems.get(selector);
     };
 
-    zjquery.create = function (name)  {
+    zjquery.create = function (name) {
         assert(!elems.has(name),
                "You already created an object with this name!!");
         const elem = new_elem(name);

@@ -302,7 +302,7 @@ run_test("content_typeahead_selected", () => {
     let caret_called1 = false;
     let caret_called2 = false;
     fake_this.$element.caret = function (...args) {
-        if (args.length === 0) {  // .caret() used in split_at_cursor
+        if (args.length === 0) { // .caret() used in split_at_cursor
             caret_called1 = true;
             return fake_this.query.length;
         }
@@ -415,7 +415,7 @@ run_test("content_typeahead_selected", () => {
     expected_value = "@_**King Hamlet** ";
     assert.equal(actual_value, expected_value);
 
-    fake_this.query =  "@_**kin";
+    fake_this.query = "@_**kin";
     fake_this.token = "kin";
     actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
     expected_value = "@_**King Hamlet** ";
@@ -606,7 +606,7 @@ run_test("initialize", () => {
         // The sorter should return the query as the first element if there
         // isn't a topic with such name.
         // This only happens if typeahead is providing other suggestions.
-        options.query = "e";  // Letter present in "furniture" and "ice"
+        options.query = "e"; // Letter present in "furniture" and "ice"
         actual_value = options.sorter(["furniture", "ice"]);
         expected_value = ["e", "furniture", "ice"];
         assert.deepEqual(actual_value, expected_value);
@@ -663,11 +663,11 @@ run_test("initialize", () => {
         }
 
         let query;
-        query = "el";  // Matches both "othELlo" and "cordELia"
+        query = "el"; // Matches both "othELlo" and "cordELia"
         assert.equal(matcher(query, othello), true);
         assert.equal(matcher(query, cordelia), true);
 
-        query = "bender";  // Doesn't exist
+        query = "bender"; // Doesn't exist
         assert.equal(matcher(query, othello), false);
         assert.equal(matcher(query, cordelia), false);
 
@@ -724,7 +724,7 @@ run_test("initialize", () => {
         assert.deepEqual(actual_value, expected_value);
 
         // A literal match at the beginning of an element puts it at the top.
-        query = "co";  // Matches everything ("x@zulip.COm")
+        query = "co"; // Matches everything ("x@zulip.COm")
         actual_value = sorter(query, [othello, deactivated_user, cordelia]);
         expected_value = [cordelia, deactivated_user, othello];
         assert.deepEqual(actual_value, expected_value);
@@ -946,13 +946,13 @@ run_test("initialize", () => {
     let pm_recipient_blur_called = false;
     const old_pm_recipient_blur = $("#private_message_recipient").blur;
     $("#private_message_recipient").blur = function (handler) {
-        if (handler) {  // The blur handler is being set.
+        if (handler) { // The blur handler is being set.
             this.val("othello@zulip.com, ");
             handler.call(this);
             const actual_value = this.val();
             const expected_value = "othello@zulip.com";
             assert.equal(actual_value, expected_value);
-        } else {  // The element is simply losing the focus.
+        } else { // The element is simply losing the focus.
             old_pm_recipient_blur();
         }
         pm_recipient_blur_called = true;
@@ -1076,10 +1076,10 @@ run_test("initialize", () => {
         // in_handler tries to avoid.
         $("#stream_message_recipient_stream").one = function (event, handler) {
             handler({preventDefault: noop});
-            f();  // This time in_handler will already be true.
+            f(); // This time in_handler will already be true.
             stream_one_called = true;
         };
-        f();  // Here in_handler is false.
+        f(); // Here in_handler is false.
         focus_handler_called = true;
     };
 

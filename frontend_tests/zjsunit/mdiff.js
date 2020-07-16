@@ -50,7 +50,7 @@ function apply_color(input_string, changes) {
  * directions to add appropriate color to the lines that they annotate.
  */
 function parse_questionmark_line(questionmark_line) {
-    let current_sequence = "";  // Either "^", "-", "+", or ""
+    let current_sequence = ""; // Either "^", "-", "+", or ""
     let beginning_index = 0;
     let index = 0;
 

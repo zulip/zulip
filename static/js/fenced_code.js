@@ -5,19 +5,19 @@
 // auto-completing code blocks missing a trailing close.
 
 // See backend fenced_code.py:71 for associated regexp
-const fencestr = "^(~{3,}|`{3,})"          + // Opening Fence
-               "[ ]*"                      + // Spaces
-               "("                         +
-                   "\\{?\\.?"              +
-                   "([a-zA-Z0-9_+-./#]*)"  + // Language
-                   "\\}?"                  +
-               ")"                         +
-               "[ ]*"                      + // Spaces
-               "("                         +
-                   "\\{?\\.?"              +
-                   "([^~`]*)"              + // Header (see fenced_code.py)
-                   "\\}?"                  +
-               ")"                         +
+const fencestr = "^(~{3,}|`{3,})" + // Opening Fence
+               "[ ]*" + // Spaces
+               "(" +
+                   "\\{?\\.?" +
+                   "([a-zA-Z0-9_+-./#]*)" + // Language
+                   "\\}?" +
+               ")" +
+               "[ ]*" + // Spaces
+               "(" +
+                   "\\{?\\.?" +
+                   "([^~`]*)" + // Header (see fenced_code.py)
+                   "\\}?" +
+               ")" +
                "$";
 const fence_re = new RegExp(fencestr);
 

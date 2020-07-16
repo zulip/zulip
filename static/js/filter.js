@@ -260,7 +260,7 @@ function decodeOperand(encoded, operator) {
 
 // Parse a string into a list of operators (see below).
 Filter.parse = function (str) {
-    const operators   = [];
+    const operators = [];
     const search_term = [];
     let negated;
     let operator;
@@ -494,7 +494,7 @@ Filter.prototype = {
             if (!this._sub) {
                 return "#";
             }
-            return  "/#narrow/stream/" + stream_data.name_to_slug(this.operands("stream")[0]) + "/topic/" + this.operands("topic")[0];
+            return "/#narrow/stream/" + stream_data.name_to_slug(this.operands("stream")[0]) + "/topic/" + this.operands("topic")[0];
         }
 
         // eliminate "complex filters"
@@ -509,22 +509,22 @@ Filter.prototype = {
                     if (!this._sub) {
                         return "#";
                     }
-                    return  "/#narrow/stream/" + stream_data.name_to_slug(this.operands("stream")[0]);
+                    return "/#narrow/stream/" + stream_data.name_to_slug(this.operands("stream")[0]);
                 case "is-private":
-                    return  "/#narrow/is/private";
+                    return "/#narrow/is/private";
                 case "is-starred":
-                    return  "/#narrow/is/starred";
+                    return "/#narrow/is/starred";
                 case "is-mentioned":
-                    return  "/#narrow/is/mentioned";
+                    return "/#narrow/is/mentioned";
                 case "streams-public":
-                    return  "/#narrow/streams/public";
+                    return "/#narrow/streams/public";
                 case "pm-with":
                 // join is used to transform the array to a comma separated string
-                    return  "/#narrow/pm-with/" + people.emails_to_slug(this.operands("pm-with").join());
+                    return "/#narrow/pm-with/" + people.emails_to_slug(this.operands("pm-with").join());
                 // TODO: It is ambiguous how we want to handle the 'sender' case,
                 // we may remove it in the future based on design decisions
                 case "sender":
-                    return  "/#narrow/sender/" + people.emails_to_slug(this.operands("sender")[0]);
+                    return "/#narrow/sender/" + people.emails_to_slug(this.operands("sender")[0]);
             }
         }
 

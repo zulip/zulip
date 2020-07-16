@@ -74,7 +74,7 @@ exports.reply_message = function (opts) {
         content = mention + " " + content;
 
         reply.type = "stream";
-        reply.to  = stream;
+        reply.to = stream;
         reply.content = content;
         reply.topic = message.topic;
 

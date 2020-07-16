@@ -171,7 +171,7 @@ run_test("upload_files", () => {
         hide_upload_status_called = true;
         assert(config.mode, "compose");
     };
-    const config =  {mode: "compose"};
+    const config = {mode: "compose"};
     $("#compose-send-button").attr("disabled", false);
     upload.upload_files(uppy, config, []);
     assert.equal($("#compose-send-button").attr("disabled"), false);

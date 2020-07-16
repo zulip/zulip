@@ -259,7 +259,7 @@ MessageListView.prototype = {
             const message_reactions = reactions.get_message_reactions(message_container.msg);
             message_container.msg.message_reactions = message_reactions;
             message_container.include_recipient = false;
-            message_container.include_footer    = false;
+            message_container.include_footer = false;
 
             if (same_recipient(prev, message_container) && self.collapse_messages &&
                 prev.msg.historical === message_container.msg.historical) {

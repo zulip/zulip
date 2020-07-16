@@ -69,7 +69,7 @@ exports.get_retention_policy_text_for_subscription_type = function (sub) {
 
     // If we are deleting messages, even if it's the organization
     // default, it's worth commenting on the policy.
-    if (message_retention_days === null)  {
+    if (message_retention_days === null) {
         message_retention_days = page_params.realm_message_retention_days;
     }
 

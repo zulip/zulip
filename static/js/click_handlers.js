@@ -7,7 +7,7 @@ const render_buddy_list_tooltip_content = require("../templates/buddy_list_toolt
 
 function convert_enter_to_click(e) {
     const key = e.which;
-    if (key === 13) {  // enter
+    if (key === 13) { // enter
         $(e.currentTarget).click();
     }
 }
