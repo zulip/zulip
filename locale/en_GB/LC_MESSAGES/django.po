@@ -9,9 +9,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-13 20:42+0000\n"
-"PO-Revision-Date: 2020-07-10 21:51+0000\n"
-"Last-Translator: David Wood <ZXFEIIKBVHB0Y6EIYWUMV68EL@david.davidtw.co>\n"
+"POT-Creation-Date: 2020-07-16 07:24+0000\n"
+"PO-Revision-Date: 2020-07-16 07:24+0000\n"
+"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: English (United Kingdom) (http://www.transifex.com/zulip/zulip/language/en_GB/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -208,7 +208,7 @@ msgstr "Analytics documentation"
 msgid "Email changed!"
 msgstr "Email changed!"
 
-#: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:143
+#: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:141
 msgid "Billing"
 msgstr "Billing"
 
@@ -217,7 +217,7 @@ msgstr "Billing"
 msgid "Upgrade to %(plan)s"
 msgstr "Upgrade to %(plan)s"
 
-#: templates/corporate/upgrade.html:56 templates/corporate/upgrade.html:176
+#: templates/corporate/upgrade.html:56 templates/corporate/upgrade.html:174
 msgid "Payment schedule"
 msgstr "Payment schedule"
 
@@ -225,7 +225,7 @@ msgstr "Payment schedule"
 msgid "Pay monthly"
 msgstr "Pay monthly"
 
-#: templates/corporate/upgrade.html:73 templates/corporate/upgrade.html:180
+#: templates/corporate/upgrade.html:73 templates/corporate/upgrade.html:178
 msgid "Pay annually"
 msgstr "Pay annually"
 
@@ -249,27 +249,27 @@ msgstr "Manual"
 msgid "Most control"
 msgstr "Most control"
 
-#: templates/corporate/upgrade.html:232
+#: templates/corporate/upgrade.html:228
 msgid "Open source"
 msgstr "Open source"
 
-#: templates/corporate/upgrade.html:233
+#: templates/corporate/upgrade.html:229
 msgid "Academic research"
 msgstr "Academic research"
 
-#: templates/corporate/upgrade.html:234
+#: templates/corporate/upgrade.html:230
 msgid "Education"
 msgstr "Education"
 
-#: templates/corporate/upgrade.html:235
+#: templates/corporate/upgrade.html:231
 msgid "Non-Profit"
 msgstr "Non-Profit"
 
-#: templates/corporate/upgrade.html:236
+#: templates/corporate/upgrade.html:232
 msgid "Event (hackathons, conferences, etc.)"
 msgstr "Event (hackathons, conferences, etc.)"
 
-#: templates/corporate/upgrade.html:237
+#: templates/corporate/upgrade.html:233
 msgid "Other"
 msgstr "Other"
 
@@ -317,7 +317,7 @@ msgid "You need an invitation to join this organization."
 msgstr "You need an invitation to join this organisation."
 
 #: templates/zerver/accounts_home.html:68 templates/zerver/footer.html:40
-#: templates/zerver/login.html:128 templates/zerver/portico-header.html:43
+#: templates/zerver/login.html:128 templates/zerver/portico-header.html:37
 #: templates/zerver/register.html:230
 msgid "Sign up"
 msgstr "Sign up"
@@ -489,7 +489,7 @@ msgstr "Deprecation notice"
 msgid "Got it"
 msgstr "Got it"
 
-#: templates/zerver/app/home.html:15
+#: templates/zerver/app/home.html:13
 msgid ""
 "\n"
 "            Some older messages are unavailable.\n"
@@ -498,7 +498,7 @@ msgid ""
 "            "
 msgstr "\n            Some older messages are unavailable.\n            <a href=\"/plans/\" target=\"_blank\" rel=\"noopener noreferrer\">Upgrade your organisation</a>\n            to access your full message history.\n            "
 
-#: templates/zerver/app/home.html:25
+#: templates/zerver/app/home.html:23
 msgid ""
 "\n"
 "            End of results from your\n"
@@ -508,11 +508,11 @@ msgid ""
 "            "
 msgstr "\n            End of results from your\n            <a href=\"/help/search-for-messages#searching-shared-history\"\n              target=\"_blank\" rel=\"noopener noreferrer\">history</a>.\n            Consider <a class=\"search-shared-history\" href=\"\">searching all public streams</a>.\n            "
 
-#: templates/zerver/app/home.html:35
+#: templates/zerver/app/home.html:33
 msgid "Nothing's been sent here yet!"
 msgstr "Nothing's been sent here yet!"
 
-#: templates/zerver/app/home.html:38
+#: templates/zerver/app/home.html:36
 msgid ""
 "\n"
 "            Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
@@ -520,12 +520,12 @@ msgid ""
 "            "
 msgstr "\n            Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n            start the conversation</a>?\n            "
 
-#: templates/zerver/app/home.html:45
+#: templates/zerver/app/home.html:43
 msgid "You have no private messages yet!"
 msgstr "You have no private messages yet!"
 
-#: templates/zerver/app/home.html:48 templates/zerver/app/home.html:58
-#: templates/zerver/app/home.html:78 templates/zerver/app/home.html:88
+#: templates/zerver/app/home.html:46 templates/zerver/app/home.html:56
+#: templates/zerver/app/home.html:76 templates/zerver/app/home.html:86
 msgid ""
 "\n"
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
@@ -533,15 +533,15 @@ msgid ""
 "            "
 msgstr "\n            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n            start the conversation</a>?\n            "
 
-#: templates/zerver/app/home.html:55
+#: templates/zerver/app/home.html:53
 msgid "You have no private messages with this person yet!"
 msgstr "You have no private messages with this person yet!"
 
-#: templates/zerver/app/home.html:65
+#: templates/zerver/app/home.html:63
 msgid "You have not sent any private messages to yourself yet!"
 msgstr "You have not sent any private messages to yourself yet!"
 
-#: templates/zerver/app/home.html:68
+#: templates/zerver/app/home.html:66
 msgid ""
 "\n"
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
@@ -549,44 +549,44 @@ msgid ""
 "            "
 msgstr "\n            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n            start a conversation with yourself</a>?\n            "
 
-#: templates/zerver/app/home.html:75
+#: templates/zerver/app/home.html:73
 msgid "You have no group private messages with this person yet!"
 msgstr "You have no group private messages with this person yet!"
 
-#: templates/zerver/app/home.html:85
+#: templates/zerver/app/home.html:83
 msgid "You have no private messages with these people yet!"
 msgstr "You have no private messages with these people yet!"
 
-#: templates/zerver/app/home.html:95
+#: templates/zerver/app/home.html:93
 msgid "You haven't received any messages sent by this user yet!"
 msgstr "You haven't received any messages sent by this user yet!"
 
-#: templates/zerver/app/home.html:98
+#: templates/zerver/app/home.html:96
 msgid "This user does not exist!"
 msgstr "This user does not exist!"
 
-#: templates/zerver/app/home.html:101
+#: templates/zerver/app/home.html:99
 msgid "One or more of these users do not exist!"
 msgstr "One or more of these users do not exist!"
 
-#: templates/zerver/app/home.html:104
+#: templates/zerver/app/home.html:102
 msgid ""
 "You aren't subscribed to this stream and nobody has talked about that yet!"
 msgstr "You aren't subscribed to this stream and nobody has talked about that yet!"
 
-#: templates/zerver/app/home.html:107
+#: templates/zerver/app/home.html:105
 msgid "Subscribe"
 msgstr "Subscribe"
 
-#: templates/zerver/app/home.html:112
+#: templates/zerver/app/home.html:110
 msgid "This stream does not exist or is private."
 msgstr "This stream does not exist or is private."
 
-#: templates/zerver/app/home.html:115
+#: templates/zerver/app/home.html:113
 msgid "You haven't starred anything yet!"
 msgstr "You haven't starred anything yet!"
 
-#: templates/zerver/app/home.html:118
+#: templates/zerver/app/home.html:116
 msgid ""
 "\n"
 "            Learn more about starring messages <a href=\"/help/star-a-message\">\n"
@@ -594,15 +594,15 @@ msgid ""
 "            "
 msgstr "\n            Learn more about starring messages <a href=\"/help/star-a-message\">\n            here</a>.\n            "
 
-#: templates/zerver/app/home.html:125
+#: templates/zerver/app/home.html:123
 msgid "You have no unread messages!"
 msgstr "You have no unread messages!"
 
-#: templates/zerver/app/home.html:128
+#: templates/zerver/app/home.html:126
 msgid "You haven't been mentioned yet!"
 msgstr "You haven't been mentioned yet!"
 
-#: templates/zerver/app/home.html:131
+#: templates/zerver/app/home.html:129
 msgid ""
 "\n"
 "            Learn more about mentions <a href=\"/help/mention-a-user-or-group\">\n"
@@ -610,11 +610,11 @@ msgid ""
 "            "
 msgstr "\n            Learn more about mentions <a href=\"/help/mention-a-user-or-group\">\n            here</a>.\n            "
 
-#: templates/zerver/app/home.html:138
+#: templates/zerver/app/home.html:136
 msgid "No search results"
 msgstr "No search results"
 
-#: templates/zerver/app/home.html:141 templates/zerver/app/home.html:143
+#: templates/zerver/app/home.html:139 templates/zerver/app/home.html:141
 msgid "Messages"
 msgstr "Messages"
 
@@ -696,7 +696,7 @@ msgid "Invite"
 msgstr "Invite"
 
 #: templates/zerver/app/keyboard_shortcuts.html:2
-#: templates/zerver/app/navbar.html:89
+#: templates/zerver/app/navbar.html:87
 #: templates/zerver/app/right_sidebar.html:23
 msgid "Keyboard shortcuts"
 msgstr "Keyboard shortcuts"
@@ -994,7 +994,7 @@ msgid "Download"
 msgstr "Download"
 
 #: templates/zerver/app/markdown_help.html:2
-#: templates/zerver/app/navbar.html:94
+#: templates/zerver/app/navbar.html:92
 msgid "Message formatting"
 msgstr "Message formatting"
 
@@ -1032,84 +1032,84 @@ msgid "Stream list"
 msgstr "Stream list"
 
 #: templates/zerver/app/navbar.html:23 templates/zerver/app/navbar.html:24
-#: templates/zerver/app/navbar.html:36 templates/zerver/app/navbar.html:37
+#: templates/zerver/app/navbar.html:34 templates/zerver/app/navbar.html:35
 msgid "Search"
 msgstr "Search"
 
-#: templates/zerver/app/navbar.html:25 templates/zerver/app/navbar.html:38
+#: templates/zerver/app/navbar.html:25 templates/zerver/app/navbar.html:36
 msgid "Exit search"
 msgstr "Exit search"
 
-#: templates/zerver/app/navbar.html:47
+#: templates/zerver/app/navbar.html:45
 msgid "User list"
 msgstr "User list"
 
-#: templates/zerver/app/navbar.html:55
+#: templates/zerver/app/navbar.html:53
 msgid "Menu"
 msgstr "Menu"
 
-#: templates/zerver/app/navbar.html:67
+#: templates/zerver/app/navbar.html:65
 msgid "Manage streams"
 msgstr "Manage streams"
 
-#: templates/zerver/app/navbar.html:72
+#: templates/zerver/app/navbar.html:70
 #: templates/zerver/app/settings_overlay.html:4
 #: templates/zerver/app/settings_overlay.html:166 zerver/lib/hotspots.py:27
 msgid "Settings"
 msgstr "Settings"
 
-#: templates/zerver/app/navbar.html:78
+#: templates/zerver/app/navbar.html:76
 msgid "Manage organization"
 msgstr "Manage organisation"
 
-#: templates/zerver/app/navbar.html:84 templates/zerver/footer.html:16
+#: templates/zerver/app/navbar.html:82 templates/zerver/footer.html:16
 msgid "Help center"
 msgstr "Help centre"
 
-#: templates/zerver/app/navbar.html:99
+#: templates/zerver/app/navbar.html:97
 #: templates/zerver/app/search_operators.html:2
 msgid "Search operators"
 msgstr "Search operators"
 
-#: templates/zerver/app/navbar.html:105
+#: templates/zerver/app/navbar.html:103
 msgid "Contact support"
 msgstr "Contact support"
 
-#: templates/zerver/app/navbar.html:112
+#: templates/zerver/app/navbar.html:110
 msgid "Desktop & mobile apps"
 msgstr "Desktop & mobile apps"
 
-#: templates/zerver/app/navbar.html:117 templates/zerver/footer.html:50
+#: templates/zerver/app/navbar.html:115 templates/zerver/footer.html:50
 msgid "Integrations"
 msgstr "Integrations"
 
-#: templates/zerver/app/navbar.html:122
+#: templates/zerver/app/navbar.html:120
 msgid "API documentation"
 msgstr "API documentation"
 
-#: templates/zerver/app/navbar.html:129
+#: templates/zerver/app/navbar.html:127
 msgid "Statistics"
 msgstr "Statistics"
 
-#: templates/zerver/app/navbar.html:136
+#: templates/zerver/app/navbar.html:134
 msgid "Plans and pricing"
 msgstr "Plans and pricing"
 
-#: templates/zerver/app/navbar.html:151
+#: templates/zerver/app/navbar.html:149
 msgid "Invite users"
 msgstr "Invite users"
 
-#: templates/zerver/app/navbar.html:157
+#: templates/zerver/app/navbar.html:155
 msgid ""
 "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
 "Webathena"
 msgstr "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena"
 
-#: templates/zerver/app/navbar.html:159
+#: templates/zerver/app/navbar.html:157
 msgid "Link with Webathena"
 msgstr "Link with Webathena"
 
-#: templates/zerver/app/navbar.html:165
+#: templates/zerver/app/navbar.html:163
 msgid "Log out"
 msgstr "Log out"
 
@@ -1383,7 +1383,7 @@ msgstr "Organisation settings"
 msgid "Organization permissions"
 msgstr "Organisation permissions"
 
-#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1909
+#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1906
 msgid "Custom emoji"
 msgstr "Custom emoji"
 
@@ -1431,6 +1431,16 @@ msgstr "Data exports"
 msgid "Show more"
 msgstr "Show more"
 
+#: templates/zerver/billing_nav.html:4
+#: templates/zerver/emails/compiled/followup_day2.html:28
+#: templates/zerver/emails/followup_day2.source.html:27
+#: templates/zerver/emails/followup_day2.txt:17
+#: templates/zerver/integrations/development/dev_panel.html:15
+#: templates/zerver/landing_nav.html:13 templates/zerver/portico-header.html:5
+#: templates/zerver/portico-header.html:8
+msgid "Zulip"
+msgstr "Zulip"
+
 #: templates/zerver/config_error.html:14
 msgid ""
 "\n"
@@ -1466,8 +1476,8 @@ msgstr "The registration link has expired or is not valid."
 
 #: templates/zerver/confirmation_link_expired_error.html:9
 #: templates/zerver/log_into_subdomain_token_invalid.html:9
-#: templates/zerver/login.html:102 templates/zerver/portico-header.html:33
-#: templates/zerver/portico-header.html:39
+#: templates/zerver/login.html:102 templates/zerver/portico-header.html:27
+#: templates/zerver/portico-header.html:33
 msgid "Log in"
 msgstr "Log in"
 
@@ -1860,13 +1870,6 @@ msgstr "Take it for a spin now."
 #: templates/zerver/emails/notify_new_login.txt:19
 msgid "Thanks,"
 msgstr "Thanks,"
-
-#: templates/zerver/emails/compiled/followup_day2.html:28
-#: templates/zerver/emails/followup_day2.source.html:27
-#: templates/zerver/emails/followup_day2.txt:17
-#: templates/zerver/portico-header.html:6
-msgid "Zulip"
-msgstr "Zulip"
 
 #: templates/zerver/emails/compiled/followup_day2.html:35
 #: templates/zerver/emails/followup_day2.source.html:34
@@ -3709,7 +3712,11 @@ msgstr "Subdomains cannot start or end with a '-'."
 msgid "Domain can only have letters, numbers, '.' and '-'s."
 msgstr "Domain can only have letters, numbers, '.' and '-'s."
 
-#: zerver/lib/email_notifications.py:415
+#: zerver/lib/email_notifications.py:123 zerver/lib/email_notifications.py:149
+msgid "Open Zulip to see the spoiler content"
+msgstr ""
+
+#: zerver/lib/email_notifications.py:466
 msgid "Zulip missed messages"
 msgstr "Zulip missed messages"
 
@@ -4064,12 +4071,12 @@ msgstr "Invalid GCM options to bouncer: {}"
 msgid "Token does not exist"
 msgstr "Token does not exist"
 
-#: zerver/lib/push_notifications.py:614
+#: zerver/lib/push_notifications.py:623
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} mentioned you:"
 
-#: zerver/lib/push_notifications.py:616
+#: zerver/lib/push_notifications.py:625
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} mentioned everyone:"
@@ -4419,54 +4426,54 @@ msgstr "Invalid filter pattern.  Valid characters are %s."
 msgid "Invalid URL format string."
 msgstr "Invalid URL format string."
 
-#: zerver/models.py:1908
+#: zerver/models.py:1905
 msgid "Unicode emoji"
 msgstr "Unicode emoji"
 
-#: zerver/models.py:1910
+#: zerver/models.py:1907
 msgid "Zulip extra emoji"
 msgstr "Zulip extra emoji"
 
-#: zerver/models.py:2808
+#: zerver/models.py:2805
 #, python-format
 msgid "Invalid user ID: %d"
 msgstr "Invalid user ID: %d"
 
-#: zerver/models.py:2812
+#: zerver/models.py:2809
 #, python-format
 msgid "User with ID %d is deactivated"
 msgstr "User with ID %d is deactivated"
 
-#: zerver/models.py:2815
+#: zerver/models.py:2812
 #, python-format
 msgid "User with ID %d is a bot"
 msgstr "User with ID %d is a bot"
 
-#: zerver/models.py:2846
+#: zerver/models.py:2843
 msgid "List of options"
 msgstr "List of options"
 
-#: zerver/models.py:2849
+#: zerver/models.py:2846
 msgid "Person picker"
 msgstr "Person picker"
 
-#: zerver/models.py:2861
+#: zerver/models.py:2858
 msgid "Short text"
 msgstr "Short text"
 
-#: zerver/models.py:2862
+#: zerver/models.py:2859
 msgid "Long text"
 msgstr "Long text"
 
-#: zerver/models.py:2863
+#: zerver/models.py:2860
 msgid "Date picker"
 msgstr "Date picker"
 
-#: zerver/models.py:2864
+#: zerver/models.py:2861
 msgid "Link"
 msgstr "Link"
 
-#: zerver/models.py:2865
+#: zerver/models.py:2862
 msgid "External account"
 msgstr "External account"
 

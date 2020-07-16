@@ -12,9 +12,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-13 20:42+0000\n"
-"PO-Revision-Date: 2020-07-14 06:24+0000\n"
-"Last-Translator: fri\n"
+"POT-Creation-Date: 2020-07-16 07:24+0000\n"
+"PO-Revision-Date: 2020-07-16 07:24+0000\n"
+"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Czech (http://www.transifex.com/zulip/zulip/language/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -211,7 +211,7 @@ msgstr "Dokumentace analytiky"
 msgid "Email changed!"
 msgstr "E-mail změněn!"
 
-#: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:143
+#: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:141
 msgid "Billing"
 msgstr "Fakturace"
 
@@ -220,7 +220,7 @@ msgstr "Fakturace"
 msgid "Upgrade to %(plan)s"
 msgstr "Povýšit na %(plan)s"
 
-#: templates/corporate/upgrade.html:56 templates/corporate/upgrade.html:176
+#: templates/corporate/upgrade.html:56 templates/corporate/upgrade.html:174
 msgid "Payment schedule"
 msgstr "Rozvrh plateb"
 
@@ -228,7 +228,7 @@ msgstr "Rozvrh plateb"
 msgid "Pay monthly"
 msgstr "Platit měsíčně"
 
-#: templates/corporate/upgrade.html:73 templates/corporate/upgrade.html:180
+#: templates/corporate/upgrade.html:73 templates/corporate/upgrade.html:178
 msgid "Pay annually"
 msgstr "Platit ročně"
 
@@ -252,27 +252,27 @@ msgstr "Ručně"
 msgid "Most control"
 msgstr "Nejvyšší kontrola"
 
-#: templates/corporate/upgrade.html:232
+#: templates/corporate/upgrade.html:228
 msgid "Open source"
 msgstr "Otevřený zdrojový kód"
 
-#: templates/corporate/upgrade.html:233
+#: templates/corporate/upgrade.html:229
 msgid "Academic research"
 msgstr "Vědecký výzkum"
 
-#: templates/corporate/upgrade.html:234
+#: templates/corporate/upgrade.html:230
 msgid "Education"
 msgstr "Vzdělávání"
 
-#: templates/corporate/upgrade.html:235
+#: templates/corporate/upgrade.html:231
 msgid "Non-Profit"
 msgstr "Neziskový"
 
-#: templates/corporate/upgrade.html:236
+#: templates/corporate/upgrade.html:232
 msgid "Event (hackathons, conferences, etc.)"
 msgstr "Událost (setkání, konference, semináře atd.)"
 
-#: templates/corporate/upgrade.html:237
+#: templates/corporate/upgrade.html:233
 msgid "Other"
 msgstr "Jiné"
 
@@ -320,7 +320,7 @@ msgid "You need an invitation to join this organization."
 msgstr "Pro připojení k této organizaci potřebujete pozvánku."
 
 #: templates/zerver/accounts_home.html:68 templates/zerver/footer.html:40
-#: templates/zerver/login.html:128 templates/zerver/portico-header.html:43
+#: templates/zerver/login.html:128 templates/zerver/portico-header.html:37
 #: templates/zerver/register.html:230
 msgid "Sign up"
 msgstr "Zaregistrovat se"
@@ -492,7 +492,7 @@ msgstr "Oznámení o zastarání"
 msgid "Got it"
 msgstr "Rozumím"
 
-#: templates/zerver/app/home.html:15
+#: templates/zerver/app/home.html:13
 msgid ""
 "\n"
 "            Some older messages are unavailable.\n"
@@ -501,7 +501,7 @@ msgid ""
 "            "
 msgstr "\n            Některé starší zprávy nejsou dostupné.\n            <a href=\"/plans/\" target=\"_blank\" rel=\"noopener noreferrer\">Povyšte svou organizaci</a>\n            pro získání přístupu k celé historii zpráv.\n            "
 
-#: templates/zerver/app/home.html:25
+#: templates/zerver/app/home.html:23
 msgid ""
 "\n"
 "            End of results from your\n"
@@ -511,11 +511,11 @@ msgid ""
 "            "
 msgstr "\n            Konec výsledků z vaší\n            <a href=\"/help/search-for-messages#searching-shared-history\"\n              target=\"_blank\" rel=\"noopener noreferrer\">historie</a>.\n            Zvažte <a class=\"search-shared-history\" href=\"\">prohledání všech veřejných kanálů</a>.\n            "
 
-#: templates/zerver/app/home.html:35
+#: templates/zerver/app/home.html:33
 msgid "Nothing's been sent here yet!"
 msgstr "Ještě sem nebylo nic odesláno!"
 
-#: templates/zerver/app/home.html:38
+#: templates/zerver/app/home.html:36
 msgid ""
 "\n"
 "            Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
@@ -523,12 +523,12 @@ msgid ""
 "            "
 msgstr "\n            Proč <a href=\"#\" class=\"empty_feed_compose_stream\">\n            nezačít konverzaci</a>?\n            "
 
-#: templates/zerver/app/home.html:45
+#: templates/zerver/app/home.html:43
 msgid "You have no private messages yet!"
 msgstr "Ještě nemáte žádné soukromé zprávy!"
 
-#: templates/zerver/app/home.html:48 templates/zerver/app/home.html:58
-#: templates/zerver/app/home.html:78 templates/zerver/app/home.html:88
+#: templates/zerver/app/home.html:46 templates/zerver/app/home.html:56
+#: templates/zerver/app/home.html:76 templates/zerver/app/home.html:86
 msgid ""
 "\n"
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
@@ -536,15 +536,15 @@ msgid ""
 "            "
 msgstr "\n            Proč <a href=\"#\" class=\"empty_feed_compose_private\">\n            nezačít konverzaci</a>?\n            "
 
-#: templates/zerver/app/home.html:55
+#: templates/zerver/app/home.html:53
 msgid "You have no private messages with this person yet!"
 msgstr "Od této osoby ještě nemáte žádné soukromé zprávy!"
 
-#: templates/zerver/app/home.html:65
+#: templates/zerver/app/home.html:63
 msgid "You have not sent any private messages to yourself yet!"
 msgstr "Zatím jste si neposílali žádné soukromé zprávy!"
 
-#: templates/zerver/app/home.html:68
+#: templates/zerver/app/home.html:66
 msgid ""
 "\n"
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
@@ -552,44 +552,44 @@ msgid ""
 "            "
 msgstr "\nProč <a href=\"#\" class=\"empty_feed_compose_private\">\nnezačít konverzaci sám se sebou</a>?"
 
-#: templates/zerver/app/home.html:75
+#: templates/zerver/app/home.html:73
 msgid "You have no group private messages with this person yet!"
 msgstr "S touto osobou zatím nemáte žádné soukromé skupinové zprávy!"
 
-#: templates/zerver/app/home.html:85
+#: templates/zerver/app/home.html:83
 msgid "You have no private messages with these people yet!"
 msgstr "Od těchto osob ještě nemáte žádné soukromé zprávy!"
 
-#: templates/zerver/app/home.html:95
+#: templates/zerver/app/home.html:93
 msgid "You haven't received any messages sent by this user yet!"
 msgstr "Od tohoto uživatele zatím nemáte žádné přijaté zprávy!"
 
-#: templates/zerver/app/home.html:98
+#: templates/zerver/app/home.html:96
 msgid "This user does not exist!"
 msgstr "Tento uživatel neexistuje!"
 
-#: templates/zerver/app/home.html:101
+#: templates/zerver/app/home.html:99
 msgid "One or more of these users do not exist!"
 msgstr "Jeden nebo více z těchto uživatelů neexistuje!"
 
-#: templates/zerver/app/home.html:104
+#: templates/zerver/app/home.html:102
 msgid ""
 "You aren't subscribed to this stream and nobody has talked about that yet!"
 msgstr "Neodebíráte tento kanál a nikdo o tomto ještě nemluvil!"
 
-#: templates/zerver/app/home.html:107
+#: templates/zerver/app/home.html:105
 msgid "Subscribe"
 msgstr "Odebírat"
 
-#: templates/zerver/app/home.html:112
+#: templates/zerver/app/home.html:110
 msgid "This stream does not exist or is private."
 msgstr "Tento kanál neexistuje nebo je soukromý."
 
-#: templates/zerver/app/home.html:115
+#: templates/zerver/app/home.html:113
 msgid "You haven't starred anything yet!"
 msgstr "Ještě jste nic neoznačil/a hvězdičkou!"
 
-#: templates/zerver/app/home.html:118
+#: templates/zerver/app/home.html:116
 msgid ""
 "\n"
 "            Learn more about starring messages <a href=\"/help/star-a-message\">\n"
@@ -597,15 +597,15 @@ msgid ""
 "            "
 msgstr "\n            Zjistěte víc o označování zpráv hvězdičkami <a href=\"/help/star-a-message\">\n           zde </a>.\n            "
 
-#: templates/zerver/app/home.html:125
+#: templates/zerver/app/home.html:123
 msgid "You have no unread messages!"
 msgstr "Nemáte žádné nepřečtené zprávy!"
 
-#: templates/zerver/app/home.html:128
+#: templates/zerver/app/home.html:126
 msgid "You haven't been mentioned yet!"
 msgstr "Ještě vás nikdo nikde nezmínil!"
 
-#: templates/zerver/app/home.html:131
+#: templates/zerver/app/home.html:129
 msgid ""
 "\n"
 "            Learn more about mentions <a href=\"/help/mention-a-user-or-group\">\n"
@@ -613,11 +613,11 @@ msgid ""
 "            "
 msgstr "\n            Zjistěte víc o zmiňování uživatelů <a href=\"/help/mention-a-user-or-group\">\n            zde</a>.\n            "
 
-#: templates/zerver/app/home.html:138
+#: templates/zerver/app/home.html:136
 msgid "No search results"
 msgstr "Žádné výsledky hledání"
 
-#: templates/zerver/app/home.html:141 templates/zerver/app/home.html:143
+#: templates/zerver/app/home.html:139 templates/zerver/app/home.html:141
 msgid "Messages"
 msgstr "Zprávy"
 
@@ -699,7 +699,7 @@ msgid "Invite"
 msgstr "Pozvat"
 
 #: templates/zerver/app/keyboard_shortcuts.html:2
-#: templates/zerver/app/navbar.html:89
+#: templates/zerver/app/navbar.html:87
 #: templates/zerver/app/right_sidebar.html:23
 msgid "Keyboard shortcuts"
 msgstr "Klávesové zkratky"
@@ -997,7 +997,7 @@ msgid "Download"
 msgstr "Stáhnout"
 
 #: templates/zerver/app/markdown_help.html:2
-#: templates/zerver/app/navbar.html:94
+#: templates/zerver/app/navbar.html:92
 msgid "Message formatting"
 msgstr "Formátování zprávy"
 
@@ -1035,84 +1035,84 @@ msgid "Stream list"
 msgstr "Seznam kanálů"
 
 #: templates/zerver/app/navbar.html:23 templates/zerver/app/navbar.html:24
-#: templates/zerver/app/navbar.html:36 templates/zerver/app/navbar.html:37
+#: templates/zerver/app/navbar.html:34 templates/zerver/app/navbar.html:35
 msgid "Search"
 msgstr "Hledat"
 
-#: templates/zerver/app/navbar.html:25 templates/zerver/app/navbar.html:38
+#: templates/zerver/app/navbar.html:25 templates/zerver/app/navbar.html:36
 msgid "Exit search"
 msgstr "Ukončit hledání"
 
-#: templates/zerver/app/navbar.html:47
+#: templates/zerver/app/navbar.html:45
 msgid "User list"
 msgstr "Seznam uživatelů"
 
-#: templates/zerver/app/navbar.html:55
+#: templates/zerver/app/navbar.html:53
 msgid "Menu"
 msgstr "Nabídka"
 
-#: templates/zerver/app/navbar.html:67
+#: templates/zerver/app/navbar.html:65
 msgid "Manage streams"
 msgstr "Spravovat kanály"
 
-#: templates/zerver/app/navbar.html:72
+#: templates/zerver/app/navbar.html:70
 #: templates/zerver/app/settings_overlay.html:4
 #: templates/zerver/app/settings_overlay.html:166 zerver/lib/hotspots.py:27
 msgid "Settings"
 msgstr "Nastavení"
 
-#: templates/zerver/app/navbar.html:78
+#: templates/zerver/app/navbar.html:76
 msgid "Manage organization"
 msgstr "Spravovat organizaci"
 
-#: templates/zerver/app/navbar.html:84 templates/zerver/footer.html:16
+#: templates/zerver/app/navbar.html:82 templates/zerver/footer.html:16
 msgid "Help center"
 msgstr "Centrum nápovědy"
 
-#: templates/zerver/app/navbar.html:99
+#: templates/zerver/app/navbar.html:97
 #: templates/zerver/app/search_operators.html:2
 msgid "Search operators"
 msgstr "Operátory pro vyhledávání"
 
-#: templates/zerver/app/navbar.html:105
+#: templates/zerver/app/navbar.html:103
 msgid "Contact support"
 msgstr "Spojit se s podporou"
 
-#: templates/zerver/app/navbar.html:112
+#: templates/zerver/app/navbar.html:110
 msgid "Desktop & mobile apps"
 msgstr "Desktopové a mobilní aplikace"
 
-#: templates/zerver/app/navbar.html:117 templates/zerver/footer.html:50
+#: templates/zerver/app/navbar.html:115 templates/zerver/footer.html:50
 msgid "Integrations"
 msgstr "Integrace"
 
-#: templates/zerver/app/navbar.html:122
+#: templates/zerver/app/navbar.html:120
 msgid "API documentation"
 msgstr "Dokumentace k API"
 
-#: templates/zerver/app/navbar.html:129
+#: templates/zerver/app/navbar.html:127
 msgid "Statistics"
 msgstr "Statistiky"
 
-#: templates/zerver/app/navbar.html:136
+#: templates/zerver/app/navbar.html:134
 msgid "Plans and pricing"
 msgstr "Ceník a plány"
 
-#: templates/zerver/app/navbar.html:151
+#: templates/zerver/app/navbar.html:149
 msgid "Invite users"
 msgstr "Pozvat uživatele"
 
-#: templates/zerver/app/navbar.html:157
+#: templates/zerver/app/navbar.html:155
 msgid ""
 "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
 "Webathena"
 msgstr "Dejte Zulipu Kerberos tickety, které jsou potřeba ke spuštění zrcadla Zephyr prostřednictvím Webatheny"
 
-#: templates/zerver/app/navbar.html:159
+#: templates/zerver/app/navbar.html:157
 msgid "Link with Webathena"
 msgstr "Propojit s Webathena"
 
-#: templates/zerver/app/navbar.html:165
+#: templates/zerver/app/navbar.html:163
 msgid "Log out"
 msgstr "Odhlásit se"
 
@@ -1386,7 +1386,7 @@ msgstr "Nastavení organizace"
 msgid "Organization permissions"
 msgstr "Oprávnění v organizaci"
 
-#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1909
+#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1906
 msgid "Custom emoji"
 msgstr "Vlastní obrázeček"
 
@@ -1434,6 +1434,16 @@ msgstr "Uložení dat"
 msgid "Show more"
 msgstr "Ukázat více"
 
+#: templates/zerver/billing_nav.html:4
+#: templates/zerver/emails/compiled/followup_day2.html:28
+#: templates/zerver/emails/followup_day2.source.html:27
+#: templates/zerver/emails/followup_day2.txt:17
+#: templates/zerver/integrations/development/dev_panel.html:15
+#: templates/zerver/landing_nav.html:13 templates/zerver/portico-header.html:5
+#: templates/zerver/portico-header.html:8
+msgid "Zulip"
+msgstr "Zulip"
+
 #: templates/zerver/config_error.html:14
 msgid ""
 "\n"
@@ -1469,8 +1479,8 @@ msgstr "Odkaz na registraci vypršel nebo není platný."
 
 #: templates/zerver/confirmation_link_expired_error.html:9
 #: templates/zerver/log_into_subdomain_token_invalid.html:9
-#: templates/zerver/login.html:102 templates/zerver/portico-header.html:33
-#: templates/zerver/portico-header.html:39
+#: templates/zerver/login.html:102 templates/zerver/portico-header.html:27
+#: templates/zerver/portico-header.html:33
 msgid "Log in"
 msgstr "Přihlásit se"
 
@@ -1863,13 +1873,6 @@ msgstr "Pojďme na to."
 #: templates/zerver/emails/notify_new_login.txt:19
 msgid "Thanks,"
 msgstr "Díky,"
-
-#: templates/zerver/emails/compiled/followup_day2.html:28
-#: templates/zerver/emails/followup_day2.source.html:27
-#: templates/zerver/emails/followup_day2.txt:17
-#: templates/zerver/portico-header.html:6
-msgid "Zulip"
-msgstr "Zulip"
 
 #: templates/zerver/emails/compiled/followup_day2.html:35
 #: templates/zerver/emails/followup_day2.source.html:34
@@ -3712,7 +3715,11 @@ msgstr "Subdomény nemohou začínat nebo končit na '-'."
 msgid "Domain can only have letters, numbers, '.' and '-'s."
 msgstr "Doména může obsahovat jen malá písmena, čísla, '.' a  '-'."
 
-#: zerver/lib/email_notifications.py:415
+#: zerver/lib/email_notifications.py:123 zerver/lib/email_notifications.py:149
+msgid "Open Zulip to see the spoiler content"
+msgstr ""
+
+#: zerver/lib/email_notifications.py:466
 msgid "Zulip missed messages"
 msgstr "Zulip zmeškal zprávy"
 
@@ -4067,12 +4074,12 @@ msgstr "Neplatné volby GCM pro \"bouncer\": {}"
 msgid "Token does not exist"
 msgstr "Elektronický klíč neexistuje"
 
-#: zerver/lib/push_notifications.py:614
+#: zerver/lib/push_notifications.py:623
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} vás zmínil:"
 
-#: zerver/lib/push_notifications.py:616
+#: zerver/lib/push_notifications.py:625
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} zmínil všechny:"
@@ -4422,54 +4429,54 @@ msgstr "Neplatný předpis filtru.  Platné znaky jsou %s."
 msgid "Invalid URL format string."
 msgstr "Neplatný řezězec URL formátu."
 
-#: zerver/models.py:1908
+#: zerver/models.py:1905
 msgid "Unicode emoji"
 msgstr "Unicode obrázeček"
 
-#: zerver/models.py:1910
+#: zerver/models.py:1907
 msgid "Zulip extra emoji"
 msgstr "Další obrázeček Zulipu"
 
-#: zerver/models.py:2808
+#: zerver/models.py:2805
 #, python-format
 msgid "Invalid user ID: %d"
 msgstr "Neplatné ID uživatele: %d"
 
-#: zerver/models.py:2812
+#: zerver/models.py:2809
 #, python-format
 msgid "User with ID %d is deactivated"
 msgstr "Uživatel s ID %d je vypnut"
 
-#: zerver/models.py:2815
+#: zerver/models.py:2812
 #, python-format
 msgid "User with ID %d is a bot"
 msgstr "Uživatel s ID %d je robot"
 
-#: zerver/models.py:2846
+#: zerver/models.py:2843
 msgid "List of options"
 msgstr "Seznam možností"
 
-#: zerver/models.py:2849
+#: zerver/models.py:2846
 msgid "Person picker"
 msgstr "Výběr osoby"
 
-#: zerver/models.py:2861
+#: zerver/models.py:2858
 msgid "Short text"
 msgstr "Krátký text"
 
-#: zerver/models.py:2862
+#: zerver/models.py:2859
 msgid "Long text"
 msgstr "Dlouhý text"
 
-#: zerver/models.py:2863
+#: zerver/models.py:2860
 msgid "Date picker"
 msgstr "Výběr data"
 
-#: zerver/models.py:2864
+#: zerver/models.py:2861
 msgid "Link"
 msgstr "Odkaz"
 
-#: zerver/models.py:2865
+#: zerver/models.py:2862
 msgid "External account"
 msgstr "Vnější účet"
 
