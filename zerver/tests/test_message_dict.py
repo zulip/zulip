@@ -347,7 +347,6 @@ class MessageHydrationTest(ZulipTestCase):
             sender_is_mirror_dummy=False,
             sender_email=cordelia.email,
             sender_full_name=cordelia.full_name,
-            sender_short_name=cordelia.short_name,
             sender_id=cordelia.id,
         )
 
@@ -362,7 +361,6 @@ class MessageHydrationTest(ZulipTestCase):
             dict(
                 email='aaron@example.com',
                 full_name='Aaron Smith',
-                short_name='Aaron',
                 id=999,
                 is_mirror_dummy=False,
             ),
@@ -374,7 +372,6 @@ class MessageHydrationTest(ZulipTestCase):
             sender_is_mirror_dummy=False,
             sender_email=cordelia.email,
             sender_full_name=cordelia.full_name,
-            sender_short_name=cordelia.short_name,
             sender_id=cordelia.id,
         )
 
@@ -386,7 +383,6 @@ class MessageHydrationTest(ZulipTestCase):
                 dict(
                     email='aaron@example.com',
                     full_name='Aaron Smith',
-                    short_name='Aaron',
                     id=999,
                     is_mirror_dummy=False,
                 ),
@@ -394,7 +390,6 @@ class MessageHydrationTest(ZulipTestCase):
                     email=cordelia.email,
                     full_name=cordelia.full_name,
                     id=cordelia.id,
-                    short_name=cordelia.short_name,
                     is_mirror_dummy=False,
                 ),
             ],
@@ -482,7 +477,7 @@ class MessageHydrationTest(ZulipTestCase):
 
         # Find which display_recipient in the list is cordelia:
         for display_recipient in message['display_recipient']:
-            if display_recipient['short_name'] == 'cordelia':
+            if display_recipient['id'] == cordelia.id:
                 cordelia_display_recipient = display_recipient
 
         # Make sure the email is up-to-date.
@@ -499,7 +494,6 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
                 recipient_dict: UserDisplayRecipient = {
                     'email': user_profile.email,
                     'full_name': user_profile.full_name,
-                    'short_name': user_profile.short_name,
                     'id': user_profile.id,
                     'is_mirror_dummy': user_profile.is_mirror_dummy,
                 }

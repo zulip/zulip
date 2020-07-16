@@ -10,6 +10,13 @@ below features are supported.
 
 ## Changes in Zulip 3.0
 
+**Feature level 26**
+
+* The `sender_short_name` field is no longer included in
+  `GET /messages`.
+* The `short_name` field is removed from `display_recipients`
+  in `GET /messages`.
+
 **Feature level 25**
 
 No changes; feature level used for Zulip 3.0 release.

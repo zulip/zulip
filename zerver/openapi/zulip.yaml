@@ -182,7 +182,6 @@ paths:
                                   "sender_full_name": "Othello Bot",
                                   "sender_id": 13215,
                                   "sender_realm_str": "example",
-                                  "sender_short_name": "othello-bot",
                                   "topic": "Castle",
                                   "topic_links": [],
                                   "timestamp": 1375978403,
@@ -204,7 +203,6 @@ paths:
                                         "email": "hamlet@example.com",
                                         "full_name": "Hamlet of Denmark",
                                         "id": 31572,
-                                        "short_name": "hamlet",
                                       },
                                     ],
                                   "id": 12345679,
@@ -213,7 +211,6 @@ paths:
                                   "sender_full_name": "Othello Bot",
                                   "sender_id": 13215,
                                   "sender_realm_str": "example",
-                                  "sender_short_name": "othello-bot",
                                   "subject": "",
                                   "topic_links": [],
                                   "timestamp": 1375978404,
@@ -636,21 +633,18 @@ paths:
                               "display_recipient":
                                 [
                                   {
-                                    "short_name": "hamlet",
                                     "id": 4,
                                     "is_mirror_dummy": false,
                                     "email": "hamlet@zulip.com",
                                     "full_name": "King Hamlet",
                                   },
                                   {
-                                    "short_name": "iago",
                                     "id": 5,
                                     "is_mirror_dummy": false,
                                     "email": "iago@zulip.com",
                                     "full_name": "Iago",
                                   },
                                   {
-                                    "short_name": "prospero",
                                     "id": 8,
                                     "is_mirror_dummy": false,
                                     "email": "prospero@zulip.com",
@@ -659,7 +653,6 @@ paths:
                                 ],
                               "content_type": "text/html",
                               "is_me_message": false,
-                              "sender_short_name": "hamlet",
                               "timestamp": 1527921326,
                               "sender_id": 4,
                               "sender_full_name": "King Hamlet",
@@ -682,7 +675,6 @@ paths:
                               "display_recipient": "Verona",
                               "content_type": "text/html",
                               "is_me_message": false,
-                              "sender_short_name": "hamlet",
                               "timestamp": 1527939746,
                               "sender_id": 4,
                               "sender_full_name": "King Hamlet",
@@ -4354,7 +4346,6 @@ paths:
                         "is_me_message": false,
                         "reactions": [],
                         "sender_realm_str": "zulip",
-                        "sender_short_name": "iago",
                       },
                     "bot_email": "outgoing-bot@localhost",
                   }
@@ -4452,10 +4443,6 @@ components:
                     type: string
                     description: |
                       Full name of the user.
-                  short_name:
-                    type: string
-                    description: |
-                      Short name of the user.
                   is_mirror_dummy:
                     type: boolean
                     description: |
@@ -4542,10 +4529,6 @@ components:
                     type: string
                     description: |
                       Full name of the user.
-                  short_name:
-                    type: string
-                    description: |
-                      Short name of the user.
                   is_mirror_dummy:
                     type: boolean
                     description: |
@@ -4575,10 +4558,6 @@ components:
             the context of a given Zulip server.
 
             E.g. on `example.zulip.com`, this will be `example`.
-        sender_short_name:
-          type: string
-          description: |
-            Reserved for future use.
         stream_id:
           type: integer
           description: |

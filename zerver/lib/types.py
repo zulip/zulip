@@ -35,7 +35,6 @@ ProfileFieldData = Dict[str, Union[Dict[str, str], str]]
 class UserDisplayRecipient(TypedDict):
     email: str
     full_name: str
-    short_name: str
     id: int
     is_mirror_dummy: bool
 DisplayRecipientT = Union[str, List[UserDisplayRecipient]]
