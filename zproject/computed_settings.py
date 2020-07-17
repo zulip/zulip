@@ -905,7 +905,7 @@ LOGGING: Dict[str, Any] = {
         },
         'zulip.auth': {
             'level': 'DEBUG',
-            'handlers': DEFAULT_ZULIP_HANDLERS + ['auth_file'],
+            'handlers': ['file', 'auth_file', 'errors_file'],
             'propagate': False,
         },
         'zulip.ldap': {
