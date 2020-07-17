@@ -40,6 +40,16 @@
     </select>
     <button type="submit" class="button rounded small support-submit-button">Update</button>
 </form>
+
+{% if realm.customer and realm.customer.sponsorship_pending %}
+<form method="POST" class="approve-sponsorship-form">
+    {{ csrf_input }}
+    <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+    <input type="hidden" name="approve_sponsorship" value="approve_sponsorship" />
+    <button class="button rounded btn sea-green small approve-sponsorship-button">Approve full sponsorship</button>
+</form>
+{% endif %}
+
 <form method="POST" class="support-discount-form">
     <b>Discount (use 85 for nonprofits)</b>:<br>
     {{ csrf_input }}

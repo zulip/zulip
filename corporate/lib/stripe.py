@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.signing import Signer
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
 
 from corporate.models import (
@@ -25,7 +26,7 @@ from corporate.models import (
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
-from zerver.models import Realm, RealmAuditLog, UserProfile
+from zerver.models import Realm, RealmAuditLog, UserProfile, get_system_bot
 from zproject.config import get_secret
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')
@@ -562,6 +563,19 @@ def update_sponsorship_status(realm: Realm, sponsorship_pending: bool) -> None:
     customer, _ = Customer.objects.get_or_create(realm=realm)
     customer.sponsorship_pending = sponsorship_pending
     customer.save(update_fields=["sponsorship_pending"])
+
+def approve_sponsorship(realm: Realm) -> None:
+    from zerver.lib.actions import do_change_plan_type, internal_send_private_message
+    do_change_plan_type(realm, Realm.STANDARD_FREE)
+    customer = get_customer_by_realm(realm)
+    if customer is not None and customer.sponsorship_pending:
+        customer.sponsorship_pending = False
+        customer.save(update_fields=["sponsorship_pending"])
+    notification_bot = get_system_bot(settings.NOTIFICATION_BOT)
+    for billing_admin in realm.get_human_billing_admin_users():
+        with override_language(billing_admin.default_language):
+            message = _("Sponsorship request for your organization is approved. Your organization is now on Zulip Standard plan :tada:.")
+            internal_send_private_message(billing_admin.realm, notification_bot, billing_admin, message)
 
 def get_discount_for_realm(realm: Realm) -> Optional[Decimal]:
     customer = get_customer_by_realm(realm)
