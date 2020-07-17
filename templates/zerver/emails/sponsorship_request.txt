@@ -7,4 +7,4 @@ Organization type: {{ organization_type }}
 Description:
 {{ description }}
 
-Requested by: {{ requested_by }} · User role: {{ user_role }} · String ID: {{ string_id }}
+Requested by: {{ requested_by }} ({{ user_role }})
