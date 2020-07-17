@@ -2,7 +2,27 @@ name: Zulip Production Suite
 
 on:
   push:
+    paths:
+      - "**/migrations/**"
+      - puppet/**
+      - requirements/**
+      - scripts/**
+      - static/**
+      - tools/**
+      - zproject/**
+      - yarn.lock
+      - .github/workflows/production-suite.yml
   pull_request:
+    paths:
+      - "**/migrations/**"
+      - puppet/**
+      - requirements/**
+      - scripts/**
+      - static/**
+      - tools/**
+      - zproject/**
+      - yarn.lock
+      - .github/workflows/production-suite.yml
 
 defaults:
   run:
