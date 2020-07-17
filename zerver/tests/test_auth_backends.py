@@ -2263,10 +2263,9 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         mobile_flow_otp = '1234abcd' * 8
 
         def initiate_auth(mobile_flow_otp: Optional[str]=None) -> None:
-            url, headers = self.prepare_login_url_and_headers(subdomain='zulip',
-                                                              id_token='invalid',
-                                                              mobile_flow_otp=mobile_flow_otp)
-            result = self.client_get(url, **headers)
+            result = self.social_auth_test(self.get_account_data_dict(email=self.email, name=self.name),
+                                           subdomain='zulip',
+                                           mobile_flow_otp=mobile_flow_otp)
             self.assertEqual(result.status_code, 302)
 
         # Start Apple auth with mobile_flow_otp param. It should get saved into the session
