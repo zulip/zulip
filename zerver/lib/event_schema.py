@@ -139,6 +139,35 @@ check_message = check_events_dict(
     ]
 )
 
+# We will eventually just send user_ids.
+_check_reaction_user = check_dict_only(
+    required_keys=[
+        # force vertical
+        ("email", check_string),
+        ("full_name", check_string),
+        ("user_id", check_int),
+    ]
+)
+
+_check_reaction = check_events_dict(
+    required_keys=[
+        ("type", equals("reaction")),
+        ("op", check_add_or_remove),
+        ("message_id", check_int),
+        ("emoji_name", check_string),
+        ("emoji_code", check_string),
+        ("reaction_type", check_string),
+        ("user_id", check_int),
+        ("user", _check_reaction_user),
+    ]
+)
+
+
+def check_reaction(var_name: str, event: Dict[str, Any], op: str) -> None:
+    _check_reaction(var_name, event)
+    assert event["op"] == op
+
+
 _check_bot_services_outgoing = check_dict_only(
     required_keys=[
         # force vertical

@@ -93,6 +93,7 @@ from zerver.lib.event_schema import (
     basic_stream_fields,
     check_events_dict,
     check_message,
+    check_reaction,
     check_realm_bot_add,
     check_realm_bot_delete,
     check_realm_bot_remove,
@@ -491,21 +492,6 @@ class NormalActionsTest(BaseAction):
         )
 
     def test_add_reaction(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('reaction')),
-            ('op', equals('add')),
-            ('message_id', check_int),
-            ('emoji_name', check_string),
-            ('emoji_code', check_string),
-            ('reaction_type', check_string),
-            ('user_id', check_int),
-            ('user', check_dict_only([
-                ('email', check_string),
-                ('full_name', check_string),
-                ('user_id', check_int),
-            ])),
-        ])
-
         message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
         message = Message.objects.get(id=message_id)
         events = self.verify_action(
@@ -513,7 +499,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile, message, "tada", "1f389", "unicode_emoji"),
             state_change_expected=False,
         )
-        schema_checker('events[0]', events[0])
+        check_reaction('events[0]', events[0], 'add')
 
     def test_add_submessage(self) -> None:
         schema_checker = check_events_dict([
@@ -544,21 +530,6 @@ class NormalActionsTest(BaseAction):
         schema_checker('events[0]', events[0])
 
     def test_remove_reaction(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('reaction')),
-            ('op', equals('remove')),
-            ('message_id', check_int),
-            ('emoji_name', check_string),
-            ('emoji_code', check_string),
-            ('reaction_type', check_string),
-            ('user_id', check_int),
-            ('user', check_dict_only([
-                ('email', check_string),
-                ('full_name', check_string),
-                ('user_id', check_int),
-            ])),
-        ])
-
         message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
         message = Message.objects.get(id=message_id)
         do_add_reaction(self.user_profile, message, "tada", "1f389", "unicode_emoji")
@@ -567,7 +538,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile, message, "1f389", "unicode_emoji"),
             state_change_expected=False,
         )
-        schema_checker('events[0]', events[0])
+        check_reaction('events[0]', events[0], 'remove')
 
     def test_invite_user_event(self) -> None:
         schema_checker = check_events_dict([
