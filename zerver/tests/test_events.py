@@ -108,6 +108,7 @@ from zerver.lib.event_schema import (
     check_update_global_notifications,
     check_update_message,
     check_update_message_embedded,
+    check_update_message_flags,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import MentionData
@@ -442,14 +443,6 @@ class NormalActionsTest(BaseAction):
 
     def test_update_message_flags(self) -> None:
         # Test message flag update events
-        schema_checker = check_events_dict([
-            ('all', check_bool),
-            ('type', equals('update_message_flags')),
-            ('flag', check_string),
-            ('messages', check_list(check_int)),
-            ('operation', equals("add")),
-        ])
-
         message = self.send_personal_message(
             self.example_user("cordelia"),
             self.example_user("hamlet"),
@@ -460,19 +453,13 @@ class NormalActionsTest(BaseAction):
             lambda: do_update_message_flags(user_profile, get_client("website"), 'add', 'starred', [message]),
             state_change_expected=True,
         )
-        schema_checker('events[0]', events[0])
-        schema_checker = check_events_dict([
-            ('all', check_bool),
-            ('type', equals('update_message_flags')),
-            ('flag', check_string),
-            ('messages', check_list(check_int)),
-            ('operation', equals("remove")),
-        ])
+        check_update_message_flags('events[0]', events[0], 'add')
+
         events = self.verify_action(
             lambda: do_update_message_flags(user_profile, get_client("website"), 'remove', 'starred', [message]),
             state_change_expected=True,
         )
-        schema_checker('events[0]', events[0])
+        check_update_message_flags('events[0]', events[0], 'remove')
 
     def test_update_read_flag_removes_unread_msg_ids(self) -> None:
 

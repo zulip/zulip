@@ -82,6 +82,14 @@ def check_events_dict(
     )
 
 
+check_add_or_remove = check_union(
+    [
+        # force vertical
+        equals("add"),
+        equals("remove"),
+    ]
+)
+
 check_value = check_union(
     [
         # force vertical formatting
@@ -588,3 +596,20 @@ check_update_message_embedded = check_events_dict(
         ("sender", check_string),
     ]
 )
+
+_check_update_message_flags = check_events_dict(
+    required_keys=[
+        ("type", equals("update_message_flags")),
+        ("operation", check_add_or_remove),
+        ("flag", check_string),
+        ("messages", check_list(check_int)),
+        ("all", check_bool),
+    ]
+)
+
+
+def check_update_message_flags(
+    var_name: str, event: Dict[str, Any], operation: str
+) -> None:
+    _check_update_message_flags(var_name, event)
+    assert event["operation"] == operation
