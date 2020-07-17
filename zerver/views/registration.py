@@ -202,7 +202,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                     ldap_user = _LDAPUser(backend, ldap_username)
 
                     try:
-                        ldap_full_name, _ = backend.get_mapped_name(ldap_user)
+                        ldap_full_name = backend.get_mapped_name(ldap_user)
                     except TypeError:
                         break
 

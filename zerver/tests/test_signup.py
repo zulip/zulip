@@ -3340,7 +3340,7 @@ class UserSignUpTest(InviteUserBase):
         subdomain = "zulip"
 
         self.init_default_ldap_database()
-        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'cn'}
         full_name = 'New LDAP fullname'
 
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
@@ -3452,7 +3452,6 @@ class UserSignUpTest(InviteUserBase):
         self.init_default_ldap_database()
         ldap_user_attr_map = {
             'full_name': 'cn',
-            'short_name': 'sn',
             'custom_profile_field__phone_number': 'homePhone',
         }
         full_name = 'New LDAP fullname'
@@ -3483,7 +3482,6 @@ class UserSignUpTest(InviteUserBase):
         self.init_default_ldap_database()
         ldap_user_attr_map = {
             'full_name': 'cn',
-            'short_name': 'sn',
         }
         do_create_realm('test', 'test', False)
 
@@ -3517,7 +3515,7 @@ class UserSignUpTest(InviteUserBase):
         subdomain = "zulip"
 
         self.init_default_ldap_database()
-        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'cn'}
 
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
             result = self.client_post('/register/', {'email': email})
@@ -3561,7 +3559,7 @@ class UserSignUpTest(InviteUserBase):
         subdomain = "zulip"
 
         self.init_default_ldap_database()
-        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'cn'}
 
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
             result = self.client_post('/register/', {'email': email})
@@ -3660,7 +3658,7 @@ class UserSignUpTest(InviteUserBase):
         subdomain = "zulip"
 
         self.init_default_ldap_database()
-        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'cn'}
 
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
             result = self.client_post('/register/', {'email': email})

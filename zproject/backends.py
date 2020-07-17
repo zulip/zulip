@@ -562,30 +562,26 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return ldap_disabled
 
     @classmethod
-    def get_mapped_name(cls, ldap_user: _LDAPUser) -> Tuple[str, str]:
-        """Constructs the user's Zulip full_name and short_name fields from
-        the LDAP data"""
+    def get_mapped_name(cls, ldap_user: _LDAPUser) -> str:
+        """Constructs the user's Zulip full_name from the LDAP data"""
         if "full_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
             full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
-            short_name = full_name = ldap_user.attrs[full_name_attr][0]
+            full_name = ldap_user.attrs[full_name_attr][0]
         elif all(key in settings.AUTH_LDAP_USER_ATTR_MAP for key in {"first_name", "last_name"}):
             first_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["first_name"]
             last_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["last_name"]
-            short_name = ldap_user.attrs[first_name_attr][0]
-            full_name = short_name + ' ' + ldap_user.attrs[last_name_attr][0]
+            first_name = ldap_user.attrs[first_name_attr][0]
+            last_name = ldap_user.attrs[last_name_attr][0]
+            full_name = f"{first_name} {last_name}"
         else:
             raise ZulipLDAPException("Missing required mapping for user's full name")
 
-        if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
-            short_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
-            short_name = ldap_user.attrs[short_name_attr][0]
-
-        return full_name, short_name
+        return full_name
 
     def sync_full_name_from_ldap(self, user_profile: UserProfile,
                                  ldap_user: _LDAPUser) -> None:
         from zerver.lib.actions import do_change_full_name
-        full_name, _ = self.get_mapped_name(ldap_user)
+        full_name = self.get_mapped_name(ldap_user)
         if full_name != user_profile.full_name:
             try:
                 full_name = check_full_name(full_name)
@@ -731,7 +727,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             raise ZulipLDAPException("Email validation failed.")
 
         # We have valid LDAP credentials; time to create an account.
-        full_name, short_name = self.get_mapped_name(ldap_user)
+        full_name = self.get_mapped_name(ldap_user)
         try:
             full_name = check_full_name(full_name)
         except JsonableError as e:
