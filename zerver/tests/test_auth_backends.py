@@ -4670,8 +4670,12 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
                                                     'custom_profile_field__birthday': 'birthDate'}):
-            with self.assertRaisesRegex(ZulipLDAPException, 'Invalid data for birthday field'):
+            with self.assertRaisesRegex(ZulipLDAPException, 'Invalid data for birthday field'), \
+                    self.assertLogs('django_auth_ldap', 'WARNING') as warn_log:
                 self.perform_ldap_sync(self.example_user('hamlet'))
+            self.assertEqual(warn_log.output, [
+                'WARNING:django_auth_ldap:Invalid data for birthday field: Birthday is not a date while authenticating hamlet'
+            ])
 
     def test_update_custom_profile_field_no_mapping(self) -> None:
         hamlet = self.example_user('hamlet')
