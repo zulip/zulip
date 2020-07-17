@@ -77,7 +77,7 @@ in bursts.
   configured in `/etc/zulip/zulip.conf`.  We have no concrete plans to
   start requiring Postgres 12, though we do expect it to improve
   performance.  Installations that would like to upgrade can follow
-  [our new postgres upgrade guide][postgres upgrade].
+  [our new postgres upgrade guide][postgres-upgrade].
 - The format of the `JWT_AUTH_KEYS` setting has changed to include an
   [algorithms](https://pyjwt.readthedocs.io/en/latest/algorithms.html)
   list: `{"subdomain": "key"}` becomes `{"subdomain": {"key": "key",
@@ -91,7 +91,7 @@ in bursts.
   Upgrade notes for all releases one is upgrading across.
 
 [manage-shell]: ../production/management-commands.html#manage-py-shell
-[postgres-upgrade]: ..production/upgrade-or-modify.html#upgrading-postgresql
+[postgres-upgrade]: ../production/upgrade-or-modify.html#upgrading-postgresql
 
 #### Full feature changelog
 
