@@ -797,14 +797,14 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
             user_disabled_in_ldap = self.is_account_control_disabled_user(ldap_user)
             if user_disabled_in_ldap:
                 if user.is_active:
-                    logging.info("Deactivating user %s because they are disabled in LDAP.",
-                                 user.delivery_email)
+                    ldap_logger.info("Deactivating user %s because they are disabled in LDAP.",
+                                     user.delivery_email)
                     do_deactivate_user(user)
                 # Do an early return to avoid trying to sync additional data.
                 return (user, built)
             elif not user.is_active:
-                logging.info("Reactivating user %s because they are not disabled in LDAP.",
-                             user.delivery_email)
+                ldap_logger.info("Reactivating user %s because they are not disabled in LDAP.",
+                                 user.delivery_email)
                 do_reactivate_user(user)
 
         self.sync_avatar_from_ldap(user, ldap_user)
