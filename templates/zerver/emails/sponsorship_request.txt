@@ -1,4 +1,5 @@
 Support URL: {{ support_url }}
+Approve full sponsorship URL: {{ approve_sponsorship_url }}
 
 Website: {{ website }}
 

@@ -630,7 +630,7 @@ class TestSupportEndpoint(ZulipTestCase):
         assert(customer is not None)
         self.assertFalse(customer.sponsorship_pending)
 
-    def test_approve_sponsorship(self) -> None:
+    def test_approve_sponsorship_request_from_support_page(self) -> None:
         lear_realm = get_realm("lear")
         update_sponsorship_status(lear_realm, True)
         king_user = self.lear_user("king")
@@ -659,6 +659,35 @@ class TestSupportEndpoint(ZulipTestCase):
         messages = UserMessage.objects.filter(user_profile=king_user)
         self.assertEqual(len(messages), 1)
         self.assertIn("Sponsorship request for your organization is approved", messages[0].message.content)
+
+    def test_approve_sponsorship_request_from_email(self) -> None:
+        lear_realm = get_realm("lear")
+        king_user = self.lear_user("king")
+        king_user.role = UserProfile.ROLE_REALM_OWNER
+        king_user.save()
+
+        self.assertNotEqual(lear_realm.plan_type, Realm.STANDARD_FREE)
+        update_sponsorship_status(lear_realm, True)
+
+        cordelia = self.example_user('cordelia')
+        self.login_user(cordelia)
+
+        result = self.client_get("/activity/support/approve_sponsorship/lear/")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        result = self.client_get("/activity/support/approve_sponsorship/lear/")
+        self.assert_in_success_response(["Sponsorship approved for lear"], result)
+        lear_realm.refresh_from_db()
+        self.assertEqual(lear_realm.plan_type, Realm.STANDARD_FREE)
+        customer = get_customer_by_realm(lear_realm)
+        assert(customer is not None)
+        self.assertFalse(customer.sponsorship_pending)
+        messages = UserMessage.objects.filter(user_profile=king_user)
+        self.assertEqual(len(messages), 1)
 
     def test_activate_or_deactivate_realm(self) -> None:
         cordelia = self.example_user('cordelia')

@@ -204,7 +204,8 @@ def sponsorship(request: HttpRequest, user: UserProfile,
     support_realm_uri = get_realm(settings.STAFF_SUBDOMAIN).uri
     support_url = urljoin(support_realm_uri, urlunsplit(("", "", reverse('analytics.views.support'),
                           urlencode({"q": realm.string_id}), "")))
-
+    approve_sponsorship_url = urljoin(support_realm_uri, reverse('analytics.views.approve_sponsorship_request',
+                                                                 kwargs = {"realm_str": realm.string_id}))
     context = {
         "requested_by": requested_by,
         "user_role": user_role,
@@ -213,6 +214,7 @@ def sponsorship(request: HttpRequest, user: UserProfile,
         "organization_type": organization_type,
         "website": website,
         "description": description,
+        "approve_sponsorship_url": approve_sponsorship_url,
     }
     send_email(
         "zerver/emails/sponsorship_request",

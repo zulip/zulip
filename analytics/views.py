@@ -1227,6 +1227,12 @@ def support(request: HttpRequest) -> HttpResponse:
     context["Confirmation"] = Confirmation
     return render(request, 'analytics/support.html', context=context)
 
+@require_server_admin
+def approve_sponsorship_request(request: HttpRequest, realm_str: str) -> HttpResponse:
+    realm = get_realm(realm_str)
+    approve_sponsorship(realm)
+    return HttpResponse(f"Sponsorship approved for {realm_str}")
+
 def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:
     fields = [
         'user_profile__full_name',

@@ -10,6 +10,8 @@ i18n_urlpatterns = [
          name='analytics.views.get_activity'),
     path('activity/support', analytics.views.support,
          name='analytics.views.support'),
+    path('activity/support/approve_sponsorship/<str:realm_str>/', analytics.views.approve_sponsorship_request,
+         name='analytics.views.approve_sponsorship_request'),
     path('realm_activity/<str:realm_str>/', analytics.views.get_realm_activity,
          name='analytics.views.get_realm_activity'),
     path('user_activity/<str:email>/', analytics.views.get_user_activity,

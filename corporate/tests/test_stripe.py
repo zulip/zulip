@@ -1096,6 +1096,7 @@ class StripeTest(StripeTestCase):
             self.assertIn('Zulip sponsorship <noreply-', message.from_email)
             self.assertIn("Requested by: King Hamlet (Member)", message.body)
             self.assertIn("Support URL: http://zulip.testserver/activity/support?q=zulip", message.body)
+            self.assertIn("sponsorship URL: http://zulip.testserver/activity/support/approve_sponsorship/zulip/", message.body)
             self.assertIn("Website: https://infinispan.org", message.body)
             self.assertIn("Organization type: Open-source", message.body)
             self.assertIn("Description:\nInfinispan is a distributed in-memory", message.body)
