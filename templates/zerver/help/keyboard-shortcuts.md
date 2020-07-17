@@ -74,8 +74,6 @@ below, and add more to your repertoire as needed.
 
 * **Narrow to all private messages**: `P`
 
-* **Cycle between stream narrows**: `A` (previous) and `D` (next)
-
 * **Narrow to all messages**: `Esc` or `Ctrl` + `[` — Shows all unmuted messages.
 
 * **Narrow to current compose box recipient**: `Ctrl` + `.`
@@ -148,6 +146,7 @@ Use `Enter` to engage with elements.
 ## Drafts
 
 * **Toggle drafts view**: `d`
+* **Edit last draft**: `D`
 
 ### Within the drafts view
 

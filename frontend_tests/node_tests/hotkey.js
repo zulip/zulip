@@ -249,9 +249,6 @@ run_test('basic_chars', () => {
     assert_mapping('w', 'activity.initiate_search');
     assert_mapping('q', 'stream_list.initiate_search');
 
-    assert_mapping('A', 'narrow.stream_cycle_backward');
-    assert_mapping('D', 'narrow.stream_cycle_forward');
-
     assert_mapping('c', 'compose_actions.start');
     assert_mapping('x', 'compose_actions.start');
     assert_mapping('P', 'narrow.by');
