@@ -21,7 +21,6 @@ from zerver.lib.actions import (
     do_add_alert_words,
     do_add_default_stream,
     do_add_reaction,
-    do_add_reaction_legacy,
     do_add_realm_domain,
     do_add_realm_filter,
     do_add_streams_to_default_stream_group,
@@ -61,7 +60,6 @@ from zerver.lib.actions import (
     do_remove_default_stream,
     do_remove_default_stream_group,
     do_remove_reaction,
-    do_remove_reaction_legacy,
     do_remove_realm_domain,
     do_remove_realm_emoji,
     do_remove_realm_filter,
@@ -590,57 +588,6 @@ class NormalActionsTest(BaseAction):
             lambda: self.send_stream_message(sender, "Verona", "hello 2"),
             state_change_expected=True,
         )
-
-    def test_add_reaction_legacy(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('reaction')),
-            ('op', equals('add')),
-            ('message_id', check_int),
-            ('emoji_name', check_string),
-            ('emoji_code', check_string),
-            ('reaction_type', check_string),
-            ('user_id', check_int),
-            ('user', check_dict_only([
-                ('email', check_string),
-                ('full_name', check_string),
-                ('user_id', check_int),
-            ])),
-        ])
-
-        message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
-        message = Message.objects.get(id=message_id)
-        events = self.verify_action(
-            lambda: do_add_reaction_legacy(
-                self.user_profile, message, "tada"),
-            state_change_expected=False,
-        )
-        schema_checker('events[0]', events[0])
-
-    def test_remove_reaction_legacy(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('reaction')),
-            ('op', equals('remove')),
-            ('message_id', check_int),
-            ('emoji_name', check_string),
-            ('emoji_code', check_string),
-            ('reaction_type', check_string),
-            ('user_id', check_int),
-            ('user', check_dict_only([
-                ('email', check_string),
-                ('full_name', check_string),
-                ('user_id', check_int),
-            ])),
-        ])
-
-        message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
-        message = Message.objects.get(id=message_id)
-        do_add_reaction_legacy(self.user_profile, message, "tada")
-        events = self.verify_action(
-            lambda: do_remove_reaction_legacy(
-                self.user_profile, message, "tada"),
-            state_change_expected=False,
-        )
-        schema_checker('events[0]', events[0])
 
     def test_add_reaction(self) -> None:
         schema_checker = check_events_dict([
