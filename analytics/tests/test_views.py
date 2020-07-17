@@ -10,13 +10,21 @@ from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
 from analytics.models import FillState, RealmCount, UserCount, last_successful_fill
 from analytics.views import rewrite_client_arrays, sort_by_totals, sort_client_labels
-from corporate.lib.stripe import add_months
+from corporate.lib.stripe import add_months, update_sponsorship_status
 from corporate.models import Customer, CustomerPlan, LicenseLedger, get_customer_by_realm
 from zerver.lib.actions import do_create_multiuse_invite_link, do_send_realm_reactivation_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, datetime_to_timestamp
-from zerver.models import Client, MultiuseInvite, PreregistrationUser, get_realm
+from zerver.models import (
+    Client,
+    MultiuseInvite,
+    PreregistrationUser,
+    Realm,
+    UserMessage,
+    UserProfile,
+    get_realm,
+)
 
 
 class TestStatsEndpoint(ZulipTestCase):
@@ -621,6 +629,36 @@ class TestSupportEndpoint(ZulipTestCase):
         customer = get_customer_by_realm(lear_realm)
         assert(customer is not None)
         self.assertFalse(customer.sponsorship_pending)
+
+    def test_approve_sponsorship(self) -> None:
+        lear_realm = get_realm("lear")
+        update_sponsorship_status(lear_realm, True)
+        king_user = self.lear_user("king")
+        king_user.role = UserProfile.ROLE_REALM_OWNER
+        king_user.save()
+
+        cordelia = self.example_user('cordelia')
+        self.login_user(cordelia)
+
+        result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}",
+                                                        "approve_sponsorship": "approve_sponsorship"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}",
+                                                        "approve_sponsorship": "approve_sponsorship"})
+        self.assert_in_success_response(["Sponsorship approved for Lear &amp; Co."], result)
+        lear_realm.refresh_from_db()
+        self.assertEqual(lear_realm.plan_type, Realm.STANDARD_FREE)
+        customer = get_customer_by_realm(lear_realm)
+        assert(customer is not None)
+        self.assertFalse(customer.sponsorship_pending)
+        messages = UserMessage.objects.filter(user_profile=king_user)
+        self.assertIn("request for sponsored hosting has been approved", messages[0].message.content)
+        self.assertEqual(len(messages), 1)
 
     def test_activate_or_deactivate_realm(self) -> None:
         cordelia = self.example_user('cordelia')

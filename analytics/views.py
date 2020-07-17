@@ -71,6 +71,7 @@ from zerver.views.invite import get_invitee_emails_set
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
+        approve_sponsorship,
         attach_discount_to_realm,
         get_current_plan_by_realm,
         get_customer_by_realm,
@@ -1157,6 +1158,10 @@ def support(request: HttpRequest) -> HttpResponse:
             elif sponsorship_pending == "false":
                 update_sponsorship_status(realm, False)
                 context["message"] = f"{realm.name} is no longer pending sponsorship."
+        elif request.POST.get('approve_sponsorship') is not None:
+            if request.POST.get('approve_sponsorship') == "approve_sponsorship":
+                approve_sponsorship(realm)
+                context["message"] = f"Sponsorship approved for {realm.name}"
         elif request.POST.get("scrub_realm", None) is not None:
             if request.POST.get("scrub_realm") == "scrub_realm":
                 do_scrub_realm(realm, acting_user=request.user)

@@ -501,6 +501,10 @@ class Realm(models.Model):
                                           role__in=[UserProfile.ROLE_REALM_ADMINISTRATOR,
                                                     UserProfile.ROLE_REALM_OWNER])
 
+    def get_human_billing_admin_users(self) -> Sequence['UserProfile']:
+        return UserProfile.objects.filter(Q(role=UserProfile.ROLE_REALM_OWNER) | Q(is_billing_admin=True),
+                                          realm=self, is_bot=False, is_active=True)
+
     def get_active_users(self) -> Sequence['UserProfile']:
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
