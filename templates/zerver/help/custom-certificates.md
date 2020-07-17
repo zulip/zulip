@@ -17,14 +17,16 @@ and follow the instructions on-screen.
 
 If you are less than 100% sure, contact your server administrator. Accepting
 a malicious self-signed certificate would give a stranger full access to
-your Zulip, including your username and password.
+your Zulip account, including your username and password.
 
 ## Desktop
 
-For safety reasons, we require you to manually enter the certificate details
-before you can connect to your Zulip server. You'll need to get a
-certificate file (should end in `.crt` or `.pem`) from your server
-administrator.
+For safety reasons, the Zulip desktop app will only connect to servers
+where it can verify the server's SSL certificate.  For certificates
+signed by a public certificate authority, it will just work.
+Otherwise, you'll need to obtain the Zulip server's public certificate
+file (generally ends with `.crt` or `.pem`) from your server
+administrator and provide to the desktopm app.
 
 ### Add a custom certificate
 
@@ -38,3 +40,13 @@ administrator.
    the custom certificate file (should end in `.crt` or `.pem`).
 
 {end_tabs}
+
+This can be done programmatically by copying the certificate file(s)
+to the Zulip app's certificate store on the computer:
+
+* **macOS**: `~/Library/Application Support/Zulip/certificates/`
+* **Windows**: `AppData\Roaming\Zulip\certificates\`
+* **Linux**: `~/.config/Zulip/certificates/`
+
+TODO: Determine the paths to provide for the general Chromium/Electron
+certificate store if that works too.
