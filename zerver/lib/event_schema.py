@@ -706,6 +706,23 @@ def check_update_message_flags(
     assert event["operation"] == operation
 
 
+_check_group = check_dict_only(
+    required_keys=[
+        ("id", check_int),
+        ("name", check_string),
+        ("members", check_list(check_int)),
+        ("description", check_string),
+    ]
+)
+
+check_user_group_add = check_events_dict(
+    required_keys=[
+        ("type", equals("user_group")),
+        ("op", equals("add")),
+        ("group", _check_group),
+    ]
+)
+
 check_user_status = check_events_dict(
     required_keys=[
         ("type", equals("user_status")),
