@@ -91,6 +91,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.event_schema import (
     basic_stream_fields,
+    check_custom_profile_fields,
     check_events_dict,
     check_invites_changed,
     check_message,
@@ -618,25 +619,12 @@ class NormalActionsTest(BaseAction):
         check_typing_start('events[0]', events[0])
 
     def test_custom_profile_fields_events(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('custom_profile_fields')),
-            ('op', equals('add')),
-            ('fields', check_list(check_dict_only([
-                ('id', check_int),
-                ('type', check_int),
-                ('name', check_string),
-                ('hint', check_string),
-                ('field_data', check_string),
-                ('order', check_int),
-            ]))),
-        ])
-
         events = self.verify_action(
             lambda: notify_realm_custom_profile_fields(
                 self.user_profile.realm, 'add'),
             state_change_expected=False,
         )
-        schema_checker('events[0]', events[0])
+        check_custom_profile_fields('events[0]', events[0])
 
         realm = self.user_profile.realm
         field = realm.customprofilefield_set.get(realm=realm, name='Biography')
@@ -649,7 +637,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile.realm, 'add'),
             state_change_expected=False,
         )
-        schema_checker('events[0]', events[0])
+        check_custom_profile_fields('events[0]', events[0])
 
     def test_custom_profile_field_data_events(self) -> None:
         schema_checker_basic = check_events_dict([
