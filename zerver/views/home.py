@@ -183,6 +183,10 @@ def home_real(request: HttpRequest) -> HttpResponse:
         # This code path should not be reachable because of zulip_login_required above.
         user_profile = None
 
+    update_last_reminder(user_profile)
+
+    statsd.incr('views.home')
+
     # If a user hasn't signed the current Terms of Service, send them there
     if need_accept_tos(user_profile):
         return accounts_accept_terms(request)
@@ -200,7 +204,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                       slim_presence=True,
                                       client_capabilities=client_capabilities,
                                       narrow=narrow)
-    update_last_reminder(user_profile)
 
     if user_profile is not None:
         first_in_realm = realm_user_count(user_profile.realm) == 1
@@ -227,6 +230,8 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if request_language is None:
         request_language = register_ret['default_language']
     translation.activate(request_language)
+
+
     # We also save the language to the user's session, so that
     # something reasonable will happen in logged-in portico pages.
     request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
@@ -284,7 +289,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
         page_params["max_message_id"] = max_message_id
         page_params["enable_desktop_notifications"] = False
 
-    statsd.incr('views.home')
     show_invites, show_add_streams = compute_show_invites_and_add_streams(user_profile)
 
     show_billing = False
