@@ -117,10 +117,12 @@ exports.create_pills = function (pill_container) {
     return pills;
 };
 
-exports.set_up_typeahead_on_pills = function (input, pills, update_func, source) {
-    if (!source) {
+exports.set_up_typeahead_on_pills = function (input, pills, opts) {
+    let source = opts.source;
+    if (!opts.source) {
         source = () => exports.typeahead_source(pills);
     }
+
     input.typeahead({
         items: 5,
         fixed: true,
@@ -146,7 +148,9 @@ exports.set_up_typeahead_on_pills = function (input, pills, update_func, source)
         updater(user) {
             exports.append_user(user, pills);
             input.trigger("focus");
-            update_func();
+            if (opts.update_func) {
+                opts.update_func();
+            }
         },
         stopAdvance: true,
     });
