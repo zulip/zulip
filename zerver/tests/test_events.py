@@ -115,6 +115,7 @@ from zerver.lib.event_schema import (
     check_update_message,
     check_update_message_embedded,
     check_update_message_flags,
+    check_user_status,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import MentionData
@@ -829,13 +830,6 @@ class NormalActionsTest(BaseAction):
         check_alert_words('events[0]', events[0])
 
     def test_away_events(self) -> None:
-        checker = check_events_dict([
-            ('type', equals('user_status')),
-            ('user_id', check_int),
-            ('away', check_bool),
-            ('status_text', check_string),
-        ])
-
         client = get_client("website")
         events = self.verify_action(
             lambda: do_update_user_status(
@@ -844,7 +838,7 @@ class NormalActionsTest(BaseAction):
                 status_text='out to lunch',
                 client_id=client.id))
 
-        checker('events[0]', events[0])
+        check_user_status('events[0]', events[0])
 
         events = self.verify_action(
             lambda: do_update_user_status(
@@ -853,7 +847,7 @@ class NormalActionsTest(BaseAction):
                 status_text='',
                 client_id=client.id))
 
-        checker('events[0]', events[0])
+        check_user_status('events[0]', events[0])
 
     def test_user_group_events(self) -> None:
         user_group_add_checker = check_events_dict([

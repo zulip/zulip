@@ -704,3 +704,13 @@ def check_update_message_flags(
 ) -> None:
     _check_update_message_flags(var_name, event)
     assert event["operation"] == operation
+
+
+check_user_status = check_events_dict(
+    required_keys=[
+        ("type", equals("user_status")),
+        ("user_id", check_int),
+        ("away", check_bool),
+        ("status_text", check_string),
+    ]
+)
