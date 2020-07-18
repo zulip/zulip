@@ -92,6 +92,7 @@ from zerver.lib.actions import (
 from zerver.lib.event_schema import (
     basic_stream_fields,
     check_events_dict,
+    check_invites_changed,
     check_message,
     check_reaction,
     check_realm_bot_add,
@@ -533,10 +534,6 @@ class NormalActionsTest(BaseAction):
         check_reaction('events[0]', events[0], 'remove')
 
     def test_invite_user_event(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('invites_changed')),
-        ])
-
         self.user_profile = self.example_user('iago')
         streams = []
         for stream_name in ["Denmark", "Scotland"]:
@@ -545,13 +542,9 @@ class NormalActionsTest(BaseAction):
             lambda: do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False),
             state_change_expected=False,
         )
-        schema_checker('events[0]', events[0])
+        check_invites_changed('events[0]', events[0])
 
     def test_create_multiuse_invite_event(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('invites_changed')),
-        ])
-
         self.user_profile = self.example_user('iago')
         streams = []
         for stream_name in ["Denmark", "Verona"]:
@@ -561,13 +554,9 @@ class NormalActionsTest(BaseAction):
             lambda: do_create_multiuse_invite_link(self.user_profile, PreregistrationUser.INVITE_AS['MEMBER'], streams),
             state_change_expected=False,
         )
-        schema_checker('events[0]', events[0])
+        check_invites_changed('events[0]', events[0])
 
     def test_revoke_user_invite_event(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('invites_changed')),
-        ])
-
         self.user_profile = self.example_user('iago')
         streams = []
         for stream_name in ["Denmark", "Verona"]:
@@ -578,13 +567,9 @@ class NormalActionsTest(BaseAction):
             lambda: do_revoke_user_invite(prereg_users[0]),
             state_change_expected=False,
         )
-        schema_checker('events[0]', events[0])
+        check_invites_changed('events[0]', events[0])
 
     def test_revoke_multiuse_invite_event(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('invites_changed')),
-        ])
-
         self.user_profile = self.example_user('iago')
         streams = []
         for stream_name in ["Denmark", "Verona"]:
@@ -596,14 +581,10 @@ class NormalActionsTest(BaseAction):
             lambda: do_revoke_multi_use_invite(multiuse_object),
             state_change_expected=False,
         )
-        schema_checker('events[0]', events[0])
+        check_invites_changed('events[0]', events[0])
 
     def test_invitation_accept_invite_event(self) -> None:
         reset_emails_in_zulip_realm()
-
-        schema_checker = check_events_dict([
-            ('type', equals('invites_changed')),
-        ])
 
         self.user_profile = self.example_user('iago')
         streams = []
@@ -625,7 +606,7 @@ class NormalActionsTest(BaseAction):
             num_events=5,
         )
 
-        schema_checker('events[4]', events[4])
+        check_invites_changed('events[4]', events[4])
 
     def test_typing_events(self) -> None:
         schema_checker = check_events_dict([

@@ -109,6 +109,13 @@ check_optional_value = check_union(
     ]
 )
 
+check_invites_changed = check_events_dict(
+    required_keys=[
+        # the most boring event...no metadata
+        ("type", equals("invites_changed")),
+    ]
+)
+
 message_fields = [
     ("avatar_url", check_none_or(check_string)),
     ("client", check_string),
