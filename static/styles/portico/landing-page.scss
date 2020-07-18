@@ -1153,17 +1153,17 @@ nav {
 
     background-color: transparent;
     box-shadow: none;
-}
 
-.portico-landing.hello .screen.hero-screen::before,
-.portico-landing.hello .screen.hero-screen::after {
-    content: "";
-    display: none;
-}
+    &::before,
+    &::after {
+        content: "";
+        display: none;
+    }
 
-.portico-landing.hello .screen.hero-screen .main-page {
-    transform: translateY(-12px) translateX(3px);
-    border: 5px solid hsl(0, 0%, 0%);
+    .main-page {
+        transform: translateY(-12px) translateX(3px);
+        border: 5px solid hsl(0, 0%, 0%);
+    }
 }
 
 .portico-landing.hello .screen {
@@ -3039,11 +3039,11 @@ nav {
         width: 420px;
         height: 282px;
         padding: 65px 117px;
-    }
 
-    .portico-landing.hello .screen.hero-screen .main-page {
-        overflow: hidden;
-        transform: translateY(-12px) translateX(2px);
+        .main-page {
+            overflow: hidden;
+            transform: translateY(-12px) translateX(2px);
+        }
     }
 
     .screen.hero-screen .col-4 .action-block {
