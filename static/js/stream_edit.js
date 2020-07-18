@@ -203,16 +203,25 @@ function submit_add_subscriber_form(e) {
         return;
     }
 
-    const user_ids = user_pill.get_user_ids(exports.pill_widget);
     const stream_subscription_info_elem = $(".stream_subscription_info").expectOne();
+    let user_ids = user_pill.get_user_ids(exports.pill_widget);
+    user_ids = user_ids.concat(stream_pill.get_user_ids(exports.pill_widget));
+    user_ids = new Set(user_ids);
 
-    if (user_ids.length === 0) {
+    if (user_ids.has(page_params.user_id) && sub.subscribed) {
+        // We don't want to send a request to subscribe ourselves
+        // if we are already subscribed to this stream. This
+        // case occurs when creating user pills from a stream.
+        user_ids.delete(page_params.user_id);
+    }
+    if (user_ids.size === 0) {
         stream_subscription_info_elem
             .text(i18n.t("No user to subscribe."))
             .addClass("text-error")
             .removeClass("text-success");
         return;
     }
+    user_ids = Array.from(user_ids);
 
     function invite_success(data) {
         exports.pill_widget.clear();
@@ -337,7 +346,7 @@ function show_subscription_settings(sub) {
         simplebar_container: $(".subscriber_list_container"),
     });
 
-    const opts = {source: get_users_for_subscriber_typeahead};
+    const opts = {source: get_users_for_subscriber_typeahead, stream: true};
     pill_typeahead.set_up(sub_settings.find(".input"), exports.pill_widget, opts);
 }
 

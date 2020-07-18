@@ -32,6 +32,7 @@ import "../localstorage.js";
 import "../drafts.js";
 import "../input_pill.js";
 import "../user_pill.js";
+import "../stream_pill.js";
 import "../compose_pm_pill.js";
 import "../channel.js";
 import "../setup.js";
