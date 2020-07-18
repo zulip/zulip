@@ -15,6 +15,7 @@ from zerver.decorator import zulip_login_required
 from zerver.forms import ToSForm
 from zerver.lib.actions import do_change_tos_version, realm_user_count
 from zerver.lib.events import do_events_register
+from zerver.lib.home import get_billing_info, get_user_permission_info
 from zerver.lib.i18n import (
     get_language_list,
     get_language_list_for_templates,
@@ -291,20 +292,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     show_invites, show_add_streams = compute_show_invites_and_add_streams(user_profile)
 
-    show_billing = False
-    show_plans = False
-    if settings.CORPORATE_ENABLED and user_profile is not None:
-        from corporate.models import CustomerPlan, get_customer_by_realm
-        if user_profile.has_billing_access:
-            customer = get_customer_by_realm(user_profile.realm)
-            if customer is not None:
-                if customer.sponsorship_pending:
-                    show_billing = True
-                elif CustomerPlan.objects.filter(customer=customer).exists():
-                    show_billing = True
-
-        if user_profile.realm.plan_type == Realm.LIMITED:
-            show_plans = True
+    billing_info = get_billing_info(user_profile)
 
     request._log_data['extra'] = "[{}]".format(register_ret["queue_id"])
 
@@ -313,18 +301,8 @@ def home_real(request: HttpRequest) -> HttpResponse:
         page_params['translation_data'] = get_language_translation_data(request_language)
 
     csp_nonce = generate_random_token(48)
-    if user_profile is not None:
-        color_scheme = user_profile.color_scheme
-        is_guest = user_profile.is_guest
-        is_realm_owner = user_profile.is_realm_owner
-        is_realm_admin = user_profile.is_realm_admin
-        show_webathena = user_profile.realm.webathena_enabled
-    else:  # nocoverage
-        color_scheme = UserProfile.COLOR_SCHEME_AUTOMATIC
-        is_guest = False
-        is_realm_admin = False
-        is_realm_owner = False
-        show_webathena = False
+
+    user_permission_info = get_user_permission_info(user_profile)
 
     navbar_logo_url = compute_navbar_logo_url(page_params)
 
@@ -335,15 +313,15 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'search_pills_enabled': settings.SEARCH_PILLS_ENABLED,
                                'show_invites': show_invites,
                                'show_add_streams': show_add_streams,
-                               'show_billing': show_billing,
+                               'show_billing': billing_info.show_billing,
                                'corporate_enabled': settings.CORPORATE_ENABLED,
-                               'show_plans': show_plans,
-                               'is_owner': is_realm_owner,
-                               'is_admin': is_realm_admin,
-                               'is_guest': is_guest,
-                               'color_scheme': color_scheme,
+                               'show_plans': billing_info.show_plans,
+                               'is_owner': user_permission_info.is_realm_owner,
+                               'is_admin': user_permission_info.is_realm_admin,
+                               'is_guest': user_permission_info.is_guest,
+                               'color_scheme': user_permission_info.color_scheme,
                                'navbar_logo_url': navbar_logo_url,
-                               'show_webathena': show_webathena,
+                               'show_webathena': user_permission_info.show_webathena,
                                'embedded': narrow_stream is not None,
                                'invite_as': PreregistrationUser.INVITE_AS,
                                'max_file_upload_size_mib': settings.MAX_FILE_UPLOAD_SIZE,
