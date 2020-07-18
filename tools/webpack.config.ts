@@ -247,8 +247,6 @@ export default (env?: string): webpack.Configuration[] => {
         {path: "xdate/src/xdate.js", name: "XDate"},
         {path: "../static/third/marked/lib/marked.js"},
         {path: "../static/js/debug.js"},
-        {path: "../static/js/blueslip.js"},
-        {path: "../static/js/common.js"},
         {path: "jquery/dist/jquery.js", name: ["$", "jQuery"]},
         {path: "underscore/underscore.js", name: "_"},
         {path: "handlebars/dist/cjs/handlebars.runtime.js", name: "Handlebars"},
