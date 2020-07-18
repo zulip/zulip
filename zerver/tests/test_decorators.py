@@ -1341,9 +1341,12 @@ class TestValidateApiKey(ZulipTestCase):
         self._change_is_active_field(self.default_bot, True)
 
     def test_validate_api_key_if_profile_is_incoming_webhook_and_is_webhook_is_unset(self) -> None:
-        with self.assertRaises(JsonableError):
+        with self.assertRaises(JsonableError), self.assertLogs(level="WARNING") as root_warn_log:
             api_key = get_api_key(self.webhook_bot)
             validate_api_key(HostRequestMock(), self.webhook_bot.email, api_key)
+        self.assertEqual(root_warn_log.output, [
+            'WARNING:root:User webhook-bot@zulip.com (zulip) attempted to access API on wrong subdomain ()'
+        ])
 
     def test_validate_api_key_if_profile_is_incoming_webhook_and_is_webhook_is_set(self) -> None:
         api_key = get_api_key(self.webhook_bot)
