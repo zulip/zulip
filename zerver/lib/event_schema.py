@@ -109,6 +109,25 @@ check_optional_value = check_union(
     ]
 )
 
+_check_custom_profile_field = check_dict_only(
+    required_keys=[
+        ("id", check_int),
+        ("type", check_int),
+        ("name", check_string),
+        ("hint", check_string),
+        ("field_data", check_string),
+        ("order", check_int),
+    ]
+)
+
+check_custom_profile_fields = check_events_dict(
+    required_keys=[
+        ("type", equals("custom_profile_fields")),
+        ("op", equals("add")),
+        ("fields", check_list(_check_custom_profile_field)),
+    ]
+)
+
 check_invites_changed = check_events_dict(
     required_keys=[
         # the most boring event...no metadata
