@@ -1298,13 +1298,13 @@ nav {
     opacity: 1;
     height: auto;
     visibility: visible;
-}
 
-.carousel.carousel-fade .carousel-inner .item.active.left,
-.carousel.carousel-fade .carousel-inner .item.active.right {
-    left: 0;
-    opacity: 0;
-    z-index: 2;
+    &.left,
+    &.right {
+        left: 0;
+        opacity: 0;
+        z-index: 2;
+    }
 }
 
 .carousel.carousel-fade .carousel-inner .item.next.left,
