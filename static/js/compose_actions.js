@@ -1,7 +1,7 @@
 const autosize = require("autosize");
 
 exports.blur_textarea = function () {
-    $(".message_comp").find("input, textarea, button").trigger("blur");
+    $(".message_comp").find("input, textarea, button, #private_message_recipient").trigger("blur");
 };
 
 function hide_box() {
