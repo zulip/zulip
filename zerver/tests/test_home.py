@@ -13,6 +13,7 @@ from django.utils.timezone import now as timezone_now
 from corporate.models import Customer, CustomerPlan
 from zerver.lib.actions import do_change_logo_source, do_create_user
 from zerver.lib.events import add_realm_logo_fields
+from zerver.lib.home import get_furthest_read_time
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_user_messages, queries_captured
@@ -28,7 +29,7 @@ from zerver.models import (
     get_system_bot,
     get_user,
 )
-from zerver.views.home import compute_navbar_logo_url, get_furthest_read_time
+from zerver.views.home import compute_navbar_logo_url
 from zerver.worker.queue_processors import UserActivityWorker
 
 
