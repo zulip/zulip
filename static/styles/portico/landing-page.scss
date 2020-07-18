@@ -1235,22 +1235,22 @@ nav {
 
     position: relative;
     z-index: 1;
-}
 
-.portico-landing.hello .features .col-2 img {
-    margin-bottom: 20px;
-    width: 100%;
-    max-width: 300px;
-}
+    img {
+        margin-bottom: 20px;
+        width: 100%;
+        max-width: 300px;
+    }
 
-.portico-landing.hello .features .col-2 .il-block {
-    display: inline-block;
-    width: 75%;
-    text-align: left;
-}
+    .il-block {
+        display: inline-block;
+        width: 75%;
+        text-align: left;
+    }
 
-.portico-landing.hello .features .col-2 h2 {
-    font-weight: normal;
+    h2 {
+        font-weight: normal;
+    }
 }
 
 .portico-landing.hello .open-source {
