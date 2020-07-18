@@ -4716,11 +4716,14 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         expected_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=no_op_field).value
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
-                                                    'custom_profile_field__birthday': 'nonExistantAttr'}):
+                                                    'custom_profile_field__birthday': 'nonExistantAttr'}), self.assertLogs('django_auth_ldap', 'WARNING') as warn_log:
             self.perform_ldap_sync(self.example_user('hamlet'))
 
         actual_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=no_op_field).value
         self.assertEqual(actual_value, expected_value)
+        self.assertEqual(warn_log.output, [
+            'WARNING:django_auth_ldap:uid=hamlet,ou=users,dc=zulip,dc=com does not have a value for the attribute nonExistantAttr'
+        ])
 
 class TestQueryLDAP(ZulipLDAPTestCase):
 
