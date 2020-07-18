@@ -1360,11 +1360,11 @@ nav {
     width: 200px;
     height: 50px;
     z-index: 10;
-}
 
-.tour .carousel-inner .start-button:hover {
-    background-color: hsl(169, 65%, 42%);
-    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.3);
+    &:hover {
+        background-color: hsl(169, 65%, 42%);
+        box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.3);
+    }
 }
 
 .tour .carousel-inner .start-image {
