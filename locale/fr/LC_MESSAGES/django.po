@@ -20,7 +20,6 @@
 # Sulian Lanteri, 2017
 # Thomas Chuffart <tchuffart@gmail.com>, 2019
 # Tim Abbott <tabbott@kandralabs.com>, 2018,2020
-# William Wendling <w.wendling@amf-france.org>, 2020
 # yvan karmouta <yvan.karmouta@gmail.com>, 2017
 msgid ""
 msgstr ""
