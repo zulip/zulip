@@ -1,35 +1,27 @@
-import calendar
 import logging
-import time
 from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.utils import translation
 from django.utils.cache import patch_cache_control
-from two_factor.utils import default_device
 
 from zerver.decorator import zulip_login_required
 from zerver.forms import ToSForm
 from zerver.lib.actions import do_change_tos_version, realm_user_count
-from zerver.lib.events import do_events_register
-from zerver.lib.home import get_billing_info, get_user_permission_info
-from zerver.lib.i18n import (
-    get_language_list,
-    get_language_list_for_templates,
-    get_language_name,
-    get_language_translation_data,
+from zerver.lib.home import (
+    build_page_params_for_home_page_load,
+    get_billing_info,
+    get_user_permission_info,
 )
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.lib.utils import generate_random_token, statsd
-from zerver.models import Message, PreregistrationUser, Realm, Stream, UserProfile
+from zerver.models import PreregistrationUser, Realm, Stream, UserProfile
 from zerver.views.compatibility import is_outdated_desktop_app, is_unsupported_browser
-from zerver.views.message_flags import get_latest_update_message_flag_activity
 from zerver.views.portico import hello_view
 
 
@@ -106,29 +98,6 @@ def update_last_reminder(user_profile: Optional[UserProfile]) -> None:
         user_profile.last_reminder = None
         user_profile.save(update_fields=["last_reminder"])
 
-def get_furthest_read_time(user_profile: Optional[UserProfile]) -> Optional[float]:
-    if user_profile is None:
-        return time.time()
-
-    user_activity = get_latest_update_message_flag_activity(user_profile)
-    if user_activity is None:
-        return None
-
-    return calendar.timegm(user_activity.last_visit.utctimetuple())
-
-def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]]:
-    bot_types: List[Dict[str, object]] = []
-    if user_profile is None:  # nocoverage
-        return bot_types
-
-    for type_id, name in UserProfile.BOT_TYPES.items():
-        bot_types.append({
-            'type_id': type_id,
-            'name': name,
-            'allowed': type_id in user_profile.allowed_bot_types,
-        })
-    return bot_types
-
 def compute_navbar_logo_url(page_params: Dict[str, Any]) -> str:
     if page_params["color_scheme"] == 2 and page_params["realm_night_logo_source"] != Realm.LOGO_DEFAULT:
         navbar_logo_url = page_params["realm_night_logo_url"]
@@ -194,18 +163,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     narrow, narrow_stream, narrow_topic = detect_narrowed_window(request, user_profile)
 
-    client_capabilities = {
-        'notification_settings_null': True,
-        'bulk_message_deletion': True,
-        'user_avatar_url_field_optional': True,
-    }
-
-    register_ret = do_events_register(user_profile, request.client,
-                                      apply_markdown=True, client_gravatar=True,
-                                      slim_presence=True,
-                                      client_capabilities=client_capabilities,
-                                      narrow=narrow)
-
     if user_profile is not None:
         first_in_realm = realm_user_count(user_profile.realm) == 1
         # If you are the only person in the realm and you didn't invite
@@ -222,83 +179,26 @@ def home_real(request: HttpRequest) -> HttpResponse:
         # The current tutorial doesn't super make sense for logged-out users.
         needs_tutorial = False
 
-    furthest_read_time = get_furthest_read_time(user_profile)
+    has_mobile_devices = user_profile is not None and num_push_devices_for_user(user_profile) > 0
 
-    # We pick a language for the user as follows:
-    # * First priority is the language in the URL, for debugging.
-    # * If not in the URL, we use the language from the user's settings.
-    request_language = translation.get_language_from_path(request.path_info)
-    if request_language is None:
-        request_language = register_ret['default_language']
-    translation.activate(request_language)
-
-
-    # We also save the language to the user's session, so that
-    # something reasonable will happen in logged-in portico pages.
-    request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
-
-    two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
-
-    # Pass parameters to the client-side JavaScript code.
-    # These end up in a global JavaScript Object named 'page_params'.
-    page_params = dict(
-        # Server settings.
-        debug_mode                      = settings.DEBUG,
-        test_suite                      = settings.TEST_SUITE,
-        poll_timeout                    = settings.POLL_TIMEOUT,
-        insecure_desktop_app            = insecure_desktop_app,
-        login_page                      = settings.HOME_NOT_LOGGED_IN,
-        root_domain_uri                 = settings.ROOT_DOMAIN_URI,
-        save_stacktraces                = settings.SAVE_FRONTEND_STACKTRACES,
-        warn_no_email                   = settings.WARN_NO_EMAIL,
-        search_pills_enabled            = settings.SEARCH_PILLS_ENABLED,
-
-        # Misc. extra data.
-        initial_servertime    = time.time(),  # Used for calculating relative presence age
-        default_language_name = get_language_name(register_ret['default_language']),
-        language_list_dbl_col = get_language_list_for_templates(register_ret['default_language']),
-        language_list         = get_language_list(),
-        needs_tutorial        = needs_tutorial,
-        first_in_realm        = first_in_realm,
-        prompt_for_invites    = prompt_for_invites,
-        furthest_read_time    = furthest_read_time,
-        has_mobile_devices    = user_profile is not None and num_push_devices_for_user(user_profile) > 0,
-        bot_types             = get_bot_types(user_profile),
-        two_fa_enabled        = two_fa_enabled,
-        # Adding two_fa_enabled as condition saves us 3 queries when
-        # 2FA is not enabled.
-        two_fa_enabled_user   = two_fa_enabled and bool(default_device(user_profile)),
+    queue_id, page_params = build_page_params_for_home_page_load(
+        request=request,
+        user_profile=user_profile,
+        insecure_desktop_app=insecure_desktop_app,
+        has_mobile_devices=has_mobile_devices,
+        narrow=narrow,
+        narrow_stream=narrow_stream,
+        narrow_topic=narrow_topic,
+        first_in_realm=first_in_realm,
+        prompt_for_invites=prompt_for_invites,
+        needs_tutorial=needs_tutorial,
     )
-
-    undesired_register_ret_fields = [
-        'streams',
-    ]
-    for field_name in set(register_ret.keys()) - set(undesired_register_ret_fields):
-        page_params[field_name] = register_ret[field_name]
-
-    if narrow_stream is not None:
-        # In narrow_stream context, initial pointer is just latest message
-        recipient = narrow_stream.recipient
-        try:
-            max_message_id = Message.objects.filter(recipient=recipient).order_by('id').reverse()[0].id
-        except IndexError:
-            max_message_id = -1
-        page_params["narrow_stream"] = narrow_stream.name
-        if narrow_topic is not None:
-            page_params["narrow_topic"] = narrow_topic
-        page_params["narrow"] = [dict(operator=term[0], operand=term[1]) for term in narrow]
-        page_params["max_message_id"] = max_message_id
-        page_params["enable_desktop_notifications"] = False
 
     show_invites, show_add_streams = compute_show_invites_and_add_streams(user_profile)
 
     billing_info = get_billing_info(user_profile)
 
-    request._log_data['extra'] = "[{}]".format(register_ret["queue_id"])
-
-    page_params['translation_data'] = {}
-    if request_language != 'en':
-        page_params['translation_data'] = get_language_translation_data(request_language)
+    request._log_data['extra'] = "[{}]".format(queue_id)
 
     csp_nonce = generate_random_token(48)
 
