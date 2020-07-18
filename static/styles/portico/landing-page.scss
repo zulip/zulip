@@ -1292,25 +1292,25 @@ nav {
     height: 0;
     transition: opacity 0.4s ease;
     visibility: hidden;
-}
 
-.carousel.carousel-fade .carousel-inner .item.active {
-    opacity: 1;
-    height: auto;
-    visibility: visible;
+    &.active {
+        opacity: 1;
+        height: auto;
+        visibility: visible;
 
-    &.left,
-    &.right {
-        left: 0;
-        opacity: 0;
-        z-index: 2;
+        &.left,
+        &.right {
+            left: 0;
+            opacity: 0;
+            z-index: 2;
+        }
     }
-}
 
-.carousel.carousel-fade .carousel-inner .item.next.left,
-.carousel.carousel-fade .carousel-inner .item.prev.right {
-    opacity: 1;
-    z-index: 1;
+    &.next.left,
+    &.prev.right {
+        opacity: 1;
+        z-index: 1;
+    }
 }
 
 .carousel.carousel-fade .carousel-inner .item-inner {
