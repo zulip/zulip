@@ -109,6 +109,14 @@ check_optional_value = check_union(
     ]
 )
 
+check_alert_words = check_events_dict(
+    required_keys=[
+        # force vertical formatting
+        ("type", equals("alert_words")),
+        ("alert_words", check_list(check_string)),
+    ]
+)
+
 _check_custom_profile_field = check_dict_only(
     required_keys=[
         ("id", check_int),

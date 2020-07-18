@@ -91,6 +91,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.event_schema import (
     basic_stream_fields,
+    check_alert_words,
     check_custom_profile_fields,
     check_events_dict,
     check_invites_changed,
@@ -819,18 +820,13 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(new_user_profile.email, f"user{new_user_profile.id}@zulip.testserver")
 
     def test_alert_words_events(self) -> None:
-        alert_words_checker = check_events_dict([
-            ('type', equals('alert_words')),
-            ('alert_words', check_list(check_string)),
-        ])
-
         events = self.verify_action(
             lambda: do_add_alert_words(self.user_profile, ["alert_word"]))
-        alert_words_checker('events[0]', events[0])
+        check_alert_words('events[0]', events[0])
 
         events = self.verify_action(
             lambda: do_remove_alert_words(self.user_profile, ["alert_word"]))
-        alert_words_checker('events[0]', events[0])
+        check_alert_words('events[0]', events[0])
 
     def test_away_events(self) -> None:
         checker = check_events_dict([
