@@ -1286,40 +1286,42 @@ nav {
     }
 }
 
-.carousel.carousel-fade .carousel-inner .item {
-    display: block;
-    opacity: 0;
-    height: 0;
-    transition: opacity 0.4s ease;
-    visibility: hidden;
+.carousel.carousel-fade .carousel-inner {
+    .item {
+        display: block;
+        opacity: 0;
+        height: 0;
+        transition: opacity 0.4s ease;
+        visibility: hidden;
 
-    &.active {
-        opacity: 1;
-        height: auto;
-        visibility: visible;
+        &.active {
+            opacity: 1;
+            height: auto;
+            visibility: visible;
 
-        &.left,
-        &.right {
-            left: 0;
-            opacity: 0;
-            z-index: 2;
+            &.left,
+            &.right {
+                left: 0;
+                opacity: 0;
+                z-index: 2;
+            }
+        }
+
+        &.next.left,
+        &.prev.right {
+            opacity: 1;
+            z-index: 1;
         }
     }
 
-    &.next.left,
-    &.prev.right {
-        opacity: 1;
-        z-index: 1;
+    .item-inner {
+        position: relative;
     }
-}
 
-.carousel.carousel-fade .carousel-inner .item-inner {
-    position: relative;
-}
-
-.carousel.carousel-fade .carousel-inner .next.left .item-inner,
-.carousel.carousel-fade .carousel-inner .prev.right .item-inner {
-    padding: 30px 20px;
+    .next.left .item-inner,
+    .prev.right .item-inner {
+        padding: 30px 20px;
+    }
 }
 
 .portico-landing .tour {
