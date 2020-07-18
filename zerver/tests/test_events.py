@@ -101,6 +101,7 @@ from zerver.lib.event_schema import (
     check_realm_update,
     check_stream_create,
     check_stream_update,
+    check_submessage,
     check_subscription_add,
     check_subscription_peer_add,
     check_subscription_peer_remove,
@@ -502,15 +503,6 @@ class NormalActionsTest(BaseAction):
         check_reaction('events[0]', events[0], 'add')
 
     def test_add_submessage(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('submessage')),
-            ('message_id', check_int),
-            ('submessage_id', check_int),
-            ('sender_id', check_int),
-            ('msg_type', check_string),
-            ('content', check_string),
-        ])
-
         cordelia = self.example_user('cordelia')
         stream_name = 'Verona'
         message_id = self.send_stream_message(
@@ -527,7 +519,7 @@ class NormalActionsTest(BaseAction):
             ),
             state_change_expected=False,
         )
-        schema_checker('events[0]', events[0])
+        check_submessage('events[0]', events[0])
 
     def test_remove_reaction(self) -> None:
         message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")

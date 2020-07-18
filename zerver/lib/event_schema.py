@@ -418,6 +418,17 @@ def check_stream_update(var_name: str, event: Dict[str, Any],) -> None:
         raise AssertionError(f"Unknown property: {prop}")
 
 
+check_submessage = check_events_dict(
+    required_keys=[
+        ("type", equals("submessage")),
+        ("message_id", check_int),
+        ("submessage_id", check_int),
+        ("sender_id", check_int),
+        ("msg_type", check_string),
+        ("content", check_string),
+    ]
+)
+
 _check_single_subscription = check_dict_only(
     required_keys=subscription_fields,
     optional_keys=[
