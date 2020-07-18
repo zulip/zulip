@@ -1144,27 +1144,6 @@ nav {
     }
 }
 
-.portico-landing.hello .screen.hero-screen {
-    padding: 95px 170px;
-    height: 385px;
-
-    background-image: url(/static/images/landing-page/macbook-empty.png);
-    background-size: 100% auto;
-
-    background-color: transparent;
-    box-shadow: none;
-
-    &::before,
-    &::after {
-        content: "";
-        display: none;
-    }
-
-    .main-page {
-        transform: translateY(-12px) translateX(3px);
-        border: 5px solid hsl(0, 0%, 0%);
-    }
-}
 
 .portico-landing.hello .screen {
     position: relative;
@@ -1182,45 +1161,67 @@ nav {
     background-color: hsl(0, 0%, 27%);
 
     z-index: 1;
-}
 
-.portico-landing.hello .screen::before {
-    content: " ";
-    position: absolute;
-    top: calc(50% - 5px);
-    left: 20px;
+    &.hero-screen {
+        padding: 95px 170px;
+        height: 385px;
 
-    width: 10px;
-    height: 10px;
+        background-image: url(/static/images/landing-page/macbook-empty.png);
+        background-size: 100% auto;
 
-    border-radius: 5px;
-    background-color: hsl(0, 0%, 13%);
-}
+        background-color: transparent;
+        box-shadow: none;
 
-.portico-landing.hello .screen::after {
-    content: " ";
-    position: absolute;
-    top: calc(50% - 12.5px);
-    right: 8px;
+        &::before,
+        &::after {
+            content: "";
+            display: none;
+        }
 
-    width: 25px;
-    height: 25px;
+        .main-page {
+            transform: translateY(-12px) translateX(3px);
+            border: 5px solid hsl(0, 0%, 0%);
+        }
+    }
 
-    border-radius: 13px;
-    background-color: hsl(0, 0%, 73%);
-}
+    &::before {
+        content: " ";
+        position: absolute;
+        top: calc(50% - 5px);
+        left: 20px;
 
-.portico-landing.hello .screen .main-page {
-    display: inline-block;
+        width: 10px;
+        height: 10px;
 
-    height: calc(100% - 30px);
-    width: calc(100% - 30px);
-    margin: 10px;
+        border-radius: 5px;
+        background-color: hsl(0, 0%, 13%);
+    }
 
-    border: 5px solid hsl(0, 0%, 13%);
-    border-radius: 4px;
+    &::after {
+        content: " ";
+        position: absolute;
+        top: calc(50% - 12.5px);
+        right: 8px;
 
-    background-color: hsl(0, 0%, 98%);
+        width: 25px;
+        height: 25px;
+
+        border-radius: 13px;
+        background-color: hsl(0, 0%, 73%);
+    }
+
+    .main-page {
+        display: inline-block;
+
+        height: calc(100% - 30px);
+        width: calc(100% - 30px);
+        margin: 10px;
+
+        border: 5px solid hsl(0, 0%, 13%);
+        border-radius: 4px;
+
+        background-color: hsl(0, 0%, 98%);
+    }
 }
 
 .portico-landing.hello .features {
