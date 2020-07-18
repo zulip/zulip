@@ -1305,8 +1305,11 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
         incoming_valid_message['Subject'] = "Test Subject"
         incoming_valid_message['From'] = self.example_email('hamlet')
         incoming_valid_message['To'] = stream_to_address
-
-        log_and_report(incoming_valid_message, "test error message", stream_to_address)
+        with self.assertLogs('zerver.lib.email_mirror', 'ERROR') as error_log:
+            log_and_report(incoming_valid_message, "test error message", stream_to_address)
+        self.assertEqual(error_log.output, [
+            'ERROR:zerver.lib.email_mirror:Sender: hamlet@zulip.com\nTo: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX@testserver <Address to stream id: 1>\ntest error message'
+        ])
         message = most_recent_message(user_profile)
 
         self.assertEqual("email mirror error", message.topic_name())
@@ -1317,7 +1320,12 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
                                                    stream.id)
         self.assertEqual(msg_content, expected_content)
 
-        log_and_report(incoming_valid_message, "test error message", None)
+        with self.assertLogs('zerver.lib.email_mirror', 'ERROR') as error_log:
+            log_and_report(incoming_valid_message, "test error message", None)
+        self.assertEqual(error_log.output, [
+            'ERROR:zerver.lib.email_mirror:Sender: hamlet@zulip.com\nTo: No recipient found\ntest error message'
+        ])
+
         message = most_recent_message(user_profile)
         self.assertEqual("email mirror error", message.topic_name())
         msg_content = message.content.strip('~').strip()
