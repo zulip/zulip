@@ -249,6 +249,7 @@
                 "stream_topic_history": false,
                 "stream_list": false,
                 "stream_muting": false,
+                "stream_pill": false,
                 "stream_popover": false,
                 "stream_sort": false,
                 "stream_ui_updates": false,
