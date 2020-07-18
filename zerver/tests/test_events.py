@@ -115,6 +115,7 @@ from zerver.lib.event_schema import (
     check_update_message,
     check_update_message_embedded,
     check_update_message_flags,
+    check_user_group_add,
     check_user_status,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
@@ -850,16 +851,6 @@ class NormalActionsTest(BaseAction):
         check_user_status('events[0]', events[0])
 
     def test_user_group_events(self) -> None:
-        user_group_add_checker = check_events_dict([
-            ('type', equals('user_group')),
-            ('op', equals('add')),
-            ('group', check_dict_only([
-                ('id', check_int),
-                ('name', check_string),
-                ('members', check_list(check_int)),
-                ('description', check_string),
-            ])),
-        ])
         othello = self.example_user('othello')
         events = self.verify_action(
             lambda: check_add_user_group(
@@ -867,7 +858,7 @@ class NormalActionsTest(BaseAction):
                 'backend',
                 [othello],
                 'Backend team'))
-        user_group_add_checker('events[0]', events[0])
+        check_user_group_add('events[0]', events[0])
 
         # Test name update
         user_group_update_checker = check_events_dict([
