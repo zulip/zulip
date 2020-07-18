@@ -1271,6 +1271,7 @@ nav {
     margin: 0px 2%;
     width: 28%;
     max-width: 500px;
+    display: inline-block;
 }
 
 .portico-landing.hello .open-source .il-block {
@@ -1283,10 +1284,6 @@ nav {
 
 .portico-landing.hello .open-source h2 {
     font-weight: normal;
-}
-
-.portico-landing.hello .open-source img {
-    display: inline-block;
 }
 
 .carousel.carousel-fade .carousel-inner .item {
