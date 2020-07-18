@@ -4334,12 +4334,15 @@ class TestLDAP(ZulipLDAPTestCase):
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_when_domain_does_not_match(self) -> None:
-        with self.settings(LDAP_APPEND_DOMAIN='acme.com'):
+        with self.settings(LDAP_APPEND_DOMAIN='acme.com'), self.assertLogs('zulip.ldap', 'DEBUG') as debug_log:
             user_profile = self.backend.authenticate(request=mock.MagicMock(),
                                                      username=self.example_email("hamlet"),
                                                      password=self.ldap_password('hamlet'),
                                                      realm=get_realm('zulip'))
             self.assertIs(user_profile, None)
+        self.assertEqual(debug_log.output, [
+            'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: Email hamlet@zulip.com does not match LDAP domain acme.com.'
+        ])
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success_with_different_subdomain(self) -> None:
