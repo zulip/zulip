@@ -4662,8 +4662,12 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_update_non_existent_profile_field(self) -> None:
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
                                                     'custom_profile_field__non_existent': 'homePhone'}):
-            with self.assertRaisesRegex(ZulipLDAPException, 'Custom profile field with name non_existent not found'):
+            with self.assertRaisesRegex(ZulipLDAPException, 'Custom profile field with name non_existent not found'), \
+                    self.assertLogs('django_auth_ldap', 'WARNING') as warn_log:
                 self.perform_ldap_sync(self.example_user('hamlet'))
+            self.assertEqual(warn_log.output, [
+                'WARNING:django_auth_ldap:Custom profile field with name non_existent not found. while authenticating hamlet'
+            ])
 
     def test_update_custom_profile_field_invalid_data(self) -> None:
         self.change_ldap_user_attr('hamlet', 'birthDate', '9999')
