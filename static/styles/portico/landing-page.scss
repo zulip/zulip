@@ -1260,30 +1260,30 @@ nav {
     z-index: 1;
 
     background-color: hsl(217, 22%, 93%);
-}
 
-.portico-landing.hello .open-source .flex {
-    min-height: 0px;
-    padding: 50px 0px;
-}
+    .flex {
+        min-height: 0px;
+        padding: 50px 0px;
+    }
 
-.portico-landing.hello .open-source img {
-    margin: 0px 2%;
-    width: 28%;
-    max-width: 500px;
-    display: inline-block;
-}
+    img {
+        margin: 0px 2%;
+        width: 28%;
+        max-width: 500px;
+        display: inline-block;
+    }
 
-.portico-landing.hello .open-source .il-block {
-    display: inline-block;
-    vertical-align: top;
-    width: 50%;
-    max-width: 700px;
-    text-align: left;
-}
+    .il-block {
+        display: inline-block;
+        vertical-align: top;
+        width: 50%;
+        max-width: 700px;
+        text-align: left;
+    }
 
-.portico-landing.hello .open-source h2 {
-    font-weight: normal;
+    h2 {
+        font-weight: normal;
+    }
 }
 
 .carousel.carousel-fade .carousel-inner .item {
@@ -3208,18 +3208,20 @@ nav {
         }
     }
 
-    .portico-landing.hello .open-source .flex {
-        display: block;
-    }
+    .portico-landing.hello .open-source {
+        .flex {
+            display: block;
+        }
 
-    .portico-landing.hello .open-source img {
-        display: block;
-        width: 300px;
-        margin: 0 auto;
-    }
+        img {
+            display: block;
+            width: 300px;
+            margin: 0 auto;
+        }
 
-    .portico-landing.hello .open-source .il-block {
-        width: 75%;
+        .il-block {
+            width: 75%;
+        }
     }
 
     .main {
