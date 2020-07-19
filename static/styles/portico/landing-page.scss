@@ -1433,6 +1433,12 @@ nav {
     }
 }
 
+.tour .carousel-inner .zulip-slack-comparison .caption {
+    text-align: left;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
 .tour .carousel-inner img {
     border: 1px solid hsl(210, 8%, 95%);
 }
@@ -1486,12 +1492,6 @@ nav {
     border: none;
     width: 700px;
     margin-left: 50px;
-}
-
-.tour .carousel-inner .zulip-slack-comparison .caption {
-    text-align: left;
-    font-weight: bold;
-    margin-bottom: 10px;
 }
 
 .tour .carousel-inner .other-resources {
