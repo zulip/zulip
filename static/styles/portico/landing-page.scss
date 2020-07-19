@@ -1401,42 +1401,42 @@ nav {
     max-width: 100%;
     margin: 20px auto 0;
     position: relative;
-}
 
-.tour .carousel-inner .zulip-slack-comparison .comparison-zulip {
-    width: 500px;
-}
-
-.tour .carousel-inner .zulip-slack-comparison .comparison-slack {
-    width: 300px;
-}
-
-.tour .carousel-inner .zulip-slack-comparison img {
-    max-width: 100%;
-
-    &.zulip-streams-selected {
-        width: 320px;
-        border: 0;
+    .comparison-zulip {
+        width: 500px;
     }
 
-    &.slack-streams-selected {
-        width: 200px;
+    .comparison-slack {
+        width: 300px;
     }
 
-    &.zulip-unreads-arrows {
-        width: 406px;
-        border: 0;
+    img {
+        max-width: 100%;
+
+        &.zulip-streams-selected {
+            width: 320px;
+            border: 0;
+        }
+
+        &.slack-streams-selected {
+            width: 200px;
+        }
+
+        &.zulip-unreads-arrows {
+            width: 406px;
+            border: 0;
+        }
+
+        &.slack-stream-unreads {
+            width: 200px;
+        }
     }
 
-    &.slack-stream-unreads {
-        width: 200px;
+    .caption {
+        text-align: left;
+        font-weight: bold;
+        margin-bottom: 10px;
     }
-}
-
-.tour .carousel-inner .zulip-slack-comparison .caption {
-    text-align: left;
-    font-weight: bold;
-    margin-bottom: 10px;
 }
 
 .tour .carousel-inner img {
@@ -2934,14 +2934,14 @@ nav {
     .tour .carousel-inner .zulip-slack-comparison {
         width: 650px;
         max-width: 100%;
-    }
 
-    .tour .carousel-inner .zulip-slack-comparison .comparison-zulip {
-        width: 450px;
-    }
+        .comparison-zulip {
+            width: 450px;
+        }
 
-    .tour .carousel-inner .zulip-slack-comparison .comparison-slack {
-        width: 200px;
+        .comparison-slack {
+            width: 200px;
+        }
     }
 }
 
@@ -3179,14 +3179,14 @@ nav {
 
     .tour .carousel-inner .zulip-slack-comparison {
         width: 100%;
-    }
 
-    .tour .carousel-inner .zulip-slack-comparison .comparison-zulip {
-        width: 65%;
-    }
+        .comparison-zulip {
+            width: 65%;
+        }
 
-    .tour .carousel-inner .zulip-slack-comparison .comparison-slack {
-        width: 35%;
+        .comparison-slack {
+            width: 35%;
+        }
     }
 
     .tour .carousel-inner .comparison-slack img.slack-unreads {
@@ -3610,27 +3610,29 @@ nav {
         top: 100%;
     }
 
-    .tour .carousel-inner .zulip-slack-comparison .comparison-zulip {
-        width: 60%;
-    }
-
-    .tour .carousel-inner .zulip-slack-comparison .comparison-slack {
-        width: 38%;
-    }
-
-    .tour .carousel-inner .zulip-slack-comparison .caption {
-        font-size: 90%;
-    }
-
-    .tour .carousel-inner .zulip-slack-comparison img {
-        max-width: 100%;
-
-        &.zulip-streams {
-            max-width: 140px;
+    .tour .carousel-inner .zulip-slack-comparison {
+        .comparison-zulip {
+            width: 60%;
         }
 
-        &.zulip-streams-selected {
-            max-width: 95%;
+        .comparison-slack {
+            width: 38%;
+        }
+
+        .caption {
+            font-size: 90%;
+        }
+
+        img {
+            max-width: 100%;
+
+            &.zulip-streams {
+                max-width: 140px;
+            }
+
+            &.zulip-streams-selected {
+                max-width: 95%;
+            }
         }
     }
 
