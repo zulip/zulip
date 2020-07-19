@@ -1578,30 +1578,30 @@ nav {
     cursor: pointer;
     background-color: hsl(222, 12%, 66%);
     transition: background .1s ease;
-}
 
-.carousel-indicators li::before {
-    position: absolute;
-    top: -10px;
-    left: 0;
-    display: inline-block;
-    width: 100%;
-    height: 10px;
-    content: "";
-}
+    &::before {
+        position: absolute;
+        top: -10px;
+        left: 0;
+        display: inline-block;
+        width: 100%;
+        height: 10px;
+        content: "";
+    }
 
-.carousel-indicators li::after {
-    position: absolute;
-    bottom: -10px;
-    left: 0;
-    display: inline-block;
-    width: 100%;
-    height: 10px;
-    content: "";
-}
+    &::after {
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        display: inline-block;
+        width: 100%;
+        height: 10px;
+        content: "";
+    }
 
-.carousel-indicators li.active {
-    background-color: hsl(220, 23%, 33%);
+    &.active {
+        background-color: hsl(220, 23%, 33%);
+    }
 }
 
 .portico-landing .testimonials {
