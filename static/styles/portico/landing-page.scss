@@ -1528,11 +1528,11 @@ nav {
     background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
     box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.2);
     border-radius: 4px;
-}
 
-.tour .carousel-inner .call-to-action:hover {
-    background-color: hsl(169, 65%, 42%);
-    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.3);
+    &:hover {
+        background-color: hsl(169, 65%, 42%);
+        box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.3);
+    }
 }
 
 .tour .carousel-control {
