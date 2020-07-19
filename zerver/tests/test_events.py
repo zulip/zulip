@@ -2418,11 +2418,17 @@ class NormalActionsTest(BaseAction):
         self.login_user(self.user_profile)
 
         with mock.patch('zerver.lib.export.do_export_realm',
-                        side_effect=Exception("test")):
+                        side_effect=Exception("test")), \
+                self.assertLogs(level="ERROR") as error_log:
             with stdout_suppressed():
                 events = self.verify_action(
                     lambda: self.client_post('/json/export/realm'),
                     state_change_expected=False, num_events=2)
+
+            # Log is of following format: "ERROR:root:Data export for zulip failed after 0.004499673843383789"
+            # Where last floating number is time and will vary in each test hence the following assertion is
+            # independent of time bit by not matching exact log but only part of it.
+            self.assertTrue("ERROR:root:Data export for zulip failed after" in error_log.output[0])
 
         pending_schema_checker('events[0]', events[0])
 
