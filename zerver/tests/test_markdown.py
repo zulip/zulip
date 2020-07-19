@@ -265,9 +265,9 @@ class MarkdownMiscTest(ZulipTestCase):
 
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):
-            with mock.patch('logging.error') as mock_logger:
+            with self.assertLogs(level="ERROR") as m:
                 render_tex("random text")
-                mock_logger.assert_called_with("Cannot find KaTeX for latex rendering!")
+            self.assertEqual(m.output, ["ERROR:root:Cannot find KaTeX for latex rendering!"])
 
 class MarkdownListPreprocessorTest(ZulipTestCase):
     # We test that the preprocessor inserts blank lines at correct places.
