@@ -1488,11 +1488,11 @@ nav {
 
 .tour .carousel-inner .comparison-slack img {
     margin: 0;
-}
 
-.tour .carousel-inner .comparison-slack img.slack-unreads {
-    width: 250px;
-    margin: 15px 0 0 -10px;
+    &.slack-unreads {
+        width: 250px;
+        margin: 15px 0 0 -10px;
+    }
 }
 
 .tour .carousel-inner .other-resources {
