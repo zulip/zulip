@@ -1564,43 +1564,43 @@ nav {
     justify-content: center;
     padding-left: 0;
     list-style: none;
-}
 
-.carousel-indicators li {
-    position: relative;
-    flex: 0 1 auto;
-    width: 10px;
-    height: 10px;
-    border-radius: 10px;
-    margin-right: 10px;
-    margin-left: 10px;
-    text-indent: -999px;
-    cursor: pointer;
-    background-color: hsl(222, 12%, 66%);
-    transition: background .1s ease;
-
-    &::before {
-        position: absolute;
-        top: -10px;
-        left: 0;
-        display: inline-block;
-        width: 100%;
+    li {
+        position: relative;
+        flex: 0 1 auto;
+        width: 10px;
         height: 10px;
-        content: "";
-    }
+        border-radius: 10px;
+        margin-right: 10px;
+        margin-left: 10px;
+        text-indent: -999px;
+        cursor: pointer;
+        background-color: hsl(222, 12%, 66%);
+        transition: background .1s ease;
 
-    &::after {
-        position: absolute;
-        bottom: -10px;
-        left: 0;
-        display: inline-block;
-        width: 100%;
-        height: 10px;
-        content: "";
-    }
+        &::before {
+            position: absolute;
+            top: -10px;
+            left: 0;
+            display: inline-block;
+            width: 100%;
+            height: 10px;
+            content: "";
+        }
 
-    &.active {
-        background-color: hsl(220, 23%, 33%);
+        &::after {
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            display: inline-block;
+            width: 100%;
+            height: 10px;
+            content: "";
+        }
+
+        &.active {
+            background-color: hsl(220, 23%, 33%);
+        }
     }
 }
 
