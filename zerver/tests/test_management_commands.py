@@ -357,7 +357,11 @@ class TestSendToEmailMirror(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
 
-        call_command(self.COMMAND_NAME, f"--fixture={fixture_path}")
+        with self.assertLogs('zerver.lib.email_mirror', level='INFO') as info_log:
+            call_command(self.COMMAND_NAME, f"--fixture={fixture_path}")
+        self.assertEqual(info_log.output, [
+            'INFO:zerver.lib.email_mirror:Successfully processed email to Denmark (zulip)'
+        ])
         message = most_recent_message(user_profile)
 
         # last message should be equal to the body of the email in 1.txt
@@ -369,7 +373,11 @@ class TestSendToEmailMirror(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
 
-        call_command(self.COMMAND_NAME, f"--fixture={fixture_path}")
+        with self.assertLogs('zerver.lib.email_mirror', level='INFO') as info_log:
+            call_command(self.COMMAND_NAME, f"--fixture={fixture_path}")
+        self.assertEqual(info_log.output, [
+            'INFO:zerver.lib.email_mirror:Successfully processed email to Denmark (zulip)'
+        ])
         message = most_recent_message(user_profile)
 
         # last message should be equal to the body of the email in 1.json
@@ -381,7 +389,11 @@ class TestSendToEmailMirror(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark2")
 
-        call_command(self.COMMAND_NAME, f"--fixture={fixture_path}", "--stream=Denmark2")
+        with self.assertLogs('zerver.lib.email_mirror', level='INFO') as info_log:
+            call_command(self.COMMAND_NAME, f"--fixture={fixture_path}", "--stream=Denmark2")
+        self.assertEqual(info_log.output, [
+            'INFO:zerver.lib.email_mirror:Successfully processed email to Denmark2 (zulip)'
+        ])
         message = most_recent_message(user_profile)
 
         # last message should be equal to the body of the email in 1.txt
