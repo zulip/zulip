@@ -373,8 +373,20 @@ class FixUnreadTests(ZulipTestCase):
         assert_unread(um_unsubscribed_id)
 
         # fix unsubscribed
-        with connection.cursor() as cursor:
+        with connection.cursor() as cursor, \
+                self.assertLogs('zulip.fix_unreads', 'INFO') as info_logs:
             fix_unsubscribed(cursor, user)
+
+        self.assertEqual(info_logs.output[0], 'INFO:zulip.fix_unreads:get recipients')
+        self.assertTrue('INFO:zulip.fix_unreads:[' in info_logs.output[1])
+        self.assertTrue('INFO:zulip.fix_unreads:elapsed time:' in info_logs.output[2])
+        self.assertEqual(info_logs.output[3],
+                         'INFO:zulip.fix_unreads:finding unread messages for non-active streams')
+        self.assertEqual(info_logs.output[4], 'INFO:zulip.fix_unreads:rows found: 1')
+        self.assertTrue('INFO:zulip.fix_unreads:elapsed time:' in info_logs.output[5])
+        self.assertEqual(info_logs.output[6],
+                         'INFO:zulip.fix_unreads:fixing unread messages for non-active streams')
+        self.assertTrue('INFO:zulip.fix_unreads:elapsed time:' in info_logs.output[7])
 
         # Muted messages don't change.
         assert_unread(um_muted_topic_id)
@@ -384,8 +396,18 @@ class FixUnreadTests(ZulipTestCase):
         # The unsubscribed entry should change.
         assert_read(um_unsubscribed_id)
 
-        # test idempotency
-        fix(user)
+        with self.assertLogs('zulip.fix_unreads', 'INFO') as info_logs:
+            # test idempotency
+            fix(user)
+
+        self.assertEqual(info_logs.output[0], f'INFO:zulip.fix_unreads:\n---\nFixing {user.id}:')
+        self.assertEqual(info_logs.output[1], 'INFO:zulip.fix_unreads:get recipients')
+        self.assertTrue('INFO:zulip.fix_unreads:[' in info_logs.output[2])
+        self.assertTrue('INFO:zulip.fix_unreads:elapsed time:' in info_logs.output[3])
+        self.assertEqual(info_logs.output[4],
+                         'INFO:zulip.fix_unreads:finding unread messages for non-active streams')
+        self.assertEqual(info_logs.output[5], 'INFO:zulip.fix_unreads:rows found: 0')
+        self.assertTrue('INFO:zulip.fix_unreads:elapsed time:' in info_logs.output[6])
 
         assert_unread(um_normal_id)
         assert_unread(um_muted_topic_id)
