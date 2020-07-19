@@ -59,7 +59,7 @@ exports.destroy_indicator = function (container) {
     }
     container.removeData("spinner_obj");
     container.empty();
-    container.css({width: 0, height: 0, display: "none"});
+    container.css({width: 0, height: 0});
 };
 
 window.loading = exports;
