@@ -1441,12 +1441,38 @@ nav {
 
 .tour .carousel-inner img {
     border: 1px solid hsl(210, 8%, 95%);
+
+    &.centered-image {
+        display: block;
+        margin: 0 auto;
+    }
+
+    &.zulip-streams {
+        width: 200px;
+    }
+
+    &.slack-streams {
+        width: 200px;
+    }
+
+    &.zulip-topic {
+        margin: -10px 0 0 50px;
+        width: 800px;
+    }
+
+    &.slack-overwhelming {
+        border: none;
+        width: 750px;
+        margin: -30px 0 0 50px;
+    }
+
+    &.zulip-easy {
+        border: none;
+        width: 700px;
+        margin-left: 50px;
+    }
 }
 
-.tour .carousel-inner img.centered-image {
-    display: block;
-    margin: 0 auto;
-}
 
 .tour .carousel-inner .mobile-hide,
 .tour .carousel-inner img.mobile-hide,
@@ -1464,34 +1490,9 @@ nav {
     margin: 0;
 }
 
-.tour .carousel-inner img.zulip-streams {
-    width: 200px;
-}
-
-.tour .carousel-inner img.slack-streams {
-    width: 200px;
-}
-
-.tour .carousel-inner img.zulip-topic {
-    margin: -10px 0 0 50px;
-    width: 800px;
-}
-
-.tour .carousel-inner img.slack-overwhelming {
-    border: none;
-    width: 750px;
-    margin: -30px 0 0 50px;
-}
-
 .tour .carousel-inner .comparison-slack img.slack-unreads {
     width: 250px;
     margin: 15px 0 0 -10px;
-}
-
-.tour .carousel-inner img.zulip-easy {
-    border: none;
-    width: 700px;
-    margin-left: 50px;
 }
 
 .tour .carousel-inner .other-resources {
@@ -2910,13 +2911,15 @@ nav {
 }
 
 @media (max-width: 1100px) {
-    .tour .carousel-inner img.zulip-topic,
-    .tour .carousel-inner img.slack-overwhelming,
-    .tour .carousel-inner img.zulip-easy {
-        width: 85%;
-        left: 0;
-        margin-left: auto;
-        margin-right: auto;
+    .tour .carousel-inner img {
+        &.zulip-topic,
+        &.slack-overwhelming,
+        &.zulip-easy {
+            width: 85%;
+            left: 0;
+            margin-left: auto;
+            margin-right: auto;
+        }
     }
 
     .tour .carousel-inner .tour-item-header {
@@ -3099,10 +3102,12 @@ nav {
         width: calc(25% - 44px);
     }
 
-    .tour .carousel-inner img.slack-overwhelming,
-    .tour .carousel-inner img.zulip-easy {
-        width: 80%;
-        left: 0;
+    .tour .carousel-inner img {
+        &.slack-overwhelming,
+        &.zulip-easy {
+            width: 80%;
+            left: 0;
+        }
     }
 
     .portico-landing.hello .hero {
