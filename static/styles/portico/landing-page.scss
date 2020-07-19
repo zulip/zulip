@@ -1415,6 +1415,24 @@ nav {
     max-width: 100%;
 }
 
+.tour .carousel-inner .zulip-slack-comparison img.zulip-streams-selected {
+    width: 320px;
+    border: 0;
+}
+
+.tour .carousel-inner .zulip-slack-comparison img.slack-streams-selected {
+    width: 200px;
+}
+
+.tour .carousel-inner .zulip-slack-comparison img.zulip-unreads-arrows {
+    width: 406px;
+    border: 0;
+}
+
+.tour .carousel-inner .zulip-slack-comparison img.slack-stream-unreads {
+    width: 200px;
+}
+
 .tour .carousel-inner img {
     border: 1px solid hsl(210, 8%, 95%);
 }
@@ -1445,24 +1463,6 @@ nav {
 }
 
 .tour .carousel-inner img.slack-streams {
-    width: 200px;
-}
-
-.tour .carousel-inner .zulip-slack-comparison img.zulip-streams-selected {
-    width: 320px;
-    border: 0;
-}
-
-.tour .carousel-inner .zulip-slack-comparison img.slack-streams-selected {
-    width: 200px;
-}
-
-.tour .carousel-inner .zulip-slack-comparison img.zulip-unreads-arrows {
-    width: 406px;
-    border: 0;
-}
-
-.tour .carousel-inner .zulip-slack-comparison img.slack-stream-unreads {
     width: 200px;
 }
 
