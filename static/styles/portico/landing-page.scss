@@ -1499,18 +1499,18 @@ nav {
     text-align: left;
     margin: 30px auto;
     max-width: 600px;
-}
 
-.tour .carousel-inner .other-resources .other-resources-section {
-    display: inline-block;
-    width: 48%;
-    text-align: center;
-    vertical-align: top;
+    .other-resources-section {
+        display: inline-block;
+        width: 48%;
+        text-align: center;
+        vertical-align: top;
 
-    img {
-        border: 0;
-        display: block;
-        margin: 0 auto;
+        img {
+            border: 0;
+            display: block;
+            margin: 0 auto;
+        }
     }
 }
 
