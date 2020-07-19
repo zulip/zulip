@@ -1544,18 +1544,18 @@ nav {
     font-weight: 400;
     opacity: 1.0;
     border-radius: 0;
-}
 
-.tour .carousel-control:hover {
-    color: hsl(220, 23%, 33%);
-}
+    &:hover {
+        color: hsl(220, 23%, 33%);
+    }
 
-.tour .carousel-control.right {
-    right: 40px;
-}
+    &.right {
+        right: 40px;
+    }
 
-.tour .carousel-control.left {
-    left: 40px;
+    &.left {
+        left: 40px;
+    }
 }
 
 .carousel-indicators {
@@ -2926,12 +2926,14 @@ nav {
         margin: 0 0 30px 0;
     }
 
-    .tour .carousel-control.right {
-        right: 20px;
-    }
+    .tour .carousel-control {
+        &.right {
+            right: 20px;
+        }
 
-    .tour .carousel-control.left {
-        left: 20px;
+        &.left {
+            left: 20px;
+        }
     }
 
     .tour .carousel-inner .zulip-slack-comparison {
@@ -3172,14 +3174,14 @@ nav {
 
     .tour .carousel-control {
         font-size: 1.2em;
-    }
 
-    .tour .carousel-control.right {
-        right: -10px;
-    }
+        &.right {
+            right: -10px;
+        }
 
-    .tour .carousel-control.left {
-        left: -10px;
+        &.left {
+            left: -10px;
+        }
     }
 
     .tour .carousel-inner .zulip-slack-comparison {
@@ -3539,14 +3541,14 @@ nav {
 
     .tour .carousel-control {
         font-size: 1.1em;
-    }
 
-    .tour .carousel-control.right {
-        right: -30px;
-    }
+        .right {
+            right: -30px;
+        }
 
-    .tour .carousel-control.left {
-        left: -30px;
+        .left {
+            left: -30px;
+        }
     }
 
     .tour .carousel-inner .zulip-slack-comparison img {
