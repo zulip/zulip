@@ -560,9 +560,9 @@ function register_popover_events(popover) {
     });
 
     $(".emoji-popover-filter").on("input", filter_emojis);
-    $(".emoji-popover-filter").keydown(process_enter_while_filtering);
-    $(".emoji-popover").keypress(process_keypress);
-    $(".emoji-popover").keydown((e) => {
+    $(".emoji-popover-filter").on("keydown", process_enter_while_filtering);
+    $(".emoji-popover").on("keypress", process_keypress);
+    $(".emoji-popover").on("keydown", (e) => {
         // Because of cross-browser issues we need to handle backspace
         // key separately. Firefox fires `keypress` event for backspace
         // key but chrome doesn't so we need to trigger the logic for

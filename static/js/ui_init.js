@@ -92,7 +92,7 @@ exports.initialize_kitchen_sink_stuff = function () {
         // preventDefault, allowing the modal to scroll normally.
     });
 
-    $(window).resize(_.throttle(resize.handler, 50));
+    $(window).on("resize", _.throttle(resize.handler, 50));
 
     // Scrolling in overlays. input boxes, and other elements that
     // explicitly scroll should not scroll the main view.  Stop

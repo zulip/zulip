@@ -208,7 +208,7 @@ exports.initialize = function () {
         exports.new_user_input = true;
     });
 
-    $(window).focus(mark_client_active);
+    $(window).on("focus", mark_client_active);
     $(window).idle({
         idle: DEFAULT_IDLE_TIMEOUT_MS,
         onIdle: mark_client_idle,

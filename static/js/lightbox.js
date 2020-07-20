@@ -271,7 +271,7 @@ exports.initialize = function () {
         exports.open($img);
     });
 
-    $("#lightbox_overlay .download").click(function () {
+    $("#lightbox_overlay .download").on("click", function () {
         this.blur();
     });
 

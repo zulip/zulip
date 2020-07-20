@@ -315,7 +315,7 @@ function buddy_list_create() {
         // sure everything's in place.
         const scroll_container = ui.get_scroll_element($(self.scroll_container_sel));
 
-        scroll_container.scroll(() => {
+        scroll_container.on("scroll", () => {
             self.fill_screen_with_content();
         });
     };

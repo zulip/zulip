@@ -532,7 +532,7 @@ exports.initialize = function () {
 
     set_count(Object.keys(draft_model.get()).length);
 
-    $("#compose-textarea").focusout(exports.update_draft);
+    $("#compose-textarea").on("focusout", exports.update_draft);
 
     $("body").on("focus", ".draft-info-box", (e) => {
         activate_element(e.target);

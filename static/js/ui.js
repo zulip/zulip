@@ -194,7 +194,7 @@ exports.maybe_show_deprecation_notice = function (key) {
 let saved_compose_cursor = 0;
 
 exports.set_compose_textarea_handlers = function () {
-    $("#compose-textarea").blur(function () {
+    $("#compose-textarea").on("blur", function () {
         saved_compose_cursor = $(this).caret();
     });
 

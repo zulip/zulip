@@ -84,7 +84,7 @@ exports.toggle = function (opts) {
     }
 
     (function () {
-        meta.$ind_tab.click(function () {
+        meta.$ind_tab.on("click", function () {
             const idx = $(this).data("tab-id");
             select_tab(idx);
         });

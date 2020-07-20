@@ -8,7 +8,7 @@ export function path_parts() {
 
 const hello_events = function () {
     let counter = 0;
-    $(window).scroll(function () {
+    $(window).on("scroll", function () {
         if (counter % 2 === 0) {
             $(".screen.hero-screen .message-feed").css(
                 "transform",
@@ -149,7 +149,7 @@ const apps_events = function () {
         google_analytics.config({page_path: window.location.pathname});
     });
 
-    $(".apps a .icon").click((e) => {
+    $(".apps a .icon").on("click", (e) => {
         const next_version = $(e.target).closest("a").attr("href").replace("/apps/", "");
         version = next_version;
 
@@ -175,7 +175,7 @@ const events = function () {
 
     $("[data-on-page='" + location + "']").addClass("active");
 
-    $("body").click((e) => {
+    $("body").on("click", (e) => {
         const $e = $(e.target);
 
         if ($e.is("nav ul .exit")) {
@@ -187,7 +187,7 @@ const events = function () {
         }
     });
 
-    $(".hamburger").click((e) => {
+    $(".hamburger").on("click", (e) => {
         $("nav ul").addClass("show");
         e.stopPropagation();
     });
@@ -209,7 +209,7 @@ const load = function () {
     });
 
     // Move to the next slide on clicking inside the carousel container
-    $(".carousel-inner .item-container").click(function (e) {
+    $(".carousel-inner .item-container").on("click", function (e) {
         const get_tag_name = e.target.tagName.toLowerCase();
         const is_button = get_tag_name === "button";
         const is_link = get_tag_name === "a";

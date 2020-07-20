@@ -58,7 +58,7 @@ export default function render_tabs() {
         // Set as the loading template for now, and load when clicked.
         $("#tab-" + repo).html($("#loading-template").html());
 
-        $("#" + repo).click(() => {
+        $("#" + repo).on("click", () => {
             if (!loaded_repos.includes(repo)) {
                 const html = _.chain(contributors_list)
                     .filter(repo)

@@ -41,13 +41,13 @@ exports.set_up = function () {
 
     $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
 
-    $("#default_language_modal [data-dismiss]").click(() => {
+    $("#default_language_modal [data-dismiss]").on("click", () => {
         overlays.close_modal("#default_language_modal");
     });
 
     const all_display_settings = settings_config.get_all_display_settings();
     for (const setting of all_display_settings.settings.user_display_settings) {
-        $("#" + setting).change(function () {
+        $("#" + setting).on("change", function () {
             const data = {};
             data[setting] = JSON.stringify($(this).prop("checked"));
 
@@ -66,7 +66,7 @@ exports.set_up = function () {
         });
     }
 
-    $("#default_language_modal .language").click((e) => {
+    $("#default_language_modal .language").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         overlays.close_modal("#default_language_modal");
@@ -94,12 +94,12 @@ exports.set_up = function () {
         overlays.open_modal("#default_language_modal");
     });
 
-    $("#demote_inactive_streams").change(function () {
+    $("#demote_inactive_streams").on("change", function () {
         const data = {demote_inactive_streams: this.value};
         change_display_setting(data, "#display-settings-status");
     });
 
-    $("#color_scheme").change(function () {
+    $("#color_scheme").on("change", function () {
         const data = {color_scheme: this.value};
         change_display_setting(data, "#display-settings-status");
     });
@@ -108,16 +108,16 @@ exports.set_up = function () {
         window.location.reload();
     });
 
-    $("#twenty_four_hour_time").change(function () {
+    $("#twenty_four_hour_time").on("change", function () {
         const data = {twenty_four_hour_time: this.value};
         change_display_setting(data, "#time-settings-status");
     });
 
-    $("#user_timezone").change(function () {
+    $("#user_timezone").on("change", function () {
         const data = {timezone: JSON.stringify(this.value)};
         change_display_setting(data, "#time-settings-status");
     });
-    $(".emojiset_choice").click(function () {
+    $(".emojiset_choice").on("click", function () {
         const data = {emojiset: JSON.stringify($(this).val())};
         const current_emojiset = JSON.stringify(page_params.emojiset);
         if (current_emojiset === data.emojiset) {
@@ -140,7 +140,7 @@ exports.set_up = function () {
         });
     });
 
-    $("#translate_emoticons").change(function () {
+    $("#translate_emoticons").on("change", function () {
         const data = {translate_emoticons: JSON.stringify(this.checked)};
         change_display_setting(data, "#emoji-settings-status");
     });

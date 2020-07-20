@@ -869,7 +869,7 @@ exports.build_page = function () {
         }
     });
 
-    $("#id_realm_msg_edit_limit_setting").change((e) => {
+    $("#id_realm_msg_edit_limit_setting").on("change", (e) => {
         const msg_edit_limit_dropdown_value = e.target.value;
         change_element_block_display_property(
             "id_realm_message_content_edit_limit_minutes",
@@ -877,7 +877,7 @@ exports.build_page = function () {
         );
     });
 
-    $("#id_realm_msg_delete_limit_setting").change((e) => {
+    $("#id_realm_msg_delete_limit_setting").on("change", (e) => {
         const msg_delete_limit_dropdown_value = e.target.value;
         change_element_block_display_property(
             "id_realm_message_content_delete_limit_minutes",
@@ -885,7 +885,7 @@ exports.build_page = function () {
         );
     });
 
-    $("#id_realm_message_retention_setting").change((e) => {
+    $("#id_realm_message_retention_setting").on("change", (e) => {
         const message_retention_setting_dropdown_value = e.target.value;
         change_element_block_display_property(
             "id_realm_message_retention_days",
@@ -893,7 +893,7 @@ exports.build_page = function () {
         );
     });
 
-    $("#id_realm_waiting_period_setting").change(function () {
+    $("#id_realm_waiting_period_setting").on("change", function () {
         const waiting_period_threshold = this.value;
         change_element_block_display_property(
             "id_realm_waiting_period_threshold",
@@ -901,7 +901,7 @@ exports.build_page = function () {
         );
     });
 
-    $("#id_realm_org_join_restrictions").change((e) => {
+    $("#id_realm_org_join_restrictions").on("change", (e) => {
         const org_join_restrictions = e.target.value;
         const node = $("#allowed_domains_label").parent();
         if (org_join_restrictions === "only_selected_domain") {
@@ -914,7 +914,7 @@ exports.build_page = function () {
         }
     });
 
-    $("#id_realm_org_join_restrictions").click((e) => {
+    $("#id_realm_org_join_restrictions").on("click", (e) => {
         // This prevents the disappearance of modal when there are
         // no allowed domains otherwise it gets closed due to
         // the click event handler attached to `#settings_overlay_container`
@@ -945,7 +945,7 @@ exports.build_page = function () {
         });
     });
 
-    $("#submit-add-realm-domain").click(() => {
+    $("#submit-add-realm-domain").on("click", () => {
         const realm_domains_info = $(".realm_domains_info");
         const widget = $("#add-realm-domain-widget");
         const domain = widget.find(".new-realm-domain").val();

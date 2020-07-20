@@ -56,12 +56,12 @@ run_test("basics", () => {
 
         self.stub = true;
 
-        self.click = function (f) {
-            click_f = f;
-        };
-
-        self.keydown = function (f) {
-            keydown_f = f;
+        self.on = function (name, f) {
+            if (name === "click") {
+                click_f = f;
+            } else if (name === "keydown") {
+                keydown_f = f;
+            }
         };
 
         self.removeClass = function (c) {

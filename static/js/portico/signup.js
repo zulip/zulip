@@ -81,7 +81,7 @@ $(() => {
     // Code in this block will be executed when the /accounts/send_confirm
     // endpoint is visited i.e. accounts_send_confirm.html is rendered.
     if ($("[data-page-id='accounts-send-confirm']").length > 0) {
-        $("#resend_email_link").click(() => {
+        $("#resend_email_link").on("click", () => {
             $(".resend_confirm").submit();
         });
     }
@@ -134,7 +134,7 @@ $(() => {
         $("#subdomain_section")[action]();
     };
 
-    $("#realm_in_root_domain").change(function () {
+    $("#realm_in_root_domain").on("change", function () {
         show_subdomain_section($(this).is(":checked"));
     });
 
@@ -188,7 +188,7 @@ $(() => {
         }
     }
 
-    $("#source_realm_select").change(update_full_name_section);
+    $("#source_realm_select").on("change", update_full_name_section);
     update_full_name_section();
 
     let timer;

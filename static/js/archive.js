@@ -129,7 +129,8 @@ $(() => {
     $.fn.safeOuterWidth = function (...args) {
         return this.outerWidth(...args) || 0;
     };
-    $(".app").scroll(
+    $(".app").on(
+        "scroll",
         _.throttle(() => {
             scroll_finish();
         }, 50),

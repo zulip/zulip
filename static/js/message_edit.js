@@ -312,7 +312,7 @@ function edit_message(row, raw_content) {
     currently_editing_messages.set(message.id, edit_obj);
     current_msg_list.show_edit_message(row, edit_obj);
 
-    form.keydown(handle_message_row_edit_keydown);
+    form.on("keydown", handle_message_row_edit_keydown);
 
     upload.feature_check($("#attach_files_" + rows.id(row)));
 
@@ -326,7 +326,7 @@ function edit_message(row, raw_content) {
     const copy_message = row.find(".copy_message");
 
     ui_util.decorate_stream_bar(message.stream, stream_header_colorblock, false);
-    message_edit_stream.change(function () {
+    message_edit_stream.on("change", function () {
         const stream_name = stream_data.maybe_get_stream_name(parseInt(this.value, 10));
         ui_util.decorate_stream_bar(stream_name, stream_header_colorblock, false);
     });
@@ -459,7 +459,7 @@ function edit_message(row, raw_content) {
     }
 
     if (!message.locally_echoed) {
-        message_edit_topic.keyup(() => {
+        message_edit_topic.on("keyup", () => {
             set_propagate_selector_display();
         });
 
@@ -518,7 +518,7 @@ exports.start = function (row, edit_box_open_callback) {
 exports.start_topic_edit = function (recipient_row) {
     const form = $(render_topic_edit_form());
     current_msg_list.show_edit_topic_on_recipient_row(recipient_row, form);
-    form.keydown(handle_inline_topic_edit_keydown);
+    form.on("keydown", handle_inline_topic_edit_keydown);
     const msg_id = rows.id_for_recipient_row(recipient_row);
     const message = current_msg_list.get(msg_id);
     let topic = message.topic;

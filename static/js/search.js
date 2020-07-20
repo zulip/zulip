@@ -121,7 +121,7 @@ exports.initialize = function () {
     });
 
     searchbox_form
-        .keydown((e) => {
+        .on("keydown", (e) => {
             exports.update_button_visibility();
             const code = e.which;
             if (code === 13 && search_query_box.is(":focus")) {
@@ -131,7 +131,7 @@ exports.initialize = function () {
                 return false;
             }
         })
-        .keyup((e) => {
+        .on("keyup", (e) => {
             if (exports.is_using_input_method) {
                 exports.is_using_input_method = false;
                 return;

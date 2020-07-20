@@ -1216,7 +1216,7 @@ exports.initialize = function () {
         mode: "compose",
     });
 
-    $("#compose-textarea").focus(() => {
+    $("#compose-textarea").on("focus", () => {
         const opts = {
             message_type: compose_state.get_message_type(),
             stream: $("#stream_message_recipient_stream").val(),

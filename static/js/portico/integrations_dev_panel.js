@@ -341,7 +341,7 @@ $(() => {
         potential_default_bot.selected = true;
     }
 
-    $("#integration_name").change(function () {
+    $("#integration_name").on("change", function () {
         clear_elements(["custom_http_headers", "fixture_body", "fixture_name", "results_notice"]);
         const integration_name = $(this).children("option:selected").val();
         get_fixtures(integration_name);
@@ -349,27 +349,27 @@ $(() => {
         return;
     });
 
-    $("#fixture_name").change(function () {
+    $("#fixture_name").on("change", function () {
         clear_elements(["fixture_body", "results_notice"]);
         const fixture_name = $(this).children("option:selected").val();
         load_fixture_body(fixture_name);
         return;
     });
 
-    $("#send_fixture_button").click(() => {
+    $("#send_fixture_button").on("click", () => {
         send_webhook_fixture_message();
         return;
     });
 
-    $("#send_all_fixtures_button").click(() => {
+    $("#send_all_fixtures_button").on("click", () => {
         clear_elements(["results_notice"]);
         send_all_fixture_messages();
         return;
     });
 
-    $("#bot_name").change(update_url);
+    $("#bot_name").on("change", update_url);
 
-    $("#stream_name").change(update_url);
+    $("#stream_name").on("change", update_url);
 
-    $("#topic_name").change(update_url);
+    $("#topic_name").on("change", update_url);
 });

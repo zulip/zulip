@@ -60,7 +60,7 @@ const DropdownListWidget = function (opts) {
             const value = $(this).attr("data-value");
             update(value);
         });
-        $(`#${opts.container_id} .dropdown_list_reset_button`).click((e) => {
+        $(`#${opts.container_id} .dropdown_list_reset_button`).on("click", (e) => {
             update(opts.null_value);
             e.preventDefault();
         });
@@ -85,22 +85,22 @@ const DropdownListWidget = function (opts) {
             },
             simplebar_container: $(`#${opts.container_id} .dropdown-list-wrapper`),
         });
-        $(`#${opts.container_id} .dropdown-search`).click((e) => {
+        $(`#${opts.container_id} .dropdown-search`).on("click", (e) => {
             e.stopPropagation();
         });
 
-        dropdown_toggle.click(() => {
+        dropdown_toggle.on("click", () => {
             search_input.val("").trigger("input");
         });
 
-        dropdown_toggle.focus((e) => {
+        dropdown_toggle.on("focus", (e) => {
             // On opening a Bootstrap Dropdown, the parent element recieves focus.
             // Here, we want our search input to have focus instead.
             e.preventDefault();
             search_input.focus();
         });
 
-        search_input.keydown((e) => {
+        search_input.on("keydown", (e) => {
             if (!/(38|40|27)/.test(e.keyCode)) {
                 return;
             }

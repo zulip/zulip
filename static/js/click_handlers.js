@@ -328,7 +328,7 @@ exports.initialize = function () {
             ui_util.blur_active_element();
         }
     });
-    $("#message_edit_form .send-status-close").click(function () {
+    $("#message_edit_form .send-status-close").on("click", function () {
         const row_id = rows.id($(this).closest(".message_row"));
         const send_status = $("#message-edit-send-status-" + row_id);
         $(send_status).stop(true).fadeOut(200);
@@ -604,7 +604,7 @@ exports.initialize = function () {
         $("#logout_form").submit();
     });
 
-    $(".restart_get_events_button").click(() => {
+    $(".restart_get_events_button").on("click", () => {
         server_events.restart_get_events({dont_block: true});
     });
 
@@ -629,18 +629,18 @@ exports.initialize = function () {
 
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
-    $("#compose-send-status .compose-send-status-close").click(() => {
+    $("#compose-send-status .compose-send-status-close").on("click", () => {
         $("#compose-send-status").stop(true).fadeOut(500);
     });
-    $("#nonexistent_stream_reply_error .compose-send-status-close").click(() => {
+    $("#nonexistent_stream_reply_error .compose-send-status-close").on("click", () => {
         $("#nonexistent_stream_reply_error").stop(true).fadeOut(500);
     });
 
-    $(".compose_stream_button").click(() => {
+    $(".compose_stream_button").on("click", () => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("stream", {trigger: "new topic button"});
     });
-    $(".compose_private_button").click(() => {
+    $(".compose_private_button").on("click", () => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("private");
     });
@@ -654,15 +654,15 @@ exports.initialize = function () {
         compose_actions.start("private");
     });
 
-    $(".compose_reply_button").click(() => {
+    $(".compose_reply_button").on("click", () => {
         compose_actions.respond_to_message({trigger: "reply button"});
     });
 
-    $(".empty_feed_compose_stream").click((e) => {
+    $(".empty_feed_compose_stream").on("click", (e) => {
         compose_actions.start("stream", {trigger: "empty feed message"});
         e.preventDefault();
     });
-    $(".empty_feed_compose_private").click((e) => {
+    $(".empty_feed_compose_private").on("click", (e) => {
         compose_actions.start("private", {trigger: "empty feed message"});
         e.preventDefault();
     });
@@ -696,19 +696,19 @@ exports.initialize = function () {
         popovers.hide_all();
     }
 
-    $("#compose_buttons").click(handle_compose_click);
-    $(".compose-content").click(handle_compose_click);
+    $("#compose_buttons").on("click", handle_compose_click);
+    $(".compose-content").on("click", handle_compose_click);
 
-    $("#compose_close").click(() => {
+    $("#compose_close").on("click", () => {
         compose_actions.cancel();
     });
 
-    $("#streams_inline_cog").click((e) => {
+    $("#streams_inline_cog").on("click", (e) => {
         e.stopPropagation();
         hashchange.go_to_location("streams/subscribed");
     });
 
-    $("#streams_filter_icon").click((e) => {
+    $("#streams_filter_icon").on("click", (e) => {
         e.stopPropagation();
         stream_list.toggle_filter_displayed(e);
     });

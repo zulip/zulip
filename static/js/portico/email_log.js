@@ -1,7 +1,7 @@
 $(() => {
     // This code will be executed when the user visits /emails in
     // development mode and email_log.html is rendered.
-    $("#toggle").change(() => {
+    $("#toggle").on("change", () => {
         if ($(".email-text").css("display") === "none") {
             $(".email-text").each(function () {
                 $(this).css("display", "block");
