@@ -1918,199 +1918,7 @@ paths:
                           A list of dictionaries where each dictionary contains
                           information about one of the subscribed streams.
                         items:
-                          type: object
-                          additionalProperties: false
-                          properties:
-                            stream_id:
-                              type: integer
-                              description: |
-                                The unique ID of a stream.
-                            name:
-                              type: string
-                              description: |
-                                The name of a stream.
-                            description:
-                              type: string
-                              description: |
-                                The short description of a stream in text/markdown format,
-                                intended to be used to prepopulate UI for editing a stream's
-                                description.
-                            rendered_description:
-                              type: string
-                              description: |
-                                A short description of a stream rendered as HTML, intended to
-                                be used when displaying the stream description in a UI.
-
-                                One should use the standard Zulip rendered_markdown CSS when
-                                displaying this content so that emoji, LaTeX, and other syntax
-                                work correctly.  And any client-side security logic for
-                                user-generated message content should be applied when displaying
-                                this HTML as though it were the body of a Zulip message.
-                            invite_only:
-                              type: boolean
-                              description: |
-                                Specifies whether the stream is private or not.
-                                Only people who have been invited can access a private stream.
-                            # TODO: This subscribers item should probably be declared optional more
-                            # explicitly in the OpenAPI format?
-                            subscribers:
-                              type: array
-                              items:
-                                type: integer
-                              description: |
-                                A list of user IDs of users who are also subscribed
-                                to a given stream. Included only if `include_subscribers` is `true`.
-                            desktop_notifications:
-                              type: boolean
-                              nullable: true
-                              description: |
-                                A boolean specifying whether desktop notifications
-                                are enabled for the given stream.
-
-                                A null value means the value of this setting
-                                should be inherited from the user-level default
-                                setting, enable_stream_desktop_notifications, for
-                                this stream.
-                            email_notifications:
-                              type: boolean
-                              nullable: true
-                              description: |
-                                A boolean specifying whether email notifications
-                                are enabled for the given stream.
-
-                                A null value means the value of this setting
-                                should be inherited from the user-level default
-                                setting, enable_stream_email_notifications, for
-                                this stream.
-                            wildcard_mentions_notify:
-                              type: boolean
-                              nullable: true
-                              description: |
-                                A boolean specifying whether wildcard mentions
-                                trigger notifications as though they were personal
-                                mentions in this stream.
-
-                                A null value means the value of this setting
-                                should be inherited from the user-level default
-                                setting, wildcard_mentions_notify, for
-                                this stream.
-                            push_notifications:
-                              type: boolean
-                              nullable: true
-                              description: |
-                                A boolean specifying whether push notifications
-                                are enabled for the given stream.
-
-                                A null value means the value of this setting
-                                should be inherited from the user-level default
-                                setting, enable_stream_push_notifications, for
-                                this stream.
-                            audible_notifications:
-                              type: boolean
-                              nullable: true
-                              description: |
-                                A boolean specifying whether audible notifications
-                                are enabled for the given stream.
-
-                                A null value means the value of this setting
-                                should be inherited from the user-level default
-                                setting, enable_stream_audible_notifications, for
-                                this stream.
-                            pin_to_top:
-                              type: boolean
-                              description: |
-                                A boolean specifying whether the given stream has been pinned
-                                to the top.
-                            email_address:
-                              type: string
-                              description: |
-                                Email address of the given stream, used for
-                                [sending emails to the stream](/help/message-a-stream-by-email).
-                            is_muted:
-                              type: boolean
-                              description: |
-                                Whether the user has muted the stream. Muted streams do
-                                not count towards your total unread count and do not show up in
-                                `All messages` view (previously known as `Home` view).
-
-                                **Changes**: Prior to Zulip 2.1, this feature was
-                                represented by the more confusingly named `in_home_view` (with the
-                                opposite value, `in_home_view=!is_muted`).
-                            in_home_view:
-                              type: boolean
-                              deprecated: true
-                              description: |
-                                Legacy property for if the given stream is muted, with inverted meeting.
-
-                                **Deprecated**; clients should use is_muted where available.
-                            is_announcement_only:
-                              type: boolean
-                              deprecated: true
-                              description: |
-                                Whether only organization administrators can post to the stream.
-
-                                **Changes**: Deprecated in Zulip 3.0 (feature level 1), use
-                                `stream_post_policy` instead.
-                            is_web_public:
-                              type: boolean
-                              description: |
-                                Whether the stream has been configured to allow unauthenticated
-                                access to its message history from the web.
-                            color:
-                              type: string
-                              description: |
-                                The user's personal color for the stream.
-                            stream_post_policy:
-                              type: integer
-                              description: |
-                                Policy for which users can post messages to the stream.
-
-                                * 1 => Any user can post.
-                                * 2 => Only administrators can post.
-                                * 3 => Only new members can post.
-
-                                **Changes**: New in Zulip 3.0, replacing the previous
-                                `is_announcement_only` boolean.
-                            message_retention_days:
-                              type: integer
-                              nullable: true
-                              description: |
-                                Number of days that messages sent to this stream will be stored
-                                before being automatically deleted by the [message retention
-                                policy](/help/message-retention-policy).  There are two special values:
-
-                                * `null`, the default, means the stream will inherit the organization
-                                  level setting.
-                                * `-1` encodes retaining messages in this stream forever.
-
-                                **Changes**: New in Zulip 3.0 (feature level 17).
-                            history_public_to_subscribers:
-                              type: boolean
-                              description: |
-                                Whether the history of the stream is public to its subscribers.
-
-                                Currently always true for public streams (i.e. invite_only=False implies
-                                history_public_to_subscribers=True), but clients should not make that
-                                assumption, as we may change that behavior in the future.
-                            first_message_id:
-                              type: integer
-                              description: |
-                                The id of the first message in the stream.
-
-                                Intended to help clients determine whether they need to display
-                                UI like the "more topics" widget that would suggest the stream
-                                has older history that can be accessed.
-
-                                Null is used for streams with no message history.
-                            stream_weekly_traffic:
-                              type: integer
-                              nullable: true
-                              description: |
-                                The average number of messages sent to the stream in recent weeks,
-                                rounded to the nearest integer.
-
-                                Null means the stream was recently created and there is
-                                insufficient data to estimate the average traffic.
+                          $ref: "#/components/schemas/Subscriptions"
                   - example:
                       {
                         "msg": "",
@@ -4377,6 +4185,200 @@ components:
         `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
 
   schemas:
+    Subscriptions:
+      type: object
+      additionalProperties: false
+      properties:
+        stream_id:
+          type: integer
+          description: |
+            The unique ID of a stream.
+        name:
+          type: string
+          description: |
+            The name of a stream.
+        description:
+          type: string
+          description: |
+            The short description of a stream in text/markdown format,
+            intended to be used to prepopulate UI for editing a stream's
+            description.
+        rendered_description:
+          type: string
+          description: |
+            A short description of a stream rendered as HTML, intended to
+            be used when displaying the stream description in a UI.
+
+            One should use the standard Zulip rendered_markdown CSS when
+            displaying this content so that emoji, LaTeX, and other syntax
+            work correctly.  And any client-side security logic for
+            user-generated message content should be applied when displaying
+            this HTML as though it were the body of a Zulip message.
+        invite_only:
+          type: boolean
+          description: |
+            Specifies whether the stream is private or not.
+            Only people who have been invited can access a private stream.
+        # TODO: This subscribers item should probably be declared optional more
+        # explicitly in the OpenAPI format?
+        subscribers:
+          type: array
+          items:
+            type: integer
+          description: |
+            A list of user IDs of users who are also subscribed
+            to a given stream. Included only if `include_subscribers` is `true`.
+        desktop_notifications:
+          type: boolean
+          nullable: true
+          description: |
+            A boolean specifying whether desktop notifications
+            are enabled for the given stream.
+
+            A null value means the value of this setting
+            should be inherited from the user-level default
+            setting, enable_stream_desktop_notifications, for
+            this stream.
+        email_notifications:
+          type: boolean
+          nullable: true
+          description: |
+            A boolean specifying whether email notifications
+            are enabled for the given stream.
+
+            A null value means the value of this setting
+            should be inherited from the user-level default
+            setting, enable_stream_email_notifications, for
+            this stream.
+        wildcard_mentions_notify:
+          type: boolean
+          nullable: true
+          description: |
+            A boolean specifying whether wildcard mentions
+            trigger notifications as though they were personal
+            mentions in this stream.
+
+            A null value means the value of this setting
+            should be inherited from the user-level default
+            setting, wildcard_mentions_notify, for
+            this stream.
+        push_notifications:
+          type: boolean
+          nullable: true
+          description: |
+            A boolean specifying whether push notifications
+            are enabled for the given stream.
+
+            A null value means the value of this setting
+            should be inherited from the user-level default
+            setting, enable_stream_push_notifications, for
+            this stream.
+        audible_notifications:
+          type: boolean
+          nullable: true
+          description: |
+            A boolean specifying whether audible notifications
+            are enabled for the given stream.
+
+            A null value means the value of this setting
+            should be inherited from the user-level default
+            setting, enable_stream_audible_notifications, for
+            this stream.
+        pin_to_top:
+          type: boolean
+          description: |
+            A boolean specifying whether the given stream has been pinned
+            to the top.
+        email_address:
+          type: string
+          description: |
+            Email address of the given stream, used for
+            [sending emails to the stream](/help/message-a-stream-by-email).
+        is_muted:
+          type: boolean
+          description: |
+            Whether the user has muted the stream. Muted streams do
+            not count towards your total unread count and do not show up in
+            `All messages` view (previously known as `Home` view).
+
+            **Changes**: Prior to Zulip 2.1, this feature was
+            represented by the more confusingly named `in_home_view` (with the
+            opposite value, `in_home_view=!is_muted`).
+        in_home_view:
+          type: boolean
+          deprecated: true
+          description: |
+            Legacy property for if the given stream is muted, with inverted meeting.
+
+            **Deprecated**; clients should use is_muted where available.
+        is_announcement_only:
+          type: boolean
+          deprecated: true
+          description: |
+            Whether only organization administrators can post to the stream.
+
+            **Changes**: Deprecated in Zulip 3.0 (feature level 1), use
+            `stream_post_policy` instead.
+        is_web_public:
+          type: boolean
+          description: |
+            Whether the stream has been configured to allow unauthenticated
+            access to its message history from the web.
+        color:
+          type: string
+          description: |
+            The user's personal color for the stream.
+        stream_post_policy:
+          type: integer
+          description: |
+            Policy for which users can post messages to the stream.
+
+            * 1 => Any user can post.
+            * 2 => Only administrators can post.
+            * 3 => Only new members can post.
+
+            **Changes**: New in Zulip 3.0, replacing the previous
+            `is_announcement_only` boolean.
+        message_retention_days:
+          type: integer
+          nullable: true
+          description: |
+            Number of days that messages sent to this stream will be stored
+            before being automatically deleted by the [message retention
+            policy](/help/message-retention-policy).  There are two special values:
+
+            * `null`, the default, means the stream will inherit the organization
+              level setting.
+            * `-1` encodes retaining messages in this stream forever.
+
+            **Changes**: New in Zulip 3.0 (feature level 17).
+        history_public_to_subscribers:
+          type: boolean
+          description: |
+            Whether the history of the stream is public to its subscribers.
+
+            Currently always true for public streams (i.e. invite_only=False implies
+            history_public_to_subscribers=True), but clients should not make that
+            assumption, as we may change that behavior in the future.
+        first_message_id:
+          type: integer
+          description: |
+            The id of the first message in the stream.
+
+            Intended to help clients determine whether they need to display
+            UI like the "more topics" widget that would suggest the stream
+            has older history that can be accessed.
+
+            Null is used for streams with no message history.
+        stream_weekly_traffic:
+          type: integer
+          nullable: true
+          description: |
+            The average number of messages sent to the stream in recent weeks,
+            rounded to the nearest integer.
+
+            Null means the stream was recently created and there is
+            insufficient data to estimate the average traffic.
     Messages:
       type: object
       additionalProperties: false
