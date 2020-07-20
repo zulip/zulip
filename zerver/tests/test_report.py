@@ -97,6 +97,7 @@ class TestReport(ZulipTestCase):
     def test_report_error(self) -> None:
         user = self.example_user('hamlet')
         self.login_user(user)
+        self.make_stream('errors', user.realm)
 
         params = fix_params(dict(
             message='hello',
