@@ -1083,6 +1083,16 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         self.add_a(info['parent'], yt_image, url, None, None, "youtube-video message_inline_image",
                    yt_id, insertion_index=info['index'], already_thumbnailed=True)
 
+    def handle_url_inlining(
+        self,
+        root: Element,
+        found_url: ResultWithFamily[Tuple[str, Optional[str]]],
+        extracted_data: Dict[str, Any],
+    ) -> None:
+        info = self.get_inlining_information(root, found_url)
+        (url, text) = found_url.result
+        self.add_embed(info['parent'], url, extracted_data)
+
     def find_proper_insertion_index(self, grandparent: Element, parent: Element,
                                     parent_index_in_grandparent: int) -> int:
         # If there are several inline images from same paragraph, ensure that
@@ -1232,7 +1242,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     if title is not None:
                         found_url.family.child.text = title
                     continue
-                self.add_embed(root, url, extracted_data)
+                self.handle_url_inlining(root, found_url, extracted_data)
                 if self.vimeo_id(url):
                     title = self.vimeo_title(extracted_data)
                     if title:
