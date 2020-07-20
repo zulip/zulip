@@ -699,6 +699,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # wikipedia.org to point to the actual image url.  It's
         # structurally very similar to dropbox_image, and possibly
         # should be rewritten to use open graph, but has some value.
+        # Note: dropbox_image was removed in PR #15828.
         parsed_url = urllib.parse.urlparse(url)
         if parsed_url.netloc.lower().endswith('.wikipedia.org'):
             # Redirecting from "/wiki/File:" to "/wiki/Special:FilePath/File:"
@@ -709,51 +710,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return correct_url
         if parsed_url.netloc == 'linx.li':
             return 'https://linx.li/s' + parsed_url.path
-        return None
-
-    def dropbox_image(self, url: str) -> Optional[Dict[str, Any]]:
-        # TODO: The returned Dict could possibly be a TypedDict in future.
-        parsed_url = urllib.parse.urlparse(url)
-        if (parsed_url.netloc == 'dropbox.com' or parsed_url.netloc.endswith('.dropbox.com')):
-            is_album = parsed_url.path.startswith('/sc/') or parsed_url.path.startswith('/photos/')
-            # Only allow preview Dropbox shared links
-            if not (parsed_url.path.startswith('/s/') or
-                    parsed_url.path.startswith('/sh/') or
-                    is_album):
-                return None
-
-            # Try to retrieve open graph protocol info for a preview
-            # This might be redundant right now for shared links for images.
-            # However, we might want to make use of title and description
-            # in the future. If the actual image is too big, we might also
-            # want to use the open graph image.
-            image_info = fetch_open_graph_image(url)
-
-            is_image = is_album or self.is_image(url)
-
-            # If it is from an album or not an actual image file,
-            # just use open graph image.
-            if is_album or not is_image:
-                # Failed to follow link to find an image preview so
-                # use placeholder image and guess filename
-                if image_info is None:
-                    return None
-
-                image_info["is_image"] = is_image
-                return image_info
-
-            # Otherwise, try to retrieve the actual image.
-            # This is because open graph image from Dropbox may have padding
-            # and gifs do not work.
-            # TODO: What if image is huge? Should we get headers first?
-            if image_info is None:
-                image_info = dict()
-            image_info['is_image'] = True
-            parsed_url_list = list(parsed_url)
-            parsed_url_list[4] = "dl=1"  # Replaces query
-            image_info["image"] = urllib.parse.urlunparse(parsed_url_list)
-
-            return image_info
         return None
 
     def youtube_id(self, url: str) -> Optional[str]:
@@ -1177,20 +1133,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 if self.is_image(url):
                     self.handle_image_inlining(root, found_url)
                 # We don't have a strong use case for doing url preview for relative links.
-                continue
-
-            dropbox_image = self.dropbox_image(url)
-            if dropbox_image is not None:
-                class_attr = "message_inline_ref"
-                is_image = dropbox_image["is_image"]
-                if is_image:
-                    class_attr = "message_inline_image"
-                    # Not making use of title and description of images
-                self.add_a(root, dropbox_image['image'], url,
-                           title=dropbox_image.get('title'),
-                           desc=dropbox_image.get('desc', ""),
-                           class_attr=class_attr,
-                           already_thumbnailed=True)
                 continue
 
             if self.is_image(url):

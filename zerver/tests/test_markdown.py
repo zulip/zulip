@@ -669,44 +669,21 @@ class MarkdownTest(ZulipTestCase):
         ret = url_embed_preview_enabled(message, no_previews=True)
         self.assertEqual(ret, False)
 
-    def test_inline_dropbox(self) -> None:
-        msg = 'Look at how hilarious our old office was: https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG'
-        image_info = {'image': 'https://photos-4.dropbox.com/t/2/AABIre1oReJgPYuc_53iv0IHq1vUzRaDg2rrCfTpiWMccQ/12/129/jpeg/1024x1024/2/_/0/4/IMG_0923.JPG/CIEBIAEgAiAHKAIoBw/ymdijjcg67hv2ta/AABz2uuED1ox3vpWWvMpBxu6a/IMG_0923.JPG', 'desc': 'Shared with Dropbox', 'title': 'IMG_0923.JPG'}
-        with mock.patch('zerver.lib.markdown.fetch_open_graph_image', return_value=image_info):
-            converted = markdown_convert_wrapper(msg)
+    def test_inline_dropbox_urls(self) -> None:
+        msg = '[Dropbox link](https://www.dropbox.com/s/u08i5hplqvvsec7/Get%20Started%20with%20Dropbox%20%281%29.pdf?dl=0)'
+        converted = markdown_convert_wrapper(msg)
 
-        self.assertEqual(converted, '<p>Look at how hilarious our old office was: <a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG">https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG" title="IMG_0923.JPG"><img src="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG?dl=1"></a></div>')
+        self.assertEqual(converted, '<p><a href="https://www.dropbox.com/s/u08i5hplqvvsec7/Get%20Started%20with%20Dropbox%20%281%29.pdf?dl=0">Dropbox link</a></p>')
 
-        msg = 'Look at my hilarious drawing folder: https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl='
-        image_info = {'image': 'https://cf.dropboxstatic.com/static/images/icons128/folder_dropbox.png', 'desc': 'Shared with Dropbox', 'title': 'Saves'}
-        with mock.patch('zerver.lib.markdown.fetch_open_graph_image', return_value=image_info):
-            converted = markdown_convert_wrapper(msg)
+        msg = '\n```spoiler This is a dropbox url\nhttps://www.dropbox.com/s/u08i5hplqvvsec7/Get%20Started%20with%20Dropbox%20%281%29.pdf?dl=0\n```'
+        converted = markdown_convert_wrapper(msg)
 
-        self.assertEqual(converted, '<p>Look at my hilarious drawing folder: <a href="https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl=">https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl=</a></p>\n<div class="message_inline_ref"><a href="https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl=" title="Saves"><img src="https://cf.dropboxstatic.com/static/images/icons128/folder_dropbox.png"></a><div><div class="message_inline_image_title">Saves</div><desc class="message_inline_image_desc"></desc></div></div>')
+        self.assertEqual(converted, '<div class="spoiler-block"><div class="spoiler-header">\n\n<p>This is a dropbox url</p>\n</div><div class="spoiler-content" aria-hidden="true">\n\n<p><a href="https://www.dropbox.com/s/u08i5hplqvvsec7/Get%20Started%20with%20Dropbox%20%281%29.pdf?dl=0">https://www.dropbox.com/s/u08i5hplqvvsec7/Get%20Started%20with%20Dropbox%20%281%29.pdf?dl=0</a></p>\n</div></div>')
 
-    def test_inline_dropbox_preview(self) -> None:
-        # Test photo album previews
-        msg = 'https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5'
-        image_info = {'image': 'https://photos-6.dropbox.com/t/2/AAAlawaeD61TyNewO5vVi-DGf2ZeuayfyHFdNTNzpGq-QA/12/271544745/jpeg/1024x1024/2/_/0/5/baby-piglet.jpg/CKnjvYEBIAIgBygCKAc/tditp9nitko60n5/AADX03VAIrQlTl28CtujDcMla/0', 'desc': 'Shared with Dropbox', 'title': '1 photo'}
-        with mock.patch('zerver.lib.markdown.fetch_open_graph_image', return_value=image_info):
-            converted = markdown_convert_wrapper(msg)
+        msg = 'https://www.dropbox.com/s/zpfp0y5ydps67nx/Get%20Started%20with%20Dropbox.pdf?dl=0\n\nTest Message\n\nhttps://www.dropbox.com/s/u08i5hplqvvsec7/Get%20Started%20with%20Dropbox%20%281%29.pdf?dl=0'
+        converted = markdown_convert_wrapper(msg)
 
-        self.assertEqual(converted, '<p><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5">https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" title="1 photo"><img src="https://photos-6.dropbox.com/t/2/AAAlawaeD61TyNewO5vVi-DGf2ZeuayfyHFdNTNzpGq-QA/12/271544745/jpeg/1024x1024/2/_/0/5/baby-piglet.jpg/CKnjvYEBIAIgBygCKAc/tditp9nitko60n5/AADX03VAIrQlTl28CtujDcMla/0"></a></div>')
-
-    def test_inline_dropbox_negative(self) -> None:
-        # Make sure we're not overzealous in our conversion:
-        msg = 'Look at the new dropbox logo: https://www.dropbox.com/static/images/home_logo.png'
-        with mock.patch('zerver.lib.markdown.fetch_open_graph_image', return_value=None):
-            converted = markdown_convert_wrapper(msg)
-
-        self.assertEqual(converted, '<p>Look at the new dropbox logo: <a href="https://www.dropbox.com/static/images/home_logo.png">https://www.dropbox.com/static/images/home_logo.png</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/static/images/home_logo.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fwww.dropbox.com%2Fstatic%2Fimages%2Fhome_logo.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fwww.dropbox.com%2Fstatic%2Fimages%2Fhome_logo.png&amp;size=thumbnail"></a></div>')
-
-    def test_inline_dropbox_bad(self) -> None:
-        # Don't fail on bad dropbox links
-        msg = "https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM"
-        with mock.patch('zerver.lib.markdown.fetch_open_graph_image', return_value=None):
-            converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>')
+        self.assertEqual(converted, '<p><a href="https://www.dropbox.com/s/zpfp0y5ydps67nx/Get%20Started%20with%20Dropbox.pdf?dl=0">https://www.dropbox.com/s/zpfp0y5ydps67nx/Get%20Started%20with%20Dropbox.pdf?dl=0</a></p>\n<p>Test Message</p>\n<p><a href="https://www.dropbox.com/s/u08i5hplqvvsec7/Get%20Started%20with%20Dropbox%20%281%29.pdf?dl=0">https://www.dropbox.com/s/u08i5hplqvvsec7/Get%20Started%20with%20Dropbox%20%281%29.pdf?dl=0</a></p>')
 
     def test_inline_github_preview(self) -> None:
         # Test photo album previews
