@@ -104,28 +104,28 @@ exports.toggle = function (opts) {
     })();
 
     const prototype = {
-        maybe_go_left: maybe_go_left,
-        maybe_go_right: maybe_go_right,
+        maybe_go_left,
+        maybe_go_right,
 
-        disable_tab: function (name) {
+        disable_tab(name) {
             const value = opts.values.find((o) => o.key === name);
 
             const idx = opts.values.indexOf(value);
             meta.$ind_tab.eq(idx).addClass("disabled");
         },
 
-        value: function () {
+        value() {
             if (meta.idx >= 0) {
                 return opts.values[meta.idx].label;
             }
         },
 
-        get: function () {
+        get() {
             return component;
         },
         // go through the process of finding the correct tab for a given name,
         // and when found, select that one and provide the proper callback.
-        goto: function (name) {
+        goto(name) {
             const value = opts.values.find((o) => o.label === name || o.key === name);
 
             const idx = opts.values.indexOf(value);

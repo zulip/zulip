@@ -192,11 +192,11 @@ exports.relevant_recipient_bars = function () {
         const title = elem.find(".message_label_clickable").last().attr("title");
 
         const item = {
-            elem: elem,
-            title: title,
-            date_html: date_html,
-            date_text: date_text,
-            need_frb: need_frb,
+            elem,
+            title,
+            date_html,
+            date_text,
+            need_frb,
         };
 
         return item;

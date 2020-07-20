@@ -14,30 +14,30 @@ const noop = function () {
 };
 
 set_global("localStorage", {
-    getItem: function (key) {
+    getItem(key) {
         return ls_container.get(key);
     },
-    setItem: function (key, val) {
+    setItem(key, val) {
         ls_container.set(key, val);
     },
-    removeItem: function (key) {
+    removeItem(key) {
         ls_container.delete(key);
     },
-    clear: function () {
+    clear() {
         ls_container.clear();
     },
 });
 set_global("compose", {});
 set_global("compose_state", {});
 set_global("stream_data", {
-    get_color: function () {
+    get_color() {
         return "#FFFFFF";
     },
 });
 set_global("people", {
     // Mocking get_by_email function, here we are
     // just returning string before `@` in email
-    get_by_email: function (email) {
+    get_by_email(email) {
         return {
             full_name: email.split("@")[0],
         };

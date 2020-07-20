@@ -145,7 +145,7 @@ run_test("message_booleans_parity", () => {
     // This test asserts that both have identical behavior for the
     // flags common between them.
     const assert_bool_match = (flags, expected_message) => {
-        const set_message = {topic: "set_message_booleans", flags: flags};
+        const set_message = {topic: "set_message_booleans", flags};
         const update_message = {topic: "update_booleans"};
         message_store.set_message_booleans(set_message);
         message_store.update_booleans(update_message, flags);
@@ -206,7 +206,7 @@ run_test("errors", () => {
     // This should early return and not run pm_conversation.set_partner
     let num_partner = 0;
     set_global("pm_conversation", {
-        set_partner: function () {
+        set_partner() {
             num_partner += 1;
         },
     });
@@ -270,7 +270,7 @@ run_test("message_id_change", () => {
 
     set_global("pointer", {
         furthest_read: 401,
-        set_furthest_read: function (value) {
+        set_furthest_read(value) {
             this.furthest_read = value;
         },
     });

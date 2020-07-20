@@ -62,8 +62,8 @@ const tictactoe_data_holder = function () {
         }
 
         const widget_data = {
-            squares: squares,
-            move_status: move_status,
+            squares,
+            move_status,
         };
 
         return widget_data;
@@ -71,16 +71,16 @@ const tictactoe_data_holder = function () {
 
     self.handle = {
         square_click: {
-            outbound: function (idx) {
+            outbound(idx) {
                 const event = {
                     type: "square_click",
-                    idx: idx,
-                    num_filled: num_filled,
+                    idx,
+                    num_filled,
                 };
                 return event;
             },
 
-            inbound: function (sender_id, data) {
+            inbound(sender_id, data) {
                 const idx = data.idx;
 
                 if (data.num_filled !== num_filled) {

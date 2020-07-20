@@ -4,7 +4,7 @@ exports.sub_list_generator = function (lst, lower, upper) {
     let i = lower;
 
     return {
-        next: function () {
+        next() {
             if (i >= upper) {
                 return;
             }
@@ -21,7 +21,7 @@ exports.reverse_sub_list_generator = function (lst, lower, upper) {
     let i = upper - 1;
 
     return {
-        next: function () {
+        next() {
             if (i < lower) {
                 return;
             }
@@ -45,7 +45,7 @@ exports.fchain = function (outer_gen, get_inner_gen) {
     let inner_gen;
 
     return {
-        next: function () {
+        next() {
             while (outer_val !== undefined) {
                 if (inner_gen === undefined) {
                     inner_gen = get_inner_gen(outer_val);
@@ -131,7 +131,7 @@ exports.reverse_wrap_exclude = function (lst, val) {
 
 exports.filter = function (gen, filter_func) {
     return {
-        next: function () {
+        next() {
             while (true) {
                 const val = gen.next();
                 if (val === undefined) {
@@ -147,7 +147,7 @@ exports.filter = function (gen, filter_func) {
 
 exports.map = function (gen, map_func) {
     return {
-        next: function () {
+        next() {
             const val = gen.next();
             if (val === undefined) {
                 return;
@@ -176,7 +176,7 @@ exports.next_topic = function (streams, get_topics, has_unread_messages, curr_st
         function make_object(topic) {
             return {
                 stream: which_stream,
-                topic: topic,
+                topic,
             };
         }
 

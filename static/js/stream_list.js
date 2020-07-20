@@ -219,7 +219,7 @@ exports.set_in_home_view = function (stream_id, in_home) {
 function build_stream_sidebar_li(sub) {
     const name = sub.name;
     const args = {
-        name: name,
+        name,
         id: sub.stream_id,
         uri: hash_util.by_stream_uri(sub.stream_id),
         is_muted: stream_data.is_muted(sub.stream_id) === true,
@@ -286,7 +286,7 @@ exports.redraw_stream_privacy = function (sub) {
 
     const args = {
         invite_only: sub.invite_only,
-        dark_background: dark_background,
+        dark_background,
     };
 
     const html = render_stream_privacy(args);
@@ -510,7 +510,7 @@ exports.set_event_handlers = function () {
     exports.stream_cursor = list_cursor({
         list: {
             scroll_container_sel: "#stream-filters-container",
-            find_li: function (opts) {
+            find_li(opts) {
                 const stream_id = opts.key;
                 const li = exports.get_stream_li(stream_id);
                 return li;
@@ -527,15 +527,15 @@ exports.set_event_handlers = function () {
     keydown_util.handle({
         elem: $search_input,
         handlers: {
-            enter_key: function () {
+            enter_key() {
                 keydown_enter_key();
                 return true;
             },
-            up_arrow: function () {
+            up_arrow() {
                 exports.stream_cursor.prev();
                 return true;
             },
-            down_arrow: function () {
+            down_arrow() {
                 exports.stream_cursor.next();
                 return true;
             },

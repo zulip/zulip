@@ -74,12 +74,12 @@ const DropdownListWidget = function (opts) {
 
         list_render.create(dropdown_list_body, opts.data, {
             name: `${opts.widget_name}_list`,
-            modifier: function (item) {
-                return render_dropdown_list({item: item});
+            modifier(item) {
+                return render_dropdown_list({item});
             },
             filter: {
                 element: search_input,
-                predicate: function (item, value) {
+                predicate(item, value) {
                     return item.name.toLowerCase().includes(value);
                 },
             },

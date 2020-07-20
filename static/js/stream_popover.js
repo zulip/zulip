@@ -142,7 +142,7 @@ function build_stream_popover(opts) {
     });
 
     $(elt).popover({
-        content: content,
+        content,
         html: true,
         trigger: "manual",
         fixed: true,
@@ -186,15 +186,15 @@ function build_topic_popover(opts) {
     const content = render_topic_sidebar_actions({
         stream_name: sub.name,
         stream_id: sub.stream_id,
-        topic_name: topic_name,
-        can_mute_topic: can_mute_topic,
-        can_unmute_topic: can_unmute_topic,
+        topic_name,
+        can_mute_topic,
+        can_unmute_topic,
         is_admin: sub.is_admin,
         color: sub.color,
     });
 
     $(elt).popover({
-        content: content,
+        content,
         html: true,
         trigger: "manual",
         fixed: true,
@@ -219,7 +219,7 @@ function build_all_messages_popover(e) {
     const content = render_all_messages_sidebar_actions();
 
     $(elt).popover({
-        content: content,
+        content,
         html: true,
         trigger: "manual",
         fixed: true,
@@ -246,7 +246,7 @@ function build_starred_messages_popover(e) {
     });
 
     $(elt).popover({
-        content: content,
+        content,
         html: true,
         trigger: "manual",
         fixed: true,
@@ -304,8 +304,8 @@ exports.register_click_handlers = function () {
         const stream_id = elem_to_stream_id(stream_li);
 
         build_stream_popover({
-            elt: elt,
-            stream_id: stream_id,
+            elt,
+            stream_id,
         });
     });
 
@@ -318,9 +318,9 @@ exports.register_click_handlers = function () {
         const topic_name = $(elt).closest("li").expectOne().attr("data-topic-name");
 
         build_topic_popover({
-            elt: elt,
-            stream_id: stream_id,
-            topic_name: topic_name,
+            elt,
+            stream_id,
+            topic_name,
         });
     });
 
@@ -395,7 +395,7 @@ exports.register_stream_handlers = function () {
         data.starred_message_counts = JSON.stringify(!starred_msg_counts);
         channel.patch({
             url: "/json/settings/display",
-            data: data,
+            data,
         });
     });
     // Mute/unmute
@@ -610,9 +610,9 @@ exports.register_topic_handlers = function () {
 
         channel.get({
             url: "/json/messages",
-            data: data,
+            data,
             idempotent: true,
-            success: function (data) {
+            success(data) {
                 const message_id = data.messages[0].id;
 
                 if (old_topic_name.trim() === new_topic_name.trim()) {
@@ -632,7 +632,7 @@ exports.register_topic_handlers = function () {
                     $("#move_topic_modal").modal("hide");
                 }
             },
-            error: function (xhr) {
+            error(xhr) {
                 show_error_msg(xhr.responseJSON.msg);
             },
         });

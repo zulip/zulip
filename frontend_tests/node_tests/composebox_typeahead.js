@@ -316,7 +316,7 @@ run_test("content_typeahead_selected", () => {
     };
     let autosize_called = false;
     set_global("compose_ui", {
-        autosize_textarea: function () {
+        autosize_textarea() {
             autosize_called = true;
         },
     });

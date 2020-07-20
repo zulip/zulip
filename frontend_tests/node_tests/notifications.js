@@ -6,7 +6,7 @@ set_global(
     }),
 );
 set_global("document", {
-    hasFocus: function () {
+    hasFocus() {
         return true;
     },
 });

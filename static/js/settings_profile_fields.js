@@ -65,7 +65,7 @@ function read_choice_field_data_from_form(field_elem) {
         .each(function () {
             const text = $(this).find("input")[0].value;
             if (text) {
-                field_data[field_order - 1] = {text: text, order: field_order.toString()};
+                field_data[field_order - 1] = {text, order: field_order.toString()};
                 field_order += 1;
             }
         });
@@ -167,7 +167,7 @@ function create_profile_field(e) {
 
     const form_data = {
         name: $("#profile_field_name").val(),
-        field_type: field_type,
+        field_type,
         hint: $("#profile_field_hint").val(),
         field_data: JSON.stringify(field_data),
     };
@@ -221,7 +221,7 @@ exports.parse_field_choices_from_field_data = function (field_data) {
     const choices = [];
     for (const [value, choice] of Object.entries(field_data)) {
         choices.push({
-            value: value,
+            value,
             text: choice.text,
             order: choice.order,
         });
@@ -263,7 +263,7 @@ function set_up_choices_field_edit_form(profile_field, field_data) {
     create_choice_row(choice_list);
     update_choice_delete_btn(choice_list, false);
     Sortable.create(choice_list[0], {
-        onUpdate: function () {},
+        onUpdate() {},
     });
 }
 
@@ -388,7 +388,7 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
                     name: profile_field.name,
                     hint: profile_field.hint,
                     type: exports.field_type_id_to_string(profile_field.type),
-                    choices: choices,
+                    choices,
                     is_choice_field: profile_field.type === field_types.CHOICE.id,
                     is_external_account_field:
                         profile_field.type === field_types.EXTERNAL_ACCOUNT.id,
@@ -417,7 +417,7 @@ function set_up_choices_field() {
     if (page_params.is_admin) {
         const choice_list = $("#profile_field_choices")[0];
         Sortable.create(choice_list, {
-            onUpdate: function () {},
+            onUpdate() {},
         });
     }
 

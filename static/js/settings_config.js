@@ -308,10 +308,10 @@ exports.all_notifications = () => ({
         },
     ],
     settings: {
-        desktop_notification_settings: desktop_notification_settings,
-        mobile_notification_settings: mobile_notification_settings,
-        email_notification_settings: email_notification_settings,
-        presence_notification_settings: presence_notification_settings,
+        desktop_notification_settings,
+        mobile_notification_settings,
+        email_notification_settings,
+        presence_notification_settings,
     },
     show_push_notifications_tooltip: {
         push_notifications: !page_params.realm_push_notifications_enabled,

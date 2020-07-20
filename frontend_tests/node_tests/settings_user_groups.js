@@ -23,7 +23,7 @@ set_global("user_groups", {
 set_global("ui_report", {});
 set_global("people", {
     my_current_user_id: noop,
-    small_avatar_url_for_person: function () {
+    small_avatar_url_for_person() {
         return "http://example.com/example.png";
     },
 });
@@ -620,7 +620,7 @@ run_test("on_events", () => {
         let default_action_for_enter_stopped = false;
         const event = {
             which: 13,
-            preventDefault: function () {
+            preventDefault() {
                 default_action_for_enter_stopped = true;
             },
         };

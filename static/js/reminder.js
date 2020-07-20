@@ -119,13 +119,13 @@ exports.do_set_reminder_for_message = function (message_id, timestamp) {
         channel.get({
             url: "/json/messages/" + message.id,
             idempotent: true,
-            success: function (data) {
+            success(data) {
                 if (current_msg_list === msg_list) {
                     message.raw_content = data.raw_content;
                     exports.do_set_reminder_for_message(message_id, timestamp);
                 }
             },
-            error: error,
+            error,
         });
         return;
     }

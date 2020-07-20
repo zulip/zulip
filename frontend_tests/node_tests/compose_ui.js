@@ -3,7 +3,7 @@ zrequire("people");
 zrequire("user_status");
 
 set_global("document", {
-    execCommand: function () {
+    execCommand() {
         return false;
     },
 });

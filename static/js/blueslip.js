@@ -131,7 +131,7 @@ function report_error(msg, stack, opts) {
             log: logger.get_log().join("\n"),
         },
         timeout: 3 * 1000,
-        success: function () {
+        success() {
             reported_errors.add(key);
             if (opts.show_ui_msg && ui_report !== undefined) {
                 // There are a few races here (and below in the error
@@ -163,7 +163,7 @@ function report_error(msg, stack, opts) {
                 );
             }
         },
-        error: function () {
+        error() {
             if (opts.show_ui_msg && ui_report !== undefined) {
                 ui_report.message(
                     "Oops.  It seems something has gone wrong. " + "Please try reloading the page.",
@@ -259,7 +259,7 @@ exports.error = function blueslip_error(msg, more_info, stack) {
     }
     const args = build_arg_list(msg, more_info);
     logger.error(...args);
-    report_error(msg, stack, {more_info: more_info});
+    report_error(msg, stack, {more_info});
 
     if (page_params.debug_mode) {
         throw new BlueslipError(msg, more_info);
@@ -267,7 +267,7 @@ exports.error = function blueslip_error(msg, more_info, stack) {
 };
 
 exports.fatal = function blueslip_fatal(msg, more_info) {
-    report_error(msg, Error().stack, {more_info: more_info});
+    report_error(msg, Error().stack, {more_info});
     throw new BlueslipError(msg, more_info);
 };
 

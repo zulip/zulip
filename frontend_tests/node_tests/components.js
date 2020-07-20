@@ -142,7 +142,7 @@ run_test("basics", () => {
             {label: i18n.t("Search operators"), key: "search-operators"},
         ],
         html_class: "stream_sorter_toggle",
-        callback: function (name, key) {
+        callback(name, key) {
             assert.equal(callback_args, undefined);
             callback_args = [name, key];
 

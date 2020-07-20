@@ -32,17 +32,17 @@ zrequire("common");
 set_global("list_util", {});
 
 set_global("current_msg_list", {
-    selected_id: function () {
+    selected_id() {
         return 42;
     },
-    selected_message: function () {
+    selected_message() {
         return {
             sent_by_me: true,
             flags: ["read", "starred"],
         };
     },
-    selected_row: function () {},
-    get_row: function () {
+    selected_row() {},
+    get_row() {
         return 101;
     },
 });
@@ -66,17 +66,17 @@ function stubbing(func_name_to_stub, test_function) {
 run_test("mappings", () => {
     function map_press(which, shiftKey) {
         return hotkey.get_keypress_hotkey({
-            which: which,
-            shiftKey: shiftKey,
+            which,
+            shiftKey,
         });
     }
 
     function map_down(which, shiftKey, ctrlKey, metaKey) {
         return hotkey.get_keydown_hotkey({
-            which: which,
-            shiftKey: shiftKey,
-            ctrlKey: ctrlKey,
-            metaKey: metaKey,
+            which,
+            shiftKey,
+            ctrlKey,
+            metaKey,
         });
     }
 
@@ -211,9 +211,9 @@ run_test("basic_chars", () => {
         for (const is_active of [return_true, return_false]) {
             for (const info_overlay_open of [return_true, return_false]) {
                 set_global("overlays", {
-                    is_active: is_active,
-                    settings_open: settings_open,
-                    info_overlay_open: info_overlay_open,
+                    is_active,
+                    settings_open,
+                    info_overlay_open,
                 });
                 test_normal_typing();
             }
@@ -345,8 +345,8 @@ run_test("motion_keys", () => {
     function process(name, shiftKey, ctrlKey) {
         const e = {
             which: codes[name],
-            shiftKey: shiftKey,
-            ctrlKey: ctrlKey,
+            shiftKey,
+            ctrlKey,
         };
 
         try {

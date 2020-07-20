@@ -36,7 +36,7 @@ function get_message(message_id) {
 
 function create_reaction(message_id, reaction_info) {
     return {
-        message_id: message_id,
+        message_id,
         user_id: page_params.user_id,
         local_id: exports.get_local_reaction_id(reaction_info),
         reaction_type: reaction_info.reaction_type,
@@ -61,8 +61,8 @@ function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
     const args = {
         url: "/json/messages/" + message_id + "/reactions",
         data: reaction_info,
-        success: function () {},
-        error: function (xhr) {
+        success() {},
+        error(xhr) {
             const response = channel.xhr_error_message("Error sending reaction", xhr);
             // Errors are somewhat common here, due to race conditions
             // where the user tries to add/remove the reaction when there is already
@@ -86,7 +86,7 @@ exports.toggle_emoji_reaction = function (message_id, emoji_name) {
     // method. This codepath is to be used only where there is no chance of an
     // user interacting with a deactivated realm emoji like emoji picker.
     const reaction_info = {
-        emoji_name: emoji_name,
+        emoji_name,
     };
 
     if (emoji.active_realm_emojis.has(emoji_name)) {
@@ -219,8 +219,8 @@ exports.add_reaction = function (event) {
         exports.update_user_fields(r);
     } else {
         exports.add_clean_reaction({
-            message: message,
-            local_id: local_id,
+            message,
+            local_id,
             user_ids: [user_id],
             reaction_type: event.reaction_type,
             emoji_name: event.emoji_name,
@@ -229,11 +229,11 @@ exports.add_reaction = function (event) {
     }
 
     const opts = {
-        message_id: message_id,
+        message_id,
         reaction_type: event.reaction_type,
         emoji_name: event.emoji_name,
         emoji_code: event.emoji_code,
-        user_id: user_id,
+        user_id,
     };
 
     if (r) {
@@ -279,9 +279,9 @@ exports.view.insert_new_reaction = function (opts) {
     const user_list = [user_id];
 
     const context = {
-        message_id: message_id,
-        emoji_name: emoji_name,
-        emoji_code: emoji_code,
+        message_id,
+        emoji_name,
+        emoji_code,
     };
 
     const new_label = generate_title(emoji_name, user_list);
@@ -345,12 +345,12 @@ exports.remove_reaction = function (event) {
     }
 
     exports.view.remove_reaction({
-        message_id: message_id,
-        reaction_type: reaction_type,
-        emoji_name: emoji_name,
-        emoji_code: emoji_code,
+        message_id,
+        reaction_type,
+        emoji_name,
+        emoji_code,
         user_list: r.user_ids,
-        user_id: user_id,
+        user_id,
     });
 };
 
@@ -467,9 +467,9 @@ exports.set_clean_reactions = function (message) {
         const user_ids = user_map.get(local_id);
 
         exports.add_clean_reaction({
-            message: message,
-            local_id: local_id,
-            user_ids: user_ids,
+            message,
+            local_id,
+            user_ids,
             reaction_type: reaction.reaction_type,
             emoji_name: reaction.emoji_name,
             emoji_code: reaction.emoji_code,

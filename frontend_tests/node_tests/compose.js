@@ -15,10 +15,10 @@ const _navigator = {
 };
 
 const _document = {
-    getElementById: function () {
+    getElementById() {
         return $("#compose-textarea");
     },
-    execCommand: function () {
+    execCommand() {
         return false;
     },
     location: {},
@@ -626,7 +626,7 @@ run_test("send_message", () => {
         func();
     });
     global.server_events = {
-        assert_get_events_running: function () {
+        assert_get_events_running() {
             stub_state.get_events_running_called += 1;
         },
     };
@@ -994,7 +994,7 @@ run_test("initialize", () => {
         compose_actions_start_checked = false;
 
         global.compose_actions = {
-            start: function (msg_type, opts) {
+            start(msg_type, opts) {
                 assert.equal(msg_type, "stream");
                 assert.deepEqual(opts, expected_opts);
                 compose_actions_start_checked = true;
@@ -1049,11 +1049,11 @@ run_test("update_fade", () => {
     let update_all_called = false;
 
     global.compose_fade = {
-        set_focused_recipient: function (msg_type) {
+        set_focused_recipient(msg_type) {
             assert.equal(msg_type, "private");
             set_focused_recipient_checked = true;
         },
-        update_all: function () {
+        update_all() {
             update_all_called = true;
         },
     };
@@ -1073,7 +1073,7 @@ run_test("trigger_submit_compose_form", () => {
     let prevent_default_checked = false;
     let compose_finish_checked = false;
     const e = {
-        preventDefault: function () {
+        preventDefault() {
             prevent_default_checked = true;
         },
     };
@@ -1262,13 +1262,13 @@ run_test("on_events", () => {
 
         const event = {
             preventDefault: noop,
-            target: target,
+            target,
         };
 
         const helper = {
-            event: event,
-            container: container,
-            target: target,
+            event,
+            container,
+            target,
             container_was_removed: () => container_removed,
         };
 
@@ -1679,7 +1679,7 @@ run_test("create_message_object", () => {
 
     global.$ = function (selector) {
         return {
-            val: function () {
+            val() {
                 return page[selector];
             },
         };

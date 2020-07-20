@@ -4,7 +4,7 @@ exports.fetch_and_render_message_history = function (message) {
     channel.get({
         url: "/json/messages/" + message.id + "/history",
         data: {message_id: JSON.stringify(message.id)},
-        success: function (data) {
+        success(data) {
             const content_edit_history = [];
             let prev_datestamp = null;
 
@@ -54,7 +54,7 @@ exports.fetch_and_render_message_history = function (message) {
                 }),
             );
         },
-        error: function (xhr) {
+        error(xhr) {
             ui_report.error(
                 i18n.t("Error fetching message edit history"),
                 xhr,

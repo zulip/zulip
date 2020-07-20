@@ -15,20 +15,20 @@ set_global("page_params", {
 });
 set_global("home_msg_list", null);
 set_global("people", {
-    small_avatar_url: function () {
+    small_avatar_url() {
         return "";
     },
 });
-set_global("unread", {message_unread: function () {}});
+set_global("unread", {message_unread() {}});
 // timerender calls setInterval when imported
 set_global("timerender", {
-    render_date: function (time1, time2) {
+    render_date(time1, time2) {
         if (time2 === undefined) {
             return [{outerHTML: String(time1.getTime())}];
         }
         return [{outerHTML: String(time1.getTime()) + " - " + String(time2.getTime())}];
     },
-    stringify_time: function (time) {
+    stringify_time(time) {
         if (page_params.twenty_four_hour_time) {
             return time.toString("HH:mm");
         }
@@ -37,9 +37,9 @@ set_global("timerender", {
 });
 
 set_global("rows", {
-    get_table: function () {
+    get_table() {
         return {
-            children: function () {
+            children() {
                 return {
                     detach: noop,
                 };
@@ -166,8 +166,8 @@ run_test("merge_message_groups", () => {
         const list = new MessageListView(undefined, undefined, true);
         list._message_groups = message_groups;
         list.list = {
-            unsubscribed_bookend_content: function () {},
-            subscribed_bookend_content: function () {},
+            unsubscribed_bookend_content() {},
+            subscribed_bookend_content() {},
         };
         return list;
     }
@@ -440,8 +440,8 @@ run_test("render_windows", () => {
         const filter = new Filter();
 
         const list = new message_list.MessageList({
-            table_name: table_name,
-            filter: filter,
+            table_name,
+            filter,
         });
 
         const view = list.view;

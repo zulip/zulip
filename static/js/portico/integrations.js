@@ -191,7 +191,7 @@ function hide_catalog_show_integration() {
         url: "/integrations/doc-html/" + state.integration,
         dataType: "html",
         success: hide_catalog,
-        error: function (err) {
+        error(err) {
             blueslip.error(
                 "Integration documentation for '" + state.integration + "' not found.",
                 err,
@@ -343,13 +343,13 @@ function integration_events() {
 
     $(".integration-instruction-block").on("click", "a .integration-category", (e) => {
         const category = $(e.target).data("category");
-        dispatch("SHOW_CATEGORY", {category: category});
+        dispatch("SHOW_CATEGORY", {category});
         return false;
     });
 
     $(".integrations a .integration-category").on("click", (e) => {
         const category = $(e.target).data("category");
-        dispatch("CHANGE_CATEGORY", {category: category});
+        dispatch("CHANGE_CATEGORY", {category});
         toggle_categories_dropdown();
         return false;
     });
@@ -357,7 +357,7 @@ function integration_events() {
     $(".integrations a .integration-lozenge").on("click", (e) => {
         if (!$(e.target).closest(".integration-lozenge").hasClass("integration-create-your-own")) {
             const integration = $(e.target).closest(".integration-lozenge").data("name");
-            dispatch("SHOW_INTEGRATION", {integration: integration});
+            dispatch("SHOW_INTEGRATION", {integration});
             return false;
         }
     });

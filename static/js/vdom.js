@@ -18,7 +18,7 @@ exports.eq_array = (a, b, eq) => {
 
 exports.ul = (opts) => ({
     tag_name: "ul",
-    opts: opts,
+    opts,
 });
 
 exports.render_tag = (tag) => {

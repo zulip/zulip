@@ -50,7 +50,7 @@ exports.maybe_disable_widgets = function () {
 exports.get_sorted_options_list = function (option_values_object) {
     const options_list = Object.keys(option_values_object).map((key) => ({
         ...option_values_object[key],
-        key: key,
+        key,
     }));
     let comparator = (x, y) => x.order - y.order;
     if (!options_list[0].order) {
@@ -302,7 +302,7 @@ exports.populate_realm_domains = function (realm_domains) {
     if (domains.length === 0) {
         domains = i18n.t("None");
     }
-    $("#allowed_domains_label").text(i18n.t("Allowed domains: __domains__", {domains: domains}));
+    $("#allowed_domains_label").text(i18n.t("Allowed domains: __domains__", {domains}));
 
     const realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
     realm_domains_table_body.find("tr").remove();
@@ -310,7 +310,7 @@ exports.populate_realm_domains = function (realm_domains) {
     for (const realm_domain of realm_domains) {
         realm_domains_table_body.append(
             render_settings_admin_realm_domains_list({
-                realm_domain: realm_domain,
+                realm_domain,
             }),
         );
     }
@@ -699,12 +699,12 @@ exports.build_page = function () {
         exports.change_save_button_state(save_btn_container, "saving");
         channel.patch({
             url: "/json/realm",
-            data: data,
-            success: function () {
+            data,
+            success() {
                 failed_alert_elem.hide();
                 exports.change_save_button_state(save_btn_container, "succeeded");
             },
-            error: function (xhr) {
+            error(xhr) {
                 exports.change_save_button_state(save_btn_container, "failed");
                 save_button.hide();
                 ui_report.error(i18n.t("Save failed"), xhr, failed_alert_elem);
@@ -933,12 +933,12 @@ exports.build_page = function () {
         const realm_domains_info = $(".realm_domains_info");
 
         channel.del({
-            url: url,
-            success: function () {
+            url,
+            success() {
                 ui_report.success(i18n.t("Deleted successfully!"), realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
-            error: function (xhr) {
+            error(xhr) {
                 ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
@@ -957,8 +957,8 @@ exports.build_page = function () {
 
         channel.post({
             url: "/json/realm/domains",
-            data: data,
-            success: function () {
+            data,
+            success() {
                 $("#add-realm-domain-widget .new-realm-domain").val("");
                 $("#add-realm-domain-widget .new-realm-domain-allow-subdomains").prop(
                     "checked",
@@ -967,7 +967,7 @@ exports.build_page = function () {
                 ui_report.success(i18n.t("Added successfully!"), realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
-            error: function (xhr) {
+            error(xhr) {
                 ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
@@ -985,27 +985,27 @@ exports.build_page = function () {
         };
 
         channel.patch({
-            url: url,
-            data: data,
-            success: function () {
+            url,
+            data,
+            success() {
                 if (allow_subdomains) {
                     ui_report.success(
                         i18n.t("Update successful: Subdomains allowed for __domain__", {
-                            domain: domain,
+                            domain,
                         }),
                         realm_domains_info,
                     );
                 } else {
                     ui_report.success(
                         i18n.t("Update successful: Subdomains no longer allowed for __domain__", {
-                            domain: domain,
+                            domain,
                         }),
                         realm_domains_info,
                     );
                 }
                 fade_status_element(realm_domains_info);
             },
-            error: function (xhr) {
+            error(xhr) {
                 ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
@@ -1052,15 +1052,15 @@ exports.build_page = function () {
         realm_icon_logo_upload_start(spinner, upload_text, delete_button);
         error_field.hide();
         channel.post({
-            url: url,
+            url,
             data: form_data,
             cache: false,
             processData: false,
             contentType: false,
-            success: function () {
+            success() {
                 realm_icon_logo_upload_complete(spinner, upload_text, delete_button);
             },
-            error: function (xhr) {
+            error(xhr) {
                 realm_icon_logo_upload_complete(spinner, upload_text, delete_button);
                 ui_report.error("", xhr, error_field);
             },
@@ -1087,7 +1087,7 @@ exports.build_page = function () {
         }
         channel.post({
             url: "/json/realm/deactivate",
-            error: function (xhr) {
+            error(xhr) {
                 ui_report.error(
                     i18n.t("Failed"),
                     xhr,

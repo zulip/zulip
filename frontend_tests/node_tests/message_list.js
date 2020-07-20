@@ -29,7 +29,7 @@ run_test("basics", () => {
     const filter = accept_all_filter();
 
     const list = new MessageList({
-        filter: filter,
+        filter,
     });
 
     const messages = [
@@ -438,7 +438,7 @@ run_test("unmuted_messages", () => {
 run_test("add_remove_rerender", () => {
     const filter = accept_all_filter();
 
-    const list = new MessageList({filter: filter});
+    const list = new MessageList({filter});
 
     const messages = [{id: 1}, {id: 2}, {id: 3}];
 

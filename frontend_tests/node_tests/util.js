@@ -9,7 +9,7 @@ run_test("CachedValue", () => {
     let x = 5;
 
     const cv = new util.CachedValue({
-        compute_value: function () {
+        compute_value() {
             return x * 2;
         },
     });

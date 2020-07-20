@@ -109,7 +109,7 @@ function get_stream_suggestions(last, operators) {
             negated: last.negated,
         };
         const search_string = Filter.unparse([term]);
-        return {description: description, search_string: search_string};
+        return {description, search_string};
     });
 
     return objs;
@@ -163,7 +163,7 @@ function get_group_suggestions(last, operators) {
         const term = {
             operator: "pm-with",
             operand: all_but_last_part + "," + person.email,
-            negated: negated,
+            negated,
         };
         const name = highlight_person(person);
         const description =
@@ -173,7 +173,7 @@ function get_group_suggestions(last, operators) {
             terms = [{operator: "is", operand: "private"}, term];
         }
         const search_string = Filter.unparse(terms);
-        return {description: description, search_string: search_string};
+        return {description, search_string};
     });
 
     return suggestions;
@@ -256,7 +256,7 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
             terms.unshift({operator: "is", operand: "private"});
         }
         const search_string = Filter.unparse(terms);
-        return {description: description, search_string: search_string};
+        return {description, search_string};
     });
 
     return objs;
@@ -354,7 +354,7 @@ function get_topic_suggestions(last, operators) {
     topics.sort();
 
     return topics.map((topic) => {
-        const topic_term = {operator: "topic", operand: topic, negated: negated};
+        const topic_term = {operator: "topic", operand: topic, negated};
         const operators = suggest_operators.concat([topic_term]);
         return format_as_suggestion(operators);
     });
@@ -521,14 +521,14 @@ function get_sent_by_me_suggestions(last, operators) {
         return [
             {
                 search_string: sender_query,
-                description: description,
+                description,
             },
         ];
     } else if (from_query.startsWith(last_string) || from_me_query.startsWith(last_string)) {
         return [
             {
                 search_string: from_query,
-                description: description,
+                description,
             },
         ];
     }
@@ -551,7 +551,7 @@ function get_operator_suggestions(last) {
     choices = choices.filter((choice) => common.phrase_match(last_operand, choice));
 
     return choices.map((choice) => {
-        const op = [{operator: choice, operand: "", negated: negated}];
+        const op = [{operator: choice, operand: "", negated}];
         return format_as_suggestion(op);
     });
 }
@@ -730,8 +730,8 @@ exports.finalize_search_result = function (result) {
 
     const strings = result.map((obj) => obj.search_string);
     return {
-        strings: strings,
-        lookup_table: lookup_table,
+        strings,
+        lookup_table,
     };
 };
 

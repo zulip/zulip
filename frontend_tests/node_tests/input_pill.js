@@ -34,7 +34,7 @@ function pill_html(value, data_id, img_src) {
     const opts = {
         id: data_id,
         display_value: value,
-        has_image: has_image,
+        has_image,
     };
 
     if (has_image) {
@@ -117,18 +117,18 @@ function set_up() {
     container.set_find_results(".input", pill_input);
 
     const config = {
-        container: container,
-        create_item_from_text: create_item_from_text,
+        container,
+        create_item_from_text,
         get_text_from_item: (item) => item.display_value,
     };
 
     id_seq = 0;
 
     return {
-        config: config,
-        pill_input: pill_input,
-        items: items,
-        container: container,
+        config,
+        pill_input,
+        items,
+        container,
     };
 }
 

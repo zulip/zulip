@@ -63,7 +63,7 @@ exports.post_hotspot_as_read = function (hotspot_name) {
     channel.post({
         url: "/json/users/me/hotspots",
         data: {hotspot: JSON.stringify(hotspot_name)},
-        error: function (err) {
+        error(err) {
             blueslip.error(err.responseText);
         },
     });

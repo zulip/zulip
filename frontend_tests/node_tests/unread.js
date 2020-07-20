@@ -81,7 +81,7 @@ run_test("changing_topics", () => {
     const message = {
         id: 15,
         type: "stream",
-        stream_id: stream_id,
+        stream_id,
         topic: "luNch",
         unread: true,
     };
@@ -89,7 +89,7 @@ run_test("changing_topics", () => {
     const other_message = {
         id: 16,
         type: "stream",
-        stream_id: stream_id,
+        stream_id,
         topic: "lunCH",
         unread: true,
     };
@@ -163,7 +163,7 @@ run_test("changing_topics", () => {
     const sticky_message = {
         id: 17,
         type: "stream",
-        stream_id: stream_id,
+        stream_id,
         topic: "sticky",
         unread: true,
     };
@@ -217,7 +217,7 @@ run_test("muting", () => {
     const message = {
         id: 15,
         type: "stream",
-        stream_id: stream_id,
+        stream_id,
         topic: "test_muting",
         unread: true,
     };
@@ -262,7 +262,7 @@ run_test("num_unread_for_topic", () => {
 
     const message = {
         type: "stream",
-        stream_id: stream_id,
+        stream_id,
         topic: "LuncH",
         unread: true,
     };
@@ -288,8 +288,8 @@ run_test("num_unread_for_topic", () => {
     const topic_dict = new FoldDict();
 
     let missing_topics = unread.get_missing_topics({
-        stream_id: stream_id,
-        topic_dict: topic_dict,
+        stream_id,
+        topic_dict,
     });
 
     assert.deepEqual(missing_topics, [{pretty_name: "LuncH", message_id: 500}]);
@@ -297,8 +297,8 @@ run_test("num_unread_for_topic", () => {
     topic_dict.set("lUNCh", "whatever");
 
     missing_topics = unread.get_missing_topics({
-        stream_id: stream_id,
-        topic_dict: topic_dict,
+        stream_id,
+        topic_dict,
     });
 
     assert.deepEqual(missing_topics, []);
@@ -337,7 +337,7 @@ run_test("home_messages", () => {
     const message = {
         id: 15,
         type: "stream",
-        stream_id: stream_id,
+        stream_id,
         topic: "lunch",
         unread: true,
     };
@@ -675,7 +675,7 @@ run_test("empty_cases", () => {
     assert.deepEqual(unread.get_all_msg_ids(), []);
 
     const missing_topics = unread.get_missing_topics({
-        stream_id: stream_id,
+        stream_id,
         topic_dict: "should-never-be-referenced",
     });
     assert.deepEqual(missing_topics, []);

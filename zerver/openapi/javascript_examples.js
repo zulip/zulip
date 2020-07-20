@@ -338,7 +338,7 @@ add_example("update_message", "/messages/{message_id}:patch", 200, async (client
     // {code_example|start}
     // Update a message with the given "message_id"
     const params = {
-        message_id: message_id,
+        message_id,
         content: "New Content",
     };
 
@@ -360,7 +360,7 @@ add_example("get_events", "/events:get", 200, async (client) => {
     // {code_example|start}
     // Retrieve events from a queue with given "queue_id"
     const eventParams = {
-        queue_id: queue_id,
+        queue_id,
         last_event_id: -1,
     };
 

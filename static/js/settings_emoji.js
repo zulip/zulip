@@ -78,7 +78,7 @@ exports.populate_emoji = function (emoji_data) {
     const emoji_table = $("#admin_emoji_table").expectOne();
     list_render.create(emoji_table, Object.values(emoji_data), {
         name: "emoji_list",
-        modifier: function (item) {
+        modifier(item) {
             if (item.deactivated !== true) {
                 return render_admin_emoji_list({
                     emoji: {
@@ -94,10 +94,10 @@ exports.populate_emoji = function (emoji_data) {
         },
         filter: {
             element: emoji_table.closest(".settings-section").find(".search"),
-            predicate: function (item, value) {
+            predicate(item, value) {
                 return item.name.toLowerCase().includes(value);
             },
-            onupdate: function () {
+            onupdate() {
                 ui.reset_scrollbar(emoji_table);
             },
         },
@@ -150,10 +150,10 @@ exports.set_up = function () {
 
         channel.del({
             url: "/json/realm/emoji/" + encodeURIComponent(btn.attr("data-emoji-name")),
-            error: function (xhr) {
+            error(xhr) {
                 ui_report.generic_row_button_error(xhr, btn);
             },
-            success: function () {
+            success() {
                 const row = btn.parents("tr");
                 row.remove();
             },
@@ -185,14 +185,14 @@ exports.set_up = function () {
                 cache: false,
                 processData: false,
                 contentType: false,
-                success: function () {
+                success() {
                     $("#admin-emoji-status").hide();
                     ui_report.success(i18n.t("Custom emoji added!"), emoji_status);
                     $("form.admin-emoji-form input[type='text']").val("");
                     $("#admin_emoji_submit").removeAttr("disabled");
                     emoji_widget.clear();
                 },
-                error: function (xhr) {
+                error(xhr) {
                     $("#admin-emoji-status").hide();
                     const errors = JSON.parse(xhr.responseText).msg;
                     xhr.responseText = JSON.stringify({msg: errors});

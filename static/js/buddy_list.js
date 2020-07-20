@@ -106,7 +106,7 @@ function buddy_list_create() {
         });
 
         const html = self.items_to_html({
-            items: items,
+            items,
         });
         self.container = $(self.container_sel);
         self.container.append(html);
@@ -194,7 +194,7 @@ function buddy_list_create() {
         }
 
         self.render_more({
-            chunk_size: chunk_size,
+            chunk_size,
         });
     };
 
@@ -203,7 +203,7 @@ function buddy_list_create() {
 
         // Try direct DOM lookup first for speed.
         let li = self.get_li_from_key({
-            key: key,
+            key,
         });
 
         if (li.length === 1) {
@@ -225,11 +225,11 @@ function buddy_list_create() {
         }
 
         self.force_render({
-            pos: pos,
+            pos,
         });
 
         li = self.get_li_from_key({
-            key: key,
+            key,
         });
 
         return li;
@@ -261,10 +261,10 @@ function buddy_list_create() {
         const key = opts.key;
         const item = opts.item;
 
-        self.maybe_remove_key({key: key});
+        self.maybe_remove_key({key});
 
         const pos = self.find_position({
-            key: key,
+            key,
         });
 
         // Order is important here--get the other_key
@@ -274,11 +274,11 @@ function buddy_list_create() {
 
         self.keys.splice(pos, 0, key);
 
-        const html = self.item_to_html({item: item});
+        const html = self.item_to_html({item});
         self.insert_new_html({
-            pos: pos,
-            html: html,
-            other_key: other_key,
+            pos,
+            html,
+            other_key,
         });
     };
 
@@ -301,7 +301,7 @@ function buddy_list_create() {
             const chunk_size = 20;
 
             self.render_more({
-                chunk_size: chunk_size,
+                chunk_size,
             });
         }
     };

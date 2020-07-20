@@ -219,7 +219,7 @@ exports.open_settings = function () {
     exports.open_overlay({
         name: "settings",
         overlay: $("#settings_overlay_container"),
-        on_close: function () {
+        on_close() {
             hashchange.exit_overlay();
         },
     });

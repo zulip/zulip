@@ -228,8 +228,8 @@ set_global("$", global.make_zjquery());
 function add_row(sub) {
     global.stream_data.add_sub(sub);
     const row = {
-        update_whether_active: function () {},
-        get_li: function () {
+        update_whether_active() {},
+        get_li() {
             const html = "<" + sub.name + " sidebar row html>";
             const obj = $(html);
 
@@ -383,7 +383,7 @@ run_test("narrowing", () => {
     initialize_stream_data();
 
     set_global("narrow_state", {
-        stream: function () {
+        stream() {
             return "devel";
         },
         topic: noop,
@@ -445,7 +445,7 @@ run_test("focusout_user_filter", () => {
 
 run_test("focus_user_filter", () => {
     const e = {
-        stopPropagation: function () {},
+        stopPropagation() {},
     };
     const click_handler = $(".stream-list-filter").get_on_handler("click");
     click_handler(e);
@@ -631,7 +631,7 @@ run_test("update_count_in_dom", () => {
     const stream_id = 11;
 
     const stream_row = {
-        get_li: function () {
+        get_li() {
             return stream_li;
         },
     };
@@ -640,7 +640,7 @@ run_test("update_count_in_dom", () => {
 
     stream_count.set(stream_id, 0);
     const counts = {
-        stream_count: stream_count,
+        stream_count,
         topic_count: new Map(),
     };
 
@@ -736,7 +736,7 @@ run_test("create_initial_sidebar_rows", () => {
 
     stream_list.stream_sidebar = {
         has_row_for: return_false,
-        set_row: function (stream_id, widget) {
+        set_row(stream_id, widget) {
             html_dict.set(stream_id, widget.get_li().html());
         },
     };

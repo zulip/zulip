@@ -58,10 +58,10 @@ exports.restore = function () {
 
 exports.stub_out_jquery = function () {
     set_global("$", () => ({
-        on: function () {},
-        trigger: function () {},
-        hide: function () {},
-        removeClass: function () {},
+        on() {},
+        trigger() {},
+        hide() {},
+        removeClass() {},
     }));
     $.fn = {};
     $.now = function () {};

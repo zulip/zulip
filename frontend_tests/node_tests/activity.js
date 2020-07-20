@@ -13,7 +13,7 @@ const _page_params = {
 };
 
 const _document = {
-    hasFocus: function () {
+    hasFocus() {
         return true;
     },
 };
@@ -41,15 +41,15 @@ const _pm_list = {
 };
 
 const _popovers = {
-    hide_all_except_sidebars: function () {},
-    hide_all: function () {},
-    show_userlist_sidebar: function () {
+    hide_all_except_sidebars() {},
+    hide_all() {},
+    show_userlist_sidebar() {
         $(".column-right").addClass("expanded");
     },
 };
 
 const _stream_popover = {
-    show_streamlist_sidebar: function () {
+    show_streamlist_sidebar() {
         $(".column-left").addClass("expanded");
     },
 };
@@ -681,7 +681,7 @@ run_test("initialize", () => {
     clear();
 
     $.stub_selector("html", {
-        on: function (name, func) {
+        on(name, func) {
             func();
         },
     });
@@ -690,7 +690,7 @@ run_test("initialize", () => {
         payload.success({});
     };
     global.server_events = {
-        check_for_unsuspend: function () {},
+        check_for_unsuspend() {},
     };
 
     let scroll_handler_started;

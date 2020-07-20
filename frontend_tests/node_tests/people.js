@@ -486,10 +486,10 @@ initialize();
 
 run_test("recipient_counts", () => {
     const user_id = 99;
-    assert.equal(people.get_recipient_count({user_id: user_id}), 0);
+    assert.equal(people.get_recipient_count({user_id}), 0);
     people.incr_recipient_count(user_id);
     people.incr_recipient_count(user_id);
-    assert.equal(people.get_recipient_count({user_id: user_id}), 2);
+    assert.equal(people.get_recipient_count({user_id}), 2);
 
     assert.equal(people.get_recipient_count({pm_recipient_count: 5}), 5);
 });
@@ -852,7 +852,7 @@ run_test("updates", () => {
 
     let person = {
         email: old_email,
-        user_id: user_id,
+        user_id,
         full_name: "Foo Barson",
     };
     people.add_active_user(person);

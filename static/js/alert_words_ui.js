@@ -44,14 +44,14 @@ function add_alert_word(alert_word) {
     channel.post({
         url: "/json/users/me/alert_words",
         data: {alert_words: JSON.stringify(words_to_be_added)},
-        success: function () {
+        success() {
             const message = i18n.t('Alert word "__word__" added successfully!', {
                 word: words_to_be_added[0],
             });
             update_alert_word_status(message, false);
             $("#create_alert_word_name").val("");
         },
-        error: function () {
+        error() {
             update_alert_word_status(i18n.t("Error adding alert word!"), true);
         },
     });
@@ -63,10 +63,10 @@ function remove_alert_word(alert_word) {
     channel.del({
         url: "/json/users/me/alert_words",
         data: {alert_words: JSON.stringify(words_to_be_removed)},
-        success: function () {
+        success() {
             update_alert_word_status(i18n.t("Alert word removed successfully!"), false);
         },
-        error: function () {
+        error() {
             update_alert_word_status(i18n.t("Error removing alert word!"), true);
         },
     });

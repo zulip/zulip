@@ -257,10 +257,10 @@ exports.analyze_selection = function (selection) {
     }
 
     return {
-        ranges: ranges,
-        start_id: start_id,
-        end_id: end_id,
-        skip_same_td_check: skip_same_td_check,
+        ranges,
+        start_id,
+        end_id,
+        skip_same_td_check,
     };
 };
 
@@ -268,24 +268,24 @@ exports.paste_handler_converter = function (paste_html) {
     const turndownService = new TurndownService();
     turndownService.addRule("headings", {
         filter: ["h1", "h2", "h3", "h4", "h5", "h6"],
-        replacement: function (content) {
+        replacement(content) {
             return content;
         },
     });
     turndownService.addRule("emphasis", {
         filter: ["em", "i"],
-        replacement: function (content) {
+        replacement(content) {
             return "*" + content + "*";
         },
     });
     // Checks for raw links without custom text or title.
     turndownService.addRule("links", {
-        filter: function (node) {
+        filter(node) {
             return (
                 node.nodeName === "A" && node.href === node.innerHTML && node.href === node.title
             );
         },
-        replacement: function (content) {
+        replacement(content) {
             return content;
         },
     });

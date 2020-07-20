@@ -26,7 +26,7 @@ const meta = {
 };
 
 const animate = {
-    maybe_close: function () {
+    maybe_close() {
         if (!meta.opened) {
             return;
         }
@@ -38,7 +38,7 @@ const animate = {
 
         setTimeout(animate.maybe_close, 100);
     },
-    fadeOut: function () {
+    fadeOut() {
         if (!meta.opened) {
             return;
         }
@@ -49,7 +49,7 @@ const animate = {
             meta.alert_hover_state = false;
         }
     },
-    fadeIn: function () {
+    fadeIn() {
         if (meta.opened) {
             return;
         }

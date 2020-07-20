@@ -165,8 +165,8 @@ run_test("populate_profile_fields", () => {
     ];
 
     test_populate({
-        fields_data: fields_data,
-        expected_template_data: expected_template_data,
+        fields_data,
+        expected_template_data,
         is_admin: true,
     });
 });

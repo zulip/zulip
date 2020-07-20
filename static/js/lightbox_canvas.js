@@ -30,7 +30,7 @@ window.onload = function () {
 };
 
 const funcs = {
-    setZoom: function (meta, zoom) {
+    setZoom(meta, zoom) {
         // condition to handle zooming event by zoom hotkeys
         if (zoom === "+") {
             zoom = meta.zoom * 1.2;
@@ -43,7 +43,7 @@ const funcs = {
 
     // this is a function given a canvas that attaches all of the events
     // required to pan and zoom.
-    attachEvents: function (canvas, context, meta) {
+    attachEvents(canvas, context, meta) {
         let mousedown = false;
 
         // wheelEvent.deltaMode is a value that describes what the unit is
@@ -174,28 +174,28 @@ const funcs = {
         // these are less reliable as preventDefault may prevent these events
         // from propagating all the way to the <body>.
         events.documentMouseup.push({
-            canvas: canvas,
-            meta: meta,
-            callback: function () {
+            canvas,
+            meta,
+            callback() {
                 mousedown = false;
             },
         });
 
         events.windowResize.push({
-            canvas: canvas,
-            meta: meta,
-            callback: function () {
+            canvas,
+            meta,
+            callback() {
                 funcs.sizeCanvas(canvas, meta);
                 funcs.displayImage(canvas, context, meta);
             },
         });
     },
 
-    imageRatio: function (image) {
+    imageRatio(image) {
         return image.naturalWidth / image.naturalHeight;
     },
 
-    displayImage: function (canvas, context, meta) {
+    displayImage(canvas, context, meta) {
         meta.coords.x = Math.max(1 / (meta.zoom * 2), meta.coords.x);
         meta.coords.x = Math.min(1 - 1 / (meta.zoom * 2), meta.coords.x);
 
@@ -225,7 +225,7 @@ const funcs = {
     // as we can, which means that we check if having the photo width = 100%
     // means that the height is less than 100% of the parent height. If so,
     // then we size the photo as w = 100%, h = 100% / 1.5.
-    sizeCanvas: function (canvas, meta) {
+    sizeCanvas(canvas, meta) {
         if (canvas.parentNode === null) {
             return;
         }
@@ -303,25 +303,25 @@ const LightboxCanvas = function (el) {
 
 LightboxCanvas.prototype = {
     // set the speed at which scrolling zooms in on a photo.
-    speed: function (speed) {
+    speed(speed) {
         this.meta.speed = speed;
     },
 
     // set the max zoom of the `LightboxCanvas` canvas as a mult of the total width.
-    maxZoom: function (maxZoom) {
+    maxZoom(maxZoom) {
         this.meta.maxZoom = maxZoom;
     },
 
-    reverseScrollDirection: function () {
+    reverseScrollDirection() {
         this.meta.direction = 1;
     },
 
-    setZoom: function (zoom) {
+    setZoom(zoom) {
         funcs.setZoom(this.meta, zoom);
         funcs.displayImage(this.canvas, this.context, this.meta);
     },
 
-    resize: function (callback) {
+    resize(callback) {
         this.meta.onresize = callback;
     },
 };

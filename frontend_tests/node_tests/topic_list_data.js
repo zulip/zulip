@@ -43,7 +43,7 @@ run_test("get_list_info w/real stream_topic_history", () => {
         const topic_name = "topic " + i;
         stream_topic_history.add_message({
             stream_id: general.stream_id,
-            topic_name: topic_name,
+            topic_name,
             message_id: 1000 + i,
         });
     }

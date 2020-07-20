@@ -100,18 +100,18 @@ exports.initialize = function () {
 };
 
 exports.current_msg_list = {
-    selected_row: function () {
+    selected_row() {
         return $(".message_row").last();
     },
 };
 exports.rows = {
-    get_message_recipient_row: function (message_row) {
+    get_message_recipient_row(message_row) {
         return $(message_row).parent(".recipient_row");
     },
-    first_message_in_group: function (message_group) {
+    first_message_in_group(message_group) {
         return $("div.message_row", message_group).first();
     },
-    id: function (message_row) {
+    id(message_row) {
         return parseFloat(message_row.attr("zid"));
     },
 };

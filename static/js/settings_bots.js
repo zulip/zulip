@@ -9,7 +9,7 @@ exports.hide_errors = function () {
 };
 
 const focus_tab = {
-    add_a_new_bot_tab: function () {
+    add_a_new_bot_tab() {
         $("#bots_lists_navbar .active").removeClass("active");
         $("#bots_lists_navbar .add-a-new-bot-tab").addClass("active");
         $("#add-a-new-bot-form").show();
@@ -17,7 +17,7 @@ const focus_tab = {
         $("#inactive_bots_list").hide();
         exports.hide_errors();
     },
-    active_bots_tab: function () {
+    active_bots_tab() {
         $("#bots_lists_navbar .active").removeClass("active");
         $("#bots_lists_navbar .active-bots-tab").addClass("active");
         $("#add-a-new-bot-form").hide();
@@ -25,7 +25,7 @@ const focus_tab = {
         $("#inactive_bots_list").hide();
         exports.hide_errors();
     },
-    inactive_bots_tab: function () {
+    inactive_bots_tab() {
         $("#bots_lists_navbar .active").removeClass("active");
         $("#bots_lists_navbar .inactive-bots-tab").addClass("active");
         $("#add-a-new-bot-form").hide();
@@ -263,10 +263,10 @@ exports.set_up = function () {
 
     $("#create_bot_form").validate({
         errorClass: "text-error",
-        success: function () {
+        success() {
             exports.hide_errors();
         },
-        submitHandler: function () {
+        submitHandler() {
             const bot_type = $("#create_bot_type :selected").val();
             const full_name = $("#create_bot_name").val();
             const short_name =
@@ -306,7 +306,7 @@ exports.set_up = function () {
                 cache: false,
                 processData: false,
                 contentType: false,
-                success: function () {
+                success() {
                     exports.hide_errors();
                     $("#create_bot_name").val("");
                     $("#create_bot_short_name").val("");
@@ -325,10 +325,10 @@ exports.set_up = function () {
                     $("#bots_lists_navbar .add-a-new-bot-tab").removeClass("active");
                     $("#bots_lists_navbar .active-bots-tab").addClass("active");
                 },
-                error: function (xhr) {
+                error(xhr) {
                     $("#bot_table_error").text(JSON.parse(xhr.responseText).msg).show();
                 },
-                complete: function () {
+                complete() {
                     loading.destroy_indicator(spinner);
                 },
             });
@@ -366,13 +366,13 @@ exports.set_up = function () {
 
         channel.del({
             url: "/json/bots/" + encodeURIComponent(bot_id),
-            success: function () {
+            success() {
                 const row = $(e.currentTarget).closest("li");
                 row.hide("slow", () => {
                     row.remove();
                 });
             },
-            error: function (xhr) {
+            error(xhr) {
                 exports.bot_error(bot_id, xhr);
             },
         });
@@ -383,7 +383,7 @@ exports.set_up = function () {
 
         channel.post({
             url: "/json/users/" + encodeURIComponent(user_id) + "/reactivate",
-            error: function (xhr) {
+            error(xhr) {
                 exports.bot_error(user_id, xhr);
             },
         });
@@ -394,12 +394,12 @@ exports.set_up = function () {
         channel.post({
             url: "/json/bots/" + encodeURIComponent(bot_id) + "/api_key/regenerate",
             idempotent: true,
-            success: function (data) {
+            success(data) {
                 const row = $(e.currentTarget).closest("li");
                 row.find(".api_key").find(".value").text(data.api_key);
                 row.find("api_key_error").hide();
             },
-            error: function (xhr) {
+            error(xhr) {
                 const row = $(e.currentTarget).closest("li");
                 row.find(".api_key_error").text(JSON.parse(xhr.responseText).msg).show();
             },
@@ -424,8 +424,8 @@ exports.set_up = function () {
         $("#edit_bot_modal").empty();
         $("#edit_bot_modal").append(
             render_edit_bot({
-                bot: bot,
-                users_list: users_list,
+                bot,
+                users_list,
             }),
         );
         const avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
@@ -445,7 +445,7 @@ exports.set_up = function () {
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
             $("#service_data").append(
                 render_settings_edit_outgoing_webhook_service({
-                    service: service,
+                    service,
                 }),
             );
             $("#edit_service_interface").val(service.interface);
@@ -453,7 +453,7 @@ exports.set_up = function () {
         if (bot.bot_type.toString() === EMBEDDED_BOT_TYPE) {
             $("#service_data").append(
                 render_settings_edit_embedded_bot_service({
-                    service: service,
+                    service,
                 }),
             );
         }
@@ -462,10 +462,10 @@ exports.set_up = function () {
 
         form.validate({
             errorClass: "text-error",
-            success: function () {
+            success() {
                 errors.hide();
             },
-            submitHandler: function () {
+            submitHandler() {
                 const bot_id = parseInt(form.attr("data-user-id"), 10);
                 const type = form.attr("data-type");
 
@@ -503,7 +503,7 @@ exports.set_up = function () {
                     cache: false,
                     processData: false,
                     contentType: false,
-                    success: function (data) {
+                    success(data) {
                         loading.destroy_indicator(spinner);
                         errors.hide();
                         edit_button.show();
@@ -520,7 +520,7 @@ exports.set_up = function () {
                         }
                         overlays.close_modal("#edit_bot_modal");
                     },
-                    error: function (xhr) {
+                    error(xhr) {
                         loading.destroy_indicator(spinner);
                         edit_button.show();
                         errors.text(JSON.parse(xhr.responseText).msg).show();
@@ -538,7 +538,7 @@ exports.set_up = function () {
     });
 
     new ClipboardJS("#copy_zuliprc", {
-        text: function (trigger) {
+        text(trigger) {
             const bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
             const bot_id = parseInt(bot_info.attr("data-user-id"), 10);
             const bot = bot_data.get(bot_id);

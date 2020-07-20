@@ -214,8 +214,8 @@ function in_browser_notify(message, title, content, raw_operators, opts) {
     const notification_html = $(
         render_notification({
             gravatar_url: people.small_avatar_url(message),
-            title: title,
-            content: content,
+            title,
+            content,
             message_id: message.id,
         }),
     );
@@ -235,7 +235,7 @@ function in_browser_notify(message, title, content, raw_operators, opts) {
     $(".notification[data-message-id='" + message.id + "']")
         .expectOne()
         .data("narrow", {
-            raw_operators: raw_operators,
+            raw_operators,
             opts_notif: opts,
         });
 }
@@ -243,10 +243,10 @@ function in_browser_notify(message, title, content, raw_operators, opts) {
 exports.notify_above_composebox = function (note, link_class, link_msg_id, link_text) {
     const notification_html = $(
         render_compose_notification({
-            note: note,
-            link_class: link_class,
-            link_msg_id: link_msg_id,
-            link_text: link_text,
+            note,
+            link_class,
+            link_msg_id,
+            link_text,
         }),
     );
     exports.clear_compose_notifications();
@@ -281,17 +281,17 @@ if (window.electron_bridge !== undefined) {
 
         function error(error) {
             window.electron_bridge.send_event("send_notification_reply_message_failed", {
-                data: data,
-                message_id: message_id,
-                error: error,
+                data,
+                message_id,
+                error,
             });
         }
 
         channel.post({
             url: "/json/messages",
-            data: data,
-            success: success,
-            error: error,
+            data,
+            success,
+            error,
         });
     });
 }
@@ -397,7 +397,7 @@ function process_notification(notification) {
         });
         notice_memory.set(key, {
             obj: notification_object,
-            msg_count: msg_count,
+            msg_count,
             message_id: message.id,
         });
 
@@ -579,7 +579,7 @@ exports.received_messages = function (messages) {
 
         if (exports.should_send_desktop_notification(message)) {
             process_notification({
-                message: message,
+                message,
                 desktop_notify: exports.granted_desktop_notifications_permission(),
             });
         }

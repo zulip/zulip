@@ -14,7 +14,7 @@ function report_send_time(send_time, receive_time, locally_echoed, rendered_chan
     const data = {
         time: send_time.toString(),
         received: receive_time.toString(),
-        locally_echoed: locally_echoed,
+        locally_echoed,
     };
 
     if (locally_echoed) {
@@ -23,7 +23,7 @@ function report_send_time(send_time, receive_time, locally_echoed, rendered_chan
 
     channel.post({
         url: "/json/report/send_times",
-        data: data,
+        data,
     });
 }
 

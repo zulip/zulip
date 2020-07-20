@@ -27,7 +27,7 @@ exports.rerender = function () {
 
 exports.persist_mute = function (stream_id, topic_name) {
     const data = {
-        stream_id: stream_id,
+        stream_id,
         topic: topic_name,
         op: "add",
     };
@@ -35,13 +35,13 @@ exports.persist_mute = function (stream_id, topic_name) {
     channel.patch({
         url: "/json/users/me/subscriptions/muted_topics",
         idempotent: true,
-        data: data,
+        data,
     });
 };
 
 exports.persist_unmute = function (stream_id, topic_name) {
     const data = {
-        stream_id: stream_id,
+        stream_id,
         topic: topic_name,
         op: "remove",
     };
@@ -49,7 +49,7 @@ exports.persist_unmute = function (stream_id, topic_name) {
     channel.patch({
         url: "/json/users/me/subscriptions/muted_topics",
         idempotent: true,
-        data: data,
+        data,
     });
 };
 
@@ -77,15 +77,15 @@ exports.set_up_muted_topics_ui = function () {
 
     list_render.create(muted_topics_table, muted_topics, {
         name: "muted-topics-list",
-        modifier: function (muted_topics) {
-            return render_muted_topic_ui_row({muted_topics: muted_topics});
+        modifier(muted_topics) {
+            return render_muted_topic_ui_row({muted_topics});
         },
         filter: {
             element: $search_input,
-            predicate: function (item, value) {
+            predicate(item, value) {
                 return item.topic.toLocaleLowerCase().indexOf(value) >= 0;
             },
-            onupdate: function () {
+            onupdate() {
                 ui.reset_scrollbar(muted_topics_table.closest(".progressive-table-wrapper"));
             },
         },
@@ -103,13 +103,13 @@ exports.mute = function (stream_id, topic) {
     exports.rerender();
     exports.persist_mute(stream_id, topic);
     feedback_widget.show({
-        populate: function (container) {
+        populate(container) {
             const rendered_html = render_topic_muted();
             container.html(rendered_html);
             container.find(".stream").text(stream_name);
             container.find(".topic").text(topic);
         },
-        on_undo: function () {
+        on_undo() {
             exports.unmute(stream_id, topic);
         },
         title_text: i18n.t("Topic muted"),

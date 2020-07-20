@@ -27,7 +27,7 @@ exports.populate_exports_table = function (exports) {
     const exports_table = $("#admin_exports_table").expectOne();
     list_render.create(exports_table, Object.values(exports), {
         name: "admin_exports_list",
-        modifier: function (data) {
+        modifier(data) {
             let failed_timestamp = data.failed_timestamp;
             let deleted_timestamp = data.deleted_timestamp;
 
@@ -60,10 +60,10 @@ exports.populate_exports_table = function (exports) {
         },
         filter: {
             element: exports_table.closest(".settings-section").find(".search"),
-            predicate: function (item, value) {
+            predicate(item, value) {
                 return people.get_full_name(item.acting_user_id).toLowerCase().includes(value);
             },
-            onupdate: function () {
+            onupdate() {
                 ui.reset_scrollbar(exports_table);
             },
         },
@@ -93,14 +93,14 @@ exports.set_up = function () {
 
         channel.post({
             url: "/json/export/realm",
-            success: function () {
+            success() {
                 ui_report.success(
                     i18n.t("Export started. Check back in a few minutes."),
                     export_status,
                     4000,
                 );
             },
-            error: function (xhr) {
+            error(xhr) {
                 ui_report.error(i18n.t("Export failed"), xhr, export_status);
             },
         });
@@ -109,7 +109,7 @@ exports.set_up = function () {
     // Do an initial population of the table
     channel.get({
         url: "/json/export/realm",
-        success: function (data) {
+        success(data) {
             exports.populate_exports_table(data.exports);
         },
     });
@@ -121,7 +121,7 @@ exports.set_up = function () {
 
         channel.del({
             url: "/json/export/realm/" + encodeURIComponent(btn.attr("data-export-id")),
-            error: function (xhr) {
+            error(xhr) {
                 ui_report.generic_row_button_error(xhr, btn);
             },
             // No success function, since UI updates are done via server_events

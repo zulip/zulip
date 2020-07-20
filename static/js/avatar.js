@@ -56,7 +56,7 @@ exports.build_user_avatar_widget = function (upload_function) {
         e.stopPropagation();
         channel.del({
             url: "/json/users/me/avatar",
-            success: function () {
+            success() {
                 $("#user-avatar-upload-widget .settings-page-delete-button").hide();
                 $("#user-avatar-source").show();
                 // Need to clear input because of a small edge case

@@ -63,8 +63,8 @@ function make_home_msg_list() {
     const filter = new Filter();
 
     const list = new message_list.MessageList({
-        table_name: table_name,
-        filter: filter,
+        table_name,
+        filter,
     });
     return list;
 }
@@ -205,8 +205,8 @@ function initial_fetch_step() {
 
     self.finish = function () {
         test_fetch_success({
-            fetch: fetch,
-            response: response,
+            fetch,
+            response,
         });
     };
 
@@ -233,8 +233,8 @@ function forward_fill_step() {
         };
 
         test_fetch_success({
-            fetch: fetch,
-            response: response,
+            fetch,
+            response,
         });
 
         assert.equal(idle_config.idle, 10000);
@@ -255,8 +255,8 @@ function test_backfill_idle(idle_config) {
     idle_config.onIdle();
 
     test_fetch_success({
-        fetch: fetch,
-        response: response,
+        fetch,
+        response,
     });
 }
 
@@ -291,7 +291,7 @@ function simulate_narrow() {
 
     const msg_list = new message_list.MessageList({
         table_name: "zfilt",
-        filter: filter,
+        filter,
     });
     set_global("current_msg_list", msg_list);
 
@@ -302,7 +302,7 @@ run_test("loading_newer", () => {
     function test_dup_new_fetch(msg_list) {
         assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), false);
         message_fetch.maybe_load_newer_messages({
-            msg_list: msg_list,
+            msg_list,
         });
     }
 
@@ -321,7 +321,7 @@ run_test("loading_newer", () => {
             assert.throws(
                 () => {
                     message_fetch.maybe_load_newer_messages({
-                        msg_list: msg_list,
+                        msg_list,
                         show_loading: noop,
                         hide_loading: noop,
                     });
@@ -333,7 +333,7 @@ run_test("loading_newer", () => {
             );
         } else {
             message_fetch.maybe_load_newer_messages({
-                msg_list: msg_list,
+                msg_list,
                 show_loading: noop,
                 hide_loading: noop,
             });
@@ -341,7 +341,7 @@ run_test("loading_newer", () => {
             test_dup_new_fetch(msg_list);
 
             test_fetch_success({
-                fetch: fetch,
+                fetch,
                 response: data.resp,
             });
         }
@@ -365,8 +365,8 @@ run_test("loading_newer", () => {
         };
 
         test_happy_path({
-            msg_list: msg_list,
-            data: data,
+            msg_list,
+            data,
             empty_msg_list: true,
         });
 
@@ -376,8 +376,8 @@ run_test("loading_newer", () => {
         msg_list.append(message_range(444, 445), false);
 
         test_happy_path({
-            msg_list: msg_list,
-            data: data,
+            msg_list,
+            data,
             empty_msg_list: false,
         });
 
@@ -392,8 +392,8 @@ run_test("loading_newer", () => {
         msg_list.data.fetch_status.update_expected_max_message_id([{id: 600}]);
 
         test_happy_path({
-            msg_list: msg_list,
-            data: data,
+            msg_list,
+            data,
         });
 
         // To handle this special case we should allow another fetch to occur,
@@ -434,7 +434,7 @@ run_test("loading_newer", () => {
         ];
 
         test_happy_path({
-            msg_list: msg_list,
+            msg_list,
             data: data[0],
             empty_msg_list: true,
         });
@@ -443,7 +443,7 @@ run_test("loading_newer", () => {
         message_list.all.append(message_range(444, 445), false);
 
         test_happy_path({
-            msg_list: msg_list,
+            msg_list,
             data: data[0],
             empty_msg_list: false,
         });
@@ -451,7 +451,7 @@ run_test("loading_newer", () => {
         assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), true);
 
         test_happy_path({
-            msg_list: msg_list,
+            msg_list,
             data: data[1],
         });
 

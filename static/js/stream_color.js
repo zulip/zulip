@@ -63,7 +63,7 @@ const subscriptions_table_colorpicker_options = {
 exports.set_colorpicker_color = function (colorpicker, color) {
     colorpicker.spectrum({
         ...subscriptions_table_colorpicker_options,
-        color: color,
+        color,
         container: "#subscription_overlay .subscription_settings.show",
     });
 };

@@ -17,7 +17,7 @@ set_global("overlays", {
     recent_topics_open: () => true,
 });
 set_global("people", {
-    is_my_user_id: function (id) {
+    is_my_user_id(id) {
         return id === 1;
     },
     sender_info_with_small_avatar_urls_for_sender_ids: (ids) => ids,
@@ -112,7 +112,7 @@ const messages = [];
 
 set_global("message_list", {
     all: {
-        all_messages: function () {
+        all_messages() {
             return messages;
         },
     },
@@ -256,8 +256,8 @@ function generate_topic_data(topic_info_array) {
         const topic_selector = $.create("#recent_topic:" + get_topic_key(stream_id, topic));
         topic_selector.data = function () {
             return {
-                participated: participated,
-                muted: muted,
+                participated,
+                muted,
                 unreadCount: unread_count,
             };
         };
@@ -272,15 +272,15 @@ function generate_topic_data(topic_info_array) {
             senders: [1, 2],
             stream: "stream" + stream_id,
             stream_color: "",
-            stream_id: stream_id,
+            stream_id,
             stream_url: "https://www.example.com",
-            topic: topic,
+            topic,
             topic_key: get_topic_key(stream_id, topic),
             topic_url: "https://www.example.com",
-            unread_count: unread_count,
-            muted: muted,
+            unread_count,
+            muted,
             topic_muted: muted,
-            participated: participated,
+            participated,
         });
     }
     return data;
@@ -638,7 +638,7 @@ run_test("test_delete_messages", () => {
 
     set_global("message_list", {
         all: {
-            all_messages: function () {
+            all_messages() {
                 // messages[0] was removed.
                 const reduced_msgs = [...messages];
                 reduced_msgs.splice(0, 1);
@@ -662,7 +662,7 @@ run_test("test_delete_messages", () => {
 
     set_global("message_list", {
         all: {
-            all_messages: function () {
+            all_messages() {
                 // messages[0], messages[1] and message[2] were removed.
                 const reduced_msgs = [...messages];
                 reduced_msgs.splice(0, 3);
@@ -683,7 +683,7 @@ run_test("test_delete_messages", () => {
 run_test("test_topic_edit", () => {
     set_global("message_list", {
         all: {
-            all_messages: function () {
+            all_messages() {
                 return messages;
             },
         },

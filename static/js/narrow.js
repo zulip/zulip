@@ -220,7 +220,7 @@ exports.activate = function (raw_operators, opts) {
 
     let msg_data = new MessageListData({
         filter: narrow_state.filter(),
-        muting_enabled: muting_enabled,
+        muting_enabled,
     });
 
     // Populate the message list if we can apply our filter locally (i.e.
@@ -228,8 +228,8 @@ exports.activate = function (raw_operators, opts) {
     // Also update id_info accordingly.
     // original back.
     exports.maybe_add_local_messages({
-        id_info: id_info,
-        msg_data: msg_data,
+        id_info,
+        msg_data,
     });
 
     if (!id_info.local_select_id) {
@@ -241,7 +241,7 @@ exports.activate = function (raw_operators, opts) {
         // the block we're about to request from the server instead.
         msg_data = new MessageListData({
             filter: narrow_state.filter(),
-            muting_enabled: muting_enabled,
+            muting_enabled,
         });
     }
 
@@ -292,11 +292,11 @@ exports.activate = function (raw_operators, opts) {
         }
 
         message_fetch.load_messages_for_narrow({
-            anchor: anchor,
-            cont: function () {
+            anchor,
+            cont() {
                 if (!select_immediately) {
                     exports.update_selection({
-                        id_info: id_info,
+                        id_info,
                         select_offset: then_select_offset,
                     });
                 }
@@ -308,7 +308,7 @@ exports.activate = function (raw_operators, opts) {
 
     if (select_immediately) {
         exports.update_selection({
-            id_info: id_info,
+            id_info,
             select_offset: then_select_offset,
         });
     }
@@ -551,7 +551,7 @@ exports.update_selection = function (opts) {
     const then_scroll = !preserve_pre_narrowing_screen_position;
 
     message_list.narrowed.select_id(msg_id, {
-        then_scroll: then_scroll,
+        then_scroll,
         use_closest: true,
         force_rerender: true,
     });
@@ -649,7 +649,7 @@ exports.narrow_to_next_pm_string = function () {
 // Activate narrowing with a single operator.
 // This is just for syntactic convenience.
 exports.by = function (operator, operand, opts) {
-    exports.activate([{operator: operator, operand: operand}], opts);
+    exports.activate([{operator, operand}], opts);
 };
 
 exports.by_topic = function (target_id, opts) {

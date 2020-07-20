@@ -76,10 +76,10 @@ exports.sort_groups = function (streams, search_term) {
     }
 
     return {
-        same_as_before: same_as_before,
-        pinned_streams: pinned_streams,
-        normal_streams: normal_streams,
-        dormant_streams: dormant_streams,
+        same_as_before,
+        pinned_streams,
+        normal_streams,
+        dormant_streams,
     };
 };
 

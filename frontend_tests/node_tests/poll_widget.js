@@ -152,7 +152,7 @@ run_test("activate another person poll", () => {
 
     const opts = {
         elem: widget_elem,
-        callback: callback,
+        callback,
         message: {
             sender_id: 100,
         },
@@ -298,7 +298,7 @@ run_test("activate own poll", () => {
     };
     const opts = {
         elem: widget_elem,
-        callback: callback,
+        callback,
         message: {
             sender_id: 100,
         },

@@ -381,7 +381,7 @@ function test_helper() {
                 events.push(full_name);
             };
         },
-        events: events,
+        events,
     };
 }
 

@@ -5,7 +5,7 @@ set_global("ui", {
     get_content_element: (element) => element,
 });
 set_global("stream_popover", {
-    hide_topic_popover: function () {},
+    hide_topic_popover() {},
 });
 set_global("unread", {});
 set_global("unread_ui", {});

@@ -4,8 +4,8 @@ function send_flag_update(message, flag, op) {
         idempotent: true,
         data: {
             messages: JSON.stringify([message.id]),
-            flag: flag,
-            op: op,
+            flag,
+            op,
         },
     });
 }

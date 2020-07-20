@@ -19,7 +19,7 @@ exports.create_item_from_email = function (email, current_items) {
             // is the email itself.
             return {
                 display_value: email,
-                email: email,
+                email,
             };
         }
 
@@ -125,11 +125,11 @@ exports.set_up_typeahead_on_pills = function (input, pills, update_func, source)
         items: 5,
         fixed: true,
         dropup: true,
-        source: source,
-        highlighter: function (item) {
+        source,
+        highlighter(item) {
             return typeahead_helper.render_person(item);
         },
-        matcher: function (item) {
+        matcher(item) {
             let query = this.query.toLowerCase();
             query = query.replace(/\u00A0/g, String.fromCharCode(32));
             if (!settings_data.show_email()) {
@@ -140,10 +140,10 @@ exports.set_up_typeahead_on_pills = function (input, pills, update_func, source)
                 email.toLowerCase().includes(query) || item.full_name.toLowerCase().includes(query)
             );
         },
-        sorter: function (matches) {
+        sorter(matches) {
             return typeahead_helper.sort_recipientbox_typeahead(this.query, matches, "");
         },
-        updater: function (user) {
+        updater(user) {
             exports.append_user(user, pills);
             input.trigger("focus");
             update_func();

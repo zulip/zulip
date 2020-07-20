@@ -46,10 +46,10 @@ function delete_attachments(attachment) {
     channel.del({
         url: "/json/attachments/" + attachment,
         idempotent: true,
-        error: function (xhr) {
+        error(xhr) {
             ui_report.error(i18n.t("Failed"), xhr, status);
         },
-        success: function () {
+        success() {
             ui_report.success(i18n.t("Attachment deleted"), status);
         },
     });
@@ -83,15 +83,15 @@ function render_attachments_ui() {
 
     list_render.create(uploaded_files_table, attachments, {
         name: "uploaded-files-list",
-        modifier: function (attachment) {
-            return render_uploaded_files_list({attachment: attachment});
+        modifier(attachment) {
+            return render_uploaded_files_list({attachment});
         },
         filter: {
             element: $search_input,
-            predicate: function (item, value) {
+            predicate(item, value) {
                 return item.name.toLocaleLowerCase().includes(value);
             },
-            onupdate: function () {
+            onupdate() {
                 ui.reset_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
             },
         },
@@ -145,14 +145,14 @@ exports.set_up_attachments = function () {
     channel.get({
         url: "/json/attachments",
         idempotent: true,
-        success: function (data) {
+        success(data) {
             loading.destroy_indicator($("#attachments_loading_indicator"));
             format_attachment_data(data.attachments);
             attachments = data.attachments;
             upload_space_used = data.upload_space_used;
             render_attachments_ui();
         },
-        error: function (xhr) {
+        error(xhr) {
             loading.destroy_indicator($("#attachments_loading_indicator"));
             ui_report.error(i18n.t("Failed"), xhr, status);
         },

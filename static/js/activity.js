@@ -178,7 +178,7 @@ function send_presence_to_server(want_redraw) {
             slim_presence: true,
         },
         idempotent: true,
-        success: function (data) {
+        success(data) {
             // Update Zephyr mirror activity warning
             if (data.zephyr_mirror_active === false) {
                 $("#zephyr-mirror-error").addClass("show");
@@ -265,7 +265,7 @@ exports.reset_users = function () {
 
 exports.narrow_for_user = function (opts) {
     const user_id = buddy_list.get_key_from_li({li: opts.li});
-    return exports.narrow_for_user_id({user_id: user_id});
+    return exports.narrow_for_user_id({user_id});
 };
 
 exports.narrow_for_user_id = function (opts) {
@@ -282,7 +282,7 @@ function keydown_enter_key() {
         return;
     }
 
-    exports.narrow_for_user_id({user_id: user_id});
+    exports.narrow_for_user_id({user_id});
     popovers.hide_all();
 }
 
@@ -305,15 +305,15 @@ exports.set_cursor_and_filter = function () {
     keydown_util.handle({
         elem: $input,
         handlers: {
-            enter_key: function () {
+            enter_key() {
                 keydown_enter_key();
                 return true;
             },
-            up_arrow: function () {
+            up_arrow() {
                 exports.user_cursor.prev();
                 return true;
             },
-            down_arrow: function () {
+            down_arrow() {
                 exports.user_cursor.next();
                 return true;
             },

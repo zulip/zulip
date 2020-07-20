@@ -67,7 +67,7 @@ function get_messages_success(data, opts) {
     const update_loading_indicator = opts.msg_list === current_msg_list;
     if (opts.num_before > 0) {
         opts.msg_list.data.fetch_status.finish_older_batch({
-            update_loading_indicator: update_loading_indicator,
+            update_loading_indicator,
             found_oldest: data.found_oldest,
             history_limited: data.history_limited,
         });
@@ -87,7 +87,7 @@ function get_messages_success(data, opts) {
 
     if (opts.num_after > 0) {
         opts.fetch_again = opts.msg_list.data.fetch_status.finish_newer_batch(data.messages, {
-            update_loading_indicator: update_loading_indicator,
+            update_loading_indicator,
             found_newest: data.found_newest,
         });
         if (opts.msg_list === home_msg_list) {
@@ -188,11 +188,11 @@ exports.load_messages = function (opts) {
     let update_loading_indicator = opts.msg_list === current_msg_list;
     if (opts.num_before > 0) {
         opts.msg_list.data.fetch_status.start_older_batch({
-            update_loading_indicator: update_loading_indicator,
+            update_loading_indicator,
         });
         if (opts.msg_list === home_msg_list) {
             message_list.all.data.fetch_status.start_older_batch({
-                update_loading_indicator: update_loading_indicator,
+                update_loading_indicator,
             });
         }
     }
@@ -201,11 +201,11 @@ exports.load_messages = function (opts) {
         // We hide the bottom loading indicator when we're fetching both top and bottom messages.
         update_loading_indicator = update_loading_indicator && opts.num_before === 0;
         opts.msg_list.data.fetch_status.start_newer_batch({
-            update_loading_indicator: update_loading_indicator,
+            update_loading_indicator,
         });
         if (opts.msg_list === home_msg_list) {
             message_list.all.data.fetch_status.start_newer_batch({
-                update_loading_indicator: update_loading_indicator,
+                update_loading_indicator,
             });
         }
     }
@@ -215,12 +215,12 @@ exports.load_messages = function (opts) {
 
     channel.get({
         url: "/json/messages",
-        data: data,
+        data,
         idempotent: true,
-        success: function (data) {
+        success(data) {
             get_messages_success(data, opts);
         },
-        error: function (xhr) {
+        error(xhr) {
             if (opts.msg_list.narrowed && opts.msg_list !== current_msg_list) {
                 // We unnarrowed before getting an error so don't
                 // bother trying again or doing further processing.
@@ -255,7 +255,7 @@ exports.load_messages_for_narrow = function (opts) {
         anchor: opts.anchor,
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
-        msg_list: msg_list,
+        msg_list,
         cont: opts.cont,
     });
 };
@@ -308,7 +308,7 @@ exports.maybe_load_older_messages = function (opts) {
     }
 
     exports.do_backfill({
-        msg_list: msg_list,
+        msg_list,
         num_before: consts.backward_batch_size,
     });
 };
@@ -318,11 +318,11 @@ exports.do_backfill = function (opts) {
     const anchor = exports.get_backfill_anchor(msg_list);
 
     exports.load_messages({
-        anchor: anchor,
+        anchor,
         num_before: opts.num_before,
         num_after: 0,
-        msg_list: msg_list,
-        cont: function () {
+        msg_list,
+        cont() {
             if (opts.cont) {
                 opts.cont();
             }
@@ -351,10 +351,10 @@ exports.maybe_load_newer_messages = function (opts) {
     }
 
     exports.load_messages({
-        anchor: anchor,
+        anchor,
         num_before: 0,
         num_after: consts.forward_batch_size,
-        msg_list: msg_list,
+        msg_list,
         cont: load_more,
     });
 };
@@ -363,7 +363,7 @@ exports.start_backfilling_messages = function () {
     // backfill more messages after the user is idle
     $(document).idle({
         idle: consts.backfill_idle_time,
-        onIdle: function () {
+        onIdle() {
             exports.do_backfill({
                 num_before: consts.backfill_batch_size,
                 msg_list: home_msg_list,
@@ -419,7 +419,7 @@ exports.initialize = function () {
         anchor = "first_unread";
     }
     exports.load_messages({
-        anchor: anchor,
+        anchor,
         num_before: consts.num_before_home_anchor,
         num_after: consts.num_after_home_anchor,
         msg_list: home_msg_list,

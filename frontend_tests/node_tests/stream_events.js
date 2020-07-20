@@ -210,7 +210,7 @@ run_test("marked_subscribed", () => {
 
     set_global("message_list", {
         all: {
-            all_messages: function () {
+            all_messages() {
                 return ["msg"];
             },
         },

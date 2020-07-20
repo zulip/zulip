@@ -197,7 +197,7 @@ exports.invite_user_to_stream = function (user_ids, sub, success, failure) {
             subscriptions: JSON.stringify([{name: stream_name}]),
             principals: JSON.stringify(user_ids),
         },
-        success: success,
+        success,
         error: failure,
     });
 };
@@ -231,7 +231,7 @@ function submit_add_subscriber_form(e) {
             const already_subscribed_users = Object.keys(data.already_subscribed).join(", ");
             stream_subscription_info_elem.text(
                 i18n.t(" __already_subscribed_users__ are already subscribed.", {
-                    already_subscribed_users: already_subscribed_users,
+                    already_subscribed_users,
                 }),
             );
         }
@@ -255,7 +255,7 @@ exports.remove_user_from_stream = function (user_id, sub, success, failure) {
     return channel.del({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([stream_name]), principals: JSON.stringify([user_id])},
-        success: success,
+        success,
         error: failure,
     });
 };
@@ -298,7 +298,7 @@ function show_subscription_settings(sub_row) {
             "'] .pill-container",
     );
     exports.pill_widget = input_pill.create({
-        container: container,
+        container,
         create_item_from_text: user_pill.create_item_from_email,
         get_text_from_item: user_pill.get_email_from_item,
     });
@@ -323,12 +323,12 @@ function show_subscription_settings(sub_row) {
 
     list_render.create(list, users, {
         name: "stream_subscribers/" + stream_id,
-        modifier: function (item) {
+        modifier(item) {
             return format_member_list_elem(item);
         },
         filter: {
             element: $("[data-stream-id='" + stream_id + "'] .search"),
-            predicate: function (item, value) {
+            predicate(item, value) {
                 const person = item;
 
                 if (person) {
@@ -391,7 +391,7 @@ exports.show_settings_for = function (node) {
 
     stream_data.update_calculated_fields(sub);
     const html = render_subscription_settings({
-        sub: sub,
+        sub,
         settings: exports.stream_settings(sub),
         stream_post_policy_values: stream_data.stream_post_policy_values,
         message_retention_text: exports.get_retention_policy_text_for_subscription_type(sub),
@@ -466,8 +466,8 @@ exports.bulk_set_stream_property = function (sub_data, status_element) {
     const data = {subscription_data: JSON.stringify(sub_data)};
     if (!status_element) {
         return channel.post({
-            url: url,
-            data: data,
+            url,
+            data,
             timeout: 10 * 1000,
         });
     }
@@ -476,7 +476,7 @@ exports.bulk_set_stream_property = function (sub_data, status_element) {
 };
 
 exports.set_stream_property = function (sub, property, value, status_element) {
-    const sub_data = {stream_id: sub.stream_id, property: property, value: value};
+    const sub_data = {stream_id: sub.stream_id, property, value};
     exports.bulk_set_stream_property([sub_data], status_element);
 };
 
@@ -530,13 +530,13 @@ function change_stream_privacy(e) {
 
     channel.patch({
         url: "/json/streams/" + stream_id,
-        data: data,
-        success: function () {
+        data,
+        success() {
             overlays.close_modal("#stream_privacy_modal");
             $("#stream_privacy_modal").remove();
             // The rest will be done by update stream event we will get.
         },
-        error: function () {
+        error() {
             $("#change-stream-privacy-button").text(i18n.t("Try again"));
         },
     });
@@ -554,14 +554,14 @@ exports.change_stream_name = function (e) {
         // Stream names might contain unsafe characters so we must encode it first.
         url: "/json/streams/" + stream_id,
         data: {new_name: JSON.stringify(new_name)},
-        success: function () {
+        success() {
             new_name_box.val("");
             ui_report.success(
                 i18n.t("The stream has been renamed!"),
                 $(".stream_change_property_info"),
             );
         },
-        error: function (xhr) {
+        error(xhr) {
             new_name_box.text(stream_data.maybe_get_stream_name(stream_id));
             ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
         },
@@ -598,14 +598,14 @@ exports.change_stream_description = function (e) {
         data: {
             description: JSON.stringify(description),
         },
-        success: function () {
+        success() {
             // The event from the server will update the rest of the UI
             ui_report.success(
                 i18n.t("The stream description has been updated!"),
                 $(".stream_change_property_info"),
             );
         },
-        error: function (xhr) {
+        error(xhr) {
             sub_settings
                 .find(".stream-description-editable")
                 .html(util.clean_user_content_links(sub.rendered_description));
@@ -617,10 +617,10 @@ exports.change_stream_description = function (e) {
 exports.delete_stream = function (stream_id, alert_element, stream_row) {
     channel.del({
         url: "/json/streams/" + stream_id,
-        error: function (xhr) {
+        error(xhr) {
             ui_report.error(i18n.t("Failed"), xhr, alert_element);
         },
-        success: function () {
+        success() {
             stream_row.remove();
         },
     });
@@ -643,7 +643,7 @@ exports.initialize = function () {
         const stream_id = get_stream_id(e.target);
         const stream = stream_data.get_sub_by_id(stream_id);
         const template_data = {
-            stream_id: stream_id,
+            stream_id,
             stream_name: stream.name,
             stream_post_policy_values: stream_data.stream_post_policy_values,
             stream_post_policy: stream.stream_post_policy,
@@ -775,8 +775,8 @@ exports.initialize = function () {
         }
         const stream_name = stream_data.maybe_get_stream_name(stream_id);
         const deactivate_stream_modal = render_settings_deactivation_stream_modal({
-            stream_name: stream_name,
-            stream_id: stream_id,
+            stream_name,
+            stream_id,
         });
         $("#deactivation_stream_modal").remove();
         $("#subscriptions_table").append(deactivate_stream_modal);

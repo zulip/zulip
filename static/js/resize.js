@@ -120,7 +120,7 @@ exports.watch_manual_resize = function (element) {
         }
 
         const meta = {
-            box: box,
+            box,
             height: null,
             mousedown: false,
         };

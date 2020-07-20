@@ -92,7 +92,7 @@ function clear_box() {
 
 exports.autosize_message_content = function () {
     autosize($("#compose-textarea"), {
-        callback: function () {
+        callback() {
             exports.maybe_scroll_up_selected_message();
         },
     });
@@ -328,8 +328,8 @@ exports.respond_to_message = function (opts) {
     }
 
     exports.start(msg_type, {
-        stream: stream,
-        topic: topic,
+        stream,
+        topic,
         private_message_recipient: pm_recipient,
         trigger: opts.trigger,
     });
@@ -438,7 +438,7 @@ exports.quote_and_reply = function (opts) {
     channel.get({
         url: "/json/messages/" + message_id,
         idempotent: true,
-        success: function (data) {
+        success(data) {
             message.raw_content = data.raw_content;
             replace_content(message);
         },

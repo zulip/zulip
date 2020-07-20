@@ -36,7 +36,7 @@ $(() => {
             new_password1: "password_strength",
         },
         errorElement: "p",
-        errorPlacement: function (error, element) {
+        errorPlacement(error, element) {
             // NB: this is called at most once, when the error element
             // is created.
             element.next(".help-inline.alert.alert-error").remove();
@@ -109,12 +109,12 @@ $(() => {
 
     $("#send_confirm").validate({
         errorElement: "div",
-        errorPlacement: function (error) {
+        errorPlacement(error) {
             $(".email-frontend-error").empty();
             $("#send_confirm .alert.email-backend-error").remove();
             error.appendTo(".email-frontend-error").addClass("text-error");
         },
-        success: function () {
+        success() {
             $("#errors").empty();
         },
     });
@@ -141,18 +141,18 @@ $(() => {
     $("#login_form").validate({
         errorClass: "text-error",
         wrapper: "div",
-        submitHandler: function (form) {
+        submitHandler(form) {
             $("#login_form").find(".loader").css("display", "inline-block");
             $("#login_form").find("button .text").hide();
 
             form.submit();
         },
-        invalidHandler: function () {
+        invalidHandler() {
             // this removes all previous errors that were put on screen
             // by the server.
             $("#login_form .alert.alert-error").remove();
         },
-        showErrors: function (error_map) {
+        showErrors(error_map) {
             if (error_map.password) {
                 $("#login_form .alert.alert-error").remove();
             }

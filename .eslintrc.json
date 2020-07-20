@@ -70,6 +70,7 @@
         "no-use-before-define": "error",
         "no-useless-constructor": "error",
         "no-var": "error",
+        "object-shorthand": "error",
         "one-var": [ "error", "never" ],
         "prefer-arrow-callback": "error",
         "prefer-const": [ "error",
@@ -307,6 +308,7 @@
             "rules": {
                 // Don’t require ES features that PhantomJS doesn’t support
                 "no-var": "off",
+                "object-shorthand": "off",
                 "prefer-arrow-callback": "off"
             }
         },

@@ -167,14 +167,14 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
         }
 
         const html = render_settings_custom_user_profile_field({
-            field: field,
+            field,
             field_type: all_field_template_types.get(field.type),
-            field_value: field_value,
+            field_value,
             is_long_text_field: field.type === all_field_types.LONG_TEXT.id,
             is_user_field: field.type === all_field_types.USER.id,
             is_date_field: field.type === all_field_types.DATE.id,
-            is_choice_field: is_choice_field,
-            field_choices: field_choices,
+            is_choice_field,
+            field_choices,
         });
         $(element_id).append(html);
     });
@@ -300,8 +300,8 @@ exports.set_up = function () {
         function request_api_key(data) {
             channel.post({
                 url: "/json/fetch_api_key",
-                data: data,
-                success: function (data) {
+                data,
+                success(data) {
                     $("#get_api_key_password").val("");
                     $("#api_key_value").text(data.api_key);
                     // The display property on the error bar is set to important
@@ -311,7 +311,7 @@ exports.set_up = function () {
                     $("#password_confirmation").hide();
                     $("#show_api_key").show();
                 },
-                error: function (xhr) {
+                error(xhr) {
                     ui_report.error(i18n.t("Error"), xhr, $("#api_key_status").expectOne());
                     $("#show_api_key").hide();
                     $("#api_key_modal").show();
@@ -340,10 +340,10 @@ exports.set_up = function () {
         $("#show_api_key").on("click", "button.regenerate_api_key", (e) => {
             channel.post({
                 url: "/json/users/me/api_key/regenerate",
-                success: function (data) {
+                success(data) {
                     $("#api_key_value").text(data.api_key);
                 },
-                error: function (xhr) {
+                error(xhr) {
                     $("#user_api_key_error").text(JSON.parse(xhr.responseText).msg).show();
                 },
             });
@@ -447,7 +447,7 @@ exports.set_up = function () {
         }
 
         const opts = {
-            success_continuation: function () {
+            success_continuation() {
                 overlays.close_modal("#change_password_modal");
             },
             error_msg_element: change_password_error,
@@ -478,7 +478,7 @@ exports.set_up = function () {
         data.full_name = $(".full_name_change_container").find("input[name='full_name']").val();
 
         const opts = {
-            success_continuation: function () {
+            success_continuation() {
                 overlays.close_modal("#change_full_name_modal");
             },
             error_msg_element: change_full_name_error,
@@ -500,7 +500,7 @@ exports.set_up = function () {
         data.email = $(".email_change_container").find("input[name='email']").val();
 
         const opts = {
-            success_continuation: function () {
+            success_continuation() {
                 if (page_params.development_environment) {
                     const email_msg = render_settings_dev_env_email_access();
                     ui_report.success(
@@ -559,7 +559,7 @@ exports.set_up = function () {
             10,
         );
         if (value) {
-            fields.push({id: field_id, value: value});
+            fields.push({id: field_id, value});
             update_user_custom_profile_fields(fields, channel.patch);
         } else {
             fields.push(field_id);
@@ -579,11 +579,11 @@ exports.set_up = function () {
         setTimeout(() => {
             channel.del({
                 url: "/json/users/me",
-                success: function () {
+                success() {
                     $("#deactivate_self_modal").modal("hide");
                     window.location.href = "/login/";
                 },
-                error: function (xhr) {
+                error(xhr) {
                     const error_last_admin = i18n.t(
                         "Error: Cannot deactivate the only organization administrator.",
                     );
@@ -645,13 +645,13 @@ exports.set_up = function () {
             cache: false,
             processData: false,
             contentType: false,
-            success: function () {
+            success() {
                 display_avatar_upload_complete();
                 $("#user-avatar-upload-widget .image_file_input_error").hide();
                 $("#user-avatar-source").hide();
                 // Rest of the work is done via the user_events -> avatar_url event we will get
             },
-            error: function (xhr) {
+            error(xhr) {
                 display_avatar_upload_complete();
                 if (page_params.avatar_source === "G") {
                     $("#user-avatar-source").show();

@@ -133,8 +133,8 @@ exports.unread_pm_counter = (function () {
             total_count += count;
         }
         return {
-            total_count: total_count,
-            pm_dict: pm_dict,
+            total_count,
+            pm_dict,
         };
     };
 
@@ -216,7 +216,7 @@ exports.unread_topic_counter = (function () {
         bucketer.add({
             bucket_key: stream_id,
             item_id: msg_id,
-            add_callback: function (per_stream_bucketer) {
+            add_callback(per_stream_bucketer) {
                 per_stream_bucketer.add({
                     bucket_key: topic,
                     item_id: msg_id,

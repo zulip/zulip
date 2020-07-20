@@ -1168,7 +1168,7 @@ exports.extract_people_from_message = function (message) {
 
         exports._add_user({
             email: person.email,
-            user_id: user_id,
+            user_id,
             full_name: person.full_name,
             is_admin: person.is_realm_admin || false,
             is_bot: person.is_bot || false,

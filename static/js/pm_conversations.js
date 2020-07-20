@@ -31,7 +31,7 @@ exports.recent = (function () {
         if (conversation === undefined) {
             // This is a new user, so create a new object.
             conversation = {
-                user_ids_string: user_ids_string,
+                user_ids_string,
                 max_message_id: message_id,
             };
             recent_message_ids.set(user_ids_string, conversation);

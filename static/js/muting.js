@@ -38,11 +38,11 @@ exports.get_muted_topics = function () {
             const date_muted = sub_dict.get(topic);
             const date_muted_str = timerender.render_now(new XDate(date_muted)).time_str;
             topics.push({
-                stream_id: stream_id,
-                stream: stream,
-                topic: topic,
-                date_muted: date_muted,
-                date_muted_str: date_muted_str,
+                stream_id,
+                stream,
+                topic,
+                date_muted,
+                date_muted_str,
             });
         }
     }

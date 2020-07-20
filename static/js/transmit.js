@@ -10,7 +10,7 @@ exports.send_message = function (request, on_success, error) {
             // Once everything is done, get ready to report times to the server.
             sent_messages.report_server_ack(request.local_id);
         },
-        error: function (xhr, error_type) {
+        error(xhr, error_type) {
             if (error_type !== "timeout" && reload_state.is_pending()) {
                 // The error might be due to the server changing
                 reload.initiate({
@@ -60,12 +60,12 @@ exports.reply_message = function (opts) {
     const reply = {
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
-        local_id: local_id,
+        local_id,
     };
 
     sent_messages.start_tracking_message({
-        local_id: local_id,
-        locally_echoed: locally_echoed,
+        local_id,
+        locally_echoed,
     });
 
     if (message.type === "stream") {

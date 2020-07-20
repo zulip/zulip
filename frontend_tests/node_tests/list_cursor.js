@@ -15,7 +15,7 @@ function basic_conf() {
     };
 
     const conf = {
-        list: list,
+        list,
         highlight_class: "highlight",
     };
 

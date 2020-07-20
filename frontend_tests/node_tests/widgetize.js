@@ -58,7 +58,7 @@ run_test("activate", () => {
             assert.equal(data.msg_type, "widget");
             assert.equal(data.data, "test_data");
         },
-        row: row,
+        row,
         widget_type: "poll",
     };
 

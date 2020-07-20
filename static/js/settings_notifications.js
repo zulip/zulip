@@ -12,7 +12,7 @@ exports.get_notifications_table_row_data = function (notify_settings) {
             };
         }
         const checkbox = {
-            setting_name: setting_name,
+            setting_name,
             is_disabled: false,
         };
         if (column === "mobile") {
@@ -52,7 +52,7 @@ function rerender_ui() {
     for (const stream of unmatched_streams) {
         unmatched_streams_table.append(
             render_stream_specific_notification_row({
-                stream: stream,
+                stream,
                 stream_specific_notification_settings:
                     settings_config.stream_specific_notification_settings,
                 is_disabled: settings_config.all_notifications().show_push_notifications_tooltip,

@@ -99,7 +99,7 @@ function get_topic_matcher(query) {
 
     return function (topic) {
         const obj = {
-            topic: topic,
+            topic,
         };
 
         return typeahead.query_matches_source_attrs(query, obj, ["topic"], " ");
@@ -366,7 +366,7 @@ exports.broadcast_mentions = function () {
         is_broadcast: true,
 
         // used for sorting
-        idx: idx,
+        idx,
     }));
 };
 
@@ -677,7 +677,7 @@ exports.get_candidates = function (query) {
             return false;
         }
         this.token = current_token;
-        return {is_silent: is_silent};
+        return {is_silent};
     }
 
     function get_slash_commands_data() {
@@ -1041,15 +1041,15 @@ exports.initialize_compose_typeahead = function (selector) {
         // inside the typeahead library.
         source: exports.get_sorted_filtered_items,
         highlighter: exports.content_highlighter,
-        matcher: function () {
+        matcher() {
             return true;
         },
-        sorter: function (items) {
+        sorter(items) {
             return items;
         },
         updater: exports.content_typeahead_selected,
         stopAdvance: true, // Do not advance to the next field on a tab or enter
-        completions: completions,
+        completions,
         automated: exports.compose_automated_selection,
         trigger_selection: exports.compose_trigger_selection,
         header: get_header_text,
@@ -1092,15 +1092,15 @@ exports.initialize = function () {
 
     // limit number of items so the list doesn't fall off the screen
     $("#stream_message_recipient_stream").typeahead({
-        source: function () {
+        source() {
             return stream_data.subscribed_streams();
         },
         items: 3,
         fixed: true,
-        highlighter: function (item) {
+        highlighter(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
-        matcher: function (item) {
+        matcher(item) {
             // The matcher for "stream" is strictly prefix-based,
             // because we want to avoid mixing up streams.
             const q = this.query.trim().toLowerCase();
@@ -1109,16 +1109,16 @@ exports.initialize = function () {
     });
 
     $("#stream_message_recipient_topic").typeahead({
-        source: function () {
+        source() {
             const stream_name = compose_state.stream_name();
             return exports.topics_seen_for(stream_name);
         },
         items: 3,
         fixed: true,
-        highlighter: function (item) {
+        highlighter(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
-        sorter: function (items) {
+        sorter(items) {
             const sorted = typeahead_helper.sorter(this.query, items, (x) => x);
             if (sorted.length > 0 && !sorted.includes(this.query)) {
                 sorted.unshift(this.query);
@@ -1132,16 +1132,16 @@ exports.initialize = function () {
         items: exports.max_num_items,
         dropup: true,
         fixed: true,
-        highlighter: function (item) {
+        highlighter(item) {
             return typeahead_helper.render_person_or_user_group(item);
         },
-        matcher: function () {
+        matcher() {
             return true;
         },
-        sorter: function (items) {
+        sorter(items) {
             return items;
         },
-        updater: function (item) {
+        updater(item) {
             if (user_groups.is_user_group(item)) {
                 for (const user_id of item.members) {
                     const user = people.get_by_user_id(user_id);

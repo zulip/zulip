@@ -33,8 +33,8 @@ $(() => {
 
         channel.post({
             url: "/emails/",
-            data: data,
-            success: function () {
+            data,
+            success() {
                 $("#smtp_form_status").show();
                 setTimeout(() => {
                     $("#smtp_form_status").hide();

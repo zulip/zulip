@@ -7,7 +7,7 @@ exports.initialize = function () {
         key: stripe_key,
         image: "/static/images/logo/zulip-icon-128x128.png",
         locale: "auto",
-        token: function (stripe_token) {
+        token(stripe_token) {
             helpers.create_ajax_request("/json/billing/sources/change", "cardchange", stripe_token);
         },
     });
@@ -19,7 +19,7 @@ exports.initialize = function () {
             zipCode: true,
             billingAddress: true,
             panelLabel: "Update card",
-            email: email,
+            email,
             label: "Update card",
             allowRememberMe: false,
         });

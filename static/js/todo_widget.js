@@ -32,8 +32,8 @@ exports.task_data_holder = function () {
         }
 
         const widget_data = {
-            pending_tasks: pending_tasks,
-            completed_tasks: completed_tasks,
+            pending_tasks,
+            completed_tasks,
         };
 
         return widget_data;
@@ -51,12 +51,12 @@ exports.task_data_holder = function () {
 
     self.handle = {
         new_task: {
-            outbound: function (task, desc) {
+            outbound(task, desc) {
                 const event = {
                     type: "new_task",
                     key: get_new_index(),
-                    task: task,
-                    desc: desc,
+                    task,
+                    desc,
                     completed: false,
                 };
 
@@ -66,7 +66,7 @@ exports.task_data_holder = function () {
                 return;
             },
 
-            inbound: function (sender_id, data) {
+            inbound(sender_id, data) {
                 // for legacy reasons, the inbound idx is
                 // called key in the event
                 const idx = data.key;
@@ -76,11 +76,11 @@ exports.task_data_holder = function () {
                 const completed = data.completed;
 
                 const task_data = {
-                    task: task,
-                    desc: desc,
-                    idx: idx,
-                    key: key,
-                    completed: completed,
+                    task,
+                    desc,
+                    idx,
+                    key,
+                    completed,
                 };
 
                 if (!self.name_in_use(task)) {
@@ -90,16 +90,16 @@ exports.task_data_holder = function () {
         },
 
         strike: {
-            outbound: function (key) {
+            outbound(key) {
                 const event = {
                     type: "strike",
-                    key: key,
+                    key,
                 };
 
                 return event;
             },
 
-            inbound: function (sender_id, data) {
+            inbound(sender_id, data) {
                 const key = data.key;
                 const item = task_map.get(key);
 

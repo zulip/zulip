@@ -138,7 +138,7 @@ function activate_people() {
 
     function set_presence(user_id, status) {
         presence.presence_info.set(user_id, {
-            status: status,
+            status,
             last_active: 9999,
         });
     }

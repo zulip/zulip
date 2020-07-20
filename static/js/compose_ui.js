@@ -119,7 +119,7 @@ exports.compute_placeholder_text = function (opts) {
                 });
             }
         }
-        return i18n.t("Message __- recipient_names__", {recipient_names: recipient_names});
+        return i18n.t("Message __- recipient_names__", {recipient_names});
     }
     return i18n.t("Compose your message here");
 };

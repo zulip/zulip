@@ -62,17 +62,17 @@ exports.keyed_topic_li = (convo) => {
     const key = "t:" + convo.topic_name;
 
     return {
-        key: key,
-        render: render,
-        convo: convo,
-        eq: eq,
+        key,
+        render,
+        convo,
+        eq,
     };
 };
 
 exports.more_li = (more_topics_unreads) => {
     const render = () =>
         render_more_topics({
-            more_topics_unreads: more_topics_unreads,
+            more_topics_unreads,
         });
 
     const eq = (other) => other.more_items && more_topics_unreads === other.more_topics_unreads;
@@ -80,11 +80,11 @@ exports.more_li = (more_topics_unreads) => {
     const key = "more";
 
     return {
-        key: key,
+        key,
         more_items: true,
-        more_topics_unreads: more_topics_unreads,
-        render: render,
-        eq: eq,
+        more_topics_unreads,
+        render,
+        eq,
     };
 };
 
@@ -96,10 +96,10 @@ exports.spinner_li = () => {
     const key = "more";
 
     return {
-        key: key,
+        key,
         spinner: true,
-        render: render,
-        eq: eq,
+        render,
+        eq,
     };
 };
 
@@ -129,7 +129,7 @@ exports.widget = function (parent_elem, my_stream_id) {
         }
 
         const dom = vdom.ul({
-            attrs: attrs,
+            attrs,
             keyed_nodes: nodes,
         });
 

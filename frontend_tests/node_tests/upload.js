@@ -348,7 +348,7 @@ run_test("file_input", () => {
     const files = ["file1", "file2"];
     const event = {
         target: {
-            files: files,
+            files,
             value: "C:\\fakepath\\portland.png",
         },
     };
@@ -388,7 +388,7 @@ run_test("file_drop", () => {
         },
         originalEvent: {
             dataTransfer: {
-                files: files,
+                files,
             },
         },
     };

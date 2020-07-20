@@ -15,7 +15,7 @@ global.patch_builtin("setTimeout", (func) => func());
 set_global("home_msg_list", {
     rerender: noop,
     select_id: noop,
-    selected_id: function () {
+    selected_id() {
         return 1;
     },
 });
@@ -62,7 +62,7 @@ set_global("compose", {
 });
 
 set_global("settings_exports", {
-    populate_exports_table: function (exports) {
+    populate_exports_table(exports) {
         return exports;
     },
     clear_success_banner: noop,
@@ -82,13 +82,13 @@ set_global("current_msg_list", {rerender: noop});
 // We use blueslip to print the traceback
 set_global("blueslip", {
     info: noop,
-    error: function (msg, more_info, stack) {
+    error(msg, more_info, stack) {
         console.log("\nFailed to process an event:\n", more_info.event, "\n");
         const error = new Error();
         error.stack = stack;
         throw error;
     },
-    exception_msg: function (ex) {
+    exception_msg(ex) {
         return ex.message;
     },
 });

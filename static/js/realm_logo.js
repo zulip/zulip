@@ -34,7 +34,7 @@ exports.build_realm_logo_widget = function (upload_function, is_night) {
         e.stopPropagation();
         channel.del({
             url: "/json/realm/logo",
-            data: data,
+            data,
         });
     });
 

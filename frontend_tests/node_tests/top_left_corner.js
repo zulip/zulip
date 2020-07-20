@@ -13,10 +13,10 @@ run_test("narrowing", () => {
     let pm_closed;
 
     set_global("pm_list", {
-        close: function () {
+        close() {
             pm_closed = true;
         },
-        expand: function () {
+        expand() {
             pm_expanded = true;
         },
     });

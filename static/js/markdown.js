@@ -89,7 +89,7 @@ exports.apply_markdown = function (message) {
     message_store.init_booleans(message);
 
     const options = {
-        userMentionHandler: function (mention, silently) {
+        userMentionHandler(mention, silently) {
             if (mention === "all" || mention === "everyone" || mention === "stream") {
                 message.mentioned = true;
                 return '<span class="user-mention" data-user-id="*">' + "@" + mention + "</span>";
@@ -160,7 +160,7 @@ exports.apply_markdown = function (message) {
             const actual_full_name = helpers.get_actual_name_from_user_id(user_id);
             return str + _.escape(actual_full_name) + "</span>";
         },
-        groupMentionHandler: function (name) {
+        groupMentionHandler(name) {
             const group = helpers.get_user_group_from_name(name);
             if (group !== undefined) {
                 if (helpers.is_member_of_user_group(group.id, helpers.my_user_id())) {
@@ -177,7 +177,7 @@ exports.apply_markdown = function (message) {
             }
             return;
         },
-        silencedMentionHandler: function (quote) {
+        silencedMentionHandler(quote) {
             // Silence quoted mentions.
             const user_mention_re = /<span.*user-mention.*data-user-id="(\d+|\*)"[^>]*>@/gm;
             quote = quote.replace(user_mention_re, (match) => {
@@ -485,7 +485,7 @@ exports.initialize = function (realm_filters, helper_config) {
 
     function disable_markdown_regex(rules, name) {
         rules[name] = {
-            exec: function () {
+            exec() {
                 return false;
             },
         };

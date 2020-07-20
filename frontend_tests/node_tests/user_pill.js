@@ -81,7 +81,7 @@ run_test("append", () => {
 
     user_pill.append_person({
         person: isaac,
-        pill_widget: pill_widget,
+        pill_widget,
     });
 
     assert(appended);
@@ -92,7 +92,7 @@ run_test("get_items", () => {
     const items = [isaac_item, bogus_item];
 
     const pill_widget = {
-        items: function () {
+        items() {
             return items;
         },
     };
@@ -104,7 +104,7 @@ run_test("typeahead", () => {
     const items = [isaac_item, bogus_item];
 
     const pill_widget = {
-        items: function () {
+        items() {
             return items;
         },
     };

@@ -64,7 +64,7 @@ exports.initialize = function () {
     let search_map = new Map();
 
     search_query_box.typeahead({
-        source: function (query) {
+        source(query) {
             let base_query = "";
             if (page_params.search_pills_enabled) {
                 base_query = search_pill.get_search_string_for_current_filter(
@@ -80,27 +80,27 @@ exports.initialize = function () {
         items: search_suggestion.max_num_of_search_results,
         helpOnEmptyStrings: true,
         naturalSearch: true,
-        highlighter: function (item) {
+        highlighter(item) {
             const obj = search_map.get(item);
             return obj.description;
         },
-        matcher: function () {
+        matcher() {
             return true;
         },
-        updater: function (search_string) {
+        updater(search_string) {
             if (page_params.search_pills_enabled) {
                 search_pill.append_search_string(search_string, search_pill_widget.widget);
                 return search_query_box.val();
             }
             return exports.narrow_or_search_for_term(search_string);
         },
-        sorter: function (items) {
+        sorter(items) {
             return items;
         },
         stopAdvance: page_params.search_pills_enabled,
         advanceKeyCodes: [8],
 
-        on_move: function () {
+        on_move() {
             if (page_params.search_pills_enabled) {
                 ui_util.place_caret_at_end(search_query_box[0]);
                 return true;

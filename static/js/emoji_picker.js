@@ -225,7 +225,7 @@ function filter_emojis() {
         const sorted_search_results = typeahead.sort_emojis(search_results, query);
         const rendered_search_results = render_emoji_popover_search_results({
             search_results: sorted_search_results,
-            message_id: message_id,
+            message_id,
         });
         $(".emoji-search-results").html(rendered_search_results);
         ui.reset_scrollbar($(".emoji-search-results-container"));
@@ -306,7 +306,7 @@ function update_emoji_showcase($focused_emoji) {
         name: focused_emoji_name.replace(/_/g, " "),
     };
     const rendered_showcase = render_emoji_showcase({
-        emoji_dict: emoji_dict,
+        emoji_dict,
     });
 
     $(".emoji-showcase-container").html(rendered_showcase);
@@ -596,9 +596,9 @@ exports.render_emoji_popover = function (elt, id) {
 
     elt.popover({
         // temporary patch for handling popover placement of `viewport_center`
-        placement: placement,
+        placement,
         fix_positions: true,
-        template: template,
+        template,
         title: "",
         content: generate_emoji_picker_content(id),
         html: true,

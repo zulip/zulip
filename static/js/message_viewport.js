@@ -150,13 +150,13 @@ function add_to_visible(
 }
 
 const top_of_feed = new util.CachedValue({
-    compute_value: function () {
+    compute_value() {
         return $(".floating_recipient").offset().top + $(".floating_recipient").safeOuterHeight();
     },
 });
 
 const bottom_of_feed = new util.CachedValue({
-    compute_value: function () {
+    compute_value() {
         return $("#compose")[0].getBoundingClientRect().top;
     },
 });
@@ -277,7 +277,7 @@ exports.scrollTop = function viewport_scrollTop(target_scrollTop) {
 
 function make_dimen_wrapper(dimen_name, dimen_func) {
     dimensions[dimen_name] = new util.CachedValue({
-        compute_value: function () {
+        compute_value() {
             return dimen_func.call(exports.message_pane);
         },
     });
@@ -313,7 +313,7 @@ exports.system_initiated_animate_scroll = function (scroll_amount) {
     in_stoppable_autoscroll = true;
     exports.message_pane.animate({
         scrollTop: viewport_offset + scroll_amount,
-        always: function () {
+        always() {
             in_stoppable_autoscroll = false;
         },
     });

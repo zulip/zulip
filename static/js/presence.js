@@ -75,20 +75,20 @@ exports.status_from_raw = function (raw) {
     if (age(active_timestamp) < OFFLINE_THRESHOLD_SECS) {
         return {
             status: "active",
-            last_active: last_active,
+            last_active,
         };
     }
 
     if (age(idle_timestamp) < OFFLINE_THRESHOLD_SECS) {
         return {
             status: "idle",
-            last_active: last_active,
+            last_active,
         };
     }
 
     return {
         status: "offline",
-        last_active: last_active,
+        last_active,
     };
 };
 
@@ -186,7 +186,7 @@ exports.set_info = function (presences, server_timestamp) {
         }
 
         const raw = {
-            server_timestamp: server_timestamp,
+            server_timestamp,
             active_timestamp: info.active_timestamp || undefined,
             idle_timestamp: info.idle_timestamp || undefined,
         };
@@ -230,7 +230,7 @@ exports.update_info_for_small_realm = function () {
         }
 
         exports.presence_info.set(user_id, {
-            status: status,
+            status,
             last_active: undefined,
         });
     }

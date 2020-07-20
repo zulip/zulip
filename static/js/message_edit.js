@@ -291,16 +291,16 @@ function edit_message(row, raw_content) {
         render_message_edit_form({
             is_stream: message.type === "stream",
             message_id: message.id,
-            is_editable: is_editable,
+            is_editable,
             is_content_editable: editability === exports.editability_types.FULL,
             has_been_editable: editability !== editability_types.NO,
             topic: message.topic,
             content: raw_content,
-            file_upload_enabled: file_upload_enabled,
-            show_video_chat_button: show_video_chat_button,
+            file_upload_enabled,
+            show_video_chat_button,
             minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60),
-            show_edit_stream: show_edit_stream,
-            available_streams: available_streams,
+            show_edit_stream,
+            available_streams,
             stream_id: message.stream_id,
             stream_name: message.stream,
             notify_new_thread: exports.notify_new_thread_default,
@@ -308,7 +308,7 @@ function edit_message(row, raw_content) {
         }),
     );
 
-    const edit_obj = {form: form, raw_content: raw_content};
+    const edit_obj = {form, raw_content};
     currently_editing_messages.set(message.id, edit_obj);
     current_msg_list.show_edit_message(row, edit_obj);
 
@@ -506,7 +506,7 @@ exports.start = function (row, edit_box_open_callback) {
     channel.get({
         url: "/json/messages/" + message.id,
         idempotent: true,
-        success: function (data) {
+        success(data) {
             if (current_msg_list === msg_list) {
                 message.raw_content = data.raw_content;
                 start_edit_with_content(row, message.raw_content, edit_box_open_callback);
@@ -584,7 +584,7 @@ exports.save_inline_topic_edit = function (row) {
 
     if (message.locally_echoed) {
         if (topic_changed) {
-            echo.edit_locally(message, {new_topic: new_topic});
+            echo.edit_locally(message, {new_topic});
             row = current_msg_list.get_row(message_id);
         }
         exports.end_inline_topic_edit(row);
@@ -600,11 +600,11 @@ exports.save_inline_topic_edit = function (row) {
     channel.patch({
         url: "/json/messages/" + message.id,
         data: request,
-        success: function () {
+        success() {
             const spinner = row.find(".topic_edit_spinner");
             loading.destroy_indicator(spinner);
         },
-        error: function (xhr) {
+        error(xhr) {
             const spinner = row.find(".topic_edit_spinner");
             loading.destroy_indicator(spinner);
             if (msg_list === current_msg_list) {
@@ -646,8 +646,8 @@ exports.save_message_row_edit = function (row) {
             // `edit_locally` handles the case where `new_topic/new_stream_id` is undefined
             echo.edit_locally(message, {
                 raw_content: new_content,
-                new_topic: new_topic,
-                new_stream_id: new_stream_id,
+                new_topic,
+                new_stream_id,
             });
             row = current_msg_list.get_row(message_id);
         }
@@ -735,13 +735,13 @@ exports.save_message_row_edit = function (row) {
     channel.patch({
         url: "/json/messages/" + message.id,
         data: request,
-        success: function () {
+        success() {
             if (edit_locally_echoed) {
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
             }
         },
-        error: function (xhr) {
+        error(xhr) {
             if (msg_list === current_msg_list) {
                 message_id = rows.id(row);
 
@@ -846,14 +846,14 @@ exports.delete_message = function (msg_id) {
             hide_delete_btn_show_spinner(true);
             channel.del({
                 url: "/json/messages/" + msg_id,
-                success: function () {
+                success() {
                     $("#delete_message_modal").modal("hide");
                     currently_deleting_messages = currently_deleting_messages.filter(
                         (id) => id !== msg_id,
                     );
                     hide_delete_btn_show_spinner(false);
                 },
-                error: function (xhr) {
+                error(xhr) {
                     currently_deleting_messages = currently_deleting_messages.filter(
                         (id) => id !== msg_id,
                     );
@@ -872,9 +872,9 @@ exports.delete_topic = function (stream_id, topic_name) {
     channel.post({
         url: "/json/streams/" + stream_id + "/delete_topic",
         data: {
-            topic_name: topic_name,
+            topic_name,
         },
-        success: function () {
+        success() {
             $("#delete_topic_modal").modal("hide");
         },
     });
@@ -900,21 +900,21 @@ exports.move_topic_containing_message_to_stream = function (
         stream_id: new_stream_id,
         propagate_mode: "change_all",
         topic: new_topic_name,
-        send_notification_to_old_thread: send_notification_to_old_thread,
-        send_notification_to_new_thread: send_notification_to_new_thread,
+        send_notification_to_old_thread,
+        send_notification_to_new_thread,
     };
     exports.notify_old_thread_default = send_notification_to_old_thread;
     exports.notify_new_thread_default = send_notification_to_new_thread;
     channel.patch({
         url: "/json/messages/" + message_id,
         data: request,
-        success: function () {
+        success() {
             // The main UI will update via receiving the event
             // from server_events.js.
             // TODO: This should probably remove a spinner and
             // close the modal.
         },
-        error: function (xhr) {
+        error(xhr) {
             ui_report.error(i18n.t("Error moving the topic"), xhr, $("#home-error"), 4000);
         },
     });

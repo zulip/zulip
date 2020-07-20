@@ -950,10 +950,10 @@ run_test("filter inactives", () => {
         const stream_id = 100 + i;
 
         const sub = {
-            name: name,
+            name,
             subscribed: true,
             newly_subscribed: false,
-            stream_id: stream_id,
+            stream_id,
         };
         stream_data.add_sub(sub);
     });

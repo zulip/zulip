@@ -128,9 +128,9 @@ exports.set_up = function () {
 
         channel.patch({
             url: "/json/settings/display",
-            data: data,
-            success: function () {},
-            error: function (xhr) {
+            data,
+            success() {},
+            error(xhr) {
                 ui_report.error(
                     settings_ui.strings.failure,
                     xhr,

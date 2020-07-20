@@ -116,7 +116,7 @@ run_test("reply_message_stream", () => {
 
     transmit.reply_message({
         message: stream_message,
-        content: content,
+        content,
     });
 
     assert.deepEqual(send_message_args, {
@@ -159,7 +159,7 @@ run_test("reply_message_private", () => {
 
     transmit.reply_message({
         message: pm_message,
-        content: content,
+        content,
     });
 
     assert.deepEqual(send_message_args, {

@@ -21,12 +21,12 @@ run_test("get_message_events", () => {
 
     msg = {
         locally_echoed: true,
-        submessages: submessages,
+        submessages,
     };
     assert.equal(submessage.get_message_events(msg), undefined);
 
     msg = {
-        submessages: submessages,
+        submessages,
     };
     assert.deepEqual(submessage.get_message_events(msg), [
         {sender_id: 33, data: 42},
@@ -44,7 +44,7 @@ run_test("make_server_callback", () => {
         assert.deepEqual(opts, {
             url: "/json/submessage",
             data: {
-                message_id: message_id,
+                message_id,
                 msg_type: "whatever",
                 content: '{"foo":32}',
             },

@@ -10,8 +10,8 @@ exports.open_overlay = function () {
     const overlay = $(".user_status_overlay");
     overlays.open_overlay({
         name: "user_status_overlay",
-        overlay: overlay,
-        on_close: function () {},
+        overlay,
+        on_close() {},
     });
 
     const user_id = people.my_current_user_id();
@@ -43,7 +43,7 @@ exports.submit_new_status = function () {
 
     user_status.server_update({
         status_text: new_status_text,
-        success: function () {
+        success() {
             exports.close_overlay();
         },
     });

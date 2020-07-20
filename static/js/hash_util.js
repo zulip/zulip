@@ -198,7 +198,7 @@ exports.parse_narrow = function (hash) {
         }
 
         const operand = exports.decode_operand(operator, raw_operand);
-        operators.push({negated: negated, operator: operator, operand: operand});
+        operators.push({negated, operator, operand});
     }
     return operators;
 };

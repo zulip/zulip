@@ -180,12 +180,12 @@ function render_user_info_popover(
     }
 
     const args = {
-        can_revoke_away: can_revoke_away,
-        can_set_away: can_set_away,
+        can_revoke_away,
+        can_set_away,
         is_active: people.is_active_user_for_popover(user.user_id),
         is_bot: user.is_bot,
-        is_me: is_me,
-        is_sender_popover: is_sender_popover,
+        is_me,
+        is_sender_popover,
         pm_with_uri: hash_util.pm_with_uri(user.email),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
@@ -320,7 +320,7 @@ exports.show_user_profile = function (user) {
     const args = {
         full_name: user.full_name,
         email: people.get_visible_email(user),
-        profile_data: profile_data,
+        profile_data,
         user_avatar: "avatar/" + user.email + "/medium",
         is_me: people.is_current_user(user.email),
         date_joined: moment(user.date_joined).format(dateFormat),
@@ -478,21 +478,21 @@ exports.toggle_actions_popover = function (element, id) {
             message_id: message.id,
             historical: message.historical,
             stream_id: message.stream_id,
-            topic: topic,
-            use_edit_icon: use_edit_icon,
-            editability_menu_item: editability_menu_item,
-            can_mute_topic: can_mute_topic,
-            can_unmute_topic: can_unmute_topic,
-            should_display_collapse: should_display_collapse,
-            should_display_uncollapse: should_display_uncollapse,
+            topic,
+            use_edit_icon,
+            editability_menu_item,
+            can_mute_topic,
+            can_unmute_topic,
+            should_display_collapse,
+            should_display_uncollapse,
             should_display_add_reaction_option: message.sent_by_me,
-            should_display_edit_history_option: should_display_edit_history_option,
-            conversation_time_uri: conversation_time_uri,
+            should_display_edit_history_option,
+            conversation_time_uri,
             narrowed: narrow_state.active(),
-            should_display_delete_option: should_display_delete_option,
+            should_display_delete_option,
             should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
-            should_display_edit_and_view_source: should_display_edit_and_view_source,
-            should_display_quote_and_reply: should_display_quote_and_reply,
+            should_display_edit_and_view_source,
+            should_display_quote_and_reply,
         };
 
         const ypos = elt.offset().top;
@@ -517,7 +517,7 @@ exports.render_actions_remind_popover = function (element, id) {
     if (elt.data("popover") === undefined) {
         const message = current_msg_list.get(id);
         const args = {
-            message: message,
+            message,
         };
         const ypos = elt.offset().top;
         elt.popover({
@@ -828,7 +828,7 @@ exports.register_click_handlers = function () {
         user_status.server_update({
             user_id: me,
             status_text: "",
-            success: function () {
+            success() {
                 $(".info_popover_actions #status_message").html("");
             },
         });

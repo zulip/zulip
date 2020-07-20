@@ -5,11 +5,11 @@ const render_subscription_table_body = require("../templates/subscription_table_
 const render_subscriptions = require("../templates/subscriptions.hbs");
 
 exports.show_subs_pane = {
-    nothing_selected: function () {
+    nothing_selected() {
         $(".nothing-selected, #stream_settings_title").show();
         $("#add_new_stream_title, .settings, #stream-creation").hide();
     },
-    settings: function () {
+    settings() {
         $(".settings, #stream_settings_title").show();
         $("#add_new_stream_title, #stream-creation, .nothing-selected").hide();
     },
@@ -343,8 +343,8 @@ function triage_stream(query, sub) {
         const val = sub[attr];
 
         return search_util.vanilla_match({
-            val: val,
-            search_terms: search_terms,
+            val,
+            search_terms,
         });
     }
 
@@ -468,9 +468,9 @@ exports.get_search_params = function () {
     const search_box = $("#stream_filter input[type='text']");
     const input = search_box.expectOne().val().trim();
     const params = {
-        input: input,
-        subscribed_only: subscribed_only,
-        sort_order: sort_order,
+        input,
+        subscribed_only,
+        sort_order,
     };
     return params;
 };
@@ -561,7 +561,7 @@ exports.setup_page = function (callback) {
                 },
             ],
             html_class: "stream_sorter_toggle",
-            callback: function (value, key) {
+            callback(value, key) {
                 exports.switch_stream_sort(key);
             },
         });
@@ -576,7 +576,7 @@ exports.setup_page = function (callback) {
                 {label: i18n.t("Subscribed"), key: "subscribed"},
                 {label: i18n.t("All streams"), key: "all-streams"},
             ],
-            callback: function (value, key) {
+            callback(value, key) {
                 exports.switch_stream_tab(key);
             },
         });
@@ -702,7 +702,7 @@ exports.launch = function (section) {
         overlays.open_overlay({
             name: "subscriptions",
             overlay: $("#subscription_overlay"),
-            on_close: function () {
+            on_close() {
                 hashchange.exit_overlay();
             },
         });
@@ -817,8 +817,8 @@ function ajaxSubscribe(stream, color, stream_row) {
     }
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([{name: stream, color: color}])},
-        success: function (resp, statusText, xhr) {
+        data: {subscriptions: JSON.stringify([{name: stream, color}])},
+        success(resp, statusText, xhr) {
             if (overlays.streams_open()) {
                 $("#create_stream_name").val("");
             }
@@ -838,7 +838,7 @@ function ajaxSubscribe(stream, color, stream_row) {
                 hide_subscribe_toggle_spinner(stream_row);
             }
         },
-        error: function (xhr) {
+        error(xhr) {
             if (stream_row !== undefined) {
                 hide_subscribe_toggle_spinner(stream_row);
             }
@@ -859,7 +859,7 @@ function ajaxUnsubscribe(sub, stream_row) {
     return channel.del({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([sub.name])},
-        success: function () {
+        success() {
             $(".stream_change_property_info").hide();
             // The rest of the work is done via the unsubscribe event we will get
 
@@ -867,7 +867,7 @@ function ajaxUnsubscribe(sub, stream_row) {
                 hide_subscribe_toggle_spinner(stream_row);
             }
         },
-        error: function (xhr) {
+        error(xhr) {
             if (stream_row !== undefined) {
                 hide_subscribe_toggle_spinner(stream_row);
             }

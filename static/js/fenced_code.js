@@ -97,7 +97,7 @@ exports.process_fenced_code = function (content) {
             const lines = [];
             if (lang === "quote") {
                 return {
-                    handle_line: function (line) {
+                    handle_line(line) {
                         if (line === fence) {
                             this.done();
                         } else {
@@ -105,7 +105,7 @@ exports.process_fenced_code = function (content) {
                         }
                     },
 
-                    done: function () {
+                    done() {
                         const text = wrap_quote(lines.join("\n"));
                         output_lines.push("");
                         output_lines.push(text);
@@ -117,7 +117,7 @@ exports.process_fenced_code = function (content) {
 
             if (lang === "math") {
                 return {
-                    handle_line: function (line) {
+                    handle_line(line) {
                         if (line === fence) {
                             this.done();
                         } else {
@@ -125,7 +125,7 @@ exports.process_fenced_code = function (content) {
                         }
                     },
 
-                    done: function () {
+                    done() {
                         const text = wrap_tex(lines.join("\n"));
                         const placeholder = stash_func(text, true);
                         output_lines.push("");
@@ -138,7 +138,7 @@ exports.process_fenced_code = function (content) {
 
             if (lang === "spoiler") {
                 return {
-                    handle_line: function (line) {
+                    handle_line(line) {
                         if (line === fence) {
                             this.done();
                         } else {
@@ -146,7 +146,7 @@ exports.process_fenced_code = function (content) {
                         }
                     },
 
-                    done: function () {
+                    done() {
                         const text = wrap_spoiler(header, lines.join("\n"), stash_func);
                         output_lines.push("");
                         output_lines.push(text);
@@ -157,7 +157,7 @@ exports.process_fenced_code = function (content) {
             }
 
             return {
-                handle_line: function (line) {
+                handle_line(line) {
                     if (line === fence) {
                         this.done();
                     } else {
@@ -165,7 +165,7 @@ exports.process_fenced_code = function (content) {
                     }
                 },
 
-                done: function () {
+                done() {
                     const text = exports.wrap_code(lines.join("\n"));
                     // insert safe HTML that is passed through the parsing
                     const placeholder = stash_func(text, true);
@@ -180,10 +180,10 @@ exports.process_fenced_code = function (content) {
 
     function default_hander() {
         return {
-            handle_line: function (line) {
+            handle_line(line) {
                 consume_line(output, line);
             },
-            done: function () {
+            done() {
                 handler_stack.pop();
             },
         };

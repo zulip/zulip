@@ -103,10 +103,10 @@ exports.build_widget = function (
     return {
         // Call back to clear() in situations like adding bots, when
         // we want to use the same widget over and over again.
-        clear: clear,
+        clear,
         // Call back to close() when you are truly done with the widget,
         // so you can release handlers.
-        close: close,
+        close,
     };
 };
 exports.build_direct_upload_widget = function (

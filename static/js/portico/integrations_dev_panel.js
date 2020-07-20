@@ -13,22 +13,22 @@ const clear_handlers = {
     topic_name: "#topic_name",
     URL: "#URL",
     results_notice: "#results_notice",
-    bot_name: function () {
+    bot_name() {
         $("#bot_name").children()[0].selected = true;
     },
-    integration_name: function () {
+    integration_name() {
         $("#integration_name").children()[0].selected = true;
     },
-    fixture_name: function () {
+    fixture_name() {
         $("#fixture_name").empty();
     },
-    fixture_body: function () {
+    fixture_body() {
         $("#fixture_body")[0].value = "";
     },
-    custom_http_headers: function () {
+    custom_http_headers() {
         $("#custom_http_headers")[0].value = "{}";
     },
-    results: function () {
+    results() {
         $("#idp-results")[0].value = "";
     },
 };
@@ -223,7 +223,7 @@ function get_fixtures(integration_name) {
         url: "/devtools/integrations/" + integration_name + "/fixtures",
         // Since the user may add or modify fixtures as they edit.
         idempotent: false,
-        success: function (response) {
+        success(response) {
             loaded_fixtures.set(integration_name, response.fixtures);
             load_fixture_options(integration_name);
             return;
@@ -270,11 +270,11 @@ function send_webhook_fixture_message() {
 
     channel.post({
         url: "/devtools/integrations/check_send_webhook_fixture_message",
-        data: {url: url, body: body, custom_headers: custom_headers, is_json: is_json},
-        beforeSend: function (xhr) {
+        data: {url, body, custom_headers, is_json},
+        beforeSend(xhr) {
             xhr.setRequestHeader("X-CSRFToken", csrftoken);
         },
-        success: function (response) {
+        success(response) {
             // If the previous fixture body was sent successfully,
             // then we should change the success message up a bit to
             // let the user easily know that this fixture body was
@@ -305,11 +305,11 @@ function send_all_fixture_messages() {
     const csrftoken = $("#csrftoken").val();
     channel.post({
         url: "/devtools/integrations/send_all_webhook_fixture_messages",
-        data: {url: url, integration_name: integration},
-        beforeSend: function (xhr) {
+        data: {url, integration_name: integration},
+        beforeSend(xhr) {
             xhr.setRequestHeader("X-CSRFToken", csrftoken);
         },
-        success: function (response) {
+        success(response) {
             set_results(response);
         },
         error: handle_unsuccessful_response,

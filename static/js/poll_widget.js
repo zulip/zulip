@@ -51,13 +51,13 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 option: obj.option,
                 names: people.safe_full_names(voters),
                 count: voters.length,
-                key: key,
-                current_user_vote: current_user_vote,
+                key,
+                current_user_vote,
             });
         }
 
         const widget_data = {
-            options: options,
+            options,
             question: poll_question,
         };
 
@@ -66,11 +66,11 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
 
     self.handle = {
         new_option: {
-            outbound: function (option) {
+            outbound(option) {
                 const event = {
                     type: "new_option",
                     idx: my_idx,
-                    option: option,
+                    option,
                 };
 
                 my_idx += 1;
@@ -78,16 +78,16 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 return event;
             },
 
-            inbound: function (sender_id, data) {
+            inbound(sender_id, data) {
                 const idx = data.idx;
                 const key = sender_id + "," + idx;
                 const option = data.option;
                 const votes = new Map();
 
                 key_to_option.set(key, {
-                    option: option,
+                    option,
                     user_id: sender_id,
-                    votes: votes,
+                    votes,
                 });
 
                 if (my_idx <= idx) {
@@ -97,10 +97,10 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
         },
 
         question: {
-            outbound: function (question) {
+            outbound(question) {
                 const event = {
                     type: "question",
-                    question: question,
+                    question,
                 };
                 if (is_my_poll) {
                     return event;
@@ -108,13 +108,13 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 return;
             },
 
-            inbound: function (sender_id, data) {
+            inbound(sender_id, data) {
                 self.set_question(data.question);
             },
         },
 
         vote: {
-            outbound: function (key) {
+            outbound(key) {
                 let vote = 1;
 
                 // toggle
@@ -124,14 +124,14 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
 
                 const event = {
                     type: "vote",
-                    key: key,
-                    vote: vote,
+                    key,
+                    vote,
                 };
 
                 return event;
             },
 
-            inbound: function (sender_id, data) {
+            inbound(sender_id, data) {
                 const key = data.key;
                 const vote = data.vote;
                 const option = key_to_option.get(key);
@@ -168,7 +168,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
     for (const [i, option] of options.entries()) {
         self.handle.new_option.inbound("canned", {
             idx: i,
-            option: option,
+            option,
         });
     }
 

@@ -98,7 +98,7 @@ exports.per_stream_history = function (stream_id) {
 
         if (!existing) {
             topics.set(opts.topic_name, {
-                message_id: message_id,
+                message_id,
                 pretty_name: topic_name,
                 historical: false,
                 count: 1,
@@ -162,7 +162,7 @@ exports.per_stream_history = function (stream_id) {
             // more current data for it.
 
             topics.set(topic_name, {
-                message_id: message_id,
+                message_id,
                 pretty_name: topic_name,
                 historical: true,
             });
@@ -174,7 +174,7 @@ exports.per_stream_history = function (stream_id) {
         const my_recents = Array.from(topics.values());
 
         const missing_topics = unread.get_missing_topics({
-            stream_id: stream_id,
+            stream_id,
             topic_dict: topics,
         });
 
@@ -230,8 +230,8 @@ exports.add_message = function (opts) {
     const history = exports.find_or_create(stream_id);
 
     history.add_or_update({
-        topic_name: topic_name,
-        message_id: message_id,
+        topic_name,
+        message_id,
     });
 };
 
@@ -250,9 +250,9 @@ exports.get_server_history = function (stream_id, on_success) {
     const url = "/json/users/me/" + stream_id + "/topics";
 
     channel.get({
-        url: url,
+        url,
         data: {},
-        success: function (data) {
+        success(data) {
             const server_history = data.topics;
             exports.add_history(stream_id, server_history);
             on_success();

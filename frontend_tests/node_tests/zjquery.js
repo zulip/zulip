@@ -168,7 +168,7 @@ run_test("events", () => {
 
     // Set up a stub event so that stopPropagation doesn't explode on us.
     const stub_event = {
-        stopPropagation: function () {},
+        stopPropagation() {},
     };
 
     // Now call the handler.

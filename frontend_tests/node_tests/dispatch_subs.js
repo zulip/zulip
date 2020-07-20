@@ -27,7 +27,7 @@ test("add", (override) => {
     const stream_id = sub.stream_id;
 
     stream_data.add_sub({
-        stream_id: stream_id,
+        stream_id,
         name: sub.name,
     });
 
@@ -70,7 +70,7 @@ test("remove", (override) => {
     const stream_id = event_sub.stream_id;
 
     const sub = {
-        stream_id: stream_id,
+        stream_id,
         name: event_sub.name,
     };
 

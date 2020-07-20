@@ -100,7 +100,7 @@ function populate_messages_sent_over_time(data) {
     // Helper functions
     function make_traces(dates, values, type, date_formatter) {
         const text = dates.map((date) => date_formatter(date));
-        const common = {x: dates, type: type, hoverinfo: "none", text: text};
+        const common = {x: dates, type, hoverinfo: "none", text};
         return {
             human: {
                 // 5062a0
@@ -147,8 +147,8 @@ function populate_messages_sent_over_time(data) {
 
     function make_rangeselector(x, y, button1, button2) {
         return {
-            x: x,
-            y: y,
+            x,
+            y,
             buttons: [
                 {stepmode: "backward", ...button1},
                 {stepmode: "backward", ...button2},
@@ -243,8 +243,8 @@ function populate_messages_sent_over_time(data) {
         values.bot.push(current.bot);
         values.me.push(current.me);
         return {
-            dates: dates,
-            values: values,
+            dates,
+            values,
             last_value_is_partial: !is_boundary(
                 new Date(start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000),
             ),
@@ -401,10 +401,10 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
     }
     const total = values.reduce((a, b) => a + b, 0);
     return {
-        values: values,
-        labels: labels,
+        values,
+        labels,
         percentages: round_to_percentages(values, total),
-        total: total,
+        total,
     };
 }
 
@@ -586,7 +586,7 @@ function populate_messages_sent_by_message_type(data) {
         return {
             trace: {
                 values: plot_data.values,
-                labels: labels,
+                labels,
                 type: "pie",
                 direction: "clockwise",
                 rotation: -90,
@@ -708,10 +708,10 @@ function populate_number_of_users(data) {
         return {
             x: end_dates,
             y: values,
-            type: type,
+            type,
             name: i18n.t("Active users"),
             hoverinfo: "none",
-            text: text,
+            text,
             visible: true,
         };
     }
@@ -786,7 +786,7 @@ function populate_messages_read_over_time(data) {
     // Helper functions
     function make_traces(dates, values, type, date_formatter) {
         const text = dates.map((date) => date_formatter(date));
-        const common = {x: dates, type: type, hoverinfo: "none", text: text};
+        const common = {x: dates, type, hoverinfo: "none", text};
         return {
             everyone: {
                 name: i18n.t("Everyone"),
@@ -825,8 +825,8 @@ function populate_messages_read_over_time(data) {
 
     function make_rangeselector(x, y, button1, button2) {
         return {
-            x: x,
-            y: y,
+            x,
+            y,
             buttons: [
                 {stepmode: "backward", ...button1},
                 {stepmode: "backward", ...button2},
@@ -914,8 +914,8 @@ function populate_messages_read_over_time(data) {
         values.everyone.push(current.everyone);
         values.me.push(current.me);
         return {
-            dates: dates,
-            values: values,
+            dates,
+            values,
             last_value_is_partial: !is_boundary(
                 new Date(start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000),
             ),
@@ -1015,13 +1015,13 @@ function populate_messages_read_over_time(data) {
 function get_chart_data(data, callback) {
     $.get({
         url: "/json/analytics/chart_data" + page_params.data_url_suffix,
-        data: data,
+        data,
         idempotent: true,
-        success: function (data) {
+        success(data) {
             callback(data);
             update_last_full_update(data.end_times);
         },
-        error: function (xhr) {
+        error(xhr) {
             $("#id_stats_errors").show().text(JSON.parse(xhr.responseText).msg);
         },
     });

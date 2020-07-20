@@ -243,9 +243,9 @@ Filter.canonicalize_term = function (opts) {
 
     // We may want to consider allowing mixed-case operators at some point
     return {
-        negated: negated,
-        operator: operator,
-        operand: operand,
+        negated,
+        operator,
+        operand,
     };
 };
 
@@ -313,7 +313,7 @@ Filter.parse = function (str) {
                 search_term.push(token);
                 continue;
             }
-            term = {negated: negated, operator: operator, operand: operand};
+            term = {negated, operator, operand};
             operators.push(term);
         }
     }
@@ -322,7 +322,7 @@ Filter.parse = function (str) {
     if (search_term.length > 0) {
         operator = "search";
         operand = search_term.join(" ");
-        term = {operator: operator, operand: operand, negated: false};
+        term = {operator, operand, negated: false};
         operators.push(term);
     }
     return operators;
@@ -354,18 +354,18 @@ Filter.unparse = function (operators) {
 };
 
 Filter.prototype = {
-    predicate: function () {
+    predicate() {
         if (this._predicate === undefined) {
             this._predicate = this._build_predicate();
         }
         return this._predicate;
     },
 
-    operators: function () {
+    operators() {
         return this._operators;
     },
 
-    public_operators: function () {
+    public_operators() {
         const safe_to_return = this._operators.filter(
             // Filter out the embedded narrow (if any).
             (value) =>
@@ -378,26 +378,26 @@ Filter.prototype = {
         return safe_to_return;
     },
 
-    operands: function (operator) {
+    operands(operator) {
         return _.chain(this._operators)
             .filter((elem) => !elem.negated && elem.operator === operator)
             .map((elem) => elem.operand)
             .value();
     },
 
-    has_negated_operand: function (operator, operand) {
+    has_negated_operand(operator, operand) {
         return this._operators.some(
             (elem) => elem.negated && elem.operator === operator && elem.operand === operand,
         );
     },
 
-    has_operand: function (operator, operand) {
+    has_operand(operator, operand) {
         return this._operators.some(
             (elem) => !elem.negated && elem.operator === operator && elem.operand === operand,
         );
     },
 
-    has_operator: function (operator) {
+    has_operator(operator) {
         return this._operators.some((elem) => {
             if (elem.negated && !["search", "has"].includes(elem.operator)) {
                 return false;
@@ -406,11 +406,11 @@ Filter.prototype = {
         });
     },
 
-    is_search: function () {
+    is_search() {
         return this.has_operator("search");
     },
 
-    calc_can_mark_messages_read: function () {
+    calc_can_mark_messages_read() {
         const term_types = this.sorted_term_types();
 
         if (_.isEqual(term_types, ["stream", "topic"])) {
@@ -450,7 +450,7 @@ Filter.prototype = {
         return false;
     },
 
-    can_mark_messages_read: function () {
+    can_mark_messages_read() {
         if (this._can_mark_messages_read === undefined) {
             this._can_mark_messages_read = this.calc_can_mark_messages_read();
         }
@@ -467,7 +467,7 @@ Filter.prototype = {
     // TODO: We likely will want to rewrite this to not piggy-back on
     // can_mark_messages_read, since that might gain some more complex behavior
     // with near: narrows.
-    is_common_narrow: function () {
+    is_common_narrow() {
         // can_mark_messages_read tests the following filters:
         // stream, stream + topic,
         // is: private, pm-with:,
@@ -496,7 +496,7 @@ Filter.prototype = {
     //
     // Note from tabbott: The slug-based approach may not be ideal; we
     // may be able to do better another way.
-    generate_redirect_url: function () {
+    generate_redirect_url() {
         const term_types = this.sorted_term_types();
 
         // this comes first because it has 3 term_types but is not a "complex filter"
@@ -551,7 +551,7 @@ Filter.prototype = {
         return "#"; // redirect to All
     },
 
-    get_icon: function () {
+    get_icon() {
         // We have special icons for the simple narrows available for the via sidebars.
         const term_types = this.sorted_term_types();
         switch (term_types[0]) {
@@ -580,7 +580,7 @@ Filter.prototype = {
         }
     },
 
-    get_title: function () {
+    get_title() {
         // Nice explanatory titles for common views.
         const term_types = this.sorted_term_types();
         if (
@@ -629,11 +629,11 @@ Filter.prototype = {
         }
     },
 
-    allow_use_first_unread_when_narrowing: function () {
+    allow_use_first_unread_when_narrowing() {
         return this.can_mark_messages_read() || this.has_operator("is");
     },
 
-    contains_only_private_messages: function () {
+    contains_only_private_messages() {
         return (
             (this.has_operator("is") && this.operands("is")[0] === "private") ||
             this.has_operator("pm-with") ||
@@ -641,11 +641,11 @@ Filter.prototype = {
         );
     },
 
-    includes_full_stream_history: function () {
+    includes_full_stream_history() {
         return this.has_operator("stream") || this.has_operator("streams");
     },
 
-    is_personal_filter: function () {
+    is_personal_filter() {
         // Whether the filter filters for user-specific data in the
         // UserMessage table, such as stars or mentions.
         //
@@ -654,7 +654,7 @@ Filter.prototype = {
         return this.has_operand("is", "mentioned") || this.has_operand("is", "starred");
     },
 
-    can_apply_locally: function (is_local_echo) {
+    can_apply_locally(is_local_echo) {
         // Since there can be multiple operators, each block should
         // just return false here.
 
@@ -682,13 +682,13 @@ Filter.prototype = {
         return true;
     },
 
-    fix_operators: function (operators) {
+    fix_operators(operators) {
         operators = this._canonicalize_operators(operators);
         operators = this._fix_redundant_is_private(operators);
         return operators;
     },
 
-    _fix_redundant_is_private: function (terms) {
+    _fix_redundant_is_private(terms) {
         const is_pm_with = (term) => Filter.term_type(term) === "pm-with";
 
         if (!terms.some(is_pm_with)) {
@@ -698,11 +698,11 @@ Filter.prototype = {
         return terms.filter((term) => Filter.term_type(term) !== "is-private");
     },
 
-    _canonicalize_operators: function (operators_mixed_case) {
+    _canonicalize_operators(operators_mixed_case) {
         return operators_mixed_case.map((tuple) => Filter.canonicalize_term(tuple));
     },
 
-    filter_with_new_params: function (params) {
+    filter_with_new_params(params) {
         const terms = this._operators.map((term) => {
             const new_term = {...term};
             if (new_term.operator === params.operator && !new_term.negated) {
@@ -713,25 +713,25 @@ Filter.prototype = {
         return new Filter(terms);
     },
 
-    has_topic: function (stream_name, topic) {
+    has_topic(stream_name, topic) {
         return this.has_operand("stream", stream_name) && this.has_operand("topic", topic);
     },
 
-    sorted_term_types: function () {
+    sorted_term_types() {
         if (this._sorted_term_types === undefined) {
             this._sorted_term_types = this._build_sorted_term_types();
         }
         return this._sorted_term_types;
     },
 
-    _build_sorted_term_types: function () {
+    _build_sorted_term_types() {
         const terms = this._operators;
         const term_types = terms.map(Filter.term_type);
         const sorted_terms = Filter.sorted_term_types(term_types);
         return sorted_terms;
     },
 
-    can_bucket_by: function (...wanted_term_types) {
+    can_bucket_by(...wanted_term_types) {
         // Examples call:
         //     filter.can_bucket_by('stream', 'topic')
         //
@@ -748,7 +748,7 @@ Filter.prototype = {
         return _.isEqual(term_types, wanted_term_types);
     },
 
-    first_valid_id_from: function (msg_ids) {
+    first_valid_id_from(msg_ids) {
         const predicate = this.predicate();
 
         const first_id = msg_ids.find((msg_id) => {
@@ -764,7 +764,7 @@ Filter.prototype = {
         return first_id;
     },
 
-    update_email: function (user_id, new_email) {
+    update_email(user_id, new_email) {
         for (const term of this._operators) {
             switch (term.operator) {
                 case "group-pm-with":
@@ -781,7 +781,7 @@ Filter.prototype = {
     },
 
     // Build a filter function from a list of operators.
-    _build_predicate: function () {
+    _build_predicate() {
         const operators = this._operators;
 
         if (!this.can_apply_locally()) {

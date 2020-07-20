@@ -26,7 +26,7 @@ exports.make_event_store = (selector) => {
     let focused = false;
 
     const self = {
-        get_on_handler: function (name, child_selector) {
+        get_on_handler(name, child_selector) {
             let handler;
 
             if (child_selector === undefined) {
@@ -49,7 +49,7 @@ exports.make_event_store = (selector) => {
             return handler;
         },
 
-        off: function (event_name, ...args) {
+        off(event_name, ...args) {
             if (args.length === 0) {
                 on_functions.delete(event_name);
                 return;
@@ -62,7 +62,7 @@ exports.make_event_store = (selector) => {
             throw Error("zjquery does not support this call sequence");
         },
 
-        on: function (event_name, ...args) {
+        on(event_name, ...args) {
             // parameters will either be
             //    (event_name, handler) or
             //    (event_name, sel, handler)
@@ -106,7 +106,7 @@ exports.make_event_store = (selector) => {
             });
         },
 
-        trigger: function ($element, ev, data) {
+        trigger($element, ev, data) {
             if (typeof ev === "string") {
                 ev = new Event(ev, data);
             }
@@ -151,22 +151,22 @@ exports.make_new_elem = function (selector, opts) {
     const event_store = exports.make_event_store(selector);
 
     const self = {
-        addClass: function (class_name) {
+        addClass(class_name) {
             classes.set(class_name, true);
             return self;
         },
-        append: function (arg) {
+        append(arg) {
             html = html + arg;
             return self;
         },
-        attr: function (name, val) {
+        attr(name, val) {
             if (val === undefined) {
                 return attrs.get(name);
             }
             attrs.set(name, val);
             return self;
         },
-        data: function (name, val) {
+        data(name, val) {
             if (val === undefined) {
                 const data_val = attrs.get("data-" + name);
                 if (data_val === undefined) {
@@ -177,31 +177,31 @@ exports.make_new_elem = function (selector, opts) {
             attrs.set("data-" + name, val);
             return self;
         },
-        delay: function () {
+        delay() {
             return self;
         },
-        debug: function () {
+        debug() {
             return {
-                value: value,
-                shown: shown,
-                selector: selector,
+                value,
+                shown,
+                selector,
             };
         },
-        empty: function (arg) {
+        empty(arg) {
             if (arg === undefined) {
                 find_results.clear();
             }
             return self;
         },
-        eq: function () {
+        eq() {
             return self;
         },
-        expectOne: function () {
+        expectOne() {
             // silently do nothing
             return self;
         },
         fadeTo: noop,
-        find: function (child_selector) {
+        find(child_selector) {
             const child = find_results.get(child_selector);
             if (child) {
                 return child;
@@ -217,30 +217,30 @@ exports.make_new_elem = function (selector, opts) {
             }
             throw Error("Cannot find " + child_selector + " in " + selector);
         },
-        get: function (idx) {
+        get(idx) {
             // We have some legacy code that does $('foo').get(0).
             assert.equal(idx, 0);
             return selector;
         },
-        get_on_handler: function (name, child_selector) {
+        get_on_handler(name, child_selector) {
             return event_store.get_on_handler(name, child_selector);
         },
-        hasClass: function (class_name) {
+        hasClass(class_name) {
             return classes.has(class_name);
         },
         height: noop,
-        hide: function () {
+        hide() {
             shown = false;
             return self;
         },
-        html: function (arg) {
+        html(arg) {
             if (arg !== undefined) {
                 html = arg;
                 return self;
             }
             return html;
         },
-        is: function (arg) {
+        is(arg) {
             if (arg === ":visible") {
                 return shown;
             }
@@ -249,27 +249,27 @@ exports.make_new_elem = function (selector, opts) {
             }
             return self;
         },
-        is_focused: function () {
+        is_focused() {
             // is_focused is not a jQuery thing; this is
             // for our testing
             return event_store.is_focused();
         },
-        off: function (...args) {
+        off(...args) {
             event_store.off(...args);
             return self;
         },
-        on: function (...args) {
+        on(...args) {
             event_store.on(...args);
             return self;
         },
-        one: function (...args) {
+        one(...args) {
             event_store.one(...args);
             return self;
         },
-        parent: function () {
+        parent() {
             return my_parent;
         },
-        parents: function (parents_selector) {
+        parents(parents_selector) {
             const result = parents_result.get(parents_selector);
             assert(
                 result,
@@ -277,58 +277,58 @@ exports.make_new_elem = function (selector, opts) {
             );
             return result;
         },
-        prepend: function (arg) {
+        prepend(arg) {
             html = arg + html;
             return self;
         },
-        prop: function (name, val) {
+        prop(name, val) {
             if (val === undefined) {
                 return properties.get(name);
             }
             properties.set(name, val);
             return self;
         },
-        removeAttr: function (name) {
+        removeAttr(name) {
             attrs.delete(name);
             return self;
         },
-        removeClass: function (class_names) {
+        removeClass(class_names) {
             class_names = class_names.split(" ");
             class_names.forEach((class_name) => {
                 classes.delete(class_name);
             });
             return self;
         },
-        remove: function () {
+        remove() {
             return self;
         },
         removeData: noop,
-        replaceWith: function () {
+        replaceWith() {
             return self;
         },
-        scrollTop: function () {
+        scrollTop() {
             return self;
         },
-        set_find_results: function (find_selector, jquery_object) {
+        set_find_results(find_selector, jquery_object) {
             find_results.set(find_selector, jquery_object);
         },
-        show: function () {
+        show() {
             shown = true;
             return self;
         },
-        serializeArray: function () {
+        serializeArray() {
             return self;
         },
-        set_parent: function (parent_elem) {
+        set_parent(parent_elem) {
             my_parent = parent_elem;
         },
-        set_parents_result: function (selector, result) {
+        set_parents_result(selector, result) {
             parents_result.set(selector, result);
         },
-        stop: function () {
+        stop() {
             return self;
         },
-        text: function (...args) {
+        text(...args) {
             if (args.length !== 0) {
                 if (args[0] !== undefined) {
                     text = args[0].toString();
@@ -337,28 +337,28 @@ exports.make_new_elem = function (selector, opts) {
             }
             return text;
         },
-        trigger: function (ev) {
+        trigger(ev) {
             event_store.trigger(self, ev);
             return self;
         },
-        val: function (...args) {
+        val(...args) {
             if (args.length === 0) {
                 return value || "";
             }
             [value] = args;
             return self;
         },
-        css: function (...args) {
+        css(...args) {
             if (args.length === 0) {
                 return css || {};
             }
             [css] = args;
             return self;
         },
-        visible: function () {
+        visible() {
             return shown;
         },
-        slice: function () {
+        slice() {
             return self;
         },
     };

@@ -154,7 +154,7 @@ function create_stream() {
         );
         return;
     }
-    data.subscriptions = JSON.stringify([{name: stream_name, description: description}]);
+    data.subscriptions = JSON.stringify([{name: stream_name, description}]);
 
     let invite_only;
     let history_public_to_subscribers;
@@ -207,15 +207,15 @@ function create_stream() {
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: data,
-        success: function () {
+        data,
+        success() {
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
             ui_report.success(i18n.t("Stream successfully created!"), $(".stream_create_info"));
             loading.destroy_indicator($("#stream_creating_indicator"));
             // The rest of the work is done via the subscribe event we will get
         },
-        error: function (xhr) {
+        error(xhr) {
             const msg = JSON.parse(xhr.responseText).msg;
             if (msg.includes("access")) {
                 // If we can't access the stream, we can safely assume it's
@@ -389,7 +389,7 @@ exports.create_handlers_for_users = function (container) {
                 const user_id = parseInt(elem.attr("data-user-id"), 10);
                 const user_checked = filtered_users.has(user_id);
                 const display = user_checked ? "block" : "none";
-                elem.css({display: display});
+                elem.css({display});
             });
         })();
 
@@ -425,7 +425,7 @@ exports.set_up_handlers = function () {
 
         if (principals.length >= 50) {
             const invites_warning_modal = render_subscription_invites_warning_modal({
-                stream_name: stream_name,
+                stream_name,
                 count: principals.length,
             });
             $("#stream-creation").append(invites_warning_modal);

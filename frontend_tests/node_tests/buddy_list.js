@@ -168,13 +168,13 @@ run_test("find_li w/force_render", () => {
     };
 
     const empty_li = buddy_list.find_li({
-        key: key,
+        key,
     });
     assert.equal(empty_li, stub_li);
     assert(!shown);
 
     const li = buddy_list.find_li({
-        key: key,
+        key,
         force_render: true,
     });
 

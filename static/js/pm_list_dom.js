@@ -8,10 +8,10 @@ exports.keyed_pm_li = (convo) => {
     const key = convo.user_ids_string;
 
     return {
-        key: key,
-        render: render,
-        convo: convo,
-        eq: eq,
+        key,
+        render,
+        convo,
+        eq,
     };
 };
 
@@ -21,7 +21,7 @@ exports.pm_ul = (convos) => {
         ["data-name", "private"],
     ];
     return vdom.ul({
-        attrs: attrs,
+        attrs,
         keyed_nodes: convos.map(exports.keyed_pm_li),
     });
 };

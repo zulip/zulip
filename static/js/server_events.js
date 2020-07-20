@@ -190,7 +190,7 @@ function get_events(options) {
         data: get_events_params,
         idempotent: true,
         timeout: page_params.poll_timeout,
-        success: function (data) {
+        success(data) {
             exports.suspect_offline = false;
             try {
                 get_events_xhr = undefined;
@@ -207,7 +207,7 @@ function get_events(options) {
             }
             get_events_timeout = setTimeout(get_events, 0);
         },
-        error: function (xhr, error_type) {
+        error(xhr, error_type) {
             try {
                 get_events_xhr = undefined;
                 // If we're old enough that our message queue has been

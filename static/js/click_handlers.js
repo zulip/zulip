@@ -216,7 +216,7 @@ exports.initialize = function () {
         const title = reactions.get_reaction_title_data(message_id, local_id);
 
         elem.tooltip({
-            title: title,
+            title,
             trigger: "hover",
             placement: "bottom",
             animation: false,
@@ -495,7 +495,7 @@ exports.initialize = function () {
         .on("click", ".selectable_sidebar_block", (e) => {
             const li = $(e.target).parents("li");
 
-            activity.narrow_for_user({li: li});
+            activity.narrow_for_user({li});
 
             e.preventDefault();
             e.stopPropagation();
@@ -724,7 +724,7 @@ exports.initialize = function () {
                 relay_url: "https://webathena.mit.edu/relay.html",
                 params: {
                     realm: "ATHENA.MIT.EDU",
-                    principal: principal,
+                    principal,
                 },
             },
             (err, r) => {
@@ -740,10 +740,10 @@ exports.initialize = function () {
                 channel.post({
                     url: "/accounts/webathena_kerberos_login/",
                     data: {cred: JSON.stringify(r.session)},
-                    success: function () {
+                    success() {
                         $("#zephyr-mirror-error").removeClass("show");
                     },
-                    error: function () {
+                    error() {
                         $("#zephyr-mirror-error").addClass("show");
                     },
                 });

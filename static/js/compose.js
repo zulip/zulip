@@ -203,7 +203,7 @@ function create_message_object() {
     // Changes here must also be kept in sync with echo.try_deliver_locally
     const message = {
         type: compose_state.get_message_type(),
-        content: content,
+        content,
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
         stream: "",
@@ -342,8 +342,8 @@ exports.send_message = function send_message(request) {
     request.local_id = local_id;
 
     sent_messages.start_tracking_message({
-        local_id: local_id,
-        locally_echoed: locally_echoed,
+        local_id,
+        locally_echoed,
     });
 
     request.locally_echoed = locally_echoed;
@@ -457,14 +457,14 @@ function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
         url: "/json/subscriptions/exists",
         data: {stream: stream_name, autosubscribe: true},
         async: false,
-        success: function (data) {
+        success(data) {
             if (data.subscribed) {
                 result = "subscribed";
             } else {
                 result = "not-subscribed";
             }
         },
-        error: function (xhr) {
+        error(xhr) {
             if (xhr.status === 404) {
                 result = "does-not-exist";
             } else {
@@ -546,7 +546,7 @@ function validate_stream_message_post_policy(sub) {
     ) {
         error_text = i18n.t(
             "New members are not allowed to post to this stream.<br>Permission will be granted in __days__ days.",
-            {days: days},
+            {days},
         );
         compose_error(error_text);
         return false;
@@ -867,14 +867,14 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
         channel.post({
             url: "/json/messages/render",
             idempotent: true,
-            data: {content: content},
-            success: function (response_data) {
+            data: {content},
+            success(response_data) {
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator(preview_spinner);
                 }
                 show_preview(response_data.rendered, content);
             },
-            error: function () {
+            error() {
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator(preview_spinner);
                 }
@@ -923,7 +923,7 @@ exports.warn_if_private_stream_is_linked = function (linked_stream) {
     const stream_name = linked_stream.name;
 
     const warning_area = $("#compose_private_stream_alert");
-    const context = {stream_name: stream_name};
+    const context = {stream_name};
     const new_row = render_compose_private_stream_alert(context);
 
     warning_area.append(new_row);
@@ -968,7 +968,7 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
 
         if (!existing_invites.includes(user_id)) {
             const context = {
-                user_id: user_id,
+                user_id,
                 stream_id: sub.stream_id,
                 name: mentioned.full_name,
                 can_subscribe_other_users: page_params.can_subscribe_other_users,
@@ -1182,7 +1182,7 @@ exports.initialize = function () {
         ) {
             channel.get({
                 url: "/json/calls/bigbluebutton/create",
-                success: function (response) {
+                success(response) {
                     insert_video_call_url(response.url, target_textarea);
                 },
             });

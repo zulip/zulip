@@ -60,7 +60,7 @@ exports.build_page = function () {
 
     const rendered_settings_tab = render_settings_tab({
         full_name: people.my_full_name(),
-        page_params: page_params,
+        page_params,
         enable_sound_select:
             page_params.enable_sounds || page_params.enable_stream_audible_notifications,
         zuliprc: "zuliprc",

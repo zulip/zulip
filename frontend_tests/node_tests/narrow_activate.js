@@ -21,7 +21,7 @@ set_global("hashchange", {});
 set_global("home_msg_list", {});
 set_global("message_fetch", {});
 set_global("message_list", {
-    set_narrowed: function (value) {
+    set_narrowed(value) {
         this.narrowed = value;
     },
 });
@@ -38,10 +38,10 @@ set_global("ui_util", {});
 set_global("unread_ops", {});
 set_global("search_pill_widget", {
     widget: {
-        clear: function () {
+        clear() {
             return true;
         },
-        appendValue: function () {
+        appendValue() {
             return true;
         },
     },
@@ -112,7 +112,7 @@ function stub_message_list() {
         const list = this;
         this.data = opts.data;
         this.view = {
-            set_message_offset: function (offset) {
+            set_message_offset(offset) {
                 list.view.offset = offset;
             },
         };
@@ -121,15 +121,15 @@ function stub_message_list() {
     };
 
     message_list.MessageList.prototype = {
-        get: function (msg_id) {
+        get(msg_id) {
             return this.data.get(msg_id);
         },
 
-        empty: function () {
+        empty() {
             return this.data.empty();
         },
 
-        select_id: function (msg_id) {
+        select_id(msg_id) {
             this.selected_id = msg_id;
         },
     };

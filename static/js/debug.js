@@ -63,8 +63,8 @@ export function check_duplicate_ids() {
     });
 
     return {
-        collisions: collisions,
-        total_collisions: total_collisions,
+        collisions,
+        total_collisions,
     };
 }
 
@@ -104,11 +104,11 @@ export function IterationProfiler() {
 }
 
 IterationProfiler.prototype = {
-    iteration_start: function () {
+    iteration_start() {
         this.section("_iteration_overhead");
     },
 
-    iteration_stop: function () {
+    iteration_stop() {
         const now = window.performance.now();
         const diff = now - this.last_time;
         if (diff > 1) {
@@ -120,13 +120,13 @@ IterationProfiler.prototype = {
         this.last_time = now;
     },
 
-    section: function (label) {
+    section(label) {
         const now = window.performance.now();
         this.sections.set(label, (this.sections.get(label) || 0) + (now - this.last_time));
         this.last_time = now;
     },
 
-    done: function () {
+    done() {
         this.section("_iteration_overhead");
 
         for (const [prop, cost] of this.sections) {

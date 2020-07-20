@@ -180,22 +180,22 @@ function format_topic(topic_data) {
 
     return {
         // stream info
-        stream_id: stream_id,
-        stream: stream,
+        stream_id,
+        stream,
         stream_color: stream_info.color,
         invite_only: stream_info.invite_only,
         is_web_public: stream_info.is_web_public,
         stream_url: hash_util.by_stream_uri(stream_id),
 
-        topic: topic,
+        topic,
         topic_key: get_topic_key(stream_id, topic),
-        unread_count: unread_count,
-        last_msg_time: last_msg_time,
+        unread_count,
+        last_msg_time,
         topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
         senders: senders_info,
         other_senders_count: Math.max(0, all_senders.length - MAX_AVATAR),
-        muted: muted,
-        topic_muted: topic_muted,
+        muted,
+        topic_muted,
         participated: topic_data.participated,
         full_last_msg_date_time: full_datetime.date + " " + full_datetime.time,
     };
@@ -419,19 +419,19 @@ exports.complete_rerender = function () {
     topics_widget = list_render.create(container, mapped_topic_values, {
         name: "recent_topics_table",
         parent_container: $("#recent_topics_table"),
-        modifier: function (item) {
+        modifier(item) {
             return render_recent_topic_row(format_topic(item));
         },
         filter: {
             // We use update_filters_view & filters_should_hide_topic to do all the
             // filtering for us, which is called using click_handlers.
-            predicate: function (topic_data) {
+            predicate(topic_data) {
                 return !exports.filters_should_hide_topic(topic_data);
             },
         },
         sort_fields: {
-            stream_sort: stream_sort,
-            topic_sort: topic_sort,
+            stream_sort,
+            topic_sort,
         },
         html_selector: get_topic_row,
         simplebar_container: $("#recent_topics_table .table_fix_head"),
@@ -443,7 +443,7 @@ exports.launch = function () {
     overlays.open_overlay({
         name: "recent_topics",
         overlay: $("#recent_topics_overlay"),
-        on_close: function () {
+        on_close() {
             hashchange.exit_overlay();
         },
     });

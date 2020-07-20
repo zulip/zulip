@@ -5,7 +5,7 @@ const noop = () => {};
 let form_data;
 
 const _jQuery = {
-    each: function (lst, f) {
+    each(lst, f) {
         for (const [k, v] of lst.entries()) {
             f(k, v);
         }
@@ -43,11 +43,11 @@ global.stub_templates((name, data) => {
 const _overlays = {};
 
 const _ui_report = {
-    success: function (msg, elem) {
+    success(msg, elem) {
         elem.val(msg);
     },
 
-    error: function (msg, xhr, elem) {
+    error(msg, xhr, elem) {
         elem.val(msg);
     },
 };
@@ -165,11 +165,11 @@ function createSaveButtons(subsection) {
         props.hidden = true;
     };
     return {
-        props: props,
+        props,
         save_button: stub_save_button,
         discard_button: stub_discard_button,
         save_button_header: stub_save_button_header,
-        save_button_controls: save_button_controls,
+        save_button_controls,
         save_button_text: stub_save_button_text,
     };
 }
@@ -348,7 +348,7 @@ function test_change_save_button_state() {
 
 function test_upload_realm_icon(upload_realm_logo_or_icon) {
     form_data = {
-        append: function (field, val) {
+        append(field, val) {
             form_data[field] = val;
         },
     };

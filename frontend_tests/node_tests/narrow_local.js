@@ -28,7 +28,7 @@ function test_with(fixture) {
     const muting_enabled = narrow_state.muting_enabled();
     const msg_data = new MessageListData({
         filter: narrow_state.filter(),
-        muting_enabled: muting_enabled,
+        muting_enabled,
     });
     const id_info = {
         target_id: fixture.target_id,
@@ -60,8 +60,8 @@ function test_with(fixture) {
     narrow_state.get_first_unread_info = () => fixture.unread_info;
 
     narrow.maybe_add_local_messages({
-        id_info: id_info,
-        msg_data: msg_data,
+        id_info,
+        msg_data,
     });
 
     assert.deepEqual(id_info, fixture.expected_id_info);

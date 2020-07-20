@@ -79,10 +79,10 @@ set_global("common", {
 
 function stub_selected_message(msg) {
     set_global("current_msg_list", {
-        selected_message: function () {
+        selected_message() {
             return msg;
         },
-        can_mark_messages_read: function () {
+        can_mark_messages_read() {
             return true;
         },
     });
@@ -90,7 +90,7 @@ function stub_selected_message(msg) {
 
 function stub_channel_get(success_value) {
     set_global("channel", {
-        get: function (opts) {
+        get(opts) {
             opts.success(success_value);
         },
     });

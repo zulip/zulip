@@ -33,7 +33,7 @@ emoji.initialize();
 
 set_global("channel", {});
 set_global("emoji_picker", {
-    hide_emoji_popover: function () {},
+    hide_emoji_popover() {},
 });
 
 const alice = {
@@ -75,20 +75,20 @@ const message = {
 };
 
 set_global("message_store", {
-    get: function (message_id) {
+    get(message_id) {
         assert.equal(message_id, 1001);
         return message;
     },
 });
 
 set_global("current_msg_list", {
-    selected_message: function () {
+    selected_message() {
         return {sent_by_me: true};
     },
-    selected_row: function () {
+    selected_row() {
         return $(".selected-row");
     },
-    selected_id: function () {
+    selected_id() {
         return 42;
     },
 });
@@ -461,8 +461,8 @@ run_test("with_view_stubs", () => {
         function add_call_func(name) {
             return function (opts) {
                 calls.push({
-                    name: name,
-                    opts: opts,
+                    name,
+                    opts,
                 });
             };
         }
@@ -503,7 +503,7 @@ run_test("with_view_stubs", () => {
     };
 
     test_view_calls({
-        run_code: function () {
+        run_code() {
             reactions.add_reaction(alice_8ball_event);
         },
         expected_view_calls: [
@@ -521,7 +521,7 @@ run_test("with_view_stubs", () => {
     });
 
     test_view_calls({
-        run_code: function () {
+        run_code() {
             reactions.add_reaction(bob_8ball_event);
         },
         expected_view_calls: [
@@ -540,7 +540,7 @@ run_test("with_view_stubs", () => {
     });
 
     test_view_calls({
-        run_code: function () {
+        run_code() {
             reactions.add_reaction(cali_airplane_event);
         },
         expected_view_calls: [
@@ -558,7 +558,7 @@ run_test("with_view_stubs", () => {
     });
 
     test_view_calls({
-        run_code: function () {
+        run_code() {
             reactions.remove_reaction(bob_8ball_event);
         },
         expected_view_calls: [
@@ -577,7 +577,7 @@ run_test("with_view_stubs", () => {
     });
 
     test_view_calls({
-        run_code: function () {
+        run_code() {
             reactions.remove_reaction(alice_8ball_event);
         },
         expected_view_calls: [

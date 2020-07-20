@@ -39,8 +39,8 @@ const emoticon_translations = (() => {
         const regex = new RegExp("(" + util.escape_regexp(emoticon) + ")", "g");
 
         translations.push({
-            regex: regex,
-            replacement_text: replacement_text,
+            regex,
+            replacement_text,
         });
     }
 

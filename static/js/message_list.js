@@ -15,7 +15,7 @@ exports.MessageList = function (opts) {
         this.muting_enabled = opts.muting_enabled;
         this.data = new MessageListData({
             muting_enabled: this.muting_enabled,
-            filter: filter,
+            filter,
         });
     }
 
@@ -76,47 +76,47 @@ exports.MessageList.prototype = {
         return render_info;
     },
 
-    get: function (id) {
+    get(id) {
         return this.data.get(id);
     },
 
-    num_items: function () {
+    num_items() {
         return this.data.num_items();
     },
 
-    empty: function () {
+    empty() {
         return this.data.empty();
     },
 
-    first: function () {
+    first() {
         return this.data.first();
     },
 
-    last: function () {
+    last() {
         return this.data.last();
     },
 
-    prev: function () {
+    prev() {
         return this.data.prev();
     },
 
-    next: function () {
+    next() {
         return this.data.next();
     },
 
-    is_at_end: function () {
+    is_at_end() {
         return this.data.is_at_end();
     },
 
-    nth_most_recent_id: function (n) {
+    nth_most_recent_id(n) {
         return this.data.nth_most_recent_id(n);
     },
 
-    is_search: function () {
+    is_search() {
         return this.data.is_search();
     },
 
-    can_mark_messages_read: function () {
+    can_mark_messages_read() {
         return this.data.can_mark_messages_read();
     },
 
@@ -131,7 +131,7 @@ exports.MessageList.prototype = {
         }
     },
 
-    selected_id: function () {
+    selected_id() {
         return this.data.selected_id();
     },
 
@@ -144,7 +144,7 @@ exports.MessageList.prototype = {
             mark_read: true,
             force_rerender: false,
             ...opts,
-            id: id,
+            id,
             msg_list: this,
             previously_selected: this.data.selected_id(),
         };
@@ -172,8 +172,8 @@ exports.MessageList.prototype = {
         if (!opts.use_closest && closest_id !== id) {
             error_data = {
                 table_name: this.table_name,
-                id: id,
-                closest_id: closest_id,
+                id,
+                closest_id,
             };
             blueslip.error("Selected message id not in MessageList", error_data);
         }
@@ -181,7 +181,7 @@ exports.MessageList.prototype = {
         if (closest_id === -1 && !opts.empty_ok) {
             error_data = {
                 table_name: this.table_name,
-                id: id,
+                id,
                 items_length: this.data.num_items(),
             };
             blueslip.fatal("Cannot select id -1", error_data);
@@ -212,27 +212,27 @@ exports.MessageList.prototype = {
         return this.get_row(this.data.selected_id());
     },
 
-    closest_id: function (id) {
+    closest_id(id) {
         return this.data.closest_id(id);
     },
 
-    advance_past_messages: function (msg_ids) {
+    advance_past_messages(msg_ids) {
         return this.data.advance_past_messages(msg_ids);
     },
 
-    selected_idx: function () {
+    selected_idx() {
         return this.data.selected_idx();
     },
 
-    subscribed_bookend_content: function (stream_name) {
+    subscribed_bookend_content(stream_name) {
         return i18n.t("You subscribed to stream __stream__", {stream: stream_name});
     },
 
-    unsubscribed_bookend_content: function (stream_name) {
+    unsubscribed_bookend_content(stream_name) {
         return i18n.t("You unsubscribed from stream __stream__", {stream: stream_name});
     },
 
-    not_subscribed_bookend_content: function (stream_name) {
+    not_subscribed_bookend_content(stream_name) {
         return i18n.t("You are not subscribed to stream __stream__", {stream: stream_name});
     },
 
@@ -275,7 +275,7 @@ exports.MessageList.prototype = {
         }
     },
 
-    unmuted_messages: function (messages) {
+    unmuted_messages(messages) {
         return this.data.unmuted_messages(messages);
     },
 
@@ -284,7 +284,7 @@ exports.MessageList.prototype = {
         this.append_to_view(viewable_messages, opts);
     },
 
-    append_to_view: function (messages, opts) {
+    append_to_view(messages, opts) {
         opts = {messages_are_new: false, ...opts};
 
         this.num_appends += 1;
@@ -314,7 +314,7 @@ exports.MessageList.prototype = {
         row.trigger("mouseleave");
     },
 
-    show_edit_topic_on_recipient_row: function (recipient_row, form) {
+    show_edit_topic_on_recipient_row(recipient_row, form) {
         recipient_row.find(".topic_edit_form").append(form);
         recipient_row.find(".on_hover_topic_edit").hide();
         recipient_row.find(".edit_content_button").hide();
@@ -322,7 +322,7 @@ exports.MessageList.prototype = {
         recipient_row.find(".topic_edit").show();
     },
 
-    hide_edit_topic_on_recipient_row: function (recipient_row) {
+    hide_edit_topic_on_recipient_row(recipient_row) {
         recipient_row.find(".stream_topic").show();
         recipient_row.find(".on_hover_topic_edit").show();
         recipient_row.find(".edit_content_button").show();
@@ -330,7 +330,7 @@ exports.MessageList.prototype = {
         recipient_row.find(".topic_edit").hide();
     },
 
-    show_message_as_read: function (message, options) {
+    show_message_as_read(message, options) {
         const row = this.get_row(message.id);
         if (options.from === "pointer" || options.from === "server") {
             row.find(".unread_marker").addClass("fast_fade");
@@ -360,7 +360,7 @@ exports.MessageList.prototype = {
         this.redo_selection();
     },
 
-    redo_selection: function () {
+    redo_selection() {
         const selected_id = this.data.selected_id();
 
         if (selected_id !== -1) {
@@ -380,33 +380,33 @@ exports.MessageList.prototype = {
         return this.data.all_messages();
     },
 
-    first_unread_message_id: function () {
+    first_unread_message_id() {
         return this.data.first_unread_message_id();
     },
 
-    message_range: function (start, end) {
+    message_range(start, end) {
         return this.data.message_range(start, end);
     },
 
-    get_row: function (id) {
+    get_row(id) {
         return this.view.get_row(id);
     },
 
-    update_user_full_name: function (user_id, full_name) {
+    update_user_full_name(user_id, full_name) {
         this.data.update_user_full_name(user_id, full_name);
         if (this.table_name !== undefined) {
             this.view.rerender_preserving_scrolltop();
         }
     },
 
-    update_user_avatar: function (user_id, avatar_url) {
+    update_user_avatar(user_id, avatar_url) {
         this.data.update_user_avatar(user_id, avatar_url);
         if (this.table_name !== undefined) {
             this.view.rerender_preserving_scrolltop();
         }
     },
 
-    update_stream_name: function (stream_id, new_stream_name) {
+    update_stream_name(stream_id, new_stream_name) {
         this.data.update_stream_name(stream_id, new_stream_name);
         if (this.table_name !== undefined) {
             this.view.rerender_preserving_scrolltop();
@@ -416,10 +416,10 @@ exports.MessageList.prototype = {
     change_message_id: function MessageList_change_message_id(old_id, new_id) {
         const self = this;
         const opts = {
-            is_current_list: function () {
+            is_current_list() {
                 return current_msg_list === self;
             },
-            re_render: function () {
+            re_render() {
                 self.view.rerender_preserving_scrolltop();
                 self.redo_selection();
             },
@@ -427,7 +427,7 @@ exports.MessageList.prototype = {
         this.data.change_message_id(old_id, new_id, opts);
     },
 
-    get_last_message_sent_by_me: function () {
+    get_last_message_sent_by_me() {
         return this.data.get_last_message_sent_by_me();
     },
 };

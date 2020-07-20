@@ -42,7 +42,7 @@ const list_cursor = function (opts) {
         }
 
         const li = opts.list.find_li({
-            key: key,
+            key,
             force_render: true,
         });
 
@@ -51,11 +51,11 @@ const list_cursor = function (opts) {
         }
 
         return {
-            highlight: function () {
+            highlight() {
                 li.addClass(opts.highlight_class);
                 self.adjust_scroll(li);
             },
-            clear: function () {
+            clear() {
                 li.removeClass(opts.highlight_class);
             },
         };

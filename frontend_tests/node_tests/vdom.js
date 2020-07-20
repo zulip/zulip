@@ -103,9 +103,9 @@ function make_child(i, name) {
 
     return {
         key: i,
-        render: render,
-        name: name,
-        eq: eq,
+        render,
+        name,
+        eq,
     };
 }
 
