@@ -227,7 +227,7 @@ exports.set_up = function () {
     $("#config_inputbox").children().hide();
     $("[name*='" + selected_embedded_bot + "']").show();
 
-    $("#download_botserverrc").click(function () {
+    $("#download_botserverrc").on("click", function () {
         const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
         let content = "";
 
@@ -547,19 +547,19 @@ exports.set_up = function () {
         },
     });
 
-    $("#bots_lists_navbar .add-a-new-bot-tab").click((e) => {
+    $("#bots_lists_navbar .add-a-new-bot-tab").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         focus_tab.add_a_new_bot_tab();
     });
 
-    $("#bots_lists_navbar .active-bots-tab").click((e) => {
+    $("#bots_lists_navbar .active-bots-tab").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         focus_tab.active_bots_tab();
     });
 
-    $("#bots_lists_navbar .inactive-bots-tab").click((e) => {
+    $("#bots_lists_navbar .inactive-bots-tab").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         focus_tab.inactive_bots_tab();

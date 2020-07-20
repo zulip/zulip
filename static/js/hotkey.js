@@ -793,7 +793,7 @@ exports.process_keydown = function (e) {
     return exports.process_hotkey(e, hotkey);
 };
 
-$(document).keydown((e) => {
+$(document).on("keydown", (e) => {
     if (exports.process_keydown(e)) {
         e.preventDefault();
     }
@@ -807,7 +807,7 @@ exports.process_keypress = function (e) {
     return exports.process_hotkey(e, hotkey);
 };
 
-$(document).keypress((e) => {
+$(document).on("keypress", (e) => {
     if (exports.process_keypress(e)) {
         e.preventDefault();
     }

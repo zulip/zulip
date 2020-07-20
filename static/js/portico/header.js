@@ -4,7 +4,7 @@ $(() => {
         return false;
     });
 
-    $("body").click((e) => {
+    $("body").on("click", (e) => {
         const $this = $(e.target);
 
         if (

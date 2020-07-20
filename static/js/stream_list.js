@@ -496,7 +496,7 @@ exports.set_event_handlers = function () {
 
     $("#streams_header")
         .expectOne()
-        .click((e) => {
+        .on("click", (e) => {
             exports.toggle_filter_displayed(e);
         });
 

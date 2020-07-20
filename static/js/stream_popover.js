@@ -286,7 +286,7 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
         ".stream_header_colorblock",
     );
     ui_util.decorate_stream_bar(current_stream_name, stream_header_colorblock, false);
-    $("#select_stream_id").change(function () {
+    $("#select_stream_id").on("change", function () {
         const stream_name = stream_data.maybe_get_stream_name(parseInt(this.value, 10));
         ui_util.decorate_stream_bar(stream_name, stream_header_colorblock, false);
     });

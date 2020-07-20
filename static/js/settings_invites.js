@@ -162,7 +162,7 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
         );
         $("#revoke_invite_modal").modal("show");
         $("#do_revoke_invite_button").unbind("click");
-        $("#do_revoke_invite_button").click(do_revoke_invite);
+        $("#do_revoke_invite_button").on("click", do_revoke_invite);
     });
 
     $(".admin_invites_table").on("click", ".resend", (e) => {
@@ -181,7 +181,7 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
         $("#resend_invite_modal").modal("show");
     });
 
-    $("#do_resend_invite_button").click(() => {
+    $("#do_resend_invite_button").on("click", () => {
         const modal_invite_id = $("#resend_invite_modal #do_resend_invite_button").attr(
             "data-invite-id",
         );

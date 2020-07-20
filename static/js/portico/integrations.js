@@ -323,7 +323,7 @@ function toggle_categories_dropdown() {
 }
 
 function integration_events() {
-    $('#integration-search input[type="text"]').keypress((e) => {
+    $('#integration-search input[type="text"]').on("keypress", (e) => {
         const integrations = $(".integration-lozenges").children().toArray();
         if (e.which === 13 && e.target.value !== "") {
             for (let i = 0; i < integrations.length; i += 1) {
@@ -337,7 +337,7 @@ function integration_events() {
         }
     });
 
-    $(".integration-categories-dropdown .dropdown-toggle").click(() => {
+    $(".integration-categories-dropdown .dropdown-toggle").on("click", () => {
         toggle_categories_dropdown();
     });
 
@@ -375,7 +375,7 @@ function integration_events() {
             dispatch("UPDATE_QUERY", {query: e.target.value.toLowerCase()});
         });
 
-    $(window).scroll(() => {
+    $(window).on("scroll", () => {
         if (document.body.scrollTop > 330) {
             $(".integration-categories-sidebar").addClass("sticky");
         } else {

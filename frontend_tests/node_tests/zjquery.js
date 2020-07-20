@@ -116,11 +116,11 @@ run_test("clicks", () => {
     const state = {};
 
     function set_up_click_handlers() {
-        $("#widget1").click(() => {
+        $("#widget1").on("click", () => {
             state.clicked = true;
         });
 
-        $(".some-class").keydown(() => {
+        $(".some-class").on("keydown", () => {
             state.keydown = true;
         });
     }

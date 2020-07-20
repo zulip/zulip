@@ -99,7 +99,7 @@ exports.build_page = function () {
 
     exports.update_default_streams_table();
 
-    $(".create_default_stream").keypress((e) => {
+    $(".create_default_stream").on("keypress", (e) => {
         if (e.which === 13) {
             e.preventDefault();
             e.stopPropagation();

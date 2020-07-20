@@ -444,7 +444,7 @@ exports.initialize = function () {
     jwindow = $(window);
     exports.message_pane = $(".app");
     // This handler must be placed before all resize handlers in our application
-    jwindow.resize(() => {
+    jwindow.on("resize", () => {
         dimensions.height.reset();
         dimensions.width.reset();
         top_of_feed.reset();

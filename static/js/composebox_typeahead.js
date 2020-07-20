@@ -266,7 +266,7 @@ function select_on_focus(field_id) {
     // conditions in Chrome so we need to protect against infinite
     // recursion.
     let in_handler = false;
-    $("#" + field_id).focus(() => {
+    $("#" + field_id).on("focus", () => {
         if (in_handler) {
             return;
         }
@@ -1063,10 +1063,10 @@ exports.initialize = function () {
     select_on_focus("private_message_recipient");
 
     // These handlers are at the "form" level so that they are called after typeahead
-    $("form#send_message_form").keydown(handle_keydown);
-    $("form#send_message_form").keyup(handle_keyup);
+    $("form#send_message_form").on("keydown", handle_keydown);
+    $("form#send_message_form").on("keyup", handle_keyup);
 
-    $("#enter_sends").click(() => {
+    $("#enter_sends").on("click", () => {
         const send_button = $("#compose-send-button");
         page_params.enter_sends = $("#enter_sends").is(":checked");
         if (page_params.enter_sends) {
@@ -1166,7 +1166,7 @@ exports.initialize = function () {
 
     exports.initialize_compose_typeahead("#compose-textarea");
 
-    $("#private_message_recipient").blur(function () {
+    $("#private_message_recipient").on("blur", function () {
         const val = $(this).val();
         const recipients = typeahead_helper.get_cleaned_pm_recipients(val);
         $(this).val(recipients.join(", "));

@@ -64,7 +64,7 @@ function get_audio_file_path(audio_element, audio_file_without_extension) {
 
 exports.initialize = function () {
     $(window)
-        .focus(() => {
+        .on("focus", () => {
             window_has_focus = true;
 
             for (const notice_mem_entry of notice_memory.values()) {
@@ -76,7 +76,7 @@ exports.initialize = function () {
             // counts.
             unread_ops.process_visible();
         })
-        .blur(() => {
+        .on("blur", () => {
             window_has_focus = false;
         });
 

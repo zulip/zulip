@@ -111,20 +111,20 @@ exports.set_up = function () {
 
     update_desktop_icon_count_display();
 
-    $("#send_test_notification").click(() => {
+    $("#send_test_notification").on("click", () => {
         notifications.send_test_notification(
             i18n.t("This is what a Zulip notification looks like."),
         );
     });
 
-    $("#play_notification_sound").click(() => {
+    $("#play_notification_sound").on("click", () => {
         $("#notifications-area").find("audio")[0].play();
     });
 
     const notification_sound_dropdown = $("#notification_sound");
     notification_sound_dropdown.val(page_params.notification_sound);
 
-    $("#enable_sounds, #enable_stream_audible_notifications").change(() => {
+    $("#enable_sounds, #enable_stream_audible_notifications").on("change", () => {
         if (
             $("#enable_stream_audible_notifications").prop("checked") ||
             $("#enable_sounds").prop("checked")

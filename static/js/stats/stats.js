@@ -319,19 +319,19 @@ function populate_messages_sent_over_time(data) {
     }
 
     // Click handlers for aggregation buttons
-    $("#daily_button").click(function () {
+    $("#daily_button").on("click", function () {
         draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, false);
         $(this).addClass("selected");
         clicked_cumulative = false;
     });
 
-    $("#weekly_button").click(function () {
+    $("#weekly_button").on("click", function () {
         draw_or_update_plot(weekly_rangeselector, weekly_traces, last_week_is_partial, false);
         $(this).addClass("selected");
         clicked_cumulative = false;
     });
 
-    $("#cumulative_button").click(function () {
+    $("#cumulative_button").on("click", function () {
         clicked_cumulative = false;
         draw_or_update_plot(daily_rangeselector, cumulative_traces, false, false);
         $(this).addClass("selected");
@@ -537,7 +537,7 @@ function populate_messages_sent_by_client(data) {
         button.addClass("selected");
     }
 
-    $("#pie_messages_sent_by_client button").click(function () {
+    $("#pie_messages_sent_by_client button").on("click", function () {
         if ($(this).attr("data-user")) {
             set_user_button($(this));
             user_button = $(this).attr("data-user");
@@ -665,7 +665,7 @@ function populate_messages_sent_by_message_type(data) {
         button.addClass("selected");
     }
 
-    $("#pie_messages_sent_by_type button").click(function () {
+    $("#pie_messages_sent_by_type button").on("click", function () {
         if ($(this).attr("data-user")) {
             set_user_button($(this));
             user_button = $(this).attr("data-user");
@@ -757,17 +757,17 @@ function populate_number_of_users(data) {
         add_hover_handler();
     }
 
-    $("#1day_actives_button").click(function () {
+    $("#1day_actives_button").on("click", function () {
         draw_or_update_plot(_1day_trace);
         $(this).addClass("selected");
     });
 
-    $("#15day_actives_button").click(function () {
+    $("#15day_actives_button").on("click", function () {
         draw_or_update_plot(_15day_trace);
         $(this).addClass("selected");
     });
 
-    $("#all_time_actives_button").click(function () {
+    $("#all_time_actives_button").on("click", function () {
         draw_or_update_plot(all_time_trace);
         $(this).addClass("selected");
     });
@@ -983,19 +983,19 @@ function populate_messages_read_over_time(data) {
     }
 
     // Click handlers for aggregation buttons
-    $("#read_daily_button").click(function () {
+    $("#read_daily_button").on("click", function () {
         draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, false);
         $(this).addClass("selected");
         clicked_cumulative = false;
     });
 
-    $("#read_weekly_button").click(function () {
+    $("#read_weekly_button").on("click", function () {
         draw_or_update_plot(weekly_rangeselector, weekly_traces, last_week_is_partial, false);
         $(this).addClass("selected");
         clicked_cumulative = false;
     });
 
-    $("#read_cumulative_button").click(function () {
+    $("#read_cumulative_button").on("click", function () {
         clicked_cumulative = false;
         draw_or_update_plot(daily_rangeselector, cumulative_traces, false, false);
         $(this).addClass("selected");

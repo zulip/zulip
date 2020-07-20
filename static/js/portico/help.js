@@ -6,7 +6,7 @@ function registerCodeSection($codeSection) {
     const $li = $codeSection.find("ul.nav li");
     const $blocks = $codeSection.find(".blocks div");
 
-    $li.click(function () {
+    $li.on("click", function () {
         const language = this.dataset.language;
 
         $li.removeClass("active");
@@ -99,7 +99,7 @@ const update_page = function (html_map, path) {
 
 new SimpleBar($(".sidebar")[0]);
 
-$(".sidebar.slide h2").click((e) => {
+$(".sidebar.slide h2").on("click", (e) => {
     const $next = $(e.target).next();
 
     if ($next.is("ul")) {
@@ -110,7 +110,7 @@ $(".sidebar.slide h2").click((e) => {
     }
 });
 
-$(".sidebar a").click(function (e) {
+$(".sidebar a").on("click", function (e) {
     const path = $(this).attr("href");
     const path_dir = path.split("/")[1];
     const current_dir = window.location.pathname.split("/")[1];
@@ -150,11 +150,11 @@ $(document).on(
     },
 );
 
-$(".hamburger").click(() => {
+$(".hamburger").on("click", () => {
     $(".sidebar").toggleClass("show");
 });
 
-$(".markdown").click(() => {
+$(".markdown").on("click", () => {
     if ($(".sidebar.show").length) {
         $(".sidebar.show").toggleClass("show");
     }

@@ -362,7 +362,7 @@ exports.set_up = function () {
         });
     });
 
-    $("#api_key_button").click((e) => {
+    $("#api_key_button").on("click", (e) => {
         setup_api_key_modal();
         overlays.open_modal("#api_key_modal");
         e.preventDefault();
