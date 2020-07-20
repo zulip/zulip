@@ -21,13 +21,9 @@ set_global("page_params", {});
 
 set_global("overlays", {});
 
-const noop = () => {};
-
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");
 set_global("$", global.make_zjquery());
-$.fn.keydown = noop;
-$.fn.keypress = noop;
 
 zrequire("emoji");
 const hotkey = zrequire("hotkey");

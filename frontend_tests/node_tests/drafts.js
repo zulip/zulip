@@ -184,12 +184,6 @@ run_test("snapshot_message", () => {
 });
 
 run_test("initialize", () => {
-    const message_content = $("#compose-textarea");
-    message_content.focusout = function (f) {
-        assert.equal(f, drafts.update_draft);
-        f();
-    };
-
     global.window.addEventListener = function (event_name, f) {
         assert.equal(event_name, "beforeunload");
         let called = false;
@@ -201,6 +195,10 @@ run_test("initialize", () => {
     };
 
     drafts.initialize();
+
+    const message_content = $("#compose-textarea");
+    assert.equal(message_content.get_on_handler("focusout"), drafts.update_draft);
+    message_content.trigger("focusout");
 });
 
 run_test("remove_old_drafts", () => {

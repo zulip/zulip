@@ -193,12 +193,6 @@ run_test("find_li w/force_render", () => {
 });
 
 run_test("scrolling", () => {
-    let scroll_f;
-
-    $(buddy_list.scroll_container_sel).scroll = (f) => {
-        scroll_f = f;
-    };
-
     buddy_list.populate({
         keys: [],
     });
@@ -212,7 +206,7 @@ run_test("scrolling", () => {
     assert(!tried_to_fill);
 
     buddy_list.start_scroll_handler();
-    scroll_f();
+    $(buddy_list.scroll_container_sel).trigger("scroll");
 
     assert(tried_to_fill);
 });

@@ -118,12 +118,6 @@ function set_up() {
 
     $("#create_bot_form").validate = () => {};
 
-    $("#create_bot_type").on = (action, f) => {
-        if (action === "change") {
-            test_create_bot_type_input_box_toggle(f);
-        }
-    };
-
     $("#config_inputbox").children = () => {
         const mock_children = {
             hide: () => {},
@@ -134,6 +128,8 @@ function set_up() {
     avatar.build_bot_edit_widget = () => {};
 
     settings_bots.set_up();
+
+    test_create_bot_type_input_box_toggle(() => $("#create_bot_type").trigger("change"));
 }
 
 run_test("set_up", () => {
