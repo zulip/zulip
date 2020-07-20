@@ -132,7 +132,6 @@ set_global("$", global.make_zjquery());
 
 const document_stub = $.create("document-stub");
 document.to_$ = () => document_stub;
-document_stub.on = () => {};
 document_stub.idle = () => {};
 
 const window_stub = $.create("window-stub");

@@ -4,7 +4,6 @@ set_global("$", global.make_zjquery());
 
 set_global("people", {});
 
-const noop = () => {};
 const return_false = () => false;
 const return_true = () => true;
 
@@ -185,19 +184,6 @@ run_test("activate another person poll", () => {
     set_widget_find_result("button.poll-question-remove");
     set_widget_find_result("input.poll-question");
 
-    let option_button_callback;
-    let vote_button_callback;
-
-    poll_option.on = (event, func) => {
-        assert.equal(event, "click");
-        option_button_callback = func;
-    };
-
-    poll_vote_button.on = (event, func) => {
-        assert.equal(event, "click");
-        vote_button_callback = func;
-    };
-
     poll_question_header.toggle = (show) => {
         assert(show);
     };
@@ -233,20 +219,16 @@ run_test("activate another person poll", () => {
     assert.equal(widget_option_container.html(), "widgets/poll_widget_results");
     assert.equal(poll_question_header.text(), "What do you want?");
 
-    const e = {
-        stopPropagation: noop,
-    };
-
     {
         /* Testing data sent to server on adding option */
         poll_option_input.val("cool choice");
         out_data = undefined;
-        option_button_callback(e);
+        poll_option.trigger("click");
         assert.deepEqual(out_data, {type: "new_option", idx: 1, option: "cool choice"});
 
         poll_option_input.val("");
         out_data = undefined;
-        option_button_callback(e);
+        poll_option.trigger("click");
         assert.deepEqual(out_data, undefined);
     }
 
@@ -274,12 +256,12 @@ run_test("activate another person poll", () => {
     {
         /* Testing data sent to server on voting */
         poll_vote_button.attr("data-key", "100,1");
-        const e = {
-            stopPropagation: noop,
-            target: poll_vote_button,
-        };
         out_data = undefined;
-        vote_button_callback(e);
+        poll_vote_button.trigger(
+            $.Event("click", {
+                target: poll_vote_button,
+            }),
+        );
         assert.deepEqual(out_data, {type: "vote", key: "100,1", vote: 1});
     }
 
@@ -331,7 +313,7 @@ run_test("activate own poll", () => {
         return elem;
     };
 
-    const poll_option = set_widget_find_result("button.poll-option");
+    set_widget_find_result("button.poll-option");
     const poll_option_input = set_widget_find_result("input.poll-option");
     const widget_option_container = set_widget_find_result("ul.poll-widget");
 
@@ -342,23 +324,11 @@ run_test("activate own poll", () => {
     const poll_question_container = set_widget_find_result(".poll-question-bar");
     const poll_option_container = set_widget_find_result(".poll-option-bar");
 
-    const poll_vote_button = set_widget_find_result("button.poll-vote");
+    set_widget_find_result("button.poll-vote");
     const poll_please_wait = set_widget_find_result(".poll-please-wait");
     const poll_author_help = set_widget_find_result(".poll-author-help");
 
     set_widget_find_result("button.poll-question-remove");
-
-    let question_button_callback;
-
-    poll_question_submit.on = (event, func) => {
-        assert.equal(event, "click");
-        question_button_callback = func;
-    };
-
-    // Following event handler are already tested and doesn't make sense
-    // to test them again
-    poll_option.on = noop;
-    poll_vote_button.on = noop;
 
     poll_question_header.toggle = (show) => {
         assert(show);
@@ -397,19 +367,15 @@ run_test("activate own poll", () => {
 
     {
         /* Testing data sent to server on editing question */
-        const e = {
-            stopPropagation: noop,
-        };
-
         poll_question_input.val("Is it new?");
         out_data = undefined;
         show_submit = true;
-        question_button_callback(e);
+        poll_question_submit.trigger("click");
         assert.deepEqual(out_data, {type: "question", question: "Is it new?"});
 
         poll_option_input.val("");
         out_data = undefined;
-        question_button_callback(e);
+        poll_question_submit.trigger("click");
         assert.deepEqual(out_data, undefined);
     }
 });

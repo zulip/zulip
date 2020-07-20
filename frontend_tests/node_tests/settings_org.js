@@ -734,12 +734,6 @@ function test_discard_changes_button(discard_changes) {
 }
 
 run_test("set_up", () => {
-    const callbacks = {};
-
-    const set_callback = (name) => (f) => {
-        callbacks[name] = f;
-    };
-
     const verify_realm_domains = simulate_realm_domains_table();
     page_params.realm_available_video_chat_providers = {
         jitsi_meet: {
@@ -754,30 +748,6 @@ run_test("set_up", () => {
             id: 4,
             name: "Big Blue Button",
         },
-    };
-
-    $("#id_realm_video_chat_provider").change = set_callback("realm_video_chat_provider");
-    $("#id_realm_org_join_restrictions").change = set_callback("change_org_join_restrictions");
-    $("#submit-add-realm-domain").click = set_callback("add_realm_domain");
-
-    let submit_settings_form;
-    let discard_changes;
-    $(".organization").on = function (action, selector, f) {
-        if (selector === ".subsection-header .subsection-changes-save .button") {
-            assert.equal(action, "click");
-            submit_settings_form = f;
-        } else if (selector === ".subsection-header .subsection-changes-discard .button") {
-            assert.equal(action, "click");
-            discard_changes = f;
-        }
-    };
-
-    let change_allow_subdomains;
-    $("#realm_domains_table").on = function (action, selector, f) {
-        if (action === "change") {
-            assert.equal(selector, ".allow-subdomains");
-            change_allow_subdomains = f;
-        }
     };
 
     let upload_realm_logo_or_icon;
@@ -797,18 +767,14 @@ run_test("set_up", () => {
         $.create("<stub delete limit parent>"),
     );
     $("#id_realm_message_retention_days").set_parent($.create("<stub retention period parent>"));
-    $("#id_realm_message_retention_setting").change = noop;
     $("#message_content_in_email_notifications_label").set_parent(
         $.create("<stub in-content setting checkbox>"),
     );
     $("#enable_digest_emails_label").set_parent($.create("<stub digest setting checkbox>"));
     $("#id_realm_digest_weekday").set_parent($.create("<stub digest weekday setting dropdown>"));
-    $("#id_realm_msg_edit_limit_setting").change = noop;
-    $("#id_realm_msg_delete_limit_setting").change = noop;
     $("#allowed_domains_label").set_parent($.create("<stub-allowed-domain-label-parent>"));
     const waiting_period_parent_elem = $.create("waiting-period-parent-stub");
     $("#id_realm_waiting_period_threshold").set_parent(waiting_period_parent_elem);
-    $("#id_realm_waiting_period_setting").change = noop;
 
     const allow_topic_edit_label_parent = $.create("allow-topic-edit-label-parent");
     $("#id_realm_allow_community_topic_editing_label").set_parent(allow_topic_edit_label_parent);
@@ -824,15 +790,27 @@ run_test("set_up", () => {
 
     verify_realm_domains();
 
-    test_realms_domain_modal(callbacks.add_realm_domain);
-    test_submit_settings_form(submit_settings_form);
+    test_realms_domain_modal(() => $("#submit-add-realm-domain").trigger("click"));
+    test_submit_settings_form(
+        $(".organization").get_on_handler(
+            "click",
+            ".subsection-header .subsection-changes-save .button",
+        ),
+    );
     test_upload_realm_icon(upload_realm_logo_or_icon);
-    test_change_allow_subdomains(change_allow_subdomains);
+    test_change_allow_subdomains(
+        $("#realm_domains_table").get_on_handler("change", ".allow-subdomains"),
+    );
     test_extract_property_name();
     test_change_save_button_state();
     test_sync_realm_settings();
     test_parse_time_limit();
-    test_discard_changes_button(discard_changes);
+    test_discard_changes_button(
+        $(".organization").get_on_handler(
+            "click",
+            ".subsection-header .subsection-changes-discard .button",
+        ),
+    );
 
     window.dropdown_list_widget = dropdown_list_widget_backup;
 });

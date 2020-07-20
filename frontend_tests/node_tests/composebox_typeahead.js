@@ -959,23 +959,6 @@ run_test("initialize", () => {
         compose_textarea_typeahead_called = true;
     };
 
-    let pm_recipient_blur_called = false;
-    const old_pm_recipient_blur = $("#private_message_recipient").blur;
-    $("#private_message_recipient").blur = function (handler) {
-        if (handler) {
-            // The blur handler is being set.
-            this.val("othello@zulip.com, ");
-            handler.call(this);
-            const actual_value = this.val();
-            const expected_value = "othello@zulip.com";
-            assert.equal(actual_value, expected_value);
-        } else {
-            // The element is simply losing the focus.
-            old_pm_recipient_blur();
-        }
-        pm_recipient_blur_called = true;
-    };
-
     page_params.enter_sends = false;
     // We manually specify it the first time because the click_func
     // doesn't exist yet.
@@ -984,6 +967,10 @@ run_test("initialize", () => {
     $("#private_message_recipient").select(noop);
 
     ct.initialize();
+
+    $("#private_message_recipient").val("othello@zulip.com, ");
+    $("#private_message_recipient").trigger("blur");
+    assert.equal($("#private_message_recipient").val(), "othello@zulip.com");
 
     // handle_keydown()
     let event = {
@@ -1088,19 +1075,6 @@ run_test("initialize", () => {
     $("form#send_message_form").keyup(event);
 
     // select_on_focus()
-    let focus_handler_called = false;
-    let stream_one_called = false;
-    $("#stream_message_recipient_stream").focus = function (f) {
-        // This .one() function emulates the possible infinite recursion that
-        // in_handler tries to avoid.
-        $("#stream_message_recipient_stream").one = function (event, handler) {
-            handler({preventDefault: noop});
-            f(); // This time in_handler will already be true.
-            stream_one_called = true;
-        };
-        f(); // Here in_handler is false.
-        focus_handler_called = true;
-    };
 
     $("#compose-send-button").fadeOut = noop;
     $("#compose-send-button").fadeIn = noop;
@@ -1130,11 +1104,8 @@ run_test("initialize", () => {
     assert(stream_typeahead_called);
     assert(subject_typeahead_called);
     assert(pm_recipient_typeahead_called);
-    assert(pm_recipient_blur_called);
     assert(channel_post_called);
     assert(compose_textarea_typeahead_called);
-    assert(focus_handler_called);
-    assert(stream_one_called);
 });
 
 run_test("begins_typeahead", () => {
