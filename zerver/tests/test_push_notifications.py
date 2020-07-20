@@ -317,18 +317,27 @@ class PushBouncerNotificationTest(BouncerTestCase):
                                         subdomain="zulip")
             self.assert_json_error(result, 'Token does not exist')
 
-            with mock.patch('zerver.lib.remote_server.requests.request',
-                            side_effect=requests.ConnectionError):
-                result = self.client_post(endpoint, {'token': token},
-                                          subdomain="zulip")
-                self.assert_json_error(
-                    result, "ConnectionError while trying to connect to push notification bouncer", 502)
+            with self.assertLogs('django.request', 'ERROR') as err_log:
+                with mock.patch('zerver.lib.remote_server.requests.request',
+                                side_effect=requests.ConnectionError):
+                    result = self.client_post(endpoint, {'token': token},
+                                              subdomain="zulip")
+                    self.assert_json_error(
+                        result, "ConnectionError while trying to connect to push notification bouncer", 502)
 
-            with mock.patch('zerver.lib.remote_server.requests.request',
-                            return_value=Result(status=500)):
-                result = self.client_post(endpoint, {'token': token},
-                                          subdomain="zulip")
-                self.assert_json_error(result, "Received 500 from push notification bouncer", 502)
+                with mock.patch('zerver.lib.remote_server.requests.request',
+                                return_value=Result(status=500)), \
+                        self.assertLogs(level='WARNING') as warn_logs:
+                    result = self.client_post(endpoint, {'token': token},
+                                              subdomain="zulip")
+                    self.assert_json_error(result, "Received 500 from push notification bouncer", 502)
+                self.assertEqual(warn_logs.output, [
+                    'WARNING:root:Received 500 from push notification bouncer'
+                ])
+            self.assertEqual(err_log.output, [
+                f'ERROR:django.request:Bad Gateway: {endpoint}',
+                f'ERROR:django.request:Bad Gateway: {endpoint}'
+            ])
 
         # Add tokens
         for endpoint, token, kind in endpoints:
