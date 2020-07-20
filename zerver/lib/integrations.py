@@ -613,7 +613,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[ScreenshotConfig]] = {
     'stripe': [ScreenshotConfig('charge_succeeded__card.json')],
     'taiga': [ScreenshotConfig('userstory_changed_status.json')],
     'teamcity': [ScreenshotConfig('success.json'), ScreenshotConfig('personal.json', '002.png')],
-    'thinkst': [ScreenshotConfig('canarytoken_real.json')],
+    'thinkst': [ScreenshotConfig('canary_consolidated_port_scan.json')],
     'transifex': [ScreenshotConfig('', extra_params={'project': 'Zulip Mobile',
                                                      'language': 'en',
                                                      'resource': 'file',
