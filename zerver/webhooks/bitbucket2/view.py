@@ -198,7 +198,7 @@ def get_force_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
 
 def get_commit_author_name(commit: Dict[str, Any]) -> str:
     if commit['author'].get('user'):
-        return commit['author']['user'].get('username')
+        return commit['author']['user'].get('display_name')
     return commit['author']['raw'].split()[0]
 
 def get_normal_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
