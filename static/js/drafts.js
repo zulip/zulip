@@ -378,7 +378,7 @@ exports.launch = function () {
 function activate_element(elem) {
     $(".draft-info-box").removeClass("active");
     $(elem).expectOne().addClass("active");
-    elem.focus();
+    elem.trigger("focus");
 }
 
 function drafts_initialize_focus(event_name) {

@@ -1,3 +1,3 @@
 $(() => {
-    $("#register").submit();
+    $("#register").trigger("submit");
 });

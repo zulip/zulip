@@ -14,24 +14,26 @@ run_test("test_early_returns", () => {
     };
 
     keydown_util.handle(opts);
-    const keydown_f = stub.keydown;
 
     const e1 = {
+        type: "keydown",
         which: 17, // not in keys
     };
 
-    keydown_f(e1);
+    stub.trigger(e1);
 
     const e2 = {
+        type: "keydown",
         which: 13, // no handler
     };
 
-    keydown_f(e2);
+    stub.trigger(e2);
 
     const e3 = {
+        type: "keydown",
         which: 37,
         altKey: true, // let browser handle
     };
 
-    keydown_f(e3);
+    stub.trigger(e3);
 });

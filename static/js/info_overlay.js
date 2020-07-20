@@ -14,7 +14,7 @@ exports.set_up_toggler = function () {
         callback: function (name, key) {
             $(".overlay-modal").hide();
             $("#" + key).show();
-            ui.get_scroll_element($("#" + key).find(".modal-body")).focus();
+            ui.get_scroll_element($("#" + key).find(".modal-body")).trigger("focus");
         },
     };
 

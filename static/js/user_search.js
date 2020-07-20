@@ -31,7 +31,7 @@ const user_search = function (opts) {
         }
 
         $input.val("");
-        $input.blur();
+        $input.trigger("blur");
         opts.reset_items();
     };
 
@@ -71,7 +71,7 @@ const user_search = function (opts) {
     };
 
     self.close_widget = function () {
-        $input.blur();
+        $input.trigger("blur");
         self.hide_widget();
         opts.reset_items();
     };
@@ -91,7 +91,7 @@ const user_search = function (opts) {
     self.initiate_search = function () {
         self.expand_column();
         self.show_widget();
-        $input.focus();
+        $input.trigger("focus");
     };
 
     self.toggle_filter_displayed = function () {

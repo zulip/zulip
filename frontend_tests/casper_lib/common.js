@@ -157,7 +157,7 @@ exports.select_item_via_typeahead = function (field_selector, str, item) {
                 // Set the value and then send a bogus keyup event to trigger
                 // the typeahead.
                 $(field_selector)
-                    .focus()
+                    .trigger("focus")
                     .val(str)
                     .trigger($.Event("keyup", {which: 0}));
 

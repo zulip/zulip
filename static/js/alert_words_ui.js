@@ -15,7 +15,7 @@ exports.render_alert_words_ui = function () {
     }
 
     // Focus new alert word name text box.
-    $("#create_alert_word_name").focus();
+    $("#create_alert_word_name").trigger("focus");
 };
 
 function update_alert_word_status(status_text, is_error) {

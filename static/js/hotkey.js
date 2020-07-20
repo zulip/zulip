@@ -231,10 +231,10 @@ exports.process_escape_key = function (e) {
         }
 
         if ($("#searchbox").has(":focus")) {
-            $("input:focus,textarea:focus").blur();
+            $("input:focus,textarea:focus").trigger("blur");
             if (page_params.search_pills_enabled) {
-                $("#searchbox .pill").blur();
-                $("#searchbox #search_query").blur();
+                $("#searchbox .pill").trigger("blur");
+                $("#searchbox #search_query").trigger("blur");
             } else {
                 tab_bar.exit_search();
             }
@@ -243,7 +243,7 @@ exports.process_escape_key = function (e) {
 
         // We pressed Esc and something was focused, and the composebox
         // wasn't open. In that case, we should blur the input.
-        $("input:focus,textarea:focus").blur();
+        $("input:focus,textarea:focus").trigger("blur");
         return true;
     }
 
@@ -272,12 +272,12 @@ exports.process_enter_key = function (e) {
         // on #gear-menu li a[tabindex] elements, force a click and prevent default.
         // this is because these links do not have an href and so don't force a
         // default action.
-        e.target.click();
+        e.target.trigger("click");
         return true;
     }
 
     if (hotspots.is_open()) {
-        $(e.target).find(".hotspot.overlay.show .hotspot-confirm").click();
+        $(e.target).find(".hotspot.overlay.show .hotspot-confirm").trigger("click");
         return false;
     }
 
@@ -286,7 +286,7 @@ exports.process_enter_key = function (e) {
     }
 
     if (exports.in_content_editable_widget(e)) {
-        $(e.target).parent().find(".checkmark").click();
+        $(e.target).parent().find(".checkmark").trigger("click");
         return false;
     }
 
@@ -359,14 +359,14 @@ exports.process_tab_key = function () {
     if (focused_message_edit_content.length > 0) {
         message_edit_form = focused_message_edit_content.closest(".message_edit_form");
         // Open message edit forms either have a save button or a close button, but not both.
-        message_edit_form.find(".message_edit_save,.message_edit_close").focus();
+        message_edit_form.find(".message_edit_save,.message_edit_close").trigger("focus");
         return true;
     }
 
     const focused_message_edit_save = $(".message_edit_save").filter(":focus");
     if (focused_message_edit_save.length > 0) {
         message_edit_form = focused_message_edit_save.closest(".message_edit_form");
-        message_edit_form.find(".message_edit_cancel").focus();
+        message_edit_form.find(".message_edit_cancel").trigger("focus");
         return true;
     }
 
@@ -391,7 +391,7 @@ exports.process_shift_tab_key = function () {
 
     // Shift-tabbing from the edit message cancel button takes you to save.
     if ($(".message_edit_cancel").filter(":focus").length > 0) {
-        $(".message_edit_save").focus();
+        $(".message_edit_save").trigger("focus");
         return true;
     }
 
@@ -401,7 +401,7 @@ exports.process_shift_tab_key = function () {
         focused_message_edit_save
             .closest(".message_edit_form")
             .find(".message_edit_content")
-            .focus();
+            .trigger("focus");
         return true;
     }
 

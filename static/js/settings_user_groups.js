@@ -272,7 +272,7 @@ exports.populate_user_groups = function () {
                 // the DOM.
                 update_cancel_button();
                 setTimeout(() => {
-                    input.focus();
+                    input.trigger("focus");
                 }, 100);
             });
         })();

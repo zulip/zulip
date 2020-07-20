@@ -409,7 +409,7 @@ run_test("focus_in_empty_compose", () => {
 
     compose_state.composing = return_true;
     $("#compose-textarea").val("");
-    $("#compose-textarea").focus();
+    $("#compose-textarea").trigger("focus");
     assert(compose_state.focus_in_empty_compose());
 
     compose_state.composing = return_false;
@@ -418,7 +418,7 @@ run_test("focus_in_empty_compose", () => {
     $("#compose-textarea").val("foo");
     assert(!compose_state.focus_in_empty_compose());
 
-    $("#compose-textarea").blur();
+    $("#compose-textarea").trigger("blur");
     assert(!compose_state.focus_in_empty_compose());
 });
 

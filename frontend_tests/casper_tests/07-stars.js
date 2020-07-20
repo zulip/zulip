@@ -20,7 +20,7 @@ function toggle_test_star_message() {
             return "cannot find star icon";
         }
 
-        star_icon.click();
+        star_icon.trigger("click");
     });
 
     if (error) {

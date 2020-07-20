@@ -330,7 +330,7 @@ function integration_events() {
                 const integration = $(integrations[i]).find(".integration-lozenge");
 
                 if ($(integration).css("display") !== "none") {
-                    $(integration).closest("a")[0].click();
+                    $(integration).closest("a")[0].trigger("click");
                     break;
                 }
             }
@@ -370,7 +370,7 @@ function integration_events() {
     // combine selector use for both focusing the integrations searchbar and adding
     // the input event.
     $(".integrations .searchbar input[type='text']")
-        .focus()
+        .trigger("focus")
         .on("input", (e) => {
             dispatch("UPDATE_QUERY", {query: e.target.value.toLowerCase()});
         });

@@ -222,7 +222,7 @@ exports.activate = function (opts) {
         const question = poll_data.get_question();
         elem.find("input.poll-question").val(question);
         render_question();
-        elem.find("input.poll-question").focus();
+        elem.find("input.poll-question").trigger("focus");
     }
 
     function abort_edit() {
@@ -268,7 +268,7 @@ exports.activate = function (opts) {
             return;
         }
 
-        poll_option_input.val("").focus();
+        poll_option_input.val("").trigger("focus");
 
         const data = poll_data.handle.new_option.outbound(option);
         callback(data);

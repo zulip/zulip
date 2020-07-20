@@ -131,11 +131,11 @@ run_test("clicks", () => {
     assert(!state.keydown);
 
     // But we can simulate clicks.
-    $("#widget1").click();
+    $("#widget1").trigger("click");
     assert.equal(state.clicked, true);
 
     // and keydown
-    $(".some-class").keydown();
+    $(".some-class").trigger("keydown");
     assert.equal(state.keydown, true);
 });
 

@@ -777,7 +777,7 @@ run_test("initialize", () => {
         const click_event = {type: "click", target: "#doesnotmatter"};
         options.query = "othello";
         // Focus lost (caused by the click event in the typeahead list)
-        $("#private_message_recipient").blur();
+        $("#private_message_recipient").trigger("blur");
         actual_value = options.updater(othello, click_event);
         assert.equal(appended_name, "Othello, the Moor of Venice");
 
@@ -969,6 +969,7 @@ run_test("initialize", () => {
 
     // handle_keydown()
     let event = {
+        type: "keydown",
         keyCode: 13,
         target: {
             id: "stream_message_recipient_stream",
@@ -979,7 +980,7 @@ run_test("initialize", () => {
     $("#stream_message_recipient_topic").data = function () {
         return {typeahead: {shown: true}};
     };
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
 
     const stub_typeahead_hidden = function () {
         return {typeahead: {shown: false}};
@@ -988,17 +989,17 @@ run_test("initialize", () => {
     $("#stream_message_recipient_stream").data = stub_typeahead_hidden;
     $("#private_message_recipient").data = stub_typeahead_hidden;
     $("#compose-textarea").data = stub_typeahead_hidden;
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
 
     event.keyCode = undefined;
     event.which = 9;
     event.shiftKey = false;
     event.target.id = "subject";
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
     event.target.id = "compose-textarea";
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
     event.target.id = "some_non_existing_id";
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
 
     // Setup jquery functions used in compose_textarea enter
     // handler.
@@ -1015,7 +1016,7 @@ run_test("initialize", () => {
 
     event.keyCode = 13;
     event.target.id = "stream_message_recipient_topic";
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
     event.target.id = "compose-textarea";
     page_params.enter_sends = false;
     event.metaKey = true;
@@ -1024,50 +1025,52 @@ run_test("initialize", () => {
         compose_finish_called = true;
     };
 
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
     assert(compose_finish_called);
     event.metaKey = false;
     event.ctrlKey = true;
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
     page_params.enter_sends = true;
     event.ctrlKey = false;
     event.altKey = true;
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
 
     // Cover case where there's a least one character there.
     range_length = 2;
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
 
     event.altKey = false;
     event.metaKey = true;
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
     event.target.id = "private_message_recipient";
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
 
     event.keyCode = 42;
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
 
     // handle_keyup()
     event = {
+        type: "keydown",
         keyCode: 13,
         target: {
             id: "stream_message_recipient_stream",
         },
         preventDefault: noop,
     };
-    // We execute .keydown() in order to make nextFocus !== false
+    // We trigger keydown in order to make nextFocus !== false
     $("#stream_message_recipient_topic").data = function () {
         return {typeahead: {shown: true}};
     };
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
     $("#stream_message_recipient_topic").off("mouseup");
-    $("form#send_message_form").keyup(event);
+    event.type = "keyup";
+    $("form#send_message_form").trigger(event);
     event.keyCode = undefined;
     event.which = 9;
     event.shiftKey = false;
-    $("form#send_message_form").keyup(event);
+    $("form#send_message_form").trigger(event);
     event.keyCode = 42;
-    $("form#send_message_form").keyup(event);
+    $("form#send_message_form").trigger(event);
 
     // select_on_focus()
 
@@ -1084,14 +1087,14 @@ run_test("initialize", () => {
     $("#enter_sends").is = function () {
         return false;
     };
-    $("#enter_sends").click();
+    $("#enter_sends").trigger("click");
 
     // Now we re-run both .initialize() and the click handler, this time
     // with enter_sends: page_params.enter_sends being true
     $("#enter_sends").is = function () {
         return true;
     };
-    $("#enter_sends").click();
+    $("#enter_sends").trigger("click");
 
     $("#stream_message_recipient_stream").off("focus");
     $("#stream_message_recipient_topic").off("focus");

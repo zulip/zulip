@@ -22,7 +22,7 @@ exports.make_menu = function (opts) {
             // In one colum mode want to show the settings list, not the first settings section.
             self.activate_section_or_default(section);
         }
-        curr_li.focus();
+        curr_li.trigger("focus");
     };
 
     self.hide = function () {
@@ -52,12 +52,12 @@ exports.make_menu = function (opts) {
     };
 
     self.prev = function () {
-        curr_li.prevAll(":visible:first").focus().click();
+        curr_li.prevAll(":visible:first").trigger("focus").trigger("click");
         return true;
     };
 
     self.next = function () {
-        curr_li.nextAll(":visible:first").focus().click();
+        curr_li.nextAll(":visible:first").trigger("focus").trigger("click");
         return true;
     };
 
@@ -66,7 +66,7 @@ exports.make_menu = function (opts) {
         const sel = "input:visible,button:visible,select:visible";
         const panel_elem = panel.find(sel).first();
 
-        panel_elem.focus();
+        panel_elem.trigger("focus");
         return true;
     };
 

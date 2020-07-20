@@ -865,7 +865,7 @@ exports.build_page = function () {
             $(e.target)
                 .closest(".org-subsection-parent")
                 .find(".subsection-changes-save button")
-                .click();
+                .trigger("click");
         }
     });
 

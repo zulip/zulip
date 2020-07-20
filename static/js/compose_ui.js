@@ -33,7 +33,7 @@ exports.smart_insert = function (textarea, syntax) {
         syntax += " ";
     }
 
-    textarea.focus();
+    textarea.trigger("focus");
 
     // We prefer to use insertText, which supports things like undo better
     // for rich-text editing features like inserting links.  But we fall

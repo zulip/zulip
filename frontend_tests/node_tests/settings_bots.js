@@ -140,11 +140,7 @@ run_test("test tab clicks", () => {
     set_up();
 
     function click_on_tab(tab_elem) {
-        const e = {
-            preventDefault: () => {},
-            stopPropagation: () => {},
-        };
-        tab_elem.click(e);
+        tab_elem.trigger("click");
     }
 
     const tabs = {

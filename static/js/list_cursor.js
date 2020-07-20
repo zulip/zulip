@@ -33,7 +33,7 @@ const list_cursor = function (opts) {
         // TODO: The list class should probably do more of the work
         //       here, so we're not so coupled to jQuery, and
         //       so we instead just get back a widget we can say
-        //       something like widget.select() on.  This will
+        //       something like widget.trigger("select") on.  This will
         //       be especially important if we do lazy rendering.
         //       It would also give the caller more flexibility on
         //       the actual styling.

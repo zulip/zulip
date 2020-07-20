@@ -259,7 +259,7 @@ function compose_error(error_text, bad_input) {
     $("#compose-send-button").prop("disabled", false);
     $("#sending-indicator").hide();
     if (bad_input !== undefined) {
-        bad_input.focus().select();
+        bad_input.trigger("focus").trigger("select");
     }
 }
 
@@ -284,14 +284,14 @@ function compose_not_subscribed_error(error_text, bad_input) {
     $("#sending-indicator").hide();
     $(".compose-send-status-close").hide();
     if (bad_input !== undefined) {
-        bad_input.focus().select();
+        bad_input.trigger("focus").trigger("select");
     }
 }
 
 exports.nonexistent_stream_reply_error = nonexistent_stream_reply_error;
 
 function clear_compose_box() {
-    $("#compose-textarea").val("").focus();
+    $("#compose-textarea").val("").trigger("focus");
     drafts.delete_draft_after_send();
     compose_ui.autosize_textarea();
     $("#compose-send-status").hide(0);
@@ -379,7 +379,7 @@ exports.enter_with_preview_open = function () {
         exports.finish();
     } else {
         // Otherwise, we return to the compose box and focus it
-        $("#compose-textarea").focus();
+        $("#compose-textarea").trigger("focus");
     }
 };
 
@@ -696,7 +696,7 @@ function validate_private_message() {
 }
 
 exports.validate = function () {
-    $("#compose-send-button").attr("disabled", "disabled").blur();
+    $("#compose-send-button").attr("disabled", "disabled").trigger("blur");
     const message_content = compose_state.message_content();
     if (reminder.is_deferred_delivery(message_content)) {
         show_sending_indicator(i18n.t("Scheduling..."));

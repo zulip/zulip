@@ -9,7 +9,7 @@ function convert_enter_to_click(e) {
     const key = e.which;
     if (key === 13) {
         // enter
-        $(e.currentTarget).click();
+        $(e.currentTarget).trigger("click");
     }
 }
 
@@ -200,7 +200,7 @@ exports.initialize = function () {
 
         if (page_params.realm_allow_edit_history) {
             message_edit_history.show_history(message);
-            message_history_cancel_btn.focus();
+            message_history_cancel_btn.trigger("focus");
         }
         e.stopPropagation();
         e.preventDefault();
@@ -601,7 +601,7 @@ exports.initialize = function () {
     notifications.register_click_handlers();
 
     $("body").on("click", ".logout_button", () => {
-        $("#logout_form").submit();
+        $("#logout_form").trigger("submit");
     });
 
     $(".restart_get_events_button").on("click", () => {
@@ -757,24 +757,24 @@ exports.initialize = function () {
 
     // disable the draggability for left-sidebar components
     $("#stream_filters, #global_filters").on("dragstart", (e) => {
-        e.target.blur();
+        e.target.trigger("blur");
         return false;
     });
 
     // Chrome focuses an element when dragging it which can be confusing when
     // users involuntarily drag something and we show them the focus outline.
-    $("body").on("dragstart", "a", (e) => e.target.blur());
+    $("body").on("dragstart", "a", (e) => e.target.trigger("blur"));
 
     // Don't focus links on middle click.
     $("body").on("mouseup", "a", (e) => {
         if (e.which === 2) {
             // middle click
-            e.target.blur();
+            e.target.trigger("blur");
         }
     });
 
     // Don't focus links on context menu.
-    $("body").on("contextmenu", "a", (e) => e.target.blur());
+    $("body").on("contextmenu", "a", (e) => e.target.trigger("blur"));
 
     (function () {
         const map = {
@@ -797,7 +797,7 @@ exports.initialize = function () {
                 $(this).text($(this).attr("data-prev-text"));
                 $("[data-make-editable]").html("");
             } else if (e.which === 13) {
-                $(this).siblings(".checkmark").click();
+                $(this).siblings(".checkmark").trigger("click");
             }
         });
 
@@ -945,7 +945,7 @@ exports.initialize = function () {
         if (compose_state.composing()) {
             if ($(e.target).closest("a").length > 0) {
                 // Refocus compose message text box if link is clicked
-                $("#compose-textarea").focus();
+                $("#compose-textarea").trigger("focus");
                 return;
             } else if (
                 !window.getSelection().toString() &&

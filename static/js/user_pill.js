@@ -145,7 +145,7 @@ exports.set_up_typeahead_on_pills = function (input, pills, update_func, source)
         },
         updater: function (user) {
             exports.append_user(user, pills);
-            input.focus();
+            input.trigger("focus");
             update_func();
         },
         stopAdvance: true,

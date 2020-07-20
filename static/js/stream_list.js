@@ -569,7 +569,7 @@ exports.clear_search = function (e) {
         return;
     }
     filter.val("");
-    filter.blur();
+    filter.trigger("blur");
     update_streams_for_search();
 };
 
@@ -592,7 +592,7 @@ exports.initiate_search = function () {
         popovers.hide_all();
         stream_popover.show_streamlist_sidebar();
     }
-    filter.focus();
+    filter.trigger("focus");
 
     exports.stream_cursor.reset();
 };
@@ -604,7 +604,7 @@ exports.clear_and_hide_search = function () {
         update_streams_for_search();
     }
     exports.stream_cursor.clear();
-    filter.blur();
+    filter.trigger("blur");
 
     exports.hide_search_section();
 };

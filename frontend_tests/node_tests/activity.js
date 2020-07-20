@@ -243,7 +243,7 @@ function reset_setup() {
 reset_setup();
 
 run_test("presence_list_full_update", () => {
-    $(".user-list-filter").focus();
+    $(".user-list-filter").trigger("focus");
     compose_state.private_message_recipient = () => fred.email;
     compose_fade.set_focused_recipient("private");
 
@@ -603,7 +603,7 @@ run_test("escape_search", () => {
 reset_setup();
 
 run_test("initiate_search", () => {
-    $(".user-list-filter").blur();
+    $(".user-list-filter").trigger("blur");
     simulate_right_column_buddy_list();
     activity.initiate_search();
     assert.equal($(".column-right").hasClass("expanded"), true);
@@ -627,9 +627,9 @@ run_test("toggle_filter_display", () => {
 });
 
 run_test("searching", () => {
-    $(".user-list-filter").focus();
+    $(".user-list-filter").trigger("focus");
     assert.equal(activity.searching(), true);
-    $(".user-list-filter").blur();
+    $(".user-list-filter").trigger("blur");
     assert.equal(activity.searching(), false);
 });
 

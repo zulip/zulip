@@ -34,7 +34,7 @@ function set_default_focus() {
     // If at any point we are confused about the currently
     // focused element, we switch focus to search.
     current_focus_elem = $("#recent_topics_search");
-    current_focus_elem.focus();
+    current_focus_elem.trigger("focus");
 }
 
 function set_table_focus(row, col) {
@@ -46,7 +46,7 @@ function set_table_focus(row, col) {
         return true;
     }
 
-    topic_rows.eq(row).find(".recent_topics_focusable").eq(col).children().focus();
+    topic_rows.eq(row).find(".recent_topics_focusable").eq(col).children().trigger("focus");
     current_focus_elem = "table";
     return true;
 }
@@ -72,7 +72,7 @@ function revive_current_focus() {
         current_focus_elem = $("#recent_topics_filter_buttons").find(
             "[data-filter='" + filter_button + "']",
         );
-        current_focus_elem.focus();
+        current_focus_elem.trigger("focus");
     }
     return true;
 }
@@ -505,7 +505,7 @@ exports.change_focused_element = function (e, input_key) {
                 return true;
             case "click":
                 // Note: current_focus_elem can be different here, so we just
-                // set current_focus_elem to the input box, we don't want .focus() on
+                // set current_focus_elem to the input box, we don't want .trigger("focus") on
                 // it since it is already focused.
                 // We only do this for search beacuse we don't want the focus to
                 // go away from the input box when `revive_current_focus` is called
@@ -560,7 +560,7 @@ exports.change_focused_element = function (e, input_key) {
         return true;
     }
     if (current_focus_elem) {
-        current_focus_elem.focus();
+        current_focus_elem.trigger("focus");
     }
 
     return true;

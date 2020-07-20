@@ -241,7 +241,7 @@ exports.add_sub_to_table = function (sub) {
         // good way to associate with this request because the stream
         // ID isn't known yet.  These are appended to the top of the
         // list, so they are more visible.
-        exports.row_for_stream_id(sub.stream_id).click();
+        exports.row_for_stream_id(sub.stream_id).trigger("click");
         stream_create.reset_created_stream();
     }
 };
@@ -653,7 +653,7 @@ exports.switch_to_stream_row = function (stream_id) {
     // It's dubious that we need this timeout any more.
     setTimeout(() => {
         if (stream_id === exports.get_active_data().id) {
-            stream_row.click();
+            stream_row.trigger("click");
         }
     }, 100);
 };
@@ -709,7 +709,7 @@ exports.launch = function (section) {
         exports.change_state(section);
     });
     if (!exports.get_active_data().id) {
-        $("#search_stream_name").focus();
+        $("#search_stream_name").trigger("focus");
     }
 };
 
@@ -722,7 +722,7 @@ exports.switch_rows = function (event) {
     } else if (!active_data.id || active_data.row.hasClass("notdisplayed")) {
         switch_row = $("div.stream-row:not(.notdisplayed)").first();
         if ($("#search_stream_name").is(":focus")) {
-            $("#search_stream_name").blur();
+            $("#search_stream_name").trigger("blur");
         }
     } else {
         if (event === "up_arrow") {
@@ -733,7 +733,7 @@ exports.switch_rows = function (event) {
         if ($("#search_stream_name").is(":focus")) {
             // remove focus from Filter streams input instead of switching rows
             // if Filter streams input is focused
-            return $("#search_stream_name").blur();
+            return $("#search_stream_name").trigger("blur");
         }
     }
 
@@ -742,7 +742,7 @@ exports.switch_rows = function (event) {
         const stream_id = row_data.id;
         exports.switch_to_stream_row(stream_id);
     } else if (event === "up_arrow" && !row_data) {
-        $("#search_stream_name").focus();
+        $("#search_stream_name").trigger("focus");
     }
     return true;
 };
