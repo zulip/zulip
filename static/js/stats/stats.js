@@ -81,9 +81,13 @@ $(() => {
         placement: "top",
         trigger: "manual",
     });
-    $("#id_last_update_question_sign").hover(() => {
-        $("span.last_update_tooltip").tooltip("toggle");
-    });
+    $("#id_last_update_question_sign")
+        .on("mouseenter", () => {
+            $("span.last_update_tooltip").tooltip("show");
+        })
+        .on("mouseleave", () => {
+            $("span.last_update_tooltip").tooltip("hide");
+        });
     // Add configuration for any additional tooltips here.
 });
 

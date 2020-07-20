@@ -80,12 +80,9 @@ exports.populate_user_groups = function () {
             pill_container.on("click", (e) => {
                 e.stopPropagation();
             });
-            pill_container.find(".pill").hover(
-                () => {
-                    pill_container.find(".pill").find(".exit").css("opacity", "0.5");
-                },
-                () => {},
-            );
+            pill_container.find(".pill").on("mouseenter", () => {
+                pill_container.find(".pill").find(".exit").css("opacity", "0.5");
+            });
         }
         update_membership(data.id);
 
