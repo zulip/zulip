@@ -302,13 +302,7 @@ run_test("initialize", () => {
     };
 
     searchbox.on = (event, callback) => {
-        if (event === "focusin") {
-            searchbox.css({"box-shadow": "unset"});
-            callback();
-            assert.deepEqual(searchbox.css(), {
-                "box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)",
-            });
-        } else if (event === "focusout") {
+        if (event === "focusout") {
             searchbox.css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
             callback();
             assert.deepEqual(searchbox.css(), {"box-shadow": "unset"});
