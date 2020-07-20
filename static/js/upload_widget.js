@@ -70,7 +70,7 @@ exports.build_widget = function (
             if (file.size > max_file_upload_size * 1024 * 1024) {
                 input_error.text(
                     i18n.t("File size must be < __max_file_size__Mb.", {
-                        max_file_size: max_file_upload_size,
+                    max_file_size: max_file_upload_size,
                     }),
                 );
                 input_error.show();
@@ -120,7 +120,7 @@ exports.build_direct_upload_widget = function (
     max_file_upload_size = max_file_upload_size || default_max_file_size;
     function accept() {
         input_error.hide();
-        const realm_logo_section = upload_button.closest(".avatar-icon-logo-settings");
+        const realm_logo_section = upload_button.closest(".image_upload_widget");
         if (realm_logo_section.attr("id") === "realm-night-logo-upload-widget") {
             upload_function(get_file_input(), true, false);
         } else if (realm_logo_section.attr("id") === "realm-day-logo-upload-widget") {
@@ -154,7 +154,7 @@ exports.build_direct_upload_widget = function (
             if (file.size > max_file_upload_size * 1024 * 1024) {
                 input_error.text(
                     i18n.t("File size must be < __max_file_size__Mb.", {
-                        max_file_size: max_file_upload_size,
+                    max_file_size: max_file_upload_size,
                     }),
                 );
                 input_error.show();
