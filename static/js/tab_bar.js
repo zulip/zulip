@@ -97,14 +97,13 @@ function bind_title_area_handlers() {
 
     // handler that makes sure that hover plays nicely
     // with whether search is being opened or not.
-    $("#tab_bar .narrow_description > a").hover(
-        () => {
+    $("#tab_bar .narrow_description > a")
+        .on("mouseenter", () => {
             $("#tab_bar .search_closed").addClass("search_icon_hover_highlight");
-        },
-        () => {
+        })
+        .on("mouseleave", () => {
             $("#tab_bar .search_closed").removeClass("search_icon_hover_highlight");
-        },
-    );
+        });
 }
 
 function build_tab_bar(filter) {

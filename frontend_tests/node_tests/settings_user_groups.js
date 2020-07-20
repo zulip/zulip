@@ -430,17 +430,6 @@ run_test("with_external_user", () => {
         turned_off[event_name + "/" + sel] = true;
     };
 
-    let pill_hover_called = false;
-    let callback;
-    let empty_fn;
-    pill_stub.hover = function (one, two) {
-        callback = one;
-        empty_fn = two;
-        pill_hover_called = true;
-        assert.equal(typeof one, "function");
-        assert.equal(typeof two, "function");
-    };
-
     const exit_button = $.create("fake-pill-exit");
     pill_stub.set_find_results(".exit", exit_button);
     let exit_button_called = false;
@@ -487,14 +476,9 @@ run_test("with_external_user", () => {
     const event = {
         stopPropagation: noop,
     };
-    let pill_click_called = false;
+    const pill_mouseenter_handler = pill_stub.get_on_handler("mouseenter");
     const pill_click_handler = pill_container_stub.get_on_handler("click");
-    pill_click_called = true;
-
-    assert(callback);
-    assert(empty_fn);
-    callback();
-    empty_fn();
+    pill_mouseenter_handler(event);
     pill_click_handler(event);
     assert.equal(delete_handler.call(fake_delete), undefined);
     assert.equal(name_update_handler(), undefined);
@@ -506,8 +490,6 @@ run_test("with_external_user", () => {
     assert.equal(set_attributes_called, 1);
     assert.equal(can_edit_called, 9);
     assert(exit_button_called);
-    assert(pill_click_called);
-    assert(pill_hover_called);
     assert.equal(user_group_find_called, 2);
     assert.equal(pill_container_find_called, 4);
     assert.equal(turned_off["keydown/.pill"], true);
