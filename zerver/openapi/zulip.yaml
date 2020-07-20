@@ -613,7 +613,7 @@ paths:
                           an array of `message` objects, each containing the following
                           fields:
                         items:
-                          $ref: "#/components/schemas/Messages"
+                          $ref: "#/components/schemas/GetMessages"
                   - example:
                       {
                         "anchor": 21,
@@ -4109,6 +4109,11 @@ paths:
                           A dict containing details on the message that triggered the
                           outgoing webhook, in the format used by [`GET /messages`](/api/get-messages).
                       - $ref: "#/components/schemas/Messages"
+                      - properties:
+                          rendered_content:
+                            type: string
+                            description: |
+                              The content/body of the message rendered in HTML.
                   bot_email:
                     type: string
                     description: |
@@ -4400,10 +4405,6 @@ components:
           type: string
           description: |
             The content/body of the message.
-        rendered_content:
-          type: string
-          description: |
-            The content/body of the message rendered in HTML.
         content_type:
           type: string
           description: |
@@ -4438,12 +4439,6 @@ components:
             Data on the recipient of the message;
             either the name of a stream or a dictionary containing basic data on
             the users who received the message.
-        flags:
-          type: array
-          description: |
-            The user's [message flags][message-flags] for the message.
-          items:
-            type: string
         id:
           type: integer
           description: |
@@ -4581,29 +4576,39 @@ components:
           description: |
             The UNIX timestamp for when the message was sent,
             in UTC seconds.
-        last_edit_timestamp:
-          type: integer
-          description: |
-            The UNIX timestamp for when the message was last edited,
-            in UTC seconds.
         type:
           type: string
           description: |
             The type of the message: `stream` or `private`.
-        match_content:
-          type: string
-          description: |
-            Only present if keyword search was included among the narrow parameters.
-            HTML content of a queried message that matches the narrow, with
-            `<span class="highlight">` elements wrapping the matches for the
-            search keywords.
-        match_subject:
-          type: string
-          description: |
-            Only present if keyword search was included among the narrow parameters.
-            HTML-escaped topic of a queried message that matches the narrow, with
-            `<span class="highlight">` elements wrapping the matches for the
-            search keywords.
+    GetMessages:
+      allOf:
+        - $ref: "#/components/schemas/Messages"
+        - properties:
+            flags:
+              type: array
+              description: |
+                The user's [message flags][message-flags] for the message.
+              items:
+                type: string
+            last_edit_timestamp:
+              type: integer
+              description: |
+                The UNIX timestamp for when the message was last edited,
+                in UTC seconds.
+            match_content:
+              type: string
+              description: |
+                Only present if keyword search was included among the narrow parameters.
+                HTML content of a queried message that matches the narrow, with
+                `<span class="highlight">` elements wrapping the matches for the
+                search keywords.
+            match_subject:
+              type: string
+              description: |
+                Only present if keyword search was included among the narrow parameters.
+                HTML-escaped topic of a queried message that matches the narrow, with
+                `<span class="highlight">` elements wrapping the matches for the
+                search keywords.
     User:
       type: object
       additionalProperties: false
