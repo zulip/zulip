@@ -7,7 +7,7 @@ exports.change_tab_to = function (tabname) {
 
 // https://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
 exports.place_caret_at_end = function (el) {
-    el.focus();
+    el.trigger("focus");
 
     if (typeof window.getSelection !== "undefined" && typeof document.createRange !== "undefined") {
         const range = document.createRange();

@@ -143,8 +143,8 @@ exports.activate = function (opts) {
                 return;
             }
 
-            elem.find(".add-task").val("").focus();
-            elem.find(".add-desc").val("").focus();
+            elem.find(".add-task").val("").trigger("focus");
+            elem.find(".add-desc").val("").trigger("focus");
 
             const task_exists = task_data.name_in_use(task);
             if (task_exists) {

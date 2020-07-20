@@ -11,7 +11,7 @@ $("body").append = noop;
 $(input).val = (arg) => {
     assert.equal(arg, "iago@zulip.com");
     return {
-        select: noop,
+        trigger: noop,
     };
 };
 

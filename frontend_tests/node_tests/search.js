@@ -31,7 +31,7 @@ global.patch_builtin("setTimeout", (func) => func());
 
 run_test("clear_search_form", () => {
     $("#search_query").val("noise");
-    $("#search_query").focus();
+    $("#search_query").trigger("focus");
     $(".search_button").prop("disabled", false);
 
     search.clear_search_form();

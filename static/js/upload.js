@@ -127,7 +127,7 @@ exports.upload_files = function (uppy, config, files) {
         });
         compose_ui.autosize_textarea();
         uppy.cancelAll();
-        exports.get_item("textarea", config).focus();
+        exports.get_item("textarea", config).trigger("focus");
         setTimeout(() => {
             exports.hide_upload_status(config);
         }, 500);

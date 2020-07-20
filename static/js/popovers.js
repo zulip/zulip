@@ -562,7 +562,7 @@ function focus_first_popover_item(items) {
         return;
     }
 
-    items.eq(0).expectOne().focus();
+    items.eq(0).expectOne().trigger("focus");
 }
 
 function popover_items_handle_keyboard(key, items) {
@@ -573,7 +573,7 @@ function popover_items_handle_keyboard(key, items) {
     let index = items.index(items.filter(":focus"));
 
     if (key === "enter" && index >= 0 && index < items.length) {
-        return items[index].click();
+        return items[index].trigger("click");
     }
     if (index === -1) {
         index = 0;
@@ -582,7 +582,7 @@ function popover_items_handle_keyboard(key, items) {
     } else if ((key === "up_arrow" || key === "vim_up") && index > 0) {
         index -= 1;
     }
-    items.eq(index).focus();
+    items.eq(index).trigger("focus");
 }
 
 function focus_first_action_popover_item() {
@@ -1035,7 +1035,7 @@ exports.register_click_handlers = function () {
 
         exports.hide_actions_popover();
         message_edit_history.show_history(message);
-        message_history_cancel_btn.focus();
+        message_history_cancel_btn.trigger("focus");
         e.stopPropagation();
         e.preventDefault();
     });
@@ -1083,7 +1083,7 @@ exports.register_click_handlers = function () {
         setTimeout(() => {
             // The Cliboard library works by focusing to a hidden textarea.
             // We unfocus this so keyboard shortcuts, etc., will work again.
-            $(":focus").blur();
+            $(":focus").trigger("blur");
         }, 0);
 
         e.stopPropagation();

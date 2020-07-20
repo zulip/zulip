@@ -60,7 +60,7 @@ const stream_name_error = (function () {
     };
 
     self.select = function () {
-        $("#create_stream_name").focus().select();
+        $("#create_stream_name").trigger("focus").trigger("select");
     };
 
     self.pre_validate = function (stream_name) {
@@ -227,7 +227,7 @@ function create_stream() {
                 // error text directly rather than turning it into
                 // "Error creating stream"?
                 stream_name_error.report_already_exists(stream_name);
-                stream_name_error.select();
+                stream_name_error.trigger("select");
             }
 
             ui_report.error(i18n.t("Error creating stream"), xhr, $(".stream_create_info"));
@@ -260,7 +260,7 @@ exports.new_stream_clicked = function (stream_name) {
     // is clear is that this shouldn't be touched unless you're also changing
     // the mobile @media query at 700px.
     if (window.innerWidth > 700) {
-        $("#create_stream_name").focus();
+        $("#create_stream_name").trigger("focus");
     }
 };
 

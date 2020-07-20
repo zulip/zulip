@@ -18,8 +18,8 @@ exports.open_overlay = function () {
     const old_status_text = user_status.get_status_text(user_id);
     const field = exports.input_field();
     field.val(old_status_text);
-    field.select();
-    field.focus();
+    field.trigger("select");
+    field.trigger("focus");
     exports.toggle_clear_message_button();
 
     const button = exports.submit_button();

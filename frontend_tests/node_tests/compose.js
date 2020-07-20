@@ -196,7 +196,7 @@ run_test("validate", () => {
         set_global("$", global.make_zjquery());
 
         $("#compose-send-button").prop("disabled", false);
-        $("#compose-send-button").focus();
+        $("#compose-send-button").trigger("focus");
         $("#sending-indicator").hide();
 
         const pm_pill_container = $.create("fake-pm-pill-container");
@@ -588,7 +588,7 @@ run_test("markdown_shortcuts", () => {
 
 run_test("send_message_success", () => {
     $("#compose-textarea").val("foobarfoobar");
-    $("#compose-textarea").blur();
+    $("#compose-textarea").trigger("blur");
     $("#compose-send-status").show();
     $("#compose-send-button").attr("disabled", "disabled");
     $("#sending-indicator").show();
@@ -686,7 +686,7 @@ run_test("send_message", () => {
         // Setting message content with a host server link and we will assert
         // later that this has been converted to a relative link.
         $("#compose-textarea").val("[foobar]" + "(https://foo.com/user_uploads/123456)");
-        $("#compose-textarea").blur();
+        $("#compose-textarea").trigger("blur");
         $("#compose-send-status").show();
         $("#compose-send-button").attr("disabled", "disabled");
         $("#sending-indicator").show();
@@ -738,7 +738,7 @@ run_test("send_message", () => {
     (function test_error_codepath_local_id_undefined() {
         stub_state = initialize_state_stub_dict();
         $("#compose-textarea").val("foobarfoobar");
-        $("#compose-textarea").blur();
+        $("#compose-textarea").trigger("blur");
         $("#compose-send-status").show();
         $("#compose-send-button").attr("disabled", "disabled");
         $("#sending-indicator").show();
@@ -794,7 +794,7 @@ run_test("enter_with_preview_open", () => {
     assert(send_message_called);
 
     page_params.enter_sends = false;
-    $("#compose-textarea").blur();
+    $("#compose-textarea").trigger("blur");
     compose.enter_with_preview_open();
     assert($("#compose-textarea").is_focused());
 
@@ -814,7 +814,7 @@ run_test("finish", () => {
     (function test_when_compose_validation_fails() {
         $("#compose_invite_users").show();
         $("#compose-send-button").prop("disabled", false);
-        $("#compose-send-button").focus();
+        $("#compose-send-button").trigger("focus");
         $("#sending-indicator").hide();
         $("#compose-textarea").off("select");
         $("#compose-textarea").val("");

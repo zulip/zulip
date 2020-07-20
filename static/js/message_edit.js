@@ -162,7 +162,7 @@ exports.show_topic_edit_spinner = function (row) {
 exports.end_if_focused_on_inline_topic_edit = function () {
     const focused_elem = $(".topic_edit_form").find(":focus");
     if (focused_elem.length === 1) {
-        focused_elem.blur();
+        focused_elem.trigger("blur");
         const recipient_row = focused_elem.closest(".recipient_row");
         exports.end_inline_topic_edit(recipient_row);
     }
@@ -171,7 +171,7 @@ exports.end_if_focused_on_inline_topic_edit = function () {
 exports.end_if_focused_on_message_row_edit = function () {
     const focused_elem = $(".message_edit").find(":focus");
     if (focused_elem.length === 1) {
-        focused_elem.blur();
+        focused_elem.trigger("blur");
         const row = focused_elem.closest(".message_row");
         exports.end_message_row_edit(row);
     }
@@ -425,14 +425,14 @@ function edit_message(row, raw_content) {
     }
 
     if (!is_editable) {
-        row.find(".message_edit_close").focus();
+        row.find(".message_edit_close").trigger("focus");
     } else if (message.type === "stream" && message.topic === compose.empty_topic_placeholder()) {
         message_edit_topic.val("");
-        message_edit_topic.focus();
+        message_edit_topic.trigger("focus");
     } else if (editability === editability_types.TOPIC_ONLY) {
-        row.find(".message_edit_topic").focus();
+        row.find(".message_edit_topic").trigger("focus");
     } else {
-        message_edit_content.focus();
+        message_edit_content.trigger("focus");
         // Put cursor at end of input.
         const contents = message_edit_content.val();
         message_edit_content.val("");
@@ -525,7 +525,7 @@ exports.start_topic_edit = function (recipient_row) {
     if (topic === compose.empty_topic_placeholder()) {
         topic = "";
     }
-    form.find(".inline_topic_edit").val(topic).select().focus();
+    form.find(".inline_topic_edit").val(topic).trigger("select").trigger("focus");
 };
 
 exports.is_editing = function (id) {
@@ -561,7 +561,7 @@ exports.end_message_row_edit = function (row) {
 
     // We have to blur out text fields, or else hotkeys.js
     // thinks we are still editing.
-    row.find(".message_edit").blur();
+    row.find(".message_edit").trigger("blur");
 };
 
 exports.save_inline_topic_edit = function (row) {
@@ -812,7 +812,7 @@ exports.edit_last_sent_message = function () {
     // Finally do the real work!
     compose_actions.cancel();
     exports.start(msg_row, () => {
-        $("#message_edit_content").focus();
+        $("#message_edit_content").trigger("focus");
     });
 };
 

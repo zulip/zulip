@@ -280,7 +280,7 @@ exports.create = function (opts) {
             // below that handles events on the ".pill" class.
             if (char === KEY.LEFT_ARROW) {
                 if (window.getSelection().anchorOffset === 0) {
-                    store.$parent.find(".pill").last().focus();
+                    store.$parent.find(".pill").last().trigger("focus");
                 }
             }
 
@@ -306,14 +306,14 @@ exports.create = function (opts) {
             const $pill = store.$parent.find(".pill:focus");
 
             if (char === KEY.LEFT_ARROW) {
-                $pill.prev().focus();
+                $pill.prev().trigger("focus");
             } else if (char === KEY.RIGHT_ARROW) {
-                $pill.next().focus();
+                $pill.next().trigger("focus");
             } else if (char === KEY.BACKSPACE) {
                 const $next = $pill.next();
                 const id = $pill.data("id");
                 funcs.removePill(id);
-                $next.focus();
+                $next.trigger("focus");
                 // the "backspace" key in FireFox will go back a page if you do
                 // not prevent it.
                 e.preventDefault();
@@ -351,12 +351,12 @@ exports.create = function (opts) {
             const id = $pill.data("id");
 
             funcs.removePill(id);
-            $next.focus();
+            $next.trigger("focus");
         });
 
         store.$parent.on("click", function (e) {
             if ($(e.target).is(".pill-container")) {
-                $(this).find(".input").focus();
+                $(this).find(".input").trigger("focus");
             }
         });
 

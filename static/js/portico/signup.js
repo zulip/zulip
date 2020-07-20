@@ -82,7 +82,7 @@ $(() => {
     // endpoint is visited i.e. accounts_send_confirm.html is rendered.
     if ($("[data-page-id='accounts-send-confirm']").length > 0) {
         $("#resend_email_link").on("click", () => {
-            $(".resend_confirm").submit();
+            $(".resend_confirm").trigger("submit");
         });
     }
 

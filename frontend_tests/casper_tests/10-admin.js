@@ -302,7 +302,7 @@ function get_suggestions(str) {
     casper.then(function () {
         casper.evaluate(function (str) {
             $(".create_default_stream")
-                .focus()
+                .trigger("focus")
                 .val(str)
                 .trigger($.Event("keyup", {which: 0}));
         }, str);

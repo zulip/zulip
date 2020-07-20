@@ -65,7 +65,7 @@ exports.toggle = function (opts) {
         }
 
         if (!opts.child_wants_focus) {
-            elem.focus();
+            elem.trigger("focus");
         }
     }
 

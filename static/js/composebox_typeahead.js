@@ -230,7 +230,7 @@ function handle_keydown(e) {
             // takes the typeaheads a little time to open after the user finishes typing, which
             // can lead to the focus moving without the autocomplete having a chance to happen.
             if (nextFocus) {
-                $(nextFocus).focus();
+                $(nextFocus).trigger("focus");
                 nextFocus = false;
             }
 
@@ -254,7 +254,7 @@ function handle_keyup(e) {
     if (code === 13 || (code === 9 && !e.shiftKey)) {
         // Enter key or tab key
         if (nextFocus) {
-            $(nextFocus).focus();
+            $(nextFocus).trigger("focus");
             nextFocus = false;
         }
     }
@@ -272,7 +272,7 @@ function select_on_focus(field_id) {
         }
         in_handler = true;
         $("#" + field_id)
-            .select()
+            .trigger("select")
             .one("mouseup", (e) => {
                 e.preventDefault();
             });
@@ -802,7 +802,7 @@ const show_flatpickr = (element, callback, default_timestamp) => {
         instance.destroy();
     });
     instance.open();
-    container.find(".flatpickr-monthDropdown-months").focus();
+    container.find(".flatpickr-monthDropdown-months").trigger("focus");
 };
 
 exports.content_typeahead_selected = function (item, event) {
@@ -1077,7 +1077,7 @@ exports.initialize = function () {
 
         // Refocus in the content box so you can continue typing or
         // press Enter to send.
-        $("#compose-textarea").focus();
+        $("#compose-textarea").trigger("focus");
 
         return channel.post({
             url: "/json/users/me/enter-sends",

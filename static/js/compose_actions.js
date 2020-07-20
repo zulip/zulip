@@ -1,7 +1,7 @@
 const autosize = require("autosize");
 
 exports.blur_textarea = function () {
-    $(".message_comp").find("input, textarea, button").blur();
+    $(".message_comp").find("input, textarea, button").trigger("blur");
 };
 
 function hide_box() {
@@ -45,7 +45,7 @@ exports.set_focus = function (msg_type, opts) {
 
     if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
         const elt = $(focus_area);
-        elt.focus().select();
+        elt.trigger("focus").trigger("select");
     }
 };
 
@@ -384,7 +384,7 @@ exports.on_topic_narrow = function () {
     compose_state.topic(narrow_state.topic());
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
-    $("#compose-textarea").focus().select();
+    $("#compose-textarea").trigger("focus").trigger("select");
 };
 
 exports.quote_and_reply = function (opts) {

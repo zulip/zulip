@@ -7,7 +7,7 @@ exports.status_classes = "alert-error alert-success alert-info alert-warning";
 
 exports.autofocus = function (selector) {
     $(() => {
-        $(selector).focus();
+        $(selector).trigger("focus");
     });
 };
 
@@ -90,7 +90,7 @@ exports.copy_data_attribute_value = function (elem, key) {
     // attribute of the element to clipboard
     const temp = $(document.createElement("input"));
     $("body").append(temp);
-    temp.val(elem.data(key)).select();
+    temp.val(elem.data(key)).trigger("select");
     document.execCommand("copy");
     temp.remove();
     elem.fadeOut(250);

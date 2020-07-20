@@ -253,11 +253,11 @@ exports.parse_image_data = function (image) {
 };
 
 exports.prev = function () {
-    $(".image-list .image.selected").prev().click();
+    $(".image-list .image.selected").prev().trigger("click");
 };
 
 exports.next = function () {
-    $(".image-list .image.selected").next().click();
+    $(".image-list .image.selected").next().trigger("click");
 };
 
 // this is a block of events that are required for the lightbox to work.
@@ -332,7 +332,7 @@ exports.initialize = function () {
     });
 
     $("#lightbox_overlay .image-preview").on("dblclick", "img, canvas", (e) => {
-        $("#lightbox_overlay .lightbox-canvas-trigger").click();
+        $("#lightbox_overlay .lightbox-canvas-trigger").trigger("click");
         e.preventDefault();
     });
 

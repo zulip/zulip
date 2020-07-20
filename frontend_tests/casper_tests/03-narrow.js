@@ -345,7 +345,7 @@ casper.waitWhileSelector("#streams_list .input-append.notdisplayed", function ()
 // Enter the search box and test highlighted suggestion navigation
 casper.then(function () {
     casper.evaluate(function () {
-        $(".stream-list-filter").expectOne().focus().trigger($.Event("click"));
+        $(".stream-list-filter").expectOne().trigger("focus").trigger($.Event("click"));
     });
 });
 
@@ -399,7 +399,7 @@ casper.then(function () {
     casper.evaluate(function () {
         $(".stream-list-filter")
             .expectOne()
-            .focus()
+            .trigger("focus")
             .val("sCoT")
             .trigger($.Event("input"))
             .trigger($.Event("click"));
@@ -436,7 +436,7 @@ casper.then(function () {
 // Clearing the list should give us back all the streams in the list
 casper.then(function () {
     casper.evaluate(function () {
-        $(".stream-list-filter").expectOne().focus().val("").trigger($.Event("input"));
+        $(".stream-list-filter").expectOne().trigger("focus").val("").trigger($.Event("input"));
     });
 });
 
@@ -467,7 +467,7 @@ casper.waitForSelector(".input-append.notdisplayed", function () {
 // We search for the beginning of "Verona", not case sensitive
 casper.then(function () {
     casper.evaluate(function () {
-        $(".stream-list-filter").expectOne().focus().val("ver").trigger($.Event("input"));
+        $(".stream-list-filter").expectOne().trigger("focus").val("ver").trigger($.Event("input"));
     });
 });
 
@@ -519,7 +519,7 @@ casper.then(function () {
 // Click on search icon
 casper.then(function () {
     casper.evaluate(function () {
-        $("#user_filter_icon").expectOne().focus().trigger($.Event("click"));
+        $("#user_filter_icon").expectOne().trigger("focus").trigger($.Event("click"));
     });
 });
 

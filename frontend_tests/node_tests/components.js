@@ -42,8 +42,10 @@ run_test("basics", () => {
             return i;
         };
 
-        self.focus = function () {
-            focused_tab = i;
+        self.trigger = function (type) {
+            if (type === "focus") {
+                focused_tab = i;
+            }
         };
 
         tabs.push(self);

@@ -32,7 +32,7 @@ exports.narrow_or_search_for_term = function (search_string) {
     // Narrowing will have already put some operators in the search box,
     // so leave the current text in.
     if (!page_params.search_pills_enabled) {
-        search_query_box.blur();
+        search_query_box.trigger("blur");
     }
     return search_query_box.val();
 };
@@ -147,7 +147,7 @@ exports.initialize = function () {
 
                 // Pill is already added during keydown event of input pills.
                 exports.narrow_or_search_for_term(search_query_box.val());
-                search_query_box.blur();
+                search_query_box.trigger("blur");
                 update_buttons_with_focus(false);
             }
         });
@@ -211,14 +211,14 @@ exports.initiate_search = function () {
     $("#searchbox").css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
     $("#search_query").typeahead("lookup").select();
     if (page_params.search_pills_enabled) {
-        $("#search_query").focus();
+        $("#search_query").trigger("focus");
         ui_util.place_caret_at_end($("#search_query")[0]);
     }
 };
 
 exports.clear_search_form = function () {
     $("#search_query").val("");
-    $("#search_query").blur();
+    $("#search_query").trigger("blur");
     $(".search_button").prop("disabled", true);
 };
 

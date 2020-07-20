@@ -1,6 +1,6 @@
 $(() => {
     $(".portico-header li.logout").on("click", () => {
-        $("#logout_form").submit();
+        $("#logout_form").trigger("submit");
         return false;
     });
 

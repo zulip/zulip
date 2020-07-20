@@ -411,7 +411,7 @@ function process_notification(notification) {
                 if (message.type !== "test-notification") {
                     narrow.by_topic(message.id, {trigger: "notification"});
                 }
-                window.focus();
+                window.trigger("focus");
             });
             notification_object.addEventListener("close", () => {
                 notice_memory.delete(key);

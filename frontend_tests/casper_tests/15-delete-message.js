@@ -15,8 +15,8 @@ casper.then(function () {
     });
     last_message_id = this.evaluate(function () {
         var msg = $("#zhome .message_row").last();
-        msg.find(".info").click();
-        $(".delete_message").click();
+        msg.find(".info").trigger("click");
+        $(".delete_message").trigger("click");
         return msg.attr("id");
     });
 });

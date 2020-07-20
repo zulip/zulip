@@ -8,12 +8,12 @@ exports.inside_list = function (e) {
 
 exports.go_down = function (e) {
     const $target = $(e.target);
-    $target.closest("li").next().find("a").focus();
+    $target.closest("li").next().find("a").trigger("focus");
 };
 
 exports.go_up = function (e) {
     const $target = $(e.target);
-    $target.closest("li").prev().find("a").focus();
+    $target.closest("li").prev().find("a").trigger("focus");
 };
 
 window.list_util = exports;

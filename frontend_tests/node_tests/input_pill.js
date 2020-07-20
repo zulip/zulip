@@ -236,13 +236,17 @@ run_test("arrows on pills", () => {
 
     const pill_stub = {
         prev: () => ({
-            focus: () => {
-                prev_focused = true;
+            trigger: (type) => {
+                if (type === "focus") {
+                    prev_focused = true;
+                }
             },
         }),
         next: () => ({
-            focus: () => {
-                next_focused = true;
+            trigger: (type) => {
+                if (type === "focus") {
+                    next_focused = true;
+                }
             },
         }),
     };
@@ -274,8 +278,10 @@ run_test("left arrow on input", () => {
 
     container.set_find_results(".pill", {
         last: () => ({
-            focus: () => {
-                last_pill_focused = true;
+            trigger: (type) => {
+                if (type === "focus") {
+                    last_pill_focused = true;
+                }
             },
         }),
     });
@@ -411,8 +417,10 @@ run_test("insert_remove", () => {
     let next_pill_focused = false;
 
     const next_pill_stub = {
-        focus: () => {
-            next_pill_focused = true;
+        trigger: (type) => {
+            if (type === "focus") {
+                next_pill_focused = true;
+            }
         },
     };
 
@@ -449,8 +457,10 @@ run_test("exit button on pill", () => {
     let next_pill_focused = false;
 
     const next_pill_stub = {
-        focus: () => {
-            next_pill_focused = true;
+        trigger: (type) => {
+            if (type === "focus") {
+                next_pill_focused = true;
+            }
         },
     };
 

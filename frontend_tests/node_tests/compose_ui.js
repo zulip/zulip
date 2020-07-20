@@ -50,14 +50,6 @@ function make_textbox(s) {
         return widget.pos;
     };
 
-    widget.focus = function () {
-        widget.focused = true;
-    };
-
-    widget.blur = function () {
-        widget.focused = false;
-    };
-
     widget.val = function (new_val) {
         if (new_val) {
             widget.s = new_val;
@@ -66,8 +58,12 @@ function make_textbox(s) {
         }
     };
 
-    widget.trigger = function () {
-        return;
+    widget.trigger = function (type) {
+        if (type === "focus") {
+            widget.focused = true;
+        } else if (type === "blur") {
+            widget.focused = false;
+        }
     };
 
     return widget;
@@ -98,21 +94,21 @@ run_test("smart_insert", () => {
     assert.equal(textbox.val(), "abc :smile: ");
     assert(textbox.focused);
 
-    textbox.blur();
+    textbox.trigger("blur");
     compose_ui.smart_insert(textbox, ":airplane:");
     assert.equal(textbox.insert_text, ":airplane: ");
     assert.equal(textbox.val(), "abc :smile: :airplane: ");
     assert(textbox.focused);
 
     textbox.caret(0);
-    textbox.blur();
+    textbox.trigger("blur");
     compose_ui.smart_insert(textbox, ":octopus:");
     assert.equal(textbox.insert_text, ":octopus: ");
     assert.equal(textbox.val(), ":octopus: abc :smile: :airplane: ");
     assert(textbox.focused);
 
     textbox.caret(textbox.val().length);
-    textbox.blur();
+    textbox.trigger("blur");
     compose_ui.smart_insert(textbox, ":heart:");
     assert.equal(textbox.insert_text, ":heart: ");
     assert.equal(textbox.val(), ":octopus: abc :smile: :airplane: :heart: ");
@@ -121,7 +117,7 @@ run_test("smart_insert", () => {
     // Test handling of spaces for ```quote
     textbox = make_textbox("");
     textbox.caret(0);
-    textbox.blur();
+    textbox.trigger("blur");
     compose_ui.smart_insert(textbox, "```quote\nquoted message\n```\n");
     assert.equal(textbox.insert_text, "```quote\nquoted message\n```\n");
     assert.equal(textbox.val(), "```quote\nquoted message\n```\n");
@@ -129,7 +125,7 @@ run_test("smart_insert", () => {
 
     textbox = make_textbox("");
     textbox.caret(0);
-    textbox.blur();
+    textbox.trigger("blur");
     compose_ui.smart_insert(textbox, "[Quoting…]\n");
     assert.equal(textbox.insert_text, "[Quoting…]\n");
     assert.equal(textbox.val(), "[Quoting…]\n");
@@ -137,7 +133,7 @@ run_test("smart_insert", () => {
 
     textbox = make_textbox("abc");
     textbox.caret(3);
-    textbox.blur();
+    textbox.trigger("blur");
     compose_ui.smart_insert(textbox, " test with space");
     assert.equal(textbox.insert_text, " test with space ");
     assert.equal(textbox.val(), "abc test with space ");
