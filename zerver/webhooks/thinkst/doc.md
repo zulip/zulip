@@ -1,4 +1,6 @@
-See your Thinkst Canary alerts in Zulip!
+See your Thinkst Canary and Canarytoken alerts in Zulip! This integration works with
+Canarytokens from Thinkst's paid product, not [canarytokens.org][canarytokens] - see the
+[Canarytoken](/integrations/doc/canarytoken) integration for those!
 
 1. {!create-stream.md!}
 
@@ -12,3 +14,5 @@ See your Thinkst Canary alerts in Zulip!
 {!congrats.md!}
 
 ![](/static/images/integrations/thinkst/001.png)
+
+[canarytokens]: https://canarytokens.org
