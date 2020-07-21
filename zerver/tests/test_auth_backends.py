@@ -3238,7 +3238,7 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         with mock.patch('zerver.views.auth.dev_auth_enabled', return_value=False):
             result = self.client_post("/api/v1/dev_fetch_api_key",
                                       dict(username=self.email))
-            self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
+            self.assert_json_error_contains(result, "DevAuthBackend not enabled.", 400)
 
 class DevGetEmailsTest(ZulipTestCase):
     def test_success(self) -> None:
@@ -3250,7 +3250,11 @@ class DevGetEmailsTest(ZulipTestCase):
     def test_dev_auth_disabled(self) -> None:
         with mock.patch('zerver.views.auth.dev_auth_enabled', return_value=False):
             result = self.client_get("/api/v1/dev_list_users")
-            self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
+            self.assert_json_error_contains(result, "DevAuthBackend not enabled.", 400)
+
+        with override_settings(PRODUCTION=True):
+            result = self.client_get("/api/v1/dev_list_users")
+            self.assert_json_error_contains(result, "Endpoint not available in production.", 400)
 
 class ExternalMethodDictsTests(ZulipTestCase):
     def get_configured_saml_backend_idp_names(self) -> List[str]:

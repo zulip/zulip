@@ -793,6 +793,12 @@ def dev_direct_login(
     redirect_to = get_safe_redirect_to(next, user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)
 
+def check_dev_auth_backend() -> None:
+    if settings.PRODUCTION:
+        raise JsonableError(_("Endpoint not available in production."))
+    if not dev_auth_enabled():
+        raise JsonableError(_("DevAuthBackend not enabled."))
+
 @csrf_exempt
 @require_post
 @has_request_variables
@@ -801,8 +807,7 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResp
     mobile apps when connecting to a Zulip development environment.  It
     requires DevAuthBackend to be included in settings.AUTHENTICATION_BACKENDS.
     """
-    if not dev_auth_enabled() or settings.PRODUCTION:
-        return json_error(_("Dev environment not enabled."))
+    check_dev_auth_backend()
 
     # Django invokes authenticate methods by matching arguments, and this
     # authentication flow will not invoke LDAP authentication because of
@@ -832,8 +837,8 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResp
 
 @csrf_exempt
 def api_dev_list_users(request: HttpRequest) -> HttpResponse:
-    if not dev_auth_enabled() or settings.PRODUCTION:
-        return json_error(_("Dev environment not enabled."))
+    check_dev_auth_backend()
+
     users = get_dev_users()
     return json_success(dict(direct_admins=[dict(email=u.delivery_email, realm_uri=u.realm.uri)
                                             for u in users if u.is_realm_admin],
