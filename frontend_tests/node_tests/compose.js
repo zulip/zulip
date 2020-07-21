@@ -748,6 +748,7 @@ run_test("send_message", () => {
         $("#compose-send-status").show();
         $("#compose-send-button").attr("disabled", "disabled");
         $("#sending-indicator").show();
+        $("#compose-textarea").off("select");
         $("#compose-textarea").select(noop);
         echo_error_msg_checked = false;
         echo.try_deliver_locally = function () {
@@ -822,6 +823,7 @@ run_test("finish", () => {
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").focus();
         $("#sending-indicator").hide();
+        $("#compose-textarea").off("select");
         $("#compose-textarea").select(noop);
         $("#compose-textarea").val("");
         const res = compose.finish();
