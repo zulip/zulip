@@ -90,12 +90,16 @@ exports.rerender = function () {
         $("#realm-logo").attr("src", page_params.realm_logo_url);
     }
 
-    change_logo_delete_button(page_params.realm_logo_source,
-                              $("#realm-day-logo-upload-widget .image-delete-button"),
-                              file_input);
-    change_logo_delete_button(page_params.realm_night_logo_source,
-                              $("#realm-night-logo-upload-widget .image-delete-button"),
-                              night_file_input);
+    change_logo_delete_button(
+        page_params.realm_logo_source,
+        $("#realm-day-logo-upload-widget .image-delete-button"),
+        file_input,
+    );
+    change_logo_delete_button(
+        page_params.realm_night_logo_source,
+        $("#realm-night-logo-upload-widget .image-delete-button"),
+        night_file_input,
+    );
 };
 
 window.realm_logo = exports;
