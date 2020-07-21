@@ -503,7 +503,7 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch('builtins.print') as mock_print:
+        with patch('builtins.print') as mock_print, self.assertLogs(level='WARNING') as warn_log:
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
@@ -512,6 +512,10 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(mock_print.mock_calls, [
             call('Generating data for', 'gryffindor'),
             call('Generating data for', 'slytherin')
+        ])
+        self.assertEqual(warn_log.output, [
+            'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
+            'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
         ])
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
@@ -676,7 +680,7 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch('builtins.print') as mock_print:
+        with patch('builtins.print') as mock_print, self.assertLogs(level='WARNING') as warn_log:
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
@@ -685,6 +689,10 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(mock_print.mock_calls, [
             call('Generating data for', 'gryffindor'),
             call('Generating data for', 'slytherin')
+        ])
+        self.assertEqual(warn_log.output, [
+            'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
+            'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
         ])
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
@@ -696,7 +704,7 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch('builtins.print') as mock_print:
+        with patch('builtins.print') as mock_print, self.assertLogs(level='WARNING') as warn_log:
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
@@ -705,6 +713,10 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(mock_print.mock_calls, [
             call('Generating data for', 'gryffindor'),
             call('Generating data for', 'slytherin')
+        ])
+        self.assertEqual(warn_log.output, [
+            'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
+            'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
         ])
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
