@@ -41,18 +41,22 @@ def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
         if isinstance(user_profile, AnonymousUser):
             user_full_name = None
             user_email = None
+            user_role = None
         else:
             user_full_name = user_profile.full_name
             user_email = user_profile.email
+            user_role = user_profile.get_role_name()
     except Exception:
         # Unexpected exceptions here should be handled gracefully
         traceback.print_exc()
         user_full_name = None
         user_email = None
+        user_role = None
 
     report['user'] = {
         'user_email': user_email,
         'user_full_name': user_full_name,
+        'user_role': user_role,
     }
 
     exception_filter = get_exception_reporter_filter(request)

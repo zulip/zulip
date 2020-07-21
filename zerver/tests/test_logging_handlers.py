@@ -117,6 +117,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         report = self.run_handler(record)
         self.assertIn("user", report)
         self.assertIn("user_email", report["user"])
+        self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
         self.assertEqual(report['stack_trace'], 'message\nmoremesssage\nmore')
@@ -132,6 +133,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         report = self.run_handler(record)
         self.assertIn("user", report)
         self.assertIn("user_email", report["user"])
+        self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
 
@@ -150,6 +152,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("host", report)
         self.assertIn("user", report)
         self.assertIn("user_email", report["user"])
+        self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
 
@@ -163,6 +166,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("host", report)
         self.assertIn("user", report)
         self.assertIn("user_email", report["user"])
+        self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
 
@@ -175,6 +179,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("host", report)
         self.assertIn("user", report)
         self.assertIn("user_email", report["user"])
+        self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
 
@@ -193,6 +198,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("host", report)
         self.assertIn("user", report)
         self.assertIn("user_email", report["user"])
+        self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
         self.assertEqual(report["stack_trace"], 'No stack trace available')
 
@@ -203,6 +209,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("host", report)
         self.assertIn("user", report)
         self.assertIn("user_email", report["user"])
+        self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
 
