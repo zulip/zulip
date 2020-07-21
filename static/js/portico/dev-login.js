@@ -7,8 +7,8 @@ $(() => {
             preserved after user is logged in. See this:
             https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
             $("input[name='direct_email']").each(function () {
-                const new_formaction = $(this).attr('formaction') + '/' + window.location.hash;
-                $(this).attr('formaction', new_formaction);
+                const new_formaction = $(this).attr("formaction") + "/" + window.location.hash;
+                $(this).attr("formaction", new_formaction);
             });
         }
     }

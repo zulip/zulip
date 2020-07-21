@@ -1,6 +1,6 @@
-const Uppy = require('@uppy/core');
-const XHRUpload = require('@uppy/xhr-upload');
-const ProgressBar = require('@uppy/progress-bar');
+const Uppy = require("@uppy/core");
+const XHRUpload = require("@uppy/xhr-upload");
+const ProgressBar = require("@uppy/progress-bar");
 
 exports.make_upload_absolute = function (uri) {
     if (uri.startsWith(compose.uploads_path)) {
@@ -27,52 +27,54 @@ exports.get_item = function (key, config) {
     }
     if (config.mode === "compose") {
         switch (key) {
-        case "textarea":
-            return $('#compose-textarea');
-        case "send_button":
-            return $('#compose-send-button');
-        case "send_status_identifier":
-            return '#compose-send-status';
-        case "send_status":
-            return $('#compose-send-status');
-        case "send_status_close_button":
-            return $('.compose-send-status-close');
-        case "send_status_message":
-            return $('#compose-error-msg');
-        case "file_input_identifier":
-            return "#file_input";
-        case "source":
-            return "compose-file-input";
-        case "drag_drop_container":
-            return $("#compose");
-        default:
-            throw Error(`Invalid key name for mode "${config.mode}"`);
+            case "textarea":
+                return $("#compose-textarea");
+            case "send_button":
+                return $("#compose-send-button");
+            case "send_status_identifier":
+                return "#compose-send-status";
+            case "send_status":
+                return $("#compose-send-status");
+            case "send_status_close_button":
+                return $(".compose-send-status-close");
+            case "send_status_message":
+                return $("#compose-error-msg");
+            case "file_input_identifier":
+                return "#file_input";
+            case "source":
+                return "compose-file-input";
+            case "drag_drop_container":
+                return $("#compose");
+            default:
+                throw Error(`Invalid key name for mode "${config.mode}"`);
         }
     } else if (config.mode === "edit") {
         if (!config.row) {
             throw Error("Missing row in config");
         }
         switch (key) {
-        case "textarea":
-            return $('#message_edit_content_' + config.row);
-        case "send_button":
-            return $('#message_edit_content_' + config.row).closest('#message_edit_form').find('.message_edit_save');
-        case "send_status_identifier":
-            return '#message-edit-send-status-' + config.row;
-        case "send_status":
-            return $('#message-edit-send-status-' + config.row);
-        case "send_status_close_button":
-            return $('#message-edit-send-status-' + config.row).find('.send-status-close');
-        case "send_status_message":
-            return $('#message-edit-send-status-' + config.row).find('.error-msg');
-        case "file_input_identifier":
-            return '#message_edit_file_input_' + config.row;
-        case "source":
-            return "message-edit-file-input";
-        case "drag_drop_container":
-            return $("#message_edit_form");
-        default:
-            throw Error(`Invalid key name for mode "${config.mode}"`);
+            case "textarea":
+                return $("#message_edit_content_" + config.row);
+            case "send_button":
+                return $("#message_edit_content_" + config.row)
+                    .closest("#message_edit_form")
+                    .find(".message_edit_save");
+            case "send_status_identifier":
+                return "#message-edit-send-status-" + config.row;
+            case "send_status":
+                return $("#message-edit-send-status-" + config.row);
+            case "send_status_close_button":
+                return $("#message-edit-send-status-" + config.row).find(".send-status-close");
+            case "send_status_message":
+                return $("#message-edit-send-status-" + config.row).find(".error-msg");
+            case "file_input_identifier":
+                return "#message_edit_file_input_" + config.row;
+            case "source":
+                return "message-edit-file-input";
+            case "drag_drop_container":
+                return $("#message_edit_form");
+            default:
+                throw Error(`Invalid key name for mode "${config.mode}"`);
         }
     } else {
         throw Error("Invalid upload mode!");
@@ -89,7 +91,11 @@ exports.show_error_message = function (config, message) {
         message = i18n.t("An unknown error occurred.");
     }
     exports.get_item("send_button", config).prop("disabled", false);
-    exports.get_item("send_status", config).addClass("alert-error").removeClass("alert-info").show();
+    exports
+        .get_item("send_status", config)
+        .addClass("alert-error")
+        .removeClass("alert-info")
+        .show();
     exports.get_item("send_status_message", config).text(message);
 };
 
@@ -98,15 +104,26 @@ exports.upload_files = function (uppy, config, files) {
         return;
     }
     if (page_params.max_file_upload_size_mib === 0) {
-        exports.show_error_message(config, i18n.t('File and image uploads have been disabled for this organization.'));
+        exports.show_error_message(
+            config,
+            i18n.t("File and image uploads have been disabled for this organization."),
+        );
         return;
     }
     exports.get_item("send_button", config).attr("disabled", "");
-    exports.get_item("send_status", config).addClass("alert-info").removeClass("alert-error").show();
+    exports
+        .get_item("send_status", config)
+        .addClass("alert-info")
+        .removeClass("alert-error")
+        .show();
     exports.get_item("send_status_message", config).html($("<p>").text(i18n.t("Uploading…")));
-    exports.get_item("send_status_close_button", config).one('click', () => {
+    exports.get_item("send_status_close_button", config).one("click", () => {
         uppy.getFiles().forEach((file) => {
-            compose_ui.replace_syntax(exports.get_translated_status(file), "", exports.get_item("textarea", config));
+            compose_ui.replace_syntax(
+                exports.get_translated_status(file),
+                "",
+                exports.get_item("textarea", config),
+            );
         });
         compose_ui.autosize_textarea();
         uppy.cancelAll();
@@ -118,7 +135,10 @@ exports.upload_files = function (uppy, config, files) {
 
     for (const file of files) {
         try {
-            compose_ui.insert_syntax_and_focus(exports.get_translated_status(file), exports.get_item("textarea", config));
+            compose_ui.insert_syntax_and_focus(
+                exports.get_translated_status(file),
+                exports.get_item("textarea", config),
+            );
             compose_ui.autosize_textarea();
             uppy.addFile({
                 source: exports.get_item("source", config),
@@ -142,28 +162,26 @@ exports.setup_upload = function (config) {
         },
         locale: {
             strings: {
-                exceedsSize: i18n.t('This file exceeds maximum allowed size of'),
-                failedToUpload: i18n.t('Failed to upload %{file}'),
+                exceedsSize: i18n.t("This file exceeds maximum allowed size of"),
+                failedToUpload: i18n.t("Failed to upload %{file}"),
             },
         },
     });
     uppy.setMeta({
         csrfmiddlewaretoken: csrf_token,
     });
-    uppy.use(
-        XHRUpload, {
-            endpoint: '/json/user_uploads',
-            formData: true,
-            fieldName: 'file',
-            // Number of concurrent uploads
-            limit: 5,
-            locale: {
-                strings: {
-                    timedOut: i18n.t('Upload stalled for %{seconds} seconds, aborting.'),
-                },
+    uppy.use(XHRUpload, {
+        endpoint: "/json/user_uploads",
+        formData: true,
+        fieldName: "file",
+        // Number of concurrent uploads
+        limit: 5,
+        locale: {
+            strings: {
+                timedOut: i18n.t("Upload stalled for %{seconds} seconds, aborting."),
             },
         },
-    );
+    });
 
     uppy.use(ProgressBar, {
         target: exports.get_item("send_status_identifier", config),
@@ -203,7 +221,7 @@ exports.setup_upload = function (config) {
         exports.upload_files(uppy, config, files);
     });
 
-    uppy.on('upload-success', (file, response) => {
+    uppy.on("upload-success", (file, response) => {
         const uri = response.body.uri;
         if (uri === undefined) {
             return;
@@ -211,15 +229,19 @@ exports.setup_upload = function (config) {
         const split_uri = uri.split("/");
         const filename = split_uri[split_uri.length - 1];
         if (!compose_state.composing()) {
-            compose_actions.start('stream');
+            compose_actions.start("stream");
         }
         const absolute_uri = exports.make_upload_absolute(uri);
         const filename_uri = "[" + filename + "](" + absolute_uri + ")";
-        compose_ui.replace_syntax(exports.get_translated_status(file), filename_uri, exports.get_item("textarea", config));
+        compose_ui.replace_syntax(
+            exports.get_translated_status(file),
+            filename_uri,
+            exports.get_item("textarea", config),
+        );
         compose_ui.autosize_textarea();
     });
 
-    uppy.on('complete', () => {
+    uppy.on("complete", () => {
         let uploads_in_progress = false;
         uppy.getFiles().forEach((file) => {
             if (file.progress.uploadComplete) {
@@ -242,7 +264,7 @@ exports.setup_upload = function (config) {
         }
     });
 
-    uppy.on('info-visible', () => {
+    uppy.on("info-visible", () => {
         const info = uppy.getState().info;
         if (info.type === "error" && info.message === "No Internet connection") {
             // server_events already handles the case of no internet.
@@ -264,16 +286,24 @@ exports.setup_upload = function (config) {
         }
     });
 
-    uppy.on('upload-error', (file, error, response) => {
+    uppy.on("upload-error", (file, error, response) => {
         const message = response ? response.body.msg : null;
         uppy.cancelAll();
         exports.show_error_message(config, message);
-        compose_ui.replace_syntax(exports.get_translated_status(file), "", exports.get_item("textarea", config));
+        compose_ui.replace_syntax(
+            exports.get_translated_status(file),
+            "",
+            exports.get_item("textarea", config),
+        );
         compose_ui.autosize_textarea();
     });
 
-    uppy.on('restriction-failed', (file) => {
-        compose_ui.replace_syntax(exports.get_translated_status(file), "", exports.get_item("textarea", config));
+    uppy.on("restriction-failed", (file) => {
+        compose_ui.replace_syntax(
+            exports.get_translated_status(file),
+            "",
+            exports.get_item("textarea", config),
+        );
         compose_ui.autosize_textarea();
     });
 

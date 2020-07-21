@@ -382,7 +382,6 @@ def add_bot_backend(
 
     bot_profile = do_create_user(email=email, password=None,
                                  realm=user_profile.realm, full_name=full_name,
-                                 short_name=short_name,
                                  bot_type=bot_type,
                                  bot_owner=user_profile,
                                  avatar_source=avatar_source,
@@ -486,9 +485,13 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile, user_id
 
 @require_realm_admin
 @has_request_variables
-def create_user_backend(request: HttpRequest, user_profile: UserProfile,
-                        email: str=REQ(), password: str=REQ(), full_name_raw: str=REQ("full_name"),
-                        short_name: str=REQ()) -> HttpResponse:
+def create_user_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    email: str=REQ(),
+    password: str=REQ(),
+    full_name_raw: str=REQ("full_name"),
+) -> HttpResponse:
     full_name = check_full_name(full_name_raw)
     form = CreateUserForm({'full_name': full_name, 'email': email})
     if not form.is_valid():
@@ -518,7 +521,7 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
     if not check_password_strength(password):
         return json_error(PASSWORD_TOO_WEAK_ERROR)
 
-    do_create_user(email, password, realm, full_name, short_name, acting_user=user_profile)
+    do_create_user(email, password, realm, full_name, acting_user=user_profile)
     return json_success()
 
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:

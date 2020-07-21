@@ -8,7 +8,7 @@ const typing_status = require("../shared/js/typing_status");
 
 function send_typing_notification_ajax(user_ids_array, operation) {
     channel.post({
-        url: '/json/typing',
+        url: "/json/typing",
         data: {
             to: JSON.stringify(user_ids_array),
             op: operation,
@@ -58,17 +58,16 @@ exports.initialize = function () {
         notify_server_stop: notify_server_stop,
     };
 
-    $(document).on('input', '#compose-textarea', () => {
+    $(document).on("input", "#compose-textarea", () => {
         // If our previous state was no typing notification, send a
         // start-typing notice immediately.
-        const new_recipient =
-          is_valid_conversation() ? exports.get_recipient() : null;
+        const new_recipient = is_valid_conversation() ? exports.get_recipient() : null;
         typing_status.update(worker, new_recipient);
     });
 
     // We send a stop-typing notification immediately when compose is
     // closed/cancelled
-    $(document).on('compose_canceled.zulip compose_finished.zulip', () => {
+    $(document).on("compose_canceled.zulip compose_finished.zulip", () => {
         typing_status.update(worker, null);
     });
 };

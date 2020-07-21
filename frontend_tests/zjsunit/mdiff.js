@@ -11,7 +11,7 @@
  * unicode string containing their diff.
  */
 
-const difflib = require('difflib');
+const difflib = require("difflib");
 
 function apply_color(input_string, changes) {
     let previous_index = 0;
@@ -50,7 +50,7 @@ function apply_color(input_string, changes) {
  * directions to add appropriate color to the lines that they annotate.
  */
 function parse_questionmark_line(questionmark_line) {
-    let current_sequence = "";  // Either "^", "-", "+", or ""
+    let current_sequence = ""; // Either "^", "-", "+", or ""
     let beginning_index = 0;
     let index = 0;
 
@@ -108,33 +108,39 @@ function diff_strings(string_0, string_1) {
         } else if (line.startsWith("?")) {
             changes_list = parse_questionmark_line(line);
             output_lines[output_lines.length - 1] = apply_color(
-                output_lines[output_lines.length - 1], changes_list);
+                output_lines[output_lines.length - 1],
+                changes_list,
+            );
         } else {
             output_lines.push(line);
         }
     });
 
-    const emphasize_codes = (string) => "\u001b[34m" + string.slice(0, 1) + "\u001b[0m" + string.slice(1);
+    const emphasize_codes = (string) =>
+        "\u001b[34m" + string.slice(0, 1) + "\u001b[0m" + string.slice(1);
     output_lines = output_lines.map(emphasize_codes);
 
     return output_lines.join("\n");
 }
 
-module.exports = { diff_strings };
+module.exports = {diff_strings};
 
 // Simple CLI for this module
 // Only run this code if called as a command-line utility
 if (require.main === module) {
     // First two args are just "node" and "mdiff.js"
-    const argv = require('minimist')(process.argv.slice(2));
+    const argv = require("minimist")(process.argv.slice(2));
 
     if (Object.prototype.hasOwnProperty.call(argv, "help")) {
-        console.log(process.argv[0] + " " + process.argv[1] +
-            " [ --help ]" +
-            " string_0" +
-            " string_1" +
-            "\n" +
-            "Where string_0 and string_1 are the strings to be diffed",
+        console.log(
+            process.argv[0] +
+                " " +
+                process.argv[1] +
+                " [ --help ]" +
+                " string_0" +
+                " string_1" +
+                "\n" +
+                "Where string_0 and string_1 are the strings to be diffed",
         );
     }
 

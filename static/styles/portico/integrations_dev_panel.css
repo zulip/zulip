@@ -1,14 +1,3 @@
-circle {
-    fill: hsl(0, 0%, 0%);
-    stroke-width: 1.93936479;
-    stroke: transparent;
-}
-
-path {
-    fill: hsl(170, 48%, 54%);
-    stroke: hsl(170, 48%, 54%);
-}
-
 button {
     background-color: hsl(152, 52%, 91%);
     color: hsl(146, 50%, 36%);

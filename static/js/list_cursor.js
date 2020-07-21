@@ -8,11 +8,9 @@ const list_cursor = function (opts) {
         opts.list.find_li &&
         opts.list.first_key &&
         opts.list.prev_key &&
-        opts.list.next_key
-    ;
-
+        opts.list.next_key;
     if (!config_ok) {
-        blueslip.error('Programming error');
+        blueslip.error("Programming error");
         return;
     }
 
@@ -84,7 +82,7 @@ const list_cursor = function (opts) {
 
     self.go_to = function (key) {
         if (key === undefined) {
-            blueslip.error('Caller is not checking keys for list_cursor.go_to');
+            blueslip.error("Caller is not checking keys for list_cursor.go_to");
             return;
         }
         if (key === self.curr_key) {
@@ -93,7 +91,7 @@ const list_cursor = function (opts) {
         self.clear();
         const row = self.get_row(key);
         if (row === undefined) {
-            blueslip.error('Cannot highlight key for list_cursor: ' + key);
+            blueslip.error("Cannot highlight key for list_cursor: " + key);
             return;
         }
         self.curr_key = key;

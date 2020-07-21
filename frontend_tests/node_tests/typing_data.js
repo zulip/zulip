@@ -1,6 +1,6 @@
 zrequire("typing_data");
 
-run_test('basics', () => {
+run_test("basics", () => {
     // The typing_data needs to be robust with lists of
     // user ids being in arbitrary sorting order and
     // possibly in string form instead of integer. So all
@@ -45,13 +45,13 @@ run_test('basics', () => {
     assert.deepEqual(typing_data.get_group_typists([20, 40]), [20]);
 });
 
-run_test('timers', () => {
+run_test("timers", () => {
     const events = {};
 
-    const stub_timer_id = 'timer_id_stub';
+    const stub_timer_id = "timer_id_stub";
     const stub_group = [5, 10, 15];
     const stub_delay = 99;
-    const stub_f = 'function';
+    const stub_f = "function";
 
     function set_timeout(f, delay) {
         assert.equal(delay, stub_delay);
@@ -81,8 +81,8 @@ run_test('timers', () => {
         typing_data.clear_inbound_timer(stub_group);
     }
 
-    global.patch_builtin('setTimeout', set_timeout);
-    global.patch_builtin('clearTimeout', clear_timeout);
+    global.patch_builtin("setTimeout", set_timeout);
+    global.patch_builtin("clearTimeout", clear_timeout);
 
     // first time, we set
     kickstart();
@@ -115,5 +115,4 @@ run_test('timers', () => {
         timer_cleared: false,
         timer_set: false,
     });
-
 });

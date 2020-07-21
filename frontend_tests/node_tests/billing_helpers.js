@@ -1,25 +1,25 @@
-const { JSDOM } = require("jsdom");
+const {JSDOM} = require("jsdom");
 const fs = require("fs");
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
-const dom = new JSDOM(template, { pretendToBeVisual: true });
-const jquery = require('jquery')(dom.window);
+const dom = new JSDOM(template, {pretendToBeVisual: true});
+const jquery = require("jquery")(dom.window);
 
-set_global('$', global.make_zjquery());
-set_global('page_params', {});
-set_global('loading', {});
-set_global('history', {});
-set_global('document', {
+set_global("$", global.make_zjquery());
+set_global("page_params", {});
+set_global("loading", {});
+set_global("history", {});
+set_global("document", {
     title: "Zulip",
 });
-set_global('location', {
+set_global("location", {
     pathname: "/upgrade/",
     search: "",
     hash: "#billing",
 });
 
-zrequire('helpers', "js/billing/helpers");
+zrequire("helpers", "js/billing/helpers");
 
-run_test('create_ajax_request', () => {
+run_test("create_ajax_request", () => {
     const form_loading_indicator = "#autopay_loading_indicator";
     const form_input_section = "#autopay-input-section";
     const form_success = "#autopay-success";
@@ -101,7 +101,6 @@ run_test('create_ajax_request', () => {
         state.free_trial_alert_message_hide += 1;
     };
 
-
     $("#autopay-form").serializeArray = () => jquery("#autopay-form").serializeArray();
 
     $.post = ({url, data, success, error}) => {
@@ -124,7 +123,7 @@ run_test('create_ajax_request', () => {
         assert.equal(data.billing_modality, '"charge_automatically"');
         assert.equal(data.schedule, '"monthly"');
         assert.equal(data.license_management, '"automatic"');
-        assert.equal(data.licenses, '');
+        assert.equal(data.licenses, "");
 
         history.pushState = (state_object, title, path) => {
             state.pushState += 1;
@@ -164,8 +163,9 @@ run_test('create_ajax_request', () => {
         assert.equal(state.free_trial_alert_message_show, 1);
     };
 
-    helpers.create_ajax_request("/json/billing/upgrade", "autopay", {id: "stripe_token_id"}, ["licenses"]);
-
+    helpers.create_ajax_request("/json/billing/upgrade", "autopay", {id: "stripe_token_id"}, [
+        "licenses",
+    ]);
 });
 
 run_test("format_money", () => {
@@ -224,8 +224,8 @@ run_test("show_license_section", () => {
     assert.equal(state.hide_license_manual_section, 1);
     assert.equal(state.show_license_automatic_section, 1);
     assert.equal(state.show_license_manual_section, 0);
-    assert.equal($("#automatic_license_count").prop('disabled'), false);
-    assert.equal($("#manual_license_count").prop('disabled'), true);
+    assert.equal($("#automatic_license_count").prop("disabled"), false);
+    assert.equal($("#manual_license_count").prop("disabled"), true);
 
     helpers.show_license_section("manual");
 
@@ -233,8 +233,8 @@ run_test("show_license_section", () => {
     assert.equal(state.hide_license_manual_section, 2);
     assert.equal(state.show_license_automatic_section, 1);
     assert.equal(state.show_license_manual_section, 1);
-    assert.equal($("#automatic_license_count").prop('disabled'), true);
-    assert.equal($("#manual_license_count").prop('disabled'), false);
+    assert.equal($("#automatic_license_count").prop("disabled"), true);
+    assert.equal($("#manual_license_count").prop("disabled"), false);
 });
 
 run_test("set_tab", () => {

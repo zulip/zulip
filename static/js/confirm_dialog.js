@@ -33,16 +33,16 @@ exports.launch = function (conf) {
         // The next three fields should be safe HTML. If callers
         // interpolate user data into strings, they should use
         // templates.
-        'html_heading',
-        'html_body',
-        'html_yes_button',
-        'on_click',
-        'parent',
+        "html_heading",
+        "html_body",
+        "html_yes_button",
+        "on_click",
+        "parent",
     ];
 
     for (const f of conf_fields) {
         if (!conf[f]) {
-            blueslip.error('programmer omitted ' + f);
+            blueslip.error("programmer omitted " + f);
         }
     }
 
@@ -51,28 +51,28 @@ exports.launch = function (conf) {
     // Close any existing modals--on settings screens you can
     // have multiple buttons that need confirmation.
     if (overlays.is_modal_open()) {
-        overlays.close_modal('#confirm_dialog_modal');
+        overlays.close_modal("#confirm_dialog_modal");
     }
 
-    confirm_dialog.find('.confirm_dialog_heading').html(conf.html_heading);
-    confirm_dialog.find('.confirm_dialog_body').html(conf.html_body);
+    confirm_dialog.find(".confirm_dialog_heading").html(conf.html_heading);
+    confirm_dialog.find(".confirm_dialog_body").html(conf.html_body);
 
-    const yes_button = confirm_dialog.find('.confirm_dialog_yes_button');
+    const yes_button = confirm_dialog.find(".confirm_dialog_yes_button");
 
     yes_button.html(conf.html_yes_button);
 
     // Set up handlers.
-    yes_button.on('click', () => {
-        overlays.close_modal('#confirm_dialog_modal');
+    yes_button.on("click", () => {
+        overlays.close_modal("#confirm_dialog_modal");
         conf.on_click();
     });
 
-    confirm_dialog.on('hide', () => {
+    confirm_dialog.on("hide", () => {
         confirm_dialog.remove();
     });
 
     // Open the modal
-    overlays.open_modal('#confirm_dialog_modal');
+    overlays.open_modal("#confirm_dialog_modal");
 };
 
 window.confirm_dialog = exports;

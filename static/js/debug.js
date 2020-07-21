@@ -21,7 +21,7 @@ export function print_elapsed_time(name, fun) {
     const t0 = new Date().getTime();
     const out = fun();
     const t1 = new Date().getTime();
-    console.log(name + ': ' + (t1 - t0) + ' ms');
+    console.log(name + ": " + (t1 - t0) + " ms");
     return out;
 }
 
@@ -42,8 +42,17 @@ export function check_duplicate_ids() {
                 collisions.push({
                     id: o.id,
                     count: 1,
-                    node: "<" + tag + " className='" + o.className + "' id='" + o.id + "'>" +
-                          "</" + tag + ">",
+                    node:
+                        "<" +
+                        tag +
+                        " className='" +
+                        o.className +
+                        "' id='" +
+                        o.id +
+                        "'>" +
+                        "</" +
+                        tag +
+                        ">",
                 });
             } else {
                 el.count += 1;
@@ -96,7 +105,7 @@ export function IterationProfiler() {
 
 IterationProfiler.prototype = {
     iteration_start: function () {
-        this.section('_iteration_overhead');
+        this.section("_iteration_overhead");
     },
 
     iteration_stop: function () {
@@ -118,7 +127,7 @@ IterationProfiler.prototype = {
     },
 
     done: function () {
-        this.section('_iteration_overhead');
+        this.section("_iteration_overhead");
 
         for (const [prop, cost] of this.sections) {
             console.log(prop, cost);

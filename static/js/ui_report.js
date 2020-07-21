@@ -6,13 +6,17 @@
 
 exports.message = function (response, status_box, cls, remove_after) {
     if (cls === undefined) {
-        cls = 'alert';
+        cls = "alert";
     }
 
     // Note we use html() below, since we can rely on our callers escaping HTML
     // via i18n.t when interpolating data.
-    status_box.removeClass(common.status_classes).addClass(cls)
-        .html(response).stop(true).fadeTo(0, 1);
+    status_box
+        .removeClass(common.status_classes)
+        .addClass(cls)
+        .html(response)
+        .stop(true)
+        .fadeTo(0, 1);
     if (remove_after) {
         setTimeout(() => {
             status_box.fadeOut(400);
@@ -33,18 +37,20 @@ exports.error = function (response, xhr, status_box, remove_after) {
         }
     }
 
-    exports.message(response, status_box, 'alert-error', remove_after);
+    exports.message(response, status_box, "alert-error", remove_after);
 };
 
 exports.success = function (response, status_box, remove_after) {
-    exports.message(response, status_box, 'alert-success', remove_after);
+    exports.message(response, status_box, "alert-success", remove_after);
 };
 
 exports.generic_embed_error = function (error) {
     const $alert = $("<div class='alert home-error-bar'></div>");
     const $exit = "<div class='exit'></div>";
 
-    $(".alert-box").append($alert.html($exit + "<div class='content'>" + error + "</div>").addClass("show"));
+    $(".alert-box").append(
+        $alert.html($exit + "<div class='content'>" + error + "</div>").addClass("show"),
+    );
 };
 
 exports.generic_row_button_error = function (xhr, btn) {

@@ -878,13 +878,13 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         # This should log an error
         with mock.patch('zerver.lib.push_notifications.uses_notification_bouncer') as mock_check, \
-                mock.patch('logging.error') as mock_logging_error, \
+                mock.patch('logging.info') as mock_logging_info, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
             handle_push_notification(user_profile.id, missed_message)
             mock_push_notifications.assert_called_once()
             # Check we didn't proceed through.
             mock_check.assert_not_called()
-            mock_logging_error.assert_called_once()
+            mock_logging_info.assert_called_once()
 
     def test_send_notifications_to_bouncer(self) -> None:
         user_profile = self.example_user('hamlet')

@@ -104,7 +104,7 @@ exports.append_user = function (user, pills) {
             person: user,
         });
     } else {
-        blueslip.warn('Undefined user in function append_user');
+        blueslip.warn("Undefined user in function append_user");
     }
 };
 
@@ -136,12 +136,12 @@ exports.set_up_typeahead_on_pills = function (input, pills, update_func, source)
                 return item.full_name.toLowerCase().includes(query);
             }
             const email = people.get_visible_email(item);
-            return email.toLowerCase().includes(query)
-                    || item.full_name.toLowerCase().includes(query);
+            return (
+                email.toLowerCase().includes(query) || item.full_name.toLowerCase().includes(query)
+            );
         },
         sorter: function (matches) {
-            return typeahead_helper.sort_recipientbox_typeahead(
-                this.query, matches, "");
+            return typeahead_helper.sort_recipientbox_typeahead(this.query, matches, "");
         },
         updater: function (user) {
             exports.append_user(user, pills);

@@ -1,36 +1,38 @@
-const autosize = require('autosize');
+const autosize = require("autosize");
 
 exports.blur_textarea = function () {
-    $('.message_comp').find('input, textarea, button').blur();
+    $(".message_comp").find("input, textarea, button").blur();
 };
 
 function hide_box() {
     exports.blur_textarea();
-    $('#stream-message').hide();
-    $('#private-message').hide();
+    $("#stream-message").hide();
+    $("#private-message").hide();
     $(".new_message_textarea").css("min-height", "");
     compose_fade.clear_compose();
-    $('.message_comp').hide();
+    $(".message_comp").hide();
     $("#compose_controls").show();
     compose.clear_preview_area();
 }
 
 function get_focus_area(msg_type, opts) {
     // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
-    if (msg_type === 'stream' && opts.stream && !opts.topic) {
-        return '#stream_message_recipient_topic';
-    } else if (msg_type === 'stream' && opts.stream
-               || msg_type === 'private' && opts.private_message_recipient) {
+    if (msg_type === "stream" && opts.stream && !opts.topic) {
+        return "#stream_message_recipient_topic";
+    } else if (
+        (msg_type === "stream" && opts.stream) ||
+        (msg_type === "private" && opts.private_message_recipient)
+    ) {
         if (opts.trigger === "new topic button") {
-            return '#stream_message_recipient_topic';
+            return "#stream_message_recipient_topic";
         }
-        return '#compose-textarea';
+        return "#compose-textarea";
     }
 
-    if (msg_type === 'stream') {
-        return '#stream_message_recipient_stream';
+    if (msg_type === "stream") {
+        return "#stream_message_recipient_stream";
     }
-    return '#private_message_recipient';
+    return "#private_message_recipient";
 }
 // Export for testing
 exports._get_focus_area = get_focus_area;
@@ -41,29 +43,27 @@ exports.set_focus = function (msg_type, opts) {
         return;
     }
 
-    if (window.getSelection().toString() === "" ||
-         opts.trigger !== "message click") {
+    if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
         const elt = $(focus_area);
         elt.focus().select();
     }
 };
 
-
 // Show the compose box.
 function show_box(msg_type, opts) {
     if (msg_type === "stream") {
-        $('#private-message').hide();
-        $('#stream-message').show();
+        $("#private-message").hide();
+        $("#stream-message").show();
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
     } else {
-        $('#private-message').show();
-        $('#stream-message').hide();
+        $("#private-message").show();
+        $("#stream-message").hide();
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
     }
     $("#compose-send-status").removeClass(common.status_classes).hide();
-    $('#compose').css({visibility: "visible"});
+    $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
 
@@ -71,7 +71,7 @@ function show_box(msg_type, opts) {
 }
 
 exports.clear_textarea = function () {
-    $("#compose").find('input[type=text], textarea').val('');
+    $("#compose").find("input[type=text], textarea").val("");
 };
 
 function clear_box() {
@@ -101,7 +101,7 @@ exports.autosize_message_content = function () {
 exports.expand_compose_box = function () {
     $("#compose_close").show();
     $("#compose_controls").hide();
-    $('.message_comp').show();
+    $(".message_comp").show();
 };
 
 exports.complete_starting_tasks = function (msg_type, opts) {
@@ -113,7 +113,7 @@ exports.complete_starting_tasks = function (msg_type, opts) {
     ui_util.change_tab_to("#home");
     compose_fade.start_compose(msg_type);
     ui_util.decorate_stream_bar(opts.stream, $("#stream-message .message_header_stream"), true);
-    $(document).trigger($.Event('compose_started.zulip', opts));
+    $(document).trigger($.Event("compose_started.zulip", opts));
     exports.update_placeholder_text(opts);
 };
 
@@ -135,8 +135,7 @@ exports.maybe_scroll_up_selected_message = function () {
         return;
     }
 
-    const cover = selected_row.offset().top + selected_row.height()
-        - $("#compose").offset().top;
+    const cover = selected_row.offset().top + selected_row.height() - $("#compose").offset().top;
     if (cover > 0) {
         message_viewport.user_initiated_animate_scroll(cover + 20);
     }
@@ -145,10 +144,10 @@ exports.maybe_scroll_up_selected_message = function () {
 function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     return {
         message_type: msg_type,
-        stream: '',
-        topic: '',
-        private_message_recipient: '',
-        trigger: 'unknown',
+        stream: "",
+        topic: "",
+        private_message_recipient: "",
+        trigger: "unknown",
 
         // Set default parameters based on the current narrowed view.
         ...narrow_state.set_compose_defaults(),
@@ -158,17 +157,19 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
 }
 
 function same_recipient_as_before(msg_type, opts) {
-    return compose_state.get_message_type() === msg_type &&
-            (msg_type === "stream" &&
-              opts.stream === compose_state.stream_name() &&
-              opts.topic === compose_state.topic() ||
-             msg_type === "private" &&
-              opts.private_message_recipient === compose_state.private_message_recipient());
+    return (
+        compose_state.get_message_type() === msg_type &&
+        ((msg_type === "stream" &&
+            opts.stream === compose_state.stream_name() &&
+            opts.topic === compose_state.topic()) ||
+            (msg_type === "private" &&
+                opts.private_message_recipient === compose_state.private_message_recipient()))
+    );
 }
 
 exports.update_placeholder_text = function (opts) {
     const placeholder_text = compose_ui.compute_placeholder_text(opts);
-    $('#compose-textarea').attr('placeholder', placeholder_text);
+    $("#compose-textarea").attr("placeholder", placeholder_text);
 };
 
 exports.start = function (msg_type, opts) {
@@ -184,14 +185,17 @@ exports.start = function (msg_type, opts) {
     // If we are invoked by a compose hotkey (c or x) or new topic
     // button, do not assume that we know what the message's topic or
     // PM recipient should be.
-    if (opts.trigger === "compose_hotkey" ||
-        opts.trigger === "new topic button") {
-        opts.topic = '';
-        opts.private_message_recipient = '';
+    if (opts.trigger === "compose_hotkey" || opts.trigger === "new topic button") {
+        opts.topic = "";
+        opts.private_message_recipient = "";
     }
 
     const subbed_streams = stream_data.subscribed_subs();
-    if (subbed_streams.length === 1 && (opts.trigger === "new topic button" || opts.trigger === "compose_hotkey" && msg_type === "stream")) {
+    if (
+        subbed_streams.length === 1 &&
+        (opts.trigger === "new topic button" ||
+            (opts.trigger === "compose_hotkey" && msg_type === "stream"))
+    ) {
         opts.stream = subbed_streams[0].name;
     }
 
@@ -249,7 +253,7 @@ exports.cancel = function () {
     compose.abort_zoom(undefined);
     compose_state.set_message_type(false);
     compose_pm_pill.clear();
-    $(document).trigger($.Event('compose_canceled.zulip'));
+    $(document).trigger($.Event("compose_canceled.zulip"));
 };
 
 exports.respond_to_message = function (opts) {
@@ -260,10 +264,13 @@ exports.respond_to_message = function (opts) {
 
     const message = current_msg_list.selected_message();
 
-    if (message === undefined) { // empty narrow implementation
-        if (!narrow_state.narrowed_by_pm_reply() &&
+    if (message === undefined) {
+        // empty narrow implementation
+        if (
+            !narrow_state.narrowed_by_pm_reply() &&
             !narrow_state.narrowed_by_stream_reply() &&
-            !narrow_state.narrowed_by_topic_reply()) {
+            !narrow_state.narrowed_by_topic_reply()
+        ) {
             compose.nonexistent_stream_reply_error();
             return;
         }
@@ -279,9 +286,9 @@ exports.respond_to_message = function (opts) {
 
         // Set msg_type to stream by default in the case of an empty
         // home view.
-        msg_type = 'stream';
+        msg_type = "stream";
         if (narrow_state.narrowed_by_pm_reply()) {
-            msg_type = 'private';
+            msg_type = "private";
         }
 
         const new_opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
@@ -296,15 +303,15 @@ exports.respond_to_message = function (opts) {
     // Important note: A reply_type of 'personal' is for the R hotkey
     // (replying to a message's sender with a private message).  All
     // other replies can just copy message.type.
-    if (opts.reply_type === 'personal' || message.type === 'private') {
-        msg_type = 'private';
+    if (opts.reply_type === "personal" || message.type === "private") {
+        msg_type = "private";
     } else {
         msg_type = message.type;
     }
 
-    let stream = '';
-    let topic = '';
-    let pm_recipient = '';
+    let stream = "";
+    let topic = "";
+    let pm_recipient = "";
     if (msg_type === "stream") {
         stream = message.stream;
         topic = message.topic;
@@ -320,10 +327,12 @@ exports.respond_to_message = function (opts) {
         }
     }
 
-    exports.start(msg_type, {stream: stream, topic: topic,
-                             private_message_recipient: pm_recipient,
-                             trigger: opts.trigger});
-
+    exports.start(msg_type, {
+        stream: stream,
+        topic: topic,
+        private_message_recipient: pm_recipient,
+        trigger: opts.trigger,
+    });
 };
 
 exports.reply_with_mention = function (opts) {
@@ -375,7 +384,7 @@ exports.on_topic_narrow = function () {
     compose_state.topic(narrow_state.topic());
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
-    $('#compose-textarea').focus().select();
+    $("#compose-textarea").focus().select();
 };
 
 exports.quote_and_reply = function (opts) {
@@ -417,8 +426,8 @@ exports.quote_and_reply = function (opts) {
         content += `[said](${hash_util.by_conversation_and_time_uri(message)}):\n`;
         const fence = fenced_code.get_unused_fence(message.raw_content);
         content += `${fence}quote\n${message.raw_content}\n${fence}`;
-        compose_ui.replace_syntax('[Quoting…]', content, textarea);
-        autosize.update($('#compose-textarea'));
+        compose_ui.replace_syntax("[Quoting…]", content, textarea);
+        autosize.update($("#compose-textarea"));
     }
 
     if (message && message.raw_content) {
@@ -427,7 +436,7 @@ exports.quote_and_reply = function (opts) {
     }
 
     channel.get({
-        url: '/json/messages/' + message_id,
+        url: "/json/messages/" + message_id,
         idempotent: true,
         success: function (data) {
             message.raw_content = data.raw_content;
@@ -463,13 +472,13 @@ exports.on_narrow = function (opts) {
     }
 
     if (narrow_state.narrowed_by_pm_reply()) {
-        opts = fill_in_opts_from_current_narrowed_view('private', opts);
+        opts = fill_in_opts_from_current_narrowed_view("private", opts);
         // Do not open compose box if triggered by search and invalid recipient
         // is present.
         if (opts.trigger === "search" && !opts.private_message_recipient) {
             return;
         }
-        exports.start('private');
+        exports.start("private");
         return;
     }
 

@@ -356,7 +356,6 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[3]['email'], 'matt.perry@foreignteam.slack.com')
         self.assertEqual(zerver_userprofile[3]['realm'], 1)
         self.assertEqual(zerver_userprofile[3]['full_name'], 'Matt Perry')
-        self.assertEqual(zerver_userprofile[3]['short_name'], 'matt.perry')
         self.assertEqual(zerver_userprofile[3]['is_mirror_dummy'], True)
         self.assertEqual(zerver_userprofile[3]['is_api_super_user'], False)
 

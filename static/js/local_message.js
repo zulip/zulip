@@ -16,13 +16,12 @@ exports.insert_message = function (message) {
 };
 
 exports.get_next_id_float = (function () {
-
     const already_used = new Set();
 
     return function () {
         const local_id_increment = 0.01;
         let latest = page_params.max_message_id;
-        if (typeof message_list.all !== 'undefined' && message_list.all.last() !== undefined) {
+        if (typeof message_list.all !== "undefined" && message_list.all.last() !== undefined) {
             latest = message_list.all.last().id;
         }
         latest = Math.max(0, latest);
@@ -51,6 +50,6 @@ exports.get_next_id_float = (function () {
 
         return local_id_float;
     };
-}());
+})();
 
 window.local_message = exports;

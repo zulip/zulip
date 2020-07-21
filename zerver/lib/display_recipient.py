@@ -16,7 +16,6 @@ display_recipient_fields = [
     "id",
     "email",
     "full_name",
-    "short_name",
     "is_mirror_dummy",
 ]
 

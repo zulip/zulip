@@ -208,7 +208,6 @@ class MarkdownMiscTest(ZulipTestCase):
                 password='whatever',
                 realm=realm,
                 full_name=full_name,
-                short_name='whatever',
             )
 
         fred1 = make_user('fred1@example.com', 'Fred Flintstone')
@@ -790,21 +789,21 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>{}</p>'.format(make_link('http://www.twitter.com/wdaher/status/999999999999999999')))
 
-        msg = 'Tweet: http://www.twitter.com/wdaher/status/287977969287315456'
+        msg = 'http://www.twitter.com/wdaher/status/287977969287315456'
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p>Tweet: {}</p>\n{}'.format(
+        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('http://www.twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('http://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
-        msg = 'Tweet: https://www.twitter.com/wdaher/status/287977969287315456'
+        msg = 'https://www.twitter.com/wdaher/status/287977969287315456'
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p>Tweet: {}</p>\n{}'.format(
+        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('https://www.twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('https://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
-        msg = 'Tweet: http://twitter.com/wdaher/status/287977969287315456'
+        msg = 'http://twitter.com/wdaher/status/287977969287315456'
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p>Tweet: {}</p>\n{}'.format(
+        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
@@ -839,27 +838,28 @@ class MarkdownTest(ZulipTestCase):
 
         # Test smart in-place inlining behavior:
         msg = ('Paragraph 1: http://twitter.com/wdaher/status/287977969287315456\n\n'
-               'Paragraph 2. Below paragraph will be removed.\n\n'
-               'http://twitter.com/wdaher/status/287977969287315457')
+               'Paragraph 2\n\n'
+               'Paragraph 3: http://twitter.com/wdaher/status/287977969287315457')
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p>Paragraph 1: {}</p>\n{}<p>Paragraph 2. Below paragraph will be removed.</p>\n{}'.format(
+        self.assertEqual(converted, '<p>Paragraph 1: {}</p>\n{}<p>Paragraph 2</p>\n<p>Paragraph 3: {}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html),
+            make_link('http://twitter.com/wdaher/status/287977969287315457'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315457', normal_tweet_html)))
 
         # Tweet has a mention in a URL, only the URL is linked
-        msg = 'Tweet: http://twitter.com/wdaher/status/287977969287315458'
+        msg = 'http://twitter.com/wdaher/status/287977969287315458'
 
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p>Tweet: {}</p>\n{}'.format(
+        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315458'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315458', mention_in_link_tweet_html)))
 
         # Tweet with an image
-        msg = 'Tweet: http://twitter.com/wdaher/status/287977969287315459'
+        msg = 'http://twitter.com/wdaher/status/287977969287315459'
 
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p>Tweet: {}</p>\n{}'.format(
+        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315459'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315459',
                                         media_tweet_html,
@@ -869,9 +869,9 @@ class MarkdownTest(ZulipTestCase):
                                          '</a>'
                                          '</div>'))))
 
-        msg = 'Tweet: http://twitter.com/wdaher/status/287977969287315460'
+        msg = 'http://twitter.com/wdaher/status/287977969287315460'
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p>Tweet: {}</p>\n{}'.format(
+        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315460'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315460', emoji_in_tweet_html)))
 
@@ -1576,7 +1576,6 @@ class MarkdownTest(ZulipTestCase):
                 password='whatever',
                 realm=realm,
                 full_name=full_name,
-                short_name='whatever',
             )
 
         sender_user_profile = self.example_user('othello')
@@ -1622,11 +1621,12 @@ class MarkdownTest(ZulipTestCase):
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
             ' https://trac.example.com/ticket/%(id)s>')
         # Create a user that potentially interferes with the pattern.
-        test_user = create_user(email='atomic@example.com',
-                                password='whatever',
-                                realm=realm,
-                                full_name='Atomic #123',
-                                short_name='whatever')
+        test_user = create_user(
+            email='atomic@example.com',
+            password='whatever',
+            realm=realm,
+            full_name='Atomic #123',
+        )
         content = "@**Atomic #123**"
         self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention" '

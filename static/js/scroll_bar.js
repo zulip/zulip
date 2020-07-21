@@ -33,7 +33,7 @@ function getScrollbarWidth() {
 let sbWidth;
 
 exports.initialize = function () {
-// Workaround for browsers with fixed scrollbars
+    // Workaround for browsers with fixed scrollbars
     sbWidth = getScrollbarWidth();
 
     if (sbWidth > 0) {
@@ -45,17 +45,24 @@ exports.initialize = function () {
         $(".fixed-app .column-middle").css("margin-left", 250 + sbWidth + "px");
 
         $(".column-right").css("right", sbWidth + "px");
-        $(".app-main .right-sidebar").css({"margin-left": sbWidth + "px",
-                                           width: 250 - sbWidth + "px"});
+        $(".app-main .right-sidebar").css({
+            "margin-left": sbWidth + "px",
+            width: 250 - sbWidth + "px",
+        });
 
         $("#compose").css("left", "-" + sbWidth + "px");
-        $(".compose-content").css({left: sbWidth + "px",
-                                   "margin-right": 250 + sbWidth + "px"});
-        $('#keyboard-icon').css({right: sbWidth + 35 + "px"});
+        $(".compose-content").css({left: sbWidth + "px", "margin-right": 250 + sbWidth + "px"});
+        $("#keyboard-icon").css({right: sbWidth + 35 + "px"});
 
-        $("head").append("<style> @media (max-width: 1165px) { .compose-content, .header-main .column-middle { margin-right: " + (7 + sbWidth) + "px !important; } } " +
-                         "@media (max-width: 775px) { .fixed-app .column-middle { margin-left: " + (7 + sbWidth) + "px !important; } } " +
-                         "</style>");
+        $("head").append(
+            "<style> @media (max-width: 1165px) { .compose-content, .header-main .column-middle { margin-right: " +
+                (7 + sbWidth) +
+                "px !important; } } " +
+                "@media (max-width: 775px) { .fixed-app .column-middle { margin-left: " +
+                (7 + sbWidth) +
+                "px !important; } } " +
+                "</style>",
+        );
     }
     exports.set_layout_width();
 };

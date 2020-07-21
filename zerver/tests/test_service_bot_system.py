@@ -25,7 +25,6 @@ class TestServiceBotBasics(ZulipTestCase):
             password="test",
             realm=get_realm("zulip"),
             full_name="BarBot",
-            short_name='bb',
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
             bot_owner=self.example_user('cordelia'),
         )
@@ -170,14 +169,12 @@ class TestServiceBotStateHandler(ZulipTestCase):
                                           password="test",
                                           realm=get_realm("zulip"),
                                           full_name="EmbeddedBo1",
-                                          short_name="embedded-bot-1",
                                           bot_type=UserProfile.EMBEDDED_BOT,
                                           bot_owner=self.user_profile)
         self.second_bot_profile = do_create_user(email="embedded-bot-2@zulip.com",
                                                  password="test",
                                                  realm=get_realm("zulip"),
                                                  full_name="EmbeddedBot2",
-                                                 short_name="embedded-bot-2",
                                                  bot_type=UserProfile.EMBEDDED_BOT,
                                                  bot_owner=self.user_profile)
 
@@ -397,14 +394,12 @@ class TestServiceBotEventTriggers(ZulipTestCase):
                                           password="test",
                                           realm=get_realm("zulip"),
                                           full_name="FooBot",
-                                          short_name="foo-bot",
                                           bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
                                           bot_owner=self.user_profile)
         self.second_bot_profile = do_create_user(email="bar-bot@zulip.com",
                                                  password="test",
                                                  realm=get_realm("zulip"),
                                                  full_name="BarBot",
-                                                 short_name="bar-bot",
                                                  bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
                                                  bot_owner=self.user_profile)
 

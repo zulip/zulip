@@ -74,20 +74,20 @@ exports.status_from_raw = function (raw) {
     */
     if (age(active_timestamp) < OFFLINE_THRESHOLD_SECS) {
         return {
-            status: 'active',
+            status: "active",
             last_active: last_active,
         };
     }
 
     if (age(idle_timestamp) < OFFLINE_THRESHOLD_SECS) {
         return {
-            status: 'idle',
+            status: "idle",
             last_active: last_active,
         };
     }
 
     return {
-        status: 'offline',
+        status: "offline",
         last_active: last_active,
     };
 };
@@ -118,13 +118,13 @@ exports.update_info_from_event = function (user_id, info, server_timestamp) {
     raw.server_timestamp = server_timestamp;
 
     for (const rec of Object.values(info)) {
-        if (rec.status === 'active') {
+        if (rec.status === "active") {
             if (rec.timestamp > (raw.active_timestamp || 0)) {
                 raw.active_timestamp = rec.timestamp;
             }
         }
 
-        if (rec.status === 'idle') {
+        if (rec.status === "idle") {
             if (rec.timestamp > (raw.idle_timestamp || 0)) {
                 raw.idle_timestamp = rec.timestamp;
             }
@@ -178,7 +178,7 @@ exports.set_info = function (presences, server_timestamp) {
             if (!(server_events.suspect_offline || reload_state.is_in_progress())) {
                 // If we're online, and we get a user who we don't
                 // know about in the presence data, throw an error.
-                blueslip.error('Unknown user ID in presence data: ' + user_id);
+                blueslip.error("Unknown user ID in presence data: " + user_id);
             }
             // Either way, we deal by skipping this user and
             // continuing with processing everyone else.

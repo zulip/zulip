@@ -1,7 +1,7 @@
-const render_more_topics = require('../templates/more_topics.hbs');
-const render_more_topics_spinner = require('../templates/more_topics_spinner.hbs');
-const render_topic_list_item = require('../templates/topic_list_item.hbs');
-const topic_list_data = require('./topic_list_data');
+const render_more_topics = require("../templates/more_topics.hbs");
+const render_more_topics_spinner = require("../templates/more_topics_spinner.hbs");
+const render_topic_list_item = require("../templates/topic_list_item.hbs");
+const topic_list_data = require("./topic_list_data");
 
 /*
     Track all active widgets with a Map.
@@ -43,7 +43,7 @@ exports.zoom_out = function () {
     const stream_ids = Array.from(active_widgets.keys());
 
     if (stream_ids.length !== 1) {
-        blueslip.error('Unexpected number of topic lists to zoom out.');
+        blueslip.error("Unexpected number of topic lists to zoom out.");
         return;
     }
 
@@ -59,7 +59,7 @@ exports.keyed_topic_li = (convo) => {
 
     const eq = (other) => _.isEqual(convo, other.convo);
 
-    const key = 't:' + convo.topic_name;
+    const key = "t:" + convo.topic_name;
 
     return {
         key: key,
@@ -70,14 +70,14 @@ exports.keyed_topic_li = (convo) => {
 };
 
 exports.more_li = (more_topics_unreads) => {
-    const render = () => render_more_topics({
-        more_topics_unreads: more_topics_unreads,
-    });
+    const render = () =>
+        render_more_topics({
+            more_topics_unreads: more_topics_unreads,
+        });
 
-    const eq = (other) => other.more_items &&
-            more_topics_unreads === other.more_topics_unreads;
+    const eq = (other) => other.more_items && more_topics_unreads === other.more_topics_unreads;
 
-    const key = 'more';
+    const key = "more";
 
     return {
         key: key,
@@ -93,7 +93,7 @@ exports.spinner_li = () => {
 
     const eq = (other) => other.spinner;
 
-    const key = 'more';
+    const key = "more";
 
     return {
         key: key,
@@ -109,8 +109,7 @@ exports.widget = function (parent_elem, my_stream_id) {
     self.prior_dom = undefined;
 
     self.build_list = function (spinner) {
-        const list_info = topic_list_data.get_list_info(
-            my_stream_id, zoomed);
+        const list_info = topic_list_data.get_list_info(my_stream_id, zoomed);
 
         const num_possible_topics = list_info.num_possible_topics;
         const more_topics_unreads = list_info.more_topics_unreads;
@@ -119,9 +118,7 @@ exports.widget = function (parent_elem, my_stream_id) {
             list_info.items.length === num_possible_topics &&
             stream_topic_history.is_complete_for_stream_id(my_stream_id);
 
-        const attrs = [
-            ['class', 'topic-list'],
-        ];
+        const attrs = [["class", "topic-list"]];
 
         const nodes = list_info.items.map(exports.keyed_topic_li);
 
@@ -148,7 +145,7 @@ exports.widget = function (parent_elem, my_stream_id) {
     };
 
     self.remove = function () {
-        parent_elem.find('.topic-list').remove();
+        parent_elem.find(".topic-list").remove();
         self.prior_dom = undefined;
     };
 
@@ -161,7 +158,7 @@ exports.widget = function (parent_elem, my_stream_id) {
         }
 
         function find() {
-            return parent_elem.find('.topic-list');
+            return parent_elem.find(".topic-list");
         }
 
         vdom.update(replace_content, find, new_dom, self.prior_dom);
@@ -215,7 +212,7 @@ exports.zoom_in = function () {
 
     const stream_id = exports.active_stream_id();
     if (!stream_id) {
-        blueslip.error('Cannot find widget for topic history zooming.');
+        blueslip.error("Cannot find widget for topic history zooming.");
         return;
     }
 
@@ -223,12 +220,12 @@ exports.zoom_in = function () {
 
     function on_success() {
         if (!active_widgets.has(stream_id)) {
-            blueslip.warn('User re-narrowed before topic history was returned.');
+            blueslip.warn("User re-narrowed before topic history was returned.");
             return;
         }
 
         if (!zoomed) {
-            blueslip.warn('User zoomed out before topic history was returned.');
+            blueslip.warn("User zoomed out before topic history was returned.");
             // Note that we could attempt to re-draw the zoomed out topic list
             // here, given that we have more history, but that might be more
             // confusing than helpful to a user who is likely trying to browse
@@ -239,7 +236,7 @@ exports.zoom_in = function () {
         active_widget.build();
     }
 
-    ui.get_scroll_element($('#stream-filters-container')).scrollTop(0);
+    ui.get_scroll_element($("#stream-filters-container")).scrollTop(0);
 
     const spinner = true;
     active_widget.build(spinner);
@@ -248,30 +245,32 @@ exports.zoom_in = function () {
 };
 
 exports.initialize = function () {
-    $('#stream_filters').on('click', '.topic-box', (e) => {
+    $("#stream_filters").on("click", ".topic-box", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
         }
-        if ($(e.target).closest('.show-more-topics').length > 0) {
+        if ($(e.target).closest(".show-more-topics").length > 0) {
             return;
         }
 
         // In a more componentized world, we would delegate some
         // of this stuff back up to our parents.
 
-        const stream_row = $(e.target).parents('.narrow-filter');
-        const stream_id = parseInt(stream_row.attr('data-stream-id'), 10);
+        const stream_row = $(e.target).parents(".narrow-filter");
+        const stream_id = parseInt(stream_row.attr("data-stream-id"), 10);
         const sub = stream_data.get_sub_by_id(stream_id);
-        const topic = $(e.target).parents('li').attr('data-topic-name');
+        const topic = $(e.target).parents("li").attr("data-topic-name");
 
-        narrow.activate([
-            {operator: 'stream', operand: sub.name},
-            {operator: 'topic', operand: topic}],
-                        {trigger: 'sidebar'});
+        narrow.activate(
+            [
+                {operator: "stream", operand: sub.name},
+                {operator: "topic", operand: topic},
+            ],
+            {trigger: "sidebar"},
+        );
 
         e.preventDefault();
     });
 };
-
 
 window.topic_list = exports;

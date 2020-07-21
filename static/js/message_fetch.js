@@ -16,12 +16,15 @@ const consts = {
 function process_result(data, opts) {
     let messages = data.messages;
 
-    if (!$('#connection-error').hasClass('get-events-error')) {
+    if (!$("#connection-error").hasClass("get-events-error")) {
         ui_report.hide_error($("#connection-error"));
     }
 
-    if (messages.length === 0 && current_msg_list === message_list.narrowed &&
-        message_list.narrowed.empty()) {
+    if (
+        messages.length === 0 &&
+        current_msg_list === message_list.narrowed &&
+        message_list.narrowed.empty()
+    ) {
         // Even after trying to load more messages, we have no
         // messages to display in this narrow.
         narrow.show_empty_narrow_message();
@@ -83,21 +86,22 @@ function get_messages_success(data, opts) {
     }
 
     if (opts.num_after > 0) {
-        opts.fetch_again = opts.msg_list.data.fetch_status.finish_newer_batch(
-            data.messages, {
-                update_loading_indicator: update_loading_indicator,
-                found_newest: data.found_newest,
-            });
+        opts.fetch_again = opts.msg_list.data.fetch_status.finish_newer_batch(data.messages, {
+            update_loading_indicator: update_loading_indicator,
+            found_newest: data.found_newest,
+        });
         if (opts.msg_list === home_msg_list) {
             // When we update home_msg_list, we need to also update
             // the fetch_status data structure for message_list.all,
             // which is never rendered (and just used for
             // prepopulating narrowed views).
             opts.fetch_again = message_list.all.data.fetch_status.finish_newer_batch(
-                data.messages, {
+                data.messages,
+                {
                     update_loading_indicator: false,
                     found_newest: data.found_newest,
-                });
+                },
+            );
         }
     }
 
@@ -123,8 +127,8 @@ function get_messages_success(data, opts) {
 // or convert the emails string to user IDs directly into the Filter code
 // because doing so breaks the app in various modules that expect emails string.
 function handle_operators_supporting_id_based_api(data) {
-    const operators_supporting_ids = ['pm-with'];
-    const operators_supporting_id = ['sender', 'group-pm-with', 'stream'];
+    const operators_supporting_ids = ["pm-with"];
+    const operators_supporting_id = ["sender", "group-pm-with", "stream"];
 
     if (data.narrow === undefined) {
         return data;
@@ -137,7 +141,7 @@ function handle_operators_supporting_id_based_api(data) {
         }
 
         if (operators_supporting_id.includes(filter.operator)) {
-            if (filter.operator === 'stream') {
+            if (filter.operator === "stream") {
                 const stream_id = stream_data.get_stream_id(filter.operand);
                 if (stream_id !== undefined) {
                     filter.operand = stream_id;
@@ -168,9 +172,7 @@ exports.load_messages = function (opts) {
         // the nearest integer before sending a request to the server.
         opts.anchor = opts.anchor.toFixed();
     }
-    let data = {anchor: opts.anchor,
-                num_before: opts.num_before,
-                num_after: opts.num_after};
+    let data = {anchor: opts.anchor, num_before: opts.num_before, num_after: opts.num_after};
 
     if (opts.msg_list.narrowed && narrow_state.active()) {
         let operators = narrow_state.public_operators();
@@ -212,7 +214,7 @@ exports.load_messages = function (opts) {
     data = handle_operators_supporting_id_based_api(data);
 
     channel.get({
-        url: '/json/messages',
+        url: "/json/messages",
         data: data,
         idempotent: true,
         success: function (data) {
@@ -238,7 +240,7 @@ exports.load_messages = function (opts) {
             }
 
             // We might want to be more clever here
-            $('#connection-error').addClass("show");
+            $("#connection-error").addClass("show");
             setTimeout(() => {
                 exports.load_messages(opts);
             }, consts.error_retry_time);
@@ -344,7 +346,7 @@ exports.maybe_load_newer_messages = function (opts) {
 
     function load_more(data, args) {
         if (args.fetch_again && args.msg_list === current_msg_list) {
-            exports.maybe_load_newer_messages({ msg_list: current_msg_list });
+            exports.maybe_load_newer_messages({msg_list: current_msg_list});
         }
     }
 
@@ -359,13 +361,15 @@ exports.maybe_load_newer_messages = function (opts) {
 
 exports.start_backfilling_messages = function () {
     // backfill more messages after the user is idle
-    $(document).idle({idle: consts.backfill_idle_time,
-                      onIdle: function () {
-                          exports.do_backfill({
-                              num_before: consts.backfill_batch_size,
-                              msg_list: home_msg_list,
-                          });
-                      }});
+    $(document).idle({
+        idle: consts.backfill_idle_time,
+        onIdle: function () {
+            exports.do_backfill({
+                num_before: consts.backfill_batch_size,
+                msg_list: home_msg_list,
+            });
+        },
+    });
 };
 
 exports.initialize = function () {
@@ -377,9 +381,11 @@ exports.initialize = function () {
             // We fall back to the closest selected id, as the user
             // may have removed a stream from the home view while we
             // were loading data.
-            home_msg_list.select_id(data.anchor,
-                                    {then_scroll: true, use_closest: true,
-                                     target_scroll_offset: page_params.initial_offset});
+            home_msg_list.select_id(data.anchor, {
+                then_scroll: true,
+                use_closest: true,
+                target_scroll_offset: page_params.initial_offset,
+            });
         }
 
         if (data.found_newest) {
@@ -400,7 +406,6 @@ exports.initialize = function () {
             msg_list: home_msg_list,
             cont: load_more,
         });
-
     }
 
     let anchor;

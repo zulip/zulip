@@ -26,15 +26,15 @@ exports.get_user_circle_class = function (user_id) {
     const status = exports.buddy_status(user_id);
 
     switch (status) {
-    case 'active':
-        return 'user_circle_green';
-    case 'idle':
-        return 'user_circle_orange';
-    case 'away_them':
-    case 'away_me':
-        return 'user_circle_empty_line';
-    default:
-        return 'user_circle_empty';
+        case "active":
+            return "user_circle_green";
+        case "idle":
+            return "user_circle_orange";
+        case "away_them":
+        case "away_me":
+            return "user_circle_empty_line";
+        default:
+            return "user_circle_empty";
     }
 };
 
@@ -42,15 +42,15 @@ exports.status_description = function (user_id) {
     const status = exports.buddy_status(user_id);
 
     switch (status) {
-    case 'active':
-        return i18n.t('Active');
-    case 'idle':
-        return i18n.t('Idle');
-    case 'away_them':
-    case 'away_me':
-        return i18n.t('Unavailable');
-    default:
-        return i18n.t('Offline');
+        case "active":
+            return i18n.t("Active");
+        case "idle":
+            return i18n.t("Idle");
+        case "away_them":
+        case "away_me":
+            return i18n.t("Unavailable");
+        default:
+            return i18n.t("Offline");
     }
 };
 
@@ -63,24 +63,24 @@ exports.level = function (user_id) {
     const status = exports.buddy_status(user_id);
 
     switch (status) {
-    case 'active':
-        return 1;
-    case 'idle':
-        return 2;
-    case 'away_them':
-        return 3;
-    default:
-        return 3;
+        case "active":
+            return 1;
+        case "idle":
+            return 2;
+        case "away_them":
+            return 3;
+        default:
+            return 3;
     }
 };
 
 exports.buddy_status = function (user_id) {
     if (user_status.is_away(user_id)) {
         if (people.is_my_user_id(user_id)) {
-            return 'away_me';
+            return "away_me";
         }
 
-        return 'away_them';
+        return "away_them";
     }
 
     // get active/idle/etc.
@@ -99,8 +99,8 @@ exports.compare_function = function (a, b) {
     const person_a = people.get_by_user_id(a);
     const person_b = people.get_by_user_id(b);
 
-    const full_name_a = person_a ? person_a.full_name : '';
-    const full_name_b = person_b ? person_b.full_name : '';
+    const full_name_a = person_a ? person_a.full_name : "";
+    const full_name_b = person_b ? person_b.full_name : "";
 
     return util.strcmp(full_name_a, full_name_b);
 };
@@ -112,7 +112,7 @@ exports.sort_users = function (user_ids) {
 };
 
 function filter_user_ids(user_filter_text, user_ids) {
-    if (user_filter_text === '') {
+    if (user_filter_text === "") {
         return user_ids;
     }
 
@@ -143,10 +143,10 @@ exports.my_user_status = function (user_id) {
     }
 
     if (user_status.is_away(user_id)) {
-        return i18n.t('(unavailable)');
+        return i18n.t("(unavailable)");
     }
 
-    return i18n.t('(you)');
+    return i18n.t("(you)");
 };
 
 exports.user_last_seen_time_status = function (user_id) {
@@ -192,11 +192,11 @@ exports.info_for = function (user_id) {
 };
 
 function get_last_seen(active_status, last_seen) {
-    if (active_status === 'active') {
+    if (active_status === "active") {
         return last_seen;
     }
 
-    const last_seen_text = i18n.t('Last active: __last_seen__', {last_seen: last_seen});
+    const last_seen_text = i18n.t("Last active: __last_seen__", {last_seen: last_seen});
     return last_seen_text;
 }
 
@@ -205,8 +205,8 @@ exports.get_title_data = function (user_ids_string, is_group) {
         // For groups, just return a string with recipient names.
         return {
             first_line: people.get_recipients(user_ids_string),
-            second_line: '',
-            third_line: '',
+            second_line: "",
+            third_line: "",
         };
     }
 
@@ -218,25 +218,21 @@ exports.get_title_data = function (user_ids_string, is_group) {
         const bot_owner = people.get_bot_owner_user(person);
 
         if (bot_owner) {
-            const bot_owner_name = i18n.t(
-                'Owner: __name__',
-                {name: bot_owner.full_name},
-            );
+            const bot_owner_name = i18n.t("Owner: __name__", {name: bot_owner.full_name});
 
             return {
                 first_line: person.full_name,
                 second_line: bot_owner_name,
-                third_line: '',
+                third_line: "",
             };
         }
 
         // Bot does not have an owner.
         return {
             first_line: person.full_name,
-            second_line: '',
-            third_line: '',
+            second_line: "",
+            third_line: "",
         };
-
     }
 
     // For buddy list and individual PMS.  Since is_group=False, it's
@@ -257,7 +253,7 @@ exports.get_title_data = function (user_ids_string, is_group) {
     return {
         first_line: person.full_name,
         second_line: get_last_seen(active_status, last_seen),
-        third_line: '',
+        third_line: "",
     };
 };
 
@@ -310,7 +306,7 @@ function get_user_id_list(user_filter_text) {
         const person = people.get_by_user_id(user_id);
 
         if (!person) {
-            blueslip.warn('Got user_id in presence but not people: ' + user_id);
+            blueslip.warn("Got user_id in presence but not people: " + user_id);
             return false;
         }
 
@@ -334,7 +330,7 @@ exports.get_items_for_users = function (user_ids) {
 };
 
 exports.huddle_fraction_present = function (huddle) {
-    const user_ids = huddle.split(',').map((s) => parseInt(s, 10));
+    const user_ids = huddle.split(",").map((s) => parseInt(s, 10));
 
     let num_present = 0;
 

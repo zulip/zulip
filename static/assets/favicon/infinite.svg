@@ -69,45 +69,18 @@
       </cc:Work>
     </rdf:RDF>
   </metadata>
+  <linearGradient id="a" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#50adff"/>
+    <stop offset="1" stop-color="#7877fc"/>
+  </linearGradient>
+  <g transform="translate(8 8) scale(0.023769201057729446) translate(-386.56 -386.56)">
+    <path d="M688.52 150.67c0 33.91-15.23 64.04-38.44 82.31L424.79 434.17c-4.18 3.59-9.62-2.19-6.61-7.03l82.64-165.46c2.31-4.63-.69-10.33-5.44-10.33H174.86c-49.64 0-90.26-45.31-90.26-100.68 0-55.37 40.62-100.68 90.26-100.68h423.39c49.65 0 90.27 45.31 90.27 100.68zM174.86 723.13h423.39c49.64 0 90.26-45.31 90.26-100.68 0-55.37-40.62-100.68-90.26-100.68H277.73c-4.75 0-7.76-5.7-5.44-10.33l82.64-165.46c3.01-4.83-2.42-10.62-6.61-7.03L123.04 540.14c-23.21 18.27-38.44 48.4-38.44 82.31 0 55.37 40.62 100.68 90.26 100.68z" fill="url(#a)"/>
+  </g>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(-112.53125,-681.00001)">
-    <path
-       sodipodi:type="arc"
-       style="fill:#999999;fill-opacity:0.59633029;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       id="path2985"
-       sodipodi:cx="314.15744"
-       sodipodi:cy="236.15892"
-       sodipodi:rx="81.822357"
-       sodipodi:ry="101.01525"
-       d="m 395.9798,236.15892 a 81.822357,101.01525 0 1 1 -163.64472,0 81.822357,101.01525 0 1 1 163.64472,0 z"
-       transform="matrix(0.02176684,0,0,0.01763114,113.69581,678.66514)" />
-    <path
-       sodipodi:type="star"
-       style="fill:#ff0000;fill-opacity:0.59633029;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       id="path3761"
-       sodipodi:sides="3"
-       sodipodi:cx="165"
-       sodipodi:cy="545.36218"
-       sodipodi:r1="263.86551"
-       sodipodi:r2="131.93274"
-       sodipodi:arg1="0.52359878"
-       sodipodi:arg2="1.5707963"
-       inkscape:flatsided="false"
-       inkscape:rounded="0"
-       inkscape:randomized="0"
-       d="M 393.51423,677.29494 165,677.29492 -63.514235,677.29494 50.742894,479.39582 165,281.49667 279.2571,479.39581 z"
-       inkscape:transform-center-y="-1.5751109"
-       transform="matrix(0.02387745,0,0,0.02387745,116.58065,677.92109)" />
-    <rect
-       style="fill:#b3b3b3;fill-opacity:0.59633029;stroke:#000000;stroke-width:0.02929281;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       id="rect3765"
-       width="12.223951"
-       height="2.8460152"
-       x="114.41927"
-       y="694.10614" />
     <g
        id="g3825"
        transform="matrix(1.7498801,0,0,1.2477417,-86.966217,-171.8859)">

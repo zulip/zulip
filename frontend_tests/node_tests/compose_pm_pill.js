@@ -1,38 +1,38 @@
-set_global('$', global.make_zjquery());
+set_global("$", global.make_zjquery());
 
 const _people = {
     small_avatar_url_for_person: function () {
-        return 'http://example.com/example.png';
+        return "http://example.com/example.png";
     },
 };
 
-set_global('people', _people);
+set_global("people", _people);
 
-zrequire('compose_pm_pill');
-zrequire('input_pill');
-zrequire('user_pill');
+zrequire("compose_pm_pill");
+zrequire("input_pill");
+zrequire("user_pill");
 
 let pills = {
     pill: {},
 };
 
-run_test('pills', () => {
+run_test("pills", () => {
     const othello = {
         user_id: 1,
-        email: 'othello@example.com',
-        full_name: 'Othello',
+        email: "othello@example.com",
+        full_name: "Othello",
     };
 
     const iago = {
-        email: 'iago@zulip.com',
+        email: "iago@zulip.com",
         user_id: 2,
-        full_name: 'Iago',
+        full_name: "Iago",
     };
 
     const hamlet = {
-        email: 'hamlet@example.com',
+        email: "hamlet@example.com",
         user_id: 3,
-        full_name: 'Hamlet',
+        full_name: "Hamlet",
     };
 
     people.get_realm_users = function () {
@@ -72,7 +72,7 @@ run_test('pills', () => {
     let appendValue_called;
     pills.appendValue = function (value) {
         appendValue_called = true;
-        assert.equal(value, 'othello@example.com');
+        assert.equal(value, "othello@example.com");
         this.appendValidatedData(othello);
     };
 
@@ -102,16 +102,16 @@ run_test('pills', () => {
             const item = handler(othello.email, pills.items());
             assert(get_by_email_called);
             assert.equal(item, undefined);
-        }());
+        })();
 
         (function test_success_path() {
             get_by_email_called = false;
             const res = handler(iago.email, pills.items());
             assert(get_by_email_called);
-            assert.equal(typeof res, 'object');
+            assert.equal(typeof res, "object");
             assert.equal(res.user_id, iago.user_id);
             assert.equal(res.display_value, iago.full_name);
-        }());
+        })();
     }
 
     function input_pill_stub(opts) {
@@ -133,18 +133,18 @@ run_test('pills', () => {
     assert.deepEqual(user_ids, [othello.user_id, hamlet.user_id]);
 
     const user_ids_string = compose_pm_pill.get_user_ids_string();
-    assert.equal(user_ids_string, '1,3');
+    assert.equal(user_ids_string, "1,3");
 
     const emails = compose_pm_pill.get_emails();
-    assert.equal(emails, 'othello@example.com,hamlet@example.com');
+    assert.equal(emails, "othello@example.com,hamlet@example.com");
 
     const persons = [othello, iago, hamlet];
     const items = compose_pm_pill.filter_taken_users(persons);
-    assert.deepEqual(items, [{email: 'iago@zulip.com', user_id: 2, full_name: 'Iago'}]);
+    assert.deepEqual(items, [{email: "iago@zulip.com", user_id: 2, full_name: "Iago"}]);
 
     test_create_item(create_item_handler);
 
-    compose_pm_pill.set_from_emails('othello@example.com');
+    compose_pm_pill.set_from_emails("othello@example.com");
     assert(compose_pm_pill.widget);
 
     assert(get_by_user_id_called);
@@ -153,7 +153,7 @@ run_test('pills', () => {
     assert(text_cleared);
 });
 
-run_test('has_unconverted_data', () => {
+run_test("has_unconverted_data", () => {
     compose_pm_pill.widget = {
         is_pending: () => true,
     };
@@ -173,7 +173,7 @@ run_test('has_unconverted_data', () => {
 
     compose_pm_pill.widget = {
         is_pending: () => false,
-        items: () => [{user_id: 99}, {email: 'random@mit.edu'}],
+        items: () => [{user_id: 99}, {email: "random@mit.edu"}],
     };
 
     // One of our items only knows email (as in a bridge-with-zephyr

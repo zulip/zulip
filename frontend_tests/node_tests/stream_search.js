@@ -1,21 +1,21 @@
 // This tests the stream searching functionality which currently
 // lives in stream_list.js.
 
-set_global('$', global.make_zjquery());
-zrequire('stream_list');
+set_global("$", global.make_zjquery());
+zrequire("stream_list");
 
 const noop = () => {};
 
-set_global('resize', {
+set_global("resize", {
     resize_page_components: noop,
     resize_stream_filters_container: noop,
 });
 
-set_global('popovers', {});
-set_global('stream_popover', {});
+set_global("popovers", {});
+set_global("stream_popover", {});
 
 function expand_sidebar() {
-    $('.app-main .column-left').addClass('expanded');
+    $(".app-main .column-left").addClass("expanded");
 }
 
 function make_cursor_helper() {
@@ -23,10 +23,10 @@ function make_cursor_helper() {
 
     stream_list.stream_cursor = {
         reset: () => {
-            events.push('reset');
+            events.push("reset");
         },
         clear: () => {
-            events.push('clear');
+            events.push("clear");
         },
     };
 
@@ -39,11 +39,11 @@ function simulate_search_expanded() {
     // The way we check if the search widget is expanded
     // is kind of awkward.
 
-    $('.stream_search_section.notdisplayed').length = 0;
+    $(".stream_search_section.notdisplayed").length = 0;
 }
 
 function simulate_search_collapsed() {
-    $('.stream_search_section.notdisplayed').length = 1;
+    $(".stream_search_section.notdisplayed").length = 1;
 }
 
 function toggle_filter() {
@@ -54,18 +54,18 @@ function clear_search_input() {
     stream_list.clear_search({stopPropagation: noop});
 }
 
-run_test('basics', () => {
+run_test("basics", () => {
     let cursor_helper;
-    const input = $('.stream-list-filter');
-    const section = $('.stream_search_section');
+    const input = $(".stream-list-filter");
+    const section = $(".stream_search_section");
 
     expand_sidebar();
-    section.addClass('notdisplayed');
+    section.addClass("notdisplayed");
 
     cursor_helper = make_cursor_helper();
 
     function verify_expanded() {
-        assert(!section.hasClass('notdisplayed'));
+        assert(!section.hasClass("notdisplayed"));
         simulate_search_expanded();
     }
 
@@ -80,7 +80,7 @@ run_test('basics', () => {
     }
 
     function verify_collapsed() {
-        assert(section.hasClass('notdisplayed'));
+        assert(section.hasClass("notdisplayed"));
         assert(!input.is_focused());
         assert(!stream_list.searching());
         simulate_search_collapsed();
@@ -101,7 +101,7 @@ run_test('basics', () => {
     verify_expanded();
     verify_focused();
 
-    assert.deepEqual(cursor_helper.events, ['reset']);
+    assert.deepEqual(cursor_helper.events, ["reset"]);
 
     // Collapse the widget.
     cursor_helper = make_cursor_helper();
@@ -109,7 +109,7 @@ run_test('basics', () => {
     toggle_filter();
     verify_collapsed();
 
-    assert.deepEqual(cursor_helper.events, ['clear']);
+    assert.deepEqual(cursor_helper.events, ["clear"]);
 
     // Expand the widget.
     toggle_filter();
@@ -118,14 +118,14 @@ run_test('basics', () => {
 
     (function add_some_text_and_collapse() {
         cursor_helper = make_cursor_helper();
-        input.val('foo');
+        input.val("foo");
         verify_list_updated(() => {
             toggle_filter();
         });
 
         verify_collapsed();
-        assert.deepEqual(cursor_helper.events, ['reset', 'clear']);
-    }());
+        assert.deepEqual(cursor_helper.events, ["reset", "clear"]);
+    })();
 
     // Expand the widget.
     toggle_filter();
@@ -141,7 +141,7 @@ run_test('basics', () => {
     stream_list.initiate_search();
 
     // Clear a non-empty search.
-    input.val('foo');
+    input.val("foo");
     verify_list_updated(() => {
         clear_search_input();
     });
@@ -152,7 +152,7 @@ run_test('basics', () => {
     stream_list.initiate_search();
 
     // Escape a non-empty search.
-    input.val('foo');
+    input.val("foo");
     stream_list.escape_search();
     verify_blurred();
 
@@ -161,27 +161,23 @@ run_test('basics', () => {
     stream_list.initiate_search();
 
     // Escape an empty search.
-    input.val('');
+    input.val("");
     stream_list.escape_search();
     verify_collapsed();
-
 });
 
-run_test('expanding_sidebar', () => {
-    $('.app-main .column-left').removeClass('expanded');
+run_test("expanding_sidebar", () => {
+    $(".app-main .column-left").removeClass("expanded");
 
     const events = [];
     popovers.hide_all = () => {
-        events.push('popovers.hide_all');
+        events.push("popovers.hide_all");
     };
-    stream_popover.show_streamlist_sidebar  = () => {
-        events.push('stream_popover.show_streamlist_sidebar');
+    stream_popover.show_streamlist_sidebar = () => {
+        events.push("stream_popover.show_streamlist_sidebar");
     };
 
     stream_list.initiate_search();
 
-    assert.deepEqual(events, [
-        'popovers.hide_all',
-        'stream_popover.show_streamlist_sidebar',
-    ]);
+    assert.deepEqual(events, ["popovers.hide_all", "stream_popover.show_streamlist_sidebar"]);
 });

@@ -16,12 +16,12 @@ exports.render_now = function (time, today) {
     const start_of_today = set_to_start_of_day(today || new XDate());
     const start_of_other_day = set_to_start_of_day(time.clone());
 
-    let time_str = '';
+    let time_str = "";
     let needs_update = false;
     // render formal time to be used as title attr tooltip
     // "\xa0" is U+00A0 NO-BREAK SPACE.
     // Can't use &nbsp; as that represents the literal string "&nbsp;".
-    const formal_time_str = time.toString('dddd,\xa0MMMM\xa0d,\xa0yyyy');
+    const formal_time_str = time.toString("dddd,\xa0MMMM\xa0d,\xa0yyyy");
 
     // How many days old is 'time'? 0 = today, 1 = yesterday, 7 = a
     // week ago, -1 = tomorrow, etc.
@@ -31,8 +31,7 @@ exports.render_now = function (time, today) {
     // constants.
     const days_old = Math.round(start_of_other_day.diffDays(start_of_today));
 
-    const is_older_year =
-        start_of_today.getFullYear() - start_of_other_day.getFullYear() > 0;
+    const is_older_year = start_of_today.getFullYear() - start_of_other_day.getFullYear() > 0;
 
     if (days_old === 0) {
         time_str = i18n.t("Today");
@@ -60,7 +59,7 @@ exports.render_now = function (time, today) {
 
 // Current date is passed as an argument for unit testing
 exports.last_seen_status_from_date = function (last_active_date, current_date) {
-    if (typeof  current_date === 'undefined') {
+    if (typeof current_date === "undefined") {
         current_date = new XDate();
     }
 
@@ -90,12 +89,14 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
     } else if (days > 90 && days < 365) {
         if (current_date.getFullYear() === last_active_date.getFullYear()) {
             // Online more than 90 days ago, in the same year
-            return i18n.t("__last_active_date__",
-                          {last_active_date: last_active_date.toString("MMM\xa0dd")});
+            return i18n.t("__last_active_date__", {
+                last_active_date: last_active_date.toString("MMM\xa0dd"),
+            });
         }
     }
-    return i18n.t("__last_active_date__",
-                  {last_active_date: last_active_date.toString("MMM\xa0dd,\xa0yyyy")});
+    return i18n.t("__last_active_date__", {
+        last_active_date: last_active_date.toString("MMM\xa0dd,\xa0yyyy"),
+    });
 };
 
 // List of the dates that need to be updated when the day changes.
@@ -132,7 +133,7 @@ function render_date_span(elem, rendered_time, rendered_time_above) {
         return elem;
     }
     elem.append(rendered_time.time_str);
-    return elem.attr('title', rendered_time.formal_time_str);
+    return elem.attr("title", rendered_time.formal_time_str);
 }
 
 // Given an XDate object 'time', return a DOM node that initially
@@ -148,7 +149,7 @@ exports.render_date = function (time, time_above, today) {
     const className = "timerender" + next_timerender_id;
     next_timerender_id += 1;
     const rendered_time = exports.render_now(time, today);
-    let node = $("<span />").attr('class', className);
+    let node = $("<span />").attr("class", className);
     if (time_above !== undefined) {
         const rendered_time_above = exports.render_now(time_above, today);
         node = render_date_span(node, rendered_time, rendered_time_above);
@@ -166,8 +167,8 @@ exports.render_date = function (time, time_above, today) {
 
 // Renders the timestamp returned by the <time:> markdown syntax.
 exports.render_markdown_timestamp = function (time, text) {
-    const hourformat = page_params.twenty_four_hour_time ? 'HH:mm' : 'h:mm A';
-    const timestring = time.format('ddd, MMM D YYYY, ' + hourformat);
+    const hourformat = page_params.twenty_four_hour_time ? "HH:mm" : "h:mm A";
+    const timestring = time.format("ddd, MMM D YYYY, " + hourformat);
     const titlestring = "This time is in your timezone. Original text was '" + text + "'.";
     return {
         text: timestring,
@@ -185,7 +186,7 @@ exports.update_timestamps = function () {
 
         for (const entry of to_process) {
             const className = entry.className;
-            const elements = $('.' + className);
+            const elements = $("." + className);
             // The element might not exist any more (because it
             // was in the zfilt table, or because we added
             // messages above it and re-collapsed).
@@ -241,17 +242,27 @@ exports.get_timestamp_for_flatpickr = (timestring) => {
 
 exports.stringify_time = function (time) {
     if (page_params.twenty_four_hour_time) {
-        return time.toString('HH:mm');
+        return time.toString("HH:mm");
     }
-    return time.toString('h:mm TT');
+    return time.toString("h:mm TT");
 };
 
 // this is for rendering absolute time based off the preferences for twenty-four
 // hour time in the format of "%mmm %d, %h:%m %p".
 exports.absolute_time = (function () {
     const MONTHS = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
     ];
 
     const fmt_time = function (date, H_24) {
@@ -275,7 +286,7 @@ exports.absolute_time = (function () {
     };
 
     return function (timestamp, today) {
-        if (typeof today === 'undefined') {
+        if (typeof today === "undefined") {
             today = new Date();
         }
         const date = new Date(timestamp);
@@ -289,7 +300,7 @@ exports.absolute_time = (function () {
         str += " " + fmt_time(date, H_24);
         return str;
     };
-}());
+})();
 
 exports.get_full_datetime = function (time) {
     // Convert to number of hours ahead/behind UTC.
@@ -298,8 +309,7 @@ exports.get_full_datetime = function (time) {
     const tz_offset = -time.getTimezoneOffset() / 60;
     return {
         date: time.toLocaleDateString(),
-        time: time.toLocaleTimeString() +
-        ' (UTC' + (tz_offset < 0 ? '' : '+') + tz_offset + ')',
+        time: time.toLocaleTimeString() + " (UTC" + (tz_offset < 0 ? "" : "+") + tz_offset + ")",
     };
 };
 
@@ -317,7 +327,7 @@ exports.set_full_datetime = function timerender_set_full_datetime(message, time_
     message.full_date_str = full_datetime.date;
     message.full_time_str = full_datetime.time;
 
-    time_elem.attr('title', message.full_date_str + ' ' + message.full_time_str);
+    time_elem.attr("title", message.full_date_str + " " + message.full_time_str);
 };
 
 window.timerender = exports;

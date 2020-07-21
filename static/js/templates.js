@@ -12,10 +12,12 @@ const util = require("./util");
 // Furthermore, waiting for DOM ready would introduce race conditions with
 // other DOM-ready callbacks that attempt to render templates.
 
-Handlebars.registerHelper('plural', (condition, one, other) => condition === 1 ? one : other);
+Handlebars.registerHelper("plural", (condition, one, other) => (condition === 1 ? one : other));
 
 Handlebars.registerHelper({
-    eq: function (a, b) { return a === b; },
+    eq: function (a, b) {
+        return a === b;
+    },
     and: function (...args) {
         args.pop(); // Handlebars options
         if (args.length === 0) {
@@ -42,7 +44,9 @@ Handlebars.registerHelper({
         }
         return last;
     },
-    not: function (a) { return !a || Handlebars.Utils.isEmpty(a); },
+    not: function (a) {
+        return !a || Handlebars.Utils.isEmpty(a);
+    },
 });
 
 // Note that this i18n caching strategy does not allow us to support
@@ -52,7 +56,7 @@ Handlebars.registerHelper({
 // Jinja2 templating engine, so we don't consider this important.
 const t_cache = new Map();
 
-Handlebars.registerHelper('t', (i18n_key) => {
+Handlebars.registerHelper("t", (i18n_key) => {
     // Marks a string for translation.
     // Example usage:
     //     {{t "some English text"}}
@@ -67,7 +71,7 @@ Handlebars.registerHelper('t', (i18n_key) => {
     return safe_result;
 });
 
-Handlebars.registerHelper('tr', (context, options) => {
+Handlebars.registerHelper("tr", (context, options) => {
     // Marks a block for translation.
     // Example usage 1:
     //     {{#tr context}}
@@ -83,7 +87,15 @@ Handlebars.registerHelper('tr', (context, options) => {
     //     1. `context` is very important. It can be `this` or an
     //        object or key of the current context.
     //     2. Use `__` instead of `{{` and `}}` to declare expressions
-    const result = i18n.t(options.fn(context).trim().split("\n").map((s) => s.trim()).join(" "), context);
+    const result = i18n.t(
+        options
+            .fn(context)
+            .trim()
+            .split("\n")
+            .map((s) => s.trim())
+            .join(" "),
+        context,
+    );
     return new Handlebars.SafeString(result);
 });
 
@@ -92,6 +104,6 @@ Handlebars.registerHelper(
     (content) => new Handlebars.SafeString(util.clean_user_content_links(content)),
 );
 
-Handlebars.registerHelper('numberFormat', (number) => number.toLocaleString());
+Handlebars.registerHelper("numberFormat", (number) => number.toLocaleString());
 
 window.templates = exports;

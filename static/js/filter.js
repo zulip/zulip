@@ -8,7 +8,10 @@ function zephyr_stream_name_match(message, operand) {
     if (m !== null && m[1] !== undefined) {
         base_stream_name = m[1];
     }
-    const related_regexp = new RegExp(/^(un)*/.source + util.escape_regexp(base_stream_name) + /(\.d)*$/.source, 'i');
+    const related_regexp = new RegExp(
+        /^(un)*/.source + util.escape_regexp(base_stream_name) + /(\.d)*$/.source,
+        "i",
+    );
     return related_regexp.test(message.stream);
 }
 
@@ -22,21 +25,29 @@ function zephyr_topic_name_match(message, operand) {
 
     // Additionally, Zephyr users expect the empty instance and
     // instance "personal" to be the same.
-    if (base_topic === ''
-        || base_topic.toLowerCase() === 'personal'
-        || base_topic.toLowerCase() === '(instance "")') {
+    if (
+        base_topic === "" ||
+        base_topic.toLowerCase() === "personal" ||
+        base_topic.toLowerCase() === '(instance "")'
+    ) {
         related_regexp = /^(|personal|\(instance ""\))(\.d)*$/i;
     } else {
-        related_regexp = new RegExp(/^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source, 'i');
+        related_regexp = new RegExp(
+            /^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source,
+            "i",
+        );
     }
 
     return related_regexp.test(message.topic);
 }
 
 function message_in_home(message) {
-    if (message.type === "private" || message.mentioned ||
-        page_params.narrow_stream !== undefined &&
-         message.stream.toLowerCase() === page_params.narrow_stream.toLowerCase()) {
+    if (
+        message.type === "private" ||
+        message.mentioned ||
+        (page_params.narrow_stream !== undefined &&
+            message.stream.toLowerCase() === page_params.narrow_stream.toLowerCase())
+    ) {
         return true;
     }
 
@@ -46,112 +57,111 @@ function message_in_home(message) {
 
 function message_matches_search_term(message, operator, operand) {
     switch (operator) {
-    case 'has':
-        if (operand === 'image') {
-            return message_util.message_has_image(message);
-        } else if (operand === 'link') {
-            return message_util.message_has_link(message);
-        } else if (operand === 'attachment') {
-            return message_util.message_has_attachment(message);
-        }
-        return false; // has:something_else returns false
-    case 'is':
-        if (operand === 'private') {
-            return message.type === 'private';
-        } else if (operand === 'starred') {
-            return message.starred;
-        } else if (operand === 'mentioned') {
-            return message.mentioned;
-        } else if (operand === 'alerted') {
-            return message.alerted;
-        } else if (operand === 'unread') {
-            return unread.message_unread(message);
-        }
-        return true; // is:whatever returns true
+        case "has":
+            if (operand === "image") {
+                return message_util.message_has_image(message);
+            } else if (operand === "link") {
+                return message_util.message_has_link(message);
+            } else if (operand === "attachment") {
+                return message_util.message_has_attachment(message);
+            }
+            return false; // has:something_else returns false
+        case "is":
+            if (operand === "private") {
+                return message.type === "private";
+            } else if (operand === "starred") {
+                return message.starred;
+            } else if (operand === "mentioned") {
+                return message.mentioned;
+            } else if (operand === "alerted") {
+                return message.alerted;
+            } else if (operand === "unread") {
+                return unread.message_unread(message);
+            }
+            return true; // is:whatever returns true
 
-    case 'in':
-        if (operand === 'home') {
-            return message_in_home(message);
-        } else if (operand === 'all') {
+        case "in":
+            if (operand === "home") {
+                return message_in_home(message);
+            } else if (operand === "all") {
+                return true;
+            }
+            return true; // in:whatever returns true
+
+        case "near":
+            // this is all handled server side
             return true;
-        }
-        return true; // in:whatever returns true
 
-    case 'near':
-        // this is all handled server side
-        return true;
+        case "id":
+            return message.id.toString() === operand;
 
-    case 'id':
-        return message.id.toString() === operand;
+        case "stream": {
+            if (message.type !== "stream") {
+                return false;
+            }
 
-    case 'stream': {
-        if (message.type !== 'stream') {
-            return false;
-        }
+            operand = operand.toLowerCase();
+            if (page_params.realm_is_zephyr_mirror_realm) {
+                return zephyr_stream_name_match(message, operand);
+            }
 
-        operand = operand.toLowerCase();
-        if (page_params.realm_is_zephyr_mirror_realm) {
-            return zephyr_stream_name_match(message, operand);
-        }
+            // Try to match by stream_id if have a valid sub for
+            // the operand.
+            const stream_id = stream_data.get_stream_id(operand);
+            if (stream_id) {
+                return message.stream_id === stream_id;
+            }
 
-        // Try to match by stream_id if have a valid sub for
-        // the operand.
-        const stream_id = stream_data.get_stream_id(operand);
-        if (stream_id) {
-            return message.stream_id === stream_id;
-        }
-
-        // We need this fallback logic in case we have a message
-        // loaded for a stream that we are no longer
-        // subscribed to (or that was deleted).
-        return message.stream.toLowerCase() === operand;
-    }
-
-    case 'topic':
-        if (message.type !== 'stream') {
-            return false;
+            // We need this fallback logic in case we have a message
+            // loaded for a stream that we are no longer
+            // subscribed to (or that was deleted).
+            return message.stream.toLowerCase() === operand;
         }
 
-        operand = operand.toLowerCase();
-        if (page_params.realm_is_zephyr_mirror_realm) {
-            return zephyr_topic_name_match(message, operand);
-        }
-        return message.topic.toLowerCase() === operand;
+        case "topic":
+            if (message.type !== "stream") {
+                return false;
+            }
 
+            operand = operand.toLowerCase();
+            if (page_params.realm_is_zephyr_mirror_realm) {
+                return zephyr_topic_name_match(message, operand);
+            }
+            return message.topic.toLowerCase() === operand;
 
-    case 'sender':
-        return people.id_matches_email_operand(message.sender_id, operand);
+        case "sender":
+            return people.id_matches_email_operand(message.sender_id, operand);
 
-    case 'group-pm-with': {
-        const operand_ids = people.pm_with_operand_ids(operand);
-        if (!operand_ids) {
-            return false;
-        }
-        const user_ids = people.group_pm_with_user_ids(message);
-        if (!user_ids) {
-            return false;
-        }
-        return user_ids.includes(operand_ids[0]);
-        // We should also check if the current user is in the recipient list (user_ids) of the
-        // message, but it is implicit by the fact that the current user has access to the message.
-    }
-
-    case 'pm-with': {
-        // TODO: use user_ids, not emails here
-        if (message.type !== 'private') {
-            return false;
-        }
-        const operand_ids = people.pm_with_operand_ids(operand);
-        if (!operand_ids) {
-            return false;
-        }
-        const user_ids = people.pm_with_user_ids(message);
-        if (!user_ids) {
-            return false;
+        case "group-pm-with": {
+            const operand_ids = people.pm_with_operand_ids(operand);
+            if (!operand_ids) {
+                return false;
+            }
+            const user_ids = people.group_pm_with_user_ids(message);
+            if (!user_ids) {
+                return false;
+            }
+            return user_ids.includes(operand_ids[0]);
+            // We should also check if the current user is in the recipient list (user_ids) of the
+            // message, but it is implicit by the fact that the current user has access to the message.
         }
 
-        return _.isEqual(operand_ids, user_ids);
-    }
+        case "pm-with": {
+            // TODO: use user_ids, not emails here
+            if (message.type !== "private") {
+                return false;
+            }
+            const operand_ids = people.pm_with_operand_ids(operand);
+            if (!operand_ids) {
+                return false;
+            }
+            const user_ids = people.pm_with_user_ids(message);
+            if (!user_ids) {
+                return false;
+            }
+
+            return _.isEqual(operand_ids, user_ids);
+        }
     }
 
     return true; // unknown operators return true (effectively ignored)
@@ -163,8 +173,8 @@ function Filter(operators) {
         this._sub = undefined;
     } else {
         this._operators = this.fix_operators(operators);
-        if (this.has_operator('stream')) {
-            this._sub = stream_data.get_sub_by_name(this.operands('stream')[0]);
+        if (this.has_operator("stream")) {
+            this._sub = stream_data.get_sub_by_name(this.operands("stream")[0]);
         }
     }
 }
@@ -172,12 +182,12 @@ function Filter(operators) {
 Filter.canonicalize_operator = function (operator) {
     operator = operator.toLowerCase();
 
-    if (operator === 'from') {
-        return 'sender';
+    if (operator === "from") {
+        return "sender";
     }
 
     if (util.is_topic_synonym(operator)) {
-        return 'topic';
+        return "topic";
     }
     return operator;
 };
@@ -196,36 +206,39 @@ Filter.canonicalize_term = function (opts) {
     operator = Filter.canonicalize_operator(operator);
 
     switch (operator) {
-    case 'has':
-        // images -> image, etc.
-        operand = operand.replace(/s$/, '');
-        break;
+        case "has":
+            // images -> image, etc.
+            operand = operand.replace(/s$/, "");
+            break;
 
-    case 'stream':
-        operand = stream_data.get_name(operand);
-        break;
-    case 'topic':
-        break;
-    case 'sender':
-    case 'pm-with':
-        operand = operand.toString().toLowerCase();
-        if (operand === 'me') {
-            operand = people.my_current_email();
-        }
-        break;
-    case 'group-pm-with':
-        operand = operand.toString().toLowerCase();
-        break;
-    case 'search':
-        // The mac app automatically substitutes regular quotes with curly
-        // quotes when typing in the search bar.  Curly quotes don't trigger our
-        // phrase search behavior, however.  So, we replace all instances of
-        // curly quotes with regular quotes when doing a search.  This is
-        // unlikely to cause any problems and is probably what the user wants.
-        operand = operand.toString().toLowerCase().replace(/[\u201c\u201d]/g, '"');
-        break;
-    default:
-        operand = operand.toString().toLowerCase();
+        case "stream":
+            operand = stream_data.get_name(operand);
+            break;
+        case "topic":
+            break;
+        case "sender":
+        case "pm-with":
+            operand = operand.toString().toLowerCase();
+            if (operand === "me") {
+                operand = people.my_current_email();
+            }
+            break;
+        case "group-pm-with":
+            operand = operand.toString().toLowerCase();
+            break;
+        case "search":
+            // The mac app automatically substitutes regular quotes with curly
+            // quotes when typing in the search bar.  Curly quotes don't trigger our
+            // phrase search behavior, however.  So, we replace all instances of
+            // curly quotes with regular quotes when doing a search.  This is
+            // unlikely to cause any problems and is probably what the user wants.
+            operand = operand
+                .toString()
+                .toLowerCase()
+                .replace(/[\u201c\u201d]/g, '"');
+            break;
+        default:
+            operand = operand.toString().toLowerCase();
     }
 
     // We may want to consider allowing mixed-case operators at some point
@@ -244,23 +257,24 @@ Filter.canonicalize_term = function (opts) {
    narrow in the URL fragment.  There we do use full
    URI encoding to avoid problematic characters. */
 function encodeOperand(operand) {
-    return operand.replace(/%/g, '%25')
-        .replace(/\+/g, '%2B')
-        .replace(/ /g, '+')
-        .replace(/"/g, '%22');
+    return operand
+        .replace(/%/g, "%25")
+        .replace(/\+/g, "%2B")
+        .replace(/ /g, "+")
+        .replace(/"/g, "%22");
 }
 
 function decodeOperand(encoded, operator) {
-    encoded = encoded.replace(/"/g, '');
-    if (['group-pm-with', 'pm-with', 'sender', 'from'].includes(operator) === false) {
-        encoded = encoded.replace(/\+/g, ' ');
+    encoded = encoded.replace(/"/g, "");
+    if (["group-pm-with", "pm-with", "sender", "from"].includes(operator) === false) {
+        encoded = encoded.replace(/\+/g, " ");
     }
     return util.robust_uri_decode(encoded).trim();
 }
 
 // Parse a string into a list of operators (see below).
 Filter.parse = function (str) {
-    const operators   = [];
+    const operators = [];
     const search_term = [];
     let negated;
     let operator;
@@ -276,7 +290,7 @@ Filter.parse = function (str) {
 
     for (const token of matches) {
         let operator;
-        const parts = token.split(':');
+        const parts = token.split(":");
         if (token[0] === '"' || parts.length === 1) {
             // Looks like a normal search term.
             search_term.push(token);
@@ -284,17 +298,17 @@ Filter.parse = function (str) {
             // Looks like an operator.
             negated = false;
             operator = parts.shift();
-            if (operator[0] === '-') {
+            if (operator[0] === "-") {
                 negated = true;
                 operator = operator.slice(1);
             }
-            operand = decodeOperand(parts.join(':'), operator);
+            operand = decodeOperand(parts.join(":"), operator);
 
             // We use Filter.operator_to_prefix() checks if the
             // operator is known.  If it is not known, then we treat
             // it as a search for the given string (which may contain
             // a `:`), not as a search operator.
-            if (Filter.operator_to_prefix(operator, negated) === '') {
+            if (Filter.operator_to_prefix(operator, negated) === "") {
                 // Put it as a search term, to not have duplicate operators
                 search_term.push(token);
                 continue;
@@ -306,8 +320,8 @@ Filter.parse = function (str) {
 
     // NB: Callers of 'parse' can assume that the 'search' operator is last.
     if (search_term.length > 0) {
-        operator = 'search';
-        operand = search_term.join(' ');
+        operator = "search";
+        operand = search_term.join(" ");
         term = {operator: operator, operand: operand, negated: false};
         operators.push(term);
     }
@@ -324,23 +338,20 @@ Filter.parse = function (str) {
 */
 Filter.unparse = function (operators) {
     const parts = operators.map((elem) => {
-
-        if (elem.operator === 'search') {
+        if (elem.operator === "search") {
             // Search terms are the catch-all case.
             // All tokens that don't start with a known operator and
             // a colon are glued together to form a search term.
             return elem.operand;
         }
-        const sign = elem.negated ? '-' : '';
-        if (elem.operator === '') {
+        const sign = elem.negated ? "-" : "";
+        if (elem.operator === "") {
             return elem.operand;
         }
-        return sign + elem.operator + ':' + encodeOperand(elem.operand.toString());
+        return sign + elem.operator + ":" + encodeOperand(elem.operand.toString());
     });
-    return parts.join(' ');
+    return parts.join(" ");
 };
-
-
 
 Filter.prototype = {
     predicate: function () {
@@ -376,19 +387,19 @@ Filter.prototype = {
 
     has_negated_operand: function (operator, operand) {
         return this._operators.some(
-            (elem) => elem.negated && (elem.operator === operator && elem.operand === operand),
+            (elem) => elem.negated && elem.operator === operator && elem.operand === operand,
         );
     },
 
     has_operand: function (operator, operand) {
         return this._operators.some(
-            (elem) => !elem.negated && (elem.operator === operator && elem.operand === operand),
+            (elem) => !elem.negated && elem.operator === operator && elem.operand === operand,
         );
     },
 
     has_operator: function (operator) {
         return this._operators.some((elem) => {
-            if (elem.negated && !['search', 'has'].includes(elem.operator)) {
+            if (elem.negated && !["search", "has"].includes(elem.operator)) {
                 return false;
             }
             return elem.operator === operator;
@@ -396,17 +407,17 @@ Filter.prototype = {
     },
 
     is_search: function () {
-        return this.has_operator('search');
+        return this.has_operator("search");
     },
 
     calc_can_mark_messages_read: function () {
         const term_types = this.sorted_term_types();
 
-        if (_.isEqual(term_types, ['stream', 'topic'])) {
+        if (_.isEqual(term_types, ["stream", "topic"])) {
             return true;
         }
 
-        if (_.isEqual(term_types, ['pm-with'])) {
+        if (_.isEqual(term_types, ["pm-with"])) {
             return true;
         }
 
@@ -415,15 +426,15 @@ Filter.prototype = {
         // that early-exits before the subsequent checks.
         // (in which case, is_common_narrow would also need to be modified)
 
-        if (_.isEqual(term_types, ['stream'])) {
+        if (_.isEqual(term_types, ["stream"])) {
             return true;
         }
 
-        if (_.isEqual(term_types, ['is-private'])) {
+        if (_.isEqual(term_types, ["is-private"])) {
             return true;
         }
 
-        if (_.isEqual(term_types, ['is-mentioned'])) {
+        if (_.isEqual(term_types, ["is-mentioned"])) {
             return true;
         }
 
@@ -432,7 +443,7 @@ Filter.prototype = {
             return true;
         }
 
-        if (term_types.length === 1 && ['in-home', 'in-all'].includes(term_types[0])) {
+        if (term_types.length === 1 && ["in-home", "in-all"].includes(term_types[0])) {
             return true;
         }
 
@@ -469,10 +480,10 @@ Filter.prototype = {
         // (which can_mark_messages_read_does not check as starred messages are always read)
         const term_types = this.sorted_term_types();
 
-        if (_.isEqual(term_types, ['is-starred'])) {
+        if (_.isEqual(term_types, ["is-starred"])) {
             return true;
         }
-        if (_.isEqual(term_types, ['streams-public'])) {
+        if (_.isEqual(term_types, ["streams-public"])) {
             return true;
         }
         return false;
@@ -489,12 +500,17 @@ Filter.prototype = {
         const term_types = this.sorted_term_types();
 
         // this comes first because it has 3 term_types but is not a "complex filter"
-        if (_.isEqual(term_types, ['stream', 'topic', 'search'])) {
+        if (_.isEqual(term_types, ["stream", "topic", "search"])) {
             // if stream does not exist, redirect to All
             if (!this._sub) {
                 return "#";
             }
-            return  '/#narrow/stream/' + stream_data.name_to_slug(this.operands('stream')[0]) + '/topic/' + this.operands('topic')[0];
+            return (
+                "/#narrow/stream/" +
+                stream_data.name_to_slug(this.operands("stream")[0]) +
+                "/topic/" +
+                this.operands("topic")[0]
+            );
         }
 
         // eliminate "complex filters"
@@ -502,29 +518,33 @@ Filter.prototype = {
             return "#"; // redirect to All
         }
 
-        if (term_types[1] === 'search') {
+        if (term_types[1] === "search") {
             switch (term_types[0]) {
-            case 'stream':
-                // if stream does not exist, redirect to All
-                if (!this._sub) {
-                    return "#";
-                }
-                return  '/#narrow/stream/' + stream_data.name_to_slug(this.operands('stream')[0]);
-            case 'is-private':
-                return  '/#narrow/is/private';
-            case 'is-starred':
-                return  '/#narrow/is/starred';
-            case 'is-mentioned':
-                return  '/#narrow/is/mentioned';
-            case 'streams-public':
-                return  '/#narrow/streams/public';
-            case 'pm-with':
-                // join is used to transform the array to a comma separated string
-                return  '/#narrow/pm-with/' + people.emails_to_slug(this.operands('pm-with').join());
+                case "stream":
+                    // if stream does not exist, redirect to All
+                    if (!this._sub) {
+                        return "#";
+                    }
+                    return (
+                        "/#narrow/stream/" + stream_data.name_to_slug(this.operands("stream")[0])
+                    );
+                case "is-private":
+                    return "/#narrow/is/private";
+                case "is-starred":
+                    return "/#narrow/is/starred";
+                case "is-mentioned":
+                    return "/#narrow/is/mentioned";
+                case "streams-public":
+                    return "/#narrow/streams/public";
+                case "pm-with":
+                    // join is used to transform the array to a comma separated string
+                    return (
+                        "/#narrow/pm-with/" + people.emails_to_slug(this.operands("pm-with").join())
+                    );
                 // TODO: It is ambiguous how we want to handle the 'sender' case,
                 // we may remove it in the future based on design decisions
-            case 'sender':
-                return  '/#narrow/sender/' + people.emails_to_slug(this.operands('sender')[0]);
+                case "sender":
+                    return "/#narrow/sender/" + people.emails_to_slug(this.operands("sender")[0]);
             }
         }
 
@@ -535,85 +555,90 @@ Filter.prototype = {
         // We have special icons for the simple narrows available for the via sidebars.
         const term_types = this.sorted_term_types();
         switch (term_types[0]) {
-        case 'in-home':
-        case 'in-all':
-            return 'home';
-        case 'stream':
-            if (!this._sub) {
-                return 'question-circle-o';
-            }
-            if (this._sub.invite_only) {
-                return 'lock';
-            }
-            if (this._sub.is_web_public) {
-                return 'globe';
-            }
-            return 'hashtag';
-        case 'is-private':
-            return 'envelope';
-        case 'is-starred':
-            return 'star';
-        case 'is-mentioned':
-            return 'at';
-        case 'pm-with':
-            return 'envelope';
+            case "in-home":
+            case "in-all":
+                return "home";
+            case "stream":
+                if (!this._sub) {
+                    return "question-circle-o";
+                }
+                if (this._sub.invite_only) {
+                    return "lock";
+                }
+                if (this._sub.is_web_public) {
+                    return "globe";
+                }
+                return "hashtag";
+            case "is-private":
+                return "envelope";
+            case "is-starred":
+                return "star";
+            case "is-mentioned":
+                return "at";
+            case "pm-with":
+                return "envelope";
         }
     },
 
     get_title: function () {
         // Nice explanatory titles for common views.
         const term_types = this.sorted_term_types();
-        if (term_types.length === 3 && _.isEqual(term_types, ['stream', 'topic', 'search']) ||
-            term_types.length === 2 && _.isEqual(term_types, ['stream', 'topic'])) {
+        if (
+            (term_types.length === 3 && _.isEqual(term_types, ["stream", "topic", "search"])) ||
+            (term_types.length === 2 && _.isEqual(term_types, ["stream", "topic"]))
+        ) {
             if (!this._sub) {
-                return i18n.t('Unknown stream');
+                return i18n.t("Unknown stream");
             }
             return this._sub.name;
         }
-        if (term_types.length === 1 || term_types.length === 2 && term_types[1] === 'search') {
+        if (term_types.length === 1 || (term_types.length === 2 && term_types[1] === "search")) {
             switch (term_types[0]) {
-            case 'in-home':
-                return i18n.t('All messages');
-            case 'in-all':
-                return i18n.t('All messages including muted streams');
-            case 'streams-public':
-                return i18n.t('Public stream messages in organization');
-            case 'stream':
-                if (!this._sub) {
-                    return i18n.t('Unknown stream');
-                }
-                return this._sub.name;
-            case 'is-starred':
-                return i18n.t('Starred messages');
-            case 'is-mentioned':
-                return i18n.t('Mentions');
-            case 'is-private':
-                return i18n.t('Private messages');
-            case 'pm-with': {
-                const emails = this.operands('pm-with')[0].split(',');
-                const names = emails.map((email) => {
-                    if (!people.get_by_email(email)) {
-                        return email;
+                case "in-home":
+                    return i18n.t("All messages");
+                case "in-all":
+                    return i18n.t("All messages including muted streams");
+                case "streams-public":
+                    return i18n.t("Public stream messages in organization");
+                case "stream":
+                    if (!this._sub) {
+                        return i18n.t("Unknown stream");
                     }
-                    return people.get_by_email(email).full_name;
-                });
+                    return this._sub.name;
+                case "is-starred":
+                    return i18n.t("Starred messages");
+                case "is-mentioned":
+                    return i18n.t("Mentions");
+                case "is-private":
+                    return i18n.t("Private messages");
+                case "pm-with": {
+                    const emails = this.operands("pm-with")[0].split(",");
+                    const names = emails.map((email) => {
+                        if (!people.get_by_email(email)) {
+                            return email;
+                        }
+                        return people.get_by_email(email).full_name;
+                    });
 
-                // We use join to handle the addition of a comma and space after every name
-                // and also to ensure that we return a string and not an array so that we
-                // can have the same return type as other cases.
-                return names.join(', ');
-            }
+                    // We use join to handle the addition of a comma and space after every name
+                    // and also to ensure that we return a string and not an array so that we
+                    // can have the same return type as other cases.
+                    return names.join(", ");
+                }
             }
         }
     },
 
     allow_use_first_unread_when_narrowing: function () {
-        return this.can_mark_messages_read() || this.has_operator('is');
+        return this.can_mark_messages_read() || this.has_operator("is");
     },
 
     contains_only_private_messages: function () {
-        return this.has_operator("is") && this.operands("is")[0] === "private" ||
-            this.has_operator("pm-with") || this.has_operator("group-pm-with");
+        return (
+            (this.has_operator("is") && this.operands("is")[0] === "private") ||
+            this.has_operator("pm-with") ||
+            this.has_operator("group-pm-with")
+        );
     },
 
     includes_full_stream_history: function () {
@@ -641,7 +666,7 @@ Filter.prototype = {
             return false;
         }
 
-        if (this.has_operator('has') && is_local_echo) {
+        if (this.has_operator("has") && is_local_echo) {
             // The has: operators can be applied locally for messages
             // rendered by the backend; links, attachments, and images
             // are not handled properly by the local echo markdown
@@ -649,8 +674,7 @@ Filter.prototype = {
             return false;
         }
 
-        if (this.has_operator('streams') ||
-            this.has_negated_operand('streams', 'public')) {
+        if (this.has_operator("streams") || this.has_negated_operand("streams", "public")) {
             return false;
         }
 
@@ -665,13 +689,13 @@ Filter.prototype = {
     },
 
     _fix_redundant_is_private: function (terms) {
-        const is_pm_with = (term) => Filter.term_type(term) === 'pm-with';
+        const is_pm_with = (term) => Filter.term_type(term) === "pm-with";
 
         if (!terms.some(is_pm_with)) {
             return terms;
         }
 
-        return terms.filter((term) => Filter.term_type(term) !== 'is-private');
+        return terms.filter((term) => Filter.term_type(term) !== "is-private");
     },
 
     _canonicalize_operators: function (operators_mixed_case) {
@@ -680,7 +704,7 @@ Filter.prototype = {
 
     filter_with_new_params: function (params) {
         const terms = this._operators.map((term) => {
-            const new_term = { ...term };
+            const new_term = {...term};
             if (new_term.operator === params.operator && !new_term.negated) {
                 new_term.operand = params.operand;
             }
@@ -690,7 +714,7 @@ Filter.prototype = {
     },
 
     has_topic: function (stream_name, topic) {
-        return this.has_operand('stream', stream_name) && this.has_operand('topic', topic);
+        return this.has_operand("stream", stream_name) && this.has_operand("topic", topic);
     },
 
     sorted_term_types: function () {
@@ -743,15 +767,15 @@ Filter.prototype = {
     update_email: function (user_id, new_email) {
         for (const term of this._operators) {
             switch (term.operator) {
-            case 'group-pm-with':
-            case 'pm-with':
-            case 'sender':
-            case 'from':
-                term.operand = people.update_email_in_reply_to(
-                    term.operand,
-                    user_id,
-                    new_email,
-                );
+                case "group-pm-with":
+                case "pm-with":
+                case "sender":
+                case "from":
+                    term.operand = people.update_email_in_reply_to(
+                        term.operand,
+                        user_id,
+                        new_email,
+                    );
             }
         }
     },
@@ -761,7 +785,9 @@ Filter.prototype = {
         const operators = this._operators;
 
         if (!this.can_apply_locally()) {
-            return function () { return true; };
+            return function () {
+                return true;
+            };
         }
 
         // FIXME: This is probably pretty slow.
@@ -785,12 +811,12 @@ Filter.term_type = function (term) {
     const operand = term.operand;
     const negated = term.negated;
 
-    let result = negated ? 'not-' : '';
+    let result = negated ? "not-" : "";
 
     result += operator;
 
-    if (['is', 'has', 'in', 'streams'].includes(operator)) {
-        result += '-' + operand;
+    if (["is", "has", "in", "streams"].includes(operator)) {
+        result += "-" + operand;
     }
 
     return result;
@@ -798,15 +824,24 @@ Filter.term_type = function (term) {
 
 Filter.sorted_term_types = function (term_types) {
     const levels = [
-        'in',
-        'streams-public',
-        'stream', 'topic',
-        'pm-with', 'group-pm-with', 'sender',
-        'near', 'id',
-        'is-alerted', 'is-mentioned', 'is-private',
-        'is-starred', 'is-unread',
-        'has-link', 'has-image', 'has-attachment',
-        'search',
+        "in",
+        "streams-public",
+        "stream",
+        "topic",
+        "pm-with",
+        "group-pm-with",
+        "sender",
+        "near",
+        "id",
+        "is-alerted",
+        "is-mentioned",
+        "is-private",
+        "is-starred",
+        "is-unread",
+        "has-link",
+        "has-image",
+        "has-attachment",
+        "search",
     ];
 
     function level(term_type) {
@@ -831,65 +866,65 @@ Filter.sorted_term_types = function (term_types) {
 Filter.operator_to_prefix = function (operator, negated) {
     operator = Filter.canonicalize_operator(operator);
 
-    if (operator === 'search') {
-        return negated ? 'exclude' : 'search for';
+    if (operator === "search") {
+        return negated ? "exclude" : "search for";
     }
 
-    const verb = negated ? 'exclude ' : '';
+    const verb = negated ? "exclude " : "";
 
     switch (operator) {
-    case 'stream':
-        return verb + 'stream';
-    case 'streams':
-        return verb + 'streams';
-    case 'near':
-        return verb + 'messages around';
+        case "stream":
+            return verb + "stream";
+        case "streams":
+            return verb + "streams";
+        case "near":
+            return verb + "messages around";
 
-    // Note: We hack around using this in "describe" below.
-    case 'has':
-        return verb + 'messages with one or more';
+        // Note: We hack around using this in "describe" below.
+        case "has":
+            return verb + "messages with one or more";
 
-    case 'id':
-        return verb + 'message ID';
+        case "id":
+            return verb + "message ID";
 
-    case 'topic':
-        return verb + 'topic';
+        case "topic":
+            return verb + "topic";
 
-    case 'sender':
-        return verb + 'sent by';
+        case "sender":
+            return verb + "sent by";
 
-    case 'pm-with':
-        return verb + 'private messages with';
+        case "pm-with":
+            return verb + "private messages with";
 
-    case 'in':
-        return verb + 'messages in';
+        case "in":
+            return verb + "messages in";
 
-    // Note: We hack around using this in "describe" below.
-    case 'is':
-        return verb + 'messages that are';
+        // Note: We hack around using this in "describe" below.
+        case "is":
+            return verb + "messages that are";
 
-    case 'group-pm-with':
-        return verb + 'group private messages including';
+        case "group-pm-with":
+            return verb + "group private messages including";
     }
-    return '';
+    return "";
 };
 
 function describe_is_operator(operator) {
-    const verb = operator.negated ? 'exclude ' : '';
+    const verb = operator.negated ? "exclude " : "";
     const operand = operator.operand;
-    const operand_list = ['private', 'starred', 'alerted', 'unread'];
+    const operand_list = ["private", "starred", "alerted", "unread"];
     if (operand_list.includes(operand)) {
-        return verb + operand + ' messages';
-    } else if (operand === 'mentioned') {
-        return verb + '@-mentions';
+        return verb + operand + " messages";
+    } else if (operand === "mentioned") {
+        return verb + "@-mentions";
     }
-    return 'invalid ' + operand + ' operand for is operator';
+    return "invalid " + operand + " operand for is operator";
 }
 
 // Convert a list of operators to a human-readable description.
 function describe_unescaped(operators) {
     if (operators.length === 0) {
-        return 'all messages';
+        return "all messages";
     }
 
     let parts = [];
@@ -899,10 +934,10 @@ function describe_unescaped(operators) {
             return term.operator === expected && !term.negated;
         };
 
-        if (is(operators[0], 'stream') && is(operators[1], 'topic')) {
+        if (is(operators[0], "stream") && is(operators[1], "topic")) {
             const stream = operators[0].operand;
             const topic = operators[1].operand;
-            const part = "stream " + stream + ' > ' + topic;
+            const part = "stream " + stream + " > " + topic;
             parts = [part];
             operators = operators.slice(2);
         }
@@ -911,25 +946,31 @@ function describe_unescaped(operators) {
     const more_parts = operators.map((elem) => {
         const operand = elem.operand;
         const canonicalized_operator = Filter.canonicalize_operator(elem.operator);
-        if (canonicalized_operator === 'is') {
+        if (canonicalized_operator === "is") {
             return describe_is_operator(elem);
         }
-        if (canonicalized_operator === 'has') {
+        if (canonicalized_operator === "has") {
             // search_suggestion.get_suggestions takes care that this message will
             // only be shown if the `has` operator is not at the last.
-            const valid_has_operands = ['image', 'images', 'link', 'links', 'attachment', 'attachments'];
+            const valid_has_operands = [
+                "image",
+                "images",
+                "link",
+                "links",
+                "attachment",
+                "attachments",
+            ];
             if (!valid_has_operands.includes(operand)) {
-                return 'invalid ' + operand + ' operand for has operator';
+                return "invalid " + operand + " operand for has operator";
             }
         }
-        const prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator,
-                                                              elem.negated);
-        if (prefix_for_operator !== '') {
-            return prefix_for_operator + ' ' + operand;
+        const prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator, elem.negated);
+        if (prefix_for_operator !== "") {
+            return prefix_for_operator + " " + operand;
         }
         return "unknown operator";
     });
-    return parts.concat(more_parts).join(', ');
+    return parts.concat(more_parts).join(", ");
 }
 
 Filter.describe = function (operators) {

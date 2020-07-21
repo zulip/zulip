@@ -24,7 +24,7 @@ exports.send = function (opts) {
     };
 
     channel.post({
-        url: '/json/zcommand',
+        url: "/json/zcommand",
         data: data,
         success: function (data) {
             if (on_success) {
@@ -32,7 +32,7 @@ exports.send = function (opts) {
             }
         },
         error: function () {
-            exports.tell_user('server did not respond');
+            exports.tell_user("server did not respond");
         },
     });
 };
@@ -40,10 +40,12 @@ exports.send = function (opts) {
 exports.tell_user = function (msg) {
     // This is a bit hacky, but we don't have a super easy API now
     // for just telling users stuff.
-    $('#compose-send-status').removeClass(common.status_classes)
-        .addClass('alert-error')
-        .stop(true).fadeTo(0, 1);
-    $('#compose-error-msg').text(msg);
+    $("#compose-send-status")
+        .removeClass(common.status_classes)
+        .addClass("alert-error")
+        .stop(true)
+        .fadeTo(0, 1);
+    $("#compose-error-msg").text(msg);
 };
 
 exports.enter_day_mode = function () {
@@ -135,10 +137,9 @@ exports.enter_fixed_mode = function () {
 };
 
 exports.process = function (message_content) {
-
     const content = message_content.trim();
 
-    if (content === '/ping') {
+    if (content === "/ping") {
         const start_time = new Date();
 
         exports.send({
@@ -154,30 +155,30 @@ exports.process = function (message_content) {
         return true;
     }
 
-    const day_commands = ['/day', '/light'];
+    const day_commands = ["/day", "/light"];
     if (day_commands.includes(content)) {
         exports.enter_day_mode();
         return true;
     }
 
-    const night_commands = ['/night', '/dark'];
+    const night_commands = ["/night", "/dark"];
     if (night_commands.includes(content)) {
         exports.enter_night_mode();
         return true;
     }
 
-    if (content === '/fluid-width') {
+    if (content === "/fluid-width") {
         exports.enter_fluid_mode();
         return true;
     }
 
-    if (content === '/fixed-width') {
+    if (content === "/fixed-width") {
         exports.enter_fixed_mode();
         return true;
     }
 
-    if (content === '/settings') {
-        hashchange.go_to_location('settings/your-account');
+    if (content === "/settings") {
+        hashchange.go_to_location("settings/your-account");
         return true;
     }
 

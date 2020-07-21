@@ -17,7 +17,7 @@ exports.eq_array = (a, b, eq) => {
 };
 
 exports.ul = (opts) => ({
-    tag_name: 'ul',
+    tag_name: "ul",
     opts: opts,
 });
 
@@ -35,18 +35,20 @@ exports.render_tag = (tag) => {
     */
     const opts = tag.opts;
     const tag_name = tag.tag_name;
-    const attr_str = opts.attrs.map((attr) => ' ' + attr[0] + '="' + _.escape(attr[1]) + '"').join('');
+    const attr_str = opts.attrs
+        .map((attr) => " " + attr[0] + '="' + _.escape(attr[1]) + '"')
+        .join("");
 
-    const start_tag = '<' + tag_name + attr_str + '>';
-    const end_tag = '</' + tag_name + '>';
+    const start_tag = "<" + tag_name + attr_str + ">";
+    const end_tag = "</" + tag_name + ">";
 
     if (opts.keyed_nodes === undefined) {
         blueslip.error("We need keyed_nodes to render innards.");
         return;
     }
 
-    const innards = opts.keyed_nodes.map((node) => node.render()).join('\n');
-    return start_tag + '\n' + innards + '\n' + end_tag;
+    const innards = opts.keyed_nodes.map((node) => node.render()).join("\n");
+    return start_tag + "\n" + innards + "\n" + end_tag;
 };
 
 exports.update = (replace_content, find, new_dom, old_dom) => {
@@ -158,11 +160,7 @@ exports.update = (replace_content, find, new_dom, old_dom) => {
         child_elems.eq(i).replaceWith(rendered_dom);
     }
 
-    exports.update_attrs(
-        find(),
-        new_opts.attrs,
-        old_opts.attrs,
-    );
+    exports.update_attrs(find(), new_opts.attrs, old_opts.attrs);
 };
 
 exports.update_attrs = (elem, new_attrs, old_attrs) => {

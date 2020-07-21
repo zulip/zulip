@@ -136,36 +136,60 @@ exports.private_message_policy_values = {
 };
 
 const time_limit_dropdown_values = new Map([
-    ["any_time", {
-        text: i18n.t("Any time"),
-        seconds: 0,
-    }],
-    ["never", {
-        text: i18n.t("Never"),
-    }],
-    ["upto_two_min", {
-        text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("2 minutes")}),
-        seconds: 2 * 60,
-    }],
-    ["upto_ten_min", {
-        text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("10 minutes")}),
-        seconds: 10 * 60,
-    }],
-    ["upto_one_hour", {
-        text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 hour")}),
-        seconds: 60 * 60,
-    }],
-    ["upto_one_day", {
-        text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 day")}),
-        seconds: 24 * 60 * 60,
-    }],
-    ["upto_one_week", {
-        text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 week")}),
-        seconds: 7 * 24 * 60 * 60,
-    }],
-    ["custom_limit", {
-        text: i18n.t("Up to N minutes after posting"),
-    }],
+    [
+        "any_time",
+        {
+            text: i18n.t("Any time"),
+            seconds: 0,
+        },
+    ],
+    [
+        "never",
+        {
+            text: i18n.t("Never"),
+        },
+    ],
+    [
+        "upto_two_min",
+        {
+            text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("2 minutes")}),
+            seconds: 2 * 60,
+        },
+    ],
+    [
+        "upto_ten_min",
+        {
+            text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("10 minutes")}),
+            seconds: 10 * 60,
+        },
+    ],
+    [
+        "upto_one_hour",
+        {
+            text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 hour")}),
+            seconds: 60 * 60,
+        },
+    ],
+    [
+        "upto_one_day",
+        {
+            text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 day")}),
+            seconds: 24 * 60 * 60,
+        },
+    ],
+    [
+        "upto_one_week",
+        {
+            text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 week")}),
+            seconds: 7 * 24 * 60 * 60,
+        },
+    ],
+    [
+        "custom_limit",
+        {
+            text: i18n.t("Up to N minutes after posting"),
+        },
+    ],
 ]);
 exports.msg_edit_limit_dropdown_values = time_limit_dropdown_values;
 exports.msg_delete_limit_dropdown_values = time_limit_dropdown_values;
@@ -199,10 +223,14 @@ exports.user_role_map = new Map(user_role_array.map((role) => [role.code, role.d
 exports.general_notifications_table_labels = {
     realm: [
         /* An array of notification settings of any category like
-        * `stream_notification_settings` which makes a single row of
-        * "Notification triggers" table should follow this order
-        */
-        "visual", "audio", "mobile", "email", "all_mentions",
+         * `stream_notification_settings` which makes a single row of
+         * "Notification triggers" table should follow this order
+         */
+        "visual",
+        "audio",
+        "mobile",
+        "email",
+        "all_mentions",
     ],
     stream: {
         is_muted: i18n.t("Mute stream"),
@@ -238,13 +266,9 @@ const pm_mention_notification_settings = [
     "enable_offline_email_notifications",
 ];
 
-const desktop_notification_settings = [
-    "pm_content_in_desktop_notifications",
-];
+const desktop_notification_settings = ["pm_content_in_desktop_notifications"];
 
-const mobile_notification_settings = [
-    "enable_online_push_notifications",
-];
+const mobile_notification_settings = ["enable_online_push_notifications"];
 
 const email_notification_settings = [
     "enable_digest_emails",
@@ -253,9 +277,7 @@ const email_notification_settings = [
     "realm_name_in_notifications",
 ];
 
-const presence_notification_settings = [
-    "presence_enabled",
-];
+const presence_notification_settings = ["presence_enabled"];
 
 const other_notification_settings = desktop_notification_settings.concat(
     ["desktop_icon_count_display"],
@@ -275,12 +297,14 @@ exports.all_notifications = () => ({
         {
             label: i18n.t("Streams"),
             notification_settings: settings_notifications.get_notifications_table_row_data(
-                exports.stream_notification_settings),
+                exports.stream_notification_settings,
+            ),
         },
         {
             label: i18n.t("PMs, mentions, and alerts"),
             notification_settings: settings_notifications.get_notifications_table_row_data(
-                pm_mention_notification_settings),
+                pm_mention_notification_settings,
+            ),
         },
     ],
     settings: {

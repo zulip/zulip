@@ -11,8 +11,8 @@ function failed_message_success(message_id) {
 
 function resend_message(message, row) {
     message.content = message.raw_content;
-    const retry_spinner = row.find('.refresh-failed-message');
-    retry_spinner.toggleClass('rotating', true);
+    const retry_spinner = row.find(".refresh-failed-message");
+    retry_spinner.toggleClass("rotating", true);
 
     // Always re-set queue_id if we've gotten a new one
     // since the time when the message object was initially created
@@ -24,7 +24,7 @@ function resend_message(message, row) {
         const message_id = data.id;
         const locally_echoed = true;
 
-        retry_spinner.toggleClass('rotating', false);
+        retry_spinner.toggleClass("rotating", false);
 
         compose.send_message_success(local_id, message_id, locally_echoed);
 
@@ -35,7 +35,7 @@ function resend_message(message, row) {
     function on_error(response) {
         exports.message_send_error(message.id, response);
         setTimeout(() => {
-            retry_spinner.toggleClass('rotating', false);
+            retry_spinner.toggleClass("rotating", false);
         }, 300);
         blueslip.log("Manual resend of message failed");
     }
@@ -45,7 +45,7 @@ function resend_message(message, row) {
 }
 
 exports.build_display_recipient = function (message) {
-    if (message.type === 'stream') {
+    if (message.type === "stream") {
         return message.stream;
     }
 
@@ -111,7 +111,7 @@ exports.insert_local_message = function (message_request, local_id_float) {
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
     // Keep this in sync with changes to compose.create_message_object
-    const message = { ...message_request };
+    const message = {...message_request};
 
     // Locally delivered messages cannot be unread (since we sent them), nor
     // can they alert the user.
@@ -122,7 +122,7 @@ exports.insert_local_message = function (message_request, local_id_float) {
     // NOTE: This will parse synchronously. We're not using the async pipeline
     markdown.apply_markdown(message);
 
-    message.content_type = 'text/html';
+    message.content_type = "text/html";
     message.sender_email = people.my_current_email();
     message.sender_full_name = people.my_full_name();
     message.avatar_url = page_params.avatar_url;
@@ -141,9 +141,8 @@ exports.insert_local_message = function (message_request, local_id_float) {
 };
 
 exports.is_slash_command = function (content) {
-    return !content.startsWith('/me') && content.startsWith('/');
+    return !content.startsWith("/me") && content.startsWith("/");
 };
-
 
 exports.try_deliver_locally = function (message_request) {
     if (markdown.contains_backend_only_syntax(message_request.content)) {
@@ -374,15 +373,18 @@ exports.initialize = function () {
             // otherwise send would not have failed
             const message = waiting_for_ack.get(local_id);
             if (message === undefined) {
-                blueslip.warn("Got resend or retry on failure request but did not find message in ack list " + local_id);
+                blueslip.warn(
+                    "Got resend or retry on failure request but did not find message in ack list " +
+                        local_id,
+                );
                 return;
             }
             callback(message, row);
         });
     }
 
-    on_failed_action('remove', abort_message);
-    on_failed_action('refresh', resend_message);
+    on_failed_action("remove", abort_message);
+    on_failed_action("refresh", resend_message);
 };
 
 window.echo = exports;

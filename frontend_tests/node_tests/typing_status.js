@@ -1,7 +1,7 @@
-zrequire('typing');
-zrequire('people');
-zrequire('compose_pm_pill');
-const typing_status = zrequire('typing_status', 'shared/js/typing_status');
+zrequire("typing");
+zrequire("people");
+zrequire("compose_pm_pill");
+const typing_status = zrequire("typing_status", "shared/js/typing_status");
 
 function make_time(secs) {
     // make times semi-realistic
@@ -9,11 +9,12 @@ function make_time(secs) {
 }
 
 function returns_time(secs) {
-    return function () { return make_time(secs); };
+    return function () {
+        return make_time(secs);
+    };
 }
 
-run_test('basics', () => {
-
+run_test("basics", () => {
     // invalid conversation basically does nothing
     let worker = {};
     typing_status.update(worker, null);
@@ -26,15 +27,15 @@ run_test('basics', () => {
     function set_timeout(f, delay) {
         assert.equal(delay, 5000);
         events.idle_callback = f;
-        return 'idle_timer_stub';
+        return "idle_timer_stub";
     }
 
     function clear_timeout() {
         events.timer_cleared = true;
     }
 
-    global.patch_builtin('setTimeout', set_timeout);
-    global.patch_builtin('clearTimeout', clear_timeout);
+    global.patch_builtin("setTimeout", set_timeout);
+    global.patch_builtin("clearTimeout", clear_timeout);
 
     function notify_server_start(recipient) {
         assert.equal(recipient, "alice");
@@ -68,8 +69,8 @@ run_test('basics', () => {
     call_handler("alice");
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(5 + 10),
-        idle_timer: 'idle_timer_stub',
-        current_recipient: 'alice',
+        idle_timer: "idle_timer_stub",
+        current_recipient: "alice",
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -84,8 +85,8 @@ run_test('basics', () => {
     call_handler("alice");
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(5 + 10),
-        idle_timer: 'idle_timer_stub',
-        current_recipient: 'alice',
+        idle_timer: "idle_timer_stub",
+        current_recipient: "alice",
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -101,8 +102,8 @@ run_test('basics', () => {
     call_handler("alice");
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(18 + 10),
-        idle_timer: 'idle_timer_stub',
-        current_recipient: 'alice',
+        idle_timer: "idle_timer_stub",
+        current_recipient: "alice",
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -146,8 +147,8 @@ run_test('basics', () => {
     call_handler("alice");
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(50 + 10),
-        idle_timer: 'idle_timer_stub',
-        current_recipient: 'alice',
+        idle_timer: "idle_timer_stub",
+        current_recipient: "alice",
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -176,8 +177,8 @@ run_test('basics', () => {
     call_handler("alice");
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(80 + 10),
-        idle_timer: 'idle_timer_stub',
-        current_recipient: 'alice',
+        idle_timer: "idle_timer_stub",
+        current_recipient: "alice",
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -220,8 +221,8 @@ run_test('basics', () => {
     call_handler("alice");
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(170 + 10),
-        idle_timer: 'idle_timer_stub',
-        current_recipient: 'alice',
+        idle_timer: "idle_timer_stub",
+        current_recipient: "alice",
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -242,8 +243,8 @@ run_test('basics', () => {
     call_handler("bob");
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(171 + 10),
-        idle_timer: 'idle_timer_stub',
-        current_recipient: 'bob',
+        idle_timer: "idle_timer_stub",
+        current_recipient: "bob",
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -256,7 +257,7 @@ run_test('basics', () => {
     // test that we correctly detect if worker.get_recipient
     // and typing_status.state.current_recipient are the same
 
-    compose_pm_pill.get_user_ids_string = () => '1,2,3';
+    compose_pm_pill.get_user_ids_string = () => "1,2,3";
     typing_status.state.current_recipient = typing.get_recipient();
 
     const call_count = {
@@ -287,14 +288,14 @@ run_test('basics', () => {
 
     // change in recipient and new_recipient should make us
     // call typing_status.stop_last_notification
-    compose_pm_pill.get_user_ids_string = () => '2,3,4';
+    compose_pm_pill.get_user_ids_string = () => "2,3,4";
     typing_status.update(worker, typing.get_recipient());
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 3);
     assert.deepEqual(call_count.stop_last_notification, 1);
 
     // Stream messages are represented as get_user_ids_string being empty
-    compose_pm_pill.get_user_ids_string = () => '';
+    compose_pm_pill.get_user_ids_string = () => "";
     typing_status.update(worker, typing.get_recipient());
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 3);

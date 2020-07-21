@@ -34,6 +34,8 @@ preparing a new release.
 * Do final updates to `changelog.md`, for any final changes and with
   any revisions from the draft blog post.  (And the date!)
 * Update `ZULIP_VERSION` and `LATEST_RELEASE_VERSION` in `version.py`.
+* For major releases, update `API_FEATURE_LEVEL` to a feature level
+  for the final release, and document a reserved range.
 * Use `build-release-tarball` to generate a final release tarball.
 * Post the release tarball on https://www.zulip.org/dist/releases/ :
   add the file, update the `zulip-server-latest.tar.gz` symlink, and

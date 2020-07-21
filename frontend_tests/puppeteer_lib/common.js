@@ -1,7 +1,7 @@
-const path = require('path');
-const puppeteer = require('puppeteer');
+const path = require("path");
+const puppeteer = require("puppeteer");
 const assert = require("assert").strict;
-const test_credentials = require('../../var/casper/test_credentials.js').test_credentials;
+const test_credentials = require("../../var/casper/test_credentials.js").test_credentials;
 
 class CommonUtils {
     constructor() {
@@ -13,11 +13,8 @@ class CommonUtils {
     async ensure_browser() {
         if (this.browser === null) {
             this.browser = await puppeteer.launch({
-                args: [
-                    '--window-size=1400,1024',
-                    '--no-sandbox', '--disable-setuid-sandbox',
-                ],
-                defaultViewport: { width: 1280, height: 1024 },
+                args: ["--window-size=1400,1024", "--no-sandbox", "--disable-setuid-sandbox"],
+                defaultViewport: {width: 1280, height: 1024},
                 headless: true,
             });
         }
@@ -40,8 +37,8 @@ class CommonUtils {
             this.screenshot_id += 1;
         }
 
-        const root_dir = path.resolve(__dirname, '../../');
-        const screenshot_path = path.join(root_dir, 'var/puppeteer', `${name}.png`);
+        const root_dir = path.resolve(__dirname, "../../");
+        const screenshot_path = path.join(root_dir, "var/puppeteer", `${name}.png`);
         await page.screenshot({
             path: screenshot_path,
         });
@@ -87,8 +84,8 @@ class CommonUtils {
 
     async log_in(page, credentials = null) {
         console.log("Logging in");
-        await page.goto(this.realm_url + 'login/');
-        assert.equal(this.realm_url + 'login/', page.url());
+        await page.goto(this.realm_url + "login/");
+        assert.equal(this.realm_url + "login/", page.url());
         if (credentials === null) {
             credentials = test_credentials.default_user;
         }
@@ -97,21 +94,21 @@ class CommonUtils {
             username: credentials.username,
             password: credentials.password,
         };
-        await this.fill_form(page, '#login_form', params);
+        await this.fill_form(page, "#login_form", params);
 
         // We wait until DOMContentLoaded event is fired to ensure that zulip JavaScript
         // is executed since some of our tests access those through page.evaluate. We use defer
         // tag for script tags that load JavaScript which means that whey will be executed after DOM
         // is parsed but before DOMContentLoaded event is fired.
         await Promise.all([
-            page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
-            page.$eval('#login_form', (form) => form.submit()),
+            page.waitForNavigation({waitUntil: "domcontentloaded"}),
+            page.$eval("#login_form", (form) => form.submit()),
         ]);
     }
 
     async log_out(page) {
         await page.goto(this.realm_url);
-        const menu_selector = '#settings-dropdown';
+        const menu_selector = "#settings-dropdown";
         const logout_selector = 'a[href="#logout"]';
         console.log("Loggin out");
         await page.waitForSelector(menu_selector, {visible: true});
@@ -122,7 +119,7 @@ class CommonUtils {
         // Wait for a email input in login page so we know login
         // page is loaded. Then check that we are at the login url.
         await page.waitForSelector('input[name="username"]');
-        assert(page.url().includes('/login/'));
+        assert(page.url().includes("/login/"));
     }
 
     async ensure_enter_does_not_send(page) {
@@ -134,8 +131,9 @@ class CommonUtils {
     }
 
     async wait_for_fully_processed_message(page, content) {
-        await page.waitFor((content) => {
-            /*
+        await page.waitFor(
+            (content) => {
+                /*
                 The tricky part about making sure that
                 a message has actually been fully processed
                 is that we'll "locally echo" the message
@@ -156,49 +154,52 @@ class CommonUtils {
                     - does it look to have been
                       re-rendered based on server info?
             */
-            const last_msg = current_msg_list.last();
-            if (last_msg === undefined) {
-                return false;
-            }
+                const last_msg = current_msg_list.last();
+                if (last_msg === undefined) {
+                    return false;
+                }
 
-            if (last_msg.raw_content !== content) {
-                return false;
-            }
+                if (last_msg.raw_content !== content) {
+                    return false;
+                }
 
-            if (last_msg.locally_echoed) {
-                return false;
-            }
+                if (last_msg.locally_echoed) {
+                    return false;
+                }
 
-            const row = rows.last_visible();
-            if (rows.id(row) !== last_msg.id) {
-                return false;
-            }
+                const row = rows.last_visible();
+                if (rows.id(row) !== last_msg.id) {
+                    return false;
+                }
 
-            /*
+                /*
                 Make sure the message is completely
                 re-rendered from its original "local echo"
                 version by looking for the star icon.  We
                 don't add the star icon until the server
                 responds.
             */
-            return row.find('.star').length === 1;
-        }, {}, content);
+                return row.find(".star").length === 1;
+            },
+            {},
+            content,
+        );
     }
 
     // Wait for any previous send to finish, then send a message.
     async send_message(page, type, params) {
         // If a message is outside the view, we do not need
         // to wait for it to be processed later.
-        const { outside_view } = params;
+        const {outside_view} = params;
         delete params.outside_view;
 
-        await page.waitForSelector('#compose-textarea');
+        await page.waitForSelector("#compose-textarea");
 
         if (type === "stream") {
-            await page.keyboard.press('KeyC');
+            await page.keyboard.press("KeyC");
         } else if (type === "private") {
             await page.keyboard.press("KeyX");
-            const recipients = params.recipient.split(', ');
+            const recipients = params.recipient.split(", ");
             for (let i = 0; i < recipients.length; i += 1) {
                 await this.set_pm_recipient(page, recipients[i]);
             }
@@ -220,13 +221,15 @@ class CommonUtils {
         await this.fill_form(page, 'form[action^="/json/messages"]', params);
         await this.ensure_enter_does_not_send(page);
         await page.waitForSelector("#compose-send-button", {visible: true});
-        await page.click('#compose-send-button');
+        await page.click("#compose-send-button");
 
         // confirm if compose box is empty.
         const compose_box_element = await page.$("#compose-textarea");
-        const compose_box_content = await page.evaluate((element) => element.textContent,
-                                                        compose_box_element);
-        assert.equal(compose_box_content, '', 'Compose box not empty after message sent');
+        const compose_box_content = await page.evaluate(
+            (element) => element.textContent,
+            compose_box_element,
+        );
+        assert.equal(compose_box_content, "", "Compose box not empty after message sent");
 
         if (!outside_view) {
             await this.wait_for_fully_processed_message(page, params.content);
@@ -241,11 +244,7 @@ class CommonUtils {
     async send_multiple_messages(page, msgs) {
         for (let msg_index = 0; msg_index < msgs.length; msg_index += 1) {
             const msg = msgs[msg_index];
-            await this.send_message(
-                page,
-                msg.stream !== undefined ? 'stream' : 'private',
-                msg,
-            );
+            await this.send_message(page, msg.stream !== undefined ? "stream" : "private", msg);
         }
     }
 
@@ -258,24 +257,24 @@ class CommonUtils {
      *
      * The messages are sorted chronologically.
      */
-    async get_rendered_messages(page, table = 'zhome') {
+    async get_rendered_messages(page, table = "zhome") {
         return await page.evaluate((table) => {
             const data = [];
-            const $recipient_rows = $(`#${table}`).find('.recipient_row');
+            const $recipient_rows = $(`#${table}`).find(".recipient_row");
             $.map($recipient_rows, (element) => {
                 const $el = $(element);
-                const stream_name = $el.find('.stream_label').text().trim();
-                const topic_name = $el.find('.stream_topic a').text().trim();
+                const stream_name = $el.find(".stream_label").text().trim();
+                const topic_name = $el.find(".stream_topic a").text().trim();
 
                 let key = stream_name;
-                if (topic_name !== '') {
+                if (topic_name !== "") {
                     // If topic_name is '' then this is PMs, so only
                     // append > topic_name if we are not in PMs or Group PMs.
                     key = `${stream_name} > ${topic_name}`;
                 }
 
                 const messages = [];
-                $.map($el.find('.message_row .message_content'), (message_row) => {
+                $.map($el.find(".message_row .message_content"), (message_row) => {
                     messages.push(message_row.innerText.trim());
                 });
 
@@ -292,7 +291,7 @@ class CommonUtils {
     // The method will only check that all the messages in the
     // messages array passed exist in the order they are passed.
     async check_messages_sent(page, table, messages) {
-        await page.waitForSelector('#' + table);
+        await page.waitForSelector("#" + table);
         const rendered_messages = await this.get_rendered_messages(page, table);
 
         // We only check the last n messages because if we run

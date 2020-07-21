@@ -6,9 +6,9 @@ import twitter_css from "!style-loader?injectType=lazyStyleTag!css-loader!../gen
 import twitter_sheet from "emoji-datasource-twitter/img/twitter/sheets-256/64.png";
 
 const emojisets = new Map([
-    ["google", { css: google_css, sheet: google_sheet }],
-    ["google-blob", { css: google_blob_css, sheet: google_blob_sheet }],
-    ["twitter", { css: twitter_css, sheet: twitter_sheet }],
+    ["google", {css: google_css, sheet: google_sheet}],
+    ["google-blob", {css: google_blob_css, sheet: google_blob_sheet}],
+    ["twitter", {css: twitter_css, sheet: twitter_sheet}],
 ]);
 
 // For `text` emojiset we fallback to `google-blob` emojiset
@@ -44,5 +44,5 @@ export function initialize() {
     //
     // TODO: We should probably just make this work just like the Zulip emoji.
     const octopus_image = new Image();
-    octopus_image.src = '/static/generated/emoji/images-google-64/1f419.png';
+    octopus_image.src = "/static/generated/emoji/images-google-64/1f419.png";
 }

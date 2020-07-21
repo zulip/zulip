@@ -3,7 +3,7 @@ from typing import Iterable, Optional, Tuple
 from django.conf import settings
 
 from zerver.lib.bulk_create import bulk_create_users
-from zerver.models import Realm, UserProfile, email_to_username, get_client, get_system_bot
+from zerver.models import Realm, UserProfile, get_client, get_system_bot
 
 
 def server_initialized() -> bool:
@@ -41,6 +41,5 @@ def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
                  bot_owner: Optional[UserProfile]=None) -> None:
     user_set = set()
     for full_name, email in name_list:
-        short_name = email_to_username(email)
-        user_set.add((email, full_name, short_name, True))
+        user_set.add((email, full_name, True))
     bulk_create_users(realm, user_set, bot_type=bot_type, bot_owner=bot_owner, tos_version=tos_version)

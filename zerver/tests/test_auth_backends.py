@@ -3403,7 +3403,7 @@ class TestTwoFactor(ZulipTestCase):
 
         # Setup LDAP
         self.init_default_ldap_database()
-        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'cn'}
         with self.settings(
                 AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',),
                 TWO_FACTOR_CALL_GATEWAY='two_factor.gateways.fake.Fake',
@@ -4204,9 +4204,9 @@ class TestLDAP(ZulipLDAPTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_get_or_build_user_when_user_does_not_exist(self) -> None:
         class _LDAPUser:
-            attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
+            attrs = {'fn': ['Full Name']}
 
-        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'fn'}
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             backend = self.backend
@@ -4219,9 +4219,9 @@ class TestLDAP(ZulipLDAPTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_get_or_build_user_when_user_has_invalid_name(self) -> None:
         class _LDAPUser:
-            attrs = {'fn': ['<invalid name>'], 'sn': ['Short Name']}
+            attrs = {'fn': ['<invalid name>']}
 
-        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'fn'}
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             backend = self.backend
@@ -4232,9 +4232,9 @@ class TestLDAP(ZulipLDAPTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_get_or_build_user_when_realm_is_deactivated(self) -> None:
         class _LDAPUser:
-            attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
+            attrs = {'fn': ['Full Name']}
 
-        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'fn'}
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             backend = self.backend
@@ -4305,7 +4305,7 @@ class TestLDAP(ZulipLDAPTestCase):
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success_with_different_subdomain(self) -> None:
-        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'cn'}
 
         Realm.objects.create(string_id='acme')
         with self.settings(
@@ -4491,7 +4491,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             None,
             test_realm,
             hamlet.full_name,
-            hamlet.short_name)
+        )
 
         self.change_ldap_user_attr('hamlet', 'cn', 'Second Hamlet')
         expected_call_args = [hamlet2, 'Second Hamlet', None]
@@ -4695,30 +4695,26 @@ class TestQueryLDAP(ZulipLDAPTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_normal_query(self) -> None:
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
-                                                    'short_name': 'sn',
                                                     'avatar': 'jpegPhoto',
                                                     'custom_profile_field__birthday': 'birthDate',
                                                     'custom_profile_field__phone_number': 'nonExistentAttr',
                                                     }):
             values = query_ldap(self.example_email('hamlet'))
-        self.assertEqual(len(values), 5)
+        self.assertEqual(len(values), 4)
         self.assertIn('full_name: King Hamlet', values)
-        self.assertIn('short_name: Hamlet', values)
         self.assertIn('avatar: (An avatar image file)', values)
         self.assertIn('custom_profile_field__birthday: 1900-09-08', values)
         self.assertIn('custom_profile_field__phone_number: LDAP field not present', values)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_query_email_attr(self) -> None:
-        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
-                                                    'short_name': 'sn'},
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn'},
                            LDAP_EMAIL_ATTR='mail'):
             # This will look up the user by email in our test dictionary,
             # should successfully find hamlet's ldap entry.
             values = query_ldap(self.example_email('hamlet'))
-        self.assertEqual(len(values), 3)
+        self.assertEqual(len(values), 2)
         self.assertIn('full_name: King Hamlet', values)
-        self.assertIn('short_name: Hamlet', values)
         self.assertIn('email: hamlet@zulip.com', values)
 
 class TestZulipAuthMixin(ZulipTestCase):

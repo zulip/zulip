@@ -1,52 +1,52 @@
-set_global('$', global.make_zjquery());
-set_global('document', 'document-stub');
+set_global("$", global.make_zjquery());
+set_global("document", "document-stub");
 
-zrequire('message_fetch');
+zrequire("message_fetch");
 
 const noop = () => {};
 
 function MessageListView() {
     return {};
 }
-set_global('MessageListView', MessageListView);
+set_global("MessageListView", MessageListView);
 
-zrequire('FetchStatus', 'js/fetch_status');
-zrequire('Filter', 'js/filter');
-zrequire('MessageListData', 'js/message_list_data');
-zrequire('message_list');
-zrequire('people');
+zrequire("FetchStatus", "js/fetch_status");
+zrequire("Filter", "js/filter");
+zrequire("MessageListData", "js/message_list_data");
+zrequire("message_list");
+zrequire("people");
 
-set_global('recent_topics', {
+set_global("recent_topics", {
     process_messages: noop,
 });
 // Still required for page_params.initial_pointer
-set_global('page_params', {});
-set_global('ui_report', {
+set_global("page_params", {});
+set_global("ui_report", {
     hide_error: noop,
 });
 
-set_global('channel', {});
-set_global('document', 'document-stub');
-set_global('message_scroll', {
+set_global("channel", {});
+set_global("document", "document-stub");
+set_global("message_scroll", {
     show_loading_older: noop,
     hide_loading_older: noop,
     show_loading_newer: noop,
     hide_loading_newer: noop,
     update_top_of_narrow_notices: () => {},
 });
-set_global('message_util', {});
-set_global('message_store', {});
-set_global('narrow_state', {});
-set_global('pm_list', {});
-set_global('server_events', {});
-set_global('stream_list', {
+set_global("message_util", {});
+set_global("message_store", {});
+set_global("narrow_state", {});
+set_global("pm_list", {});
+set_global("server_events", {});
+set_global("stream_list", {
     maybe_scroll_narrow_into_view: () => {},
 });
 
 const alice = {
-    email: 'alice@example.com',
+    email: "alice@example.com",
     user_id: 7,
-    full_name: 'Alice',
+    full_name: "Alice",
 };
 people.add_active_user(alice);
 
@@ -59,7 +59,7 @@ function stub_message_view(list) {
 }
 
 function make_home_msg_list() {
-    const table_name = 'whatever';
+    const table_name = "whatever";
     const filter = new Filter();
 
     const list = new message_list.MessageList({
@@ -74,8 +74,8 @@ function make_all_list() {
 }
 
 function reset_lists() {
-    set_global('home_msg_list', make_home_msg_list());
-    set_global('current_msg_list', home_msg_list);
+    set_global("home_msg_list", make_home_msg_list());
+    set_global("current_msg_list", home_msg_list);
     message_list.all = make_all_list();
     stub_message_view(home_msg_list);
     stub_message_view(message_list.all);
@@ -92,7 +92,7 @@ function config_fake_channel(conf) {
         if (!conf.can_call_again) {
             assert(self.success === undefined);
         }
-        assert.equal(opts.url, '/json/messages');
+        assert.equal(opts.url, "/json/messages");
         assert.deepEqual(opts.data, conf.expected_opts_data);
         self.success = opts.success;
         called = true;
@@ -141,7 +141,7 @@ function message_range(start, end) {
 const initialize_data = {
     initial_fetch: {
         req: {
-            anchor: 'first_unread',
+            anchor: "first_unread",
             num_before: 200,
             num_after: 200,
             client_gravatar: true,
@@ -155,7 +155,7 @@ const initialize_data = {
 
     forward_fill: {
         req: {
-            anchor: '800',
+            anchor: "800",
             num_before: 0,
             num_after: 1000,
             client_gravatar: true,
@@ -168,7 +168,7 @@ const initialize_data = {
 
     back_fill: {
         req: {
-            anchor: '201',
+            anchor: "201",
             num_before: 1000,
             num_after: 0,
             client_gravatar: true,
@@ -228,7 +228,7 @@ function forward_fill_step() {
         const response = initialize_data.forward_fill.resp;
 
         let idle_config;
-        $('document-stub').idle = function (config) {
+        $("document-stub").idle = function (config) {
             idle_config = config;
         };
 
@@ -260,7 +260,7 @@ function test_backfill_idle(idle_config) {
     });
 }
 
-run_test('initialize', () => {
+run_test("initialize", () => {
     reset_lists();
 
     const step1 = initial_fetch_step();
@@ -282,21 +282,23 @@ function simulate_narrow() {
         predicate: () => () => false,
     };
 
-    narrow_state.active = function () { return true; };
+    narrow_state.active = function () {
+        return true;
+    };
     narrow_state.public_operators = function () {
-        return [{ operator: 'pm-with', operand: alice.email }];
+        return [{operator: "pm-with", operand: alice.email}];
     };
 
     const msg_list = new message_list.MessageList({
-        table_name: 'zfilt',
+        table_name: "zfilt",
         filter: filter,
     });
-    set_global('current_msg_list', msg_list);
+    set_global("current_msg_list", msg_list);
 
     return msg_list;
 }
 
-run_test('loading_newer', () => {
+run_test("loading_newer", () => {
     function test_dup_new_fetch(msg_list) {
         assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), false);
         message_fetch.maybe_load_newer_messages({
@@ -350,7 +352,7 @@ run_test('loading_newer', () => {
 
         const data = {
             req: {
-                anchor: '444',
+                anchor: "444",
                 num_before: 0,
                 num_after: 100,
                 narrow: `[{"operator":"pm-with","operand":[${alice.user_id}]}]`,
@@ -398,7 +400,7 @@ run_test('loading_newer', () => {
         // since the last message event's data had been discarded.
         // This fetch goes on until the newest message has been found.
         assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), false);
-    }());
+    })();
 
     (function test_home() {
         reset_lists();
@@ -407,7 +409,7 @@ run_test('loading_newer', () => {
         const data = [
             {
                 req: {
-                    anchor: '444',
+                    anchor: "444",
                     num_before: 0,
                     num_after: 100,
                     client_gravatar: true,
@@ -419,7 +421,7 @@ run_test('loading_newer', () => {
             },
             {
                 req: {
-                    anchor: '599',
+                    anchor: "599",
                     num_before: 0,
                     num_after: 100,
                     client_gravatar: true,
@@ -454,7 +456,5 @@ run_test('loading_newer', () => {
         });
 
         assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), false);
-
-    }());
-
+    })();
 });

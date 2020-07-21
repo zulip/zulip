@@ -10,7 +10,6 @@ This library implements two related, similar concepts:
 
 */
 
-
 const _message_content_height_cache = new Map();
 
 function show_more_link(row) {
@@ -221,7 +220,7 @@ exports.condense_and_collapse = function (elems) {
             // By default, condense a long message.
             condense_row($(elem));
         } else {
-            content.removeClass('condensed');
+            content.removeClass("condensed");
             $(elem).find(".message_expander").hide();
         }
 

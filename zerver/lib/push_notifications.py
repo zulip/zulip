@@ -770,7 +770,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
             # If the cause is a race with the message being deleted,
             # that's normal and we have no need to log an error.
             return
-        logging.error(
+        logging.info(
             "Unexpected message access failure handling push notifications: %s %s",
             user_profile.id, missed_message['message_id'],
         )

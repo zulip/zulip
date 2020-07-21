@@ -9,23 +9,23 @@ exports.bytes_to_size = function (bytes, kb_with_1024_bytes) {
         kb_with_1024_bytes = false;
     }
     const kb_size = kb_with_1024_bytes ? 1024 : 1000;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const sizes = ["B", "KB", "MB", "GB", "TB"];
     if (bytes === 0) {
-        return '0 B';
+        return "0 B";
     }
     const i = parseInt(Math.floor(Math.log(bytes) / Math.log(kb_size)), 10);
     let size = Math.round(bytes / Math.pow(kb_size, i));
     if (i > 0 && size < 10) {
-        size = Math.round(bytes / Math.pow(kb_size, i) * 10) / 10;
+        size = Math.round((bytes / Math.pow(kb_size, i)) * 10) / 10;
     }
-    return size + ' ' + sizes[i];
+    return size + " " + sizes[i];
 };
 
 exports.percentage_used_space = function (uploads_size) {
     if (page_params.realm_upload_quota === null) {
         return null;
     }
-    return (100 * uploads_size / page_params.realm_upload_quota).toFixed(1);
+    return ((100 * uploads_size) / page_params.realm_upload_quota).toFixed(1);
 };
 
 function set_upload_space_stats() {
@@ -42,9 +42,9 @@ function set_upload_space_stats() {
 }
 
 function delete_attachments(attachment) {
-    const status = $('#delete-upload-status');
+    const status = $("#delete-upload-status");
     channel.del({
-        url: '/json/attachments/' + attachment,
+        url: "/json/attachments/" + attachment,
         idempotent: true,
         error: function (xhr) {
             ui_report.error(i18n.t("Failed"), xhr, status);
@@ -59,8 +59,12 @@ function sort_mentioned_in(a, b) {
     const a_m = a.messages[0];
     const b_m = b.messages[0];
 
-    if (!a_m) { return 1; }
-    if (!b_m) { return -1; }
+    if (!a_m) {
+        return 1;
+    }
+    if (!b_m) {
+        return -1;
+    }
 
     if (a_m.id > b_m.id) {
         return 1;
@@ -80,7 +84,7 @@ function render_attachments_ui() {
     list_render.create(uploaded_files_table, attachments, {
         name: "uploaded-files-list",
         modifier: function (attachment) {
-            return render_uploaded_files_list({ attachment: attachment });
+            return render_uploaded_files_list({attachment: attachment});
         },
         filter: {
             element: $search_input,
@@ -91,12 +95,12 @@ function render_attachments_ui() {
                 ui.reset_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
             },
         },
-        parent_container: $('#attachments-settings').expectOne(),
-        init_sort: ['numeric', 'create_time'],
+        parent_container: $("#attachments-settings").expectOne(),
+        init_sort: ["numeric", "create_time"],
         sort_fields: {
             mentioned_in: sort_mentioned_in,
         },
-        simplebar_container: $('#attachments-settings .progressive-table-wrapper'),
+        simplebar_container: $("#attachments-settings .progressive-table-wrapper"),
     });
 
     ui.reset_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
@@ -115,10 +119,10 @@ exports.update_attachments = function (event) {
         // If we haven't fetched attachment data yet, there's nothing to do.
         return;
     }
-    if (event.op === 'remove' || event.op === 'update') {
+    if (event.op === "remove" || event.op === "update") {
         attachments = attachments.filter((a) => a.id !== event.attachment.id);
     }
-    if (event.op === 'add' || event.op === 'update') {
+    if (event.op === "add" || event.op === "update") {
         format_attachment_data([event.attachment]);
         attachments.push(event.attachment);
     }
@@ -131,25 +135,25 @@ exports.update_attachments = function (event) {
 exports.set_up_attachments = function () {
     // The settings page must be rendered before this function gets called.
 
-    const status = $('#delete-upload-status');
-    loading.make_indicator($('#attachments_loading_indicator'), {text: 'Loading...'});
+    const status = $("#delete-upload-status");
+    loading.make_indicator($("#attachments_loading_indicator"), {text: "Loading..."});
 
-    $('#uploaded_files_table').on('click', '.remove-attachment', (e) => {
-        delete_attachments($(e.target).closest(".uploaded_file_row").attr('data-attachment-id'));
+    $("#uploaded_files_table").on("click", ".remove-attachment", (e) => {
+        delete_attachments($(e.target).closest(".uploaded_file_row").attr("data-attachment-id"));
     });
 
     channel.get({
         url: "/json/attachments",
         idempotent: true,
         success: function (data) {
-            loading.destroy_indicator($('#attachments_loading_indicator'));
+            loading.destroy_indicator($("#attachments_loading_indicator"));
             format_attachment_data(data.attachments);
             attachments = data.attachments;
             upload_space_used = data.upload_space_used;
             render_attachments_ui();
         },
         error: function (xhr) {
-            loading.destroy_indicator($('#attachments_loading_indicator'));
+            loading.destroy_indicator($("#attachments_loading_indicator"));
             ui_report.error(i18n.t("Failed"), xhr, status);
         },
     });

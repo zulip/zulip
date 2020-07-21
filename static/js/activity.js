@@ -25,12 +25,12 @@ exports.client_is_active = document.hasFocus && document.hasFocus();
 exports.new_user_input = true;
 
 function update_pm_count_in_dom(count_span, value_span, count) {
-    const li = count_span.parents('li');
+    const li = count_span.parents("li");
 
     if (count === 0) {
         count_span.hide();
         li.removeClass("user-with-count");
-        value_span.text('');
+        value_span.text("");
         return;
     }
 
@@ -46,8 +46,8 @@ function get_pm_list_item(user_id) {
 }
 
 function set_pm_count(user_ids_string, count) {
-    const count_span = get_pm_list_item(user_ids_string).find('.count');
-    const value_span = count_span.find('.value');
+    const count_span = get_pm_list_item(user_ids_string).find(".count");
+    const value_span = count_span.find(".value");
     update_pm_count_in_dom(count_span, value_span, count);
 }
 
@@ -57,7 +57,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 
     for (const [user_ids_string, count] of counts.pm_count) {
         // TODO: just use user_ids_string in our markup
-        const is_pm = !user_ids_string.includes(',');
+        const is_pm = !user_ids_string.includes(",");
         if (is_pm) {
             set_pm_count(user_ids_string, count);
         }
@@ -103,7 +103,7 @@ exports.build_user_sidebar = function () {
 
     const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
-    const finish = blueslip.start_timing('buddy_list.populate');
+    const finish = blueslip.start_timing("buddy_list.populate");
     buddy_list.populate({
         keys: user_ids,
     });
@@ -134,8 +134,10 @@ exports.compute_active_status = function () {
     //
     // The check for `get_idle_on_system === undefined` is feature
     // detection; older desktop app releases never set that property.
-    if (window.electron_bridge !== undefined
-            && window.electron_bridge.get_idle_on_system !== undefined) {
+    if (
+        window.electron_bridge !== undefined &&
+        window.electron_bridge.get_idle_on_system !== undefined
+    ) {
         if (window.electron_bridge.get_idle_on_system()) {
             return exports.IDLE;
         }
@@ -168,7 +170,7 @@ function send_presence_to_server(want_redraw) {
     server_events.check_for_unsuspend();
 
     channel.post({
-        url: '/json/users/me/presence',
+        url: "/json/users/me/presence",
         data: {
             status: exports.compute_active_status(),
             ping_only: !want_redraw,
@@ -179,9 +181,9 @@ function send_presence_to_server(want_redraw) {
         success: function (data) {
             // Update Zephyr mirror activity warning
             if (data.zephyr_mirror_active === false) {
-                $('#zephyr-mirror-error').addClass("show");
+                $("#zephyr-mirror-error").addClass("show");
             } else {
-                $('#zephyr-mirror-error').removeClass("show");
+                $("#zephyr-mirror-error").removeClass("show");
             }
 
             exports.new_user_input = false;
@@ -207,10 +209,12 @@ exports.initialize = function () {
     });
 
     $(window).focus(mark_client_active);
-    $(window).idle({idle: DEFAULT_IDLE_TIMEOUT_MS,
-                    onIdle: mark_client_idle,
-                    onActive: mark_client_active,
-                    keepTracking: true});
+    $(window).idle({
+        idle: DEFAULT_IDLE_TIMEOUT_MS,
+        onIdle: mark_client_idle,
+        onActive: mark_client_active,
+        keepTracking: true,
+    });
 
     exports.set_cursor_and_filter();
 
@@ -268,7 +272,7 @@ exports.narrow_for_user_id = function (opts) {
     const person = people.get_by_user_id(opts.user_id);
     const email = person.email;
 
-    narrow.by('pm-with', email, {trigger: 'sidebar'});
+    narrow.by("pm-with", email, {trigger: "sidebar"});
     exports.user_filter.clear_and_hide_search();
 };
 
@@ -285,7 +289,7 @@ function keydown_enter_key() {
 exports.set_cursor_and_filter = function () {
     exports.user_cursor = list_cursor({
         list: buddy_list,
-        highlight_class: 'highlighted_user',
+        highlight_class: "highlighted_user",
     });
 
     exports.user_filter = user_search({
@@ -296,7 +300,7 @@ exports.set_cursor_and_filter = function () {
 
     const $input = exports.user_filter.input_field();
 
-    $input.on('blur', exports.user_cursor.clear);
+    $input.on("blur", exports.user_cursor.clear);
 
     keydown_util.handle({
         elem: $input,
@@ -335,8 +339,8 @@ exports.get_filter_text = function () {
         // situations where get called before everything is
         // fully initialized.  The empty string is a fine
         // default here.
-        blueslip.warn('get_filter_text() is called before initialization');
-        return '';
+        blueslip.warn("get_filter_text() is called before initialization");
+        return "";
     }
 
     return exports.user_filter.text();

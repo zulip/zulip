@@ -1,6 +1,6 @@
-const pmc = zrequire('pm_conversations');
+const pmc = zrequire("pm_conversations");
 
-run_test('partners', () => {
+run_test("partners", () => {
     const user1_id = 1;
     const user2_id = 2;
     const user3_id = 3;
@@ -15,27 +15,21 @@ run_test('partners', () => {
 
 zrequire("people");
 
-run_test('insert_recent_private_message', () => {
+run_test("insert_recent_private_message", () => {
     const params = {
         recent_private_conversations: [
-            {user_ids: [11, 2],
-             max_message_id: 150,
-            },
-            {user_ids: [1],
-             max_message_id: 111,
-            },
-            {user_ids: [],
-             max_message_id: 7,
-            },
+            {user_ids: [11, 2], max_message_id: 150},
+            {user_ids: [1], max_message_id: 111},
+            {user_ids: [], max_message_id: 7},
         ],
     };
     people.initialize_current_user(15);
     pmc.recent.initialize(params);
 
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: '2,11', max_message_id: 150},
-        {user_ids_string: '1', max_message_id: 111},
-        {user_ids_string: '15', max_message_id: 7},
+        {user_ids_string: "2,11", max_message_id: 150},
+        {user_ids_string: "1", max_message_id: 111},
+        {user_ids_string: "15", max_message_id: 7},
     ]);
 
     pmc.recent.insert([1], 1001);
@@ -46,11 +40,11 @@ run_test('insert_recent_private_message', () => {
     pmc.recent.insert([1], 555);
 
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: '1', max_message_id: 3001},
-        {user_ids_string: '2', max_message_id: 2001},
-        {user_ids_string: '2,11', max_message_id: 150},
-        {user_ids_string: '15', max_message_id: 7},
+        {user_ids_string: "1", max_message_id: 3001},
+        {user_ids_string: "2", max_message_id: 2001},
+        {user_ids_string: "2,11", max_message_id: 150},
+        {user_ids_string: "15", max_message_id: 7},
     ]);
 
-    assert.deepEqual(pmc.recent.get_strings(), ['1', '2', '2,11', '15']);
+    assert.deepEqual(pmc.recent.get_strings(), ["1", "2", "2,11", "15"]);
 });

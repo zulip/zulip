@@ -22,7 +22,7 @@ exports.animate_mention_changes = function (li, new_mention_count) {
 
 exports.set_count_toggle_button = function (elem, count) {
     if (count === 0) {
-        if (elem.is(':animated')) {
+        if (elem.is(":animated")) {
             return elem.stop(true, true).hide();
         }
         return elem.hide(500);
@@ -50,9 +50,7 @@ exports.update_unread_counts = function () {
     const notifiable_unread_count = unread.calculate_notifiable_count(res);
     notifications.update_title_count(notifiable_unread_count);
 
-    exports.set_count_toggle_button($("#streamlist-toggle-unreadcount"),
-                                    res.home_unread_messages);
-
+    exports.set_count_toggle_button($("#streamlist-toggle-unreadcount"), res.home_unread_messages);
 };
 
 exports.should_display_bankruptcy_banner = function () {
@@ -67,8 +65,11 @@ exports.should_display_bankruptcy_banner = function () {
     }
 
     const now = new XDate(true).getTime() / 1000;
-    if (page_params.unread_msgs.count > 500 &&
-        now - page_params.furthest_read_time > 60 * 60 * 24 * 2) { // 2 days.
+    if (
+        page_params.unread_msgs.count > 500 &&
+        now - page_params.furthest_read_time > 60 * 60 * 24 * 2
+    ) {
+        // 2 days.
         return true;
     }
 

@@ -9,7 +9,7 @@ exports.narrow_or_search_for_term = function (search_string) {
         // while using input tool
         return search_query_box.val();
     }
-    ui_util.change_tab_to('#home');
+    ui_util.change_tab_to("#home");
 
     let operators;
     if (page_params.search_pills_enabled) {
@@ -17,12 +17,13 @@ exports.narrow_or_search_for_term = function (search_string) {
         // function, so that the base_query includes the suggestion selected
         // along with query corresponding to the existing pills.
         const base_query = search_pill.get_search_string_for_current_filter(
-            search_pill_widget.widget);
+            search_pill_widget.widget,
+        );
         operators = Filter.parse(base_query);
     } else {
         operators = Filter.parse(search_string);
     }
-    narrow.activate(operators, {trigger: 'search'});
+    narrow.activate(operators, {trigger: "search"});
 
     // It's sort of annoying that this is not in a position to
     // blur the search box, because it means that Esc won't
@@ -37,25 +38,23 @@ exports.narrow_or_search_for_term = function (search_string) {
 };
 
 function update_buttons_with_focus(focused) {
-    const search_query_box = $('#search_query');
+    const search_query_box = $("#search_query");
 
     // Show buttons iff the search input is focused, or has non-empty contents,
     // or we are narrowed.
-    if (focused
-        || search_query_box.val()
-        || narrow_state.active()) {
-        $('.search_button').prop('disabled', false);
+    if (focused || search_query_box.val() || narrow_state.active()) {
+        $(".search_button").prop("disabled", false);
     }
 }
 
 exports.update_button_visibility = function () {
-    update_buttons_with_focus($('#search_query').is(':focus'));
+    update_buttons_with_focus($("#search_query").is(":focus"));
 };
 
 exports.initialize = function () {
-    const search_query_box = $('#search_query');
-    const searchbox_form = $('#searchbox_form');
-    const searchbox = $('#searchbox');
+    const search_query_box = $("#search_query");
+    const searchbox_form = $("#searchbox_form");
+    const searchbox = $("#searchbox");
 
     // Data storage for the typeahead.
     // This maps a search string to an object with a "description" field.
@@ -66,10 +65,11 @@ exports.initialize = function () {
 
     search_query_box.typeahead({
         source: function (query) {
-            let base_query = '';
+            let base_query = "";
             if (page_params.search_pills_enabled) {
                 base_query = search_pill.get_search_string_for_current_filter(
-                    search_pill_widget.widget);
+                    search_pill_widget.widget,
+                );
             }
             const suggestions = search_suggestion.get_suggestions(base_query, query);
             // Update our global search_map hash
@@ -89,8 +89,7 @@ exports.initialize = function () {
         },
         updater: function (search_string) {
             if (page_params.search_pills_enabled) {
-                search_pill.append_search_string(search_string,
-                                                 search_pill_widget.widget);
+                search_pill.append_search_string(search_string, search_pill_widget.widget);
                 return search_query_box.val();
             }
             return exports.narrow_or_search_for_term(search_string);
@@ -112,7 +111,7 @@ exports.initialize = function () {
         on_escape: tab_bar.exit_search,
     });
 
-    searchbox_form.on('compositionend', () => {
+    searchbox_form.on("compositionend", () => {
         // Set `is_using_input_method` to true if enter is pressed to exit
         // the input tool popover and get the text in the search bar. Then
         // we suppress searching triggered by this enter key by checking
@@ -121,42 +120,44 @@ exports.initialize = function () {
         exports.is_using_input_method = true;
     });
 
-    searchbox_form.keydown((e) => {
-        exports.update_button_visibility();
-        const code = e.which;
-        if (code === 13 && search_query_box.is(":focus")) {
-            // Don't submit the form so that the typeahead can instead
-            // handle our Enter keypress. Any searching that needs
-            // to be done will be handled in the keyup.
-            return false;
-        }
-    }).keyup((e) => {
-        if (exports.is_using_input_method) {
-            exports.is_using_input_method = false;
-            return;
-        }
-        const code = e.which;
-        if (code === 13 && search_query_box.is(":focus")) {
-            // We just pressed enter and the box had focus, which
-            // means we didn't use the typeahead at all.  In that
-            // case, we should act as though we're searching by
-            // operators.  (The reason the other actions don't call
-            // this codepath is that they first all blur the box to
-            // indicate that they've done what they need to do)
+    searchbox_form
+        .keydown((e) => {
+            exports.update_button_visibility();
+            const code = e.which;
+            if (code === 13 && search_query_box.is(":focus")) {
+                // Don't submit the form so that the typeahead can instead
+                // handle our Enter keypress. Any searching that needs
+                // to be done will be handled in the keyup.
+                return false;
+            }
+        })
+        .keyup((e) => {
+            if (exports.is_using_input_method) {
+                exports.is_using_input_method = false;
+                return;
+            }
+            const code = e.which;
+            if (code === 13 && search_query_box.is(":focus")) {
+                // We just pressed enter and the box had focus, which
+                // means we didn't use the typeahead at all.  In that
+                // case, we should act as though we're searching by
+                // operators.  (The reason the other actions don't call
+                // this codepath is that they first all blur the box to
+                // indicate that they've done what they need to do)
 
-            // Pill is already added during keydown event of input pills.
-            exports.narrow_or_search_for_term(search_query_box.val());
-            search_query_box.blur();
-            update_buttons_with_focus(false);
-        }
-    });
+                // Pill is already added during keydown event of input pills.
+                exports.narrow_or_search_for_term(search_query_box.val());
+                search_query_box.blur();
+                update_buttons_with_focus(false);
+            }
+        });
 
     // Some of these functions don't actually need to be exported,
     // but the code was moved here from elsewhere, and it would be
     // more work to re-order everything and make them private.
 
-    search_query_box.on('focus', exports.focus_search);
-    search_query_box.on('blur', (e) => {
+    search_query_box.on("focus", exports.focus_search);
+    search_query_box.on("blur", (e) => {
         // The search query box is a visual cue as to
         // whether search or narrowing is active.  If
         // the user blurs the search box, then we should
@@ -173,7 +174,7 @@ exports.initialize = function () {
         // really it would be OK if they did).
 
         if (page_params.search_pills_enabled) {
-            const pill_id = $(e.relatedTarget).closest(".pill").data('id');
+            const pill_id = $(e.relatedTarget).closest(".pill").data("id");
             const search_pill = search_pill_widget.widget.getByID(pill_id);
             if (search_pill) {
                 // The searchbox loses focus while the search
@@ -193,7 +194,7 @@ exports.initialize = function () {
         // Uses jquery instead of pure css as the `:focus` event occurs on `#search_query`,
         // while we want to add box-shadow to `#searchbox`. This could have been done
         // with `:focus-within` CSS selector, but it is not supported in IE or Opera.
-        searchbox.on('focusout', () => {
+        searchbox.on("focusout", () => {
             tab_bar.close_search_bar_and_open_narrow_description();
             searchbox.css({"box-shadow": "unset"});
         });
@@ -207,18 +208,18 @@ exports.focus_search = function () {
 
 exports.initiate_search = function () {
     tab_bar.open_search_bar_and_close_narrow_description();
-    $('#searchbox').css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
-    $('#search_query').typeahead('lookup').select();
+    $("#searchbox").css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
+    $("#search_query").typeahead("lookup").select();
     if (page_params.search_pills_enabled) {
-        $('#search_query').focus();
-        ui_util.place_caret_at_end($('#search_query')[0]);
+        $("#search_query").focus();
+        ui_util.place_caret_at_end($("#search_query")[0]);
     }
 };
 
 exports.clear_search_form = function () {
-    $('#search_query').val('');
-    $('#search_query').blur();
-    $('.search_button').prop('disabled', true);
+    $("#search_query").val("");
+    $("#search_query").blur();
+    $(".search_button").prop("disabled", true);
 };
 
 window.search = exports;

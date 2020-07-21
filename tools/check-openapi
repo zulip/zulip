@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const jsyaml = require('js-yaml');
-const SwaggerParser = require('swagger-parser');
-const ExampleValidator = require('openapi-examples-validator');
+const fs = require("fs");
+const jsyaml = require("js-yaml");
+const SwaggerParser = require("swagger-parser");
+const ExampleValidator = require("openapi-examples-validator");
 
 (async () => {
     // Iterate through the changed files, passed in the arguments.
@@ -12,7 +12,7 @@ const ExampleValidator = require('openapi-examples-validator');
     for (const file of process.argv.slice(2)) {
         try {
             if (
-                jsyaml.safeLoad(await fs.promises.readFile(file, 'utf8'), {
+                jsyaml.safeLoad(await fs.promises.readFile(file, "utf8"), {
                     filename: file,
                 }).openapi !== undefined
             ) {

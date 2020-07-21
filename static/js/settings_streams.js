@@ -14,7 +14,8 @@ exports.maybe_disable_widgets = function () {
     }
 
     $(".organization-box [data-name='default-streams-list']")
-        .find("input:not(.search), button, select").attr("disabled", true);
+        .find("input:not(.search), button, select")
+        .attr("disabled", true);
 };
 
 exports.build_default_stream_table = function () {
@@ -41,16 +42,15 @@ exports.build_default_stream_table = function () {
             },
         },
         parent_container: $("#admin-default-streams-list").expectOne(),
-        init_sort: ['alphabetic', 'name'],
-        simplebar_container: $('#admin-default-streams-list .progressive-table-wrapper'),
+        init_sort: ["alphabetic", "name"],
+        simplebar_container: $("#admin-default-streams-list .progressive-table-wrapper"),
     });
 
-    loading.destroy_indicator($('#admin_page_default_streams_loading_indicator'));
+    loading.destroy_indicator($("#admin_page_default_streams_loading_indicator"));
 };
 
 exports.update_default_streams_table = function () {
-    if (/#*organization/.test(window.location.hash) ||
-        /#*settings/.test(window.location.hash)) {
+    if (/#*organization/.test(window.location.hash) || /#*settings/.test(window.location.hash)) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
         exports.build_default_stream_table();
     }
@@ -64,7 +64,7 @@ function make_stream_default(stream_id) {
     default_stream_status.hide();
 
     channel.post({
-        url: '/json/default_streams',
+        url: "/json/default_streams",
         data: data,
         error: function (xhr) {
             if (xhr.status.toString().charAt(0) === "4") {
@@ -79,7 +79,7 @@ function make_stream_default(stream_id) {
 
 exports.delete_default_stream = function (stream_id, default_stream_row, alert_element) {
     channel.del({
-        url: "/json/default_streams" + "?" + $.param({ stream_id: stream_id }),
+        url: "/json/default_streams" + "?" + $.param({stream_id: stream_id}),
         error: function (xhr) {
             ui_report.generic_row_button_error(xhr, alert_element);
         },
@@ -99,7 +99,7 @@ exports.build_page = function () {
 
     exports.update_default_streams_table();
 
-    $('.create_default_stream').keypress((e) => {
+    $(".create_default_stream").keypress((e) => {
         if (e.which === 13) {
             e.preventDefault();
             e.stopPropagation();
@@ -109,14 +109,14 @@ exports.build_page = function () {
         }
     });
 
-    $('.create_default_stream').typeahead({
+    $(".create_default_stream").typeahead({
         items: 5,
         fixed: true,
         source: function () {
             return stream_data.get_non_default_stream_names();
         },
         highlighter: function (item) {
-            return typeahead_helper.render_typeahead_item({ primary: item });
+            return typeahead_helper.render_typeahead_item({primary: item});
         },
     });
 

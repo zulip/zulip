@@ -1,17 +1,13 @@
-set_global('$', {});
+set_global("$", {});
 
-set_global('reload', {});
-zrequire('reload_state');
-zrequire('channel');
+set_global("reload", {});
+zrequire("reload_state");
+zrequire("channel");
 
-const default_stub_xhr = 'default-stub-xhr';
+const default_stub_xhr = "default-stub-xhr";
 
 function test_with_mock_ajax(test_params) {
-    const {
-        xhr = default_stub_xhr,
-        run_code,
-        check_ajax_options,
-    } = test_params;
+    const {xhr = default_stub_xhr, run_code, check_ajax_options} = test_params;
 
     let ajax_called;
     let ajax_options;
@@ -36,15 +32,15 @@ function test_with_mock_ajax(test_params) {
     check_ajax_options(ajax_options);
 }
 
-run_test('basics', () => {
+run_test("basics", () => {
     test_with_mock_ajax({
         run_code: function () {
             channel.post({});
         },
 
         check_ajax_options: function (options) {
-            assert.equal(options.type, 'POST');
-            assert.equal(options.dataType, 'json');
+            assert.equal(options.type, "POST");
+            assert.equal(options.dataType, "json");
 
             // Just make sure these don't explode.
             options.simulate_success();
@@ -58,9 +54,9 @@ run_test('basics', () => {
         },
 
         check_ajax_options: function (options) {
-            assert.equal(options.type, 'POST');
-            assert.equal(options.data.method, 'PATCH');
-            assert.equal(options.dataType, 'json');
+            assert.equal(options.type, "POST");
+            assert.equal(options.data.method, "PATCH");
+            assert.equal(options.dataType, "json");
 
             // Just make sure these don't explode.
             options.simulate_success();
@@ -74,8 +70,8 @@ run_test('basics', () => {
         },
 
         check_ajax_options: function (options) {
-            assert.equal(options.type, 'PUT');
-            assert.equal(options.dataType, 'json');
+            assert.equal(options.type, "PUT");
+            assert.equal(options.dataType, "json");
 
             // Just make sure these don't explode.
             options.simulate_success();
@@ -89,8 +85,8 @@ run_test('basics', () => {
         },
 
         check_ajax_options: function (options) {
-            assert.equal(options.type, 'DELETE');
-            assert.equal(options.dataType, 'json');
+            assert.equal(options.type, "DELETE");
+            assert.equal(options.dataType, "json");
 
             // Just make sure these don't explode.
             options.simulate_success();
@@ -104,27 +100,26 @@ run_test('basics', () => {
         },
 
         check_ajax_options: function (options) {
-            assert.equal(options.type, 'GET');
-            assert.equal(options.dataType, 'json');
+            assert.equal(options.type, "GET");
+            assert.equal(options.dataType, "json");
 
             // Just make sure these don't explode.
             options.simulate_success();
             options.simulate_error();
         },
     });
-
 });
 
-run_test('normal_post', () => {
+run_test("normal_post", () => {
     const data = {
-        s: 'some_string',
+        s: "some_string",
         num: 7,
         lst: [1, 2, 4, 8],
     };
 
     let orig_success_called;
     let orig_error_called;
-    const stub_xhr = 'stub-xhr-normal-post';
+    const stub_xhr = "stub-xhr-normal-post";
 
     test_with_mock_ajax({
         xhr: stub_xhr,
@@ -132,11 +127,11 @@ run_test('normal_post', () => {
         run_code: function () {
             channel.post({
                 data: data,
-                url: '/json/endpoint',
+                url: "/json/endpoint",
                 success: function (data, text_status, xhr) {
                     orig_success_called = true;
-                    assert.equal(data, 'response data');
-                    assert.equal(text_status, 'success');
+                    assert.equal(data, "response data");
+                    assert.equal(text_status, "success");
                     assert.equal(xhr, stub_xhr);
                 },
                 error: function () {
@@ -146,12 +141,12 @@ run_test('normal_post', () => {
         },
 
         check_ajax_options: function (options) {
-            assert.equal(options.type, 'POST');
-            assert.equal(options.dataType, 'json');
+            assert.equal(options.type, "POST");
+            assert.equal(options.dataType, "json");
             assert.deepEqual(options.data, data);
-            assert.equal(options.url, '/json/endpoint');
+            assert.equal(options.url, "/json/endpoint");
 
-            options.simulate_success('response data', 'success');
+            options.simulate_success("response data", "success");
             assert(orig_success_called);
 
             options.simulate_error();
@@ -160,13 +155,13 @@ run_test('normal_post', () => {
     });
 });
 
-run_test('patch_with_form_data', () => {
+run_test("patch_with_form_data", () => {
     let appended;
 
     const data = {
         append: function (k, v) {
-            assert.equal(k, 'method');
-            assert.equal(v, 'PATCH');
+            assert.equal(k, "method");
+            assert.equal(v, "PATCH");
             appended = true;
         },
     };
@@ -181,8 +176,8 @@ run_test('patch_with_form_data', () => {
         },
 
         check_ajax_options: function (options) {
-            assert.equal(options.type, 'POST');
-            assert.equal(options.dataType, 'json');
+            assert.equal(options.type, "POST");
+            assert.equal(options.dataType, "json");
 
             // Just make sure these don't explode.
             options.simulate_success();
@@ -191,7 +186,7 @@ run_test('patch_with_form_data', () => {
     });
 });
 
-run_test('reload_on_403_error', () => {
+run_test("reload_on_403_error", () => {
     test_with_mock_ajax({
         xhr: {
             status: 403,
@@ -220,11 +215,11 @@ run_test('reload_on_403_error', () => {
     });
 });
 
-run_test('unexpected_403_response', () => {
+run_test("unexpected_403_response", () => {
     test_with_mock_ajax({
         xhr: {
             status: 403,
-            responseText: 'unexpected',
+            responseText: "unexpected",
         },
 
         run_code: function () {
@@ -232,13 +227,13 @@ run_test('unexpected_403_response', () => {
         },
 
         check_ajax_options: function (options) {
-            blueslip.expect('error', 'Unexpected 403 response from server');
+            blueslip.expect("error", "Unexpected 403 response from server");
             options.simulate_error();
         },
     });
 });
 
-run_test('retry', () => {
+run_test("retry", () => {
     test_with_mock_ajax({
         run_code: function () {
             channel.post({
@@ -248,12 +243,12 @@ run_test('retry', () => {
         },
 
         check_ajax_options: function (options) {
-            global.patch_builtin('setTimeout', (f, delay) => {
+            global.patch_builtin("setTimeout", (f, delay) => {
                 assert.equal(delay, 0);
                 f();
             });
 
-            blueslip.expect('log', 'Retrying idempotent[object Object]');
+            blueslip.expect("log", "Retrying idempotent[object Object]");
             test_with_mock_ajax({
                 run_code: function () {
                     options.simulate_success();
@@ -267,32 +262,34 @@ run_test('retry', () => {
     });
 });
 
-run_test('too_many_pending', () => {
+run_test("too_many_pending", () => {
     $.ajax = function () {
-        const xhr = 'stub';
+        const xhr = "stub";
         return xhr;
     };
 
-    blueslip.expect('warn',
-                    'The length of pending_requests is over 50. ' +
-                    'Most likely they are not being correctly removed.');
+    blueslip.expect(
+        "warn",
+        "The length of pending_requests is over 50. " +
+            "Most likely they are not being correctly removed.",
+    );
     _.times(50, () => {
         channel.post({});
     });
 });
 
-run_test('xhr_error_message', () => {
+run_test("xhr_error_message", () => {
     let xhr = {
-        status: '200',
-        responseText: 'does not matter',
+        status: "200",
+        responseText: "does not matter",
     };
-    let msg = 'data added';
-    assert.equal(channel.xhr_error_message(msg, xhr), 'data added');
+    let msg = "data added";
+    assert.equal(channel.xhr_error_message(msg, xhr), "data added");
 
     xhr = {
-        status: '404',
+        status: "404",
         responseText: '{"msg": "file not found"}',
     };
-    msg = 'some message';
-    assert.equal(channel.xhr_error_message(msg, xhr), 'some message: file not found');
+    msg = "some message";
+    assert.equal(channel.xhr_error_message(msg, xhr), "some message: file not found");
 });

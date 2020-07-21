@@ -2,7 +2,7 @@ const util = require("./util");
 let focused_recipient;
 let normal_display = false;
 
-exports.should_fade_message =  function (message) {
+exports.should_fade_message = function (message) {
     return !util.same_recipient(focused_recipient, message);
 };
 
@@ -18,8 +18,8 @@ exports.set_focused_recipient = function (msg_type) {
     };
 
     if (focused_recipient.type === "stream") {
-        const stream_name = $('#stream_message_recipient_stream').val();
-        focused_recipient.topic = $('#stream_message_recipient_topic').val();
+        const stream_name = $("#stream_message_recipient_stream").val();
+        focused_recipient.topic = $("#stream_message_recipient_topic").val();
         focused_recipient.stream = stream_name;
         const sub = stream_data.get_sub(stream_name);
         if (sub) {
@@ -36,7 +36,7 @@ exports.set_focused_recipient = function (msg_type) {
 
 function display_messages_normally() {
     const table = rows.get_table(current_msg_list.table_name);
-    table.find('.recipient_row').removeClass("message-fade");
+    table.find(".recipient_row").removeClass("message-fade");
 
     normal_display = true;
     floating_recipient_bar.update();
@@ -69,31 +69,40 @@ function fade_messages() {
     }
 
     // Defer updating all message groups so that the compose box can open sooner
-    setTimeout((expected_msg_list, expected_recipient) => {
-        const all_groups = rows.get_table(current_msg_list.table_name).find(".recipient_row");
+    setTimeout(
+        (expected_msg_list, expected_recipient) => {
+            const all_groups = rows.get_table(current_msg_list.table_name).find(".recipient_row");
 
-        if (current_msg_list !== expected_msg_list ||
-            !compose_state.composing() ||
-            compose_state.private_message_recipient() !== expected_recipient) {
-            return;
-        }
+            if (
+                current_msg_list !== expected_msg_list ||
+                !compose_state.composing() ||
+                compose_state.private_message_recipient() !== expected_recipient
+            ) {
+                return;
+            }
 
-        should_fade_group = false;
+            should_fade_group = false;
 
-        // Note: The below algorithm relies on the fact that all_elts is
-        // sorted as it would be displayed in the message view
-        for (i = 0; i < all_groups.length; i += 1) {
-            const group_elt = $(all_groups[i]);
-            should_fade_group = exports.should_fade_message(rows.recipient_from_group(group_elt));
-            change_fade_state(group_elt, should_fade_group);
-        }
+            // Note: The below algorithm relies on the fact that all_elts is
+            // sorted as it would be displayed in the message view
+            for (i = 0; i < all_groups.length; i += 1) {
+                const group_elt = $(all_groups[i]);
+                should_fade_group = exports.should_fade_message(
+                    rows.recipient_from_group(group_elt),
+                );
+                change_fade_state(group_elt, should_fade_group);
+            }
 
-        floating_recipient_bar.update();
-    }, 0, current_msg_list, compose_state.private_message_recipient());
+            floating_recipient_bar.update();
+        },
+        0,
+        current_msg_list,
+        compose_state.private_message_recipient(),
+    );
 }
 
 exports.would_receive_message = function (user_id) {
-    if (focused_recipient.type === 'stream') {
+    if (focused_recipient.type === "stream") {
         const sub = stream_data.get_sub_by_id(focused_recipient.stream_id);
         if (!sub) {
             // If the stream isn't valid, there is no risk of a mix
@@ -114,10 +123,10 @@ const user_fade_config = {
         return buddy_list.get_key_from_li({li: li});
     },
     fade: function (li) {
-        return li.addClass('user-fade');
+        return li.addClass("user-fade");
     },
     unfade: function (li) {
-        return li.removeClass('user-fade');
+        return li.removeClass("user-fade");
     },
 };
 

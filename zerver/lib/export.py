@@ -30,6 +30,7 @@ from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.pysa import mark_sanitized
 from zerver.models import (
+    AlertWord,
     Attachment,
     BotConfigData,
     BotStorageData,
@@ -619,6 +620,13 @@ def get_realm_config() -> Config:
         table='zerver_userprofile',
         virtual_parent=realm_config,
         custom_fetch=fetch_user_profile,
+    )
+
+    Config(
+        table='zerver_alertword',
+        model=AlertWord,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
     )
 
     user_groups_config = Config(

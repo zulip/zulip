@@ -15,10 +15,10 @@ exports.set_global = function (name, val) {
 
 exports.zrequire = function (name, fn) {
     if (fn === undefined) {
-        fn = '../../static/js/' + name;
+        fn = "../../static/js/" + name;
     } else if (/^generated\/|^js\/|^shared\/|^third\//.test(fn)) {
         // FIXME: Stealing part of the NPM namespace is confusing.
-        fn = '../../static/' + fn;
+        fn = "../../static/" + fn;
     }
     delete require.cache[require.resolve(fn)];
     requires.push(fn);
@@ -36,8 +36,8 @@ exports.clear_zulip_refs = function () {
         run it standalone.
     */
     _.each(require.cache, (_, fn) => {
-        if (fn.indexOf('static/') >= 0) {
-            if (fn.indexOf('static/templates') < 0) {
+        if (fn.indexOf("static/") >= 0) {
+            if (fn.indexOf("static/templates") < 0) {
                 delete require.cache[fn];
             }
         }
@@ -57,7 +57,7 @@ exports.restore = function () {
 };
 
 exports.stub_out_jquery = function () {
-    set_global('$', () => ({
+    set_global("$", () => ({
         on: function () {},
         trigger: function () {},
         hide: function () {},
@@ -74,7 +74,7 @@ exports.with_overrides = function (test_function) {
     const clobber_callbacks = [];
 
     const override = function (name, f) {
-        const parts = name.split('.');
+        const parts = name.split(".");
         const module = parts[0];
         const func_name = parts[1];
 
@@ -88,8 +88,7 @@ exports.with_overrides = function (test_function) {
             // If you get a failure from this, you probably just
             // need to have your test do its own overrides and
             // not cherry-pick off of the prior test's setup.
-            global[module][func_name] =
-                'ATTEMPTED TO REUSE OVERRIDDEN VALUE FROM PRIOR TEST';
+            global[module][func_name] = "ATTEMPTED TO REUSE OVERRIDDEN VALUE FROM PRIOR TEST";
         });
     };
 

@@ -1,5 +1,5 @@
 const util = require("./util");
-const autosize = require('autosize');
+const autosize = require("autosize");
 
 let narrow_window = false;
 
@@ -37,24 +37,26 @@ function get_new_heights() {
 
     res.main_div_min_height = viewport_height - top_navbar_height;
 
-    res.stream_filters_max_height = viewport_height
-        - parseInt($("#left-sidebar").css("marginTop"), 10)
-        - parseInt($(".narrows_panel").css("marginTop"), 10)
-        - parseInt($(".narrows_panel").css("marginBottom"), 10)
-        - $("#global_filters").safeOuterHeight(true)
-        - $("#streams_header").safeOuterHeight(true);
+    res.stream_filters_max_height =
+        viewport_height -
+        parseInt($("#left-sidebar").css("marginTop"), 10) -
+        parseInt($(".narrows_panel").css("marginTop"), 10) -
+        parseInt($(".narrows_panel").css("marginBottom"), 10) -
+        $("#global_filters").safeOuterHeight(true) -
+        $("#streams_header").safeOuterHeight(true);
 
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
 
     // RIGHT SIDEBAR
 
-    const usable_height = viewport_height
-        - parseInt($("#right-sidebar").css("marginTop"), 10)
-        - $("#userlist-header").safeOuterHeight(true)
-        - $("#user_search_section").safeOuterHeight(true)
-        - invite_user_link_height
-        - $("#sidebar-keyboard-shortcuts").safeOuterHeight(true);
+    const usable_height =
+        viewport_height -
+        parseInt($("#right-sidebar").css("marginTop"), 10) -
+        $("#userlist-header").safeOuterHeight(true) -
+        $("#user_search_section").safeOuterHeight(true) -
+        invite_user_link_height -
+        $("#sidebar-keyboard-shortcuts").safeOuterHeight(true);
 
     res.buddy_list_wrapper_max_height = Math.max(80, usable_height);
 
@@ -62,7 +64,6 @@ function get_new_heights() {
 }
 
 function left_userlist_get_new_heights() {
-
     const res = {};
     const viewport_height = message_viewport.height();
     const viewport_width = message_viewport.width();
@@ -74,23 +75,23 @@ function left_userlist_get_new_heights() {
     res.bottom_whitespace_height = viewport_height * 0.4;
     res.main_div_min_height = viewport_height - top_navbar_height;
 
-
     // left sidebar
-    const stream_filters = $('#stream_filters').expectOne();
-    const buddy_list_wrapper = $('#buddy_list_wrapper').expectOne();
+    const stream_filters = $("#stream_filters").expectOne();
+    const buddy_list_wrapper = $("#buddy_list_wrapper").expectOne();
 
     const stream_filters_real_height = stream_filters.prop("scrollHeight");
     const user_list_real_height = ui.get_scroll_element(buddy_list_wrapper).prop("scrollHeight");
 
-    res.total_leftlist_height = viewport_height
-                                - parseInt($("#left-sidebar").css("marginTop"), 10)
-                                - parseInt($(".narrows_panel").css("marginTop"), 10)
-                                - parseInt($(".narrows_panel").css("marginBottom"), 10)
-                                - $("#global_filters").safeOuterHeight(true)
-                                - $("#streams_header").safeOuterHeight(true)
-                                - $("#userlist-header").safeOuterHeight(true)
-                                - $("#user_search_section").safeOuterHeight(true)
-                                - parseInt(stream_filters.css("marginBottom"), 10);
+    res.total_leftlist_height =
+        viewport_height -
+        parseInt($("#left-sidebar").css("marginTop"), 10) -
+        parseInt($(".narrows_panel").css("marginTop"), 10) -
+        parseInt($(".narrows_panel").css("marginBottom"), 10) -
+        $("#global_filters").safeOuterHeight(true) -
+        $("#streams_header").safeOuterHeight(true) -
+        $("#userlist-header").safeOuterHeight(true) -
+        $("#user_search_section").safeOuterHeight(true) -
+        parseInt(stream_filters.css("marginBottom"), 10);
 
     const blocks = [
         {
@@ -114,7 +115,7 @@ exports.watch_manual_resize = function (element) {
         const box = document.querySelector(element);
 
         if (!box) {
-            blueslip.error('Bad selector in watch_manual_resize: ' + element);
+            blueslip.error("Bad selector in watch_manual_resize: " + element);
             return;
         }
 
@@ -144,12 +145,11 @@ exports.watch_manual_resize = function (element) {
         document.body.addEventListener("mouseup", body_handler);
 
         return [box_handler, body_handler];
-    }((height) => {
+    })((height) => {
         // This callback disables autosize on the textarea.  It
         // will be re-enabled when this component is next opened.
-        autosize.destroy($(element))
-            .height(height + "px");
-    }));
+        autosize.destroy($(element)).height(height + "px");
+    });
 };
 
 exports.resize_bottom_whitespace = function (h) {
@@ -159,7 +159,7 @@ exports.resize_bottom_whitespace = function (h) {
 exports.resize_stream_filters_container = function (h) {
     h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
     exports.resize_bottom_whitespace(h);
-    $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
+    $("#stream-filters-container").css("max-height", h.stream_filters_max_height);
 };
 
 exports.resize_sidebars = function () {
@@ -170,7 +170,7 @@ exports.resize_sidebars = function () {
 
         $("#top_navbar").removeClass("rightside-userlist");
 
-        const right_items = $('.right-sidebar-items').expectOne();
+        const right_items = $(".right-sidebar-items").expectOne();
 
         if (css_narrow_mode && !narrow_window) {
             // move stuff to the left sidebar (skinny mode)
@@ -187,16 +187,16 @@ exports.resize_sidebars = function () {
             popovers.set_userlist_placement("right");
             sidebar = $("#right-sidebar").expectOne();
             sidebar.append(right_items);
-            $("#buddy_list_wrapper").css("margin", '');
-            $("#userlist-toggle").css("display", '');
+            $("#buddy_list_wrapper").css("margin", "");
+            $("#userlist-toggle").css("display", "");
             $("#invite-user-link").show();
         }
     }
 
     const h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
 
-    $("#buddy_list_wrapper").css('max-height', h.buddy_list_wrapper_max_height);
-    $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
+    $("#buddy_list_wrapper").css("max-height", h.buddy_list_wrapper_max_height);
+    $("#stream-filters-container").css("max-height", h.stream_filters_max_height);
 
     return h;
 };

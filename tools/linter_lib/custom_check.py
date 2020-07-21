@@ -114,7 +114,10 @@ js_rules = RuleList(
          'exclude': {'static/js/templates.js'},
          'description': 'Do not pass a variable into i18n.t; it will not be exported to Transifex for translation.'},
         {'pattern': r'i18n\.t\(.+\).*\+',
-         'description': 'Do not concatenate i18n strings'},
+         'description': 'Do not concatenate i18n strings',
+         'exclude_line': {
+             ('static/js/narrow.js', 'i18n.t("Some common words were excluded from your search.") +'),
+         }},
         {'pattern': r'\+.*i18n\.t\(.+\)',
          'description': 'Do not concatenate i18n strings'},
         {'pattern': '[.]html[(]',

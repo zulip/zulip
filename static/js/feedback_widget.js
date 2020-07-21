@@ -1,4 +1,4 @@
-const render_feedback_container = require('../templates/feedback_container.hbs');
+const render_feedback_container = require("../templates/feedback_container.hbs");
 
 /*
 
@@ -17,7 +17,6 @@ Codewise it's a singleton widget that controls the DOM inside
 #feedback_container, which gets served up by server.
 
 */
-
 
 const meta = {
     hide_me_time: null,
@@ -91,11 +90,11 @@ function set_up_handlers() {
         meta.hide_me_time = Math.max(meta.hide_me_time, new Date().getTime() + 2000);
     });
 
-    meta.$container.on('click', '.exit-me', () => {
+    meta.$container.on("click", ".exit-me", () => {
         animate.fadeOut();
     });
 
-    meta.$container.on('click', '.feedback_undo', () => {
+    meta.$container.on("click", ".feedback_undo", () => {
         if (meta.undo) {
             meta.undo();
         }
@@ -113,11 +112,11 @@ exports.dismiss = function () {
 
 exports.show = function (opts) {
     if (!opts.populate) {
-        blueslip.error('programmer needs to supply populate callback.');
+        blueslip.error("programmer needs to supply populate callback.");
         return;
     }
 
-    meta.$container = $('#feedback_container');
+    meta.$container = $("#feedback_container");
 
     const html = render_feedback_container();
     meta.$container.html(html);
@@ -129,9 +128,9 @@ exports.show = function (opts) {
     // add a four second delay before closing up.
     meta.hide_me_time = new Date().getTime() + 4000;
 
-    meta.$container.find('.feedback_title').text(opts.title_text);
-    meta.$container.find('.feedback_undo').text(opts.undo_button_text);
-    opts.populate(meta.$container.find('.feedback_content'));
+    meta.$container.find(".feedback_title").text(opts.title_text);
+    meta.$container.find(".feedback_undo").text(opts.undo_button_text);
+    opts.populate(meta.$container.find(".feedback_content"));
 
     animate.fadeIn();
 };

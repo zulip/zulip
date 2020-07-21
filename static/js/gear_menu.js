@@ -75,7 +75,7 @@ the selector and then calls info_overlay.show.
 const scroll_positions = new Map();
 
 exports.update_org_settings_menu_item = function () {
-    const item = $('.admin-menu-item').expectOne();
+    const item = $(".admin-menu-item").expectOne();
     if (page_params.is_admin) {
         item.find("span").text(i18n.t("Manage organization"));
     } else {
@@ -86,15 +86,15 @@ exports.update_org_settings_menu_item = function () {
 exports.initialize = function () {
     exports.update_org_settings_menu_item();
 
-    $('#gear-menu a[data-toggle="tab"]').on('show', (e) => {
+    $('#gear-menu a[data-toggle="tab"]').on("show", (e) => {
         // Save the position of our old tab away, before we switch
-        const old_tab = $(e.relatedTarget).attr('href');
+        const old_tab = $(e.relatedTarget).attr("href");
         scroll_positions.set(old_tab, message_viewport.scrollTop());
     });
-    $('#gear-menu a[data-toggle="tab"]').on('shown', (e) => {
-        const target_tab = $(e.target).attr('href');
+    $('#gear-menu a[data-toggle="tab"]').on("shown", (e) => {
+        const target_tab = $(e.target).attr("href");
         // Hide all our error messages when switching tabs
-        $('.alert').removeClass("show");
+        $(".alert").removeClass("show");
 
         // Set the URL bar title to show the sub-page you're currently on.
         let browser_url = target_tab;
@@ -106,7 +106,7 @@ exports.initialize = function () {
         // After we show the new tab, restore its old scroll position
         // (we apparently have to do this after setting the hash,
         // because otherwise that action may scroll us somewhere.)
-        if (target_tab === '#home') {
+        if (target_tab === "#home") {
             if (scroll_positions.has(target_tab)) {
                 message_viewport.scrollTop(scroll_positions.get(target_tab));
             } else {

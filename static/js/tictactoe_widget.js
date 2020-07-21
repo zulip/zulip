@@ -1,4 +1,4 @@
-const render_widgets_tictactoe_widget = require('../templates/widgets/tictactoe_widget.hbs');
+const render_widgets_tictactoe_widget = require("../templates/widgets/tictactoe_widget.hbs");
 
 const tictactoe_data_holder = function () {
     const self = {};
@@ -28,9 +28,7 @@ const tictactoe_data_holder = function () {
                 return false;
             }
 
-            return (
-                square_values.get(line[1]) === token &&
-                square_values.get(line[2]) === token);
+            return square_values.get(line[1]) === token && square_values.get(line[2]) === token;
         }
 
         const board = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -56,7 +54,7 @@ const tictactoe_data_holder = function () {
             [square(7), square(8), square(9)],
         ];
 
-        const token = num_filled % 2 === 0 ? 'X' : 'O';
+        const token = num_filled % 2 === 0 ? "X" : "O";
         let move_status = token + "'s turn";
 
         if (game_over) {
@@ -75,7 +73,7 @@ const tictactoe_data_holder = function () {
         square_click: {
             outbound: function (idx) {
                 const event = {
-                    type: 'square_click',
+                    type: "square_click",
                     idx: idx,
                     num_filled: num_filled,
                 };
@@ -86,11 +84,11 @@ const tictactoe_data_holder = function () {
                 const idx = data.idx;
 
                 if (data.num_filled !== num_filled) {
-                    blueslip.info('out of sync', data.num_filled);
+                    blueslip.info("out of sync", data.num_filled);
                     return;
                 }
 
-                const token = num_filled % 2 === 0 ? 'X' : 'O';
+                const token = num_filled % 2 === 0 ? "X" : "O";
 
                 if (square_values.has(idx)) {
                     return;
@@ -105,7 +103,6 @@ const tictactoe_data_holder = function () {
             },
         },
     };
-
 
     self.handle_event = function (sender_id, data) {
         const type = data.type;
@@ -128,9 +125,9 @@ exports.activate = function (opts) {
         const html = render_widgets_tictactoe_widget(widget_data);
         elem.html(html);
 
-        elem.find("button.tictactoe-square").on('click', (e) => {
+        elem.find("button.tictactoe-square").on("click", (e) => {
             e.stopPropagation();
-            const str_idx = $(e.target).attr('data-idx');
+            const str_idx = $(e.target).attr("data-idx");
             const idx = parseInt(str_idx, 10);
 
             const data = tictactoe_data.handle.square_click.outbound(idx);

@@ -254,8 +254,13 @@ class TestDigestEmailMessages(ZulipTestCase):
         cutoff = timezone_now()
         # A Tuesday
         mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
-        bot = do_create_user('some_bot@example.com', 'password', get_realm('zulip'), 'some_bot', '',
-                             bot_type=UserProfile.DEFAULT_BOT)
+        bot = do_create_user(
+            'some_bot@example.com',
+            'password',
+            get_realm('zulip'),
+            'some_bot',
+            bot_type=UserProfile.DEFAULT_BOT,
+        )
         UserActivity.objects.create(
             last_visit=cutoff - datetime.timedelta(days=1),
             user_profile=bot,

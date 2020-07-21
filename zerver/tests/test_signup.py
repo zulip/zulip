@@ -1579,7 +1579,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             'foo@zulip.com',
             'password',
             self.user_profile.realm,
-            'full name', 'short name',
+            'full name',
             prereg_user=prereg_user,
         )
 
@@ -3340,7 +3340,7 @@ class UserSignUpTest(InviteUserBase):
         subdomain = "zulip"
 
         self.init_default_ldap_database()
-        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'cn'}
         full_name = 'New LDAP fullname'
 
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
@@ -3392,8 +3392,6 @@ class UserSignUpTest(InviteUserBase):
             user_profile = UserProfile.objects.get(delivery_email=email)
             # Name comes from form which was set by LDAP.
             self.assertEqual(user_profile.full_name, full_name)
-            # Short name comes from LDAP.
-            self.assertEqual(user_profile.short_name, "shortname")
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
@@ -3435,8 +3433,6 @@ class UserSignUpTest(InviteUserBase):
             user_profile = UserProfile.objects.get(delivery_email=email)
             # Name comes from form which was set by LDAP.
             self.assertEqual(user_profile.full_name, "First Last")
-            # Short name comes from LDAP.
-            self.assertEqual(user_profile.short_name, "First")
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
@@ -3456,7 +3452,6 @@ class UserSignUpTest(InviteUserBase):
         self.init_default_ldap_database()
         ldap_user_attr_map = {
             'full_name': 'cn',
-            'short_name': 'sn',
             'custom_profile_field__phone_number': 'homePhone',
         }
         full_name = 'New LDAP fullname'
@@ -3472,7 +3467,6 @@ class UserSignUpTest(InviteUserBase):
             user_profile = UserProfile.objects.get(delivery_email=email)
             # Name comes from form which was set by LDAP.
             self.assertEqual(user_profile.full_name, full_name)
-            self.assertEqual(user_profile.short_name, 'shortname')
 
             # Test custom profile fields are properly synced.
             phone_number_field = CustomProfileField.objects.get(realm=user_profile.realm, name='Phone number')
@@ -3488,7 +3482,6 @@ class UserSignUpTest(InviteUserBase):
         self.init_default_ldap_database()
         ldap_user_attr_map = {
             'full_name': 'cn',
-            'short_name': 'sn',
         }
         do_create_realm('test', 'test', False)
 
@@ -3522,7 +3515,7 @@ class UserSignUpTest(InviteUserBase):
         subdomain = "zulip"
 
         self.init_default_ldap_database()
-        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'cn'}
 
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
             result = self.client_post('/register/', {'email': email})
@@ -3566,7 +3559,7 @@ class UserSignUpTest(InviteUserBase):
         subdomain = "zulip"
 
         self.init_default_ldap_database()
-        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'cn'}
 
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
             result = self.client_post('/register/', {'email': email})
@@ -3665,7 +3658,7 @@ class UserSignUpTest(InviteUserBase):
         subdomain = "zulip"
 
         self.init_default_ldap_database()
-        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'cn'}
 
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
             result = self.client_post('/register/', {'email': email})

@@ -99,10 +99,16 @@ def build_user_profile(avatar_source: str,
         is_active=is_active,
         role=role,
         realm_id=realm_id,
-        short_name=short_name,
         timezone=timezone,
     )
     dct = model_to_dict(obj)
+
+    '''
+    Even though short_name is no longer in the Zulip
+    UserProfile, it's helpful to have it in our import
+    dictionaries for legacy reasons.
+    '''
+    dct['short_name'] = short_name
     return dct
 
 def build_avatar(zulip_user_id: int, realm_id: int, email: str, avatar_url: str,

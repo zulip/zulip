@@ -3,8 +3,10 @@ const pending_requests = [];
 function add_pending_request(jqXHR) {
     pending_requests.push(jqXHR);
     if (pending_requests.length > 50) {
-        blueslip.warn('The length of pending_requests is over 50. Most likely ' +
-                      'they are not being correctly removed.');
+        blueslip.warn(
+            "The length of pending_requests is over 50. Most likely " +
+                "they are not being correctly removed.",
+        );
     }
 }
 
@@ -43,17 +45,20 @@ function call(args, idempotent) {
 
         if (xhr.status === 403) {
             try {
-                if (JSON.parse(xhr.responseText).code === 'CSRF_FAILED') {
-                    reload.initiate({immediate: true,
-                                     save_pointer: true,
-                                     save_narrow: true,
-                                     save_compose: true});
+                if (JSON.parse(xhr.responseText).code === "CSRF_FAILED") {
+                    reload.initiate({
+                        immediate: true,
+                        save_pointer: true,
+                        save_narrow: true,
+                        save_compose: true,
+                    });
                 }
             } catch (ex) {
-                blueslip.error('Unexpected 403 response from server',
-                               {xhr: xhr.responseText,
-                                args: args},
-                               ex.stack);
+                blueslip.error(
+                    "Unexpected 403 response from server",
+                    {xhr: xhr.responseText, args: args},
+                    ex.stack,
+                );
             }
         }
         return orig_error(xhr, error_type, xhn);
@@ -92,23 +97,23 @@ function call(args, idempotent) {
 }
 
 exports.get = function (options) {
-    const args = { type: "GET", dataType: "json", ...options };
+    const args = {type: "GET", dataType: "json", ...options};
     return call(args, options.idempotent);
 };
 
 exports.post = function (options) {
-    const args = { type: "POST", dataType: "json", ...options };
+    const args = {type: "POST", dataType: "json", ...options};
     return call(args, options.idempotent);
 };
 
 exports.put = function (options) {
-    const args = { type: "PUT", dataType: "json", ...options };
+    const args = {type: "PUT", dataType: "json", ...options};
     return call(args, options.idempotent);
 };
 
 // Not called exports.delete because delete is a reserved word in JS
 exports.del = function (options) {
-    const args = { type: "DELETE", dataType: "json", ...options };
+    const args = {type: "DELETE", dataType: "json", ...options};
     return call(args, options.idempotent);
 };
 
@@ -120,7 +125,7 @@ exports.patch = function (options) {
         // method this way
         options.data.append("method", "PATCH");
     } else {
-        options.data = { ...options.data, method: 'PATCH' };
+        options.data = {...options.data, method: "PATCH"};
     }
     return exports.post(options, options.idempotent);
 };

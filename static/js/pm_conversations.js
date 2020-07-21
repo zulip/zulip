@@ -1,4 +1,4 @@
-const FoldDict = require('./fold_dict').FoldDict;
+const FoldDict = require("./fold_dict").FoldDict;
 
 const partners = new Set();
 
@@ -25,7 +25,7 @@ exports.recent = (function () {
         }
         user_ids.sort((a, b) => a - b);
 
-        const user_ids_string = user_ids.join(',');
+        const user_ids_string = user_ids.join(",");
         let conversation = recent_message_ids.get(user_ids_string);
 
         if (conversation === undefined) {
@@ -75,6 +75,6 @@ exports.recent = (function () {
     };
 
     return self;
-}());
+})();
 
 window.pm_conversations = exports;

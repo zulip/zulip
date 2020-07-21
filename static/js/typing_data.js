@@ -10,7 +10,7 @@ function to_int(s) {
 
 function get_key(group) {
     const ids = util.sorted_ids(group);
-    return ids.join(',');
+    return ids.join(",");
 }
 
 exports.add_typist = function (group, typist) {
@@ -67,6 +67,5 @@ exports.kickstart_inbound_timer = function (group, delay, callback) {
     const timer = setTimeout(callback, delay);
     inbound_timer_dict.set(key, timer);
 };
-
 
 window.typing_data = exports;

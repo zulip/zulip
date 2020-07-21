@@ -1,6 +1,6 @@
 const util = require("./util");
-const FoldDict = require('./fold_dict').FoldDict;
-const LazySet = require('./lazy_set').LazySet;
+const FoldDict = require("./fold_dict").FoldDict;
+const LazySet = require("./lazy_set").LazySet;
 const settings_config = require("./settings_config");
 
 const BinaryDict = function (pred) {
@@ -77,7 +77,6 @@ const BinaryDict = function (pred) {
         self.falses.delete(k);
     };
 
-
     return self;
 };
 
@@ -113,11 +112,15 @@ exports.clear_subscriptions = function () {
 exports.clear_subscriptions();
 
 exports.set_filter_out_inactives = function () {
-    if (page_params.demote_inactive_streams ===
-            settings_config.demote_inactive_streams_values.automatic.code) {
+    if (
+        page_params.demote_inactive_streams ===
+        settings_config.demote_inactive_streams_values.automatic.code
+    ) {
         filter_out_inactives = exports.num_subscribed_subs() >= 30;
-    } else if (page_params.demote_inactive_streams ===
-            settings_config.demote_inactive_streams_values.always.code) {
+    } else if (
+        page_params.demote_inactive_streams ===
+        settings_config.demote_inactive_streams_values.always.code
+    ) {
         filter_out_inactives = true;
     } else {
         filter_out_inactives = false;
@@ -181,7 +184,7 @@ exports.unsubscribe_myself = function (sub) {
 };
 
 exports.add_sub = function (sub) {
-    if (!Object.prototype.hasOwnProperty.call(sub, 'subscribers')) {
+    if (!Object.prototype.hasOwnProperty.call(sub, "subscribers")) {
         sub.subscribers = new LazySet([]);
     }
 
@@ -232,13 +235,13 @@ exports.get_sub_by_name = function (name) {
 };
 
 exports.id_to_slug = function (stream_id) {
-    let name = exports.maybe_get_stream_name(stream_id) || 'unknown';
+    let name = exports.maybe_get_stream_name(stream_id) || "unknown";
 
     // The name part of the URL doesn't really matter, so we try to
     // make it pretty.
-    name = name.replace(' ', '-');
+    name = name.replace(" ", "-");
 
-    return stream_id + '-' + name;
+    return stream_id + "-" + name;
 };
 
 exports.name_to_slug = function (name) {
@@ -250,9 +253,9 @@ exports.name_to_slug = function (name) {
 
     // The name part of the URL doesn't really matter, so we try to
     // make it pretty.
-    name = name.replace(' ', '-');
+    name = name.replace(" ", "-");
 
-    return stream_id + '-' + name;
+    return stream_id + "-" + name;
 };
 
 exports.slug_to_name = function (slug) {
@@ -303,11 +306,10 @@ exports.slug_to_name = function (slug) {
     return slug;
 };
 
-
 exports.delete_sub = function (stream_id) {
     const sub = subs_by_stream_id.get(stream_id);
     if (!sub) {
-        blueslip.warn('Failed to delete stream ' + stream_id);
+        blueslip.warn("Failed to delete stream " + stream_id);
         return;
     }
     subs_by_stream_id.delete(stream_id);
@@ -430,7 +432,6 @@ exports.potential_subscribers = function (sub) {
     }
 
     return people.filter_all_users(is_potential_subscriber);
-
 };
 
 exports.update_stream_email_address = function (sub, email) {
@@ -440,7 +441,7 @@ exports.update_stream_email_address = function (sub, email) {
 exports.get_subscriber_count = function (stream_id) {
     const sub = exports.get_sub_by_id(stream_id);
     if (sub === undefined) {
-        blueslip.warn('We got a get_subscriber_count count call for a non-existent stream.');
+        blueslip.warn("We got a get_subscriber_count count call for a non-existent stream.");
         return;
     }
     if (!sub.subscribers) {
@@ -458,7 +459,7 @@ exports.update_stream_privacy = function (sub, values) {
     sub.history_public_to_subscribers = values.history_public_to_subscribers;
 };
 
-exports.update_message_retention_setting  = function (sub, message_retention_days) {
+exports.update_message_retention_setting = function (sub, message_retention_days) {
     sub.message_retention_days = message_retention_days;
 };
 
@@ -470,7 +471,7 @@ exports.receives_notifications = function (stream_id, notification_name) {
     if (sub[notification_name] !== null) {
         return sub[notification_name];
     }
-    if (notification_name === 'wildcard_mentions_notify') {
+    if (notification_name === "wildcard_mentions_notify") {
         return page_params[notification_name];
     }
     return page_params["enable_stream_" + notification_name];
@@ -484,21 +485,21 @@ exports.update_calculated_fields = function (sub) {
     // If stream is public then any user can subscribe. If stream is private then only
     // subscribed users can unsubscribe.
     // Guest users can't subscribe themselves to any stream.
-    sub.should_display_subscription_button = sub.subscribed ||
-        !page_params.is_guest && !sub.invite_only;
-    sub.should_display_preview_button = sub.subscribed || !sub.invite_only ||
-                                        sub.previously_subscribed;
-    sub.can_change_stream_permissions = page_params.is_admin && (
-        !sub.invite_only || sub.subscribed);
+    sub.should_display_subscription_button =
+        sub.subscribed || (!page_params.is_guest && !sub.invite_only);
+    sub.should_display_preview_button =
+        sub.subscribed || !sub.invite_only || sub.previously_subscribed;
+    sub.can_change_stream_permissions =
+        page_params.is_admin && (!sub.invite_only || sub.subscribed);
     // User can add other users to stream if stream is public or user is subscribed to stream.
     // Guest users can't access subscribers of any(public or private) non-subscribed streams.
-    sub.can_access_subscribers = page_params.is_admin || sub.subscribed || !page_params.is_guest &&
-                                 !sub.invite_only;
+    sub.can_access_subscribers =
+        page_params.is_admin || sub.subscribed || (!page_params.is_guest && !sub.invite_only);
     sub.preview_url = hash_util.by_stream_uri(sub.stream_id);
     sub.can_add_subscribers = !page_params.is_guest && (!sub.invite_only || sub.subscribed);
     sub.is_old_stream = sub.stream_weekly_traffic !== null;
     if (sub.rendered_description !== undefined) {
-        sub.rendered_description = sub.rendered_description.replace('<p>', '').replace('</p>', '');
+        sub.rendered_description = sub.rendered_description.replace("<p>", "").replace("</p>", "");
     }
     exports.update_subscribers_count(sub);
 
@@ -653,7 +654,7 @@ exports.set_subscribers = function (sub, user_ids) {
 
 exports.add_subscriber = function (stream_id, user_id) {
     const sub = exports.get_sub_by_id(stream_id);
-    if (typeof sub === 'undefined') {
+    if (typeof sub === "undefined") {
         blueslip.warn("We got an add_subscriber call for a non-existent stream.");
         return false;
     }
@@ -669,7 +670,7 @@ exports.add_subscriber = function (stream_id, user_id) {
 
 exports.remove_subscriber = function (stream_id, user_id) {
     const sub = exports.get_sub_by_id(stream_id);
-    if (typeof sub === 'undefined') {
+    if (typeof sub === "undefined") {
         blueslip.warn("We got a remove_subscriber call for a non-existent stream " + stream_id);
         return false;
     }
@@ -685,10 +686,12 @@ exports.remove_subscriber = function (stream_id, user_id) {
 
 exports.is_user_subscribed = function (stream_id, user_id) {
     const sub = exports.get_sub_by_id(stream_id);
-    if (typeof sub === 'undefined' || !sub.can_access_subscribers) {
+    if (typeof sub === "undefined" || !sub.can_access_subscribers) {
         // If we don't know about the stream, or we ourselves cannot access subscriber list,
         // so we return undefined (treated as falsy if not explicitly handled).
-        blueslip.warn("We got a is_user_subscribed call for a non-existent or inaccessible stream.");
+        blueslip.warn(
+            "We got a is_user_subscribed call for a non-existent or inaccessible stream.",
+        );
         return;
     }
     if (typeof user_id === "undefined") {
@@ -747,8 +750,8 @@ exports.create_sub_from_server_data = function (attrs) {
         push_notifications: page_params.enable_stream_push_notifications,
         email_notifications: page_params.enable_stream_email_notifications,
         wildcard_mentions_notify: page_params.wildcard_mentions_notify,
-        description: '',
-        rendered_description: '',
+        description: "",
+        rendered_description: "",
         first_message_id: attrs.first_message_id,
         ...attrs,
     };
@@ -775,7 +778,8 @@ exports.get_unmatched_streams_for_notification_settings = function () {
         const settings_values = {};
         let make_table_row = false;
         for (const notification_name of settings_config.stream_specific_notification_settings) {
-            const prepend = notification_name === 'wildcard_mentions_notify' ? "" : "enable_stream_";
+            const prepend =
+                notification_name === "wildcard_mentions_notify" ? "" : "enable_stream_";
             const default_setting = page_params[prepend + notification_name];
             const stream_setting = exports.receives_notifications(row.stream_id, notification_name);
 
@@ -831,7 +835,7 @@ exports.sort_for_stream_settings = function (stream_ids, order) {
     function name(stream_id) {
         const sub = exports.get_sub_by_id(stream_id);
         if (!sub) {
-            return '';
+            return "";
         }
         return sub.name.toLocaleLowerCase();
     }
@@ -845,15 +849,16 @@ exports.sort_for_stream_settings = function (stream_ids, order) {
         return -1;
     }
 
-    function by_stream_name(id_a, id_b)  {
+    function by_stream_name(id_a, id_b) {
         const stream_a_name = name(id_a);
         const stream_b_name = name(id_b);
         return String.prototype.localeCompare.call(stream_a_name, stream_b_name);
     }
 
     function by_subscriber_count(id_a, id_b) {
-        const out = exports.get_sub_by_id(id_b).subscribers.size
-            - exports.get_sub_by_id(id_a).subscribers.size;
+        const out =
+            exports.get_sub_by_id(id_b).subscribers.size -
+            exports.get_sub_by_id(id_a).subscribers.size;
         if (out === 0) {
             return by_stream_name(id_a, id_b);
         }
@@ -912,7 +917,7 @@ exports.get_notifications_stream = function () {
         // We reach here when the notifications stream is a private
         // stream the current user is not subscribed to.
     }
-    return '';
+    return "";
 };
 
 exports.initialize = function (params) {

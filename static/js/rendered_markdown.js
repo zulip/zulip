@@ -10,10 +10,10 @@
 */
 
 function get_user_id_for_mention_button(elem) {
-    const user_id_string = $(elem).attr('data-user-id');
+    const user_id_string = $(elem).attr("data-user-id");
     // Handle legacy markdown that was rendered before we cut
     // over to using data-user-id.
-    const email = $(elem).attr('data-user-email');
+    const email = $(elem).attr("data-user-email");
 
     if (user_id_string === "*" || email === "*") {
         return "*";
@@ -35,7 +35,7 @@ function get_user_id_for_mention_button(elem) {
 }
 
 function get_user_group_id_for_mention_button(elem) {
-    const user_group_id = $(elem).attr('data-user-group-id');
+    const user_group_id = $(elem).attr("data-user-group-id");
 
     if (user_group_id) {
         return parseInt(user_group_id, 10);
@@ -46,7 +46,7 @@ function get_user_group_id_for_mention_button(elem) {
 
 // Helper function to update a mentioned user's name.
 exports.set_name_in_mention_element = function (element, name) {
-    if ($(element).hasClass('silent')) {
+    if ($(element).hasClass("silent")) {
         $(element).text(name);
     } else {
         $(element).text("@" + name);
@@ -55,17 +55,17 @@ exports.set_name_in_mention_element = function (element, name) {
 
 exports.update_elements = (content) => {
     // Set the rtl class if the text has an rtl direction
-    if (rtl.get_direction(content.text()) === 'rtl') {
-        content.addClass('rtl');
+    if (rtl.get_direction(content.text()) === "rtl") {
+        content.addClass("rtl");
     }
 
-    content.find('.user-mention').each(function () {
+    content.find(".user-mention").each(function () {
         const user_id = get_user_id_for_mention_button(this);
         // We give special highlights to the mention buttons
         // that refer to the current user.
         if (user_id === "*" || people.is_my_user_id(user_id)) {
             // Either a wildcard mention or us, so mark it.
-            $(this).addClass('user-mention-me');
+            $(this).addClass("user-mention-me");
         }
         if (user_id && user_id !== "*" && !$(this).find(".highlight").length) {
             // If it's a mention of a specific user, edit the
@@ -81,7 +81,7 @@ exports.update_elements = (content) => {
         }
     });
 
-    content.find('.user-group-mention').each(function () {
+    content.find(".user-group-mention").each(function () {
         const user_group_id = get_user_group_id_for_mention_button(this);
         const user_group = user_groups.get_user_group_from_id(user_group_id, true);
         if (user_group === undefined) {
@@ -95,7 +95,7 @@ exports.update_elements = (content) => {
         const my_user_id = people.my_current_user_id();
         // Mark user group you're a member of.
         if (user_groups.is_member_of(user_group_id, my_user_id)) {
-            $(this).addClass('user-mention-me');
+            $(this).addClass("user-mention-me");
         }
 
         if (user_group_id && !$(this).find(".highlight").length) {
@@ -105,8 +105,8 @@ exports.update_elements = (content) => {
         }
     });
 
-    content.find('a.stream').each(function () {
-        const stream_id = parseInt($(this).attr('data-stream-id'), 10);
+    content.find("a.stream").each(function () {
+        const stream_id = parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id && !$(this).find(".highlight").length) {
             // Display the current name for stream if it is not
             // being displayed in search highlight.
@@ -120,27 +120,27 @@ exports.update_elements = (content) => {
         }
     });
 
-    content.find('a.stream-topic').each(function () {
-        const stream_id = parseInt($(this).attr('data-stream-id'), 10);
+    content.find("a.stream-topic").each(function () {
+        const stream_id = parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id && !$(this).find(".highlight").length) {
             // Display the current name for stream if it is not
             // being displayed in search highlight.
             const text = $(this).text();
-            const topic = text.split('>', 2)[1];
+            const topic = text.split(">", 2)[1];
             const stream_name = stream_data.maybe_get_stream_name(stream_id);
             if (stream_name !== undefined) {
                 // If the stream has been deleted,
                 // stream_data.maybe_get_stream_name might return
                 // undefined.  Otherwise, display the current stream name.
-                $(this).text("#" + stream_name + ' > ' + topic);
+                $(this).text("#" + stream_name + " > " + topic);
             }
         }
     });
 
-    content.find('time').each(function () {
+    content.find("time").each(function () {
         // Populate each timestamp span with mentioned time
         // in user's local timezone.
-        const time_str = $(this).attr('datetime');
+        const time_str = $(this).attr("datetime");
         if (time_str === undefined) {
             return;
         }
@@ -155,35 +155,35 @@ exports.update_elements = (content) => {
             const text = $(this).text();
             const rendered_time = timerender.render_markdown_timestamp(timestamp, text);
             $(this).text(rendered_time.text);
-            $(this).attr('title', rendered_time.title);
+            $(this).attr("title", rendered_time.title);
         } else {
             // This shouldn't happen. If it does, we're very interested in debugging it.
             blueslip.error(`Moment could not parse datetime supplied by backend: ${time_str}`);
         }
     });
 
-    content.find('span.timestamp-error').each(function () {
-        const time_str = $(this).text().replace('Invalid time format: ', '');
-        const text = i18n.t('Invalid time format: __timestamp__', { timestamp: time_str });
+    content.find("span.timestamp-error").each(function () {
+        const time_str = $(this).text().replace("Invalid time format: ", "");
+        const text = i18n.t("Invalid time format: __timestamp__", {timestamp: time_str});
         $(this).text(text);
     });
 
-    content.find('div.spoiler-header').each(function () {
+    content.find("div.spoiler-header").each(function () {
         // If a spoiler block has no header content, it should have a default header.
         // We do this client side to allow for i18n by the client.
         if ($.trim($(this).html()).length === 0) {
-            $(this).append(`<p>${i18n.t('Spoiler')}</p>`);
+            $(this).append(`<p>${i18n.t("Spoiler")}</p>`);
         }
 
         // Add the expand/collapse button to spoiler blocks
-        const toggle_button_html = '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
+        const toggle_button_html =
+            '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
         $(this).prepend(toggle_button_html);
     });
 
-
     // Display emoji (including realm emoji) as text if
     // page_params.emojiset is 'text'.
-    if (page_params.emojiset === 'text') {
+    if (page_params.emojiset === "text") {
         content.find(".emoji").replaceWith(function () {
             const text = $(this).attr("title");
             return ":" + text + ":";

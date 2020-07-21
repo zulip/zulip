@@ -1,18 +1,22 @@
-set_global('pm_conversations', {
+set_global("pm_conversations", {
     recent: {},
 });
 
-zrequire('muting');
-zrequire('unread');
-zrequire('stream_data');
-zrequire('stream_topic_history');
-zrequire('stream_sort');
-const tg = zrequire('topic_generator');
+zrequire("muting");
+zrequire("unread");
+zrequire("stream_data");
+zrequire("stream_topic_history");
+zrequire("stream_sort");
+const tg = zrequire("topic_generator");
 
-function is_even(i) { return i % 2 === 0; }
-function is_odd(i) { return i % 2 === 1; }
+function is_even(i) {
+    return i % 2 === 0;
+}
+function is_odd(i) {
+    return i % 2 === 1;
+}
 
-run_test('basics', () => {
+run_test("basics", () => {
     let gen = tg.list_generator([10, 20, 30]);
     assert.equal(gen.next(), 10);
     assert.equal(gen.next(), 20);
@@ -72,14 +76,16 @@ run_test('basics', () => {
 
     ints = tg.list_generator([10, 20, 30]);
 
-    function mult10(x) { return x * 10; }
+    function mult10(x) {
+        return x * 10;
+    }
 
     gen = tg.map(ints, mult10);
     assert.equal(gen.next(), 100);
     assert.equal(gen.next(), 200);
 });
 
-run_test('reverse', () => {
+run_test("reverse", () => {
     let gen = tg.reverse_list_generator([10, 20, 30]);
     assert.equal(gen.next(), 30);
     assert.equal(gen.next(), 20);
@@ -96,7 +102,7 @@ run_test('reverse', () => {
     assert.equal(gen.next(), undefined);
     assert.equal(gen.next(), undefined);
 
-    gen = tg.reverse_wrap_exclude([10, 20, 30], 'whatever');
+    gen = tg.reverse_wrap_exclude([10, 20, 30], "whatever");
     assert.equal(gen.next(), 30);
     assert.equal(gen.next(), 20);
     assert.equal(gen.next(), 10);
@@ -140,7 +146,7 @@ run_test('reverse', () => {
     assert.equal(gen.next(), undefined);
 });
 
-run_test('fchain', () => {
+run_test("fchain", () => {
     const mults = function (n) {
         let ret = 0;
         return {
@@ -176,50 +182,49 @@ run_test('fchain', () => {
         return;
     };
 
-    blueslip.expect('error', 'Invalid generator returned.');
+    blueslip.expect("error", "Invalid generator returned.");
     ints = tg.list_generator([29, 43]);
     gen = tg.fchain(ints, undef);
     gen.next();
 });
 
-run_test('streams', () => {
+run_test("streams", () => {
     function assert_next_stream(curr_stream, expected) {
         const actual = tg.get_next_stream(curr_stream);
         assert.equal(actual, expected);
     }
 
     global.stream_sort.get_streams = function () {
-        return ['announce', 'muted', 'devel', 'test here'];
+        return ["announce", "muted", "devel", "test here"];
     };
 
-    assert_next_stream(undefined, 'announce');
-    assert_next_stream('NOT THERE', 'announce');
+    assert_next_stream(undefined, "announce");
+    assert_next_stream("NOT THERE", "announce");
 
-    assert_next_stream('announce', 'muted');
-    assert_next_stream('test here', 'announce');
+    assert_next_stream("announce", "muted");
+    assert_next_stream("test here", "announce");
 
     function assert_prev_stream(curr_stream, expected) {
         const actual = tg.get_prev_stream(curr_stream);
         assert.equal(actual, expected);
     }
 
-    assert_prev_stream(undefined, 'test here');
-    assert_prev_stream('test here', 'devel');
-    assert_prev_stream('announce', 'test here');
-
+    assert_prev_stream(undefined, "test here");
+    assert_prev_stream("test here", "devel");
+    assert_prev_stream("announce", "test here");
 });
 
-run_test('topics', () => {
+run_test("topics", () => {
     const streams = [1, 2, 3, 4];
     const topics = new Map([
-        [1, ['read', 'read', '1a', '1b', 'read', '1c']],
+        [1, ["read", "read", "1a", "1b", "read", "1c"]],
         [2, []],
-        [3, ['3a', 'read', 'read', '3b', 'read']],
-        [4, ['4a']],
+        [3, ["3a", "read", "read", "3b", "read"]],
+        [4, ["4a"]],
     ]);
 
     function has_unread_messages(stream, topic) {
-        return topic !== 'read';
+        return topic !== "read";
     }
 
     function get_topics(stream) {
@@ -227,32 +232,21 @@ run_test('topics', () => {
     }
 
     function next_topic(curr_stream, curr_topic) {
-        return tg.next_topic(
-            streams,
-            get_topics,
-            has_unread_messages,
-            curr_stream,
-            curr_topic);
+        return tg.next_topic(streams, get_topics, has_unread_messages, curr_stream, curr_topic);
     }
 
-    assert.deepEqual(next_topic(1, '1a'),
-                     {stream: 1, topic: '1b'});
-    assert.deepEqual(next_topic(1, undefined),
-                     {stream: 1, topic: '1a'});
-    assert.deepEqual(next_topic(2, 'bogus'),
-                     {stream: 3, topic: '3a'});
-    assert.deepEqual(next_topic(3, '3b'),
-                     {stream: 3, topic: '3a'});
-    assert.deepEqual(next_topic(4, '4a'),
-                     {stream: 1, topic: '1a'});
-    assert.deepEqual(next_topic(undefined, undefined),
-                     {stream: 1, topic: '1a'});
+    assert.deepEqual(next_topic(1, "1a"), {stream: 1, topic: "1b"});
+    assert.deepEqual(next_topic(1, undefined), {stream: 1, topic: "1a"});
+    assert.deepEqual(next_topic(2, "bogus"), {stream: 3, topic: "3a"});
+    assert.deepEqual(next_topic(3, "3b"), {stream: 3, topic: "3a"});
+    assert.deepEqual(next_topic(4, "4a"), {stream: 1, topic: "1a"});
+    assert.deepEqual(next_topic(undefined, undefined), {stream: 1, topic: "1a"});
 
     // Now test the deeper function that is wired up to
     // real functions stream_data/stream_sort/unread.
 
     global.stream_sort.get_streams = function () {
-        return ['announce', 'muted', 'devel', 'test here'];
+        return ["announce", "muted", "devel", "test here"];
     };
 
     const muted_stream_id = 400;
@@ -265,10 +259,10 @@ run_test('topics', () => {
 
     stream_topic_history.get_recent_topic_names = function (stream_id) {
         switch (stream_id) {
-        case muted_stream_id:
-            return ['ms-topic1', 'ms-topic2'];
-        case devel_stream_id:
-            return ['muted', 'python'];
+            case muted_stream_id:
+                return ["ms-topic1", "ms-topic2"];
+            case devel_stream_id:
+                return ["muted", "python"];
         }
 
         return [];
@@ -279,7 +273,7 @@ run_test('topics', () => {
     };
 
     global.stream_data.is_stream_muted_by_name = function (stream_name) {
-        return stream_name === 'muted';
+        return stream_name === "muted";
     };
 
     global.unread.topic_has_any_unread = function (stream_id) {
@@ -287,44 +281,44 @@ run_test('topics', () => {
     };
 
     global.muting.is_topic_muted = function (stream_name, topic) {
-        return topic === 'muted';
+        return topic === "muted";
     };
 
-    let next_item = tg.get_next_topic('announce', 'whatever');
+    let next_item = tg.get_next_topic("announce", "whatever");
     assert.deepEqual(next_item, {
-        stream: 'devel',
-        topic: 'python',
+        stream: "devel",
+        topic: "python",
     });
 
-    next_item = tg.get_next_topic('muted', undefined);
+    next_item = tg.get_next_topic("muted", undefined);
     assert.deepEqual(next_item, {
-        stream: 'muted',
-        topic: 'ms-topic1',
+        stream: "muted",
+        topic: "ms-topic1",
     });
 });
 
-run_test('get_next_unread_pm_string', () => {
+run_test("get_next_unread_pm_string", () => {
     pm_conversations.recent.get_strings = function () {
-        return ['1', 'read', '2,3', '4', 'unk'];
+        return ["1", "read", "2,3", "4", "unk"];
     };
 
     unread.num_unread_for_person = function (user_ids_string) {
-        if (user_ids_string === 'unk') {
+        if (user_ids_string === "unk") {
             return;
         }
 
-        if (user_ids_string === 'read') {
+        if (user_ids_string === "read") {
             return 0;
         }
 
         return 5; // random non-zero value
     };
 
-    assert.equal(tg.get_next_unread_pm_string(), '1');
-    assert.equal(tg.get_next_unread_pm_string('4'), '1');
-    assert.equal(tg.get_next_unread_pm_string('unk'), '1');
-    assert.equal(tg.get_next_unread_pm_string('4'), '1');
-    assert.equal(tg.get_next_unread_pm_string('1'), '2,3');
-    assert.equal(tg.get_next_unread_pm_string('read'), '2,3');
-    assert.equal(tg.get_next_unread_pm_string('2,3'), '4');
+    assert.equal(tg.get_next_unread_pm_string(), "1");
+    assert.equal(tg.get_next_unread_pm_string("4"), "1");
+    assert.equal(tg.get_next_unread_pm_string("unk"), "1");
+    assert.equal(tg.get_next_unread_pm_string("4"), "1");
+    assert.equal(tg.get_next_unread_pm_string("1"), "2,3");
+    assert.equal(tg.get_next_unread_pm_string("read"), "2,3");
+    assert.equal(tg.get_next_unread_pm_string("2,3"), "4");
 });

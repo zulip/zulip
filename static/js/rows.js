@@ -5,40 +5,40 @@ exports.next_visible = function (message_row) {
     if (message_row === undefined || message_row.length === 0) {
         return $();
     }
-    const row = message_row.next('.selectable_row');
+    const row = message_row.next(".selectable_row");
     if (row.length !== 0) {
         return row;
     }
     const recipient_row = exports.get_message_recipient_row(message_row);
-    const next_recipient_rows = $(recipient_row).nextAll('.recipient_row');
+    const next_recipient_rows = $(recipient_row).nextAll(".recipient_row");
     if (next_recipient_rows.length === 0) {
         return $();
     }
-    return $('.selectable_row', next_recipient_rows[0]).first();
+    return $(".selectable_row", next_recipient_rows[0]).first();
 };
 
 exports.prev_visible = function (message_row) {
     if (message_row === undefined || message_row.length === 0) {
         return $();
     }
-    const row = message_row.prev('.selectable_row');
+    const row = message_row.prev(".selectable_row");
     if (row.length !== 0) {
         return row;
     }
     const recipient_row = exports.get_message_recipient_row(message_row);
-    const prev_recipient_rows = $(recipient_row).prevAll('.recipient_row');
+    const prev_recipient_rows = $(recipient_row).prevAll(".recipient_row");
     if (prev_recipient_rows.length === 0) {
         return $();
     }
-    return $('.selectable_row', prev_recipient_rows[0]).last();
+    return $(".selectable_row", prev_recipient_rows[0]).last();
 };
 
 exports.first_visible = function () {
-    return $('.focused_table .selectable_row').first();
+    return $(".focused_table .selectable_row").first();
 };
 
 exports.last_visible = function () {
-    return $('.focused_table .selectable_row').last();
+    return $(".focused_table .selectable_row").last();
 };
 
 exports.visible_range = function (start_id, end_id) {
@@ -66,12 +66,12 @@ exports.visible_range = function (start_id, end_id) {
 };
 
 exports.is_draft_row = function (row) {
-    return row.find('.restore-draft').length >= 1;
+    return row.find(".restore-draft").length >= 1;
 };
 
 exports.id = function (message_row) {
     if (exports.is_draft_row(message_row)) {
-        blueslip.error('Drafts have no zid');
+        blueslip.error("Drafts have no zid");
         return;
     }
 
@@ -87,7 +87,7 @@ exports.id = function (message_row) {
         blueslip.error("Caller should pass in a single row.");
     }
 
-    const zid = message_row.attr('zid');
+    const zid = message_row.attr("zid");
 
     if (zid === undefined) {
         blueslip.error("Calling code passed rows.id a row with no zid attr.");
@@ -97,31 +97,28 @@ exports.id = function (message_row) {
 };
 
 exports.local_echo_id = function (message_row) {
-    const zid = message_row.attr('zid');
+    const zid = message_row.attr("zid");
 
     if (zid === undefined) {
         blueslip.error("Calling code passed rows.local_id a row with no zid attr.");
         return;
     }
 
-    if (!zid.includes('.0')) {
-        blueslip.error('Trying to get local_id from row that has reified message id: ' + zid);
+    if (!zid.includes(".0")) {
+        blueslip.error("Trying to get local_id from row that has reified message id: " + zid);
     }
 
     return zid;
 };
 
-const valid_table_names = new Set([
-    "zhome",
-    "zfilt",
-]);
+const valid_table_names = new Set(["zhome", "zfilt"]);
 
 exports.get_table = function (table_name) {
     if (!valid_table_names.has(table_name)) {
         return $();
     }
 
-    return $('#' + table_name);
+    return $("#" + table_name);
 };
 
 exports.get_message_id = function (elem) {
@@ -141,19 +138,21 @@ exports.get_closest_group = function (element) {
 };
 
 exports.first_message_in_group = function (message_group) {
-    return $('div.message_row', message_group).first();
+    return $("div.message_row", message_group).first();
 };
 
 exports.get_message_recipient_row = function (message_row) {
-    return $(message_row).parent('.recipient_row').expectOne();
+    return $(message_row).parent(".recipient_row").expectOne();
 };
 
 exports.get_message_recipient_header = function (message_row) {
-    return $(message_row).parent('.recipient_row').find('.message_header').expectOne();
+    return $(message_row).parent(".recipient_row").find(".message_header").expectOne();
 };
 
 exports.recipient_from_group = function (message_group) {
-    return message_store.get(exports.id($(message_group).children('.message_row').first().expectOne()));
+    return message_store.get(
+        exports.id($(message_group).children(".message_row").first().expectOne()),
+    );
 };
 
 exports.id_for_recipient_row = function (recipient_row) {

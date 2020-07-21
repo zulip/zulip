@@ -1,5 +1,5 @@
-const render_muted_topic_ui_row = require('../templates/muted_topic_ui_row.hbs');
-const render_topic_muted = require('../templates/topic_muted.hbs');
+const render_muted_topic_ui_row = require("../templates/muted_topic_ui_row.hbs");
+const render_topic_muted = require("../templates/topic_muted.hbs");
 
 function timestamp_ms() {
     return new Date().getTime();
@@ -29,11 +29,11 @@ exports.persist_mute = function (stream_id, topic_name) {
     const data = {
         stream_id: stream_id,
         topic: topic_name,
-        op: 'add',
+        op: "add",
     };
     last_topic_update = timestamp_ms();
     channel.patch({
-        url: '/json/users/me/subscriptions/muted_topics',
+        url: "/json/users/me/subscriptions/muted_topics",
         idempotent: true,
         data: data,
     });
@@ -43,11 +43,11 @@ exports.persist_unmute = function (stream_id, topic_name) {
     const data = {
         stream_id: stream_id,
         topic: topic_name,
-        op: 'remove',
+        op: "remove",
     };
     last_topic_update = timestamp_ms();
     channel.patch({
-        url: '/json/users/me/subscriptions/muted_topics',
+        url: "/json/users/me/subscriptions/muted_topics",
         idempotent: true,
         data: data,
     });
@@ -78,7 +78,7 @@ exports.set_up_muted_topics_ui = function () {
     list_render.create(muted_topics_table, muted_topics, {
         name: "muted-topics-list",
         modifier: function (muted_topics) {
-            return render_muted_topic_ui_row({ muted_topics: muted_topics });
+            return render_muted_topic_ui_row({muted_topics: muted_topics});
         },
         filter: {
             element: $search_input,
@@ -89,8 +89,8 @@ exports.set_up_muted_topics_ui = function () {
                 ui.reset_scrollbar(muted_topics_table.closest(".progressive-table-wrapper"));
             },
         },
-        parent_container: $('#muted-topic-settings'),
-        simplebar_container: $('#muted-topic-settings .progressive-table-wrapper'),
+        parent_container: $("#muted-topic-settings"),
+        simplebar_container: $("#muted-topic-settings .progressive-table-wrapper"),
     });
 };
 
@@ -137,7 +137,7 @@ exports.toggle_mute = function (message) {
 
     if (muting.is_topic_muted(stream_id, topic)) {
         exports.unmute(stream_id, topic);
-    } else if (message.type === 'stream') {
+    } else if (message.type === "stream") {
         exports.mute(stream_id, topic);
     }
 };

@@ -29,7 +29,6 @@ def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> Optional[Use
         # and beginning of email address
         user = UserProfile.objects.filter(
             Q(full_name__iexact=jira_username) |
-            Q(short_name__iexact=jira_username) |
             Q(email__istartswith=jira_username),
             is_active=True,
             realm=realm).order_by("id")[0]

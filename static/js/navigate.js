@@ -1,7 +1,5 @@
 function go_to_row(msg_id) {
-    current_msg_list.select_id(msg_id,
-                               {then_scroll: true,
-                                from_scroll: true});
+    current_msg_list.select_id(msg_id, {then_scroll: true, from_scroll: true});
 }
 
 exports.up = function () {
@@ -21,8 +19,9 @@ exports.down = function (with_centering) {
             // At the last message, scroll to the bottom so we have
             // lots of nice whitespace for new messages coming in.
             const current_msg_table = rows.get_table(current_msg_list.table_name);
-            message_viewport.scrollTop(current_msg_table.safeOuterHeight(true) -
-                                       message_viewport.height() * 0.1);
+            message_viewport.scrollTop(
+                current_msg_table.safeOuterHeight(true) - message_viewport.height() * 0.1,
+            );
             if (current_msg_list.can_mark_messages_read()) {
                 unread_ops.mark_current_list_as_read();
             }
@@ -42,15 +41,13 @@ exports.down = function (with_centering) {
 exports.to_home = function () {
     message_viewport.set_last_movement_direction(-1);
     const first_id = current_msg_list.first().id;
-    current_msg_list.select_id(first_id, {then_scroll: true,
-                                          from_scroll: true});
+    current_msg_list.select_id(first_id, {then_scroll: true, from_scroll: true});
 };
 
 exports.to_end = function () {
     const next_id = current_msg_list.last().id;
     message_viewport.set_last_movement_direction(1);
-    current_msg_list.select_id(next_id, {then_scroll: true,
-                                         from_scroll: true});
+    current_msg_list.select_id(next_id, {then_scroll: true, from_scroll: true});
     if (current_msg_list.can_mark_messages_read()) {
         unread_ops.mark_current_list_as_read();
     }
@@ -141,8 +138,5 @@ exports.maybe_scroll_to_selected = function () {
         scroll_to_selected_planned = false;
     }
 };
-
-
-
 
 window.navigate = exports;

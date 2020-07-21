@@ -1,15 +1,15 @@
-set_global('$', global.make_zjquery());
-zrequire('people');
-zrequire('buddy_data');
-zrequire('buddy_list');
-zrequire('ui');
+set_global("$", global.make_zjquery());
+zrequire("people");
+zrequire("buddy_data");
+zrequire("buddy_list");
+zrequire("ui");
 
-set_global('padded_widget', {
+set_global("padded_widget", {
     update_padding: () => {},
 });
 
 function init_simulated_scrolling() {
-    set_global('message_viewport', {
+    set_global("message_viewport", {
         height: () => 550,
     });
 
@@ -19,23 +19,23 @@ function init_simulated_scrolling() {
         scrollHeight: 0,
     };
 
-    $('#buddy_list_wrapper')[0] = elem;
+    $("#buddy_list_wrapper")[0] = elem;
 
-    $('#buddy_list_wrapper_padding').height = () => 0;
+    $("#buddy_list_wrapper_padding").height = () => 0;
 
     return elem;
 }
 
 const alice = {
-    email: 'alice@zulip.com',
+    email: "alice@zulip.com",
     user_id: 10,
-    full_name: 'Alice Smith',
+    full_name: "Alice Smith",
 };
 people.add_active_user(alice);
 
-run_test('get_items', () => {
-    const alice_li = $.create('alice stub');
-    const sel = 'li.user_sidebar_entry';
+run_test("get_items", () => {
+    const alice_li = $.create("alice stub");
+    const sel = "li.user_sidebar_entry";
 
     buddy_list.container.set_find_results(sel, {
         map: (f) => [f(0, alice_li)],
@@ -45,26 +45,26 @@ run_test('get_items', () => {
     assert.deepEqual(items, [alice_li]);
 });
 
-run_test('basics', () => {
+run_test("basics", () => {
     init_simulated_scrolling();
 
     buddy_list.get_data_from_keys = (opts) => {
         const keys = opts.keys;
         assert.deepEqual(keys, [alice.user_id]);
-        return 'data-stub';
+        return "data-stub";
     };
 
     buddy_list.items_to_html = (opts) => {
         const items = opts.items;
 
-        assert.equal(items, 'data-stub');
+        assert.equal(items, "data-stub");
 
-        return 'html-stub';
+        return "html-stub";
     };
 
     let appended;
     buddy_list.container.append = (html) => {
-        assert.equal(html, 'html-stub');
+        assert.equal(html, "html-stub");
         appended = true;
     };
 
@@ -73,7 +73,7 @@ run_test('basics', () => {
     });
     assert(appended);
 
-    const alice_li = $.create('alice-li-stub');
+    const alice_li = $.create("alice-li-stub");
     alice_li.length = 1;
 
     buddy_list.get_li_from_key = (opts) => {
@@ -89,7 +89,7 @@ run_test('basics', () => {
     assert.equal(li, alice_li);
 });
 
-run_test('big_list', () => {
+run_test("big_list", () => {
     const elem = init_simulated_scrolling();
 
     // Don't actually render, but do simulate filling up
@@ -108,9 +108,9 @@ run_test('big_list', () => {
 
     _.times(num_users, (i) => {
         const person = {
-            email: 'foo' + i + '@zulip.com',
+            email: "foo" + i + "@zulip.com",
             user_id: 100 + i,
-            full_name: 'Somebody ' + i,
+            full_name: "Somebody " + i,
         };
         people.add_active_user(person);
         user_ids.push(person.user_id);
@@ -123,7 +123,7 @@ run_test('big_list', () => {
     assert.equal(chunks_inserted, 6);
 });
 
-run_test('force_render', () => {
+run_test("force_render", () => {
     buddy_list.render_count = 50;
 
     let num_rendered = 0;
@@ -138,18 +138,18 @@ run_test('force_render', () => {
     assert.equal(num_rendered, 60 - 50 + 3);
 
     // Force a contrived error case for line coverage.
-    blueslip.expect('error', 'cannot show key at this position: 10');
+    blueslip.expect("error", "cannot show key at this position: 10");
     buddy_list.force_render({
         pos: 10,
     });
 });
 
-run_test('find_li w/force_render', () => {
+run_test("find_li w/force_render", () => {
     // If we call find_li w/force_render set, and the
     // key is not already rendered in DOM, then the
     // widget will call show_key to force-render it.
-    const key = '999';
-    const stub_li = $.create('nada');
+    const key = "999";
+    const stub_li = $.create("nada");
 
     stub_li.length = 0;
 
@@ -158,9 +158,7 @@ run_test('find_li w/force_render', () => {
         return stub_li;
     };
 
-    buddy_list.keys = [
-        'foo', 'bar', key, 'baz',
-    ];
+    buddy_list.keys = ["foo", "bar", key, "baz"];
 
     let shown;
 
@@ -186,7 +184,7 @@ run_test('find_li w/force_render', () => {
     buddy_list.get_li_from_key = () => ({length: 0});
 
     const undefined_li = buddy_list.find_li({
-        key: 'not-there',
+        key: "not-there",
         force_render: true,
     });
 
@@ -194,7 +192,7 @@ run_test('find_li w/force_render', () => {
     assert.equal(undefined_li.length, 0);
 });
 
-run_test('scrolling', () => {
+run_test("scrolling", () => {
     let scroll_f;
 
     $(buddy_list.scroll_container_sel).scroll = (f) => {

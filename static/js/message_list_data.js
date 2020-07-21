@@ -169,8 +169,7 @@ MessageListData.prototype = {
     unmuted_messages: function (messages) {
         return messages.filter(
             (message) =>
-                !muting.is_topic_muted(message.stream_id, message.topic) ||
-                message.mentioned,
+                !muting.is_topic_muted(message.stream_id, message.topic) || message.mentioned,
         );
     },
 
@@ -286,7 +285,6 @@ MessageListData.prototype = {
 
             viewable_messages = this.unmuted_messages(messages);
             this._items = viewable_messages.concat(this._items);
-
         } else {
             viewable_messages = messages;
             this._items = messages.concat(this._items);
@@ -357,7 +355,7 @@ MessageListData.prototype = {
         }
 
         const start_idx = this._lower_bound(start);
-        const end_idx   = this._lower_bound(end);
+        const end_idx = this._lower_bound(end);
         return this._items.slice(start_idx, end_idx + 1);
     },
 
@@ -370,8 +368,7 @@ MessageListData.prototype = {
         function less_func(msg, ref_id, a_idx) {
             if (self._is_localonly_id(msg.id)) {
                 // First non-local message before this one
-                const effective = self._next_nonlocal_message(self._items, a_idx,
-                                                              (idx) => idx - 1);
+                const effective = self._next_nonlocal_message(self._items, a_idx, (idx) => idx - 1);
                 if (effective) {
                     // Turn the 10.02 in [11, 10.02, 12] into 11.02
                     const decimal = parseFloat((msg.id % 1).toFixed(0.02));
@@ -431,7 +428,7 @@ MessageListData.prototype = {
                 const item = items[potential_idx];
 
                 if (item === undefined) {
-                    blueslip.warn('Invalid potential_idx: ' + potential_idx);
+                    blueslip.warn("Invalid potential_idx: " + potential_idx);
                     continue;
                 }
 
@@ -525,7 +522,9 @@ MessageListData.prototype = {
     },
 
     reorder_messages: function (new_id, opts) {
-        function message_sort_func(a, b) {return a.id - b.id;}
+        function message_sort_func(a, b) {
+            return a.id - b.id;
+        }
         // If this message is now out of order, re-order and re-render
         const self = this;
         const current_message = self._hash.get(new_id);
@@ -533,18 +532,20 @@ MessageListData.prototype = {
 
         if (index === -1) {
             if (!self.muting_enabled && opts.is_current_list()) {
-                blueslip.error("Trying to re-order message but can't find message with new_id in _items!");
+                blueslip.error(
+                    "Trying to re-order message but can't find message with new_id in _items!",
+                );
             }
             return;
         }
 
-        const next = self._next_nonlocal_message(self._items, index,
-                                                 (idx) => idx + 1);
-        const prev = self._next_nonlocal_message(self._items, index,
-                                                 (idx) => idx - 1);
+        const next = self._next_nonlocal_message(self._items, index, (idx) => idx + 1);
+        const prev = self._next_nonlocal_message(self._items, index, (idx) => idx - 1);
 
-        if (next !== undefined && current_message.id > next.id ||
-            prev !== undefined && current_message.id < prev.id) {
+        if (
+            (next !== undefined && current_message.id > next.id) ||
+            (prev !== undefined && current_message.id < prev.id)
+        ) {
             blueslip.debug("Changed message ID from server caused out-of-order list, reordering");
             self._items.sort(message_sort_func);
             if (self.muting_enabled) {

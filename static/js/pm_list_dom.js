@@ -1,4 +1,4 @@
-const render_pm_list_item = require('../templates/pm_list_item.hbs');
+const render_pm_list_item = require("../templates/pm_list_item.hbs");
 
 exports.keyed_pm_li = (convo) => {
     const render = () => render_pm_list_item(convo);
@@ -17,8 +17,8 @@ exports.keyed_pm_li = (convo) => {
 
 exports.pm_ul = (convos) => {
     const attrs = [
-        ['class', 'expanded_private_messages'],
-        ['data-name', 'private'],
+        ["class", "expanded_private_messages"],
+        ["data-name", "private"],
     ];
     return vdom.ul({
         attrs: attrs,

@@ -22,12 +22,12 @@ exports.user_ids = function () {
 
 exports.get = function get(message_id) {
     if (message_id === undefined || message_id === null) {
-        blueslip.error('message_store.get got bad value: ' + message_id);
+        blueslip.error("message_store.get got bad value: " + message_id);
         return;
     }
 
-    if (typeof message_id !== 'number') {
-        blueslip.error('message_store got non-number: ' + message_id);
+    if (typeof message_id !== "number") {
+        blueslip.error("message_store got non-number: " + message_id);
 
         // Try to soldier on, assuming the caller treats message
         // ids as strings.
@@ -42,12 +42,11 @@ exports.each = function (f) {
 };
 
 exports.get_pm_emails = function (message) {
-
     function email(user_id) {
         const person = people.get_by_user_id(user_id);
         if (!person) {
-            blueslip.error('Unknown user id ' + user_id);
-            return '?';
+            blueslip.error("Unknown user id " + user_id);
+            return "?";
         }
         return person.email;
     }
@@ -55,16 +54,15 @@ exports.get_pm_emails = function (message) {
     const user_ids = people.pm_with_user_ids(message);
     const emails = user_ids.map(email).sort();
 
-    return emails.join(', ');
+    return emails.join(", ");
 };
 
 exports.get_pm_full_names = function (message) {
-
     function name(user_id) {
         const person = people.get_by_user_id(user_id);
         if (!person) {
-            blueslip.error('Unknown user id ' + user_id);
-            return '?';
+            blueslip.error("Unknown user id " + user_id);
+            return "?";
         }
         return person.full_name;
     }
@@ -72,7 +70,7 @@ exports.get_pm_full_names = function (message) {
     const user_ids = people.pm_with_user_ids(message);
     const names = user_ids.map(name).sort();
 
-    return names.join(', ');
+    return names.join(", ");
 };
 
 exports.process_message_for_recent_private_messages = function (message) {
@@ -95,19 +93,18 @@ exports.set_message_booleans = function (message) {
         return flags.includes(flag_name);
     }
 
-    message.unread = !convert_flag('read');
-    message.historical = convert_flag('historical');
-    message.starred = convert_flag('starred');
-    message.mentioned = convert_flag('mentioned') || convert_flag('wildcard_mentioned');
-    message.mentioned_me_directly =  convert_flag('mentioned');
-    message.collapsed = convert_flag('collapsed');
-    message.alerted = convert_flag('has_alert_word');
+    message.unread = !convert_flag("read");
+    message.historical = convert_flag("historical");
+    message.starred = convert_flag("starred");
+    message.mentioned = convert_flag("mentioned") || convert_flag("wildcard_mentioned");
+    message.mentioned_me_directly = convert_flag("mentioned");
+    message.collapsed = convert_flag("collapsed");
+    message.alerted = convert_flag("has_alert_word");
 
     // Once we have set boolean flags here, the `flags` attribute is
     // just a distraction, so we delete it.  (All the downstream code
     // uses booleans.)
     delete message.flags;
-
 };
 
 exports.init_booleans = function (message) {
@@ -132,9 +129,9 @@ exports.update_booleans = function (message, flags) {
         return flags.includes(flag_name);
     }
 
-    message.mentioned = convert_flag('mentioned') || convert_flag('wildcard_mentioned');
-    message.mentioned_me_directly =  convert_flag('mentioned');
-    message.alerted = convert_flag('has_alert_word');
+    message.mentioned = convert_flag("mentioned") || convert_flag("wildcard_mentioned");
+    message.mentioned_me_directly = convert_flag("mentioned");
+    message.alerted = convert_flag("has_alert_word");
 };
 
 exports.add_message_metadata = function (message) {
@@ -164,37 +161,36 @@ exports.add_message_metadata = function (message) {
     util.convert_message_topic(message);
 
     switch (message.type) {
-    case 'stream':
-        message.is_stream = true;
-        message.stream = message.display_recipient;
-        message.reply_to = message.sender_email;
+        case "stream":
+            message.is_stream = true;
+            message.stream = message.display_recipient;
+            message.reply_to = message.sender_email;
 
-        stream_topic_history.add_message({
-            stream_id: message.stream_id,
-            topic_name: message.topic,
-            message_id: message.id,
-        });
+            stream_topic_history.add_message({
+                stream_id: message.stream_id,
+                topic_name: message.topic,
+                message_id: message.id,
+            });
 
-        recent_senders.process_message_for_senders(message);
-        message_user_ids.add(message.sender_id);
-        break;
+            recent_senders.process_message_for_senders(message);
+            message_user_ids.add(message.sender_id);
+            break;
 
-    case 'private':
-        message.is_private = true;
-        message.reply_to = util.normalize_recipients(
-            exports.get_pm_emails(message));
-        message.display_reply_to = exports.get_pm_full_names(message);
-        message.pm_with_url = people.pm_with_url(message);
-        message.to_user_ids = people.pm_reply_user_string(message);
+        case "private":
+            message.is_private = true;
+            message.reply_to = util.normalize_recipients(exports.get_pm_emails(message));
+            message.display_reply_to = exports.get_pm_full_names(message);
+            message.pm_with_url = people.pm_with_url(message);
+            message.to_user_ids = people.pm_reply_user_string(message);
 
-        exports.process_message_for_recent_private_messages(message);
+            exports.process_message_for_recent_private_messages(message);
 
-        if (people.is_my_user_id(message.sender_id)) {
-            for (const recip of message.display_recipient) {
-                message_user_ids.add(recip.id);
+            if (people.is_my_user_id(message.sender_id)) {
+                for (const recip of message.display_recipient) {
+                    message_user_ids.add(recip.id);
+                }
             }
-        }
-        break;
+            break;
     }
 
     alert_words.process_message(message);

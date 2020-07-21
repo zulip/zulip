@@ -29,5 +29,4 @@ exports.set_state_to_in_progress = function () {
     reload_in_progress = true;
 };
 
-
 window.reload_state = exports;

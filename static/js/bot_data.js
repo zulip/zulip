@@ -1,23 +1,22 @@
 const bots = new Map();
 
 const bot_fields = [
-    'api_key',
-    'avatar_url',
-    'bot_type',
-    'default_all_public_streams',
-    'default_events_register_stream',
-    'default_sending_stream',
-    'email',
-    'full_name',
-    'is_active',
-    'owner', // TODO: eliminate
-    'owner_id',
-    'user_id',
+    "api_key",
+    "avatar_url",
+    "bot_type",
+    "default_all_public_streams",
+    "default_events_register_stream",
+    "default_sending_stream",
+    "email",
+    "full_name",
+    "is_active",
+    "owner", // TODO: eliminate
+    "owner_id",
+    "user_id",
 ];
 
 const services = new Map();
-const services_fields = ['base_url', 'interface',
-                         'config_data', 'service_name', 'token'];
+const services_fields = ["base_url", "interface", "config_data", "service_name", "token"];
 
 const send_change_event = _.debounce(() => {
     settings_bots.render_bots();
@@ -53,7 +52,7 @@ exports.update = function (bot_id, bot_update) {
 
     // We currently only support one service per bot.
     const service = services.get(bot_id)[0];
-    if (typeof bot_update.services !== 'undefined' && bot_update.services.length > 0) {
+    if (typeof bot_update.services !== "undefined" && bot_update.services.length > 0) {
         Object.assign(service, _.pick(bot_update.services[0], services_fields));
     }
 

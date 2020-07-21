@@ -29,7 +29,6 @@ exports.update_email = function (user_id, new_email) {
     }
 };
 
-
 /* Operators we should send to the server. */
 exports.public_operators = function () {
     if (current_filter === undefined) {
@@ -45,7 +44,7 @@ exports.search_string = function () {
 // Collect operators which appear only once into an object,
 // and discard those which appear more than once.
 function collect_single(operators) {
-    const seen   = new Map();
+    const seen = new Map();
     const result = new Map();
 
     for (const elem of operators) {
@@ -74,17 +73,17 @@ exports.set_compose_defaults = function () {
     // Set the stream, topic, and/or PM recipient if they are
     // uniquely specified in the narrow view.
 
-    if (single.has('stream')) {
-        opts.stream = stream_data.get_name(single.get('stream'));
+    if (single.has("stream")) {
+        opts.stream = stream_data.get_name(single.get("stream"));
     }
 
-    if (single.has('topic')) {
-        opts.topic = single.get('topic');
+    if (single.has("topic")) {
+        opts.topic = single.get("topic");
     }
 
-    if (single.has('pm-with')) {
-        const private_message_recipient = single.get('pm-with');
-        if (people.is_valid_bulk_emails_for_compose(private_message_recipient.split(','))) {
+    if (single.has("pm-with")) {
+        const private_message_recipient = single.get("pm-with");
+        if (people.is_valid_bulk_emails_for_compose(private_message_recipient.split(","))) {
             opts.private_message_recipient = private_message_recipient;
         }
     }
@@ -169,9 +168,9 @@ exports.pm_string = function () {
 exports.get_first_unread_info = function () {
     if (current_filter === undefined) {
         // we don't yet support the all-messages view
-        blueslip.error('unexpected call to get_first_unread_info');
+        blueslip.error("unexpected call to get_first_unread_info");
         return {
-            flavor: 'cannot_compute',
+            flavor: "cannot_compute",
         };
     }
 
@@ -181,7 +180,7 @@ exports.get_first_unread_info = function () {
         // server to give us a definitive list of messages before
         // deciding where we'll move the selection.
         return {
-            flavor: 'cannot_compute',
+            flavor: "cannot_compute",
         };
     }
 
@@ -190,7 +189,7 @@ exports.get_first_unread_info = function () {
     if (unread_ids === undefined) {
         // _possible_unread_message_ids() only works for certain narrows
         return {
-            flavor: 'cannot_compute',
+            flavor: "cannot_compute",
         };
     }
 
@@ -198,13 +197,12 @@ exports.get_first_unread_info = function () {
 
     if (msg_id === undefined) {
         return {
-            flavor: 'not_found',
+            flavor: "not_found",
         };
     }
 
-
     return {
-        flavor: 'found',
+        flavor: "found",
         msg_id: unread_ids[0],
     };
 };
@@ -225,7 +223,7 @@ exports._possible_unread_message_ids = function () {
     let topic_name;
     let pm_string;
 
-    if (current_filter.can_bucket_by('stream', 'topic')) {
+    if (current_filter.can_bucket_by("stream", "topic")) {
         stream_id = exports.stream_id();
         if (stream_id === undefined) {
             return [];
@@ -234,7 +232,7 @@ exports._possible_unread_message_ids = function () {
         return unread.get_msg_ids_for_topic(stream_id, topic_name);
     }
 
-    if (current_filter.can_bucket_by('stream')) {
+    if (current_filter.can_bucket_by("stream")) {
         stream_id = exports.stream_id();
         if (stream_id === undefined) {
             return [];
@@ -242,7 +240,7 @@ exports._possible_unread_message_ids = function () {
         return unread.get_msg_ids_for_stream(stream_id);
     }
 
-    if (current_filter.can_bucket_by('pm-with')) {
+    if (current_filter.can_bucket_by("pm-with")) {
         pm_string = exports.pm_string();
         if (pm_string === undefined) {
             return [];
@@ -250,19 +248,19 @@ exports._possible_unread_message_ids = function () {
         return unread.get_msg_ids_for_person(pm_string);
     }
 
-    if (current_filter.can_bucket_by('is-private')) {
+    if (current_filter.can_bucket_by("is-private")) {
         return unread.get_msg_ids_for_private();
     }
 
-    if (current_filter.can_bucket_by('is-mentioned')) {
+    if (current_filter.can_bucket_by("is-mentioned")) {
         return unread.get_msg_ids_for_mentions();
     }
 
-    if (current_filter.can_bucket_by('is-starred')) {
+    if (current_filter.can_bucket_by("is-starred")) {
         return unread.get_msg_ids_for_starred();
     }
 
-    if (current_filter.can_bucket_by('sender')) {
+    if (current_filter.can_bucket_by("sender")) {
         // TODO: see #9352 to make this more efficient
         return unread.get_all_msg_ids();
     }
@@ -274,14 +272,12 @@ exports._possible_unread_message_ids = function () {
     return;
 };
 
-
 // Are we narrowed to PMs: all PMs or PMs with particular people.
 exports.narrowed_to_pms = function () {
     if (current_filter === undefined) {
         return false;
     }
-    return current_filter.has_operator("pm-with") ||
-            current_filter.has_operand("is", "private");
+    return current_filter.has_operator("pm-with") || current_filter.has_operand("is", "private");
 };
 
 exports.narrowed_by_pm_reply = function () {
@@ -289,8 +285,7 @@ exports.narrowed_by_pm_reply = function () {
         return false;
     }
     const operators = current_filter.operators();
-    return operators.length === 1 &&
-            current_filter.has_operator('pm-with');
+    return operators.length === 1 && current_filter.has_operator("pm-with");
 };
 
 exports.narrowed_by_topic_reply = function () {
@@ -298,16 +293,17 @@ exports.narrowed_by_topic_reply = function () {
         return false;
     }
     const operators = current_filter.operators();
-    return operators.length === 2 &&
-            current_filter.operands("stream").length === 1 &&
-            current_filter.operands("topic").length === 1;
+    return (
+        operators.length === 2 &&
+        current_filter.operands("stream").length === 1 &&
+        current_filter.operands("topic").length === 1
+    );
 };
 
 // We auto-reply under certain conditions, namely when you're narrowed
 // to a PM (or huddle), and when you're narrowed to some stream/topic pair
 exports.narrowed_by_reply = function () {
-    return exports.narrowed_by_pm_reply() ||
-            exports.narrowed_by_topic_reply();
+    return exports.narrowed_by_pm_reply() || exports.narrowed_by_topic_reply();
 };
 
 exports.narrowed_by_stream_reply = function () {
@@ -315,16 +311,14 @@ exports.narrowed_by_stream_reply = function () {
         return false;
     }
     const operators = current_filter.operators();
-    return operators.length === 1 &&
-            current_filter.operands("stream").length === 1;
+    return operators.length === 1 && current_filter.operands("stream").length === 1;
 };
 
 exports.narrowed_to_topic = function () {
     if (current_filter === undefined) {
         return false;
     }
-    return current_filter.has_operator("stream") &&
-            current_filter.has_operator("topic");
+    return current_filter.has_operator("stream") && current_filter.has_operator("topic");
 };
 
 exports.narrowed_to_search = function () {
@@ -339,8 +333,12 @@ exports.narrowed_to_starred = function () {
 };
 
 exports.muting_enabled = function () {
-    return !exports.narrowed_to_topic() && !exports.narrowed_to_search() &&
-            !exports.narrowed_to_pms() && !exports.narrowed_to_starred();
+    return (
+        !exports.narrowed_to_topic() &&
+        !exports.narrowed_to_search() &&
+        !exports.narrowed_to_pms() &&
+        !exports.narrowed_to_starred()
+    );
 };
 
 exports.is_for_stream_id = function (stream_id) {

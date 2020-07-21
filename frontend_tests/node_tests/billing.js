@@ -1,22 +1,24 @@
 const noop = () => {};
-const { JSDOM } = require("jsdom");
+const {JSDOM} = require("jsdom");
 const fs = require("fs");
 
 const template = fs.readFileSync("templates/corporate/billing.html", "utf-8");
-const dom = new JSDOM(template, { pretendToBeVisual: true });
+const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
 let jquery_init;
-global.$ = (f) => {jquery_init = f;};
-set_global('helpers', {
+global.$ = (f) => {
+    jquery_init = f;
+};
+set_global("helpers", {
     set_tab: noop,
 });
-set_global('StripeCheckout', {
+set_global("StripeCheckout", {
     configure: noop,
 });
 
-zrequire('billing', "js/billing/billing");
-set_global('$', global.make_zjquery());
+zrequire("billing", "js/billing/billing");
+set_global("$", global.make_zjquery());
 
 run_test("initialize", () => {
     let token_func;
@@ -51,9 +53,9 @@ run_test("initialize", () => {
 
     let stripe_checkout_configure_called = false;
     StripeCheckout.configure = (config_opts) => {
-        assert.equal(config_opts.image, '/static/images/logo/zulip-icon-128x128.png');
-        assert.equal(config_opts.locale, 'auto');
-        assert.equal(config_opts.key, '{{publishable_key}}');
+        assert.equal(config_opts.image, "/static/images/logo/zulip-icon-128x128.png");
+        assert.equal(config_opts.locale, "auto");
+        assert.equal(config_opts.key, "{{publishable_key}}");
         token_func = config_opts.token;
         stripe_checkout_configure_called = true;
 
@@ -62,7 +64,8 @@ run_test("initialize", () => {
         };
     };
 
-    $("#payment-method").data = (key) => document.querySelector("#payment-method").getAttribute("data-" + key);
+    $("#payment-method").data = (key) =>
+        document.querySelector("#payment-method").getAttribute("data-" + key);
 
     jquery_init();
 
@@ -71,7 +74,7 @@ run_test("initialize", () => {
     const e = {
         preventDefault: noop,
     };
-    const update_card_click_handler = $('#update-card-button').get_on_handler('click');
+    const update_card_click_handler = $("#update-card-button").get_on_handler("click");
     update_card_click_handler(e);
     assert(create_ajax_request_called);
     assert(open_func_called);
@@ -85,7 +88,7 @@ run_test("initialize", () => {
         create_ajax_request_called = true;
     };
 
-    const change_plan_status_click_handler = $('#change-plan-status').get_on_handler('click');
+    const change_plan_status_click_handler = $("#change-plan-status").get_on_handler("click");
     change_plan_status_click_handler(e);
     assert(create_ajax_request_called);
 });

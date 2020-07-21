@@ -1,4 +1,4 @@
-const LazySet = zrequire('lazy_set').LazySet;
+const LazySet = zrequire("lazy_set").LazySet;
 
 /*
     We mostly test LazySet indirectly.  This code
@@ -6,7 +6,7 @@ const LazySet = zrequire('lazy_set').LazySet;
     how we download subscribers in page_params.
 */
 
-run_test('map', () => {
+run_test("map", () => {
     const ls = new LazySet([1, 2]);
 
     const triple = (n) => n * 3;
@@ -14,9 +14,9 @@ run_test('map', () => {
     assert.deepEqual(ls.map(triple), [3, 6]);
 });
 
-run_test('conversions', () => {
-    blueslip.expect('error', 'not a number', 2);
+run_test("conversions", () => {
+    blueslip.expect("error", "not a number", 2);
     const ls = new LazySet([1, 2]);
-    ls.add('3');
-    assert(ls.has('3'));
+    ls.add("3");
+    assert(ls.has("3"));
 });

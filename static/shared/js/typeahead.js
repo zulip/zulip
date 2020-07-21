@@ -20,12 +20,12 @@
     prefix matches trumping "popularity".
 */
 export const popular_emojis = [
-    '1f44d', // +1
-    '1f389', // tada
-    '1f642', // slight_smile
-    '2764', // heart
-    '1f6e0', // working_on_it
-    '1f419', // octopus
+    "1f44d", // +1
+    "1f389", // tada
+    "1f642", // slight_smile
+    "2764", // heart
+    "1f6e0", // working_on_it
+    "1f419", // octopus
 ];
 
 const unicode_marks = /\p{M}/gu;
@@ -150,29 +150,20 @@ export function sort_emojis(objs, query) {
     const lowerQuery = query.toLowerCase();
 
     function decent_match(name) {
-        const pieces = name.toLowerCase().split('_');
+        const pieces = name.toLowerCase().split("_");
         return pieces.some((piece) => piece.startsWith(lowerQuery));
     }
 
     const popular_set = new Set(popular_emojis);
 
     function is_popular(obj) {
-        return popular_set.has(obj.emoji_code) &&
-            decent_match(obj.emoji_name);
+        return popular_set.has(obj.emoji_code) && decent_match(obj.emoji_name);
     }
 
     const popular_emoji_matches = objs.filter(is_popular);
     const others = objs.filter((obj) => !is_popular(obj));
 
-    const triage_results = triage(
-        query,
-        others,
-        (x) => x.emoji_name,
-    );
+    const triage_results = triage(query, others, (x) => x.emoji_name);
 
-    return [
-        ...popular_emoji_matches,
-        ...triage_results.matches,
-        ...triage_results.rest,
-    ];
+    return [...popular_emoji_matches, ...triage_results.matches, ...triage_results.rest];
 }

@@ -18,7 +18,8 @@ exports.focus_in_empty_compose = function () {
     return (
         exports.composing() &&
         exports.message_content() === "" &&
-        $('#compose-textarea').is(':focus'));
+        $("#compose-textarea").is(":focus")
+    );
 };
 
 function get_or_set(fieldname, keep_leading_whitespace) {
@@ -26,7 +27,7 @@ function get_or_set(fieldname, keep_leading_whitespace) {
     // because the DOM element might not exist yet when get_or_set
     // is called.
     return function (newval) {
-        const elem = $('#' + fieldname);
+        const elem = $("#" + fieldname);
         const oldval = elem.val();
         if (newval !== undefined) {
             elem.val(newval);
@@ -36,11 +37,11 @@ function get_or_set(fieldname, keep_leading_whitespace) {
 }
 
 // TODO: Break out setters and getter into their own functions.
-exports.stream_name     = get_or_set('stream_message_recipient_stream');
-exports.topic           = get_or_set('stream_message_recipient_topic');
+exports.stream_name = get_or_set("stream_message_recipient_stream");
+exports.topic = get_or_set("stream_message_recipient_topic");
 // We can't trim leading whitespace in `compose_textarea` because
 // of the indented syntax for multi-line code blocks.
-exports.message_content = get_or_set('compose-textarea', true);
+exports.message_content = get_or_set("compose-textarea", true);
 exports.private_message_recipient = function (value) {
     if (typeof value === "string") {
         compose_pm_pill.set_from_emails(value);

@@ -1,4 +1,4 @@
-import { Plugin } from "webpack";
+import {Plugin} from "webpack";
 
 declare namespace BundleTracker {
     interface Options {

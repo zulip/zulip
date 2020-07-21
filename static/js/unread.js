@@ -1,5 +1,5 @@
 const util = require("./util");
-const FoldDict = require('./fold_dict').FoldDict;
+const FoldDict = require("./fold_dict").FoldDict;
 
 // The unread module tracks the message IDs and locations of the
 // user's unread messages.  The tracking is initialized with
@@ -179,7 +179,7 @@ exports.unread_pm_counter = (function () {
     };
 
     return self;
-}());
+})();
 
 function make_per_stream_bucketer() {
     return make_bucketer({
@@ -199,7 +199,6 @@ exports.unread_topic_counter = (function () {
     self.clear = function () {
         bucketer.clear();
     };
-
 
     self.set_streams = function (objs) {
         for (const obj of objs) {
@@ -233,9 +232,8 @@ exports.unread_topic_counter = (function () {
     self.get_counts = function () {
         const res = {};
         res.stream_unread_messages = 0;
-        res.stream_count = new Map();  // hash by stream_id -> count
+        res.stream_count = new Map(); // hash by stream_id -> count
         for (const [stream_id, per_stream_bucketer] of bucketer) {
-
             // We track unread counts for streams that may be currently
             // unsubscribed.  Since users may re-subscribe, we don't
             // completely throw away the data.  But we do ignore it here,
@@ -256,7 +254,6 @@ exports.unread_topic_counter = (function () {
             if (!stream_data.is_muted(stream_id)) {
                 res.stream_unread_messages += stream_count;
             }
-
         }
 
         return res;
@@ -355,7 +352,6 @@ exports.unread_topic_counter = (function () {
         return util.sorted_ids(ids);
     };
 
-
     self.topic_has_any_unread = function (stream_id, topic) {
         const per_stream_bucketer = bucketer.get_bucket(stream_id);
 
@@ -372,7 +368,7 @@ exports.unread_topic_counter = (function () {
     };
 
     return self;
-}());
+})();
 
 exports.unread_mentions_counter = new Set();
 
@@ -403,9 +399,7 @@ exports.update_unread_topics = function (msg, event) {
         return;
     }
 
-    exports.unread_topic_counter.delete(
-        msg.id,
-    );
+    exports.unread_topic_counter.delete(msg.id);
 
     exports.unread_topic_counter.add(
         new_stream_id || msg.stream_id,
@@ -422,16 +416,12 @@ exports.process_loaded_messages = function (messages) {
 
         unread_messages.add(message.id);
 
-        if (message.type === 'private') {
+        if (message.type === "private") {
             exports.unread_pm_counter.add(message);
         }
 
-        if (message.type === 'stream') {
-            exports.unread_topic_counter.add(
-                message.stream_id,
-                message.topic,
-                message.id,
-            );
+        if (message.type === "stream") {
+            exports.unread_topic_counter.add(message.stream_id, message.topic, message.id);
         }
 
         exports.update_message_for_mention(message);
@@ -445,7 +435,7 @@ exports.update_message_for_mention = function (message) {
     }
 
     const is_unmuted_mention =
-        message.type === 'stream' &&
+        message.type === "stream" &&
         message.mentioned &&
         !muting.is_topic_muted(message.stream_id, message.topic);
 
@@ -504,9 +494,11 @@ exports.get_counts = function () {
 exports.calculate_notifiable_count = function (res) {
     let new_message_count = 0;
 
-    const only_show_notifiable = page_params.desktop_icon_count_display ===
+    const only_show_notifiable =
+        page_params.desktop_icon_count_display ===
         settings_notifications.desktop_icon_count_display_values.notifiable.code;
-    const no_notifications = page_params.desktop_icon_count_display ===
+    const no_notifications =
+        page_params.desktop_icon_count_display ===
         settings_notifications.desktop_icon_count_display_values.none.code;
     if (only_show_notifiable) {
         // DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE
@@ -594,18 +586,26 @@ exports.initialize = function () {
     }
 
     for (const obj of unread_msgs.huddles) {
-        for (const message_id of obj.unread_message_ids) {unread_messages.add(message_id);}
+        for (const message_id of obj.unread_message_ids) {
+            unread_messages.add(message_id);
+        }
     }
 
     for (const obj of unread_msgs.pms) {
-        for (const message_id of obj.unread_message_ids) {unread_messages.add(message_id);}
+        for (const message_id of obj.unread_message_ids) {
+            unread_messages.add(message_id);
+        }
     }
 
     for (const obj of unread_msgs.streams) {
-        for (const message_id of obj.unread_message_ids) {unread_messages.add(message_id);}
+        for (const message_id of obj.unread_message_ids) {
+            unread_messages.add(message_id);
+        }
     }
 
-    for (const message_id of unread_msgs.mentions) {unread_messages.add(message_id);}
+    for (const message_id of unread_msgs.mentions) {
+        unread_messages.add(message_id);
+    }
 };
 
 window.unread = exports;

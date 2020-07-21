@@ -1,6 +1,6 @@
 exports.send_message = function (request, on_success, error) {
     channel.post({
-        url: '/json/messages',
+        url: "/json/messages",
         data: request,
         success: function success(data) {
             // Call back to our callers to do things like closing the compose
@@ -11,13 +11,15 @@ exports.send_message = function (request, on_success, error) {
             sent_messages.report_server_ack(request.local_id);
         },
         error: function (xhr, error_type) {
-            if (error_type !== 'timeout' && reload_state.is_pending()) {
+            if (error_type !== "timeout" && reload_state.is_pending()) {
                 // The error might be due to the server changing
-                reload.initiate({immediate: true,
-                                 save_pointer: true,
-                                 save_narrow: true,
-                                 save_compose: true,
-                                 send_after_reload: true});
+                reload.initiate({
+                    immediate: true,
+                    save_pointer: true,
+                    save_narrow: true,
+                    save_compose: true,
+                    send_after_reload: true,
+                });
                 return;
             }
 
@@ -66,15 +68,15 @@ exports.reply_message = function (opts) {
         locally_echoed: locally_echoed,
     });
 
-    if (message.type === 'stream') {
+    if (message.type === "stream") {
         const stream = message.stream;
 
         const mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
 
-        content = mention + ' ' + content;
+        content = mention + " " + content;
 
-        reply.type = 'stream';
-        reply.to  = stream;
+        reply.type = "stream";
+        reply.to = stream;
         reply.content = content;
         reply.topic = message.topic;
 
@@ -82,18 +84,18 @@ exports.reply_message = function (opts) {
         return;
     }
 
-    if (message.type === 'private') {
+    if (message.type === "private") {
         const pm_recipient = people.pm_reply_to(message);
 
-        reply.type = 'private';
-        reply.to = JSON.stringify(pm_recipient.split(','));
+        reply.type = "private";
+        reply.to = JSON.stringify(pm_recipient.split(","));
         reply.content = content;
 
         exports.send_message(reply, success, error);
         return;
     }
 
-    blueslip.error('unknown message type: ' + message.type);
+    blueslip.error("unknown message type: " + message.type);
 };
 
 window.transmit = exports;

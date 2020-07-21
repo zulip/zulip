@@ -240,17 +240,6 @@ html {
     .header-main .logo span {
         color: hsl(0, 0%, 27%);
     }
-
-    .header-main .logo .brand-logo {
-        circle {
-            fill: hsl(0, 0%, 27%) !important;
-        }
-
-        path {
-            fill: hsl(0, 0%, 100%) !important;
-            stroke: hsl(0, 0%, 100%) !important;
-        }
-    }
 }
 
 .register-form {

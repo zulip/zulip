@@ -138,7 +138,7 @@ class TestFollowupEmails(ZulipTestCase):
                                                                  "(uid=%(email)s)"))
     def test_day1_email_ldap_case_a_login_credentials(self) -> None:
         self.init_default_ldap_database()
-        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'cn'}
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             self.login_with_return("newuser_email_as_uid@zulip.com",
@@ -155,7 +155,7 @@ class TestFollowupEmails(ZulipTestCase):
                                                 'zproject.backends.ZulipDummyBackend'))
     def test_day1_email_ldap_case_b_login_credentials(self) -> None:
         self.init_default_ldap_database()
-        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'cn'}
 
         with self.settings(
                 LDAP_APPEND_DOMAIN='zulip.com',
@@ -175,7 +175,7 @@ class TestFollowupEmails(ZulipTestCase):
                                                 'zproject.backends.ZulipDummyBackend'))
     def test_day1_email_ldap_case_c_login_credentials(self) -> None:
         self.init_default_ldap_database()
-        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'cn'}
 
         with self.settings(
                 LDAP_EMAIL_ATTR='mail',

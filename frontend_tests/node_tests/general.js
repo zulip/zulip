@@ -6,20 +6,20 @@
 // The most basic unit tests load up code, call functions,
 // and assert truths:
 
-const util = zrequire('util');
-assert(!util.find_wildcard_mentions('boring text'));
-assert(util.find_wildcard_mentions('mention @**everyone**'));
+const util = zrequire("util");
+assert(!util.find_wildcard_mentions("boring text"));
+assert(util.find_wildcard_mentions("mention @**everyone**"));
 
 // Let's test with people.js next.  We'll show this technique:
 //  * get a false value
 //  * change the data
 //  * get a true value
 
-zrequire('people');
+zrequire("people");
 const isaac = {
-    email: 'isaac@example.com',
+    email: "isaac@example.com",
     user_id: 30,
-    full_name: 'Isaac Newton',
+    full_name: "Isaac Newton",
 };
 
 assert(!people.is_known_user_id(isaac.user_id));
@@ -33,9 +33,9 @@ assert(people.is_known_user_id(isaac.user_id));
 // require.
 
 const me = {
-    email: 'me@example.com',
+    email: "me@example.com",
     user_id: 31,
-    full_name: 'Me Myself',
+    full_name: "Me Myself",
 };
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
@@ -45,8 +45,8 @@ people.initialize_current_user(me.user_id);
 // tests):
 
 const denmark_stream = {
-    color: 'blue',
-    name: 'Denmark',
+    color: "blue",
+    name: "Denmark",
     stream_id: 101,
     subscribed: false,
 };
@@ -55,15 +55,15 @@ const denmark_stream = {
 // structure that the server sends down to us when the app starts.  We
 // prefer to test with a clean slate.
 
-set_global('page_params', {});
+set_global("page_params", {});
 
-zrequire('stream_data');
+zrequire("stream_data");
 
-run_test('stream_data', () => {
-    assert.equal(stream_data.get_sub_by_name('Denmark'), undefined);
+run_test("stream_data", () => {
+    assert.equal(stream_data.get_sub_by_name("Denmark"), undefined);
     stream_data.add_sub(denmark_stream);
-    const sub = stream_data.get_sub_by_name('Denmark');
-    assert.equal(sub.color, 'blue');
+    const sub = stream_data.get_sub_by_name("Denmark");
+    assert.equal(sub.color, "blue");
 });
 
 // Hopefully the basic patterns for testing data-oriented modules
@@ -77,9 +77,9 @@ const messages = {
         id: 400,
         sender_id: isaac.user_id,
         stream_id: denmark_stream.stream_id,
-        type: 'stream',
-        flags: ['has_alert_word'],
-        topic: 'copenhagen',
+        type: "stream",
+        flags: ["has_alert_word"],
+        topic: "copenhagen",
         // note we don't have every field that a "real" message
         // would have, and that can be fine
     },
@@ -91,22 +91,22 @@ const messages = {
 
 const noop = () => undefined;
 
-set_global('alert_words', {});
+set_global("alert_words", {});
 
 alert_words.process_message = noop;
 
 // We can also bring in real code:
-zrequire('recent_senders');
-zrequire('unread');
-zrequire('stream_topic_history');
-zrequire('recent_topics');
-zrequire('overlays');
+zrequire("recent_senders");
+zrequire("unread");
+zrequire("stream_topic_history");
+zrequire("recent_topics");
+zrequire("overlays");
 
 // And finally require the module that we will test directly:
-zrequire('message_store');
+zrequire("message_store");
 
-run_test('message_store', () => {
-    const in_message = { ...messages.isaac_to_denmark_stream };
+run_test("message_store", () => {
+    const in_message = {...messages.isaac_to_denmark_stream};
 
     assert.equal(in_message.alerted, undefined);
     message_store.set_message_booleans(in_message);
@@ -121,19 +121,19 @@ run_test('message_store', () => {
 
     // There are more side effects.
     const topic_names = stream_topic_history.get_recent_topic_names(denmark_stream.stream_id);
-    assert.deepEqual(topic_names, ['copenhagen']);
+    assert.deepEqual(topic_names, ["copenhagen"]);
 });
 
 // Tracking unread messages is a very fundamental part of the Zulip
 // app, and we use the unread object to track unread messages.
 
-run_test('unread', () => {
+run_test("unread", () => {
     const stream_id = denmark_stream.stream_id;
-    const topic_name = 'copenhagen';
+    const topic_name = "copenhagen";
 
     assert.equal(unread.num_unread_for_topic(stream_id, topic_name), 0);
 
-    const in_message = { ...messages.isaac_to_denmark_stream };
+    const in_message = {...messages.isaac_to_denmark_stream};
     message_store.set_message_booleans(in_message);
 
     unread.process_loaded_messages([in_message]);
@@ -147,12 +147,12 @@ run_test('unread', () => {
 
 // We use the second argument of zrequire to find the location of the
 // Filter class.
-zrequire('Filter', 'js/filter');
+zrequire("Filter", "js/filter");
 
-run_test('filter', () => {
+run_test("filter", () => {
     const filter_terms = [
-        {operator: 'stream', operand: 'Denmark'},
-        {operator: 'topic', operand: 'copenhagen'},
+        {operator: "stream", operand: "Denmark"},
+        {operator: "topic", operand: "copenhagen"},
     ];
 
     const filter = new Filter(filter_terms);
@@ -162,28 +162,34 @@ run_test('filter', () => {
     // We don't need full-fledged messages to test the gist of
     // our filter.  If there are details that are distracting from
     // your test, you should not feel guilty about removing them.
-    assert.equal(predicate({type: 'personal'}), false);
+    assert.equal(predicate({type: "personal"}), false);
 
-    assert.equal(predicate({
-        type: 'stream',
-        stream_id: denmark_stream.stream_id,
-        topic: 'does not match filter',
-    }), false);
+    assert.equal(
+        predicate({
+            type: "stream",
+            stream_id: denmark_stream.stream_id,
+            topic: "does not match filter",
+        }),
+        false,
+    );
 
-    assert.equal(predicate({
-        type: 'stream',
-        stream_id: denmark_stream.stream_id,
-        topic: 'copenhagen',
-    }), true);
+    assert.equal(
+        predicate({
+            type: "stream",
+            stream_id: denmark_stream.stream_id,
+            topic: "copenhagen",
+        }),
+        true,
+    );
 });
 
 // We have a "narrow" abstraction that sits roughly on top of the
 // "filter" abstraction.  If you are in a narrow, we track the
 // state with the narrow_state module.
 
-zrequire('narrow_state');
+zrequire("narrow_state");
 
-run_test('narrow_state', () => {
+run_test("narrow_state", () => {
     // As we often do, first make assertions about the starting
     // state:
 
@@ -191,16 +197,16 @@ run_test('narrow_state', () => {
 
     // Now set the state.
     const filter_terms = [
-        {operator: 'stream', operand: 'Denmark'},
-        {operator: 'topic', operand: 'copenhagen'},
+        {operator: "stream", operand: "Denmark"},
+        {operator: "topic", operand: "copenhagen"},
     ];
 
     const filter = new Filter(filter_terms);
 
     narrow_state.set_current_filter(filter);
 
-    assert.equal(narrow_state.stream(), 'Denmark');
-    assert.equal(narrow_state.topic(), 'copenhagen');
+    assert.equal(narrow_state.stream(), "Denmark");
+    assert.equal(narrow_state.topic(), "copenhagen");
 });
 
 /*
@@ -279,19 +285,19 @@ run_test('narrow_state', () => {
 
 */
 
-zrequire('server_events_dispatch');
+zrequire("server_events_dispatch");
 
 // We will use Bob in several tests.
 const bob = {
-    email: 'bob@example.com',
+    email: "bob@example.com",
     user_id: 33,
-    full_name: 'Bob Roberts',
+    full_name: "Bob Roberts",
 };
 
-run_test('add_user_event', () => {
+run_test("add_user_event", () => {
     const event = {
-        type: 'realm_user',
-        op: 'add',
+        type: "realm_user",
+        op: "add",
         person: bob,
     };
 
@@ -314,23 +320,23 @@ run_test('add_user_event', () => {
 
 */
 
-set_global('activity', {});
-set_global('message_live_update', {});
-set_global('pm_list', {});
-set_global('settings_users', {});
+set_global("activity", {});
+set_global("message_live_update", {});
+set_global("pm_list", {});
+set_global("settings_users", {});
 
-zrequire('user_events');
+zrequire("user_events");
 
-run_test('update_user_event', () => {
+run_test("update_user_event", () => {
     const new_bob = {
-        email: 'bob@example.com',
+        email: "bob@example.com",
         user_id: bob.user_id,
-        full_name: 'The Artist Formerly Known as Bob',
+        full_name: "The Artist Formerly Known as Bob",
     };
 
     const event = {
-        type: 'realm_user',
-        op: 'update',
+        type: "realm_user",
+        op: "update",
         person: new_bob,
     };
 
@@ -348,7 +354,7 @@ run_test('update_user_event', () => {
     const user = people.get_by_user_id(bob.user_id);
 
     // Verify that the code actually did its main job:
-    assert.equal(user.full_name, 'The Artist Formerly Known as Bob');
+    assert.equal(user.full_name, "The Artist Formerly Known as Bob");
 });
 
 /*
@@ -370,7 +376,7 @@ function test_helper() {
 
     return {
         redirect: (module_name, func_name) => {
-            const full_name = module_name + '.' + func_name;
+            const full_name = module_name + "." + func_name;
             global[module_name][func_name] = () => {
                 events.push(full_name);
             };
@@ -395,35 +401,35 @@ function test_helper() {
 
 */
 
-set_global('home_msg_list', {});
-set_global('message_list', {});
-set_global('message_util', {});
-set_global('notifications', {});
-set_global('resize', {});
-set_global('stream_list', {});
-set_global('unread_ops', {});
-set_global('unread_ui', {});
+set_global("home_msg_list", {});
+set_global("message_list", {});
+set_global("message_util", {});
+set_global("notifications", {});
+set_global("resize", {});
+set_global("stream_list", {});
+set_global("unread_ops", {});
+set_global("unread_ui", {});
 
-zrequire('message_events');
+zrequire("message_events");
 
-run_test('insert_message', () => {
+run_test("insert_message", () => {
     const helper = test_helper();
 
     const new_message = {
         sender_id: isaac.user_id,
         id: 1001,
-        content: 'example content',
+        content: "example content",
     };
 
     assert.equal(message_store.get(new_message.id), undefined);
 
-    helper.redirect('huddle_data', 'process_loaded_messages');
-    helper.redirect('message_util', 'add_new_messages');
-    helper.redirect('notifications', 'received_messages');
-    helper.redirect('resize', 'resize_page_components');
-    helper.redirect('stream_list', 'update_streams_sidebar');
-    helper.redirect('unread_ops', 'process_visible');
-    helper.redirect('unread_ui', 'update_unread_counts');
+    helper.redirect("huddle_data", "process_loaded_messages");
+    helper.redirect("message_util", "add_new_messages");
+    helper.redirect("notifications", "received_messages");
+    helper.redirect("resize", "resize_page_components");
+    helper.redirect("stream_list", "update_streams_sidebar");
+    helper.redirect("unread_ops", "process_visible");
+    helper.redirect("unread_ui", "update_unread_counts");
 
     narrow_state.reset_current_filter();
 
@@ -434,14 +440,14 @@ run_test('insert_message', () => {
     // the code invokes various objects when a new message
     // comes in:
     assert.deepEqual(helper.events, [
-        'huddle_data.process_loaded_messages',
-        'message_util.add_new_messages',
-        'message_util.add_new_messages',
-        'unread_ui.update_unread_counts',
-        'resize.resize_page_components',
-        'unread_ops.process_visible',
-        'notifications.received_messages',
-        'stream_list.update_streams_sidebar',
+        "huddle_data.process_loaded_messages",
+        "message_util.add_new_messages",
+        "message_util.add_new_messages",
+        "unread_ui.update_unread_counts",
+        "resize.resize_page_components",
+        "unread_ops.process_visible",
+        "notifications.received_messages",
+        "stream_list.update_streams_sidebar",
     ]);
 
     // Despite all of our stubbing/mocking, the call to
@@ -449,7 +455,7 @@ run_test('insert_message', () => {
     // side effect that we can verify:
     const inserted_message = message_store.get(new_message.id);
     assert.equal(inserted_message.id, new_message.id);
-    assert.equal(inserted_message.content, 'example content');
+    assert.equal(inserted_message.content, "example content");
 });
 
 /*
@@ -486,22 +492,22 @@ run_test('insert_message', () => {
 
 */
 
-set_global('channel', {});
-set_global('home_msg_list', {});
-set_global('message_list', {});
-set_global('message_viewport', {});
-zrequire('message_flags');
+set_global("channel", {});
+set_global("home_msg_list", {});
+set_global("message_list", {});
+set_global("message_viewport", {});
+zrequire("message_flags");
 
-zrequire('unread_ops');
+zrequire("unread_ops");
 
-run_test('unread_ops', () => {
+run_test("unread_ops", () => {
     (function set_up() {
         const test_messages = [
             {
                 id: 50,
-                type: 'stream',
+                type: "stream",
                 stream_id: denmark_stream.stream_id,
-                topic: 'copenhagen',
+                topic: "copenhagen",
                 unread: true,
             },
         ];
@@ -521,7 +527,7 @@ run_test('unread_ops', () => {
 
         // Set current_message_list containing messages that
         // can be marked read
-        set_global('current_msg_list', {
+        set_global("current_msg_list", {
             all_messages: () => test_messages,
             can_mark_messages_read: () => true,
         });
@@ -531,7 +537,7 @@ run_test('unread_ops', () => {
         message_list.all = {};
         message_list.all.show_message_as_read = noop;
         notifications.close_notification = noop;
-    }());
+    })();
 
     // Set up a way to capture the options passed in to channel.post.
     let channel_post_opts;
@@ -552,12 +558,11 @@ run_test('unread_ops', () => {
     // we post info to the server.  We can verify that the correct
     // url and parameters are specified:
     assert.deepEqual(channel_post_opts, {
-        url: '/json/messages/flags',
+        url: "/json/messages/flags",
         idempotent: true,
-        data: { messages: '[50]', op: 'add', flag: 'read' },
+        data: {messages: "[50]", op: "add", flag: "read"},
         success: channel_post_opts.success,
     });
-
 });
 
 /*
@@ -573,24 +578,24 @@ run_test('unread_ops', () => {
 
 */
 
-set_global('topic_list', {});
+set_global("topic_list", {});
 
-zrequire('stream_sort');
-zrequire('stream_list');
+zrequire("stream_sort");
+zrequire("stream_list");
 
 const social_stream = {
-    color: 'red',
-    name: 'Social',
+    color: "red",
+    name: "Social",
     stream_id: 102,
     subscribed: true,
 };
 
-run_test('set_up_filter', () => {
+run_test("set_up_filter", () => {
     stream_data.add_sub(social_stream);
 
     const filter_terms = [
-        {operator: 'stream', operand: 'Social'},
-        {operator: 'topic', operand: 'lunch'},
+        {operator: "stream", operand: "Social"},
+        {operator: "topic", operand: "lunch"},
     ];
 
     const filter = new Filter(filter_terms);
@@ -614,7 +619,7 @@ function jquery_elem() {
 
 function make_jquery_helper() {
     const stream_list_filter = jquery_elem();
-    stream_list_filter.val = () => '';
+    stream_list_filter.val = () => "";
 
     const stream_filters = jquery_elem();
 
@@ -625,29 +630,24 @@ function make_jquery_helper() {
 
     function fake_jquery(selector) {
         switch (selector) {
-        case '.stream-list-filter':
-            return stream_list_filter;
-        case 'ul#stream_filters li':
-            return jquery_elem();
-        case '#stream_filters':
-            return stream_filters;
-        default:
-            throw Error('unknown selector: ' + selector);
+            case ".stream-list-filter":
+                return stream_list_filter;
+            case "ul#stream_filters li":
+                return jquery_elem();
+            case "#stream_filters":
+                return stream_filters;
+            default:
+                throw Error("unknown selector: " + selector);
         }
     }
 
-    set_global('$', fake_jquery);
+    set_global("$", fake_jquery);
 
     return {
         verify_actions: () => {
-            const expected_data_to_append = [
-                [
-                    'stream stub',
-                ],
-            ];
+            const expected_data_to_append = [["stream stub"]];
 
-            assert.deepEqual(appended_data,
-                             expected_data_to_append);
+            assert.deepEqual(appended_data, expected_data_to_append);
         },
     };
 }
@@ -692,7 +692,7 @@ function make_sidebar_helper() {
             update_whether_active: () => {
                 updated_whether_active = true;
             },
-            get_li: () => ['stream stub'],
+            get_li: () => ["stream stub"],
         };
     }
 
@@ -704,14 +704,13 @@ function make_sidebar_helper() {
     return {
         verify_actions: () => {
             assert(updated_whether_active);
-
         },
     };
 }
 
-zrequire('topic_zoom');
+zrequire("topic_zoom");
 
-run_test('stream_list', () => {
+run_test("stream_list", () => {
     const jquery_helper = make_jquery_helper();
     const sidebar_helper = make_sidebar_helper();
     const topic_list_helper = make_topic_list_helper();

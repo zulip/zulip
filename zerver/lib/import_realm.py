@@ -33,6 +33,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import BadImageError, guess_type, random_name, sanitize_name
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import (
+    AlertWord,
     Attachment,
     BotConfigData,
     BotStorageData,
@@ -61,7 +62,6 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
-    email_to_username,
     get_huddle_hash,
     get_system_bot,
     get_user_profile_by_id,
@@ -83,6 +83,7 @@ realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
 # Code reviewers: give these tables extra scrutiny, as we need to
 # make sure to reload related tables AFTER we re-map the ids.
 ID_MAP: Dict[str, Dict[int, int]] = {
+    'alertword': {},
     'client': {},
     'user_profile': {},
     'huddle': {},
@@ -878,6 +879,10 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
         # Since Zulip doesn't use these permissions, drop them
         del user_profile_dict['user_permissions']
         del user_profile_dict['groups']
+        # The short_name field is obsolete in Zulip, but it's
+        # convenient for third party exports to populate it.
+        if 'short_name' in user_profile_dict:
+            del user_profile_dict['short_name']
 
     user_profiles = [UserProfile(**item) for item in data['zerver_userprofile']]
     for user_profile in user_profiles:
@@ -941,6 +946,12 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
             recipient = Recipient.objects.get(type=Recipient.HUDDLE, type_id=huddle.id)
             huddle.recipient = recipient
             huddle.save(update_fields=["recipient"])
+
+    if 'zerver_alertword' in data:
+        re_map_foreign_keys(data, 'zerver_alertword', 'user_profile', related_table='user_profile')
+        re_map_foreign_keys(data, 'zerver_alertword', 'realm', related_table='realm')
+        update_model_ids(AlertWord, data, 'alertword')
+        bulk_import_model(data, AlertWord)
 
     if 'zerver_userhotspot' in data:
         fix_datetime_fields(data, 'zerver_userhotspot')
@@ -1089,9 +1100,8 @@ def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
                  bot_type: Optional[int]=None) -> None:
     user_set = set()
     for full_name, email in name_list:
-        short_name = email_to_username(email)
         if not UserProfile.objects.filter(email=email):
-            user_set.add((email, full_name, short_name, True))
+            user_set.add((email, full_name, True))
     bulk_create_users(realm, user_set, bot_type)
 
 def update_message_foreign_keys(import_dir: Path,
