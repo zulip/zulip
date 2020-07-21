@@ -194,7 +194,6 @@ run_test("start", () => {
         content: "hello",
     };
 
-    $("#compose-textarea").trigger = noop;
     start("private", opts);
 
     assert_hidden("#stream-message");
