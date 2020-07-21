@@ -1124,6 +1124,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         presence_enabled=bool,
     )
 
+    ROLE_ID_TO_NAME_MAP = {
+        ROLE_REALM_OWNER: "Realm owner",
+        ROLE_REALM_ADMINISTRATOR: "Realm adminstrator",
+        ROLE_MEMBER: "Member",
+        ROLE_GUEST: "Guest"
+    }
+
+    def get_role_name(self) -> str:
+        return self.ROLE_ID_TO_NAME_MAP[self.role]
+
     @property
     def profile_data(self) -> ProfileData:
         values = CustomProfileFieldValue.objects.filter(user_profile=self)
