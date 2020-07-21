@@ -4388,6 +4388,69 @@ components:
 
             Null means the stream was recently created and there is
             insufficient data to estimate the average traffic.
+    EmojiReaction:
+      type: object
+      additionalProperties: false
+      properties:
+        emoji_code:
+          type: string
+          description: |
+            A unique identifier, defining the specific emoji codepoint requested,
+            within the namespace of the `reaction_type`.
+
+            For example, for `unicode_emoji`, this will be an encoding of the
+            unicode codepoint.
+        emoji_name:
+          type: string
+          description: |
+            Name of the emoji.
+        reaction_type:
+          type: string
+          description: |
+            One of the following values:
+
+            * `unicode_emoji`: Unicode emoji (`emoji_code` will be its unicode
+              codepoint).
+            * `realm_emoji`: [Custom emoji](/help/add-custom-emoji).
+              (`emoji_code` will be its ID).
+            * `zulip_extra_emoji`: Special emoji included with Zulip.  Exists to
+              namespace the `zulip` emoji.
+        user_id:
+          type: integer
+          description: |
+            The ID of the user who added the reaction.
+
+            **Changes**: New in Zulip 3.0 (feature level 2). The `user`
+            object is deprecated and will be removed in the future.
+        user:
+          type: object
+          additionalProperties: false
+          deprecated: true
+          description: |
+            Dictionary with data on the user who added the reaction, including
+            the user ID as the `id` field.  **Note**: In the [events
+            API](/api/get-events), this `user` dictionary
+            confusing had the user ID in a field called `user_id`
+            instead.  We recommend ignoring fields other than the user
+            ID.  **Deprecated** and to be removed in a future release
+            once core clients have migrated to use the `user_id` field.
+          properties:
+            id:
+              type: integer
+              description: |
+                ID of the user.
+            email:
+              type: string
+              description: |
+                Email of the user.
+            full_name:
+              type: string
+              description: |
+                Full name of the user.
+            is_mirror_dummy:
+              type: boolean
+              description: |
+                Whether the user is a mirror dummy.
     Messages:
       type: object
       additionalProperties: false
@@ -4457,68 +4520,7 @@ components:
           description: |
             Data on any reactions to the message.
           items:
-            type: object
-            additionalProperties: false
-            properties:
-              emoji_code:
-                type: string
-                description: |
-                  A unique identifier, defining the specific emoji codepoint requested,
-                  within the namespace of the `reaction_type`.
-
-                  For example, for `unicode_emoji`, this will be an encoding of the
-                  unicode codepoint.
-              emoji_name:
-                type: string
-                description: |
-                  Name of the emoji.
-              reaction_type:
-                type: string
-                description: |
-                  One of the following values:
-
-                  * `unicode_emoji`: Unicode emoji (`emoji_code` will be its unicode
-                    codepoint).
-                  * `realm_emoji`: [Custom emoji](/help/add-custom-emoji).
-                    (`emoji_code` will be its ID).
-                  * `zulip_extra_emoji`: Special emoji included with Zulip.  Exists to
-                    namespace the `zulip` emoji.
-              user_id:
-                type: integer
-                description: |
-                  The ID of the user who added the reaction.
-
-                  **Changes**: New in Zulip 3.0 (feature level 2). The `user`
-                  object is deprecated and will be removed in the future.
-              user:
-                type: object
-                additionalProperties: false
-                deprecated: true
-                description: |
-                  Dictionary with data on the user who added the reaction, including
-                  the user ID as the `id` field.  **Note**: In the [events
-                  API](/api/get-events), this `user` dictionary
-                  confusing had the user ID in a field called `user_id`
-                  instead.  We recommend ignoring fields other than the user
-                  ID.  **Deprecated** and to be removed in a future release
-                  once core clients have migrated to use the `user_id` field.
-                properties:
-                  id:
-                    type: integer
-                    description: |
-                      ID of the user.
-                  email:
-                    type: string
-                    description: |
-                      Email of the user.
-                  full_name:
-                    type: string
-                    description: |
-                      Full name of the user.
-                  is_mirror_dummy:
-                    type: boolean
-                    description: |
-                      Whether the user is a mirror dummy.
+            $ref: "#/components/schemas/EmojiReaction"
         recipient_id:
           type: integer
           description: |
