@@ -15,7 +15,7 @@ exports.make_event_store = (selector) => {
     const on_functions = new Map();
     const child_on_functions = new Map();
 
-    function generic_event(event_name, arg) {
+    function generic_event($element, event_name, arg) {
         if (typeof arg === "function") {
             on_functions.set(event_name, arg);
         } else {
@@ -24,7 +24,7 @@ exports.make_event_store = (selector) => {
                 const error = "Cannot find " + event_name + " handler for " + selector;
                 throw Error(error);
             }
-            handler(arg);
+            handler.call($element, arg);
         }
     }
 
@@ -104,7 +104,7 @@ exports.make_event_store = (selector) => {
             child_on.set(event_name, handler);
         },
 
-        trigger: function (ev) {
+        trigger: function ($element, ev) {
             const ev_name = typeof ev === "string" ? ev : ev.name;
             const func = on_functions.get(ev_name);
 
@@ -117,7 +117,7 @@ exports.make_event_store = (selector) => {
                 return;
             }
 
-            func(ev.data);
+            func.call($element, ev.data);
         },
     };
 
@@ -160,7 +160,7 @@ exports.make_new_elem = function (selector, opts) {
             return self;
         },
         click: function (arg) {
-            event_store.generic_event("click", arg);
+            event_store.generic_event(self, "click", arg);
             return self;
         },
         data: function (name, val) {
@@ -264,11 +264,11 @@ exports.make_new_elem = function (selector, opts) {
             return focused;
         },
         keydown: function (arg) {
-            event_store.generic_event("keydown", arg);
+            event_store.generic_event(self, "keydown", arg);
             return self;
         },
         keyup: function (arg) {
-            event_store.generic_event("keyup", arg);
+            event_store.generic_event(self, "keyup", arg);
             return self;
         },
         off: function (...args) {
@@ -323,7 +323,7 @@ exports.make_new_elem = function (selector, opts) {
             return self;
         },
         select: function (arg) {
-            event_store.generic_event("select", arg);
+            event_store.generic_event(self, "select", arg);
             return self;
         },
         set_find_results: function (find_selector, jquery_object) {
@@ -355,7 +355,7 @@ exports.make_new_elem = function (selector, opts) {
             return text;
         },
         trigger: function (ev) {
-            event_store.trigger(ev);
+            event_store.trigger(self, ev);
             return self;
         },
         val: function (...args) {
