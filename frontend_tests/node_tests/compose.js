@@ -845,10 +845,9 @@ run_test("finish", () => {
         };
 
         let compose_finished_event_checked = false;
-        $(document).trigger = function (e) {
-            assert.equal(e.type, "compose_finished.zulip");
+        $(document).on("compose_finished.zulip", () => {
             compose_finished_event_checked = true;
-        };
+        });
         let send_message_called = false;
         compose.send_message = function () {
             send_message_called = true;
@@ -1445,10 +1444,9 @@ run_test("on_events", () => {
             assert(param);
         };
         let compose_file_input_clicked = false;
-        $("#compose #file_input").trigger = function (ev_name) {
-            assert.equal(ev_name, "click");
+        $("#compose #file_input").on("click", () => {
             compose_file_input_clicked = true;
-        };
+        });
 
         const event = {
             preventDefault: noop,
