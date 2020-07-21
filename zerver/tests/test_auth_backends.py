@@ -4502,19 +4502,27 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.change_ldap_user_attr('hamlet', 'userAccountControl', '2')
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
-                                                    'userAccountControl': 'userAccountControl'}):
+                                                    'userAccountControl': 'userAccountControl'}), \
+                self.assertLogs('zulip.ldap') as info_logs:
             self.perform_ldap_sync(self.example_user('hamlet'))
         hamlet = self.example_user('hamlet')
         self.assertFalse(hamlet.is_active)
+        self.assertEqual(info_logs.output, [
+            'INFO:zulip.ldap:Deactivating user hamlet@zulip.com because they are disabled in LDAP.'
+        ])
 
     @mock.patch("zproject.backends.ZulipLDAPAuthBackendBase.sync_full_name_from_ldap")
     def test_dont_sync_disabled_ldap_user(self, fake_sync: mock.MagicMock) -> None:
         self.change_ldap_user_attr('hamlet', 'userAccountControl', '2')
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
-                                                    'userAccountControl': 'userAccountControl'}):
+                                                    'userAccountControl': 'userAccountControl'}), \
+                self.assertLogs('zulip.ldap') as info_logs:
             self.perform_ldap_sync(self.example_user('hamlet'))
             fake_sync.assert_not_called()
+        self.assertEqual(info_logs.output, [
+            'INFO:zulip.ldap:Deactivating user hamlet@zulip.com because they are disabled in LDAP.'
+        ])
 
     def test_reactivate_user(self) -> None:
         do_deactivate_user(self.example_user('hamlet'))
