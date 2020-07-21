@@ -439,22 +439,42 @@ class TestExport(ZulipTestCase):
         do_add_reaction(self.example_user("iago"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
         do_add_reaction(self.example_user("hamlet"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
 
-        with patch("zerver.management.commands.export.export_realm_wrapper") as m:
+        with patch("zerver.management.commands.export.export_realm_wrapper") as m, \
+                patch('builtins.print') as mock_print:
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
             m.assert_called_once_with(realm=realm, public_only=False, consent_message_id=message.id,
                                       delete_after_upload=False, threads=mock.ANY, output_dir=mock.ANY,
                                       upload=False)
 
-        with self.assertRaisesRegex(CommandError, "Message with given ID does not"):
+        self.assertEqual(mock_print.mock_calls, [
+            call('\033[94mExporting realm\033[0m: zulip'),
+            call('\n\033[94mMessage content:\033[0m\nThumbs up for export\n'),
+            call('\033[94mNumber of users that reacted outbox:\033[0m 2\n')
+        ])
+
+        with self.assertRaisesRegex(CommandError, "Message with given ID does not"), \
+                patch('builtins.print') as mock_print:
             call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id=123456")
+        self.assertEqual(mock_print.mock_calls, [
+            call('\033[94mExporting realm\033[0m: zulip'),
+        ])
 
         message.last_edit_time = timezone_now()
         message.save()
-        with self.assertRaisesRegex(CommandError, "Message was edited. Aborting..."):
+        with self.assertRaisesRegex(CommandError, "Message was edited. Aborting..."), \
+                patch('builtins.print') as mock_print:
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
+        self.assertEqual(mock_print.mock_calls, [
+            call('\033[94mExporting realm\033[0m: zulip'),
+        ])
 
         message.last_edit_time = None
         message.save()
         do_add_reaction(self.mit_user("sipbtest"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
-        with self.assertRaisesRegex(CommandError, "Users from a different realm reacted to message. Aborting..."):
+        with self.assertRaisesRegex(CommandError, "Users from a different realm reacted to message. Aborting..."), \
+                patch('builtins.print') as mock_print:
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
+
+        self.assertEqual(mock_print.mock_calls, [
+            call('\033[94mExporting realm\033[0m: zulip'),
+        ])
