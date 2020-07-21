@@ -192,14 +192,7 @@ def sponsorship(request: HttpRequest, user: UserProfile,
     realm = user.realm
 
     requested_by = user.full_name
-
-    role_id_to_name_map = {
-        UserProfile.ROLE_REALM_OWNER: "Realm owner",
-        UserProfile.ROLE_REALM_ADMINISTRATOR: "Realm adminstrator",
-        UserProfile.ROLE_MEMBER: "Member",
-        UserProfile.ROLE_GUEST: "Guest"
-    }
-    user_role = role_id_to_name_map[user.role]
+    user_role = user.get_role_name()
 
     support_realm_uri = get_realm(settings.STAFF_SUBDOMAIN).uri
     support_url = urljoin(support_realm_uri, urlunsplit(("", "", reverse('analytics.views.support'),
