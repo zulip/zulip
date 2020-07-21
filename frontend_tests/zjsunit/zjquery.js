@@ -23,6 +23,7 @@ exports.make_event_store = (selector) => {
     */
     const on_functions = new Map();
     const child_on_functions = new Map();
+    let focused = false;
 
     const self = {
         get_on_handler: function (name, child_selector) {
@@ -98,22 +99,33 @@ exports.make_event_store = (selector) => {
             child_on.set(event_name, handler);
         },
 
+        one(event_name, handler) {
+            self.on(event_name, function (ev) {
+                self.off(event_name);
+                return handler.call(this, ev);
+            });
+        },
+
         trigger: function ($element, ev, data) {
             if (typeof ev === "string") {
                 ev = new Event(ev, data);
             }
             const func = on_functions.get(ev.type);
 
-            if (!func) {
+            if (func) {
                 // It's possible that test code will trigger events
                 // that haven't been set up yet, but we are trying to
                 // eventually deprecate trigger in our codebase, so for
                 // now we just let calls to trigger silently do nothing.
                 // (And I think actual jQuery would do the same thing.)
-                return;
+                func.call($element, ev, data);
             }
 
-            func.call($element, ev, data);
+            if (ev.type === "focus" || ev.type === "focusin") {
+                focused = true;
+            } else if (ev.type === "blur" || ev.type === "focusout") {
+                focused = false;
+            }
         },
 
         generic_event($element, event_name, arg) {
@@ -122,6 +134,10 @@ exports.make_event_store = (selector) => {
             } else {
                 self.trigger($element, event_name, arg);
             }
+        },
+
+        is_focused() {
+            return focused;
         },
     };
 
@@ -134,7 +150,6 @@ exports.make_new_elem = function (selector, opts) {
     let value;
     let css;
     let shown = false;
-    let focused = false;
     const find_results = new Map();
     let my_parent;
     const parents_result = new Map();
@@ -159,8 +174,8 @@ exports.make_new_elem = function (selector, opts) {
             attrs.set(name, val);
             return self;
         },
-        blur: function () {
-            focused = false;
+        blur: function (arg) {
+            event_store.generic_event(self, "blur", arg);
             return self;
         },
         click: function (arg) {
@@ -218,16 +233,16 @@ exports.make_new_elem = function (selector, opts) {
             }
             throw Error("Cannot find " + child_selector + " in " + selector);
         },
-        focus: function () {
-            focused = true;
+        focus: function (arg) {
+            event_store.generic_event(self, "focus", arg);
             return self;
         },
-        focusin: function () {
-            focused = true;
+        focusin: function (arg) {
+            event_store.generic_event(self, "focusin", arg);
             return self;
         },
-        focusout: function () {
-            focused = false;
+        focusout: function (arg) {
+            event_store.generic_event(self, "focusout", arg);
             return self;
         },
         get: function (idx) {
@@ -258,14 +273,14 @@ exports.make_new_elem = function (selector, opts) {
                 return shown;
             }
             if (arg === ":focus") {
-                return focused;
+                return self.is_focused();
             }
             return self;
         },
         is_focused: function () {
             // is_focused is not a jQuery thing; this is
             // for our testing
-            return focused;
+            return event_store.is_focused();
         },
         keydown: function (arg) {
             event_store.generic_event(self, "keydown", arg);
@@ -281,6 +296,10 @@ exports.make_new_elem = function (selector, opts) {
         },
         on: function (...args) {
             event_store.on(...args);
+            return self;
+        },
+        one: function (...args) {
+            event_store.one(...args);
             return self;
         },
         parent: function () {
