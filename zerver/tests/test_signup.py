@@ -3924,13 +3924,17 @@ class UserSignUpTest(InviteUserBase):
         # (this is an invalid state, so it's a bug we got here):
         user_profile.is_active = True
         user_profile.save()
-        with self.assertRaisesRegex(AssertionError, "Mirror dummy user is already active!"):
+        with self.assertRaisesRegex(AssertionError, "Mirror dummy user is already active!"), \
+                self.assertLogs('django.request', 'ERROR') as error_log:
             result = self.submit_reg_form_for_user(
                 email,
                 password,
                 from_confirmation='1',
                 # Pass HTTP_HOST for the target subdomain
                 HTTP_HOST=subdomain + ".testserver")
+        self.assertTrue('ERROR:django.request:Internal Server Error: /accounts/register/' in error_log.output[0])
+        self.assertTrue('raise AssertionError("Mirror dummy user is already active!' in error_log.output[0])
+        self.assertTrue('AssertionError: Mirror dummy user is already active!' in error_log.output[0])
 
         user_profile.is_active = False
         user_profile.save()
@@ -3959,8 +3963,12 @@ class UserSignUpTest(InviteUserBase):
         user_profile.is_active = True
         user_profile.save()
 
-        with self.assertRaisesRegex(AssertionError, "Mirror dummy user is already active!"):
+        with self.assertRaisesRegex(AssertionError, "Mirror dummy user is already active!"), \
+                self.assertLogs('django.request', 'ERROR') as error_log:
             self.client_post('/register/', {'email': email}, subdomain="zephyr")
+        self.assertTrue('ERROR:django.request:Internal Server Error: /register/' in error_log.output[0])
+        self.assertTrue('raise AssertionError("Mirror dummy user is already active!' in error_log.output[0])
+        self.assertTrue('AssertionError: Mirror dummy user is already active!' in error_log.output[0])
 
     @override_settings(TERMS_OF_SERVICE=False)
     def test_dev_user_registration(self) -> None:
