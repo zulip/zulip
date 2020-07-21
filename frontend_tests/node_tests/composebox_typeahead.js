@@ -1078,6 +1078,7 @@ run_test("initialize", () => {
         return {typeahead: {shown: true}};
     };
     $("form#send_message_form").keydown(event);
+    $("#stream_message_recipient_topic").off("mouseup");
     $("form#send_message_form").keyup(event);
     event.keyCode = undefined;
     event.which = 9;

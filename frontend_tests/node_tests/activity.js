@@ -1,4 +1,7 @@
 set_global("$", global.make_zjquery());
+const window_stub = $.create("window-stub");
+set_global("to_$", () => window_stub);
+$(window).idle = () => {};
 
 let filter_key_handlers;
 
@@ -682,8 +685,6 @@ run_test("initialize", () => {
             func();
         },
     });
-    $(window).focus = (func) => func();
-    $(window).idle = () => {};
 
     channel.post = function (payload) {
         payload.success({});
@@ -700,6 +701,7 @@ run_test("initialize", () => {
     activity.client_is_active = false;
 
     activity.initialize();
+    $(window).trigger("focus");
     clear();
 
     assert(scroll_handler_started);
