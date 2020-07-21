@@ -3518,101 +3518,15 @@ paths:
                           A list of `stream` objects with details on the requested streams.
                         type: array
                         items:
-                          type: object
-                          additionalProperties: false
-                          properties:
-                            stream_id:
-                              type: integer
-                              description: |
-                                The unique ID of the stream.
-                            name:
-                              type: string
-                              description: |
-                                The name of the stream.
-                            description:
-                              type: string
-                              description: |
-                                The short description of the stream in text/markdown format,
-                                intended to be used to prepopulate UI for editing a stream's
-                                description.
-                            invite_only:
-                              type: boolean
-                              description: |
-                                Specifies whether the stream is private or not.
-                                Only people who have been invited can access a private stream.
-                            rendered_description:
-                              type: string
-                              description: |
-                                The short description of the stream rendered as HTML, intended to
-                                be used when displaying the stream description in a UI.
-
-                                One should use the standard Zulip rendered_markdown CSS when
-                                displaying this content so that emoji, LaTeX, and other syntax
-                                work correctly.  And any client-side security logic for
-                                user-generated message content should be applied when displaying
-                                this HTML as though it were the body of a Zulip message.
-                            is_web_public:
-                              type: boolean
-                              description: |
-                                Whether the stream has been configured to allow unauthenticated
-                                access to its message history from the web.
-                            stream_post_policy:
-                              type: integer
-                              description: |
-                                Policy for which users can post messages to the stream.
-
-                                * 1 => Any user can post.
-                                * 2 => Only administrators can post.
-                                * 3 => Only new members can post.
-
-                                **Changes**: New in Zulip 3.0, replacing the previous
-                                `is_announcement_only` boolean.
-                            message_retention_days:
-                              type: integer
-                              nullable: true
-                              description: |
-                                Number of days that messages sent to this stream will be stored
-                                before being automatically deleted by the [message retention
-                                policy](/help/message-retention-policy).  There are two special values:
-
-                                * `null`, the default, means the stream will inherit the organization
-                                  level setting.
-                                * `-1` encodes retaining messages in this stream forever.
-
-                                **Changes**: New in Zulip 3.0 (feature level 17).
-                            history_public_to_subscribers:
-                              type: boolean
-                              description: |
-                                Whether the history of the stream is public to its subscribers.
-
-                                Currently always true for public streams (i.e. invite_only=False implies
-                                history_public_to_subscribers=True), but clients should not make that
-                                assumption, as we may change that behavior in the future.
-                            first_message_id:
-                              type: integer
-                              nullable: true
-                              description: |
-                                The id of the first message in the stream.
-
-                                Intended to help clients determine whether they need to display
-                                UI like the "more topics" widget that would suggest the stream
-                                has older history that can be accessed.
-
-                                Null is used for streams with no message history.
-                            is_announcement_only:
-                              type: boolean
-                              deprecated: true
-                              description: |
-                                Whether the given stream is announcement only or not.
-
-                                **Changes**: Deprecated in Zulip 3.0 (feature level 1), use
-                                `stream_post_policy` instead.
-                            is_default:
-                              type: boolean
-                              description: |
-                                Whether the given stream is a
-                                [default stream](/help/set-default-streams-for-new-users).  Only
-                                returned if the `include_default` parameter is `true`.
+                          allOf:
+                            - $ref: "#/components/schemas/BasicStream"
+                            - properties:
+                                is_default:
+                                  type: boolean
+                                  description: |
+                                    Whether the given stream is a
+                                    [default stream](/help/set-default-streams-for-new-users).  Only
+                                    returned if the `include_default` parameter is `true`.
                   - example:
                       {
                         "msg": "",
@@ -4190,6 +4104,96 @@ components:
         `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
 
   schemas:
+    BasicStream:
+      type: object
+      additionalProperties: false
+      properties:
+        stream_id:
+          type: integer
+          description: |
+            The unique ID of the stream.
+        name:
+          type: string
+          description: |
+            The name of the stream.
+        description:
+          type: string
+          description: |
+            The short description of the stream in text/markdown format,
+            intended to be used to prepopulate UI for editing a stream's
+            description.
+        invite_only:
+          type: boolean
+          description: |
+            Specifies whether the stream is private or not.
+            Only people who have been invited can access a private stream.
+        rendered_description:
+          type: string
+          description: |
+            The short description of the stream rendered as HTML, intended to
+            be used when displaying the stream description in a UI.
+
+            One should use the standard Zulip rendered_markdown CSS when
+            displaying this content so that emoji, LaTeX, and other syntax
+            work correctly.  And any client-side security logic for
+            user-generated message content should be applied when displaying
+            this HTML as though it were the body of a Zulip message.
+        is_web_public:
+          type: boolean
+          description: |
+            Whether the stream has been configured to allow unauthenticated
+            access to its message history from the web.
+        stream_post_policy:
+          type: integer
+          description: |
+            Policy for which users can post messages to the stream.
+
+            * 1 => Any user can post.
+            * 2 => Only administrators can post.
+            * 3 => Only new members can post.
+
+            **Changes**: New in Zulip 3.0, replacing the previous
+            `is_announcement_only` boolean.
+        message_retention_days:
+          type: integer
+          nullable: true
+          description: |
+            Number of days that messages sent to this stream will be stored
+            before being automatically deleted by the [message retention
+            policy](/help/message-retention-policy).  There are two special values:
+
+            * `null`, the default, means the stream will inherit the organization
+              level setting.
+            * `-1` encodes retaining messages in this stream forever.
+
+            **Changes**: New in Zulip 3.0 (feature level 17).
+        history_public_to_subscribers:
+          type: boolean
+          description: |
+            Whether the history of the stream is public to its subscribers.
+
+            Currently always true for public streams (i.e. invite_only=False implies
+            history_public_to_subscribers=True), but clients should not make that
+            assumption, as we may change that behavior in the future.
+        first_message_id:
+          type: integer
+          nullable: true
+          description: |
+            The id of the first message in the stream.
+
+            Intended to help clients determine whether they need to display
+            UI like the "more topics" widget that would suggest the stream
+            has older history that can be accessed.
+
+            Null is used for streams with no message history.
+        is_announcement_only:
+          type: boolean
+          deprecated: true
+          description: |
+            Whether the given stream is announcement only or not.
+
+            **Changes**: Deprecated in Zulip 3.0 (feature level 1), use
+            `stream_post_policy` instead.
     Subscriptions:
       type: object
       additionalProperties: false
