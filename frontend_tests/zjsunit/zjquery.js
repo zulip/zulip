@@ -128,14 +128,6 @@ exports.make_event_store = (selector) => {
             }
         },
 
-        generic_event($element, event_name, arg) {
-            if (typeof arg === "function") {
-                self.on(event_name, arg);
-            } else {
-                self.trigger($element, event_name, arg);
-            }
-        },
-
         is_focused() {
             return focused;
         },
@@ -172,18 +164,6 @@ exports.make_new_elem = function (selector, opts) {
                 return attrs.get(name);
             }
             attrs.set(name, val);
-            return self;
-        },
-        blur: function (arg) {
-            event_store.generic_event(self, "blur", arg);
-            return self;
-        },
-        change: function (arg) {
-            event_store.generic_event(self, "change", arg);
-            return self;
-        },
-        click: function (arg) {
-            event_store.generic_event(self, "click", arg);
             return self;
         },
         data: function (name, val) {
@@ -237,18 +217,6 @@ exports.make_new_elem = function (selector, opts) {
             }
             throw Error("Cannot find " + child_selector + " in " + selector);
         },
-        focus: function (arg) {
-            event_store.generic_event(self, "focus", arg);
-            return self;
-        },
-        focusin: function (arg) {
-            event_store.generic_event(self, "focusin", arg);
-            return self;
-        },
-        focusout: function (arg) {
-            event_store.generic_event(self, "focusout", arg);
-            return self;
-        },
         get: function (idx) {
             // We have some legacy code that does $('foo').get(0).
             assert.equal(idx, 0);
@@ -285,18 +253,6 @@ exports.make_new_elem = function (selector, opts) {
             // is_focused is not a jQuery thing; this is
             // for our testing
             return event_store.is_focused();
-        },
-        keydown: function (arg) {
-            event_store.generic_event(self, "keydown", arg);
-            return self;
-        },
-        keypress: function (arg) {
-            event_store.generic_event(self, "keypress", arg);
-            return self;
-        },
-        keyup: function (arg) {
-            event_store.generic_event(self, "keyup", arg);
-            return self;
         },
         off: function (...args) {
             event_store.off(...args);
@@ -350,15 +306,7 @@ exports.make_new_elem = function (selector, opts) {
         replaceWith: function () {
             return self;
         },
-        scroll: function (arg) {
-            event_store.generic_event(self, "scroll", arg);
-            return self;
-        },
         scrollTop: function () {
-            return self;
-        },
-        select: function (arg) {
-            event_store.generic_event(self, "select", arg);
             return self;
         },
         set_find_results: function (find_selector, jquery_object) {
