@@ -960,11 +960,6 @@ run_test("initialize", () => {
     };
 
     page_params.enter_sends = false;
-    // We manually specify it the first time because the click_func
-    // doesn't exist yet.
-    $("#stream_message_recipient_stream").select(noop);
-    $("#stream_message_recipient_topic").select(noop);
-    $("#private_message_recipient").select(noop);
 
     ct.initialize();
 
