@@ -1097,6 +1097,14 @@ run_test("initialize", () => {
         return true;
     };
     $("#enter_sends").click();
+
+    $("#stream_message_recipient_stream").off("focus");
+    $("#stream_message_recipient_topic").off("focus");
+    $("#private_message_recipient").off("focus");
+    $("form#send_message_form").off("keydown");
+    $("form#send_message_form").off("keyup");
+    $("#enter_sends").off("click");
+    $("#private_message_recipient").off("blur");
     ct.initialize();
 
     // Now let's make sure that all the stub functions have been called

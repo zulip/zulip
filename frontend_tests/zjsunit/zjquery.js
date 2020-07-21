@@ -130,7 +130,7 @@ exports.make_event_store = (selector) => {
 
         generic_event($element, event_name, arg) {
             if (typeof arg === "function") {
-                on_functions.set(event_name, arg);
+                self.on(event_name, arg);
             } else {
                 self.trigger($element, event_name, arg);
             }

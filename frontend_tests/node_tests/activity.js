@@ -700,6 +700,7 @@ run_test("initialize", () => {
 
     activity.client_is_active = false;
 
+    $(window).off("focus");
     activity.initialize();
     $(window).trigger("focus");
     clear();
@@ -719,6 +720,7 @@ run_test("initialize", () => {
     };
     global.setInterval = (func) => func();
 
+    $(window).off("focus");
     activity.initialize();
 
     assert($("#zephyr-mirror-error").hasClass("show"));
