@@ -115,7 +115,8 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         record.msg = 'message\nmoremesssage\nmore'
 
         report = self.run_handler(record)
-        self.assertIn("user_email", report)
+        self.assertIn("user", report)
+        self.assertIn("user_email", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
         self.assertEqual(report['stack_trace'], 'message\nmoremesssage\nmore')
@@ -129,7 +130,8 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         assert isinstance(record, HasRequest)
 
         report = self.run_handler(record)
-        self.assertIn("user_email", report)
+        self.assertIn("user", report)
+        self.assertIn("user_email", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
 
@@ -138,7 +140,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             with patch("zerver.logging_handlers.add_request_metadata",
                        side_effect=Exception("Unexpected exception!")):
                 report = self.run_handler(record)
-        self.assertNotIn("user_email", report)
+        self.assertNotIn("user", report)
         self.assertIn("message", report)
         self.assertEqual(report["stack_trace"], "See /var/log/zulip/errors.log")
 
@@ -146,7 +148,8 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         record.request.user = AnonymousUser()
         report = self.run_handler(record)
         self.assertIn("host", report)
-        self.assertIn("user_email", report)
+        self.assertIn("user", report)
+        self.assertIn("user_email", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
 
@@ -158,7 +161,8 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         report = self.run_handler(record)
         record.request.get_host = orig_get_host
         self.assertIn("host", report)
-        self.assertIn("user_email", report)
+        self.assertIn("user", report)
+        self.assertIn("user_email", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
 
@@ -169,7 +173,8 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             report = self.run_handler(record)
             record.request.method = "GET"
         self.assertIn("host", report)
-        self.assertIn("user_email", report)
+        self.assertIn("user", report)
+        self.assertIn("user_email", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
 
@@ -186,7 +191,8 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         record.exc_info = None
         report = self.run_handler(record)
         self.assertIn("host", report)
-        self.assertIn("user_email", report)
+        self.assertIn("user", report)
+        self.assertIn("user_email", report["user"])
         self.assertIn("message", report)
         self.assertEqual(report["stack_trace"], 'No stack trace available')
 
@@ -195,7 +201,8 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         with patch("zerver.logging_handlers.traceback.print_exc"):
             report = self.run_handler(record)
         self.assertIn("host", report)
-        self.assertIn("user_email", report)
+        self.assertIn("user", report)
+        self.assertIn("user_email", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
 
