@@ -178,6 +178,10 @@ exports.make_new_elem = function (selector, opts) {
             event_store.generic_event(self, "blur", arg);
             return self;
         },
+        change: function (arg) {
+            event_store.generic_event(self, "change", arg);
+            return self;
+        },
         click: function (arg) {
             event_store.generic_event(self, "click", arg);
             return self;
@@ -286,6 +290,10 @@ exports.make_new_elem = function (selector, opts) {
             event_store.generic_event(self, "keydown", arg);
             return self;
         },
+        keypress: function (arg) {
+            event_store.generic_event(self, "keypress", arg);
+            return self;
+        },
         keyup: function (arg) {
             event_store.generic_event(self, "keyup", arg);
             return self;
@@ -340,6 +348,10 @@ exports.make_new_elem = function (selector, opts) {
         },
         removeData: noop,
         replaceWith: function () {
+            return self;
+        },
+        scroll: function (arg) {
+            event_store.generic_event(self, "scroll", arg);
             return self;
         },
         scrollTop: function () {
