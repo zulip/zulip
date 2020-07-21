@@ -1,5 +1,14 @@
 const noop = function () {};
 
+class Event {
+    constructor(type, props) {
+        this.type = type;
+        Object.assign(this, props);
+    }
+    preventDefault() {}
+    stopPropagation() {}
+}
+
 exports.make_event_store = (selector) => {
     /*
 
@@ -104,9 +113,11 @@ exports.make_event_store = (selector) => {
             child_on.set(event_name, handler);
         },
 
-        trigger: function ($element, ev) {
-            const ev_name = typeof ev === "string" ? ev : ev.name;
-            const func = on_functions.get(ev_name);
+        trigger: function ($element, ev, data) {
+            if (typeof ev === "string") {
+                ev = new Event(ev, data);
+            }
+            const func = on_functions.get(ev.type);
 
             if (!func) {
                 // It's possible that test code will trigger events
@@ -117,7 +128,7 @@ exports.make_event_store = (selector) => {
                 return;
             }
 
-            func.call($element, ev.data);
+            func.call($element, ev, data);
         },
     };
 
@@ -533,12 +544,7 @@ exports.make_zjquery = function (opts) {
         return res;
     };
 
-    zjquery.Event = function (name, data) {
-        return {
-            name: name,
-            data: data,
-        };
-    };
+    zjquery.Event = (type, props) => new Event(type, props);
 
     fn.after = function (s) {
         return s;

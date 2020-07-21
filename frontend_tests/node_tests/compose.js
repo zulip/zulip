@@ -846,7 +846,7 @@ run_test("finish", () => {
 
         let compose_finished_event_checked = false;
         $(document).trigger = function (e) {
-            assert.equal(e.name, "compose_finished.zulip");
+            assert.equal(e.type, "compose_finished.zulip");
             compose_finished_event_checked = true;
         };
         let send_message_called = false;
