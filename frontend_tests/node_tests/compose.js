@@ -145,8 +145,6 @@ run_test("validate_stream_message_address_info", () => {
     stream_data.add_sub(sub);
     assert(compose.validate_stream_message_address_info("social"));
 
-    $("#stream_message_recipient_stream").select(noop);
-
     sub.subscribed = false;
     stream_data.add_sub(sub);
     global.stub_templates((template_name) => {
@@ -200,7 +198,6 @@ run_test("validate", () => {
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").focus();
         $("#sending-indicator").hide();
-        $("#compose-textarea").select(noop);
 
         const pm_pill_container = $.create("fake-pm-pill-container");
         $("#private_message_recipient").set_parent(pm_pill_container);
@@ -212,7 +209,6 @@ run_test("validate", () => {
         ui_util.place_caret_at_end = noop;
 
         $("#zephyr-mirror-error").is = noop;
-        $("#private_message_recipient").select(noop);
 
         global.stub_templates((fn) => {
             assert.equal(fn, "input_pill");
@@ -294,14 +290,12 @@ run_test("validate", () => {
 
     compose_state.set_message_type("stream");
     compose_state.stream_name("");
-    $("#stream_message_recipient_stream").select(noop);
     assert(!compose.validate());
     assert.equal($("#compose-error-msg").html(), i18n.t("Please specify a stream"));
 
     compose_state.stream_name("Denmark");
     page_params.realm_mandatory_topics = true;
     compose_state.topic("");
-    $("#stream_message_recipient_topic").select(noop);
     assert(!compose.validate());
     assert.equal($("#compose-error-msg").html(), i18n.t("Please specify a topic"));
 });
@@ -749,7 +743,6 @@ run_test("send_message", () => {
         $("#compose-send-button").attr("disabled", "disabled");
         $("#sending-indicator").show();
         $("#compose-textarea").off("select");
-        $("#compose-textarea").select(noop);
         echo_error_msg_checked = false;
         echo.try_deliver_locally = function () {
             return;
@@ -824,7 +817,6 @@ run_test("finish", () => {
         $("#compose-send-button").focus();
         $("#sending-indicator").hide();
         $("#compose-textarea").off("select");
-        $("#compose-textarea").select(noop);
         $("#compose-textarea").val("");
         const res = compose.finish();
         assert.equal(res, false);
@@ -1346,7 +1338,6 @@ run_test("on_events", () => {
                 return "102";
             }
         };
-        $("#compose-textarea").select(noop);
         helper.target.prop("disabled", false);
 
         // !sub will result in true here and we check the success code path.
