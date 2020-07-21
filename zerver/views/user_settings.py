@@ -19,7 +19,7 @@ from confirmation.models import (
     get_object_from_key,
     render_confirmation_key_error,
 )
-from zerver.decorator import REQ, has_request_variables, human_users_only
+from zerver.decorator import REQ, do_login, has_request_variables, human_users_only
 from zerver.lib.actions import (
     check_change_full_name,
     do_change_avatar_fields,
@@ -102,6 +102,7 @@ def confirm_email_change(
             f'<a href="mailto:{escape(old_email)}">{escape(old_email)}</a>'
         ),
     }
+    do_login(request, acting_user)
     return render(request, "confirmation/confirm_email_change.html", context=ctx)
 
 
