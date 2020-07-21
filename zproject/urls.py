@@ -193,6 +193,11 @@ v1_api_and_json_patterns = [
     path('zcommand', rest_dispatch,
          {'POST': 'zerver.views.message_send.zcommand_backend'}),
 
+    # Endpoints for syncing drafts.
+    path('drafts', rest_dispatch,
+         {'POST': ('zerver.views.drafts.create_drafts',
+                   {'intentionally_undocumented'})}),
+
     # messages -> zerver.views.message*
     # GET returns messages, possibly filtered, POST sends a message
     path('messages', rest_dispatch,
