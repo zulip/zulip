@@ -402,7 +402,7 @@ exports.register_stream_handlers = function () {
     $("body").on("click", ".toggle_home", (e) => {
         const sub = stream_popover_sub(e);
         exports.hide_stream_popover();
-        subs.toggle_home(sub);
+        subs.set_muted(sub, !sub.is_muted);
         e.stopPropagation();
     });
 

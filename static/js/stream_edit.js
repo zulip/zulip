@@ -407,52 +407,35 @@ exports.show_settings_for = function (node) {
     show_subscription_settings(sub_settings);
 };
 
-function stream_is_muted_clicked(e) {
-    e.preventDefault();
+function stream_is_muted_changed(e) {
     const sub = get_sub_for_target(e.target);
     if (!sub) {
-        blueslip.error("stream_is_muted_clicked() fails");
+        blueslip.error("stream_is_muted_changed() fails");
         return;
     }
 
     const sub_settings = exports.settings_for_sub(sub);
     const notification_checkboxes = sub_settings.find(".sub_notification_setting");
 
-    subs.toggle_home(sub, `#stream_change_property_status${sub.stream_id}`);
-
-    if (!sub.is_muted) {
-        sub_settings.find(".mute-note").addClass("hide-mute-note");
-        notification_checkboxes.removeClass("muted-sub");
-        notification_checkboxes.find("input[type='checkbox']").prop("disabled", false);
-    } else {
-        sub_settings.find(".mute-note").removeClass("hide-mute-note");
-        notification_checkboxes.addClass("muted-sub");
-        notification_checkboxes.find("input[type='checkbox']").attr("disabled", true);
-    }
+    subs.set_muted(sub, `#stream_change_property_status${sub.stream_id}`, e.target.checked);
+    sub_settings.find(".mute-note").toggleClass("hide-mute-note", !sub.is_muted);
+    notification_checkboxes.toggleClass("muted-sub", sub.is_muted);
+    notification_checkboxes.find("input[type='checkbox']").prop("disabled", sub.is_muted);
 }
 
-exports.stream_setting_clicked = function (e) {
-    if (e.currentTarget.id === "sub_is_muted_setting") {
+exports.stream_setting_changed = function (e, from_notification_settings) {
+    if (e.target.name === "is_muted") {
         return;
     }
-    e.preventDefault();
-    e.stopPropagation();
 
     const sub = get_sub_for_target(e.target);
-    let checkbox = $(e.currentTarget).find(".sub_setting_control");
-    let status_element = "#stream_change_property_status" + sub.stream_id;
-    // sub data is being changed from the notification settings page.
-    if (checkbox.length === 0) {
-        checkbox = $(e.currentTarget);
-        status_element = checkbox.closest(".subsection-parent").find(".alert-notification");
-    }
-    const setting = checkbox.attr("name");
+    const status_element = from_notification_settings
+        ? $(e.target).closest(".subsection-parent").find(".alert-notification")
+        : $("#stream_change_property_status" + sub.stream_id);
+    const setting = e.target.name;
     if (!sub) {
-        blueslip.error("undefined sub in stream_setting_clicked()");
+        blueslip.error("undefined sub in stream_setting_changed()");
         return;
-    }
-    if (checkbox.prop("disabled")) {
-        return false;
     }
     if (exports.is_notification_setting(setting) && sub[setting] === null) {
         if (setting === "wildcard_mentions_notify") {
@@ -461,7 +444,7 @@ exports.stream_setting_clicked = function (e) {
             sub[setting] = page_params["enable_stream_" + setting];
         }
     }
-    exports.set_stream_property(sub, setting, !sub[setting], status_element);
+    exports.set_stream_property(sub, setting, e.target.checked, status_element);
 };
 
 exports.bulk_set_stream_property = function (sub_data, status_element) {
@@ -692,9 +675,17 @@ exports.initialize = function () {
         e.stopPropagation();
     });
 
-    $("#subscriptions_table").on("click", "#sub_is_muted_setting", stream_is_muted_clicked);
+    $("#subscriptions_table").on(
+        "change",
+        "#sub_is_muted_setting .sub_setting_control",
+        stream_is_muted_changed,
+    );
 
-    $("#subscriptions_table").on("click", ".sub_setting_checkbox", exports.stream_setting_clicked);
+    $("#subscriptions_table").on(
+        "change",
+        ".sub_setting_checkbox .sub_setting_control",
+        exports.stream_setting_changed,
+    );
 
     $("#subscriptions_table").on("keyup", ".subscriber_list_add form", (e) => {
         if (e.which === 13) {

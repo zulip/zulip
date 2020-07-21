@@ -98,7 +98,7 @@ exports.set_up = function () {
         e.stopPropagation();
         const input_elem = $(e.currentTarget);
         if (input_elem.parents("#stream-specific-notify-table").length) {
-            stream_edit.stream_setting_clicked(e);
+            stream_edit.stream_setting_changed(e, true);
             return;
         }
         const setting_name = input_elem.attr("name");
