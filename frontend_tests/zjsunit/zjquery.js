@@ -24,22 +24,7 @@ exports.make_event_store = (selector) => {
     const on_functions = new Map();
     const child_on_functions = new Map();
 
-    function generic_event($element, event_name, arg) {
-        if (typeof arg === "function") {
-            on_functions.set(event_name, arg);
-        } else {
-            const handler = on_functions.get(event_name);
-            if (!handler) {
-                const error = "Cannot find " + event_name + " handler for " + selector;
-                throw Error(error);
-            }
-            handler.call($element, arg);
-        }
-    }
-
     const self = {
-        generic_event: generic_event,
-
         get_on_handler: function (name, child_selector) {
             let handler;
 
@@ -129,6 +114,14 @@ exports.make_event_store = (selector) => {
             }
 
             func.call($element, ev, data);
+        },
+
+        generic_event($element, event_name, arg) {
+            if (typeof arg === "function") {
+                on_functions.set(event_name, arg);
+            } else {
+                self.trigger($element, event_name, arg);
+            }
         },
     };
 
