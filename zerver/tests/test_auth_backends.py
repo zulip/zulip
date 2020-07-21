@@ -4528,10 +4528,14 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         do_deactivate_user(self.example_user('hamlet'))
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
-                                                    'userAccountControl': 'userAccountControl'}):
+                                                    'userAccountControl': 'userAccountControl'}), \
+                self.assertLogs('zulip.ldap') as info_logs:
             self.perform_ldap_sync(self.example_user('hamlet'))
         hamlet = self.example_user('hamlet')
         self.assertTrue(hamlet.is_active)
+        self.assertEqual(info_logs.output, [
+            'INFO:zulip.ldap:Reactivating user hamlet@zulip.com because they are not disabled in LDAP.'
+        ])
 
     def test_user_in_multiple_realms(self) -> None:
         test_realm = do_create_realm('test', 'test', False)
