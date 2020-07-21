@@ -2,6 +2,7 @@ import filecmp
 import logging
 import os
 from typing import Any, Dict, List
+from unittest.mock import call, patch
 
 import ujson
 
@@ -502,11 +503,16 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        do_convert_data(
-            mattermost_data_dir=mattermost_data_dir,
-            output_dir=output_dir,
-            masking_content=False,
-        )
+        with patch('builtins.print') as mock_print:
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=False,
+            )
+        self.assertEqual(mock_print.mock_calls, [
+            call('Generating data for', 'gryffindor'),
+            call('Generating data for', 'slytherin')
+        ])
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
         self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, 'avatars')), True)
@@ -575,11 +581,15 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("direct_channel", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        do_convert_data(
-            mattermost_data_dir=mattermost_data_dir,
-            output_dir=output_dir,
-            masking_content=False,
-        )
+        with patch('builtins.print') as mock_print:
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=False,
+            )
+        self.assertEqual(mock_print.mock_calls, [
+            call('Generating data for', 'gryffindor'),
+        ])
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
         self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, 'avatars')), True)
@@ -666,11 +676,16 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        do_convert_data(
-            mattermost_data_dir=mattermost_data_dir,
-            output_dir=output_dir,
-            masking_content=True,
-        )
+        with patch('builtins.print') as mock_print:
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=True,
+            )
+        self.assertEqual(mock_print.mock_calls, [
+            call('Generating data for', 'gryffindor'),
+            call('Generating data for', 'slytherin')
+        ])
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
         messages = self.read_file(harry_team_output_dir, 'messages-000001.json')
@@ -681,11 +696,16 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        do_convert_data(
-            mattermost_data_dir=mattermost_data_dir,
-            output_dir=output_dir,
-            masking_content=True,
-        )
+        with patch('builtins.print') as mock_print:
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=True,
+            )
+        self.assertEqual(mock_print.mock_calls, [
+            call('Generating data for', 'gryffindor'),
+            call('Generating data for', 'slytherin')
+        ])
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
 
