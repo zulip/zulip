@@ -435,6 +435,8 @@ exports.stream_setting_clicked = function (e) {
     if (e.currentTarget.id === "sub_is_muted_setting") {
         return;
     }
+    e.preventDefault();
+    e.stopPropagation();
 
     const sub = get_sub_for_target(e.target);
     let checkbox = $(e.currentTarget).find(".sub_setting_control");
