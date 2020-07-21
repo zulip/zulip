@@ -1,11 +1,11 @@
 const autosize = require("autosize");
 
-exports.blur_textarea = function () {
+exports.blur_compose_inputs = function () {
     $(".message_comp").find("input, textarea, button, #private_message_recipient").trigger("blur");
 };
 
 function hide_box() {
-    exports.blur_textarea();
+    exports.blur_compose_inputs();
     $("#stream-message").hide();
     $("#private-message").hide();
     $(".new_message_textarea").css("min-height", "");

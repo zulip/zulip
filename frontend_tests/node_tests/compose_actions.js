@@ -115,7 +115,7 @@ run_test("start", () => {
     compose_actions.expand_compose_box = noop;
     compose_actions.set_focus = noop;
     compose_actions.complete_starting_tasks = noop;
-    compose_actions.blur_textarea = noop;
+    compose_actions.blur_compose_inputs = noop;
     compose_actions.clear_textarea = noop;
 
     // Start stream message
