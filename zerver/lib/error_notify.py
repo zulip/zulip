@@ -23,8 +23,8 @@ def logger_repr(report: Dict[str, Any]) -> str:
     return "Logger {logger_name}, from module {log_module} line {log_lineno}:".format(**report)
 
 def user_info_str(report: Dict[str, Any]) -> str:
-    if report['user_full_name'] and report['user_email']:
-        user_info = "{user_full_name} ({user_email})".format(**report)
+    if report.get('user') and report['user'].get('user_full_name'):
+        user_info = "{user[user_full_name]} <{user[user_email]}>".format(**report)
     else:
         user_info = "Anonymous user (not logged in)"
 
@@ -44,10 +44,11 @@ def notify_browser_error(report: Dict[str, Any]) -> None:
     email_browser_error(report)
 
 def email_browser_error(report: Dict[str, Any]) -> None:
-    email_subject = f"Browser error for {user_info_str(report)}"
+    user_info = user_info_str(report)
+    email_subject = f"Browser error for {user_info}"
+    body = f"User: {user_info}"
 
-    body = """\
-User: {user_full_name} <{user_email}> on {deployment}
+    body += """\
 
 Message:
 {message}

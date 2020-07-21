@@ -49,8 +49,11 @@ def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
         traceback.print_exc()
         user_full_name = None
         user_email = None
-    report['user_email'] = user_email
-    report['user_full_name'] = user_full_name
+
+    report['user'] = {
+        'user_email': user_email,
+        'user_full_name': user_full_name,
+    }
 
     exception_filter = get_exception_reporter_filter(request)
     try:
