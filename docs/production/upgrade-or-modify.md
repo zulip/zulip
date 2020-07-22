@@ -339,11 +339,11 @@ working correctly.
     ```
     apt remove upstart -y
     /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
-    pg_dropcluster 9.5 main --stop
+    pg_dropcluster 11 main --stop
     systemctl stop postgresql
-    pg_upgradecluster -m upgrade 9.3 main
-    pg_dropcluster 9.3 main
-    apt remove postgresql-9.3
+    pg_upgradecluster -m upgrade 9.6 main
+    pg_dropcluster 9.6 main
+    apt remove postgresql-9.6
     systemctl start postgresql
     service memcached restart
     ```
