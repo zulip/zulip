@@ -7,7 +7,7 @@ defaults:
     shell: bash
 
 jobs:
-  focal_bionic:
+  unit_tests:
     strategy:
       fail-fast: false
       matrix:
