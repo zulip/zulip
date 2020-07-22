@@ -407,7 +407,8 @@ class TestConvertMattermostData(ZulipTestCase):
     COMMAND_NAME = 'convert_mattermost_data'
 
     def test_if_command_calls_do_convert_data(self) -> None:
-        with patch('zerver.management.commands.convert_mattermost_data.do_convert_data') as m:
+        with patch('zerver.management.commands.convert_mattermost_data.do_convert_data') as m, \
+                patch('builtins.print') as mock_print:
             mm_fixtures = self.fixture_file_name("", "mattermost_fixtures")
             output_dir = self.make_import_output_dir("mattermost")
             call_command(self.COMMAND_NAME, mm_fixtures, f"--output={output_dir}")
@@ -417,6 +418,9 @@ class TestConvertMattermostData(ZulipTestCase):
             mattermost_data_dir=os.path.realpath(mm_fixtures),
             output_dir=os.path.realpath(output_dir),
         )
+        self.assertEqual(mock_print.mock_calls, [
+            call('Converting Data ...')
+        ])
 
 class TestInvoicePlans(ZulipTestCase):
     COMMAND_NAME = 'invoice_plans'
