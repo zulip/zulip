@@ -17,7 +17,7 @@ class MessageListData {
         }
 
         this.filter = filter;
-        this.fetch_status = FetchStatus();
+        this.fetch_status = new FetchStatus();
     }
 
     all_messages() {
