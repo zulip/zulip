@@ -201,8 +201,7 @@ const events = function () {
     }
 };
 
-// run this callback when the page is determined to have loaded.
-const load = function () {
+$(() => {
     // Initiate the bootstrap carousel logic
     $(".carousel").carousel({
         interval: false,
@@ -238,15 +237,7 @@ const load = function () {
 
     // Set up events / categories / search
     events();
-};
 
-if (document.readyState === "complete") {
-    load();
-} else {
-    $(load);
-}
-
-$(() => {
     if (window.location.pathname === "/team/") {
         render_tabs();
     }
