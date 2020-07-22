@@ -137,18 +137,6 @@ function get_num_unread(user_id) {
     return unread.num_unread_for_person(user_id.toString());
 }
 
-exports.my_user_status = function (user_id) {
-    if (!people.is_my_user_id(user_id)) {
-        return;
-    }
-
-    if (user_status.is_away(user_id)) {
-        return i18n.t("(unavailable)");
-    }
-
-    return i18n.t("(you)");
-};
-
 exports.user_last_seen_time_status = function (user_id) {
     const status = presence.get_status(user_id);
     if (status === "active") {
@@ -176,16 +164,15 @@ exports.user_last_seen_time_status = function (user_id) {
 exports.info_for = function (user_id) {
     const user_circle_class = exports.get_user_circle_class(user_id);
     const person = people.get_by_user_id(user_id);
-    const my_user_status = exports.my_user_status(user_id);
     const user_circle_status = exports.status_description(user_id);
 
     return {
         href: hash_util.pm_with_uri(person.email),
         name: person.full_name,
         user_id,
-        my_user_status,
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
+        user_status_message: user_status.get_status_text(user_id),
         user_circle_class,
         user_circle_status,
     };

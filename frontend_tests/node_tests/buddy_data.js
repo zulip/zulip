@@ -280,14 +280,6 @@ run_test("bulk_data_hacks", () => {
 });
 
 run_test("level", () => {
-    assert.equal(buddy_data.my_user_status(me.user_id), "translated: (you)");
-    user_status.set_away(me.user_id);
-    assert.equal(buddy_data.my_user_status(me.user_id), "translated: (unavailable)");
-    user_status.revoke_away(me.user_id);
-    assert.equal(buddy_data.my_user_status(me.user_id), "translated: (you)");
-});
-
-run_test("level", () => {
     presence.presence_info.clear();
     assert.equal(buddy_data.level(me.user_id), 0);
     assert.equal(buddy_data.level(selma.user_id), 3);
