@@ -1,5 +1,6 @@
 import logging
 import re
+from email.headerregistry import AddressHeader
 from email.message import EmailMessage
 from typing import Dict, List, Optional, Tuple
 
@@ -310,9 +311,14 @@ def find_emailgateway_recipient(message: EmailMessage) -> str:
 
     for header_name in recipient_headers:
         for header_value in message.get_all(header_name, []):
-            for addr in header_value.addresses:
-                if match_email_re.match(addr.addr_spec):
-                    return addr.addr_spec
+            if isinstance(header_value, AddressHeader):
+                emails = [addr.addr_spec for addr in header_value.addresses]
+            else:
+                emails = [str(header_value)]
+
+            for email in emails:
+                if match_email_re.match(email):
+                    return email
 
     raise ZulipEmailForwardError("Missing recipient in mirror email")
 
