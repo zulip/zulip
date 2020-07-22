@@ -42,7 +42,7 @@ async function realm_creation_tests(page) {
     // checking the text in <p> tag under pitch class is as expected.
     await page.waitForSelector(".pitch");
     const text_in_pitch = await page.evaluate(() => document.querySelector(".pitch p").innerText);
-    assert(text_in_pitch === "We just need you to do one last thing.");
+    assert(text_in_pitch === "You’re almost there! We just need you to do one last thing.");
 
     // fill the form.
     const params = {

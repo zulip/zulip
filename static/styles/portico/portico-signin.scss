@@ -531,7 +531,7 @@ html {
 .portico-page {
     .pitch {
         h1 {
-            margin-bottom: 0px;
+            margin-bottom: 5px;
         }
 
         p {
@@ -743,8 +743,12 @@ button#register_auth_button_gitlab {
     padding: 0;
     margin: 30px;
 
-    section {
+    fieldset {
         margin: 30px;
+
+        .input-box:last-child {
+            margin-bottom: 0;
+        }
     }
 
     .info-box {
@@ -759,7 +763,7 @@ button#register_auth_button_gitlab {
         display: block;
         text-align: center;
         width: 330px;
-        margin: 30px auto 10px;
+        margin: 25px auto 10px;
         position: relative;
 
         &.with-top-space {
@@ -808,7 +812,7 @@ button#register_auth_button_gitlab {
         width: 150px;
 
         + .realm_subdomain_label {
-            margin-top: 12px;
+            top: 15px;
             margin-left: 180px;
             display: inline-block;
 
@@ -832,14 +836,30 @@ button#register_auth_button_gitlab {
         }
     }
 
-    .help-box {
-        width: calc(100% - 25px);
-        max-width: none;
-        margin: 0 auto;
+    #id_email {
+        font-weight: normal;
+        margin: 2px;
+        padding-top: 25px;
+        text-align: left;
+        overflow-wrap: break-word;
+    }
 
-        &.margin-top {
-            margin-top: 21px;
-            text-align: left;
+    .help-text {
+        width: 100%;
+        max-width: none;
+        margin: 2px 0;
+        text-align: left;
+        color: hsl(0, 0%, 47%);
+        font-size: 0.9rem;
+        font-weight: 400;
+        line-height: 1.2;
+    }
+
+    legend {
+        margin-bottom: 0;
+
+        + .input-box {
+            margin-top: 20px;
         }
     }
 
