@@ -154,7 +154,7 @@ exports.update_message_topic_editing_pencil = function () {
 exports.show_topic_edit_spinner = function (row) {
     const spinner = row.find(".topic_edit_spinner");
     loading.make_indicator(spinner);
-    $(spinner).removeAttr("style");
+    spinner.css({height: ""});
     $(".topic_edit_save").hide();
     $(".topic_edit_cancel").hide();
 };
