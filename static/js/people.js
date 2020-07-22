@@ -730,7 +730,10 @@ export function is_valid_email_for_compose(email) {
     if (!person) {
         return false;
     }
-    return active_user_dict.has(person.user_id);
+
+    // we allow deactivated users in compose so that
+    // one can attempt to reply to threads that contained them.
+    return true;
 }
 
 export function is_valid_bulk_emails_for_compose(emails) {
