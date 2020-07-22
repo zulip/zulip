@@ -1,34 +1,3 @@
-const events = {
-    documentMouseup: [],
-    windowResize: [],
-};
-
-window.onload = function () {
-    document.body.addEventListener("mouseup", (e) => {
-        events.documentMouseup = events.documentMouseup.filter(function (event) {
-            // go through automatic cleanup when running events.
-            if (!document.body.contains(event.canvas)) {
-                return false;
-            }
-
-            event.callback.call(this, e);
-            return true;
-        });
-    });
-
-    window.addEventListener("resize", function (e) {
-        events.windowResize = events.windowResize.filter((event) => {
-            if (!document.body.contains(event.canvas)) {
-                return false;
-            }
-
-            event.callback.call(this, e);
-
-            return true;
-        });
-    });
-};
-
 const funcs = {
     setZoom(meta, zoom) {
         // condition to handle zooming event by zoom hotkeys
@@ -173,21 +142,21 @@ const funcs = {
         // do so on the document.body as well, though depending on the infra,
         // these are less reliable as preventDefault may prevent these events
         // from propagating all the way to the <body>.
-        events.documentMouseup.push({
-            canvas,
-            meta,
-            callback() {
+        document.body.addEventListener("mouseup", function body_mouseup() {
+            if (document.body.contains(canvas)) {
                 mousedown = false;
-            },
+            } else {
+                document.body.removeEventListener("mouseup", body_mouseup);
+            }
         });
 
-        events.windowResize.push({
-            canvas,
-            meta,
-            callback() {
+        window.addEventListener("resize", function window_resize() {
+            if (document.body.contains(canvas)) {
                 funcs.sizeCanvas(canvas, meta);
                 funcs.displayImage(canvas, context, meta);
-            },
+            } else {
+                window.removeEventListener("resize", window_resize);
+            }
         });
     },
 
@@ -286,12 +255,12 @@ class LightboxCanvas {
 
         this.meta.image = new Image();
         this.meta.image.src = this.canvas.getAttribute("data-src");
-        this.meta.image.onload = () => {
+        this.meta.image.addEventListener("load", () => {
             this.meta.ratio = funcs.imageRatio(this.meta.image);
 
             funcs.sizeCanvas(this.canvas, this.meta);
             funcs.displayImage(this.canvas, this.context, this.meta);
-        };
+        });
 
         this.canvas.image = this.meta.image;
 
