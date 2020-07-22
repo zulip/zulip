@@ -317,13 +317,12 @@ run_test("initiate_search", () => {
     $("#search_query").typeahead = (lookup) => {
         if (lookup === "lookup") {
             typeahead_forced_open = true;
-            return {
-                select: () => {
-                    is_searchbox_text_selected = true;
-                },
-            };
         }
+        return $("#search_query");
     };
+    $("#search_query").on("select", () => {
+        is_searchbox_text_selected = true;
+    });
 
     search.initiate_search();
     assert(typeahead_forced_open);

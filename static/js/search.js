@@ -209,7 +209,7 @@ exports.focus_search = function () {
 exports.initiate_search = function () {
     tab_bar.open_search_bar_and_close_narrow_description();
     $("#searchbox").css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
-    $("#search_query").typeahead("lookup").select();
+    $("#search_query").typeahead("lookup").trigger("select");
     if (page_params.search_pills_enabled) {
         $("#search_query").trigger("focus");
         ui_util.place_caret_at_end($("#search_query")[0]);
