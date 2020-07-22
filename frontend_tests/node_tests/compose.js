@@ -590,7 +590,7 @@ run_test("send_message_success", () => {
     $("#compose-textarea").val("foobarfoobar");
     $("#compose-textarea").trigger("blur");
     $("#compose-send-status").show();
-    $("#compose-send-button").attr("disabled", "disabled");
+    $("#compose-send-button").prop("disabled", true);
     $("#sending-indicator").show();
 
     let reify_message_id_checked;
@@ -688,7 +688,7 @@ run_test("send_message", () => {
         $("#compose-textarea").val("[foobar]" + "(https://foo.com/user_uploads/123456)");
         $("#compose-textarea").trigger("blur");
         $("#compose-send-status").show();
-        $("#compose-send-button").attr("disabled", "disabled");
+        $("#compose-send-button").prop("disabled", true);
         $("#sending-indicator").show();
 
         compose.send_message();
@@ -740,7 +740,7 @@ run_test("send_message", () => {
         $("#compose-textarea").val("foobarfoobar");
         $("#compose-textarea").trigger("blur");
         $("#compose-send-status").show();
-        $("#compose-send-button").attr("disabled", "disabled");
+        $("#compose-send-button").prop("disabled", true);
         $("#sending-indicator").show();
         $("#compose-textarea").off("select");
         echo_error_msg_checked = false;
@@ -1027,7 +1027,7 @@ run_test("initialize", () => {
     })();
 
     (function test_abort_xhr() {
-        $("#compose-send-button").attr("disabled", "disabled");
+        $("#compose-send-button").prop("disabled", true);
 
         reset_jquery();
         stub_out_video_calls();

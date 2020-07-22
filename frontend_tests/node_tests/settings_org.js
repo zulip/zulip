@@ -927,76 +927,64 @@ run_test("misc", () => {
     page_params.realm_name_changes_disabled = false;
     page_params.server_name_changes_disabled = false;
     settings_account.update_name_change_display();
-    assert.equal($("#full_name").attr("disabled"), false);
+    assert(!$("#full_name").prop("disabled"));
     assert.equal($(".change_name_tooltip").is(":visible"), false);
 
     page_params.realm_name_changes_disabled = true;
     page_params.server_name_changes_disabled = false;
     settings_account.update_name_change_display();
-    assert.equal($("#full_name").attr("disabled"), "disabled");
+    assert($("#full_name").prop("disabled"));
     assert($(".change_name_tooltip").is(":visible"));
 
     page_params.realm_name_changes_disabled = true;
     page_params.server_name_changes_disabled = true;
     settings_account.update_name_change_display();
-    assert.equal($("#full_name").attr("disabled"), "disabled");
+    assert($("#full_name").prop("disabled"));
     assert($(".change_name_tooltip").is(":visible"));
 
     page_params.realm_name_changes_disabled = false;
     page_params.server_name_changes_disabled = true;
     settings_account.update_name_change_display();
-    assert.equal($("#full_name").attr("disabled"), "disabled");
+    assert($("#full_name").prop("disabled"));
     assert($(".change_name_tooltip").is(":visible"));
 
     page_params.realm_email_changes_disabled = false;
     settings_account.update_email_change_display();
-    assert.equal($("#change_email .button").attr("disabled"), false);
+    assert(!$("#change_email .button").prop("disabled"));
 
     page_params.realm_email_changes_disabled = true;
     settings_account.update_email_change_display();
-    assert.equal($("#change_email .button").attr("disabled"), "disabled");
+    assert($("#change_email .button").prop("disabled"));
 
     page_params.realm_avatar_changes_disabled = false;
     page_params.server_avatar_changes_disabled = false;
     settings_account.update_avatar_change_display();
-    assert.equal($("#user-avatar-upload-widget .image_upload_button").attr("disabled"), false);
-    assert.equal(
-        $("#user-avatar-upload-widget .image-delete-button .button").attr("disabled"),
-        false,
-    );
+    assert(!$("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
+    assert(!$("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
     page_params.realm_avatar_changes_disabled = true;
     page_params.server_avatar_changes_disabled = false;
     settings_account.update_avatar_change_display();
-    assert.equal($("#user-avatar-upload-widget .image_upload_button").attr("disabled"), "disabled");
-    assert.equal(
-        $("#user-avatar-upload-widget .image-delete-button .button").attr("disabled"),
-        "disabled",
-    );
+    assert($("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
+    assert($("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
     page_params.realm_avatar_changes_disabled = false;
     page_params.server_avatar_changes_disabled = true;
     settings_account.update_avatar_change_display();
-    assert.equal($("#user-avatar-upload-widget .image_upload_button").attr("disabled"), "disabled");
-    assert.equal(
-        $("#user-avatar-upload-widget .image-delete-button .button").attr("disabled"),
-        "disabled",
-    );
+    assert($("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
+    assert($("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
     page_params.realm_avatar_changes_disabled = true;
     page_params.server_avatar_changes_disabled = true;
     settings_account.update_avatar_change_display();
-    assert.equal($("#user-avatar-upload-widget .image_upload_button").attr("disabled"), "disabled");
-    assert.equal(
-        $("#user-avatar-upload-widget .image-delete-button .button").attr("disabled"),
-        "disabled",
-    );
+    assert($("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
+    assert($("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
 
     // If organization admin, these UI elements are never disabled.
     page_params.is_admin = true;
     settings_account.update_name_change_display();
-    assert.equal($("#full_name").attr("disabled"), false);
+    assert(!$("#full_name").prop("disabled"));
     assert.equal($(".change_name_tooltip").is(":visible"), false);
 
     settings_account.update_email_change_display();
-    assert.equal($("#change_email .button").attr("disabled"), false);
+    assert(!$("#change_email .button").prop("disabled"));
 
     stream_data.get_streams_for_settings_page = () => {
         const arr = [];

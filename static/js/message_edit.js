@@ -186,7 +186,7 @@ function handle_message_row_edit_keydown(e) {
                 if (composebox_typeahead.should_enter_send(e)) {
                     const row = $(".message_edit_content").filter(":focus").closest(".message_row");
                     const message_edit_save_button = row.find(".message_edit_save");
-                    if (message_edit_save_button.attr("disabled") === "disabled") {
+                    if (message_edit_save_button.prop("disabled")) {
                         // In cases when the save button is disabled
                         // we need to disable save on pressing enter
                         // Prevent default to avoid new-line on pressing
@@ -818,7 +818,7 @@ exports.edit_last_sent_message = function () {
 
 function hide_delete_btn_show_spinner(deleting) {
     if (deleting) {
-        $("do_delete_message_button").attr("disabled", "disabled");
+        $("do_delete_message_button").prop("disabled", true);
         $("#delete_message_modal > div.modal-footer > button").hide();
         const delete_spinner = $("#do_delete_message_spinner");
         loading.make_indicator(delete_spinner, {abs_positioned: true});

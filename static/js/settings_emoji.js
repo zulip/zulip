@@ -168,7 +168,7 @@ exports.set_up = function () {
             e.preventDefault();
             e.stopPropagation();
             const emoji_status = $("#admin-emoji-status");
-            $("#admin_emoji_submit").attr("disabled", true);
+            $("#admin_emoji_submit").prop("disabled", true);
             const emoji = {};
             const formData = new FormData();
 
@@ -189,7 +189,7 @@ exports.set_up = function () {
                     $("#admin-emoji-status").hide();
                     ui_report.success(i18n.t("Custom emoji added!"), emoji_status);
                     $("form.admin-emoji-form input[type='text']").val("");
-                    $("#admin_emoji_submit").removeAttr("disabled");
+                    $("#admin_emoji_submit").prop("disabled", false);
                     emoji_widget.clear();
                 },
                 error(xhr) {
@@ -197,7 +197,7 @@ exports.set_up = function () {
                     const errors = JSON.parse(xhr.responseText).msg;
                     xhr.responseText = JSON.stringify({msg: errors});
                     ui_report.error(i18n.t("Failed"), xhr, emoji_status);
-                    $("#admin_emoji_submit").removeAttr("disabled");
+                    $("#admin_emoji_submit").prop("disabled", false);
                 },
             });
         });

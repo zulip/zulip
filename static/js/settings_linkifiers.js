@@ -112,7 +112,7 @@ exports.build_page = function () {
             const pattern_status = $("#admin-filter-pattern-status");
             const format_status = $("#admin-filter-format-status");
             const add_filter_button = $(".new-filter-form button");
-            add_filter_button.attr("disabled", "disabled");
+            add_filter_button.prop("disabled", true);
             filter_status.hide();
             pattern_status.hide();
             format_status.hide();
@@ -128,13 +128,13 @@ exports.build_page = function () {
                 success(data) {
                     $("#filter_pattern").val("");
                     $("#filter_format_string").val("");
-                    add_filter_button.removeAttr("disabled");
+                    add_filter_button.prop("disabled", false);
                     filter.id = data.id;
                     ui_report.success(i18n.t("Custom filter added!"), filter_status);
                 },
                 error(xhr) {
                     const errors = JSON.parse(xhr.responseText).errors;
-                    add_filter_button.removeAttr("disabled");
+                    add_filter_button.prop("disabled", false);
                     if (errors.pattern !== undefined) {
                         xhr.responseText = JSON.stringify({msg: errors.pattern});
                         ui_report.error(i18n.t("Failed"), xhr, pattern_status);

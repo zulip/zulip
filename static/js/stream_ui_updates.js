@@ -70,7 +70,7 @@ exports.update_settings_button_for_sub = function (sub) {
     } else {
         settings_button.attr("title", "");
         exports.initialize_cant_subscribe_popover(sub);
-        settings_button.attr("disabled", "disabled");
+        settings_button.prop("disabled", true);
     }
 };
 
@@ -234,13 +234,13 @@ exports.update_add_subscriptions_elements = function (sub) {
     const allow_user_to_add_subs = sub.can_add_subscribers;
 
     if (allow_user_to_add_subs) {
-        input_element.removeAttr("disabled");
-        button_element.removeAttr("disabled");
+        input_element.prop("disabled", false);
+        button_element.prop("disabled", false);
         button_element.css("pointer-events", "");
         $(".add_subscribers_container input").popover("destroy");
     } else {
-        input_element.attr("disabled", "disabled");
-        button_element.attr("disabled", "disabled");
+        input_element.prop("disabled", true);
+        button_element.prop("disabled", true);
 
         exports.initialize_disable_btn_hint_popover(
             $(".add_subscribers_container"),
