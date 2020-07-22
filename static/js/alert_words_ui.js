@@ -30,7 +30,7 @@ function update_alert_word_status(status_text, is_error) {
 }
 
 function add_alert_word(alert_word) {
-    alert_word = $.trim(alert_word);
+    alert_word = alert_word.trim();
     if (alert_word === "") {
         update_alert_word_status(i18n.t("Alert word can't be empty!"), true);
         return;

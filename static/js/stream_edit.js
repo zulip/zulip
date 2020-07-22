@@ -533,7 +533,7 @@ exports.change_stream_name = function (e) {
     const sub_settings = $(e.target).closest(".subscription_settings");
     const stream_id = get_stream_id(e.target);
     const new_name_box = sub_settings.find(".stream-name-editable");
-    const new_name = $.trim(new_name_box.text());
+    const new_name = new_name_box.text().trim();
     $(".stream_change_property_info").hide();
 
     channel.patch({
