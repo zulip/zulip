@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, call, patch
+
 from django.template.loader import get_template
 
 from zerver.lib.exceptions import InvalidMarkdownIncludeStatement
@@ -104,7 +106,8 @@ footer
                     'non-indentedcodeblockwithmultiplelines</code></pre></div>footer')
         self.assertEqual(content_sans_whitespace, expected)
 
-    def test_custom_markdown_include_extension(self) -> None:
+    @patch('builtins.print')
+    def test_custom_markdown_include_extension(self, mock_print: MagicMock) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
             'markdown_test_file': "zerver/tests/markdown/test_custom_include_extension.md",
@@ -112,6 +115,9 @@ footer
 
         with self.assertRaisesRegex(InvalidMarkdownIncludeStatement, "Invalid markdown include statement"):
             template.render(context)
+        self.assertEqual(mock_print.mock_calls, [
+            call("Warning: could not find file templates/zerver/help/include/nonexistent-macro.md. Error: [Errno 2] No such file or directory: 'templates/zerver/help/include/nonexistent-macro.md'")
+        ])
 
     def test_custom_markdown_include_extension_empty_macro(self) -> None:
         template = get_template("tests/test_markdown.html")
