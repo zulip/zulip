@@ -2,7 +2,7 @@ zrequire("list_cursor");
 
 run_test("config errors", () => {
     blueslip.expect("error", "Programming error");
-    list_cursor({});
+    new ListCursor({});
 });
 
 function basic_conf() {
@@ -25,7 +25,7 @@ function basic_conf() {
 run_test("misc errors", () => {
     const conf = basic_conf();
 
-    const cursor = list_cursor(conf);
+    const cursor = new ListCursor(conf);
 
     // Test that we just ignore empty
     // lists for unknown keys.
@@ -37,10 +37,10 @@ run_test("misc errors", () => {
 
     cursor.get_row("nada");
 
-    blueslip.expect("error", "Caller is not checking keys for list_cursor.go_to");
+    blueslip.expect("error", "Caller is not checking keys for ListCursor.go_to");
     cursor.go_to(undefined);
 
-    blueslip.expect("error", "Cannot highlight key for list_cursor: nada");
+    blueslip.expect("error", "Cannot highlight key for ListCursor: nada");
     cursor.go_to("nada");
 
     cursor.prev();
@@ -49,7 +49,7 @@ run_test("misc errors", () => {
 
 run_test("single item list", () => {
     const conf = basic_conf();
-    const cursor = list_cursor(conf);
+    const cursor = new ListCursor(conf);
 
     const valid_key = "42";
     const li_stub = {
