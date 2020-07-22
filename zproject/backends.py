@@ -1109,7 +1109,7 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
         # field of the `details` object).  For those backends, we have
         # custom per-backend code to properly fetch only verified
         # email addresses from the appropriate third-party API.
-        verified_emails = backend.get_verified_emails(*args, **kwargs)
+        verified_emails = backend.get_verified_emails(realm, *args, **kwargs)
         verified_emails_length = len(verified_emails)
         if verified_emails_length == 0:
             # TODO: Provide a nice error message screen to the user
@@ -1136,7 +1136,7 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
             if (len(existing_account_emails) != 1 or backend.strategy.session_get('is_signup') == '1'):
                 unverified_emails = []
                 if hasattr(backend, 'get_unverified_emails'):
-                    unverified_emails = backend.get_unverified_emails(*args, **kwargs)
+                    unverified_emails = backend.get_unverified_emails(realm, *args, **kwargs)
                 return render(backend.strategy.request, 'zerver/social_auth_select_email.html', context = {
                     'primary_email': verified_emails[0],
                     'verified_non_primary_emails': verified_emails[1:],
@@ -1427,18 +1427,18 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             emails = []
         return emails
 
-    def get_unverified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
+    def get_unverified_emails(self, realm: Realm, *args: Any, **kwargs: Any) -> List[str]:
         return [
-            email_obj['email'] for email_obj in self.get_usable_email_objects(*args, **kwargs)
+            email_obj['email'] for email_obj in self.get_usable_email_objects(realm, *args, **kwargs)
             if not email_obj.get('verified')
         ]
 
-    def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
+    def get_verified_emails(self, realm: Realm, *args: Any, **kwargs: Any) -> List[str]:
         # We only let users login using email addresses that are
         # verified by GitHub, because the whole point is for the user
         # to demonstrate that they control the target email address.
         verified_emails: List[str] = []
-        for email_obj in [obj for obj in self.get_usable_email_objects(*args, **kwargs)
+        for email_obj in [obj for obj in self.get_usable_email_objects(realm, *args, **kwargs)
                           if obj.get('verified')]:
             # social_associate_user_helper assumes that the first email in
             # verified_emails is primary.
@@ -1449,15 +1449,19 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
         return verified_emails
 
-    def get_usable_email_objects(self, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
-        # We disallow the
+    def get_usable_email_objects(self, realm: Realm, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
+        # We disallow creation of new accounts with
         # @noreply.github.com/@users.noreply.github.com email
         # addresses, because structurally, we only want to allow email
-        # addresses that can receive emails, and those cannot.
+        # addresses that can receive emails, and those cannot. However,
+        # if an account with this address happens to already exist in the realm
+        # (which could happen e.g. as a result of data import from another chat tool),
+        # we will allow signing in to it.
         email_objs = self.get_all_associated_email_objects(*args, **kwargs)
         return [
             email for email in email_objs
-            if not email["email"].endswith("@users.noreply.github.com")
+            if (not email["email"].endswith("@users.noreply.github.com")
+                or common_get_active_user(email["email"], realm) is not None)
         ]
 
     def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> Dict[str, str]:
