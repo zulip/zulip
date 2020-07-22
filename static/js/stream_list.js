@@ -507,7 +507,7 @@ exports.set_event_handlers = function () {
         $(this).off("scroll");
     });
 
-    exports.stream_cursor = list_cursor({
+    exports.stream_cursor = new ListCursor({
         list: {
             scroll_container_sel: "#stream-filters-container",
             find_li(opts) {
@@ -543,7 +543,7 @@ exports.set_event_handlers = function () {
     });
 
     $search_input.on("click", focus_stream_filter);
-    $search_input.on("focusout", exports.stream_cursor.clear);
+    $search_input.on("focusout", () => exports.stream_cursor.clear());
     $search_input.on("input", update_streams_for_search);
 };
 

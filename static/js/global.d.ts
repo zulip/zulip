@@ -6,6 +6,7 @@
 declare let FetchStatus: any;
 declare let Filter: any;
 declare let LightboxCanvas: any;
+declare let ListCursor: any;
 declare let MessageListData: any;
 declare let MessageListView: any;
 declare let activity: any;
@@ -58,7 +59,6 @@ declare let input_pill: any;
 declare let invite: any;
 declare let keydown_util: any;
 declare let lightbox: any;
-declare let list_cursor: any;
 declare let list_render: any;
 declare let list_util: any;
 declare let loading: any;

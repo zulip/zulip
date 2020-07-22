@@ -192,7 +192,7 @@ class BuddyList extends BuddyListConf {
         const pos = this.keys.indexOf(key);
 
         if (pos < 0) {
-            // TODO: See list_cursor.get_row() for why this is
+            // TODO: See ListCursor.get_row() for why this is
             //       a bit janky now.
             return [];
         }

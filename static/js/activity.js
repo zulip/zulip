@@ -287,7 +287,7 @@ function keydown_enter_key() {
 }
 
 exports.set_cursor_and_filter = function () {
-    exports.user_cursor = list_cursor({
+    exports.user_cursor = new ListCursor({
         list: buddy_list,
         highlight_class: "highlighted_user",
     });
@@ -295,12 +295,12 @@ exports.set_cursor_and_filter = function () {
     exports.user_filter = user_search({
         update_list: update_users_for_search,
         reset_items: exports.reset_users,
-        on_focus: exports.user_cursor.reset,
+        on_focus: () => exports.user_cursor.reset(),
     });
 
     const $input = exports.user_filter.input_field();
 
-    $input.on("blur", exports.user_cursor.clear);
+    $input.on("blur", () => exports.user_cursor.clear());
 
     keydown_util.handle({
         elem: $input,
