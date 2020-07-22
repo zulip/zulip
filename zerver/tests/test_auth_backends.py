@@ -779,7 +779,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
     def social_auth_test_finish(self, result: HttpResponse,
                                 account_data_dict: Dict[str, str],
                                 expect_choose_email_screen: bool,
-                                **headers: Any) -> HttpResponse:
+                                headers: Any,
+                                **extra_data: Any) -> HttpResponse:
         parsed_url = urllib.parse.urlparse(result.url)
         csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
         result = self.client_get(self.AUTH_FINISH_URL,
@@ -872,7 +873,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
             result = self.social_auth_test_finish(result, account_data_dict,
                                                   expect_choose_email_screen,
-                                                  **headers)
+                                                  headers=headers,
+                                                  **extra_data)
         return result
 
     def test_social_auth_no_key(self) -> None:
@@ -2098,7 +2100,8 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
     def social_auth_test_finish(self, result: HttpResponse,
                                 account_data_dict: Dict[str, str],
                                 expect_choose_email_screen: bool,
-                                **headers: Any) -> HttpResponse:
+                                headers: Any,
+                                **extra_data: Any) -> HttpResponse:
         parsed_url = urllib.parse.urlparse(result.url)
         state = urllib.parse.parse_qs(parsed_url.query)['state']
         self.client.session.flush()
@@ -2358,7 +2361,9 @@ class GitHubAuthBackendTest(SocialAuthBase):
     def social_auth_test_finish(self, result: HttpResponse,
                                 account_data_dict: Dict[str, str],
                                 expect_choose_email_screen: bool,
-                                **headers: Any) -> HttpResponse:
+                                headers: Any,
+                                expect_noreply_email_allowed: bool=False,
+                                **extra_data: Any) -> HttpResponse:
         parsed_url = urllib.parse.urlparse(result.url)
         csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
         result = self.client_get(self.AUTH_FINISH_URL,
@@ -2379,7 +2384,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
             all_emails_verified = True
             for email_data_dict in self.email_data:
                 email = email_data_dict["email"]
-                if email.endswith("@users.noreply.github.com"):
+                if email.endswith("@users.noreply.github.com") and not expect_noreply_email_allowed:
                     self.assert_not_in_success_response([email], result)
                 elif email_data_dict.get('verified'):
                     self.assert_in_success_response([email], result)
@@ -2706,9 +2711,10 @@ class GitHubAuthBackendTest(SocialAuthBase):
 
     def test_github_oauth2_email_no_reply_dot_github_dot_com(self) -> None:
         # As emails ending with `noreply.github.com` are excluded from
-        # verified_emails, choosing it as an email should raise a `email
-        # not associated` warning.
-        account_data_dict = self.get_account_data_dict(email="hamlet@users.noreply.github.com", name=self.name)
+        # verified_emails unless an account with that email already exists,
+        # choosing it as an email should raise a `email not associated` warning.
+        noreply_email = "hamlet@users.noreply.github.com"
+        account_data_dict = self.get_account_data_dict(email=noreply_email, name=self.name)
         email_data = [
             dict(email="notprimary@zulip.com",
                  verified=True),
@@ -2732,6 +2738,24 @@ class GitHubAuthBackendTest(SocialAuthBase):
             " emails associated with the account",
             "warning",
         )])
+
+        # Now we create the user account with the noreply email and verify that it's
+        # possible to sign in to it.
+        realm = get_realm("zulip")
+        do_create_user(noreply_email, 'password', realm, account_data_dict["name"])
+        result = self.social_auth_test(account_data_dict,
+                                       subdomain='zulip',
+                                       expect_choose_email_screen=True,
+                                       expect_noreply_email_allowed=True,
+                                       email_data=email_data)
+        data = load_subdomain_token(result)
+        self.assertEqual(data['email'], account_data_dict["email"])
+        self.assertEqual(data['full_name'], account_data_dict["name"])
+        self.assertEqual(data['subdomain'], 'zulip')
+        self.assertEqual(result.status_code, 302)
+        parsed_url = urllib.parse.urlparse(result.url)
+        uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
     def test_github_oauth2_email_not_associated(self) -> None:
         account_data_dict = self.get_account_data_dict(email='not-associated@zulip.com', name=self.name)
