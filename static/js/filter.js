@@ -168,168 +168,169 @@ function message_matches_search_term(message, operator, operand) {
     return true; // unknown operators return true (effectively ignored)
 }
 
-function Filter(operators) {
-    if (operators === undefined) {
-        this._operators = [];
-        this._sub = undefined;
-    } else {
-        this._operators = this.fix_operators(operators);
-        if (this.has_operator("stream")) {
-            this._sub = stream_data.get_sub_by_name(this.operands("stream")[0]);
+class Filter {
+    constructor(operators) {
+        if (operators === undefined) {
+            this._operators = [];
+            this._sub = undefined;
+        } else {
+            this._operators = this.fix_operators(operators);
+            if (this.has_operator("stream")) {
+                this._sub = stream_data.get_sub_by_name(this.operands("stream")[0]);
+            }
         }
     }
-}
 
-Filter.canonicalize_operator = function (operator) {
-    operator = operator.toLowerCase();
+    static canonicalize_operator(operator) {
+        operator = operator.toLowerCase();
 
-    if (operator === "from") {
-        return "sender";
+        if (operator === "from") {
+            return "sender";
+        }
+
+        if (util.is_topic_synonym(operator)) {
+            return "topic";
+        }
+        return operator;
     }
 
-    if (util.is_topic_synonym(operator)) {
-        return "topic";
+    static canonicalize_term(opts) {
+        let negated = opts.negated;
+        let operator = opts.operator;
+        let operand = opts.operand;
+
+        // Make negated be explicitly false for both clarity and
+        // simplifying deepEqual checks in the tests.
+        if (!negated) {
+            negated = false;
+        }
+
+        operator = Filter.canonicalize_operator(operator);
+
+        switch (operator) {
+            case "has":
+                // images -> image, etc.
+                operand = operand.replace(/s$/, "");
+                break;
+
+            case "stream":
+                operand = stream_data.get_name(operand);
+                break;
+            case "topic":
+                break;
+            case "sender":
+            case "pm-with":
+                operand = operand.toString().toLowerCase();
+                if (operand === "me") {
+                    operand = people.my_current_email();
+                }
+                break;
+            case "group-pm-with":
+                operand = operand.toString().toLowerCase();
+                break;
+            case "search":
+                // The mac app automatically substitutes regular quotes with curly
+                // quotes when typing in the search bar.  Curly quotes don't trigger our
+                // phrase search behavior, however.  So, we replace all instances of
+                // curly quotes with regular quotes when doing a search.  This is
+                // unlikely to cause any problems and is probably what the user wants.
+                operand = operand
+                    .toString()
+                    .toLowerCase()
+                    .replace(/[\u201c\u201d]/g, '"');
+                break;
+            default:
+                operand = operand.toString().toLowerCase();
+        }
+
+        // We may want to consider allowing mixed-case operators at some point
+        return {
+            negated,
+            operator,
+            operand,
+        };
     }
-    return operator;
-};
 
-Filter.canonicalize_term = function (opts) {
-    let negated = opts.negated;
-    let operator = opts.operator;
-    let operand = opts.operand;
+    /* We use a variant of URI encoding which looks reasonably
+       nice and still handles unambiguously cases such as
+       spaces in operands.
 
-    // Make negated be explicitly false for both clarity and
-    // simplifying deepEqual checks in the tests.
-    if (!negated) {
-        negated = false;
+       This is just for the search bar, not for saving the
+       narrow in the URL fragment.  There we do use full
+       URI encoding to avoid problematic characters. */
+    static encodeOperand(operand) {
+        return operand
+            .replace(/%/g, "%25")
+            .replace(/\+/g, "%2B")
+            .replace(/ /g, "+")
+            .replace(/"/g, "%22");
     }
 
-    operator = Filter.canonicalize_operator(operator);
+    static decodeOperand(encoded, operator) {
+        encoded = encoded.replace(/"/g, "");
+        if (["group-pm-with", "pm-with", "sender", "from"].includes(operator) === false) {
+            encoded = encoded.replace(/\+/g, " ");
+        }
+        return util.robust_uri_decode(encoded).trim();
+    }
 
-    switch (operator) {
-        case "has":
-            // images -> image, etc.
-            operand = operand.replace(/s$/, "");
-            break;
+    // Parse a string into a list of operators (see below).
+    static parse(str) {
+        const operators = [];
+        const search_term = [];
+        let negated;
+        let operator;
+        let operand;
+        let term;
 
-        case "stream":
-            operand = stream_data.get_name(operand);
-            break;
-        case "topic":
-            break;
-        case "sender":
-        case "pm-with":
-            operand = operand.toString().toLowerCase();
-            if (operand === "me") {
-                operand = people.my_current_email();
+        // Match all operands that either have no spaces, or are surrounded by
+        // quotes, preceded by an optional operator that may have a space after it.
+        const matches = str.match(/([^\s:]+: ?)?("[^"]+"?|\S+)/g);
+        if (matches === null) {
+            return operators;
+        }
+
+        for (const token of matches) {
+            let operator;
+            const parts = token.split(":");
+            if (token[0] === '"' || parts.length === 1) {
+                // Looks like a normal search term.
+                search_term.push(token);
+            } else {
+                // Looks like an operator.
+                negated = false;
+                operator = parts.shift();
+                if (operator[0] === "-") {
+                    negated = true;
+                    operator = operator.slice(1);
+                }
+                operand = Filter.decodeOperand(parts.join(":"), operator);
+
+                // We use Filter.operator_to_prefix() checks if the
+                // operator is known.  If it is not known, then we treat
+                // it as a search for the given string (which may contain
+                // a `:`), not as a search operator.
+                if (Filter.operator_to_prefix(operator, negated) === "") {
+                    // Put it as a search term, to not have duplicate operators
+                    search_term.push(token);
+                    continue;
+                }
+                term = {negated, operator, operand};
+                operators.push(term);
             }
-            break;
-        case "group-pm-with":
-            operand = operand.toString().toLowerCase();
-            break;
-        case "search":
-            // The mac app automatically substitutes regular quotes with curly
-            // quotes when typing in the search bar.  Curly quotes don't trigger our
-            // phrase search behavior, however.  So, we replace all instances of
-            // curly quotes with regular quotes when doing a search.  This is
-            // unlikely to cause any problems and is probably what the user wants.
-            operand = operand
-                .toString()
-                .toLowerCase()
-                .replace(/[\u201c\u201d]/g, '"');
-            break;
-        default:
-            operand = operand.toString().toLowerCase();
-    }
+        }
 
-    // We may want to consider allowing mixed-case operators at some point
-    return {
-        negated,
-        operator,
-        operand,
-    };
-};
-
-/* We use a variant of URI encoding which looks reasonably
-   nice and still handles unambiguously cases such as
-   spaces in operands.
-
-   This is just for the search bar, not for saving the
-   narrow in the URL fragment.  There we do use full
-   URI encoding to avoid problematic characters. */
-function encodeOperand(operand) {
-    return operand
-        .replace(/%/g, "%25")
-        .replace(/\+/g, "%2B")
-        .replace(/ /g, "+")
-        .replace(/"/g, "%22");
-}
-
-function decodeOperand(encoded, operator) {
-    encoded = encoded.replace(/"/g, "");
-    if (["group-pm-with", "pm-with", "sender", "from"].includes(operator) === false) {
-        encoded = encoded.replace(/\+/g, " ");
-    }
-    return util.robust_uri_decode(encoded).trim();
-}
-
-// Parse a string into a list of operators (see below).
-Filter.parse = function (str) {
-    const operators = [];
-    const search_term = [];
-    let negated;
-    let operator;
-    let operand;
-    let term;
-
-    // Match all operands that either have no spaces, or are surrounded by
-    // quotes, preceded by an optional operator that may have a space after it.
-    const matches = str.match(/([^\s:]+: ?)?("[^"]+"?|\S+)/g);
-    if (matches === null) {
+        // NB: Callers of 'parse' can assume that the 'search' operator is last.
+        if (search_term.length > 0) {
+            operator = "search";
+            operand = search_term.join(" ");
+            term = {operator, operand, negated: false};
+            operators.push(term);
+        }
         return operators;
     }
 
-    for (const token of matches) {
-        let operator;
-        const parts = token.split(":");
-        if (token[0] === '"' || parts.length === 1) {
-            // Looks like a normal search term.
-            search_term.push(token);
-        } else {
-            // Looks like an operator.
-            negated = false;
-            operator = parts.shift();
-            if (operator[0] === "-") {
-                negated = true;
-                operator = operator.slice(1);
-            }
-            operand = decodeOperand(parts.join(":"), operator);
-
-            // We use Filter.operator_to_prefix() checks if the
-            // operator is known.  If it is not known, then we treat
-            // it as a search for the given string (which may contain
-            // a `:`), not as a search operator.
-            if (Filter.operator_to_prefix(operator, negated) === "") {
-                // Put it as a search term, to not have duplicate operators
-                search_term.push(token);
-                continue;
-            }
-            term = {negated, operator, operand};
-            operators.push(term);
-        }
-    }
-
-    // NB: Callers of 'parse' can assume that the 'search' operator is last.
-    if (search_term.length > 0) {
-        operator = "search";
-        operand = search_term.join(" ");
-        term = {operator, operand, negated: false};
-        operators.push(term);
-    }
-    return operators;
-};
-
-/* Convert a list of operators to a string.
+    /* Convert a list of operators to a string.
    Each operator is a key-value pair like
 
        ['topic', 'my amazing topic']
@@ -337,34 +338,33 @@ Filter.parse = function (str) {
    These are not keys in a JavaScript object, because we
    might need to support multiple operators of the same type.
 */
-Filter.unparse = function (operators) {
-    const parts = operators.map((elem) => {
-        if (elem.operator === "search") {
-            // Search terms are the catch-all case.
-            // All tokens that don't start with a known operator and
-            // a colon are glued together to form a search term.
-            return elem.operand;
-        }
-        const sign = elem.negated ? "-" : "";
-        if (elem.operator === "") {
-            return elem.operand;
-        }
-        return sign + elem.operator + ":" + encodeOperand(elem.operand.toString());
-    });
-    return parts.join(" ");
-};
+    static unparse(operators) {
+        const parts = operators.map((elem) => {
+            if (elem.operator === "search") {
+                // Search terms are the catch-all case.
+                // All tokens that don't start with a known operator and
+                // a colon are glued together to form a search term.
+                return elem.operand;
+            }
+            const sign = elem.negated ? "-" : "";
+            if (elem.operator === "") {
+                return elem.operand;
+            }
+            return sign + elem.operator + ":" + Filter.encodeOperand(elem.operand.toString());
+        });
+        return parts.join(" ");
+    }
 
-Filter.prototype = {
     predicate() {
         if (this._predicate === undefined) {
             this._predicate = this._build_predicate();
         }
         return this._predicate;
-    },
+    }
 
     operators() {
         return this._operators;
-    },
+    }
 
     public_operators() {
         const safe_to_return = this._operators.filter(
@@ -377,26 +377,26 @@ Filter.prototype = {
                 ),
         );
         return safe_to_return;
-    },
+    }
 
     operands(operator) {
         return _.chain(this._operators)
             .filter((elem) => !elem.negated && elem.operator === operator)
             .map((elem) => elem.operand)
             .value();
-    },
+    }
 
     has_negated_operand(operator, operand) {
         return this._operators.some(
             (elem) => elem.negated && elem.operator === operator && elem.operand === operand,
         );
-    },
+    }
 
     has_operand(operator, operand) {
         return this._operators.some(
             (elem) => !elem.negated && elem.operator === operator && elem.operand === operand,
         );
-    },
+    }
 
     has_operator(operator) {
         return this._operators.some((elem) => {
@@ -405,11 +405,11 @@ Filter.prototype = {
             }
             return elem.operator === operator;
         });
-    },
+    }
 
     is_search() {
         return this.has_operator("search");
-    },
+    }
 
     calc_can_mark_messages_read() {
         const term_types = this.sorted_term_types();
@@ -449,14 +449,14 @@ Filter.prototype = {
         }
 
         return false;
-    },
+    }
 
     can_mark_messages_read() {
         if (this._can_mark_messages_read === undefined) {
             this._can_mark_messages_read = this.calc_can_mark_messages_read();
         }
         return this._can_mark_messages_read;
-    },
+    }
 
     // This is used to control the behaviour for "exiting search",
     // given the ability to flip between displaying the search bar and the narrow description in UI
@@ -488,7 +488,7 @@ Filter.prototype = {
             return true;
         }
         return false;
-    },
+    }
 
     // This is used to control the behaviour for "exiting search"
     // within a narrow (E.g. a stream/topic + search) to bring you to
@@ -550,7 +550,7 @@ Filter.prototype = {
         }
 
         return "#"; // redirect to All
-    },
+    }
 
     get_icon() {
         // We have special icons for the simple narrows available for the via sidebars.
@@ -579,7 +579,7 @@ Filter.prototype = {
             case "pm-with":
                 return "envelope";
         }
-    },
+    }
 
     get_title() {
         // Nice explanatory titles for common views.
@@ -628,11 +628,11 @@ Filter.prototype = {
                 }
             }
         }
-    },
+    }
 
     allow_use_first_unread_when_narrowing() {
         return this.can_mark_messages_read() || this.has_operator("is");
-    },
+    }
 
     contains_only_private_messages() {
         return (
@@ -640,11 +640,11 @@ Filter.prototype = {
             this.has_operator("pm-with") ||
             this.has_operator("group-pm-with")
         );
-    },
+    }
 
     includes_full_stream_history() {
         return this.has_operator("stream") || this.has_operator("streams");
-    },
+    }
 
     is_personal_filter() {
         // Whether the filter filters for user-specific data in the
@@ -653,7 +653,7 @@ Filter.prototype = {
         // Such filters should not advertise "streams:public" as it
         // will never add additional results.
         return this.has_operand("is", "mentioned") || this.has_operand("is", "starred");
-    },
+    }
 
     can_apply_locally(is_local_echo) {
         // Since there can be multiple operators, each block should
@@ -681,13 +681,13 @@ Filter.prototype = {
 
         // If we get this far, we're good!
         return true;
-    },
+    }
 
     fix_operators(operators) {
         operators = this._canonicalize_operators(operators);
         operators = this._fix_redundant_is_private(operators);
         return operators;
-    },
+    }
 
     _fix_redundant_is_private(terms) {
         const is_pm_with = (term) => Filter.term_type(term) === "pm-with";
@@ -697,11 +697,11 @@ Filter.prototype = {
         }
 
         return terms.filter((term) => Filter.term_type(term) !== "is-private");
-    },
+    }
 
     _canonicalize_operators(operators_mixed_case) {
         return operators_mixed_case.map((tuple) => Filter.canonicalize_term(tuple));
-    },
+    }
 
     filter_with_new_params(params) {
         const terms = this._operators.map((term) => {
@@ -712,25 +712,25 @@ Filter.prototype = {
             return new_term;
         });
         return new Filter(terms);
-    },
+    }
 
     has_topic(stream_name, topic) {
         return this.has_operand("stream", stream_name) && this.has_operand("topic", topic);
-    },
+    }
 
     sorted_term_types() {
         if (this._sorted_term_types === undefined) {
             this._sorted_term_types = this._build_sorted_term_types();
         }
         return this._sorted_term_types;
-    },
+    }
 
     _build_sorted_term_types() {
         const terms = this._operators;
         const term_types = terms.map(Filter.term_type);
         const sorted_terms = Filter.sorted_term_types(term_types);
         return sorted_terms;
-    },
+    }
 
     can_bucket_by(...wanted_term_types) {
         // Examples call:
@@ -747,7 +747,7 @@ Filter.prototype = {
         const term_types = all_term_types.slice(0, wanted_term_types.length);
 
         return _.isEqual(term_types, wanted_term_types);
-    },
+    }
 
     first_valid_id_from(msg_ids) {
         const predicate = this.predicate();
@@ -763,7 +763,7 @@ Filter.prototype = {
         });
 
         return first_id;
-    },
+    }
 
     update_email(user_id, new_email) {
         for (const term of this._operators) {
@@ -779,204 +779,202 @@ Filter.prototype = {
                     );
             }
         }
-    },
+    }
 
     // Build a filter function from a list of operators.
     _build_predicate() {
         const operators = this._operators;
 
         if (!this.can_apply_locally()) {
-            return function () {
-                return true;
-            };
+            return () => true;
         }
 
         // FIXME: This is probably pretty slow.
         // We could turn it into something more like a compiler:
         // build JavaScript code in a string and then eval() it.
 
-        return function (message) {
-            return operators.every((term) => {
+        return (message) =>
+            operators.every((term) => {
                 let ok = message_matches_search_term(message, term.operator, term.operand);
                 if (term.negated) {
                     ok = !ok;
                 }
                 return ok;
             });
-        };
-    },
-};
-
-Filter.term_type = function (term) {
-    const operator = term.operator;
-    const operand = term.operand;
-    const negated = term.negated;
-
-    let result = negated ? "not-" : "";
-
-    result += operator;
-
-    if (["is", "has", "in", "streams"].includes(operator)) {
-        result += "-" + operand;
     }
 
-    return result;
-};
+    static term_type(term) {
+        const operator = term.operator;
+        const operand = term.operand;
+        const negated = term.negated;
 
-Filter.sorted_term_types = function (term_types) {
-    const levels = [
-        "in",
-        "streams-public",
-        "stream",
-        "topic",
-        "pm-with",
-        "group-pm-with",
-        "sender",
-        "near",
-        "id",
-        "is-alerted",
-        "is-mentioned",
-        "is-private",
-        "is-starred",
-        "is-unread",
-        "has-link",
-        "has-image",
-        "has-attachment",
-        "search",
-    ];
+        let result = negated ? "not-" : "";
 
-    function level(term_type) {
-        let i = levels.indexOf(term_type);
-        if (i === -1) {
-            i = 999;
+        result += operator;
+
+        if (["is", "has", "in", "streams"].includes(operator)) {
+            result += "-" + operand;
         }
-        return i;
+
+        return result;
     }
 
-    function compare(a, b) {
-        const diff = level(a) - level(b);
-        if (diff !== 0) {
-            return diff;
-        }
-        return util.strcmp(a, b);
-    }
+    static sorted_term_types(term_types) {
+        const levels = [
+            "in",
+            "streams-public",
+            "stream",
+            "topic",
+            "pm-with",
+            "group-pm-with",
+            "sender",
+            "near",
+            "id",
+            "is-alerted",
+            "is-mentioned",
+            "is-private",
+            "is-starred",
+            "is-unread",
+            "has-link",
+            "has-image",
+            "has-attachment",
+            "search",
+        ];
 
-    return term_types.slice().sort(compare);
-};
-
-Filter.operator_to_prefix = function (operator, negated) {
-    operator = Filter.canonicalize_operator(operator);
-
-    if (operator === "search") {
-        return negated ? "exclude" : "search for";
-    }
-
-    const verb = negated ? "exclude " : "";
-
-    switch (operator) {
-        case "stream":
-            return verb + "stream";
-        case "streams":
-            return verb + "streams";
-        case "near":
-            return verb + "messages around";
-
-        // Note: We hack around using this in "describe" below.
-        case "has":
-            return verb + "messages with one or more";
-
-        case "id":
-            return verb + "message ID";
-
-        case "topic":
-            return verb + "topic";
-
-        case "sender":
-            return verb + "sent by";
-
-        case "pm-with":
-            return verb + "private messages with";
-
-        case "in":
-            return verb + "messages in";
-
-        // Note: We hack around using this in "describe" below.
-        case "is":
-            return verb + "messages that are";
-
-        case "group-pm-with":
-            return verb + "group private messages including";
-    }
-    return "";
-};
-
-function describe_is_operator(operator) {
-    const verb = operator.negated ? "exclude " : "";
-    const operand = operator.operand;
-    const operand_list = ["private", "starred", "alerted", "unread"];
-    if (operand_list.includes(operand)) {
-        return verb + operand + " messages";
-    } else if (operand === "mentioned") {
-        return verb + "@-mentions";
-    }
-    return "invalid " + operand + " operand for is operator";
-}
-
-// Convert a list of operators to a human-readable description.
-function describe_unescaped(operators) {
-    if (operators.length === 0) {
-        return "all messages";
-    }
-
-    let parts = [];
-
-    if (operators.length >= 2) {
-        const is = function (term, expected) {
-            return term.operator === expected && !term.negated;
+        const level = (term_type) => {
+            let i = levels.indexOf(term_type);
+            if (i === -1) {
+                i = 999;
+            }
+            return i;
         };
 
-        if (is(operators[0], "stream") && is(operators[1], "topic")) {
-            const stream = operators[0].operand;
-            const topic = operators[1].operand;
-            const part = "stream " + stream + " > " + topic;
-            parts = [part];
-            operators = operators.slice(2);
-        }
+        const compare = (a, b) => {
+            const diff = level(a) - level(b);
+            if (diff !== 0) {
+                return diff;
+            }
+            return util.strcmp(a, b);
+        };
+
+        return term_types.slice().sort(compare);
     }
 
-    const more_parts = operators.map((elem) => {
-        const operand = elem.operand;
-        const canonicalized_operator = Filter.canonicalize_operator(elem.operator);
-        if (canonicalized_operator === "is") {
-            return describe_is_operator(elem);
+    static operator_to_prefix(operator, negated) {
+        operator = Filter.canonicalize_operator(operator);
+
+        if (operator === "search") {
+            return negated ? "exclude" : "search for";
         }
-        if (canonicalized_operator === "has") {
-            // search_suggestion.get_suggestions takes care that this message will
-            // only be shown if the `has` operator is not at the last.
-            const valid_has_operands = [
-                "image",
-                "images",
-                "link",
-                "links",
-                "attachment",
-                "attachments",
-            ];
-            if (!valid_has_operands.includes(operand)) {
-                return "invalid " + operand + " operand for has operator";
+
+        const verb = negated ? "exclude " : "";
+
+        switch (operator) {
+            case "stream":
+                return verb + "stream";
+            case "streams":
+                return verb + "streams";
+            case "near":
+                return verb + "messages around";
+
+            // Note: We hack around using this in "describe" below.
+            case "has":
+                return verb + "messages with one or more";
+
+            case "id":
+                return verb + "message ID";
+
+            case "topic":
+                return verb + "topic";
+
+            case "sender":
+                return verb + "sent by";
+
+            case "pm-with":
+                return verb + "private messages with";
+
+            case "in":
+                return verb + "messages in";
+
+            // Note: We hack around using this in "describe" below.
+            case "is":
+                return verb + "messages that are";
+
+            case "group-pm-with":
+                return verb + "group private messages including";
+        }
+        return "";
+    }
+
+    static describe_is_operator(operator) {
+        const verb = operator.negated ? "exclude " : "";
+        const operand = operator.operand;
+        const operand_list = ["private", "starred", "alerted", "unread"];
+        if (operand_list.includes(operand)) {
+            return verb + operand + " messages";
+        } else if (operand === "mentioned") {
+            return verb + "@-mentions";
+        }
+        return "invalid " + operand + " operand for is operator";
+    }
+
+    // Convert a list of operators to a human-readable description.
+    static describe_unescaped(operators) {
+        if (operators.length === 0) {
+            return "all messages";
+        }
+
+        let parts = [];
+
+        if (operators.length >= 2) {
+            const is = (term, expected) => term.operator === expected && !term.negated;
+
+            if (is(operators[0], "stream") && is(operators[1], "topic")) {
+                const stream = operators[0].operand;
+                const topic = operators[1].operand;
+                const part = "stream " + stream + " > " + topic;
+                parts = [part];
+                operators = operators.slice(2);
             }
         }
-        const prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator, elem.negated);
-        if (prefix_for_operator !== "") {
-            return prefix_for_operator + " " + operand;
-        }
-        return "unknown operator";
-    });
-    return parts.concat(more_parts).join(", ");
-}
 
-Filter.describe = function (operators) {
-    return Handlebars.Utils.escapeExpression(describe_unescaped(operators));
-};
+        const more_parts = operators.map((elem) => {
+            const operand = elem.operand;
+            const canonicalized_operator = Filter.canonicalize_operator(elem.operator);
+            if (canonicalized_operator === "is") {
+                return Filter.describe_is_operator(elem);
+            }
+            if (canonicalized_operator === "has") {
+                // search_suggestion.get_suggestions takes care that this message will
+                // only be shown if the `has` operator is not at the last.
+                const valid_has_operands = [
+                    "image",
+                    "images",
+                    "link",
+                    "links",
+                    "attachment",
+                    "attachments",
+                ];
+                if (!valid_has_operands.includes(operand)) {
+                    return "invalid " + operand + " operand for has operator";
+                }
+            }
+            const prefix_for_operator = Filter.operator_to_prefix(
+                canonicalized_operator,
+                elem.negated,
+            );
+            if (prefix_for_operator !== "") {
+                return prefix_for_operator + " " + operand;
+            }
+            return "unknown operator";
+        });
+        return parts.concat(more_parts).join(", ");
+    }
+
+    static describe(operators) {
+        return Handlebars.Utils.escapeExpression(Filter.describe_unescaped(operators));
+    }
+}
 
 module.exports = Filter;
 
