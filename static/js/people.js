@@ -688,15 +688,11 @@ exports.small_avatar_url = function (message) {
 };
 
 exports.is_valid_email_for_compose = function (email) {
-    if (exports.is_cross_realm_email(email)) {
-        return true;
-    }
-
     const person = exports.get_by_email(email);
     if (!person) {
         return false;
     }
-    return active_user_dict.has(person.user_id);
+    return true;
 };
 
 exports.is_valid_bulk_emails_for_compose = function (emails) {

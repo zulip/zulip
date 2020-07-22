@@ -263,7 +263,7 @@ run_test("basics", () => {
     assert.equal(people.get_non_active_human_ids().length, 1);
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
-    assert.equal(people.is_valid_email_for_compose(isaac.email), false);
+    assert.equal(people.is_valid_email_for_compose(isaac.email), true);
 
     people.add_active_user(bot_botson);
     assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
@@ -989,7 +989,7 @@ run_test("initialize", () => {
     assert(people.is_cross_realm_email("bot@example.com"));
     assert(people.is_valid_email_for_compose("bot@example.com"));
     assert(people.is_valid_email_for_compose("alice@example.com"));
-    assert(!people.is_valid_email_for_compose("retiree@example.com"));
+    assert(people.is_valid_email_for_compose("retiree@example.com"));
     assert(!people.is_valid_email_for_compose("totally-bogus-username@example.com"));
     assert(people.is_valid_bulk_emails_for_compose(["bot@example.com", "alice@example.com"]));
     assert(!people.is_valid_bulk_emails_for_compose(["not@valid.com", "alice@example.com"]));

@@ -57,6 +57,12 @@ run_test("narrowing", () => {
     top_left_corner.handle_narrow_activated(filter);
     assert(!pm_expanded);
 
+    pm_expanded = false;
+    people.deactivate(alice);
+    filter = new Filter([{operator: "pm-with", operand: "alice@example.com"}]);
+    top_left_corner.handle_narrow_activated(filter);
+    assert(pm_expanded);
+
     filter = new Filter([{operator: "is", operand: "mentioned"}]);
     top_left_corner.handle_narrow_activated(filter);
     assert($(".top_left_mentions").hasClass("active-filter"));
