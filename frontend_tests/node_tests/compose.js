@@ -1689,10 +1689,6 @@ run_test("create_message_object", () => {
         return "stream";
     };
 
-    global.$.trim = function (s) {
-        return s;
-    };
-
     let message = compose.create_message_object();
     assert.equal(message.to, sub.stream_id);
     assert.equal(message.topic, "lunch");

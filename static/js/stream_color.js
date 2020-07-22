@@ -13,7 +13,7 @@ function update_table_stream_color(table, stream_name, color) {
 
     for (const label of stream_labels) {
         const $label = $(label);
-        if ($.trim($label.text()) === stream_name) {
+        if ($label.text().trim() === stream_name) {
             const messages = $label.closest(".recipient_row").children(".message_row");
             messages
                 .children(".messagebox")

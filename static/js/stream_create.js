@@ -139,8 +139,8 @@ function get_principals() {
 
 function create_stream() {
     const data = {};
-    const stream_name = $.trim($("#create_stream_name").val());
-    const description = $.trim($("#create_stream_description").val());
+    const stream_name = $("#create_stream_name").val().trim();
+    const description = $("#create_stream_description").val().trim();
     created_stream = stream_name;
 
     // Even though we already check to make sure that while typing the user cannot enter
@@ -406,7 +406,7 @@ exports.set_up_handlers = function () {
         e.preventDefault();
         clear_error_display();
 
-        const stream_name = $.trim($("#create_stream_name").val());
+        const stream_name = $("#create_stream_name").val().trim();
         const name_ok = stream_name_error.validate_for_submit(stream_name);
 
         if (!name_ok) {
@@ -444,7 +444,7 @@ exports.set_up_handlers = function () {
     });
 
     container.on("input", "#create_stream_name", () => {
-        const stream_name = $.trim($("#create_stream_name").val());
+        const stream_name = $("#create_stream_name").val().trim();
 
         // This is an inexpensive check.
         stream_name_error.pre_validate(stream_name);

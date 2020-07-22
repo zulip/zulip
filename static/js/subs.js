@@ -884,7 +884,7 @@ exports.do_open_create_stream = function () {
     // Only call this directly for hash changes.
     // Prefer open_create_stream().
 
-    const stream = $.trim($("#search_stream_name").val());
+    const stream = $("#search_stream_name").val().trim();
 
     if (!should_list_all_streams()) {
         // Realms that don't allow listing streams should simply be subscribed to.
