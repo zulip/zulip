@@ -251,9 +251,3 @@ $(() => {
         render_tabs();
     }
 });
-
-// Prevent Firefox from bfcaching the page.
-// According to https://developer.mozilla.org/en-US/docs/DOM/window.onunload
-// Using this event handler in your page prevents Firefox from caching the
-// page in the in-memory bfcache (backward/forward cache).
-$(window).on("unload", () => {});
