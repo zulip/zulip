@@ -161,7 +161,7 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
             meta.is_multiuse,
         );
         $("#revoke_invite_modal").modal("show");
-        $("#do_revoke_invite_button").unbind("click");
+        $("#do_revoke_invite_button").off("click");
         $("#do_revoke_invite_button").on("click", do_revoke_invite);
     });
 
