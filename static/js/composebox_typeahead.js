@@ -237,8 +237,8 @@ function handle_keydown(e) {
             if (on_compose && code === 13) {
                 if (exports.should_enter_send(e)) {
                     e.preventDefault();
-                    if ($("#compose-send-button").attr("disabled") !== "disabled") {
-                        $("#compose-send-button").attr("disabled", "disabled");
+                    if (!$("#compose-send-button").prop("disabled")) {
+                        $("#compose-send-button").prop("disabled", true);
                         compose.finish();
                     }
                     return;

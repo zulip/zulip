@@ -696,7 +696,7 @@ function validate_private_message() {
 }
 
 exports.validate = function () {
-    $("#compose-send-button").attr("disabled", "disabled").trigger("blur");
+    $("#compose-send-button").prop("disabled", true).trigger("blur");
     const message_content = compose_state.message_content();
     if (reminder.is_deferred_delivery(message_content)) {
         show_sending_indicator(i18n.t("Scheduling..."));
@@ -1062,7 +1062,7 @@ exports.initialize = function () {
         function failure(error_msg) {
             exports.clear_invites();
             compose_error(error_msg, $("#compose-textarea"));
-            $(event.target).attr("disabled", true);
+            $(event.target).prop("disabled", true);
         }
 
         function xhr_failure(xhr) {

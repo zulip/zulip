@@ -1036,13 +1036,13 @@ exports.show_empty_narrow_message = function () {
         "title",
         i18n.t("There are no messages to reply to."),
     );
-    $("#left_bar_compose_reply_button_big").attr("disabled", "disabled");
+    $("#left_bar_compose_reply_button_big").prop("disabled", true);
 };
 
 exports.hide_empty_narrow_message = function () {
     $(".empty_feed_notice").hide();
     $("#left_bar_compose_reply_button_big").attr("title", i18n.t("Reply (r)"));
-    $("#left_bar_compose_reply_button_big").removeAttr("disabled");
+    $("#left_bar_compose_reply_button_big").prop("disabled", false);
 };
 
 window.narrow = exports;

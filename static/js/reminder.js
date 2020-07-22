@@ -56,7 +56,7 @@ exports.schedule_message = function (request) {
         deliver_at.trim() === "" ||
         command_line.slice(command.length, command.length + 1) !== " "
     ) {
-        $("#compose-textarea").attr("disabled", false);
+        $("#compose-textarea").prop("disabled", false);
         if (command_line.slice(command.length, command.length + 1) !== " ") {
             compose.compose_error(
                 i18n.t(
@@ -85,16 +85,16 @@ exports.schedule_message = function (request) {
                 "Scheduled your Message to be delivered at: " + data.deliver_at,
             );
         }
-        $("#compose-textarea").attr("disabled", false);
+        $("#compose-textarea").prop("disabled", false);
         compose.clear_compose_box();
     };
     const error = function (response) {
-        $("#compose-textarea").attr("disabled", false);
+        $("#compose-textarea").prop("disabled", false);
         compose.compose_error(response, $("#compose-textarea"));
     };
     /* We are adding a disable on compose under this block because we
     want slash commands to be blocking in nature. */
-    $("#compose-textarea").attr("disabled", true);
+    $("#compose-textarea").prop("disabled", true);
 
     transmit.send_message(request, success, error);
 };

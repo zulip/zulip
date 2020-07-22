@@ -18,21 +18,21 @@ exports.maybe_disable_widgets = function () {
 
     $(".organization-box [data-name='auth-methods']")
         .find("input, button, select, checked")
-        .attr("disabled", true);
+        .prop("disabled", true);
 
     if (page_params.is_admin) {
-        $("#deactivate_realm_button").attr("disabled", true);
-        $("#org-message-retention").find("input, select").attr("disabled", true);
+        $("#deactivate_realm_button").prop("disabled", true);
+        $("#org-message-retention").find("input, select").prop("disabled", true);
         return;
     }
 
     $(".organization-box [data-name='organization-profile']")
         .find("input, textarea, button, select")
-        .attr("disabled", true);
+        .prop("disabled", true);
 
     $(".organization-box [data-name='organization-settings']")
         .find("input, textarea, button, select")
-        .attr("disabled", true);
+        .prop("disabled", true);
 
     $(".organization-box [data-name='organization-settings']")
         .find(".control-label-disabled")
@@ -40,7 +40,7 @@ exports.maybe_disable_widgets = function () {
 
     $(".organization-box [data-name='organization-permissions']")
         .find("input, textarea, button, select")
-        .attr("disabled", true);
+        .prop("disabled", true);
 
     $(".organization-box [data-name='organization-permissions']")
         .find(".control-label-disabled")

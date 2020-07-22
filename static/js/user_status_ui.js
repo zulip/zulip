@@ -23,7 +23,7 @@ exports.open_overlay = function () {
     exports.toggle_clear_message_button();
 
     const button = exports.submit_button();
-    button.attr("disabled", true);
+    button.prop("disabled", true);
 };
 
 exports.close_overlay = function () {
@@ -57,9 +57,9 @@ exports.update_button = function () {
     const button = exports.submit_button();
 
     if (old_status_text === new_status_text) {
-        button.attr("disabled", true);
+        button.prop("disabled", true);
     } else {
-        button.attr("disabled", false);
+        button.prop("disabled", false);
     }
 };
 

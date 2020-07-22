@@ -12,7 +12,7 @@ exports.maybe_disable_widgets = function () {
 
     $(".organization-box [data-name='profile-field-settings']")
         .find("input, button, select")
-        .attr("disabled", true);
+        .prop("disabled", true);
 };
 
 let order = [];

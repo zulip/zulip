@@ -47,31 +47,31 @@ exports.user_can_change_avatar = function () {
 
 exports.update_name_change_display = function () {
     if (!exports.user_can_change_name()) {
-        $("#full_name").attr("disabled", "disabled");
+        $("#full_name").prop("disabled", true);
         $(".change_name_tooltip").show();
     } else {
-        $("#full_name").attr("disabled", false);
+        $("#full_name").prop("disabled", false);
         $(".change_name_tooltip").hide();
     }
 };
 
 exports.update_email_change_display = function () {
     if (page_params.realm_email_changes_disabled && !page_params.is_admin) {
-        $("#change_email .button").attr("disabled", "disabled");
+        $("#change_email .button").prop("disabled", true);
         $(".change_email_tooltip").show();
     } else {
-        $("#change_email .button").attr("disabled", false);
+        $("#change_email .button").prop("disabled", false);
         $(".change_email_tooltip").hide();
     }
 };
 
 exports.update_avatar_change_display = function () {
     if (!exports.user_can_change_avatar()) {
-        $("#user-avatar-upload-widget .image_upload_button").attr("disabled", "disabled");
-        $("#user-avatar-upload-widget .image-delete-button .button").attr("disabled", "disabled");
+        $("#user-avatar-upload-widget .image_upload_button").prop("disabled", true);
+        $("#user-avatar-upload-widget .image-delete-button .button").prop("disabled", true);
     } else {
-        $("#user-avatar-upload-widget .image_upload_button").attr("disabled", false);
-        $("#user-avatar-upload-widget .image-delete-button .button").attr("disabled", false);
+        $("#user-avatar-upload-widget .image_upload_button").prop("disabled", false);
+        $("#user-avatar-upload-widget .image-delete-button .button").prop("disabled", false);
     }
 };
 

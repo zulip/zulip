@@ -15,7 +15,7 @@ exports.maybe_disable_widgets = function () {
 
     $(".organization-box [data-name='default-streams-list']")
         .find("input:not(.search), button, select")
-        .attr("disabled", true);
+        .prop("disabled", true);
 };
 
 exports.build_default_stream_table = function () {

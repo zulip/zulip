@@ -110,7 +110,7 @@ exports.upload_files = function (uppy, config, files) {
         );
         return;
     }
-    exports.get_item("send_button", config).attr("disabled", "");
+    exports.get_item("send_button", config).prop("disabled", true);
     exports
         .get_item("send_status", config)
         .addClass("alert-info")

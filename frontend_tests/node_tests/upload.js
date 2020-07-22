@@ -137,7 +137,7 @@ run_test("get_item", () => {
 });
 
 run_test("hide_upload_status", () => {
-    $("#compose-send-button").prop("disabled", "");
+    $("#compose-send-button").prop("disabled", true);
     $("#compose-send-status").addClass("alert-info").show();
 
     upload.hide_upload_status({mode: "compose"});
@@ -148,7 +148,7 @@ run_test("hide_upload_status", () => {
 });
 
 run_test("show_error_message", () => {
-    $("#compose-send-button").prop("disabled", "");
+    $("#compose-send-button").prop("disabled", true);
     $("#compose-send-status").addClass("alert-info").removeClass("alert-error").hide();
     $("#compose-error-msg").text("");
     $("#compose-error-msg").hide();
@@ -192,9 +192,9 @@ run_test("upload_files", () => {
         assert(config.mode, "compose");
     };
     const config = {mode: "compose"};
-    $("#compose-send-button").attr("disabled", false);
+    $("#compose-send-button").prop("disabled", false);
     upload.upload_files(uppy, config, []);
-    assert.equal($("#compose-send-button").attr("disabled"), false);
+    assert(!$("#compose-send-button").prop("disabled"));
 
     page_params.max_file_upload_size_mib = 0;
     let show_error_message_called = false;
@@ -225,10 +225,10 @@ run_test("upload_files", () => {
     compose_ui.autosize_textarea = () => {
         compose_ui_autosize_textarea_called = true;
     };
-    $("#compose-send-button").attr("disabled", false);
+    $("#compose-send-button").prop("disabled", false);
     $("#compose-send-status").removeClass("alert-info").hide();
     upload.upload_files(uppy, config, files);
-    assert.equal($("#compose-send-button").attr("disabled"), "");
+    assert($("#compose-send-button").prop("disabled"));
     assert($("#compose-send-status").hasClass("alert-info"));
     assert($("#compose-send-status").visible());
     assert.equal($("<p>").text(), "translated: Uploading…");
