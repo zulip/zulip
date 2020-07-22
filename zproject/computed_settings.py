@@ -927,6 +927,7 @@ LOGGING: Dict[str, Any] = {
         'zulip.slow_queries': {
             'level': 'INFO',
             'handlers': ['slow_queries_file'],
+            'propagate': False,
         },
         'zulip.soft_deactivation': {
             'handlers': ['file', 'errors_file'],
