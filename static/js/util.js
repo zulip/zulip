@@ -176,23 +176,25 @@ exports.array_compare = function util_array_compare(a, b) {
  * which should be a function that computes the uncached value.
  */
 const unassigned_value_sentinel = {};
-exports.CachedValue = function (opts) {
-    this._value = unassigned_value_sentinel;
-    Object.assign(this, opts);
-};
+class CachedValue {
+    _value = unassigned_value_sentinel;
 
-exports.CachedValue.prototype = {
-    get: function CachedValue_get() {
+    constructor(opts) {
+        Object.assign(this, opts);
+    }
+
+    get() {
         if (this._value === unassigned_value_sentinel) {
             this._value = this.compute_value();
         }
         return this._value;
-    },
+    }
 
-    reset: function CachedValue_reset() {
+    reset() {
         this._value = unassigned_value_sentinel;
-    },
-};
+    }
+}
+exports.CachedValue = CachedValue;
 
 exports.find_wildcard_mentions = function (message_content) {
     const mention = message_content.match(/(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/);
