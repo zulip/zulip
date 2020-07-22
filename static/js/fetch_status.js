@@ -1,17 +1,23 @@
-const FetchStatus = function () {
-    const self = {};
+function max_id_for_messages(messages) {
+    let max_id = 0;
+    for (const msg of messages) {
+        max_id = Math.max(max_id, msg.id);
+    }
+    return max_id;
+}
 
+class FetchStatus {
     // The FetchStatus object tracks tracks the state of a
     // message_list_data object, whether rendered in the DOM or not,
     // and is the source of truth for whether the message_list_data
     // object has the complete history of the view or whether more
     // messages should be loaded when scrolling to the top or bottom
     // of the message feed.
-    let loading_older = false;
-    let loading_newer = false;
-    let found_oldest = false;
-    let found_newest = false;
-    let history_limited = false;
+    _loading_older = false;
+    _loading_newer = false;
+    _found_oldest = false;
+    _found_newest = false;
+    _history_limited = false;
 
     // Tracks the highest message ID that we know exist in this view,
     // but are not within the contiguous range of messages we have
@@ -19,61 +25,53 @@ const FetchStatus = function () {
     // condition where a newly sent message races with fetching a
     // group of messages that would lead to found_newest being set
     // (described in detail below).
-    let expected_max_message_id = 0;
+    _expected_max_message_id = 0;
 
-    function max_id_for_messages(messages) {
-        let max_id = 0;
-        for (const msg of messages) {
-            max_id = Math.max(max_id, msg.id);
-        }
-        return max_id;
-    }
-
-    self.start_older_batch = function (opts) {
-        loading_older = true;
+    start_older_batch(opts) {
+        this._loading_older = true;
         if (opts.update_loading_indicator) {
             message_scroll.show_loading_older();
         }
-    };
+    }
 
-    self.finish_older_batch = function (opts) {
-        loading_older = false;
-        found_oldest = opts.found_oldest;
-        history_limited = opts.history_limited;
+    finish_older_batch(opts) {
+        this._loading_older = false;
+        this._found_oldest = opts.found_oldest;
+        this._history_limited = opts.history_limited;
         if (opts.update_loading_indicator) {
             message_scroll.hide_loading_older();
         }
-    };
+    }
 
-    self.can_load_older_messages = function () {
-        return !loading_older && !found_oldest;
-    };
+    can_load_older_messages() {
+        return !this._loading_older && !this._found_oldest;
+    }
 
-    self.has_found_oldest = function () {
-        return found_oldest;
-    };
+    has_found_oldest() {
+        return this._found_oldest;
+    }
 
-    self.history_limited = function () {
-        return history_limited;
-    };
+    history_limited() {
+        return this._history_limited;
+    }
 
-    self.start_newer_batch = function (opts) {
-        loading_newer = true;
+    start_newer_batch(opts) {
+        this._loading_newer = true;
         if (opts.update_loading_indicator) {
             message_scroll.show_loading_newer();
         }
-    };
+    }
 
-    self.finish_newer_batch = function (messages, opts) {
+    finish_newer_batch(messages, opts) {
         // Returns true if and only if the caller needs to trigger an
         // additional fetch due to the race described below.
         const found_max_message_id = max_id_for_messages(messages);
-        loading_newer = false;
-        found_newest = opts.found_newest;
+        this._loading_newer = false;
+        this._found_newest = opts.found_newest;
         if (opts.update_loading_indicator) {
             message_scroll.hide_loading_newer();
         }
-        if (found_newest && expected_max_message_id > found_max_message_id) {
+        if (this._found_newest && this._expected_max_message_id > found_max_message_id) {
             // This expected_max_message_id logic is designed to
             // resolve a subtle race condition involving newly sent
             // messages in a view that does not display the currently
@@ -108,30 +106,31 @@ const FetchStatus = function () {
             // higher than the highest ID returned in a GET /messages
             // response with found_newest=true, we know the above race
             // has happened and trigger an additional fetch.
-            found_newest = false;
+            this._found_newest = false;
 
             // Resetting our tracked last message id is an important
             // circuit-breaker for cases where the message(s) that we
             // "know" exist were deleted or moved to another topic.
-            expected_max_message_id = 0;
+            this._expected_max_message_id = 0;
             return true;
         }
         return false;
-    };
+    }
 
-    self.can_load_newer_messages = function () {
-        return !loading_newer && !found_newest;
-    };
+    can_load_newer_messages() {
+        return !this._loading_newer && !this._found_newest;
+    }
 
-    self.has_found_newest = function () {
-        return found_newest;
-    };
+    has_found_newest() {
+        return this._found_newest;
+    }
 
-    self.update_expected_max_message_id = function (messages) {
-        expected_max_message_id = Math.max(expected_max_message_id, max_id_for_messages(messages));
-    };
-
-    return self;
-};
+    update_expected_max_message_id(messages) {
+        this._expected_max_message_id = Math.max(
+            this._expected_max_message_id,
+            max_id_for_messages(messages),
+        );
+    }
+}
 module.exports = FetchStatus;
 window.FetchStatus = FetchStatus;
