@@ -1453,10 +1453,12 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         # We disallow creation of new accounts with
         # @noreply.github.com/@users.noreply.github.com email
         # addresses, because structurally, we only want to allow email
-        # addresses that can receive emails, and those cannot. However,
-        # if an account with this address happens to already exist in the realm
-        # (which could happen e.g. as a result of data import from another chat tool),
-        # we will allow signing in to it.
+        # addresses that can receive emails, and those cannot.
+
+        # However, if an account with this address already exists in
+        # the realm (which could happen e.g. as a result of data
+        # import from another chat tool), we will allow signing in to
+        # it.
         email_objs = self.get_all_associated_email_objects(*args, **kwargs)
         return [
             email for email in email_objs
