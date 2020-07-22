@@ -251,19 +251,11 @@ code a lot uglier, in which case it's fine to go up to 120 or so.
 
 ### JavaScript and TypeScript
 
-When calling a function with an anonymous function as an argument, use
-this style:
-
-    my_function('foo', data => {
-        var x = ...;
-        // ...
-    });
-
-The inner function body is indented one level from the outer function
-call. The closing brace for the inner function and the closing
-parenthesis for the outer call are together on the same line. This style
-isn't necessarily appropriate for calls with multiple anonymous
-functions or other arguments following them.
+Our JavaScript and TypeScript code is formatted with
+[Prettier](https://prettier.io/).  You can ask Prettier to reformat
+all code via our [linter tool](../testing/linters.md) with `tools/lint
+--only=prettier --fix`.  You can also [integrate it with your
+editor](https://prettier.io/docs/en/editors.html).
 
 Combine adjacent on-ready functions, if they are logically related.
 
