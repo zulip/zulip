@@ -407,7 +407,7 @@ exports.navigate = function (event_name, e) {
 
     if (event_name === "enter") {
         if (is_composition(e.target)) {
-            e.target.trigger("click");
+            e.target.click();
         } else {
             toggle_selected_emoji(e);
         }

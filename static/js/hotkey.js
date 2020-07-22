@@ -272,7 +272,7 @@ exports.process_enter_key = function (e) {
         // on #gear-menu li a[tabindex] elements, force a click and prevent default.
         // this is because these links do not have an href and so don't force a
         // default action.
-        e.target.trigger("click");
+        e.target.click();
         return true;
     }
 

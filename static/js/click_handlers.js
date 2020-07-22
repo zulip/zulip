@@ -757,24 +757,24 @@ exports.initialize = function () {
 
     // disable the draggability for left-sidebar components
     $("#stream_filters, #global_filters").on("dragstart", (e) => {
-        e.target.trigger("blur");
+        e.target.blur();
         return false;
     });
 
     // Chrome focuses an element when dragging it which can be confusing when
     // users involuntarily drag something and we show them the focus outline.
-    $("body").on("dragstart", "a", (e) => e.target.trigger("blur"));
+    $("body").on("dragstart", "a", (e) => e.target.blur());
 
     // Don't focus links on middle click.
     $("body").on("mouseup", "a", (e) => {
         if (e.which === 2) {
             // middle click
-            e.target.trigger("blur");
+            e.target.blur();
         }
     });
 
     // Don't focus links on context menu.
-    $("body").on("contextmenu", "a", (e) => e.target.trigger("blur"));
+    $("body").on("contextmenu", "a", (e) => e.target.blur());
 
     (function () {
         const map = {
