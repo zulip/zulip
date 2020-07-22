@@ -19,6 +19,7 @@ below will direct you to the official documentation for these projects.
 
 - [eslint](https://eslint.org)
 - [mypy](http://mypy-lang.org/)
+- [Prettier](https://prettier.io/)
 - [puppet](https://puppet.com/) (puppet provides its own mechanism for
   validating manifests)
 - [pyflakes](https://pypi.python.org/pypi/pyflakes)
@@ -100,6 +101,7 @@ following checks:
 
 - Check Python code with pyflakes.
 - Check JavaScript and TypeScript code with eslint.
+- Check JavaScript, TypeScript, and YAML formatting with Prettier.
 - Check Python code for custom Zulip rules.
 - Check non-Python code for custom Zulip rules.
 - Check puppet manifests with the puppet validator.
@@ -184,6 +186,7 @@ that we exempt may be deemed not worthwhile to fix.
 
 We check our JavaScript code in a few different ways:
 - We run eslint.
+- We check code formatting with Prettier.
 - We perform custom Zulip regex checks on the code.
 
 #### Puppet manifests
