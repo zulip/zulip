@@ -62,7 +62,7 @@ const funcs = {
         // props don't exist, so we need to create them as a difference of
         // where the last `layerX` and `layerY` movements since the last
         // `mousemove` event in this `mousedown` event were registered.
-        const polyfillMouseMovement = function (e) {
+        const polyfillMouseMovement = (e) => {
             e.movementX = e.layerX - lastPosition.x || 0;
             e.movementY = e.layerY - lastPosition.y || 0;
 
@@ -257,11 +257,8 @@ const funcs = {
     },
 };
 
-// a class w/ prototype to create a new `LightboxCanvas` instance.
-const LightboxCanvas = function (el) {
-    const self = this;
-
-    this.meta = {
+class LightboxCanvas {
+    meta = {
         direction: -1,
         zoom: 1,
         image: null,
@@ -276,54 +273,54 @@ const LightboxCanvas = function (el) {
         maxZoom: 10,
     };
 
-    if (el instanceof Node) {
-        this.canvas = el;
-    } else if (typeof el === "string") {
-        this.canvas = document.querySelector(el);
-    } else {
-        throw new TypeError("'LightboxCanvas' accepts either string selector or node.");
+    constructor(el) {
+        if (el instanceof Node) {
+            this.canvas = el;
+        } else if (typeof el === "string") {
+            this.canvas = document.querySelector(el);
+        } else {
+            throw new TypeError("'LightboxCanvas' accepts either string selector or node.");
+        }
+
+        this.context = this.canvas.getContext("2d");
+
+        this.meta.image = new Image();
+        this.meta.image.src = this.canvas.getAttribute("data-src");
+        this.meta.image.onload = () => {
+            this.meta.ratio = funcs.imageRatio(this.meta.image);
+
+            funcs.sizeCanvas(this.canvas, this.meta);
+            funcs.displayImage(this.canvas, this.context, this.meta);
+        };
+
+        this.canvas.image = this.meta.image;
+
+        funcs.attachEvents(this.canvas, this.context, this.meta);
     }
 
-    this.context = this.canvas.getContext("2d");
-
-    this.meta.image = new Image();
-    this.meta.image.src = this.canvas.getAttribute("data-src");
-    this.meta.image.onload = function () {
-        self.meta.ratio = funcs.imageRatio(this);
-
-        funcs.sizeCanvas(self.canvas, self.meta);
-        funcs.displayImage(self.canvas, self.context, self.meta);
-    };
-
-    this.canvas.image = this.meta.image;
-
-    funcs.attachEvents(this.canvas, this.context, self.meta);
-};
-
-LightboxCanvas.prototype = {
     // set the speed at which scrolling zooms in on a photo.
     speed(speed) {
         this.meta.speed = speed;
-    },
+    }
 
     // set the max zoom of the `LightboxCanvas` canvas as a mult of the total width.
     maxZoom(maxZoom) {
         this.meta.maxZoom = maxZoom;
-    },
+    }
 
     reverseScrollDirection() {
         this.meta.direction = 1;
-    },
+    }
 
     setZoom(zoom) {
         funcs.setZoom(this.meta, zoom);
         funcs.displayImage(this.canvas, this.context, this.meta);
-    },
+    }
 
     resize(callback) {
         this.meta.onresize = callback;
-    },
-};
+    }
+}
 
 module.exports = LightboxCanvas;
 window.LightboxCanvas = LightboxCanvas;
