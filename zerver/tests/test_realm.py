@@ -492,7 +492,6 @@ class RealmTest(ZulipTestCase):
         req = dict(private_message_policy = ujson.dumps(Realm.PRIVATE_MESSAGE_POLICY_DISABLED))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
-        print(result)
 
         invalid_value = 10
         req = dict(private_message_policy = ujson.dumps(invalid_value))

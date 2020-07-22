@@ -421,7 +421,6 @@ class MarkdownTest(ZulipTestCase):
                 href = 'http://' + url
             return payload % (f"<a href=\"{href}\">{url}</a>",)
 
-        print("Running Markdown Linkify tests")
         with mock.patch('zerver.lib.url_preview.preview.link_embed_data_from_cache', return_value=None):
             for inline_url, reference, url in linkify_tests:
                 try:
