@@ -399,7 +399,7 @@ exports.register_stream_handlers = function () {
         });
     });
     // Mute/unmute
-    $("body").on("click", ".toggle_home", (e) => {
+    $("body").on("click", ".toggle_stream_muted", (e) => {
         const sub = stream_popover_sub(e);
         exports.hide_stream_popover();
         subs.set_muted(sub, !sub.is_muted);
