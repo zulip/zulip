@@ -12,69 +12,56 @@ if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
 }
 
-function Logger() {
-    this._memory_log = [];
+function pad(num, width) {
+    return num.toString().padStart(width, "0");
 }
 
-Logger.prototype = (function () {
-    function pad(num, width) {
-        let ret = num.toString();
-        while (ret.length < width) {
-            ret = "0" + ret;
+function make_logger_func(name) {
+    return function Logger_func(...args) {
+        const now = new Date();
+        const date_str =
+            now.getUTCFullYear() +
+            "-" +
+            pad(now.getUTCMonth() + 1, 2) +
+            "-" +
+            pad(now.getUTCDate(), 2) +
+            " " +
+            pad(now.getUTCHours(), 2) +
+            ":" +
+            pad(now.getUTCMinutes(), 2) +
+            ":" +
+            pad(now.getUTCSeconds(), 2) +
+            "." +
+            pad(now.getUTCMilliseconds(), 3) +
+            " UTC";
+
+        const str_args = args.map((x) => (typeof x === "object" ? JSON.stringify(x) : x));
+
+        const log_entry = date_str + " " + name.toUpperCase() + ": " + str_args.join("");
+        this._memory_log.push(log_entry);
+
+        // Don't let the log grow without bound
+        if (this._memory_log.length > 1000) {
+            this._memory_log.shift();
         }
-        return ret;
-    }
 
-    function make_logger_func(name) {
-        return function Logger_func(...args) {
-            const now = new Date();
-            const date_str =
-                now.getUTCFullYear() +
-                "-" +
-                pad(now.getUTCMonth() + 1, 2) +
-                "-" +
-                pad(now.getUTCDate(), 2) +
-                " " +
-                pad(now.getUTCHours(), 2) +
-                ":" +
-                pad(now.getUTCMinutes(), 2) +
-                ":" +
-                pad(now.getUTCSeconds(), 2) +
-                "." +
-                pad(now.getUTCMilliseconds(), 3) +
-                " UTC";
-
-            const str_args = args.map((x) => (typeof x === "object" ? JSON.stringify(x) : x));
-
-            const log_entry = date_str + " " + name.toUpperCase() + ": " + str_args.join("");
-            this._memory_log.push(log_entry);
-
-            // Don't let the log grow without bound
-            if (this._memory_log.length > 1000) {
-                this._memory_log.shift();
-            }
-
-            if (console[name] !== undefined) {
-                return console[name](...args);
-            }
-            return;
-        };
-    }
-
-    const proto = {
-        get_log: function Logger_get_log() {
-            return this._memory_log;
-        },
+        if (console[name] !== undefined) {
+            return console[name](...args);
+        }
     };
+}
 
-    const methods = ["debug", "log", "info", "warn", "error"];
-    let i;
-    for (i = 0; i < methods.length; i += 1) {
-        proto[methods[i]] = make_logger_func(methods[i]);
+class Logger {
+    _memory_log = [];
+
+    get_log() {
+        return this._memory_log;
     }
+}
 
-    return proto;
-})();
+for (const name of ["debug", "log", "info", "warn", "error"]) {
+    Logger.prototype[name] = make_logger_func(name);
+}
 
 const logger = new Logger();
 
