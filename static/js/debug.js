@@ -98,15 +98,13 @@ export function check_duplicate_ids() {
  * The _rest_of_iteration section is the region of the iteration body
  * after section b.
  */
-export function IterationProfiler() {
-    this.sections = new Map();
-    this.last_time = window.performance.now();
-}
+export class IterationProfiler {
+    sections = new Map();
+    last_time = window.performance.now();
 
-IterationProfiler.prototype = {
     iteration_start() {
         this.section("_iteration_overhead");
-    },
+    }
 
     iteration_stop() {
         const now = window.performance.now();
@@ -118,13 +116,13 @@ IterationProfiler.prototype = {
             );
         }
         this.last_time = now;
-    },
+    }
 
     section(label) {
         const now = window.performance.now();
         this.sections.set(label, (this.sections.get(label) || 0) + (now - this.last_time));
         this.last_time = now;
-    },
+    }
 
     done() {
         this.section("_iteration_overhead");
@@ -132,5 +130,5 @@ IterationProfiler.prototype = {
         for (const [prop, cost] of this.sections) {
             console.log(prop, cost);
         }
-    },
-};
+    }
+}
