@@ -3,18 +3,13 @@
         "node": true,
         "es6": true
     },
-    "extends": [
-        "eslint:recommended",
-        "prettier"
-    ],
+    "extends": ["eslint:recommended", "prettier"],
     "parserOptions": {
         "ecmaVersion": 2019,
         "warnOnUnsupportedTypeScriptVersion": false,
         "sourceType": "module"
     },
-    "plugins": [
-        "eslint-plugin-empty-returns"
-    ],
+    "plugins": ["eslint-plugin-empty-returns"],
     "rules": {
         "array-callback-return": "error",
         "arrow-body-style": "error",
@@ -24,7 +19,8 @@
         "empty-returns/main": "error",
         "eqeqeq": "error",
         "guard-for-in": "error",
-        "new-cap": [ "error",
+        "new-cap": [
+            "error",
             {
                 "capIsNew": false
             }
@@ -59,9 +55,10 @@
         "no-self-compare": "error",
         "no-sync": "error",
         "no-undef-init": "error",
-        "no-unneeded-ternary": [ "error", { "defaultAssignment": false } ],
+        "no-unneeded-ternary": ["error", {"defaultAssignment": false}],
         "no-unused-expressions": "error",
-        "no-unused-vars": [ "error",
+        "no-unused-vars": [
+            "error",
             {
                 "vars": "local",
                 "varsIgnorePattern": "print_elapsed_time|check_duplicate_ids"
@@ -71,9 +68,10 @@
         "no-useless-constructor": "error",
         "no-var": "error",
         "object-shorthand": "error",
-        "one-var": [ "error", "never" ],
+        "one-var": ["error", "never"],
         "prefer-arrow-callback": "error",
-        "prefer-const": [ "error",
+        "prefer-const": [
+            "error",
             {
                 "ignoreReadBeforeAssign": true
             }
@@ -82,15 +80,12 @@
         "sort-imports": "error",
         "spaced-comment": "off",
         "strict": "off",
-        "valid-typeof": [ "error", { "requireStringLiterals": true } ],
+        "valid-typeof": ["error", {"requireStringLiterals": true}],
         "yoda": "error"
     },
     "overrides": [
         {
-            "files": [
-                "frontend_tests/**/*.{js,ts}",
-                "static/js/**/*.{js,ts}"
-            ],
+            "files": ["frontend_tests/**/*.{js,ts}", "static/js/**/*.{js,ts}"],
             "globals": {
                 "$": false,
                 "ClipboardJS": false,
@@ -301,10 +296,7 @@
             }
         },
         {
-            "files": [
-                "frontend_tests/casper_tests/*.js",
-                "frontend_tests/casper_lib/*.js"
-            ],
+            "files": ["frontend_tests/casper_tests/*.js", "frontend_tests/casper_lib/*.js"],
             "rules": {
                 // Don’t require ES features that PhantomJS doesn’t support
                 "no-var": "off",
@@ -314,10 +306,7 @@
         },
         {
             "files": ["**/*.ts"],
-            "extends": [
-                "plugin:@typescript-eslint/recommended",
-                "prettier/@typescript-eslint"
-            ],
+            "extends": ["plugin:@typescript-eslint/recommended", "prettier/@typescript-eslint"],
             "parserOptions": {
                 "project": "tsconfig.json"
             },
@@ -330,7 +319,10 @@
                 "@typescript-eslint/array-type": "error",
                 "@typescript-eslint/await-thenable": "error",
                 "@typescript-eslint/consistent-type-assertions": "error",
-                "@typescript-eslint/explicit-function-return-type": ["error", { "allowExpressions": true }],
+                "@typescript-eslint/explicit-function-return-type": [
+                    "error",
+                    {"allowExpressions": true}
+                ],
                 "@typescript-eslint/member-ordering": "error",
                 "@typescript-eslint/no-explicit-any": "off",
                 "@typescript-eslint/no-extraneous-class": "error",
@@ -338,7 +330,7 @@
                 "@typescript-eslint/no-parameter-properties": "error",
                 "@typescript-eslint/no-unnecessary-qualifier": "error",
                 "@typescript-eslint/no-unnecessary-type-assertion": "error",
-                "@typescript-eslint/no-unused-vars": ["error", { "varsIgnorePattern": "^_" } ],
+                "@typescript-eslint/no-unused-vars": ["error", {"varsIgnorePattern": "^_"}],
                 "@typescript-eslint/no-use-before-define": "error",
                 "@typescript-eslint/no-useless-constructor": "error",
                 "@typescript-eslint/prefer-includes": "error",
