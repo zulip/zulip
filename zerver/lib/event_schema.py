@@ -5,7 +5,7 @@ It will contain schemas (aka validators) for Zulip events.
 
 Right now it's only intended to be used by test code.
 """
-from typing import Any, Dict, Sequence, Tuple, Union
+from typing import Any, Dict, Sequence, Set, Tuple, Union
 
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.validator import (
@@ -14,6 +14,7 @@ from zerver.lib.validator import (
     check_dict,
     check_dict_only,
     check_int,
+    check_int_in,
     check_list,
     check_none_or,
     check_string,
@@ -388,6 +389,64 @@ def check_realm_update(var_name: str, event: Dict[str, Any],) -> None:
         assert isinstance(value, str)
     else:
         raise AssertionError(f"Unexpected property type {property_type}")
+
+
+avatar_fields = {
+    "avatar_source",
+    "avatar_url",
+    "avatar_url_medium",
+    "avatar_version",
+}
+
+_check_custom_profile_field = check_dict_only(
+    required_keys=[
+        # vertical formatting
+        ("id", check_int),
+        ("value", check_string),
+    ],
+    optional_keys=[
+        # vertical formatting
+        ("rendered_value", check_string),
+    ],
+)
+
+_check_realm_user_person = check_dict_only(
+    required_keys=[
+        # vertical formatting
+        ("user_id", check_int),
+    ],
+    optional_keys=[
+        ("avatar_source", check_string),
+        ("avatar_url", check_none_or(check_string)),
+        ("avatar_url_medium", check_none_or(check_string)),
+        ("avatar_version", check_int),
+        ("bot_owner_id", check_int),
+        ("custom_profile_field", _check_custom_profile_field),
+        ("delivery_email", check_string),
+        ("full_name", check_string),
+        ("role", check_int_in(UserProfile.ROLE_TYPES)),
+        ("email", check_string),
+        ("user_id", check_int),
+        ("timezone", check_string),
+    ],
+)
+
+_check_realm_user_update = check_events_dict(
+    required_keys=[
+        ("type", equals("realm_user")),
+        ("op", equals("update")),
+        ("person", _check_realm_user_person),
+    ]
+)
+
+
+def check_realm_user_update(
+    var_name: str, event: Dict[str, Any], optional_fields: Set[str],
+) -> None:
+    _check_realm_user_update(var_name, event)
+
+    keys = set(event["person"].keys()) - {"user_id"}
+    assert optional_fields == keys
 
 
 check_stream_create = check_events_dict(
