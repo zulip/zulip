@@ -111,7 +111,7 @@ casper.then(function () {
 // test copying two first messages from topic
 casper.then(function () {
     var actual_copied_lines = copy_messages("copy paste test C", "copy paste test D");
-    var expected_copied_lines = ["Iago: copy paste test C", "Iago: copy paste test D"];
+    var expected_copied_lines = ["Desdemona: copy paste test C", "Desdemona: copy paste test D"];
     casper.test.assertEquals(
         actual_copied_lines,
         expected_copied_lines,
@@ -123,9 +123,9 @@ casper.then(function () {
 casper.then(function () {
     var actual_copied_lines = copy_messages("copy paste test C", "copy paste test E");
     var expected_copied_lines = [
-        "Iago: copy paste test C",
-        "Iago: copy paste test D",
-        "Iago: copy paste test E",
+        "Desdemona: copy paste test C",
+        "Desdemona: copy paste test D",
+        "Desdemona: copy paste test E",
     ];
     casper.test.assertEquals(
         actual_copied_lines,
@@ -139,9 +139,9 @@ casper.then(function () {
     var actual_copied_lines = copy_messages("copy paste test B", "copy paste test C");
     var expected_copied_lines = [
         "Verona > copy-paste-subject #1 Today",
-        "Iago: copy paste test B",
+        "Desdemona: copy paste test B",
         "Verona > copy-paste-subject #2 Today",
-        "Iago: copy paste test C",
+        "Desdemona: copy paste test C",
     ];
     casper.test.assertEquals(
         actual_copied_lines,
@@ -155,11 +155,11 @@ casper.then(function () {
     var actual_copied_lines = copy_messages("copy paste test B", "copy paste test E");
     var expected_copied_lines = [
         "Verona > copy-paste-subject #1 Today",
-        "Iago: copy paste test B",
+        "Desdemona: copy paste test B",
         "Verona > copy-paste-subject #2 Today",
-        "Iago: copy paste test C",
-        "Iago: copy paste test D",
-        "Iago: copy paste test E",
+        "Desdemona: copy paste test C",
+        "Desdemona: copy paste test D",
+        "Desdemona: copy paste test E",
     ];
     casper.test.assertEquals(
         actual_copied_lines,
@@ -173,10 +173,10 @@ casper.then(function () {
     var actual_copied_lines = copy_messages("copy paste test A", "copy paste test C");
     var expected_copied_lines = [
         "Verona > copy-paste-subject #1 Today",
-        "Iago: copy paste test A",
-        "Iago: copy paste test B",
+        "Desdemona: copy paste test A",
+        "Desdemona: copy paste test B",
         "Verona > copy-paste-subject #2 Today",
-        "Iago: copy paste test C",
+        "Desdemona: copy paste test C",
     ];
     casper.test.assertEquals(
         actual_copied_lines,
@@ -190,13 +190,13 @@ casper.then(function () {
     var actual_copied_lines = copy_messages("copy paste test B", "copy paste test F");
     var expected_copied_lines = [
         "Verona > copy-paste-subject #1 Today",
-        "Iago: copy paste test B",
+        "Desdemona: copy paste test B",
         "Verona > copy-paste-subject #2 Today",
-        "Iago: copy paste test C",
-        "Iago: copy paste test D",
-        "Iago: copy paste test E",
+        "Desdemona: copy paste test C",
+        "Desdemona: copy paste test D",
+        "Desdemona: copy paste test E",
         "Verona > copy-paste-subject #3 Today",
-        "Iago: copy paste test F",
+        "Desdemona: copy paste test F",
     ];
     casper.test.assertEquals(
         actual_copied_lines,
