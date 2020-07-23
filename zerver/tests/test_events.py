@@ -90,6 +90,7 @@ from zerver.lib.actions import (
     try_update_realm_custom_profile_field,
 )
 from zerver.lib.event_schema import (
+    avatar_fields,
     basic_stream_fields,
     check_alert_words,
     check_custom_profile_fields,
@@ -102,6 +103,7 @@ from zerver.lib.event_schema import (
     check_realm_bot_remove,
     check_realm_bot_update,
     check_realm_update,
+    check_realm_user_update,
     check_stream_create,
     check_stream_update,
     check_submessage,
@@ -135,7 +137,6 @@ from zerver.lib.validator import (
     check_dict_only,
     check_float,
     check_int,
-    check_int_in,
     check_list,
     check_none_or,
     check_string,
@@ -643,31 +644,6 @@ class NormalActionsTest(BaseAction):
         check_custom_profile_fields('events[0]', events[0])
 
     def test_custom_profile_field_data_events(self) -> None:
-        schema_checker_basic = check_events_dict([
-            ('type', equals('realm_user')),
-            ('op', equals('update')),
-            ('person', check_dict_only([
-                ('user_id', check_int),
-                ('custom_profile_field', check_dict_only([
-                    ('id', check_int),
-                    ('value', check_none_or(check_string)),
-                ])),
-            ])),
-        ])
-
-        schema_checker_with_rendered_value = check_events_dict([
-            ('type', equals('realm_user')),
-            ('op', equals('update')),
-            ('person', check_dict_only([
-                ('user_id', check_int),
-                ('custom_profile_field', check_dict_only([
-                    ('id', check_int),
-                    ('value', check_none_or(check_string)),
-                    ('rendered_value', check_none_or(check_string)),
-                ])),
-            ])),
-        ])
-
         field_id = self.user_profile.realm.customprofilefield_set.get(
             realm=self.user_profile.realm, name='Biography').id
         field = {
@@ -678,7 +654,11 @@ class NormalActionsTest(BaseAction):
             lambda: do_update_user_custom_profile_data_if_changed(
                 self.user_profile,
                 [field]))
-        schema_checker_with_rendered_value('events[0]', events[0])
+        check_realm_user_update('events[0]', events[0], {"custom_profile_field"})
+        self.assertEqual(
+            events[0]['person']['custom_profile_field'].keys(),
+            {"id", "value", "rendered_value"}
+        )
 
         # Test we pass correct stringify value in custom-user-field data event
         field_id = self.user_profile.realm.customprofilefield_set.get(
@@ -691,7 +671,11 @@ class NormalActionsTest(BaseAction):
             lambda: do_update_user_custom_profile_data_if_changed(
                 self.user_profile,
                 [field]))
-        schema_checker_basic('events[0]', events[0])
+        check_realm_user_update('events[0]', events[0], {"custom_profile_field"})
+        self.assertEqual(
+            events[0]['person']['custom_profile_field'].keys(),
+            {"id", "value"}
+        )
 
     def test_presence_events(self) -> None:
         fields = [
@@ -1051,74 +1035,29 @@ class NormalActionsTest(BaseAction):
         muted_topics_checker('events[0]', events[0])
 
     def test_change_avatar_fields(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('realm_user')),
-            ('op', equals('update')),
-            ('person', check_dict_only([
-                ('avatar_url', check_string),
-                ('avatar_url_medium', check_string),
-                ('avatar_version', check_int),
-                ('avatar_source', check_string),
-                ('user_id', check_int),
-            ])),
-        ])
         events = self.verify_action(
             lambda: do_change_avatar_fields(self.user_profile, UserProfile.AVATAR_FROM_USER, acting_user=self.user_profile),
         )
-        schema_checker('events[0]', events[0])
+        check_realm_user_update('events[0]', events[0], avatar_fields)
+        assert isinstance(events[0]['person']['avatar_url'], str)
+        assert isinstance(events[0]['person']['avatar_url_medium'], str)
 
-        schema_checker = check_events_dict([
-            ('type', equals('realm_user')),
-            ('op', equals('update')),
-            ('person', check_dict_only([
-                ('avatar_source', check_string),
-                ('avatar_url', check_none_or(check_string)),
-                ('avatar_url_medium', check_none_or(check_string)),
-                ('avatar_version', check_int),
-                ('user_id', check_int),
-            ])),
-        ])
         events = self.verify_action(
             lambda: do_change_avatar_fields(self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=self.user_profile),
         )
-        schema_checker('events[0]', events[0])
+        check_realm_user_update('events[0]', events[0], avatar_fields)
+        self.assertEqual(events[0]['person']['avatar_url'], None)
+        self.assertEqual(events[0]['person']['avatar_url_medium'], None)
 
     def test_change_full_name(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('realm_user')),
-            ('op', equals('update')),
-            ('person', check_dict_only([
-                ('full_name', check_string),
-                ('user_id', check_int),
-            ])),
-        ])
         events = self.verify_action(
             lambda: do_change_full_name(
                 self.user_profile,
                 'Sir Hamlet',
                 self.user_profile))
-        schema_checker('events[0]', events[0])
+        check_realm_user_update('events[0]', events[0], {'full_name'})
 
     def test_change_user_delivery_email_email_address_visibilty_admins(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('realm_user')),
-            ('op', equals('update')),
-            ('person', check_dict_only([
-                ('delivery_email', check_string),
-                ('user_id', check_int),
-            ])),
-        ])
-        avatar_schema_checker = check_events_dict([
-            ('type', equals('realm_user')),
-            ('op', equals('update')),
-            ('person', check_dict_only([
-                ('avatar_source', check_string),
-                ('avatar_url', check_string),
-                ('avatar_url_medium', check_string),
-                ('avatar_version', check_int),
-                ('user_id', check_int),
-            ])),
-        ])
         do_set_realm_property(self.user_profile.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
         # Important: We need to refresh from the database here so that
@@ -1130,8 +1069,11 @@ class NormalActionsTest(BaseAction):
             action,
             num_events=2,
             client_gravatar=False)
-        schema_checker('events[0]', events[0])
-        avatar_schema_checker('events[1]', events[1])
+
+        check_realm_user_update('events[0]', events[0], {"delivery_email"})
+        check_realm_user_update('events[1]', events[1], avatar_fields)
+        assert isinstance(events[1]['person']['avatar_url'], str)
+        assert isinstance(events[1]['person']['avatar_url_medium'], str)
 
     def test_change_realm_authentication_methods(self) -> None:
         schema_checker = check_events_dict([
@@ -1298,20 +1240,12 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        schema_checker = check_events_dict([
-            ('type', equals('realm_user')),
-            ('op', equals('update')),
-            ('person', check_dict_only([
-                ('role', check_int_in(UserProfile.ROLE_TYPES)),
-                ('user_id', check_int),
-            ])),
-        ])
-
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER)
         for role in [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_MEMBER]:
             events = self.verify_action(
                 lambda: do_change_user_role(self.user_profile, role))
-            schema_checker('events[0]', events[0])
+            check_realm_user_update('events[0]', events[0], {'role'})
+            self.assertEqual(events[0]['person']['role'], role)
 
     def test_change_is_owner(self) -> None:
         reset_emails_in_zulip_realm()
@@ -1321,20 +1255,12 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        schema_checker = check_events_dict([
-            ('type', equals('realm_user')),
-            ('op', equals('update')),
-            ('person', check_dict_only([
-                ('role', check_int_in(UserProfile.ROLE_TYPES)),
-                ('user_id', check_int),
-            ])),
-        ])
-
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER)
         for role in [UserProfile.ROLE_REALM_OWNER, UserProfile.ROLE_MEMBER]:
             events = self.verify_action(
                 lambda: do_change_user_role(self.user_profile, role))
-            schema_checker('events[0]', events[0])
+            check_realm_user_update('events[0]', events[0], {'role'})
+            self.assertEqual(events[0]['person']['role'], role)
 
     def test_change_is_guest(self) -> None:
         reset_emails_in_zulip_realm()
@@ -1344,20 +1270,12 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        schema_checker = check_events_dict([
-            ('type', equals('realm_user')),
-            ('op', equals('update')),
-            ('person', check_dict_only([
-                ('role', check_int_in(UserProfile.ROLE_TYPES)),
-                ('user_id', check_int),
-            ])),
-        ])
-
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER)
         for role in [UserProfile.ROLE_GUEST, UserProfile.ROLE_MEMBER]:
             events = self.verify_action(
                 lambda: do_change_user_role(self.user_profile, role))
-            schema_checker('events[0]', events[0])
+            check_realm_user_update('events[0]', events[0], {'role'})
+            self.assertEqual(events[0]['person']['role'], role)
 
     def test_change_notification_settings(self) -> None:
         for notification_setting, v in self.user_profile.notification_setting_types.items():
@@ -1652,22 +1570,13 @@ class NormalActionsTest(BaseAction):
         check_realm_bot_update('events[0]', events[0], 'default_events_register_stream')
 
     def test_change_bot_owner(self) -> None:
-        change_bot_owner_checker_user = check_events_dict([
-            ('type', equals('realm_user')),
-            ('op', equals('update')),
-            ('person', check_dict_only([
-                ('user_id', check_int),
-                ('bot_owner_id', check_int),
-            ])),
-        ])
-
         self.user_profile = self.example_user('iago')
         owner = self.example_user('hamlet')
         bot = self.create_bot('test')
         action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_update('events[0]', events[0], 'owner_id')
-        change_bot_owner_checker_user('events[1]', events[1])
+        check_realm_user_update('events[1]', events[1], {"bot_owner_id"})
 
         self.user_profile = self.example_user('aaron')
         owner = self.example_user('hamlet')
@@ -1675,7 +1584,7 @@ class NormalActionsTest(BaseAction):
         action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_delete('events[0]', events[0])
-        change_bot_owner_checker_user('events[1]', events[1])
+        check_realm_user_update('events[1]', events[1], {"bot_owner_id"})
 
         previous_owner = self.example_user('aaron')
         self.user_profile = self.example_user('hamlet')
@@ -1683,7 +1592,7 @@ class NormalActionsTest(BaseAction):
         action = lambda: do_change_bot_owner(bot, self.user_profile, previous_owner)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_add('events[0]', events[0])
-        change_bot_owner_checker_user('events[1]', events[1])
+        check_realm_user_update('events[1]', events[1], {"bot_owner_id"})
 
     def test_do_update_outgoing_webhook_service(self) -> None:
         self.user_profile = self.example_user('iago')
@@ -2183,17 +2092,8 @@ class UserDisplayActionTest(BaseAction):
 
             check_update_display_settings('events[0]', events[0])
 
-            timezone_schema_checker = check_events_dict([
-                ('type', equals('realm_user')),
-                ('op', equals('update')),
-                ('person', check_dict_only([
-                    ('email', check_string),
-                    ('user_id', check_int),
-                    ('timezone', check_string),
-                ])),
-            ])
             if setting_name == "timezone":
-                timezone_schema_checker('events[1]', events[1])
+                check_realm_user_update('events[1]', events[1], {"email", "timezone"})
 
     def test_set_user_display_settings(self) -> None:
         for prop in UserProfile.property_types:
