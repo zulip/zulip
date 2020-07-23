@@ -37,6 +37,7 @@ function set_up_spain_realm_emoji_for_test() {
         },
     };
     emoji.update_emojis(realm_emojis);
+    assert.equal(emoji.get_server_realm_emoji_data(), realm_emojis);
 }
 
 run_test("get_emoji_* API", () => {

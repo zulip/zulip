@@ -66,7 +66,7 @@ exports.populate_emoji = function () {
         return;
     }
 
-    const emoji_data = page_params.realm_emoji;
+    const emoji_data = emoji.get_server_realm_emoji_data();
 
     for (const emoji of Object.values(emoji_data)) {
         // Add people.js data for the user here.
