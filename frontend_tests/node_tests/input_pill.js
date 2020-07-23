@@ -133,20 +133,17 @@ function set_up() {
     const items = {
         blue: {
             display_value: user_blue.full_name,
-            description: "color of the sky",
             img_src: example_img_link,
             user_id: user_blue.user_id,
         },
 
         red: {
             display_value: user_red.full_name,
-            description: "color of stop signs",
             user_id: user_red.user_id,
         },
 
         yellow: {
             display_value: user_yellow.full_name,
-            description: "color of bananas",
             user_id: user_yellow.user_id,
         },
     };
