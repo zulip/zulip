@@ -281,8 +281,7 @@ const LightboxCanvas = function (el) {
     } else if (typeof el === "string") {
         this.canvas = document.querySelector(el);
     } else {
-        blueslip.warn("Error. 'LightboxCanvas' accepts either string selector or node.");
-        return;
+        throw new TypeError("'LightboxCanvas' accepts either string selector or node.");
     }
 
     this.context = this.canvas.getContext("2d");
