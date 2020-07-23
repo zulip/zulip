@@ -228,7 +228,7 @@ exports.setup_upload = function (config) {
         }
         const split_uri = uri.split("/");
         const filename = split_uri[split_uri.length - 1];
-        if (!compose_state.composing()) {
+        if (config.mode === "compose" && !compose_state.composing()) {
             compose_actions.start("stream");
         }
         const absolute_uri = exports.make_upload_absolute(uri);
