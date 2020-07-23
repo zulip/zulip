@@ -20,65 +20,66 @@ exports.set_messages_read_in_narrow = function (value) {
 
 const unread_messages = new Set();
 
-function make_bucketer(options) {
-    const self = {};
-    const key_to_bucket = new options.KeyDict();
-    const reverse_lookup = new Map();
+class Bucketer {
+    reverse_lookup = new Map();
 
-    self.clear = function () {
-        key_to_bucket.clear();
-        reverse_lookup.clear();
-    };
+    constructor(options) {
+        this.key_to_bucket = new options.KeyDict();
+        this.make_bucket = options.make_bucket;
+    }
 
-    self.add = function (opts) {
+    clear() {
+        this.key_to_bucket.clear();
+        this.reverse_lookup.clear();
+    }
+
+    add(opts) {
         const bucket_key = opts.bucket_key;
         const item_id = opts.item_id;
         const add_callback = opts.add_callback;
 
-        let bucket = key_to_bucket.get(bucket_key);
+        let bucket = this.key_to_bucket.get(bucket_key);
         if (!bucket) {
-            bucket = options.make_bucket();
-            key_to_bucket.set(bucket_key, bucket);
+            bucket = this.make_bucket();
+            this.key_to_bucket.set(bucket_key, bucket);
         }
         if (add_callback) {
             add_callback(bucket, item_id);
         } else {
             bucket.add(item_id);
         }
-        reverse_lookup.set(item_id, bucket);
-    };
+        this.reverse_lookup.set(item_id, bucket);
+    }
 
-    self.delete = function (item_id) {
-        const bucket = reverse_lookup.get(item_id);
+    delete(item_id) {
+        const bucket = this.reverse_lookup.get(item_id);
         if (bucket) {
             bucket.delete(item_id);
-            reverse_lookup.delete(item_id);
+            this.reverse_lookup.delete(item_id);
         }
-    };
+    }
 
-    self.get_bucket = function (bucket_key) {
-        return key_to_bucket.get(bucket_key);
-    };
+    get_bucket(bucket_key) {
+        return this.key_to_bucket.get(bucket_key);
+    }
 
-    self.keys = function () {
-        return key_to_bucket.keys();
-    };
+    keys() {
+        return this.key_to_bucket.keys();
+    }
 
-    self.values = function () {
-        return key_to_bucket.values();
-    };
+    values() {
+        return this.key_to_bucket.values();
+    }
 
-    self[Symbol.iterator] = function () {
-        return key_to_bucket[Symbol.iterator]();
-    };
-
-    return self;
+    [Symbol.iterator]() {
+        return this.key_to_bucket[Symbol.iterator]();
+    }
 }
 
 exports.unread_pm_counter = (function () {
     const self = {};
 
-    const bucketer = make_bucketer({
+    const bucketer = new Bucketer({
         KeyDict: Map,
         make_bucket: () => new Set(),
     });
@@ -182,7 +183,7 @@ exports.unread_pm_counter = (function () {
 })();
 
 function make_per_stream_bucketer() {
-    return make_bucketer({
+    return new Bucketer({
         KeyDict: FoldDict, // bucket keys are topics
         make_bucket: () => new Set(),
     });
@@ -191,7 +192,7 @@ function make_per_stream_bucketer() {
 exports.unread_topic_counter = (function () {
     const self = {};
 
-    const bucketer = make_bucketer({
+    const bucketer = new Bucketer({
         KeyDict: Map, // bucket keys are stream_ids
         make_bucket: make_per_stream_bucketer,
     });
