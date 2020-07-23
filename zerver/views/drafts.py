@@ -10,7 +10,7 @@ from zerver.lib.addressee import get_user_profiles_by_ids
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import truncate_body, truncate_topic
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_success
+from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.validator import (
@@ -103,3 +103,21 @@ def create_drafts(request: HttpRequest, user_profile: UserProfile,
     created_draft_objects = Draft.objects.bulk_create(draft_objects)
     draft_ids = [draft_object.id for draft_object in created_draft_objects]
     return json_success({"ids": draft_ids})
+
+@has_request_variables
+def edit_draft(request: HttpRequest, user_profile: UserProfile, draft_id: int,
+               draft_dict: Dict[str, Any]=REQ("draft", validator=draft_dict_validator),
+               ) -> HttpResponse:
+    try:
+        draft_object = Draft.objects.get(id=draft_id, user_profile=user_profile)
+    except Draft.DoesNotExist:
+        return json_error(_("Draft does not exist"), status=404)
+
+    valid_draft_dict = further_validated_draft_dict(draft_dict, user_profile)
+    draft_object.content = valid_draft_dict["content"]
+    draft_object.topic = valid_draft_dict["topic"]
+    draft_object.recipient = valid_draft_dict["recipient"]
+    draft_object.last_edit_time = valid_draft_dict["last_edit_time"]
+    draft_object.save()
+
+    return json_success()

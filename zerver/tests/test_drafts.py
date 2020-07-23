@@ -1,4 +1,5 @@
 import time
+from copy import deepcopy
 from typing import Any, Dict, List
 
 import ujson
@@ -301,3 +302,97 @@ class DraftCreationTests(ZulipTestCase):
             draft_dicts,
             "Topic must not contain null bytes"
         )
+
+class DraftEditTests(ZulipTestCase):
+    def test_edit_draft_successfully(self) -> None:
+        hamlet = self.example_user("hamlet")
+        visible_streams = self.get_streams(hamlet)
+        stream_a = self.get_stream_id(visible_streams[0])
+        stream_b = self.get_stream_id(visible_streams[1])
+
+        # Make sure that there are no drafts at the start of this test.
+        self.assertEqual(Draft.objects.count(), 0)
+
+        # Create a draft.
+        draft_dict = {
+            "type": "stream",
+            "to": [stream_a],
+            "topic": "drafts",
+            "content": "The API should be good",
+            "timestamp": 1595505700.85247
+        }
+        resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": ujson.dumps([draft_dict])})
+        self.assert_json_success(resp)
+        new_draft_id = ujson.loads(resp.content)["ids"][0]
+
+        # Change the draft data.
+        draft_dict["content"] = "The API needs to be structured yet simple to use."
+        draft_dict["to"] = [stream_b]
+        draft_dict["topic"] = "designing drafts"
+        draft_dict["timestamp"] = 1595505800.84923
+
+        # Update this change in the backend.
+        resp = self.api_patch(hamlet, f"/api/v1/drafts/{new_draft_id}",
+                              {"draft": ujson.dumps(draft_dict)})
+        self.assert_json_success(resp)
+
+        # Now make sure that the change was made successfully.
+        new_draft = Draft.objects.get(id=new_draft_id, user_profile=hamlet)
+        new_draft_dict = new_draft.to_dict()
+        self.assertEqual(new_draft_dict, draft_dict)
+
+    def test_edit_non_existant_draft(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # Make sure that no draft exists in the first place.
+        self.assertEqual(Draft.objects.count(), 0)
+
+        # Try to update a draft that doesn't exist.
+        draft_dict = {
+            "type": "stream",
+            "to": [10],
+            "topic": "drafts",
+            "content": "The API should be good",
+            "timestamp": 1595505700.85247
+        }
+        resp = self.api_patch(hamlet, "/api/v1/drafts/999999999",
+                              {"draft": ujson.dumps(draft_dict)})
+        self.assert_json_error(resp, "Draft does not exist", status_code=404)
+
+        # Now make sure that no changes were made.
+        self.assertEqual(Draft.objects.count(), 0)
+
+    def test_edit_unowned_draft(self) -> None:
+        hamlet = self.example_user("hamlet")
+        visible_streams = self.get_streams(hamlet)
+        stream_id = self.get_stream_id(visible_streams[0])
+
+        # Make sure that there are no drafts at the start of this test.
+        self.assertEqual(Draft.objects.count(), 0)
+
+        # Create a draft.
+        draft_dict = {
+            "type": "stream",
+            "to": [stream_id],
+            "topic": "drafts",
+            "content": "The API should be good",
+            "timestamp": 1595505700.85247
+        }
+        resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": ujson.dumps([draft_dict])})
+        self.assert_json_success(resp)
+        new_draft_id = ujson.loads(resp.content)["ids"][0]
+
+        # Change the draft data.
+        modified_draft_dict = deepcopy(draft_dict)
+        modified_draft_dict["content"] = "???"
+
+        # Update this change in the backend as a different user.
+        zoe = self.example_user("ZOE")
+        resp = self.api_patch(zoe, f"/api/v1/drafts/{new_draft_id}",
+                              {"draft": ujson.dumps(draft_dict)})
+        self.assert_json_error(resp, "Draft does not exist", status_code=404)
+
+        # Now make sure that no changes were made.
+        existing_draft = Draft.objects.get(id=new_draft_id, user_profile=hamlet)
+        existing_draft_dict = existing_draft.to_dict()
+        self.assertEqual(existing_draft_dict, draft_dict)

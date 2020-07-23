@@ -197,6 +197,9 @@ v1_api_and_json_patterns = [
     path('drafts', rest_dispatch,
          {'POST': ('zerver.views.drafts.create_drafts',
                    {'intentionally_undocumented'})}),
+    path('drafts/<int:draft_id>', rest_dispatch,
+         {'PATCH': ('zerver.views.drafts.edit_draft',
+                    {'intentionally_undocumented'})}),
 
     # messages -> zerver.views.message*
     # GET returns messages, possibly filtered, POST sends a message
