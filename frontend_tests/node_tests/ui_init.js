@@ -97,7 +97,6 @@ zrequire("user_groups");
 zrequire("unread");
 zrequire("bot_data");
 set_global("marked", zrequire("marked", "third/marked/lib/marked"));
-zrequire("fenced_code");
 zrequire("markdown");
 zrequire("upload");
 zrequire("compose");
