@@ -835,7 +835,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '.status', (e) => {
+   $('body').on('click', '.status', (e) => {
         exports.hide_all();
         console.log(user_status);
         if (user_status.server_set_away())
