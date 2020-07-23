@@ -16,7 +16,7 @@ import logging
 from datetime import date
 from random import randrange
 from time import sleep
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Union
 
 from typing_extensions import TypedDict
 
@@ -39,13 +39,37 @@ args = parser.parse_args()
 
 class ContributorsJSON(TypedDict):
     date: str
-    contrib: List[Dict[str, Union[str, int]]]
+    contrib: List[Dict[str, Union[int, str]]]
+
+class Contributor(TypedDict):
+    avatar_url: str
+    contributions: int
+    login: str
 
 logger = logging.getLogger('zulip.fetch_contributors_json')
 
-def fetch_contributors(repo_link: str) -> Optional[List[Dict[str, Dict[str, Any]]]]:
-    r: requests.Response = requests.get(repo_link, verify=os.environ.get('CUSTOM_CA_CERTIFICATES'))
-    return r.json() if r.status_code == 200 else None
+def fetch_contributors(repo_link: str, max_retries: int) -> List[Contributor]:
+    contributors: List[Contributor] = []
+    retry_attempts = 0
+    page_index = 1
+
+    while True:
+        response: requests.Response = requests.get(f"{repo_link}?page={page_index}", verify=os.environ.get('CUSTOM_CA_CERTIFICATES'))
+        if response.status_code == 200:
+            data = response.json()
+            if len(data) == 0:
+                return contributors
+            contributors.extend(data)
+            retry_attempts = 0
+            page_index += 1
+        else:
+            retry_attempts += 1
+            if retry_attempts > args.max_retries:
+                logger.warning("Failed retries fetching contributors data from Github.")
+                sys.exit(1)
+
+            sleep_time = randrange(0, min(64, 2**retry_attempts))
+            sleep(sleep_time)
 
 def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
     with open(out_file, 'w') as f:
@@ -63,66 +87,32 @@ def update_contributor_data_file() -> None:
     # the total count, including those that should *not* have tabs on the team
     # page (e.g. if they are deprecated).
     repositories = {
-        'server': 'https://api.github.com/repos/zulip/zulip/stats/contributors',
-        'desktop': 'https://api.github.com/repos/zulip/zulip-desktop/stats/contributors',
-        'mobile': 'https://api.github.com/repos/zulip/zulip-mobile/stats/contributors',
-        'python-zulip-api': 'https://api.github.com/repos/zulip/python-zulip-api/stats/contributors',
-        'zulip-js': 'https://api.github.com/repos/zulip/zulip-js/stats/contributors',
-        'zulipbot': 'https://api.github.com/repos/zulip/zulipbot/stats/contributors',
-        'terminal': 'https://api.github.com/repos/zulip/zulip-terminal/stats/contributors',
-        'zulip-ios-legacy': 'https://api.github.com/repos/zulip/zulip-ios-legacy/stats/contributors',
-        'zulip-android': 'https://api.github.com/repos/zulip/zulip-android/stats/contributors',
+        'server': 'https://api.github.com/repos/zulip/zulip/contributors',
+        'desktop': 'https://api.github.com/repos/zulip/zulip-desktop/contributors',
+        'mobile': 'https://api.github.com/repos/zulip/zulip-mobile/contributors',
+        'python-zulip-api': 'https://api.github.com/repos/zulip/python-zulip-api/contributors',
+        'zulip-js': 'https://api.github.com/repos/zulip/zulip-js/contributors',
+        'zulipbot': 'https://api.github.com/repos/zulip/zulipbot/contributors',
+        'terminal': 'https://api.github.com/repos/zulip/zulip-terminal/contributors',
+        'zulip-ios-legacy': 'https://api.github.com/repos/zulip/zulip-ios-legacy/contributors',
+        'zulip-android': 'https://api.github.com/repos/zulip/zulip-android/contributors',
     }
 
     data: ContributorsJSON = dict(date=str(date.today()), contrib=[])
     contribs_list: Dict[str, Dict[str, Union[str, int]]] = {}
-    retry_attempts = 0
 
-    while True:
-        repos_done = []
-        for name, link in repositories.items():
-            contribs = fetch_contributors(link)
-            if contribs:
-                repos_done.append(name)
-                for contrib in contribs:
-                    assert contrib is not None  # TODO: To improve/clarify
-
-                    author = contrib.get('author')
-                    if author is None:
-                        # This happens for users who've deleted their GitHub account.
-                        continue
-
-                    username = author.get('login')
-                    assert username is not None  # TODO: To improve/clarify
-
-                    avatar = author.get('avatar_url')
-                    assert avatar is not None  # TODO: To improve/clarify
-                    total = contrib.get('total')
-                    assert total is not None  # TODO: To improve/clarify
-
-                    contrib_data = {
-                        'avatar': avatar,
-                        name: total,
-                    }
-                    if username in contribs_list:
-                        contribs_list[username].update(contrib_data)
-                    else:
-                        contribs_list[username] = contrib_data
-                retry_attempts = 0
+    for name, link in repositories.items():
+        contributors = fetch_contributors(link, args.max_retries)
+        for contributor in contributors:
+            username = contributor['login']
+            if username in contribs_list:
+                contribs_list[username][name] = contributor['contributions']
             else:
-                retry_attempts += 1
-                if retry_attempts > args.max_retries:
-                    logger.warning("Failed retries fetching contributors data from Github.")
-                    sys.exit(1)
-
-                sleep_time = randrange(0, min(64, 2**retry_attempts))
-                sleep(sleep_time)
-
-        for repo in repos_done:
-            del repositories[repo]
-
-        if not repositories:
-            break
+                contribs_list[username] = {
+                    'avatar': contributor['avatar_url'],
+                    'name': username,
+                    name: contributor['contributions']
+                }
 
     # remove duplicate contributions count
     # find commits at the time of split and subtract from zulip-server
@@ -136,10 +126,7 @@ def update_contributor_data_file() -> None:
                 original_commits = total_commits - duplicate_commits_count
                 contribs_list[committer]['server'] = original_commits
 
-    for contributor_name, contributor_data in contribs_list.items():
-        contributor_data['name'] = contributor_name
-        data['contrib'].append(contributor_data)
-
+    data['contrib'] = list(contribs_list.values())
     write_to_disk(data, settings.CONTRIBUTOR_DATA_FILE_PATH)
 
 if __name__ == "__main__":

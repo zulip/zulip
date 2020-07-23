@@ -30,10 +30,10 @@ function contrib_total_commits(contrib) {
 //   - Display full name instead of github username.
 export default function render_tabs() {
     const template = _.template($("#contributors-template").html());
-
-    // Since the Github API limits the number of output to 100, we want to
-    // remove anyone in the total tab with less commits than the 100th
-    // contributor to the server repo. (See #7470)
+    // The GitHub API limits the number of contributors per repo to somwhere in the 300s.
+    // Since zulip/zulip repo has the highest number of contributors by far, we only show
+    // contributors who have atleast the same number of contributions than the last contributor
+    // returned by the API for zulip/zulip repo.
     const least_server_commits = _.chain(contributors_list)
         .filter("server")
         .sortBy("server")
