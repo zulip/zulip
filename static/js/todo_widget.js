@@ -1,23 +1,21 @@
 const render_widgets_todo_widget = require("../templates/widgets/todo_widget.hbs");
 const render_widgets_todo_widget_tasks = require("../templates/widgets/todo_widget_tasks.hbs");
 
-exports.task_data_holder = function () {
-    const self = {};
+class TaskData {
+    task_map = new Map();
 
-    const task_map = new Map();
-
-    function get_new_index() {
+    get_new_index() {
         let idx = 0;
 
-        for (const item of task_map.values()) {
+        for (const item of this.task_map.values()) {
             idx = Math.max(idx, item.idx);
         }
 
         return idx + 1;
     }
 
-    self.get_widget_data = function () {
-        const all_tasks = Array.from(task_map.values());
+    get_widget_data() {
+        const all_tasks = Array.from(this.task_map.values());
         all_tasks.sort((a, b) => a.task.localeCompare(b.task));
 
         const pending_tasks = [];
@@ -37,36 +35,36 @@ exports.task_data_holder = function () {
         };
 
         return widget_data;
-    };
+    }
 
-    self.name_in_use = function (name) {
-        for (const item of task_map.values()) {
+    name_in_use(name) {
+        for (const item of this.task_map.values()) {
             if (item.task === name) {
                 return true;
             }
         }
 
         return false;
-    };
+    }
 
-    self.handle = {
+    handle = {
         new_task: {
-            outbound(task, desc) {
+            outbound: (task, desc) => {
                 const event = {
                     type: "new_task",
-                    key: get_new_index(),
+                    key: this.get_new_index(),
                     task,
                     desc,
                     completed: false,
                 };
 
-                if (!self.name_in_use(task)) {
+                if (!this.name_in_use(task)) {
                     return event;
                 }
                 return;
             },
 
-            inbound(sender_id, data) {
+            inbound: (sender_id, data) => {
                 // for legacy reasons, the inbound idx is
                 // called key in the event
                 const idx = data.key;
@@ -83,14 +81,14 @@ exports.task_data_holder = function () {
                     completed,
                 };
 
-                if (!self.name_in_use(task)) {
-                    task_map.set(key, task_data);
+                if (!this.name_in_use(task)) {
+                    this.task_map.set(key, task_data);
                 }
             },
         },
 
         strike: {
-            outbound(key) {
+            outbound: (key) => {
                 const event = {
                     type: "strike",
                     key,
@@ -99,9 +97,9 @@ exports.task_data_holder = function () {
                 return event;
             },
 
-            inbound(sender_id, data) {
+            inbound: (sender_id, data) => {
                 const key = data.key;
-                const item = task_map.get(key);
+                const item = this.task_map.get(key);
 
                 if (item === undefined) {
                     blueslip.warn("Do we have legacy data? unknown key for tasks: " + key);
@@ -113,21 +111,20 @@ exports.task_data_holder = function () {
         },
     };
 
-    self.handle_event = function (sender_id, data) {
+    handle_event(sender_id, data) {
         const type = data.type;
-        if (self.handle[type]) {
-            self.handle[type].inbound(sender_id, data);
+        if (this.handle[type]) {
+            this.handle[type].inbound(sender_id, data);
         }
-    };
-
-    return self;
-};
+    }
+}
+exports.TaskData = TaskData;
 
 exports.activate = function (opts) {
     const elem = opts.elem;
     const callback = opts.callback;
 
-    const task_data = exports.task_data_holder();
+    const task_data = new TaskData();
 
     function render() {
         const html = render_widgets_todo_widget();
