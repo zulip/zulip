@@ -106,12 +106,12 @@ def update_contributor_data_file() -> None:
     with open(duplicate_commits_file) as f:
         duplicate_commits = json.load(f)
         for committer in duplicate_commits:
-            if committer in contributor_username_to_data and contributor_username_to_data[committer].get('server'):
-                total_commits = contributor_username_to_data[committer]['server']
+            if committer in contributor_username_to_data and contributor_username_to_data[committer].get('zulip'):
+                total_commits = contributor_username_to_data[committer]['zulip']
                 assert isinstance(total_commits, int)
                 duplicate_commits_count = duplicate_commits[committer]
                 original_commits = total_commits - duplicate_commits_count
-                contributor_username_to_data[committer]['server'] = original_commits
+                contributor_username_to_data[committer]['zulip'] = original_commits
 
     data['contributors'] = list(contributor_username_to_data.values())
     write_to_disk(data, settings.CONTRIBUTOR_DATA_FILE_PATH)
