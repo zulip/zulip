@@ -39,28 +39,26 @@ class StreamSubscriptionError {
 }
 const stream_subscription_error = new StreamSubscriptionError();
 
-const stream_name_error = (function () {
-    const self = {};
-
-    self.report_already_exists = function () {
+class StreamNameError {
+    report_already_exists() {
         $("#stream_name_error").text(i18n.t("A stream with this name already exists"));
         $("#stream_name_error").show();
-    };
+    }
 
-    self.clear_errors = function () {
+    clear_errors() {
         $("#stream_name_error").hide();
-    };
+    }
 
-    self.report_empty_stream = function () {
+    report_empty_stream() {
         $("#stream_name_error").text(i18n.t("A stream needs to have a name"));
         $("#stream_name_error").show();
-    };
+    }
 
-    self.select = function () {
+    select() {
         $("#create_stream_name").trigger("focus").trigger("select");
-    };
+    }
 
-    self.pre_validate = function (stream_name) {
+    pre_validate(stream_name) {
         // Don't worry about empty strings...we just want to call this
         // to warn users early before they start doing too much work
         // after they make the effort to type in a stream name.  (The
@@ -69,23 +67,23 @@ const stream_name_error = (function () {
         // the public streams that I'm not subscribed to yet.  Once I
         // realize the stream already exists, I may want to cancel.)
         if (stream_name && stream_data.get_sub(stream_name)) {
-            self.report_already_exists();
+            this.report_already_exists();
             return;
         }
 
-        self.clear_errors();
-    };
+        this.clear_errors();
+    }
 
-    self.validate_for_submit = function (stream_name) {
+    validate_for_submit(stream_name) {
         if (!stream_name) {
-            self.report_empty_stream();
-            self.select();
+            this.report_empty_stream();
+            this.select();
             return false;
         }
 
         if (stream_data.get_sub(stream_name)) {
-            self.report_already_exists();
-            self.select();
+            this.report_already_exists();
+            this.select();
             return false;
         }
 
@@ -94,10 +92,9 @@ const stream_name_error = (function () {
         // however, that there's some invite-only stream that we don't
         // know about locally that will cause a name collision.)
         return true;
-    };
-
-    return self;
-})();
+    }
+}
+const stream_name_error = new StreamNameError();
 
 // Within the new stream modal...
 function update_announce_stream_state() {
