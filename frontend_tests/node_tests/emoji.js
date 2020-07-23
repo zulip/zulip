@@ -1,8 +1,3 @@
-set_global("page_params", {
-    emojiset: "google",
-    realm_emoji: {},
-});
-
 zrequire("emoji");
 
 run_test("get_canonical_name", () => {

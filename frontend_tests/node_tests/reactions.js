@@ -7,6 +7,9 @@ zrequire("reactions");
 
 set_global("page_params", {
     user_id: 5,
+});
+
+const emoji_params = {
     realm_emoji: {
         991: {
             id: "991",
@@ -27,9 +30,9 @@ set_global("page_params", {
             deactivated: false,
         },
     },
-});
+};
 
-emoji.initialize();
+emoji.initialize(emoji_params);
 
 set_global("channel", {});
 set_global("emoji_picker", {

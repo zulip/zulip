@@ -132,7 +132,7 @@ exports.update_emojis = function (realm_emojis) {
     exports.build_emoji_data(exports.active_realm_emojis);
 };
 
-exports.initialize = function initialize() {
+exports.initialize = function initialize(params) {
     for (const value of emoji_codes.names) {
         const base_name = exports.get_emoji_codepoint(value);
 
@@ -143,7 +143,7 @@ exports.initialize = function initialize() {
         }
     }
 
-    exports.update_emojis(page_params.realm_emoji);
+    exports.update_emojis(params.realm_emoji);
 };
 
 exports.build_emoji_data = function (realm_emojis) {

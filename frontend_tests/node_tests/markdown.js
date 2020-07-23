@@ -18,8 +18,7 @@ set_global("location", {
 
 set_global("moment", require("moment-timezone"));
 
-set_global("page_params", {
-    realm_users: [],
+const emoji_params = {
     realm_emoji: {
         1: {
             id: 1,
@@ -28,6 +27,10 @@ set_global("page_params", {
             deactivated: false,
         },
     },
+};
+
+set_global("page_params", {
+    realm_users: [],
     realm_filters: [
         ["#(?P<id>[0-9]{2,8})", "https://trac.example.com/ticket/%(id)s"],
         ["ZBUG_(?P<id>[0-9]{2,8})", "https://trac2.zulip.net/ticket/%(id)s"],
@@ -43,7 +46,7 @@ function Image() {
     return {};
 }
 set_global("Image", Image);
-emoji.initialize();
+emoji.initialize(emoji_params);
 
 const doc = "";
 set_global("document", doc);
