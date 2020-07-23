@@ -186,32 +186,30 @@ function make_per_stream_bucketer() {
     });
 }
 
-exports.unread_topic_counter = (function () {
-    const self = {};
-
-    const bucketer = new Bucketer({
+class UnreadTopicCounter {
+    bucketer = new Bucketer({
         KeyDict: Map, // bucket keys are stream_ids
         make_bucket: make_per_stream_bucketer,
     });
 
-    self.clear = function () {
-        bucketer.clear();
-    };
+    clear() {
+        this.bucketer.clear();
+    }
 
-    self.set_streams = function (objs) {
+    set_streams(objs) {
         for (const obj of objs) {
             const stream_id = obj.stream_id;
             const topic = obj.topic;
             const unread_message_ids = obj.unread_message_ids;
 
             for (const msg_id of unread_message_ids) {
-                self.add(stream_id, topic, msg_id);
+                this.add(stream_id, topic, msg_id);
             }
         }
-    };
+    }
 
-    self.add = function (stream_id, topic, msg_id) {
-        bucketer.add({
+    add(stream_id, topic, msg_id) {
+        this.bucketer.add({
             bucket_key: stream_id,
             item_id: msg_id,
             add_callback(per_stream_bucketer) {
@@ -221,17 +219,17 @@ exports.unread_topic_counter = (function () {
                 });
             },
         });
-    };
+    }
 
-    self.delete = function (msg_id) {
-        bucketer.delete(msg_id);
-    };
+    delete(msg_id) {
+        this.bucketer.delete(msg_id);
+    }
 
-    self.get_counts = function () {
+    get_counts() {
         const res = {};
         res.stream_unread_messages = 0;
         res.stream_count = new Map(); // hash by stream_id -> count
-        for (const [stream_id, per_stream_bucketer] of bucketer) {
+        for (const [stream_id, per_stream_bucketer] of this.bucketer) {
             // We track unread counts for streams that may be currently
             // unsubscribed.  Since users may re-subscribe, we don't
             // completely throw away the data.  But we do ignore it here,
@@ -255,13 +253,13 @@ exports.unread_topic_counter = (function () {
         }
 
         return res;
-    };
+    }
 
-    self.get_missing_topics = function (opts) {
+    get_missing_topics(opts) {
         const stream_id = opts.stream_id;
         const topic_dict = opts.topic_dict;
 
-        const per_stream_bucketer = bucketer.get_bucket(stream_id);
+        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
         if (!per_stream_bucketer) {
             return [];
         }
@@ -280,12 +278,12 @@ exports.unread_topic_counter = (function () {
         });
 
         return result;
-    };
+    }
 
-    self.get_stream_count = function (stream_id) {
+    get_stream_count(stream_id) {
         let stream_count = 0;
 
-        const per_stream_bucketer = bucketer.get_bucket(stream_id);
+        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
 
         if (!per_stream_bucketer) {
             return 0;
@@ -299,10 +297,10 @@ exports.unread_topic_counter = (function () {
         }
 
         return stream_count;
-    };
+    }
 
-    self.get = function (stream_id, topic) {
-        const per_stream_bucketer = bucketer.get_bucket(stream_id);
+    get(stream_id, topic) {
+        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
         if (!per_stream_bucketer) {
             return 0;
         }
@@ -313,10 +311,10 @@ exports.unread_topic_counter = (function () {
         }
 
         return topic_bucket.size;
-    };
+    }
 
-    self.get_msg_ids_for_stream = function (stream_id) {
-        const per_stream_bucketer = bucketer.get_bucket(stream_id);
+    get_msg_ids_for_stream(stream_id) {
+        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
 
         if (!per_stream_bucketer) {
             return [];
@@ -333,10 +331,10 @@ exports.unread_topic_counter = (function () {
         }
 
         return util.sorted_ids(ids);
-    };
+    }
 
-    self.get_msg_ids_for_topic = function (stream_id, topic) {
-        const per_stream_bucketer = bucketer.get_bucket(stream_id);
+    get_msg_ids_for_topic(stream_id, topic) {
+        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
         if (!per_stream_bucketer) {
             return [];
         }
@@ -348,10 +346,10 @@ exports.unread_topic_counter = (function () {
 
         const ids = Array.from(topic_bucket);
         return util.sorted_ids(ids);
-    };
+    }
 
-    self.topic_has_any_unread = function (stream_id, topic) {
-        const per_stream_bucketer = bucketer.get_bucket(stream_id);
+    topic_has_any_unread(stream_id, topic) {
+        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
 
         if (!per_stream_bucketer) {
             return false;
@@ -363,10 +361,9 @@ exports.unread_topic_counter = (function () {
         }
 
         return id_set.size !== 0;
-    };
-
-    return self;
-})();
+    }
+}
+exports.unread_topic_counter = new UnreadTopicCounter();
 
 exports.unread_mentions_counter = new Set();
 
