@@ -834,7 +834,21 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
         e.preventDefault();
     });
-   
+
+    $('body').on('click', '.status', (e) => {
+        exports.hide_all();
+        console.log(user_status);
+        if (user_status.server_set_away())
+        {
+            user_status.server_set_away();
+           }
+        else  {
+            user_status.server_revoke_away();
+        }
+        e.stopPropagation();
+        e.preventDefault();
+        }); 
+
     $('body').on('click', '.set_away_status', (e) => {
         exports.hide_all();              
         user_status.server_set_away();
