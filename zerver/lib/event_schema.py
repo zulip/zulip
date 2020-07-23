@@ -349,6 +349,13 @@ def check_realm_bot_update(var_name: str, event: Dict[str, Any], field: str,) ->
     assert {"user_id", field} == set(event["bot"].keys())
 
 
+_check_plan_type_extra_data = check_dict_only(
+    required_keys=[
+        # force vertical
+        ("upload_quota", check_int),
+    ]
+)
+
 """
 realm/update events are flexible for values;
 we will use a more strict checker to check
@@ -360,7 +367,11 @@ _check_realm_update = check_events_dict(
         ("op", equals("update")),
         ("property", check_string),
         ("value", check_value),
-    ]
+    ],
+    optional_keys=[
+        # force vertical
+        ("extra_data", _check_plan_type_extra_data),
+    ],
 )
 
 
@@ -380,6 +391,13 @@ def check_realm_update(var_name: str, event: Dict[str, Any], prop: str,) -> None
 
     assert prop == event["property"]
     value = event["value"]
+
+    if prop == "plan_type":
+        assert isinstance(value, int)
+        assert "extra_data" in event.keys()
+        return
+
+    assert "extra_data" not in event.keys()
 
     if prop in ["notifications_stream_id", "signup_notifications_stream_id"]:
         assert isinstance(value, int)
