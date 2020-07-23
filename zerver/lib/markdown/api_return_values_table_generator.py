@@ -1,3 +1,5 @@
+import copy
+import json
 import re
 from typing import Any, Dict, List, Mapping, Optional
 
@@ -8,7 +10,6 @@ from markdown.preprocessors import Preprocessor
 from zerver.openapi.openapi import get_openapi_return_values, likely_deprecated_parameter
 
 REGEXP = re.compile(r'\{generate_return_values_table\|\s*(.+?)\s*\|\s*(.+)\s*\}')
-
 
 class MarkdownReturnValuesTableGenerator(Extension):
     def __init__(self, configs: Mapping[str, Any] = {}) -> None:
@@ -38,7 +39,16 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 endpoint, method = doc_name.rsplit(':', 1)
                 return_values: Dict[str, Any] = {}
                 return_values = get_openapi_return_values(endpoint, method)
-                text = self.render_table(return_values, 0)
+                text: List[str] = []
+                if endpoint != '/events':
+                    text = self.render_table(return_values, 0)
+                else:
+                    return_values = copy.deepcopy(return_values)
+                    events = return_values['events'].pop('items', None)
+                    text = self.render_table(return_values, 0)
+                    # Another heading for the events documentation
+                    text.append('\n\n## Events\n\n')
+                    text += self.render_events(events)
                 line_split = REGEXP.split(line, maxsplit=0)
                 preceding = line_split[0]
                 following = line_split[-1]
@@ -61,6 +71,24 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
         for return_value in return_values:
             if return_value in IGNORE:
                 continue
+            if 'oneOf' in return_values[return_value]:
+                # For elements using oneOf there are two descriptions. The first description
+                # should be at level with the oneOf and should containg the basic non-specific
+                # description of the endpoint. Then for each element of oneOf there is a
+                # specialized description for that particular case. The description used
+                # right below is the main description.
+                ans.append(self.render_desc(return_values[return_value]['description'],
+                                            spacing, return_value))
+                for element in return_values[return_value]['oneOf']:
+                    if 'description' not in element:
+                        continue
+                    # Add the specialized description of the oneOf element.
+                    ans.append(self.render_desc(element['description'], spacing + 4))
+                    # If the oneOf element is an object schema then render the documentation
+                    # of its keys.
+                    if 'properties' in element:
+                        ans += self.render_table(element['properties'], spacing + 8)
+                continue
             description = return_values[return_value]['description']
             # Test to make sure deprecated keys are marked appropriately.
             if likely_deprecated_parameter(description):
@@ -79,5 +107,34 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 ans += self.render_table(return_values[return_value]['items']['properties'], spacing + 4)
         return ans
 
+    def render_events(self, events_dict: Dict[str, Any]) -> List[str]:
+        text: List[str] = []
+        # Use argument section design for better visuals
+        # Directly using `###` for subheading causes errors so use h3 with made up id.
+        argument_template = ('<div class="api-argument"><p class="api-argument-name"><h3 id="{h3_id}">' +
+                             ' {event_type} {op}</h3></p></div> \n{description}\n\n\n')
+        for events in events_dict['oneOf']:
+            event_type: Dict[str, Any] = events['properties'].pop('type')
+            event_type_str: str = event_type['enum'][0]
+            # Internal hyperlink name
+            h3_id: str = event_type_str
+            event_type_str = f'<span class="api-argument-required"> {event_type_str}</span>'
+            op: Optional[Dict[str, Any]] = events['properties'].pop('op', None)
+            op_str: str = ''
+            if op is not None:
+                op_str = op['enum'][0]
+                h3_id += '-' + op_str
+                op_str = f'<span class="api-argument-deprecated">op: {op_str}</span>'
+            description = events['description']
+            text.append(argument_template.format(event_type=event_type_str, op=op_str,
+                        description=description, h3_id=h3_id))
+            text += self.render_table(events['properties'], 0)
+            # This part is for adding examples of individual events
+            text.append('**Example**')
+            text.append('\n```json\n')
+            example = json.dumps(events['example'], indent=4)
+            text.append(example)
+            text.append('```\n\n')
+        return text
 def makeExtension(*args: Any, **kwargs: str) -> MarkdownReturnValuesTableGenerator:
     return MarkdownReturnValuesTableGenerator(kwargs)
