@@ -16,7 +16,7 @@ const repo_name_to_tab_name = {
 // if a user leaves and then revisits the same tab.
 const loaded_repos = [];
 
-function contrib_total_commits(contributor) {
+function calculate_total_commits(contributor) {
     let commits = 0;
     Object.keys(repo_name_to_tab_name).forEach((repo_name) => {
         commits += contributor[repo_name] || 0;
@@ -42,7 +42,7 @@ export default function render_tabs() {
         .map((c) => ({
             name: c.name,
             avatar: c.avatar,
-            commits: contrib_total_commits(c),
+            commits: calculate_total_commits(c),
         }))
         .sortBy("commits")
         .reverse()
