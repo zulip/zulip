@@ -156,8 +156,224 @@ paths:
                           guaranteed to be increasing, but they are not guaranteed to be
                           consecutive.
                         items:
-                          type: object
-                          additionalProperties: false
+                          oneOf:
+                            - type: object
+                              description: |
+                                Event sent to a user's clients when that user's set of configured
+                                [alert words](/help/add-an-alert-word) have changed.
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                    - alert_words
+                                alert_words:
+                                  type: array
+                                  description: |
+                                    Array of strings, each a configured alert word.
+                                  items:
+                                    type: string
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "alert_words",
+                                  "alert_words": ["alert_word"],
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                Event sent to a user's clients when that user's display settings
+                                have changed.
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                    - update_display_settings
+                                setting_name:
+                                  type: string
+                                  description: |
+                                    Name of the changed display setting.
+                                setting:
+                                  description: |
+                                    New value of the changed setting.
+                                  type: boolean
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "update_display_settings",
+                                  "setting_name": "high_contrast_mode",
+                                  "setting": false,
+                                }
+                            - type: object
+                              description: |
+                                Event sent to a user's clients when that user's [notification
+                                settings](/api/update-notification-settings) have changed.
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                    - update_global_notifications
+                                notification_name:
+                                  type: string
+                                  description: |
+                                    Name of the changed notification setting.
+                                setting:
+                                  description: |
+                                    New value of the changed setting.
+                                  type: boolean
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "update_global_notifications",
+                                  "notification_name": "enable_sounds",
+                                  "setting": true,
+                                }
+                            - type: object
+                              description: |
+                                Event sent generally to all users in an organization for changes
+                                in the set of users or those users metadata.
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                    - realm_user
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                person:
+                                  description: |
+                                    Object containing the changed details of the user.
+                                    It has multiple forms depending on the value changed.
+                                  oneOf:
+                                    - type: object
+                                      description: |
+                                        When a user changes their full name.
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The id of modified user.
+                                        full_name:
+                                          type: string
+                                          description: |
+                                            The new full name for the user.
+                                    - type: object
+                                      description: |
+                                        When a user changes their avatar.
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The id of the user who is affected by this change.
+                                        avatar_url:
+                                          type: string
+                                          description: |
+                                            The url of the new avatar URL for the user.
+                                        avatar_source:
+                                          type: string
+                                          description: |
+                                            The new avatar data source type for the user.
+
+                                            Value values are `G` (gravatar) and `U` (uploaded by user).
+                                        avatar_url_medium:
+                                          type: string
+                                          description: |
+                                            The new medium-size avatar URL for user.
+                                        avatar_version:
+                                          type: string
+                                          description: |
+                                            The version number for the user's avatar.  This is useful
+                                            for cache-busting.
+                                    - type: object
+                                      description: |
+                                        When a user changes their timezone setting.
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The id of modified user.
+                                        email:
+                                          type: string
+                                          description: |
+                                            The email of the user.
+
+                                            **Deprecated**: This field will be removed in a future
+                                            release as it is redunant with the `user_id`.
+                                          deprecated: true
+                                        timezone:
+                                          type: string
+                                          description: |
+                                            The new timezone of the user.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "realm_user",
+                                  "op": "update",
+                                  "person":
+                                    {
+                                      "avatar_source": "G",
+                                      "avatar_url": "https:\/\/secure.gravatar.com\/avatar\/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=3",
+                                      "avatar_url_medium": "https:\/\/secure.gravatar.com\/avatar\/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&s=500&version=3",
+                                      "avatar_version": 3,
+                                      "user_id": 10,
+                                    },
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                Event sent to a user's clients when that user's stream subscriptions
+                                have changed (either the set of subscriptions or their properties).
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                    - subscription
+                                op:
+                                  type: string
+                                  enum:
+                                    - add
+                                subscriptions:
+                                  type: array
+                                  description: |
+                                    A list of dictionaries where each dictionary contains
+                                    information about one of the subscribed streams.
+                                  items:
+                                    $ref: "#/components/schemas/Subscriptions"
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "subscription",
+                                  "op": "add",
+                                  "subscriptions":
+                                    [
+                                      {
+                                        "name": "test_stream",
+                                        "stream_id": 9,
+                                        "description": "",
+                                        "rendered_description": "",
+                                        "invite_only": false,
+                                        "is_web_public": false,
+                                        "stream_post_policy": 1,
+                                        "history_public_to_subscribers": true,
+                                        "first_message_id": null,
+                                        "message_retention_days": null,
+                                        "is_announcement_only": false,
+                                        "color": "#76ce90",
+                                        "is_muted": false,
+                                        "pin_to_top": false,
+                                        "audible_notifications": null,
+                                        "desktop_notifications": null,
+                                        "email_notifications": null,
+                                        "push_notifications": null,
+                                        "wildcard_mentions_notify": null,
+                                        "in_home_view": true,
+                                        "email_address": "test_stream.af64447e9e39374841063747ade8e6b0.show-sender@testserver",
+                                        "stream_weekly_traffic": null,
+                                        "subscribers": [10],
+                                      },
+                                    ],
+                                  "id": 0,
+                                }
                       queue_id:
                         type: string
                         description: |
