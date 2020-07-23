@@ -24,35 +24,32 @@ exports.update_count_in_dom = function (unread_count_elem, count) {
     value_span.text(count);
 };
 
-exports.stream_sidebar = (function () {
-    const self = {};
+class StreamSidebar {
+    rows = new Map(); // stream id -> row widget
 
-    self.rows = new Map(); // stream id -> row widget
+    set_row(stream_id, widget) {
+        this.rows.set(stream_id, widget);
+    }
 
-    self.set_row = function (stream_id, widget) {
-        self.rows.set(stream_id, widget);
-    };
+    get_row(stream_id) {
+        return this.rows.get(stream_id);
+    }
 
-    self.get_row = function (stream_id) {
-        return self.rows.get(stream_id);
-    };
+    has_row_for(stream_id) {
+        return this.rows.has(stream_id);
+    }
 
-    self.has_row_for = function (stream_id) {
-        return self.rows.has(stream_id);
-    };
-
-    self.remove_row = function (stream_id) {
+    remove_row(stream_id) {
         // This only removes the row from our data structure.
         // Our caller should use build_stream_list() to re-draw
         // the sidebar, so that we don't have to deal with edge
         // cases like removing the last pinned stream (and removing
         // the divider).
 
-        self.rows.delete(stream_id);
-    };
-
-    return self;
-})();
+        this.rows.delete(stream_id);
+    }
+}
+exports.stream_sidebar = new StreamSidebar();
 
 function get_search_term() {
     const search_box = $(".stream-list-filter");
