@@ -698,9 +698,18 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(["Lear &amp; Co. scrubbed"], result)
 
         with mock.patch("analytics.views.do_scrub_realm") as m:
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(AssertionError), self.assertLogs('django.request', 'ERROR') as err_log:
                 result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}"})
             m.assert_not_called()
+            self.assertTrue(
+                'ERROR:django.request:Internal Server Error: /activity/support' in err_log.output[0]
+            )
+            self.assertTrue(
+                'Traceback (most recent call last):' in err_log.output[0]
+            )
+            self.assertTrue(
+                'AssertionError' in err_log.output[0]
+            )
 
 class TestGetChartDataHelpers(ZulipTestCase):
     # last_successful_fill is in analytics/models.py, but get_chart_data is
