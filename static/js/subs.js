@@ -95,7 +95,7 @@ exports.active_stream = function () {
     }
 };
 
-exports.set_muted = function (sub, status_element, is_muted) {
+exports.set_muted = function (sub, is_muted, status_element) {
     stream_muting.update_is_muted(sub, is_muted);
     stream_edit.set_stream_property(sub, "is_muted", sub.is_muted, status_element);
 };
