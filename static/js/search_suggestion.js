@@ -556,37 +556,40 @@ function get_operator_suggestions(last) {
     });
 }
 
-function make_attacher(base) {
-    const self = {};
-    self.result = [];
-    const prev = new Set();
+class Attacher {
+    result = [];
+    prev = new Set();
 
-    function prepend_base(suggestion) {
-        if (base && base.description.length > 0) {
-            suggestion.search_string = base.search_string + " " + suggestion.search_string;
-            suggestion.description = base.description + ", " + suggestion.description;
+    constructor(base) {
+        this.base = base;
+    }
+
+    prepend_base(suggestion) {
+        if (this.base && this.base.description.length > 0) {
+            suggestion.search_string = this.base.search_string + " " + suggestion.search_string;
+            suggestion.description = this.base.description + ", " + suggestion.description;
         }
     }
 
-    self.push = function (suggestion) {
-        if (!prev.has(suggestion.search_string)) {
-            prev.add(suggestion.search_string);
-            self.result.push(suggestion);
+    push(suggestion) {
+        if (!this.prev.has(suggestion.search_string)) {
+            this.prev.add(suggestion.search_string);
+            this.result.push(suggestion);
         }
-    };
+    }
 
-    self.concat = function (suggestions) {
-        suggestions.forEach(self.push);
-    };
-
-    self.attach_many = function (suggestions) {
+    concat(suggestions) {
         for (const suggestion of suggestions) {
-            prepend_base(suggestion);
-            self.push(suggestion);
+            this.push(suggestion);
         }
-    };
+    }
 
-    return self;
+    attach_many(suggestions) {
+        for (const suggestion of suggestions) {
+            this.prepend_base(suggestion);
+            this.push(suggestion);
+        }
+    }
 }
 
 exports.get_search_result = function (base_query, query) {
@@ -646,7 +649,7 @@ exports.get_search_result = function (base_query, query) {
     }
 
     const base = get_default_suggestion(search_operators.slice(0, -1));
-    const attacher = make_attacher(base);
+    const attacher = new Attacher(base);
 
     // Display the default first
     // `has` and `is` operators work only on predefined categories. Default suggestion
