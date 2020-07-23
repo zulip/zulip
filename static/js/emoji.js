@@ -11,6 +11,16 @@ exports.all_realm_emojis = new Map();
 exports.active_realm_emojis = new Map();
 exports.default_emoji_aliases = new Map();
 
+// For legacy reasons we track server_realm_emoji_data,
+// since our settings code builds off that format.  We
+// should move it to use all_realm_emojis, which requires
+// adding author_id here and then changing the settings code
+// in a slightly non-trivial way.
+exports.server_realm_emoji_data = {};
+
+// We really want to deprecate this, too.
+exports.get_server_realm_emoji_data = () => exports.server_realm_emoji_data;
+
 const emoticon_translations = (() => {
     /*
 
@@ -91,6 +101,10 @@ exports.get_realm_emoji_url = (emoji_name) => {
 };
 
 exports.update_emojis = function (realm_emojis) {
+    // The settings code still works with the
+    // server format of the data.
+    exports.server_realm_emoji_data = realm_emojis;
+
     // exports.all_realm_emojis is emptied before adding the realm-specific emoji
     // to it. This makes sure that in case of deletion, the deleted realm_emojis
     // don't persist in exports.active_realm_emojis.
