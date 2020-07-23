@@ -76,9 +76,11 @@ exports.update_topics_of_message_ids = function (message_ids) {
     for (const msg_id of message_ids) {
         // Note: message_store retians data of msg post deletion.
         const message = message_store.get(msg_id);
-        // Create unique keys for stream_id and topic.
-        const topic_key = message.stream_id + ":" + message.topic;
-        topics_to_update.set(topic_key, [message.stream_id, message.topic]);
+        if (message.type === "stream") {
+            // Create unique keys for stream_id and topic.
+            const topic_key = message.stream_id + ":" + message.topic;
+            topics_to_update.set(topic_key, [message.stream_id, message.topic]);
+        }
     }
 
     for (const [stream_id, topic] of topics_to_update.values()) {
