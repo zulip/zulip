@@ -195,7 +195,9 @@ v1_api_and_json_patterns = [
 
     # Endpoints for syncing drafts.
     path('drafts', rest_dispatch,
-         {'POST': ('zerver.views.drafts.create_drafts',
+         {'GET': ('zerver.views.drafts.fetch_drafts',
+                  {'intentionally_undocumented'}),
+          'POST': ('zerver.views.drafts.create_drafts',
                    {'intentionally_undocumented'})}),
     path('drafts/<int:draft_id>', rest_dispatch,
          {'PATCH': ('zerver.views.drafts.edit_draft',

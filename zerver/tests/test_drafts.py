@@ -473,3 +473,69 @@ class DraftDeleteTests(ZulipTestCase):
         existing_draft = Draft.objects.get(id=new_draft_id, user_profile=hamlet)
         existing_draft_dict = existing_draft.to_dict()
         self.assertEqual(existing_draft_dict, draft_dict)
+
+class DraftFetchTest(ZulipTestCase):
+    def test_fetch_drafts(self) -> None:
+        self.assertEqual(Draft.objects.count(), 0)
+
+        hamlet = self.example_user("hamlet")
+        zoe = self.example_user("ZOE")
+        othello = self.example_user("othello")
+        visible_stream_id = self.get_stream_id(self.get_streams(hamlet)[0])
+        draft_dicts = [
+            {
+                "type": "stream",
+                "to": [visible_stream_id],
+                "topic": "thinking out loud",
+                "content": "What if pigs really could fly?",
+                "timestamp": 1595479019.439159,
+            },
+            {
+                "type": "private",
+                "to": [zoe.id],
+                "topic": "",
+                "content": "What if made it possible to sync drafts in Zulip?",
+                "timestamp": 1595479020.439160,
+            },
+            {
+                "type": "private",
+                "to": [zoe.id, othello.id],
+                "topic": "",
+                "content": "What if made it possible to sync drafts in Zulip?",
+                "timestamp": 1595479021.439161,
+            },
+        ]
+        payload = {"drafts": ujson.dumps(draft_dicts)}
+        resp = self.api_post(hamlet, "/api/v1/drafts", payload)
+        self.assert_json_success(resp)
+
+        self.assertEqual(Draft.objects.count(), 3)
+
+        zoe_draft_dicts = [
+            {
+                "type": "private",
+                "to": [hamlet.id],
+                "topic": "",
+                "content": "Hello there!",
+                "timestamp": 1595479019.439159,
+            },
+        ]
+        payload = {"drafts": ujson.dumps(zoe_draft_dicts)}
+        resp = self.api_post(zoe, "/api/v1/drafts", payload)
+        self.assert_json_success(resp)
+
+        self.assertEqual(Draft.objects.count(), 4)
+
+        # Now actually fetch the drafts. Make sure that hamlet gets only
+        # his drafts and exactly as he made them.
+        resp = self.api_get(hamlet, "/api/v1/drafts")
+        self.assert_json_success(resp)
+        data = ujson.loads(resp.content)
+        self.assertEqual(data["count"], 3)
+
+        first_draft_id = Draft.objects.order_by("id")[0].id
+        expected_draft_contents = {
+            "{}".format(i+first_draft_id): draft_dicts[i] for i in range(0, 3)
+        }  # In JSON, all keys must be strings.
+
+        self.assertEqual(data["drafts"], expected_draft_contents)
