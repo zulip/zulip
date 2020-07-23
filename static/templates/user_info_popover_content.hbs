@@ -53,23 +53,23 @@
 
       {{#if is_me}}
         <hr>
-         <label>Status</label>
+        <label>Status</label>
         <select class="status"> 
             <option value="Status">
                     {{#if can_set_away}}
-            <li>
-                <a href="#" class="set_away_status">
-                    <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}active : Set yourself unavailable{{/tr}}
-                </a>
-            </li>
-            {{/if}}
-            {{#if can_revoke_away}}
-            <li>
-                <a href="#" class="revoke_away_status">
-                    <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Inactive : Set yourself active{{/tr}}
-                </a>
-            </li>
-            {{/if}}
+                    <li>
+                        <a href="#" class="set_away_status">
+                            <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}active : Set yourself unavailable{{/tr}}
+                        </a>
+                    </li>
+                    {{/if}}
+                    {{#if can_revoke_away}}
+                    <li>
+                        <a href="#" class="revoke_away_status">
+                            <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Inactive : Set yourself active{{/tr}}
+                        </a>
+                    </li>
+                    {{/if}}
             </option>
         </select>
 
