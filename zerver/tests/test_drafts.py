@@ -396,3 +396,80 @@ class DraftEditTests(ZulipTestCase):
         existing_draft = Draft.objects.get(id=new_draft_id, user_profile=hamlet)
         existing_draft_dict = existing_draft.to_dict()
         self.assertEqual(existing_draft_dict, draft_dict)
+
+class DraftDeleteTests(ZulipTestCase):
+    def test_delete_draft_successfully(self) -> None:
+        hamlet = self.example_user("hamlet")
+        visible_streams = self.get_streams(hamlet)
+        stream_id = self.get_stream_id(visible_streams[0])
+
+        # Make sure that there are no drafts at the start of this test.
+        self.assertEqual(Draft.objects.count(), 0)
+
+        # Create a draft.
+        draft_dict = {
+            "type": "stream",
+            "to": [stream_id],
+            "topic": "drafts",
+            "content": "The API should be good",
+            "timestamp": 1595505700.85247
+        }
+        resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": ujson.dumps([draft_dict])})
+        self.assert_json_success(resp)
+        new_draft_id = ujson.loads(resp.content)["ids"][0]
+
+        # Make sure that exactly 1 draft exists now.
+        self.assertEqual(Draft.objects.count(), 1)
+
+        # Update this change in the backend.
+        resp = self.api_delete(hamlet, f"/api/v1/drafts/{new_draft_id}")
+        self.assert_json_success(resp)
+
+        # Now make sure that the there are no more drafts.
+        self.assertEqual(Draft.objects.count(), 0)
+
+    def test_delete_non_existant_draft(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # Make sure that no draft exists in the first place.
+        self.assertEqual(Draft.objects.count(), 0)
+
+        # Try to delete a draft that doesn't exist.
+        resp = self.api_delete(hamlet, "/api/v1/drafts/9999999999")
+        self.assert_json_error(resp, "Draft does not exist", status_code=404)
+
+        # Now make sure that no drafts were made for whatever reason.
+        self.assertEqual(Draft.objects.count(), 0)
+
+    def test_delete_unowned_draft(self) -> None:
+        hamlet = self.example_user("hamlet")
+        visible_streams = self.get_streams(hamlet)
+        stream_id = self.get_stream_id(visible_streams[0])
+
+        # Make sure that there are no drafts at the start of this test.
+        self.assertEqual(Draft.objects.count(), 0)
+
+        # Create a draft.
+        draft_dict = {
+            "type": "stream",
+            "to": [stream_id],
+            "topic": "drafts",
+            "content": "The API should be good",
+            "timestamp": 1595505700.85247
+        }
+        resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": ujson.dumps([draft_dict])})
+        self.assert_json_success(resp)
+        new_draft_id = ujson.loads(resp.content)["ids"][0]
+
+        # Delete this draft in the backend as a different user.
+        zoe = self.example_user("ZOE")
+        resp = self.api_delete(zoe, f"/api/v1/drafts/{new_draft_id}")
+        self.assert_json_error(resp, "Draft does not exist", status_code=404)
+
+        # Make sure that the draft was not deleted.
+        self.assertEqual(Draft.objects.count(), 1)
+
+        # Now make sure that no changes were made either.
+        existing_draft = Draft.objects.get(id=new_draft_id, user_profile=hamlet)
+        existing_draft_dict = existing_draft.to_dict()
+        self.assertEqual(existing_draft_dict, draft_dict)

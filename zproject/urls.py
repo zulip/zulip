@@ -199,7 +199,9 @@ v1_api_and_json_patterns = [
                    {'intentionally_undocumented'})}),
     path('drafts/<int:draft_id>', rest_dispatch,
          {'PATCH': ('zerver.views.drafts.edit_draft',
-                    {'intentionally_undocumented'})}),
+                    {'intentionally_undocumented'}),
+          'DELETE': ('zerver.views.drafts.delete_draft',
+                     {'intentionally_undocumented'})}),
 
     # messages -> zerver.views.message*
     # GET returns messages, possibly filtered, POST sends a message

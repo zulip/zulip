@@ -121,3 +121,12 @@ def edit_draft(request: HttpRequest, user_profile: UserProfile, draft_id: int,
     draft_object.save()
 
     return json_success()
+
+def delete_draft(request: HttpRequest, user_profile: UserProfile, draft_id: int) -> HttpResponse:
+    try:
+        draft_object = Draft.objects.get(id=draft_id, user_profile=user_profile)
+    except Draft.DoesNotExist:
+        return json_error(_("Draft does not exist"), status=404)
+
+    draft_object.delete()
+    return json_success()
