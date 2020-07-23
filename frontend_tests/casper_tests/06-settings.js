@@ -294,7 +294,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.test.info("Deleting alert word");
-    casper.click("button.remove-alert-word");
+    casper.click("button.remove-alert-word[data-word='some phrase']");
     casper.test.info("Checking that a success message is displayed");
     casper.waitUntilVisible("#alert_word_status", function () {
         casper.test.assertSelectorHasText(
@@ -308,7 +308,6 @@ casper.then(function () {
     });
     casper.test.info("Checking that the element was deleted");
     casper.waitWhileVisible(".alert-word-item[data-word='some phrase']", function () {
-        casper.test.assertDoesntExist("div.alert-word-information-box");
         casper.test.info("Element deleted successfully");
     });
 });
