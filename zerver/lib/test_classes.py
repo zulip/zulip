@@ -752,6 +752,7 @@ class ZulipTestCase(TestCase):
 
     def make_stream(self, stream_name: str, realm: Optional[Realm]=None,
                     invite_only: bool=False,
+                    is_web_public: bool=False,
                     history_public_to_subscribers: Optional[bool]=None) -> Stream:
         if realm is None:
             realm = get_realm('zulip')
@@ -764,6 +765,7 @@ class ZulipTestCase(TestCase):
                 realm=realm,
                 name=stream_name,
                 invite_only=invite_only,
+                is_web_public=is_web_public,
                 history_public_to_subscribers=history_public_to_subscribers,
             )
         except IntegrityError:  # nocoverage -- this is for bugs in the tests
@@ -807,9 +809,11 @@ class ZulipTestCase(TestCase):
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(self, user: UserProfile, streams: Iterable[str],
                                     extra_post_data: Dict[str, Any]={}, invite_only: bool=False,
+                                    is_web_public: bool=False,
                                     allow_fail: bool=False,
                                     **kwargs: Any) -> HttpResponse:
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
+                     'is_web_public': ujson.dumps(is_web_public),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
         result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, **kwargs)
