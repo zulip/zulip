@@ -48,10 +48,10 @@ casper.then(function () {
             casper.test.assertVisible("#old_password");
             casper.test.assertVisible("#new_password");
 
-            casper.test.assertEqual(casper.getFormValues(form_sel).full_name, "Iago");
+            casper.test.assertEqual(casper.getFormValues(form_sel).full_name, "Desdemona");
 
             casper.fill(form_sel, {
-                full_name: "IagoNew",
+                full_name: "DesdemonaNew",
                 old_password: test_credentials.default_user.password,
                 new_password: "qwertyuiop",
             });
@@ -87,7 +87,7 @@ casper.then(function () {
         /*
         // Change it all back so the next test can still log in
         casper.fill(form_sel, {
-            full_name: "Iago",
+            full_name: "Desdemona",
             old_password: "qwertyuiop",
             new_password: test_credentials.default_user.password,
         });
