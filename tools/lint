@@ -94,7 +94,7 @@ def run() -> None:
                                   description="Sorts Python import statements",
                                   check_arg=['--check-only', '--diff'])
     linter_config.external_linter('prettier', ['node_modules/.bin/prettier', '--check'],
-                                  ['js', 'ts', 'yaml', 'yml'],
+                                  ['js', 'json', 'ts', 'yaml', 'yml'],
                                   fix_arg=['--write'],
                                   description="Formats JavaScript and YAML",
                                   # https://github.com/prettier/prettier/pull/8703

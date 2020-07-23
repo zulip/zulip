@@ -1,6 +1,5 @@
 module.exports = {
     bracketSpacing: false,
-    tabWidth: 4,
     trailingComma: "all",
     overrides: [
         {
@@ -10,9 +9,10 @@ module.exports = {
             },
         },
         {
-            files: ["**.yml", "**.yaml"],
+            files: ["tsconfig.json"],
             options: {
-                tabWidth: 2,
+                parser: "json5",
+                quoteProps: "preserve",
             },
         },
     ],
