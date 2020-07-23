@@ -1,12 +1,11 @@
 zrequire("hash_util");
-set_global("katex", zrequire("katex", "katex/dist/katex.min.js"));
 set_global("marked", zrequire("marked", "third/marked/lib/marked"));
 
 const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+const fenced_code = zrequire("fenced_code", "shared/js/fenced_code");
 const markdown_config = zrequire("markdown_config");
 
 zrequire("emoji");
-zrequire("fenced_code");
 zrequire("markdown");
 zrequire("message_store");
 zrequire("people");

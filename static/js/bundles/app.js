@@ -77,7 +77,6 @@ import "../narrow.js";
 import "../reload_state.js";
 import "../reload.js";
 import "../compose_fade.js";
-import "../fenced_code.js";
 import "../markdown.js";
 import "../local_message.js";
 import "../echo.js";

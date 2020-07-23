@@ -23,7 +23,6 @@ zrequire("compose_ui");
 zrequire("compose");
 zrequire("compose_state");
 zrequire("compose_actions");
-zrequire("fenced_code");
 zrequire("stream_data");
 
 set_global("document", "document-stub");
