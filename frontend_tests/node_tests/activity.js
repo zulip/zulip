@@ -585,9 +585,9 @@ run_test("realm_presence_disabled", () => {
 
 run_test("clear_search", () => {
     $(".user-list-filter").val("somevalue");
-    activity.user_filter.clear_search();
+    $("#clear_search_people_button").trigger("click");
     assert.equal($(".user-list-filter").val(), "");
-    activity.user_filter.clear_search();
+    $("#clear_search_people_button").trigger("click");
     assert($("#user_search_section").hasClass("notdisplayed"));
 });
 

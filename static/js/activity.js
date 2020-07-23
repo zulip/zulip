@@ -292,7 +292,7 @@ exports.set_cursor_and_filter = function () {
         highlight_class: "highlighted_user",
     });
 
-    exports.user_filter = user_search({
+    exports.user_filter = new UserSearch({
         update_list: update_users_for_search,
         reset_items: exports.reset_users,
         on_focus: exports.user_cursor.reset,

@@ -1,83 +1,93 @@
-const user_search = function (opts) {
+class UserSearch {
     // This is mostly view code to manage the user search widget
     // above the buddy list.  We rely on other code to manage the
     // details of populating the list when we change.
 
-    const self = {};
+    $widget = $("#user_search_section").expectOne();
+    $input = $(".user-list-filter").expectOne();
 
-    const $widget = $("#user_search_section").expectOne();
-    const $input = $(".user-list-filter").expectOne();
+    constructor(opts) {
+        this._reset_items = opts.reset_items;
+        this._update_list = opts.update_list;
+        this._on_focus = opts.on_focus;
 
-    self.input_field = function () {
-        return $input;
-    };
+        $("#clear_search_people_button").on("click", () => this.clear_search());
+        $("#userlist-header").on("click", () => this.toggle_filter_displayed());
 
-    self.text = function () {
-        return $input.val().trim();
-    };
+        this.$input.on("input", opts.update_list);
+        this.$input.on("focus", (e) => this.on_focus(e));
+    }
 
-    self.searching = function () {
-        return $input.is(":focus");
-    };
+    input_field() {
+        return this.$input;
+    }
 
-    self.empty = function () {
-        return self.text() === "";
-    };
+    text() {
+        return this.$input.val().trim();
+    }
 
-    self.clear_search = function () {
-        if (self.empty()) {
-            self.close_widget();
+    searching() {
+        return this.$input.is(":focus");
+    }
+
+    empty() {
+        return this.text() === "";
+    }
+
+    clear_search() {
+        if (this.empty()) {
+            this.close_widget();
             return;
         }
 
-        $input.val("");
-        $input.trigger("blur");
-        opts.reset_items();
-    };
+        this.$input.val("");
+        this.$input.trigger("blur");
+        this._reset_items();
+    }
 
-    self.escape_search = function () {
-        if (self.empty()) {
-            self.close_widget();
+    escape_search() {
+        if (this.empty()) {
+            this.close_widget();
             return;
         }
 
-        $input.val("");
-        opts.update_list();
-    };
+        this.$input.val("");
+        this._update_list();
+    }
 
-    self.hide_widget = function () {
-        $widget.addClass("notdisplayed");
+    hide_widget() {
+        this.$widget.addClass("notdisplayed");
         resize.resize_sidebars();
-    };
+    }
 
-    self.show_widget = function () {
+    show_widget() {
         // Hide all the popovers but not userlist sidebar
         // when the user wants to search.
         popovers.hide_all_except_sidebars();
-        $widget.removeClass("notdisplayed");
+        this.$widget.removeClass("notdisplayed");
         resize.resize_sidebars();
-    };
+    }
 
-    self.widget_shown = function () {
-        return $widget.hasClass("notdisplayed");
-    };
+    widget_shown() {
+        return this.$widget.hasClass("notdisplayed");
+    }
 
-    self.clear_and_hide_search = function () {
-        if (!self.empty()) {
-            $input.val("");
-            opts.update_list();
+    clear_and_hide_search() {
+        if (!this.empty()) {
+            this.$input.val("");
+            this._update_list();
         }
-        self.close_widget();
-    };
+        this.close_widget();
+    }
 
-    self.close_widget = function () {
-        $input.trigger("blur");
-        self.hide_widget();
-        opts.reset_items();
-    };
+    close_widget() {
+        this.$input.trigger("blur");
+        this.hide_widget();
+        this._reset_items();
+    }
 
-    self.expand_column = function () {
-        const column = $input.closest(".app-main [class^='column-']");
+    expand_column() {
+        const column = this.$input.closest(".app-main [class^='column-']");
         if (!column.hasClass("expanded")) {
             popovers.hide_all();
             if (column.hasClass("column-left")) {
@@ -86,35 +96,27 @@ const user_search = function (opts) {
                 popovers.show_userlist_sidebar();
             }
         }
-    };
-
-    self.initiate_search = function () {
-        self.expand_column();
-        self.show_widget();
-        $input.trigger("focus");
-    };
-
-    self.toggle_filter_displayed = function () {
-        if (self.widget_shown()) {
-            self.initiate_search();
-        } else {
-            self.clear_and_hide_search();
-        }
-    };
-
-    function on_focus(e) {
-        opts.on_focus();
-        e.stopPropagation();
     }
 
-    $("#clear_search_people_button").on("click", self.clear_search);
-    $("#userlist-header").on("click", self.toggle_filter_displayed);
+    initiate_search() {
+        this.expand_column();
+        this.show_widget();
+        this.$input.trigger("focus");
+    }
 
-    $input.on("input", opts.update_list);
-    $input.on("focus", on_focus);
+    toggle_filter_displayed() {
+        if (this.widget_shown()) {
+            this.initiate_search();
+        } else {
+            this.clear_and_hide_search();
+        }
+    }
 
-    return self;
-};
+    on_focus(e) {
+        this._on_focus();
+        e.stopPropagation();
+    }
+}
 
-module.exports = user_search;
-window.user_search = user_search;
+module.exports = UserSearch;
+window.UserSearch = UserSearch;
