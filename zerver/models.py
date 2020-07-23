@@ -1125,10 +1125,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     )
 
     ROLE_ID_TO_NAME_MAP = {
-        ROLE_REALM_OWNER: "Realm owner",
-        ROLE_REALM_ADMINISTRATOR: "Realm adminstrator",
-        ROLE_MEMBER: "Member",
-        ROLE_GUEST: "Guest"
+        ROLE_REALM_OWNER: _("Organization owner"),
+        ROLE_REALM_ADMINISTRATOR: _("Organization adminstrator"),
+        ROLE_MEMBER: _("Member"),
+        ROLE_GUEST: _("Guest"),
     }
 
     def get_role_name(self) -> str:
