@@ -3,7 +3,7 @@ const LazySet = require("./lazy_set").LazySet;
 const settings_config = require("./settings_config");
 const util = require("./util");
 
-const BinaryDict = function (pred) {
+class BinaryDict {
     /*
       A dictionary that keeps track of which objects had the predicate
       return true or false for efficient lookups and iteration.
@@ -19,66 +19,67 @@ const BinaryDict = function (pred) {
             - autocomplete stream in compose
     */
 
-    const self = {};
-    self.trues = new FoldDict();
-    self.falses = new FoldDict();
+    trues = new FoldDict();
+    falses = new FoldDict();
 
-    self.true_values = function () {
-        return self.trues.values();
-    };
+    constructor(pred) {
+        this.pred = pred;
+    }
 
-    self.num_true_items = function () {
-        return self.trues.size;
-    };
+    true_values() {
+        return this.trues.values();
+    }
 
-    self.false_values = function () {
-        return self.falses.values();
-    };
+    num_true_items() {
+        return this.trues.size;
+    }
 
-    self.values = function* () {
-        for (const value of self.trues.values()) {
+    false_values() {
+        return this.falses.values();
+    }
+
+    *values() {
+        for (const value of this.trues.values()) {
             yield value;
         }
-        for (const value of self.falses.values()) {
+        for (const value of this.falses.values()) {
             yield value;
         }
-    };
+    }
 
-    self.get = function (k) {
-        const res = self.trues.get(k);
+    get(k) {
+        const res = this.trues.get(k);
 
         if (res !== undefined) {
             return res;
         }
 
-        return self.falses.get(k);
-    };
+        return this.falses.get(k);
+    }
 
-    self.set = function (k, v) {
-        if (pred(v)) {
-            self.set_true(k, v);
+    set(k, v) {
+        if (this.pred(v)) {
+            this.set_true(k, v);
         } else {
-            self.set_false(k, v);
+            this.set_false(k, v);
         }
-    };
+    }
 
-    self.set_true = function (k, v) {
-        self.falses.delete(k);
-        self.trues.set(k, v);
-    };
+    set_true(k, v) {
+        this.falses.delete(k);
+        this.trues.set(k, v);
+    }
 
-    self.set_false = function (k, v) {
-        self.trues.delete(k);
-        self.falses.set(k, v);
-    };
+    set_false(k, v) {
+        this.trues.delete(k);
+        this.falses.set(k, v);
+    }
 
-    self.delete = function (k) {
-        self.trues.delete(k);
-        self.falses.delete(k);
-    };
-
-    return self;
-};
+    delete(k) {
+        this.trues.delete(k);
+        this.falses.delete(k);
+    }
+}
 
 // The stream_info variable maps stream names to stream properties objects
 // Call clear_subscriptions() to initialize it.
