@@ -15,7 +15,7 @@ page can be easily identified in it's respective JavaScript file -->
         {% endif %}
         <p class="devlogin_subheader">(Or visit the <a href="/login/">normal login page</a>.)</p>
         <form name="direct_login_form" id="direct_login_form" method="post" class="login-form">
-            <input type="hidden" name="next" value="{{ next }}" />
+            <input type="hidden" class="next-url" name="next" value="{{ next }}" />
             <div class="control-group">
                 <div class="controls">
                     <div class="group">
