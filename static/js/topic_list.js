@@ -104,20 +104,23 @@ exports.spinner_li = () => {
     };
 };
 
-exports.widget = function (parent_elem, my_stream_id) {
-    const self = {};
+class TopicListWidget {
+    prior_dom = undefined;
 
-    self.prior_dom = undefined;
+    constructor(parent_elem, my_stream_id) {
+        this.parent_elem = parent_elem;
+        this.my_stream_id = my_stream_id;
+    }
 
-    self.build_list = function (spinner) {
-        const list_info = topic_list_data.get_list_info(my_stream_id, zoomed);
+    build_list(spinner) {
+        const list_info = topic_list_data.get_list_info(this.my_stream_id, zoomed);
 
         const num_possible_topics = list_info.num_possible_topics;
         const more_topics_unreads = list_info.more_topics_unreads;
 
         const is_showing_all_possible_topics =
             list_info.items.length === num_possible_topics &&
-            stream_topic_history.is_complete_for_stream_id(my_stream_id);
+            stream_topic_history.is_complete_for_stream_id(this.my_stream_id);
 
         const attrs = [["class", "topic-list"]];
 
@@ -135,40 +138,37 @@ exports.widget = function (parent_elem, my_stream_id) {
         });
 
         return dom;
-    };
+    }
 
-    self.get_parent = function () {
-        return parent_elem;
-    };
+    get_parent() {
+        return this.parent_elem;
+    }
 
-    self.get_stream_id = function () {
-        return my_stream_id;
-    };
+    get_stream_id() {
+        return this.my_stream_id;
+    }
 
-    self.remove = function () {
-        parent_elem.find(".topic-list").remove();
-        self.prior_dom = undefined;
-    };
+    remove() {
+        this.parent_elem.find(".topic-list").remove();
+        this.prior_dom = undefined;
+    }
 
-    self.build = function (spinner) {
-        const new_dom = self.build_list(spinner);
+    build(spinner) {
+        const new_dom = this.build_list(spinner);
 
-        function replace_content(html) {
-            self.remove();
-            parent_elem.append(html);
-        }
+        const replace_content = (html) => {
+            this.remove();
+            this.parent_elem.append(html);
+        };
 
-        function find() {
-            return parent_elem.find(".topic-list");
-        }
+        const find = () => this.parent_elem.find(".topic-list");
 
-        vdom.update(replace_content, find, new_dom, self.prior_dom);
+        vdom.update(replace_content, find, new_dom, this.prior_dom);
 
-        self.prior_dom = new_dom;
-    };
-
-    return self;
-};
+        this.prior_dom = new_dom;
+    }
+}
+exports.TopicListWidget = TopicListWidget;
 
 exports.active_stream_id = function () {
     const stream_ids = Array.from(active_widgets.keys());
@@ -200,7 +200,7 @@ exports.rebuild = function (stream_li, stream_id) {
     }
 
     exports.clear();
-    const widget = exports.widget(stream_li, stream_id);
+    const widget = new TopicListWidget(stream_li, stream_id);
     widget.build();
 
     active_widgets.set(stream_id, widget);
