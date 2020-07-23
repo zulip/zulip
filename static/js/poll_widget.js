@@ -1,51 +1,60 @@
 const render_widgets_poll_widget = require("../templates/widgets/poll_widget.hbs");
 const render_widgets_poll_widget_results = require("../templates/widgets/poll_widget_results.hbs");
 
-exports.poll_data_holder = function (is_my_poll, question, options) {
+class PollData {
     // This object just holds data for a poll, although it
     // works closely with the widget's concept of how data
     // should be represented for rendering, plus how the
     // server sends us data.
-    const self = {};
 
-    const me = people.my_current_user_id();
-    let poll_question = question;
-    const key_to_option = new Map();
-    let my_idx = 1;
+    me = people.my_current_user_id();
+    key_to_option = new Map();
+    my_idx = 1;
 
-    let input_mode = is_my_poll; // for now
+    constructor(is_my_poll, question, options) {
+        this.is_my_poll = is_my_poll;
+        this.poll_question = question;
+        this.input_mode = is_my_poll; // for now
 
-    self.set_question = function (new_question) {
-        input_mode = false;
-        poll_question = new_question;
-    };
+        if (question) {
+            this.set_question(question);
+        }
 
-    self.get_question = function () {
-        return poll_question;
-    };
-
-    self.set_input_mode = function () {
-        input_mode = true;
-    };
-
-    self.clear_input_mode = function () {
-        input_mode = false;
-    };
-
-    self.get_input_mode = function () {
-        return input_mode;
-    };
-
-    if (question) {
-        self.set_question(question);
+        for (const [i, option] of options.entries()) {
+            this.handle.new_option.inbound("canned", {
+                idx: i,
+                option,
+            });
+        }
     }
 
-    self.get_widget_data = function () {
+    set_question(new_question) {
+        this.input_mode = false;
+        this.poll_question = new_question;
+    }
+
+    get_question() {
+        return this.poll_question;
+    }
+
+    set_input_mode() {
+        this.input_mode = true;
+    }
+
+    clear_input_mode() {
+        this.input_mode = false;
+    }
+
+    get_input_mode() {
+        return this.input_mode;
+    }
+
+    get_widget_data() {
         const options = [];
 
-        for (const [key, obj] of key_to_option) {
+        for (const [key, obj] of this.key_to_option) {
             const voters = Array.from(obj.votes.keys());
-            const current_user_vote = voters.includes(me);
+            const current_user_vote = voters.includes(this.me);
 
             options.push({
                 option: obj.option,
@@ -58,67 +67,67 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
 
         const widget_data = {
             options,
-            question: poll_question,
+            question: this.poll_question,
         };
 
         return widget_data;
-    };
+    }
 
-    self.handle = {
+    handle = {
         new_option: {
-            outbound(option) {
+            outbound: (option) => {
                 const event = {
                     type: "new_option",
-                    idx: my_idx,
+                    idx: this.my_idx,
                     option,
                 };
 
-                my_idx += 1;
+                this.my_idx += 1;
 
                 return event;
             },
 
-            inbound(sender_id, data) {
+            inbound: (sender_id, data) => {
                 const idx = data.idx;
                 const key = sender_id + "," + idx;
                 const option = data.option;
                 const votes = new Map();
 
-                key_to_option.set(key, {
+                this.key_to_option.set(key, {
                     option,
                     user_id: sender_id,
                     votes,
                 });
 
-                if (my_idx <= idx) {
-                    my_idx = idx + 1;
+                if (this.my_idx <= idx) {
+                    this.my_idx = idx + 1;
                 }
             },
         },
 
         question: {
-            outbound(question) {
+            outbound: (question) => {
                 const event = {
                     type: "question",
                     question,
                 };
-                if (is_my_poll) {
+                if (this.is_my_poll) {
                     return event;
                 }
                 return;
             },
 
-            inbound(sender_id, data) {
-                self.set_question(data.question);
+            inbound: (sender_id, data) => {
+                this.set_question(data.question);
             },
         },
 
         vote: {
-            outbound(key) {
+            outbound: (key) => {
                 let vote = 1;
 
                 // toggle
-                if (key_to_option.get(key).votes.get(me)) {
+                if (this.key_to_option.get(key).votes.get(this.me)) {
                     vote = -1;
                 }
 
@@ -131,10 +140,10 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 return event;
             },
 
-            inbound(sender_id, data) {
+            inbound: (sender_id, data) => {
                 const key = data.key;
                 const vote = data.vote;
-                const option = key_to_option.get(key);
+                const option = this.key_to_option.get(key);
 
                 if (option === undefined) {
                     blueslip.warn("unknown key for poll: " + key);
@@ -152,28 +161,19 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
         },
     };
 
-    self.handle_event = function (sender_id, data) {
+    handle_event(sender_id, data) {
         const type = data.type;
-        if (self.handle[type]) {
-            self.handle[type].inbound(sender_id, data);
+        if (this.handle[type]) {
+            this.handle[type].inbound(sender_id, data);
         }
-    };
-
-    // function to check whether option already exists
-    self.is_option_present = function (data, latest_option) {
-        return data.some((el) => el.option === latest_option);
-    };
-
-    // function to add all options added along with the /poll command
-    for (const [i, option] of options.entries()) {
-        self.handle.new_option.inbound("canned", {
-            idx: i,
-            option,
-        });
     }
 
-    return self;
-};
+    // function to check whether option already exists
+    is_option_present(data, latest_option) {
+        return data.some((el) => el.option === latest_option);
+    }
+}
+exports.PollData = PollData;
 
 exports.activate = function (opts) {
     const elem = opts.elem;
@@ -187,7 +187,7 @@ exports.activate = function (opts) {
     }
 
     const is_my_poll = people.is_my_user_id(opts.message.sender_id);
-    const poll_data = exports.poll_data_holder(is_my_poll, question, options);
+    const poll_data = new PollData(is_my_poll, question, options);
 
     function update_edit_controls() {
         const has_question = elem.find("input.poll-question").val().trim() !== "";
