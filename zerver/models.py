@@ -66,7 +66,7 @@ from zerver.lib.cache import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.timestamp import datetime_to_precise_timestamp, datetime_to_timestamp
 from zerver.lib.types import (
     DisplayRecipientT,
     ExtendedFieldElement,
@@ -1898,6 +1898,44 @@ class ArchivedSubMessage(AbstractSubMessage):
     message: ArchivedMessage = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)
 
 post_save.connect(flush_submessage, sender=SubMessage)
+
+class Draft(models.Model):
+    """ Server-side storage model for storing drafts so that drafts can be synced across
+    multiple clients/devices.
+    """
+    user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    recipient: Optional[Recipient] = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
+    topic: str = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH, db_index=True)
+    content: str = models.TextField()  # Length should not exceed MAX_MESSAGE_LENGTH
+    last_edit_time: datetime.datetime = models.DateTimeField(db_index=True)
+
+    def __str__(self) -> str:
+        return f"<{self.__class__.__name__}: {self.user_profile.email} / {self.id} / {self.last_edit_time}>"
+
+    def to_dict(self) -> Dict[str, Any]:  # nocoverage  # Will be added in a later commit.
+        if self.recipient is None:
+            _type = ""
+            to = []
+        elif self.recipient.type == Recipient.STREAM:
+            _type = "stream"
+            to = [self.recipient.type_id]
+        else:
+            _type = "private"
+            if self.recipient.type == Recipient.PERSONAL:
+                to = [self.recipient.type_id]
+            else:
+                to = []
+                for r in get_display_recipient(self.recipient):
+                    assert(not isinstance(r, str))  # It will only be a string for streams
+                    if not r["id"] == self.user_profile_id:
+                        to.append(r["id"])
+        return {
+            "type": _type,
+            "to": to,
+            "topic": self.topic,
+            "content": self.content,
+            "timestamp": datetime_to_precise_timestamp(self.last_edit_time),
+        }
 
 class AbstractReaction(models.Model):
     """For emoji reactions to messages (and potentially future reaction types).

@@ -124,6 +124,7 @@ ALL_ZULIP_TABLES = {
     'zerver_defaultstream',
     'zerver_defaultstreamgroup',
     'zerver_defaultstreamgroup_streams',
+    'zerver_draft',
     'zerver_emailchangestatus',
     'zerver_huddle',
     'zerver_message',
@@ -236,6 +237,9 @@ NON_EXPORTED_TABLES = {
 
     # This is low priority, since users can easily just reset themselves to away.
     'zerver_userstatus',
+
+    # Drafts don't need to be exported as they are supposed to be more ephemeral.
+    'zerver_draft',
 
     # For any tables listed below here, it's a bug that they are not present in the export.
 }
