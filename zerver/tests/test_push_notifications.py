@@ -318,17 +318,24 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assert_json_error(result, 'Token does not exist')
 
             with mock.patch('zerver.lib.remote_server.requests.request',
-                            side_effect=requests.ConnectionError):
+                            side_effect=requests.ConnectionError), self.assertLogs(level="ERROR") as error_log:
                 result = self.client_post(endpoint, {'token': token},
                                           subdomain="zulip")
                 self.assert_json_error(
                     result, "ConnectionError while trying to connect to push notification bouncer", 502)
+                self.assertEqual(error_log.output, [
+                    f'ERROR:django.request:Bad Gateway: {endpoint}',
+                ])
 
             with mock.patch('zerver.lib.remote_server.requests.request',
-                            return_value=Result(status=500)):
+                            return_value=Result(status=500)), self.assertLogs(level="WARNING") as warn_log:
                 result = self.client_post(endpoint, {'token': token},
                                           subdomain="zulip")
                 self.assert_json_error(result, "Received 500 from push notification bouncer", 502)
+                self.assertEqual(warn_log.output, [
+                    'WARNING:root:Received 500 from push notification bouncer',
+                    f'ERROR:django.request:Bad Gateway: {endpoint}',
+                ])
 
         # Add tokens
         for endpoint, token, kind in endpoints:
