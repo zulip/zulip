@@ -45,7 +45,7 @@ exports.update_custom_emoji_ui = function () {
         $(".admin-emoji-form").show();
     }
 
-    exports.populate_emoji(page_params.realm_emoji);
+    exports.populate_emoji();
 };
 
 exports.reset = function () {
@@ -61,10 +61,12 @@ function sort_author_full_name(a, b) {
     return -1;
 }
 
-exports.populate_emoji = function (emoji_data) {
+exports.populate_emoji = function () {
     if (!meta.loaded) {
         return;
     }
+
+    const emoji_data = page_params.realm_emoji;
 
     for (const emoji of Object.values(emoji_data)) {
         // Add people.js data for the user here.
@@ -141,7 +143,7 @@ exports.set_up = function () {
     loading.make_indicator($("#admin_page_emoji_loading_indicator"));
 
     // Populate emoji table
-    exports.populate_emoji(page_params.realm_emoji);
+    exports.populate_emoji();
 
     $(".admin_emoji_table").on("click", ".delete", function (e) {
         e.preventDefault();
