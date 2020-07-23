@@ -1326,18 +1326,9 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(state_data['realm_plan_type'], Realm.SELF_HOSTED)
         self.assertEqual(state_data['zulip_plan_is_not_limited'], True)
 
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('plan_type')),
-            ('value', equals(Realm.LIMITED)),
-            ('extra_data', check_dict_only([
-                ('upload_quota', check_int),
-            ])),
-        ])
         events = self.verify_action(
             lambda: do_change_plan_type(realm, Realm.LIMITED))
-        schema_checker('events[0]', events[0])
+        check_realm_update('events[0]', events[0], 'plan_type')
 
         state_data = fetch_initial_state_data(self.user_profile, None, "", False, False)
         self.assertEqual(state_data['realm_plan_type'], Realm.LIMITED)
