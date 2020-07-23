@@ -230,34 +230,37 @@ function build_stream_sidebar_li(sub) {
     return list_item;
 }
 
-function build_stream_sidebar_row(sub) {
-    const self = {};
-    const list_item = build_stream_sidebar_li(sub);
+class StreamSidebarRow {
+    constructor(sub) {
+        this.sub = sub;
+        this.list_item = build_stream_sidebar_li(sub);
+        this.update_unread_count();
+    }
 
-    self.update_whether_active = function () {
-        if (stream_data.is_active(sub) || sub.pin_to_top === true) {
-            list_item.removeClass("inactive_stream");
+    update_whether_active() {
+        if (stream_data.is_active(this.sub) || this.sub.pin_to_top === true) {
+            this.list_item.removeClass("inactive_stream");
         } else {
-            list_item.addClass("inactive_stream");
+            this.list_item.addClass("inactive_stream");
         }
-    };
+    }
 
-    self.get_li = function () {
-        return list_item;
-    };
+    get_li() {
+        return this.list_item;
+    }
 
-    self.remove = function () {
-        list_item.remove();
-    };
+    remove() {
+        this.list_item.remove();
+    }
 
-    self.update_unread_count = function () {
-        const count = unread.num_unread_for_stream(sub.stream_id);
-        exports.update_count_in_dom(list_item, count);
-    };
+    update_unread_count() {
+        const count = unread.num_unread_for_stream(this.sub.stream_id);
+        exports.update_count_in_dom(this.list_item, count);
+    }
+}
 
-    self.update_unread_count();
-
-    exports.stream_sidebar.set_row(sub.stream_id, self);
+function build_stream_sidebar_row(sub) {
+    exports.stream_sidebar.set_row(sub.stream_id, new StreamSidebarRow(sub));
 }
 
 exports.create_sidebar_row = function (sub) {
