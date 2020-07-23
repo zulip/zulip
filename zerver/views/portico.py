@@ -59,14 +59,14 @@ def team_view(request: HttpRequest) -> HttpResponse:
         with open(settings.CONTRIBUTOR_DATA_FILE_PATH) as f:
             data = ujson.load(f)
     except FileNotFoundError:
-        data = {'contrib': {}, 'date': "Never ran."}
+        data = {'contributors': {}, 'date': "Never ran."}
 
     return TemplateResponse(
         request,
         'zerver/team.html',
         context={
             'page_params': {
-                'contrib': data['contrib'],
+                'contributors': data['contributors'],
             },
             'date': data['date'],
         },
