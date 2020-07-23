@@ -48,13 +48,15 @@ class Contributor(TypedDict):
 
 logger = logging.getLogger('zulip.fetch_contributors_json')
 
-def fetch_contributors(repo_link: str, max_retries: int) -> List[Contributor]:
+def fetch_contributors(repo_name: str, max_retries: int) -> List[Contributor]:
     contributors: List[Contributor] = []
     retry_attempts = 0
     page_index = 1
 
+    api_link = f"https://api.github.com/repos/zulip/{repo_name}/contributors"
+
     while True:
-        response: requests.Response = requests.get(f"{repo_link}?page={page_index}", verify=os.environ.get('CUSTOM_CA_CERTIFICATES'))
+        response: requests.Response = requests.get(f"{api_link}?page={page_index}", verify=os.environ.get('CUSTOM_CA_CERTIFICATES'))
         if response.status_code == 200:
             data = response.json()
             if len(data) == 0:
@@ -77,41 +79,26 @@ def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
         f.write("\n")
 
 def update_contributor_data_file() -> None:
-    """
-    Get contributors data from Github and insert them into a temporary
-    dictionary. Retry fetching each repository if responded with non HTTP 200
-    status.
-    """
-
-    # This dictionary should hold all repositories that should be included in
+    # This list should hold all repositories that should be included in
     # the total count, including those that should *not* have tabs on the team
     # page (e.g. if they are deprecated).
-    repositories = {
-        'server': 'https://api.github.com/repos/zulip/zulip/contributors',
-        'desktop': 'https://api.github.com/repos/zulip/zulip-desktop/contributors',
-        'mobile': 'https://api.github.com/repos/zulip/zulip-mobile/contributors',
-        'python-zulip-api': 'https://api.github.com/repos/zulip/python-zulip-api/contributors',
-        'zulip-js': 'https://api.github.com/repos/zulip/zulip-js/contributors',
-        'zulipbot': 'https://api.github.com/repos/zulip/zulipbot/contributors',
-        'terminal': 'https://api.github.com/repos/zulip/zulip-terminal/contributors',
-        'zulip-ios-legacy': 'https://api.github.com/repos/zulip/zulip-ios-legacy/contributors',
-        'zulip-android': 'https://api.github.com/repos/zulip/zulip-android/contributors',
-    }
+    repo_names = ['zulip', 'zulip-desktop', 'zulip-mobile', 'python-zulip-api', 'zulip-js', 'zulipbot',
+                  'zulip-terminal', 'zulip-ios-legacy', 'zulip-android']
 
     data: ContributorsJSON = dict(date=str(date.today()), contrib=[])
     contribs_list: Dict[str, Dict[str, Union[str, int]]] = {}
 
-    for name, link in repositories.items():
-        contributors = fetch_contributors(link, args.max_retries)
+    for repo_name in repo_names:
+        contributors = fetch_contributors(repo_name, args.max_retries)
         for contributor in contributors:
             username = contributor['login']
             if username in contribs_list:
-                contribs_list[username][name] = contributor['contributions']
+                contribs_list[username][repo_name] = contributor['contributions']
             else:
                 contribs_list[username] = {
                     'avatar': contributor['avatar_url'],
                     'name': username,
-                    name: contributor['contributions']
+                    repo_name: contributor['contributions']
                 }
 
     # remove duplicate contributions count

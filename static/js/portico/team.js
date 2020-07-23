@@ -1,26 +1,25 @@
 const contributors_list = page_params.contrib;
 
-// `repos` are repositories to be shown as tabs, whereas `hidden_repos` are
-// repositories that should count towards the total but not have tabs.
-const repos = [
-    "server",
-    "desktop",
-    "mobile",
-    "python-zulip-api",
-    "zulip-js",
-    "zulipbot",
-    "terminal",
-];
-const hidden_repos = ["zulip-android", "zulip-ios-legacy"];
+const repo_name_to_tab_name = {
+    zulip: "server",
+    "zulip-desktop": "desktop",
+    "zulip-mobile": "mobile",
+    "python-zulip-api": "python-zulip-api",
+    "zulip-js": "zulip-js",
+    zulipbot: "zulipbot",
+    "zulip-terminal": "terminal",
+    "zulip-ios-legacy": "",
+    "zulip-android": "",
+};
 
 // Remember the loaded repositories so that HTML is not redundantly edited
 // if a user leaves and then revisits the same tab.
 const loaded_repos = [];
 
-function contrib_total_commits(contrib) {
+function contrib_total_commits(contributor) {
     let commits = 0;
-    repos.concat(hidden_repos).forEach((repo) => {
-        commits += contrib[repo] || 0;
+    Object.keys(repo_name_to_tab_name).forEach((repo_name) => {
+        commits += contributor[repo_name] || 0;
     });
     return commits;
 }
@@ -35,9 +34,9 @@ export default function render_tabs() {
     // contributors who have atleast the same number of contributions than the last contributor
     // returned by the API for zulip/zulip repo.
     const least_server_commits = _.chain(contributors_list)
-        .filter("server")
-        .sortBy("server")
-        .value()[0].server;
+        .filter("zulip")
+        .sortBy("zulip")
+        .value()[0].zulip;
 
     const total_tab_html = _.chain(contributors_list)
         .map((c) => ({
@@ -54,29 +53,33 @@ export default function render_tabs() {
 
     $("#tab-total").html(total_tab_html);
 
-    for (const repo of repos) {
+    for (const repo_name of Object.keys(repo_name_to_tab_name)) {
+        const tab_name = repo_name_to_tab_name[repo_name];
+        if (!tab_name) {
+            continue;
+        }
         // Set as the loading template for now, and load when clicked.
-        $("#tab-" + repo).html($("#loading-template").html());
+        $("#tab-" + tab_name).html($("#loading-template").html());
 
-        $("#" + repo).on("click", () => {
-            if (!loaded_repos.includes(repo)) {
+        $("#" + tab_name).on("click", () => {
+            if (!loaded_repos.includes(repo_name)) {
                 const html = _.chain(contributors_list)
-                    .filter(repo)
-                    .sortBy(repo)
+                    .filter(repo_name)
+                    .sortBy(repo_name)
                     .reverse()
                     .map((c) =>
                         template({
                             name: c.name,
                             avatar: c.avatar,
-                            commits: c[repo],
+                            commits: c[repo_name],
                         }),
                     )
                     .value()
                     .join("");
 
-                $("#tab-" + repo).html(html);
+                $("#tab-" + tab_name).html(html);
 
-                loaded_repos.push(repo);
+                loaded_repos.push(repo_name);
             }
         });
     }
