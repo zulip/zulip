@@ -28,12 +28,14 @@ run_test("process_message_for_senders", () => {
 
     // New stream
     const message1 = {
+        type: "stream",
         stream_id: stream1,
         id: (next_id += 1),
         topic: topic1,
         sender_id: sender1,
     };
     const message2 = {
+        type: "stream",
         stream_id: stream2,
         id: (next_id += 1),
         topic: topic1,
@@ -62,6 +64,7 @@ run_test("process_message_for_senders", () => {
 
     // New topic
     const message3 = {
+        type: "stream",
         stream_id: stream1,
         id: (next_id += 1),
         topic: topic2,
@@ -77,6 +80,7 @@ run_test("process_message_for_senders", () => {
 
     // New sender
     const message4 = {
+        type: "stream",
         stream_id: stream1,
         id: (next_id += 1),
         topic: topic1,
@@ -92,6 +96,7 @@ run_test("process_message_for_senders", () => {
 
     // More recent message
     const message5 = {
+        type: "stream",
         stream_id: stream1,
         id: (next_id += 1),
         topic: topic1,
@@ -107,18 +112,21 @@ run_test("process_message_for_senders", () => {
 
     // Same stream, but different topics
     const message6 = {
+        type: "stream",
         stream_id: stream3,
         id: (next_id += 1),
         topic: topic1,
         sender_id: sender1,
     };
     const message7 = {
+        type: "stream",
         stream_id: stream3,
         id: (next_id += 1),
         topic: topic2,
         sender_id: sender2,
     };
     const message8 = {
+        type: "stream",
         stream_id: stream3,
         id: (next_id += 1),
         topic: topic3,
@@ -144,6 +152,7 @@ run_test("process_message_for_senders", () => {
 
     // new message in topic2
     const message9 = {
+        type: "stream",
         stream_id: stream3,
         id: (next_id += 1),
         topic: topic2,

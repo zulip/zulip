@@ -242,8 +242,10 @@ exports.update_topics_of_message_ids = function (message_ids) {
     const topics_to_rerender = new Map();
     for (const msg_id of message_ids) {
         const message = message_store.get(msg_id);
-        const topic_key = get_topic_key(message.stream_id, message.topic);
-        topics_to_rerender.set(topic_key, [message.stream_id, message.topic]);
+        if (message.type === "stream") {
+            const topic_key = get_topic_key(message.stream_id, message.topic);
+            topics_to_rerender.set(topic_key, [message.stream_id, message.topic]);
+        }
     }
 
     for (const [stream_id, topic] of topics_to_rerender.values()) {
