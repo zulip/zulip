@@ -4,6 +4,7 @@
 # 
 # Translators:
 # Greg Price <gnprice@gmail.com>, 2017
+# Guy Kouakou <kkfguy@gmail.com>, 2020
 # Kouhei Sutou <kou@cozmixng.org>, 2016-2018
 # Ray Kraesig <rkraesig@zulip.com>, 2020
 # Tetsuya Morimoto <tetsuya.morimoto@gmail.com>, 2017
@@ -15,8 +16,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-16 07:24+0000\n"
-"PO-Revision-Date: 2020-07-16 07:24+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"PO-Revision-Date: 2020-07-21 23:35+0000\n"
+"Last-Translator: Yuuki Kawagoe <ripsigma@gmail.com>\n"
 "Language-Team: Japanese (http://www.transifex.com/zulip/zulip/language/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -50,12 +51,12 @@ msgstr "グループのプライベートメッセージ"
 
 #: analytics/views.py:250
 msgid "Unknown chart name: {}"
-msgstr ""
+msgstr "不明なチャート名: {}"
 
 #: analytics/views.py:259
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
-msgstr ""
+msgstr "開始時刻が終了時刻より遅いです。 開始：{start}、終了：{end}"
 
 #: analytics/views.py:274 analytics/views.py:296
 msgid "No analytics data available. Please contact your server administrator."
@@ -82,7 +83,7 @@ msgstr "少なくとも {} 人分の請求書を作成する必要がありま�
 msgid ""
 "Invoices with more than {} licenses can't be processed from this page. To "
 "complete the upgrade, please contact {}."
-msgstr ""
+msgstr "{}ライセンスを超える請求書は、このページから処理できません。 アップグレードを完了するには、{}にお問い合わせください。"
 
 #: corporate/views.py:89
 msgid "No payment method on file"
@@ -96,7 +97,7 @@ msgstr ""
 #: corporate/views.py:99
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
-msgstr ""
+msgstr "不明なお支払い方法です。{email} にお問い合わせください。"
 
 #: templates/analytics/stats.html:10
 msgid "Analytics are fully available 24 hours after organization creation."
@@ -256,7 +257,7 @@ msgstr "ほとんどの制御"
 
 #: templates/corporate/upgrade.html:228
 msgid "Open source"
-msgstr ""
+msgstr "ソースを開く"
 
 #: templates/corporate/upgrade.html:229
 msgid "Academic research"
@@ -307,7 +308,7 @@ msgstr "メール"
 msgid ""
 "I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
 "rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr ""
+msgstr "<a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener noreferrer\">サービス利用規約</a>に同意します。"
 
 #: templates/zerver/accounts_accept_terms.html:54
 msgid "Enter"
@@ -401,7 +402,7 @@ msgstr "トピック"
 
 #: templates/zerver/app/compose.html:78
 msgid "To"
-msgstr "に"
+msgstr "宛先"
 
 #: templates/zerver/app/compose.html:82
 msgid "You and"
@@ -597,7 +598,7 @@ msgid ""
 "            Learn more about starring messages <a href=\"/help/star-a-message\">\n"
 "            here</a>.\n"
 "            "
-msgstr ""
+msgstr "\n            メッセージのスターに関する詳しい情報は <a href=\"/help/star-a-message\">\n            こちら</a>です。\n            "
 
 #: templates/zerver/app/home.html:123
 msgid "You have no unread messages!"
@@ -613,7 +614,7 @@ msgid ""
 "            Learn more about mentions <a href=\"/help/mention-a-user-or-group\">\n"
 "            here</a>.\n"
 "            "
-msgstr ""
+msgstr "\n            メンションに関する詳しい情報は<a href=\"/help/mention-a-user-or-group\">\n            こちら</a>です。\n            "
 
 #: templates/zerver/app/home.html:136
 msgid "No search results"
@@ -637,7 +638,7 @@ msgstr ""
 msgid ""
 "<strong class=\"message\">Unable to connect to\n"
 "            Zulip.</strong>  Updates may be delayed."
-msgstr ""
+msgstr "<strong class=\"message\">Zulipに接続できません。</strong>更新が遅れている可能性があります。"
 
 #: templates/zerver/app/index.html:69
 msgid "Retrying soon..."
@@ -882,15 +883,15 @@ msgstr "トピックのミュートを切り替え"
 #: templates/zerver/app/keyboard_shortcuts.html:239
 #: templates/zerver/app/left_sidebar.html:65
 msgid "Recent topics"
-msgstr ""
+msgstr "最近のトピック"
 
 #: templates/zerver/app/keyboard_shortcuts.html:243
 msgid "View recent topics"
-msgstr ""
+msgstr "最近のトピックを表示"
 
 #: templates/zerver/app/keyboard_shortcuts.html:247
 msgid "Hide recent topics"
-msgstr ""
+msgstr "最近のトピックを非表示"
 
 #: templates/zerver/app/keyboard_shortcuts.html:264
 msgid "Edit selected draft"
@@ -942,7 +943,7 @@ msgstr "新しいストリームを作成"
 
 #: templates/zerver/app/keyboard_shortcuts.html:328
 msgid "Detailed keyboard shortcuts documentation"
-msgstr "キーボードショートカットの詳細ドキュメント"
+msgstr "キーボードショートカットの詳細なドキュメント"
 
 #: templates/zerver/app/left_sidebar.html:5
 #: templates/zerver/app/left_sidebar.html:11
@@ -976,7 +977,7 @@ msgstr "すべてのストリーム"
 
 #: templates/zerver/app/left_sidebar.html:87
 msgid "Add streams"
-msgstr ""
+msgstr "ストリームを追加"
 
 #: templates/zerver/app/lightbox_overlay.html:10
 msgid "Pan &amp; Zoom"
@@ -1123,7 +1124,7 @@ msgid ""
 "Zulip needs your permission to\n"
 "            <a class=\"request-desktop-notifications alert-link\">enable desktop notifications.</a>\n"
 "            "
-msgstr ""
+msgstr "Zulipが<a class=\"request-desktop-notifications alert-link\">デスクトップ通知</a>の許可を求めています。"
 
 #: templates/zerver/app/navbar_alerts.html:10
 msgid ""
@@ -1196,11 +1197,11 @@ msgstr ""
 
 #: templates/zerver/app/recent_topics.html:5
 msgid "Recent topics (beta)"
-msgstr ""
+msgstr "最近のトピック (ベータ版)"
 
 #: templates/zerver/app/recent_topics.html:10
 msgid "Pro tip: You can use 't' to view recent topics."
-msgstr ""
+msgstr "豆知識: tキーを押すと、最近のトピックを表示することができます。"
 
 #: templates/zerver/app/right_sidebar.html:5
 #: templates/zerver/app/right_sidebar.html:6
@@ -1261,7 +1262,7 @@ msgstr ""
 
 #: templates/zerver/app/search_operators.html:49
 msgid "Narrow to messages with alert words."
-msgstr "アラートワードを含むメッセージだけ表示"
+msgstr "キーワードを含むメッセージだけ表示"
 
 #: templates/zerver/app/search_operators.html:53
 msgid "Narrow to messages that mention you."
@@ -1305,11 +1306,11 @@ msgstr "トピック <span class=\"operator_value\">topic</span> のメッセー
 msgid ""
 "You can use any combination of these search\n"
 "        operators in a single query. For example:"
-msgstr ""
+msgstr "一度の検索で複数の検索オペレーターを使用することができます。使用例:"
 
 #: templates/zerver/app/search_operators.html:92
 msgid "streamname"
-msgstr ""
+msgstr "ストリーム名"
 
 #: templates/zerver/app/search_operators.html:93
 msgid "user@example.com"
@@ -1317,7 +1318,7 @@ msgstr ""
 
 #: templates/zerver/app/search_operators.html:94
 msgid "keyword"
-msgstr ""
+msgstr "キーワード"
 
 #: templates/zerver/app/search_operators.html:106
 #, python-format
@@ -1330,11 +1331,11 @@ msgid ""
 "            containing the keyword\n"
 "            <span class=\"operator_value\">%(placeholder_keyword)s</span>.\n"
 "            "
-msgstr ""
+msgstr "\n            これで、\n            <span class=\"operator_value\">%(placeholder_email)s</span>\n            内で\n            <span class=\"operator_value\">%(placeholder_stream)s</span>\n            が送信した\n            <span class=\"operator_value\">%(placeholder_keyword)s</span>を含むメッセージを検索することができます。\n            "
 
 #: templates/zerver/app/search_operators.html:116
 msgid "Detailed search operators documentation"
-msgstr ""
+msgstr "検索オペレーターの詳細なドキュメント"
 
 #: templates/zerver/app/settings_overlay.html:16
 msgid "Your account"
@@ -1354,7 +1355,7 @@ msgstr "ボット"
 
 #: templates/zerver/app/settings_overlay.html:34
 msgid "Alert words"
-msgstr "アラートワード"
+msgstr "キーワード通知"
 
 #: templates/zerver/app/settings_overlay.html:39
 msgid "Uploaded files"
@@ -1418,7 +1419,7 @@ msgstr "デフォルトのストリーム"
 
 #: templates/zerver/app/settings_overlay.html:132
 msgid "Linkifiers"
-msgstr ""
+msgstr "リンク化"
 
 #: templates/zerver/app/settings_overlay.html:140
 msgid "Custom profile fields"
@@ -1742,7 +1743,7 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.source.html:23
 #: templates/zerver/emails/followup_day1.txt:14
 msgid "Username:"
-msgstr ""
+msgstr "ユーザー名:"
 
 #: templates/zerver/emails/compiled/followup_day1.html:29
 #: templates/zerver/emails/followup_day1.source.html:25
@@ -2493,12 +2494,12 @@ msgstr ""
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
 msgid "Group PMs with %(huddle_display_name)s"
-msgstr ""
+msgstr "%(huddle_display_name)sとのグループPM"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
 msgid "PMs with %(sender_str)s"
-msgstr ""
+msgstr "%(sender_str)sとのプライベートメッセージ"
 
 #: templates/zerver/emails/missed_message.subject.txt:7
 msgid "New missed messages"
@@ -4219,7 +4220,7 @@ msgstr ""
 
 #: zerver/lib/users.py:68 zerver/views/users.py:347 zerver/views/users.py:495
 msgid "Bad name or username"
-msgstr "許容できない名前またはユーザー名"
+msgstr "利用できない名前またはユーザー名"
 
 #: zerver/lib/users.py:82
 msgid "Invalid integration '{}'."
@@ -4670,7 +4671,7 @@ msgstr "変更するものがありません"
 
 #: zerver/views/message_edit.py:195
 msgid "You don't have permission to move this message"
-msgstr ""
+msgstr "このメッセージを移動する権限がありません"
 
 #: zerver/views/message_edit.py:197
 msgid "Cannot change message content while changing stream"
@@ -4682,7 +4683,7 @@ msgstr ""
 
 #: zerver/views/message_edit.py:237 zerver/views/message_edit.py:240
 msgid "You don't have permission to delete this message"
-msgstr ""
+msgstr "このメッセージを削除する権限がありません"
 
 #: zerver/views/message_edit.py:248
 msgid "The time limit for deleting this message has passed"
@@ -5053,7 +5054,7 @@ msgstr ""
 #: zerver/views/users.py:151
 msgid ""
 "The owner permission cannot be removed from the only organization owner."
-msgstr ""
+msgstr "組織にオーナーが一人しか存在しない場合、オーナー権限を削除することはできません"
 
 #: zerver/views/users.py:237
 msgid "Failed to change owner, no such user"

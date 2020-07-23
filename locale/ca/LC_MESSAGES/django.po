@@ -11,8 +11,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-16 07:24+0000\n"
-"PO-Revision-Date: 2020-07-16 07:24+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"PO-Revision-Date: 2020-07-16 10:04+0000\n"
+"Last-Translator: Gonçal Garcés\n"
 "Language-Team: Catalan (http://www.transifex.com/zulip/zulip/language/ca/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -236,7 +236,7 @@ msgstr ""
 
 #: templates/corporate/upgrade.html:89
 msgid "Automatic"
-msgstr ""
+msgstr "Automàtic"
 
 #: templates/corporate/upgrade.html:90
 msgid "Most convenient"
@@ -244,7 +244,7 @@ msgstr ""
 
 #: templates/corporate/upgrade.html:96
 msgid "Manual"
-msgstr ""
+msgstr "Manual"
 
 #: templates/corporate/upgrade.html:97
 msgid "Most control"
@@ -252,11 +252,11 @@ msgstr ""
 
 #: templates/corporate/upgrade.html:228
 msgid "Open source"
-msgstr ""
+msgstr "Codi lliure"
 
 #: templates/corporate/upgrade.html:229
 msgid "Academic research"
-msgstr ""
+msgstr "Recerca acadèmica"
 
 #: templates/corporate/upgrade.html:230
 msgid "Education"
@@ -361,7 +361,7 @@ msgstr "Desat com a esborrany"
 
 #: templates/zerver/app/compose.html:20
 msgid "New message"
-msgstr ""
+msgstr "Missatge nou"
 
 #: templates/zerver/app/compose.html:27 templates/zerver/app/compose.html:28
 msgid "New topic"
@@ -674,7 +674,7 @@ msgstr "Membres"
 
 #: templates/zerver/app/invite_user.html:42
 msgid "Organization administrators"
-msgstr ""
+msgstr "Administradors d'organització"
 
 #: templates/zerver/app/invite_user.html:44
 msgid "Guests"
@@ -742,7 +742,7 @@ msgstr "Següent missatge privat no llegit"
 #: templates/zerver/app/keyboard_shortcuts.html:48
 #: templates/zerver/app/keyboard_shortcuts.html:65
 msgid "Initiate a search"
-msgstr ""
+msgstr "Inicia una cerca"
 
 #: templates/zerver/app/keyboard_shortcuts.html:52
 #: templates/zerver/app/keyboard_shortcuts.html:293
@@ -765,7 +765,7 @@ msgstr "Cerca persones"
 
 #: templates/zerver/app/keyboard_shortcuts.html:77
 msgid "Previous message"
-msgstr ""
+msgstr "Missatge anterior"
 
 #: templates/zerver/app/keyboard_shortcuts.html:85
 msgid "Scroll up"
@@ -857,11 +857,11 @@ msgstr ""
 
 #: templates/zerver/app/keyboard_shortcuts.html:208
 msgid "Edit selected message"
-msgstr ""
+msgstr "Edita el missatge seleccionat"
 
 #: templates/zerver/app/keyboard_shortcuts.html:212
 msgid "Star selected message"
-msgstr ""
+msgstr "Destaca el missatge seleccionat"
 
 #: templates/zerver/app/keyboard_shortcuts.html:217
 msgid "React to selected message with"
@@ -882,11 +882,11 @@ msgstr "Temes recents"
 
 #: templates/zerver/app/keyboard_shortcuts.html:243
 msgid "View recent topics"
-msgstr ""
+msgstr "Mostra els temes recents"
 
 #: templates/zerver/app/keyboard_shortcuts.html:247
 msgid "Hide recent topics"
-msgstr ""
+msgstr "Amaga els temes recents"
 
 #: templates/zerver/app/keyboard_shortcuts.html:264
 msgid "Edit selected draft"
@@ -906,7 +906,7 @@ msgstr "Mostra/amaga el menú d'eines"
 
 #: templates/zerver/app/keyboard_shortcuts.html:285
 msgid "Open message menu"
-msgstr ""
+msgstr "Obre el menú de missatges"
 
 #: templates/zerver/app/keyboard_shortcuts.html:289
 msgid "Open reactions menu"
@@ -1043,7 +1043,7 @@ msgstr ""
 
 #: templates/zerver/app/navbar.html:45
 msgid "User list"
-msgstr ""
+msgstr "Llista d'usuaris"
 
 #: templates/zerver/app/navbar.html:53
 msgid "Menu"
@@ -1440,7 +1440,7 @@ msgstr ""
 #: templates/zerver/landing_nav.html:13 templates/zerver/portico-header.html:5
 #: templates/zerver/portico-header.html:8
 msgid "Zulip"
-msgstr ""
+msgstr "Zulip"
 
 #: templates/zerver/config_error.html:14
 msgid ""
@@ -1453,7 +1453,7 @@ msgstr ""
 
 #: templates/zerver/confirm_continue_registration.html:10
 msgid "Zulip account not found."
-msgstr ""
+msgstr "No s'ha trobat el compte de Zulip"
 
 #: templates/zerver/confirm_continue_registration.html:14
 #, python-format
@@ -1575,7 +1575,7 @@ msgstr "Usuaris normals"
 #: templates/zerver/emails/find_team.txt:1
 #, python-format
 msgid "Hi %(user_name)s,"
-msgstr ""
+msgstr "Hola, %(user_name)s,"
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:11
 #: templates/zerver/emails/confirm_new_email.source.html:10
@@ -1726,19 +1726,19 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.source.html:19
 #: templates/zerver/emails/followup_day1.txt:10
 msgid "Your account details:"
-msgstr ""
+msgstr "Detalls del vostre compte:"
 
 #: templates/zerver/emails/compiled/followup_day1.html:22
 #: templates/zerver/emails/followup_day1.source.html:20
 #: templates/zerver/emails/followup_day1.txt:11
 msgid "Organization URL:"
-msgstr ""
+msgstr "URL de l'organització:"
 
 #: templates/zerver/emails/compiled/followup_day1.html:26
 #: templates/zerver/emails/followup_day1.source.html:23
 #: templates/zerver/emails/followup_day1.txt:14
 msgid "Username:"
-msgstr ""
+msgstr "Nom d'usuari:"
 
 #: templates/zerver/emails/compiled/followup_day1.html:29
 #: templates/zerver/emails/followup_day1.source.html:25
@@ -1784,7 +1784,7 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.source.html:42
 #: templates/zerver/emails/followup_day1.txt:31
 msgid "Cheers,"
-msgstr ""
+msgstr "Salutacions,"
 
 #: templates/zerver/emails/compiled/followup_day1.html:49
 #: templates/zerver/emails/compiled/notify_change_in_email.html:15
@@ -1793,7 +1793,7 @@ msgstr ""
 #: templates/zerver/emails/notify_change_in_email.source.html:14
 #: templates/zerver/emails/notify_change_in_email.txt:7
 msgid "Team Zulip"
-msgstr ""
+msgstr "L'equip de Zulip"
 
 #: templates/zerver/emails/compiled/followup_day1.html:53
 msgid ""
