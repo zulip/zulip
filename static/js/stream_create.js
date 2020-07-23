@@ -16,31 +16,28 @@ exports.get_name = function () {
     return created_stream;
 };
 
-const stream_subscription_error = (function () {
-    const self = {};
-
-    self.report_no_subs_to_stream = function () {
+class StreamSubscriptionError {
+    report_no_subs_to_stream() {
         $("#stream_subscription_error").text(
             i18n.t("You cannot create a stream with no subscribers!"),
         );
         $("#stream_subscription_error").show();
-    };
+    }
 
-    self.cant_create_stream_without_susbscribing = function () {
+    cant_create_stream_without_susbscribing() {
         $("#stream_subscription_error").text(
             i18n.t(
                 "You must be an organization administrator to create a stream without subscribing.",
             ),
         );
         $("#stream_subscription_error").show();
-    };
+    }
 
-    self.clear_errors = function () {
+    clear_errors() {
         $("#stream_subscription_error").hide();
-    };
-
-    return self;
-})();
+    }
+}
+const stream_subscription_error = new StreamSubscriptionError();
 
 const stream_name_error = (function () {
     const self = {};
