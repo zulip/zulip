@@ -86,16 +86,16 @@ def update_contributor_data_file() -> None:
                   'zulip-terminal', 'zulip-ios-legacy', 'zulip-android']
 
     data: ContributorsJSON = dict(date=str(date.today()), contrib=[])
-    contribs_list: Dict[str, Dict[str, Union[str, int]]] = {}
+    contributor_username_to_data: Dict[str, Dict[str, Union[str, int]]] = {}
 
     for repo_name in repo_names:
         contributors = fetch_contributors(repo_name, args.max_retries)
         for contributor in contributors:
             username = contributor['login']
-            if username in contribs_list:
-                contribs_list[username][repo_name] = contributor['contributions']
+            if username in contributor_username_to_data:
+                contributor_username_to_data[username][repo_name] = contributor['contributions']
             else:
-                contribs_list[username] = {
+                contributor_username_to_data[username] = {
                     'avatar': contributor['avatar_url'],
                     'name': username,
                     repo_name: contributor['contributions']
@@ -106,14 +106,14 @@ def update_contributor_data_file() -> None:
     with open(duplicate_commits_file) as f:
         duplicate_commits = json.load(f)
         for committer in duplicate_commits:
-            if committer in contribs_list and contribs_list[committer].get('server'):
-                total_commits = contribs_list[committer]['server']
+            if committer in contributor_username_to_data and contributor_username_to_data[committer].get('server'):
+                total_commits = contributor_username_to_data[committer]['server']
                 assert isinstance(total_commits, int)
                 duplicate_commits_count = duplicate_commits[committer]
                 original_commits = total_commits - duplicate_commits_count
-                contribs_list[committer]['server'] = original_commits
+                contributor_username_to_data[committer]['server'] = original_commits
 
-    data['contrib'] = list(contribs_list.values())
+    data['contrib'] = list(contributor_username_to_data.values())
     write_to_disk(data, settings.CONTRIBUTOR_DATA_FILE_PATH)
 
 if __name__ == "__main__":
