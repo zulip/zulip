@@ -2,15 +2,16 @@ zrequire("hash_util");
 set_global("katex", zrequire("katex", "katex/dist/katex.min.js"));
 set_global("marked", zrequire("marked", "third/marked/lib/marked"));
 
-zrequire("fenced_code");
-zrequire("stream_data");
-zrequire("people");
-zrequire("user_groups");
 const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
-zrequire("emoji");
-zrequire("message_store");
 const markdown_config = zrequire("markdown_config");
+
+zrequire("emoji");
+zrequire("fenced_code");
 zrequire("markdown");
+zrequire("message_store");
+zrequire("people");
+zrequire("stream_data");
+zrequire("user_groups");
 
 set_global("location", {
     origin: "http://zulip.zulipdev.com",
