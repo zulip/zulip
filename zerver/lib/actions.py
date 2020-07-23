@@ -2541,6 +2541,7 @@ def validate_user_access_to_subscribers(user_profile: Optional[UserProfile],
     validate_user_access_to_subscribers_helper(
         user_profile,
         {"realm_id": stream.realm_id,
+         "is_web_public": stream.is_web_public,
          "invite_only": stream.invite_only},
         # We use a lambda here so that we only compute whether the
         # user is subscribed if we have to
@@ -2575,6 +2576,11 @@ def validate_user_access_to_subscribers_helper(
 
     if user_profile.realm_id != stream_dict["realm_id"]:
         raise ValidationError("Requesting user not in given realm")
+
+    # Even guest users can access subscribers to web-public streams,
+    # since they can freely become subscribers to these streams.
+    if stream_dict["is_web_public"]:
+        return
 
     # Guest users can access subscribed public stream's subscribers
     if user_profile.is_guest:

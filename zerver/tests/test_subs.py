@@ -3967,6 +3967,14 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assertTrue(stream_dict["stream_id"] not in sub_ids)
                 self.assertTrue(stream_dict["stream_id"] not in unsub_ids)
 
+                # The Rome stream has is_web_public=True, with default
+                # subscribers not setup by this test, so we do the
+                # following check only for the streams we created.
+                if stream_dict["name"] in web_public_streams:
+                    self.assertEqual(
+                        len(stream_dict["subscribers"]),
+                        len(users_to_subscribe))
+
         test_guest_user_case()
 
     def test_gather_subscribed_streams_for_guest_user(self) -> None:
@@ -4134,6 +4142,26 @@ class GetSubscribersTest(ZulipTestCase):
             self.assertIsInstance(subscriber, str)
             subscribers.append(subscriber)
         self.assertEqual(set(subscribers), set(expected_subscribers))
+
+    def test_json_get_subscribers_for_guest_user(self) -> None:
+        """
+        Guest users should have access to subscribers of web-public streams, even
+        if they aren't subscribed or have never subscribed to that stream.
+        """
+        guest_user = self.example_user("polonius")
+        _, _, never_subscribed = gather_subscriptions_helper(guest_user, True)
+        # A guest user can only see never subscribed streams that are web-public.
+        # For Polonius, the only web public stream that he is not subscribed at
+        # this point is Rome.
+        self.assertTrue(len(never_subscribed) == 1)
+
+        web_public_stream_id = never_subscribed[0]['stream_id']
+        result = self.client_get(f"/json/streams/{web_public_stream_id}/members")
+        self.assert_json_success(result)
+        result_dict = result.json()
+        self.assertIn('subscribers', result_dict)
+        self.assertIsInstance(result_dict['subscribers'], list)
+        self.assertTrue(len(result_dict['subscribers']) > 0)
 
     def test_nonsubscriber_private_stream(self) -> None:
         """
