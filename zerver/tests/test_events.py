@@ -1199,12 +1199,6 @@ class NormalActionsTest(BaseAction):
             schema_checker('events[0]', events[0])
 
     def test_change_realm_notifications_stream(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('notifications_stream_id')),
-            ('value', check_int),
-        ])
 
         stream = get_stream("Rome", self.user_profile.realm)
 
@@ -1213,16 +1207,9 @@ class NormalActionsTest(BaseAction):
                 lambda: do_set_realm_notifications_stream(self.user_profile.realm,
                                                           notifications_stream,
                                                           notifications_stream_id))
-            schema_checker('events[0]', events[0])
+            check_realm_update('events[0]', events[0], 'notifications_stream_id')
 
     def test_change_realm_signup_notifications_stream(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('signup_notifications_stream_id')),
-            ('value', check_int),
-        ])
-
         stream = get_stream("Rome", self.user_profile.realm)
 
         for signup_notifications_stream, signup_notifications_stream_id in ((stream, stream.id), (None, -1)):
@@ -1230,7 +1217,7 @@ class NormalActionsTest(BaseAction):
                 lambda: do_set_realm_signup_notifications_stream(self.user_profile.realm,
                                                                  signup_notifications_stream,
                                                                  signup_notifications_stream_id))
-            schema_checker('events[0]', events[0])
+            check_realm_update('events[0]', events[0], 'signup_notifications_stream_id')
 
     def test_change_is_admin(self) -> None:
         reset_emails_in_zulip_realm()
@@ -2048,7 +2035,7 @@ class RealmPropertyActionTest(BaseAction):
                     RealmAuditLog.OLD_VALUE: {'property': name, 'value': old_value},
                     RealmAuditLog.NEW_VALUE: {'property': name, 'value': val}
                 })).count(), 1)
-            check_realm_update('events[0]', events[0])
+            check_realm_update('events[0]', events[0], name)
 
     def test_change_realm_property(self) -> None:
         for prop in Realm.property_types:

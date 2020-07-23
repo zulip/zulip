@@ -364,7 +364,7 @@ _check_realm_update = check_events_dict(
 )
 
 
-def check_realm_update(var_name: str, event: Dict[str, Any],) -> None:
+def check_realm_update(var_name: str, event: Dict[str, Any], prop: str,) -> None:
     """
     Realm updates have these two fields:
 
@@ -377,10 +377,16 @@ def check_realm_update(var_name: str, event: Dict[str, Any],) -> None:
     for the property.
     """
     _check_realm_update(var_name, event)
-    prop = event["property"]
+
+    assert prop == event["property"]
     value = event["value"]
 
+    if prop in ["notifications_stream_id", "signup_notifications_stream_id"]:
+        assert isinstance(value, int)
+        return
+
     property_type = Realm.property_types[prop]
+
     if property_type in (bool, int, str):
         assert isinstance(value, property_type)
     elif property_type == (int, type(None)):
