@@ -697,15 +697,6 @@ run_test("python_to_js_filter", () => {
     assert.deepEqual(actual_value, expected_value);
 });
 
-run_test("katex_throws_unexpected_exceptions", () => {
-    katex.renderToString = function () {
-        throw new Error("some-exception");
-    };
-    blueslip.expect("error", "Error: some-exception");
-    const message = {raw_content: "$$a$$"};
-    markdown.apply_markdown(message);
-});
-
 run_test("translate_emoticons_to_names", () => {
     // Simple test
     const test_text = "Testing :)";
