@@ -394,6 +394,8 @@ exports.initialize_everything = function () {
 
     const alert_words_params = pop_fields("alert_words");
 
+    const emoji_params = pop_fields("realm_emoji");
+
     const bot_params = pop_fields("realm_bots");
 
     const people_params = pop_fields("realm_users", "realm_non_active_users", "cross_realm_bots");
@@ -446,7 +448,7 @@ exports.initialize_everything = function () {
     bot_data.initialize(bot_params); // Must happen after people.initialize()
     message_fetch.initialize();
     message_scroll.initialize();
-    emoji.initialize();
+    emoji.initialize(emoji_params);
     markdown.initialize(page_params.realm_filters, markdown_config.get_helpers());
     compose.initialize();
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
