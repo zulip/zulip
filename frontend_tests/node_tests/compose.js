@@ -48,6 +48,7 @@ const render_compose_private_stream_alert = mock_template("compose_private_strea
 
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_fade = zrequire("compose_fade");
+const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
 const echo = zrequire("echo");
@@ -614,6 +615,7 @@ test_ui("finish", ({override}) => {
         $("#compose-textarea").val("foobarfoobar");
         compose_state.set_message_type("private");
         override(compose_state, "private_message_recipient", () => "bob@example.com");
+        override(compose_pm_pill, "get_user_ids", () => []);
 
         let compose_finished_event_checked = false;
         $(document).on("compose_finished.zulip", () => {

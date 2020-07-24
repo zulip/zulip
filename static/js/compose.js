@@ -716,17 +716,18 @@ function validate_stream_message() {
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
 function validate_private_message() {
-    if (page_params.realm_private_message_policy === 2) {
-        // Frontend check for for PRIVATE_MESSAGE_POLICY_DISABLED
-        const user_ids = compose_pm_pill.get_user_ids();
-        if (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot) {
-            // Unless we're composing to a bot
-            compose_error.show(
-                $t_html({defaultMessage: "Private messages are disabled in this organization."}),
-                $("#private_message_recipient"),
-            );
-            return false;
-        }
+    const user_ids = compose_pm_pill.get_user_ids();
+
+    if (
+        page_params.realm_private_message_policy === 2 && // Frontend check for for PRIVATE_MESSAGE_POLICY_DISABLED
+        (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot)
+    ) {
+        // Unless we're composing to a bot
+        compose_error.show(
+            $t_html({defaultMessage: "Private messages are disabled in this organization."}),
+            $("#private_message_recipient"),
+        );
+        return false;
     }
 
     if (compose_state.private_message_recipient().length === 0) {
@@ -758,6 +759,22 @@ function validate_private_message() {
         );
         return false;
     }
+
+    for (const user_id of user_ids) {
+        if (!people.is_person_active(user_id)) {
+            context = {full_name: people.get_by_user_id(user_id).full_name};
+            compose_error.show(
+                $t_html(
+                    {defaultMessage: "You cannot send messages to deactivated users."},
+                    context,
+                ),
+                $("#private_message_recipient"),
+            );
+
+            return false;
+        }
+    }
+
     return true;
 }
 

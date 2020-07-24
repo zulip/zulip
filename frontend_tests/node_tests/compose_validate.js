@@ -213,6 +213,13 @@ test_ui("validate", ({override}) => {
     compose_state.private_message_recipient("bob@example.com");
     assert.ok(compose.validate());
 
+    people.deactivate(bob);
+    assert.ok(!compose.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        $t_html({defaultMessage: "You cannot send messages to deactivated users."}),
+    );
+
     page_params.realm_is_zephyr_mirror_realm = true;
     assert.ok(compose.validate());
     page_params.realm_is_zephyr_mirror_realm = false;
