@@ -84,7 +84,9 @@ class GitterImporter(ZulipTestCase):
         gitter_file = os.path.join(os.path.dirname(__file__), 'fixtures/gitter_data.json')
         do_convert_data(gitter_file, output_dir)
 
-        do_import_realm(output_dir, 'test-gitter-import')
+        with self.assertLogs(level="INFO"):
+            do_import_realm(output_dir, 'test-gitter-import')
+
         realm = get_realm('test-gitter-import')
 
         # test rendered_messages

@@ -1,4 +1,3 @@
-import logging
 import os
 import shutil
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
@@ -67,10 +66,6 @@ def mocked_requests_get(*args: List[str], **kwargs: List[str]) -> MockResponse:
         return MockResponse(None, 404)
 
 class SlackImporter(ZulipTestCase):
-    logger = logging.getLogger()
-    # set logger to a higher level to suppress 'logger.INFO' outputs
-    logger.setLevel(logging.WARNING)
-
     @mock.patch('requests.get', side_effect=mocked_requests_get)
     def test_get_slack_api_data(self, mock_get: mock.Mock) -> None:
         token = 'xoxp-valid-token'
@@ -299,9 +294,11 @@ class SlackImporter(ZulipTestCase):
         slack_data_dir = './random_path'
         timestamp = int(timezone_now().timestamp())
         mock_get_data_file.return_value = user_data
-        zerver_userprofile, avatar_list, slack_user_id_to_zulip_user_id, customprofilefield, \
-            customprofilefield_value = users_to_zerver_userprofile(slack_data_dir, user_data, 1,
-                                                                   timestamp, 'test_domain')
+
+        with self.assertLogs(level="INFO"):
+            zerver_userprofile, avatar_list, slack_user_id_to_zulip_user_id, customprofilefield, \
+                customprofilefield_value = users_to_zerver_userprofile(slack_data_dir, user_data, 1,
+                                                                       timestamp, 'test_domain')
 
         # Test custom profile fields
         self.assertEqual(customprofilefield[0]['field_type'], 1)
@@ -437,10 +434,11 @@ class SlackImporter(ZulipTestCase):
         zerver_userprofile = [{'id': 1}, {'id': 8}, {'id': 7}, {'id': 5}]
         realm_id = 3
 
-        realm, added_channels, added_mpims, dm_members, slack_recipient_name_to_zulip_recipient_id = \
-            channels_to_zerver_stream(self.fixture_file_name("", "slack_fixtures"), realm_id,
-                                      {"zerver_userpresence": []}, slack_user_id_to_zulip_user_id,
-                                      zerver_userprofile)
+        with self.assertLogs(level="INFO"):
+            realm, added_channels, added_mpims, dm_members, slack_recipient_name_to_zulip_recipient_id = \
+                channels_to_zerver_stream(self.fixture_file_name("", "slack_fixtures"), realm_id,
+                                          {"zerver_userpresence": []}, slack_user_id_to_zulip_user_id,
+                                          zerver_userprofile)
 
         test_added_channels = {'sharedchannel': ("C061A0HJG", 3), 'general': ("C061A0YJG", 1),
                                'general1': ("C061A0YJP", 2), 'random': ("C061A0WJG", 0)}
@@ -713,10 +711,13 @@ class SlackImporter(ZulipTestCase):
                                      attachments, uploads, reactions[:1]],
                                     [zerver_message[1:2], zerver_usermessage[2:5],
                                      attachments, uploads, reactions[1:1]]]
-        # Hacky: We should include a zerver_userprofile, not the empty []
-        test_reactions, uploads, zerver_attachment = convert_slack_workspace_messages(
-            './random_path', user_list, 2, {}, {}, added_channels, {}, {},
-            realm, [], [], 'domain', output_dir=output_dir, chunk_size=1)
+
+        with self.assertLogs(level="INFO"):
+            # Hacky: We should include a zerver_userprofile, not the empty []
+            test_reactions, uploads, zerver_attachment = convert_slack_workspace_messages(
+                './random_path', user_list, 2, {}, {}, added_channels, {}, {},
+                realm, [], [], 'domain', output_dir=output_dir, chunk_size=1)
+
         messages_file_1 = os.path.join(output_dir, 'messages-000001.json')
         self.assertTrue(os.path.exists(messages_file_1))
         messages_file_2 = os.path.join(output_dir, 'messages-000002.json')
@@ -768,7 +769,9 @@ class SlackImporter(ZulipTestCase):
         mock_get_slack_api_data.side_effect = [user_data_fixture['members'], {}, team_info_fixture["team"]]
         mock_requests_get.return_value.raw = get_test_image_file("img.png")
 
-        do_convert_data(test_slack_zip_file, output_dir, token)
+        with self.assertLogs(level="INFO"):
+            do_convert_data(test_slack_zip_file, output_dir, token)
+
         self.assertTrue(os.path.exists(output_dir))
         self.assertTrue(os.path.exists(output_dir + '/realm.json'))
 
@@ -786,7 +789,7 @@ class SlackImporter(ZulipTestCase):
             self.assertTrue(os.path.exists(os.path.join(realm_icons_path, records[1]["path"])))
 
         # test import of the converted slack data into an existing database
-        with self.settings(BILLING_ENABLED=False):
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(output_dir, test_realm_subdomain)
         realm = get_realm(test_realm_subdomain)
         self.assertTrue(realm.name, test_realm_subdomain)
