@@ -1,5 +1,39 @@
 "use strict";
 
+function display_pill(sub) {
+    return "#" + sub.name + ": " + sub.subscriber_count + " users";
+}
+
+exports.create_item_from_stream_name = function (stream_name, current_items) {
+    stream_name = stream_name.trim();
+    if (!stream_name.startsWith("#")) {
+        return;
+    }
+    stream_name = stream_name.substring(1);
+
+    const sub = stream_data.get_sub(stream_name);
+    if (!sub) {
+        return;
+    }
+
+    const existing_ids = current_items.map((item) => item.stream_id);
+    if (existing_ids.includes(sub.stream_id)) {
+        return;
+    }
+
+    const item = {
+        display_value: display_pill(sub),
+        stream_id: sub.stream_id,
+        stream_name: sub.name,
+    };
+
+    return item;
+};
+
+exports.get_stream_name_from_item = function (item) {
+    return item.stream_name;
+};
+
 function get_user_ids_from_subs(items) {
     let user_ids = [];
     const stream_ids = items.map((item) => item.stream_id);
@@ -24,8 +58,9 @@ exports.get_user_ids = function (pill_widget) {
 
 exports.append_stream = function (stream, pill_widget) {
     pill_widget.appendValidatedData({
-        display_value: "#" + stream.name + ": " + stream.subscriber_count + " users",
+        display_value: display_pill(stream),
         stream_id: stream.stream_id,
+        stream_name: stream.name,
     });
     pill_widget.clear_text();
 };
