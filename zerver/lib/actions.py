@@ -5520,7 +5520,7 @@ def get_web_public_streams(realm: Realm) -> List[Dict[str, Any]]:
     return streams
 
 def do_get_streams(
-        user_profile: UserProfile, include_public: bool=True,
+        user_profile: UserProfile, include_public: bool=True, include_web_public: bool=False,
         include_subscribed: bool=True, include_all_active: bool=False,
         include_default: bool=False, include_owner_subscribed: bool=False,
 ) -> List[Dict[str, Any]]:
@@ -5552,6 +5552,9 @@ def do_get_streams(
         if include_public:
             invite_only_check = Q(invite_only=False)
             add_filter_option(invite_only_check)
+        if include_web_public:
+            web_public_check = Q(is_web_public=True)
+            add_filter_option(web_public_check)
         if include_owner_subscribed and user_profile.is_bot:
             bot_owner = user_profile.bot_owner
             assert bot_owner is not None

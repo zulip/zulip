@@ -1508,6 +1508,28 @@ class DefaultStreamTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertFalse(stream_name in self.get_default_stream_names(user_profile.realm))
 
+    def test_guest_user_access_to_streams(self) -> None:
+        user_profile = self.example_user("polonius")
+        self.login_user(user_profile)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_GUEST)
+
+        # Get all the streams that Polonius has access to (subscribed + web public streams)
+        result = self.client_get('/json/streams?include_web_public=true')
+        streams = result.json()['streams']
+        subscribed, unsubscribed, never_subscribed = gather_subscriptions_helper(user_profile)
+        self.assertEqual(len(streams),
+                         len(subscribed) + len(unsubscribed) + len(never_subscribed))
+        expected_streams = subscribed + unsubscribed + never_subscribed
+        stream_names = [
+            stream['name']
+            for stream in streams
+        ]
+        expected_stream_names = [
+            stream['name']
+            for stream in expected_streams
+        ]
+        self.assertEqual(set(stream_names), set(expected_stream_names))
+
 class DefaultStreamGroupTest(ZulipTestCase):
     def test_create_update_and_remove_default_stream_group(self) -> None:
         realm = get_realm("zulip")

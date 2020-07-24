@@ -4315,6 +4315,14 @@ paths:
             type: boolean
             default: true
           example: false
+        - name: include_web_public
+          in: query
+          description: |
+            Include all web public streams.
+          schema:
+            type: boolean
+            default: false
+          example: true
         - name: include_subscribed
           in: query
           description: |

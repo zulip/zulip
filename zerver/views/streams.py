@@ -597,6 +597,7 @@ def get_subscribers_backend(request: HttpRequest, user_profile: UserProfile,
 def get_streams_backend(
         request: HttpRequest, user_profile: UserProfile,
         include_public: bool=REQ(validator=check_bool, default=True),
+        include_web_public: bool=REQ(validator=check_bool, default=False),
         include_subscribed: bool=REQ(validator=check_bool, default=True),
         include_all_active: bool=REQ(validator=check_bool, default=False),
         include_default: bool=REQ(validator=check_bool, default=False),
@@ -604,6 +605,7 @@ def get_streams_backend(
 ) -> HttpResponse:
 
     streams = do_get_streams(user_profile, include_public=include_public,
+                             include_web_public=include_web_public,
                              include_subscribed=include_subscribed,
                              include_all_active=include_all_active,
                              include_default=include_default,
