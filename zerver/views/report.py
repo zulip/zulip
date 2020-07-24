@@ -9,14 +9,13 @@ from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from zerver.decorator import human_users_only
 from zerver.lib.markdown import privacy_clean_markdown
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
 from zerver.lib.unminify import SourceMap
-from zerver.lib.validator import check_bool, check_dict, to_non_negative_int
+from zerver.lib.validator import check_bool, check_dict
 from zerver.models import UserProfile
 
 js_source_map: Optional[SourceMap] = None

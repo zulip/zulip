@@ -176,12 +176,6 @@ def cache_with_key(
                 log_invalid_cache_keys(stack_trace, [key])
                 return func(*args, **kwargs)
 
-            extra = ""
-            if cache_name == 'database':
-                extra = ".dbcache"
-
-            status = "hit" if val is not None else "miss"
-
             # Values are singleton tuples so that we can distinguish
             # a result of None from a missing key.
             if val is not None:

@@ -9,8 +9,6 @@ from itertools import zip_longest
 from time import sleep
 from typing import Any, Callable, Iterator, List, Optional, Sequence, Set, Tuple, TypeVar
 
-from django.conf import settings
-
 T = TypeVar('T')
 
 # Runs the callback with slices of all_list of a given batch_size
