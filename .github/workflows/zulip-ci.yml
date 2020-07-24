@@ -149,20 +149,6 @@ jobs:
           name: puppeteer
           path: ./var/puppeteer
 
-      # We cannot use upload-artifacts actions to upload the test
-      # reports from /tmp, that directory exists inside the docker
-      # image. Move them to ./var so we access it outside docker since
-      # the current directory is volume mounted outside the docker image.
-      - name: Move test reports to var
-        run: mv /tmp/zulip-test-event-log/ ./var/
-
-      - name: Store test reports
-        if: ${{ matrix.is_bionic }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: test-reports
-          path: ./var/zulip-test-event-log/
-
       - name: Check development database build
         if: ${{ matrix.is_focal }}
         run: mispipe "tools/ci/setup-backend" ts

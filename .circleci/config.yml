@@ -219,10 +219,6 @@ jobs:
           path: ./var/puppeteer/
           destination: puppeteer
 
-      - store_artifacts:
-          path: ../../../tmp/zulip-test-event-log/
-          destination: test-reports
-
       - store_test_results:
           path: ./var/xunit-test-results/casper/
       - *notify_failure_status
