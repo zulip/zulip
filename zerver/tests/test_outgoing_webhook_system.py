@@ -74,7 +74,7 @@ class DoRestCallTests(ZulipTestCase):
                 do_rest_call('', None, self.mock_event, handler)
             self.assertTrue(mock_send.called)
 
-    def test_retry_request(self: mock.Mock) -> None:
+    def test_retry_request(self) -> None:
         response = ResponseMock(500)
 
         self.mock_event['failed_tries'] = 3
@@ -85,6 +85,8 @@ class DoRestCallTests(ZulipTestCase):
         self.assertEqual(bot_owner_notification.content,
                          '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
 The webhook got a response with status code *500*.''')
+
+        assert self.bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
         self.mock_event['failed_tries'] = 0
 
@@ -99,6 +101,7 @@ The webhook got a response with status code *500*.''')
         self.assertEqual(bot_owner_notification.content,
                          '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
 The webhook got a response with status code *400*.''')
+
         assert self.bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
 
