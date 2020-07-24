@@ -31,7 +31,6 @@ from .configured_settings import (
     EMAIL_BACKEND,
     EMAIL_HOST,
     ERROR_REPORTING,
-    EVENT_LOGS_ENABLED,
     EXTERNAL_HOST,
     EXTERNAL_HOST_WITHOUT_PORT,
     EXTERNAL_URI_SCHEME,
@@ -687,15 +686,6 @@ TRACEMALLOC_DUMP_DIR = zulip_path("/var/log/zulip/tracemalloc")
 SCHEDULED_MESSAGE_DELIVERER_LOG_PATH = zulip_path("/var/log/zulip/scheduled_message_deliverer.log")
 RETENTION_LOG_PATH = zulip_path("/var/log/zulip/message_retention.log")
 AUTH_LOG_PATH = zulip_path("/var/log/zulip/auth.log")
-
-# The EVENT_LOGS feature is an ultra-legacy piece of code, which
-# originally logged all significant database changes for debugging.
-# We plan to replace it with RealmAuditLog, stored in the database,
-# everywhere that code mentioning it appears.
-if EVENT_LOGS_ENABLED:
-    EVENT_LOG_DIR: Optional[str] = zulip_path("/home/zulip/logs/event_log")
-else:
-    EVENT_LOG_DIR = None
 
 ZULIP_WORKER_TEST_FILE = '/tmp/zulip-worker-test-file'
 

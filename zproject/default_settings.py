@@ -223,11 +223,6 @@ EXTRA_INSTALLED_APPS = ['analytics']
 # Default GOOGLE_CLIENT_ID to the value needed for Android auth to work
 GOOGLE_CLIENT_ID = '835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com'
 
-# Legacy event logs configuration.  Our plans include removing
-# log_event entirely in favor of RealmAuditLog, at which point we
-# can remove this setting.
-EVENT_LOGS_ENABLED = False
-
 # Used to construct URLs to point to the Zulip server.  Since we
 # only support HTTPS in production, this is just for development.
 EXTERNAL_URI_SCHEME = "https://"

@@ -2,7 +2,6 @@ import datetime
 import itertools
 import logging
 import os
-import platform
 import time
 from collections import defaultdict
 from operator import itemgetter
@@ -73,7 +72,6 @@ from zerver.lib.cache import (
     user_profile_by_api_key_cache_key,
     user_profile_by_email_cache_key,
 )
-from zerver.lib.context_managers import lockfile
 from zerver.lib.create_user import create_user, get_display_email_address
 from zerver.lib.email_mirror_helpers import encode_email_address, encode_email_address_helper
 from zerver.lib.email_notifications import enqueue_welcome_emails
@@ -255,25 +253,6 @@ def subscriber_info(user_id: int) -> Dict[str, Any]:
         'id': user_id,
         'flags': ['read']
     }
-
-# Store an event in the log for re-importing messages
-def log_event(event: MutableMapping[str, Any]) -> None:
-    if settings.EVENT_LOG_DIR is None:
-        return
-
-    if "timestamp" not in event:
-        event["timestamp"] = time.time()
-
-    if not os.path.exists(settings.EVENT_LOG_DIR):
-        os.mkdir(settings.EVENT_LOG_DIR)
-
-    template = os.path.join(settings.EVENT_LOG_DIR,
-                            '%s.' + platform.node() +
-                            timezone_now().strftime('.%Y-%m-%d'))
-
-    with lockfile(template % ('lock',)):
-        with open(template % ('events',), 'a') as log:
-            log.write(ujson.dumps(event) + '\n')
 
 def can_access_stream_user_ids(stream: Stream) -> Set[int]:
     # return user ids of users who can access the attributes of
@@ -3725,11 +3704,6 @@ def do_create_realm(string_id: str, name: str,
 
     if settings.BILLING_ENABLED:
         do_change_plan_type(realm, Realm.LIMITED)
-
-    # Log the event
-    log_event({"type": "realm_created",
-               "string_id": string_id,
-               "emails_restricted_to_domains": emails_restricted_to_domains})
 
     sender = get_system_bot(settings.NOTIFICATION_BOT)
     admin_realm = sender.realm

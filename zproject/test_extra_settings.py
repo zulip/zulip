@@ -60,9 +60,6 @@ if "GENERATE_STRIPE_FIXTURES" in os.environ:
 # This allows CasperJS to proceed quickly to the next test step.
 POLL_TIMEOUT = 1000
 
-# Don't use the real message log for tests
-EVENT_LOG_DIR = '/tmp/zulip-test-event-log'
-
 # Stores the messages in `django.core.mail.outbox` rather than sending them.
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
