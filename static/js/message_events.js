@@ -1,5 +1,5 @@
-const util = require("./util");
 const huddle_data = require("./huddle_data");
+const util = require("./util");
 
 function maybe_add_narrowed_messages(messages, msg_list) {
     const ids = [];

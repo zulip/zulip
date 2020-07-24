@@ -19,7 +19,16 @@
         "empty-returns/main": "error",
         "eqeqeq": "error",
         "guard-for-in": "error",
+        "import/first": "error",
+        "import/newline-after-import": "error",
         "import/no-unresolved": ["error", {"ignore": ["!"]}],
+        "import/order": [
+            "error",
+            {
+                "alphabetize": {"order": "asc"},
+                "newlines-between": "always"
+            }
+        ],
         "new-cap": [
             "error",
             {
@@ -78,7 +87,6 @@
             }
         ],
         "radix": "error",
-        "sort-imports": "error",
         "spaced-comment": "off",
         "strict": "off",
         "valid-typeof": ["error", {"requireStringLiterals": true}],

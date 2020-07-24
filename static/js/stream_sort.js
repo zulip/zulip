@@ -1,4 +1,5 @@
 const util = require("./util");
+
 let previous_pinned;
 let previous_normal;
 let previous_dormant;

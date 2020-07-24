@@ -1,5 +1,7 @@
 const fs = require("fs");
+
 const {JSDOM} = require("jsdom");
+
 const template = fs.readFileSync("templates/analytics/realm_details.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;

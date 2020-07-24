@@ -1,4 +1,5 @@
 const util = require("./util");
+
 const resize_app = function () {
     const panels_height = $("#panels").height();
     $("body > .app").height("calc(100% - " + panels_height + "px)");

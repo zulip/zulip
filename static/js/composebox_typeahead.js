@@ -1,8 +1,10 @@
+const autosize = require("autosize");
+const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
+
 const pygments_data = require("../generated/pygments_data.json");
 const typeahead = require("../shared/js/typeahead");
-const autosize = require("autosize");
+
 const settings_data = require("./settings_data");
-const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
 
 //************************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS

@@ -1,5 +1,6 @@
-var common = require("../casper_lib/common.js");
 var test_credentials = require("../../var/casper/test_credentials.js").test_credentials;
+var common = require("../casper_lib/common.js");
+
 var OUTGOING_WEBHOOK_BOT_TYPE = "3";
 var GENERIC_BOT_TYPE = "1";
 

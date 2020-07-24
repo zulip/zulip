@@ -1,4 +1,5 @@
 const render_tab_bar = require("../templates/tab_bar.hbs");
+
 const rendered_markdown = require("./rendered_markdown");
 
 function get_sub_count(current_stream) {

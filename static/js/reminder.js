@@ -1,4 +1,5 @@
 const util = require("./util");
+
 const deferred_message_types = {
     scheduled: {
         delivery_type: "send_later",

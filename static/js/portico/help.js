@@ -1,5 +1,6 @@
-import * as google_analytics from "./google-analytics.js";
 import SimpleBar from "simplebar";
+
+import * as google_analytics from "./google-analytics.js";
 import {activate_correct_tab} from "./tabbed-instructions.js";
 
 function registerCodeSection($codeSection) {

@@ -1,6 +1,8 @@
-const path = require("path");
-const puppeteer = require("puppeteer");
 const assert = require("assert").strict;
+const path = require("path");
+
+const puppeteer = require("puppeteer");
+
 const test_credentials = require("../../var/casper/test_credentials.js").test_credentials;
 
 class CommonUtils {

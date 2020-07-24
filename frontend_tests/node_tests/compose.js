@@ -1,5 +1,5 @@
-const rewiremock = require("rewiremock/node");
 const {JSDOM} = require("jsdom");
+const rewiremock = require("rewiremock/node");
 
 set_global("bridge", false);
 

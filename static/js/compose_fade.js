@@ -1,4 +1,5 @@
 const util = require("./util");
+
 let focused_recipient;
 let normal_display = false;
 

@@ -1,6 +1,5 @@
-const util = require("./util");
-const settings_data = require("./settings_data");
 const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
+
 const render_actions_popover_content = require("../templates/actions_popover_content.hbs");
 const render_mobile_message_buttons_popover = require("../templates/mobile_message_buttons_popover.hbs");
 const render_mobile_message_buttons_popover_content = require("../templates/mobile_message_buttons_popover_content.hbs");
@@ -11,6 +10,9 @@ const render_user_group_info_popover_content = require("../templates/user_group_
 const render_user_info_popover_content = require("../templates/user_info_popover_content.hbs");
 const render_user_info_popover_title = require("../templates/user_info_popover_title.hbs");
 const render_user_profile_modal = require("../templates/user_profile_modal.hbs");
+
+const settings_data = require("./settings_data");
+const util = require("./util");
 
 let current_actions_popover_elem;
 let current_flatpickr_instance;

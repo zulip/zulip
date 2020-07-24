@@ -1,9 +1,10 @@
-const util = require("./util");
-const rendered_markdown = require("./rendered_markdown");
 const render_bookend = require("../templates/bookend.hbs");
 const render_message_group = require("../templates/message_group.hbs");
 const render_recipient_row = require("../templates/recipient_row.hbs");
 const render_single_message = require("../templates/single_message.hbs");
+
+const rendered_markdown = require("./rendered_markdown");
+const util = require("./util");
 
 function MessageListView(list, table_name, collapse_messages) {
     this.list = list;

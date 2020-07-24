@@ -1,8 +1,9 @@
-const util = require("./util");
 const render_subscription = require("../templates/subscription.hbs");
 const render_subscription_settings = require("../templates/subscription_settings.hbs");
 const render_subscription_table_body = require("../templates/subscription_table_body.hbs");
 const render_subscriptions = require("../templates/subscriptions.hbs");
+
+const util = require("./util");
 
 exports.show_subs_pane = {
     nothing_selected() {

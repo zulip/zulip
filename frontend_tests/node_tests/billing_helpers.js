@@ -1,8 +1,11 @@
-const {JSDOM} = require("jsdom");
 const fs = require("fs");
+
+const JQuery = require("jquery");
+const {JSDOM} = require("jsdom");
+
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
-const jquery = require("jquery")(dom.window);
+const jquery = JQuery(dom.window);
 
 set_global("$", global.make_zjquery());
 set_global("page_params", {});

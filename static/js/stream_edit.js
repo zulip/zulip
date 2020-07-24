@@ -1,10 +1,11 @@
-const util = require("./util");
 const render_settings_deactivation_stream_modal = require("../templates/settings/deactivation_stream_modal.hbs");
 const render_stream_member_list_entry = require("../templates/stream_member_list_entry.hbs");
 const render_subscription_settings = require("../templates/subscription_settings.hbs");
 const render_subscription_stream_privacy_modal = require("../templates/subscription_stream_privacy_modal.hbs");
-const settings_data = require("./settings_data");
+
 const settings_config = require("./settings_config");
+const settings_data = require("./settings_data");
+const util = require("./util");
 
 function setup_subscriptions_stream_hash(sub) {
     const hash = hash_util.stream_edit_uri(sub);
