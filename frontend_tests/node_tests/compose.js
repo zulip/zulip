@@ -288,6 +288,13 @@ run_test("validate", () => {
     compose_state.private_message_recipient("bob@example.com");
     assert(compose.validate());
 
+    people.deactivate(bob);
+    assert(!compose.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        i18n.t("The user bob@example.com has been deactivated", {}),
+    );
+
     page_params.realm_is_zephyr_mirror_realm = true;
     assert(compose.validate());
     page_params.realm_is_zephyr_mirror_realm = false;
@@ -840,6 +847,9 @@ run_test("finish", () => {
         compose_state.set_message_type("private");
         compose_state.private_message_recipient = function () {
             return "bob@example.com";
+        };
+        people.is_person_active = function () {
+            return true;
         };
 
         let compose_finished_event_checked = false;

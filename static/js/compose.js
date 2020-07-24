@@ -655,9 +655,10 @@ function validate_stream_message() {
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
 function validate_private_message() {
+    const user_ids = compose_pm_pill.get_user_ids();
+
     if (page_params.realm_private_message_policy === 2) {
         // Frontend check for for PRIVATE_MESSAGE_POLICY_DISABLED
-        const user_ids = compose_pm_pill.get_user_ids();
         if (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot) {
             // Unless we're composing to a bot
             compose_error(
@@ -697,6 +698,25 @@ function validate_private_message() {
         );
         return false;
     }
+
+    const deactivated_users_ids = [];
+    for (const user_id of user_ids) {
+        if (!people.is_person_active(user_id)) {
+            deactivated_users_ids.push(user_id);
+        }
+    }
+
+    if (deactivated_users_ids.length !== 0) {
+        for (const user_id of deactivated_users_ids) {
+            const email = people.get_by_user_id(user_id).email;
+            compose_error(
+                i18n.t("The user __email__ has been deactivated", {email}),
+                $("#private_message_recipient"),
+            );
+        }
+        return false;
+    }
+
     return true;
 }
 
