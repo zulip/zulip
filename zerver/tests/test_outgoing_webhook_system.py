@@ -61,18 +61,22 @@ class DoRestCallTests(ZulipTestCase):
         self.bot_user = self.example_user('outgoing_webhook_bot')
         self.service_handler = GenericOutgoingWebhookService("token", self.bot_user, "service")
 
-    @mock.patch('zerver.lib.outgoing_webhook.send_response_message')
-    def test_successful_request(self, mock_send: mock.Mock) -> None:
+    def test_successful_request(self) -> None:
         response = ResponseMock(200, dict(content='whatever'))
-        with mock.patch('requests.request', return_value=response):
+        expect_200 = mock.patch('requests.request', return_value=response)
+
+        expect_send_response = mock.patch('zerver.lib.outgoing_webhook.send_response_message')
+        with expect_200, expect_send_response as mock_send:
             do_rest_call('', None, self.mock_event, self.service_handler)
         self.assertTrue(mock_send.called)
 
         for service_class in [GenericOutgoingWebhookService, SlackOutgoingWebhookService]:
             handler = service_class("token", self.bot_user, "service")
-            with mock.patch('requests.request', return_value=response):
+
+            with expect_200:
                 do_rest_call('', None, self.mock_event, handler)
-            self.assertTrue(mock_send.called)
+
+            # TODO: assert something interesting here?
 
     def test_retry_request(self) -> None:
         response = ResponseMock(500)
@@ -90,14 +94,18 @@ The webhook got a response with status code *500*.''')
         self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
         self.mock_event['failed_tries'] = 0
 
-    @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
-    def test_fail_request(self, mock_fail_with_message: mock.Mock) -> None:
+    def test_fail_request(self) -> None:
         response = ResponseMock(400)
-        with mock.patch('requests.request', return_value=response), mock.patch('logging.warning'):
+        expect_400 = mock.patch("requests.request", return_value=response)
+        expect_fail = mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
+        expect_warnings = mock.patch("logging.warning")
+
+        with expect_400, expect_fail as mock_fail, expect_warnings:
             do_rest_call('', None, self.mock_event, self.service_handler)
 
+        self.assertTrue(mock_fail.called)
+
         bot_owner_notification = self.get_last_message()
-        self.assertTrue(mock_fail_with_message.called)
         self.assertEqual(bot_owner_notification.content,
                          '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
 The webhook got a response with status code *400*.''')
@@ -134,14 +142,17 @@ The webhook got a response with status code *400*.''')
         helper(side_effect=timeout_error, error_text='A timeout occurred.')
         helper(side_effect=connection_error, error_text='A connection error occurred.')
 
-    @mock.patch('logging.exception')
-    @mock.patch('requests.request', side_effect=request_exception_error)
-    @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
-    def test_request_exception(self, mock_fail_with_message: mock.Mock,
-                               mock_requests_request: mock.Mock, mock_logger: mock.Mock) -> None:
-        do_rest_call('', None, self.mock_event, self.service_handler)
+    def test_request_exception(self) -> None:
+        expect_request_exception = mock.patch("requests.request", side_effect=request_exception_error)
+        expect_logging_exception = mock.patch("logging.exception")
+        expect_fail = mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
+
+        with expect_request_exception, expect_logging_exception, expect_fail as mock_fail:
+            do_rest_call('', None, self.mock_event, self.service_handler)
+
+        self.assertTrue(mock_fail.called)
+
         bot_owner_notification = self.get_last_message()
-        self.assertTrue(mock_fail_with_message.called)
         self.assertEqual(bot_owner_notification.content,
                          '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
 When trying to send a request to the webhook service, an exception of type RequestException occurred:
