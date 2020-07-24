@@ -3,7 +3,7 @@
         "es2020": true,
         "node": true
     },
-    "extends": ["eslint:recommended", "prettier"],
+    "extends": ["eslint:recommended", "plugin:import/errors", "plugin:import/warnings", "prettier"],
     "parser": "babel-eslint",
     "parserOptions": {
         "warnOnUnsupportedTypeScriptVersion": false,
@@ -19,6 +19,7 @@
         "empty-returns/main": "error",
         "eqeqeq": "error",
         "guard-for-in": "error",
+        "import/no-unresolved": ["error", {"ignore": ["!"]}],
         "new-cap": [
             "error",
             {
@@ -297,7 +298,11 @@
         },
         {
             "files": ["**/*.ts"],
-            "extends": ["plugin:@typescript-eslint/recommended", "prettier/@typescript-eslint"],
+            "extends": [
+                "plugin:@typescript-eslint/recommended",
+                "plugin:import/typescript",
+                "prettier/@typescript-eslint"
+            ],
             "parserOptions": {
                 "project": "tsconfig.json"
             },
