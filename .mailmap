@@ -29,3 +29,8 @@ Tim Abbott <tabbott@zulip.com> <tabbott@mit.edu>
 Tim Abbott <tabbott@zulip.com> <tabbott@zulipchat.com>
 Vishnu KS <yo@vishnuks.com> <hackerkid@vishnuks.com>
 Vishnu KS <yo@vishnuks.com> <yo@vishnuks.com>
+
+# Some major contributors of Zulip whose email in commit messages are not associated
+# to any GitHub account. mailmap entry added to group the commits togather so that there
+# are no multiple entries in /team page.
+Jeff Arnold <jbarnold@zulip.com> <jbarnold@humbughq.com>
