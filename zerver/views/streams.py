@@ -25,7 +25,6 @@ from django.utils.translation import ugettext as _
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import (
     authenticated_json_view,
-    require_non_guest_user,
     require_post,
     require_realm_admin,
 )
@@ -409,12 +408,12 @@ def you_were_just_subscribed_message(acting_user: UserProfile,
 RETENTION_DEFAULT: Union[str, int] = "realm_default"
 EMPTY_PRINCIPALS: Union[Sequence[str], Sequence[int]] = []
 
-@require_non_guest_user
 @has_request_variables
 def add_subscriptions_backend(
         request: HttpRequest, user_profile: UserProfile,
         streams_raw: Iterable[Dict[str, str]]=REQ("subscriptions", validator=add_subscriptions_schema),
         invite_only: bool=REQ(validator=check_bool, default=False),
+        is_web_public: bool=REQ(validator=check_bool, default=False),
         stream_post_policy: int=REQ(validator=check_int_in(
             Stream.STREAM_POST_POLICY_TYPES), default=Stream.STREAM_POST_POLICY_EVERYONE),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
@@ -443,6 +442,7 @@ def add_subscriptions_backend(
         # Strip the stream name here.
         stream_dict_copy['name'] = stream_dict_copy['name'].strip()
         stream_dict_copy["invite_only"] = invite_only
+        stream_dict_copy["is_web_public"] = is_web_public
         stream_dict_copy["stream_post_policy"] = stream_post_policy
         stream_dict_copy["history_public_to_subscribers"] = history_public_to_subscribers
         stream_dict_copy["message_retention_days"] = parse_message_retention_days(

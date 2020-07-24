@@ -4697,6 +4697,15 @@ paths:
             type: boolean
             default: false
           example: true
+        - name: is_web_public
+          in: query
+          description: |
+            A boolean specifying whether the streams specified in
+            `subscriptions` are web-public or not.
+          schema:
+            type: boolean
+            default: false
+          example: true
         - $ref: "#/components/parameters/HistoryPublicToSubscribers"
         - $ref: "#/components/parameters/StreamPostPolicy"
         - $ref: "#/components/parameters/MessageRetentionDays"
