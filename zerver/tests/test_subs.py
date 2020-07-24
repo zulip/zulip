@@ -397,6 +397,29 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(stream.invite_only)
         self.assertTrue(stream.history_public_to_subscribers)
 
+    def test_create_web_public_stream(self) -> None:
+        user_profile = self.example_user('hamlet')
+        realm = user_profile.realm
+
+        stream_names = ['new1', 'new2', 'new3']
+        stream_descriptions = ['des1', 'des2', 'des3']
+        new_streams, existing_streams = create_streams_if_needed(
+            realm,
+            [{"name": stream_name,
+              "description": stream_description,
+              "is_web_public": True}
+             for (stream_name, stream_description) in zip(stream_names, stream_descriptions)])
+
+        self.assertEqual(len(new_streams), 3)
+        self.assertEqual(len(existing_streams), 0)
+
+        actual_stream_names = {stream.name for stream in new_streams}
+        self.assertEqual(actual_stream_names, set(stream_names))
+        actual_stream_descriptions = {stream.description for stream in new_streams}
+        self.assertEqual(actual_stream_descriptions, set(stream_descriptions))
+        for stream in new_streams:
+            self.assertTrue(stream.is_web_public)
+
     def test_make_stream_private(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login_user(user_profile)

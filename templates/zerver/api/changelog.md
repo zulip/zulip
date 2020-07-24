@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 36**
+
+* [`POST /subscribe`](/api/subscribe): Added a `is_web_public` field to
+  describe if the stream to subscribe is web public or not.
+
 **Feature level 35**
 
 * The peer_add and peer_remove subscription events now have plural
