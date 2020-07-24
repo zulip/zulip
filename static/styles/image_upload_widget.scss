@@ -85,6 +85,10 @@
         display: block;
     }
 
+    .image_file_input_error {
+        position: absolute;
+    }
+
     &:hover {
         .image-delete-button {
             opacity: 1;
@@ -153,10 +157,8 @@
 #user-avatar-source {
     font-size: 1em;
     z-index: 99;
-    a {
-        position: relative;
-        top: 10px;
-    }
+    position: relative;
+    top: 12px;
 }
 
 /* SCSS related to settings page realm icon upload widget only */
