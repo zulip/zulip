@@ -81,7 +81,6 @@ class DoRestCallTests(ZulipTestCase):
     def test_retry_request(self) -> None:
         response = ResponseMock(500)
 
-        self.mock_event['failed_tries'] = 3
         with mock.patch('requests.request', return_value=response), mock.patch('logging.warning'):
             do_rest_call('',  None, self.mock_event, self.service_handler)
 
@@ -92,7 +91,6 @@ The webhook got a response with status code *500*.''')
 
         assert self.bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
-        self.mock_event['failed_tries'] = 0
 
     def test_fail_request(self) -> None:
         response = ResponseMock(400)
