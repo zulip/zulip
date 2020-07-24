@@ -340,9 +340,6 @@ TOS_VERSION: Optional[str] = None
 # Template to use when bumping TOS_VERSION to explain situation.
 FIRST_TIME_TOS_TEMPLATE: Optional[str] = None
 
-# Hostname used for Zulip's statsd logging integration.
-STATSD_HOST = ''
-
 # Configuration for JWT auth.
 if TYPE_CHECKING:
     class JwtAuthKey(TypedDict):

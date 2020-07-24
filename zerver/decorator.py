@@ -50,7 +50,7 @@ from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.types import ViewFuncT
 from zerver.lib.user_agent import parse_user_agent
-from zerver.lib.utils import has_api_key_format, statsd
+from zerver.lib.utils import has_api_key_format
 from zerver.models import Realm, UserProfile, get_client, get_user_profile_by_api_key
 
 # This is a hack to ensure that RemoteZulipServer always exists even
@@ -744,20 +744,6 @@ def internal_notify_view(is_tornado_view: bool) -> Callable[[ViewFuncT], ViewFun
 
 def to_utc_datetime(timestamp: str) -> datetime.datetime:
     return timestamp_to_datetime(float(timestamp))
-
-def statsd_increment(counter: str, val: int=1) -> Callable[[FuncT], FuncT]:
-    """Increments a statsd counter on completion of the
-    decorated function.
-
-    Pass the name of the counter to this decorator-returning function."""
-    def wrapper(func: FuncT) -> FuncT:
-        @wraps(func)
-        def wrapped_func(*args: object, **kwargs: object) -> object:
-            ret = func(*args, **kwargs)
-            statsd.incr(counter, val)
-            return ret
-        return cast(FuncT, wrapped_func)  # https://github.com/python/mypy/issues/1927
-    return wrapper
 
 def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> None:
     """Returns whether or not a user was rate limited. Will raise a RateLimited exception

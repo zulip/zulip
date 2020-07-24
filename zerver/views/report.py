@@ -16,7 +16,6 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
 from zerver.lib.unminify import SourceMap
-from zerver.lib.utils import statsd, statsd_key
 from zerver.lib.validator import check_bool, check_dict, to_non_negative_int
 from zerver.models import UserProfile
 
@@ -30,60 +29,6 @@ def get_js_source_map() -> Optional[SourceMap]:
             static_path('webpack-bundles'),
         ])
     return js_source_map
-
-@human_users_only
-@has_request_variables
-def report_send_times(request: HttpRequest, user_profile: UserProfile,
-                      time: int=REQ(converter=to_non_negative_int),
-                      received: int=REQ(converter=to_non_negative_int, default=-1),
-                      displayed: int=REQ(converter=to_non_negative_int, default=-1),
-                      locally_echoed: bool=REQ(validator=check_bool, default=False),
-                      rendered_content_disparity: bool=REQ(validator=check_bool,
-                                                           default=False)) -> HttpResponse:
-    received_str = "(unknown)"
-    if received > 0:
-        received_str = str(received)
-    displayed_str = "(unknown)"
-    if displayed > 0:
-        displayed_str = str(displayed)
-
-    request._log_data["extra"] = f"[{time}ms/{received_str}ms/{displayed_str}ms/echo:{locally_echoed}/diff:{rendered_content_disparity}]"
-
-    base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
-    statsd.timing(f"endtoend.send_time.{base_key}", time)
-    if received > 0:
-        statsd.timing(f"endtoend.receive_time.{base_key}", received)
-    if displayed > 0:
-        statsd.timing(f"endtoend.displayed_time.{base_key}", displayed)
-    if locally_echoed:
-        statsd.incr('locally_echoed')
-    if rendered_content_disparity:
-        statsd.incr('render_disparity')
-    return json_success()
-
-@human_users_only
-@has_request_variables
-def report_narrow_times(request: HttpRequest, user_profile: UserProfile,
-                        initial_core: int=REQ(converter=to_non_negative_int),
-                        initial_free: int=REQ(converter=to_non_negative_int),
-                        network: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
-    request._log_data["extra"] = f"[{initial_core}ms/{initial_free}ms/{network}ms]"
-    base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
-    statsd.timing(f"narrow.initial_core.{base_key}", initial_core)
-    statsd.timing(f"narrow.initial_free.{base_key}", initial_free)
-    statsd.timing(f"narrow.network.{base_key}", network)
-    return json_success()
-
-@human_users_only
-@has_request_variables
-def report_unnarrow_times(request: HttpRequest, user_profile: UserProfile,
-                          initial_core: int=REQ(converter=to_non_negative_int),
-                          initial_free: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
-    request._log_data["extra"] = f"[{initial_core}ms/{initial_free}ms]"
-    base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
-    statsd.timing(f"unnarrow.initial_core.{base_key}", initial_core)
-    statsd.timing(f"unnarrow.initial_free.{base_key}", initial_free)
-    return json_success()
 
 @has_request_variables
 def report_error(request: HttpRequest, user_profile: UserProfile, message: str=REQ(),

@@ -19,7 +19,7 @@ from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import compute_show_invites_and_add_streams
-from zerver.lib.utils import generate_random_token, statsd
+from zerver.lib.utils import generate_random_token
 from zerver.models import PreregistrationUser, Realm, Stream, UserProfile
 from zerver.views.compatibility import is_outdated_desktop_app, is_unsupported_browser
 from zerver.views.portico import hello_view
@@ -154,8 +154,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
         user_profile = None
 
     update_last_reminder(user_profile)
-
-    statsd.incr('views.home')
 
     # If a user hasn't signed the current Terms of Service, send them there
     if need_accept_tos(user_profile):

@@ -48,7 +48,6 @@ from confirmation.models import (
     create_confirmation_link,
     generate_key,
 )
-from zerver.decorator import statsd_increment
 from zerver.lib import retention as retention
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import (
@@ -169,7 +168,7 @@ from zerver.lib.users import (
     get_api_key,
     user_profile_to_user_row,
 )
-from zerver.lib.utils import generate_api_key, log_statsd_event
+from zerver.lib.utils import generate_api_key
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
@@ -3926,7 +3925,6 @@ def do_update_user_activity_interval(user_profile: UserProfile,
     UserActivityInterval.objects.create(user_profile=user_profile, start=log_time,
                                         end=effective_end)
 
-@statsd_increment('user_activity')
 def do_update_user_activity(user_profile_id: int,
                             client_id: int,
                             query: str,
@@ -3964,7 +3962,6 @@ def consolidate_client(client: Client) -> Client:
     else:
         return client
 
-@statsd_increment('user_presence')
 def do_update_user_presence(user_profile: UserProfile,
                             client: Client,
                             log_time: datetime.datetime,
@@ -4068,8 +4065,6 @@ def do_update_user_status(user_profile: UserProfile,
     send_event(realm, event, active_user_ids(realm.id))
 
 def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
-    log_statsd_event('bankruptcy')
-
     # First, we clear mobile push notifications.  This is safer in the
     # event that the below logic times out and we're killed.
     all_push_message_ids = UserMessage.objects.filter(
@@ -4111,8 +4106,6 @@ def do_mark_stream_messages_as_read(user_profile: UserProfile,
                                     client: Client,
                                     stream: Stream,
                                     topic_name: Optional[str]=None) -> int:
-    log_statsd_event('mark_stream_as_read')
-
     msgs = UserMessage.objects.filter(
         user_profile=user_profile,
     )

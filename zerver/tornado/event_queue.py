@@ -39,7 +39,6 @@ from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.lib.request import JsonableError
-from zerver.lib.utils import statsd
 from zerver.middleware import async_request_timer_restart
 from zerver.models import Client, Realm, UserProfile
 from zerver.tornado.autoreload import add_reload_hook
@@ -458,8 +457,6 @@ def gc_event_queues(port: int) -> None:
                      '  Now %d active queues, %s',
                      port, len(to_remove), len(affected_users), time.time() - start,
                      len(clients), handler_stats_string())
-    statsd.gauge('tornado.active_queues', len(clients))
-    statsd.gauge('tornado.active_users', len(user_clients))
 
 def persistent_queue_filename(port: int, last: bool=False) -> str:
     if settings.TORNADO_PROCESSES == 1:

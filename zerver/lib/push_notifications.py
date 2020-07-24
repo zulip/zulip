@@ -14,7 +14,6 @@ from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, bulk_access_messages_expect_usermessage, huddle_users
@@ -106,7 +105,6 @@ def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
 
 APNS_MAX_RETRIES = 3
 
-@statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
                                  payload_data: Dict[str, Any], remote: bool=False) -> None:
     # We lazily do the APNS imports as part of optimizing Zulip's base
@@ -253,7 +251,6 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
 
     return priority  # when this grows a second option, can make it a tuple
 
-@statsd_increment("android_push_notification")
 def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, Any],
                                    options: Dict[str, Any], remote: bool=False) -> None:
     """
@@ -750,7 +747,6 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
         flags=F('flags').bitand(
             ~UserMessage.flags.active_mobile_push_notification))
 
-@statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
     missed_message is the event received by the

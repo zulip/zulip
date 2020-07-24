@@ -295,10 +295,6 @@ django-pylibmc==0.6.1 \
 django-sendfile2==0.6.0 \
     --hash=sha256:7f850040ddc29c9c42192ed85b915465a3ed7cced916c4fafdd5eda057dd06ec \
     # via -r requirements/common.in
-django-statsd-mozilla==0.4.0 \
-    --hash=sha256:0d87cb63de8107279cbb748caad9aa74c6a44e7e96ccc5dbf07b89f77285a4b8 \
-    --hash=sha256:81084f3d426f5184f0a0f1dbfe035cc26b66f041d2184559d916a228d856f0d3 \
-    # via -r requirements/common.in
 django-two-factor-auth[phonenumberslite]==1.12.1 \
     --hash=sha256:612adb0dd6e9ed3b4ecd6763f2e3f56358d7b5afb843a3a49994d1d3bc91ffc2 \
     --hash=sha256:8e698d548a5a7c02c7ba343bc5376a7bbdc4e59c20ef13223743fe42fa4a1281 \
@@ -1022,10 +1018,6 @@ sshpubkeys==3.1.0 \
     --hash=sha256:9f73d51c2ef1e68cd7bde0825df29b3c6ec89f4ce24ebca3bf9eaa4a23a284db \
     --hash=sha256:b388399caeeccdc145f06fd0d2665eeecc545385c60b55c282a15a022215af80 \
     # via moto
-statsd==3.3.0 \
-    --hash=sha256:c610fb80347fca0ef62666d241bce64184bd7cc1efe582f9690e045c25535eaa \
-    --hash=sha256:e3e6db4c246f7c59003e51c9720a51a7f39a396541cb9b147ff4b14d15b5dd1f \
-    # via django-statsd-mozilla
 strict-rfc3339==0.7 \
     --hash=sha256:5cad17bedfc3af57b399db0fed32771f18fc54bbd917e85546088607ac5e1277 \
     # via openapi-schema-validator

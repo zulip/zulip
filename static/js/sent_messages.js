@@ -10,23 +10,6 @@ exports.get_new_local_id = function () {
     return "loc-" + local_id.toString();
 };
 
-function report_send_time(send_time, receive_time, locally_echoed, rendered_changed) {
-    const data = {
-        time: send_time.toString(),
-        received: receive_time.toString(),
-        locally_echoed,
-    };
-
-    if (locally_echoed) {
-        data.rendered_content_disparity = rendered_changed;
-    }
-
-    channel.post({
-        url: "/json/report/send_times",
-        data,
-    });
-}
-
 exports.start_tracking_message = function (opts) {
     const local_id = opts.local_id;
 
@@ -80,22 +63,8 @@ exports.message_state = function (opts) {
         server_events.restart_get_events();
     };
 
-    self.maybe_report_send_times = function () {
-        if (!self.ready()) {
-            return;
-        }
-        const data = self.data;
-        report_send_time(
-            data.send_finished - data.start,
-            data.received - data.start,
-            data.locally_echoed,
-            data.rendered_content_disparity,
-        );
-    };
-
     self.report_event_received = function () {
         self.data.received = new Date();
-        self.maybe_report_send_times();
     };
 
     self.mark_disparity = function () {
@@ -104,7 +73,6 @@ exports.message_state = function (opts) {
 
     self.report_server_ack = function () {
         self.data.send_finished = new Date();
-        self.maybe_report_send_times();
 
         // We only start our timer for events coming in here,
         // since it's plausible the server rejected our message,

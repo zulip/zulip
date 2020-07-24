@@ -1,11 +1,10 @@
-from typing import Any, Callable, Dict, Iterable, List, Tuple
+from typing import Any, Dict
 from unittest import mock
 
 import ujson
 from django.test import override_settings
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.utils import statsd
 
 
 def fix_params(raw_params: Dict[str, Any]) -> Dict[str, str]:
@@ -13,86 +12,7 @@ def fix_params(raw_params: Dict[str, Any]) -> Dict[str, str]:
     # individual parameters serialized as JSON.
     return {k: ujson.dumps(v) for k, v in raw_params.items()}
 
-class StatsMock:
-    def __init__(self, settings: Callable[..., Any]) -> None:
-        self.settings = settings
-        self.real_impl = statsd
-        self.func_calls: List[Tuple[str, Iterable[Any]]] = []
-
-    def __getattr__(self, name: str) -> Callable[..., Any]:
-        def f(*args: Any) -> None:
-            with self.settings(STATSD_HOST=''):
-                getattr(self.real_impl, name)(*args)
-            self.func_calls.append((name, args))
-
-        return f
-
 class TestReport(ZulipTestCase):
-    def test_send_time(self) -> None:
-        self.login('hamlet')
-
-        params = dict(
-            time=5,
-            received=6,
-            displayed=7,
-            locally_echoed='true',
-            rendered_content_disparity='true',
-        )
-
-        stats_mock = StatsMock(self.settings)
-        with mock.patch('zerver.views.report.statsd', wraps=stats_mock):
-            result = self.client_post("/json/report/send_times", params)
-        self.assert_json_success(result)
-
-        expected_calls = [
-            ('timing', ('endtoend.send_time.zulip', 5)),
-            ('timing', ('endtoend.receive_time.zulip', 6)),
-            ('timing', ('endtoend.displayed_time.zulip', 7)),
-            ('incr', ('locally_echoed',)),
-            ('incr', ('render_disparity',)),
-        ]
-        self.assertEqual(stats_mock.func_calls, expected_calls)
-
-    def test_narrow_time(self) -> None:
-        self.login('hamlet')
-
-        params = dict(
-            initial_core=5,
-            initial_free=6,
-            network=7,
-        )
-
-        stats_mock = StatsMock(self.settings)
-        with mock.patch('zerver.views.report.statsd', wraps=stats_mock):
-            result = self.client_post("/json/report/narrow_times", params)
-        self.assert_json_success(result)
-
-        expected_calls = [
-            ('timing', ('narrow.initial_core.zulip', 5)),
-            ('timing', ('narrow.initial_free.zulip', 6)),
-            ('timing', ('narrow.network.zulip', 7)),
-        ]
-        self.assertEqual(stats_mock.func_calls, expected_calls)
-
-    def test_unnarrow_time(self) -> None:
-        self.login('hamlet')
-
-        params = dict(
-            initial_core=5,
-            initial_free=6,
-        )
-
-        stats_mock = StatsMock(self.settings)
-        with mock.patch('zerver.views.report.statsd', wraps=stats_mock):
-            result = self.client_post("/json/report/unnarrow_times", params)
-        self.assert_json_success(result)
-
-        expected_calls = [
-            ('timing', ('unnarrow.initial_core.zulip', 5)),
-            ('timing', ('unnarrow.initial_free.zulip', 6)),
-        ]
-        self.assertEqual(stats_mock.func_calls, expected_calls)
-
     @override_settings(BROWSER_ERROR_REPORTING=True)
     def test_report_error(self) -> None:
         user = self.example_user('hamlet')

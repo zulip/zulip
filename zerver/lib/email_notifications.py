@@ -16,7 +16,6 @@ from django.utils.translation import ugettext as _
 from lxml.cssselect import CSSSelector
 
 from confirmation.models import one_click_unsubscribe_link
-from zerver.decorator import statsd_increment
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.queue import queue_json_publish
@@ -335,7 +334,6 @@ def message_content_allowed_in_missedmessage_emails(user_profile: UserProfile) -
     return user_profile.realm.message_content_allowed_in_email_notifications and \
         user_profile.message_content_in_email_notifications
 
-@statsd_increment("missed_message_reminders")
 def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
                                                 missed_messages: List[Dict[str, Any]],
                                                 message_count: int) -> None:

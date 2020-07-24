@@ -42,7 +42,6 @@ from zerver.lib.streams import (
 from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC, topic_column_sa, topic_match_sa
 from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.types import Validator
-from zerver.lib.utils import statsd
 from zerver.lib.validator import (
     check_bool,
     check_dict,
@@ -953,8 +952,6 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         client_gravatar=client_gravatar,
         allow_edit_history=user_profile.realm.allow_edit_history,
     )
-
-    statsd.incr('loaded_old_messages', len(message_list))
 
     ret = dict(
         messages=message_list,

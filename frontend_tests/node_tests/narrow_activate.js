@@ -221,13 +221,5 @@ run_test("basics", () => {
     });
 
     assert.equal(narrow_state.narrowed_to_pms(), true);
-
-    channel.post = (opts) => {
-        assert.equal(opts.url, "/json/report/narrow_times");
-        helper.push_event("report narrow times");
-    };
-
-    helper.clear();
     cont();
-    helper.assert_events(["report narrow times"]);
 });

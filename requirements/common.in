@@ -48,9 +48,6 @@ https://github.com/zulip/django-auth-ldap/archive/e26d0ef2a7ff77ab3fdd7b6578a760
 # Django extension providing bitfield support
 django-bitfield
 
-# Django extension for sending data to statsd
-django-statsd-mozilla
-
 # Needed for Android push notifications
 python-gcm
 

@@ -1,57 +1,6 @@
 const util = require("./util");
-let unnarrow_times;
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
-
-function report_narrow_time(initial_core_time, initial_free_time, network_time) {
-    channel.post({
-        url: "/json/report/narrow_times",
-        data: {
-            initial_core: initial_core_time.toString(),
-            initial_free: initial_free_time.toString(),
-            network: network_time.toString(),
-        },
-    });
-}
-
-function maybe_report_narrow_time(msg_list) {
-    if (
-        msg_list.network_time === undefined ||
-        msg_list.initial_core_time === undefined ||
-        msg_list.initial_free_time === undefined
-    ) {
-        return;
-    }
-    report_narrow_time(
-        msg_list.initial_core_time - msg_list.start_time,
-        msg_list.initial_free_time - msg_list.start_time,
-        msg_list.network_time - msg_list.start_time,
-    );
-}
-
-function report_unnarrow_time() {
-    if (
-        unnarrow_times === undefined ||
-        unnarrow_times.start_time === undefined ||
-        unnarrow_times.initial_core_time === undefined ||
-        unnarrow_times.initial_free_time === undefined
-    ) {
-        return;
-    }
-
-    const initial_core_time = unnarrow_times.initial_core_time - unnarrow_times.start_time;
-    const initial_free_time = unnarrow_times.initial_free_time - unnarrow_times.start_time;
-
-    channel.post({
-        url: "/json/report/unnarrow_times",
-        data: {
-            initial_core: initial_core_time.toString(),
-            initial_free: initial_free_time.toString(),
-        },
-    });
-
-    unnarrow_times = {};
-}
 
 exports.save_pre_narrow_offset_for_reload = function () {
     if (current_msg_list.selected_id() !== -1) {
@@ -301,7 +250,6 @@ exports.activate = function (raw_operators, opts) {
                     });
                 }
                 msg_list.network_time = new Date();
-                maybe_report_narrow_time(msg_list);
             },
         });
     })();
@@ -350,7 +298,6 @@ exports.activate = function (raw_operators, opts) {
     setTimeout(() => {
         resize.resize_stream_filters_container();
         msg_list.initial_free_time = new Date();
-        maybe_report_narrow_time(msg_list);
     }, 0);
 };
 
@@ -777,7 +724,6 @@ exports.deactivate = function () {
     if (narrow_state.filter() === undefined) {
         return;
     }
-    unnarrow_times = {start_time: new Date()};
     blueslip.debug("Unnarrowed");
 
     if (message_scroll.actively_scrolling()) {
@@ -842,11 +788,8 @@ exports.deactivate = function () {
 
     handle_post_narrow_deactivate_processes();
 
-    unnarrow_times.initial_core_time = new Date();
     setTimeout(() => {
         resize.resize_stream_filters_container();
-        unnarrow_times.initial_free_time = new Date();
-        report_unnarrow_time();
     });
 };
 

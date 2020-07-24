@@ -13,8 +13,6 @@ from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic
 from tornado import ioloop
 
-from zerver.lib.utils import statsd
-
 MAX_REQUEST_RETRIES = 3
 Consumer = Callable[[BlockingChannel, Basic.Deliver, pika.BasicProperties, str], None]
 
@@ -120,8 +118,6 @@ class SimpleQueueClient:
                 routing_key=queue_name,
                 properties=pika.BasicProperties(delivery_mode=2),
                 body=body)
-
-            statsd.incr(f"rabbitmq.publish.{queue_name}")
 
         self.ensure_queue(queue_name, do_publish)
 

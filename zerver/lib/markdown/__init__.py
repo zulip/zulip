@@ -371,7 +371,7 @@ def has_blockquote_ancestor(element_pair: Optional[ElementPair]) -> bool:
     else:
         return has_blockquote_ancestor(element_pair.parent)
 
-@cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
+@cache_with_key(lambda tweet_id: tweet_id, cache_name="database")
 def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
     if settings.TEST_SUITE:
         from . import testing_mocks

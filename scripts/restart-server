@@ -28,9 +28,6 @@ if pwd.getpwuid(os.getuid()).pw_name != "zulip":
     logging.error("Must be run as user 'zulip'.")
     sys.exit(1)
 
-# Send a statsd event on restarting the server
-subprocess.check_call(["./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))])
-
 if args.fill_cache:
     logging.info("Filling memcached caches")
     subprocess.check_call(["./manage.py", "fill_memcached_caches"])
