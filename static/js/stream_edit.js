@@ -298,10 +298,26 @@ function show_subscription_settings(sub) {
             stream_id +
             "'] .pill-container",
     );
+
+    function create_item_from_text(text, current_items) {
+        const item = stream_pill.create_item_from_stream_name(text, current_items);
+        if (item) {
+            return item;
+        }
+        return user_pill.create_item_from_email(text, current_items);
+    }
+    function get_text_from_item(item) {
+        const text = stream_pill.get_stream_name_from_item(item);
+        if (text) {
+            return text;
+        }
+        return user_pill.get_email_from_item(item);
+    }
+
     exports.pill_widget = input_pill.create({
         container,
-        create_item_from_text: user_pill.create_item_from_email,
-        get_text_from_item: user_pill.get_email_from_item,
+        create_item_from_text,
+        get_text_from_item,
     });
 
     if (!sub.render_subscribers) {
