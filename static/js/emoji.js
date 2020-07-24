@@ -9,17 +9,18 @@ exports.emojis_by_name = new Map();
 
 exports.all_realm_emojis = new Map();
 exports.active_realm_emojis = new Map();
-exports.default_emoji_aliases = new Map();
+
+const default_emoji_aliases = new Map();
 
 // For legacy reasons we track server_realm_emoji_data,
 // since our settings code builds off that format.  We
 // should move it to use all_realm_emojis, which requires
 // adding author_id here and then changing the settings code
 // in a slightly non-trivial way.
-exports.server_realm_emoji_data = {};
+let server_realm_emoji_data = {};
 
 // We really want to deprecate this, too.
-exports.get_server_realm_emoji_data = () => exports.server_realm_emoji_data;
+exports.get_server_realm_emoji_data = () => server_realm_emoji_data;
 
 const emoticon_translations = (() => {
     /*
@@ -103,7 +104,7 @@ exports.get_realm_emoji_url = (emoji_name) => {
 exports.update_emojis = function (realm_emojis) {
     // The settings code still works with the
     // server format of the data.
-    exports.server_realm_emoji_data = realm_emojis;
+    server_realm_emoji_data = realm_emojis;
 
     // exports.all_realm_emojis is emptied before adding the realm-specific emoji
     // to it. This makes sure that in case of deletion, the deleted realm_emojis
@@ -137,10 +138,10 @@ exports.initialize = function initialize(params) {
     for (const value of emoji_codes.names) {
         const base_name = exports.get_emoji_codepoint(value);
 
-        if (exports.default_emoji_aliases.has(base_name)) {
-            exports.default_emoji_aliases.get(base_name).push(value);
+        if (default_emoji_aliases.has(base_name)) {
+            default_emoji_aliases.get(base_name).push(value);
         } else {
-            exports.default_emoji_aliases.set(base_name, [value]);
+            default_emoji_aliases.set(base_name, [value]);
         }
     }
 
@@ -168,7 +169,7 @@ exports.build_emoji_data = function (realm_emojis) {
                 const emoji_dict = {
                     name: emoji_name,
                     display_name: emoji_name,
-                    aliases: exports.default_emoji_aliases.get(codepoint),
+                    aliases: default_emoji_aliases.get(codepoint),
                     is_realm_emoji: false,
                     emoji_code: codepoint,
                     has_reacted: false,
