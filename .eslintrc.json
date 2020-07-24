@@ -1,12 +1,11 @@
 {
     "env": {
-        "node": true,
-        "es6": true
+        "es2020": true,
+        "node": true
     },
     "extends": ["eslint:recommended", "prettier"],
     "parser": "babel-eslint",
     "parserOptions": {
-        "ecmaVersion": 2019,
         "warnOnUnsupportedTypeScriptVersion": false,
         "sourceType": "module"
     },
@@ -86,7 +85,7 @@
     },
     "overrides": [
         {
-            "files": ["frontend_tests/**/*.{js,ts}", "static/js/**/*.{js,ts}"],
+            "files": ["frontend_tests/**", "static/js/**"],
             "globals": {
                 "$": false,
                 "ClipboardJS": false,
@@ -297,15 +296,6 @@
             }
         },
         {
-            "files": ["frontend_tests/casper_tests/*.js", "frontend_tests/casper_lib/*.js"],
-            "rules": {
-                // Don’t require ES features that PhantomJS doesn’t support
-                "no-var": "off",
-                "object-shorthand": "off",
-                "prefer-arrow-callback": "off"
-            }
-        },
-        {
             "files": ["**/*.ts"],
             "extends": ["plugin:@typescript-eslint/recommended", "prettier/@typescript-eslint"],
             "parserOptions": {
@@ -339,6 +329,52 @@
                 "@typescript-eslint/prefer-string-starts-ends-with": "error",
                 "@typescript-eslint/promise-function-async": "error",
                 "@typescript-eslint/unified-signatures": "error"
+            }
+        },
+        {
+            "files": ["frontend_tests/**"],
+            "globals": {
+                "assert": false,
+                "casper": false,
+                "document": false,
+                "set_global": false,
+                "window": false,
+                "zrequire": false
+            },
+            "rules": {
+                "no-sync": "off"
+            }
+        },
+        {
+            "files": ["frontend_tests/casper_lib/**", "frontend_tests/casper_tests/**"],
+            "env": {
+                "browser": true,
+                "es2020": false
+            },
+            "rules": {
+                // Don’t require ES features that PhantomJS doesn’t support
+                "no-var": "off",
+                "object-shorthand": "off",
+                "prefer-arrow-callback": "off"
+            }
+        },
+        {
+            "files": ["static/**"],
+            "env": {
+                "browser": true,
+                "commonjs": true,
+                "node": false
+            },
+            "rules": {
+                "no-console": "error"
+            }
+        },
+        {
+            "files": ["static/shared/**"],
+            "env": {
+                "browser": false,
+                "commonjs": false,
+                "shared-node-browser": true
             }
         }
     ]
