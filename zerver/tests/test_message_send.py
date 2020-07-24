@@ -1,5 +1,4 @@
 import datetime
-import time
 from typing import Any, Optional, Set
 from unittest import mock
 
@@ -1143,13 +1142,8 @@ class StreamMessagesTest(ZulipTestCase):
 
         before_um_count = UserMessage.objects.count()
 
-        t = time.time()
         for i in range(num_messages):
             send_test_message()
-
-        delay = time.time() - t
-        assert(delay)  # quiet down lint
-        # print(delay)
 
         after_um_count = UserMessage.objects.count()
         ums_created = after_um_count - before_um_count
