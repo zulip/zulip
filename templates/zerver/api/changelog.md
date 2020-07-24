@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 40**
+
+* [`POST /subscribe`](/api/subscribe): Added a `is_web_public` field to
+  describe if the stream to subscribe is web public or not.
+
 **Feature level 39**
 
 * Added new [GET /users/{email}](/api/get-user-by-email) endpoint.
