@@ -1,5 +1,5 @@
-const common = require("../puppeteer_lib/common");
 const test_credentials = require("../../var/casper/test_credentials.js").test_credentials;
+const common = require("../puppeteer_lib/common");
 
 async function login_tests(page) {
     await common.log_in(page, test_credentials.default_user);

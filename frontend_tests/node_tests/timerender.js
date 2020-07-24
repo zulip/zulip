@@ -3,6 +3,7 @@ set_global("page_params", {
     twenty_four_hour_time: true,
 });
 set_global("moment", require("moment-timezone"));
+
 set_global("XDate", zrequire("XDate", "xdate"));
 zrequire("timerender");
 

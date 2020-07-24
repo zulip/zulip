@@ -1,10 +1,10 @@
 const render_all_messages_sidebar_actions = require("../templates/all_messages_sidebar_actions.hbs");
 const render_delete_topic_modal = require("../templates/delete_topic_modal.hbs");
+const render_move_topic_to_stream = require("../templates/move_topic_to_stream.hbs");
 const render_starred_messages_sidebar_actions = require("../templates/starred_messages_sidebar_actions.hbs");
 const render_stream_sidebar_actions = require("../templates/stream_sidebar_actions.hbs");
 const render_topic_sidebar_actions = require("../templates/topic_sidebar_actions.hbs");
 const render_unstar_messages_modal = require("../templates/unstar_messages_modal.hbs");
-const render_move_topic_to_stream = require("../templates/move_topic_to_stream.hbs");
 
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.

@@ -1,5 +1,6 @@
-const util = require("./util");
 const render_draft_table_body = require("../templates/draft_table_body.hbs");
+
+const util = require("./util");
 
 function set_count(count) {
     const draft_count = count.toString();

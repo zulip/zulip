@@ -1,8 +1,9 @@
-const util = require("./util");
 require("unorm"); // String.prototype.normalize polyfill for IE11
-const FoldDict = require("./fold_dict").FoldDict;
 const typeahead = require("../shared/js/typeahead");
+
+const FoldDict = require("./fold_dict").FoldDict;
 const settings_data = require("./settings_data");
+const util = require("./util");
 
 let people_dict;
 let people_by_name_dict;

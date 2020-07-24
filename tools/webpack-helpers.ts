@@ -1,5 +1,6 @@
-import {RuleSetRule, RuleSetUseItem} from "webpack";
 import {basename, resolve} from "path";
+
+import {RuleSetRule, RuleSetUseItem} from "webpack";
 
 export const cacheLoader: RuleSetUseItem = {
     loader: "cache-loader",

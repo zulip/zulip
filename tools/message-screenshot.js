@@ -1,7 +1,9 @@
-const puppeteer = require("puppeteer");
-const commander = require("commander");
 const path = require("path");
+
+const commander = require("commander");
 const mkdirp = require("mkdirp");
+const puppeteer = require("puppeteer");
+
 const host = "localhost:9991";
 const options = {};
 

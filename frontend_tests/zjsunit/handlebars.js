@@ -1,6 +1,7 @@
 const fs = require("fs");
-const Handlebars = require("handlebars/dist/cjs/handlebars.js");
 const path = require("path");
+
+const Handlebars = require("handlebars/dist/cjs/handlebars.js");
 const {SourceMapConsumer, SourceNode} = require("source-map");
 
 const templates_path = path.resolve(__dirname, "../../static/templates");

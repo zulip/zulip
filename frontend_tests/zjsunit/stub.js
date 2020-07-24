@@ -1,3 +1,5 @@
+const assert = require("assert").strict;
+
 // Stubs don't do any magical modifications to your namespace.  They
 // just provide you a function that records what arguments get passed
 // to it.  To use stubs as something more like "spies," use something

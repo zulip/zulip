@@ -1,5 +1,5 @@
-const util = require("./util");
 const FoldDict = require("./fold_dict").FoldDict;
+const util = require("./util");
 
 // The unread module tracks the message IDs and locations of the
 // user's unread messages.  The tracking is initialized with

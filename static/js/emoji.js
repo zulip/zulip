@@ -1,5 +1,6 @@
-const util = require("./util");
 const emoji_codes = require("../generated/emoji/emoji_codes.json");
+
+const util = require("./util");
 
 // `emojis_by_name` is the central data source that is supposed to be
 // used by every widget in the webapp for gathering data for displaying

@@ -1,10 +1,11 @@
-const rendered_markdown = require("./rendered_markdown");
-const util = require("./util");
 const render_compose_all_everyone = require("../templates/compose_all_everyone.hbs");
 const render_compose_announce = require("../templates/compose_announce.hbs");
 const render_compose_invite_users = require("../templates/compose_invite_users.hbs");
 const render_compose_not_subscribed = require("../templates/compose_not_subscribed.hbs");
 const render_compose_private_stream_alert = require("../templates/compose_private_stream_alert.hbs");
+
+const rendered_markdown = require("./rendered_markdown");
+const util = require("./util");
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 

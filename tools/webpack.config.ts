@@ -1,17 +1,19 @@
 import {basename, resolve} from "path";
-import {cacheLoader, getExposeLoaders} from "./webpack-helpers";
-import BundleTracker from "webpack4-bundle-tracker";
+
 import CleanCss from "clean-css";
-import DebugRequirePlugin from "./debug-require-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import OptimizeCssAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import TerserPlugin from "terser-webpack-plugin";
 // The devServer member of webpack.Configuration is managed by the
 // webpack-dev-server package. We are only importing the type here.
-import _webpackDevServer from "webpack-dev-server";
-import assets from "./webpack.assets.json";
 import webpack from "webpack";
+import _webpackDevServer from "webpack-dev-server";
+import BundleTracker from "webpack4-bundle-tracker";
+
+import DebugRequirePlugin from "./debug-require-webpack-plugin";
+import {cacheLoader, getExposeLoaders} from "./webpack-helpers";
+import assets from "./webpack.assets.json";
 
 export default (env?: string): webpack.Configuration[] => {
     const production: boolean = env === "production";

@@ -1,4 +1,5 @@
 const util = require("./util");
+
 exports.initialize_pill = function () {
     const container = $("#private_message_recipient").parent();
 

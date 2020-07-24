@@ -2,8 +2,9 @@
 // debugging.  It also exposes the list of modules it knows about as the keys
 // of the require.ids object.
 
-import webpack, {Template} from "webpack";
 import path from "path";
+
+import webpack, {Template} from "webpack";
 
 export default class DebugRequirePlugin {
     apply(compiler: webpack.Compiler): void {

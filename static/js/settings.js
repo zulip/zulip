@@ -1,5 +1,6 @@
-const settings_config = require("./settings_config");
 const render_settings_tab = require("../templates/settings_tab.hbs");
+
+const settings_config = require("./settings_config");
 
 $("body").ready(() => {
     $("#settings_overlay_container").on("click", (e) => {

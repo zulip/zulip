@@ -1,6 +1,16 @@
-const path = require("path");
 const fs = require("fs");
+const Module = require("module");
+const path = require("path");
+
 const escapeRegExp = require("lodash/escapeRegExp");
+
+const finder = require("./finder.js");
+const handlebars = require("./handlebars.js");
+const stub_i18n = require("./i18n.js");
+const namespace = require("./namespace.js");
+const stub = require("./stub.js");
+const make_blueslip = require("./zblueslip.js").make_zblueslip;
+const zjquery = require("./zjquery.js");
 
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
@@ -15,6 +25,7 @@ require("@babel/register")({
 
 global.assert = require("assert").strict;
 global._ = require("underscore/underscore.js");
+
 const _ = global._;
 
 // Create a helper function to avoid sneaky delays in tests.
@@ -23,14 +34,12 @@ function immediate(f) {
 }
 
 // Find the files we need to run.
-const finder = require("./finder.js");
 const files = finder.find_files_to_run(); // may write to console
 if (files.length === 0) {
     throw "No tests found";
 }
 
 // Set up our namespace helpers.
-const namespace = require("./namespace.js");
 global.set_global = namespace.set_global;
 global.patch_builtin = namespace.set_global;
 global.zrequire = namespace.zrequire;
@@ -43,28 +52,19 @@ global.window = new Proxy(global, {
 global.to_$ = () => window;
 
 // Set up stub helpers.
-const stub = require("./stub.js");
 global.make_stub = stub.make_stub;
 global.with_stub = stub.with_stub;
 
 // Set up fake jQuery
-global.make_zjquery = require("./zjquery.js").make_zjquery;
-
-// Set up fake blueslip
-const make_blueslip = require("./zblueslip.js").make_zblueslip;
-
-// Set up fake translation
-const stub_i18n = require("./i18n.js");
+global.make_zjquery = zjquery.make_zjquery;
 
 // Set up Handlebars
-const handlebars = require("./handlebars.js");
 global.make_handlebars = handlebars.make_handlebars;
 global.stub_templates = handlebars.stub_templates;
 
 const noop = function () {};
 
 // Set up fake module.hot
-const Module = require("module");
 Module.prototype.hot = {
     accept: noop,
 };

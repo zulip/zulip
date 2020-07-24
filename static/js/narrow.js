@@ -1,4 +1,5 @@
 const util = require("./util");
+
 let unnarrow_times;
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;

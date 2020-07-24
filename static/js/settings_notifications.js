@@ -1,4 +1,5 @@
 const render_stream_specific_notification_row = require("../templates/settings/stream_specific_notification_row.hbs");
+
 const settings_config = require("./settings_config");
 
 exports.get_notifications_table_row_data = function (notify_settings) {

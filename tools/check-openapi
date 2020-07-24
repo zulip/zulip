@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
 const fs = require("fs");
+
 const jsyaml = require("js-yaml");
-const SwaggerParser = require("swagger-parser");
 const ExampleValidator = require("openapi-examples-validator");
+const SwaggerParser = require("swagger-parser");
 
 (async () => {
     // Iterate through the changed files, passed in the arguments.

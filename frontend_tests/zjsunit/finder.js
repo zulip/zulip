@@ -1,6 +1,7 @@
-const _ = require("underscore/underscore.js");
 const fs = require("fs");
 const path = require("path");
+
+const _ = require("underscore/underscore.js");
 
 exports.find_files_to_run = function () {
     let oneFileFilter = [];

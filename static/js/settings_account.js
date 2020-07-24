@@ -1,6 +1,6 @@
+const render_settings_api_key_modal = require("../templates/settings/api_key_modal.hbs");
 const render_settings_custom_user_profile_field = require("../templates/settings/custom_user_profile_field.hbs");
 const render_settings_dev_env_email_access = require("../templates/settings/dev_env_email_access.hbs");
-const render_settings_api_key_modal = require("../templates/settings/api_key_modal.hbs");
 
 exports.update_email = function (new_email) {
     const email_input = $("#email_value");
