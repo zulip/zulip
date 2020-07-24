@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Optional
 from unittest import mock
 
@@ -61,7 +60,6 @@ class DoRestCallTests(ZulipTestCase):
 
         self.bot_user = self.example_user('outgoing_webhook_bot')
         self.service_handler = GenericOutgoingWebhookService("token", self.bot_user, "service")
-        logging.disable(logging.WARNING)
 
     @mock.patch('zerver.lib.outgoing_webhook.send_response_message')
     def test_successful_request(self, mock_send: mock.Mock) -> None:
@@ -80,7 +78,7 @@ class DoRestCallTests(ZulipTestCase):
         response = ResponseMock(500)
 
         self.mock_event['failed_tries'] = 3
-        with mock.patch('requests.request', return_value=response):
+        with mock.patch('requests.request', return_value=response), mock.patch('logging.warning'):
             do_rest_call('',  None, self.mock_event, self.service_handler)
             bot_owner_notification = self.get_last_message()
             self.assertEqual(bot_owner_notification.content,
@@ -92,7 +90,7 @@ The webhook got a response with status code *500*.''')
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
     def test_fail_request(self, mock_fail_with_message: mock.Mock) -> None:
         response = ResponseMock(400)
-        with mock.patch('requests.request', return_value=response):
+        with mock.patch('requests.request', return_value=response), mock.patch('logging.warning'):
             do_rest_call('', None, self.mock_event, self.service_handler)
             bot_owner_notification = self.get_last_message()
             self.assertTrue(mock_fail_with_message.called)
@@ -103,7 +101,7 @@ The webhook got a response with status code *400*.''')
             self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
 
     def test_headers(self) -> None:
-        with mock.patch('requests.request') as mock_request:
+        with mock.patch('requests.request') as mock_request, mock.patch('logging.warning'):
             do_rest_call('', 'payload-stub', self.mock_event, self.service_handler)
             kwargs = mock_request.call_args[1]
             self.assertEqual(kwargs['data'], 'payload-stub')
@@ -117,7 +115,7 @@ The webhook got a response with status code *400*.''')
 
     def test_error_handling(self) -> None:
         def helper(side_effect: Any, error_text: str) -> None:
-            with mock.patch('logging.info'):
+            with mock.patch('logging.warning'), mock.patch('logging.info'):
                 with mock.patch('requests.request', side_effect=side_effect):
                     do_rest_call('', None, self.mock_event, self.service_handler)
                     bot_owner_notification = self.get_last_message()
