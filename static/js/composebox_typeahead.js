@@ -112,12 +112,6 @@ function get_topic_matcher(query) {
     };
 }
 
-// nextFocus is set on a keydown event to indicate where we should focus on keyup.
-// We can't focus at the time of keydown because we need to wait for typeahead.
-// And we can't compute where to focus at the time of keyup because only the keydown
-// has reliable information about whether it was a Tab or a Shift+Tab.
-let nextFocus = false;
-
 exports.should_enter_send = function (e) {
     const has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
     const has_modifier_key = e.shiftKey || has_non_shift_modifier_key;
@@ -173,6 +167,8 @@ exports.handle_enter = function (textarea, e) {
     // Fall through to native browser behavior, otherwise.
 };
 
+let nextFocus = false;
+
 function handle_keydown(e) {
     const code = e.keyCode || e.which;
 
@@ -189,67 +185,27 @@ function handle_keydown(e) {
         const on_pm = target_sel === "#private_message_recipient";
         const on_compose = target_sel === "#compose-textarea";
 
-        if (on_stream || on_topic || on_pm) {
-            // For Enter, prevent the form from submitting
-            // For Tab, prevent the focus from changing again
-            e.preventDefault();
-        }
-
-        // In the compose_textarea box, preventDefault() for Tab but not for Enter
-        if (on_compose && code !== 13) {
-            e.preventDefault();
-        }
-
-        if (on_stream) {
-            nextFocus = "#stream_message_recipient_topic";
-        } else if (on_topic) {
-            if (code === 13) {
+        if (on_compose && code === 13) {
+            if (exports.should_enter_send(e)) {
                 e.preventDefault();
-            }
-            nextFocus = "#compose-textarea";
-        } else if (on_pm) {
-            nextFocus = "#compose-textarea";
-        } else if (on_compose) {
-            if (code === 13) {
-                nextFocus = false;
-            } else {
-                nextFocus = "#compose-send-button";
-            }
-        } else {
-            nextFocus = false;
-        }
-
-        // If no typeaheads are shown...
-        if (
-            !(
-                $("#stream_message_recipient_topic").data().typeahead.shown ||
-                $("#stream_message_recipient_stream").data().typeahead.shown ||
-                $("#private_message_recipient").data().typeahead.shown ||
-                $("#compose-textarea").data().typeahead.shown
-            )
-        ) {
-            // If no typeaheads are shown and the user is tabbing from the message content box,
-            // then there's no need to wait and we can change the focus right away.
-            // Without this code to change the focus right away, if the user presses Enter
-            // before they fully release the Tab key, the Tab will be lost.  Note that we don't
-            // want to change focus right away in the private_message_recipient box since it
-            // takes the typeaheads a little time to open after the user finishes typing, which
-            // can lead to the focus moving without the autocomplete having a chance to happen.
-            if (nextFocus) {
-                $(nextFocus).trigger("focus");
-                nextFocus = false;
-            }
-
-            if (on_compose && code === 13) {
-                if (exports.should_enter_send(e)) {
-                    e.preventDefault();
-                    if (!$("#compose-send-button").prop("disabled")) {
-                        $("#compose-send-button").prop("disabled", true);
-                        compose.finish();
-                    }
-                    return;
+                if (!$("#compose-send-button").prop("disabled")) {
+                    $("#compose-send-button").prop("disabled", true);
+                    compose.finish();
                 }
-                exports.handle_enter($("#compose-textarea"), e);
+                return;
+            }
+            exports.handle_enter($("#compose-textarea"), e);
+        } else if (on_stream || on_topic || on_pm) {
+            // Prevent the form from submitting
+            e.preventDefault();
+
+            // We are doing the focusing on keyup to not abort the typeahead.
+            if (on_stream) {
+                nextFocus = $("#stream_message_recipient_topic");
+            } else if (on_topic) {
+                nextFocus = $("#compose-textarea");
+            } else if (on_pm) {
+                nextFocus = $("#compose-textarea");
             }
         }
     }
@@ -257,10 +213,11 @@ function handle_keydown(e) {
 
 function handle_keyup(e) {
     const code = e.keyCode || e.which;
+
     if (code === 13 || (code === 9 && !e.shiftKey)) {
         // Enter key or Tab key
         if (nextFocus) {
-            $(nextFocus).trigger("focus");
+            nextFocus.trigger("focus");
             nextFocus = false;
         }
     }
