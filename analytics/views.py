@@ -589,7 +589,10 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                 GROUP BY realm_id
             ) wau_counts
             ON wau_counts.realm_id = realm.id
-        WHERE EXISTS (
+        WHERE
+            realm.plan_type = 3
+            OR
+            EXISTS (
                 SELECT *
                 FROM zerver_useractivity ua
                 JOIN zerver_userprofile up
