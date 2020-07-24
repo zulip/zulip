@@ -1889,6 +1889,25 @@ class CheckMessageTest(ZulipTestCase):
         ret = check_message(sender, client, addressee, message_content)
         self.assertEqual(ret['message'].sender.id, sender.id)
 
+    def test_guest_user_can_send_message(self) -> None:
+        # Guest users can write to web_public streams.
+        sender = self.example_user("polonius")
+        client = make_client(name="test suite")
+        rome_stream = get_stream("Rome", sender.realm)
+
+        is_sender_subscriber = Subscription.objects.filter(
+            user_profile=sender,
+            recipient__type_id=rome_stream.id,
+        ).exists()
+        self.assertFalse(is_sender_subscriber)
+        self.assertTrue(rome_stream.is_web_public)
+
+        topic_name = 'issue'
+        message_content = 'whatever'
+        addressee = Addressee.for_stream_name(rome_stream.name, topic_name)
+        ret = check_message(sender, client, addressee, message_content)
+        self.assertEqual(ret['message'].sender.id, sender.id)
+
     def test_bot_pm_feature(self) -> None:
         """We send a PM to a bot's owner if their bot sends a message to
         an unsubscribed stream"""

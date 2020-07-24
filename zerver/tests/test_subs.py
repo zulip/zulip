@@ -53,6 +53,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.streams import (
     access_stream_by_id,
     access_stream_by_name,
+    can_access_stream_history,
     create_streams_if_needed,
     filter_stream_authorization,
     list_to_streams,
@@ -200,6 +201,11 @@ class TestCreateStreams(ZulipTestCase):
                 "description": "Public stream with public history",
             },
             {
+                "name": "webpublicstream",
+                "description": "Web public stream",
+                "is_web_public": True
+            },
+            {
                 "name": "privatestream",
                 "description": "Private stream with non-public history",
                 "invite_only": True,
@@ -220,10 +226,12 @@ class TestCreateStreams(ZulipTestCase):
 
         created, existing = create_streams_if_needed(realm, stream_dicts)
 
-        self.assertEqual(len(created), 4)
+        self.assertEqual(len(created), 5)
         self.assertEqual(len(existing), 0)
         for stream in created:
             if stream.name == 'publicstream':
+                self.assertTrue(stream.history_public_to_subscribers)
+            if stream.name == 'webpublicstream':
                 self.assertTrue(stream.history_public_to_subscribers)
             if stream.name == 'privatestream':
                 self.assertFalse(stream.history_public_to_subscribers)
@@ -4288,6 +4296,14 @@ class AccessStreamTest(ZulipTestCase):
         self.assertEqual(stream.id, stream_ret.id)
         self.assertEqual(sub_ret.recipient, rec_ret)
         self.assertEqual(sub_ret.recipient.type_id, stream.id)
+
+        stream_name = "web_public_stream"
+        stream = self.make_stream(stream_name, guest_user_profile.realm, is_web_public=True)
+        # Guest users have access to web public streams even if they aren't subscribed.
+        (stream_ret, rec_ret, sub_ret) = access_stream_by_id(guest_user_profile, stream.id)
+        self.assertTrue(can_access_stream_history(guest_user_profile, stream))
+        assert sub_ret is None
+        self.assertEqual(stream.id, stream_ret.id)
 
 class StreamTrafficTest(ZulipTestCase):
     def test_average_weekly_stream_traffic_calculation(self) -> None:
