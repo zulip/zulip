@@ -1,4 +1,5 @@
 const katex = require("katex/dist/katex.min.js");
+
 const fenced_code = require("../shared/js/fenced_code");
 
 // This contains zulip's frontend markdown implementation; see
