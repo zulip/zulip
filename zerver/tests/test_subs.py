@@ -2871,6 +2871,21 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(filter_stream_authorization(guest_user, [stream]),
                          ([], [stream]))
 
+        web_public_stream = self.make_stream('web_public_stream', is_web_public=True)
+        public_stream = self.make_stream('public_stream', invite_only=False)
+        private_stream = self.make_stream('private_stream2', invite_only=True)
+        # This test should be added as soon as the subscription endpoint allows
+        # guest users to subscribe to web public streams. Although they are already
+        # authorized, the decorator in "add_subscriptions_backend" still needs to be
+        # deleted.
+        #
+        # result = self.common_subscribe_to_streams(guest_user, ['web_public_stream'],
+        #                                           is_web_public=True, allow_fail=True)
+        # self.assert_json_success(result)
+        streams_to_sub = [web_public_stream, public_stream, private_stream]
+        self.assertEqual(filter_stream_authorization(guest_user, streams_to_sub),
+                         ([web_public_stream], [public_stream, private_stream]))
+
     def test_users_getting_add_peer_event(self) -> None:
         """
         Check users getting add_peer_event is correct

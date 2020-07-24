@@ -408,6 +408,10 @@ def filter_stream_authorization(user_profile: UserProfile,
         if stream.id in streams_subscribed:
             continue
 
+        # Web public streams are accessible even to guests
+        if stream.is_web_public:
+            continue
+
         # Members and administrators are authorized for public streams
         if not stream.invite_only and not user_profile.is_guest:
             continue
