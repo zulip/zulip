@@ -33,4 +33,5 @@ Vishnu KS <yo@vishnuks.com> <yo@vishnuks.com>
 # Some major contributors of Zulip whose email in commit messages are not associated
 # to any GitHub account. mailmap entry added to group the commits togather so that there
 # are no multiple entries in /team page.
+Allen Rabinovich <allenr@zulip.com> <allenr@humbughq.com>
 Jeff Arnold <jbarnold@zulip.com> <jbarnold@humbughq.com>
