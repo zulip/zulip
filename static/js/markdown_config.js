@@ -1,3 +1,6 @@
+// TODO: move to markdown.
+const emoji = require("../shared/js/emoji");
+
 /*
     This config is in a separate file for partly
     tactical reasons.  We want the webapp to

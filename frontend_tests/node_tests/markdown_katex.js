@@ -12,7 +12,6 @@ const markdown_config = zrequire("markdown_config");
 set_global("marked", zrequire("marked", "third/marked/lib/marked"));
 set_global("page_params", {});
 
-zrequire("emoji");
 zrequire("hash_util");
 zrequire("message_store");
 zrequire("people");

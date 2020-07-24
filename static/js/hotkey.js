@@ -1,3 +1,5 @@
+const emoji = require("../shared/js/emoji");
+
 function do_narrow_action(action) {
     action(current_msg_list.selected_id(), {trigger: "hotkey"});
     return true;

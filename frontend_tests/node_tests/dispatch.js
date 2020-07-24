@@ -66,7 +66,6 @@ const page_params = global.page_params;
 
 // For data-oriented modules, just use them, don't stub them.
 zrequire("alert_words");
-zrequire("emoji");
 zrequire("unread");
 zrequire("stream_topic_history");
 zrequire("stream_list");
@@ -76,6 +75,8 @@ zrequire("people");
 zrequire("starred_messages");
 zrequire("user_status");
 zrequire("subs");
+
+const emoji = zrequire("emoji", "shared/js/emoji");
 
 zrequire("server_events_dispatch");
 zrequire("panels");

@@ -27,7 +27,7 @@ set_global("overlays", {});
 set_global("document", "document-stub");
 set_global("$", global.make_zjquery());
 
-zrequire("emoji");
+const emoji = zrequire("emoji", "shared/js/emoji");
 
 emoji.initialize({
     realm_emoji: {},

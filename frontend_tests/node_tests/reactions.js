@@ -2,8 +2,8 @@ set_global("document", "document-stub");
 set_global("$", global.make_zjquery());
 
 const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+const emoji = zrequire("emoji", "shared/js/emoji");
 
-zrequire("emoji");
 zrequire("people");
 zrequire("reactions");
 

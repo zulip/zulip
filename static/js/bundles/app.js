@@ -182,7 +182,6 @@ import "../settings_profile_fields.js";
 import "../settings.js";
 import "../admin.js";
 import "../tab_bar.js";
-import "../emoji.js";
 import "../bot_data.js";
 import "../reactions.js";
 import "../typing.js";

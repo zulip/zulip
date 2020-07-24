@@ -1,4 +1,5 @@
 const generated_emoji_codes = require("../generated/emoji/emoji_codes.json");
+const emoji = require("../shared/js/emoji");
 
 const emojisets = require("./emojisets");
 const markdown_config = require("./markdown_config");

@@ -1,3 +1,5 @@
+const emoji = require("../shared/js/emoji");
+
 const settings_config = require("./settings_config");
 
 exports.dispatch_normal_event = function dispatch_normal_event(event) {

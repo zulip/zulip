@@ -2,6 +2,7 @@ const autosize = require("autosize");
 const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
 
 const pygments_data = require("../generated/pygments_data.json");
+const emoji = require("../shared/js/emoji");
 const typeahead = require("../shared/js/typeahead");
 
 const settings_data = require("./settings_data");

@@ -1,7 +1,7 @@
+const emoji = zrequire("emoji", "shared/js/emoji");
 const typeahead = zrequire("typeahead", "shared/js/typeahead");
 zrequire("compose_state");
 zrequire("pm_conversations");
-zrequire("emoji");
 set_global("Handlebars", global.make_handlebars());
 zrequire("templates");
 zrequire("typeahead_helper");

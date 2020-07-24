@@ -1,3 +1,4 @@
+const emoji = require("../shared/js/emoji");
 const render_message_reaction = require("../templates/message_reaction.hbs");
 
 exports.view = {}; // function namespace
