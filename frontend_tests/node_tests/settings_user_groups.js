@@ -3,6 +3,7 @@
 const _ = require("lodash");
 
 zrequire("user_pill");
+zrequire("pill_typeahead");
 zrequire("settings_user_groups");
 
 set_global("$", global.make_zjquery());

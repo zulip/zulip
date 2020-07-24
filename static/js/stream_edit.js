@@ -343,7 +343,7 @@ function show_subscription_settings(sub_row) {
     });
 
     const opts = {source: get_users_for_subscriber_typeahead};
-    user_pill.set_up_typeahead_on_pills(sub_settings.find(".input"), exports.pill_widget, opts);
+    pill_typeahead.set_up(sub_settings.find(".input"), exports.pill_widget, opts);
 }
 
 exports.is_notification_setting = function (setting_label) {

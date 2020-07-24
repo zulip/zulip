@@ -188,6 +188,7 @@
                 "padded_widget": false,
                 "page_params": false,
                 "panels": false,
+                "pill_typeahead": false,
                 "people": false,
                 "pm_conversations": false,
                 "pm_list": false,

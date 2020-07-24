@@ -257,12 +257,12 @@ exports.initialize_custom_user_type_fields = function (
                 const input = pill_container.children(".input");
                 if (set_handler_on_update) {
                     const opts = {update_func: update_custom_user_field};
-                    user_pill.set_up_typeahead_on_pills(input, pills, opts);
+                    pill_typeahead.set_up(input, pills, opts);
                     pills.onPillRemove(() => {
                         update_custom_user_field();
                     });
                 } else {
-                    user_pill.set_up_typeahead_on_pills(input, pills, {});
+                    pill_typeahead.set_up(input, pills, {});
                 }
             }
             user_pills.set(field.id, pills);

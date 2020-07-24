@@ -2,7 +2,6 @@
 
 // This will be used for pills for things like composing PMs
 // or adding users to a stream/group.
-const settings_data = require("./settings_data");
 
 exports.create_item_from_email = function (email, current_items) {
     // For normal Zulip use, we need to validate the email for our realm.
@@ -90,7 +89,7 @@ exports.has_unconverted_data = function (pill_widget) {
 
 exports.typeahead_source = function (pill_widget) {
     const persons = people.get_realm_users();
-    return exports.filter_taken_users(persons, pill_widget);
+    return user_pill.filter_taken_users(persons, pill_widget);
 };
 
 exports.filter_taken_users = function (items, pill_widget) {
@@ -117,45 +116,6 @@ exports.create_pills = function (pill_container) {
         get_text_from_item: exports.get_email_from_item,
     });
     return pills;
-};
-
-exports.set_up_typeahead_on_pills = function (input, pills, opts) {
-    let source = opts.source;
-    if (!opts.source) {
-        source = () => exports.typeahead_source(pills);
-    }
-
-    input.typeahead({
-        items: 5,
-        fixed: true,
-        dropup: true,
-        source,
-        highlighter(item) {
-            return typeahead_helper.render_person(item);
-        },
-        matcher(item) {
-            let query = this.query.toLowerCase();
-            query = query.replace(/\u00A0/g, String.fromCharCode(32));
-            if (!settings_data.show_email()) {
-                return item.full_name.toLowerCase().includes(query);
-            }
-            const email = people.get_visible_email(item);
-            return (
-                email.toLowerCase().includes(query) || item.full_name.toLowerCase().includes(query)
-            );
-        },
-        sorter(matches) {
-            return typeahead_helper.sort_recipientbox_typeahead(this.query, matches, "");
-        },
-        updater(user) {
-            exports.append_user(user, pills);
-            input.trigger("focus");
-            if (opts.update_func) {
-                opts.update_func();
-            }
-        },
-        stopAdvance: true,
-    });
 };
 
 window.user_pill = exports;

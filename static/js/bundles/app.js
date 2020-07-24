@@ -115,6 +115,7 @@ import "../typeahead_helper.js";
 import "../search_suggestion.js";
 import "../search.js";
 import "../composebox_typeahead.js";
+import "../pill_typeahead.js";
 import "../navigate.js";
 import "../list_util.js";
 import "../hotkey.js";
