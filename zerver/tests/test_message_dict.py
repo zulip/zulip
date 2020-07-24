@@ -1,4 +1,3 @@
-import time
 from typing import Any, Dict, List, Union
 from unittest import mock
 
@@ -176,7 +175,6 @@ class MessageDictTest(ZulipTestCase):
         self.assertTrue(num_ids >= 600)
 
         flush_per_request_caches()
-        t = time.time()
         with queries_captured() as queries:
             rows = list(MessageDict.get_raw_db_rows(ids))
 
@@ -186,13 +184,6 @@ class MessageDictTest(ZulipTestCase):
             ]
             MessageDict.post_process_dicts(objs, apply_markdown=False, client_gravatar=False)
 
-        delay = time.time() - t
-        # Make sure we don't take longer than 1.5ms per message to
-        # extract messages.  Note that we increased this from 1ms to
-        # 1.5ms to handle tests running in parallel being a bit
-        # slower.
-        error_msg = f"Number of ids: {num_ids}. Time delay: {delay}"
-        self.assertTrue(delay < 0.0015 * num_ids, error_msg)
         self.assert_length(queries, 7)
         self.assertEqual(len(rows), num_ids)
 
