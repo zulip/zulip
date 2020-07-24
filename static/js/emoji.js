@@ -185,7 +185,7 @@ exports.get_canonical_name = function (emoji_name) {
     }
     const codepoint = exports.get_emoji_codepoint(emoji_name);
     if (codepoint === undefined) {
-        blueslip.error("Invalid emoji name: " + emoji_name);
+        // Our caller needs to handle this possibility.
         return;
     }
 

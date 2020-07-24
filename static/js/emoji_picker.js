@@ -298,6 +298,12 @@ function update_emoji_showcase($focused_emoji) {
     // of converting emoji names like :100:, :1234: etc to number.
     const focused_emoji_name = $focused_emoji.attr("data-emoji-name");
     const canonical_name = emoji.get_canonical_name(focused_emoji_name);
+
+    if (!canonical_name) {
+        blueslip.error("Invalid focused_emoji_name: " + focused_emoji_name);
+        return;
+    }
+
     const focused_emoji_dict = emoji.emojis_by_name.get(canonical_name);
 
     const emoji_dict = {

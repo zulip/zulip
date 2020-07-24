@@ -23,8 +23,8 @@ run_test("get_canonical_name", () => {
     canonical_name = emoji.get_canonical_name("airplane");
     assert.equal(canonical_name, "airplane");
 
-    blueslip.expect("error", "Invalid emoji name: non_existent");
-    emoji.get_canonical_name("non_existent");
+    canonical_name = emoji.get_canonical_name("non_existent");
+    assert.equal(canonical_name, undefined);
 });
 
 run_test("get_emoji_* API", () => {
