@@ -167,6 +167,7 @@
     height: 100px;
     border-radius: 5px;
     box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+    margin-bottom: 10px;
 
     .image-delete-text {
         top: 40px;
@@ -183,6 +184,12 @@
         height: 40px;
         top: 30%;
         right: 30%;
+    }
+
+    .image_file_input_error {
+        height: 30px;
+        width: 200px;
+        display: block;
     }
 }
 
