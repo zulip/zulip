@@ -44,13 +44,13 @@ function message_hover(message_row) {
         message_row
             .find(".edit_content")
             .html(
-                '<i class="fa fa-pencil edit_content_button" aria-hidden="true" title="Edit (e)"></i>',
+                '<i class="fa fa-pencil edit_content_button" aria-hidden="true" title="{{ _("Edit") }} (e)"></i>',
             );
     } else {
         message_row
             .find(".edit_content")
             .html(
-                '<i class="fa fa-file-code-o edit_content_button" aria-hidden="true" title="View source (e)" data-message-id="' +
+                '<i class="fa fa-file-code-o edit_content_button" aria-hidden="true" title="{{ _("View source") }} (e)" data-message-id="' +
                     id +
                     '"></i>',
             );
