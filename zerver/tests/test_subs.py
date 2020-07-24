@@ -398,6 +398,21 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(stream.invite_only)
         self.assertTrue(stream.history_public_to_subscribers)
 
+    def test_create_web_public_stream(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        self.make_stream('web_public_stream',
+                         realm=realm,
+                         is_web_public=True,
+                         history_public_to_subscribers=True)
+
+        stream = get_stream('web_public_stream', realm)
+
+        self.assertTrue(stream.history_public_to_subscribers)
+        self.assertTrue(stream.is_web_public)
+        self.assertFalse(stream.invite_only)
+
     def test_make_stream_private(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login_user(user_profile)
