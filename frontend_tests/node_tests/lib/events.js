@@ -307,8 +307,18 @@ exports.fixtures = {
     realm_emoji: {
         type: "realm_emoji",
         realm_emoji: {
-            airplane: {
-                source_url: "some_url",
+            101: {
+                id: "101",
+                name: "spain",
+                source_url: "/some/path/to/spain.png",
+                deactivated: false,
+            },
+            102: {
+                id: "102",
+                name: "green_tick",
+                author_id: 222,
+                deactivated: false,
+                source_url: "/some/path/to/emoji",
             },
         },
     },
