@@ -4879,8 +4879,6 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values(
             *Stream.API_FIELDS,
-            # date_created is used as an input for the stream_weekly_traffic computed field.
-            "date_created",
             # The realm_id and recipient_id are generally not needed in the API.
             "realm_id",
             "recipient_id",
@@ -4933,6 +4931,9 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         for field_name in Stream.API_FIELDS:
             if field_name == "id":
                 stream_dict['stream_id'] = stream["id"]
+                continue
+            elif field_name == "date_created":
+                stream_dict['date_created'] = datetime_to_timestamp(stream[field_name])
                 continue
             stream_dict[field_name] = stream[field_name]
 
@@ -4990,6 +4991,9 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             for field_name in Stream.API_FIELDS:
                 if field_name == "id":
                     stream_dict['stream_id'] = stream["id"]
+                    continue
+                elif field_name == "date_created":
+                    stream_dict['date_created'] = datetime_to_timestamp(stream[field_name])
                     continue
                 stream_dict[field_name] = stream[field_name]
 

@@ -4122,6 +4122,10 @@ components:
             The short description of the stream in text/markdown format,
             intended to be used to prepopulate UI for editing a stream's
             description.
+        date_created:
+          type: integer
+          description: |
+            The UNIX timestamp for when the stream was created, in UTC seconds.
         invite_only:
           type: boolean
           description: |
@@ -4223,6 +4227,10 @@ components:
             work correctly.  And any client-side security logic for
             user-generated message content should be applied when displaying
             this HTML as though it were the body of a Zulip message.
+        date_created:
+          type: integer
+          description: |
+            The UNIX timestamp for when the stream was created, in UTC seconds.
         invite_only:
           type: boolean
           description: |

@@ -38,6 +38,7 @@ basic_stream_fields = [
     ("rendered_description", check_string),
     ("stream_id", check_int),
     ("stream_post_policy", check_int),
+    ("date_created", check_int),
 ]
 
 subscription_fields: Sequence[Tuple[str, Validator[object]]] = [
