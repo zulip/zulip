@@ -316,19 +316,15 @@ exports.fixtures = {
     realm_user__add: {
         type: "realm_user",
         op: "add",
-        person: {
-            email: "added@example.com",
-            full_name: "Added Person",
-            user_id: 1001,
-        },
+        person: exports.test_user,
     },
 
     realm_user__remove: {
         type: "realm_user",
         op: "remove",
         person: {
-            email: "added@example.com",
-            user_id: 1001,
+            email: exports.test_user.email,
+            user_id: exports.test_user.user_id,
         },
     },
 
@@ -336,9 +332,8 @@ exports.fixtures = {
         type: "realm_user",
         op: "update",
         person: {
-            email: "alice@example.com",
-            full_name: "Alice NewName",
-            // etc.
+            user_id: exports.test_user.user_id,
+            full_name: "Bob NewName",
         },
     },
 

@@ -510,7 +510,7 @@ with_overrides((override) => {
     let event = event_fixtures.realm_user__add;
     dispatch(event);
     const added_person = people.get_by_user_id(event.person.user_id);
-    assert.equal(added_person.full_name, "Added Person");
+    assert.equal(added_person.full_name, "Test User");
     assert(people.is_active_user_for_popover(event.person.user_id));
 
     event = event_fixtures.realm_user__remove;
@@ -519,7 +519,7 @@ with_overrides((override) => {
 
     // We don't actually remove the person, we just deactivate them.
     const removed_person = people.get_by_user_id(event.person.user_id);
-    assert.equal(removed_person.full_name, "Added Person");
+    assert.equal(removed_person.full_name, "Test User");
     assert(!people.is_active_user_for_popover(event.person.user_id));
 
     event = event_fixtures.realm_user__update;
