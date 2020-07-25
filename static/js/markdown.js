@@ -1,6 +1,7 @@
 const katex = require("katex/dist/katex.min.js");
 const _ = require("lodash");
 
+const emoji = require("../shared/js/emoji");
 const fenced_code = require("../shared/js/fenced_code");
 
 // This contains zulip's frontend markdown implementation; see
@@ -61,7 +62,7 @@ exports.translate_emoticons_to_names = (text) => {
         return match;
     };
 
-    for (const translation of helpers.get_emoticon_translations()) {
+    for (const translation of emoji.get_emoticon_translations()) {
         // We can't pass replacement_text directly into
         // emoticon_replacer, because emoticon_replacer is
         // a callback for `replace()`.  Instead we just mutate
@@ -263,7 +264,7 @@ function make_emoji_span(codepoint, title, alt_text) {
 
 function handleUnicodeEmoji(unicode_emoji) {
     const codepoint = unicode_emoji.codePointAt(0).toString(16);
-    const emoji_name = helpers.get_emoji_name(codepoint);
+    const emoji_name = emoji.get_emoji_name(codepoint);
 
     if (emoji_name) {
         const alt_text = ":" + emoji_name + ":";
@@ -285,7 +286,7 @@ function handleEmoji(emoji_name) {
     // Otherwise we'll look at unicode emoji to render with an emoji
     // span using the spritesheet; and if it isn't one of those
     // either, we pass through the plain text syntax unmodified.
-    const emoji_url = helpers.get_realm_emoji_url(emoji_name);
+    const emoji_url = emoji.get_realm_emoji_url(emoji_name);
 
     if (emoji_url) {
         return (
@@ -301,7 +302,7 @@ function handleEmoji(emoji_name) {
         );
     }
 
-    const codepoint = helpers.get_emoji_codepoint(emoji_name);
+    const codepoint = emoji.get_emoji_codepoint(emoji_name);
     if (codepoint) {
         return make_emoji_span(codepoint, title, alt_text);
     }
