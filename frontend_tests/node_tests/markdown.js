@@ -387,7 +387,6 @@ run_test("marked", () => {
             expected:
                 '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
         },
-        {input: "\u{1f6b2}", expected: "<p>\u{1f6b2}</p>"},
         {
             input: "Silent mention: @_**Cordelia Lear**",
             expected:
@@ -523,11 +522,6 @@ run_test("marked", () => {
                 '<p><a class="stream-topic" data-stream-id="5" href="/#narrow/stream/5-.26-.26.20.26amp.3B/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; > &amp; &amp; &amp;amp;</a></p>',
         },
     ];
-
-    // We remove one of the unicode emoji we put as input in one of the test
-    // cases (U+1F6B2), to verify that we display the emoji as it was input if it
-    // isn't present in emoji_codes.codepoint_to_name.
-    delete emoji_codes.codepoint_to_name["1f6b2"];
 
     test_cases.forEach((test_case) => {
         // Disable emoji conversion by default.
@@ -746,4 +740,30 @@ run_test("translate_emoticons_to_names", () => {
             assert.equal(result, expected);
         }
     }
+});
+
+run_test("missing unicode emojis", () => {
+    const message = {raw_content: "\u{1f6b2}"};
+
+    markdown.apply_markdown(message);
+    assert.equal(
+        message.content,
+        '<p><span aria-label="bike" class="emoji emoji-1f6b2" role="img" title="bike">:bike:</span></p>',
+    );
+
+    // Now simulate that we don't know any emoji names.
+    function fake_get_emoji_name(codepoint) {
+        assert.equal(codepoint, "1f6b2");
+        // return undefined
+    }
+
+    const config = {
+        ...markdown_config.get_helpers(),
+        get_emoji_name: fake_get_emoji_name,
+    };
+
+    markdown.initialize(page_params.realm_filters, config);
+
+    markdown.apply_markdown(message);
+    assert.equal(message.content, "<p>\u{1f6b2}</p>");
 });
