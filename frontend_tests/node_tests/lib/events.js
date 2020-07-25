@@ -575,6 +575,7 @@ exports.fixtures = {
         operation: "add",
         flag: "read",
         messages: [999],
+        all: false,
     },
 
     update_message_flags__starred_add: {
@@ -582,6 +583,7 @@ exports.fixtures = {
         operation: "add",
         flag: "starred",
         messages: [exports.test_message.id],
+        all: false,
     },
 
     update_message_flags__starred_remove: {
@@ -589,6 +591,7 @@ exports.fixtures = {
         operation: "remove",
         flag: "starred",
         messages: [exports.test_message.id],
+        all: false,
     },
 
     delete_message: {
