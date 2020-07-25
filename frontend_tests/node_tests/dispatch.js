@@ -568,7 +568,7 @@ with_overrides((override) => {
         const args = stub.get_args("streams");
         assert_same(
             args.streams.map((stream) => stream.stream_id),
-            [42, 99],
+            [101, 102],
         );
     });
 
