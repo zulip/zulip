@@ -101,6 +101,38 @@ exports.get_realm_emoji_url = (emoji_name) => {
     return data.emoji_url;
 };
 
+exports.build_emoji_data = function (realm_emojis) {
+    exports.emojis_by_name.clear();
+    for (const [realm_emoji_name, realm_emoji] of realm_emojis) {
+        const emoji_dict = {
+            name: realm_emoji_name,
+            display_name: realm_emoji_name,
+            aliases: [realm_emoji_name],
+            is_realm_emoji: true,
+            url: realm_emoji.emoji_url,
+            has_reacted: false,
+        };
+        exports.emojis_by_name.set(realm_emoji_name, emoji_dict);
+    }
+
+    for (const codepoints of Object.values(emoji_codes.emoji_catalog)) {
+        for (const codepoint of codepoints) {
+            const emoji_name = exports.get_emoji_name(codepoint);
+            if (emoji_name !== undefined && !exports.emojis_by_name.has(emoji_name)) {
+                const emoji_dict = {
+                    name: emoji_name,
+                    display_name: emoji_name,
+                    aliases: default_emoji_aliases.get(codepoint),
+                    is_realm_emoji: false,
+                    emoji_code: codepoint,
+                    has_reacted: false,
+                };
+                exports.emojis_by_name.set(emoji_name, emoji_dict);
+            }
+        }
+    }
+};
+
 exports.update_emojis = function (realm_emojis) {
     // The settings code still works with the
     // server format of the data.
@@ -146,38 +178,6 @@ exports.initialize = function initialize(params) {
     }
 
     exports.update_emojis(params.realm_emoji);
-};
-
-exports.build_emoji_data = function (realm_emojis) {
-    exports.emojis_by_name.clear();
-    for (const [realm_emoji_name, realm_emoji] of realm_emojis) {
-        const emoji_dict = {
-            name: realm_emoji_name,
-            display_name: realm_emoji_name,
-            aliases: [realm_emoji_name],
-            is_realm_emoji: true,
-            url: realm_emoji.emoji_url,
-            has_reacted: false,
-        };
-        exports.emojis_by_name.set(realm_emoji_name, emoji_dict);
-    }
-
-    for (const codepoints of Object.values(emoji_codes.emoji_catalog)) {
-        for (const codepoint of codepoints) {
-            const emoji_name = exports.get_emoji_name(codepoint);
-            if (emoji_name !== undefined && !exports.emojis_by_name.has(emoji_name)) {
-                const emoji_dict = {
-                    name: emoji_name,
-                    display_name: emoji_name,
-                    aliases: default_emoji_aliases.get(codepoint),
-                    is_realm_emoji: false,
-                    emoji_code: codepoint,
-                    has_reacted: false,
-                };
-                exports.emojis_by_name.set(emoji_name, emoji_dict);
-            }
-        }
-    }
 };
 
 exports.get_canonical_name = function (emoji_name) {
