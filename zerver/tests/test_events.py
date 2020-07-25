@@ -1882,10 +1882,13 @@ class NormalActionsTest(BaseAction):
 
         with mock.patch('zerver.lib.export.do_export_realm',
                         return_value=create_dummy_file('test-export.tar.gz')):
-            with stdout_suppressed():
+            with stdout_suppressed(), self.assertLogs(level='INFO') as info_logs:
                 events = self.verify_action(
                     lambda: self.client_post('/json/export/realm'),
                     state_change_expected=True, num_events=3)
+            self.assertTrue(
+                'INFO:root:Completed data export for zulip in' in info_logs.output[0]
+            )
 
         # We first notify when an export is initiated,
         pending_schema_checker('events[0]', events[0])
