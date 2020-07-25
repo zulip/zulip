@@ -1603,7 +1603,11 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.url, self.CONFIG_ERROR_URL)
 
     def test_config_error_page(self) -> None:
-        result = self.client_get("/accounts/login/social/saml")
+        with self.assertLogs(level='INFO') as info_log:
+            result = self.client_get("/accounts/login/social/saml")
+        self.assertEqual(info_log.output, [
+            'INFO:root:Attempted to initiate SAML authentication with wrong idp argument: None'
+        ])
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, '/config-error/saml')
         result = self.client_get(result.url)
@@ -1853,15 +1857,23 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
     def test_social_auth_saml_login_bad_idp_arg(self) -> None:
         for action in ['login', 'register']:
-            result = self.client_get(f'/accounts/{action}/social/saml')
+            with self.assertLogs(level='INFO') as info_log:
+                result = self.client_get(f'/accounts/{action}/social/saml')
             # Missing idp argument.
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/config-error/saml')
+            self.assertEqual(info_log.output, [
+                'INFO:root:Attempted to initiate SAML authentication with wrong idp argument: None'
+            ])
 
-            result = self.client_get(f'/accounts/{action}/social/saml/nonexistent_idp')
+            with self.assertLogs(level='INFO') as info_log:
+                result = self.client_get(f'/accounts/{action}/social/saml/nonexistent_idp')
             # No such IdP is configured.
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/config-error/saml')
+            self.assertEqual(info_log.output, [
+                'INFO:root:Attempted to initiate SAML authentication with wrong idp argument: nonexistent_idp'
+            ])
 
             result = self.client_get(f'/accounts/{action}/social/saml/')
             # No matching url pattern.
@@ -3478,8 +3490,12 @@ class TestTwoFactor(ZulipTestCase):
             first_step_data = {"username": email,
                                "password": password,
                                "two_factor_login_view-current_step": "auth"}
-            result = self.client_post("/accounts/login/", first_step_data)
+            with self.assertLogs('two_factor.gateways.fake', 'INFO') as info_log:
+                result = self.client_post("/accounts/login/", first_step_data)
             self.assertEqual(result.status_code, 200)
+            self.assertEqual(info_log.output, [
+                'INFO:two_factor.gateways.fake:Fake SMS to +12125550100: "Your token is: 123456"'
+            ])
 
             second_step_data = {"token-otp_token": str(token),
                                 "two_factor_login_view-current_step": "token"}
