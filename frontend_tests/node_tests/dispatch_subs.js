@@ -103,7 +103,7 @@ test("add error handling", (override) => {
     global.with_stub((stub) => {
         override("blueslip.error", stub.f);
         dispatch(event);
-        assert.deepEqual(stub.get_args("param").param, "Subscribing to unknown stream with ID 42");
+        assert.deepEqual(stub.get_args("param").param, "Subscribing to unknown stream with ID 101");
     });
 });
 

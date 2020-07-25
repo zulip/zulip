@@ -17,6 +17,35 @@ exports.test_message = {
     id: 99,
 };
 
+const streams = {
+    devel: {
+        name: "devel",
+        description: ":devel fun:",
+        rendered_description: "<b>devel fun</b>",
+        invite_only: false,
+        stream_id: 101,
+        first_message_id: 1,
+        history_public_to_subscribers: false,
+        is_announcement_only: false,
+        is_web_public: false,
+        message_retention_days: null,
+        stream_post_policy: 1,
+    },
+    test: {
+        name: "test",
+        description: "test desc",
+        rendered_description: "test desc",
+        invite_only: true,
+        stream_id: 102,
+        first_message_id: 1,
+        history_public_to_subscribers: false,
+        is_web_public: false,
+        is_announcement_only: false,
+        message_retention_days: null,
+        stream_post_policy: 1,
+    },
+};
+
 exports.fixtures = {
     alert_words: {
         type: "alert_words",
@@ -29,20 +58,7 @@ exports.fixtures = {
 
     default_streams: {
         type: "default_streams",
-        default_streams: [
-            {
-                name: "devel",
-                description: "devel",
-                invite_only: false,
-                stream_id: 1,
-            },
-            {
-                name: "test",
-                description: "test",
-                invite_only: true,
-                stream_id: 1,
-            },
-        ],
+        default_streams: [streams.devel, streams.test],
     },
 
     hotspots: {
@@ -354,7 +370,7 @@ exports.fixtures = {
     stream__create: {
         type: "stream",
         op: "create",
-        streams: [{stream_id: 42}, {stream_id: 99}],
+        streams: [streams.devel, streams.test],
     },
 
     stream__delete: {
@@ -377,11 +393,19 @@ exports.fixtures = {
         op: "add",
         subscriptions: [
             {
-                name: "devel",
-                stream_id: 42,
-                subscribers: ["alice@example.com", "bob@example.com"],
-                email_address: "devel+0138515295f4@zulipdev.com:9991",
-                // etc.
+                ...streams.devel,
+                audible_notifications: true,
+                color: "blue",
+                desktop_notifications: false,
+                email_address: "whatever",
+                email_notifications: false,
+                in_home_view: false,
+                is_muted: true,
+                pin_to_top: false,
+                push_notifications: false,
+                stream_weekly_traffic: 40,
+                wildcard_mentions_notify: false,
+                subscribers: [5, 8, 13, 21],
             },
         ],
     },
