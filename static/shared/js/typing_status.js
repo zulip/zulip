@@ -1,4 +1,4 @@
-import _ from "underscore";
+import _ from "lodash";
 
 // The following constants are tuned to work with
 // TYPING_STARTED_EXPIRY_PERIOD, which is what the other

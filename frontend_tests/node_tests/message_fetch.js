@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 set_global("$", global.make_zjquery());
 set_global("document", "document-stub");
 

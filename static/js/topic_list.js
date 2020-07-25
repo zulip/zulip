@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const render_more_topics = require("../templates/more_topics.hbs");
 const render_more_topics_spinner = require("../templates/more_topics_spinner.hbs");
 const render_topic_list_item = require("../templates/topic_list_item.hbs");

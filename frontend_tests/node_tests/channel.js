@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 set_global("$", {});
 
 set_global("reload", {});

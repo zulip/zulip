@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const emojisets = require("./emojisets");
 const markdown_config = require("./markdown_config");
 

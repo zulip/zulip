@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const _page_params = {};
 
 set_global("page_params", _page_params);

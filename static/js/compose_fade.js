@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const util = require("./util");
 
 let focused_recipient;

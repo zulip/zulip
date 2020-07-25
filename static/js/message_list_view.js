@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const render_bookend = require("../templates/bookend.hbs");
 const render_message_group = require("../templates/message_group.hbs");
 const render_recipient_row = require("../templates/recipient_row.hbs");
@@ -475,7 +477,7 @@ MessageListView.prototype = {
                 // rerender the last message
                 message_actions.rerender_messages_next_same_sender.push(prev_msg_container);
                 message_actions.append_messages = _.first(new_message_groups).message_containers;
-                new_message_groups = _.rest(new_message_groups);
+                new_message_groups = _.tail(new_message_groups);
             } else if (first_group !== undefined && second_group !== undefined) {
                 if (same_day(prev_msg_container, curr_msg_container)) {
                     clear_group_date_divider(second_group);

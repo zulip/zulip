@@ -21,7 +21,7 @@
  */
 
 const {JSDOM} = require("jsdom");
-const _ = require("underscore");
+const _ = require("lodash");
 
 const mdiff = require("./mdiff.js");
 

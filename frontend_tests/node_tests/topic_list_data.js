@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 set_global("narrow_state", {});
 set_global("unread", {});
 set_global("muting", {});

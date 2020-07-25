@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const requires = [];
 const new_globals = new Set();
 let old_globals = {};

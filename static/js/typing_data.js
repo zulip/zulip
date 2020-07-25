@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const util = require("./util");
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
@@ -46,7 +48,7 @@ exports.get_group_typists = function (group) {
 exports.get_all_typists = function () {
     let typists = [].concat(...Array.from(typist_dct.values()));
     typists = util.sorted_ids(typists);
-    typists = _.uniq(typists, true);
+    typists = _.sortedUniq(typists);
     return typists;
 };
 

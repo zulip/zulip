@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 zrequire("people");
 set_global("message_store", {});
 set_global("page_params", {});

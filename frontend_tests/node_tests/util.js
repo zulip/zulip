@@ -1,4 +1,5 @@
 const {JSDOM} = require("jsdom");
+const _ = require("lodash");
 
 set_global("$", global.make_zjquery());
 set_global("DOMParser", new JSDOM().window.DOMParser);

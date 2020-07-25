@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const render_subscription = require("../templates/subscription.hbs");
 const render_subscription_settings = require("../templates/subscription_settings.hbs");
 const render_subscription_table_body = require("../templates/subscription_table_body.hbs");

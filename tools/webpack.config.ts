@@ -240,7 +240,7 @@ export default (env?: string): webpack.Configuration[] => {
     };
 
     // Expose Global variables for third party libraries to webpack modules
-    // Use the unminified versions of jquery and underscore so that
+    // Use the unminified version of jquery so that
     // Good error messages show up in production and development in the source maps
     const exposeOptions = [
         {path: "./debug-require.js", name: "require"},
@@ -250,7 +250,6 @@ export default (env?: string): webpack.Configuration[] => {
         {path: "../static/third/marked/lib/marked.js"},
         {path: "../static/js/debug.js"},
         {path: "jquery/dist/jquery.js", name: ["$", "jQuery"]},
-        {path: "underscore/underscore.js", name: "_"},
         {path: "handlebars/dist/cjs/handlebars.runtime.js", name: "Handlebars"},
         {path: "sortablejs/Sortable.js"},
         {path: "winchan/winchan.js", name: "WinChan"},

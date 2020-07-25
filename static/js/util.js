@@ -1,3 +1,4 @@
+const _ = require("lodash");
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
 exports.random_int = function random_int(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -229,7 +230,7 @@ exports.sorted_ids = function (ids) {
     // it also makes sure we don't mutate the list.
     let id_list = ids.map(to_int);
     id_list.sort((a, b) => a - b);
-    id_list = _.uniq(id_list, true);
+    id_list = _.sortedUniq(id_list);
 
     return id_list;
 };

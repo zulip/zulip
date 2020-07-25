@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 zrequire("keydown_util");
 zrequire("components");
 
