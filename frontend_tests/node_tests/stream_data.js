@@ -497,23 +497,38 @@ run_test("stream_settings", () => {
         stream_post_policy: stream_data.stream_post_policy_values.admins.code,
         message_retention_days: 10,
     };
+
+    const web_public_stream = {
+        stream_id: 4,
+        name: "d",
+        color: "red",
+        subscribed: false,
+        invite_only: false,
+        is_web_public: true,
+    };
+
     stream_data.clear_subscriptions();
     stream_data.add_sub(cinnamon);
     stream_data.add_sub(amber);
     stream_data.add_sub(blue);
+    stream_data.add_sub(web_public_stream);
 
     let sub_rows = stream_data.get_streams_for_settings_page();
-    assert.equal(sub_rows[0].color, "blue");
-    assert.equal(sub_rows[1].color, "amber");
-    assert.equal(sub_rows[2].color, "cinnamon");
+    assert.equal(sub_rows[0].color, blue.color);
+    assert.equal(sub_rows[1].color, web_public_stream.color);
+    assert.equal(sub_rows[2].color, amber.color);
+    assert.equal(sub_rows[3].color, cinnamon.color);
 
     sub_rows = stream_data.get_streams_for_admin();
-    assert.equal(sub_rows[0].name, "a");
-    assert.equal(sub_rows[1].name, "b");
-    assert.equal(sub_rows[2].name, "c");
+    assert.equal(sub_rows[0].name, amber.name);
+    assert.equal(sub_rows[1].name, blue.name);
+    assert.equal(sub_rows[2].name, cinnamon.name);
+    assert.equal(sub_rows[3].name, web_public_stream.name);
+
     assert.equal(sub_rows[0].invite_only, true);
     assert.equal(sub_rows[1].invite_only, false);
     assert.equal(sub_rows[2].invite_only, false);
+    assert.equal(sub_rows[3].invite_only, false);
 
     assert.equal(sub_rows[0].history_public_to_subscribers, true);
     assert.equal(
@@ -521,6 +536,7 @@ run_test("stream_settings", () => {
         true,
     );
     assert.equal(sub_rows[0].message_retention_days, 10);
+    assert.equal(sub_rows[3].is_web_public, true);
 
     const sub = stream_data.get_sub("a");
     stream_data.update_stream_privacy(sub, {
@@ -535,14 +551,33 @@ run_test("stream_settings", () => {
     assert.equal(sub.stream_post_policy, stream_data.stream_post_policy_values.everyone.code);
     assert.equal(sub.message_retention_days, -1);
 
-    // For guest user only retrieve subscribed streams
+    /*
+      For guest users, retrieve:
+       - subscribed streams
+       - previously subscribed streams (only message history from when they were
+         subscribed)
+       - all web public streams.
+    */
     sub_rows = stream_data.get_updated_unsorted_subs();
-    assert.equal(sub_rows.length, 3);
+    assert.equal(sub_rows.length, 4);
+
     global.page_params.is_guest = true;
+    const unsubscribed = {
+        stream_id: 5,
+        name: "e",
+        color: "yellow",
+        subscribed: false,
+        invite_only: false,
+        is_web_public: false,
+        previously_subscribed: true,
+    };
+    stream_data.add_sub(unsubscribed);
     sub_rows = stream_data.get_updated_unsorted_subs();
-    assert.equal(sub_rows[0].name, "c");
-    assert.equal(sub_rows[1].name, "a");
-    assert.equal(sub_rows.length, 2);
+    assert.equal(sub_rows[0].name, cinnamon.name);
+    assert.equal(sub_rows[1].name, amber.name);
+    assert.equal(sub_rows[2].name, web_public_stream.name);
+    assert.equal(sub_rows[3].name, unsubscribed.name);
+    assert.equal(sub_rows.length, 4);
 });
 
 run_test("guest_user_access_to_streams", () => {
