@@ -821,8 +821,8 @@ exports.needs_subscribe_warning = function (user_id, stream_id) {
 };
 
 function insert_video_call_url(url, target_textarea) {
-    const video_call_link_text = "[" + _("Click to join video call") + "](" + url + ")";
-    compose_ui.insert_syntax_and_focus(video_call_link_text, target_textarea);
+    const link_text = i18n.t("Click to join video call");
+    compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea);
 }
 
 exports.render_and_show_preview = function (preview_spinner, preview_content_box, content) {
