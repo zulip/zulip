@@ -265,10 +265,12 @@ class MessagePOSTTest(ZulipTestCase):
         user = self.example_user('hamlet')
         user.default_sending_stream_id = get_stream('Verona', user.realm).id
         user.save()
+        # The `to` field is required according to OpenAPI specification
         result = self.api_post(user, "/api/v1/messages", {"type": "stream",
                                                           "client": "test suite",
                                                           "content": "Test message no to",
-                                                          "topic": "Test topic"})
+                                                          "topic": "Test topic"},
+                               intentionally_undocumented=True)
         self.assert_json_success(result)
 
         sent_message = self.get_last_message()
@@ -940,8 +942,10 @@ class ScheduledMessageTest(ZulipTestCase):
                    "tz_guess": tz_guess}
         if defer_until:
             payload["deliver_at"] = defer_until
-
-        result = self.client_post("/json/messages", payload)
+        # `Topic` cannot be empty according to OpenAPI specification.
+        intentionally_undocumented: bool = (topic_name == '')
+        result = self.client_post("/json/messages", payload,
+                                  intentionally_undocumented=intentionally_undocumented)
         return result
 
     def test_schedule_message(self) -> None:
