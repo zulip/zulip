@@ -614,8 +614,9 @@ exports.fixtures = {
         type: "user_group",
         op: "add",
         group: {
+            id: 555,
             name: "Mobile",
-            id: "1",
+            description: "mobile folks",
             members: [1],
         },
     },
