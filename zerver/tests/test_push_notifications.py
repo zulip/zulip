@@ -176,11 +176,15 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         hamlet = self.example_user('hamlet')
 
-        result = self.api_post(
-            hamlet,
-            endpoint,
-            dict(user_id=user_id, token_kin=token_kind, token=token),
-        )
+        with self.assertLogs(level='WARNING') as warn_log:
+            result = self.api_post(
+                hamlet,
+                endpoint,
+                dict(user_id=user_id, token_kin=token_kind, token=token),
+            )
+        self.assertEqual(warn_log.output, [
+            'WARNING:root:User hamlet@zulip.com (zulip) attempted to access API on wrong subdomain ()'
+        ])
         self.assert_json_error(result, "Account is not associated with this subdomain",
                                status_code=401)
 
@@ -502,7 +506,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             subdomain="")
         self.assert_json_error(result, "Data is out of order.")
 
-        with mock.patch("zilencer.views.validate_incoming_table_data"):
+        with mock.patch("zilencer.views.validate_incoming_table_data"), self.assertLogs(level='WARNING') as warn_log:
             # We need to wrap a transaction here to avoid the
             # IntegrityError that will be thrown in here from breaking
             # the unittest transaction.
@@ -515,6 +519,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
                      'realmauditlog_rows': ujson.dumps(realmauditlog_data)},
                     subdomain="")
             self.assert_json_error(result, "Invalid data.")
+            self.assertEqual(warn_log.output, [
+                'WARNING:root:Invalid data saving zilencer_remoteinstallationcount for server demo.example.com/1234-abcd'
+            ])
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
     @mock.patch('zerver.lib.remote_server.requests.request')
