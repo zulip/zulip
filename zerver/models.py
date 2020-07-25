@@ -1554,8 +1554,6 @@ class Stream(models.Model):
     # * is_in_zephyr_realm is a backend-only optimization.
     # * "deactivated" streams are filtered from the API entirely.
     # * "realm" and "recipient" are not exposed to clients via the API.
-    # * "date_created" should probably be added here, as it's useful information
-    #   to subscribers.
     API_FIELDS = [
         "name",
         "id",
@@ -1566,7 +1564,8 @@ class Stream(models.Model):
         "stream_post_policy",
         "history_public_to_subscribers",
         "first_message_id",
-        "message_retention_days"
+        "message_retention_days",
+        "date_created",
     ]
 
     @staticmethod
@@ -1579,6 +1578,9 @@ class Stream(models.Model):
         for field_name in self.API_FIELDS:
             if field_name == "id":
                 result['stream_id'] = self.id
+                continue
+            elif field_name == "date_created":
+                result['date_created'] = datetime_to_timestamp(self.date_created)
                 continue
             result[field_name] = getattr(self, field_name)
         result['is_announcement_only'] = self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
