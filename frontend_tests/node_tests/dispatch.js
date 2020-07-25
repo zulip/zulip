@@ -66,6 +66,7 @@ const page_params = global.page_params;
 
 // For data-oriented modules, just use them, don't stub them.
 zrequire("alert_words");
+zrequire("emoji");
 zrequire("unread");
 zrequire("stream_topic_history");
 zrequire("stream_list");
@@ -424,15 +425,33 @@ run_test("realm_bot", (override) => {
 run_test("realm_emoji", (override) => {
     const event = event_fixtures.realm_emoji;
 
-    global.with_stub((stub) => {
-        override("emoji.update_emojis", stub.f);
-        override("settings_emoji.populate_emoji", noop);
-        override("emoji_picker.rebuild_catalog", noop);
-        override("composebox_typeahead.update_emoji_data", noop);
-        dispatch(event);
-        const args = stub.get_args("realm_emoji");
-        assert_same(args.realm_emoji, event.realm_emoji);
-    });
+    const ui_func_names = [
+        "settings_emoji.populate_emoji",
+        "emoji_picker.rebuild_catalog",
+        "composebox_typeahead.update_emoji_data",
+    ];
+
+    const ui_stubs = [];
+
+    for (const func_name of ui_func_names) {
+        const ui_stub = global.make_stub();
+        override(func_name, ui_stub.f);
+        ui_stubs.push(ui_stub);
+    }
+
+    // Make sure we start with nothing...
+    assert.equal(emoji.get_realm_emoji_url("spain"), undefined);
+
+    dispatch(event);
+
+    // Now emoji.js knows about the spain emoji.
+    assert_same(emoji.get_realm_emoji_url("spain"), "/some/path/to/spain.png");
+
+    // Make sure our UI modules all got dispatched the same simple way.
+    for (const stub of ui_stubs) {
+        assert(stub.num_calls, 1);
+        assert.equal(stub.last_call_args.length, 0);
+    }
 });
 
 run_test("realm_filters", (override) => {
