@@ -98,7 +98,7 @@ function show_emoji_catalog() {
     search_is_active = false;
 }
 
-exports.generate_emoji_picker_data = function (realm_emojis) {
+exports.rebuild_catalog = function (realm_emojis) {
     const catalog = new Map();
     catalog.set(
         "Custom",
@@ -771,7 +771,7 @@ exports.register_click_handlers = function () {
 };
 
 exports.initialize = function () {
-    exports.generate_emoji_picker_data(emoji.active_realm_emojis);
+    exports.rebuild_catalog(emoji.active_realm_emojis);
 };
 
 window.emoji_picker = exports;

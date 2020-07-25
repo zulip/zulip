@@ -218,7 +218,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             // can display it properly when reopened without refresh.
             emoji.update_emojis(event.realm_emoji);
             settings_emoji.populate_emoji();
-            emoji_picker.generate_emoji_picker_data(emoji.active_realm_emojis);
+            emoji_picker.rebuild_catalog(emoji.active_realm_emojis);
             composebox_typeahead.update_emoji_data();
             break;
 

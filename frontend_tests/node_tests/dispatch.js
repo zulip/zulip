@@ -427,7 +427,7 @@ run_test("realm_emoji", (override) => {
     global.with_stub((stub) => {
         override("emoji.update_emojis", stub.f);
         override("settings_emoji.populate_emoji", noop);
-        override("emoji_picker.generate_emoji_picker_data", noop);
+        override("emoji_picker.rebuild_catalog", noop);
         override("composebox_typeahead.update_emoji_data", noop);
         dispatch(event);
         const args = stub.get_args("realm_emoji");
