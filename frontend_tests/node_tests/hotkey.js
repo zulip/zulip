@@ -11,6 +11,8 @@
 // it calls any external module other than `ui.foo`, it'll crash.
 // Future work includes making sure it actually does call `ui.foo()`.
 
+const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+
 set_global("activity", {});
 
 set_global("navigator", {
@@ -26,6 +28,12 @@ set_global("document", "document-stub");
 set_global("$", global.make_zjquery());
 
 zrequire("emoji");
+
+emoji.initialize({
+    realm_emoji: {},
+    emoji_codes,
+});
+
 const hotkey = zrequire("hotkey");
 zrequire("common");
 

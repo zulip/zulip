@@ -1,3 +1,5 @@
+const generated_emoji_codes = require("../generated/emoji/emoji_codes.json");
+
 const emojisets = require("./emojisets");
 const markdown_config = require("./markdown_config");
 
@@ -448,7 +450,10 @@ exports.initialize_everything = function () {
     bot_data.initialize(bot_params); // Must happen after people.initialize()
     message_fetch.initialize();
     message_scroll.initialize();
-    emoji.initialize(emoji_params);
+    emoji.initialize({
+        realm_emoji: emoji_params.realm_emoji,
+        emoji_codes: generated_emoji_codes,
+    });
     markdown.initialize(page_params.realm_filters, markdown_config.get_helpers());
     compose.initialize();
     composebox_typeahead.initialize(); // Must happen after compose.initialize()

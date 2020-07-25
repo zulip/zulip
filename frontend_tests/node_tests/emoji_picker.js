@@ -1,8 +1,13 @@
 zrequire("emoji");
 zrequire("emoji_picker");
 
+const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+
 run_test("initialize", () => {
-    emoji.update_emojis({});
+    emoji.initialize({
+        realm_emoji: {},
+        emoji_codes,
+    });
     emoji_picker.initialize();
 
     const complete_emoji_catalog = _.sortBy(emoji_picker.complete_emoji_catalog, "name");

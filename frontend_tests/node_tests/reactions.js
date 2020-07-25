@@ -1,6 +1,8 @@
 set_global("document", "document-stub");
 set_global("$", global.make_zjquery());
 
+const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+
 zrequire("emoji");
 zrequire("people");
 zrequire("reactions");
@@ -30,6 +32,7 @@ const emoji_params = {
             deactivated: false,
         },
     },
+    emoji_codes,
 };
 
 emoji.initialize(emoji_params);

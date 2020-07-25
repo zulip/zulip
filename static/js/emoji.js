@@ -1,6 +1,7 @@
-const emoji_codes = require("../generated/emoji/emoji_codes.json");
-
 const util = require("./util");
+
+// We will get actual values when we get initialized.
+let emoji_codes = {};
 
 // `emojis_by_name` is the central data source that is supposed to be
 // used by every widget in the webapp for gathering data for displaying
@@ -22,7 +23,9 @@ let server_realm_emoji_data = {};
 // We really want to deprecate this, too.
 exports.get_server_realm_emoji_data = () => server_realm_emoji_data;
 
-const emoticon_translations = (() => {
+let emoticon_translations = [];
+
+function build_emoticon_translations() {
     /*
 
     Build a data structure that looks like something
@@ -56,8 +59,8 @@ const emoticon_translations = (() => {
         });
     }
 
-    return translations;
-})();
+    emoticon_translations = translations;
+}
 
 const zulip_emoji = {
     id: "zulip",
@@ -167,6 +170,10 @@ exports.update_emojis = function (realm_emojis) {
 };
 
 exports.initialize = function initialize(params) {
+    emoji_codes = params.emoji_codes;
+
+    build_emoticon_translations();
+
     for (const value of emoji_codes.names) {
         const base_name = exports.get_emoji_codepoint(value);
 

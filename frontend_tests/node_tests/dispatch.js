@@ -89,6 +89,11 @@ people.add_active_user(test_user);
 
 message_store.add_message_metadata(test_message);
 
+const realm_emoji = {};
+const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+
+emoji.initialize({realm_emoji, emoji_codes});
+
 function assert_same(actual, expected) {
     // This helper prevents us from getting false positives
     // where actual and expected are both undefined.

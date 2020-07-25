@@ -1,13 +1,15 @@
+const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+
 const events = require("./lib/events.js");
 
 zrequire("emoji");
 
-const realm_emojis = events.fixtures.realm_emoji.realm_emoji;
+const realm_emoji = events.fixtures.realm_emoji.realm_emoji;
 
-emoji.update_emojis(realm_emojis);
+emoji.initialize({realm_emoji, emoji_codes});
 
 run_test("sanity check", () => {
-    assert.equal(emoji.get_server_realm_emoji_data(), realm_emojis);
+    assert.equal(emoji.get_server_realm_emoji_data(), realm_emoji);
 });
 
 run_test("get_canonical_name", () => {

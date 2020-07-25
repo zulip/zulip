@@ -27,6 +27,7 @@ const emoji_params = {
             deactivated: false,
         },
     },
+    emoji_codes,
 };
 
 set_global("page_params", {
