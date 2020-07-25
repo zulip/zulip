@@ -2,6 +2,7 @@ const _ = require("lodash");
 
 const generated_emoji_codes = require("../generated/emoji/emoji_codes.json");
 const emoji = require("../shared/js/emoji");
+const render_edit_content_button = require("../templates/edit_content_button.hbs");
 
 const emojisets = require("./emojisets");
 const markdown_config = require("./markdown_config");
@@ -42,24 +43,13 @@ function message_hover(message_row) {
     }
 
     // But the message edit hover icon is determined by whether the message is still editable
-    if (
-        message_edit.get_editability(message) === message_edit.editability_types.FULL &&
-        !message.status_message
-    ) {
-        message_row
-            .find(".edit_content")
-            .html(
-                '<i class="fa fa-pencil edit_content_button" aria-hidden="true" title="{{ _("Edit") }} (e)"></i>',
-            );
-    } else {
-        message_row
-            .find(".edit_content")
-            .html(
-                '<i class="fa fa-file-code-o edit_content_button" aria-hidden="true" title="{{ _("View source") }} (e)" data-message-id="' +
-                    id +
-                    '"></i>',
-            );
-    }
+    const is_message_editable =
+        message_edit.get_editability(message) === message_edit.editability_types.FULL;
+    const args = {
+        is_editable: is_message_editable && !message.status_message,
+        msg_id: id,
+    };
+    message_row.find(".edit_content").html(render_edit_content_button(args));
 }
 
 exports.initialize_kitchen_sink_stuff = function () {
