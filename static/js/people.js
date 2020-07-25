@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 require("unorm"); // String.prototype.normalize polyfill for IE11
 const typeahead = require("../shared/js/typeahead");
 

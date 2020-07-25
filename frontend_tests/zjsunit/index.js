@@ -2,7 +2,7 @@ const fs = require("fs");
 const Module = require("module");
 const path = require("path");
 
-const escapeRegExp = require("lodash/escapeRegExp");
+const _ = require("lodash");
 
 const finder = require("./finder.js");
 const handlebars = require("./handlebars.js");
@@ -15,18 +15,15 @@ const zjquery = require("./zjquery.js");
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
     only: [
-        new RegExp("^" + escapeRegExp(path.resolve(__dirname, "../../static/js")) + path.sep),
+        new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../static/js")) + path.sep),
         new RegExp(
-            "^" + escapeRegExp(path.resolve(__dirname, "../../static/shared/js")) + path.sep,
+            "^" + _.escapeRegExp(path.resolve(__dirname, "../../static/shared/js")) + path.sep,
         ),
     ],
     plugins: ["rewire-ts"],
 });
 
 global.assert = require("assert").strict;
-global._ = require("underscore/underscore.js");
-
-const _ = global._;
 
 // Create a helper function to avoid sneaky delays in tests.
 function immediate(f) {

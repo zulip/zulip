@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 exports.default_color = "#c2c2c2";
 
 // Classes which could be returned by get_color_class.

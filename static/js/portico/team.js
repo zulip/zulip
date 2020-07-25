@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 const contributors_list = page_params.contributors;
 
 const repo_name_to_tab_name = {

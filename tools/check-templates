@@ -45,7 +45,7 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
     # so we exclude them from our linter.
     logging.basicConfig(format='%(levelname)s:%(message)s')
     templates = sorted(fn for fn in templates if 'casperjs' not in fn)
-    # Use of underscore templates <%= %>.
+    # Use of lodash templates <%= %>.
     if 'templates/zerver/team.html' in templates:
         templates.remove('templates/zerver/team.html')
 

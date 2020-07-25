@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const render_stream_privacy = require("../templates/stream_privacy.hbs");
 const render_stream_sidebar_row = require("../templates/stream_sidebar_row.hbs");
 

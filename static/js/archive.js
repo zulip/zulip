@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const render_archive_message_group = require("../templates/archive_message_group.hbs");
 
 function should_separate_into_groups(current_msg_time, next_msg_time) {

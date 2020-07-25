@@ -1,4 +1,5 @@
 const katex = require("katex/dist/katex.min.js");
+const _ = require("lodash");
 
 const fenced_code = require("../shared/js/fenced_code");
 

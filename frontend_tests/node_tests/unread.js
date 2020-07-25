@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 zrequire("muting");
 zrequire("people");
 zrequire("stream_data");

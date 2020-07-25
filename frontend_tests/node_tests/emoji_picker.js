@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const emoji = zrequire("emoji", "shared/js/emoji");
 zrequire("emoji_picker");
 

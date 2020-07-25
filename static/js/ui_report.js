@@ -1,3 +1,4 @@
+const _ = require("lodash");
 /* Arguments used in the report_* functions are,
    response- response that we want to display
    status_box- element being used to display the response

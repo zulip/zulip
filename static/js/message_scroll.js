@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 let actively_scrolling = false;
 
 // Tracks whether the next scroll that will complete is initiated by

@@ -1,5 +1,5 @@
 import katex from "katex/dist/katex.min.js";
-import _ from "underscore";
+import _ from "lodash";
 
 // Parsing routine that can be dropped in to message parsing
 // and formats code blocks
