@@ -101,6 +101,13 @@ exports.stream_privacy_policy_values = {
             "Anyone can join; anyone can view complete message history without joining",
         ),
     },
+    web_public: {
+        code: "web-public",
+        name: i18n.t("Web public"),
+        description: i18n.t(
+            "Anyone (including guest users) can join; anyone on the internet can view complete message history without creating an account",
+        ),
+    },
     private_with_public_history: {
         code: "invite-only-public-history",
         name: i18n.t("Private, shared history"),
@@ -369,9 +376,13 @@ exports.get_updated_unsorted_subs = function () {
         exports.update_calculated_fields(sub);
     }
 
-    // We don't display unsubscribed streams to guest users.
+    // We display unsubscribed streams to guest users, but unless they are web_public,
+    // their information on the edit panel is blocked and they can only see messages
+    // sent before they unsubscribed.
     if (page_params.is_guest) {
-        all_subs = all_subs.filter((sub) => sub.subscribed);
+        all_subs = all_subs.filter(
+            (sub) => sub.subscribed || sub.is_web_public || sub.previously_subscribed,
+        );
     }
 
     return all_subs;
@@ -516,17 +527,16 @@ exports.update_calculated_fields = function (sub) {
     sub.can_change_name_description = page_params.is_admin;
     // If stream is public then any user can subscribe. If stream is private then only
     // subscribed users can unsubscribe.
-    // Guest users can't subscribe themselves to any stream.
+    // Guest users can't subscribe themselves to any stream other than web public.
     sub.should_display_subscription_button =
-        sub.subscribed || (!page_params.is_guest && !sub.invite_only);
+        sub.subscribed || (!(page_params.is_guest && !sub.is_web_public) && !sub.invite_only);
     sub.should_display_preview_button =
         sub.subscribed || !sub.invite_only || sub.previously_subscribed;
     sub.can_change_stream_permissions =
         page_params.is_admin && (!sub.invite_only || sub.subscribed);
     // User can add other users to stream if stream is public or user is subscribed to stream.
-    // Guest users can't access subscribers of any(public or private) non-subscribed streams.
-    sub.can_access_subscribers =
-        page_params.is_admin || sub.subscribed || (!page_params.is_guest && !sub.invite_only);
+    // Guest users can only access subscribers of web_public streams they can join.
+    sub.can_access_subscribers = page_params.is_admin || sub.should_display_subscription_button;
     sub.preview_url = hash_util.by_stream_uri(sub.stream_id);
     sub.can_add_subscribers = !page_params.is_guest && (!sub.invite_only || sub.subscribed);
     sub.is_old_stream = sub.stream_weekly_traffic !== null;
@@ -597,13 +607,22 @@ exports.id_is_subscribed = function (stream_id) {
 exports.get_stream_privacy_policy = function (stream_id) {
     const sub = exports.get_sub_by_id(stream_id);
 
-    if (!sub.invite_only) {
+    if (!sub.invite_only && !sub.is_web_public) {
         return exports.stream_privacy_policy_values.public.code;
     }
     if (sub.invite_only && !sub.history_public_to_subscribers) {
         return exports.stream_privacy_policy_values.private.code;
     }
+    if (sub.is_web_public) {
+        return exports.stream_privacy_policy_values.web_public.code;
+    }
     return exports.stream_privacy_policy_values.private_with_public_history.code;
+};
+
+exports.is_web_public = function (stream_id) {
+    const sub = subs_by_stream_id.get(stream_id);
+
+    return sub !== undefined && sub.is_web_public;
 };
 
 exports.get_invite_only = function (stream_name) {
