@@ -1,6 +1,3 @@
-// TODO: move to markdown.
-const emoji = require("../shared/js/emoji");
-
 /*
     This config is in a separate file for partly
     tactical reasons.  We want the webapp to
@@ -33,12 +30,6 @@ exports.get_helpers = () => ({
     // user groups
     get_user_group_from_name: user_groups.get_user_group_from_name,
     is_member_of_user_group: user_groups.is_member_of,
-
-    // emojis
-    get_realm_emoji_url: emoji.get_realm_emoji_url,
-    get_emoji_name: emoji.get_emoji_name,
-    get_emoji_codepoint: emoji.get_emoji_codepoint,
-    get_emoticon_translations: emoji.get_emoticon_translations,
 
     // stream hashes
     get_stream_by_name: stream_data.get_sub,
