@@ -39,7 +39,6 @@ const ignore_modules = [
     "compose_pm_pill",
     "copy_and_paste",
     "drafts",
-    "emoji",
     "emoji_picker",
     "gear_menu",
     "hashchange",
@@ -68,8 +67,6 @@ for (const mod of ignore_modules) {
     });
 }
 
-emoji.emojis_by_name = new Map();
-
 util.is_mobile = () => false;
 global.stub_templates(() => "some-html");
 ui.get_scroll_element = (element) => element;
@@ -77,6 +74,7 @@ ui.get_scroll_element = (element) => element;
 zrequire("alert_words");
 zrequire("hash_util");
 zrequire("echo");
+zrequire("emoji");
 zrequire("colorspace");
 zrequire("stream_color");
 zrequire("stream_edit");
@@ -152,6 +150,7 @@ page_params.unread_msgs = {
 };
 page_params.recent_private_conversations = [];
 page_params.user_status = {};
+page_params.realm_emoji = {};
 page_params.realm_users = [];
 page_params.realm_non_active_users = [];
 page_params.cross_realm_bots = [];
