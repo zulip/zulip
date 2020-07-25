@@ -306,7 +306,7 @@ SKIP_JSON = {'/fetch_api_key:post'}
 
 def validate_request(url: str, method: str, data: Dict[str, Any],
                      http_headers: Dict[str, Any], json_url: bool,
-                     uses_invalid_parameters: bool) -> None:
+                     status_code: str, intentionally_undocumented: bool=False) -> None:
     # Some JSON endpoints have different parameters compared to
     # their `/api/v1` counterparts.
     if json_url and url + ':' + method in SKIP_JSON:
@@ -322,12 +322,15 @@ def validate_request(url: str, method: str, data: Dict[str, Any],
     mock_request = MockRequest('http://localhost:9991/', method, '/api/v1' + url,
                                headers=http_headers, args=data)
     result = openapi_spec.core_validator().validate(mock_request)
-
-    if uses_invalid_parameters:
-        # This assertion helps us avoid unnecessary use of the
-        # uses_invalid_parameters argument.
-        assert(len(result.errors) != 0)
-        return
+    if len(result.errors) != 0:
+        # Requests that do not validate against the OpenAPI spec must either:
+        # * Have returned a 400 (bad request) error
+        # * Have returned a 200 (success) with this request marked as intentionally
+        # undocumented behavior.
+        if status_code.startswith('4'):
+            return
+        if status_code.startswith('2') and intentionally_undocumented:
+            return
 
     # If no errors are raised, then validation is successful
     if len(result.errors) == 0:
@@ -341,8 +344,8 @@ with the parameters passed in this HTTP request.  Consider:
 
 * Updating the OpenAPI schema defined in zerver/openapi/zulip.yaml
 * Adjusting the test to pass valid parameters.  If the test
-  deliberately passes invalid parameters, you need to pass
-  `uses_invalid_parameters=True` to self.client_{method.lower()} or
+  fails due to intentionally_undocumented features, you need to pass
+  `intentionally_undocumented=True` to self.client_{method.lower()} or
   self.api_{method.lower()} to document your intent.
 
 See https://zulip.readthedocs.io/en/latest/documentation/api.html for help.
