@@ -1791,8 +1791,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             resp = OneLogin_Saml2_Response(settings=saml_settings, response=SAMLResponse)
             issuers = resp.get_issuers()
         except self.SAMLRESPONSE_PARSING_EXCEPTIONS:
-            logger = logging.getLogger(f"zulip.auth.{self.name}")
-            logger.info("Error while parsing SAMLResponse:", exc_info=True)
+            self.logger.info("Error while parsing SAMLResponse:", exc_info=True)
             return None
 
         for idp_name, idp_config in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
