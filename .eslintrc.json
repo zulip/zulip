@@ -386,6 +386,20 @@
                 "browser": false,
                 "commonjs": false,
                 "shared-node-browser": true
+            },
+            "rules": {
+                "import/no-restricted-paths": [
+                    "error",
+                    {
+                        "zones": [
+                            {
+                                "target": "./static/shared",
+                                "from": ".",
+                                "except": ["./node_modules", "./static/shared"]
+                            }
+                        ]
+                    }
+                ]
             }
         }
     ]
