@@ -17,6 +17,19 @@ exports.test_message = {
     id: 99,
 };
 
+const typing_person1 = {
+    user_id: 1,
+    email: "user1@example.com",
+};
+
+const typing_person2 = {
+    user_id: 2,
+    email: "user2@example.com",
+};
+
+exports.typing_person1 = typing_person1;
+exports.typing_person2 = typing_person2;
+
 const streams = {
     devel: {
         name: "devel",
@@ -446,25 +459,16 @@ exports.fixtures = {
 
     typing__start: {
         type: "typing",
-        sender: {
-            user_id: 4,
-        },
         op: "start",
+        sender: typing_person1,
+        recipients: [typing_person2],
     },
 
     typing__stop: {
         type: "typing",
-        sender: {
-            user_id: 6,
-        },
         op: "stop",
-    },
-
-    typing__self: {
-        type: "typing",
-        sender: {
-            user_id: 5,
-        },
+        sender: typing_person1,
+        recipients: [typing_person2],
     },
 
     update_display_settings__default_language: {

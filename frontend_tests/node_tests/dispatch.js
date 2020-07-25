@@ -5,6 +5,7 @@ const events = require("./lib/events.js");
 const event_fixtures = events.fixtures;
 const test_message = events.test_message;
 const test_user = events.test_user;
+const typing_person1 = events.typing_person1;
 
 set_global("$", global.make_zjquery());
 
@@ -625,7 +626,7 @@ with_overrides((override) => {
         override("typing_events.display_notification", stub.f);
         dispatch(event);
         const args = stub.get_args("event");
-        assert_same(args.event.sender.user_id, 4);
+        assert_same(args.event.sender.user_id, typing_person1.user_id);
     });
 
     event = event_fixtures.typing__stop;
@@ -633,11 +634,11 @@ with_overrides((override) => {
         override("typing_events.hide_notification", stub.f);
         dispatch(event);
         const args = stub.get_args("event");
-        assert_same(args.event.sender.user_id, 6);
+        assert_same(args.event.sender.user_id, typing_person1.user_id);
     });
 
-    page_params.user_id = 5;
-    event = event_fixtures.typing__self;
+    page_params.user_id = typing_person1.user_id;
+    event = event_fixtures.typing__start;
     dispatch(event); // get line coverage
 });
 
