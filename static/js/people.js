@@ -1085,8 +1085,19 @@ exports._add_user = function add(person) {
     }
 
     exports.track_duplicate_full_name(person.full_name, person.user_id);
-    people_dict.set(person.email, person);
     people_by_name_dict.set(person.full_name, person);
+
+    // Delivery email is the real email address of the user
+    // which is only present if the user is an administrator
+    // or a owner. Without adding this to email dict, the code paths
+    // that take user email input such as PM Recipient email in the
+    // compose box and use people.get_by_email won't be able to retrive
+    // that person via their real email so add the delivery email along
+    // with the user<id>@<domain> email.
+    people_dict.set(person.email, person);
+    if (person.delivery_email !== undefined) {
+        people_dict.set(person.delivery_email, person);
+    }
 };
 
 exports.add_active_user = function (person) {
