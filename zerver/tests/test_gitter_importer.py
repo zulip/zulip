@@ -1,4 +1,3 @@
-import logging
 import os
 from typing import Any
 from unittest import mock
@@ -12,15 +11,13 @@ from zerver.models import Message, UserProfile, get_realm
 
 
 class GitterImporter(ZulipTestCase):
-    logger = logging.getLogger()
-    # set logger to a higher level to suppress 'logger.INFO' outputs
-    logger.setLevel(logging.WARNING)
 
     @mock.patch('zerver.data_import.gitter.process_avatars', return_value=[])
     def test_gitter_import_data_conversion(self, mock_process_avatars: mock.Mock) -> None:
         output_dir = self.make_import_output_dir("gitter")
         gitter_file = os.path.join(os.path.dirname(__file__), 'fixtures/gitter_data.json')
-        do_convert_data(gitter_file, output_dir)
+        with self.assertLogs(level='INFO'):
+            do_convert_data(gitter_file, output_dir)
 
         def read_file(output_file: str) -> Any:
             full_path = os.path.join(output_dir, output_file)
@@ -82,7 +79,8 @@ class GitterImporter(ZulipTestCase):
     def test_gitter_import_to_existing_database(self, mock_process_avatars: mock.Mock) -> None:
         output_dir = self.make_import_output_dir("gitter")
         gitter_file = os.path.join(os.path.dirname(__file__), 'fixtures/gitter_data.json')
-        do_convert_data(gitter_file, output_dir)
+        with self.assertLogs(level="INFO"):
+            do_convert_data(gitter_file, output_dir)
 
         with self.assertLogs(level="INFO"):
             do_import_realm(output_dir, 'test-gitter-import')
