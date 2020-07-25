@@ -38,6 +38,7 @@ from jwt.exceptions import PyJWTError
 from lxml.etree import XMLSyntaxError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
 from onelogin.saml2.response import OneLogin_Saml2_Response
+from onelogin.saml2.settings import OneLogin_Saml2_Settings
 from requests import HTTPError
 from social_core.backends.apple import AppleIdAuth
 from social_core.backends.azuread import AzureADOAuth2
@@ -1780,8 +1781,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         return data
 
-    @classmethod
-    def get_issuing_idp(cls, SAMLResponse: str) -> Optional[str]:
+    def get_issuing_idp(self, SAMLResponse: str) -> Optional[str]:
         """
         Given a SAMLResponse, returns which of the configured IdPs is declared as the issuer.
         This value MUST NOT be trusted as the true issuer!
@@ -1792,10 +1792,12 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         of the configured IdPs' information to use for parsing and validating the response.
         """
         try:
-            resp = OneLogin_Saml2_Response(settings={}, response=SAMLResponse)
+            config = self.generate_saml_config()
+            saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
+            resp = OneLogin_Saml2_Response(settings=saml_settings, response=SAMLResponse)
             issuers = resp.get_issuers()
-        except cls.SAMLRESPONSE_PARSING_EXCEPTIONS:
-            logger = logging.getLogger(f"zulip.auth.{cls.name}")
+        except self.SAMLRESPONSE_PARSING_EXCEPTIONS:
+            logger = logging.getLogger(f"zulip.auth.{self.name}")
             logger.info("Error while parsing SAMLResponse:", exc_info=True)
             return None
 
