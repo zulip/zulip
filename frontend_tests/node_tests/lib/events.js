@@ -587,6 +587,7 @@ exports.fixtures = {
 
     custom_profile_fields: {
         type: "custom_profile_fields",
+        op: "update",
         fields: [
             {id: 1, name: "teams", type: 1},
             {id: 2, name: "hobbies", type: 1},
