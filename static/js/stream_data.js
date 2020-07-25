@@ -366,6 +366,10 @@ exports.subscribed_streams = function () {
     return exports.subscribed_subs().map((sub) => sub.name);
 };
 
+exports.subscribed_stream_ids = function () {
+    return exports.subscribed_subs().map((sub) => sub.stream_id);
+};
+
 exports.get_invite_stream_data = function () {
     function get_data(sub) {
         return {

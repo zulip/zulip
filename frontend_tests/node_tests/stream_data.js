@@ -74,6 +74,7 @@ run_test("basics", () => {
     assert.deepEqual(stream_data.home_view_stream_names(), ["social"]);
     assert.deepEqual(stream_data.subscribed_streams(), ["social", "test"]);
     assert.deepEqual(stream_data.get_colors(), ["red", "yellow"]);
+    assert.deepEqual(stream_data.subscribed_stream_ids(), [social.stream_id, test.stream_id]);
 
     assert(stream_data.is_subscribed("social"));
     assert(stream_data.is_subscribed("Social"));
