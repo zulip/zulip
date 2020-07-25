@@ -476,84 +476,98 @@ exports.fixtures = {
         setting_name: "default_language",
         setting: "fr",
         language_name: "French",
+        user: exports.test_user.email,
     },
 
     update_display_settings__left_side_userlist: {
         type: "update_display_settings",
         setting_name: "left_side_userlist",
         setting: true,
+        user: exports.test_user.email,
     },
 
     update_display_settings__twenty_four_hour_time: {
         type: "update_display_settings",
         setting_name: "twenty_four_hour_time",
         setting: true,
+        user: exports.test_user.email,
     },
 
     update_display_settings__high_contrast_mode: {
         type: "update_display_settings",
         setting_name: "high_contrast_mode",
         setting: true,
+        user: exports.test_user.email,
     },
 
     update_display_settings__dense_mode: {
         type: "update_display_settings",
         setting_name: "dense_mode",
         setting: true,
+        user: exports.test_user.email,
     },
 
     update_display_settings__color_scheme_automatic: {
         type: "update_display_settings",
         setting_name: "color_scheme",
         setting: 1,
+        user: exports.test_user.email,
     },
 
     update_display_settings__color_scheme_dark: {
         type: "update_display_settings",
         setting_name: "color_scheme",
         setting: 2,
+        user: exports.test_user.email,
     },
 
     update_display_settings__color_scheme_light: {
         type: "update_display_settings",
         setting_name: "color_scheme",
         setting: 3,
+        user: exports.test_user.email,
     },
 
     update_display_settings__starred_message_counts: {
         type: "update_display_settings",
         setting_name: "starred_message_counts",
         setting: true,
+        user: exports.test_user.email,
     },
 
     update_display_settings__fluid_layout_width: {
         type: "update_display_settings",
         setting_name: "fluid_layout_width",
         setting: true,
+        user: exports.test_user.email,
     },
 
     update_display_settings__demote_inactive_streams: {
         type: "update_display_settings",
         setting_name: "demote_inactive_streams",
         setting: 2,
+        user: exports.test_user.email,
     },
 
     update_display_settings__translate_emoticons: {
         type: "update_display_settings",
         setting_name: "translate_emoticons",
         setting: true,
+        user: exports.test_user.email,
     },
 
     update_display_settings__emojiset: {
         type: "update_display_settings",
         setting_name: "emojiset",
         setting: "google",
+        user: exports.test_user.email,
     },
 
     update_global_notifications: {
         type: "update_global_notifications",
         notification_name: "enable_stream_audible_notifications",
         setting: true,
+        user: exports.test_user.email,
     },
 
     update_message_flags__read: {
