@@ -295,8 +295,12 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
             id_fetcher=get_user_email,
         )
         self.assertEqual(result, {hamlet.delivery_email: hamlet})
+        with self.assertLogs(level='INFO') as info_log:
+            flush_cache(Mock())
+        self.assertEqual(info_log.output, [
+            'INFO:root:Clearing memcached cache after migrations'
+        ])
 
-        flush_cache(Mock())
         # With the cache flushed, the query_function should get called:
         with self.assertRaises(CustomException):
             result = bulk_cached_fetch(
