@@ -235,8 +235,17 @@ exports.fixtures = {
         op: "add",
         bot: {
             email: "the-bot@example.com",
+            user_id: 42,
+            avatar_url: "/some/path/to/avatar",
+            api_key: "SOME_KEY",
             full_name: "The Bot",
-            // etc.
+            bot_type: 1,
+            default_all_public_streams: true,
+            default_events_register_stream: "whatever",
+            default_sending_stream: "whatever",
+            is_active: true,
+            owner_id: exports.test_user.user_id,
+            services: [],
         },
     },
 
@@ -244,8 +253,7 @@ exports.fixtures = {
         type: "realm_bot",
         op: "remove",
         bot: {
-            email: "the-bot@example.com",
-            user_id: "42",
+            user_id: 42,
             full_name: "The Bot",
         },
     },
@@ -254,8 +262,7 @@ exports.fixtures = {
         type: "realm_bot",
         op: "delete",
         bot: {
-            email: "the-bot@example.com",
-            user_id: "42",
+            user_id: 42,
         },
     },
 
@@ -263,7 +270,6 @@ exports.fixtures = {
         type: "realm_bot",
         op: "update",
         bot: {
-            email: "the-bot@example.com",
             user_id: 4321,
             full_name: "The Bot Has A New Name",
         },
