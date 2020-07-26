@@ -254,7 +254,7 @@ export default (env?: string): webpack.Configuration[] => {
         {path: "sortablejs/Sortable.js"},
         {path: "winchan/winchan.js", name: "WinChan"},
     ];
-    config.module.rules.unshift(...getExposeLoaders(exposeOptions));
+    config.module!.rules.unshift(...getExposeLoaders(exposeOptions));
 
     if (!production) {
         // Out JS debugging tools

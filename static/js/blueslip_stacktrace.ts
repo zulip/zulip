@@ -17,16 +17,19 @@ type NumberedLine = {
 };
 
 type CleanStackFrame = {
-    full_path: string;
-    show_path: string;
-    function_name: FunctionName;
-    line_number: number;
-    context: NumberedLine[] | undefined;
+    full_path?: string;
+    show_path?: string;
+    function_name?: FunctionName;
+    line_number?: number;
+    context?: NumberedLine[];
 };
 
-export function clean_path(full_path: string): string {
+export function clean_path(full_path?: string): string | undefined {
     // If the file is local, just show the filename.
     // Otherwise, show the full path starting from node_modules.
+    if (full_path === undefined) {
+        return undefined;
+    }
     const idx = full_path.indexOf("/node_modules/");
     if (idx !== -1) {
         return full_path.slice(idx + "/node_modules/".length);
@@ -55,18 +58,21 @@ const sourceCache: {[source: string]: string | Promise<string>} = {};
 const stack_trace_gps = new StackTraceGPS({sourceCache});
 
 async function get_context(location: StackFrame): Promise<NumberedLine[] | undefined> {
-    const sourceContent = await sourceCache[location.getFileName()];
+    const {fileName, lineNumber} = location;
+    if (fileName === undefined || lineNumber === undefined) {
+        return undefined;
+    }
+    const sourceContent = await sourceCache[fileName];
     if (sourceContent === undefined) {
         return undefined;
     }
     const lines = sourceContent.split("\n");
-    const line_number = location.getLineNumber();
-    const lo_line_num = Math.max(line_number - 5, 0);
-    const hi_line_num = Math.min(line_number + 4, lines.length);
+    const lo_line_num = Math.max(lineNumber - 5, 0);
+    const hi_line_num = Math.min(lineNumber + 4, lines.length);
     return lines.slice(lo_line_num, hi_line_num).map((line: string, i: number) => ({
         line_number: lo_line_num + i + 1,
         line,
-        focus: lo_line_num + i + 1 === line_number,
+        focus: lo_line_num + i + 1 === lineNumber,
     }));
 }
 

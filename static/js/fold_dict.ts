@@ -65,10 +65,9 @@ export class FoldDict<V> {
     }
 
     // Handle case-folding of keys and the empty string.
-    private _munge(key: string): string | undefined {
+    private _munge(key: string): string {
         if (key === undefined) {
-            blueslip.error("Tried to call a FoldDict method with an undefined key.");
-            return undefined;
+            throw new TypeError("Tried to call a FoldDict method with an undefined key.");
         }
 
         return key.toString().toLowerCase();
