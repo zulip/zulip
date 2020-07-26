@@ -14,7 +14,6 @@ const noop = function () {};
 $.fn.popover = noop; // this will get wrapped by our code
 
 zrequire("popovers");
-popovers.hide_user_profile = noop;
 
 set_global("current_msg_list", {});
 set_global("page_params", {
@@ -105,7 +104,9 @@ function make_image_stubber() {
 
 popovers.register_click_handlers();
 
-run_test("sender_hover", () => {
+run_test("sender_hover", (override) => {
+    override("popovers.hide_user_profile", noop);
+
     const selection = ".sender_name, .sender_name-in-status, .inline_profile_picture";
     const handler = $("#main_div").get_on_handler("click", selection);
 
@@ -194,7 +195,9 @@ run_test("sender_hover", () => {
     // todo: load image
 });
 
-run_test("actions_popover", () => {
+run_test("actions_popover", (override) => {
+    override("popovers.hide_user_profile", noop);
+
     const handler = $("#main_div").get_on_handler("click", ".actions_hover");
 
     window.location = {
