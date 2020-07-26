@@ -11,14 +11,13 @@ set_global("$", global.make_zjquery());
 
 global.patch_builtin("setTimeout", (func) => func());
 
+// We access various msg_list object to rerender them
+set_global("current_msg_list", {});
+
 // These dependencies are closer to the dispatcher, and they
 // apply to all tests.
 set_global("home_msg_list", {
     rerender: noop,
-    select_id: noop,
-    selected_id() {
-        return 1;
-    },
 });
 
 set_global("markdown", {
@@ -29,15 +28,12 @@ set_global("notifications", {
     redraw_title: noop,
 });
 
-set_global("settings_emoji", {
-    update_custom_emoji_ui: noop,
-});
+set_global("settings_emoji", {});
 
 set_global("settings_account", {
-    update_email_change_display: noop,
-    update_name_change_display: noop,
     add_custom_profile_fields_to_settings: noop,
 });
+
 set_global("settings_display", {
     update_page: noop,
 });
@@ -58,16 +54,7 @@ set_global("settings_bots", {
     update_bot_permissions_ui: noop,
 });
 
-set_global("compose", {
-    update_video_chat_button_display: noop,
-});
-
-set_global("settings_exports", {
-    populate_exports_table(exports) {
-        return exports;
-    },
-    clear_success_banner: noop,
-});
+set_global("compose", {});
 
 // page_params is highly coupled to dispatching now
 set_global("page_params", {
@@ -76,9 +63,6 @@ set_global("page_params", {
     realm_description: "already set description",
 });
 const page_params = global.page_params;
-
-// We access various msg_list object to rerender them
-set_global("current_msg_list", {rerender: noop});
 
 // We use blueslip to print the traceback
 set_global("blueslip", {
