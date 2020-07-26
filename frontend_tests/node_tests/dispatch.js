@@ -64,20 +64,6 @@ set_global("page_params", {
 });
 const page_params = global.page_params;
 
-// We use blueslip to print the traceback
-set_global("blueslip", {
-    info: noop,
-    error(msg, more_info, stack) {
-        console.log("\nFailed to process an event:\n", more_info.event, "\n");
-        const error = new Error();
-        error.stack = stack;
-        throw error;
-    },
-    exception_msg(ex) {
-        return ex.message;
-    },
-});
-
 // For data-oriented modules, just use them, don't stub them.
 zrequire("alert_words");
 zrequire("unread");
