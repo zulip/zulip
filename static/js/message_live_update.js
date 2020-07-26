@@ -26,13 +26,8 @@ exports.update_user_full_name = function (user_id, full_name) {
 exports.update_avatar = function (user_id, avatar_url) {
     let url = avatar_url;
     url = people.format_small_avatar_url(url);
-
-    for (const list of [home_msg_list, message_list.narrowed, message_list.all]) {
-        if (list === undefined) {
-            continue;
-        }
-        list.update_user_avatar(user_id, url);
-    }
+    message_store.update_property("small_avatar_url", url, {user_id});
+    rerender_messages_view();
 };
 
 window.message_live_update = exports;

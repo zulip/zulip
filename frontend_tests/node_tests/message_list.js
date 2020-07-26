@@ -196,9 +196,6 @@ run_test("updates", () => {
     ];
 
     list.append(messages, true);
-    list.update_user_avatar(100, "http://zulip.org");
-    assert.equal(list.get(1).small_avatar_url, "http://zulip.org");
-    assert.equal(list.get(2).small_avatar_url, "http://github.com");
 
     list.update_stream_name(64, "Finland");
     assert.equal(list.get(2).stream, "Finland");
