@@ -3,8 +3,6 @@ const events = require("./lib/events.js");
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
-const noop = function () {};
-
 set_global("compose_fade", {});
 set_global("stream_events", {});
 set_global("subs", {});
@@ -111,9 +109,7 @@ test("add error handling", (override) => {
     });
 });
 
-test("peer event error handling (bad stream_ids)", (override) => {
-    override("compose_fade.update_faded_users", noop);
-
+test("peer event error handling (bad stream_ids)", () => {
     const add_event = {
         type: "subscription",
         op: "peer_add",

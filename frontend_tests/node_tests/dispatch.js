@@ -89,7 +89,6 @@ zrequire("people");
 zrequire("starred_messages");
 zrequire("user_status");
 zrequire("subs");
-zrequire("stream_ui_updates");
 
 zrequire("server_events_dispatch");
 zrequire("panels");
@@ -180,7 +179,6 @@ with_overrides((override) => {
     // custom profile fields
     const event = event_fixtures.custom_profile_fields;
     override("settings_profile_fields.populate_profile_fields", noop);
-    override("settings_profile_fields.report_success", noop);
     override("settings_account.add_custom_profile_fields_to_settings", noop);
     dispatch(event);
     assert_same(global.page_params.custom_profile_fields, event.fields);
@@ -337,7 +335,6 @@ with_overrides((override) => {
     test_realm_boolean(event, "realm_default_twenty_four_hour_time");
 
     event = event_fixtures.realm__update__email_addresses_visibility;
-    override("stream_ui_updates.update_subscribers_list", noop);
     dispatch(event);
     assert_same(page_params.realm_email_address_visibility, 3);
 

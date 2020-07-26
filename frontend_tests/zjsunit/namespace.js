@@ -72,11 +72,14 @@ exports.with_overrides = function (test_function) {
     // a way to override the namespace temporarily.
 
     const restore_callbacks = [];
+    const unused_funcs = new Map();
 
     const override = function (name, f) {
         if (typeof f !== "function") {
             throw new Error("You can only override with a function.");
         }
+
+        unused_funcs.set(name, true);
 
         const parts = name.split(".");
         const module = parts[0];
@@ -87,7 +90,10 @@ exports.with_overrides = function (test_function) {
         }
 
         const old_f = global[module][func_name];
-        global[module][func_name] = f;
+        global[module][func_name] = function (...args) {
+            unused_funcs.delete(name);
+            return f.apply(this, args);
+        };
 
         restore_callbacks.push(() => {
             global[module][func_name] = old_f;
@@ -98,5 +104,9 @@ exports.with_overrides = function (test_function) {
 
     for (const restore_callback of restore_callbacks) {
         restore_callback();
+    }
+
+    for (const unused_name of unused_funcs.keys()) {
+        throw new Error(unused_name + " never got invoked!");
     }
 };
