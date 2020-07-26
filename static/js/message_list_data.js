@@ -193,15 +193,6 @@ class MessageListData {
         return this.last().id;
     }
 
-    update_stream_name(stream_id, new_stream_name) {
-        for (const item of this._items) {
-            if (item.stream_id && item.stream_id === stream_id) {
-                item.display_recipient = new_stream_name;
-                item.stream = new_stream_name;
-            }
-        }
-    }
-
     add_messages(messages) {
         let top_messages = [];
         let bottom_messages = [];

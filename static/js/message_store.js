@@ -212,6 +212,14 @@ exports.update_property = function (property, value, info) {
                 }
             });
             break;
+        case "stream_name":
+            exports.each((msg) => {
+                if (msg.stream_id && msg.stream_id === info.stream_id) {
+                    msg.display_recipient = value;
+                    msg.stream = value;
+                }
+            });
+            break;
     }
 };
 

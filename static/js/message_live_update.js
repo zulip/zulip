@@ -10,12 +10,8 @@ function rerender_messages_view() {
 }
 
 exports.update_stream_name = function (stream_id, new_name) {
-    for (const list of [home_msg_list, message_list.narrowed, message_list.all]) {
-        if (list === undefined) {
-            continue;
-        }
-        list.update_stream_name(stream_id, new_name);
-    }
+    message_store.update_property("stream_name", new_name, {stream_id});
+    rerender_messages_view();
 };
 
 exports.update_user_full_name = function (user_id, full_name) {
