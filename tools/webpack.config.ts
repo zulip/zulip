@@ -248,7 +248,7 @@ export default (env?: string): webpack.Configuration[] => {
         {path: "jquery/dist/jquery.js", name: ["$", "jQuery"]},
         {path: "handlebars/dist/cjs/handlebars.runtime.js", name: "Handlebars"},
     ];
-    config.module.rules.unshift(...getExposeLoaders(exposeOptions));
+    config.module!.rules.unshift(...getExposeLoaders(exposeOptions));
 
     if (!production) {
         // Out JS debugging tools
