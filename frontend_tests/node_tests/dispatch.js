@@ -95,10 +95,7 @@ function assert_same(actual, expected) {
     assert.deepEqual(actual, expected);
 }
 
-const with_overrides = global.with_overrides; // make lint happy
-
-with_overrides((override) => {
-    // alert_words
+run_test("alert_words", (override) => {
     assert(!alert_words.has_alert_word("fire"));
     assert(!alert_words.has_alert_word("lunch"));
 
@@ -111,8 +108,7 @@ with_overrides((override) => {
     assert(alert_words.has_alert_word("lunch"));
 });
 
-with_overrides((override) => {
-    // attachments
+run_test("attachments", (override) => {
     const event = event_fixtures.attachment;
     global.with_stub((stub) => {
         override("attachments_ui.update_attachments", stub.f);
@@ -121,8 +117,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // User groups
+run_test("user groups", (override) => {
     let event = event_fixtures.user_group__add;
     override("settings_user_groups.reload", noop);
     global.with_stub((stub) => {
@@ -161,8 +156,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // custom profile fields
+run_test("custom profile fields", (override) => {
     const event = event_fixtures.custom_profile_fields;
     override("settings_profile_fields.populate_profile_fields", noop);
     override("settings_account.add_custom_profile_fields_to_settings", noop);
@@ -170,8 +164,7 @@ with_overrides((override) => {
     assert_same(global.page_params.custom_profile_fields, event.fields);
 });
 
-with_overrides((override) => {
-    // default_streams
+run_test("default_streams", (override) => {
     const event = event_fixtures.default_streams;
     override("settings_streams.update_default_streams_table", noop);
     global.with_stub((stub) => {
@@ -182,16 +175,14 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // hotspots
+run_test("hotspots", (override) => {
     const event = event_fixtures.hotspots;
     override("hotspots.load_new", noop);
     dispatch(event);
     assert_same(page_params.hotspots, event.hotspots);
 });
 
-with_overrides((override) => {
-    // invites_changed
+run_test("invites_changed", (override) => {
     const event = event_fixtures.invites_changed;
     $("#admin-invites-list").length = 1;
     global.with_stub((stub) => {
@@ -200,8 +191,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // muted_topics
+run_test("muted_topics", (override) => {
     const event = event_fixtures.muted_topics;
 
     global.with_stub((stub) => {
@@ -212,8 +202,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // presence
+run_test("presence", (override) => {
     const event = event_fixtures.presence;
 
     global.with_stub((stub) => {
@@ -226,8 +215,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // reaction
+run_test("reaction", (override) => {
     let event = event_fixtures.reaction__add;
     global.with_stub((stub) => {
         override("reactions.add_reaction", stub.f);
@@ -247,7 +235,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
+run_test("realm settings", (override) => {
     override("settings_org.sync_realm_settings", noop);
     override("settings_bots.update_bot_permissions_ui", noop);
     override("notifications.redraw_title", noop);
@@ -384,8 +372,7 @@ with_overrides((override) => {
     assert_same(window.location.href, "/accounts/deactivated/");
 });
 
-with_overrides((override) => {
-    // realm_bot
+run_test("realm_bot", (override) => {
     let event = event_fixtures.realm_bot__add;
     global.with_stub((bot_stub) => {
         global.with_stub((admin_stub) => {
@@ -434,8 +421,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // realm_emoji
+run_test("realm_emoji", (override) => {
     const event = event_fixtures.realm_emoji;
 
     global.with_stub((stub) => {
@@ -449,8 +435,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // realm_filters
+run_test("realm_filters", (override) => {
     const event = event_fixtures.realm_filters;
     page_params.realm_filters = [];
     override("settings_linkifiers.populate_filters", noop);
@@ -459,8 +444,7 @@ with_overrides((override) => {
     assert_same(page_params.realm_filters, event.realm_filters);
 });
 
-with_overrides((override) => {
-    // realm_domains
+run_test("realm_domains", (override) => {
     let event = event_fixtures.realm_domains__add;
     page_params.realm_domains = [];
     override("settings_org.populate_realm_domains", noop);
@@ -476,8 +460,7 @@ with_overrides((override) => {
     assert_same(page_params.realm_domains, []);
 });
 
-with_overrides((override) => {
-    // realm_user
+run_test("realm_user", (override) => {
     let event = event_fixtures.realm_user__add;
     dispatch(event);
     const added_person = people.get_by_user_id(event.person.user_id);
@@ -502,8 +485,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // restart
+run_test("restart", (override) => {
     const event = event_fixtures.restart;
     global.with_stub((stub) => {
         override("reload.initiate", stub.f);
@@ -514,8 +496,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // stream update
+run_test("stream", (override) => {
     let event = event_fixtures.stream__update;
 
     global.with_stub((stub) => {
@@ -572,8 +553,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // submessage
+run_test("submessage", (override) => {
     const event = event_fixtures.submessage;
     global.with_stub((stub) => {
         override("submessage.handle_event", stub.f);
@@ -591,8 +571,7 @@ with_overrides((override) => {
 
 // For subscriptions, see dispatch_subs.js
 
-with_overrides((override) => {
-    // typing
+run_test("typing", (override) => {
     let event = event_fixtures.typing__start;
     global.with_stub((stub) => {
         override("typing_events.display_notification", stub.f);
@@ -614,8 +593,7 @@ with_overrides((override) => {
     dispatch(event); // get line coverage
 });
 
-with_overrides((override) => {
-    // update_display_settings
+run_test("update_display_settings", (override) => {
     let event = event_fixtures.update_display_settings__default_language;
     page_params.default_language = "en";
     override("settings_display.update_page", noop);
@@ -735,8 +713,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // update_global_notifications
+run_test("update_global_notifications", (override) => {
     const event = event_fixtures.update_global_notifications;
     global.with_stub((stub) => {
         override("notifications.handle_global_notification_updates", stub.f);
@@ -748,8 +725,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // update_message_flags__read
+run_test("update_message (read)", (override) => {
     const event = event_fixtures.update_message_flags__read;
 
     global.with_stub((stub) => {
@@ -760,9 +736,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // update_message_flags__starred
-
+run_test("update_message (stars)", (override) => {
     override("starred_messages.rerender_ui", noop);
 
     let event = event_fixtures.update_message_flags__starred_add;
@@ -788,8 +762,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // delete_message
+run_test("delete_message", (override) => {
     const event = event_fixtures.delete_message;
 
     override("stream_list.update_streams_sidebar", noop);
@@ -816,8 +789,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
-    // attachments
+run_test("user_status", (override) => {
     let event = event_fixtures.user_status__set_away;
     global.with_stub((stub) => {
         override("activity.on_set_away", stub.f);
@@ -845,7 +817,7 @@ with_overrides((override) => {
     });
 });
 
-with_overrides((override) => {
+run_test("realm_export", (override) => {
     const event = event_fixtures.realm_export;
     override("settings_exports.populate_exports_table", noop);
     dispatch(event);
