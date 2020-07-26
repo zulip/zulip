@@ -196,10 +196,6 @@ run_test("updates", () => {
     ];
 
     list.append(messages, true);
-    list.update_user_full_name(100, "Anthony");
-    assert.equal(list.get(1).sender_full_name, "Anthony");
-    assert.equal(list.get(2).sender_full_name, "jeff");
-
     list.update_user_avatar(100, "http://zulip.org");
     assert.equal(list.get(1).small_avatar_url, "http://zulip.org");
     assert.equal(list.get(2).small_avatar_url, "http://github.com");

@@ -193,14 +193,6 @@ class MessageListData {
         return this.last().id;
     }
 
-    update_user_full_name(user_id, full_name) {
-        for (const item of this._items) {
-            if (item.sender_id && item.sender_id === user_id) {
-                item.sender_full_name = full_name;
-            }
-        }
-    }
-
     update_user_avatar(user_id, avatar_url) {
         // TODO:
         // We may want to de-dup some logic with update_user_full_name,

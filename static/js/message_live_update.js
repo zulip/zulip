@@ -1,3 +1,14 @@
+function rerender_messages_view() {
+    for (const list of [home_msg_list, message_list.narrowed, message_list.all]) {
+        if (list === undefined) {
+            continue;
+        }
+        if (list.table_name !== undefined) {
+            list.rerender_view();
+        }
+    }
+}
+
 exports.update_stream_name = function (stream_id, new_name) {
     for (const list of [home_msg_list, message_list.narrowed, message_list.all]) {
         if (list === undefined) {
@@ -8,12 +19,8 @@ exports.update_stream_name = function (stream_id, new_name) {
 };
 
 exports.update_user_full_name = function (user_id, full_name) {
-    for (const list of [home_msg_list, message_list.narrowed, message_list.all]) {
-        if (list === undefined) {
-            continue;
-        }
-        list.update_user_full_name(user_id, full_name);
-    }
+    message_store.update_property("sender_full_name", full_name, {user_id});
+    rerender_messages_view();
 };
 
 exports.update_avatar = function (user_id, avatar_url) {

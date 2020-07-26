@@ -393,13 +393,6 @@ class MessageList {
         return this.view.get_row(id);
     }
 
-    update_user_full_name(user_id, full_name) {
-        this.data.update_user_full_name(user_id, full_name);
-        if (this.table_name !== undefined) {
-            this.view.rerender_preserving_scrolltop();
-        }
-    }
-
     update_user_avatar(user_id, avatar_url) {
         this.data.update_user_avatar(user_id, avatar_url);
         if (this.table_name !== undefined) {
