@@ -393,13 +393,6 @@ class MessageList {
         return this.view.get_row(id);
     }
 
-    update_stream_name(stream_id, new_stream_name) {
-        this.data.update_stream_name(stream_id, new_stream_name);
-        if (this.table_name !== undefined) {
-            this.view.rerender_preserving_scrolltop();
-        }
-    }
-
     change_message_id(old_id, new_id) {
         const opts = {
             is_current_list: () => current_msg_list === this,

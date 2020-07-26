@@ -172,36 +172,6 @@ run_test("message_range", () => {
     assert.deepEqual(list.message_range(-1, 40), [{id: 30}, {id: 40}]);
 });
 
-run_test("updates", () => {
-    const list = new MessageList({});
-    list.view.rerender_preserving_scrolltop = noop;
-
-    const messages = [
-        {
-            id: 1,
-            sender_id: 100,
-            sender_full_name: "tony",
-            stream_id: 32,
-            stream: "denmark",
-            small_avatar_url: "http://zulip.spork",
-        },
-        {
-            id: 2,
-            sender_id: 39,
-            sender_full_name: "jeff",
-            stream_id: 64,
-            stream: "russia",
-            small_avatar_url: "http://github.com",
-        },
-    ];
-
-    list.append(messages, true);
-
-    list.update_stream_name(64, "Finland");
-    assert.equal(list.get(2).stream, "Finland");
-    assert.equal(list.get(1).stream, "denmark");
-});
-
 run_test("nth_most_recent_id", () => {
     const list = new MessageList({});
     list.append([{id: 10}, {id: 20}, {id: 30}]);
