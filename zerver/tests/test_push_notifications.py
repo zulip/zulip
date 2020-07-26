@@ -1084,8 +1084,11 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.setup_gcm_tokens()
         self.make_stream('public_stream')
         self.subscribe(self.user_profile, 'public_stream')
-        do_soft_deactivate_users([self.user_profile])
-
+        with self.assertLogs(level='INFO') as info_logs:
+            do_soft_deactivate_users([self.user_profile])
+        self.assertEqual(info_logs.output, [
+            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+        ])
         sender = self.example_user('iago')
         message_id = self.send_stream_message(sender, "public_stream", "test")
         missed_message = {
