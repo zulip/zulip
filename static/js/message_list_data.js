@@ -551,7 +551,7 @@ class MessageListData {
             // whether this deferral is necessary; it was present in
             // the original 2013 local echo implementation but we
             // don't have records for why we added it then.
-            setTimeout(opts.re_render, 0);
+            setTimeout(opts.rerender_view, 0);
         }
     }
 
