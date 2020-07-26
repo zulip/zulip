@@ -71,7 +71,7 @@ exports.with_overrides = function (test_function) {
     // This function calls test_function() and passes in
     // a way to override the namespace temporarily.
 
-    const clobber_callbacks = [];
+    const restore_callbacks = [];
 
     const override = function (name, f) {
         const parts = name.split(".");
@@ -82,19 +82,17 @@ exports.with_overrides = function (test_function) {
             set_global(module, {});
         }
 
+        const old_f = global[module][func_name];
         global[module][func_name] = f;
 
-        clobber_callbacks.push(() => {
-            // If you get a failure from this, you probably just
-            // need to have your test do its own overrides and
-            // not cherry-pick off of the prior test's setup.
-            global[module][func_name] = "ATTEMPTED TO REUSE OVERRIDDEN VALUE FROM PRIOR TEST";
+        restore_callbacks.push(() => {
+            global[module][func_name] = old_f;
         });
     };
 
     test_function(override);
 
-    for (const f of clobber_callbacks) {
-        f();
+    for (const restore_callback of restore_callbacks) {
+        restore_callback();
     }
 };
