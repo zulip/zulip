@@ -338,6 +338,11 @@ class MessageList {
         row.removeClass("unread");
     }
 
+    rerender_view() {
+        this.view.rerender_preserving_scrolltop();
+        this.redo_selection();
+    }
+
     rerender() {
         // We need to clear the rendering state, rather than just
         // doing clear_table, since we want to potentially recollapse
@@ -353,9 +358,7 @@ class MessageList {
                 narrow.hide_empty_narrow_message();
             }
         }
-
-        this.view.rerender_preserving_scrolltop();
-        this.redo_selection();
+        this.rerender_view();
     }
 
     redo_selection() {
@@ -414,10 +417,7 @@ class MessageList {
     change_message_id(old_id, new_id) {
         const opts = {
             is_current_list: () => current_msg_list === this,
-            re_render: () => {
-                this.view.rerender_preserving_scrolltop();
-                this.redo_selection();
-            },
+            rerender_view: () => this.rerender_view(),
         };
         this.data.change_message_id(old_id, new_id, opts);
     }
