@@ -17,8 +17,6 @@ zrequire("MessageListData", "js/message_list_data");
 zrequire("MessageListView", "js/message_list_view");
 const MessageList = zrequire("message_list").MessageList;
 
-const with_overrides = global.with_overrides; // make lint happy
-
 function accept_all_filter() {
     const filter = {
         predicate: () => () => true,
@@ -334,72 +332,70 @@ run_test("local_echo", () => {
     assert.equal(list.closest_id(50.01), 50.01);
 });
 
-run_test("bookend", () => {
+run_test("bookend", (override) => {
     const list = new MessageList({});
 
-    with_overrides((override) => {
-        let expected = "translated: You subscribed to stream IceCream";
-        list.view.clear_trailing_bookend = noop;
-        list.narrowed = true;
+    let expected = "translated: You subscribed to stream IceCream";
+    list.view.clear_trailing_bookend = noop;
+    list.narrowed = true;
 
-        override("narrow_state.stream", () => "IceCream");
+    override("narrow_state.stream", () => "IceCream");
 
-        override("stream_data.is_subscribed", () => true);
+    override("stream_data.is_subscribed", () => true);
 
-        global.with_stub((stub) => {
-            list.view.render_trailing_bookend = stub.f;
-            list.update_trailing_bookend();
-            const bookend = stub.get_args("content", "subscribed", "show_button");
-            assert.equal(bookend.content, expected);
-            assert.equal(bookend.subscribed, true);
-            assert.equal(bookend.show_button, true);
-        });
+    global.with_stub((stub) => {
+        list.view.render_trailing_bookend = stub.f;
+        list.update_trailing_bookend();
+        const bookend = stub.get_args("content", "subscribed", "show_button");
+        assert.equal(bookend.content, expected);
+        assert.equal(bookend.subscribed, true);
+        assert.equal(bookend.show_button, true);
+    });
 
-        expected = "translated: You unsubscribed from stream IceCream";
-        list.last_message_historical = false;
-        override("stream_data.is_subscribed", () => false);
+    expected = "translated: You unsubscribed from stream IceCream";
+    list.last_message_historical = false;
+    override("stream_data.is_subscribed", () => false);
 
-        override("stream_data.get_sub", () => ({invite_only: false}));
+    override("stream_data.get_sub", () => ({invite_only: false}));
 
-        global.with_stub((stub) => {
-            list.view.render_trailing_bookend = stub.f;
-            list.update_trailing_bookend();
-            const bookend = stub.get_args("content", "subscribed", "show_button");
-            assert.equal(bookend.content, expected);
-            assert.equal(bookend.subscribed, false);
-            assert.equal(bookend.show_button, true);
-        });
+    global.with_stub((stub) => {
+        list.view.render_trailing_bookend = stub.f;
+        list.update_trailing_bookend();
+        const bookend = stub.get_args("content", "subscribed", "show_button");
+        assert.equal(bookend.content, expected);
+        assert.equal(bookend.subscribed, false);
+        assert.equal(bookend.show_button, true);
+    });
 
-        // Test when the stream is privates (invite only)
-        expected = "translated: You unsubscribed from stream IceCream";
-        override("stream_data.is_subscribed", () => false);
+    // Test when the stream is privates (invite only)
+    expected = "translated: You unsubscribed from stream IceCream";
+    override("stream_data.is_subscribed", () => false);
 
-        override("stream_data.get_sub", () => ({invite_only: true}));
+    override("stream_data.get_sub", () => ({invite_only: true}));
 
-        global.with_stub((stub) => {
-            list.view.render_trailing_bookend = stub.f;
-            list.update_trailing_bookend();
-            const bookend = stub.get_args("content", "subscribed", "show_button");
-            assert.equal(bookend.content, expected);
-            assert.equal(bookend.subscribed, false);
-            assert.equal(bookend.show_button, false);
-        });
+    global.with_stub((stub) => {
+        list.view.render_trailing_bookend = stub.f;
+        list.update_trailing_bookend();
+        const bookend = stub.get_args("content", "subscribed", "show_button");
+        assert.equal(bookend.content, expected);
+        assert.equal(bookend.subscribed, false);
+        assert.equal(bookend.show_button, false);
+    });
 
-        expected = "translated: You are not subscribed to stream IceCream";
-        list.last_message_historical = true;
+    expected = "translated: You are not subscribed to stream IceCream";
+    list.last_message_historical = true;
 
-        global.with_stub((stub) => {
-            list.view.render_trailing_bookend = stub.f;
-            list.update_trailing_bookend();
-            const bookend = stub.get_args("content", "subscribed", "show_button");
-            assert.equal(bookend.content, expected);
-            assert.equal(bookend.subscribed, false);
-            assert.equal(bookend.show_button, true);
-        });
+    global.with_stub((stub) => {
+        list.view.render_trailing_bookend = stub.f;
+        list.update_trailing_bookend();
+        const bookend = stub.get_args("content", "subscribed", "show_button");
+        assert.equal(bookend.content, expected);
+        assert.equal(bookend.subscribed, false);
+        assert.equal(bookend.show_button, true);
     });
 });
 
-run_test("unmuted_messages", () => {
+run_test("unmuted_messages", (override) => {
     const list = new MessageList({});
 
     const muted_stream_id = 999;
@@ -427,14 +423,12 @@ run_test("unmuted_messages", () => {
         },
     ];
 
-    with_overrides((override) => {
-        override("muting.is_topic_muted", (stream_id) => stream_id === muted_stream_id);
+    override("muting.is_topic_muted", (stream_id) => stream_id === muted_stream_id);
 
-        // Make sure unmuted_message filters out the "muted" entry,
-        // which we mark as having a muted topic, and not mentioned.
-        const test_unmuted = list.unmuted_messages(unmuted.concat(muted));
-        assert.deepEqual(unmuted, test_unmuted);
-    });
+    // Make sure unmuted_message filters out the "muted" entry,
+    // which we mark as having a muted topic, and not mentioned.
+    const test_unmuted = list.unmuted_messages(unmuted.concat(muted));
+    assert.deepEqual(unmuted, test_unmuted);
 });
 
 run_test("add_remove_rerender", () => {
