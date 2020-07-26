@@ -44,9 +44,13 @@ class RealmTest(ZulipTestCase):
 
     def test_realm_creation_ensures_internal_realms(self) -> None:
         with mock.patch("zerver.lib.actions.server_initialized", return_value=False):
-            with mock.patch("zerver.lib.actions.create_internal_realm") as mock_create_internal:
+            with mock.patch("zerver.lib.actions.create_internal_realm") as mock_create_internal, \
+                    self.assertLogs(level='INFO') as info_logs:
                 do_create_realm("testrealm", "Test Realm")
                 mock_create_internal.assert_called_once()
+            self.assertEqual(info_logs.output, [
+                'INFO:root:Server not yet initialized. Creating the internal realm first.'
+            ])
 
     def test_do_set_realm_name_caching(self) -> None:
         """The main complicated thing about setting realm names is fighting the
