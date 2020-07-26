@@ -215,9 +215,14 @@ class WorkerTest(ZulipTestCase):
                 # Double-calling start is our way to get it to run again
                 self.assertTrue(timer.is_alive())
                 mmw.start()
+                with self.assertLogs(level='INFO') as info_logs:
+                    # Now, we actually send the emails.
+                    mmw.maybe_send_batched_emails()
+                self.assertEqual(info_logs.output, [
+                    'INFO:root:Batch-processing 3 missedmessage_emails events for user 10',
+                    'INFO:root:Batch-processing 1 missedmessage_emails events for user 12'
+                ])
 
-                # Now, we actually send the emails.
-                mmw.maybe_send_batched_emails()
                 self.assertFalse(timer.is_alive())
 
         self.assertEqual(tm.call_args[0][0], 5)  # should sleep 5 seconds
@@ -296,10 +301,14 @@ class WorkerTest(ZulipTestCase):
                 fake_client.queue.append(('missedmessage_mobile_notifications', event_new))
                 fake_client.queue.append(('missedmessage_mobile_notifications', event_remove))
 
-                with patch('zerver.lib.queue.queue_json_publish', side_effect=fake_publish):
+                with patch('zerver.lib.queue.queue_json_publish', side_effect=fake_publish), \
+                        self.assertLogs('zerver.worker.queue_processors', 'WARNING') as warn_logs:
                     worker.start()
                     self.assertEqual(mock_handle_new.call_count, 1 + MAX_REQUEST_RETRIES)
                     self.assertEqual(mock_handle_remove.call_count, 1 + MAX_REQUEST_RETRIES)
+                self.assertEqual(warn_logs.output, [
+                    'WARNING:zerver.worker.queue_processors:Maximum retries exceeded for trigger:1 event:push_notification',
+                ] * 2)
 
     @patch('zerver.worker.queue_processors.mirror_email')
     def test_mirror_worker(self, mock_mirror_email: MagicMock) -> None:
@@ -343,7 +352,8 @@ class WorkerTest(ZulipTestCase):
         for element in data:
             fake_client.queue.append(('email_mirror', element))
 
-        with simulated_queue_client(lambda: fake_client):
+        with simulated_queue_client(lambda: fake_client), \
+                self.assertLogs('zerver.worker.queue_processors', level='WARNING') as warn_logs:
             start_time = time.time()
             with patch('time.time', return_value=start_time):
                 worker = queue_processors.MirrorWorker()
@@ -386,6 +396,9 @@ class WorkerTest(ZulipTestCase):
                         "Deadlock trying to incr_ratelimit for %s",
                         f"RateLimitedRealmMirror:{realm.string_id}",
                     )
+        self.assertEqual(warn_logs.output, [
+            'WARNING:zerver.worker.queue_processors:MirrorWorker: Rejecting an email from: None to realm: Zulip Dev - rate limited.'
+        ] * 5)
 
     def test_email_sending_worker_retries(self) -> None:
         """Tests the retry_send_email_failures decorator to make sure it
@@ -466,13 +479,17 @@ class WorkerTest(ZulipTestCase):
                        return_value=fake_response), \
                     self.settings(MAILCHIMP_API_KEY='one-two',
                                   PRODUCTION=True,
-                                  ZULIP_FRIENDS_LIST_ID='id'):
+                                  ZULIP_FRIENDS_LIST_ID='id'), \
+                    self.assertLogs(level='INFO') as info_logs:
                 with patch('logging.warning') as logging_warning_mock:
                     worker.start()
                     logging_warning_mock.assert_called_once_with(
                         "Attempted to sign up already existing email to list: %s",
                         "foo@bar.baz",
                     )
+            self.assertEqual(info_logs.output, [
+                'INFO:root:Processing signup for user 10 in realm zulip'
+            ])
 
     def test_signups_bad_request(self) -> None:
         fake_client = self.FakeClient()
@@ -491,9 +508,13 @@ class WorkerTest(ZulipTestCase):
                        return_value=fake_response), \
                     self.settings(MAILCHIMP_API_KEY='one-two',
                                   PRODUCTION=True,
-                                  ZULIP_FRIENDS_LIST_ID='id'):
+                                  ZULIP_FRIENDS_LIST_ID='id'), \
+                    self.assertLogs(level='INFO') as info_logs:
                 worker.start()
                 fake_response.raise_for_status.assert_called_once()
+            self.assertEqual(info_logs.output, [
+                'INFO:root:Processing signup for user 10 in realm zulip'
+            ])
 
     def test_invites_worker(self) -> None:
         fake_client = self.FakeClient()
