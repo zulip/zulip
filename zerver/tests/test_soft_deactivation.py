@@ -257,7 +257,11 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         # We are sending this message to ensure that long_term_idle_user has
         # at least one UserMessage row.
         self.send_stream_message(long_term_idle_user, stream_name)
-        do_soft_deactivate_users([long_term_idle_user])
+        with self.assertLogs(level='INFO') as info_logs:
+            do_soft_deactivate_users([long_term_idle_user])
+        self.assertEqual(info_logs.output, [
+            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+        ])
 
         message = 'Test Message 1'
         message_id = self.send_stream_message(sender, stream_name,
@@ -302,7 +306,11 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         long_term_idle_user = self.example_user('hamlet')
         self.send_stream_message(long_term_idle_user, stream_name)
-        do_soft_deactivate_users([long_term_idle_user])
+        with self.assertLogs(level='INFO') as info_logs:
+            do_soft_deactivate_users([long_term_idle_user])
+        self.assertEqual(info_logs.output, [
+            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+        ])
 
         # Test that add_missing_messages() in simplest case of adding a
         # message for which UserMessage row doesn't exist for this user.
@@ -404,7 +412,11 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             sender, stream_name, 'Test Message 9')
         self.unsubscribe(long_term_idle_user, stream_name)
         # Soft deactivate and send another message to the unsubscribed stream.
-        do_soft_deactivate_users([long_term_idle_user])
+        with self.assertLogs(level='INFO') as info_logs:
+            do_soft_deactivate_users([long_term_idle_user])
+        self.assertEqual(info_logs.output, [
+            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+        ])
         send_fake_message('Test Message 10', stream)
 
         idle_user_msg_list = get_user_messages(long_term_idle_user)
@@ -459,7 +471,11 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         sender = self.example_user('iago')
         long_term_idle_user = self.example_user('hamlet')
         self.send_stream_message(long_term_idle_user, stream_name)
-        do_soft_deactivate_users([long_term_idle_user])
+        with self.assertLogs(level='INFO') as info_logs:
+            do_soft_deactivate_users([long_term_idle_user])
+        self.assertEqual(info_logs.output, [
+            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+        ])
 
         num_new_messages = 5
         message_ids = []
@@ -503,7 +519,11 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         long_term_idle_user = self.example_user('hamlet')
         self.send_stream_message(long_term_idle_user, stream_name)
-        do_soft_deactivate_users([long_term_idle_user])
+        with self.assertLogs(level='INFO') as info_logs:
+            do_soft_deactivate_users([long_term_idle_user])
+        self.assertEqual(info_logs.output, [
+            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+        ])
 
         def assert_um_count(user: UserProfile, count: int) -> None:
             user_messages = get_user_messages(user)
