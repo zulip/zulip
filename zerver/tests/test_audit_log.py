@@ -293,7 +293,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
         do_set_realm_message_editing(realm, True, 1000, False, acting_user=user)
         realm_audit_logs = RealmAuditLog.objects.filter(realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
-                                                        event_time__gte=now, acting_user=user)
+                                                        event_time__gte=now, acting_user=user).order_by("id")
         self.assertEqual(realm_audit_logs.count(), 2)
 
         # allow_message_editing was already True.
