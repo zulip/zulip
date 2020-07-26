@@ -644,13 +644,20 @@ with_overrides((override) => {
     dispatch(event);
     assert_same(page_params.left_side_userlist, true);
 
+    // We alias message_list.narrowed to current_msg_list
+    // to make sure we get line coverage on re-rendering
+    // the current message list.  The actual code tests
+    // that these two objects are equal.  It is possible
+    // we want a better strategy for that, or at least
+    // a helper.
+    message_list.narrowed = current_msg_list;
+
     let called = false;
     current_msg_list.rerender = () => {
         called = true;
     };
 
     override("home_msg_list.rerender", noop);
-    override("message_list.narrowed", current_msg_list);
     event = event_fixtures.update_display_settings__twenty_four_hour_time;
     page_params.twenty_four_hour_time = false;
     dispatch(event);

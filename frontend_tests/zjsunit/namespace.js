@@ -74,6 +74,10 @@ exports.with_overrides = function (test_function) {
     const restore_callbacks = [];
 
     const override = function (name, f) {
+        if (typeof f !== "function") {
+            throw new Error("You can only override with a function.");
+        }
+
         const parts = name.split(".");
         const module = parts[0];
         const func_name = parts[1];
