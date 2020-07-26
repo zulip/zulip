@@ -11,19 +11,50 @@ set_global("$", global.make_zjquery());
 
 global.patch_builtin("setTimeout", (func) => func());
 
+set_global("activity", {});
+set_global("alert_words_ui", {});
+set_global("attachments_ui", {});
+set_global("bot_data", {});
 set_global("compose", {});
+set_global("composebox_typeahead", {});
 set_global("current_msg_list", {});
+set_global("emoji", {});
+set_global("emoji_picker", {});
 set_global("home_msg_list", {});
+set_global("hotspots", {});
 set_global("markdown", {});
 set_global("message_edit", {});
+set_global("message_list", {});
+set_global("muting_ui", {});
+set_global("night_mode", {});
 set_global("notifications", {});
 set_global("overlays", {});
+set_global("reactions", {});
+set_global("realm_icon", {});
+set_global("realm_logo", {});
+set_global("reload", {});
+set_global("scroll_bar", {});
 set_global("settings_account", {});
 set_global("settings_bots", {});
 set_global("settings_display", {});
 set_global("settings_emoji", {});
+set_global("settings_exports", {});
+set_global("settings_invites", {});
+set_global("settings_linkifiers", {});
 set_global("settings_notifications", {});
 set_global("settings_org", {});
+set_global("settings_profile_fields", {});
+set_global("settings_streams", {});
+set_global("settings_user_groups", {});
+set_global("settings_users", {});
+set_global("stream_data", {});
+set_global("stream_events", {});
+set_global("submessage", {});
+set_global("typing_events", {});
+set_global("ui", {});
+set_global("unread_ops", {});
+set_global("user_events", {});
+set_global("user_groups", {});
 
 // page_params is highly coupled to dispatching now
 set_global("page_params", {

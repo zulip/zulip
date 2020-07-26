@@ -8,6 +8,14 @@ const _settings_notifications = {
 };
 set_global("settings_notifications", _settings_notifications);
 
+set_global("color_data", {});
+set_global("current_msg_list", {});
+set_global("message_util", {});
+set_global("stream_color", {});
+set_global("stream_list", {});
+set_global("stream_muting", {});
+set_global("subs", {});
+
 zrequire("people");
 zrequire("stream_data");
 zrequire("stream_events");
