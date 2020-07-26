@@ -1,6 +1,5 @@
 zrequire("stream_data");
 zrequire("stream_sort");
-const with_overrides = global.with_overrides;
 
 run_test("no_subscribed_streams", () => {
     assert.equal(stream_sort.sort_groups(""), undefined);
@@ -49,7 +48,7 @@ function sort_groups(query) {
     return stream_sort.sort_groups(streams, query);
 }
 
-with_overrides((override) => {
+run_test("basics", (override) => {
     override("stream_data.is_active", (sub) => sub.name !== "pneumonia");
 
     // Test sorting into categories/alphabetized
