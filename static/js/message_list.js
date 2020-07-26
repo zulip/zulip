@@ -393,13 +393,6 @@ class MessageList {
         return this.view.get_row(id);
     }
 
-    update_user_avatar(user_id, avatar_url) {
-        this.data.update_user_avatar(user_id, avatar_url);
-        if (this.table_name !== undefined) {
-            this.view.rerender_preserving_scrolltop();
-        }
-    }
-
     update_stream_name(stream_id, new_stream_name) {
         this.data.update_stream_name(stream_id, new_stream_name);
         if (this.table_name !== undefined) {

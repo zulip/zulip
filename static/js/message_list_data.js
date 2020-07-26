@@ -193,18 +193,6 @@ class MessageListData {
         return this.last().id;
     }
 
-    update_user_avatar(user_id, avatar_url) {
-        // TODO:
-        // We may want to de-dup some logic with update_user_full_name,
-        // especially if we want to optimize this with some kind of
-        // hash that maps sender_id -> messages.
-        for (const item of this._items) {
-            if (item.sender_id && item.sender_id === user_id) {
-                item.small_avatar_url = avatar_url;
-            }
-        }
-    }
-
     update_stream_name(stream_id, new_stream_name) {
         for (const item of this._items) {
             if (item.stream_id && item.stream_id === stream_id) {

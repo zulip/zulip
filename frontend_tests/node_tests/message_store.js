@@ -256,12 +256,14 @@ run_test("update_property", () => {
         type: "stream",
         sender_full_name: alice.full_name,
         sender_id: alice.user_id,
+        small_avatar_url: "alice_url",
         id: 100,
     };
     const message2 = {
         type: "stream",
         sender_full_name: bob.full_name,
         sender_id: bob.user_id,
+        small_avatar_url: "bob_url",
         id: 101,
     };
     for (const message of [message1, message2]) {
@@ -274,6 +276,12 @@ run_test("update_property", () => {
     message_store.update_property("sender_full_name", "Bobby", {user_id: bob.user_id});
     assert.equal(message1.sender_full_name, alice.full_name);
     assert.equal(message2.sender_full_name, "Bobby");
+
+    assert.equal(message1.small_avatar_url, "alice_url");
+    assert.equal(message2.small_avatar_url, "bob_url");
+    message_store.update_property("small_avatar_url", "bobby_url", {user_id: bob.user_id});
+    assert.equal(message1.small_avatar_url, "alice_url");
+    assert.equal(message2.small_avatar_url, "bobby_url");
 });
 
 run_test("each", () => {
