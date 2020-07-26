@@ -24,9 +24,6 @@ set_global("search_pill_widget", {
     },
 });
 
-search_pill.append_search_string = noop;
-search_pill.get_search_string_for_current_filter = noop;
-
 global.patch_builtin("setTimeout", (func) => func());
 
 run_test("clear_search_form", () => {

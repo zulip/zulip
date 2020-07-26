@@ -733,7 +733,7 @@ function test_discard_changes_button(discard_changes) {
     settings_org.change_save_button_state = stubbed_function;
 }
 
-run_test("set_up", () => {
+run_test("set_up", (override) => {
     const verify_realm_domains = simulate_realm_domains_table();
     page_params.realm_available_video_chat_providers = {
         jitsi_meet: {
@@ -785,7 +785,7 @@ run_test("set_up", () => {
 
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
-    settings_org.maybe_disable_widgets = noop;
+    override("settings_org.maybe_disable_widgets", noop);
     settings_org.set_up();
 
     verify_realm_domains();
@@ -1030,7 +1030,6 @@ run_test("misc", () => {
     assert.equal(elem.text(), "#some_stream");
     assert(!elem.hasClass("text-warning"));
 
-    stream_data.get_sub_by_id = noop;
     settings_org.notifications_stream_widget.render(undefined);
     assert.equal(elem.text(), "translated: Disabled");
     assert(elem.hasClass("text-warning"));
@@ -1048,7 +1047,6 @@ run_test("misc", () => {
     assert.equal(elem.text(), "#some_stream");
     assert(!elem.hasClass("text-warning"));
 
-    stream_data.get_sub_by_id = noop;
     settings_org.signup_notifications_stream_widget.render(undefined);
     assert.equal(elem.text(), "translated: Disabled");
     assert(elem.hasClass("text-warning"));
