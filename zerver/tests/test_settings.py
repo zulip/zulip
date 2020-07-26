@@ -285,7 +285,8 @@ class ChangeSettingsTest(ZulipTestCase):
             self.assert_json_error(result, "Your Zulip password is managed in LDAP")
 
         with self.settings(LDAP_APPEND_DOMAIN="example.com",
-                           AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
+                           AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map), \
+                self.assertLogs('zulip.ldap', 'DEBUG') as debug_log:
             result = self.client_patch(
                 "/json/settings",
                 dict(
@@ -293,6 +294,9 @@ class ChangeSettingsTest(ZulipTestCase):
                     new_password="ignored",
                 ))
             self.assert_json_success(result)
+            self.assertEqual(debug_log.output, [
+                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: Email hamlet@zulip.com does not match LDAP domain example.com.'
+            ])
 
         with self.settings(LDAP_APPEND_DOMAIN=None,
                            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
