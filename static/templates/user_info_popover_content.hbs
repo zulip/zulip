@@ -52,31 +52,36 @@
     </div>
 
     {{#if is_me}}
-    <hr>
-    {{#if can_set_away}}
+        <hr>
+        <label>Status</label>
+        <select class="status">
+            <option>
+                {{#if can_set_away}}
+                <li>
+                    <a href="#" class="set_away_status">
+                        <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Active : Set Yourself Unavailable{{/tr}}
+                    </a>
+                </li>
+                {{/if}}
+                {{#if can_revoke_away}}
+                <li>
+                    <a href="#" class="revoke_away_status">
+                        <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Inactive : Set Yourself Active{{/tr}}
+                    </a>
+                </li>
+                {{/if}}
+            </option>
+        </select>
         <li>
-            <a href="#" class="set_away_status">
-                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as unavailable{{/tr}}
+            <a href="#" class="update_status_text">
+                <i class="fa fa-comments" aria-hidden="true"></i>
+                {{#if status_text}}
+                    {{#tr this}}Edit status message{{/tr}}
+                {{else}}
+                    {{#tr this}}Set a status message{{/tr}}
+                {{/if}}
             </a>
         </li>
-        {{/if}}
-        {{#if can_revoke_away}}
-        <li>
-            <a href="#" class="revoke_away_status">
-                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as active{{/tr}}
-            </a>
-        </li>
-    {{/if}}
-    <li>
-        <a href="#" class="update_status_text">
-            <i class="fa fa-comments" aria-hidden="true"></i>
-            {{#if status_text}}
-                {{#tr this}}Edit status message{{/tr}}
-            {{else}}
-                {{#tr this}}Set a status message{{/tr}}
-            {{/if}}
-        </a>
-    </li>
     {{/if}}
 
     {{#if status_text}}
