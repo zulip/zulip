@@ -197,7 +197,6 @@ run_test("marked_subscribed", () => {
     // Test undefined error
     with_overrides((override) => {
         let errors = 0;
-        override("stream_color.update_stream_color", noop);
         override("blueslip.error", () => {
             errors += 1;
         });
@@ -214,6 +213,9 @@ run_test("marked_subscribed", () => {
         const subscribed = {subscribed: true};
         stream_events.mark_subscribed(subscribed, [], "yellow");
         assert.equal(completed, false);
+
+        // prevent warning about spurious override
+        message_util.do_unread_count_updates();
     });
 
     set_global("message_list", {
@@ -278,7 +280,6 @@ run_test("marked_subscribed", () => {
         global.with_stub((stub) => {
             override("message_util.do_unread_count_updates", noop);
             override("stream_list.add_sidebar_row", noop);
-            override("stream_color.update_stream_color", noop);
             override("subs.set_color", stub.f);
             stream_events.mark_subscribed(frontend, [], undefined);
             const args = stub.get_args("id", "color");
@@ -337,6 +338,9 @@ run_test("mark_unsubscribed", () => {
         frontend.subscribed = false;
         stream_events.mark_unsubscribed(frontend);
         assert.equal(removed_sub, false);
+
+        // prevent warning about spurious mock
+        stream_list.remove_sidebar_row();
     });
 
     // Test unsubscribe
