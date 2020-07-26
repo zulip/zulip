@@ -106,7 +106,7 @@ global.run_test = (label, f) => {
         console.info("        test: " + label);
     }
     try {
-        f();
+        global.with_overrides(f);
     } catch (error) {
         console.info("-".repeat(50));
         console.info(`test failed: ${current_file_name} > ${label}`);
