@@ -29,7 +29,21 @@ zrequire("emoji");
 const hotkey = zrequire("hotkey");
 zrequire("common");
 
+set_global("compose_actions", {});
+set_global("condense", {});
+set_global("drafts", {});
+set_global("hashchange", {});
+set_global("info_overlay", {});
+set_global("lightbox", {});
 set_global("list_util", {});
+set_global("message_edit", {});
+set_global("muting_ui", {});
+set_global("narrow", {});
+set_global("navigate", {});
+set_global("reactions", {});
+set_global("search", {});
+set_global("stream_list", {});
+set_global("subs", {});
 
 set_global("current_msg_list", {
     selected_id() {

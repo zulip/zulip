@@ -79,7 +79,7 @@ exports.with_overrides = function (test_function) {
         const func_name = parts[1];
 
         if (!Object.prototype.hasOwnProperty.call(global, module)) {
-            set_global(module, {});
+            throw new Error("you must first use set_global/zrequire for " + module);
         }
 
         const old_f = global[module][func_name];
