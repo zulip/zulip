@@ -140,21 +140,33 @@ class TestReport(ZulipTestCase):
         # js_source_map actually gets instantiated.
         with \
                 self.settings(DEVELOPMENT=False, TEST_SUITE=False), \
-                mock.patch('zerver.lib.unminify.SourceMap.annotate_stacktrace') as annotate:
+                mock.patch('zerver.lib.unminify.SourceMap.annotate_stacktrace') as annotate, \
+                self.assertLogs(level='INFO') as info_logs:
             result = self.client_post("/json/report/error", params)
         self.assert_json_success(result)
         # fix_params (see above) adds quotes when JSON encoding.
         annotate.assert_called_once_with('"trace"')
+        self.assertEqual(info_logs.output, [
+            'INFO:root:Processing traceback with type browser for None'
+        ])
 
         # Now test without authentication.
         self.logout()
         with \
                 self.settings(DEVELOPMENT=False, TEST_SUITE=False), \
-                mock.patch('zerver.lib.unminify.SourceMap.annotate_stacktrace') as annotate:
+                mock.patch('zerver.lib.unminify.SourceMap.annotate_stacktrace') as annotate, \
+                self.assertLogs(level='INFO') as info_logs:
             result = self.client_post("/json/report/error", params)
         self.assert_json_success(result)
+        self.assertEqual(info_logs.output, [
+            'INFO:root:Processing traceback with type browser for None'
+        ])
 
     def test_report_csp_violations(self) -> None:
         fixture_data = self.fixture_data('csp_report.json')
-        result = self.client_post("/report/csp_violations", fixture_data, content_type="application/json")
+        with self.assertLogs(level='WARNING') as warn_logs:
+            result = self.client_post("/report/csp_violations", fixture_data, content_type="application/json")
         self.assert_json_success(result)
+        self.assertEqual(warn_logs.output, [
+            "WARNING:root:CSP Violation in Document(''). Blocked URI(''), Original Policy(''), Violated Directive(''), Effective Directive(''), Disposition(''), Referrer(''), Status Code(''), Script Sample('')"
+        ])
