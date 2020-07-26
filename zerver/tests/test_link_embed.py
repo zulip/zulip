@@ -294,8 +294,11 @@ class PreviewTestCase(ZulipTestCase):
             event = patched.call_args[0][1]
 
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
-            with mock.patch('requests.get', mocked_response):
+            with mock.patch('requests.get', mocked_response), self.assertLogs(level='INFO') as info_logs:
                 FetchLinksEmbedData().consume(event)
+            self.assertTrue(
+                'INFO:root:Time spent on get_link_embed_data for http://test.org/: ' in info_logs.output[0]
+            )
 
         embedded_link = f'<a href="{url}" title="The Rock">The Rock</a>'
         msg = Message.objects.select_related("sender").get(id=msg_id)
@@ -333,8 +336,12 @@ class PreviewTestCase(ZulipTestCase):
 
         # Run the queue processor to potentially rerender things
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
-            with mock.patch('requests.get', mocked_response):
+            with mock.patch('requests.get', mocked_response), self.assertLogs(level='INFO') as info_logs:
                 FetchLinksEmbedData().consume(event)
+            self.assertTrue(
+                'INFO:root:Time spent on get_link_embed_data for http://test.org/: ' in info_logs.output[0]
+            )
+
         msg = Message.objects.select_related("sender").get(id=msg_id)
         return msg
 
@@ -358,10 +365,13 @@ class PreviewTestCase(ZulipTestCase):
             mocked_response_edited = mock.Mock(side_effect=self.create_mock_response(edited_url))
 
             with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
-                with mock.patch('requests.get', mocked_response_original):
+                with mock.patch('requests.get', mocked_response_original), self.assertLogs(level='INFO') as info_logs:
                     # Run the queue processor. This will simulate the event for original_url being
                     # processed after the message has been edited.
                     FetchLinksEmbedData().consume(event)
+            self.assertTrue(
+                'INFO:root:Time spent on get_link_embed_data for http://test.org/: ' in info_logs.output[0]
+            )
             msg = Message.objects.select_related("sender").get(id=msg_id)
             # The content of the message has changed since the event for original_url has been created,
             # it should not be rendered. Another, up-to-date event will have been sent (edited_url).
@@ -370,13 +380,16 @@ class PreviewTestCase(ZulipTestCase):
             mocked_response_edited.assert_not_called()
 
             with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
-                with mock.patch('requests.get', mocked_response_edited):
+                with mock.patch('requests.get', mocked_response_edited), self.assertLogs(level='INFO') as info_logs:
                     # Now proceed with the original queue_json_publish and call the
                     # up-to-date event for edited_url.
                     queue_json_publish(*args, **kwargs)
                     msg = Message.objects.select_related("sender").get(id=msg_id)
                     self.assertIn(f'<a href="{edited_url}" title="The Rock">The Rock</a>',
                                   msg.rendered_content)
+            self.assertTrue(
+                'INFO:root:Time spent on get_link_embed_data for http://edited.org/: ' in info_logs.output[0]
+            )
 
         with mock.patch('zerver.views.message_edit.queue_json_publish', wraps=wrapped_queue_json_publish) as patched:
             result = self.client_patch("/json/messages/" + str(msg_id), {
@@ -446,8 +459,13 @@ class PreviewTestCase(ZulipTestCase):
             'message_realm_id': msg.sender.realm_id,
             'message_content': url}
         with self.settings(INLINE_URL_EMBED_PREVIEW=True, TEST_SUITE=False, CACHES=TEST_CACHES):
-            with mock.patch('requests.get', mock.Mock(side_effect=ConnectionError())):
+            with mock.patch('requests.get', mock.Mock(side_effect=ConnectionError())), \
+                    self.assertLogs(level='INFO') as info_logs:
                 FetchLinksEmbedData().consume(event)
+            self.assertTrue(
+                'INFO:root:Time spent on get_link_embed_data for http://test.org/: ' in info_logs.output[0]
+            )
+
         msg = Message.objects.get(id=msg_id)
         self.assertEqual(
             '<p><a href="http://test.org/">http://test.org/</a></p>',
@@ -486,10 +504,12 @@ class PreviewTestCase(ZulipTestCase):
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url, headers=headers))
 
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
-            with mock.patch('requests.get', mocked_response):
+            with mock.patch('requests.get', mocked_response), self.assertLogs(level='INFO') as info_logs:
                 FetchLinksEmbedData().consume(event)
-
                 cached_data = link_embed_data_from_cache(url)
+            self.assertTrue(
+                'INFO:root:Time spent on get_link_embed_data for http://test.org/audio.mp3: ' in info_logs.output[0]
+            )
 
         self.assertIsNone(cached_data)
         msg = Message.objects.select_related("sender").get(id=msg_id)
@@ -514,9 +534,12 @@ class PreviewTestCase(ZulipTestCase):
         html = '\n'.join(line for line in self.open_graph_html.splitlines() if 'og:image' not in line)
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url, html=html))
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
-            with mock.patch('requests.get', mocked_response):
+            with mock.patch('requests.get', mocked_response), self.assertLogs(level='INFO') as info_logs:
                 FetchLinksEmbedData().consume(event)
                 cached_data = link_embed_data_from_cache(url)
+            self.assertTrue(
+                'INFO:root:Time spent on get_link_embed_data for http://test.org/foo.html: ' in info_logs.output[0]
+            )
 
         self.assertIn('title', cached_data)
         self.assertNotIn('image', cached_data)
@@ -543,9 +566,12 @@ class PreviewTestCase(ZulipTestCase):
                          for line in self.open_graph_html.splitlines())
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url, html=html))
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
-            with mock.patch('requests.get', mocked_response):
+            with mock.patch('requests.get', mocked_response), self.assertLogs(level='INFO') as info_logs:
                 FetchLinksEmbedData().consume(event)
                 cached_data = link_embed_data_from_cache(url)
+            self.assertTrue(
+                'INFO:root:Time spent on get_link_embed_data for http://test.org/foo.html: ' in info_logs.output[0]
+            )
 
         self.assertIn('title', cached_data)
         self.assertNotIn('image', cached_data)
@@ -570,9 +596,12 @@ class PreviewTestCase(ZulipTestCase):
         headers = {'content-type': ''}  # No content type header
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url, headers=headers))
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
-            with mock.patch('requests.get', mocked_response):
+            with mock.patch('requests.get', mocked_response), self.assertLogs(level='INFO') as info_logs:
                 FetchLinksEmbedData().consume(event)
                 data = link_embed_data_from_cache(url)
+            self.assertTrue(
+                'INFO:root:Time spent on get_link_embed_data for http://test.org/: ' in info_logs.output[0]
+            )
 
         self.assertIn('title', data)
         self.assertIn('image', data)
@@ -600,8 +629,12 @@ class PreviewTestCase(ZulipTestCase):
         with mock.patch('zerver.lib.url_preview.preview.get_oembed_data', side_effect=lambda *args, **kwargs: None):
             with mock.patch('zerver.lib.url_preview.preview.valid_content_type', side_effect=lambda k: True):
                 with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
-                    with mock.patch('requests.get', mock.Mock(side_effect=ConnectionError())):
+                    with mock.patch('requests.get', mock.Mock(side_effect=ConnectionError())), \
+                            self.assertLogs(level='INFO') as info_logs:
                         FetchLinksEmbedData().consume(event)
+                    self.assertTrue(
+                        'INFO:root:Time spent on get_link_embed_data for http://test.org/: ' in info_logs.output[0]
+                    )
 
                     with self.assertRaises(NotFoundInCache):
                         link_embed_data_from_cache(url)
@@ -630,8 +663,11 @@ class PreviewTestCase(ZulipTestCase):
 
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
-            with mock.patch('requests.get', mocked_response):
+            with mock.patch('requests.get', mocked_response), self.assertLogs(level='INFO') as info_logs:
                 FetchLinksEmbedData().consume(event)
+            self.assertTrue(
+                'INFO:root:Time spent on get_link_embed_data for http://test.org/x: ' in info_logs.output[0]
+            )
             cached_data = link_embed_data_from_cache(error_url)
 
         # FIXME: Should we really cache this, especially without cache invalidation?
@@ -661,11 +697,14 @@ class PreviewTestCase(ZulipTestCase):
                        'oembed': True, 'type': 'video', 'image': f'{url}/image.png'}
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
-            with mock.patch('requests.get', mocked_response):
+            with mock.patch('requests.get', mocked_response), self.assertLogs(level='INFO') as info_logs:
                 with mock.patch('zerver.lib.url_preview.preview.get_oembed_data',
                                 lambda *args, **kwargs: mocked_data):
                     FetchLinksEmbedData().consume(event)
                     data = link_embed_data_from_cache(url)
+            self.assertTrue(
+                'INFO:root:Time spent on get_link_embed_data for http://test.org/: ' in info_logs.output[0]
+            )
 
         self.assertEqual(data, mocked_data)
         msg.refresh_from_db()
@@ -690,10 +729,13 @@ class PreviewTestCase(ZulipTestCase):
         mocked_data = {'title': 'Clearer Code at Scale - Static Types at Zulip and Dropbox'}
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
-            with mock.patch('requests.get', mocked_response):
+            with mock.patch('requests.get', mocked_response), self.assertLogs(level='INFO') as info_logs:
                 with mock.patch('zerver.lib.markdown.link_preview.link_embed_data_from_cache',
                                 lambda *args, **kwargs: mocked_data):
                     FetchLinksEmbedData().consume(event)
+            self.assertTrue(
+                'INFO:root:Time spent on get_link_embed_data for https://www.youtube.com/watch?v=eSJTXC7Ixgg:' in info_logs.output[0]
+            )
 
         msg.refresh_from_db()
         expected_content = '<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube - Clearer Code at Scale - Static Types at Zulip and Dropbox</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg"></a></div>'
