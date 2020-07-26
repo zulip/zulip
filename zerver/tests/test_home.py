@@ -906,7 +906,11 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(user_msg_list[-1].content, message)
         self.logout()
 
-        do_soft_deactivate_users([long_term_idle_user])
+        with self.assertLogs(level='INFO') as info_log:
+            do_soft_deactivate_users([long_term_idle_user])
+        self.assertEqual(info_log.output, [
+            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+        ])
 
         self.login_user(long_term_idle_user)
         message = 'Test Message 2'
@@ -926,7 +930,11 @@ class HomeTest(ZulipTestCase):
         # We are sending this message to ensure that long_term_idle_user has
         # at least one UserMessage row.
         self.send_test_message('Testing', sender_name='hamlet')
-        do_soft_deactivate_users([long_term_idle_user])
+        with self.assertLogs(level='INFO') as info_log:
+            do_soft_deactivate_users([long_term_idle_user])
+        self.assertEqual(info_log.output, [
+            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+        ])
 
         message = 'Test Message 1'
         self.send_test_message(message)
@@ -950,7 +958,11 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(idle_user_msg_list[-1].content, message)
         self.logout()
 
-        do_soft_deactivate_users([long_term_idle_user])
+        with self.assertLogs(level='INFO') as info_log:
+            do_soft_deactivate_users([long_term_idle_user])
+        self.assertEqual(info_log.output, [
+            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+        ])
 
         message = 'Test Message 3'
         self.send_test_message(message)
