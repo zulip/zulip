@@ -202,6 +202,18 @@ exports.add_message_metadata = function (message) {
     return message;
 };
 
+exports.update_property = function (property, value, info) {
+    switch (property) {
+        case "sender_full_name":
+            exports.each((msg) => {
+                if (msg.sender_id && msg.sender_id === info.user_id) {
+                    msg[property] = value;
+                }
+            });
+            break;
+    }
+};
+
 exports.reify_message_id = function (opts) {
     const old_id = opts.old_id;
     const new_id = opts.new_id;

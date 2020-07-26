@@ -251,6 +251,31 @@ run_test("update_booleans", () => {
     assert.equal(message.unread, true);
 });
 
+run_test("update_property", () => {
+    const message1 = {
+        type: "stream",
+        sender_full_name: alice.full_name,
+        sender_id: alice.user_id,
+        id: 100,
+    };
+    const message2 = {
+        type: "stream",
+        sender_full_name: bob.full_name,
+        sender_id: bob.user_id,
+        id: 101,
+    };
+    for (const message of [message1, message2]) {
+        message_store.set_message_booleans(message);
+        message_store.add_message_metadata(message);
+    }
+
+    assert.equal(message1.sender_full_name, alice.full_name);
+    assert.equal(message2.sender_full_name, bob.full_name);
+    message_store.update_property("sender_full_name", "Bobby", {user_id: bob.user_id});
+    assert.equal(message1.sender_full_name, alice.full_name);
+    assert.equal(message2.sender_full_name, "Bobby");
+});
+
 run_test("each", () => {
     message_store.each((message) => {
         assert(message.alerted !== undefined);
