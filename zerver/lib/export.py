@@ -159,6 +159,7 @@ ALL_ZULIP_TABLES = {
     'zerver_userprofile_user_permissions',
     'zerver_userstatus',
     'zerver_mutedtopic',
+    'zerver_userexportconsent',
 }
 
 # This set contains those database tables that we expect to not be
@@ -236,6 +237,9 @@ NON_EXPORTED_TABLES = {
 
     # This is low priority, since users can easily just reset themselves to away.
     'zerver_userstatus',
+
+    # We will want to export this once the feature is complete.
+    'zerver_userexportconsent'
 
     # For any tables listed below here, it's a bug that they are not present in the export.
 }
