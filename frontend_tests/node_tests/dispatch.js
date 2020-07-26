@@ -11,50 +11,19 @@ set_global("$", global.make_zjquery());
 
 global.patch_builtin("setTimeout", (func) => func());
 
-// We access various msg_list object to rerender them
-set_global("current_msg_list", {});
-
-// These dependencies are closer to the dispatcher, and they
-// apply to all tests.
-set_global("home_msg_list", {
-    rerender: noop,
-});
-
-set_global("markdown", {
-    update_realm_filter_rules: noop,
-});
-
-set_global("notifications", {
-    redraw_title: noop,
-});
-
-set_global("settings_emoji", {});
-
-set_global("settings_account", {
-    add_custom_profile_fields_to_settings: noop,
-});
-
-set_global("settings_display", {
-    update_page: noop,
-});
-
-set_global("settings_notifications", {
-    update_page: noop,
-});
-
-set_global("settings_org", {
-    sync_realm_settings: noop,
-});
-
-set_global("message_edit", {
-    update_message_topic_editing_pencil: noop,
-});
-
-set_global("settings_bots", {
-    update_bot_permissions_ui: noop,
-});
-
 set_global("compose", {});
+set_global("current_msg_list", {});
+set_global("home_msg_list", {});
+set_global("markdown", {});
+set_global("message_edit", {});
+set_global("notifications", {});
+set_global("overlays", {});
+set_global("settings_account", {});
+set_global("settings_bots", {});
+set_global("settings_display", {});
+set_global("settings_emoji", {});
+set_global("settings_notifications", {});
+set_global("settings_org", {});
 
 // page_params is highly coupled to dispatching now
 set_global("page_params", {
@@ -76,10 +45,6 @@ set_global("blueslip", {
     exception_msg(ex) {
         return ex.message;
     },
-});
-
-set_global("overlays", {
-    streams_open: () => true,
 });
 
 // For data-oriented modules, just use them, don't stub them.
@@ -185,6 +150,7 @@ with_overrides((override) => {
     const event = event_fixtures.custom_profile_fields;
     override("settings_profile_fields.populate_profile_fields", noop);
     override("settings_profile_fields.report_success", noop);
+    override("settings_account.add_custom_profile_fields_to_settings", noop);
     dispatch(event);
     assert_same(global.page_params.custom_profile_fields, event.fields);
 });
@@ -267,6 +233,10 @@ with_overrides((override) => {
 });
 
 with_overrides((override) => {
+    override("settings_org.sync_realm_settings", noop);
+    override("settings_bots.update_bot_permissions_ui", noop);
+    override("notifications.redraw_title", noop);
+
     // realm
     function test_realm_boolean(event, parameter_name) {
         page_params[parameter_name] = true;
@@ -358,6 +328,7 @@ with_overrides((override) => {
     page_params.realm_allow_message_editing = false;
     page_params.realm_message_content_edit_limit_seconds = 0;
     override("settings_org.populate_auth_methods", noop);
+    override("message_edit.update_message_topic_editing_pencil", noop);
     dispatch(event);
     assert_same(page_params.realm_allow_message_editing, true);
     assert_same(page_params.realm_message_content_edit_limit_seconds, 5);
@@ -469,6 +440,7 @@ with_overrides((override) => {
     const event = event_fixtures.realm_filters;
     page_params.realm_filters = [];
     override("settings_linkifiers.populate_filters", noop);
+    override("markdown.update_realm_filter_rules", noop);
     dispatch(event);
     assert_same(page_params.realm_filters, event.realm_filters);
 });
@@ -549,6 +521,7 @@ with_overrides((override) => {
         override("stream_data.get_sub_by_id", noop);
         override("stream_data.update_calculated_fields", noop);
         override("subs.add_sub_to_table", noop);
+        override("overlays.streams_open", () => true);
         dispatch(event);
         const args = stub.get_args("streams");
         assert_same(
@@ -573,6 +546,7 @@ with_overrides((override) => {
         const args = stub.get_args("stream_id");
         assert_same(args.stream_id, 42);
 
+        override("settings_org.sync_realm_settings", noop);
         override("stream_list.remove_sidebar_row", noop);
         page_params.realm_notifications_stream_id = 42;
         dispatch(event);
@@ -630,6 +604,7 @@ with_overrides((override) => {
     // update_display_settings
     let event = event_fixtures.update_display_settings__default_language;
     page_params.default_language = "en";
+    override("settings_display.update_page", noop);
     dispatch(event);
     assert_same(page_params.default_language, "fr");
 
@@ -643,6 +618,7 @@ with_overrides((override) => {
         called = true;
     };
 
+    override("home_msg_list.rerender", noop);
     override("message_list.narrowed", current_msg_list);
     event = event_fixtures.update_display_settings__twenty_four_hour_time;
     page_params.twenty_four_hour_time = false;
@@ -743,6 +719,7 @@ with_overrides((override) => {
     const event = event_fixtures.update_global_notifications;
     global.with_stub((stub) => {
         override("notifications.handle_global_notification_updates", stub.f);
+        override("settings_notifications.update_page", noop);
         dispatch(event);
         const args = stub.get_args("name", "setting");
         assert_same(args.name, event.notification_name);
