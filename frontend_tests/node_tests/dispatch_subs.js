@@ -18,8 +18,8 @@ const dispatch = server_events_dispatch.dispatch_normal_event;
 function test(label, f) {
     stream_data.clear_subscriptions();
 
-    run_test(label, () => {
-        global.with_overrides(f);
+    run_test(label, (override) => {
+        f(override);
     });
 }
 
