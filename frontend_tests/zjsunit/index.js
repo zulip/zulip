@@ -37,6 +37,7 @@ if (files.length === 0) {
 }
 
 // Set up our namespace helpers.
+global.with_field = namespace.with_field;
 global.set_global = namespace.set_global;
 global.patch_builtin = namespace.set_global;
 global.zrequire = namespace.zrequire;

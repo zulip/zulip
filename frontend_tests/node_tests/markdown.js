@@ -758,12 +758,9 @@ run_test("missing unicode emojis", () => {
         // return undefined
     }
 
-    const actual_get_emoji_name = emoji.get_emoji_name;
-    emoji.get_emoji_name = fake_get_emoji_name;
+    with_field(emoji, "get_emoji_name", fake_get_emoji_name, () => {
+        markdown.apply_markdown(message);
+    });
 
-    markdown.apply_markdown(message);
     assert.equal(message.content, "<p>\u{1f6b2}</p>");
-
-    // restore get_emoji_name for any future tests that follow
-    emoji.get_emoji_name = actual_get_emoji_name;
 });

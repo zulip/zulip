@@ -69,6 +69,13 @@ exports.stub_out_jquery = function () {
     $.now = function () {};
 };
 
+exports.with_field = function (obj, field, val, f) {
+    const old_val = obj[field];
+    obj[field] = val;
+    f();
+    obj[field] = old_val;
+};
+
 exports.with_overrides = function (test_function) {
     // This function calls test_function() and passes in
     // a way to override the namespace temporarily.

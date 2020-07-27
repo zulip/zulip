@@ -348,6 +348,7 @@
                 "document": false,
                 "set_global": false,
                 "window": false,
+                "with_field": false,
                 "zrequire": false
             },
             "rules": {
