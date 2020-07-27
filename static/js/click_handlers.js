@@ -1,4 +1,6 @@
 const _ = require("lodash");
+const WinChan = require("winchan");
+
 // You won't find every click handler here, but it's a good place to start!
 
 const render_buddy_list_tooltip = require("../templates/buddy_list_tooltip.hbs");

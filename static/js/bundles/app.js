@@ -7,7 +7,6 @@ import "jquery-caret-plugin/src/jquery.caret.js";
 import "../../third/jquery-idle/jquery.idle.js";
 import "spectrum-colorpicker";
 import "jquery-validation/dist/jquery.validate.js";
-import "winchan/winchan.js";
 import "handlebars/dist/cjs/handlebars.runtime.js";
 import "flatpickr/dist/flatpickr.js";
 import "flatpickr/dist/plugins/confirmDate/confirmDate.js";
