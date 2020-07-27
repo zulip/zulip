@@ -17,7 +17,6 @@ zrequire("stream_topic_history");
 zrequire("people");
 zrequire("stream_color");
 zrequire("stream_data");
-zrequire("marked", "third/marked/lib/marked");
 zrequire("FetchStatus", "js/fetch_status");
 zrequire("Filter", "js/filter");
 zrequire("MessageListData", "js/message_list_data");

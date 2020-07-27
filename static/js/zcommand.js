@@ -1,3 +1,5 @@
+const marked = require("../third/marked/lib/marked");
+
 /*
 
 What in the heck is a zcommand?

@@ -244,7 +244,6 @@ export default (env?: string): webpack.Configuration[] => {
     // Good error messages show up in production and development in the source maps
     const exposeOptions = [
         {path: "./debug-require.js", name: "require"},
-        {path: "../static/third/marked/lib/marked.js"},
         {path: "../static/js/debug.js"},
         {path: "jquery/dist/jquery.js", name: ["$", "jQuery"]},
         {path: "handlebars/dist/cjs/handlebars.runtime.js", name: "Handlebars"},

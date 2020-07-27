@@ -1,10 +1,10 @@
 zrequire("hash_util");
-set_global("marked", zrequire("marked", "third/marked/lib/marked"));
 
 const emoji = zrequire("emoji", "shared/js/emoji");
 const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
 const fenced_code = zrequire("fenced_code", "shared/js/fenced_code");
 const markdown_config = zrequire("markdown_config");
+const marked = zrequire("marked", "third/marked/lib/marked");
 
 zrequire("markdown");
 zrequire("message_store");
