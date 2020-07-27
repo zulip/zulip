@@ -1,6 +1,10 @@
 const _ = require("lodash");
+const moment = require("moment-timezone");
+const rewiremock = require("rewiremock/node");
 
-zrequire("people");
+rewiremock.proxy(() => zrequire("people"), {
+    "moment-timezone": () => moment("20130208T080910"),
+});
 set_global("message_store", {});
 set_global("page_params", {});
 set_global("settings_data", {});
@@ -390,9 +394,6 @@ run_test("user_timezone", () => {
     expected_pref.format = "h:mm A";
     global.page_params.twenty_four_hour_time = false;
     assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
-
-    const actual_moment = zrequire("actual_moment", "moment-timezone");
-    set_global("moment", () => actual_moment("20130208T080910"));
 
     global.page_params.twenty_four_hour_time = true;
     assert.equal(people.get_user_time(me.user_id), "0:09");

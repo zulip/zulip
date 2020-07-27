@@ -1,5 +1,6 @@
 const md5 = require("blueimp-md5");
 const _ = require("lodash");
+const moment = require("moment-timezone");
 
 require("unorm"); // String.prototype.normalize polyfill for IE11
 const typeahead = require("../shared/js/typeahead");

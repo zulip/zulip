@@ -1,3 +1,4 @@
+const moment = require("moment");
 const XDate = require("xdate");
 
 let next_timerender_id = 0;
