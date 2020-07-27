@@ -1,7 +1,8 @@
+const rewiremock = require("rewiremock/node");
+
 set_global("page_params", {});
 set_global("$", global.make_zjquery());
 set_global("loading", {});
-set_global("Sortable", {create: () => {}});
 
 const SHORT_TEXT_ID = 1;
 const CHOICE_ID = 3;
@@ -29,7 +30,9 @@ page_params.custom_profile_field_types = {
     },
 };
 
-zrequire("settings_profile_fields");
+rewiremock.proxy(() => zrequire("settings_profile_fields"), {
+    sortablejs: {create: () => {}},
+});
 
 function test_populate(opts) {
     const fields_data = opts.fields_data;
