@@ -104,7 +104,6 @@
                 "ListCursor": false,
                 "MessageListData": false,
                 "MessageListView": false,
-                "Plotly": false,
                 "UserSearch": false,
                 "activity": false,
                 "admin": false,
