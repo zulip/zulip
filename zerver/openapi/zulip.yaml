@@ -474,6 +474,78 @@ paths:
                                     ],
                                   "id": 0,
                                 }
+                            - type: object
+                              description: |
+                                Event type for messages.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - message
+                                message:
+                                  $ref: "#/components/schemas/Messages"
+                                flags:
+                                  type: array
+                                  description: |
+                                    The user's [message flags][message-flags] for the message.
+                                  items:
+                                    type: string
+                                email_notified:
+                                  type: boolean
+                                  description: |
+                                    Whether the user receiving the event has already been
+                                    notified via email.
+                                push_notified:
+                                  type: boolean
+                                  description: |
+                                    Whether the user receiving the event has already been
+                                    notified via mobile notification.
+                                stream_push_notify:
+                                  type: boolean
+                                  description: |
+                                    Whether the user receiving the event has to be notified
+                                    via mobile notification for stream message.
+                                stream_email_notify:
+                                  type: boolean
+                                  description: |
+                                    Whether the user receiving the event has to be notified
+                                    via email for stream message.
+                                wildcard_mention_notify:
+                                  type: boolean
+                                  description: |
+                                    Whether the user has to be notified due to wildcard mention.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "message",
+                                  "message":
+                                    {
+                                      "id": 31,
+                                      "sender_id": 10,
+                                      "content": "<p>First message ...<a href=\"user_uploads\/2\/ce\/2Xpnnwgh8JWKxBXtTfD6BHKV\/zulip.txt\">zulip.txt<\/a><\/p>",
+                                      "recipient_id": 23,
+                                      "timestamp": 1594825416,
+                                      "client": "test suite",
+                                      "subject": "test",
+                                      "topic_links": [],
+                                      "is_me_message": false,
+                                      "reactions": [],
+                                      "submessages": [],
+                                      "sender_full_name": "King Hamlet",
+                                      "sender_short_name": "hamlet",
+                                      "sender_email": "user10@zulip.testserver",
+                                      "sender_realm_str": "zulip",
+                                      "display_recipient": "Denmark",
+                                      "type": "stream",
+                                      "stream_id": 1,
+                                      "avatar_url": null,
+                                      "content_type": "text\/html",
+                                    },
+                                  "flags": [],
+                                  "id": 1,
+                                }
                       queue_id:
                         type: string
                         description: |
@@ -4782,6 +4854,8 @@ components:
                 Whether the user is a mirror dummy.
     Messages:
       type: object
+      description: |
+        Object containing details of the message.
       additionalProperties: false
       properties:
         avatar_url:
