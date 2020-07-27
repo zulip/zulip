@@ -177,14 +177,12 @@ run_test("basics", () => {
     assert.deepEqual(result, expected_result);
 });
 
-run_test("sending", () => {
+run_test("sending", (override) => {
     const message_id = 1001; // see above for setup
     let emoji_name = "smile"; // should be a current reaction
 
-    const orig_remove_reaction = reactions.remove_reaction;
-    const orig_add_reaction = reactions.add_reaction;
-    reactions.remove_reaction = function () {};
-    reactions.add_reaction = function () {};
+    override("reactions.add_reaction", () => {});
+    override("reactions.remove_reaction", () => {});
 
     global.with_stub((stub) => {
         global.channel.del = stub.f;
@@ -253,8 +251,6 @@ run_test("sending", () => {
     emoji_name = "unknown-emoji"; // Test sending an emoji unknown to frontend.
     blueslip.expect("warn", "Bad emoji name: " + emoji_name);
     reactions.toggle_emoji_reaction(message_id, emoji_name);
-    reactions.add_reaction = orig_add_reaction;
-    reactions.remove_reaction = orig_remove_reaction;
 });
 
 run_test("set_reaction_count", () => {
@@ -617,15 +613,16 @@ run_test("error_handling", () => {
         user_id: 99,
     };
 
-    const original_func = reactions.current_user_has_reacted_to_emoji;
-    reactions.current_user_has_reacted_to_emoji = function () {
-        return true;
-    };
-    reactions.toggle_emoji_reaction(55, bogus_event.emoji_name);
-    reactions.current_user_has_reacted_to_emoji = original_func;
+    with_field(
+        reactions,
+        "current_user_has_reacted_to_emoji",
+        () => true,
+        () => {
+            reactions.toggle_emoji_reaction(55, bogus_event.emoji_name);
+        },
+    );
 
     reactions.add_reaction(bogus_event);
-
     reactions.remove_reaction(bogus_event);
 });
 

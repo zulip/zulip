@@ -51,12 +51,10 @@ set_global("page_params", {
 });
 
 function stub_timestamp(timestamp, func) {
-    const original_func = Date.prototype.getTime;
-    Date.prototype.getTime = function () {
+    function fake_time() {
         return timestamp;
-    };
-    func();
-    Date.prototype.getTime = original_func;
+    }
+    with_field(Date.prototype, "getTime", fake_time, func);
 }
 
 const legacy_draft = {
