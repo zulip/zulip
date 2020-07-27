@@ -1,5 +1,6 @@
 const katex = require("katex/dist/katex.min.js");
 const _ = require("lodash");
+const moment = require("moment");
 
 const emoji = require("../shared/js/emoji");
 const fenced_code = require("../shared/js/fenced_code");

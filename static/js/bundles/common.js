@@ -7,8 +7,6 @@ import "../csrf.js";
 import "../blueslip.js";
 import "../../third/bootstrap/js/bootstrap.js";
 import "../common.js";
-import "moment/min/moment.min.js";
-import "moment-timezone/builds/moment-timezone-with-data.min.js";
 import "../../third/bootstrap/css/bootstrap.css";
 import "../../third/bootstrap/css/bootstrap-btn.css";
 import "../../third/bootstrap/css/bootstrap-responsive.css";

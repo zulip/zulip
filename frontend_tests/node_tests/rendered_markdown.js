@@ -1,5 +1,4 @@
 const rm = zrequire("rendered_markdown");
-set_global("moment", zrequire("moment", "moment-timezone"));
 zrequire("people");
 zrequire("user_groups");
 zrequire("stream_data");

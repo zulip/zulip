@@ -1,5 +1,6 @@
 const ClipboardJS = require("clipboard");
 const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
+const moment = require("moment");
 
 const render_actions_popover_content = require("../templates/actions_popover_content.hbs");
 const render_mobile_message_buttons_popover = require("../templates/mobile_message_buttons_popover.hbs");
