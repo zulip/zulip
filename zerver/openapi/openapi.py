@@ -18,7 +18,7 @@ OPENAPI_SPEC_PATH = os.path.abspath(os.path.join(
 EXCLUDE_UNDOCUMENTED_ENDPOINTS = {"/realm/emoji/{emoji_name}:delete", "/users:patch"}
 # Consists of endpoints with some documentation remaining.
 # These are skipped but return true as the validator cannot exclude objects
-EXCLUDE_DOCUMENTED_ENDPOINTS = {"/events:get", "/register:post", "/settings/notifications:patch"}
+EXCLUDE_DOCUMENTED_ENDPOINTS = {"/register:post", "/settings/notifications:patch"}
 class OpenAPISpec():
     def __init__(self, path: str) -> None:
         self.path = path
@@ -26,6 +26,7 @@ class OpenAPISpec():
         self.data: Dict[str, Any] = {}
         self.regex_dict: Dict[str, str] = {}
         self.core_data: Any = None
+        self.documented_events: Set[str] = set()
 
     def reload(self) -> None:
         # Because importing yamole (and in turn, yaml) takes
@@ -46,6 +47,16 @@ class OpenAPISpec():
         self.core_data = RequestValidator(validator_spec)
         self.create_regex_dict()
         self.last_update = os.path.getmtime(self.path)
+        # Form a set of all documented events
+        self.documented_events.clear()
+        schema = (self.data['paths']['/events']['get']['responses']
+                  ['200']['content']['application/json']['schema'])
+        for events in schema['properties']['events']['items']['oneOf']:
+            op_str = ':'
+            if 'op' in events['properties']:
+                op_str = f':{events["properties"]["op"]["enum"][0]}'
+            self.documented_events.add(events['properties']['type']['enum'][0]
+                                       + op_str)
 
     def create_regex_dict(self) -> None:
         # Alogrithm description:
@@ -121,6 +132,19 @@ class OpenAPISpec():
             self.reload()
         return self.core_data
 
+    def get_documented_events(self) -> Set[str]:
+        """Reload the OpenAPI file if it has been modified after the last time
+        it was read, and then return the set of documented events. Similar
+        to preceding functions. Used for proper access to OpenAPI objects.
+        """
+        last_modified = os.path.getmtime(self.path)
+        # Using != rather than < to cover the corner case of users placing an
+        # earlier version than the current one
+        if self.last_update != last_modified:
+            self.reload()
+        return self.documented_events
+
+
 class SchemaError(Exception):
     pass
 
@@ -190,6 +214,21 @@ def match_against_openapi_regex(endpoint: str) -> Optional[str]:
             return openapi_spec.regex_keys()[key]
     return None
 
+def get_event_type(event: Dict[str, Any]) -> str:
+    return event['type'] + ':' + event.get('op', '')
+
+def fix_events(content: Dict[str, Any]) -> None:
+    """Remove undocumented events from events array. This is a makeshift
+    function so that further documentation of `/events` can happen with
+    only zulip.yaml changes and minimal other changes. It should be removed
+    as soon as `/events` documentation is complete.
+    """
+    content['events'] = [event for event in content['events']
+                         if get_event_type(event) in openapi_spec.get_documented_events()]
+    # 'user' is deprecated so remove its occurences from the events array
+    for event in content['events']:
+        event.pop('user', None)
+
 def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
                                     method: str, response: str) -> bool:
     """Compare a "content" dict with the defined schema for a specific method
@@ -225,10 +264,14 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
         # been added as all 400 have the same schema.  When all 400
         # response have been defined this should be removed.
         return True
-
     # The actual work of validating that the response matches the
     # schema is done via the third-party OAS30Validator.
     schema = get_schema(endpoint, method, response)
+    if endpoint == '/events' and method == 'get':
+        # This a temporary function for checking only documented events
+        # as all events haven't been documented yet.
+        # TODO: Remove this after all events have been documented.
+        fix_events(content)
     validator = OAS30Validator(schema)
     validator.validate(content)
     return True
