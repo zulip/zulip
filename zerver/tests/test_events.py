@@ -161,6 +161,7 @@ from zerver.models import (
     get_stream,
     get_user_by_delivery_email,
 )
+from zerver.openapi.openapi import validate_against_openapi_schema
 from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
@@ -219,8 +220,14 @@ class BaseAction(ZulipTestCase):
         )
         action()
         events = client.event_queue.contents()
+        content = {
+            'queue_id': '123.12',
+            'events': copy.deepcopy(events),
+            'msg': '',
+            'result': 'success'
+        }
+        validate_against_openapi_schema(content, '/events', 'get', '200')
         self.assertEqual(len(events), num_events)
-
         initial_state = copy.deepcopy(hybrid_state)
         post_process_state(self.user_profile, initial_state, notification_settings_null)
         before = ujson.dumps(initial_state)
