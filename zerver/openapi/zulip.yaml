@@ -162,6 +162,8 @@ paths:
                                 Event sent to a user's clients when that user's set of configured
                                 [alert words](/help/add-an-alert-word) have changed.
                               properties:
+                                id:
+                                  type: integer
                                 type:
                                   type: string
                                   enum:
@@ -184,6 +186,8 @@ paths:
                                 Event sent to a user's clients when that user's display settings
                                 have changed.
                               properties:
+                                id:
+                                  type: integer
                                 type:
                                   type: string
                                   enum:
@@ -195,7 +199,16 @@ paths:
                                 setting:
                                   description: |
                                     New value of the changed setting.
-                                  type: boolean
+                                  oneOf:
+                                    - type: boolean
+                                    - type: integer
+                                    - type: string
+                                language_name:
+                                  description: |
+                                    Present only if the setting to be changed is
+                                    `default_language`. Contains the name of the
+                                    new default language in English.
+                                  type: string
                               additionalProperties: false
                               example:
                                 {
@@ -208,6 +221,8 @@ paths:
                                 Event sent to a user's clients when that user's [notification
                                 settings](/api/update-notification-settings) have changed.
                               properties:
+                                id:
+                                  type: integer
                                 type:
                                   type: string
                                   enum:
@@ -219,7 +234,10 @@ paths:
                                 setting:
                                   description: |
                                     New value of the changed setting.
-                                  type: boolean
+                                  oneOf:
+                                    - type: boolean
+                                    - type: integer
+                                    - type: string
                               additionalProperties: false
                               example:
                                 {
@@ -236,6 +254,8 @@ paths:
                                   type: string
                                   enum:
                                     - realm_user
+                                id:
+                                  type: integer
                                 op:
                                   type: string
                                   enum:
@@ -257,6 +277,7 @@ paths:
                                           type: string
                                           description: |
                                             The new full name for the user.
+                                      additionalProperties: false
                                     - type: object
                                       description: |
                                         When a user changes their avatar.
@@ -280,11 +301,13 @@ paths:
                                           description: |
                                             The new medium-size avatar URL for user.
                                         avatar_version:
-                                          type: string
+                                          type: integer
                                           description: |
                                             The version number for the user's avatar.  This is useful
                                             for cache-busting.
+                                      additionalProperties: false
                                     - type: object
+                                      additionalProperties: false
                                       description: |
                                         When a user changes their timezone setting.
                                       properties:
@@ -304,6 +327,81 @@ paths:
                                           type: string
                                           description: |
                                             The new timezone of the user.
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
+                                        When the owner of a bot changes.
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The id of the user/bot whose owner has changed.
+                                        bot_owner_id:
+                                          type: integer
+                                          description: |
+                                            The user id of the new bot owner.
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
+                                        When the role of a user changes.
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The id of the user affected by this change.
+                                        role:
+                                          type: integer
+                                          description: |
+                                            The new role of the user in integer.
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
+                                        When the delivery email of a user changes.
+
+                                        Note: This event is only visible to admins.
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The id of the user affected by this change.
+                                        delivery_email:
+                                          type: string
+                                          description: |
+                                            The new delivery email of the user.
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
+                                        When the user updates one of their custom profile
+                                        fields.
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The id of the user affected by this change.
+                                        custom_profile_field:
+                                          type: object
+                                          additionalProperties: false
+                                          description: |
+                                            Object containing details about the custom
+                                            profile data change.
+                                          properties:
+                                            id:
+                                              type: integer
+                                              description: |
+                                                The id of the custom profile field which user updated.
+                                            value:
+                                              type: string
+                                              description: |
+                                                User's personal value for this custom profile field.
+                                            rendered_value:
+                                              type: string
+                                              description: |
+                                                The `value` rendered in HTML.  Will only be present for
+                                                custom profile field types that support markdown rendering.
+
+                                                This user-generated HTML content should be rendered
+                                                using the same CSS and client-side security protections
+                                                as are used for message content.
                               additionalProperties: false
                               example:
                                 {
@@ -324,6 +422,8 @@ paths:
                                 Event sent to a user's clients when that user's stream subscriptions
                                 have changed (either the set of subscriptions or their properties).
                               properties:
+                                id:
+                                  type: integer
                                 type:
                                   type: string
                                   enum:
@@ -4599,6 +4699,7 @@ components:
             assumption, as we may change that behavior in the future.
         first_message_id:
           type: integer
+          nullable: true
           description: |
             The id of the first message in the stream.
 
