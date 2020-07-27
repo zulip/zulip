@@ -924,6 +924,12 @@ LOGGING: Dict[str, Any] = {
             'handlers': ['file', 'errors_file'],
             'propagate': False,
         },
+        # This logger is used only for automated tests validating the
+        # error-handling behavior of the zulip_admins handler.
+        'zulip.test_zulip_admins_handler': {
+            'handlers': ['zulip_admins'],
+            'propagate': False,
+        },
         'zulip.zerver.lib.webhooks.common': {
             'level': 'DEBUG',
             'handlers': ['file', 'errors_file'],

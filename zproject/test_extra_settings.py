@@ -120,6 +120,14 @@ if not CASPER_TESTS:
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 
+    # This logger is used only for automated tests validating the
+    # error-handling behavior of the zulip_admins handler.
+    LOGGING['loggers']['zulip.test_zulip_admins_handler'] = {
+        'handlers': ['zulip_admins'],
+        'propagate': False,
+    }
+
+    # Here we set various loggers to be less noisy for unit tests.
     def set_loglevel(logger_name: str, level: str) -> None:
         LOGGING['loggers'].setdefault(logger_name, {})['level'] = level
     set_loglevel('zulip.requests', 'CRITICAL')
