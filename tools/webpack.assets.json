@@ -114,8 +114,7 @@
     "stats": [
         "./static/js/bundles/portico.js",
         "./static/styles/portico/stats.scss",
-        "./static/js/stats/stats.js",
-        "plotly.js/dist/plotly-basic.min.js"
+        "./static/js/stats/stats.js"
     ],
     "app": ["./static/js/bundles/app.js", "katex/dist/katex.min.js"],
     "digest": ["./static/js/bundles/portico.js"]

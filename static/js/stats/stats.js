@@ -1,3 +1,7 @@
+const Plotly = require("plotly.js/lib/core");
+
+Plotly.register([require("plotly.js/lib/bar"), require("plotly.js/lib/pie")]);
+
 const font_14pt = {
     family: "Source Sans Pro",
     size: 14,
