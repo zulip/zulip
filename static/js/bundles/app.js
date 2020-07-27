@@ -9,7 +9,6 @@ import "spectrum-colorpicker";
 import "../../third/marked/lib/marked.js";
 import "xdate/src/xdate.js";
 import "jquery-validation/dist/jquery.validate.js";
-import "blueimp-md5/js/md5.js";
 import "clipboard/dist/clipboard.js";
 import "winchan/winchan.js";
 import "handlebars/dist/cjs/handlebars.runtime.js";

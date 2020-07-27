@@ -1,3 +1,4 @@
+const md5 = require("blueimp-md5");
 const _ = require("lodash");
 
 require("unorm"); // String.prototype.normalize polyfill for IE11
