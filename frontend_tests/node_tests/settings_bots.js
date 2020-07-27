@@ -1,3 +1,5 @@
+const rewiremock = require("rewiremock/node");
+
 set_global("page_params", {
     realm_uri: "https://chat.example.com",
     realm_embedded_bots: [
@@ -24,13 +26,15 @@ set_global("avatar", {});
 set_global("$", global.make_zjquery());
 
 zrequire("bot_data");
-zrequire("settings_bots");
 zrequire("people");
 
 function ClipboardJS(sel) {
     assert.equal(sel, "#copy_zuliprc");
 }
-set_global("ClipboardJS", ClipboardJS);
+
+rewiremock.proxy(() => zrequire("settings_bots"), {
+    clipboard: ClipboardJS,
+});
 
 bot_data.initialize(bot_data_params);
 

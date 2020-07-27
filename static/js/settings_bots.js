@@ -1,3 +1,5 @@
+const ClipboardJS = require("clipboard");
+
 const render_bot_avatar_row = require("../templates/bot_avatar_row.hbs");
 const render_edit_bot = require("../templates/edit_bot.hbs");
 const render_settings_edit_embedded_bot_service = require("../templates/settings/edit_embedded_bot_service.hbs");

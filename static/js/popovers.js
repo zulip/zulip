@@ -1,3 +1,4 @@
+const ClipboardJS = require("clipboard");
 const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
 
 const render_actions_popover_content = require("../templates/actions_popover_content.hbs");
