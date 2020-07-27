@@ -247,7 +247,6 @@ export default (env?: string): webpack.Configuration[] => {
         {path: "../static/js/debug.js"},
         {path: "jquery/dist/jquery.js", name: ["$", "jQuery"]},
         {path: "handlebars/dist/cjs/handlebars.runtime.js", name: "Handlebars"},
-        {path: "sortablejs/Sortable.js"},
         {path: "winchan/winchan.js", name: "WinChan"},
     ];
     config.module.rules.unshift(...getExposeLoaders(exposeOptions));

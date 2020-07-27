@@ -11,7 +11,6 @@ import "winchan/winchan.js";
 import "handlebars/dist/cjs/handlebars.runtime.js";
 import "flatpickr/dist/flatpickr.js";
 import "flatpickr/dist/plugins/confirmDate/confirmDate.js";
-import "sortablejs/Sortable.js";
 
 // Import App JS
 import "../i18n.js";
