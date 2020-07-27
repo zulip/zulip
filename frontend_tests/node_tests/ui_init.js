@@ -94,7 +94,6 @@ zrequire("search_pill_widget");
 zrequire("user_groups");
 zrequire("unread");
 zrequire("bot_data");
-set_global("marked", zrequire("marked", "third/marked/lib/marked"));
 zrequire("markdown");
 zrequire("upload");
 zrequire("compose");

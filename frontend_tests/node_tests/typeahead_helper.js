@@ -12,7 +12,6 @@ zrequire("people");
 zrequire("stream_data");
 zrequire("narrow");
 zrequire("hash_util");
-zrequire("marked", "third/marked/lib/marked");
 
 const emoji = zrequire("emoji", "shared/js/emoji");
 const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");

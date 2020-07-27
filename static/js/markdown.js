@@ -3,6 +3,7 @@ const _ = require("lodash");
 
 const emoji = require("../shared/js/emoji");
 const fenced_code = require("../shared/js/fenced_code");
+const marked = require("../third/marked/lib/marked");
 
 // This contains zulip's frontend markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other

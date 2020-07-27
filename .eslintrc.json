@@ -169,7 +169,6 @@
                 "localstorage": false,
                 "location": false,
                 "markdown": false,
-                "marked": false,
                 "message_edit": false,
                 "message_edit_history": false,
                 "message_events": false,
