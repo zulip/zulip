@@ -1,4 +1,5 @@
 const _ = require("lodash");
+const XDate = require("xdate");
 
 const render_archive_message_group = require("../templates/archive_message_group.hbs");
 

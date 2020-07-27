@@ -8,7 +8,6 @@
     "archive": [
         "./static/js/bundles/portico.js",
         "katex/dist/katex.min.js",
-        "xdate/src/xdate.js",
         "handlebars/dist/cjs/handlebars.runtime.js",
         "./static/js/archive.js",
         "./static/js/colorspace.js",

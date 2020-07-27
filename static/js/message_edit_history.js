@@ -1,3 +1,5 @@
+const XDate = require("xdate");
+
 const render_message_edit_history = require("../templates/message_edit_history.hbs");
 
 exports.fetch_and_render_message_history = function (message) {

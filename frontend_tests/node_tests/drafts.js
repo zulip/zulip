@@ -1,8 +1,9 @@
+const XDate = require("xdate");
+
 set_global("$", global.make_zjquery());
 
 zrequire("localstorage");
 zrequire("drafts");
-set_global("XDate", zrequire("XDate", "xdate"));
 zrequire("timerender");
 set_global("Handlebars", global.make_handlebars());
 zrequire("stream_color");

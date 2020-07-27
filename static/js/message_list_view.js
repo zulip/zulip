@@ -1,4 +1,5 @@
 const _ = require("lodash");
+const XDate = require("xdate");
 
 const render_bookend = require("../templates/bookend.hbs");
 const render_message_group = require("../templates/message_group.hbs");

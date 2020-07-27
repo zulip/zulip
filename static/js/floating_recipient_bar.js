@@ -1,3 +1,5 @@
+const XDate = require("xdate");
+
 let is_floating_recipient_bar_showing = false;
 
 function top_offset(elem) {

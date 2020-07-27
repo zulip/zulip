@@ -1,3 +1,5 @@
+const XDate = require("xdate");
+
 const render_draft_table_body = require("../templates/draft_table_body.hbs");
 
 const util = require("./util");
