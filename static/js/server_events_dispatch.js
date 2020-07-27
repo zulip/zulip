@@ -436,13 +436,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 $("body").fadeOut(300);
                 setTimeout(() => {
                     if (event.setting === settings_config.color_scheme_values.night.code) {
-                        night_mode.enable();
+                        theme.night();
                         realm_logo.rerender();
                     } else if (event.setting === settings_config.color_scheme_values.day.code) {
-                        night_mode.disable();
+                        theme.day();
                         realm_logo.rerender();
                     } else {
-                        night_mode.default_preference_checker();
+                        theme.auto();
                         realm_logo.rerender();
                     }
                     $("body").fadeIn(300);
