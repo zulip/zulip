@@ -53,7 +53,7 @@ from zerver.lib.actions import (
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_success
+from zerver.lib.response import json_error, json_success
 from zerver.lib.subdomains import get_subdomain_from_hostname
 from zerver.lib.timestamp import convert_to_UTC, timestamp_to_datetime
 from zerver.lib.validator import to_non_negative_int
@@ -1125,7 +1125,8 @@ def support(request: HttpRequest) -> HttpResponse:
         keys = set(request.POST.keys())
         if "csrfmiddlewaretoken" in keys:
             keys.remove("csrfmiddlewaretoken")
-        assert(len(keys) == 2)
+        if len(keys) != 2:
+            return json_error(_("Invalid parameters"))
 
         realm_id = request.POST.get("realm_id")
         realm = Realm.objects.get(id=realm_id)
