@@ -62,7 +62,12 @@ async function get_context(location: StackFrame): Promise<NumberedLine[] | undef
     if (fileName === undefined || lineNumber === undefined) {
         return undefined;
     }
-    const sourceContent = await sourceCache[fileName];
+    let sourceContent;
+    try {
+        sourceContent = await sourceCache[fileName];
+    } catch {
+        return undefined;
+    }
     if (sourceContent === undefined) {
         return undefined;
     }
@@ -82,11 +87,14 @@ export async function display_stacktrace(error: string, stack: string): Promise<
 
     const stackframes: CleanStackFrame[] = await Promise.all(
         ErrorStackParser.parse(ex).map(async (stack_frame: ErrorStackParser.StackFrame) => {
-            const location = await stack_trace_gps.getMappedLocation(
-                // Work around mistake in ErrorStackParser.StackFrame definition
-                // https://github.com/stacktracejs/error-stack-parser/pull/49
-                (stack_frame as unknown) as StackFrame,
-            );
+            // Work around mistake in ErrorStackParser.StackFrame definition
+            // https://github.com/stacktracejs/error-stack-parser/pull/54
+            let location = (stack_frame as unknown) as StackFrame;
+            try {
+                location = await stack_trace_gps.getMappedLocation(location);
+            } catch {
+                // Use unmapped location
+            }
             return {
                 full_path: location.getFileName(),
                 show_path: clean_path(location.getFileName()),
