@@ -97,7 +97,6 @@
             "files": ["frontend_tests/**", "static/js/**"],
             "globals": {
                 "$": false,
-                "ClipboardJS": false,
                 "FetchStatus": false,
                 "Filter": false,
                 "Handlebars": false,

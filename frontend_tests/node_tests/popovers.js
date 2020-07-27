@@ -1,3 +1,5 @@
+const rewiremock = require("rewiremock/node");
+
 set_global("$", global.make_zjquery());
 
 zrequire("hash_util");
@@ -12,8 +14,6 @@ zrequire("message_edit");
 
 const noop = function () {};
 $.fn.popover = noop; // this will get wrapped by our code
-
-zrequire("popovers");
 
 set_global("current_msg_list", {});
 set_global("page_params", {
@@ -44,7 +44,10 @@ set_global("stream_data", {});
 function ClipboardJS(sel) {
     assert.equal(sel, ".copy_link");
 }
-set_global("ClipboardJS", ClipboardJS);
+
+rewiremock.proxy(() => zrequire("popovers"), {
+    clipboard: ClipboardJS,
+});
 
 const alice = {
     email: "alice@example.com",
