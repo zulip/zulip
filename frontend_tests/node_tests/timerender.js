@@ -1,10 +1,11 @@
+const XDate = require("xdate");
+
 set_global("$", global.make_zjquery());
 set_global("page_params", {
     twenty_four_hour_time: true,
 });
 set_global("moment", require("moment-timezone"));
 
-set_global("XDate", zrequire("XDate", "xdate"));
 zrequire("timerender");
 
 run_test("render_now_returns_today", () => {

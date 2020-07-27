@@ -22,7 +22,6 @@ set_global("people", {
     },
     sender_info_with_small_avatar_urls_for_sender_ids: (ids) => ids,
 });
-set_global("XDate", zrequire("XDate", "xdate"));
 set_global("timerender", {
     last_seen_status_from_date: () => "Just now",
     get_full_datetime: () => ({

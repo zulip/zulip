@@ -1,3 +1,5 @@
+const XDate = require("xdate");
+
 const FoldDict = require("./fold_dict").FoldDict;
 
 const muted_topics = new Map();

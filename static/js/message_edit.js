@@ -1,4 +1,5 @@
 const ClipboardJS = require("clipboard");
+const XDate = require("xdate");
 
 const render_message_edit_form = require("../templates/message_edit_form.hbs");
 const render_topic_edit_form = require("../templates/topic_edit_form.hbs");

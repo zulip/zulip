@@ -1,3 +1,5 @@
+const XDate = require("xdate");
+
 let next_timerender_id = 0;
 
 const set_to_start_of_day = function (time) {
