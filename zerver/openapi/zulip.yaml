@@ -228,7 +228,81 @@ paths:
                                 notification_name:
                                   type: string
                                   description: |
-                                    Notification setting to be changed.
+                                    Notification setting to be changed. It is one of the following:
+                                      * `enable_stream_desktop_notifications`: Enable visual desktop
+                                      notifications for stream messages.
+
+                                      * `enable_stream_email_notifications`: Enable email notifications
+                                      for stream messages.
+
+                                      * `enable_stream_push_notifications`: Enable mobile notifications
+                                      for stream messages.
+
+                                      * `enable_stream_audible_notifications`: Enable audible desktop
+                                      notifications for stream messages.
+
+                                      * `notification_sound`: Notification sound name.
+
+                                      * `enable_desktop_notifications`: Enable visual desktop notifications
+                                      for private messages and @-mentions.
+
+                                      * `enable_sounds`: Enable audible desktop notifications for private
+                                      messages and @-mentions.
+
+                                      * `enable_offline_email_notifications`: Enable email notifications for
+                                      private messages and @-mentions received when the user is offline.
+
+                                      * `enable_offline_push_notifications`: Enable mobile notification for
+                                      private messages and @-mentions received when the user is offline.
+
+                                      * `enable_online_push_notifications`: Enable mobile notification for
+                                      private messages and @-mentions received when the user is online.
+
+                                      * `enable_digest_emails`: Enable digest emails when the user is away.
+
+                                      * `enable_login_emails`: Enable email notifications for new logins to
+                                      account.
+
+                                      * `message_content_in_email_notifications`: Include the message's
+                                      content in missed messages email notifications.
+
+                                      * `pm_content_in_desktop_notifications`: Include content of
+                                      private messages in desktop notifications.
+
+                                      * `wildcard_mentions_notify`: Whether wildcard mentions (E.g. @**all**)
+                                      should send notifications like a personal mention.
+
+                                      * `desktop_icon_count_display`: Unread count summary
+                                      (appears in desktop sidebar and browser tab)
+
+                                          * 1 - All unreads
+                                          * 2 - Private messages and mentions
+                                          * 3 - None
+
+                                      * `realm_name_in_notifications`: Include organization name in subject of
+                                      missed message emails.
+
+                                      * `presence_enabled`: Display the presence status to other users when
+                                      online.
+                                  enum:
+                                    - enable_stream_desktop_notifications
+                                    - enable_stream_email_notifications
+                                    - enable_stream_push_notifications
+                                    - enable_stream_audible_notifications
+                                    - notification_sound
+                                    - enable_desktop_notifications
+                                    - enable_sounds
+                                    - enable_offline_email_notifications
+                                    - enable_offline_push_notifications
+                                    - enable_online_push_notifications
+                                    - enable_digest_emails
+                                    - enable_login_emails
+                                    - message_content_in_email_notifications
+                                    - pm_content_in_desktop_notifications
+                                    - wildcard_mentions_notify
+                                    - desktop_icon_count_display
+                                    - realm_name_in_notifications
+                                    - presence_enabled
                                 setting:
                                   description: |
                                     Final value of setting.
