@@ -118,7 +118,7 @@ exports.complete_starting_tasks = function (msg_type, opts) {
     compose_fade.start_compose(msg_type);
     ui_util.decorate_stream_bar(opts.stream, $("#stream-message .message_header_stream"), true);
     $(document).trigger($.Event("compose_started.zulip", opts));
-    exports.update_placeholder_text(opts);
+    exports.update_placeholder_text();
 };
 
 exports.maybe_scroll_up_selected_message = function () {
@@ -171,9 +171,15 @@ function same_recipient_as_before(msg_type, opts) {
     );
 }
 
-exports.update_placeholder_text = function (opts) {
-    const placeholder_text = compose_ui.compute_placeholder_text(opts);
-    $("#compose-textarea").attr("placeholder", placeholder_text);
+exports.update_placeholder_text = function () {
+    const opts = {
+        message_type: compose_state.get_message_type(),
+        stream: $("#stream_message_recipient_stream").val(),
+        topic: $("#stream_message_recipient_topic").val(),
+        private_message_recipient: compose_pm_pill.get_emails(),
+    };
+
+    $("#compose-textarea").attr("placeholder", compose_ui.compute_placeholder_text(opts));
 };
 
 exports.start = function (msg_type, opts) {
