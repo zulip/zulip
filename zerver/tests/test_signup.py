@@ -424,7 +424,11 @@ class PasswordResetTest(ZulipTestCase):
             self.assert_length(outbox, 2)
 
             # Too many password reset emails sent to the address, we won't send more.
-            self.client_post('/accounts/password/reset/', {'email': email})
+            with self.assertLogs(level='INFO') as info_logs:
+                self.client_post('/accounts/password/reset/', {'email': email})
+            self.assertEqual(info_logs.output, [
+                'INFO:root:Too many password reset attempts for email hamlet@zulip.com'
+            ])
             self.assert_length(outbox, 2)
 
             # Resetting for a different address works though.
@@ -623,8 +627,12 @@ class LoginTest(ZulipTestCase):
         self.assert_logged_in_user_id(None)
 
     def test_login_invalid_subdomain(self) -> None:
-        result = self.login_with_return(self.example_email("hamlet"), "xxx",
-                                        subdomain="invalid")
+        with self.assertLogs(level='WARNING') as warn_log:
+            result = self.login_with_return(self.example_email("hamlet"), "xxx",
+                                            subdomain="invalid")
+        self.assertEqual(warn_log.output, [
+            'WARNING:root:User hamlet@zulip.com attempted to password login to nonexistent subdomain invalid'
+        ])
         self.assertEqual(result.status_code, 404)
         self.assert_in_response("There is no Zulip organization hosted at this subdomain.", result)
         self.assert_logged_in_user_id(None)
@@ -3604,7 +3612,7 @@ class UserSignUpTest(InviteUserBase):
                 POPULATE_PROFILE_VIA_LDAP=True,
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-        ):
+        ), self.assertLogs('zulip.ldap', 'DEBUG') as debug_log:
             result = self.submit_reg_form_for_user(email,
                                                    password,
                                                    full_name="Non-LDAP Full Name",
@@ -3615,6 +3623,9 @@ class UserSignUpTest(InviteUserBase):
             # aren't allowed to create non-ldap accounts.
             self.assertEqual(result.url, "/accounts/login/?email=newuser%40zulip.com")
             self.assertFalse(UserProfile.objects.filter(delivery_email=email).exists())
+            self.assertEqual(debug_log.output, [
+                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No ldap user matching django_to_ldap_username result: newuser. Input username: newuser@zulip.com'
+            ])
 
         # If the email is outside of LDAP_APPEND_DOMAIN, we successfully create a non-ldap account,
         # with the password managed in the zulip database.
@@ -3635,12 +3646,15 @@ class UserSignUpTest(InviteUserBase):
                     "New account email %s could not be found in LDAP",
                     "newuser@zulip.com",
                 )
-
-            result = self.submit_reg_form_for_user(email,
-                                                   password,
-                                                   full_name="Non-LDAP Full Name",
-                                                   # Pass HTTP_HOST for the target subdomain
-                                                   HTTP_HOST=subdomain + ".testserver")
+            with self.assertLogs('zulip.ldap', 'DEBUG') as debug_log:
+                result = self.submit_reg_form_for_user(email,
+                                                       password,
+                                                       full_name="Non-LDAP Full Name",
+                                                       # Pass HTTP_HOST for the target subdomain
+                                                       HTTP_HOST=subdomain + ".testserver")
+            self.assertEqual(debug_log.output, [
+                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: Email newuser@zulip.com does not match LDAP domain example.com.'
+            ])
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "http://zulip.testserver/")
             user_profile = UserProfile.objects.get(delivery_email=email)
@@ -3725,11 +3739,15 @@ class UserSignUpTest(InviteUserBase):
                     "nonexistent@zulip.com",
                 )
 
-            result = self.submit_reg_form_for_user(email,
-                                                   password,
-                                                   full_name="Non-LDAP Full Name",
-                                                   # Pass HTTP_HOST for the target subdomain
-                                                   HTTP_HOST=subdomain + ".testserver")
+            with self.assertLogs('zulip.ldap', 'DEBUG') as debug_log:
+                result = self.submit_reg_form_for_user(email,
+                                                       password,
+                                                       full_name="Non-LDAP Full Name",
+                                                       # Pass HTTP_HOST for the target subdomain
+                                                       HTTP_HOST=subdomain + ".testserver")
+            self.assertEqual(debug_log.output, [
+                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No ldap user matching django_to_ldap_username result: nonexistent@zulip.com. Input username: nonexistent@zulip.com'
+            ])
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "http://zulip.testserver/")
             user_profile = UserProfile.objects.get(delivery_email=email)
@@ -3749,8 +3767,12 @@ class UserSignUpTest(InviteUserBase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
-            # Invite user.
-            self.login('iago')
+            with self.assertLogs('zulip.ldap', 'DEBUG') as debug_log:
+                # Invite user.
+                self.login('iago')
+            self.assertEqual(debug_log.output, [
+                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No ldap user matching django_to_ldap_username result: iago. Input username: iago@zulip.com'
+            ])
             response = self.invite(invitee_emails='newuser@zulip.com',
                                    stream_names=streams,
                                    invite_as=invite_as)
@@ -4283,7 +4305,11 @@ class TwoFactorAuthTest(ZulipTestCase):
             first_step_data = {"username": email,
                                "password": password,
                                "two_factor_login_view-current_step": "auth"}
-            result = self.client_post("/accounts/login/", first_step_data)
+            with self.assertLogs('two_factor.gateways.fake', 'INFO') as info_logs:
+                result = self.client_post("/accounts/login/", first_step_data)
+            self.assertEqual(info_logs.output, [
+                'INFO:two_factor.gateways.fake:Fake SMS to +12125550100: "Your token is: 123456"'
+            ])
             self.assertEqual(result.status_code, 200)
 
             second_step_data = {"token-otp_token": str(token),
