@@ -306,8 +306,8 @@ class JsonErrorHandler(MiddlewareMixin):
             return json_response_from_error(exception)
         if request.error_format == "JSON":
             capture_exception(exception)
-            logger = logging.getLogger("zerver.middleware.json_error_handler")
-            logger.error(traceback.format_exc(), extra=dict(request=request))
+            json_error_logger = logging.getLogger("zerver.middleware.json_error_handler")
+            json_error_logger.error(traceback.format_exc(), extra=dict(request=request))
             return json_error(_("Internal server error"), status=500)
         return None
 
