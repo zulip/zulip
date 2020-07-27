@@ -1608,7 +1608,7 @@ class InternalPrepTest(ZulipTestCase):
         othello = self.example_user('othello')
         stream = get_stream('Verona', realm)
 
-        with mock.patch('logging.exception') as m:
+        with self.assertLogs(level="ERROR") as m:
             internal_send_private_message(
                 realm=realm,
                 sender=cordelia,
@@ -1616,14 +1616,13 @@ class InternalPrepTest(ZulipTestCase):
                 content=bad_content,
             )
 
-        m.assert_called_once_with(
-            "Error queueing internal message by %s: %s",
-            "cordelia@zulip.com",
-            "Message must not be empty",
-            stack_info=True,
-        )
+        self.assertEqual(m.output[0].split('\n')[0],
+                         "ERROR:root:Error queueing internal message by {}: {}".format(
+                             "cordelia@zulip.com",
+                             "Message must not be empty"
+        ))
 
-        with mock.patch('logging.exception') as m:
+        with self.assertLogs(level="ERROR") as m:
             internal_send_huddle_message(
                 realm=realm,
                 sender=cordelia,
@@ -1631,14 +1630,13 @@ class InternalPrepTest(ZulipTestCase):
                 content=bad_content,
             )
 
-        m.assert_called_once_with(
-            "Error queueing internal message by %s: %s",
-            "cordelia@zulip.com",
-            "Message must not be empty",
-            stack_info=True,
-        )
+        self.assertEqual(m.output[0].split('\n')[0],
+                         "ERROR:root:Error queueing internal message by {}: {}".format(
+                             "cordelia@zulip.com",
+                             "Message must not be empty"
+        ))
 
-        with mock.patch('logging.exception') as m:
+        with self.assertLogs(level="ERROR") as m:
             internal_send_stream_message(
                 realm=realm,
                 sender=cordelia,
@@ -1647,14 +1645,13 @@ class InternalPrepTest(ZulipTestCase):
                 stream=stream,
             )
 
-        m.assert_called_once_with(
-            "Error queueing internal message by %s: %s",
-            "cordelia@zulip.com",
-            "Message must not be empty",
-            stack_info=True,
-        )
+        self.assertEqual(m.output[0].split('\n')[0],
+                         "ERROR:root:Error queueing internal message by {}: {}".format(
+                             "cordelia@zulip.com",
+                             "Message must not be empty"
+        ))
 
-        with mock.patch('logging.exception') as m:
+        with self.assertLogs(level="ERROR") as m:
             internal_send_stream_message_by_name(
                 realm=realm,
                 sender=cordelia,
@@ -1663,12 +1660,11 @@ class InternalPrepTest(ZulipTestCase):
                 content=bad_content,
             )
 
-        m.assert_called_once_with(
-            "Error queueing internal message by %s: %s",
-            "cordelia@zulip.com",
-            "Message must not be empty",
-            stack_info=True,
-        )
+        self.assertEqual(m.output[0].split('\n')[0],
+                         "ERROR:root:Error queueing internal message by {}: {}".format(
+                             "cordelia@zulip.com",
+                             "Message must not be empty"
+        ))
 
     def test_error_handling(self) -> None:
         realm = get_realm('zulip')
@@ -1688,18 +1684,18 @@ class InternalPrepTest(ZulipTestCase):
         # Simulate sending a message to somebody not in the
         # realm of the sender.
         recipient_user = self.mit_user('starnine')
-        with mock.patch('logging.exception') as logging_mock:
+        with self.assertLogs(level="ERROR") as m:
             result = internal_prep_private_message(
                 realm=realm,
                 sender=sender,
                 recipient_user=recipient_user,
                 content=content)
-        logging_mock.assert_called_once_with(
-            "Error queueing internal message by %s: %s",
-            "cordelia@zulip.com",
-            "You can't send private messages outside of your organization.",
-            stack_info=True,
-        )
+
+        self.assertEqual(m.output[0].split('\n')[0],
+                         "ERROR:root:Error queueing internal message by {}: {}".format(
+                             "cordelia@zulip.com",
+                             "You can't send private messages outside of your organization."
+        ))
 
     def test_ensure_stream_gets_called(self) -> None:
         realm = get_realm('zulip')
