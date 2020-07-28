@@ -41,6 +41,8 @@ else:
 
 EXTERNAL_HOST_WITHOUT_PORT = deport(EXTERNAL_HOST)
 
+FAKE_EMAIL_DOMAIN = "zulipdev.com"
+
 ALLOWED_HOSTS = ['*']
 
 # Uncomment extra backends if you want to test with them.  Note that
