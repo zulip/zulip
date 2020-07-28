@@ -370,11 +370,9 @@ function integration_events() {
 
     // combine selector use for both focusing the integrations searchbar and adding
     // the input event.
-    $(".integrations .searchbar input[type='text']")
-        .trigger("focus")
-        .on("input", (e) => {
-            dispatch("UPDATE_QUERY", {query: e.target.value.toLowerCase()});
-        });
+    $(".integrations .searchbar input[type='text']").on("input", (e) => {
+        dispatch("UPDATE_QUERY", {query: e.target.value.toLowerCase()});
+    });
 
     $(window).on("scroll", () => {
         if (document.body.scrollTop > 330) {
@@ -402,4 +400,5 @@ $(() => {
     integration_events();
     load_data();
     dispatch("LOAD_PATH");
+    $(".integrations .searchbar input[type='text']").trigger("focus");
 });
