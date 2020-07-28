@@ -189,14 +189,14 @@ def get_changed_due_date_body(payload: Mapping[str, Any], action_type: str) -> s
 
 def get_managed_desc_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
-        'desc': prettify_date(get_action_data(payload)['card']['desc']),
+        'desc': get_action_data(payload)['card']['desc'],
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_changed_desc_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
-        'desc': prettify_date(get_action_data(payload)['card']['desc']),
-        'old_desc': prettify_date(get_action_data(payload)['old']['desc']),
+        'desc': get_action_data(payload)['card']['desc'],
+        'old_desc': get_action_data(payload)['old']['desc'],
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
