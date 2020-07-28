@@ -4,9 +4,9 @@ worker_processes auto;
 pid /var/run/nginx.pid;
 include /etc/nginx/modules-enabled/*.conf;
 
-worker_rlimit_nofile 40000;
+worker_rlimit_nofile 1000000;
 events {
-    worker_connections 40000;
+    worker_connections 1000000;
 
     use epoll;
 
