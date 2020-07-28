@@ -12,8 +12,24 @@ class CommonUtils {
         this.realm_url = "http://zulip.zulipdev.com:9981/";
         this.pm_recipient = {
             async set(page, recipient) {
-                await page.type("#private_message_recipient", recipient);
-                await page.keyboard.press("Enter");
+                // Without using the delay option here there seems to be
+                // a flake where the typeahead doesn't show up.
+                await page.type("#private_message_recipient", recipient, {delay: 100});
+
+                // We use jQuery here because we need to use it's :visible
+                // pseudo selector to actually wait for typeahead item that
+                // is visible; there can be typeahead item with this selector
+                // that is invisible because it is meant for something else
+                // e.g. private message input typeahead is diffrent from topic
+                // input typeahead but both can be present in the dom.
+                await page.waitForFunction(() => {
+                    const selector = ".typeahead-menu .active a:visible";
+                    return $(selector).length !== 0;
+                });
+
+                await page.evaluate(() => {
+                    $(".typeahead-menu .active a:visible").click();
+                });
             },
 
             async expect(page, expected) {

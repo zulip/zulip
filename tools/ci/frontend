@@ -30,8 +30,7 @@ PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
 #
 # ./tools/test-js-with-casper --xunit-export
 
-# Temporarily disabled pending further work
-# ./tools/test-js-with-puppeteer
+./tools/test-js-with-puppeteer
 
 # NB: Everything here should be in `tools/test-all`.  If there's a
 # reason not to run it there, it should be there as a comment
