@@ -4126,6 +4126,8 @@ components:
           type: integer
           description: |
             The UNIX timestamp for when the stream was created, in UTC seconds.
+
+            **Changes**: New in Zulip 4.0 (feature level 30).
         invite_only:
           type: boolean
           description: |
@@ -4231,6 +4233,8 @@ components:
           type: integer
           description: |
             The UNIX timestamp for when the stream was created, in UTC seconds.
+
+            **Changes**: New in Zulip 4.0 (feature level 30).
         invite_only:
           type: boolean
           description: |

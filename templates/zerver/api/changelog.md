@@ -8,6 +8,17 @@ server versions is to check the `zulip_feature_level` parameter in the
 `/register` and `/server_settings` responses to determine which of the
 below features are supported.
 
+## Changes in Zulip 4.0
+
+**Feature Level 30**
+
+* [`GET users/me/subscriptions`](/api/get-subscriptions), [`GET
+  /streams`](/api/get-streams): Added `date_created` to Stream
+  objects.
+
+Feature levels 28 and 29 are reserved for future use in 3.x bug fix
+releases.
+
 ## Changes in Zulip 3.1
 
 **Feature level 27**
