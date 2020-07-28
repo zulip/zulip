@@ -588,7 +588,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 full_name = check_full_name(full_name)
             except JsonableError as e:
                 raise ZulipLDAPException(e.msg)
-            do_change_full_name(user_profile, full_name, None)
+            do_change_full_name(user_profile, full_name, acting_user=None)
 
     def sync_custom_profile_fields_from_ldap(self, user_profile: UserProfile,
                                              ldap_user: _LDAPUser) -> None:

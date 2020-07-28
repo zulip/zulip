@@ -559,7 +559,7 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
                    default_stream_groups: Sequence[DefaultStreamGroup]=[],
                    source_profile: Optional[UserProfile]=None,
                    realm_creation: bool=False,
-                   acting_user: Optional[UserProfile]=None) -> UserProfile:
+                   *, acting_user: Optional[UserProfile]=None) -> UserProfile:
 
     user_profile = create_user(email=email, password=password, realm=realm,
                                full_name=full_name,
@@ -594,7 +594,7 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
                                realm_creation=realm_creation)
     return user_profile
 
-def do_activate_user(user_profile: UserProfile, acting_user: Optional[UserProfile]=None) -> None:
+def do_activate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]=None) -> None:
     user_profile.is_active = True
     user_profile.is_mirror_dummy = False
     user_profile.set_unusable_password()
@@ -617,7 +617,7 @@ def do_activate_user(user_profile: UserProfile, acting_user: Optional[UserProfil
 
     notify_created_user(user_profile)
 
-def do_reactivate_user(user_profile: UserProfile, acting_user: Optional[UserProfile]=None) -> None:
+def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]=None) -> None:
     # Unlike do_activate_user, this is meant for re-activating existing users,
     # so it doesn't reset their password, etc.
     user_profile.is_active = True
@@ -645,7 +645,7 @@ def active_humans_in_realm(realm: Realm) -> Sequence[UserProfile]:
 
 
 def do_set_realm_property(realm: Realm, name: str, value: Any,
-                          acting_user: Optional[UserProfile] = None) -> None:
+                          *, acting_user: Optional[UserProfile] = None) -> None:
     """Takes in a realm object, the name of an attribute to update, the
        value to update and and the user who initiated the update.
     """
@@ -693,7 +693,7 @@ def do_set_realm_property(realm: Realm, name: str, value: Any,
 
 def do_set_realm_authentication_methods(realm: Realm,
                                         authentication_methods: Dict[str, bool],
-                                        acting_user: Optional[UserProfile]=None) -> None:
+                                        *, acting_user: Optional[UserProfile]=None) -> None:
     old_value = realm.authentication_methods_dict()
     for key, value in list(authentication_methods.items()):
         index = getattr(realm.authentication_methods, key).number
@@ -718,7 +718,7 @@ def do_set_realm_message_editing(realm: Realm,
                                  allow_message_editing: bool,
                                  message_content_edit_limit_seconds: int,
                                  allow_community_topic_editing: bool,
-                                 acting_user: Optional[UserProfile]=None) -> None:
+                                 *, acting_user: Optional[UserProfile]=None) -> None:
     old_values = dict(allow_message_editing=realm.allow_message_editing,
                       message_content_edit_limit_seconds=realm.message_content_edit_limit_seconds,
                       allow_community_topic_editing=realm.allow_community_topic_editing)
@@ -752,7 +752,7 @@ def do_set_realm_message_editing(realm: Realm,
     send_event(realm, event, active_user_ids(realm.id))
 
 def do_set_realm_notifications_stream(realm: Realm, stream: Optional[Stream], stream_id: int,
-                                      acting_user: Optional[UserProfile]=None) -> None:
+                                      *, acting_user: Optional[UserProfile]=None) -> None:
     old_value = getattr(realm, 'notifications_stream')
     realm.notifications_stream = stream
     realm.save(update_fields=['notifications_stream'])
@@ -774,7 +774,7 @@ def do_set_realm_notifications_stream(realm: Realm, stream: Optional[Stream], st
     send_event(realm, event, active_user_ids(realm.id))
 
 def do_set_realm_signup_notifications_stream(realm: Realm, stream: Optional[Stream], stream_id: int,
-                                             acting_user: Optional[UserProfile]=None) -> None:
+                                             *, acting_user: Optional[UserProfile]=None) -> None:
     old_value = getattr(realm, 'signup_notifications_stream')
     realm.signup_notifications_stream = stream
     realm.save(update_fields=['signup_notifications_stream'])
@@ -794,7 +794,7 @@ def do_set_realm_signup_notifications_stream(realm: Realm, stream: Optional[Stre
     )
     send_event(realm, event, active_user_ids(realm.id))
 
-def do_deactivate_realm(realm: Realm, acting_user: Optional[UserProfile]=None) -> None:
+def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]=None) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
     tell the difference between users that were intentionally deactivated,
@@ -843,7 +843,7 @@ def do_change_realm_subdomain(realm: Realm, new_subdomain: str) -> None:
     realm.string_id = new_subdomain
     realm.save(update_fields=["string_id"])
 
-def do_scrub_realm(realm: Realm, acting_user: Optional[UserProfile]=None) -> None:
+def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]=None) -> None:
     users = UserProfile.objects.filter(realm=realm)
     for user in users:
         do_delete_messages_by_sender(user)
@@ -862,7 +862,7 @@ def do_scrub_realm(realm: Realm, acting_user: Optional[UserProfile]=None) -> Non
                                  event_type=RealmAuditLog.REALM_SCRUBBED)
 
 def do_deactivate_user(user_profile: UserProfile,
-                       acting_user: Optional[UserProfile]=None,
+                       *, acting_user: Optional[UserProfile]=None,
                        _cascade: bool=True) -> None:
     if not user_profile.is_active:
         return
@@ -1910,7 +1910,7 @@ def ensure_stream(realm: Realm,
                   stream_name: str,
                   invite_only: bool=False,
                   stream_description: str="",
-                  acting_user: Optional[UserProfile]=None) -> Stream:
+                  *, acting_user: Optional[UserProfile]=None) -> Stream:
     return create_stream_if_needed(realm, stream_name,
                                    invite_only=invite_only,
                                    stream_description=stream_description,
@@ -2783,7 +2783,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                            users: Iterable[UserProfile],
                            color_map: Mapping[str, str]={},
                            from_stream_creation: bool=False,
-                           acting_user: Optional[UserProfile]=None) -> SubT:
+                           *, acting_user: Optional[UserProfile]=None) -> SubT:
     users = list(users)
 
     recipients_map: Dict[int, int] = {stream.id: stream.recipient_id for stream in streams}
@@ -2974,7 +2974,7 @@ SubAndRemovedT = Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile,
 def bulk_remove_subscriptions(users: Iterable[UserProfile],
                               streams: Iterable[Stream],
                               acting_client: Client,
-                              acting_user: Optional[UserProfile]=None) -> SubAndRemovedT:
+                              *, acting_user: Optional[UserProfile]=None) -> SubAndRemovedT:
 
     users = list(users)
     streams = list(streams)
@@ -3109,7 +3109,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
 
 def do_change_subscription_property(user_profile: UserProfile, sub: Subscription,
                                     stream: Stream, property_name: str, value: Any,
-                                    acting_user: Optional[UserProfile]=None) -> None:
+                                    *, acting_user: Optional[UserProfile]=None) -> None:
     database_property_name = property_name
     event_property_name = property_name
     database_value = value
@@ -3156,7 +3156,7 @@ def do_change_password(user_profile: UserProfile, password: str, commit: bool=Tr
                                  event_time=event_time)
 
 def do_change_full_name(user_profile: UserProfile, full_name: str,
-                        acting_user: Optional[UserProfile]) -> None:
+                        *, acting_user: Optional[UserProfile]) -> None:
     old_name = user_profile.full_name
     user_profile.full_name = full_name
     user_profile.save(update_fields=["full_name"])
@@ -3175,17 +3175,17 @@ def do_change_full_name(user_profile: UserProfile, full_name: str,
                    bot_owner_user_ids(user_profile))
 
 def check_change_full_name(user_profile: UserProfile, full_name_raw: str,
-                           acting_user: UserProfile) -> str:
+                           *, acting_user: UserProfile) -> str:
     """Verifies that the user's proposed full name is valid.  The caller
     is responsible for checking check permissions.  Returns the new
     full name, which may differ from what was passed in (because this
     function strips whitespace)."""
     new_full_name = check_full_name(full_name_raw)
-    do_change_full_name(user_profile, new_full_name, acting_user)
+    do_change_full_name(user_profile, new_full_name, acting_user=acting_user)
     return new_full_name
 
 def check_change_bot_full_name(user_profile: UserProfile, full_name_raw: str,
-                               acting_user: UserProfile) -> None:
+                               *, acting_user: UserProfile) -> None:
     new_full_name = check_full_name(full_name_raw)
 
     if new_full_name == user_profile.full_name:
@@ -3198,10 +3198,10 @@ def check_change_bot_full_name(user_profile: UserProfile, full_name_raw: str,
         realm_id=user_profile.realm_id,
         full_name=new_full_name,
     )
-    do_change_full_name(user_profile, new_full_name, acting_user)
+    do_change_full_name(user_profile, new_full_name, acting_user=acting_user)
 
 def do_change_bot_owner(user_profile: UserProfile, bot_owner: UserProfile,
-                        acting_user: UserProfile) -> None:
+                        *, acting_user: UserProfile) -> None:
     previous_owner = user_profile.bot_owner
     user_profile.bot_owner = bot_owner
     user_profile.save()  # Can't use update_fields because of how the foreign key works.
@@ -3264,7 +3264,7 @@ def do_change_tos_version(user_profile: UserProfile, tos_version: str) -> None:
                                  event_type=RealmAuditLog.USER_TOS_VERSION_CHANGED,
                                  event_time=event_time)
 
-def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -> str:
+def do_regenerate_api_key(user_profile: UserProfile, *, acting_user: UserProfile) -> str:
     old_api_key = user_profile.api_key
     new_api_key = generate_api_key()
     user_profile.api_key = new_api_key
@@ -3322,7 +3322,7 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
                active_user_ids(user_profile.realm_id))
 
 def do_change_avatar_fields(user_profile: UserProfile, avatar_source: str,
-                            skip_notify: bool=False, acting_user: Optional[UserProfile]=None) -> None:
+                            skip_notify: bool=False, *, acting_user: Optional[UserProfile]=None) -> None:
     user_profile.avatar_source = avatar_source
     user_profile.avatar_version += 1
     user_profile.save(update_fields=["avatar_source", "avatar_version"])
@@ -3335,11 +3335,11 @@ def do_change_avatar_fields(user_profile: UserProfile, avatar_source: str,
     if not skip_notify:
         notify_avatar_url_change(user_profile)
 
-def do_delete_avatar_image(user: UserProfile, acting_user: Optional[UserProfile]=None) -> None:
+def do_delete_avatar_image(user: UserProfile, *, acting_user: Optional[UserProfile]=None) -> None:
     do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=acting_user)
     delete_avatar_image(user)
 
-def do_change_icon_source(realm: Realm, icon_source: str, acting_user: Optional[UserProfile]=None) -> None:
+def do_change_icon_source(realm: Realm, icon_source: str, *, acting_user: Optional[UserProfile]=None) -> None:
     realm.icon_source = icon_source
     realm.icon_version += 1
     realm.save(update_fields=["icon_source", "icon_version"])
@@ -3359,7 +3359,7 @@ def do_change_icon_source(realm: Realm, icon_source: str, acting_user: Optional[
                               icon_url=realm_icon_url(realm))),
                active_user_ids(realm.id))
 
-def do_change_logo_source(realm: Realm, logo_source: str, night: bool, acting_user: Optional[UserProfile]=None) -> None:
+def do_change_logo_source(realm: Realm, logo_source: str, night: bool, *, acting_user: Optional[UserProfile]=None) -> None:
     if not night:
         realm.logo_source = logo_source
         realm.logo_version += 1
@@ -3416,7 +3416,7 @@ def do_change_plan_type(realm: Realm, plan_type: int) -> None:
     send_event(realm, event, active_user_ids(realm.id))
 
 def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional[Stream],
-                                     acting_user: Optional[UserProfile]=None) -> None:
+                                     *, acting_user: Optional[UserProfile]=None) -> None:
     old_value = getattr(user_profile, 'default_sending_stream')
     user_profile.default_sending_stream = stream
     user_profile.save(update_fields=['default_sending_stream'])
@@ -3445,7 +3445,7 @@ def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional
 
 def do_change_default_events_register_stream(user_profile: UserProfile,
                                              stream: Optional[Stream],
-                                             acting_user: Optional[UserProfile]=None) -> None:
+                                             *, acting_user: Optional[UserProfile]=None) -> None:
     old_value = getattr(user_profile, 'default_events_register_stream')
     user_profile.default_events_register_stream = stream
     user_profile.save(update_fields=['default_events_register_stream'])
@@ -3473,7 +3473,7 @@ def do_change_default_events_register_stream(user_profile: UserProfile,
                    bot_owner_user_ids(user_profile))
 
 def do_change_default_all_public_streams(user_profile: UserProfile, value: bool,
-                                         acting_user: Optional[UserProfile]=None) -> None:
+                                         *, acting_user: Optional[UserProfile]=None) -> None:
     old_value = getattr(user_profile, 'default_all_public_streams')
     user_profile.default_all_public_streams = value
     user_profile.save(update_fields=['default_all_public_streams'])
@@ -3496,7 +3496,7 @@ def do_change_default_all_public_streams(user_profile: UserProfile, value: bool,
                                  )),
                    bot_owner_user_ids(user_profile))
 
-def do_change_user_role(user_profile: UserProfile, value: int, acting_user: Optional[UserProfile]=None) -> None:
+def do_change_user_role(user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]=None) -> None:
     old_value = user_profile.role
     user_profile.role = value
     user_profile.save(update_fields=["role"])
@@ -3730,7 +3730,7 @@ def do_create_realm(string_id: str, name: str,
 
 def do_change_notification_settings(user_profile: UserProfile, name: str,
                                     value: Union[bool, int, str],
-                                    acting_user: Optional[UserProfile]=None) -> None:
+                                    *, acting_user: Optional[UserProfile]=None) -> None:
     """Takes in a UserProfile object, the name of a global notification
     preference to update, and the value to update to
     """
@@ -5475,7 +5475,7 @@ def do_change_realm_domain(realm_domain: RealmDomain, allow_subdomains: bool) ->
                                    allow_subdomains=realm_domain.allow_subdomains))
     send_event(realm_domain.realm, event, active_user_ids(realm_domain.realm_id))
 
-def do_remove_realm_domain(realm_domain: RealmDomain, acting_user: Optional[UserProfile]=None) -> None:
+def do_remove_realm_domain(realm_domain: RealmDomain, *, acting_user: Optional[UserProfile]=None) -> None:
     realm = realm_domain.realm
     domain = realm_domain.domain
     realm_domain.delete()

@@ -1061,7 +1061,7 @@ class NormalActionsTest(BaseAction):
             lambda: do_change_full_name(
                 self.user_profile,
                 'Sir Hamlet',
-                self.user_profile))
+                acting_user=self.user_profile))
         check_realm_user_update('events[0]', events[0], {'full_name'})
 
     def test_change_user_delivery_email_email_address_visibilty_admins(self) -> None:
@@ -1466,13 +1466,13 @@ class NormalActionsTest(BaseAction):
 
     def test_change_bot_full_name(self) -> None:
         bot = self.create_bot('test')
-        action = lambda: do_change_full_name(bot, 'New Bot Name', self.user_profile)
+        action = lambda: do_change_full_name(bot, 'New Bot Name', acting_user=self.user_profile)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_update('events[1]', events[1], 'full_name')
 
     def test_regenerate_bot_api_key(self) -> None:
         bot = self.create_bot('test')
-        action = lambda: do_regenerate_api_key(bot, self.user_profile)
+        action = lambda: do_regenerate_api_key(bot, acting_user=self.user_profile)
         events = self.verify_action(action)
         check_realm_bot_update('events[0]', events[0], 'api_key')
 
@@ -1559,7 +1559,7 @@ class NormalActionsTest(BaseAction):
         self.user_profile = self.example_user('iago')
         owner = self.example_user('hamlet')
         bot = self.create_bot('test')
-        action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
+        action = lambda: do_change_bot_owner(bot, owner, acting_user=self.user_profile)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_update('events[0]', events[0], 'owner_id')
         check_realm_user_update('events[1]', events[1], {"bot_owner_id"})
@@ -1567,7 +1567,7 @@ class NormalActionsTest(BaseAction):
         self.user_profile = self.example_user('aaron')
         owner = self.example_user('hamlet')
         bot = self.create_bot('test1', full_name='Test1 Testerson')
-        action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
+        action = lambda: do_change_bot_owner(bot, owner, acting_user=self.user_profile)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_delete('events[0]', events[0])
         check_realm_user_update('events[1]', events[1], {"bot_owner_id"})
@@ -1575,7 +1575,7 @@ class NormalActionsTest(BaseAction):
         previous_owner = self.example_user('aaron')
         self.user_profile = self.example_user('hamlet')
         bot = self.create_test_bot('test2', previous_owner, full_name='Test2 Testerson')
-        action = lambda: do_change_bot_owner(bot, self.user_profile, previous_owner)
+        action = lambda: do_change_bot_owner(bot, self.user_profile, acting_user=previous_owner)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_add('events[0]', events[0])
         check_realm_user_update('events[1]', events[1], {"bot_owner_id"})

@@ -4593,11 +4593,11 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         )
 
         self.change_ldap_user_attr('hamlet', 'cn', 'Second Hamlet')
-        expected_call_args = [hamlet2, 'Second Hamlet', None]
+        expected_call_args = [hamlet2, 'Second Hamlet']
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn'}):
             with mock.patch('zerver.lib.actions.do_change_full_name') as f:
                 self.perform_ldap_sync(hamlet2)
-                f.assert_called_once_with(*expected_call_args)
+                f.assert_called_once_with(*expected_call_args, acting_user=None)
 
                 # Get the updated model and make sure the full name is changed correctly:
                 hamlet2 = get_user_by_delivery_email(email, test_realm)

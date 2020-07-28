@@ -366,7 +366,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             user_profile = existing_user_profile
             do_activate_user(user_profile, acting_user=user_profile)
             do_change_password(user_profile, password)
-            do_change_full_name(user_profile, full_name, user_profile)
+            do_change_full_name(user_profile, full_name, acting_user=user_profile)
             do_set_user_display_setting(user_profile, 'timezone', timezone)
             # TODO: When we clean up the `do_activate_user` code path,
             # make it respect invited_as_admin / is_realm_admin.

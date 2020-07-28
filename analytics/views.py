@@ -1148,7 +1148,7 @@ def support(request: HttpRequest) -> HttpResponse:
                 do_send_realm_reactivation_email(realm)
                 context["message"] = f"Realm reactivation email sent to admins of {realm.name}."
             elif status == "deactivated":
-                do_deactivate_realm(realm, request.user)
+                do_deactivate_realm(realm, acting_user=request.user)
                 context["message"] = f"{realm.name} deactivated."
         elif request.POST.get("sponsorship_pending", None) is not None:
             sponsorship_pending = request.POST.get("sponsorship_pending")

@@ -157,7 +157,7 @@ def update_user_backend(
             full_name.strip() != ""):
         # We don't respect `name_changes_disabled` here because the request
         # is on behalf of the administrator.
-        check_change_full_name(target, full_name, user_profile)
+        check_change_full_name(target, full_name, acting_user=user_profile)
 
     if profile_data is not None:
         clean_profile_data = []
@@ -229,7 +229,7 @@ def patch_bot_backend(
     bot = access_bot_by_id(user_profile, bot_id)
 
     if full_name is not None:
-        check_change_bot_full_name(bot, full_name, user_profile)
+        check_change_bot_full_name(bot, full_name, acting_user=user_profile)
     if bot_owner_id is not None:
         try:
             owner = get_user_profile_by_id_in_realm(bot_owner_id, user_profile.realm)
@@ -242,7 +242,7 @@ def patch_bot_backend(
 
         previous_owner = bot.bot_owner
         if previous_owner != owner:
-            do_change_bot_owner(bot, owner, user_profile)
+            do_change_bot_owner(bot, owner, acting_user=user_profile)
 
     if default_sending_stream is not None:
         if default_sending_stream == "":
@@ -302,7 +302,7 @@ def patch_bot_backend(
 def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, bot_id: int) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
 
-    new_api_key = do_regenerate_api_key(bot, user_profile)
+    new_api_key = do_regenerate_api_key(bot, acting_user=user_profile)
     json_result = dict(
         api_key=new_api_key,
     )

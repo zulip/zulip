@@ -170,7 +170,7 @@ class TestRealmAuditLog(ZulipTestCase):
         admin = self.example_user('iago')
         bot = self.notification_bot()
         bot_owner = self.example_user('hamlet')
-        do_change_bot_owner(bot, bot_owner, admin)
+        do_change_bot_owner(bot, bot_owner, acting_user=admin)
         self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_BOT_OWNER_CHANGED,
                                                       event_time__gte=now).count(), 1)
         self.assertEqual(bot_owner, bot.bot_owner)
@@ -178,7 +178,7 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_regenerate_api_key(self) -> None:
         now = timezone_now()
         user = self.example_user('hamlet')
-        do_regenerate_api_key(user, user)
+        do_regenerate_api_key(user, acting_user=user)
         self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_API_KEY_CHANGED,
                                                       event_time__gte=now).count(), 1)
         self.assertTrue(user.api_key)

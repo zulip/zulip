@@ -386,7 +386,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         with mock.patch('zerver.worker.queue_processors.clear_push_device_tokens',
                         side_effect=PushNotificationBouncerRetryLaterError("test")), \
                 mock.patch('zerver.worker.queue_processors.retry_event') as mock_retry:
-            do_regenerate_api_key(user, user)
+            do_regenerate_api_key(user, acting_user=user)
             mock_retry.assert_called()
 
             # We didn't manage to communicate with the bouncer, to the tokens are still there:
@@ -395,7 +395,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assertEqual(len(tokens), 2)
 
         # Now we successfully remove them:
-        do_regenerate_api_key(user, user)
+        do_regenerate_api_key(user, acting_user=user)
         tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id,
                                                            server=server))
         self.assertEqual(len(tokens), 0)

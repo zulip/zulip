@@ -150,7 +150,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
             pass
         else:
             # Note that check_change_full_name strips the passed name automatically
-            result['full_name'] = check_change_full_name(user_profile, full_name, user_profile)
+            result['full_name'] = check_change_full_name(user_profile, full_name, acting_user=user_profile)
 
     return json_success(result)
 
@@ -271,7 +271,7 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
 # a bot regenerating its own API key.
 @has_request_variables
 def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    new_api_key = do_regenerate_api_key(user_profile, user_profile)
+    new_api_key = do_regenerate_api_key(user_profile, acting_user=user_profile)
     json_result = dict(
         api_key = new_api_key,
     )
