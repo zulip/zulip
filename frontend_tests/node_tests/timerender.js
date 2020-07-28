@@ -15,9 +15,9 @@ run_test("render_now_returns_today", () => {
         needs_update: true,
     };
     const actual = timerender.render_now(today, today);
-    assert.equal(expected.time_str, actual.time_str);
-    assert.equal(expected.formal_time_str, actual.formal_time_str);
-    assert.equal(expected.needs_update, actual.needs_update);
+    assert.equal(actual.time_str, expected.time_str);
+    assert.equal(actual.formal_time_str, expected.formal_time_str);
+    assert.equal(actual.needs_update, expected.needs_update);
 });
 
 run_test("render_now_returns_yesterday", () => {
@@ -29,9 +29,9 @@ run_test("render_now_returns_yesterday", () => {
         needs_update: true,
     };
     const actual = timerender.render_now(yesterday, today);
-    assert.equal(expected.time_str, actual.time_str);
-    assert.equal(expected.formal_time_str, actual.formal_time_str);
-    assert.equal(expected.needs_update, actual.needs_update);
+    assert.equal(actual.time_str, expected.time_str);
+    assert.equal(actual.formal_time_str, expected.formal_time_str);
+    assert.equal(actual.needs_update, expected.needs_update);
 });
 
 run_test("render_now_returns_year", () => {
@@ -43,9 +43,9 @@ run_test("render_now_returns_year", () => {
         needs_update: false,
     };
     const actual = timerender.render_now(year_ago, today);
-    assert.equal(expected.time_str, actual.time_str);
-    assert.equal(expected.formal_time_str, actual.formal_time_str);
-    assert.equal(expected.needs_update, actual.needs_update);
+    assert.equal(actual.time_str, expected.time_str);
+    assert.equal(actual.formal_time_str, expected.formal_time_str);
+    assert.equal(actual.needs_update, expected.needs_update);
 });
 
 run_test("render_now_returns_month_and_day", () => {
@@ -57,9 +57,9 @@ run_test("render_now_returns_month_and_day", () => {
         needs_update: false,
     };
     const actual = timerender.render_now(three_months_ago, today);
-    assert.equal(expected.time_str, actual.time_str);
-    assert.equal(expected.formal_time_str, actual.formal_time_str);
-    assert.equal(expected.needs_update, actual.needs_update);
+    assert.equal(actual.time_str, expected.time_str);
+    assert.equal(actual.formal_time_str, expected.formal_time_str);
+    assert.equal(actual.needs_update, expected.needs_update);
 });
 
 run_test("render_now_returns_year_with_year_boundary", () => {
@@ -71,9 +71,9 @@ run_test("render_now_returns_year_with_year_boundary", () => {
         needs_update: false,
     };
     const actual = timerender.render_now(three_months_ago, today);
-    assert.equal(expected.time_str, actual.time_str);
-    assert.equal(expected.formal_time_str, actual.formal_time_str);
-    assert.equal(expected.needs_update, actual.needs_update);
+    assert.equal(actual.time_str, expected.time_str);
+    assert.equal(actual.formal_time_str, expected.formal_time_str);
+    assert.equal(actual.needs_update, expected.needs_update);
 });
 
 run_test("render_date_renders_time_html", () => {
@@ -95,7 +95,7 @@ run_test("render_date_renders_time_html", () => {
     };
 
     const actual = timerender.render_date(message_time, undefined, today);
-    assert.equal(expected_html, actual.html());
+    assert.equal(actual.html(), expected_html);
     assert.equal(attrs.title, "Friday, April 12, 2019");
     assert.equal(attrs.class, "timerender0");
 });
@@ -129,7 +129,7 @@ run_test("get_full_time", () => {
     const timestamp = 1495091573; // 5/18/2017 7:12:53 AM (UTC+0)
     const expected = "2017-05-18T07:12:53Z"; // ISO 8601 date format
     const actual = timerender.get_full_time(timestamp);
-    assert.equal(expected, actual);
+    assert.equal(actual, expected);
 });
 
 run_test("get_timestamp_for_flatpickr", () => {
@@ -160,26 +160,26 @@ run_test("absolute_time_12_hour", () => {
     let today = new Date(timestamp);
     let expected = "Apr 12 05:52 PM";
     let actual = timerender.absolute_time(timestamp, today);
-    assert.equal(expected, actual);
+    assert.equal(actual, expected);
 
     // timestamp with hour > 12, different year
     today.setFullYear(today.getFullYear() + 1);
     expected = "Apr 12, 2019 05:52 PM";
     actual = timerender.absolute_time(timestamp, today);
-    assert.equal(expected, actual);
+    assert.equal(actual, expected);
 
     // timestamp with hour < 12, same year
     timestamp = 1495091573000; // 5/18/2017 7:12:53 AM (UTC+0)
     today = new Date(timestamp);
     expected = "May 18 07:12 AM";
     actual = timerender.absolute_time(timestamp, today);
-    assert.equal(expected, actual);
+    assert.equal(actual, expected);
 
     // timestamp with hour < 12, different year
     today.setFullYear(today.getFullYear() + 1);
     expected = "May 18, 2017 07:12 AM";
     actual = timerender.absolute_time(timestamp, today);
-    assert.equal(expected, actual);
+    assert.equal(actual, expected);
 });
 
 run_test("absolute_time_24_hour", () => {
@@ -192,26 +192,26 @@ run_test("absolute_time_24_hour", () => {
     let today = new Date(timestamp);
     let expected = "Apr 12 17:52";
     let actual = timerender.absolute_time(timestamp, today);
-    assert.equal(expected, actual);
+    assert.equal(actual, expected);
 
     // timestamp with hour > 12, different year
     today.setFullYear(today.getFullYear() + 1);
     expected = "Apr 12, 2019 17:52";
     actual = timerender.absolute_time(timestamp, today);
-    assert.equal(expected, actual);
+    assert.equal(actual, expected);
 
     // timestamp with hour < 12, same year
     timestamp = 1495091573000; // 5/18/2017 7:12:53 AM (UTC+0)
     today = new Date(timestamp);
     expected = "May 18 07:12";
     actual = timerender.absolute_time(timestamp, today);
-    assert.equal(expected, actual);
+    assert.equal(actual, expected);
 
     // timestamp with hour < 12, different year
     today.setFullYear(today.getFullYear() + 1);
     expected = "May 18, 2017 07:12";
     actual = timerender.absolute_time(timestamp, today);
-    assert.equal(expected, actual);
+    assert.equal(actual, expected);
 });
 
 run_test("set_full_datetime", () => {
@@ -231,7 +231,7 @@ run_test("set_full_datetime", () => {
     const time = new Date(message.timestamp * 1000);
     const expected = `${time.toLocaleDateString()} 7:12:53 AM (UTC+0)`;
     timerender.set_full_datetime(message, time_element);
-    assert.equal(expected, attrs.title);
+    assert.equal(attrs.title, expected);
 });
 
 run_test("last_seen_status_from_date", () => {
@@ -281,16 +281,16 @@ run_test("set_full_datetime", () => {
     let time = new XDate(1549958107000); // Tuesday 2/12/2019 07:55:07 AM (UTC+0)
     let time_str = timerender.stringify_time(time);
     let expected = "07:55";
-    assert.equal(expected, time_str);
+    assert.equal(time_str, expected);
 
     page_params.twenty_four_hour_time = false;
     time_str = timerender.stringify_time(time);
     expected = "7:55 AM";
-    assert.equal(expected, time_str);
+    assert.equal(time_str, expected);
 
     time = new XDate(1549979707000); // Tuesday 2/12/2019 13:55:07 PM (UTC+0)
     page_params.twenty_four_hour_time = false;
     time_str = timerender.stringify_time(time);
     expected = "1:55 PM";
-    assert.equal(expected, time_str);
+    assert.equal(time_str, expected);
 });
