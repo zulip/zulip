@@ -3028,7 +3028,8 @@ def get_fake_email_domain() -> str:
         # Check that the fake email domain can be used to form valid email addresses.
         validate_email("bot@" + settings.FAKE_EMAIL_DOMAIN)
     except ValidationError:
-        raise InvalidFakeEmailDomain(settings.FAKE_EMAIL_DOMAIN + ' is not a valid domain.')
+        raise InvalidFakeEmailDomain(settings.FAKE_EMAIL_DOMAIN + ' is not a valid domain. '
+                                     'Consider setting the FAKE_EMAIL_DOMAIN setting.')
 
     return settings.FAKE_EMAIL_DOMAIN
 
