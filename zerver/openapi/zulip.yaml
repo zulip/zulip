@@ -566,6 +566,418 @@ paths:
                                   "flags": [],
                                   "id": 1,
                                 }
+                            - type: object
+                              description: |
+                                Event sent to a user's clients when the status
+                                of their zoom token has changed. Having a zoom
+                                token allows participation in Zoom video calls.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - has_zoom_token
+                                value:
+                                  type: boolean
+                                  description: |
+                                    A boolean specifying whether the user has zoom
+                                    token or not.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "has_zoom_token",
+                                  "value": true,
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                A very basic event sent to all users which signifies
+                                that the number of invites for the Zulip server have
+                                changed.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - invites_changed
+                              additionalProperties: false
+                              example: {"type": "invites_changed", "id": 0}
+                            - type: object
+                              description: |
+                                Event sent to all users of the Zulip server for
+                                addition of a new user to the Zulip user.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - realm_user
+                                op:
+                                  type: string
+                                  enum:
+                                    - add
+                                person:
+                                  $ref: "#/components/schemas/User"
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "realm_user",
+                                  "op": "add",
+                                  "person":
+                                    {
+                                      "email": "foo@zulip.com",
+                                      "user_id": 38,
+                                      "avatar_version": 1,
+                                      "is_admin": false,
+                                      "is_owner": false,
+                                      "is_guest": false,
+                                      "is_bot": false,
+                                      "full_name": "full name",
+                                      "timezone": "",
+                                      "is_active": true,
+                                      "date_joined": "2020-07-15T15:04:02.030833+00:00",
+                                      "avatar_url": "https:\/\/secure.gravatar.com\/avatar\/c6b5578d4964bd9c5fae593c6868912a?d=identicon&version=1",
+                                      "profile_data": {},
+                                    },
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                Event sent to all users of the Zulip server containing
+                                the details of a user's presence on the Zulip server.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - presence
+                                user_id:
+                                  type: integer
+                                  description: |
+                                    The id of modified user.
+                                email:
+                                  type: string
+                                  description: |
+                                    The email of the user.
+
+                                    **Deprecated**: This field will be removed in a future
+                                    release as it is redunant with the `user_id`.
+                                  deprecated: true
+                                server_timestamp:
+                                  type: number
+                                  description: |
+                                    The timestamp of when the Zulip server received the user's
+                                    presence as a UNIX timestamp(Python's time.time() or number
+                                    of seconds since epoch).
+                                presence:
+                                  type: object
+                                  description: |
+                                    An object contatining a set of objects which describe the
+                                    the user's presence on various platfroms.
+                                  additionalProperties:
+                                    type: object
+                                    description: |
+                                      `{client_name}`: Object containing the details of the user's
+                                      presence on a particular platform with the client's platform
+                                      name being the object key.
+                                    properties:
+                                      client:
+                                        type: string
+                                        description: |
+                                          The client's platform name.
+                                      status:
+                                        type: string
+                                        enum:
+                                          - idle
+                                          - active
+                                        description: |
+                                          The status of the user on this client. It is either `idle`
+                                          or `active`.
+                                      timestamp:
+                                        type: integer
+                                        description: |
+                                          The UNIX timestamp of when this client sent the user's presence
+                                          to the server with the precision of a second.
+                                      pushable:
+                                        type: boolean
+                                        description: |
+                                          Whether the client is capable of showing mobile/push notifications
+                                          to the user.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "presence",
+                                  "user_id": 10,
+                                  "email": "user10@zulip.testserver",
+                                  "server_timestamp": 1594825445.320078373,
+                                  "presence":
+                                    {
+                                      "ZulipAndroid\/1.0":
+                                        {
+                                          "client": "ZulipAndroid\/1.0",
+                                          "status": "idle",
+                                          "timestamp": 1594825445,
+                                          "pushable": false,
+                                        },
+                                    },
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                Event sent generally to all users for addition
+                                of new streams to the Zulip realm.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - stream
+                                op:
+                                  type: string
+                                  enum:
+                                    - add
+                                streams:
+                                  type: array
+                                  description: |
+                                    Array of stream objects, each contatining
+                                    details about the newly added streams.
+                                  items:
+                                    $ref: "#/components/schemas/BasicStream"
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "stream",
+                                  "op": "create",
+                                  "streams":
+                                    [
+                                      {
+                                        "name": "private",
+                                        "stream_id": 12,
+                                        "description": "",
+                                        "rendered_description": "",
+                                        "invite_only": true,
+                                        "is_web_public": false,
+                                        "stream_post_policy": 1,
+                                        "history_public_to_subscribers": false,
+                                        "first_message_id": null,
+                                        "message_retention_days": null,
+                                        "is_announcement_only": false,
+                                      },
+                                    ],
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                Event sent generally to all users when a
+                                vacant stream(stream with no users)
+                                gets a active user i.e gets occupied.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - stream
+                                op:
+                                  type: string
+                                  enum:
+                                    - occupy
+                                streams:
+                                  type: array
+                                  description: |
+                                    Array of stream objects, each contatining
+                                    details about the newly occupied streams.
+                                  items:
+                                    $ref: "#/components/schemas/BasicStream"
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "stream",
+                                  "op": "occupy",
+                                  "streams":
+                                    [
+                                      {
+                                        "name": "test_stream",
+                                        "stream_id": 11,
+                                        "description": "",
+                                        "rendered_description": "",
+                                        "invite_only": false,
+                                        "is_web_public": false,
+                                        "stream_post_policy": 1,
+                                        "history_public_to_subscribers": true,
+                                        "first_message_id": null,
+                                        "message_retention_days": null,
+                                        "is_announcement_only": false,
+                                      },
+                                    ],
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                Event sent generally to all users when a stream no
+                                longer has any users i.e becomes vacant.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - stream
+                                op:
+                                  type: string
+                                  enum:
+                                    - vacant
+                                streams:
+                                  type: array
+                                  description: |
+                                    Array of stream objects, each contatining
+                                    details about the newly vacant streams.
+                                  items:
+                                    $ref: "#/components/schemas/BasicStream"
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "stream",
+                                  "op": "vacate",
+                                  "streams":
+                                    [
+                                      {
+                                        "name": "test_stream",
+                                        "stream_id": 11,
+                                        "description": "",
+                                        "rendered_description": "",
+                                        "invite_only": false,
+                                        "is_web_public": false,
+                                        "stream_post_policy": 1,
+                                        "history_public_to_subscribers": true,
+                                        "first_message_id": null,
+                                        "message_retention_days": null,
+                                        "is_announcement_only": false,
+                                      },
+                                    ],
+                                  "id": 2,
+                                }
+                            - type: object
+                              description: |
+                                Event sent generally to all users for deletion
+                                of streams in the Zulip realm.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - stream
+                                op:
+                                  type: string
+                                  enum:
+                                    - delete
+                                streams:
+                                  type: array
+                                  description: |
+                                    Array of stream objects, each contatining
+                                    details about the streams that were deleted.
+                                  items:
+                                    $ref: "#/components/schemas/BasicStream"
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "stream",
+                                  "op": "delete",
+                                  "streams":
+                                    [
+                                      {
+                                        "name": "private",
+                                        "stream_id": 12,
+                                        "description": "",
+                                        "rendered_description": "",
+                                        "invite_only": true,
+                                        "is_web_public": false,
+                                        "stream_post_policy": 1,
+                                        "history_public_to_subscribers": false,
+                                        "first_message_id": null,
+                                        "message_retention_days": null,
+                                        "is_announcement_only": false,
+                                      },
+                                    ],
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                Event sent to all users subscribed to a stream
+                                when a property of the stream changes.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - stream
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                stream_id:
+                                  type: integer
+                                  description: |
+                                    The id of the stream whose details have changed.
+                                name:
+                                  type: string
+                                  description: |
+                                    The name of the stream whose details have changed.
+                                property:
+                                  type: string
+                                  description: |
+                                    The property of the stream which has changed. See
+                                    [/stream GET](/api/get-streams) for the various
+                                    properties of a stream.
+                                value:
+                                  description: |
+                                    The new value of the stream's property.
+                                  oneOf:
+                                    - type: integer
+                                    - type: boolean
+                                    - type: string
+                                rendered_description:
+                                  type: string
+                                  description: |
+                                    Note: Only present if the changed property was description.
+
+                                    The short description of the stream rendered as HTML, intended to
+                                    be used when displaying the stream description in a UI.
+
+                                    One should use the standard Zulip rendered_markdown CSS when
+                                    displaying this content so that emoji, LaTeX, and other syntax
+                                    work correctly.  And any client-side security logic for
+                                    user-generated message content should be applied when displaying
+                                    this HTML as though it were the body of a Zulip message.
+                                history_public_to_subscribers:
+                                  type: boolean
+                                  description: |
+                                    Note: Only present if the changed property was `invite_only`.
+
+                                    Whether the history of the stream is public to its subscribers.
+
+                                    Currently always true for public streams (i.e. invite_only=False implies
+                                    history_public_to_subscribers=True), but clients should not make that
+                                    assumption, as we may change that behavior in the future.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "op": "update",
+                                  "type": "stream",
+                                  "property": "invite_only",
+                                  "value": true,
+                                  "history_public_to_subscribers": true,
+                                  "stream_id": 11,
+                                  "name": "test_stream",
+                                  "id": 0,
+                                }
                       queue_id:
                         type: string
                         description: |
@@ -4521,6 +4933,8 @@ components:
   schemas:
     BasicStream:
       type: object
+      description: |
+        Object containing basic details about the stream.
       additionalProperties: false
       properties:
         stream_id:
