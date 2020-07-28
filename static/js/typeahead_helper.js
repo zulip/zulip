@@ -1,3 +1,5 @@
+const Handlebars = require("handlebars/runtime");
+
 const pygments_data = require("../generated/pygments_data.json");
 const emoji = require("../shared/js/emoji");
 const typeahead = require("../shared/js/typeahead");

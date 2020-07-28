@@ -1,3 +1,5 @@
+const Handlebars = require("handlebars/runtime");
+
 const util = require("./util");
 
 // Below, we register Zulip-specific extensions to the handlebars API.

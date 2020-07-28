@@ -67,7 +67,6 @@ zrequire("compose_ui");
 const util = zrequire("util");
 zrequire("rtl");
 zrequire("common");
-set_global("Handlebars", global.make_handlebars());
 zrequire("stream_data");
 zrequire("compose_state");
 zrequire("people");

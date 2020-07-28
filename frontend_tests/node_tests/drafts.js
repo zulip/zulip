@@ -5,7 +5,6 @@ set_global("$", global.make_zjquery());
 zrequire("localstorage");
 zrequire("drafts");
 zrequire("timerender");
-set_global("Handlebars", global.make_handlebars());
 zrequire("stream_color");
 zrequire("colorspace");
 

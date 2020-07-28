@@ -13,7 +13,6 @@ page_params.realm_email_address_visibility =
 const huddle_data = zrequire("huddle_data");
 
 zrequire("typeahead_helper");
-set_global("Handlebars", global.make_handlebars());
 zrequire("Filter", "js/filter");
 zrequire("narrow_state");
 zrequire("stream_data");

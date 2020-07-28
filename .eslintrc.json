@@ -99,7 +99,6 @@
                 "$": false,
                 "FetchStatus": false,
                 "Filter": false,
-                "Handlebars": false,
                 "LightboxCanvas": false,
                 "ListCursor": false,
                 "MessageListData": false,

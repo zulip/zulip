@@ -1,3 +1,4 @@
+const Handlebars = require("handlebars/runtime");
 const _ = require("lodash");
 
 const util = require("./util");

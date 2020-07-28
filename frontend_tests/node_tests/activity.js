@@ -75,7 +75,6 @@ set_global("stream_popover", _stream_popover);
 set_global("ui", _ui);
 
 zrequire("compose_fade");
-set_global("Handlebars", global.make_handlebars());
 zrequire("unread");
 zrequire("hash_util");
 zrequire("narrow");
