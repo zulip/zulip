@@ -534,7 +534,7 @@ run_test("marked", () => {
         const message = {raw_content: input};
         markdown.apply_markdown(message);
         const output = message.content;
-        assert.equal(expected, output);
+        assert.equal(output, expected);
     });
 });
 
@@ -699,7 +699,7 @@ run_test("translate_emoticons_to_names", () => {
     const test_text = "Testing :)";
     const expected = "Testing :smile:";
     const result = markdown.translate_emoticons_to_names(test_text);
-    assert.equal(expected, result);
+    assert.equal(result, expected);
 
     // Extensive tests.
     // The following code loops over the test cases and each emoticon conversion

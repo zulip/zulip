@@ -641,10 +641,10 @@ function test_parse_time_limit() {
             elem,
         );
         assert.equal(
-            expected_value,
             settings_org.get_realm_time_limits_in_minutes(
                 "realm_message_content_edit_limit_seconds",
             ),
+            expected_value,
         );
     };
 
