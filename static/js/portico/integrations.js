@@ -331,7 +331,7 @@ function integration_events() {
                 const integration = $(integrations[i]).find(".integration-lozenge");
 
                 if ($(integration).css("display") !== "none") {
-                    $(integration).closest("a")[0].trigger("click");
+                    $(integration).closest("a")[0].click();
                     break;
                 }
             }
