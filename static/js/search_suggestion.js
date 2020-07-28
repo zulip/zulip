@@ -1,3 +1,5 @@
+const Handlebars = require("handlebars/runtime");
+
 const huddle_data = require("./huddle_data");
 const settings_data = require("./settings_data");
 

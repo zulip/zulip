@@ -1,7 +1,6 @@
 zrequire("search_pill");
 zrequire("input_pill");
 zrequire("Filter", "js/filter");
-set_global("Handlebars", global.make_handlebars());
 
 const is_starred_item = {
     display_value: "is:starred",

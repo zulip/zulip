@@ -1,7 +1,6 @@
 set_global("$", global.make_zjquery());
 zrequire("input_pill");
 
-set_global("Handlebars", global.make_handlebars());
 zrequire("templates");
 
 set_global("document", {});

@@ -1,3 +1,5 @@
+const Handlebars = require("handlebars/runtime");
+
 const render_compose_all_everyone = require("../templates/compose_all_everyone.hbs");
 const render_compose_announce = require("../templates/compose_announce.hbs");
 const render_compose_invite_users = require("../templates/compose_invite_users.hbs");

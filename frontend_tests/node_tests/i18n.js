@@ -1,4 +1,3 @@
-set_global("Handlebars", global.make_handlebars());
 zrequire("templates");
 
 // We download our translations in `page_params` (which

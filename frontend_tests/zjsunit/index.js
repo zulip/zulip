@@ -2,6 +2,7 @@ const fs = require("fs");
 const Module = require("module");
 const path = require("path");
 
+const Handlebars = require("handlebars/runtime");
 const _ = require("lodash");
 
 const finder = require("./finder.js");
@@ -57,7 +58,6 @@ global.with_stub = stub.with_stub;
 global.make_zjquery = zjquery.make_zjquery;
 
 // Set up Handlebars
-global.make_handlebars = handlebars.make_handlebars;
 global.stub_templates = handlebars.stub_templates;
 
 const noop = function () {};
@@ -136,6 +136,7 @@ try {
         }
 
         namespace.restore();
+        Handlebars.HandlebarsEnvironment();
     });
 } catch (e) {
     if (e.stack) {
