@@ -577,7 +577,7 @@ function popover_items_handle_keyboard(key, items) {
     let index = items.index(items.filter(":focus"));
 
     if (key === "enter" && index >= 0 && index < items.length) {
-        return items[index].trigger("click");
+        return items[index].click();
     }
     if (index === -1) {
         index = 0;
