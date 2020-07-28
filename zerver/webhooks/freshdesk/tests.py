@@ -43,19 +43,6 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
         self.api_stream_message(self.test_user, 'status_changed', expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
-    def test_status_change_fixture_without_required_key(self) -> None:
-        """
-        A fixture without the requisite keys should raise JsonableError.
-        """
-        self.url = self.build_webhook_url()
-        payload = self.get_body('status_changed_fixture_with_missing_key')
-        kwargs = {
-            'HTTP_AUTHORIZATION': self.encode_email(self.test_user.email),
-            'content_type': 'application/x-www-form-urlencoded',
-        }
-        result = self.client_post(self.url, payload, **kwargs)
-        self.assert_json_error(result, 'Missing key triggered_event in JSON')
-
     def test_priority_change(self) -> None:
         """
         Messages are generated when a ticket's priority changes through
