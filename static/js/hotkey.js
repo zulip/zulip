@@ -340,6 +340,11 @@ exports.process_enter_key = function (e) {
         return false;
     }
 
+    if ($(e.target).attr("role") === "button") {
+        e.target.click();
+        return false;
+    }
+
     if ($("#preview_message_area").is(":visible")) {
         compose.enter_with_preview_open();
         return true;

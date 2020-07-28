@@ -763,7 +763,8 @@ td.pointer {
     vertical-align: top;
     border: none;
 
-    &:hover .message_controls {
+    &:hover .message_controls,
+    &:focus-within .message_controls {
         .empty-star {
             opacity: 0.4;
         }
