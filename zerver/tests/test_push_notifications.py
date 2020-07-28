@@ -544,9 +544,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(RealmCount.objects.count(), 1)
 
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
-        with mock.patch('zerver.lib.remote_server.logging.warning') as log_warning:
+        with self.assertLogs(level="WARNING") as m:
             send_analytics_to_remote_server()
-            log_warning.assert_called_once()
+        self.assertEqual(m.output, ["WARNING:root:Invalid property invalid count stat"])
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
 
     # Servers on Zulip 2.0.6 and earlier only send realm_counts and installation_counts data,
@@ -896,13 +896,13 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         # This should log an error
         with mock.patch('zerver.lib.push_notifications.uses_notification_bouncer') as mock_check, \
-                mock.patch('logging.info') as mock_logging_info, \
+                self.assertLogs(level="INFO") as mock_logging_info, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
             handle_push_notification(user_profile.id, missed_message)
             mock_push_notifications.assert_called_once()
             # Check we didn't proceed through.
             mock_check.assert_not_called()
-            mock_logging_info.assert_called_once()
+            self.assertEqual(mock_logging_info.output, [f"INFO:root:Unexpected message access failure handling push notifications: {user_profile.id} {missed_message['message_id']}"])
 
     def test_send_notifications_to_bouncer(self) -> None:
         user_profile = self.example_user('hamlet')
