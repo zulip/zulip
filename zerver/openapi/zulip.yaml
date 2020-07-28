@@ -494,28 +494,48 @@ paths:
                                     type: string
                                 email_notified:
                                   type: boolean
+                                  deprecated: true
                                   description: |
                                     Whether the user receiving the event has already been
                                     notified via email.
+
+                                    **Deprecated**: This field is present only due to a bug and
+                                    will be removed from the API.
                                 push_notified:
                                   type: boolean
+                                  deprecated: true
                                   description: |
                                     Whether the user receiving the event has already been
                                     notified via mobile notification.
+
+                                    **Deprecated**: This field is present only due to a bug and
+                                    will be removed from the API.
                                 stream_push_notify:
                                   type: boolean
+                                  deprecated: true
                                   description: |
                                     Whether the user receiving the event has to be notified
                                     via mobile notification for stream message.
+
+                                    **Deprecated**: This field is present only due to a bug and
+                                    will be removed from the API.
                                 stream_email_notify:
                                   type: boolean
+                                  deprecated: true
                                   description: |
                                     Whether the user receiving the event has to be notified
                                     via email for stream message.
+
+                                    **Deprecated**: This field is present only due to a bug and
+                                    will be removed from the API.
                                 wildcard_mention_notify:
                                   type: boolean
+                                  deprecated: true
                                   description: |
                                     Whether the user has to be notified due to wildcard mention.
+
+                                    **Deprecated**: This field is present only due to a bug and
+                                    will be removed from the API.
                               additionalProperties: false
                               example:
                                 {
@@ -550,6 +570,13 @@ paths:
                         type: string
                         description: |
                           The ID of the registered queue.
+                      handler_id:
+                        type: integer
+                        description: |
+                          An internal field that should not be present in these API responses.
+
+                          **Deprecated**: This will be removed in a future release.
+                        deprecated: true
                   - example:
                       {
                         "queue_id": "1375801870:2942",
