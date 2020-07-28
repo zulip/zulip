@@ -19,6 +19,7 @@ def add_context(event: 'Event', hint: 'Hint') -> 'Event':
         if user_info.get("id"):
             user_profile = get_user_profile_by_id(user_info["id"])
             user_info["realm"] = user_profile.realm.string_id or 'root'
+            user_info["role"] = user_profile.get_role_name()
     return event
 
 def setup_sentry(dsn: Optional[str], *integrations: Integration) -> None:
