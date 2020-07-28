@@ -215,7 +215,16 @@ exports.initialize_kitchen_sink_stuff = function () {
         }
         const row = event.msg_list.get_row(event.id);
         $(".selected_message").removeClass("selected_message");
-        row.addClass("selected_message");
+        const messagebox = $(row).children(".messagebox");
+        messagebox.addClass("selected_message");
+
+        if (event.id !== event.previously_selected) {
+            // If we just selected a new messages, we should focus it
+            // so that tabbing between elements works.  But we don't
+            // want to change focus after local echo completes or any
+            // other form of background rerendering.
+            messagebox[0].focus({preventScroll: true});
+        }
 
         if (event.then_scroll) {
             if (row.length === 0) {

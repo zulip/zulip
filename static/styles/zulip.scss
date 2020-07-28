@@ -1086,6 +1086,9 @@ td.pointer {
 }
 
 .selected_message {
+    // Disable Chrome's native focus outline.
+    outline: 0;
+
     .messagebox {
         z-index: 1;
     }
