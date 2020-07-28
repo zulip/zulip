@@ -307,7 +307,7 @@
 
   , listen: function () {
       this.$element
-        .on('blur',     this.blur(this))
+        .on('blur',     this.blur.bind(this))
         .on('keypress', this.keypress.bind(this))
         .on('keyup',    this.keyup.bind(this))
 
