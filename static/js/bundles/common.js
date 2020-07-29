@@ -1,7 +1,7 @@
 import "core-js/features/promise";
 import "core-js/features/symbol";
 import "../../../tools/debug-require";
-import "jquery/dist/jquery.js";
+import "jquery";
 import "../page_params.js";
 import "../csrf.js";
 import "../blueslip.js";

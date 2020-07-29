@@ -46,7 +46,7 @@ export default class DebugRequirePlugin {
                     resolver.resolve(
                         {},
                         __dirname,
-                        "./debug-require.js",
+                        "./debug-require",
                         {},
                         (err?: Error, result?: string) => (err ? reject(err) : resolve(result)),
                     ),
