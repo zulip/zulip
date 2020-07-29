@@ -397,10 +397,11 @@ def filter_stream_authorization(user_profile: UserProfile,
         if stream.id in streams_subscribed:
             continue
 
-        # Users are not authorized for invite_only streams, and guest
-        # users are not authorized for any streams
-        if stream.invite_only or user_profile.is_guest:
-            unauthorized_streams.append(stream)
+        # Members and administrators are authorized for public streams
+        if not stream.invite_only and not user_profile.is_guest:
+            continue
+
+        unauthorized_streams.append(stream)
 
     authorized_streams = [stream for stream in streams if
                           stream.id not in {stream.id for stream in unauthorized_streams}]
