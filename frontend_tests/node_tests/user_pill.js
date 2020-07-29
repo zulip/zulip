@@ -32,6 +32,7 @@ const isaac_item = {
     display_value: "Isaac Newton",
     type: "user",
     user_id: isaac.user_id,
+    deactivated: false,
     img_src: `/avatar/${isaac.user_id}&s=50`,
 };
 

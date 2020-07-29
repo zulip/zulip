@@ -37,6 +37,10 @@ run_test("pills", ({override}) => {
         full_name: "Hamlet",
     };
 
+    people.add_active_user(othello);
+    people.add_active_user(iago);
+    people.add_active_user(hamlet);
+
     people.get_realm_users = () => [iago, othello, hamlet];
 
     const recipient_stub = $("#private_message_recipient");
@@ -113,6 +117,18 @@ run_test("pills", ({override}) => {
             assert.equal(res.user_id, iago.user_id);
             assert.equal(res.display_value, iago.full_name);
         })();
+
+        (function test_deactivated_pill() {
+            people.deactivate(iago);
+            get_by_email_called = false;
+            const res = handler(iago.email, pills.items());
+            assert.ok(get_by_email_called);
+            assert.equal(typeof res, "object");
+            assert.equal(res.user_id, iago.user_id);
+            assert.equal(res.display_value, iago.full_name + " (deactivated)");
+            assert.ok(res.deactivated);
+            people.add_active_user(iago);
+        })();
     }
 
     function input_pill_stub(opts) {
@@ -152,7 +168,9 @@ run_test("pills", ({override}) => {
 
     const persons = [othello, iago, hamlet];
     const items = compose_pm_pill.filter_taken_users(persons);
-    assert.deepEqual(items, [{email: "iago@zulip.com", user_id: 2, full_name: "Iago"}]);
+    assert.deepEqual(items, [
+        {email: "iago@zulip.com", user_id: 2, full_name: "Iago", is_moderator: false},
+    ]);
 
     test_create_item(create_item_handler);
 

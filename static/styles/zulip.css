@@ -1627,6 +1627,10 @@ div.focused_table {
     }
 }
 
+.deactivated-pill {
+    background-color: hsl(0, 86%, 86%) !important;
+}
+
 #message_view_header {
     z-index: 2;
     float: left;

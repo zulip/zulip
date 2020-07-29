@@ -121,6 +121,10 @@ test_ui("populate_user_groups", ({override}) => {
         full_name: "Bob",
     };
 
+    people.add_active_user(iago);
+    people.add_active_user(alice);
+    people.add_active_user(bob);
+
     people.get_realm_users = () => [iago, alice, bob];
 
     user_groups.get_realm_user_groups = () => [realm_user_group];
@@ -320,6 +324,18 @@ test_ui("populate_user_groups", ({override}) => {
             assert.equal(typeof res, "object");
             assert.equal(res.user_id, bob.user_id);
             assert.equal(res.display_value, bob.full_name);
+        })();
+
+        (function test_deactivated_pill() {
+            people.deactivate(bob);
+            get_by_email_called = false;
+            const res = handler(bob.email, pills.items());
+            assert.ok(get_by_email_called);
+            assert.equal(typeof res, "object");
+            assert.equal(res.user_id, bob.user_id);
+            assert.equal(res.display_value, bob.full_name + " (deactivated)");
+            assert.ok(res.deactivated);
+            people.add_active_user(bob);
         })();
     }
 

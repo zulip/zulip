@@ -48,7 +48,14 @@ export function create_item_from_email(email, current_items) {
         user_id: user.user_id,
         email: user.email,
         img_src: avatar_url,
+        deactivated: false,
     };
+
+    // We pass deactivated true for a deactivated user
+    if (!people.is_person_active(user.user_id)) {
+        item.deactivated = true;
+        item.display_value = user.full_name + " (deactivated)";
+    }
 
     return item;
 }
