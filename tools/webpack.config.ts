@@ -12,8 +12,14 @@ import _webpackDevServer from "webpack-dev-server";
 import BundleTracker from "webpack4-bundle-tracker";
 
 import DebugRequirePlugin from "./debug-require-webpack-plugin";
-import {cacheLoader} from "./webpack-helpers";
 import assets from "./webpack.assets.json";
+
+const cacheLoader: webpack.RuleSetUseItem = {
+    loader: "cache-loader",
+    options: {
+        cacheDirectory: resolve(__dirname, "../var/webpack-cache"),
+    },
+};
 
 export default (env?: string): webpack.Configuration[] => {
     const production: boolean = env === "production";
