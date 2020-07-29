@@ -41,17 +41,28 @@ class CommonUtils {
                 assert.equal(actual_recipients, expected);
             },
         };
+
         this.fullname = {
             cordelia: "Cordelia Lear",
             othello: "Othello, the Moor of Venice",
             hamlet: "King Hamlet",
         };
+
+        this.window_size = {
+            width: 1400,
+            height: 1024,
+        };
     }
 
     async ensure_browser() {
         if (this.browser === null) {
+            const {window_size} = this;
             this.browser = await puppeteer.launch({
-                args: ["--window-size=1400,1024", "--no-sandbox", "--disable-setuid-sandbox"],
+                args: [
+                    `--window-size=${window_size.width},${window_size.height}`,
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                ],
                 defaultViewport: {width: 1280, height: 1024},
                 headless: true,
             });
