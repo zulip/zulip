@@ -1,4 +1,5 @@
 const Handlebars = require("handlebars/runtime");
+const _ = require("lodash");
 
 const pygments_data = require("../generated/pygments_data.json");
 const emoji = require("../shared/js/emoji");
@@ -17,9 +18,7 @@ exports.get_cleaned_pm_recipients = function (query_string) {
 };
 
 exports.build_highlight_regex = function (query) {
-    // the regex below is based on bootstrap code
-    query = query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-    const regex = new RegExp("(" + query + ")", "ig");
+    const regex = new RegExp("(" + _.escapeRegExp(query) + ")", "ig");
     return regex;
 };
 
