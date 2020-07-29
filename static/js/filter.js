@@ -13,7 +13,7 @@ function zephyr_stream_name_match(message, operand) {
         base_stream_name = m[1];
     }
     const related_regexp = new RegExp(
-        /^(un)*/.source + util.escape_regexp(base_stream_name) + /(\.d)*$/.source,
+        /^(un)*/.source + _.escapeRegExp(base_stream_name) + /(\.d)*$/.source,
         "i",
     );
     return related_regexp.test(message.stream);
@@ -37,7 +37,7 @@ function zephyr_topic_name_match(message, operand) {
         related_regexp = /^(|personal|\(instance ""\))(\.d)*$/i;
     } else {
         related_regexp = new RegExp(
-            /^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source,
+            /^/.source + _.escapeRegExp(base_topic) + /(\.d)*$/.source,
             "i",
         );
     }
