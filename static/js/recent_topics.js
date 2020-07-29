@@ -227,17 +227,9 @@ exports.topic_in_search_results = function (keyword, stream, topic) {
     if (keyword === "") {
         return true;
     }
-    // Escape speacial characters from input.
-    // https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
-    keyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const text = (stream + " " + topic).toLowerCase().replace(/\s+/g, " ");
-    const search_words = keyword.toLowerCase().replace(/\s+/g, " ").split(" ");
-    return search_words.every((word) => {
-        if (text.search(word) !== -1) {
-            return true;
-        }
-        return false;
-    });
+    const text = (stream + " " + topic).toLowerCase();
+    const search_words = keyword.toLowerCase().split(/\s+/);
+    return search_words.every((word) => text.includes(word));
 };
 
 exports.update_topics_of_message_ids = function (message_ids) {
