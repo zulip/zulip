@@ -476,6 +476,116 @@ paths:
                                 }
                             - type: object
                               description: |
+                                Event sent to a user's clients when that user has unsubscribed
+                                to one or more streams and his subscriptions have been removed.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - subscription
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove
+                                subscriptions:
+                                  type: array
+                                  description: |
+                                    A list of dictionaries where each dictionary contains
+                                    information about one of the un-subscribed streams.
+                                  items:
+                                    type: object
+                                    additionalProperties: false
+                                    description: |
+                                      Dictionary containing details about the unsubscribed stream.
+                                    properties:
+                                      stream_id:
+                                        type: integer
+                                        description: |
+                                          The id of the stream.
+                                      name:
+                                        type: string
+                                        description: |
+                                          The name of the stream.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "subscription",
+                                  "op": "remove",
+                                  "subscriptions":
+                                    [{"name": "test_stream", "stream_id": 9}],
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                Event sent when a user has been subscribed to a stream.
+                                Sent to all users if the stream is public or to only
+                                the existing subscribers if the stream is private.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - subscription
+                                op:
+                                  type: string
+                                  enum:
+                                    - peer_add
+                                stream_id:
+                                  type: integer
+                                  description: |
+                                    The id of the stream to which the user has subscribed.
+                                user_id:
+                                  type: integer
+                                  description: |
+                                    The id of the user who subscribed.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "subscription",
+                                  "op": "peer_add",
+                                  "stream_id": 9,
+                                  "user_id": 12,
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                Event sent when a user has been unsubscribed from a stream.
+                                Sent to all users if the stream is public or to only
+                                the existing subscribers if the stream is private.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - subscription
+                                op:
+                                  type: string
+                                  enum:
+                                    - peer_remove
+                                stream_id:
+                                  type: integer
+                                  description: |
+                                    The id of the stream from which the user has been
+                                    unsubscribed from.
+                                user_id:
+                                  type: integer
+                                  description: |
+                                    The id of the user who has been unsubscribed.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "subscription",
+                                  "op": "peer_remove",
+                                  "stream_id": 9,
+                                  "user_id": 12,
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
                                 Event type for messages.
                               properties:
                                 id:
@@ -644,6 +754,45 @@ paths:
                                       "avatar_url": "https:\/\/secure.gravatar.com\/avatar\/c6b5578d4964bd9c5fae593c6868912a?d=identicon&version=1",
                                       "profile_data": {},
                                     },
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                Event sent to all users of the Zulip server for
+                                removal of a user to the Zulip server.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - realm_user
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove
+                                person:
+                                  type: object
+                                  additionalProperties: false
+                                  description: |
+                                    Object containing details of the user to be removed
+                                    fromt the server.
+                                  properties:
+                                    user_id:
+                                      type: integer
+                                      description: |
+                                        The id of the user to be removed.
+                                    full_name:
+                                      type: string
+                                      description: |
+                                        The full name of the user.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "realm_user",
+                                  "op": "remove",
+                                  "person":
+                                    {"user_id": 35, "full_name": "Foo Bot"},
                                   "id": 0,
                                 }
                             - type: object
@@ -996,6 +1145,84 @@ paths:
                                   "name": "test_stream",
                                   "id": 0,
                                 }
+                            - type: object
+                              description: |
+                                Event sent when a reaction is added to a message.
+                                Sent to all users who were recipients of the message.
+                              allOf:
+                                - $ref: "#/components/schemas/EmojiReaction"
+                                - properties:
+                                    id:
+                                      type: integer
+                                    type:
+                                      type: string
+                                      enum:
+                                        - reaction
+                                    op:
+                                      type: string
+                                      enum:
+                                        - add
+                                    message_id:
+                                      type: integer
+                                      description: |
+                                        The id of the message to which a reaction was
+                                        added.
+                                - example:
+                                    {
+                                      "type": "reaction",
+                                      "op": "add",
+                                      "user_id": 10,
+                                      "user":
+                                        {
+                                          "user_id": 10,
+                                          "email": "user10@zulip.testserver",
+                                          "full_name": "King Hamlet",
+                                        },
+                                      "message_id": 32,
+                                      "emoji_name": "tada",
+                                      "emoji_code": "1f389",
+                                      "reaction_type": "unicode_emoji",
+                                      "id": 0,
+                                    }
+                            - type: object
+                              description: |
+                                Event sent when a reaction is removed to a message.
+                                Sent to all users who were recipients of the message.
+                              allOf:
+                                - $ref: "#/components/schemas/EmojiReaction"
+                                - properties:
+                                    id:
+                                      type: integer
+                                    type:
+                                      type: string
+                                      enum:
+                                        - reaction
+                                    op:
+                                      type: string
+                                      enum:
+                                        - remove
+                                    message_id:
+                                      type: integer
+                                      description: |
+                                        The id of the message from which the reaction was
+                                        removed.
+                                - example:
+                                    {
+                                      "type": "reaction",
+                                      "op": "remove",
+                                      "user_id": 10,
+                                      "user":
+                                        {
+                                          "user_id": 10,
+                                          "email": "user10@zulip.testserver",
+                                          "full_name": "King Hamlet",
+                                        },
+                                      "message_id": 52,
+                                      "emoji_name": "tada",
+                                      "emoji_code": "1f389",
+                                      "reaction_type": "unicode_emoji",
+                                      "id": 0,
+                                    }
                       queue_id:
                         type: string
                         description: |
