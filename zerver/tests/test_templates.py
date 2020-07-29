@@ -38,8 +38,8 @@ header
 <p>
   <div class="code-section has-tabs" markdown="1">
     <ul class="nav">
-      <li data-language="ios">iOS</li>
-      <li data-language="desktop-web">Desktop/Web</li>
+      <li data-language="ios" tabindex="0">iOS</li>
+      <li data-language="desktop-web" tabindex="0">Desktop/Web</li>
     </ul>
     <div class="blocks">
       <div data-language="ios" markdown="1"></p>
@@ -56,8 +56,8 @@ header
 <p>
   <div class="code-section has-tabs" markdown="1">
     <ul class="nav">
-      <li data-language="desktop-web">Desktop/Web</li>
-      <li data-language="android">Android</li>
+      <li data-language="desktop-web" tabindex="0">Desktop/Web</li>
+      <li data-language="android" tabindex="0">Android</li>
     </ul>
     <div class="blocks">
       <div data-language="desktop-web" markdown="1"></p>
@@ -74,7 +74,7 @@ header
 <p>
   <div class="code-section no-tabs" markdown="1">
     <ul class="nav">
-      <li data-language="null_tab">None</li>
+      <li data-language="null_tab" tabindex="0">None</li>
     </ul>
     <div class="blocks">
       <div data-language="null_tab" markdown="1"></p>

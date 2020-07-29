@@ -25,7 +25,7 @@ NAV_BAR_TEMPLATE = """
 """.strip()
 
 NAV_LIST_ITEM_TEMPLATE = """
-<li data-language="{data_language}">{name}</li>
+<li data-language="{data_language}" tabindex="0">{name}</li>
 """.strip()
 
 DIV_TAB_CONTENT_TEMPLATE = """

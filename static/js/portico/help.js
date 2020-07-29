@@ -16,6 +16,12 @@ function registerCodeSection($codeSection) {
         $blocks.removeClass("active");
         $blocks.filter("[data-language=" + language + "]").addClass("active");
     });
+
+    $li.on("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.target.click();
+        }
+    });
 }
 
 function highlight_current_article() {
