@@ -1,15 +1,8 @@
 /* eslint-disable no-console */
 
-/* WARNING:
-
-    This file is only included when Django's DEBUG = True and your
-    host is in INTERNAL_IPS.
-
-    Do not commit any code elsewhere which uses these functions.
-    They are for debugging use only.
-
-    The file may still be accessible under other circumstances, so do
-    not put sensitive information here. */
+// This module is included from webpack in development mode.  To access it from
+// the browser console, run:
+//   var debug = require("./static/js/debug");
 
 /*
       debug.print_elapsed_time("foo", foo)

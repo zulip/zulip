@@ -244,7 +244,6 @@ export default (env?: string): webpack.Configuration[] => {
     // Good error messages show up in production and development in the source maps
     const exposeOptions = [
         {path: "./debug-require.js", name: "require"},
-        {path: "../static/js/debug.js"},
         {path: "jquery/dist/jquery.js", name: ["$", "jQuery"]},
     ];
     config.module!.rules.unshift(...getExposeLoaders(exposeOptions));
@@ -252,7 +251,7 @@ export default (env?: string): webpack.Configuration[] => {
     if (!production) {
         // Out JS debugging tools
         for (const paths of Object.values(assets)) {
-            paths.push("./static/js/debug.js");
+            paths.push("./static/js/debug");
         }
         config.devServer = {
             clientLogLevel: "error",
