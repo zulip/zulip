@@ -127,43 +127,6 @@ exports.fixtures = {
         },
     },
 
-    // Please keep this next section un-nested, as we want this to partly
-    // be simple documentation on the formats of individual events.
-    realm__update__create_stream_policy: {
-        type: "realm",
-        op: "update",
-        property: "create_stream_policy",
-        value: 2,
-    },
-
-    realm__update__invite_to_stream_policy: {
-        type: "realm",
-        op: "update",
-        property: "invite_to_stream_policy",
-        value: 2,
-    },
-
-    realm__update__invite_required: {
-        type: "realm",
-        op: "update",
-        property: "invite_required",
-        value: false,
-    },
-
-    realm__update__name: {
-        type: "realm",
-        op: "update",
-        property: "name",
-        value: "new_realm_name",
-    },
-
-    realm__update__emails_restricted_to_domains: {
-        type: "realm",
-        op: "update",
-        property: "emails_restricted_to_domains",
-        value: false,
-    },
-
     realm__update__bot_creation_policy: {
         type: "realm",
         op: "update",
@@ -171,11 +134,25 @@ exports.fixtures = {
         value: 1,
     },
 
-    realm__update__email_addresses_visibility: {
+    realm__update__create_stream_policy: {
         type: "realm",
         op: "update",
-        property: "email_address_visibility",
-        value: 3,
+        property: "create_stream_policy",
+        value: 2,
+    },
+
+    realm__update__default_code_block_language: {
+        type: "realm",
+        op: "update",
+        property: "default_code_block_language",
+        value: "javascript",
+    },
+
+    realm__update__default_twenty_four_hour_time: {
+        type: "realm",
+        op: "update",
+        property: "default_twenty_four_hour_time",
+        value: false,
     },
 
     realm__update__disallow_disposable_email_addresses: {
@@ -185,32 +162,53 @@ exports.fixtures = {
         value: false,
     },
 
-    realm__update_default_twenty_four_hour_time: {
+    realm__update__email_addresses_visibility: {
         type: "realm",
         op: "update",
-        property: "default_twenty_four_hour_time",
+        property: "email_address_visibility",
+        value: 3,
+    },
+
+    realm__update__emails_restricted_to_domains: {
+        type: "realm",
+        op: "update",
+        property: "emails_restricted_to_domains",
         value: false,
     },
 
-    realm__update_notifications_stream_id: {
+    realm__update__invite_required: {
+        type: "realm",
+        op: "update",
+        property: "invite_required",
+        value: false,
+    },
+
+    realm__update__invite_to_stream_policy: {
+        type: "realm",
+        op: "update",
+        property: "invite_to_stream_policy",
+        value: 2,
+    },
+
+    realm__update__name: {
+        type: "realm",
+        op: "update",
+        property: "name",
+        value: "new_realm_name",
+    },
+
+    realm__update__notifications_stream_id: {
         type: "realm",
         op: "update",
         property: "notifications_stream_id",
         value: 42,
     },
 
-    realm__update_signup_notifications_stream_id: {
+    realm__update__signup_notifications_stream_id: {
         type: "realm",
         op: "update",
         property: "signup_notifications_stream_id",
         value: 41,
-    },
-
-    realm__update_default_code_block_language: {
-        type: "realm",
-        op: "update",
-        property: "default_code_block_language",
-        value: "javascript",
     },
 
     realm__update_dict__default: {

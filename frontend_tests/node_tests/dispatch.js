@@ -312,24 +312,24 @@ run_test("realm settings", (override) => {
     event = event_fixtures.realm__update__disallow_disposable_email_addresses;
     test_realm_boolean(event, "realm_disallow_disposable_email_addresses");
 
-    event = event_fixtures.realm__update_default_twenty_four_hour_time;
+    event = event_fixtures.realm__update__default_twenty_four_hour_time;
     test_realm_boolean(event, "realm_default_twenty_four_hour_time");
 
     event = event_fixtures.realm__update__email_addresses_visibility;
     dispatch(event);
     assert_same(page_params.realm_email_address_visibility, 3);
 
-    event = event_fixtures.realm__update_notifications_stream_id;
+    event = event_fixtures.realm__update__notifications_stream_id;
     dispatch(event);
     assert_same(page_params.realm_notifications_stream_id, 42);
     page_params.realm_notifications_stream_id = -1; // make sure to reset for future tests
 
-    event = event_fixtures.realm__update_signup_notifications_stream_id;
+    event = event_fixtures.realm__update__signup_notifications_stream_id;
     dispatch(event);
     assert_same(page_params.realm_signup_notifications_stream_id, 41);
     page_params.realm_signup_notifications_stream_id = -1; // make sure to reset for future tests
 
-    event = event_fixtures.realm__update_default_code_block_language;
+    event = event_fixtures.realm__update__default_code_block_language;
     dispatch(event);
     assert_same(page_params.realm_default_code_block_language, "javascript");
 
