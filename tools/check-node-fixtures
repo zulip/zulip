@@ -3,7 +3,7 @@ import argparse
 import os
 import subprocess
 import sys
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import ujson
 
@@ -87,8 +87,23 @@ def read_fixtures() -> Dict[str, Any]:
     return ujson.loads(schema)
 
 
+def verify_fixtures_are_sorted(names: List[str]) -> None:
+    for i in range(1, len(names)):
+        if names[i] < names[i - 1]:
+            raise Exception(
+                f"""
+                Please keep your fixtures in order within
+                your events.js file.  The following
+                key is out of order
+
+                {names[i]}
+                """
+            )
+
+
 def run() -> None:
     fixtures = read_fixtures()
+    verify_fixtures_are_sorted(list(fixtures.keys()))
     for name, event in fixtures.items():
         if name in SKIP_LIST:
             print(f"skip {name}")
