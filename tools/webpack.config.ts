@@ -1,3 +1,5 @@
+/// <reference types="webpack-dev-server" />
+
 import {basename, resolve} from "path";
 
 import CleanCss from "clean-css";
@@ -5,10 +7,7 @@ import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import OptimizeCssAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import TerserPlugin from "terser-webpack-plugin";
-// The devServer member of webpack.Configuration is managed by the
-// webpack-dev-server package. We are only importing the type here.
 import webpack from "webpack";
-import _webpackDevServer from "webpack-dev-server";
 import BundleTracker from "webpack4-bundle-tracker";
 
 import DebugRequirePlugin from "./debug-require-webpack-plugin";
