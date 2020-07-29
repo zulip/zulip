@@ -12,7 +12,7 @@ import _webpackDevServer from "webpack-dev-server";
 import BundleTracker from "webpack4-bundle-tracker";
 
 import DebugRequirePlugin from "./debug-require-webpack-plugin";
-import {cacheLoader, getExposeLoaders} from "./webpack-helpers";
+import {cacheLoader} from "./webpack-helpers";
 import assets from "./webpack.assets.json";
 
 export default (env?: string): webpack.Configuration[] => {
@@ -24,6 +24,16 @@ export default (env?: string): webpack.Configuration[] => {
         entry: assets,
         module: {
             rules: [
+                {
+                    test: require.resolve("./debug-require"),
+                    loader: "expose-loader",
+                    options: {exposes: "require"},
+                },
+                {
+                    test: require.resolve("jquery"),
+                    loader: "expose-loader",
+                    options: {exposes: ["$", "jQuery"]},
+                },
                 // Generate webfont
                 {
                     test: /\.font\.js$/,
@@ -238,15 +248,6 @@ export default (env?: string): webpack.Configuration[] => {
             }),
         ],
     };
-
-    // Expose Global variables for third party libraries to webpack modules
-    // Use the unminified version of jquery so that
-    // Good error messages show up in production and development in the source maps
-    const exposeOptions = [
-        {path: "./debug-require.js", name: "require"},
-        {path: "jquery/dist/jquery.js", name: ["$", "jQuery"]},
-    ];
-    config.module!.rules.unshift(...getExposeLoaders(exposeOptions));
 
     if (!production) {
         // Out JS debugging tools
