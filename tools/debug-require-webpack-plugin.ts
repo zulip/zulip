@@ -86,7 +86,11 @@ export default class DebugRequirePlugin {
                         source,
                         `${requireFn}(${JSON.stringify(
                             debugRequireId,
-                        )}).initialize(${JSON.stringify(Object.fromEntries(ids), null, "\t")});`,
+                        )}).initialize(${JSON.stringify(
+                            Object.fromEntries(ids),
+                            null,
+                            "\t",
+                        )}, modules);`,
                     ]);
                 },
             );
