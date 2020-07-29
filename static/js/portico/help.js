@@ -73,7 +73,7 @@ function scrollToHash(simplebar) {
     }
 }
 
-const html_map = new Map();
+const cache = new Map();
 const loading = {
     name: null,
 };
@@ -83,23 +83,26 @@ const markdownSB = new SimpleBar($(".markdown")[0]);
 const fetch_page = function (path, callback) {
     $.get(path, (res) => {
         const $html = $(res).find(".markdown .content");
+        const title = $(res).filter("title").text();
 
-        callback($html.html().trim());
+        callback({html: $html.html().trim(), title});
         render_code_sections();
     });
 };
 
-const update_page = function (html_map, path) {
-    if (html_map.has(path)) {
-        $(".markdown .content").html(html_map.get(path));
+const update_page = function (cache, path) {
+    if (cache.has(path)) {
+        $(".markdown .content").html(cache.get(path).html);
+        document.title = cache.get(path).title;
         render_code_sections();
         scrollToHash(markdownSB);
     } else {
         loading.name = path;
-        fetch_page(path, (res) => {
-            html_map.set(path, res);
-            $(".markdown .content").html(res);
+        fetch_page(path, (article) => {
+            cache.set(path, article);
+            $(".markdown .content").html(article.html);
             loading.name = null;
+            document.title = article.title;
             scrollToHash(markdownSB);
         });
     }
@@ -124,7 +127,7 @@ $(".sidebar a").on("click", function (e) {
 
     history.pushState({}, "", path);
 
-    update_page(html_map, path);
+    update_page(cache, path);
 
     $(".sidebar").removeClass("show");
 
@@ -166,7 +169,7 @@ scrollToHash(markdownSB);
 
 window.addEventListener("popstate", () => {
     const path = window.location.pathname;
-    update_page(html_map, path);
+    update_page(cache, path);
 });
 
 $("body").addClass("noscroll");

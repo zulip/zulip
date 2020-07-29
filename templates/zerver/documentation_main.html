@@ -2,6 +2,9 @@
 {% set entrypoint = "help" %}
 
 {# Zulip User and API Documentation. #}
+{% block title %}
+<title>{{ OPEN_GRAPH_TITLE }}</title>
+{% endblock %}
 
 {% block portico_content %}
 <div class="app help terms-page inline-block{% if page_is_help_center %} help-center{% endif %}{% if page_is_api_center %} api-center{% endif %}">
