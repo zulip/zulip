@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 // We will get actual values when we get initialized.
 let emoji_codes = {};
 
@@ -21,12 +23,6 @@ let server_realm_emoji_data = {};
 // We really want to deprecate this, too.
 export function get_server_realm_emoji_data() {
     return server_realm_emoji_data;
-}
-
-function escape_regexp(string) {
-    // HIGHLY DEPRECATED!!!!
-    // We should fix this in our upcoming lodash sweep.
-    return string.replace(/([.*+?^=!:${}()|[\]/\\])/g, "\\$1");
 }
 
 let emoticon_translations = [];
@@ -57,7 +53,7 @@ function build_emoticon_translations() {
 
     const translations = [];
     for (const [emoticon, replacement_text] of Object.entries(emoji_codes.emoticon_conversions)) {
-        const regex = new RegExp("(" + escape_regexp(emoticon) + ")", "g");
+        const regex = new RegExp("(" + _.escapeRegExp(emoticon) + ")", "g");
 
         translations.push({
             regex,
