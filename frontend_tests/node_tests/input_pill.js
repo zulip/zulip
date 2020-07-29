@@ -2,6 +2,7 @@
 
 set_global("$", global.make_zjquery());
 zrequire("input_pill");
+zrequire("people");
 
 zrequire("templates");
 
@@ -48,6 +49,14 @@ function pill_html(value, data_id, img_src) {
 run_test("basics", () => {
     const config = {};
 
+    const hamlet = {
+        email: "hamlet@example.com",
+        user_id: 1,
+        full_name: "Hamlet",
+    };
+
+    people.add_active_user(hamlet);
+
     blueslip.expect("error", "Pill needs container.");
     input_pill.create(config);
 
@@ -70,6 +79,7 @@ run_test("basics", () => {
         display_value: "JavaScript",
         language: "js",
         img_src: example_img_link,
+        user_id: hamlet.user_id,
     };
 
     let inserted_before;
@@ -83,28 +93,67 @@ run_test("basics", () => {
     widget.appendValidatedData(item);
     assert(inserted_before);
 
-    assert.deepEqual(widget.items(), [item]);
+    people.deactivate(hamlet);
+
+    inserted_before = false;
+    pill_input.before = function (elem) {
+        inserted_before = true;
+        assert(elem.hasClass("deactivated-user-pill"));
+        const html = elem.html();
+        assert(html.includes("(deactivated)"));
+    };
+
+    widget.appendValidatedData(item);
+    assert(inserted_before);
+
+    assert.deepEqual(widget.items(), [item, item]);
 });
 
 function set_up() {
     set_global("$", global.make_zjquery());
+
+    const user_blue = {
+        email: "blue@example.com",
+        full_name: "BLUE",
+        user_id: 1,
+    };
+
+    const user_red = {
+        email: "red@example.com",
+        full_name: "RED",
+        user_id: 2,
+    };
+
+    const user_yellow = {
+        email: "yellow@example.com",
+        full_name: "YELLOW",
+        user_id: 3,
+    };
+
     const items = {
         blue: {
-            display_value: "BLUE",
+            display_value: user_blue.full_name,
             description: "color of the sky",
             img_src: example_img_link,
+            user_id: user_blue.user_id,
         },
 
         red: {
-            display_value: "RED",
+            display_value: user_red.full_name,
             description: "color of stop signs",
+            user_id: user_red.user_id,
         },
 
         yellow: {
-            display_value: "YELLOW",
+            display_value: user_yellow.full_name,
             description: "color of bananas",
+            user_id: user_yellow.user_id,
         },
     };
+
+    people.add_active_user(user_blue);
+    people.add_active_user(user_red);
+    people.add_active_user(user_yellow);
 
     const pill_input = $.create("pill_input");
 

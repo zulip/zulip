@@ -102,21 +102,50 @@ exports.create = function (opts) {
 
             store.pills.push(payload);
 
-            const has_image = item.img_src !== undefined;
+            if (people.is_person_active(item.user_id)) {
+                payload.$element = this.renderActiveUserData(payload);
+            } else {
+                payload.$element = this.renderDeactivatedUserData(payload);
+            }
+
+            store.$input.before(payload.$element);
+        },
+
+        renderActiveUserData(payload) {
+            const has_image = payload.item.img_src !== undefined;
 
             const opts = {
                 id: payload.id,
-                display_value: item.display_value,
+                display_value: payload.item.display_value,
                 has_image,
             };
 
             if (has_image) {
-                opts.img_src = item.img_src;
+                opts.img_src = payload.item.img_src;
             }
 
             const pill_html = render_input_pill(opts);
-            payload.$element = $(pill_html);
-            store.$input.before(payload.$element);
+            return $(pill_html);
+        },
+
+        renderDeactivatedUserData(payload) {
+            const has_image = payload.item.img_src !== undefined;
+
+            const opts = {
+                id: payload.id,
+                display_value: payload.item.display_value + " (deactivated)",
+                has_image,
+            };
+
+            if (has_image) {
+                opts.img_src = payload.item.img_src;
+            }
+
+            const pill_html = render_input_pill(opts);
+            const $pill = $(pill_html);
+            $pill.addClass("deactivated-user-pill");
+            $pill.prop("title", i18n.t("Can't send messages to the deactivated user"));
+            return $pill;
         },
 
         // this appends a pill to the end of the container but before the
