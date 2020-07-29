@@ -78,10 +78,6 @@ exports.create = function (opts) {
                 return;
             }
 
-            if (typeof store.onPillCreate === "function") {
-                store.onPillCreate();
-            }
-
             return item;
         },
 
@@ -112,6 +108,10 @@ exports.create = function (opts) {
 
             if (has_image) {
                 opts.img_src = item.img_src;
+            }
+
+            if (typeof store.onPillCreate === "function") {
+                store.onPillCreate();
             }
 
             const pill_html = render_input_pill(opts);
