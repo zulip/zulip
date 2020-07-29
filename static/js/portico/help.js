@@ -20,6 +20,7 @@ function registerCodeSection($codeSection) {
 
 function highlight_current_article() {
     $(".help .sidebar a").removeClass("highlighted");
+    $(".help .sidebar a").attr("tabindex", "0");
     const path = window.location.pathname;
 
     if (!path) {
@@ -37,6 +38,7 @@ function highlight_current_article() {
     // Highlight current article link and the heading of the same
     article.closest("ul").css("display", "block");
     article.addClass("highlighted");
+    article.attr("tabindex", "-1");
 }
 
 function render_code_sections() {
