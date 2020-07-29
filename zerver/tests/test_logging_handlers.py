@@ -72,14 +72,21 @@ class AdminNotifyHandlerTest(ZulipTestCase):
     def simulate_error(self) -> logging.LogRecord:
         self.login('hamlet')
         with patch("zerver.decorator.rate_limit") as rate_limit_patch, \
-                self.assertLogs('django.request', level='ERROR') as error_log:
+                self.assertLogs('django.request', level='ERROR') as request_error_log, \
+                self.assertLogs('zerver.middleware.json_error_handler', level='ERROR') as json_error_handler_log:
             rate_limit_patch.side_effect = capture_and_throw
             result = self.client_get("/json/users")
             self.assert_json_error(result, "Internal server error", status_code=500)
             rate_limit_patch.assert_called_once()
-        self.assertEqual(error_log.output, [
+        self.assertEqual(request_error_log.output, [
             'ERROR:django.request:Internal Server Error: /json/users'
         ])
+        self.assertTrue(
+            'ERROR:zerver.middleware.json_error_handler:Traceback (most recent call last):' in json_error_handler_log.output[0]
+        )
+        self.assertTrue(
+            'Exception: Request error' in json_error_handler_log.output[0]
+        )
 
         record = self.logger.makeRecord(
             'name',
