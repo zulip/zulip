@@ -2,6 +2,7 @@ import random
 from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Union
 from unittest import mock
+from urllib.parse import urlencode
 
 import ujson
 from django.conf import settings
@@ -3527,9 +3528,15 @@ class GetStreamsTest(ZulipTestCase):
 
         # Check it correctly lists the bot owner's subs with
         # include_owner_subscribed=true
+        filters = dict(
+            include_owner_subscribed = "true",
+            include_public = "false",
+            include_subscribed = "false",
+        )
+        request_variables = urlencode(filters)
         result = self.api_get(
             test_bot,
-            "/api/v1/streams?include_owner_subscribed=true&include_public=false&include_subscribed=false")
+            f"/api/v1/streams?{request_variables}")
         owner_subs = self.api_get(hamlet, "/api/v1/users/me/subscriptions")
 
         self.assert_json_success(result)
@@ -3546,9 +3553,15 @@ class GetStreamsTest(ZulipTestCase):
         # Check it correctly lists the bot owner's subs and the
         # bot's subs
         self.subscribe(test_bot, 'Scotland')
+        filters = dict(
+            include_owner_subscribed = "true",
+            include_public = "false",
+            include_subscribed = "true",
+        )
+        request_variables = urlencode(filters)
         result = self.api_get(
             test_bot,
-            "/api/v1/streams?include_owner_subscribed=true&include_public=false&include_subscribed=true",
+            f"/api/v1/streams?{request_variables}",
         )
 
         self.assert_json_success(result)
@@ -3671,7 +3684,12 @@ class GetStreamsTest(ZulipTestCase):
                          sorted([s["name"] for s in json2["subscriptions"]]))
 
         # Check it correctly lists all public streams with include_subscribed=false
-        result = self.api_get(user, "/api/v1/streams?include_public=true&include_subscribed=false")
+        filters = dict(
+            include_public = "true",
+            include_subscribed = "false"
+        )
+        request_variables = urlencode(filters)
+        result = self.api_get(user, f"/api/v1/streams?{request_variables}")
         self.assert_json_success(result)
 
         json = result.json()
