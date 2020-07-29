@@ -102,6 +102,19 @@ class zulip::profile::base {
     group  => 'root',
     source => 'puppet:///modules/zulip/security/limits.conf',
   }
+  file { '/etc/systemd/system.conf.d/':
+    ensure => directory,
+    mode   => '0755',
+    owner  => 'root',
+    group  => 'root',
+  }
+  file { '/etc/systemd/system.conf.d/limits.conf':
+    ensure => file,
+    mode   => '0644',
+    owner  => 'root',
+    group  => 'root',
+    source => 'puppet:///modules/zulip/systemd/system.conf.d/limits.conf',
+  }
 
   service { 'puppet':
     ensure  => 'stopped',
