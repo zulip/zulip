@@ -29,6 +29,8 @@ zrequire("stream_data");
 
 set_global("document", "document-stub");
 
+compose_actions.update_placeholder_text = noop;
+
 const start = compose_actions.start;
 const cancel = compose_actions.cancel;
 const get_focus_area = compose_actions._get_focus_area;

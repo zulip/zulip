@@ -119,6 +119,10 @@ run_test("pills", () => {
 
     input_pill.create = input_pill_stub;
 
+    // We stub the return value of input_pill.create(), manually add widget functions to it.
+    pills.onPillCreate = () => {};
+    pills.onPillRemove = () => {};
+
     compose_pm_pill.initialize();
     assert(compose_pm_pill.widget);
 
