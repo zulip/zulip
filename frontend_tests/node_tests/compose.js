@@ -682,9 +682,7 @@ run_test("send_message", () => {
             stub_state.reify_message_id_checked += 1;
         };
 
-        // Setting message content with a host server link and we will assert
-        // later that this has been converted to a relative link.
-        $("#compose-textarea").val("[foobar]" + "(https://foo.com/user_uploads/123456)");
+        $("#compose-textarea").val("[foobar](/user_uploads/123456)");
         $("#compose-textarea").trigger("blur");
         $("#compose-send-status").show();
         $("#compose-send-button").prop("disabled", true);

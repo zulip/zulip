@@ -29,15 +29,6 @@ exports.announce_warn_threshold = 60;
 
 exports.uploads_domain = document.location.protocol + "//" + document.location.host;
 exports.uploads_path = "/user_uploads";
-exports.uploads_re = new RegExp(
-    "\\]\\(" + exports.uploads_domain + "(" + exports.uploads_path + "[^\\)]+)\\)",
-    "g",
-);
-
-function make_uploads_relative(content) {
-    // Rewrite uploads in markdown links back to domain-relative form
-    return content.replace(exports.uploads_re, "]($1)");
-}
 
 function show_all_everyone_warnings(stream_id) {
     const stream_count = stream_data.get_subscriber_count(stream_id) || 0;
@@ -201,12 +192,10 @@ function create_message_object() {
         topic = exports.empty_topic_placeholder();
     }
 
-    const content = make_uploads_relative(compose_state.message_content());
-
     // Changes here must also be kept in sync with echo.try_deliver_locally
     const message = {
         type: compose_state.get_message_type(),
-        content,
+        content: compose_state.message_content(),
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
         stream: "",
