@@ -3,7 +3,8 @@ Receive GitLab notifications in Zulip!
 1. {!create-stream.md!}
 
 1. {!create-bot-construct-url-indented.md!}
-
+   If you want keep merge request titles out of the topic, then you can
+   you can add a `&use_merge_request_title=false` at the end of the URL.
    {!git-webhook-url-with-branches-indented.md!}
 
 1. Go to your repository on GitLab and click **Settings** on the left
