@@ -2,14 +2,6 @@ const Uppy = require("@uppy/core");
 const ProgressBar = require("@uppy/progress-bar");
 const XHRUpload = require("@uppy/xhr-upload");
 
-exports.make_upload_absolute = function (uri) {
-    if (uri.startsWith(compose.uploads_path)) {
-        // Rewrite the URI to a usable link
-        return compose.uploads_domain + uri;
-    }
-    return uri;
-};
-
 // Show the upload button only if the browser supports it.
 exports.feature_check = function (upload_button) {
     if (window.XMLHttpRequest && new XMLHttpRequest().upload) {
@@ -231,8 +223,7 @@ exports.setup_upload = function (config) {
         if (config.mode === "compose" && !compose_state.composing()) {
             compose_actions.start("stream");
         }
-        const absolute_uri = exports.make_upload_absolute(uri);
-        const filename_uri = "[" + filename + "](" + absolute_uri + ")";
+        const filename_uri = "[" + filename + "](" + uri + ")";
         compose_ui.replace_syntax(
             exports.get_translated_status(file),
             filename_uri,
