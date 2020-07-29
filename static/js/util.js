@@ -151,11 +151,6 @@ exports.make_strcmp = function () {
 };
 exports.strcmp = exports.make_strcmp();
 
-exports.escape_regexp = function (string) {
-    // code from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
-    return string.replace(/([.*+?^=!:${}()|[\]/\\])/g, "\\$1");
-};
-
 exports.array_compare = function util_array_compare(a, b) {
     if (a.length !== b.length) {
         return false;
