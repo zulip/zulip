@@ -54,19 +54,6 @@ import * as zcommand from "./zcommand";
 
 let uppy;
 
-export const uploads_domain = document.location.protocol + "//" + document.location.host;
-export const uploads_path = "/user_uploads";
-
-export const uploads_re = new RegExp(
-    "\\]\\(" + uploads_domain + "(" + uploads_path + "[^\\)]+)\\)",
-    "g",
-);
-
-function make_uploads_relative(content) {
-    // Rewrite uploads in Markdown links back to domain-relative form
-    return content.replace(uploads_re, "]($1)");
-}
-
 export function compute_show_video_chat_button() {
     const available_providers = page_params.realm_available_video_chat_providers;
     if (page_params.realm_video_chat_provider === available_providers.disabled.id) {
@@ -144,12 +131,10 @@ export function create_message_object() {
         topic = empty_topic_placeholder();
     }
 
-    const content = make_uploads_relative(compose_state.message_content());
-
     // Changes here must also be kept in sync with echo.try_deliver_locally
     const message = {
         type: compose_state.get_message_type(),
-        content,
+        content: compose_state.message_content(),
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
         stream: "",
