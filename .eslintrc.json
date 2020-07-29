@@ -347,7 +347,11 @@
             }
         },
         {
-            "files": ["frontend_tests/casper_lib/**", "frontend_tests/casper_tests/**"],
+            "files": [
+                "frontend_tests/casper_lib/**",
+                "frontend_tests/casper_tests/**",
+                "tools/debug-require.js"
+            ],
             "env": {
                 "browser": true,
                 "es2020": false

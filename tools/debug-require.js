@@ -1,12 +1,12 @@
 /* global __webpack_require__ */
 
-let webpackModules;
+var webpackModules;
 
 function debugRequire(request) {
     if (!Object.prototype.hasOwnProperty.call(debugRequire.ids, request)) {
         throw new Error("Cannot find module '" + request + "'");
     }
-    const moduleId = debugRequire.ids[request];
+    var moduleId = debugRequire.ids[request];
     if (!Object.prototype.hasOwnProperty.call(webpackModules, moduleId)) {
         throw new Error("Module '" + request + "' has not been loaded yet");
     }
