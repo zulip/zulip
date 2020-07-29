@@ -253,6 +253,15 @@ class GitlabHookTests(WebhookTestCase):
             expected_topic,
             expected_message)
 
+    def test_note_merge_request_event_message_without_merge_request_title(self) -> None:
+        expected_topic = "my-awesome-project / MR #1"
+        expected_message = "Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1#note_14171860) on [MR #1](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1):\n\n~~~ quote\nNice merge request!\n~~~"
+        self.url = self.build_webhook_url(use_merge_request_title="false")  # To keep things as valid JSON.
+        self.send_and_test_stream_message(
+            'note_hook__merge_request_note',
+            expected_topic,
+            expected_message)
+
     def test_note_merge_request_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = "notifications"
@@ -341,6 +350,15 @@ class GitlabHookTests(WebhookTestCase):
         expected_topic = "my-awesome-project / MR #2 NEW MR"
         expected_message = "Tomasz Kolek closed [MR #2](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2)."
 
+        self.send_and_test_stream_message(
+            'merge_request_hook__merge_request_closed',
+            expected_topic,
+            expected_message)
+
+    def test_merge_request_closed_event_message_without_using_title(self) -> None:
+        expected_topic = "my-awesome-project / MR #2"
+        expected_message = "Tomasz Kolek closed [MR #2](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2)."
+        self.url = self.build_webhook_url(use_merge_request_title="false")
         self.send_and_test_stream_message(
             'merge_request_hook__merge_request_closed',
             expected_topic,

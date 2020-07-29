@@ -8,6 +8,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_bool
 from zerver.lib.webhooks.common import (
     UnexpectedWebhookEventType,
     check_send_webhook_message,
@@ -357,6 +358,7 @@ EVENT_FUNCTION_MAPPER = {
 def api_gitlab_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any]=REQ(argument_type='body'),
                        branches: Optional[str]=REQ(default=None),
+                       use_merge_request_title: bool=REQ(default=True, validator=check_bool),
                        user_specified_topic: Optional[str]=REQ("topic", default=None)) -> HttpResponse:
     event = get_event(request, payload, branches)
     if event is not None:
@@ -374,14 +376,14 @@ def api_gitlab_webhook(request: HttpRequest, user_profile: UserProfile,
             project_url = f"[{get_repo_name(payload)}]({get_project_homepage(payload)})"
             body = f"[{project_url}] {body}"
 
-        topic = get_subject_based_on_event(event, payload)
+        topic = get_subject_based_on_event(event, payload, use_merge_request_title)
         check_send_webhook_message(request, user_profile, topic, body)
     return json_success()
 
 def get_body_based_on_event(event: str) -> Any:
     return EVENT_FUNCTION_MAPPER[event]
 
-def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> str:
+def get_subject_based_on_event(event: str, payload: Dict[str, Any], use_merge_request_title: bool) -> str:
     if event == 'Push Hook':
         return f"{get_repo_name(payload)} / {get_branch_name(payload)}"
     elif event == 'Job Hook' or event == 'Build Hook':
@@ -395,7 +397,7 @@ def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> str:
             repo=get_repo_name(payload),
             type='MR',
             id=payload['object_attributes'].get('iid'),
-            title=payload['object_attributes'].get('title'),
+            title=payload['object_attributes'].get('title') if use_merge_request_title else "",
         )
     elif event.startswith('Issue Hook') or event.startswith('Confidential Issue Hook'):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
@@ -416,7 +418,7 @@ def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> str:
             repo=get_repo_name(payload),
             type='MR',
             id=payload['merge_request'].get('iid'),
-            title=payload['merge_request'].get('title'),
+            title=payload['merge_request'].get('title') if use_merge_request_title else "",
         )
 
     elif event == 'Note Hook Snippet':
