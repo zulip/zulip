@@ -11,6 +11,9 @@ const noop = function () {};
 
 set_global("$", global.make_zjquery());
 set_global("DOMParser", new JSDOM().window.DOMParser);
+set_global("compose_actions", {
+    update_placeholder_text: noop,
+});
 
 const LazySet = zrequire("lazy_set.js").LazySet;
 

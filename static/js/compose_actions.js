@@ -172,6 +172,11 @@ function same_recipient_as_before(msg_type, opts) {
 }
 
 exports.update_placeholder_text = function () {
+    // Change compose placeholder text only if compose box is open.
+    if (!$("#compose-textarea").is(":visible")) {
+        return;
+    }
+
     const opts = {
         message_type: compose_state.get_message_type(),
         stream: $("#stream_message_recipient_stream").val(),
