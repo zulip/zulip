@@ -34,11 +34,9 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f60b': {'canonical_name': 'yum', 'aliases': []},
     # crazy from https://beebom.com/emoji-meanings/, seems like best emoji for
     # joking
+    '1f61b': {'canonical_name': 'stuck_out_tongue', 'aliases': ['mischievous']},
     '1f61c': {'canonical_name': 'stuck_out_tongue_wink', 'aliases': ['joking', 'crazy']},
-    '1f61d': {'canonical_name': 'stuck_out_tongue', 'aliases': []},
-    # don't really need two stuck_out_tongues (see People/23), so chose
-    # something else that could fit
-    '1f61b': {'canonical_name': 'mischievous', 'aliases': []},
+    '1f61d': {'canonical_name': 'stuck_out_tongue_closed_eyes', 'aliases': []},
     # kaching suggested by user
     '1f911': {'canonical_name': 'money_face', 'aliases': ['kaching']},
     # arms_open seems like a natural addition
