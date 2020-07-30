@@ -53,29 +53,40 @@
 
     {{#if is_me}}
     <hr>
-    {{#if can_set_away}}
+        {{#if can_set_away}}
+        <li>
+            <a href="#" class="set_away_status">
+                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as unavailable{{/tr}}
+            </a>
+        </li>
+        {{/if}}
+        {{#if can_revoke_away}}
+        <li>
+            <a href="#" class="revoke_away_status">
+                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as active{{/tr}}
+            </a>
+        </li>
+        {{/if}}
     <li>
-        <a href="#" class="set_away_status">
-            <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as unavailable{{/tr}}
-        </a>
-    </li>
-    {{/if}}
-    {{#if can_revoke_away}}
-    <li>
-        <a href="#" class="revoke_away_status">
-            <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as active{{/tr}}
-        </a>
-    </li>
-    {{/if}}
-    <li>
-        <a href="#" class="update_status_text">
+        
             <i class="fa fa-comments" aria-hidden="true"></i>
             {{#if status_text}}
                 {{#tr this}}Edit status message{{/tr}}
             {{else}}
-                {{#tr this}}Set a status message{{/tr}}
+                {{#tr this}}Set a status message <a href="#">(edit)</a>{{/tr}}
+                <a href="#" class="update_status_text">
+                    <form>
+                    <select>
+                        <option value="metting">In a metting</option>
+                        <option value="commuting">Commuting</option>
+                        <option value="sick">Out sick</option>
+                        <option value="vacationing">Vacationing</option>
+                        <option value="working remotely">Working remotely</option>
+                    </select>
+                    </form>
+                </a>
             {{/if}}
-        </a>
+        
     </li>
     {{/if}}
 
