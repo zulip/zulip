@@ -448,6 +448,7 @@ class TestExport(ZulipTestCase):
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
             m.assert_called_once_with(realm=realm, public_only=False, consent_message_id=message.id,
                                       delete_after_upload=False, threads=mock.ANY, output_dir=mock.ANY,
+                                      percent_callback=mock.ANY,
                                       upload=False)
 
         self.assertEqual(mock_print.mock_calls, [
