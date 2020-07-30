@@ -1,4 +1,5 @@
 import os
+import sys
 import tempfile
 from argparse import ArgumentParser
 from typing import Any
@@ -168,9 +169,14 @@ class Command(ZulipBaseCommand):
 
             print(f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)}\n")
 
+        def percent_callback(bytes_transferred: Any) -> None:
+            sys.stdout.write('.')
+            sys.stdout.flush()
+
         # Allows us to trigger exports separately from command line argument parsing
         export_realm_wrapper(realm=realm, output_dir=output_dir,
                              threads=num_threads, upload=options['upload'],
                              public_only=public_only,
                              delete_after_upload=options["delete_after_upload"],
+                             percent_callback=percent_callback,
                              consent_message_id=consent_message_id)

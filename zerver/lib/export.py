@@ -1757,6 +1757,7 @@ def export_realm_wrapper(realm: Realm, output_dir: str,
                          threads: int, upload: bool,
                          public_only: bool,
                          delete_after_upload: bool,
+                         percent_callback: Optional[Callable[[Any], None]]=None,
                          consent_message_id: Optional[int]=None) -> Optional[str]:
     tarball_path = do_export_realm(realm=realm, output_dir=output_dir,
                                    threads=threads, public_only=public_only,
@@ -1771,7 +1772,8 @@ def export_realm_wrapper(realm: Realm, output_dir: str,
     # without additional configuration.  We'll likely want to change
     # that in the future.
     print("Uploading export tarball...")
-    public_url = zerver.lib.upload.upload_backend.upload_export_tarball(realm, tarball_path)
+    public_url = zerver.lib.upload.upload_backend.upload_export_tarball(
+        realm, tarball_path, percent_callback=percent_callback)
     print()
     print(f"Uploaded to {public_url}")
 

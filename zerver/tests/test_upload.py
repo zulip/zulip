@@ -1883,7 +1883,16 @@ class S3Test(ZulipTestCase):
         with open(tarball_path, 'w') as f:
             f.write('dummy')
 
-        uri = upload_export_tarball(user_profile.realm, tarball_path)
+        total_bytes_transferred = 0
+
+        def percent_callback(bytes_transferred: int) -> None:
+            nonlocal total_bytes_transferred
+            total_bytes_transferred += bytes_transferred
+
+        uri = upload_export_tarball(user_profile.realm, tarball_path,
+                                    percent_callback=percent_callback)
+        # Verify the percent_callback API works
+        self.assertEqual(total_bytes_transferred, 5)
 
         result = re.search(re.compile(r"([0-9a-fA-F]{32})"), uri)
         if result is not None:
