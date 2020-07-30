@@ -213,7 +213,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/users/me/presence',
         '/users/me/alert_words',
         '/users/me/status',
-
+        '/users/{email}',
         #### These realm administration settings are valuable to document:
         # Delete a file uploaded by current user.
         '/attachments/{attachment_id}',

@@ -315,6 +315,8 @@ v1_api_and_json_patterns = [
               DELETE=deactivate_user_backend),
     rest_path('users/<int:user_id>/subscriptions/<int:stream_id>',
               GET=get_subscription_backend),
+    rest_path('users/<str:email>',
+              GET=get_members_backend),
     rest_path('bots',
               GET=get_bots_backend,
               POST=add_bot_backend),

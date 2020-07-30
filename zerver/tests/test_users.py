@@ -1659,6 +1659,22 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(bot_dict['email'], bot.email)
         self.assertTrue(bot_dict['is_bot'])
 
+        # Tests the GET /users/{email} api endpoint.
+        result = self.client_get(f'/json/users/{hamlet.email}')
+        self.assert_json_success(result)
+        self.assertEqual(hamlet_dict, result.json()['user'])
+
+        result = self.client_get(f'/json/users/{hamlet.email}?include_custom_profile_fields=true')
+        self.assert_json_success(result)
+        self.assertIn('profile_data', result.json()['user'])
+
+        result = self.client_get('/json/users/nonexistence@zulip.com')
+        self.assert_json_error(result, "No such user")
+
+        result = self.client_get(f'/json/users/{bot.email}')
+        self.assert_json_success(result)
+        self.assertEqual(result.json()['user'], bot_dict)
+
     def test_get_all_profiles_avatar_urls(self) -> None:
         hamlet = self.example_user('hamlet')
         result = self.api_get(hamlet, "/api/v1/users")

@@ -39,6 +39,7 @@ from zerver.lib.upload import upload_avatar_image
 from zerver.lib.url_encoding import add_query_arg_to_redirect_url
 from zerver.lib.users import (
     access_bot_by_id,
+    access_user_by_email,
     access_user_by_id,
     add_service,
     check_bot_creation_policy,
@@ -451,9 +452,9 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     return json_success({'bots': list(map(bot_info, bot_profiles))})
 
 @has_request_variables
-def get_members_backend(request: HttpRequest, user_profile: UserProfile, user_id: Optional[int]=None,
-                        include_custom_profile_fields: bool=REQ(validator=check_bool,
-                                                                default=False),
+def get_members_backend(request: HttpRequest, user_profile: UserProfile,
+                        user_id: Optional[int]=None, email: Optional[str]=None,
+                        include_custom_profile_fields: bool=REQ(validator=check_bool, default=False),
                         client_gravatar: bool=REQ(validator=check_bool, default=False),
                         ) -> HttpResponse:
     '''
@@ -467,10 +468,18 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile, user_id
         # If email addresses are only available to administrators,
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
+
+    # The 'user_id' and 'email' parameters are defined in urls.py
+    # and not via REQ. Thus, we check here whether we have 'user_id'
+    # or email, for 'GET /users/{user_id}' and 'GET /users/{email}'
+    # respectively.
     target_user = None
     if user_id is not None:
         target_user = access_user_by_id(user_profile, user_id, allow_deactivated=True,
                                         allow_bots=True, read_only=True)
+    elif email is not None:
+        target_user = access_user_by_email(user_profile, email, allow_deactivated=True,
+                                           allow_bots=True, read_only=True)
 
     members = get_raw_user_data(realm, user_profile, target_user=target_user,
                                 client_gravatar=client_gravatar,
