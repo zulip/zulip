@@ -3454,6 +3454,8 @@ nav {
                 }
 
                 &.active {
+                    font-weight: 400;
+
                     &::after {
                         content: ">";
                         transform: scale(1, 1);
@@ -3461,8 +3463,6 @@ nav {
                         left: -25px;
                         font-weight: 400;
                     }
-
-                    font-weight: 400;
                 }
             }
         }
