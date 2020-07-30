@@ -73,25 +73,14 @@
         </option>
     </select>
     <li>
-        
+        <a href="#" class="update_status_text">
             <i class="fa fa-comments" aria-hidden="true"></i>
             {{#if status_text}}
                 {{#tr this}}Edit status message{{/tr}}
             {{else}}
-                {{#tr this}}Set a status message <a href="#">(edit)</a>{{/tr}}
-                <a href="#" class="update_status_text">
-                    <form>
-                    <select>
-                        <option value="metting">In a metting</option>
-                        <option value="commuting">Commuting</option>
-                        <option value="sick">Out sick</option>
-                        <option value="vacationing">Vacationing</option>
-                        <option value="working remotely">Working remotely</option>
-                    </select>
-                    </form>
-                </a>
+                {{#tr this}}Set a status message{{/tr}}
             {{/if}}
-        
+        </a>
     </li>
     {{/if}}
 
