@@ -41,6 +41,7 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.test_settings"
 django.setup()
 
 from zerver.lib import event_schema
+from zerver.lib.data_types import make_checker
 
 SKIP_LIST = [
     # The event_schema checker for user_status is overly strict.
@@ -53,21 +54,14 @@ SKIP_LIST = [
 def get_event_checker(
     event: Dict[str, Any]
 ) -> Optional[Callable[[str, Dict[str, Any]], None]]:
-    name = "check_" + event["type"]
+    name = event["type"]
     if "op" in event:
         name += "_" + event["op"]
 
-    """
-    In our backend tests we always want check_foo
-    to be the "main" API, but often _check_foo actually
-    conforms to validator name/event pattern better
-    than check_foo (which may layer on some more custom
-    checks).  We can clean that up eventually, but now
-    we just work around it here in this younger tooling.
-    """
-    for n in ["_" + name, name]:
-        if hasattr(event_schema, n):
-            return getattr(event_schema, n)
+    name += "_event"
+
+    if hasattr(event_schema, name):
+        return make_checker(getattr(event_schema, name))
     return None
 
 
