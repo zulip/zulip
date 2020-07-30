@@ -82,7 +82,7 @@ our Services:
 
 * [Amazon Web Services, Inc.](https://aws.amazon.com/compliance/gdpr-center/)
   for cloud infrastructure.
-* [Digital Ocean, Inc.](https://www.digitalocean.com/security/gdpr/)
+* [DigitalOcean, Inc.](https://www.digitalocean.com/security/gdpr/)
   for cloud infrastructure.
 * [Front, Inc.](https://community.frontapp.com/t/x1p4mw/is-front-compliant-with-gdpr)
   for customer support.

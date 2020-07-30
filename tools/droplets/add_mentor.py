@@ -1,4 +1,4 @@
-# Allows a mentor to ssh into a Digital Ocean droplet. This is designed to be
+# Allows a mentor to ssh into a DigitalOcean droplet. This is designed to be
 # executed on the target machine.
 #
 # This script takes the username of the mentor as an argument:
