@@ -1,4 +1,4 @@
-# Creates a Droplet on Digital Ocean for remote Zulip development.
+# Creates a Droplet on DigitalOcean for remote Zulip development.
 # Particularly useful for sprints/hackathons, interns, and other
 # situation where one wants to quickly onboard new contributors.
 #
@@ -8,7 +8,7 @@
 # Requires python-digitalocean library:
 # https://github.com/koalalorenzo/python-digitalocean
 #
-# Also requires Digital Ocean team membership for Zulip and api token:
+# Also requires DigitalOcean team membership for Zulip and api token:
 # https://cloud.digitalocean.com/settings/api/tokens
 #
 # Copy conf.ini-template to conf.ini and populate with your api token.
@@ -27,7 +27,7 @@ from typing import Any, Dict, List
 import digitalocean
 
 # initiation argument parser
-parser = argparse.ArgumentParser(description='Create a Zulip devopment VM Digital Ocean droplet.')
+parser = argparse.ArgumentParser(description='Create a Zulip devopment VM DigitalOcean droplet.')
 parser.add_argument("username", help="Github username for whom you want to create a Zulip dev droplet")
 parser.add_argument('--tags', nargs='+', default=[])
 parser.add_argument('-f', '--recreate', dest='recreate', action="store_true", default=False)

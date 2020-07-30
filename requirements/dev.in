@@ -47,7 +47,7 @@ gitlint
 # Needed for visualising cprofile reports
 snakeviz
 
-# Needed for creating digital ocean droplets
+# Needed for creating DigitalOcean droplets
 python-digitalocean
 
 # Needed for updating the locked pip dependencies

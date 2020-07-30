@@ -9,7 +9,7 @@ Google Code-in, Zulip can provide you with a virtual machine with the
 development environment already set up.
 
 The machines (droplets) are being generously provided by
-[Digital Ocean](https://www.digitalocean.com/). Thank you Digital Ocean!
+[DigitalOcean](https://www.digitalocean.com/). Thank you DigitalOcean!
 
 ## Step 1: Join GitHub and create SSH Keys
 
