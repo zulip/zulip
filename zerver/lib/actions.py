@@ -5017,11 +5017,11 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             stream_dict['is_announcement_only'] = \
                 stream['stream_post_policy'] == Stream.STREAM_POST_POLICY_ADMINS
 
-            if is_public or user_profile.is_realm_admin:
-                subscribers = subscriber_map[stream["id"]]
-                if subscribers is not None:
-                    stream_dict['subscribers'] = subscribers
+            subscribers = subscriber_map[stream["id"]]
+            if subscribers is not None:
+                stream_dict['subscribers'] = subscribers
             never_subscribed.append(stream_dict)
+
     return (sorted(subscribed, key=lambda x: x['name']),
             sorted(unsubscribed, key=lambda x: x['name']),
             sorted(never_subscribed, key=lambda x: x['name']))
