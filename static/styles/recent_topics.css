@@ -13,9 +13,11 @@
         overflow: hidden !important;
         display: flex;
         flex-direction: column;
-        border: 1px solid hsl(0, 0%, 88%);
-        border-radius: 10px 10px 0 0;
-        margin-top: 50px;
+        border-style: solid;
+        border-color: hsl(0, 0%, 88%);
+        border-width: 0 1px;
+        border-radius: 0;
+        margin-top: 40px;
 
         td {
             vertical-align: middle;
