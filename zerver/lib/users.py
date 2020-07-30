@@ -221,6 +221,19 @@ def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:
         raise JsonableError(_("Insufficient permission"))
     return target
 
+def check_access_to_user(user_profile: UserProfile, target: UserProfile,
+                         allow_deactivated: bool=False, allow_bots: bool=False,
+                         read_only: bool=False) -> None:
+    if target.is_bot and not allow_bots:
+        raise JsonableError(_("No such user"))
+    if not target.is_active and not allow_deactivated:
+        raise JsonableError(_("User is deactivated"))
+    if read_only:
+        # Administrative access is not required just to read a user.
+        return
+    if not user_profile.can_admin_user(target):
+        raise JsonableError(_("Insufficient permission"))
+
 def access_user_by_id(user_profile: UserProfile, user_id: int,
                       allow_deactivated: bool=False, allow_bots: bool=False,
                       read_only: bool=False) -> UserProfile:
@@ -228,15 +241,11 @@ def access_user_by_id(user_profile: UserProfile, user_id: int,
         target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
     except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
-    if target.is_bot and not allow_bots:
-        raise JsonableError(_("No such user"))
-    if not target.is_active and not allow_deactivated:
-        raise JsonableError(_("User is deactivated"))
-    if read_only:
-        # Administrative access is not required just to read a user.
-        return target
-    if not user_profile.can_admin_user(target):
-        raise JsonableError(_("Insufficient permission"))
+
+    check_access_to_user(user_profile=user_profile, target=target,
+                         allow_deactivated=allow_deactivated, allow_bots=allow_bots,
+                         read_only=read_only)
+
     return target
 
 def get_accounts_for_email(email: str) -> List[Dict[str, Optional[str]]]:
