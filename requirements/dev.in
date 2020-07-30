@@ -69,3 +69,6 @@ cairosvg
 
 # Needed for tools/check-thirdparty
 python-debian
+
+# Pattern-based lint tool
+semgrep
