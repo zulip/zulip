@@ -81,49 +81,6 @@ class TestDigestEmailMessages(ZulipTestCase):
 
     @mock.patch('zerver.lib.digest.enough_traffic')
     @mock.patch('zerver.lib.digest.send_future_email')
-    def test_guest_user_multiple_stream_sender(self,
-                                               mock_send_future_email: mock.MagicMock,
-                                               mock_enough_traffic: mock.MagicMock) -> None:
-        othello = self.example_user('othello')
-        hamlet = self.example_user('hamlet')
-        cordelia = self.example_user('cordelia')
-        polonius = self.example_user('polonius')
-        create_stream_if_needed(cordelia.realm, 'web_public_stream', is_web_public=True)
-        self.subscribe(othello, 'web_public_stream')
-        self.subscribe(hamlet, 'web_public_stream')
-        self.subscribe(cordelia, 'web_public_stream')
-        self.subscribe(polonius, 'web_public_stream')
-
-        one_day_ago = timezone_now() - datetime.timedelta(days=1)
-        Message.objects.all().update(date_sent=one_day_ago)
-        one_hour_ago = timezone_now() - datetime.timedelta(seconds=3600)
-
-        cutoff = time.mktime(one_hour_ago.timetuple())
-
-        senders = ['hamlet', 'cordelia',  'othello', 'desdemona']
-        self.simulate_stream_conversation('web_public_stream', senders)
-
-        flush_per_request_caches()
-        # When this test is run in isolation, one additional query is run which
-        # is equivalent to
-        # ContentType.objects.get(app_label='zerver', model='userprofile')
-        # This code is run when we call `confirmation.models.create_confirmation_link`.
-        # To trigger this, we call the one_click_unsubscribe_link function below.
-        one_click_unsubscribe_link(polonius, 'digest')
-        with queries_captured() as queries:
-            handle_digest_email(polonius.id, cutoff)
-
-        self.assert_length(queries, 6)
-
-        self.assertEqual(mock_send_future_email.call_count, 1)
-        kwargs = mock_send_future_email.call_args[1]
-        self.assertEqual(kwargs['to_user_ids'], [polonius.id])
-
-        new_stream_names = kwargs['context']['new_streams']['plain']
-        self.assertTrue('web_public_stream' in new_stream_names)
-
-    @mock.patch('zerver.lib.digest.enough_traffic')
-    @mock.patch('zerver.lib.digest.send_future_email')
     def test_soft_deactivated_user_multiple_stream_senders(self,
                                                            mock_send_future_email: mock.MagicMock,
                                                            mock_enough_traffic: mock.MagicMock) -> None:
