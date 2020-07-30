@@ -5,55 +5,54 @@ It will contain schemas (aka validators) for Zulip events.
 
 Right now it's only intended to be used by test code.
 """
-from typing import Any, Callable, Dict, List, Sequence, Set, Tuple, Union
+from typing import Any, Dict, List, Sequence, Set, Tuple, Union
 
-from zerver.lib.topic import ORIG_TOPIC, TOPIC_LINKS, TOPIC_NAME
-from zerver.lib.validator import (
-    Validator,
-    check_bool,
-    check_dict,
-    check_dict_only,
-    check_int,
-    check_int_in,
-    check_list,
-    check_none_or,
-    check_string,
-    check_union,
-    check_url,
-    equals,
+from zerver.lib.data_types import (
+    DictType,
+    EnumType,
+    Equals,
+    ListType,
+    OptionalType,
+    UnionType,
+    UrlType,
+    check_data,
+    event_dict_type,
+    make_checker,
 )
+from zerver.lib.topic import ORIG_TOPIC, TOPIC_LINKS, TOPIC_NAME
+from zerver.lib.validator import Validator, check_dict_only, check_int
 from zerver.models import Realm, Stream, UserProfile
 
 # These fields are used for "stream" events, and are included in the
 # larger "subscription" events that also contain personal settings.
 basic_stream_fields = [
-    ("description", check_string),
-    ("first_message_id", check_none_or(check_int)),
-    ("history_public_to_subscribers", check_bool),
-    ("invite_only", check_bool),
-    ("is_announcement_only", check_bool),
-    ("is_web_public", check_bool),
-    ("message_retention_days", equals(None)),
-    ("name", check_string),
-    ("rendered_description", check_string),
-    ("stream_id", check_int),
-    ("stream_post_policy", check_int),
-    ("date_created", check_int),
+    ("description", str),
+    ("first_message_id", OptionalType(int)),
+    ("history_public_to_subscribers", bool),
+    ("invite_only", bool),
+    ("is_announcement_only", bool),
+    ("is_web_public", bool),
+    ("message_retention_days", Equals(None)),
+    ("name", str),
+    ("rendered_description", str),
+    ("stream_id", int),
+    ("stream_post_policy", int),
+    ("date_created", int),
 ]
 
-subscription_fields: Sequence[Tuple[str, Validator[object]]] = [
+subscription_fields: Sequence[Tuple[str, Any]] = [
     *basic_stream_fields,
-    ("audible_notifications", check_none_or(check_bool)),
-    ("color", check_string),
-    ("desktop_notifications", check_none_or(check_bool)),
-    ("email_address", check_string),
-    ("email_notifications", check_none_or(check_bool)),
-    ("in_home_view", check_bool),
-    ("is_muted", check_bool),
-    ("pin_to_top", check_bool),
-    ("push_notifications", check_none_or(check_bool)),
-    ("stream_weekly_traffic", check_none_or(check_int)),
-    ("wildcard_mentions_notify", check_none_or(check_bool)),
+    ("audible_notifications", OptionalType(bool)),
+    ("color", str),
+    ("desktop_notifications", OptionalType(bool)),
+    ("email_address", str),
+    ("email_notifications", OptionalType(bool)),
+    ("in_home_view", bool),
+    ("is_muted", bool),
+    ("pin_to_top", bool),
+    ("push_notifications", OptionalType(bool)),
+    ("stream_weekly_traffic", OptionalType(int)),
+    ("wildcard_mentions_notify", OptionalType(bool)),
 ]
 
 
@@ -62,14 +61,14 @@ def check_events_dict(
     optional_keys: Sequence[Tuple[str, Validator[object]]] = [],
 ) -> Validator[Dict[str, object]]:
     """
-    This is just a tiny wrapper on check_dict, but it provides
+    This is just a tiny wrapper on check_dict_only, but it provides
     some minor benefits:
 
         - mark clearly that the schema is for a Zulip event
         - make sure there's a type field
         - add id field automatically
         - sanity check that we have no duplicate keys (we
-          should just make check_dict do that, eventually)
+          should just make check_dict_only do that, eventually)
 
     """
     rkeys = [key[0] for key in required_keys]
@@ -84,143 +83,150 @@ def check_events_dict(
     )
 
 
-check_add_or_remove = check_union(
+equals_add_or_remove = UnionType(
     [
         # force vertical
-        equals("add"),
-        equals("remove"),
+        Equals("add"),
+        Equals("remove"),
     ]
 )
 
-check_value = check_union(
+value_type = UnionType(
     [
         # force vertical formatting
-        check_bool,
-        check_int,
-        check_string,
+        bool,
+        int,
+        str,
     ]
 )
 
-check_optional_value = check_union(
+optional_value_type = UnionType(
     [
         # force vertical formatting
-        check_bool,
-        check_int,
-        check_string,
-        equals(None),
+        bool,
+        int,
+        str,
+        Equals(None),
     ]
 )
 
-check_alert_words = check_events_dict(
+alert_words_event = event_dict_type(
     required_keys=[
         # force vertical formatting
-        ("type", equals("alert_words")),
-        ("alert_words", check_list(check_string)),
+        ("type", Equals("alert_words")),
+        ("alert_words", ListType(str)),
     ]
 )
+check_alert_words = make_checker(alert_words_event)
 
-_check_custom_profile_field = check_dict_only(
+custom_profile_field_type = DictType(
     required_keys=[
-        ("id", check_int),
-        ("type", check_int),
-        ("name", check_string),
-        ("hint", check_string),
-        ("field_data", check_string),
-        ("order", check_int),
-    ]
+        ("id", int),
+        ("type", int),
+        ("name", str),
+        ("hint", str),
+        ("field_data", str),
+        ("order", int),
+    ],
 )
 
-check_custom_profile_fields = check_events_dict(
+custom_profile_fields_event = event_dict_type(
     required_keys=[
-        ("type", equals("custom_profile_fields")),
-        ("op", equals("add")),
-        ("fields", check_list(_check_custom_profile_field)),
+        ("type", Equals("custom_profile_fields")),
+        ("op", Equals("add")),
+        ("fields", ListType(custom_profile_field_type)),
     ]
 )
+check_custom_profile_fields = make_checker(custom_profile_fields_event)
 
-_check_stream_group = check_dict_only(
+_check_stream_group = DictType(
     required_keys=[
-        ("name", check_string),
-        ("id", check_int),
-        ("description", check_string),
-        ("streams", check_list(check_dict_only(basic_stream_fields))),
+        ("name", str),
+        ("id", int),
+        ("description", str),
+        ("streams", ListType(DictType(basic_stream_fields))),
     ]
 )
 
-check_default_stream_groups = check_events_dict(
+default_stream_groups_event = event_dict_type(
     required_keys=[
         # force vertical
-        ("type", equals("default_stream_groups")),
-        ("default_stream_groups", check_list(_check_stream_group)),
+        ("type", Equals("default_stream_groups")),
+        ("default_stream_groups", ListType(_check_stream_group)),
     ]
 )
+check_default_stream_groups = make_checker(default_stream_groups_event)
 
-check_default_streams = check_events_dict(
+default_streams_event = event_dict_type(
     required_keys=[
-        ("type", equals("default_streams")),
-        ("default_streams", check_list(check_dict_only(basic_stream_fields))),
+        ("type", Equals("default_streams")),
+        ("default_streams", ListType(DictType(basic_stream_fields))),
     ]
 )
+check_default_streams = make_checker(default_streams_event)
 
-check_invites_changed = check_events_dict(
+invites_changed_event = event_dict_type(
     required_keys=[
         # the most boring event...no metadata
-        ("type", equals("invites_changed")),
+        ("type", Equals("invites_changed")),
     ]
 )
+check_invites_changed = make_checker(invites_changed_event)
 
 message_fields = [
-    ("avatar_url", check_none_or(check_string)),
-    ("client", check_string),
-    ("content", check_string),
-    ("content_type", equals("text/html")),
-    ("display_recipient", check_string),
-    ("id", check_int),
-    ("is_me_message", check_bool),
-    ("reactions", check_list(check_dict([]))),
-    ("recipient_id", check_int),
-    ("sender_realm_str", check_string),
-    ("sender_email", check_string),
-    ("sender_full_name", check_string),
-    ("sender_id", check_int),
-    ("stream_id", check_int),
-    (TOPIC_NAME, check_string),
-    (TOPIC_LINKS, check_list(check_string)),
-    ("submessages", check_list(check_dict([]))),
-    ("timestamp", check_int),
-    ("type", check_string),
+    ("avatar_url", OptionalType(str)),
+    ("client", str),
+    ("content", str),
+    ("content_type", Equals("text/html")),
+    ("display_recipient", str),
+    ("id", int),
+    ("is_me_message", bool),
+    ("reactions", ListType(dict)),
+    ("recipient_id", int),
+    ("sender_realm_str", str),
+    ("sender_email", str),
+    ("sender_full_name", str),
+    ("sender_id", int),
+    ("stream_id", int),
+    (TOPIC_NAME, str),
+    (TOPIC_LINKS, ListType(str)),
+    ("submessages", ListType(dict)),
+    ("timestamp", int),
+    ("type", str),
 ]
 
-check_message = check_events_dict(
+message_event = event_dict_type(
     required_keys=[
-        ("type", equals("message")),
-        ("flags", check_list(check_string)),
-        ("message", check_dict_only(message_fields)),
+        ("type", Equals("message")),
+        ("flags", ListType(str)),
+        ("message", DictType(message_fields)),
     ]
 )
+check_message = make_checker(message_event)
 
 # We will eventually just send user_ids.
-_check_reaction_user = check_dict_only(
+reaction_user_type = DictType(
     required_keys=[
         # force vertical
-        ("email", check_string),
-        ("full_name", check_string),
-        ("user_id", check_int),
+        ("email", str),
+        ("full_name", str),
+        ("user_id", int),
     ]
 )
 
-_check_reaction = check_events_dict(
+reaction_event = event_dict_type(
     required_keys=[
-        ("type", equals("reaction")),
-        ("op", check_add_or_remove),
-        ("message_id", check_int),
-        ("emoji_name", check_string),
-        ("emoji_code", check_string),
-        ("reaction_type", check_string),
-        ("user_id", check_int),
-        ("user", _check_reaction_user),
+        ("type", Equals("reaction")),
+        ("op", equals_add_or_remove),
+        ("message_id", int),
+        ("emoji_name", str),
+        ("emoji_code", str),
+        ("reaction_type", str),
+        ("user_id", int),
+        ("user", reaction_user_type),
     ]
 )
+_check_reaction = make_checker(reaction_event)
 
 
 def check_reaction(var_name: str, event: Dict[str, Any], op: str) -> None:
@@ -228,65 +234,66 @@ def check_reaction(var_name: str, event: Dict[str, Any], op: str) -> None:
     assert event["op"] == op
 
 
-_check_bot_services_outgoing = check_dict_only(
+bot_services_outgoing_type = DictType(
     required_keys=[
         # force vertical
-        ("base_url", check_url),
-        ("interface", check_int),
-        ("token", check_string),
+        ("base_url", UrlType()),
+        ("interface", int),
+        ("token", str),
     ]
 )
 
 # We use a strict check here, because our tests
 # don't specifically focus on seeing how
 # flexible we can make the types be for config_data.
-_ad_hoc_config_data_schema = equals(dict(foo="bar"))
+_ad_hoc_config_data_schema = Equals(dict(foo="bar"))
 
-_check_bot_services_embedded = check_dict_only(
+bot_services_embedded_type = DictType(
     required_keys=[
         # force vertical
-        ("service_name", check_string),
+        ("service_name", str),
         ("config_data", _ad_hoc_config_data_schema),
     ]
 )
 
 # Note that regular bots just get an empty list of services,
-# so the sub_validator for check_list won't matter for them.
-_check_bot_services = check_list(
-    check_union(
+# so the sub_validator for ListType won't matter for them.
+bot_services_type = ListType(
+    UnionType(
         [
             # force vertical
-            _check_bot_services_outgoing,
-            _check_bot_services_embedded,
+            bot_services_outgoing_type,
+            bot_services_embedded_type,
         ]
     ),
 )
 
-_check_bot = check_dict_only(
+bot_type = DictType(
     required_keys=[
-        ("user_id", check_int),
-        ("api_key", check_string),
-        ("avatar_url", check_string),
-        ("bot_type", check_int),
-        ("default_all_public_streams", check_bool),
-        ("default_events_register_stream", check_none_or(check_string)),
-        ("default_sending_stream", check_none_or(check_string)),
-        ("email", check_string),
-        ("full_name", check_string),
-        ("is_active", check_bool),
-        ("owner_id", check_int),
-        ("services", _check_bot_services),
+        ("user_id", int),
+        ("api_key", str),
+        ("avatar_url", str),
+        ("bot_type", int),
+        ("default_all_public_streams", bool),
+        ("default_events_register_stream", OptionalType(str)),
+        ("default_sending_stream", OptionalType(str)),
+        ("email", str),
+        ("full_name", str),
+        ("is_active", bool),
+        ("owner_id", int),
+        ("services", bot_services_type),
     ]
 )
 
-_check_realm_bot_add = check_events_dict(
+realm_bot_add_event = event_dict_type(
     required_keys=[
         # force vertical
-        ("type", equals("realm_bot")),
-        ("op", equals("add")),
-        ("bot", _check_bot),
+        ("type", Equals("realm_bot")),
+        ("op", Equals("add")),
+        ("bot", bot_type),
     ]
 )
+_check_realm_bot_add = make_checker(realm_bot_add_event)
 
 
 def check_realm_bot_add(var_name: str, event: Dict[str, Any],) -> None:
@@ -298,73 +305,80 @@ def check_realm_bot_add(var_name: str, event: Dict[str, Any],) -> None:
     services = event["bot"]["services"]
 
     if bot_type == UserProfile.DEFAULT_BOT:
-        equals([])(services_field, services)
+        check_data(Equals([]), services_field, services)
     elif bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
-        check_list(_check_bot_services_outgoing, length=1)(services_field, services)
+        check_data(
+            ListType(bot_services_outgoing_type, length=1), services_field, services
+        )
     elif bot_type == UserProfile.EMBEDDED_BOT:
-        check_list(_check_bot_services_embedded, length=1)(services_field, services)
+        check_data(
+            ListType(bot_services_embedded_type, length=1), services_field, services
+        )
     else:
         raise AssertionError(f"Unknown bot_type: {bot_type}")
 
 
-_check_bot_for_delete = check_dict_only(
+bot_type_for_delete = DictType(
     required_keys=[
         # for legacy reasons we have a dict here
         # with only one key
-        ("user_id", check_int),
+        ("user_id", int),
     ]
 )
 
-check_realm_bot_delete = check_events_dict(
+realm_bot_delete_event = event_dict_type(
     required_keys=[
-        ("type", equals("realm_bot")),
-        ("op", equals("delete")),
-        ("bot", _check_bot_for_delete),
+        ("type", Equals("realm_bot")),
+        ("op", Equals("delete")),
+        ("bot", bot_type_for_delete),
     ]
 )
+check_realm_bot_delete = make_checker(realm_bot_delete_event)
 
-_check_bot_for_remove = check_dict_only(
+bot_type_for_remove = DictType(
     required_keys=[
         # Why does remove have full_name but delete doesn't?
         # Why do we have both a remove and a delete event
         # for bots?  I don't know the answer as I write this.
-        ("full_name", check_string),
-        ("user_id", check_int),
+        ("full_name", str),
+        ("user_id", int),
     ]
 )
 
-check_realm_bot_remove = check_events_dict(
+realm_bot_remove_event = event_dict_type(
     required_keys=[
-        ("type", equals("realm_bot")),
-        ("op", equals("remove")),
-        ("bot", _check_bot_for_remove),
+        ("type", Equals("realm_bot")),
+        ("op", Equals("remove")),
+        ("bot", bot_type_for_remove),
     ]
 )
+check_realm_bot_remove = make_checker(realm_bot_remove_event)
 
-_check_bot_for_update = check_dict_only(
+bot_type_for_update = DictType(
     required_keys=[
         # force vertical
-        ("user_id", check_int),
+        ("user_id", int),
     ],
     optional_keys=[
-        ("api_key", check_string),
-        ("avatar_url", check_string),
-        ("default_all_public_streams", check_bool),
-        ("default_events_register_stream", check_none_or(check_string)),
-        ("default_sending_stream", check_none_or(check_string)),
-        ("full_name", check_string),
-        ("owner_id", check_int),
-        ("services", _check_bot_services),
+        ("api_key", str),
+        ("avatar_url", str),
+        ("default_all_public_streams", bool),
+        ("default_events_register_stream", OptionalType(str)),
+        ("default_sending_stream", OptionalType(str)),
+        ("full_name", str),
+        ("owner_id", int),
+        ("services", bot_services_type),
     ],
 )
 
-_check_realm_bot_update = check_events_dict(
+realm_bot_update_event = event_dict_type(
     required_keys=[
-        ("type", equals("realm_bot")),
-        ("op", equals("update")),
-        ("bot", _check_bot_for_update),
+        ("type", Equals("realm_bot")),
+        ("op", Equals("update")),
+        ("bot", bot_type_for_update),
     ]
 )
+_check_realm_bot_update = make_checker(realm_bot_update_event)
 
 
 def check_realm_bot_update(var_name: str, event: Dict[str, Any], field: str,) -> None:
@@ -374,10 +388,10 @@ def check_realm_bot_update(var_name: str, event: Dict[str, Any], field: str,) ->
     assert {"user_id", field} == set(event["bot"].keys())
 
 
-_check_plan_type_extra_data = check_dict_only(
+plan_type_extra_data_type = DictType(
     required_keys=[
         # force vertical
-        ("upload_quota", check_int),
+        ("upload_quota", int),
     ]
 )
 
@@ -386,18 +400,19 @@ realm/update events are flexible for values;
 we will use a more strict checker to check
 types in a context-specific manner
 """
-_check_realm_update = check_events_dict(
+realm_update_event = event_dict_type(
     required_keys=[
-        ("type", equals("realm")),
-        ("op", equals("update")),
-        ("property", check_string),
-        ("value", check_value),
+        ("type", Equals("realm")),
+        ("op", Equals("update")),
+        ("property", str),
+        ("value", value_type),
     ],
     optional_keys=[
         # force vertical
-        ("extra_data", _check_plan_type_extra_data),
+        ("extra_data", plan_type_extra_data_type),
     ],
 )
+_check_realm_update = make_checker(realm_update_event)
 
 
 def check_realm_update(var_name: str, event: Dict[str, Any], prop: str,) -> None:
@@ -447,46 +462,47 @@ avatar_fields = {
     "avatar_version",
 }
 
-_check_custom_profile_field = check_dict_only(
+custom_profile_field_type = DictType(
     required_keys=[
         # vertical formatting
-        ("id", check_int),
-        ("value", check_string),
+        ("id", int),
+        ("value", str),
     ],
     optional_keys=[
         # vertical formatting
-        ("rendered_value", check_string),
+        ("rendered_value", str),
     ],
 )
 
-_check_realm_user_person = check_dict_only(
+realm_user_person_type = DictType(
     required_keys=[
         # vertical formatting
-        ("user_id", check_int),
+        ("user_id", int),
     ],
     optional_keys=[
-        ("avatar_source", check_string),
-        ("avatar_url", check_none_or(check_string)),
-        ("avatar_url_medium", check_none_or(check_string)),
-        ("avatar_version", check_int),
-        ("bot_owner_id", check_int),
-        ("custom_profile_field", _check_custom_profile_field),
-        ("delivery_email", check_string),
-        ("full_name", check_string),
-        ("role", check_int_in(UserProfile.ROLE_TYPES)),
-        ("email", check_string),
-        ("user_id", check_int),
-        ("timezone", check_string),
+        ("avatar_source", str),
+        ("avatar_url", OptionalType(str)),
+        ("avatar_url_medium", OptionalType(str)),
+        ("avatar_version", int),
+        ("bot_owner_id", int),
+        ("custom_profile_field", custom_profile_field_type),
+        ("delivery_email", str),
+        ("full_name", str),
+        ("role", EnumType(UserProfile.ROLE_TYPES)),
+        ("email", str),
+        ("user_id", int),
+        ("timezone", str),
     ],
 )
 
-_check_realm_user_update = check_events_dict(
+realm_user_update_event = event_dict_type(
     required_keys=[
-        ("type", equals("realm_user")),
-        ("op", equals("update")),
-        ("person", _check_realm_user_person),
+        ("type", Equals("realm_user")),
+        ("op", Equals("update")),
+        ("person", realm_user_person_type),
     ]
 )
+_check_realm_user_update = make_checker(realm_user_update_event)
 
 
 def check_realm_user_update(
@@ -498,36 +514,39 @@ def check_realm_user_update(
     assert optional_fields == keys
 
 
-check_stream_create = check_events_dict(
+stream_create_event = event_dict_type(
     required_keys=[
-        ("type", equals("stream")),
-        ("op", equals("create")),
-        ("streams", check_list(check_dict_only(basic_stream_fields))),
+        ("type", Equals("stream")),
+        ("op", Equals("create")),
+        ("streams", ListType(DictType(basic_stream_fields))),
     ]
 )
+check_stream_create = make_checker(stream_create_event)
 
-check_stream_delete = check_events_dict(
+stream_delete_event = event_dict_type(
     required_keys=[
-        ("type", equals("stream")),
-        ("op", equals("delete")),
-        ("streams", check_list(check_dict_only(basic_stream_fields))),
+        ("type", Equals("stream")),
+        ("op", Equals("delete")),
+        ("streams", ListType(DictType(basic_stream_fields))),
     ]
 )
+check_stream_delete = make_checker(stream_delete_event)
 
-_check_stream_update = check_events_dict(
+stream_update_event = event_dict_type(
     required_keys=[
-        ("type", equals("stream")),
-        ("op", equals("update")),
-        ("property", check_string),
-        ("value", check_optional_value),
-        ("name", check_string),
-        ("stream_id", check_int),
+        ("type", Equals("stream")),
+        ("op", Equals("update")),
+        ("property", str),
+        ("value", optional_value_type),
+        ("name", str),
+        ("stream_id", int),
     ],
     optional_keys=[
-        ("rendered_description", check_string),
-        ("history_public_to_subscribers", check_bool),
+        ("rendered_description", str),
+        ("history_public_to_subscribers", bool),
     ],
 )
+_check_stream_update = make_checker(stream_update_event)
 
 
 def check_stream_update(var_name: str, event: Dict[str, Any],) -> None:
@@ -568,32 +587,34 @@ def check_stream_update(var_name: str, event: Dict[str, Any],) -> None:
         raise AssertionError(f"Unknown property: {prop}")
 
 
-check_submessage = check_events_dict(
+submessage_event = event_dict_type(
     required_keys=[
-        ("type", equals("submessage")),
-        ("message_id", check_int),
-        ("submessage_id", check_int),
-        ("sender_id", check_int),
-        ("msg_type", check_string),
-        ("content", check_string),
+        ("type", Equals("submessage")),
+        ("message_id", int),
+        ("submessage_id", int),
+        ("sender_id", int),
+        ("msg_type", str),
+        ("content", str),
     ]
 )
+check_submessage = make_checker(submessage_event)
 
-_check_single_subscription = check_dict_only(
+single_subscription_type = DictType(
     required_keys=subscription_fields,
     optional_keys=[
         # force vertical
-        ("subscribers", check_list(check_int)),
+        ("subscribers", ListType(int)),
     ],
 )
 
-_check_subscription_add = check_events_dict(
+subscription_add_event = event_dict_type(
     required_keys=[
-        ("type", equals("subscription")),
-        ("op", equals("add")),
-        ("subscriptions", check_list(_check_single_subscription)),
+        ("type", Equals("subscription")),
+        ("op", Equals("add")),
+        ("subscriptions", ListType(single_subscription_type)),
     ],
 )
+_check_subscription_add = make_checker(subscription_add_event)
 
 
 def check_subscription_add(
@@ -608,69 +629,74 @@ def check_subscription_add(
             assert "subscribers" not in sub.keys()
 
 
-check_subscription_peer_add = check_events_dict(
+subscription_peer_add_event = event_dict_type(
     required_keys=[
-        ("type", equals("subscription")),
-        ("op", equals("peer_add")),
-        ("user_id", check_int),
-        ("stream_id", check_int),
+        ("type", Equals("subscription")),
+        ("op", Equals("peer_add")),
+        ("user_id", int),
+        ("stream_id", int),
     ]
 )
+check_subscription_peer_add = make_checker(subscription_peer_add_event)
 
-check_subscription_peer_remove = check_events_dict(
+subscription_peer_remove_event = event_dict_type(
     required_keys=[
-        ("type", equals("subscription")),
-        ("op", equals("peer_remove")),
-        ("user_id", check_int),
-        ("stream_id", check_int),
+        ("type", Equals("subscription")),
+        ("op", Equals("peer_remove")),
+        ("user_id", int),
+        ("stream_id", int),
     ]
 )
+check_subscription_peer_remove = make_checker(subscription_peer_remove_event)
 
-_check_remove_sub = check_dict_only(
+remove_sub_type = DictType(
     required_keys=[
         # We should eventually just return stream_id here.
-        ("name", check_string),
-        ("stream_id", check_int),
+        ("name", str),
+        ("stream_id", int),
     ]
 )
 
-check_subscription_remove = check_events_dict(
+subscription_remove_event = event_dict_type(
     required_keys=[
-        ("type", equals("subscription")),
-        ("op", equals("remove")),
-        ("subscriptions", check_list(_check_remove_sub)),
+        ("type", Equals("subscription")),
+        ("op", Equals("remove")),
+        ("subscriptions", ListType(remove_sub_type)),
     ]
 )
+check_subscription_remove = make_checker(subscription_remove_event)
 
-_check_typing_person = check_dict_only(
+typing_person_type = DictType(
     required_keys=[
         # we should eventually just send user_id
-        ("email", check_string),
-        ("user_id", check_int),
+        ("email", str),
+        ("user_id", int),
     ]
 )
 
-check_typing_start = check_events_dict(
+typing_start_event = event_dict_type(
     required_keys=[
-        ("type", equals("typing")),
-        ("op", equals("start")),
-        ("sender", _check_typing_person),
-        ("recipients", check_list(_check_typing_person)),
+        ("type", Equals("typing")),
+        ("op", Equals("start")),
+        ("sender", typing_person_type),
+        ("recipients", ListType(typing_person_type)),
     ]
 )
+check_typing_start = make_checker(typing_start_event)
 
-_check_update_display_settings = check_events_dict(
+update_display_settings_event = event_dict_type(
     required_keys=[
-        ("type", equals("update_display_settings")),
-        ("setting_name", check_string),
-        ("setting", check_value),
-        ("user", check_string),
+        ("type", Equals("update_display_settings")),
+        ("setting_name", str),
+        ("setting", value_type),
+        ("user", str),
     ],
     optional_keys=[
         # force vertical
-        ("language_name", check_string),
+        ("language_name", str),
     ],
 )
+_check_update_display_settings = make_checker(update_display_settings_event)
 
 
 def check_update_display_settings(var_name: str, event: Dict[str, Any],) -> None:
@@ -692,14 +718,15 @@ def check_update_display_settings(var_name: str, event: Dict[str, Any],) -> None
         assert "language_name" not in event.keys()
 
 
-_check_update_global_notifications = check_events_dict(
+update_global_notifications_event = event_dict_type(
     required_keys=[
-        ("type", equals("update_global_notifications")),
-        ("notification_name", check_string),
-        ("setting", check_value),
-        ("user", check_string),
+        ("type", Equals("update_global_notifications")),
+        ("notification_name", str),
+        ("setting", value_type),
+        ("user", str),
     ]
 )
+_check_update_global_notifications = make_checker(update_global_notifications_event)
 
 
 def check_update_global_notifications(
@@ -719,31 +746,31 @@ def check_update_global_notifications(
 
 
 update_message_required_fields = [
-    ("type", equals("update_message")),
-    ("user_id", check_int),
-    ("edit_timestamp", check_int),
-    ("message_id", check_int),
+    ("type", Equals("update_message")),
+    ("user_id", int),
+    ("edit_timestamp", int),
+    ("message_id", int),
 ]
 
-update_message_content_fields: List[Tuple[str, Callable[[str, object], object]]] = [
-    ("content", check_string),
-    ("is_me_message", check_bool),
-    ("orig_content", check_string),
-    ("orig_rendered_content", check_string),
-    ("prev_rendered_content_version", check_int),
-    ("rendered_content", check_string),
+update_message_content_fields: List[Tuple[str, Any]] = [
+    ("content", str),
+    ("is_me_message", bool),
+    ("orig_content", str),
+    ("orig_rendered_content", str),
+    ("prev_rendered_content_version", int),
+    ("rendered_content", str),
 ]
 
 update_message_topic_fields = [
-    ("flags", check_list(check_string)),
-    ("message_ids", check_list(check_int)),
-    ("new_stream_id", check_int),
-    (ORIG_TOPIC, check_string),
-    ("propagate_mode", check_string),
-    ("stream_id", check_int),
-    ("stream_name", check_string),
-    (TOPIC_LINKS, check_list(check_string)),
-    (TOPIC_NAME, check_string),
+    ("flags", ListType(str)),
+    ("message_ids", ListType(int)),
+    ("new_stream_id", int),
+    (ORIG_TOPIC, str),
+    ("propagate_mode", str),
+    ("stream_id", int),
+    ("stream_name", str),
+    (TOPIC_LINKS, ListType(str)),
+    (TOPIC_NAME, str),
 ]
 
 update_message_optional_fields = (
@@ -753,10 +780,11 @@ update_message_optional_fields = (
 # The schema here does not include the "embedded"
 # variant of update_message; it is for message
 # and topic editing.
-_check_update_message = check_events_dict(
+update_message_event = event_dict_type(
     required_keys=update_message_required_fields,
     optional_keys=update_message_optional_fields,
 )
+_check_update_message = make_checker(update_message_event)
 
 
 def check_update_message(
@@ -785,26 +813,28 @@ def check_update_message(
     assert expected_keys == actual_keys
 
 
-check_update_message_embedded = check_events_dict(
+update_message_embedded_event = event_dict_type(
     required_keys=[
-        ("type", equals("update_message")),
-        ("flags", check_list(check_string)),
-        ("content", check_string),
-        ("message_id", check_int),
-        ("message_ids", check_list(check_int)),
-        ("rendered_content", check_string),
+        ("type", Equals("update_message")),
+        ("flags", ListType(str)),
+        ("content", str),
+        ("message_id", int),
+        ("message_ids", ListType(int)),
+        ("rendered_content", str),
     ]
 )
+check_update_message_embedded = make_checker(update_message_embedded_event)
 
-_check_update_message_flags = check_events_dict(
+update_message_flags_event = event_dict_type(
     required_keys=[
-        ("type", equals("update_message_flags")),
-        ("operation", check_add_or_remove),
-        ("flag", check_string),
-        ("messages", check_list(check_int)),
-        ("all", check_bool),
+        ("type", Equals("update_message_flags")),
+        ("operation", equals_add_or_remove),
+        ("flag", str),
+        ("messages", ListType(int)),
+        ("all", bool),
     ]
 )
+_check_update_message_flags = make_checker(update_message_flags_event)
 
 
 def check_update_message_flags(
@@ -814,28 +844,30 @@ def check_update_message_flags(
     assert event["operation"] == operation
 
 
-_check_group = check_dict_only(
+group_type = DictType(
     required_keys=[
-        ("id", check_int),
-        ("name", check_string),
-        ("members", check_list(check_int)),
-        ("description", check_string),
+        ("id", int),
+        ("name", str),
+        ("members", ListType(int)),
+        ("description", str),
     ]
 )
 
-check_user_group_add = check_events_dict(
+user_group_add_event = event_dict_type(
     required_keys=[
-        ("type", equals("user_group")),
-        ("op", equals("add")),
-        ("group", _check_group),
+        ("type", Equals("user_group")),
+        ("op", Equals("add")),
+        ("group", group_type),
     ]
 )
+check_user_group_add = make_checker(user_group_add_event)
 
-check_user_status = check_events_dict(
+user_status_event = event_dict_type(
     required_keys=[
-        ("type", equals("user_status")),
-        ("user_id", check_int),
-        ("away", check_bool),
-        ("status_text", check_string),
+        ("type", Equals("user_status")),
+        ("user_id", int),
+        ("away", bool),
+        ("status_text", str),
     ]
 )
+check_user_status = make_checker(user_status_event)
