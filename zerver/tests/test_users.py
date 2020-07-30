@@ -35,7 +35,12 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.users import access_user_by_id, get_accounts_for_email, user_ids_to_users
+from zerver.lib.users import (
+    access_user_by_email,
+    access_user_by_id,
+    get_accounts_for_email,
+    user_ids_to_users,
+)
 from zerver.models import (
     CustomProfileField,
     InvalidFakeEmailDomain,
@@ -395,6 +400,33 @@ class PermissionTest(ZulipTestCase):
         # But does have read-only access to it.
         access_user_by_id(self.example_user("cordelia"), self.example_user("aaron").id,
                           read_only=True)
+
+    def test_access_user_by_email(self) -> None:
+        iago = self.example_user("iago")
+
+        # Must be a valid user ID in the realm
+        with self.assertRaises(JsonableError):
+            access_user_by_email(iago, self.mit_user("sipbtest").email)
+
+        # Can only access bot users if allow_deactivated is passed
+        bot = self.example_user("default_bot")
+        access_user_by_email(iago, bot.email, allow_bots=True)
+        with self.assertRaises(JsonableError):
+            access_user_by_email(iago, bot.email)
+
+        # Can only access deactivated users if allow_deactivated is passed
+        hamlet = self.example_user("hamlet")
+        do_deactivate_user(hamlet)
+        with self.assertRaises(JsonableError):
+            access_user_by_email(iago, hamlet.email)
+        access_user_by_email(iago, hamlet.email, allow_deactivated=True)
+
+        # Non-admin user can't admin another user
+        with self.assertRaises(JsonableError):
+            access_user_by_email(self.example_user("cordelia"), self.example_user("aaron").email)
+        # But does have read-only access to it.
+        access_user_by_email(self.example_user("cordelia"), self.example_user("aaron").email,
+                             read_only=True)
 
     def test_change_regular_member_to_guest(self) -> None:
         iago = self.example_user("iago")

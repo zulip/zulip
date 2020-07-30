@@ -26,6 +26,7 @@ from zerver.models import (
     Service,
     UserProfile,
     get_realm_user_dicts,
+    get_user,
     get_user_profile_by_id_in_realm,
 )
 
@@ -239,6 +240,20 @@ def access_user_by_id(user_profile: UserProfile, user_id: int,
                       read_only: bool=False) -> UserProfile:
     try:
         target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
+    except UserProfile.DoesNotExist:
+        raise JsonableError(_("No such user"))
+
+    check_access_to_user(user_profile=user_profile, target=target,
+                         allow_deactivated=allow_deactivated, allow_bots=allow_bots,
+                         read_only=read_only)
+
+    return target
+
+def access_user_by_email(user_profile: UserProfile, email: str,
+                         allow_deactivated: bool=False, allow_bots: bool=False,
+                         read_only: bool=False) -> UserProfile:
+    try:
+        target = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
 
