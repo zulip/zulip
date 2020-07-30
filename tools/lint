@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 import argparse
 import os
-import re
+import random
 import sys
 
 # check for the venv
 from lib import sanity_check
 
 sanity_check.check_venv(__file__)
-
-import random
 
 from zulint.command import LinterConfig, add_default_linter_arguments
 
@@ -101,6 +99,7 @@ def run() -> None:
                                   suppress_line=lambda line: line in ["Checking formatting...\n", "All matched files use Prettier code style!\n"])
 
     semgrep_command = ["semgrep", "--config=./tools/semgrep.yml", "--error",
+                       "--disable-version-check", "--quiet",
                        # This option is dangerous in the context of running
                        # semgrep-as-a-service on untrusted user code, since it
                        # causes Python code in the rules configuration to be
@@ -113,9 +112,7 @@ def run() -> None:
     linter_config.external_linter('semgrep-py', [*semgrep_command, "--lang=python"], ['py'],
                                   fix_arg='--autofix',
                                   description="Syntactic Grep (semgrep) Code Search Tool "
-                                  "(config: ./tools/semgrep.yml)",
-                                  # https://github.com/returntocorp/semgrep/issues/1228
-                                  suppress_line=lambda line: bool(re.match(r"running \d+ rules\.\.\.$", line)))
+                                  "(config: ./tools/semgrep.yml)")
 
     linter_config.external_linter('thirdparty', ['tools/check-thirdparty'],
                                   description="Check docs/THIRDPARTY copyright file syntax")
