@@ -20,7 +20,7 @@ let current_actions_popover_elem;
 let current_flatpickr_instance;
 let current_message_info_popover_elem;
 let current_mobile_message_buttons_popover_elem;
-let userlist_placement = "1center";
+let userlist_placement = "right";
 
 let list_of_popovers = [];
 
