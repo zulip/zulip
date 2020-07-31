@@ -412,6 +412,7 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
         except twitter.TwitterError as e:
             t = e.args[0]
             if len(t) == 1 and ('code' in t[0]):
+                # https://developer.twitter.com/en/docs/basics/response-codes
                 code = t[0]['code']
                 if code in [34, 144, 421, 422]:
                     # All these "correspond with HTTP 404," and mean
