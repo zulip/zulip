@@ -47,16 +47,6 @@ class OpenAPISpec():
         self.core_data = RequestValidator(validator_spec)
         self.create_regex_dict()
         self.last_update = os.path.getmtime(self.path)
-        # Form a set of all documented events
-        self.documented_events.clear()
-        schema = (self.data['paths']['/events']['get']['responses']
-                  ['200']['content']['application/json']['schema'])
-        for events in schema['properties']['events']['items']['oneOf']:
-            op_str = ':'
-            if 'op' in events['properties']:
-                op_str = f':{events["properties"]["op"]["enum"][0]}'
-            self.documented_events.add(events['properties']['type']['enum'][0]
-                                       + op_str)
 
     def create_regex_dict(self) -> None:
         # Alogrithm description:
@@ -131,19 +121,6 @@ class OpenAPISpec():
         if self.last_update != last_modified:
             self.reload()
         return self.core_data
-
-    def get_documented_events(self) -> Set[str]:
-        """Reload the OpenAPI file if it has been modified after the last time
-        it was read, and then return the set of documented events. Similar
-        to preceding functions. Used for proper access to OpenAPI objects.
-        """
-        last_modified = os.path.getmtime(self.path)
-        # Using != rather than < to cover the corner case of users placing an
-        # earlier version than the current one
-        if self.last_update != last_modified:
-            self.reload()
-        return self.documented_events
-
 
 class SchemaError(Exception):
     pass
@@ -223,8 +200,6 @@ def fix_events(content: Dict[str, Any]) -> None:
     only zulip.yaml changes and minimal other changes. It should be removed
     as soon as `/events` documentation is complete.
     """
-    content['events'] = [event for event in content['events']
-                         if get_event_type(event) in openapi_spec.get_documented_events()]
     # 'user' is deprecated so remove its occurences from the events array
     for event in content['events']:
         event.pop('user', None)
