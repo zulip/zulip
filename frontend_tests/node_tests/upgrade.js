@@ -37,7 +37,9 @@ run_test("initialize", () => {
         assert.equal(page_name, "upgrade");
     };
 
+    let create_ajax_request_form_call_count = 0;
     helpers.create_ajax_request = (url, form_name, stripe_token, numeric_inputs, redirect_to) => {
+        create_ajax_request_form_call_count += 1;
         if (form_name === "autopay") {
             assert.equal(url, "/json/billing/upgrade");
             assert.equal(stripe_token, "stripe_add_card_token");
@@ -111,15 +113,18 @@ run_test("initialize", () => {
     const request_sponsorship_click_handler = $("#sponsorship-button").get_on_handler("click");
 
     helpers.is_valid_input = () => true;
-
     add_card_click_handler(e);
+    assert.equal(create_ajax_request_form_call_count, 1);
     invoice_click_handler(e);
+    assert.equal(create_ajax_request_form_call_count, 2);
+    request_sponsorship_click_handler(e);
+    assert.equal(create_ajax_request_form_call_count, 3);
 
     helpers.is_valid_input = () => false;
     add_card_click_handler(e);
     invoice_click_handler(e);
-
     request_sponsorship_click_handler(e);
+    assert.equal(create_ajax_request_form_call_count, 3);
 
     helpers.show_license_section = (section) => {
         assert.equal(section, "manual");

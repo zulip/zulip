@@ -40,6 +40,9 @@ exports.initialize = () => {
     });
 
     $("#sponsorship-button").on("click", (e) => {
+        if (!helpers.is_valid_input($("#sponsorship-form"))) {
+            return;
+        }
         e.preventDefault();
         helpers.create_ajax_request(
             "/json/billing/sponsorship",
