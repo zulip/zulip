@@ -411,24 +411,24 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
             raise
         except twitter.TwitterError as e:
             t = e.args[0]
-            if len(t) == 1 and ('code' in t[0]) and (t[0]['code'] == 34):
-                # Code 34 means that the message doesn't exist; return
-                # None so that we will cache the error
-                return None
-            elif len(t) == 1 and ('code' in t[0]) and (t[0]['code'] == 88 or
-                                                       t[0]['code'] == 130):
-                # Code 88 means that we were rate-limited and 130
-                # means Twitter is having capacity issues; either way
-                # just raise the error so we don't cache None and will
-                # try again later.
-                raise
-            else:
-                # It's not clear what to do in cases of other errors,
-                # but for now it seems reasonable to log at error
-                # level (so that we get notified), but then cache the
-                # failure to proceed with our usual work
-                markdown_logger.exception("Unknown error fetching tweet data")
-                return None
+            if len(t) == 1 and ('code' in t[0]):
+                code = t[0]['code']
+                if code == 34:
+                    # Code 34 means that the message doesn't exist; return
+                    # None so that we will cache the error
+                    return None
+                elif code in [88, 130]:
+                    # Code 88 means that we were rate-limited and 130
+                    # means Twitter is having capacity issues; either way
+                    # just raise the error so we don't cache None and will
+                    # try again later.
+                    raise
+            # It's not clear what to do in cases of other errors,
+            # but for now it seems reasonable to log at error
+            # level (so that we get notified), but then cache the
+            # failure to proceed with our usual work
+            markdown_logger.exception("Unknown error fetching tweet data")
+            return None
     return res
 
 HEAD_START_RE = re.compile('^head[ >]')
