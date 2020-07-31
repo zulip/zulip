@@ -1,8 +1,7 @@
+const emoji = zrequire("emoji", "shared/js/emoji");
 const typeahead = zrequire("typeahead", "shared/js/typeahead");
 zrequire("compose_state");
 zrequire("pm_conversations");
-zrequire("emoji");
-set_global("Handlebars", global.make_handlebars());
 zrequire("templates");
 zrequire("typeahead_helper");
 zrequire("people");
@@ -316,7 +315,7 @@ run_test("content_typeahead_selected", () => {
     };
     let autosize_called = false;
     set_global("compose_ui", {
-        autosize_textarea: function () {
+        autosize_textarea() {
             autosize_called = true;
         },
     });
@@ -777,7 +776,7 @@ run_test("initialize", () => {
         const click_event = {type: "click", target: "#doesnotmatter"};
         options.query = "othello";
         // Focus lost (caused by the click event in the typeahead list)
-        $("#private_message_recipient").blur();
+        $("#private_message_recipient").trigger("blur");
         actual_value = options.updater(othello, click_event);
         assert.equal(appended_name, "Othello, the Moor of Venice");
 
@@ -959,34 +958,17 @@ run_test("initialize", () => {
         compose_textarea_typeahead_called = true;
     };
 
-    let pm_recipient_blur_called = false;
-    const old_pm_recipient_blur = $("#private_message_recipient").blur;
-    $("#private_message_recipient").blur = function (handler) {
-        if (handler) {
-            // The blur handler is being set.
-            this.val("othello@zulip.com, ");
-            handler.call(this);
-            const actual_value = this.val();
-            const expected_value = "othello@zulip.com";
-            assert.equal(actual_value, expected_value);
-        } else {
-            // The element is simply losing the focus.
-            old_pm_recipient_blur();
-        }
-        pm_recipient_blur_called = true;
-    };
-
     page_params.enter_sends = false;
-    // We manually specify it the first time because the click_func
-    // doesn't exist yet.
-    $("#stream_message_recipient_stream").select(noop);
-    $("#stream_message_recipient_topic").select(noop);
-    $("#private_message_recipient").select(noop);
 
     ct.initialize();
 
+    $("#private_message_recipient").val("othello@zulip.com, ");
+    $("#private_message_recipient").trigger("blur");
+    assert.equal($("#private_message_recipient").val(), "othello@zulip.com");
+
     // handle_keydown()
     let event = {
+        type: "keydown",
         keyCode: 13,
         target: {
             id: "stream_message_recipient_stream",
@@ -997,7 +979,7 @@ run_test("initialize", () => {
     $("#stream_message_recipient_topic").data = function () {
         return {typeahead: {shown: true}};
     };
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
 
     const stub_typeahead_hidden = function () {
         return {typeahead: {shown: false}};
@@ -1006,17 +988,17 @@ run_test("initialize", () => {
     $("#stream_message_recipient_stream").data = stub_typeahead_hidden;
     $("#private_message_recipient").data = stub_typeahead_hidden;
     $("#compose-textarea").data = stub_typeahead_hidden;
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
 
     event.keyCode = undefined;
     event.which = 9;
     event.shiftKey = false;
     event.target.id = "subject";
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
     event.target.id = "compose-textarea";
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
     event.target.id = "some_non_existing_id";
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
 
     // Setup jquery functions used in compose_textarea enter
     // handler.
@@ -1033,7 +1015,7 @@ run_test("initialize", () => {
 
     event.keyCode = 13;
     event.target.id = "stream_message_recipient_topic";
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
     event.target.id = "compose-textarea";
     page_params.enter_sends = false;
     event.metaKey = true;
@@ -1042,64 +1024,54 @@ run_test("initialize", () => {
         compose_finish_called = true;
     };
 
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
     assert(compose_finish_called);
     event.metaKey = false;
     event.ctrlKey = true;
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
     page_params.enter_sends = true;
     event.ctrlKey = false;
     event.altKey = true;
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
 
     // Cover case where there's a least one character there.
     range_length = 2;
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
 
     event.altKey = false;
     event.metaKey = true;
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
     event.target.id = "private_message_recipient";
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
 
     event.keyCode = 42;
-    $("form#send_message_form").keydown(event);
+    $("form#send_message_form").trigger(event);
 
     // handle_keyup()
     event = {
+        type: "keydown",
         keyCode: 13,
         target: {
             id: "stream_message_recipient_stream",
         },
         preventDefault: noop,
     };
-    // We execute .keydown() in order to make nextFocus !== false
+    // We trigger keydown in order to make nextFocus !== false
     $("#stream_message_recipient_topic").data = function () {
         return {typeahead: {shown: true}};
     };
-    $("form#send_message_form").keydown(event);
-    $("form#send_message_form").keyup(event);
+    $("form#send_message_form").trigger(event);
+    $("#stream_message_recipient_topic").off("mouseup");
+    event.type = "keyup";
+    $("form#send_message_form").trigger(event);
     event.keyCode = undefined;
     event.which = 9;
     event.shiftKey = false;
-    $("form#send_message_form").keyup(event);
+    $("form#send_message_form").trigger(event);
     event.keyCode = 42;
-    $("form#send_message_form").keyup(event);
+    $("form#send_message_form").trigger(event);
 
     // select_on_focus()
-    let focus_handler_called = false;
-    let stream_one_called = false;
-    $("#stream_message_recipient_stream").focus = function (f) {
-        // This .one() function emulates the possible infinite recursion that
-        // in_handler tries to avoid.
-        $("#stream_message_recipient_stream").one = function (event, handler) {
-            handler({preventDefault: noop});
-            f(); // This time in_handler will already be true.
-            stream_one_called = true;
-        };
-        f(); // Here in_handler is false.
-        focus_handler_called = true;
-    };
 
     $("#compose-send-button").fadeOut = noop;
     $("#compose-send-button").fadeIn = noop;
@@ -1114,14 +1086,22 @@ run_test("initialize", () => {
     $("#enter_sends").is = function () {
         return false;
     };
-    $("#enter_sends").click();
+    $("#enter_sends").trigger("click");
 
     // Now we re-run both .initialize() and the click handler, this time
     // with enter_sends: page_params.enter_sends being true
     $("#enter_sends").is = function () {
         return true;
     };
-    $("#enter_sends").click();
+    $("#enter_sends").trigger("click");
+
+    $("#stream_message_recipient_stream").off("focus");
+    $("#stream_message_recipient_topic").off("focus");
+    $("#private_message_recipient").off("focus");
+    $("form#send_message_form").off("keydown");
+    $("form#send_message_form").off("keyup");
+    $("#enter_sends").off("click");
+    $("#private_message_recipient").off("blur");
     ct.initialize();
 
     // Now let's make sure that all the stub functions have been called
@@ -1129,11 +1109,8 @@ run_test("initialize", () => {
     assert(stream_typeahead_called);
     assert(subject_typeahead_called);
     assert(pm_recipient_typeahead_called);
-    assert(pm_recipient_blur_called);
     assert(channel_post_called);
     assert(compose_textarea_typeahead_called);
-    assert(focus_handler_called);
-    assert(stream_one_called);
 });
 
 run_test("begins_typeahead", () => {

@@ -147,7 +147,7 @@ exports.get_hotkey_deprecation_notice = function (originalHotkey, replacementHot
     return i18n.t(
         'We\'ve replaced the "__originalHotkey__" hotkey with "__replacementHotkey__" ' +
             "to make this common shortcut easier to trigger.",
-        {originalHotkey: originalHotkey, replacementHotkey: replacementHotkey},
+        {originalHotkey, replacementHotkey},
     );
 };
 
@@ -178,7 +178,7 @@ exports.maybe_show_deprecation_notice = function (key) {
     if (!shown_deprecation_notices.includes(key)) {
         $("#deprecation-notice-modal").modal("show");
         $("#deprecation-notice-message").text(message);
-        $("#close-deprecation-notice").focus();
+        $("#close-deprecation-notice").trigger("focus");
         shown_deprecation_notices.push(key);
         if (localstorage.supported()) {
             localStorage.setItem(
@@ -194,7 +194,7 @@ exports.maybe_show_deprecation_notice = function (key) {
 let saved_compose_cursor = 0;
 
 exports.set_compose_textarea_handlers = function () {
-    $("#compose-textarea").blur(function () {
+    $("#compose-textarea").on("blur", function () {
         saved_compose_cursor = $(this).caret();
     });
 
@@ -206,7 +206,7 @@ exports.set_compose_textarea_handlers = function () {
 };
 
 exports.restore_compose_cursor = function () {
-    $("#compose-textarea").focus().caret(saved_compose_cursor);
+    $("#compose-textarea").trigger("focus").caret(saved_compose_cursor);
 };
 
 exports.initialize = function () {

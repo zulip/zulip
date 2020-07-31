@@ -44,7 +44,7 @@ casper.then(function () {
 
     this.waitUntilVisible("#id_email", function () {
         this.test.assertEvalEquals(function () {
-            return $("#id_email").attr("placeholder");
+            return $("#id_email").html();
         }, email);
     });
 

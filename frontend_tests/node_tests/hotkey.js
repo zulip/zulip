@@ -11,6 +11,8 @@
 // it calls any external module other than `ui.foo`, it'll crash.
 // Future work includes making sure it actually does call `ui.foo()`.
 
+const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+
 set_global("activity", {});
 
 set_global("navigator", {
@@ -21,32 +23,48 @@ set_global("page_params", {});
 
 set_global("overlays", {});
 
-const noop = () => {};
-
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");
 set_global("$", global.make_zjquery());
-$.fn.keydown = noop;
-$.fn.keypress = noop;
 
-zrequire("emoji");
+const emoji = zrequire("emoji", "shared/js/emoji");
+
+emoji.initialize({
+    realm_emoji: {},
+    emoji_codes,
+});
+
 const hotkey = zrequire("hotkey");
 zrequire("common");
 
+set_global("compose_actions", {});
+set_global("condense", {});
+set_global("drafts", {});
+set_global("hashchange", {});
+set_global("info_overlay", {});
+set_global("lightbox", {});
 set_global("list_util", {});
+set_global("message_edit", {});
+set_global("muting_ui", {});
+set_global("narrow", {});
+set_global("navigate", {});
+set_global("reactions", {});
+set_global("search", {});
+set_global("stream_list", {});
+set_global("subs", {});
 
 set_global("current_msg_list", {
-    selected_id: function () {
+    selected_id() {
         return 42;
     },
-    selected_message: function () {
+    selected_message() {
         return {
             sent_by_me: true,
             flags: ["read", "starred"],
         };
     },
-    selected_row: function () {},
-    get_row: function () {
+    selected_row() {},
+    get_row() {
         return 101;
     },
 });
@@ -70,17 +88,17 @@ function stubbing(func_name_to_stub, test_function) {
 run_test("mappings", () => {
     function map_press(which, shiftKey) {
         return hotkey.get_keypress_hotkey({
-            which: which,
-            shiftKey: shiftKey,
+            which,
+            shiftKey,
         });
     }
 
     function map_down(which, shiftKey, ctrlKey, metaKey) {
         return hotkey.get_keydown_hotkey({
-            which: which,
-            shiftKey: shiftKey,
-            ctrlKey: ctrlKey,
-            metaKey: metaKey,
+            which,
+            shiftKey,
+            ctrlKey,
+            metaKey,
         });
     }
 
@@ -178,7 +196,7 @@ run_test("basic_chars", () => {
 
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
-    assert_unmapped("abfhlmoyz");
+    assert_unmapped("abfmoyz");
     assert_unmapped("BEFHILNOQTUWXYZ");
 
     // We have to skip some checks due to the way the code is
@@ -215,9 +233,10 @@ run_test("basic_chars", () => {
         for (const is_active of [return_true, return_false]) {
             for (const info_overlay_open of [return_true, return_false]) {
                 set_global("overlays", {
-                    is_active: is_active,
-                    settings_open: settings_open,
-                    info_overlay_open: info_overlay_open,
+                    is_active,
+                    settings_open,
+                    info_overlay_open,
+                    recent_topics_open: return_false,
                 });
                 test_normal_typing();
             }
@@ -244,7 +263,7 @@ run_test("basic_chars", () => {
     test_normal_typing();
     overlays.is_active = return_false;
 
-    assert_mapping("?", "info_overlay.maybe_show_keyboard_shortcuts");
+    assert_mapping("?", "hashchange.go_to_location");
     assert_mapping("/", "search.initiate_search");
     assert_mapping("w", "activity.initiate_search");
     assert_mapping("q", "stream_list.initiate_search");
@@ -349,8 +368,8 @@ run_test("motion_keys", () => {
     function process(name, shiftKey, ctrlKey) {
         const e = {
             which: codes[name],
-            shiftKey: shiftKey,
-            ctrlKey: ctrlKey,
+            shiftKey,
+            ctrlKey,
         };
 
         try {

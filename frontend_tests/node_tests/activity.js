@@ -1,4 +1,7 @@
 set_global("$", global.make_zjquery());
+const window_stub = $.create("window-stub");
+set_global("to_$", () => window_stub);
+$(window).idle = () => {};
 
 let filter_key_handlers;
 
@@ -10,7 +13,7 @@ const _page_params = {
 };
 
 const _document = {
-    hasFocus: function () {
+    hasFocus() {
         return true;
     },
 };
@@ -38,15 +41,15 @@ const _pm_list = {
 };
 
 const _popovers = {
-    hide_all_except_sidebars: function () {},
-    hide_all: function () {},
-    show_userlist_sidebar: function () {
+    hide_all_except_sidebars() {},
+    hide_all() {},
+    show_userlist_sidebar() {
         $(".column-right").addClass("expanded");
     },
 };
 
 const _stream_popover = {
-    show_streamlist_sidebar: function () {
+    show_streamlist_sidebar() {
         $(".column-left").addClass("expanded");
     },
 };
@@ -72,7 +75,6 @@ set_global("stream_popover", _stream_popover);
 set_global("ui", _ui);
 
 zrequire("compose_fade");
-set_global("Handlebars", global.make_handlebars());
 zrequire("unread");
 zrequire("hash_util");
 zrequire("narrow");
@@ -240,7 +242,7 @@ function reset_setup() {
 reset_setup();
 
 run_test("presence_list_full_update", () => {
-    $(".user-list-filter").focus();
+    $(".user-list-filter").trigger("focus");
     compose_state.private_message_recipient = () => fred.email;
     compose_fade.set_focused_recipient("private");
 
@@ -582,9 +584,9 @@ run_test("realm_presence_disabled", () => {
 
 run_test("clear_search", () => {
     $(".user-list-filter").val("somevalue");
-    activity.user_filter.clear_search();
+    $("#clear_search_people_button").trigger("click");
     assert.equal($(".user-list-filter").val(), "");
-    activity.user_filter.clear_search();
+    $("#clear_search_people_button").trigger("click");
     assert($("#user_search_section").hasClass("notdisplayed"));
 });
 
@@ -600,7 +602,7 @@ run_test("escape_search", () => {
 reset_setup();
 
 run_test("initiate_search", () => {
-    $(".user-list-filter").blur();
+    $(".user-list-filter").trigger("blur");
     simulate_right_column_buddy_list();
     activity.initiate_search();
     assert.equal($(".column-right").hasClass("expanded"), true);
@@ -624,9 +626,9 @@ run_test("toggle_filter_display", () => {
 });
 
 run_test("searching", () => {
-    $(".user-list-filter").focus();
+    $(".user-list-filter").trigger("focus");
     assert.equal(activity.searching(), true);
-    $(".user-list-filter").blur();
+    $(".user-list-filter").trigger("blur");
     assert.equal(activity.searching(), false);
 });
 
@@ -678,18 +680,16 @@ run_test("initialize", () => {
     clear();
 
     $.stub_selector("html", {
-        on: function (name, func) {
+        on(name, func) {
             func();
         },
     });
-    $(window).focus = (func) => func();
-    $(window).idle = () => {};
 
     channel.post = function (payload) {
         payload.success({});
     };
     global.server_events = {
-        check_for_unsuspend: function () {},
+        check_for_unsuspend() {},
     };
 
     let scroll_handler_started;
@@ -699,7 +699,9 @@ run_test("initialize", () => {
 
     activity.client_is_active = false;
 
+    $(window).off("focus");
     activity.initialize();
+    $(window).trigger("focus");
     clear();
 
     assert(scroll_handler_started);
@@ -717,6 +719,7 @@ run_test("initialize", () => {
     };
     global.setInterval = (func) => func();
 
+    $(window).off("focus");
     activity.initialize();
 
     assert($("#zephyr-mirror-error").hasClass("show"));

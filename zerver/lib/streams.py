@@ -163,6 +163,10 @@ def access_stream_for_send_message(sender: UserProfile,
         elif sender.is_new_member:
             raise JsonableError(_("New members cannot send to this stream."))
 
+    if stream.is_web_public:
+        # Even guest users can write to web-public streams.
+        return
+
     if not (stream.invite_only or sender.is_guest):
         # This is a public stream and sender is not a guest user
         return
@@ -241,6 +245,10 @@ def access_stream_common(user_profile: UserProfile, stream: Stream,
                                        active=require_active)
     except Subscription.DoesNotExist:
         sub = None
+
+    # Any realm user, even guests, can access web_public streams.
+    if stream.is_web_public:
+        return (recipient, sub)
 
     # If the stream is in your realm and public, you can access it.
     if stream.is_public() and not user_profile.is_guest:
@@ -353,6 +361,9 @@ def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool
     access_stream is being called elsewhere to confirm that the user
     can actually see this stream.
     """
+    if stream.is_web_public:
+        return True
+
     if stream.is_history_realm_public() and not user_profile.is_guest:
         return True
 
@@ -397,10 +408,15 @@ def filter_stream_authorization(user_profile: UserProfile,
         if stream.id in streams_subscribed:
             continue
 
-        # Users are not authorized for invite_only streams, and guest
-        # users are not authorized for any streams
-        if stream.invite_only or user_profile.is_guest:
-            unauthorized_streams.append(stream)
+        # Web public streams are accessible even to guests
+        if stream.is_web_public:
+            continue
+
+        # Members and administrators are authorized for public streams
+        if not stream.invite_only and not user_profile.is_guest:
+            continue
+
+        unauthorized_streams.append(stream)
 
     authorized_streams = [stream for stream in streams if
                           stream.id not in {stream.id for stream in unauthorized_streams}]

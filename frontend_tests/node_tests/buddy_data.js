@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const _page_params = {};
 
 set_global("page_params", _page_params);
@@ -138,7 +140,7 @@ function activate_people() {
 
     function set_presence(user_id, status) {
         presence.presence_info.set(user_id, {
-            status: status,
+            status,
             last_active: 9999,
         });
     }

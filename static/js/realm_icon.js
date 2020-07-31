@@ -7,11 +7,11 @@ exports.build_realm_icon_widget = function (upload_function) {
         return;
     }
     if (page_params.realm_icon_source === "G") {
-        $("#realm-icon-upload-widget .settings-page-delete-button").hide();
+        $("#realm-icon-upload-widget .image-delete-button").hide();
     } else {
-        $("#realm-icon-upload-widget .settings-page-delete-button").show();
+        $("#realm-icon-upload-widget .image-delete-button").show();
     }
-    $("#realm-icon-upload-widget .settings-page-delete-button").on("click", (e) => {
+    $("#realm-icon-upload-widget .image-delete-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         channel.del({
@@ -31,9 +31,9 @@ exports.build_realm_icon_widget = function (upload_function) {
 exports.rerender = function () {
     $("#realm-icon-upload-widget .image-block").attr("src", page_params.realm_icon_url);
     if (page_params.realm_icon_source === "U") {
-        $("#realm-icon-upload-widget .settings-page-delete-button").show();
+        $("#realm-icon-upload-widget .image-delete-button").show();
     } else {
-        $("#realm-icon-upload-widget .settings-page-delete-button").hide();
+        $("#realm-icon-upload-widget .image-delete-button").hide();
         // Need to clear input because of a small edge case
         // where you try to upload the same image you just deleted.
         const file_input = $("#realm-icon-upload-widget .image_file_input");

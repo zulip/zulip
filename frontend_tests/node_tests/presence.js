@@ -1,3 +1,5 @@
+const XDate = require("xdate");
+
 zrequire("people");
 zrequire("presence");
 
@@ -9,10 +11,6 @@ set_global("server_events", {});
 set_global("reload_state", {
     is_in_progress: return_false,
 });
-function XDate(ms) {
-    return {seconds: ms};
-}
-set_global("XDate", XDate);
 
 const OFFLINE_THRESHOLD_SECS = 140;
 
@@ -178,7 +176,7 @@ run_test("set_presence_info", () => {
         last_active: recent,
     });
     assert.equal(presence.get_status(alice.user_id), "active");
-    assert.deepEqual(presence.last_active_date(alice.user_id), {seconds: recent * 1000});
+    assert.deepEqual(presence.last_active_date(alice.user_id), new XDate(recent * 1000));
 
     assert.deepEqual(presence.presence_info.get(fred.user_id), {status: "idle", last_active: now});
     assert.equal(presence.get_status(fred.user_id), "idle");
@@ -283,7 +281,7 @@ run_test("last_active_date", () => {
 
     assert.equal(presence.last_active_date(unknown_id), undefined);
     assert.equal(presence.last_active_date(fred.user_id), undefined);
-    assert.deepEqual(presence.last_active_date(alice.user_id), {seconds: 500000});
+    assert.deepEqual(presence.last_active_date(alice.user_id), new XDate(500 * 1000));
 });
 
 run_test("update_info_from_event", () => {

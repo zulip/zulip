@@ -176,11 +176,15 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         hamlet = self.example_user('hamlet')
 
-        result = self.api_post(
-            hamlet,
-            endpoint,
-            dict(user_id=user_id, token_kin=token_kind, token=token),
-        )
+        with self.assertLogs(level='WARNING') as warn_log:
+            result = self.api_post(
+                hamlet,
+                endpoint,
+                dict(user_id=user_id, token_kin=token_kind, token=token),
+            )
+        self.assertEqual(warn_log.output, [
+            'WARNING:root:User hamlet@zulip.com (zulip) attempted to access API on wrong subdomain ()'
+        ])
         self.assert_json_error(result, "Account is not associated with this subdomain",
                                status_code=401)
 
@@ -318,17 +322,24 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assert_json_error(result, 'Token does not exist')
 
             with mock.patch('zerver.lib.remote_server.requests.request',
-                            side_effect=requests.ConnectionError):
+                            side_effect=requests.ConnectionError), self.assertLogs(level="ERROR") as error_log:
                 result = self.client_post(endpoint, {'token': token},
                                           subdomain="zulip")
                 self.assert_json_error(
                     result, "ConnectionError while trying to connect to push notification bouncer", 502)
+                self.assertEqual(error_log.output, [
+                    f'ERROR:django.request:Bad Gateway: {endpoint}',
+                ])
 
             with mock.patch('zerver.lib.remote_server.requests.request',
-                            return_value=Result(status=500)):
+                            return_value=Result(status=500)), self.assertLogs(level="WARNING") as warn_log:
                 result = self.client_post(endpoint, {'token': token},
                                           subdomain="zulip")
                 self.assert_json_error(result, "Received 500 from push notification bouncer", 502)
+                self.assertEqual(warn_log.output, [
+                    'WARNING:root:Received 500 from push notification bouncer',
+                    f'ERROR:django.request:Bad Gateway: {endpoint}',
+                ])
 
         # Add tokens
         for endpoint, token, kind in endpoints:
@@ -495,7 +506,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             subdomain="")
         self.assert_json_error(result, "Data is out of order.")
 
-        with mock.patch("zilencer.views.validate_incoming_table_data"):
+        with mock.patch("zilencer.views.validate_incoming_table_data"), self.assertLogs(level='WARNING') as warn_log:
             # We need to wrap a transaction here to avoid the
             # IntegrityError that will be thrown in here from breaking
             # the unittest transaction.
@@ -508,6 +519,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
                      'realmauditlog_rows': ujson.dumps(realmauditlog_data)},
                     subdomain="")
             self.assert_json_error(result, "Invalid data.")
+            self.assertEqual(warn_log.output, [
+                'WARNING:root:Invalid data saving zilencer_remoteinstallationcount for server demo.example.com/1234-abcd'
+            ])
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
     @mock.patch('zerver.lib.remote_server.requests.request')
@@ -1070,8 +1084,11 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.setup_gcm_tokens()
         self.make_stream('public_stream')
         self.subscribe(self.user_profile, 'public_stream')
-        do_soft_deactivate_users([self.user_profile])
-
+        with self.assertLogs(level='INFO') as info_logs:
+            do_soft_deactivate_users([self.user_profile])
+        self.assertEqual(info_logs.output, [
+            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+        ])
         sender = self.example_user('iago')
         message_id = self.send_stream_message(sender, "public_stream", "test")
         missed_message = {

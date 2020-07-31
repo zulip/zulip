@@ -6,9 +6,11 @@ set_global("page_params", {
 set_global("compose_ui", {});
 
 const {JSDOM} = require("jsdom");
+
 const {window} = new JSDOM("<!DOCTYPE html><p>Hello world</p>");
 const {DOMParser, document} = window;
 set_global("$", require("jquery")(window));
+
 set_global("DOMParser", DOMParser);
 set_global("document", document);
 

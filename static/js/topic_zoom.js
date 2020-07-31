@@ -10,7 +10,7 @@ function zoom_in() {
     popovers.hide_all_except_sidebars();
     topic_list.zoom_in();
     stream_list.zoom_in_topics({
-        stream_id: stream_id,
+        stream_id,
     });
 
     zoomed_in = true;

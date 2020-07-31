@@ -1,3 +1,5 @@
+const XDate = require("xdate");
+
 function truncate_precision(float) {
     return parseFloat(float.toFixed(3));
 }

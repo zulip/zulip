@@ -1,3 +1,5 @@
+const emoji = require("../shared/js/emoji");
+
 const settings_config = require("./settings_config");
 
 exports.dispatch_normal_event = function dispatch_normal_event(event) {
@@ -214,12 +216,12 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             break;
 
         case "realm_emoji":
-            // Update `page_params.realm_emoji` so that settings page
-            // can display it properly when reopened without refresh.
-            page_params.realm_emoji = event.realm_emoji;
+            // The authoritative data source is here.
             emoji.update_emojis(event.realm_emoji);
-            settings_emoji.populate_emoji(event.realm_emoji);
-            emoji_picker.generate_emoji_picker_data(emoji.active_realm_emojis);
+
+            // And then let other widgets know.
+            settings_emoji.populate_emoji();
+            emoji_picker.rebuild_catalog();
             composebox_typeahead.update_emoji_data();
             break;
 

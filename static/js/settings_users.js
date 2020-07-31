@@ -1,8 +1,9 @@
-const settings_data = require("./settings_data");
-const settings_config = require("./settings_config");
-const render_admin_user_list = require("../templates/admin_user_list.hbs");
-const render_admin_human_form = require("../templates/admin_human_form.hbs");
 const render_admin_bot_form = require("../templates/admin_bot_form.hbs");
+const render_admin_human_form = require("../templates/admin_human_form.hbs");
+const render_admin_user_list = require("../templates/admin_user_list.hbs");
+
+const settings_config = require("./settings_config");
+const settings_data = require("./settings_data");
 
 const section = {
     active: {},
@@ -257,7 +258,7 @@ section.bots.create_table = () => {
         html_selector: (item) => `tr[data-user-id='${item}']`,
         filter: {
             element: $bots_table.closest(".settings-section").find(".search"),
-            predicate: function (item, value) {
+            predicate(item, value) {
                 if (!item) {
                     return false;
                 }
@@ -286,7 +287,7 @@ section.active.create_table = (active_users) => {
     list_render.create($users_table, active_users, {
         name: "users_table_list",
         get_item: people.get_by_user_id,
-        modifier: function (item) {
+        modifier(item) {
             const info = human_info(item);
             return render_admin_user_list(info);
         },
@@ -314,7 +315,7 @@ section.deactivated.create_table = (deactivated_users) => {
     list_render.create($deactivated_users_table, deactivated_users, {
         name: "deactivated_users_table_list",
         get_item: people.get_by_user_id,
-        modifier: function (item) {
+        modifier(item) {
             const info = human_info(item);
             return render_admin_user_list(info);
         },
@@ -386,7 +387,7 @@ function open_human_form(person) {
     const user_id = person.user_id;
 
     const html = render_admin_human_form({
-        user_id: user_id,
+        user_id,
         email: person.email,
         full_name: person.full_name,
         user_role_values: settings_config.user_role_values,
@@ -502,10 +503,10 @@ function confirm_deactivation(row, user_id, status_field) {
         const row_deactivate_button = row.find("button.deactivate");
         row_deactivate_button.prop("disabled", true).text(i18n.t("Working…"));
         const opts = {
-            success_continuation: function () {
+            success_continuation() {
                 update_view_on_deactivate(row);
             },
-            error_continuation: function () {
+            error_continuation() {
                 row_deactivate_button.text(i18n.t("Deactivate"));
             },
         };
@@ -544,10 +545,10 @@ function handle_bot_deactivation(tbody, status_field) {
         const url = "/json/bots/" + encodeURIComponent(bot_id);
 
         const opts = {
-            success_continuation: function () {
+            success_continuation() {
                 update_view_on_deactivate(row);
             },
-            error_continuation: function (xhr) {
+            error_continuation(xhr) {
                 ui_report.generic_row_button_error(xhr, button_elem);
             },
         };
@@ -567,10 +568,10 @@ function handle_reactivation(tbody, status_field) {
         const data = {};
 
         const opts = {
-            success_continuation: function () {
+            success_continuation() {
                 update_view_on_reactivate(row);
             },
-            error_continuation: function (xhr) {
+            error_continuation(xhr) {
                 ui_report.generic_row_button_error(xhr, button_elem);
             },
         };

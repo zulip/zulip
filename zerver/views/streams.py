@@ -597,6 +597,7 @@ def get_subscribers_backend(request: HttpRequest, user_profile: UserProfile,
 def get_streams_backend(
         request: HttpRequest, user_profile: UserProfile,
         include_public: bool=REQ(validator=check_bool, default=True),
+        include_web_public: bool=REQ(validator=check_bool, default=False),
         include_subscribed: bool=REQ(validator=check_bool, default=True),
         include_all_active: bool=REQ(validator=check_bool, default=False),
         include_default: bool=REQ(validator=check_bool, default=False),
@@ -604,6 +605,7 @@ def get_streams_backend(
 ) -> HttpResponse:
 
     streams = do_get_streams(user_profile, include_public=include_public,
+                             include_web_public=include_web_public,
                              include_subscribed=include_subscribed,
                              include_all_active=include_all_active,
                              include_default=include_default,
@@ -736,7 +738,7 @@ def update_subscription_properties_backend(
             return json_error(error.message)
 
         do_change_subscription_property(user_profile, sub, stream,
-                                        property, value)
+                                        property, value, acting_user=user_profile)
 
         response_data.append({'stream_id': stream_id,
                               'property': property,

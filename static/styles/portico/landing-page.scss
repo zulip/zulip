@@ -868,158 +868,160 @@ nav {
 .compare {
     background-color: hsl(163, 22%, 31%);
     color: hsl(0, 0%, 100%);
-}
 
-.compare .text-header .text-content h1 {
-    margin-top: 0px;
-}
+    .text-header .text-content h1 {
+        margin-top: 0px;
+    }
 
-.compare .padded-content {
-    width: 900px;
-    margin: 0 auto;
-}
+    .padded-content {
+        width: 900px;
+        margin: 0 auto;
+    }
 
-.compare table {
-    width: 100%;
-    text-align: left;
-    border-collapse: collapse;
+    table {
+        width: 100%;
+        text-align: left;
+        border-collapse: collapse;
 
-    font-weight: 400;
+        font-weight: 400;
 
-    color: hsla(0, 0%, 100%, 0.8);
-}
+        color: hsla(0, 0%, 100%, 0.8);
 
-.compare table thead th:last-of-type {
-    width: 120px;
-}
+        thead th {
+            &:last-of-type {
+                width: 120px;
+            }
 
-.compare table thead th.uniform {
-    width: 20%;
-}
+            &.uniform {
+                width: 20%;
+            }
+        }
 
-.compare table td:not(:first-of-type),
-.compare table th:not(:first-of-type) {
-    text-align: center;
-}
+        td:not(:first-of-type),
+        th:not(:first-of-type) {
+            text-align: center;
+        }
+    }
 
-.compare thead {
-    border-bottom: 3px solid hsla(0, 0%, 0%, 0.1);
-}
+    thead {
+        border-bottom: 3px solid hsla(0, 0%, 0%, 0.1);
 
-.compare thead th {
-    font-weight: 600;
-    padding: 15px 0px;
+        th {
+            font-weight: 600;
+            padding: 15px 0px;
 
-    color: hsl(0, 0%, 100%);
-}
+            color: hsl(0, 0%, 100%);
 
-.compare thead th.normal {
-    font-weight: normal;
-    color: inherit;
-}
+            &.normal {
+                font-weight: normal;
+                color: inherit;
+            }
+        }
+    }
 
-.compare tbody tr {
-    border-bottom: 1px solid hsla(360, 0%, 100%, 0.03);
-}
+    tbody tr {
+        border-bottom: 1px solid hsla(360, 0%, 100%, 0.03);
 
-.compare tbody tr td {
-    padding: 10px 0px;
-}
+        td {
+            padding: 10px 0px;
 
-.compare tbody tr td.no {
-    text-align: center;
-}
+            &.no {
+                text-align: center;
+            }
 
-.compare tbody tr td.yes::before {
-    content: " ";
-    display: inline-block;
+            &.yes::before {
+                content: " ";
+                display: inline-block;
 
-    width: 27px;
-    height: 27px;
-    background-image: url(/static/images/landing-page/checkmark.png);
-    background-size: 100% auto;
-}
+                width: 27px;
+                height: 27px;
+                background-image: url(/static/images/landing-page/checkmark.png);
+                background-size: 100% auto;
+            }
 
-.compare tbody tr td.no::before {
-    content: "\d7";
+            &.no::before {
+                content: "\d7";
 
-    position: relative;
-    display: inline-block;
+                position: relative;
+                display: inline-block;
 
-    top: 3px;
+                top: 3px;
 
-    font-size: 2.5rem;
-    font-weight: 500;
-    line-height: 0.9;
+                font-size: 2.5rem;
+                font-weight: 500;
+                line-height: 0.9;
 
-    opacity: 0.4;
-}
+                opacity: 0.4;
+            }
 
-.compare tbody tr td a {
-    font-size: 0.9rem;
-    font-weight: 400;
-    text-transform: uppercase;
-}
+            a {
+                font-size: 0.9rem;
+                font-weight: 400;
+                text-transform: uppercase;
+            }
+        }
+    }
 
-.compare p {
-    font-weight: 300;
-}
+    p {
+        font-weight: 300;
+    }
 
-.compare .terms {
-    margin-top: 30px;
-    font-weight: 400;
-    font-size: 0.7em;
+    .terms {
+        margin-top: 30px;
+        font-weight: 400;
+        font-size: 0.7em;
 
-    line-height: 1.2;
+        line-height: 1.2;
 
-    color: hsla(0, 0%, 100%, 0.8);
-}
+        color: hsla(0, 0%, 100%, 0.8);
 
-.compare .terms a {
-    color: hsl(170, 47%, 73%);
+        a {
+            color: hsl(170, 47%, 73%);
+        }
+    }
 }
 
 /* -- faq css -- */
 .faqs {
     position: relative;
     background-color: hsl(0, 0%, 98%);
-}
 
-.faqs .padded-content {
-    position: relative;
-    z-index: 1;
-}
+    .padded-content {
+        position: relative;
+        z-index: 1;
+    }
 
-.faqs header {
-    max-width: 700px;
-    margin: 0 auto;
-}
+    header {
+        max-width: 700px;
+        margin: 0 auto;
 
-.faqs header h1 span {
-    vertical-align: top;
-}
+        h1 span {
+            vertical-align: top;
+        }
+    }
 
-.faqs .faq {
-    margin: 50px auto;
-    max-width: 700px;
-    font-size: 1.2em;
-    color: hsl(223, 6%, 25%);
-}
+    .faq {
+        margin: 50px auto;
+        max-width: 700px;
+        font-size: 1.2em;
+        color: hsl(223, 6%, 25%);
 
-/* the last faq in the box shouldn't have an extra 50px of margin. */
-.faqs .faq-box div:last-of-type {
-    margin-bottom: 10px;
-}
+        .question {
+            font-weight: 600;
+            color: hsl(222, 20%, 40%);
+            font-size: 1.1em;
+        }
 
-.faqs .faq .question {
-    font-weight: 600;
-    color: hsl(222, 20%, 40%);
-    font-size: 1.1em;
-}
+        .answer {
+            margin: 20px 0px 0px 0px;
+            font-weight: 400;
+        }
+    }
 
-.faqs .faq .answer {
-    margin: 20px 0px 0px 0px;
-    font-weight: 400;
+    /* the last faq in the box shouldn't have an extra 50px of margin. */
+    .faq-box div:last-of-type {
+        margin-bottom: 10px;
+    }
 }
 
 .screen .line {
@@ -3452,6 +3454,8 @@ nav {
                 }
 
                 &.active {
+                    font-weight: 400;
+
                     &::after {
                         content: ">";
                         transform: scale(1, 1);
@@ -3459,8 +3463,6 @@ nav {
                         left: -25px;
                         font-weight: 400;
                     }
-
-                    font-weight: 400;
                 }
             }
         }

@@ -5,47 +5,47 @@ const settings_config = zrequire("settings_config");
 zrequire("user_events");
 
 set_global("activity", {
-    redraw: function () {},
+    redraw() {},
 });
 
 set_global("settings_linkifiers", {
-    maybe_disable_widgets: function () {},
+    maybe_disable_widgets() {},
 });
 set_global("settings_org", {
-    maybe_disable_widgets: function () {},
+    maybe_disable_widgets() {},
 });
 set_global("settings_profile_fields", {
-    maybe_disable_widgets: function () {},
+    maybe_disable_widgets() {},
 });
 set_global("settings_streams", {
-    maybe_disable_widgets: function () {},
+    maybe_disable_widgets() {},
 });
 set_global("settings_users", {
-    update_user_data: function () {},
+    update_user_data() {},
 });
 
 set_global("gear_menu", {
-    update_org_settings_menu_item: function () {},
+    update_org_settings_menu_item() {},
 });
 set_global("page_params", {
     is_admin: true,
 });
 
 set_global("pm_list", {
-    update_private_messages: function () {},
+    update_private_messages() {},
 });
 
 set_global("narrow_state", {
-    update_email: function () {},
+    update_email() {},
 });
 
 set_global("compose", {
-    update_email: function () {},
+    update_email() {},
 });
 
 set_global("settings_account", {
-    update_email: function () {},
-    update_full_name: function () {},
+    update_email() {},
+    update_full_name() {},
 });
 
 set_global("message_live_update", {});

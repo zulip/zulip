@@ -23,7 +23,6 @@ zrequire("compose_ui");
 zrequire("compose");
 zrequire("compose_state");
 zrequire("compose_actions");
-zrequire("fenced_code");
 zrequire("stream_data");
 
 set_global("document", "document-stub");
@@ -79,10 +78,10 @@ set_global("common", {
 
 function stub_selected_message(msg) {
     set_global("current_msg_list", {
-        selected_message: function () {
+        selected_message() {
             return msg;
         },
-        can_mark_messages_read: function () {
+        can_mark_messages_read() {
             return true;
         },
     });
@@ -90,7 +89,7 @@ function stub_selected_message(msg) {
 
 function stub_channel_get(success_value) {
     set_global("channel", {
-        get: function (opts) {
+        get(opts) {
             opts.success(success_value);
         },
     });
@@ -115,7 +114,7 @@ run_test("start", () => {
     compose_actions.expand_compose_box = noop;
     compose_actions.set_focus = noop;
     compose_actions.complete_starting_tasks = noop;
-    compose_actions.blur_textarea = noop;
+    compose_actions.blur_compose_inputs = noop;
     compose_actions.clear_textarea = noop;
 
     // Start stream message
@@ -194,7 +193,6 @@ run_test("start", () => {
         content: "hello",
     };
 
-    $("#compose-textarea").trigger = noop;
     start("private", opts);
 
     assert_hidden("#stream-message");
@@ -410,7 +408,7 @@ run_test("focus_in_empty_compose", () => {
 
     compose_state.composing = return_true;
     $("#compose-textarea").val("");
-    $("#compose-textarea").focus();
+    $("#compose-textarea").trigger("focus");
     assert(compose_state.focus_in_empty_compose());
 
     compose_state.composing = return_false;
@@ -419,7 +417,7 @@ run_test("focus_in_empty_compose", () => {
     $("#compose-textarea").val("foo");
     assert(!compose_state.focus_in_empty_compose());
 
-    $("#compose-textarea").blur();
+    $("#compose-textarea").trigger("blur");
     assert(!compose_state.focus_in_empty_compose());
 });
 

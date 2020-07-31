@@ -1,5 +1,6 @@
-const util = require("./util");
 const autosize = require("autosize");
+
+const util = require("./util");
 
 let narrow_window = false;
 
@@ -120,7 +121,7 @@ exports.watch_manual_resize = function (element) {
         }
 
         const meta = {
-            box: box,
+            box,
             height: null,
             mousedown: false,
         };

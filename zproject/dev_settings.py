@@ -41,6 +41,8 @@ else:
 
 EXTERNAL_HOST_WITHOUT_PORT = deport(EXTERNAL_HOST)
 
+FAKE_EMAIL_DOMAIN = "zulipdev.com"
+
 ALLOWED_HOSTS = ['*']
 
 # Uncomment extra backends if you want to test with them.  Note that
@@ -73,7 +75,6 @@ INVITES_MIN_USER_AGE_DAYS = 0
 EMBEDDED_BOTS_ENABLED = True
 
 SAVE_FRONTEND_STACKTRACES = True
-EVENT_LOGS_ENABLED = True
 STAGING_ERROR_NOTIFICATIONS = True
 
 SYSTEM_ONLY_REALMS: Set[str] = set()

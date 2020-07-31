@@ -1,6 +1,9 @@
+const _ = require("lodash");
+
 const render_more_topics = require("../templates/more_topics.hbs");
 const render_more_topics_spinner = require("../templates/more_topics_spinner.hbs");
 const render_topic_list_item = require("../templates/topic_list_item.hbs");
+
 const topic_list_data = require("./topic_list_data");
 
 /*
@@ -62,17 +65,17 @@ exports.keyed_topic_li = (convo) => {
     const key = "t:" + convo.topic_name;
 
     return {
-        key: key,
-        render: render,
-        convo: convo,
-        eq: eq,
+        key,
+        render,
+        convo,
+        eq,
     };
 };
 
 exports.more_li = (more_topics_unreads) => {
     const render = () =>
         render_more_topics({
-            more_topics_unreads: more_topics_unreads,
+            more_topics_unreads,
         });
 
     const eq = (other) => other.more_items && more_topics_unreads === other.more_topics_unreads;
@@ -80,11 +83,11 @@ exports.more_li = (more_topics_unreads) => {
     const key = "more";
 
     return {
-        key: key,
+        key,
         more_items: true,
-        more_topics_unreads: more_topics_unreads,
-        render: render,
-        eq: eq,
+        more_topics_unreads,
+        render,
+        eq,
     };
 };
 
@@ -96,27 +99,30 @@ exports.spinner_li = () => {
     const key = "more";
 
     return {
-        key: key,
+        key,
         spinner: true,
-        render: render,
-        eq: eq,
+        render,
+        eq,
     };
 };
 
-exports.widget = function (parent_elem, my_stream_id) {
-    const self = {};
+class TopicListWidget {
+    prior_dom = undefined;
 
-    self.prior_dom = undefined;
+    constructor(parent_elem, my_stream_id) {
+        this.parent_elem = parent_elem;
+        this.my_stream_id = my_stream_id;
+    }
 
-    self.build_list = function (spinner) {
-        const list_info = topic_list_data.get_list_info(my_stream_id, zoomed);
+    build_list(spinner) {
+        const list_info = topic_list_data.get_list_info(this.my_stream_id, zoomed);
 
         const num_possible_topics = list_info.num_possible_topics;
         const more_topics_unreads = list_info.more_topics_unreads;
 
         const is_showing_all_possible_topics =
             list_info.items.length === num_possible_topics &&
-            stream_topic_history.is_complete_for_stream_id(my_stream_id);
+            stream_topic_history.is_complete_for_stream_id(this.my_stream_id);
 
         const attrs = [["class", "topic-list"]];
 
@@ -129,45 +135,42 @@ exports.widget = function (parent_elem, my_stream_id) {
         }
 
         const dom = vdom.ul({
-            attrs: attrs,
+            attrs,
             keyed_nodes: nodes,
         });
 
         return dom;
-    };
+    }
 
-    self.get_parent = function () {
-        return parent_elem;
-    };
+    get_parent() {
+        return this.parent_elem;
+    }
 
-    self.get_stream_id = function () {
-        return my_stream_id;
-    };
+    get_stream_id() {
+        return this.my_stream_id;
+    }
 
-    self.remove = function () {
-        parent_elem.find(".topic-list").remove();
-        self.prior_dom = undefined;
-    };
+    remove() {
+        this.parent_elem.find(".topic-list").remove();
+        this.prior_dom = undefined;
+    }
 
-    self.build = function (spinner) {
-        const new_dom = self.build_list(spinner);
+    build(spinner) {
+        const new_dom = this.build_list(spinner);
 
-        function replace_content(html) {
-            self.remove();
-            parent_elem.append(html);
-        }
+        const replace_content = (html) => {
+            this.remove();
+            this.parent_elem.append(html);
+        };
 
-        function find() {
-            return parent_elem.find(".topic-list");
-        }
+        const find = () => this.parent_elem.find(".topic-list");
 
-        vdom.update(replace_content, find, new_dom, self.prior_dom);
+        vdom.update(replace_content, find, new_dom, this.prior_dom);
 
-        self.prior_dom = new_dom;
-    };
-
-    return self;
-};
+        this.prior_dom = new_dom;
+    }
+}
+exports.TopicListWidget = TopicListWidget;
 
 exports.active_stream_id = function () {
     const stream_ids = Array.from(active_widgets.keys());
@@ -199,7 +202,7 @@ exports.rebuild = function (stream_li, stream_id) {
     }
 
     exports.clear();
-    const widget = exports.widget(stream_li, stream_id);
+    const widget = new TopicListWidget(stream_li, stream_id);
     widget.build();
 
     active_widgets.set(stream_id, widget);

@@ -1,12 +1,13 @@
-import * as google_analytics from "./google-analytics.js";
 import SimpleBar from "simplebar";
+
+import * as google_analytics from "./google-analytics.js";
 import {activate_correct_tab} from "./tabbed-instructions.js";
 
 function registerCodeSection($codeSection) {
     const $li = $codeSection.find("ul.nav li");
     const $blocks = $codeSection.find(".blocks div");
 
-    $li.click(function () {
+    $li.on("click", function () {
         const language = this.dataset.language;
 
         $li.removeClass("active");
@@ -15,10 +16,17 @@ function registerCodeSection($codeSection) {
         $blocks.removeClass("active");
         $blocks.filter("[data-language=" + language + "]").addClass("active");
     });
+
+    $li.on("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.target.click();
+        }
+    });
 }
 
 function highlight_current_article() {
     $(".help .sidebar a").removeClass("highlighted");
+    $(".help .sidebar a").attr("tabindex", "0");
     const path = window.location.pathname;
 
     if (!path) {
@@ -36,6 +44,7 @@ function highlight_current_article() {
     // Highlight current article link and the heading of the same
     article.closest("ul").css("display", "block");
     article.addClass("highlighted");
+    article.attr("tabindex", "-1");
 }
 
 function render_code_sections() {
@@ -64,7 +73,7 @@ function scrollToHash(simplebar) {
     }
 }
 
-const html_map = new Map();
+const cache = new Map();
 const loading = {
     name: null,
 };
@@ -74,23 +83,26 @@ const markdownSB = new SimpleBar($(".markdown")[0]);
 const fetch_page = function (path, callback) {
     $.get(path, (res) => {
         const $html = $(res).find(".markdown .content");
+        const title = $(res).filter("title").text();
 
-        callback($html.html().trim());
+        callback({html: $html.html().trim(), title});
         render_code_sections();
     });
 };
 
-const update_page = function (html_map, path) {
-    if (html_map.has(path)) {
-        $(".markdown .content").html(html_map.get(path));
+const update_page = function (cache, path) {
+    if (cache.has(path)) {
+        $(".markdown .content").html(cache.get(path).html);
+        document.title = cache.get(path).title;
         render_code_sections();
         scrollToHash(markdownSB);
     } else {
         loading.name = path;
-        fetch_page(path, (res) => {
-            html_map.set(path, res);
-            $(".markdown .content").html(res);
+        fetch_page(path, (article) => {
+            cache.set(path, article);
+            $(".markdown .content").html(article.html);
             loading.name = null;
+            document.title = article.title;
             scrollToHash(markdownSB);
         });
     }
@@ -99,18 +111,7 @@ const update_page = function (html_map, path) {
 
 new SimpleBar($(".sidebar")[0]);
 
-$(".sidebar.slide h2").click((e) => {
-    const $next = $(e.target).next();
-
-    if ($next.is("ul")) {
-        // Close other article's headings first
-        $(".sidebar ul").not($next).hide();
-        // Toggle the heading
-        $next.slideToggle("fast", "swing");
-    }
-});
-
-$(".sidebar a").click(function (e) {
+$(".sidebar a").on("click", function (e) {
     const path = $(this).attr("href");
     const path_dir = path.split("/")[1];
     const current_dir = window.location.pathname.split("/")[1];
@@ -126,7 +127,7 @@ $(".sidebar a").click(function (e) {
 
     history.pushState({}, "", path);
 
-    update_page(html_map, path);
+    update_page(cache, path);
 
     $(".sidebar").removeClass("show");
 
@@ -150,11 +151,11 @@ $(document).on(
     },
 );
 
-$(".hamburger").click(() => {
+$(".hamburger").on("click", () => {
     $(".sidebar").toggleClass("show");
 });
 
-$(".markdown").click(() => {
+$(".markdown").on("click", () => {
     if ($(".sidebar.show").length) {
         $(".sidebar.show").toggleClass("show");
     }
@@ -168,7 +169,9 @@ scrollToHash(markdownSB);
 
 window.addEventListener("popstate", () => {
     const path = window.location.pathname;
-    update_page(html_map, path);
+    update_page(cache, path);
 });
 
 $("body").addClass("noscroll");
+
+$(".highlighted")[0].scrollIntoView({block: "center"});

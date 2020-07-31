@@ -66,7 +66,7 @@ from zerver.lib.cache import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.timestamp import datetime_to_precise_timestamp, datetime_to_timestamp
 from zerver.lib.types import (
     DisplayRecipientT,
     ExtendedFieldElement,
@@ -416,6 +416,7 @@ class Realm(models.Model):
         private_message_policy=int,
         user_group_edit_policy=int,
         default_code_block_language=(str, type(None)),
+        message_content_delete_limit_seconds=int,
     )
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
@@ -499,6 +500,10 @@ class Realm(models.Model):
         return UserProfile.objects.filter(realm=self, is_bot=False, is_active=True,
                                           role__in=[UserProfile.ROLE_REALM_ADMINISTRATOR,
                                                     UserProfile.ROLE_REALM_OWNER])
+
+    def get_human_billing_admin_users(self) -> Sequence['UserProfile']:
+        return UserProfile.objects.filter(Q(role=UserProfile.ROLE_REALM_OWNER) | Q(is_billing_admin=True),
+                                          realm=self, is_bot=False, is_active=True)
 
     def get_active_users(self) -> Sequence['UserProfile']:
         # TODO: Change return type to QuerySet[UserProfile]
@@ -1124,6 +1129,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         presence_enabled=bool,
     )
 
+    ROLE_ID_TO_NAME_MAP = {
+        ROLE_REALM_OWNER: _("Organization owner"),
+        ROLE_REALM_ADMINISTRATOR: _("Organization adminstrator"),
+        ROLE_MEMBER: _("Member"),
+        ROLE_GUEST: _("Guest"),
+    }
+
+    def get_role_name(self) -> str:
+        return self.ROLE_ID_TO_NAME_MAP[self.role]
+
     @property
     def profile_data(self) -> ProfileData:
         values = CustomProfileFieldValue.objects.filter(user_profile=self)
@@ -1189,7 +1204,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     @property
     def has_billing_access(self) -> bool:
-        return self.is_realm_admin or self.is_billing_admin
+        return self.is_realm_owner or self.is_billing_admin
 
     @property
     def is_realm_owner(self) -> bool:
@@ -1539,8 +1554,6 @@ class Stream(models.Model):
     # * is_in_zephyr_realm is a backend-only optimization.
     # * "deactivated" streams are filtered from the API entirely.
     # * "realm" and "recipient" are not exposed to clients via the API.
-    # * "date_created" should probably be added here, as it's useful information
-    #   to subscribers.
     API_FIELDS = [
         "name",
         "id",
@@ -1551,7 +1564,8 @@ class Stream(models.Model):
         "stream_post_policy",
         "history_public_to_subscribers",
         "first_message_id",
-        "message_retention_days"
+        "message_retention_days",
+        "date_created",
     ]
 
     @staticmethod
@@ -1564,6 +1578,9 @@ class Stream(models.Model):
         for field_name in self.API_FIELDS:
             if field_name == "id":
                 result['stream_id'] = self.id
+                continue
+            elif field_name == "date_created":
+                result['date_created'] = datetime_to_timestamp(self.date_created)
                 continue
             result[field_name] = getattr(self, field_name)
         result['is_announcement_only'] = self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
@@ -1881,6 +1898,44 @@ class ArchivedSubMessage(AbstractSubMessage):
     message: ArchivedMessage = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)
 
 post_save.connect(flush_submessage, sender=SubMessage)
+
+class Draft(models.Model):
+    """ Server-side storage model for storing drafts so that drafts can be synced across
+    multiple clients/devices.
+    """
+    user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    recipient: Optional[Recipient] = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
+    topic: str = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH, db_index=True)
+    content: str = models.TextField()  # Length should not exceed MAX_MESSAGE_LENGTH
+    last_edit_time: datetime.datetime = models.DateTimeField(db_index=True)
+
+    def __str__(self) -> str:
+        return f"<{self.__class__.__name__}: {self.user_profile.email} / {self.id} / {self.last_edit_time}>"
+
+    def to_dict(self) -> Dict[str, Any]:  # nocoverage  # Will be added in a later commit.
+        if self.recipient is None:
+            _type = ""
+            to = []
+        elif self.recipient.type == Recipient.STREAM:
+            _type = "stream"
+            to = [self.recipient.type_id]
+        else:
+            _type = "private"
+            if self.recipient.type == Recipient.PERSONAL:
+                to = [self.recipient.type_id]
+            else:
+                to = []
+                for r in get_display_recipient(self.recipient):
+                    assert(not isinstance(r, str))  # It will only be a string for streams
+                    if not r["id"] == self.user_profile_id:
+                        to.append(r["id"])
+        return {
+            "type": _type,
+            "to": to,
+            "topic": self.topic,
+            "content": self.content,
+            "timestamp": datetime_to_precise_timestamp(self.last_edit_time),
+        }
 
 class AbstractReaction(models.Model):
     """For emoji reactions to messages (and potentially future reaction types).
@@ -2701,6 +2756,10 @@ class AbstractRealmAuditLog(models.Model):
     USER_TOS_VERSION_CHANGED = 126
     USER_API_KEY_CHANGED = 127
     USER_BOT_OWNER_CHANGED = 128
+    USER_DEFAULT_SENDING_STREAM_CHANGED = 129
+    USER_DEFAULT_REGISTER_STREAM_CHANGED = 130
+    USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED = 131
+    USER_NOTIFICATION_SETTINGS_CHANGED = 132
 
     REALM_DEACTIVATED = 201
     REALM_REACTIVATED = 202
@@ -2709,10 +2768,12 @@ class AbstractRealmAuditLog(models.Model):
     REALM_LOGO_CHANGED = 205
     REALM_EXPORTED = 206
     REALM_PROPERTY_CHANGED = 207
+    REALM_ICON_SOURCE_CHANGED = 208
 
     SUBSCRIPTION_CREATED = 301
     SUBSCRIPTION_ACTIVATED = 302
     SUBSCRIPTION_DEACTIVATED = 303
+    SUBSCRIPTION_PROPERTY_CHANGED = 304
 
     STRIPE_CUSTOMER_CREATED = 401
     STRIPE_CARD_CHANGED = 402
@@ -2725,6 +2786,7 @@ class AbstractRealmAuditLog(models.Model):
 
     STREAM_CREATED = 601
     STREAM_DEACTIVATED = 602
+    STREAM_NAME_CHANGED = 603
 
     event_type: int = models.PositiveSmallIntegerField()
 
@@ -3004,7 +3066,8 @@ def get_fake_email_domain() -> str:
         # Check that the fake email domain can be used to form valid email addresses.
         validate_email("bot@" + settings.FAKE_EMAIL_DOMAIN)
     except ValidationError:
-        raise InvalidFakeEmailDomain(settings.FAKE_EMAIL_DOMAIN + ' is not a valid domain.')
+        raise InvalidFakeEmailDomain(settings.FAKE_EMAIL_DOMAIN + ' is not a valid domain. '
+                                     'Consider setting the FAKE_EMAIL_DOMAIN setting.')
 
     return settings.FAKE_EMAIL_DOMAIN
 

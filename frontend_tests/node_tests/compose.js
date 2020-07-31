@@ -1,5 +1,5 @@
-const rewiremock = require("rewiremock/node");
 const {JSDOM} = require("jsdom");
+const rewiremock = require("rewiremock/node");
 
 set_global("bridge", false);
 
@@ -15,10 +15,10 @@ const _navigator = {
 };
 
 const _document = {
-    getElementById: function () {
+    getElementById() {
         return $("#compose-textarea");
     },
-    execCommand: function () {
+    execCommand() {
         return false;
     },
     location: {},
@@ -67,7 +67,6 @@ zrequire("compose_ui");
 const util = zrequire("util");
 zrequire("rtl");
 zrequire("common");
-set_global("Handlebars", global.make_handlebars());
 zrequire("stream_data");
 zrequire("compose_state");
 zrequire("people");
@@ -145,8 +144,6 @@ run_test("validate_stream_message_address_info", () => {
     stream_data.add_sub(sub);
     assert(compose.validate_stream_message_address_info("social"));
 
-    $("#stream_message_recipient_stream").select(noop);
-
     sub.subscribed = false;
     stream_data.add_sub(sub);
     global.stub_templates((template_name) => {
@@ -198,9 +195,8 @@ run_test("validate", () => {
         set_global("$", global.make_zjquery());
 
         $("#compose-send-button").prop("disabled", false);
-        $("#compose-send-button").focus();
+        $("#compose-send-button").trigger("focus");
         $("#sending-indicator").hide();
-        $("#compose-textarea").select(noop);
 
         const pm_pill_container = $.create("fake-pm-pill-container");
         $("#private_message_recipient").set_parent(pm_pill_container);
@@ -212,7 +208,6 @@ run_test("validate", () => {
         ui_util.place_caret_at_end = noop;
 
         $("#zephyr-mirror-error").is = noop;
-        $("#private_message_recipient").select(noop);
 
         global.stub_templates((fn) => {
             assert.equal(fn, "input_pill");
@@ -294,14 +289,12 @@ run_test("validate", () => {
 
     compose_state.set_message_type("stream");
     compose_state.stream_name("");
-    $("#stream_message_recipient_stream").select(noop);
     assert(!compose.validate());
     assert.equal($("#compose-error-msg").html(), i18n.t("Please specify a stream"));
 
     compose_state.stream_name("Denmark");
     page_params.realm_mandatory_topics = true;
     compose_state.topic("");
-    $("#stream_message_recipient_topic").select(noop);
     assert(!compose.validate());
     assert.equal($("#compose-error-msg").html(), i18n.t("Please specify a topic"));
 });
@@ -594,9 +587,9 @@ run_test("markdown_shortcuts", () => {
 
 run_test("send_message_success", () => {
     $("#compose-textarea").val("foobarfoobar");
-    $("#compose-textarea").blur();
+    $("#compose-textarea").trigger("blur");
     $("#compose-send-status").show();
-    $("#compose-send-button").attr("disabled", "disabled");
+    $("#compose-send-button").prop("disabled", true);
     $("#sending-indicator").show();
 
     let reify_message_id_checked;
@@ -632,7 +625,7 @@ run_test("send_message", () => {
         func();
     });
     global.server_events = {
-        assert_get_events_running: function () {
+        assert_get_events_running() {
             stub_state.get_events_running_called += 1;
         },
     };
@@ -692,9 +685,9 @@ run_test("send_message", () => {
         // Setting message content with a host server link and we will assert
         // later that this has been converted to a relative link.
         $("#compose-textarea").val("[foobar]" + "(https://foo.com/user_uploads/123456)");
-        $("#compose-textarea").blur();
+        $("#compose-textarea").trigger("blur");
         $("#compose-send-status").show();
-        $("#compose-send-button").attr("disabled", "disabled");
+        $("#compose-send-button").prop("disabled", true);
         $("#sending-indicator").show();
 
         compose.send_message();
@@ -744,11 +737,11 @@ run_test("send_message", () => {
     (function test_error_codepath_local_id_undefined() {
         stub_state = initialize_state_stub_dict();
         $("#compose-textarea").val("foobarfoobar");
-        $("#compose-textarea").blur();
+        $("#compose-textarea").trigger("blur");
         $("#compose-send-status").show();
-        $("#compose-send-button").attr("disabled", "disabled");
+        $("#compose-send-button").prop("disabled", true);
         $("#sending-indicator").show();
-        $("#compose-textarea").select(noop);
+        $("#compose-textarea").off("select");
         echo_error_msg_checked = false;
         echo.try_deliver_locally = function () {
             return;
@@ -800,7 +793,7 @@ run_test("enter_with_preview_open", () => {
     assert(send_message_called);
 
     page_params.enter_sends = false;
-    $("#compose-textarea").blur();
+    $("#compose-textarea").trigger("blur");
     compose.enter_with_preview_open();
     assert($("#compose-textarea").is_focused());
 
@@ -820,9 +813,9 @@ run_test("finish", () => {
     (function test_when_compose_validation_fails() {
         $("#compose_invite_users").show();
         $("#compose-send-button").prop("disabled", false);
-        $("#compose-send-button").focus();
+        $("#compose-send-button").trigger("focus");
         $("#sending-indicator").hide();
-        $("#compose-textarea").select(noop);
+        $("#compose-textarea").off("select");
         $("#compose-textarea").val("");
         const res = compose.finish();
         assert.equal(res, false);
@@ -845,10 +838,9 @@ run_test("finish", () => {
         };
 
         let compose_finished_event_checked = false;
-        $(document).trigger = function (e) {
-            assert.equal(e.name, "compose_finished.zulip");
+        $(document).on("compose_finished.zulip", () => {
             compose_finished_event_checked = true;
-        };
+        });
         let send_message_called = false;
         compose.send_message = function () {
             send_message_called = true;
@@ -1001,7 +993,7 @@ run_test("initialize", () => {
         compose_actions_start_checked = false;
 
         global.compose_actions = {
-            start: function (msg_type, opts) {
+            start(msg_type, opts) {
                 assert.equal(msg_type, "stream");
                 assert.deepEqual(opts, expected_opts);
                 compose_actions_start_checked = true;
@@ -1034,7 +1026,7 @@ run_test("initialize", () => {
     })();
 
     (function test_abort_xhr() {
-        $("#compose-send-button").attr("disabled", "disabled");
+        $("#compose-send-button").prop("disabled", true);
 
         reset_jquery();
         stub_out_video_calls();
@@ -1056,11 +1048,11 @@ run_test("update_fade", () => {
     let update_all_called = false;
 
     global.compose_fade = {
-        set_focused_recipient: function (msg_type) {
+        set_focused_recipient(msg_type) {
             assert.equal(msg_type, "private");
             set_focused_recipient_checked = true;
         },
-        update_all: function () {
+        update_all() {
             update_all_called = true;
         },
     };
@@ -1080,7 +1072,7 @@ run_test("trigger_submit_compose_form", () => {
     let prevent_default_checked = false;
     let compose_finish_checked = false;
     const e = {
-        preventDefault: function () {
+        preventDefault() {
             prevent_default_checked = true;
         },
     };
@@ -1269,13 +1261,13 @@ run_test("on_events", () => {
 
         const event = {
             preventDefault: noop,
-            target: target,
+            target,
         };
 
         const helper = {
-            event: event,
-            container: container,
-            target: target,
+            event,
+            container,
+            target,
             container_was_removed: () => container_removed,
         };
 
@@ -1345,7 +1337,6 @@ run_test("on_events", () => {
                 return "102";
             }
         };
-        $("#compose-textarea").select(noop);
         helper.target.prop("disabled", false);
 
         // !sub will result in true here and we check the success code path.
@@ -1445,10 +1436,9 @@ run_test("on_events", () => {
             assert(param);
         };
         let compose_file_input_clicked = false;
-        $("#compose #file_input").trigger = function (ev_name) {
-            assert.equal(ev_name, "click");
+        $("#compose #file_input").on("click", () => {
             compose_file_input_clicked = true;
-        };
+        });
 
         const event = {
             preventDefault: noop,
@@ -1489,8 +1479,8 @@ run_test("on_events", () => {
         handler(ev);
 
         // video link ids consist of 15 random digits
-        let video_link_regex = /\[Click to join video call\]\(https:\/\/meet.jit.si\/\d{15}\)/;
-        assert(video_link_regex.test(syntax_to_insert));
+        let video_link_regex = /\[translated: Click to join video call\]\(https:\/\/meet.jit.si\/\d{15}\)/;
+        assert.match(syntax_to_insert, video_link_regex);
 
         page_params.jitsi_server_url = null;
         called = false;
@@ -1514,8 +1504,8 @@ run_test("on_events", () => {
         };
 
         handler(ev);
-        video_link_regex = /\[Click to join video call\]\(example\.zoom\.com\)/;
-        assert(video_link_regex.test(syntax_to_insert));
+        video_link_regex = /\[translated: Click to join video call\]\(example\.zoom\.com\)/;
+        assert.match(syntax_to_insert, video_link_regex);
 
         page_params.realm_video_chat_provider =
             page_params.realm_available_video_chat_providers.big_blue_button.id;
@@ -1529,8 +1519,8 @@ run_test("on_events", () => {
         };
 
         handler(ev);
-        video_link_regex = /\[Click to join video call\]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
-        assert(video_link_regex.test(syntax_to_insert));
+        video_link_regex = /\[translated: Click to join video call\]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
+        assert.match(syntax_to_insert, video_link_regex);
     })();
 
     (function test_markdown_preview_compose_clicked() {
@@ -1688,7 +1678,7 @@ run_test("create_message_object", () => {
 
     global.$ = function (selector) {
         return {
-            val: function () {
+            val() {
                 return page[selector];
             },
         };
@@ -1696,10 +1686,6 @@ run_test("create_message_object", () => {
 
     global.compose_state.get_message_type = function () {
         return "stream";
-    };
-
-    global.$.trim = function (s) {
-        return s;
     };
 
     let message = compose.create_message_object();

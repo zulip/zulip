@@ -17,6 +17,50 @@ exports.test_message = {
     id: 99,
 };
 
+const typing_person1 = {
+    user_id: 1,
+    email: "user1@example.com",
+};
+
+const typing_person2 = {
+    user_id: 2,
+    email: "user2@example.com",
+};
+
+exports.typing_person1 = typing_person1;
+exports.typing_person2 = typing_person2;
+
+const streams = {
+    devel: {
+        name: "devel",
+        description: ":devel fun:",
+        rendered_description: "<b>devel fun</b>",
+        invite_only: false,
+        stream_id: 101,
+        date_created: 1595823892,
+        first_message_id: 1,
+        history_public_to_subscribers: false,
+        is_announcement_only: false,
+        is_web_public: false,
+        message_retention_days: null,
+        stream_post_policy: 1,
+    },
+    test: {
+        name: "test",
+        description: "test desc",
+        rendered_description: "test desc",
+        invite_only: true,
+        stream_id: 102,
+        date_created: 1595823893,
+        first_message_id: 1,
+        history_public_to_subscribers: false,
+        is_web_public: false,
+        is_announcement_only: false,
+        message_retention_days: null,
+        stream_post_policy: 1,
+    },
+};
+
 exports.fixtures = {
     alert_words: {
         type: "alert_words",
@@ -27,22 +71,26 @@ exports.fixtures = {
         type: "attachment",
     },
 
+    custom_profile_fields: {
+        type: "custom_profile_fields",
+        op: "update",
+        fields: [
+            {id: 1, name: "teams", type: 1},
+            {id: 2, name: "hobbies", type: 1},
+        ],
+    },
+
     default_streams: {
         type: "default_streams",
-        default_streams: [
-            {
-                name: "devel",
-                description: "devel",
-                invite_only: false,
-                stream_id: 1,
-            },
-            {
-                name: "test",
-                description: "test",
-                invite_only: true,
-                stream_id: 1,
-            },
-        ],
+        default_streams: [streams.devel, streams.test],
+    },
+
+    delete_message: {
+        type: "delete_message",
+        message_ids: [1337],
+        message_type: "stream",
+        stream_id: 99,
+        topic: "topic1",
     },
 
     hotspots: {
@@ -96,41 +144,9 @@ exports.fixtures = {
         },
     },
 
-    // Please keep this next section un-nested, as we want this to partly
-    // be simple documentation on the formats of individual events.
-    realm__update__create_stream_policy: {
+    realm__deactivated: {
         type: "realm",
-        op: "update",
-        property: "create_stream_policy",
-        value: 2,
-    },
-
-    realm__update__invite_to_stream_policy: {
-        type: "realm",
-        op: "update",
-        property: "invite_to_stream_policy",
-        value: 2,
-    },
-
-    realm__update__invite_required: {
-        type: "realm",
-        op: "update",
-        property: "invite_required",
-        value: false,
-    },
-
-    realm__update__name: {
-        type: "realm",
-        op: "update",
-        property: "name",
-        value: "new_realm_name",
-    },
-
-    realm__update__emails_restricted_to_domains: {
-        type: "realm",
-        op: "update",
-        property: "emails_restricted_to_domains",
-        value: false,
+        op: "deactivated",
     },
 
     realm__update__bot_creation_policy: {
@@ -140,11 +156,25 @@ exports.fixtures = {
         value: 1,
     },
 
-    realm__update__email_addresses_visibility: {
+    realm__update__create_stream_policy: {
         type: "realm",
         op: "update",
-        property: "email_address_visibility",
-        value: 3,
+        property: "create_stream_policy",
+        value: 2,
+    },
+
+    realm__update__default_code_block_language: {
+        type: "realm",
+        op: "update",
+        property: "default_code_block_language",
+        value: "javascript",
+    },
+
+    realm__update__default_twenty_four_hour_time: {
+        type: "realm",
+        op: "update",
+        property: "default_twenty_four_hour_time",
+        value: false,
     },
 
     realm__update__disallow_disposable_email_addresses: {
@@ -154,32 +184,53 @@ exports.fixtures = {
         value: false,
     },
 
-    realm__update_default_twenty_four_hour_time: {
+    realm__update__email_addresses_visibility: {
         type: "realm",
         op: "update",
-        property: "default_twenty_four_hour_time",
+        property: "email_address_visibility",
+        value: 3,
+    },
+
+    realm__update__emails_restricted_to_domains: {
+        type: "realm",
+        op: "update",
+        property: "emails_restricted_to_domains",
         value: false,
     },
 
-    realm__update_notifications_stream_id: {
+    realm__update__invite_required: {
+        type: "realm",
+        op: "update",
+        property: "invite_required",
+        value: false,
+    },
+
+    realm__update__invite_to_stream_policy: {
+        type: "realm",
+        op: "update",
+        property: "invite_to_stream_policy",
+        value: 2,
+    },
+
+    realm__update__name: {
+        type: "realm",
+        op: "update",
+        property: "name",
+        value: "new_realm_name",
+    },
+
+    realm__update__notifications_stream_id: {
         type: "realm",
         op: "update",
         property: "notifications_stream_id",
         value: 42,
     },
 
-    realm__update_signup_notifications_stream_id: {
+    realm__update__signup_notifications_stream_id: {
         type: "realm",
         op: "update",
         property: "signup_notifications_stream_id",
         value: 41,
-    },
-
-    realm__update_default_code_block_language: {
-        type: "realm",
-        op: "update",
-        property: "default_code_block_language",
-        value: "javascript",
     },
 
     realm__update_dict__default: {
@@ -225,28 +276,22 @@ exports.fixtures = {
         },
     },
 
-    realm__deactivated: {
-        type: "realm",
-        op: "deactivated",
-    },
-
     realm_bot__add: {
         type: "realm_bot",
         op: "add",
         bot: {
             email: "the-bot@example.com",
+            user_id: 42,
+            avatar_url: "/some/path/to/avatar",
+            api_key: "SOME_KEY",
             full_name: "The Bot",
-            // etc.
-        },
-    },
-
-    realm_bot__remove: {
-        type: "realm_bot",
-        op: "remove",
-        bot: {
-            email: "the-bot@example.com",
-            user_id: "42",
-            full_name: "The Bot",
+            bot_type: 1,
+            default_all_public_streams: true,
+            default_events_register_stream: "whatever",
+            default_sending_stream: "whatever",
+            is_active: true,
+            owner_id: exports.test_user.user_id,
+            services: [],
         },
     },
 
@@ -254,8 +299,16 @@ exports.fixtures = {
         type: "realm_bot",
         op: "delete",
         bot: {
-            email: "the-bot@example.com",
-            user_id: "42",
+            user_id: 42,
+        },
+    },
+
+    realm_bot__remove: {
+        type: "realm_bot",
+        op: "remove",
+        bot: {
+            user_id: 42,
+            full_name: "The Bot",
         },
     },
 
@@ -263,24 +316,9 @@ exports.fixtures = {
         type: "realm_bot",
         op: "update",
         bot: {
-            email: "the-bot@example.com",
             user_id: 4321,
             full_name: "The Bot Has A New Name",
         },
-    },
-
-    realm_emoji: {
-        type: "realm_emoji",
-        realm_emoji: {
-            airplane: {
-                source_url: "some_url",
-            },
-        },
-    },
-
-    realm_filters: {
-        type: "realm_filters",
-        realm_filters: [["#[123]", "ticket %(id)s"]],
     },
 
     realm_domains__add: {
@@ -307,22 +345,51 @@ exports.fixtures = {
         domain: "ramen",
     },
 
+    realm_emoji: {
+        type: "realm_emoji",
+        realm_emoji: {
+            101: {
+                id: "101",
+                name: "spain",
+                source_url: "/some/path/to/spain.png",
+                deactivated: false,
+            },
+            102: {
+                id: "102",
+                name: "green_tick",
+                author_id: 222,
+                deactivated: false,
+                source_url: "/some/path/to/emoji",
+            },
+        },
+    },
+
+    realm_export: {
+        type: "realm_export",
+        exports: {
+            acting_user_id: 55,
+            event_time: "noon",
+            path: "some_path",
+        },
+    },
+
+    realm_filters: {
+        type: "realm_filters",
+        realm_filters: [["#[123]", "ticket %(id)s"]],
+    },
+
     realm_user__add: {
         type: "realm_user",
         op: "add",
-        person: {
-            email: "added@example.com",
-            full_name: "Added Person",
-            user_id: 1001,
-        },
+        person: exports.test_user,
     },
 
     realm_user__remove: {
         type: "realm_user",
         op: "remove",
         person: {
-            email: "added@example.com",
-            user_id: 1001,
+            email: exports.test_user.email,
+            user_id: exports.test_user.user_id,
         },
     },
 
@@ -330,15 +397,26 @@ exports.fixtures = {
         type: "realm_user",
         op: "update",
         person: {
-            email: "alice@example.com",
-            full_name: "Alice NewName",
-            // etc.
+            user_id: exports.test_user.user_id,
+            full_name: "Bob NewName",
         },
     },
 
     restart: {
         type: "restart",
         immediate: true,
+    },
+
+    stream__create: {
+        type: "stream",
+        op: "create",
+        streams: [streams.devel, streams.test],
+    },
+
+    stream__delete: {
+        type: "stream",
+        op: "delete",
+        streams: [{stream_id: 42}, {stream_id: 99}],
     },
 
     stream__update: {
@@ -348,18 +426,6 @@ exports.fixtures = {
         stream_id: 99,
         property: "color",
         value: "blue",
-    },
-
-    stream__create: {
-        type: "stream",
-        op: "create",
-        streams: [{stream_id: 42}, {stream_id: 99}],
-    },
-
-    stream__delete: {
-        type: "stream",
-        op: "delete",
-        streams: [{stream_id: 42}, {stream_id: 99}],
     },
 
     submessage: {
@@ -376,22 +442,19 @@ exports.fixtures = {
         op: "add",
         subscriptions: [
             {
-                name: "devel",
-                stream_id: 42,
-                subscribers: ["alice@example.com", "bob@example.com"],
-                email_address: "devel+0138515295f4@zulipdev.com:9991",
-                // etc.
-            },
-        ],
-    },
-
-    subscription__remove: {
-        type: "subscription",
-        op: "remove",
-        subscriptions: [
-            {
-                name: "devel",
-                stream_id: 42,
+                ...streams.devel,
+                audible_notifications: true,
+                color: "blue",
+                desktop_notifications: false,
+                email_address: "whatever",
+                email_notifications: false,
+                in_home_view: false,
+                is_muted: true,
+                pin_to_top: false,
+                push_notifications: false,
+                stream_weekly_traffic: 40,
+                wildcard_mentions_notify: false,
+                subscribers: [5, 8, 13, 21],
             },
         ],
     },
@@ -410,6 +473,17 @@ exports.fixtures = {
         stream_id: 42,
     },
 
+    subscription__remove: {
+        type: "subscription",
+        op: "remove",
+        subscriptions: [
+            {
+                name: "devel",
+                stream_id: 42,
+            },
+        ],
+    },
+
     subscription__update: {
         type: "subscription",
         op: "update",
@@ -421,25 +495,37 @@ exports.fixtures = {
 
     typing__start: {
         type: "typing",
-        sender: {
-            user_id: 4,
-        },
         op: "start",
+        sender: typing_person1,
+        recipients: [typing_person2],
     },
 
     typing__stop: {
         type: "typing",
-        sender: {
-            user_id: 6,
-        },
         op: "stop",
+        sender: typing_person1,
+        recipients: [typing_person2],
     },
 
-    typing__self: {
-        type: "typing",
-        sender: {
-            user_id: 5,
-        },
+    update_display_settings__color_scheme_automatic: {
+        type: "update_display_settings",
+        setting_name: "color_scheme",
+        setting: 1,
+        user: exports.test_user.email,
+    },
+
+    update_display_settings__color_scheme_dark: {
+        type: "update_display_settings",
+        setting_name: "color_scheme",
+        setting: 2,
+        user: exports.test_user.email,
+    },
+
+    update_display_settings__color_scheme_light: {
+        type: "update_display_settings",
+        setting_name: "color_scheme",
+        setting: 3,
+        user: exports.test_user.email,
     },
 
     update_display_settings__default_language: {
@@ -447,84 +533,77 @@ exports.fixtures = {
         setting_name: "default_language",
         setting: "fr",
         language_name: "French",
-    },
-
-    update_display_settings__left_side_userlist: {
-        type: "update_display_settings",
-        setting_name: "left_side_userlist",
-        setting: true,
-    },
-
-    update_display_settings__twenty_four_hour_time: {
-        type: "update_display_settings",
-        setting_name: "twenty_four_hour_time",
-        setting: true,
-    },
-
-    update_display_settings__high_contrast_mode: {
-        type: "update_display_settings",
-        setting_name: "high_contrast_mode",
-        setting: true,
-    },
-
-    update_display_settings__dense_mode: {
-        type: "update_display_settings",
-        setting_name: "dense_mode",
-        setting: true,
-    },
-
-    update_display_settings__color_scheme_automatic: {
-        type: "update_display_settings",
-        setting_name: "color_scheme",
-        setting: 1,
-    },
-
-    update_display_settings__color_scheme_dark: {
-        type: "update_display_settings",
-        setting_name: "color_scheme",
-        setting: 2,
-    },
-
-    update_display_settings__color_scheme_light: {
-        type: "update_display_settings",
-        setting_name: "color_scheme",
-        setting: 3,
-    },
-
-    update_display_settings__starred_message_counts: {
-        type: "update_display_settings",
-        setting_name: "starred_message_counts",
-        setting: true,
-    },
-
-    update_display_settings__fluid_layout_width: {
-        type: "update_display_settings",
-        setting_name: "fluid_layout_width",
-        setting: true,
+        user: exports.test_user.email,
     },
 
     update_display_settings__demote_inactive_streams: {
         type: "update_display_settings",
         setting_name: "demote_inactive_streams",
         setting: 2,
+        user: exports.test_user.email,
     },
 
-    update_display_settings__translate_emoticons: {
+    update_display_settings__dense_mode: {
         type: "update_display_settings",
-        setting_name: "translate_emoticons",
+        setting_name: "dense_mode",
         setting: true,
+        user: exports.test_user.email,
     },
 
     update_display_settings__emojiset: {
         type: "update_display_settings",
         setting_name: "emojiset",
         setting: "google",
+        user: exports.test_user.email,
+    },
+
+    update_display_settings__fluid_layout_width: {
+        type: "update_display_settings",
+        setting_name: "fluid_layout_width",
+        setting: true,
+        user: exports.test_user.email,
+    },
+
+    update_display_settings__high_contrast_mode: {
+        type: "update_display_settings",
+        setting_name: "high_contrast_mode",
+        setting: true,
+        user: exports.test_user.email,
+    },
+
+    update_display_settings__left_side_userlist: {
+        type: "update_display_settings",
+        setting_name: "left_side_userlist",
+        setting: true,
+        user: exports.test_user.email,
+    },
+
+    update_display_settings__starred_message_counts: {
+        type: "update_display_settings",
+        setting_name: "starred_message_counts",
+        setting: true,
+        user: exports.test_user.email,
+    },
+
+    update_display_settings__translate_emoticons: {
+        type: "update_display_settings",
+        setting_name: "translate_emoticons",
+        setting: true,
+        user: exports.test_user.email,
+    },
+
+    update_display_settings__twenty_four_hour_time: {
+        type: "update_display_settings",
+        setting_name: "twenty_four_hour_time",
+        setting: true,
+        user: exports.test_user.email,
     },
 
     update_global_notifications: {
         type: "update_global_notifications",
         notification_name: "enable_stream_audible_notifications",
         setting: true,
+        user: exports.test_user.email,
     },
 
     update_message_flags__read: {
@@ -532,6 +611,7 @@ exports.fixtures = {
         operation: "add",
         flag: "read",
         messages: [999],
+        all: false,
     },
 
     update_message_flags__starred_add: {
@@ -539,6 +619,7 @@ exports.fixtures = {
         operation: "add",
         flag: "starred",
         messages: [exports.test_message.id],
+        all: false,
     },
 
     update_message_flags__starred_remove: {
@@ -546,44 +627,34 @@ exports.fixtures = {
         operation: "remove",
         flag: "starred",
         messages: [exports.test_message.id],
+        all: false,
     },
 
-    delete_message: {
-        type: "delete_message",
-        message_ids: [1337],
-        message_type: "stream",
-        stream_id: 99,
-        topic: "topic1",
-    },
-
-    custom_profile_fields: {
-        type: "custom_profile_fields",
-        fields: [
-            {id: 1, name: "teams", type: 1},
-            {id: 2, name: "hobbies", type: 1},
-        ],
-    },
     user_group__add: {
         type: "user_group",
         op: "add",
         group: {
+            id: 555,
             name: "Mobile",
-            id: "1",
+            description: "mobile folks",
             members: [1],
         },
     },
+
     user_group__add_members: {
         type: "user_group",
         op: "add_members",
         group_id: 1,
         user_ids: [2],
     },
+
     user_group__remove_members: {
         type: "user_group",
         op: "remove_members",
         group_id: 3,
         user_ids: [99, 100],
     },
+
     user_group__update: {
         type: "user_group",
         op: "update",
@@ -593,27 +664,22 @@ exports.fixtures = {
             description: "All Frontend people",
         },
     },
+
     user_status__revoke_away: {
         type: "user_status",
         user_id: 63,
         away: false,
     },
+
     user_status__set_away: {
         type: "user_status",
         user_id: 55,
         away: true,
     },
+
     user_status__set_status_text: {
         type: "user_status",
         user_id: exports.test_user.user_id,
         status_text: "out to lunch",
-    },
-    realm_export: {
-        type: "realm_export",
-        exports: {
-            acting_user_id: 55,
-            event_time: "noon",
-            path: "some_path",
-        },
     },
 };

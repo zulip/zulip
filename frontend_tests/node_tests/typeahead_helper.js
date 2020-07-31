@@ -5,15 +5,14 @@ const settings_config = zrequire("settings_config");
 page_params.realm_email_address_visibility =
     settings_config.email_address_visibility_values.admins_only.code;
 
-set_global("Handlebars", global.make_handlebars());
 zrequire("recent_senders");
 zrequire("pm_conversations");
 zrequire("people");
-zrequire("emoji");
 zrequire("stream_data");
 zrequire("narrow");
 zrequire("hash_util");
-zrequire("marked", "third/marked/lib/marked");
+
+const emoji = zrequire("emoji", "shared/js/emoji");
 const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
 const actual_pygments_data = Object.assign({}, pygments_data);
 const ct = zrequire("composebox_typeahead");

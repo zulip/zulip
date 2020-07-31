@@ -1,4 +1,7 @@
+const moment = require("moment-timezone");
+
 const util = require("./util");
+
 const deferred_message_types = {
     scheduled: {
         delivery_type: "send_later",
@@ -56,7 +59,7 @@ exports.schedule_message = function (request) {
         deliver_at.trim() === "" ||
         command_line.slice(command.length, command.length + 1) !== " "
     ) {
-        $("#compose-textarea").attr("disabled", false);
+        $("#compose-textarea").prop("disabled", false);
         if (command_line.slice(command.length, command.length + 1) !== " ") {
             compose.compose_error(
                 i18n.t(
@@ -85,16 +88,16 @@ exports.schedule_message = function (request) {
                 "Scheduled your Message to be delivered at: " + data.deliver_at,
             );
         }
-        $("#compose-textarea").attr("disabled", false);
+        $("#compose-textarea").prop("disabled", false);
         compose.clear_compose_box();
     };
     const error = function (response) {
-        $("#compose-textarea").attr("disabled", false);
+        $("#compose-textarea").prop("disabled", false);
         compose.compose_error(response, $("#compose-textarea"));
     };
     /* We are adding a disable on compose under this block because we
     want slash commands to be blocking in nature. */
-    $("#compose-textarea").attr("disabled", true);
+    $("#compose-textarea").prop("disabled", true);
 
     transmit.send_message(request, success, error);
 };
@@ -119,13 +122,13 @@ exports.do_set_reminder_for_message = function (message_id, timestamp) {
         channel.get({
             url: "/json/messages/" + message.id,
             idempotent: true,
-            success: function (data) {
+            success(data) {
                 if (current_msg_list === msg_list) {
                     message.raw_content = data.raw_content;
                     exports.do_set_reminder_for_message(message_id, timestamp);
                 }
             },
-            error: error,
+            error,
         });
         return;
     }

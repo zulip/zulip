@@ -1,6 +1,6 @@
 const emoji_codes = require("../generated/emoji/emoji_codes.json");
+const emoji = require("../shared/js/emoji");
 const typeahead = require("../shared/js/typeahead");
-
 const render_emoji_popover = require("../templates/emoji_popover.hbs");
 const render_emoji_popover_content = require("../templates/emoji_popover_content.hbs");
 const render_emoji_popover_search_results = require("../templates/emoji_popover_search_results.hbs");
@@ -99,7 +99,9 @@ function show_emoji_catalog() {
     search_is_active = false;
 }
 
-exports.generate_emoji_picker_data = function (realm_emojis) {
+exports.rebuild_catalog = function () {
+    const realm_emojis = emoji.active_realm_emojis;
+
     const catalog = new Map();
     catalog.set(
         "Custom",
@@ -225,7 +227,7 @@ function filter_emojis() {
         const sorted_search_results = typeahead.sort_emojis(search_results, query);
         const rendered_search_results = render_emoji_popover_search_results({
             search_results: sorted_search_results,
-            message_id: message_id,
+            message_id,
         });
         $(".emoji-search-results").html(rendered_search_results);
         ui.reset_scrollbar($(".emoji-search-results-container"));
@@ -265,7 +267,7 @@ function process_enter_while_filtering(e) {
         const first_emoji = get_rendered_emoji(0, 0);
         if (first_emoji) {
             if (is_composition(first_emoji)) {
-                first_emoji.click();
+                first_emoji.trigger("click");
             } else {
                 toggle_reaction(first_emoji.attr("data-emoji-name"), e);
             }
@@ -299,6 +301,12 @@ function update_emoji_showcase($focused_emoji) {
     // of converting emoji names like :100:, :1234: etc to number.
     const focused_emoji_name = $focused_emoji.attr("data-emoji-name");
     const canonical_name = emoji.get_canonical_name(focused_emoji_name);
+
+    if (!canonical_name) {
+        blueslip.error("Invalid focused_emoji_name: " + focused_emoji_name);
+        return;
+    }
+
     const focused_emoji_dict = emoji.emojis_by_name.get(canonical_name);
 
     const emoji_dict = {
@@ -306,7 +314,7 @@ function update_emoji_showcase($focused_emoji) {
         name: focused_emoji_name.replace(/_/g, " "),
     };
     const rendered_showcase = render_emoji_showcase({
-        emoji_dict: emoji_dict,
+        emoji_dict,
     });
 
     $(".emoji-showcase-container").html(rendered_showcase);
@@ -318,10 +326,10 @@ function maybe_change_focused_emoji($emoji_map, next_section, next_index, preser
         current_section = next_section;
         current_index = next_index;
         if (!preserve_scroll) {
-            next_emoji.focus();
+            next_emoji.trigger("focus");
         } else {
             const start = ui.get_scroll_element($emoji_map).scrollTop();
-            next_emoji.focus();
+            next_emoji.trigger("focus");
             if (ui.get_scroll_element($emoji_map).scrollTop() !== start) {
                 ui.get_scroll_element($emoji_map).scrollTop(start);
             }
@@ -380,7 +388,7 @@ function get_next_emoji_coordinates(move_by) {
 }
 
 function change_focus_to_filter() {
-    $(".emoji-popover-filter").focus();
+    $(".emoji-popover-filter").trigger("focus");
     // If search is active reset current selected emoji to first emoji.
     if (search_is_active) {
         current_section = 0;
@@ -426,7 +434,7 @@ exports.navigate = function (event_name, e) {
         const filter_text = $(".emoji-popover-filter").val();
         const is_cursor_at_end = $(".emoji-popover-filter").caret() === filter_text.length;
         if (event_name === "down_arrow" || (is_cursor_at_end && event_name === "right_arrow")) {
-            selected_emoji.focus();
+            selected_emoji.trigger("focus");
             if (current_section === 0 && current_index < 6) {
                 ui.get_scroll_element($emoji_map).scrollTop(0);
             }
@@ -434,7 +442,7 @@ exports.navigate = function (event_name, e) {
             return true;
         }
         if (event_name === "tab") {
-            selected_emoji.focus();
+            selected_emoji.trigger("focus");
             update_emoji_showcase(selected_emoji);
             return true;
         }
@@ -451,7 +459,7 @@ exports.navigate = function (event_name, e) {
             // goes to beginning) with something reasonable and
             // consistent (cursor goes to the end of the filter
             // string).
-            $(".emoji-popover-filter").focus().caret(Infinity);
+            $(".emoji-popover-filter").trigger("focus").caret(Infinity);
             ui.get_scroll_element($emoji_map).scrollTop(0);
             ui.get_scroll_element($(".emoji-search-results-container")).scrollTop(0);
             current_section = 0;
@@ -560,9 +568,9 @@ function register_popover_events(popover) {
     });
 
     $(".emoji-popover-filter").on("input", filter_emojis);
-    $(".emoji-popover-filter").keydown(process_enter_while_filtering);
-    $(".emoji-popover").keypress(process_keypress);
-    $(".emoji-popover").keydown((e) => {
+    $(".emoji-popover-filter").on("keydown", process_enter_while_filtering);
+    $(".emoji-popover").on("keypress", process_keypress);
+    $(".emoji-popover").on("keydown", (e) => {
         // Because of cross-browser issues we need to handle backspace
         // key separately. Firefox fires `keypress` event for backspace
         // key but chrome doesn't so we need to trigger the logic for
@@ -596,9 +604,9 @@ exports.render_emoji_popover = function (elt, id) {
 
     elt.popover({
         // temporary patch for handling popover placement of `viewport_center`
-        placement: placement,
+        placement,
         fix_positions: true,
-        template: template,
+        template,
         title: "",
         content: generate_emoji_picker_content(id),
         html: true,
@@ -608,7 +616,7 @@ exports.render_emoji_popover = function (elt, id) {
     elt.prop("title", i18n.t("Add emoji reaction (:)"));
 
     const popover = elt.data("popover").$tip;
-    popover.find(".emoji-popover-filter").focus();
+    popover.find(".emoji-popover-filter").trigger("focus");
     current_message_emoji_popover_elem = elt;
 
     emoji_catalog_last_coordinates = {
@@ -766,7 +774,7 @@ exports.register_click_handlers = function () {
 };
 
 exports.initialize = function () {
-    exports.generate_emoji_picker_data(emoji.active_realm_emojis);
+    exports.rebuild_catalog();
 };
 
 window.emoji_picker = exports;

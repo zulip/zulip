@@ -1,10 +1,10 @@
+const XDate = require("xdate");
+
 set_global("$", global.make_zjquery());
 
 zrequire("localstorage");
 zrequire("drafts");
-set_global("XDate", zrequire("XDate", "xdate"));
 zrequire("timerender");
-set_global("Handlebars", global.make_handlebars());
 zrequire("stream_color");
 zrequire("colorspace");
 
@@ -14,30 +14,30 @@ const noop = function () {
 };
 
 set_global("localStorage", {
-    getItem: function (key) {
+    getItem(key) {
         return ls_container.get(key);
     },
-    setItem: function (key, val) {
+    setItem(key, val) {
         ls_container.set(key, val);
     },
-    removeItem: function (key) {
+    removeItem(key) {
         ls_container.delete(key);
     },
-    clear: function () {
+    clear() {
         ls_container.clear();
     },
 });
 set_global("compose", {});
 set_global("compose_state", {});
 set_global("stream_data", {
-    get_color: function () {
+    get_color() {
         return "#FFFFFF";
     },
 });
 set_global("people", {
     // Mocking get_by_email function, here we are
     // just returning string before `@` in email
-    get_by_email: function (email) {
+    get_by_email(email) {
         return {
             full_name: email.split("@")[0],
         };
@@ -51,12 +51,10 @@ set_global("page_params", {
 });
 
 function stub_timestamp(timestamp, func) {
-    const original_func = Date.prototype.getTime;
-    Date.prototype.getTime = function () {
+    function fake_time() {
         return timestamp;
-    };
-    func();
-    Date.prototype.getTime = original_func;
+    }
+    with_field(Date.prototype, "getTime", fake_time, func);
 }
 
 const legacy_draft = {
@@ -184,12 +182,6 @@ run_test("snapshot_message", () => {
 });
 
 run_test("initialize", () => {
-    const message_content = $("#compose-textarea");
-    message_content.focusout = function (f) {
-        assert.equal(f, drafts.update_draft);
-        f();
-    };
-
     global.window.addEventListener = function (event_name, f) {
         assert.equal(event_name, "beforeunload");
         let called = false;
@@ -201,6 +193,10 @@ run_test("initialize", () => {
     };
 
     drafts.initialize();
+
+    const message_content = $("#compose-textarea");
+    assert.equal(message_content.get_on_handler("focusout"), drafts.update_draft);
+    message_content.trigger("focusout");
 });
 
 run_test("remove_old_drafts", () => {
@@ -229,8 +225,8 @@ run_test("remove_old_drafts", () => {
     assert.deepEqual(draft_model.get(), {id3: draft_3});
 });
 
-run_test("format_drafts", () => {
-    drafts.remove_old_drafts = noop;
+run_test("format_drafts", (override) => {
+    override("drafts.remove_old_drafts", noop);
 
     draft_1.updatedAt = new Date(1549958107000).getTime(); // 2/12/2019 07:55:07 AM (UTC+0)
     draft_2.updatedAt = new Date(1549958107000).setDate(-1);
@@ -321,7 +317,7 @@ run_test("format_drafts", () => {
         return "<draft table stub>";
     });
 
-    drafts.open_overlay = noop;
+    override("drafts.open_overlay", noop);
     drafts.set_initial_element = noop;
     $("#drafts_table .draft-row").length = 0;
 

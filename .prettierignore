@@ -1,1 +1,6 @@
+/corporate/tests/stripe_fixtures
+/locale
 /static/third
+/tools/setup/emoji/emoji_map.json
+/zerver/tests/fixtures
+/zerver/webhooks/*/fixtures

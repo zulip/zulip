@@ -16,54 +16,49 @@ exports.get_name = function () {
     return created_stream;
 };
 
-const stream_subscription_error = (function () {
-    const self = {};
-
-    self.report_no_subs_to_stream = function () {
+class StreamSubscriptionError {
+    report_no_subs_to_stream() {
         $("#stream_subscription_error").text(
             i18n.t("You cannot create a stream with no subscribers!"),
         );
         $("#stream_subscription_error").show();
-    };
+    }
 
-    self.cant_create_stream_without_susbscribing = function () {
+    cant_create_stream_without_susbscribing() {
         $("#stream_subscription_error").text(
             i18n.t(
                 "You must be an organization administrator to create a stream without subscribing.",
             ),
         );
         $("#stream_subscription_error").show();
-    };
+    }
 
-    self.clear_errors = function () {
+    clear_errors() {
         $("#stream_subscription_error").hide();
-    };
+    }
+}
+const stream_subscription_error = new StreamSubscriptionError();
 
-    return self;
-})();
-
-const stream_name_error = (function () {
-    const self = {};
-
-    self.report_already_exists = function () {
+class StreamNameError {
+    report_already_exists() {
         $("#stream_name_error").text(i18n.t("A stream with this name already exists"));
         $("#stream_name_error").show();
-    };
+    }
 
-    self.clear_errors = function () {
+    clear_errors() {
         $("#stream_name_error").hide();
-    };
+    }
 
-    self.report_empty_stream = function () {
+    report_empty_stream() {
         $("#stream_name_error").text(i18n.t("A stream needs to have a name"));
         $("#stream_name_error").show();
-    };
+    }
 
-    self.select = function () {
-        $("#create_stream_name").focus().select();
-    };
+    select() {
+        $("#create_stream_name").trigger("focus").trigger("select");
+    }
 
-    self.pre_validate = function (stream_name) {
+    pre_validate(stream_name) {
         // Don't worry about empty strings...we just want to call this
         // to warn users early before they start doing too much work
         // after they make the effort to type in a stream name.  (The
@@ -72,23 +67,23 @@ const stream_name_error = (function () {
         // the public streams that I'm not subscribed to yet.  Once I
         // realize the stream already exists, I may want to cancel.)
         if (stream_name && stream_data.get_sub(stream_name)) {
-            self.report_already_exists();
+            this.report_already_exists();
             return;
         }
 
-        self.clear_errors();
-    };
+        this.clear_errors();
+    }
 
-    self.validate_for_submit = function (stream_name) {
+    validate_for_submit(stream_name) {
         if (!stream_name) {
-            self.report_empty_stream();
-            self.select();
+            this.report_empty_stream();
+            this.select();
             return false;
         }
 
         if (stream_data.get_sub(stream_name)) {
-            self.report_already_exists();
-            self.select();
+            this.report_already_exists();
+            this.select();
             return false;
         }
 
@@ -97,10 +92,9 @@ const stream_name_error = (function () {
         // however, that there's some invite-only stream that we don't
         // know about locally that will cause a name collision.)
         return true;
-    };
-
-    return self;
-})();
+    }
+}
+const stream_name_error = new StreamNameError();
 
 // Within the new stream modal...
 function update_announce_stream_state() {
@@ -139,8 +133,8 @@ function get_principals() {
 
 function create_stream() {
     const data = {};
-    const stream_name = $.trim($("#create_stream_name").val());
-    const description = $.trim($("#create_stream_description").val());
+    const stream_name = $("#create_stream_name").val().trim();
+    const description = $("#create_stream_description").val().trim();
     created_stream = stream_name;
 
     // Even though we already check to make sure that while typing the user cannot enter
@@ -154,7 +148,7 @@ function create_stream() {
         );
         return;
     }
-    data.subscriptions = JSON.stringify([{name: stream_name, description: description}]);
+    data.subscriptions = JSON.stringify([{name: stream_name, description}]);
 
     let invite_only;
     let history_public_to_subscribers;
@@ -207,15 +201,15 @@ function create_stream() {
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: data,
-        success: function () {
+        data,
+        success() {
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
             ui_report.success(i18n.t("Stream successfully created!"), $(".stream_create_info"));
             loading.destroy_indicator($("#stream_creating_indicator"));
             // The rest of the work is done via the subscribe event we will get
         },
-        error: function (xhr) {
+        error(xhr) {
             const msg = JSON.parse(xhr.responseText).msg;
             if (msg.includes("access")) {
                 // If we can't access the stream, we can safely assume it's
@@ -227,7 +221,7 @@ function create_stream() {
                 // error text directly rather than turning it into
                 // "Error creating stream"?
                 stream_name_error.report_already_exists(stream_name);
-                stream_name_error.select();
+                stream_name_error.trigger("select");
             }
 
             ui_report.error(i18n.t("Error creating stream"), xhr, $(".stream_create_info"));
@@ -260,7 +254,7 @@ exports.new_stream_clicked = function (stream_name) {
     // is clear is that this shouldn't be touched unless you're also changing
     // the mobile @media query at 700px.
     if (window.innerWidth > 700) {
-        $("#create_stream_name").focus();
+        $("#create_stream_name").trigger("focus");
     }
 };
 
@@ -389,7 +383,7 @@ exports.create_handlers_for_users = function (container) {
                 const user_id = parseInt(elem.attr("data-user-id"), 10);
                 const user_checked = filtered_users.has(user_id);
                 const display = user_checked ? "block" : "none";
-                elem.css({display: display});
+                elem.css({display});
             });
         })();
 
@@ -406,7 +400,7 @@ exports.set_up_handlers = function () {
         e.preventDefault();
         clear_error_display();
 
-        const stream_name = $.trim($("#create_stream_name").val());
+        const stream_name = $("#create_stream_name").val().trim();
         const name_ok = stream_name_error.validate_for_submit(stream_name);
 
         if (!name_ok) {
@@ -425,7 +419,7 @@ exports.set_up_handlers = function () {
 
         if (principals.length >= 50) {
             const invites_warning_modal = render_subscription_invites_warning_modal({
-                stream_name: stream_name,
+                stream_name,
                 count: principals.length,
             });
             $("#stream-creation").append(invites_warning_modal);
@@ -444,7 +438,7 @@ exports.set_up_handlers = function () {
     });
 
     container.on("input", "#create_stream_name", () => {
-        const stream_name = $.trim($("#create_stream_name").val());
+        const stream_name = $("#create_stream_name").val().trim();
 
         // This is an inexpensive check.
         stream_name_error.pre_validate(stream_name);

@@ -193,6 +193,18 @@ v1_api_and_json_patterns = [
     path('zcommand', rest_dispatch,
          {'POST': 'zerver.views.message_send.zcommand_backend'}),
 
+    # Endpoints for syncing drafts.
+    path('drafts', rest_dispatch,
+         {'GET': ('zerver.views.drafts.fetch_drafts',
+                  {'intentionally_undocumented'}),
+          'POST': ('zerver.views.drafts.create_drafts',
+                   {'intentionally_undocumented'})}),
+    path('drafts/<int:draft_id>', rest_dispatch,
+         {'PATCH': ('zerver.views.drafts.edit_draft',
+                    {'intentionally_undocumented'}),
+          'DELETE': ('zerver.views.drafts.delete_draft',
+                     {'intentionally_undocumented'})}),
+
     # messages -> zerver.views.message*
     # GET returns messages, possibly filtered, POST sends a message
     path('messages', rest_dispatch,

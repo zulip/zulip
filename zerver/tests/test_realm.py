@@ -44,9 +44,13 @@ class RealmTest(ZulipTestCase):
 
     def test_realm_creation_ensures_internal_realms(self) -> None:
         with mock.patch("zerver.lib.actions.server_initialized", return_value=False):
-            with mock.patch("zerver.lib.actions.create_internal_realm") as mock_create_internal:
+            with mock.patch("zerver.lib.actions.create_internal_realm") as mock_create_internal, \
+                    self.assertLogs(level='INFO') as info_logs:
                 do_create_realm("testrealm", "Test Realm")
                 mock_create_internal.assert_called_once()
+            self.assertEqual(info_logs.output, [
+                'INFO:root:Server not yet initialized. Creating the internal realm first.'
+            ])
 
     def test_do_set_realm_name_caching(self) -> None:
         """The main complicated thing about setting realm names is fighting the
@@ -492,7 +496,6 @@ class RealmTest(ZulipTestCase):
         req = dict(private_message_policy = ujson.dumps(Realm.PRIVATE_MESSAGE_POLICY_DISABLED))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
-        print(result)
 
         invalid_value = 10
         req = dict(private_message_policy = ujson.dumps(invalid_value))
@@ -514,6 +517,7 @@ class RealmTest(ZulipTestCase):
             digest_weekday=10,
             user_group_edit_policy=10,
             private_message_policy=10,
+            message_content_delete_limit_seconds=-10,
         )
 
         # We need an admin user.
@@ -724,6 +728,7 @@ class RealmAPITest(ZulipTestCase):
                     video_chat_provider=ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id']),
                 ),
             ],
+            message_content_delete_limit_seconds=[1000, 1100, 1200]
         )
 
         vals = test_values.get(name)

@@ -1,11 +1,10 @@
 const fs = require("fs");
-const Handlebars = require("handlebars/dist/cjs/handlebars.js");
 const path = require("path");
+
+const Handlebars = require("handlebars");
 const {SourceMapConsumer, SourceNode} = require("source-map");
 
 const templates_path = path.resolve(__dirname, "../../static/templates");
-
-exports.make_handlebars = () => Handlebars.create();
 
 exports.stub_templates = (stub) => {
     window.template_stub = stub;
@@ -33,17 +32,15 @@ require.extensions[".hbs"] = (module, filename) => {
     const pc = hb.precompile(code, {preventIndent: true, srcName: filename});
     const node = new SourceNode();
     node.add([
-        "let hb, template;\n",
+        'const Handlebars = require("handlebars/runtime");\n',
+        "const template = Handlebars.template(",
+        SourceNode.fromStringWithSourceMap(pc.code, new SourceMapConsumer(pc.map)),
+        ");\n",
         "module.exports = (...args) => {\n",
         "    if (window.template_stub !== undefined) {\n",
         "        return window.template_stub(",
         JSON.stringify(name),
         ", ...args);\n",
-        "    }\n",
-        "    if (hb !== Handlebars) {\n",
-        "        template = (hb = Handlebars).template(",
-        SourceNode.fromStringWithSourceMap(pc.code, new SourceMapConsumer(pc.map)),
-        ");\n",
         "    }\n",
         "    return template(...args);\n",
         "};\n",

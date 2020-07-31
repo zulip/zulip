@@ -7,8 +7,7 @@ exports.initialize = function () {
 
     exports.widget.onPillRemove(() => {
         if (exports.widget.items().length === 0) {
-            ui_util.change_tab_to("#home");
-            narrow.deactivate();
+            hashchange.go_to_location("");
         }
     });
 

@@ -53,7 +53,7 @@ from zerver.lib.actions import (
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_success
+from zerver.lib.response import json_error, json_success
 from zerver.lib.subdomains import get_subdomain_from_hostname
 from zerver.lib.timestamp import convert_to_UTC, timestamp_to_datetime
 from zerver.lib.validator import to_non_negative_int
@@ -71,9 +71,13 @@ from zerver.views.invite import get_invitee_emails_set
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
+        approve_sponsorship,
         attach_discount_to_realm,
+        get_current_plan_by_realm,
         get_customer_by_realm,
         get_discount_for_realm,
+        get_latest_seat_count,
+        make_end_of_cycle_updates_if_needed,
         update_sponsorship_status,
     )
 
@@ -589,7 +593,10 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                 GROUP BY realm_id
             ) wau_counts
             ON wau_counts.realm_id = realm.id
-        WHERE EXISTS (
+        WHERE
+            realm.plan_type = 3
+            OR
+            EXISTS (
                 SELECT *
                 FROM zerver_useractivity ua
                 JOIN zerver_userprofile up
@@ -1118,7 +1125,8 @@ def support(request: HttpRequest) -> HttpResponse:
         keys = set(request.POST.keys())
         if "csrfmiddlewaretoken" in keys:
             keys.remove("csrfmiddlewaretoken")
-        assert(len(keys) == 2)
+        if len(keys) != 2:
+            return json_error(_("Invalid parameters"))
 
         realm_id = request.POST.get("realm_id")
         realm = Realm.objects.get(id=realm_id)
@@ -1151,6 +1159,10 @@ def support(request: HttpRequest) -> HttpResponse:
             elif sponsorship_pending == "false":
                 update_sponsorship_status(realm, False)
                 context["message"] = f"{realm.name} is no longer pending sponsorship."
+        elif request.POST.get('approve_sponsorship') is not None:
+            if request.POST.get('approve_sponsorship') == "approve_sponsorship":
+                approve_sponsorship(realm)
+                context["message"] = f"Sponsorship approved for {realm.name}"
         elif request.POST.get("scrub_realm", None) is not None:
             if request.POST.get("scrub_realm") == "scrub_realm":
                 do_scrub_realm(realm, acting_user=request.user)
@@ -1181,6 +1193,17 @@ def support(request: HttpRequest) -> HttpResponse:
 
         for realm in realms:
             realm.customer = get_customer_by_realm(realm)
+
+            current_plan = get_current_plan_by_realm(realm)
+            if current_plan is not None:
+                new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(current_plan, timezone_now())
+                if last_ledger_entry is not None:
+                    if new_plan is not None:
+                        realm.current_plan = new_plan
+                    else:
+                        realm.current_plan = current_plan
+                    realm.current_plan.licenses = last_ledger_entry.licenses
+                    realm.current_plan.licenses_used = get_latest_seat_count(realm)
 
         context["realms"] = realms
 

@@ -1,28 +1,56 @@
-const contributors_list = page_params.contrib;
+import _ from "lodash";
 
-// `repos` are repositories to be shown as tabs, whereas `hidden_repos` are
-// repositories that should count towards the total but not have tabs.
-const repos = [
-    "server",
-    "desktop",
-    "mobile",
-    "python-zulip-api",
-    "zulip-js",
-    "zulipbot",
-    "terminal",
-];
-const hidden_repos = ["zulip-android", "zulip-ios-legacy"];
+const contributors_list = page_params.contributors;
+
+const repo_name_to_tab_name = {
+    zulip: "server",
+    "zulip-desktop": "desktop",
+    "zulip-mobile": "mobile",
+    "python-zulip-api": "python-zulip-api",
+    "zulip-js": "zulip-js",
+    zulipbot: "zulipbot",
+    "zulip-terminal": "terminal",
+    "zulip-ios-legacy": "",
+    "zulip-android": "",
+};
 
 // Remember the loaded repositories so that HTML is not redundantly edited
 // if a user leaves and then revisits the same tab.
 const loaded_repos = [];
 
-function contrib_total_commits(contrib) {
+function calculate_total_commits(contributor) {
     let commits = 0;
-    repos.concat(hidden_repos).forEach((repo) => {
-        commits += contrib[repo] || 0;
+    Object.keys(repo_name_to_tab_name).forEach((repo_name) => {
+        commits += contributor[repo_name] || 0;
     });
     return commits;
+}
+
+function get_profile_url(contributor, tab_name) {
+    const commit_email_linked_to_github = "github_username" in contributor;
+
+    if (commit_email_linked_to_github) {
+        return "https://github.com/" + contributor.github_username;
+    }
+
+    const email = contributor.email;
+
+    if (tab_name) {
+        return `https://github.com/zulip/${tab_name}/commits?author=${email}`;
+    }
+
+    for (const repo_name in repo_name_to_tab_name) {
+        if (repo_name in contributor) {
+            return `https://github.com/zulip/${repo_name}/commits?author=${email}`;
+        }
+    }
+}
+
+function get_display_name(contributor) {
+    if (contributor.github_username) {
+        return "@" + contributor.github_username;
+    }
+    return contributor.name;
 }
 
 // TODO (for v2 of /team contributors):
@@ -30,53 +58,51 @@ function contrib_total_commits(contrib) {
 //   - Display full name instead of github username.
 export default function render_tabs() {
     const template = _.template($("#contributors-template").html());
-
-    // Since the Github API limits the number of output to 100, we want to
-    // remove anyone in the total tab with less commits than the 100th
-    // contributor to the server repo. (See #7470)
-    const least_server_commits = _.chain(contributors_list)
-        .filter("server")
-        .sortBy("server")
-        .value()[0].server;
-
     const total_tab_html = _.chain(contributors_list)
         .map((c) => ({
-            name: c.name,
+            name: get_display_name(c),
+            github_username: c.github_username,
             avatar: c.avatar,
-            commits: contrib_total_commits(c),
+            profile_url: get_profile_url(c),
+            commits: calculate_total_commits(c),
         }))
         .sortBy("commits")
         .reverse()
-        .filter((c) => c.commits >= least_server_commits)
         .map((c) => template(c))
         .value()
         .join("");
 
     $("#tab-total").html(total_tab_html);
 
-    for (const repo of repos) {
+    for (const repo_name of Object.keys(repo_name_to_tab_name)) {
+        const tab_name = repo_name_to_tab_name[repo_name];
+        if (!tab_name) {
+            continue;
+        }
         // Set as the loading template for now, and load when clicked.
-        $("#tab-" + repo).html($("#loading-template").html());
+        $("#tab-" + tab_name).html($("#loading-template").html());
 
-        $("#" + repo).click(() => {
-            if (!loaded_repos.includes(repo)) {
+        $("#" + tab_name).on("click", () => {
+            if (!loaded_repos.includes(repo_name)) {
                 const html = _.chain(contributors_list)
-                    .filter(repo)
-                    .sortBy(repo)
+                    .filter(repo_name)
+                    .sortBy(repo_name)
                     .reverse()
                     .map((c) =>
                         template({
-                            name: c.name,
+                            name: get_display_name(c),
+                            github_username: c.github_username,
                             avatar: c.avatar,
-                            commits: c[repo],
+                            profile_url: get_profile_url(c),
+                            commits: c[repo_name],
                         }),
                     )
                     .value()
                     .join("");
 
-                $("#tab-" + repo).html(html);
+                $("#tab-" + tab_name).html(html);
 
-                loaded_repos.push(repo);
+                loaded_repos.push(repo_name);
             }
         });
     }

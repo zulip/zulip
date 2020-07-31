@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const render_hotspot_overlay = require("../templates/hotspot_overlay.hbs");
 const render_intro_reply_hotspot = require("../templates/intro_reply_hotspot.hbs");
 
@@ -63,7 +65,7 @@ exports.post_hotspot_as_read = function (hotspot_name) {
     channel.post({
         url: "/json/users/me/hotspots",
         data: {hotspot: JSON.stringify(hotspot_name)},
-        error: function (err) {
+        error(err) {
             blueslip.error(err.responseText);
         },
     });

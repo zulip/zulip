@@ -1,3 +1,4 @@
+const emoji = require("../shared/js/emoji");
 const render_admin_emoji_list = require("../templates/admin_emoji_list.hbs");
 const render_settings_emoji_settings_tip = require("../templates/settings/emoji_settings_tip.hbs");
 
@@ -45,7 +46,7 @@ exports.update_custom_emoji_ui = function () {
         $(".admin-emoji-form").show();
     }
 
-    exports.populate_emoji(page_params.realm_emoji);
+    exports.populate_emoji();
 };
 
 exports.reset = function () {
@@ -61,10 +62,12 @@ function sort_author_full_name(a, b) {
     return -1;
 }
 
-exports.populate_emoji = function (emoji_data) {
+exports.populate_emoji = function () {
     if (!meta.loaded) {
         return;
     }
+
+    const emoji_data = emoji.get_server_realm_emoji_data();
 
     for (const emoji of Object.values(emoji_data)) {
         // Add people.js data for the user here.
@@ -78,7 +81,7 @@ exports.populate_emoji = function (emoji_data) {
     const emoji_table = $("#admin_emoji_table").expectOne();
     list_render.create(emoji_table, Object.values(emoji_data), {
         name: "emoji_list",
-        modifier: function (item) {
+        modifier(item) {
             if (item.deactivated !== true) {
                 return render_admin_emoji_list({
                     emoji: {
@@ -94,10 +97,10 @@ exports.populate_emoji = function (emoji_data) {
         },
         filter: {
             element: emoji_table.closest(".settings-section").find(".search"),
-            predicate: function (item, value) {
+            predicate(item, value) {
                 return item.name.toLowerCase().includes(value);
             },
-            onupdate: function () {
+            onupdate() {
                 ui.reset_scrollbar(emoji_table);
             },
         },
@@ -141,7 +144,7 @@ exports.set_up = function () {
     loading.make_indicator($("#admin_page_emoji_loading_indicator"));
 
     // Populate emoji table
-    exports.populate_emoji(page_params.realm_emoji);
+    exports.populate_emoji();
 
     $(".admin_emoji_table").on("click", ".delete", function (e) {
         e.preventDefault();
@@ -150,10 +153,10 @@ exports.set_up = function () {
 
         channel.del({
             url: "/json/realm/emoji/" + encodeURIComponent(btn.attr("data-emoji-name")),
-            error: function (xhr) {
+            error(xhr) {
                 ui_report.generic_row_button_error(xhr, btn);
             },
-            success: function () {
+            success() {
                 const row = btn.parents("tr");
                 row.remove();
             },
@@ -168,7 +171,7 @@ exports.set_up = function () {
             e.preventDefault();
             e.stopPropagation();
             const emoji_status = $("#admin-emoji-status");
-            $("#admin_emoji_submit").attr("disabled", true);
+            $("#admin_emoji_submit").prop("disabled", true);
             const emoji = {};
             const formData = new FormData();
 
@@ -185,19 +188,19 @@ exports.set_up = function () {
                 cache: false,
                 processData: false,
                 contentType: false,
-                success: function () {
+                success() {
                     $("#admin-emoji-status").hide();
                     ui_report.success(i18n.t("Custom emoji added!"), emoji_status);
                     $("form.admin-emoji-form input[type='text']").val("");
-                    $("#admin_emoji_submit").removeAttr("disabled");
+                    $("#admin_emoji_submit").prop("disabled", false);
                     emoji_widget.clear();
                 },
-                error: function (xhr) {
+                error(xhr) {
                     $("#admin-emoji-status").hide();
                     const errors = JSON.parse(xhr.responseText).msg;
                     xhr.responseText = JSON.stringify({msg: errors});
                     ui_report.error(i18n.t("Failed"), xhr, emoji_status);
-                    $("#admin_emoji_submit").removeAttr("disabled");
+                    $("#admin_emoji_submit").prop("disabled", false);
                 },
             });
         });

@@ -1,3 +1,11 @@
+const katex = require("katex/dist/katex.min.js");
+const _ = require("lodash");
+const moment = require("moment");
+
+const emoji = require("../shared/js/emoji");
+const fenced_code = require("../shared/js/fenced_code");
+const marked = require("../third/marked/lib/marked");
+
 // This contains zulip's frontend markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
 // main piece in rendering markdown client-side is
@@ -56,7 +64,7 @@ exports.translate_emoticons_to_names = (text) => {
         return match;
     };
 
-    for (const translation of helpers.get_emoticon_translations()) {
+    for (const translation of emoji.get_emoticon_translations()) {
         // We can't pass replacement_text directly into
         // emoticon_replacer, because emoticon_replacer is
         // a callback for `replace()`.  Instead we just mutate
@@ -89,7 +97,7 @@ exports.apply_markdown = function (message) {
     message_store.init_booleans(message);
 
     const options = {
-        userMentionHandler: function (mention, silently) {
+        userMentionHandler(mention, silently) {
             if (mention === "all" || mention === "everyone" || mention === "stream") {
                 message.mentioned = true;
                 return '<span class="user-mention" data-user-id="*">' + "@" + mention + "</span>";
@@ -160,7 +168,7 @@ exports.apply_markdown = function (message) {
             const actual_full_name = helpers.get_actual_name_from_user_id(user_id);
             return str + _.escape(actual_full_name) + "</span>";
         },
-        groupMentionHandler: function (name) {
+        groupMentionHandler(name) {
             const group = helpers.get_user_group_from_name(name);
             if (group !== undefined) {
                 if (helpers.is_member_of_user_group(group.id, helpers.my_user_id())) {
@@ -177,7 +185,7 @@ exports.apply_markdown = function (message) {
             }
             return;
         },
-        silencedMentionHandler: function (quote) {
+        silencedMentionHandler(quote) {
             // Silence quoted mentions.
             const user_mention_re = /<span.*user-mention.*data-user-id="(\d+|\*)"[^>]*>@/gm;
             quote = quote.replace(user_mention_re, (match) => {
@@ -258,7 +266,7 @@ function make_emoji_span(codepoint, title, alt_text) {
 
 function handleUnicodeEmoji(unicode_emoji) {
     const codepoint = unicode_emoji.codePointAt(0).toString(16);
-    const emoji_name = helpers.get_emoji_name(codepoint);
+    const emoji_name = emoji.get_emoji_name(codepoint);
 
     if (emoji_name) {
         const alt_text = ":" + emoji_name + ":";
@@ -280,7 +288,7 @@ function handleEmoji(emoji_name) {
     // Otherwise we'll look at unicode emoji to render with an emoji
     // span using the spritesheet; and if it isn't one of those
     // either, we pass through the plain text syntax unmodified.
-    const emoji_url = helpers.get_realm_emoji_url(emoji_name);
+    const emoji_url = emoji.get_realm_emoji_url(emoji_name);
 
     if (emoji_url) {
         return (
@@ -296,7 +304,7 @@ function handleEmoji(emoji_name) {
         );
     }
 
-    const codepoint = helpers.get_emoji_codepoint(emoji_name);
+    const codepoint = emoji.get_emoji_codepoint(emoji_name);
     if (codepoint) {
         return make_emoji_span(codepoint, title, alt_text);
     }
@@ -485,7 +493,7 @@ exports.initialize = function (realm_filters, helper_config) {
 
     function disable_markdown_regex(rules, name) {
         rules[name] = {
-            exec: function () {
+            exec() {
                 return false;
             },
         };

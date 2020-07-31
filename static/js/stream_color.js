@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 exports.default_color = "#c2c2c2";
 
 // Classes which could be returned by get_color_class.
@@ -13,7 +15,7 @@ function update_table_stream_color(table, stream_name, color) {
 
     for (const label of stream_labels) {
         const $label = $(label);
-        if ($.trim($label.text()) === stream_name) {
+        if ($label.text().trim() === stream_name) {
             const messages = $label.closest(".recipient_row").children(".message_row");
             messages
                 .children(".messagebox")
@@ -63,7 +65,7 @@ const subscriptions_table_colorpicker_options = {
 exports.set_colorpicker_color = function (colorpicker, color) {
     colorpicker.spectrum({
         ...subscriptions_table_colorpicker_options,
-        color: color,
+        color,
         container: "#subscription_overlay .subscription_settings.show",
     });
 };
@@ -93,7 +95,7 @@ exports.update_stream_color = function (sub, color, opts) {
         update_historical_message_color(sub.name, color);
     }
     update_stream_sidebar_swatch_color(stream_id, color);
-    tab_bar.colorize_tab_bar();
+    message_view_header.colorize_message_view_header();
 };
 
 function picker_do_change_color(color) {

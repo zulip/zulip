@@ -1,3 +1,7 @@
+const Plotly = require("plotly.js/lib/core");
+
+Plotly.register([require("plotly.js/lib/bar"), require("plotly.js/lib/pie")]);
+
 const font_14pt = {
     family: "Source Sans Pro",
     size: 14,
@@ -81,9 +85,13 @@ $(() => {
         placement: "top",
         trigger: "manual",
     });
-    $("#id_last_update_question_sign").hover(() => {
-        $("span.last_update_tooltip").tooltip("toggle");
-    });
+    $("#id_last_update_question_sign")
+        .on("mouseenter", () => {
+            $("span.last_update_tooltip").tooltip("show");
+        })
+        .on("mouseleave", () => {
+            $("span.last_update_tooltip").tooltip("hide");
+        });
     // Add configuration for any additional tooltips here.
 });
 
@@ -96,7 +104,7 @@ function populate_messages_sent_over_time(data) {
     // Helper functions
     function make_traces(dates, values, type, date_formatter) {
         const text = dates.map((date) => date_formatter(date));
-        const common = {x: dates, type: type, hoverinfo: "none", text: text};
+        const common = {x: dates, type, hoverinfo: "none", text};
         return {
             human: {
                 // 5062a0
@@ -143,8 +151,8 @@ function populate_messages_sent_over_time(data) {
 
     function make_rangeselector(x, y, button1, button2) {
         return {
-            x: x,
-            y: y,
+            x,
+            y,
             buttons: [
                 {stepmode: "backward", ...button1},
                 {stepmode: "backward", ...button2},
@@ -239,8 +247,8 @@ function populate_messages_sent_over_time(data) {
         values.bot.push(current.bot);
         values.me.push(current.me);
         return {
-            dates: dates,
-            values: values,
+            dates,
+            values,
             last_value_is_partial: !is_boundary(
                 new Date(start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000),
             ),
@@ -315,19 +323,19 @@ function populate_messages_sent_over_time(data) {
     }
 
     // Click handlers for aggregation buttons
-    $("#daily_button").click(function () {
+    $("#daily_button").on("click", function () {
         draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, false);
         $(this).addClass("selected");
         clicked_cumulative = false;
     });
 
-    $("#weekly_button").click(function () {
+    $("#weekly_button").on("click", function () {
         draw_or_update_plot(weekly_rangeselector, weekly_traces, last_week_is_partial, false);
         $(this).addClass("selected");
         clicked_cumulative = false;
     });
 
-    $("#cumulative_button").click(function () {
+    $("#cumulative_button").on("click", function () {
         clicked_cumulative = false;
         draw_or_update_plot(daily_rangeselector, cumulative_traces, false, false);
         $(this).addClass("selected");
@@ -397,10 +405,10 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
     }
     const total = values.reduce((a, b) => a + b, 0);
     return {
-        values: values,
-        labels: labels,
+        values,
+        labels,
         percentages: round_to_percentages(values, total),
-        total: total,
+        total,
     };
 }
 
@@ -533,7 +541,7 @@ function populate_messages_sent_by_client(data) {
         button.addClass("selected");
     }
 
-    $("#pie_messages_sent_by_client button").click(function () {
+    $("#pie_messages_sent_by_client button").on("click", function () {
         if ($(this).attr("data-user")) {
             set_user_button($(this));
             user_button = $(this).attr("data-user");
@@ -582,7 +590,7 @@ function populate_messages_sent_by_message_type(data) {
         return {
             trace: {
                 values: plot_data.values,
-                labels: labels,
+                labels,
                 type: "pie",
                 direction: "clockwise",
                 rotation: -90,
@@ -661,7 +669,7 @@ function populate_messages_sent_by_message_type(data) {
         button.addClass("selected");
     }
 
-    $("#pie_messages_sent_by_type button").click(function () {
+    $("#pie_messages_sent_by_type button").on("click", function () {
         if ($(this).attr("data-user")) {
             set_user_button($(this));
             user_button = $(this).attr("data-user");
@@ -704,10 +712,10 @@ function populate_number_of_users(data) {
         return {
             x: end_dates,
             y: values,
-            type: type,
+            type,
             name: i18n.t("Active users"),
             hoverinfo: "none",
-            text: text,
+            text,
             visible: true,
         };
     }
@@ -753,17 +761,17 @@ function populate_number_of_users(data) {
         add_hover_handler();
     }
 
-    $("#1day_actives_button").click(function () {
+    $("#1day_actives_button").on("click", function () {
         draw_or_update_plot(_1day_trace);
         $(this).addClass("selected");
     });
 
-    $("#15day_actives_button").click(function () {
+    $("#15day_actives_button").on("click", function () {
         draw_or_update_plot(_15day_trace);
         $(this).addClass("selected");
     });
 
-    $("#all_time_actives_button").click(function () {
+    $("#all_time_actives_button").on("click", function () {
         draw_or_update_plot(all_time_trace);
         $(this).addClass("selected");
     });
@@ -782,7 +790,7 @@ function populate_messages_read_over_time(data) {
     // Helper functions
     function make_traces(dates, values, type, date_formatter) {
         const text = dates.map((date) => date_formatter(date));
-        const common = {x: dates, type: type, hoverinfo: "none", text: text};
+        const common = {x: dates, type, hoverinfo: "none", text};
         return {
             everyone: {
                 name: i18n.t("Everyone"),
@@ -821,8 +829,8 @@ function populate_messages_read_over_time(data) {
 
     function make_rangeselector(x, y, button1, button2) {
         return {
-            x: x,
-            y: y,
+            x,
+            y,
             buttons: [
                 {stepmode: "backward", ...button1},
                 {stepmode: "backward", ...button2},
@@ -910,8 +918,8 @@ function populate_messages_read_over_time(data) {
         values.everyone.push(current.everyone);
         values.me.push(current.me);
         return {
-            dates: dates,
-            values: values,
+            dates,
+            values,
             last_value_is_partial: !is_boundary(
                 new Date(start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000),
             ),
@@ -979,19 +987,19 @@ function populate_messages_read_over_time(data) {
     }
 
     // Click handlers for aggregation buttons
-    $("#read_daily_button").click(function () {
+    $("#read_daily_button").on("click", function () {
         draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, false);
         $(this).addClass("selected");
         clicked_cumulative = false;
     });
 
-    $("#read_weekly_button").click(function () {
+    $("#read_weekly_button").on("click", function () {
         draw_or_update_plot(weekly_rangeselector, weekly_traces, last_week_is_partial, false);
         $(this).addClass("selected");
         clicked_cumulative = false;
     });
 
-    $("#read_cumulative_button").click(function () {
+    $("#read_cumulative_button").on("click", function () {
         clicked_cumulative = false;
         draw_or_update_plot(daily_rangeselector, cumulative_traces, false, false);
         $(this).addClass("selected");
@@ -1011,13 +1019,13 @@ function populate_messages_read_over_time(data) {
 function get_chart_data(data, callback) {
     $.get({
         url: "/json/analytics/chart_data" + page_params.data_url_suffix,
-        data: data,
+        data,
         idempotent: true,
-        success: function (data) {
+        success(data) {
             callback(data);
             update_last_full_update(data.end_times);
         },
-        error: function (xhr) {
+        error(xhr) {
             $("#id_stats_errors").show().text(JSON.parse(xhr.responseText).msg);
         },
     });

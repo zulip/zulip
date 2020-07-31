@@ -1,39 +1,42 @@
-const list_cursor = function (opts) {
-    const self = {};
-
-    const config_ok =
-        opts.highlight_class &&
-        opts.list &&
-        opts.list.scroll_container_sel &&
-        opts.list.find_li &&
-        opts.list.first_key &&
-        opts.list.prev_key &&
-        opts.list.next_key;
-    if (!config_ok) {
-        blueslip.error("Programming error");
-        return;
-    }
-
-    self.clear = function () {
-        if (self.curr_key === undefined) {
+class ListCursor {
+    constructor({highlight_class, list}) {
+        const config_ok =
+            highlight_class &&
+            list &&
+            list.scroll_container_sel &&
+            list.find_li &&
+            list.first_key &&
+            list.prev_key &&
+            list.next_key;
+        if (!config_ok) {
+            blueslip.error("Programming error");
             return;
         }
-        const row = self.get_row(self.curr_key);
+
+        this.highlight_class = highlight_class;
+        this.list = list;
+    }
+
+    clear() {
+        if (this.curr_key === undefined) {
+            return;
+        }
+        const row = this.get_row(this.curr_key);
         if (row) {
             row.clear();
         }
-        self.curr_key = undefined;
-    };
+        this.curr_key = undefined;
+    }
 
-    self.get_key = function () {
-        return self.curr_key;
-    };
+    get_key() {
+        return this.curr_key;
+    }
 
-    self.get_row = function (key) {
+    get_row(key) {
         // TODO: The list class should probably do more of the work
         //       here, so we're not so coupled to jQuery, and
         //       so we instead just get back a widget we can say
-        //       something like widget.select() on.  This will
+        //       something like widget.trigger("select") on.  This will
         //       be especially important if we do lazy rendering.
         //       It would also give the caller more flexibility on
         //       the actual styling.
@@ -41,8 +44,8 @@ const list_cursor = function (opts) {
             return;
         }
 
-        const li = opts.list.find_li({
-            key: key,
+        const li = this.list.find_li({
+            key,
             force_render: true,
         });
 
@@ -51,91 +54,89 @@ const list_cursor = function (opts) {
         }
 
         return {
-            highlight: function () {
-                li.addClass(opts.highlight_class);
-                self.adjust_scroll(li);
+            highlight: () => {
+                li.addClass(this.highlight_class);
+                this.adjust_scroll(li);
             },
-            clear: function () {
-                li.removeClass(opts.highlight_class);
+            clear: () => {
+                li.removeClass(this.highlight_class);
             },
         };
-    };
+    }
 
-    self.adjust_scroll = function (li) {
-        const scroll_container = $(opts.list.scroll_container_sel);
+    adjust_scroll(li) {
+        const scroll_container = $(this.list.scroll_container_sel);
         scroll_util.scroll_element_into_container(li, scroll_container);
-    };
+    }
 
-    self.redraw = function () {
+    redraw() {
         // We should only call this for situations like the buddy
         // list where we redraw the whole list without necessarily
         // changing it, so we just want to re-highlight the current
         // row in the new DOM.  If you are filtering, for now you
         // should call the 'reset()' method.
-        const row = self.get_row(self.curr_key);
+        const row = this.get_row(this.curr_key);
 
         if (row === undefined) {
             return;
         }
         row.highlight();
-    };
+    }
 
-    self.go_to = function (key) {
+    go_to(key) {
         if (key === undefined) {
-            blueslip.error("Caller is not checking keys for list_cursor.go_to");
+            blueslip.error("Caller is not checking keys for ListCursor.go_to");
             return;
         }
-        if (key === self.curr_key) {
+        if (key === this.curr_key) {
             return;
         }
-        self.clear();
-        const row = self.get_row(key);
+        this.clear();
+        const row = this.get_row(key);
         if (row === undefined) {
-            blueslip.error("Cannot highlight key for list_cursor: " + key);
+            blueslip.error("Cannot highlight key for ListCursor: " + key);
             return;
         }
-        self.curr_key = key;
+        this.curr_key = key;
         row.highlight();
-    };
+    }
 
-    self.reset = function () {
-        self.clear();
-        const key = opts.list.first_key();
+    reset() {
+        this.clear();
+        const key = this.list.first_key();
         if (key === undefined) {
-            self.curr_key = undefined;
+            this.curr_key = undefined;
             return;
         }
-        self.go_to(key);
-    };
+        this.go_to(key);
+    }
 
-    self.prev = function () {
-        if (self.curr_key === undefined) {
+    prev() {
+        if (this.curr_key === undefined) {
             return;
         }
-        const key = opts.list.prev_key(self.curr_key);
+        const key = this.list.prev_key(this.curr_key);
         if (key === undefined) {
             // leave the current key
             return;
         }
-        self.go_to(key);
-    };
+        this.go_to(key);
+    }
 
-    self.next = function () {
-        if (self.curr_key === undefined) {
+    next() {
+        if (this.curr_key === undefined) {
             // This is sort of a special case where we went from
             // an empty filter to having data.
-            self.reset();
+            this.reset();
             return;
         }
-        const key = opts.list.next_key(self.curr_key);
+        const key = this.list.next_key(this.curr_key);
         if (key === undefined) {
             // leave the current key
             return;
         }
-        self.go_to(key);
-    };
-
-    return self;
-};
-module.exports = list_cursor;
-window.list_cursor = list_cursor;
+        this.go_to(key);
+    }
+}
+module.exports = ListCursor;
+window.ListCursor = ListCursor;

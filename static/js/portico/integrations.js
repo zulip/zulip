@@ -1,6 +1,7 @@
-import * as google_analytics from "./google-analytics.js";
-import blueslip from "./../blueslip";
+import _ from "lodash";
 
+import blueslip from "./../blueslip";
+import * as google_analytics from "./google-analytics.js";
 import {path_parts} from "./landing-page";
 
 // these constants are populated immediately with data from the DOM on page load
@@ -191,7 +192,7 @@ function hide_catalog_show_integration() {
         url: "/integrations/doc-html/" + state.integration,
         dataType: "html",
         success: hide_catalog,
-        error: function (err) {
+        error(err) {
             blueslip.error(
                 "Integration documentation for '" + state.integration + "' not found.",
                 err,
@@ -323,7 +324,7 @@ function toggle_categories_dropdown() {
 }
 
 function integration_events() {
-    $('#integration-search input[type="text"]').keypress((e) => {
+    $('#integration-search input[type="text"]').on("keypress", (e) => {
         const integrations = $(".integration-lozenges").children().toArray();
         if (e.which === 13 && e.target.value !== "") {
             for (let i = 0; i < integrations.length; i += 1) {
@@ -337,19 +338,19 @@ function integration_events() {
         }
     });
 
-    $(".integration-categories-dropdown .dropdown-toggle").click(() => {
+    $(".integration-categories-dropdown .dropdown-toggle").on("click", () => {
         toggle_categories_dropdown();
     });
 
     $(".integration-instruction-block").on("click", "a .integration-category", (e) => {
         const category = $(e.target).data("category");
-        dispatch("SHOW_CATEGORY", {category: category});
+        dispatch("SHOW_CATEGORY", {category});
         return false;
     });
 
     $(".integrations a .integration-category").on("click", (e) => {
         const category = $(e.target).data("category");
-        dispatch("CHANGE_CATEGORY", {category: category});
+        dispatch("CHANGE_CATEGORY", {category});
         toggle_categories_dropdown();
         return false;
     });
@@ -357,7 +358,7 @@ function integration_events() {
     $(".integrations a .integration-lozenge").on("click", (e) => {
         if (!$(e.target).closest(".integration-lozenge").hasClass("integration-create-your-own")) {
             const integration = $(e.target).closest(".integration-lozenge").data("name");
-            dispatch("SHOW_INTEGRATION", {integration: integration});
+            dispatch("SHOW_INTEGRATION", {integration});
             return false;
         }
     });
@@ -369,13 +370,11 @@ function integration_events() {
 
     // combine selector use for both focusing the integrations searchbar and adding
     // the input event.
-    $(".integrations .searchbar input[type='text']")
-        .focus()
-        .on("input", (e) => {
-            dispatch("UPDATE_QUERY", {query: e.target.value.toLowerCase()});
-        });
+    $(".integrations .searchbar input[type='text']").on("input", (e) => {
+        dispatch("UPDATE_QUERY", {query: e.target.value.toLowerCase()});
+    });
 
-    $(window).scroll(() => {
+    $(window).on("scroll", () => {
         if (document.body.scrollTop > 330) {
             $(".integration-categories-sidebar").addClass("sticky");
         } else {
@@ -401,4 +400,5 @@ $(() => {
     integration_events();
     load_data();
     dispatch("LOAD_PATH");
+    $(".integrations .searchbar input[type='text']").trigger("focus");
 });

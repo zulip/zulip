@@ -39,7 +39,7 @@ exports.populate_filters = function (filters_data) {
     const filters_table = $("#admin_filters_table").expectOne();
     list_render.create(filters_table, filters_data, {
         name: "linkifiers_list",
-        modifier: function (filter) {
+        modifier(filter) {
             return render_admin_filter_list({
                 filter: {
                     pattern: filter[0],
@@ -51,12 +51,12 @@ exports.populate_filters = function (filters_data) {
         },
         filter: {
             element: filters_table.closest(".settings-section").find(".search"),
-            predicate: function (item, value) {
+            predicate(item, value) {
                 return (
                     item[0].toLowerCase().includes(value) || item[1].toLowerCase().includes(value)
                 );
             },
-            onupdate: function () {
+            onupdate() {
                 ui.reset_scrollbar(filters_table);
             },
         },
@@ -93,10 +93,10 @@ exports.build_page = function () {
 
         channel.del({
             url: "/json/realm/filters/" + encodeURIComponent(btn.attr("data-filter-id")),
-            error: function (xhr) {
+            error(xhr) {
                 ui_report.generic_row_button_error(xhr, btn);
             },
-            success: function () {
+            success() {
                 const row = btn.parents("tr");
                 row.remove();
             },
@@ -112,7 +112,7 @@ exports.build_page = function () {
             const pattern_status = $("#admin-filter-pattern-status");
             const format_status = $("#admin-filter-format-status");
             const add_filter_button = $(".new-filter-form button");
-            add_filter_button.attr("disabled", "disabled");
+            add_filter_button.prop("disabled", true);
             filter_status.hide();
             pattern_status.hide();
             format_status.hide();
@@ -125,16 +125,16 @@ exports.build_page = function () {
             channel.post({
                 url: "/json/realm/filters",
                 data: $(this).serialize(),
-                success: function (data) {
+                success(data) {
                     $("#filter_pattern").val("");
                     $("#filter_format_string").val("");
-                    add_filter_button.removeAttr("disabled");
+                    add_filter_button.prop("disabled", false);
                     filter.id = data.id;
                     ui_report.success(i18n.t("Custom filter added!"), filter_status);
                 },
-                error: function (xhr) {
+                error(xhr) {
                     const errors = JSON.parse(xhr.responseText).errors;
-                    add_filter_button.removeAttr("disabled");
+                    add_filter_button.prop("disabled", false);
                     if (errors.pattern !== undefined) {
                         xhr.responseText = JSON.stringify({msg: errors.pattern});
                         ui_report.error(i18n.t("Failed"), xhr, pattern_status);

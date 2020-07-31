@@ -1,4 +1,5 @@
 const util = require("./util");
+
 let unnarrow_times;
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
@@ -220,7 +221,7 @@ exports.activate = function (raw_operators, opts) {
 
     let msg_data = new MessageListData({
         filter: narrow_state.filter(),
-        muting_enabled: muting_enabled,
+        muting_enabled,
     });
 
     // Populate the message list if we can apply our filter locally (i.e.
@@ -228,8 +229,8 @@ exports.activate = function (raw_operators, opts) {
     // Also update id_info accordingly.
     // original back.
     exports.maybe_add_local_messages({
-        id_info: id_info,
-        msg_data: msg_data,
+        id_info,
+        msg_data,
     });
 
     if (!id_info.local_select_id) {
@@ -241,7 +242,7 @@ exports.activate = function (raw_operators, opts) {
         // the block we're about to request from the server instead.
         msg_data = new MessageListData({
             filter: narrow_state.filter(),
-            muting_enabled: muting_enabled,
+            muting_enabled,
         });
     }
 
@@ -260,7 +261,7 @@ exports.activate = function (raw_operators, opts) {
     $("#zfilt").addClass("focused_table");
     $("#zhome").removeClass("focused_table");
 
-    ui_util.change_tab_to("#home");
+    ui_util.change_tab_to("#message_feed_container");
     message_list.set_narrowed(msg_list);
     current_msg_list = message_list.narrowed;
 
@@ -292,11 +293,11 @@ exports.activate = function (raw_operators, opts) {
         }
 
         message_fetch.load_messages_for_narrow({
-            anchor: anchor,
-            cont: function () {
+            anchor,
+            cont() {
                 if (!select_immediately) {
                     exports.update_selection({
-                        id_info: id_info,
+                        id_info,
                         select_offset: then_select_offset,
                     });
                 }
@@ -308,7 +309,7 @@ exports.activate = function (raw_operators, opts) {
 
     if (select_immediately) {
         exports.update_selection({
-            id_info: id_info,
+            id_info,
             select_offset: then_select_offset,
         });
     }
@@ -344,7 +345,7 @@ exports.activate = function (raw_operators, opts) {
     top_left_corner.handle_narrow_activated(current_filter);
     stream_list.handle_narrow_activated(current_filter);
     typing_events.render_notifications_for_narrow();
-    tab_bar.initialize();
+    message_view_header.initialize();
 
     msg_list.initial_core_time = new Date();
     setTimeout(() => {
@@ -551,7 +552,7 @@ exports.update_selection = function (opts) {
     const then_scroll = !preserve_pre_narrowing_screen_position;
 
     message_list.narrowed.select_id(msg_id, {
-        then_scroll: then_scroll,
+        then_scroll,
         use_closest: true,
         force_rerender: true,
     });
@@ -649,7 +650,7 @@ exports.narrow_to_next_pm_string = function () {
 // Activate narrowing with a single operator.
 // This is just for syntactic convenience.
 exports.by = function (operator, operand, opts) {
-    exports.activate([{operator: operator, operand: operand}], opts);
+    exports.activate([{operator, operand}], opts);
 };
 
 exports.by_topic = function (target_id, opts) {
@@ -753,7 +754,7 @@ function handle_post_narrow_deactivate_processes() {
     message_edit.handle_narrow_deactivated();
     widgetize.set_widgets_for_list();
     typing_events.render_notifications_for_narrow();
-    tab_bar.initialize();
+    message_view_header.initialize();
     exports.narrow_title = "home";
     notifications.redraw_title();
     message_scroll.hide_top_of_narrow_notices();
@@ -761,6 +762,9 @@ function handle_post_narrow_deactivate_processes() {
 }
 
 exports.deactivate = function () {
+    // NOTE: Never call this function independently,
+    // always use hashchange.go_to_location("") to
+    // activate All message narrow.
     /*
       Switches current_msg_list from narrowed_msg_list to
       home_msg_list ("All messages"), ending the current narrow.  This
@@ -1036,13 +1040,13 @@ exports.show_empty_narrow_message = function () {
         "title",
         i18n.t("There are no messages to reply to."),
     );
-    $("#left_bar_compose_reply_button_big").attr("disabled", "disabled");
+    $("#left_bar_compose_reply_button_big").prop("disabled", true);
 };
 
 exports.hide_empty_narrow_message = function () {
     $(".empty_feed_notice").hide();
     $("#left_bar_compose_reply_button_big").attr("title", i18n.t("Reply (r)"));
-    $("#left_bar_compose_reply_button_big").removeAttr("disabled");
+    $("#left_bar_compose_reply_button_big").prop("disabled", false);
 };
 
 window.narrow = exports;

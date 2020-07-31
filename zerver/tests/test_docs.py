@@ -356,22 +356,29 @@ class SmtpConfigErrorTest(ZulipTestCase):
 
 class PlansPageTest(ZulipTestCase):
     def test_plans_auth(self) -> None:
-        # Test root domain
-        result = self.client_get("/plans/", subdomain="")
+        root_domain = ""
+        result = self.client_get("/plans/", subdomain=root_domain)
         self.assert_in_success_response(["Sign up now"], result)
-        # Test non-existent domain
-        result = self.client_get("/plans/", subdomain="moo")
+
+        non_existent_domain = "moo"
+        result = self.client_get("/plans/", subdomain=non_existent_domain)
         self.assertEqual(result.status_code, 404)
         self.assert_in_response("does not exist", result)
-        # Test valid domain, no login
+
         realm = get_realm("zulip")
         realm.plan_type = Realm.STANDARD_FREE
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/accounts/login/?next=plans")
-        # Test valid domain, with login
-        self.login('hamlet')
+
+        guest_user = 'polonius'
+        self.login(guest_user)
+        result = self.client_get("/plans/", subdomain="zulip", follow=True)
+        self.assertEqual(result.status_code, 404)
+
+        organization_member = 'hamlet'
+        self.login(organization_member)
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response(["Current plan"], result)
         # Test root domain, with login on different domain

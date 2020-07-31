@@ -1,3 +1,5 @@
+const XDate = require("xdate");
+
 let last_mention_count = 0;
 
 function do_new_messages_animation(li) {

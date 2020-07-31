@@ -1,17 +1,24 @@
+/// <reference types="webpack-dev-server" />
+
 import {basename, resolve} from "path";
-import {cacheLoader, getExposeLoaders} from "./webpack-helpers";
-import BundleTracker from "webpack4-bundle-tracker";
+
 import CleanCss from "clean-css";
-import DebugRequirePlugin from "./debug-require-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import OptimizeCssAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import TerserPlugin from "terser-webpack-plugin";
-// The devServer member of webpack.Configuration is managed by the
-// webpack-dev-server package. We are only importing the type here.
-import _webpackDevServer from "webpack-dev-server";
-import assets from "./webpack.assets.json";
 import webpack from "webpack";
+import BundleTracker from "webpack4-bundle-tracker";
+
+import DebugRequirePlugin from "./debug-require-webpack-plugin";
+import assets from "./webpack.assets.json";
+
+const cacheLoader: webpack.RuleSetUseItem = {
+    loader: "cache-loader",
+    options: {
+        cacheDirectory: resolve(__dirname, "../var/webpack-cache"),
+    },
+};
 
 export default (env?: string): webpack.Configuration[] => {
     const production: boolean = env === "production";
@@ -22,6 +29,16 @@ export default (env?: string): webpack.Configuration[] => {
         entry: assets,
         module: {
             rules: [
+                {
+                    test: require.resolve("./debug-require"),
+                    loader: "expose-loader",
+                    options: {exposes: "require"},
+                },
+                {
+                    test: require.resolve("jquery"),
+                    loader: "expose-loader",
+                    options: {exposes: ["$", "jQuery"]},
+                },
                 // Generate webfont
                 {
                     test: /\.font\.js$/,
@@ -237,28 +254,10 @@ export default (env?: string): webpack.Configuration[] => {
         ],
     };
 
-    // Expose Global variables for third party libraries to webpack modules
-    // Use the unminified versions of jquery and underscore so that
-    // Good error messages show up in production and development in the source maps
-    const exposeOptions = [
-        {path: "./debug-require.js", name: "require"},
-        {path: "blueimp-md5/js/md5.js"},
-        {path: "clipboard/dist/clipboard.js", name: "ClipboardJS"},
-        {path: "xdate/src/xdate.js", name: "XDate"},
-        {path: "../static/third/marked/lib/marked.js"},
-        {path: "../static/js/debug.js"},
-        {path: "jquery/dist/jquery.js", name: ["$", "jQuery"]},
-        {path: "underscore/underscore.js", name: "_"},
-        {path: "handlebars/dist/cjs/handlebars.runtime.js", name: "Handlebars"},
-        {path: "sortablejs/Sortable.js"},
-        {path: "winchan/winchan.js", name: "WinChan"},
-    ];
-    config.module.rules.unshift(...getExposeLoaders(exposeOptions));
-
     if (!production) {
         // Out JS debugging tools
         for (const paths of Object.values(assets)) {
-            paths.push("./static/js/debug.js");
+            paths.push("./static/js/debug");
         }
         config.devServer = {
             clientLogLevel: "error",

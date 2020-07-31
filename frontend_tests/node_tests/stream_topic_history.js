@@ -9,7 +9,7 @@ run_test("basics", () => {
     const stream_id = 55;
 
     stream_topic_history.add_message({
-        stream_id: stream_id,
+        stream_id,
         message_id: 101,
         topic_name: "toPic1",
     });
@@ -20,7 +20,7 @@ run_test("basics", () => {
     assert.deepEqual(max_message_id, 101);
 
     stream_topic_history.add_message({
-        stream_id: stream_id,
+        stream_id,
         message_id: 102,
         topic_name: "Topic1",
     });
@@ -30,7 +30,7 @@ run_test("basics", () => {
     assert.deepEqual(max_message_id, 102);
 
     stream_topic_history.add_message({
-        stream_id: stream_id,
+        stream_id,
         message_id: 103,
         topic_name: "topic2",
     });
@@ -41,7 +41,7 @@ run_test("basics", () => {
 
     // Removing first topic1 message has no effect.
     stream_topic_history.remove_messages({
-        stream_id: stream_id,
+        stream_id,
         topic_name: "toPic1",
         num_messages: 1,
     });
@@ -53,7 +53,7 @@ run_test("basics", () => {
 
     // Removing second topic1 message removes the topic.
     stream_topic_history.remove_messages({
-        stream_id: stream_id,
+        stream_id,
         topic_name: "Topic1",
         num_messages: 1,
     });
@@ -62,7 +62,7 @@ run_test("basics", () => {
 
     // Test that duplicate remove does not crash us.
     stream_topic_history.remove_messages({
-        stream_id: stream_id,
+        stream_id,
         topic_name: "Topic1",
         num_messages: 1,
     });
@@ -123,7 +123,7 @@ run_test("server_history", () => {
     assert.equal(stream_topic_history.is_complete_for_stream_id(stream_id), false);
 
     stream_topic_history.add_message({
-        stream_id: stream_id,
+        stream_id,
         message_id: 501,
         topic_name: "local",
     });
@@ -148,7 +148,7 @@ run_test("server_history", () => {
     // If new activity comes in for historical messages,
     // they can bump to the front of the list.
     stream_topic_history.add_message({
-        stream_id: stream_id,
+        stream_id,
         message_id: 502,
         topic_name: "hist1",
     });
@@ -163,7 +163,7 @@ run_test("server_history", () => {
     // Removing a local message removes the topic if we have
     // our counts right.
     stream_topic_history.remove_messages({
-        stream_id: stream_id,
+        stream_id,
         topic_name: "local",
         num_messages: 1,
     });
@@ -173,7 +173,7 @@ run_test("server_history", () => {
     // We can try to remove a historical message, but it should
     // have no effect.
     stream_topic_history.remove_messages({
-        stream_id: stream_id,
+        stream_id,
         topic_name: "hist2",
         num_messages: 1,
     });
@@ -196,13 +196,13 @@ run_test("test_unread_logic", () => {
     const stream_id = 77;
 
     stream_topic_history.add_message({
-        stream_id: stream_id,
+        stream_id,
         message_id: 201,
         topic_name: "toPic1",
     });
 
     stream_topic_history.add_message({
-        stream_id: stream_id,
+        stream_id,
         message_id: 45,
         topic_name: "topic2",
     });
@@ -241,7 +241,7 @@ run_test("test_stream_has_topics", () => {
     assert.equal(stream_topic_history.stream_has_topics(stream_id), false);
 
     stream_topic_history.add_message({
-        stream_id: stream_id,
+        stream_id,
         message_id: 888,
         topic_name: "whatever",
     });
@@ -273,7 +273,7 @@ run_test("server_history_end_to_end", () => {
         on_success_called = true;
     });
 
-    get_success_callback({topics: topics});
+    get_success_callback({topics});
 
     assert(on_success_called);
 

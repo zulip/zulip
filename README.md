@@ -11,6 +11,7 @@ largest and fastest growing open source group chat project.
 [![CircleCI branch](https://img.shields.io/circleci/project/github/zulip/zulip/master.svg)](https://circleci.com/gh/zulip/zulip/tree/master)
 [![Coverage Status](https://img.shields.io/codecov/c/github/zulip/zulip/master.svg)](https://codecov.io/gh/zulip/zulip/branch/master)
 [![Mypy coverage](https://img.shields.io/badge/mypy-100%25-green.svg)][mypy-coverage]
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 [![GitHub release](https://img.shields.io/github/release/zulip/zulip.svg)](https://github.com/zulip/zulip/releases/latest)
 [![docs](https://readthedocs.org/projects/zulip/badge/?version=latest)](https://zulip.readthedocs.io/en/latest/)
 [![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
@@ -55,7 +56,7 @@ You might be interested in:
   [companies](https://zulip.com/for/companies/), or Zulip for
   [working groups and part time communities](https://zulip.com/for/working-groups-and-communities/).
 
-* **Running a Zulip server**. Use a preconfigured [Digital Ocean droplet](https://marketplace.digitalocean.com/apps/zulip),
+* **Running a Zulip server**. Use a preconfigured [DigitalOcean droplet](https://marketplace.digitalocean.com/apps/zulip),
   [install Zulip](https://zulip.readthedocs.io/en/stable/production/install.html)
   directly, or use Zulip's
   experimental [Docker image](https://zulip.readthedocs.io/en/latest/production/deployment.html#zulip-in-docker).

@@ -22,12 +22,18 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "custom_headers": "{}",
             "is_json": "true",
         }
+        with self.assertLogs(level="ERROR") as logs:
+            response = self.client_post(target_url, data)
 
-        response = self.client_post(target_url, data)
+            self.assertEqual(response.status_code, 500)  # Since the response would be forwarded.
+            expected_response = {"result": "error", "msg": "Internal server error"}
+            self.assertEqual(ujson.loads(response.content), expected_response)
 
-        self.assertEqual(response.status_code, 500)  # Since the response would be forwarded.
-        expected_response = {"result": "error", "msg": "Internal server error"}
-        self.assertEqual(ujson.loads(response.content), expected_response)
+        # Intention of this test looks like to trigger keyError
+        # so just testing KeyError is printed along wth Traceback in logs
+        self.assertTrue("KeyError" in logs.output[0])
+        self.assertTrue("Traceback (most recent call last)" in logs.output[0])
+        self.assertEqual(logs.output[1], "ERROR:django.request:Internal Server Error: /api/v1/external/airbrake")
 
     def test_check_send_webhook_fixture_message_for_success_without_headers(self) -> None:
         bot = get_user('webhook-bot@zulip.com', self.zulip_realm)

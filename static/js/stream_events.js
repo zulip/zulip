@@ -13,9 +13,9 @@ exports.update_property = function (stream_id, property, value, other_values) {
     if (sub === undefined) {
         // This isn't a stream we know about, so ignore it.
         blueslip.warn("Update for an unknown subscription", {
-            stream_id: stream_id,
-            property: property,
-            value: value,
+            stream_id,
+            property,
+            value,
         });
         return;
     }
@@ -62,8 +62,8 @@ exports.update_property = function (stream_id, property, value, other_values) {
             break;
         default:
             blueslip.warn("Unexpected subscription property type", {
-                property: property,
-                value: value,
+                property,
+                value,
             });
     }
 };
@@ -104,7 +104,7 @@ exports.mark_subscribed = function (sub, subscribers, color) {
     }
 
     // update navbar if necessary
-    tab_bar.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub);
 
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
         current_msg_list.update_trailing_bookend();
@@ -128,7 +128,7 @@ exports.mark_unsubscribed = function (sub) {
             subs.update_settings_for_unsubscribed(sub);
         }
         // update navbar if necessary
-        tab_bar.maybe_rerender_title_area_for_stream(sub);
+        message_view_header.maybe_rerender_title_area_for_stream(sub);
     } else {
         // Already unsubscribed
         return;

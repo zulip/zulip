@@ -1,3 +1,4 @@
+const _ = require("lodash");
 /*
     Helpers for detecting user activity and managing user idle states
 */
@@ -178,7 +179,7 @@ function send_presence_to_server(want_redraw) {
             slim_presence: true,
         },
         idempotent: true,
-        success: function (data) {
+        success(data) {
             // Update Zephyr mirror activity warning
             if (data.zephyr_mirror_active === false) {
                 $("#zephyr-mirror-error").addClass("show");
@@ -208,7 +209,7 @@ exports.initialize = function () {
         exports.new_user_input = true;
     });
 
-    $(window).focus(mark_client_active);
+    $(window).on("focus", mark_client_active);
     $(window).idle({
         idle: DEFAULT_IDLE_TIMEOUT_MS,
         onIdle: mark_client_idle,
@@ -265,7 +266,7 @@ exports.reset_users = function () {
 
 exports.narrow_for_user = function (opts) {
     const user_id = buddy_list.get_key_from_li({li: opts.li});
-    return exports.narrow_for_user_id({user_id: user_id});
+    return exports.narrow_for_user_id({user_id});
 };
 
 exports.narrow_for_user_id = function (opts) {
@@ -282,38 +283,38 @@ function keydown_enter_key() {
         return;
     }
 
-    exports.narrow_for_user_id({user_id: user_id});
+    exports.narrow_for_user_id({user_id});
     popovers.hide_all();
 }
 
 exports.set_cursor_and_filter = function () {
-    exports.user_cursor = list_cursor({
+    exports.user_cursor = new ListCursor({
         list: buddy_list,
         highlight_class: "highlighted_user",
     });
 
-    exports.user_filter = user_search({
+    exports.user_filter = new UserSearch({
         update_list: update_users_for_search,
         reset_items: exports.reset_users,
-        on_focus: exports.user_cursor.reset,
+        on_focus: () => exports.user_cursor.reset(),
     });
 
     const $input = exports.user_filter.input_field();
 
-    $input.on("blur", exports.user_cursor.clear);
+    $input.on("blur", () => exports.user_cursor.clear());
 
     keydown_util.handle({
         elem: $input,
         handlers: {
-            enter_key: function () {
+            enter_key() {
                 keydown_enter_key();
                 return true;
             },
-            up_arrow: function () {
+            up_arrow() {
                 exports.user_cursor.prev();
                 return true;
             },
-            down_arrow: function () {
+            down_arrow() {
                 exports.user_cursor.next();
                 return true;
             },

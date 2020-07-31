@@ -4,22 +4,22 @@ This guide is for mentors who want to help create remote Zulip dev servers
 for hackathon, GCI, or sprint participants.
 
 The machines (droplets) have been generously provided by
-[Digital Ocean](https://www.digitalocean.com/) to help Zulip contributors
-get up and running as easily as possible. Thank you Digital Ocean!
+[DigitalOcean](https://www.digitalocean.com/) to help Zulip contributors
+get up and running as easily as possible. Thank you DigitalOcean!
 
-The `create.py` create uses the Digital Ocean API to quickly create new virtual
+The `create.py` create uses the DigitalOcean API to quickly create new virtual
 machines (droplets) with the Zulip dev server already configured.
 
-## Step 1: Join Zulip Digital Ocean team
+## Step 1: Join Zulip DigitalOcean team
 
-We have created a team on Digital Ocean for Zulip mentors. Ask Rishi or Tim
-to be added. You need access to the team so you can create your Digital Ocean
+We have created a team on DigitalOcean for Zulip mentors. Ask Rishi or Tim
+to be added. You need access to the team so you can create your DigitalOcean
 API token.
 
-## Step 2: Create your Digital Ocean API token
+## Step 2: Create your DigitalOcean API token
 
 Once you've been added to the Zulip team,
-[login](https://cloud.digitalocean.com/droplets) to the Digital Ocean control
+[login](https://cloud.digitalocean.com/droplets) to the DigitalOcean control
 panel and [create your personal API token][do-create-api-token]. **Make sure
 you create your API token under the Zulip team.** (It should look something
 like [this][image-zulip-team]).
@@ -155,7 +155,7 @@ Rough steps:
 
 1. Get the `ssh` key for `base.zulipdev.org` from Tim, Vishnu or Rishi.
 1. Log in to the Zulip organization view, rather than via your personal account.
-1. Create a new droplet in Digital Ocean with 2GB RAM and `base.zulipdev.org` as the
+1. Create a new droplet in DigitalOcean with 2GB RAM and `base.zulipdev.org` as the
    SSH authentication key.
 1. Login to the droplet as root user. Make sure to point the SSH program to the private
    key of `base.zulipdev.org` during this step.

@@ -1,6 +1,7 @@
-const util = require("./util");
-const settings_data = require("./settings_data");
+const ClipboardJS = require("clipboard");
 const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
+const moment = require("moment");
+
 const render_actions_popover_content = require("../templates/actions_popover_content.hbs");
 const render_mobile_message_buttons_popover = require("../templates/mobile_message_buttons_popover.hbs");
 const render_mobile_message_buttons_popover_content = require("../templates/mobile_message_buttons_popover_content.hbs");
@@ -11,6 +12,9 @@ const render_user_group_info_popover_content = require("../templates/user_group_
 const render_user_info_popover_content = require("../templates/user_info_popover_content.hbs");
 const render_user_info_popover_title = require("../templates/user_info_popover_title.hbs");
 const render_user_profile_modal = require("../templates/user_profile_modal.hbs");
+
+const settings_data = require("./settings_data");
+const util = require("./util");
 
 let current_actions_popover_elem;
 let current_flatpickr_instance;
@@ -180,12 +184,12 @@ function render_user_info_popover(
     }
 
     const args = {
-        can_revoke_away: can_revoke_away,
-        can_set_away: can_set_away,
+        can_revoke_away,
+        can_set_away,
         is_active: people.is_active_user_for_popover(user.user_id),
         is_bot: user.is_bot,
-        is_me: is_me,
-        is_sender_popover: is_sender_popover,
+        is_me,
+        is_sender_popover,
         pm_with_uri: hash_util.pm_with_uri(user.email),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
@@ -320,7 +324,7 @@ exports.show_user_profile = function (user) {
     const args = {
         full_name: user.full_name,
         email: people.get_visible_email(user),
-        profile_data: profile_data,
+        profile_data,
         user_avatar: "avatar/" + user.email + "/medium",
         is_me: people.is_current_user(user.email),
         date_joined: moment(user.date_joined).format(dateFormat),
@@ -478,21 +482,21 @@ exports.toggle_actions_popover = function (element, id) {
             message_id: message.id,
             historical: message.historical,
             stream_id: message.stream_id,
-            topic: topic,
-            use_edit_icon: use_edit_icon,
-            editability_menu_item: editability_menu_item,
-            can_mute_topic: can_mute_topic,
-            can_unmute_topic: can_unmute_topic,
-            should_display_collapse: should_display_collapse,
-            should_display_uncollapse: should_display_uncollapse,
+            topic,
+            use_edit_icon,
+            editability_menu_item,
+            can_mute_topic,
+            can_unmute_topic,
+            should_display_collapse,
+            should_display_uncollapse,
             should_display_add_reaction_option: message.sent_by_me,
-            should_display_edit_history_option: should_display_edit_history_option,
-            conversation_time_uri: conversation_time_uri,
+            should_display_edit_history_option,
+            conversation_time_uri,
             narrowed: narrow_state.active(),
-            should_display_delete_option: should_display_delete_option,
+            should_display_delete_option,
             should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
-            should_display_edit_and_view_source: should_display_edit_and_view_source,
-            should_display_quote_and_reply: should_display_quote_and_reply,
+            should_display_edit_and_view_source,
+            should_display_quote_and_reply,
         };
 
         const ypos = elt.offset().top;
@@ -517,7 +521,7 @@ exports.render_actions_remind_popover = function (element, id) {
     if (elt.data("popover") === undefined) {
         const message = current_msg_list.get(id);
         const args = {
-            message: message,
+            message,
         };
         const ypos = elt.offset().top;
         elt.popover({
@@ -557,15 +561,15 @@ function get_action_menu_menu_items() {
     return $("li:not(.divider):visible a", popover_data.$tip);
 }
 
-function focus_first_popover_item(items) {
+exports.focus_first_popover_item = (items) => {
     if (!items) {
         return;
     }
 
-    items.eq(0).expectOne().focus();
-}
+    items.eq(0).expectOne().trigger("focus");
+};
 
-function popover_items_handle_keyboard(key, items) {
+exports.popover_items_handle_keyboard = (key, items) => {
     if (!items) {
         return;
     }
@@ -582,14 +586,14 @@ function popover_items_handle_keyboard(key, items) {
     } else if ((key === "up_arrow" || key === "vim_up") && index > 0) {
         index -= 1;
     }
-    items.eq(index).focus();
-}
+    items.eq(index).trigger("focus");
+};
 
 function focus_first_action_popover_item() {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const items = get_action_menu_menu_items();
-    focus_first_popover_item(items);
+    exports.focus_first_popover_item(items);
 }
 
 exports.open_message_menu = function (message) {
@@ -610,7 +614,7 @@ exports.open_message_menu = function (message) {
 
 exports.actions_menu_handle_keyboard = function (key) {
     const items = get_action_menu_menu_items();
-    popover_items_handle_keyboard(key, items);
+    exports.popover_items_handle_keyboard(key, items);
 };
 
 exports.actions_popped = function () {
@@ -661,12 +665,10 @@ exports.show_pm_list_sidebar = function () {
 let current_user_sidebar_user_id;
 let current_user_sidebar_popover;
 
-function user_sidebar_popped() {
-    return current_user_sidebar_popover !== undefined;
-}
+exports.user_sidebar_popped = () => current_user_sidebar_popover !== undefined;
 
 exports.hide_user_sidebar_popover = function () {
-    if (user_sidebar_popped()) {
+    if (exports.user_sidebar_popped()) {
         // this hide_* method looks different from all the others since
         // the presence list may be redrawn. Due to funkiness with jquery's .data()
         // this would confuse $.popover("destroy"), which looks at the .data() attached
@@ -683,12 +685,12 @@ function focus_user_info_popover_item() {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const items = get_user_info_popover_items();
-    focus_first_popover_item(items);
+    exports.focus_first_popover_item(items);
 }
 
 exports.user_info_popover_handle_keyboard = function (key) {
     const items = get_user_info_popover_items();
-    popover_items_handle_keyboard(key, items);
+    exports.popover_items_handle_keyboard(key, items);
 };
 
 exports.show_sender_info = function () {
@@ -828,7 +830,7 @@ exports.register_click_handlers = function () {
         user_status.server_update({
             user_id: me,
             status_text: "",
-            success: function () {
+            success() {
                 $(".info_popover_actions #status_message").html("");
             },
         });
@@ -1044,7 +1046,7 @@ exports.register_click_handlers = function () {
 
         exports.hide_actions_popover();
         message_edit_history.show_history(message);
-        message_history_cancel_btn.focus();
+        message_history_cancel_btn.trigger("focus");
         e.stopPropagation();
         e.preventDefault();
     });
@@ -1092,7 +1094,7 @@ exports.register_click_handlers = function () {
         setTimeout(() => {
             // The Cliboard library works by focusing to a hidden textarea.
             // We unfocus this so keyboard shortcuts, etc., will work again.
-            $(":focus").blur();
+            $(":focus").trigger("blur");
         }, 0);
 
         e.stopPropagation();
@@ -1128,7 +1130,7 @@ exports.any_active = function () {
     // Expanded sidebars on mobile view count as popovers as well.
     return (
         exports.actions_popped() ||
-        user_sidebar_popped() ||
+        exports.user_sidebar_popped() ||
         stream_popover.stream_popped() ||
         stream_popover.topic_popped() ||
         exports.message_info_popped() ||

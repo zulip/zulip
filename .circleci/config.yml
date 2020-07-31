@@ -136,19 +136,19 @@ aliases:
       name: install production
       command: |
         sudo service rabbitmq-server restart
-        sudo mispipe "/tmp/production-install 2>&1" ts
+        sudo --preserve-env=CIRCLECI mispipe "/tmp/production-install 2>&1" ts
 
   - &verify_production
     run:
       name: verify install
       command: |
-        sudo mispipe "/tmp/production-verify 2>&1" ts
+        sudo --preserve-env=CIRCLECI mispipe "/tmp/production-verify 2>&1" ts
 
   - &upgrade_postgresql
     run:
       name: upgrade postgresql
       command: |
-        sudo mispipe "/tmp/production-upgrade-pg 2>&1" ts
+        sudo --preserve-env=CIRCLECI mispipe "/tmp/production-upgrade-pg 2>&1" ts
 
   - &check_xenial_provision_error
     run:
@@ -218,10 +218,6 @@ jobs:
       - store_artifacts:
           path: ./var/puppeteer/
           destination: puppeteer
-
-      - store_artifacts:
-          path: ../../../tmp/zulip-test-event-log/
-          destination: test-reports
 
       - store_test_results:
           path: ./var/xunit-test-results/casper/
@@ -294,16 +290,10 @@ jobs:
           # or relative path from working_directory.
           # This is a directory on the container which is
           # taken to be the root directory of the workspace.
-          root: /tmp
+          root: /tmp/production-build
           # Must be relative path from root
           paths:
-            - zulip-server-test.tar.gz
-            - success-http-headers.template.txt
-            - production-install
-            - production-verify
-            - production-upgrade-pg
-            - production
-            - production-extract-tarball
+            - "*"
       - *notify_failure_status
 
   "bionic-production-install":

@@ -78,11 +78,11 @@ exports.get_list_info = function (stream_id, zoomed) {
         }
 
         const topic_info = {
-            topic_name: topic_name,
+            topic_name,
             unread: num_unread,
             is_zero: num_unread === 0,
             is_muted: is_topic_muted,
-            is_active_topic: is_active_topic,
+            is_active_topic,
             url: hash_util.by_stream_topic_uri(stream_id, topic_name),
         };
 
@@ -90,8 +90,8 @@ exports.get_list_info = function (stream_id, zoomed) {
     }
 
     return {
-        items: items,
+        items,
         num_possible_topics: topic_names.length,
-        more_topics_unreads: more_topics_unreads,
+        more_topics_unreads,
     };
 };

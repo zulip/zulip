@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 zrequire("keydown_util");
 zrequire("components");
 
@@ -42,8 +44,10 @@ run_test("basics", () => {
             return i;
         };
 
-        self.focus = function () {
-            focused_tab = i;
+        self.trigger = function (type) {
+            if (type === "focus") {
+                focused_tab = i;
+            }
         };
 
         tabs.push(self);
@@ -56,12 +60,12 @@ run_test("basics", () => {
 
         self.stub = true;
 
-        self.click = function (f) {
-            click_f = f;
-        };
-
-        self.keydown = function (f) {
-            keydown_f = f;
+        self.on = function (name, f) {
+            if (name === "click") {
+                click_f = f;
+            } else if (name === "keydown") {
+                keydown_f = f;
+            }
         };
 
         self.removeClass = function (c) {
@@ -140,7 +144,7 @@ run_test("basics", () => {
             {label: i18n.t("Search operators"), key: "search-operators"},
         ],
         html_class: "stream_sorter_toggle",
-        callback: function (name, key) {
+        callback(name, key) {
             assert.equal(callback_args, undefined);
             callback_args = [name, key];
 

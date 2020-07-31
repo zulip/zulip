@@ -5,11 +5,8 @@ set_global("todo_widget", {});
 set_global("zform", {});
 set_global("document", "document-stub");
 
-const noop = () => {};
 const return_true = () => true;
 const return_false = () => false;
-
-$(document).on = noop;
 
 zrequire("widgetize");
 
@@ -61,7 +58,7 @@ run_test("activate", () => {
             assert.equal(data.msg_type, "widget");
             assert.equal(data.data, "test_data");
         },
-        row: row,
+        row,
         widget_type: "poll",
     };
 

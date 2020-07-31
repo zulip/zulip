@@ -124,6 +124,7 @@ ALL_ZULIP_TABLES = {
     'zerver_defaultstream',
     'zerver_defaultstreamgroup',
     'zerver_defaultstreamgroup_streams',
+    'zerver_draft',
     'zerver_emailchangestatus',
     'zerver_huddle',
     'zerver_message',
@@ -236,6 +237,9 @@ NON_EXPORTED_TABLES = {
 
     # This is low priority, since users can easily just reset themselves to away.
     'zerver_userstatus',
+
+    # Drafts don't need to be exported as they are supposed to be more ephemeral.
+    'zerver_draft',
 
     # For any tables listed below here, it's a bug that they are not present in the export.
 }
@@ -1753,6 +1757,7 @@ def export_realm_wrapper(realm: Realm, output_dir: str,
                          threads: int, upload: bool,
                          public_only: bool,
                          delete_after_upload: bool,
+                         percent_callback: Optional[Callable[[Any], None]]=None,
                          consent_message_id: Optional[int]=None) -> Optional[str]:
     tarball_path = do_export_realm(realm=realm, output_dir=output_dir,
                                    threads=threads, public_only=public_only,
@@ -1767,7 +1772,8 @@ def export_realm_wrapper(realm: Realm, output_dir: str,
     # without additional configuration.  We'll likely want to change
     # that in the future.
     print("Uploading export tarball...")
-    public_url = zerver.lib.upload.upload_backend.upload_export_tarball(realm, tarball_path)
+    public_url = zerver.lib.upload.upload_backend.upload_export_tarball(
+        realm, tarball_path, percent_callback=percent_callback)
     print()
     print(f"Uploaded to {public_url}")
 

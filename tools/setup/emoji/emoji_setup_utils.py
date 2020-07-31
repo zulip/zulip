@@ -36,8 +36,8 @@ REMAPPED_EMOJIS = {
 # Emoticons and which emoji they should become. Duplicate emoji are allowed.
 # Changes here should be mimicked in `templates/zerver/help/enable-emoticon-translations.md`.
 EMOTICON_CONVERSIONS = {
-    ':)': ':slight_smile:',
-    '(:': ':slight_smile:',
+    ':)': ':smile:',
+    '(:': ':smile:',
     ':(': ':frown:',
     '<3': ':heart:',
     ':|': ':neutral:',

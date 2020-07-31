@@ -1,3 +1,5 @@
+const Handlebars = require("handlebars/runtime");
+
 const util = require("./util");
 
 // Below, we register Zulip-specific extensions to the handlebars API.
@@ -15,10 +17,10 @@ const util = require("./util");
 Handlebars.registerHelper("plural", (condition, one, other) => (condition === 1 ? one : other));
 
 Handlebars.registerHelper({
-    eq: function (a, b) {
+    eq(a, b) {
         return a === b;
     },
-    and: function (...args) {
+    and(...args) {
         args.pop(); // Handlebars options
         if (args.length === 0) {
             return true;
@@ -31,7 +33,7 @@ Handlebars.registerHelper({
         }
         return last;
     },
-    or: function (...args) {
+    or(...args) {
         args.pop(); // Handlebars options
         if (args.length === 0) {
             return false;
@@ -44,7 +46,7 @@ Handlebars.registerHelper({
         }
         return last;
     },
-    not: function (a) {
+    not(a) {
         return !a || Handlebars.Utils.isEmpty(a);
     },
 });

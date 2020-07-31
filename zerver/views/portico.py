@@ -36,7 +36,8 @@ def plans_view(request: HttpRequest) -> HttpResponse:
             return HttpResponseRedirect('https://zulip.com/plans')
         if not request.user.is_authenticated:
             return redirect_to_login(next="plans")
-
+        if request.user.is_guest:
+            return TemplateResponse(request, "404.html", status=404)
         if settings.CORPORATE_ENABLED:
             from corporate.models import get_customer_by_realm
             customer = get_customer_by_realm(realm)
@@ -58,14 +59,14 @@ def team_view(request: HttpRequest) -> HttpResponse:
         with open(settings.CONTRIBUTOR_DATA_FILE_PATH) as f:
             data = ujson.load(f)
     except FileNotFoundError:
-        data = {'contrib': {}, 'date': "Never ran."}
+        data = {'contributors': {}, 'date': "Never ran."}
 
     return TemplateResponse(
         request,
         'zerver/team.html',
         context={
             'page_params': {
-                'contrib': data['contrib'],
+                'contributors': data['contributors'],
             },
             'date': data['date'],
         },

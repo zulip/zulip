@@ -1,9 +1,13 @@
-const util = require("./util");
+const Handlebars = require("handlebars/runtime");
+const XDate = require("xdate");
+
 const render_draft_table_body = require("../templates/draft_table_body.hbs");
+
+const util = require("./util");
 
 function set_count(count) {
     const draft_count = count.toString();
-    const text = i18n.t("Drafts (__draft_count__)", {draft_count: draft_count});
+    const text = i18n.t("Drafts (__draft_count__)", {draft_count});
     $(".compose_drafts_button").text(text);
 }
 
@@ -233,12 +237,12 @@ exports.format_draft = function (draft) {
         formatted = {
             draft_id: draft.id,
             is_stream: true,
-            stream: stream,
+            stream,
             stream_color: draft_stream_color,
             dark_background: stream_color.get_color_class(draft_stream_color),
             topic: draft_topic,
             raw_content: draft.content,
-            time_stamp: time_stamp,
+            time_stamp,
         };
     } else {
         const emails = util.extract_pm_recipients(draft.private_message_recipient);
@@ -256,9 +260,9 @@ exports.format_draft = function (draft) {
         formatted = {
             draft_id: draft.id,
             is_stream: false,
-            recipients: recipients,
+            recipients,
             raw_content: draft.content,
-            time_stamp: time_stamp,
+            time_stamp,
         };
     }
 
@@ -333,7 +337,7 @@ exports.launch = function () {
     function render_widgets(drafts) {
         $("#drafts_table").empty();
         const rendered = render_draft_table_body({
-            drafts: drafts,
+            drafts,
             draft_lifetime: DRAFT_LIFETIME,
         });
         $("#drafts_table").append(rendered);
@@ -508,7 +512,7 @@ exports.open_overlay = function () {
     overlays.open_overlay({
         name: "drafts",
         overlay: $("#draft_overlay"),
-        on_close: function () {
+        on_close() {
             hashchange.exit_overlay();
         },
     });
@@ -532,7 +536,7 @@ exports.initialize = function () {
 
     set_count(Object.keys(draft_model.get()).length);
 
-    $("#compose-textarea").focusout(exports.update_draft);
+    $("#compose-textarea").on("focusout", exports.update_draft);
 
     $("body").on("focus", ".draft-info-box", (e) => {
         activate_element(e.target);

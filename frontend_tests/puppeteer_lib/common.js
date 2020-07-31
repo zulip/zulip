@@ -1,6 +1,8 @@
-const path = require("path");
-const puppeteer = require("puppeteer");
 const assert = require("assert").strict;
+const path = require("path");
+
+const puppeteer = require("puppeteer");
+
 const test_credentials = require("../../var/casper/test_credentials.js").test_credentials;
 
 class CommonUtils {
@@ -8,6 +10,40 @@ class CommonUtils {
         this.browser = null;
         this.screenshot_id = 0;
         this.realm_url = "http://zulip.zulipdev.com:9981/";
+        this.pm_recipient = {
+            async set(page, recipient) {
+                // Without using the delay option here there seems to be
+                // a flake where the typeahead doesn't show up.
+                await page.type("#private_message_recipient", recipient, {delay: 100});
+
+                // We use jQuery here because we need to use it's :visible
+                // pseudo selector to actually wait for typeahead item that
+                // is visible; there can be typeahead item with this selector
+                // that is invisible because it is meant for something else
+                // e.g. private message input typeahead is diffrent from topic
+                // input typeahead but both can be present in the dom.
+                await page.waitForFunction(() => {
+                    const selector = ".typeahead-menu .active a:visible";
+                    return $(selector).length !== 0;
+                });
+
+                await page.evaluate(() => {
+                    $(".typeahead-menu .active a:visible").click();
+                });
+            },
+
+            async expect(page, expected) {
+                const actual_recipients = await page.evaluate(() =>
+                    compose_state.private_message_recipient(),
+                );
+                assert.equal(actual_recipients, expected);
+            },
+        };
+        this.fullname = {
+            cordelia: "Cordelia Lear",
+            othello: "Othello, the Moor of Venice",
+            hamlet: "King Hamlet",
+        };
     }
 
     async ensure_browser() {
@@ -44,9 +80,8 @@ class CommonUtils {
         });
     }
 
-    async set_pm_recipient(page, recipient) {
-        await page.type("#private_message_recipient", recipient);
-        await page.keyboard.press("Enter");
+    async assert_selector_doesnt_exist(page, selector) {
+        await page.waitForFunction((selector) => $(selector === null), {}, selector);
     }
 
     /**
@@ -67,6 +102,9 @@ class CommonUtils {
      * });
      */
     async fill_form(page, form_selector, params) {
+        async function is_dropdown(page, name) {
+            return (await page.$(`select[name="${name}"]`)) !== null;
+        }
         for (const name of Object.keys(params)) {
             const name_selector = `${form_selector} [name="${name}"]`;
             const value = params[name];
@@ -76,10 +114,64 @@ class CommonUtils {
                         el.click();
                     }
                 });
+            } else if (await is_dropdown(page, name)) {
+                await page.select(name_selector, params[name]);
             } else {
+                // clear any existing text in the input field before filling.
+                await page.$eval(name_selector, (el) => {
+                    el.value = "";
+                });
                 await page.type(name_selector, params[name]);
             }
         }
+    }
+
+    async check_form_contents(page, form_selector, params) {
+        for (const name of Object.keys(params)) {
+            const name_selector = `${form_selector} [name="${name}"]`;
+            const expected_value = params[name];
+            if (typeof expected_value === "boolean") {
+                assert.equal(
+                    await page.$eval(name_selector, (el) => el.checked),
+                    expected_value,
+                    "Form content is not as expected.",
+                );
+            } else {
+                assert.equal(
+                    await page.$eval(name_selector, (el) => el.value),
+                    expected_value,
+                    "Form content is not as expected.",
+                );
+            }
+        }
+    }
+
+    async get_text_from_selector(page, selector) {
+        return await page.evaluate((selector) => $(selector).text().trim(), selector);
+    }
+
+    async get_stream_id(page, stream_name) {
+        return await page.evaluate(
+            (stream_name) => stream_data.get_stream_id(stream_name),
+            stream_name,
+        );
+    }
+
+    async get_user_id_from_name(page, name) {
+        if (this.fullname[name] !== undefined) {
+            name = this.fullname[name];
+        }
+        return await page.evaluate((name) => people.get_user_id_from_name(name), name);
+    }
+
+    async get_internal_email_from_name(page, name) {
+        if (this.fullname[name] !== undefined) {
+            name = this.fullname[name];
+        }
+        return await page.evaluate((fullname) => {
+            const user_id = people.get_user_id_from_name(fullname);
+            return people.get_by_user_id(user_id).email;
+        }, name);
     }
 
     async log_in(page, credentials = null) {
@@ -201,7 +293,7 @@ class CommonUtils {
             await page.keyboard.press("KeyX");
             const recipients = params.recipient.split(", ");
             for (let i = 0; i < recipients.length; i += 1) {
-                await this.set_pm_recipient(page, recipients[i]);
+                await this.pm_recipient.set(page, recipients[i]);
             }
             delete params.recipient;
         } else {
@@ -239,6 +331,8 @@ class CommonUtils {
         await page.evaluate(() => {
             compose_actions.cancel();
         });
+        // Make sure the compose box is closed.
+        await page.waitForSelector("#compose-textarea", {hidden: true});
     }
 
     async send_multiple_messages(page, msgs) {

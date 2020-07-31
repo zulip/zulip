@@ -120,15 +120,15 @@
                     <div id="tab-terminal" class="contributors"></div>
                 </div>
 
-                <!-- Compiled using underscore -->
+                <!-- Compiled using lodash -->
                 <script type="text/template" id="contributors-template">
                     <div class="person">
-                        <a href="https://github.com/<%= name %>" target="_blank" rel="noopener noreferrer" class="no-underline">
+                        <a href="<%= profile_url %>" target="_blank" rel="noopener noreferrer" class="no-underline">
                             <div class="avatar">
                                 <img class="avatar_img" src="<%= avatar %>" alt="{{ _('Avatar') }}" />
                             </div>
                             <div class='info'>
-                                <b>@<%= name %></b><br>
+                                <b><%= name %></b><br>
                                 <%= commits %> <%= commits === 1 ? 'commit' : 'commits' %>
                             </div>
                         </a>

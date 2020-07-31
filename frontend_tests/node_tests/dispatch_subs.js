@@ -1,8 +1,11 @@
 const events = require("./lib/events.js");
+
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
-const noop = function () {};
+set_global("compose_fade", {});
+set_global("stream_events", {});
+set_global("subs", {});
 
 zrequire("people");
 zrequire("stream_data");
@@ -15,8 +18,8 @@ const dispatch = server_events_dispatch.dispatch_normal_event;
 function test(label, f) {
     stream_data.clear_subscriptions();
 
-    run_test(label, () => {
-        global.with_overrides(f);
+    run_test(label, (override) => {
+        f(override);
     });
 }
 
@@ -27,7 +30,7 @@ test("add", (override) => {
     const stream_id = sub.stream_id;
 
     stream_data.add_sub({
-        stream_id: stream_id,
+        stream_id,
         name: sub.name,
     });
 
@@ -70,7 +73,7 @@ test("remove", (override) => {
     const stream_id = event_sub.stream_id;
 
     const sub = {
-        stream_id: stream_id,
+        stream_id,
         name: event_sub.name,
     };
 
@@ -102,13 +105,11 @@ test("add error handling", (override) => {
     global.with_stub((stub) => {
         override("blueslip.error", stub.f);
         dispatch(event);
-        assert.deepEqual(stub.get_args("param").param, "Subscribing to unknown stream with ID 42");
+        assert.deepEqual(stub.get_args("param").param, "Subscribing to unknown stream with ID 101");
     });
 });
 
-test("peer event error handling (bad stream_ids)", (override) => {
-    override("compose_fade.update_faded_users", noop);
-
+test("peer event error handling (bad stream_ids)", () => {
     const add_event = {
         type: "subscription",
         op: "peer_add",

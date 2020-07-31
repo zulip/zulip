@@ -1,8 +1,12 @@
-const pygments_data = require("../generated/pygments_data.json");
-const typeahead = require("../shared/js/typeahead");
 const autosize = require("autosize");
-const settings_data = require("./settings_data");
 const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
+const moment = require("moment");
+
+const pygments_data = require("../generated/pygments_data.json");
+const emoji = require("../shared/js/emoji");
+const typeahead = require("../shared/js/typeahead");
+
+const settings_data = require("./settings_data");
 
 //************************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
@@ -99,7 +103,7 @@ function get_topic_matcher(query) {
 
     return function (topic) {
         const obj = {
-            topic: topic,
+            topic,
         };
 
         return typeahead.query_matches_source_attrs(query, obj, ["topic"], " ");
@@ -230,15 +234,15 @@ function handle_keydown(e) {
             // takes the typeaheads a little time to open after the user finishes typing, which
             // can lead to the focus moving without the autocomplete having a chance to happen.
             if (nextFocus) {
-                $(nextFocus).focus();
+                $(nextFocus).trigger("focus");
                 nextFocus = false;
             }
 
             if (on_compose && code === 13) {
                 if (exports.should_enter_send(e)) {
                     e.preventDefault();
-                    if ($("#compose-send-button").attr("disabled") !== "disabled") {
-                        $("#compose-send-button").attr("disabled", "disabled");
+                    if (!$("#compose-send-button").prop("disabled")) {
+                        $("#compose-send-button").prop("disabled", true);
                         compose.finish();
                     }
                     return;
@@ -254,30 +258,10 @@ function handle_keyup(e) {
     if (code === 13 || (code === 9 && !e.shiftKey)) {
         // Enter key or tab key
         if (nextFocus) {
-            $(nextFocus).focus();
+            $(nextFocus).trigger("focus");
             nextFocus = false;
         }
     }
-}
-
-// https://stackoverflow.com/questions/3380458/looking-for-a-better-workaround-to-chrome-select-on-focus-bug
-function select_on_focus(field_id) {
-    // A select event appears to trigger a focus event under certain
-    // conditions in Chrome so we need to protect against infinite
-    // recursion.
-    let in_handler = false;
-    $("#" + field_id).focus(() => {
-        if (in_handler) {
-            return;
-        }
-        in_handler = true;
-        $("#" + field_id)
-            .select()
-            .one("mouseup", (e) => {
-                e.preventDefault();
-            });
-        in_handler = false;
-    });
 }
 
 exports.split_at_cursor = function (query, input) {
@@ -366,7 +350,7 @@ exports.broadcast_mentions = function () {
         is_broadcast: true,
 
         // used for sorting
-        idx: idx,
+        idx,
     }));
 };
 
@@ -677,7 +661,7 @@ exports.get_candidates = function (query) {
             return false;
         }
         this.token = current_token;
-        return {is_silent: is_silent};
+        return {is_silent};
     }
 
     function get_slash_commands_data() {
@@ -802,7 +786,7 @@ const show_flatpickr = (element, callback, default_timestamp) => {
         instance.destroy();
     });
     instance.open();
-    container.find(".flatpickr-monthDropdown-months").focus();
+    container.find(".flatpickr-monthDropdown-months").trigger("focus");
 };
 
 exports.content_typeahead_selected = function (item, event) {
@@ -1041,15 +1025,15 @@ exports.initialize_compose_typeahead = function (selector) {
         // inside the typeahead library.
         source: exports.get_sorted_filtered_items,
         highlighter: exports.content_highlighter,
-        matcher: function () {
+        matcher() {
             return true;
         },
-        sorter: function (items) {
+        sorter(items) {
             return items;
         },
         updater: exports.content_typeahead_selected,
         stopAdvance: true, // Do not advance to the next field on a tab or enter
-        completions: completions,
+        completions,
         automated: exports.compose_automated_selection,
         trigger_selection: exports.compose_trigger_selection,
         header: get_header_text,
@@ -1058,15 +1042,12 @@ exports.initialize_compose_typeahead = function (selector) {
 
 exports.initialize = function () {
     exports.update_emoji_data();
-    select_on_focus("stream_message_recipient_stream");
-    select_on_focus("stream_message_recipient_topic");
-    select_on_focus("private_message_recipient");
 
     // These handlers are at the "form" level so that they are called after typeahead
-    $("form#send_message_form").keydown(handle_keydown);
-    $("form#send_message_form").keyup(handle_keyup);
+    $("form#send_message_form").on("keydown", handle_keydown);
+    $("form#send_message_form").on("keyup", handle_keyup);
 
-    $("#enter_sends").click(() => {
+    $("#enter_sends").on("click", () => {
         const send_button = $("#compose-send-button");
         page_params.enter_sends = $("#enter_sends").is(":checked");
         if (page_params.enter_sends) {
@@ -1077,7 +1058,7 @@ exports.initialize = function () {
 
         // Refocus in the content box so you can continue typing or
         // press Enter to send.
-        $("#compose-textarea").focus();
+        $("#compose-textarea").trigger("focus");
 
         return channel.post({
             url: "/json/users/me/enter-sends",
@@ -1092,15 +1073,15 @@ exports.initialize = function () {
 
     // limit number of items so the list doesn't fall off the screen
     $("#stream_message_recipient_stream").typeahead({
-        source: function () {
+        source() {
             return stream_data.subscribed_streams();
         },
         items: 3,
         fixed: true,
-        highlighter: function (item) {
+        highlighter(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
-        matcher: function (item) {
+        matcher(item) {
             // The matcher for "stream" is strictly prefix-based,
             // because we want to avoid mixing up streams.
             const q = this.query.trim().toLowerCase();
@@ -1109,16 +1090,16 @@ exports.initialize = function () {
     });
 
     $("#stream_message_recipient_topic").typeahead({
-        source: function () {
+        source() {
             const stream_name = compose_state.stream_name();
             return exports.topics_seen_for(stream_name);
         },
         items: 3,
         fixed: true,
-        highlighter: function (item) {
+        highlighter(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
-        sorter: function (items) {
+        sorter(items) {
             const sorted = typeahead_helper.sorter(this.query, items, (x) => x);
             if (sorted.length > 0 && !sorted.includes(this.query)) {
                 sorted.unshift(this.query);
@@ -1132,16 +1113,16 @@ exports.initialize = function () {
         items: exports.max_num_items,
         dropup: true,
         fixed: true,
-        highlighter: function (item) {
+        highlighter(item) {
             return typeahead_helper.render_person_or_user_group(item);
         },
-        matcher: function () {
+        matcher() {
             return true;
         },
-        sorter: function (items) {
+        sorter(items) {
             return items;
         },
-        updater: function (item) {
+        updater(item) {
             if (user_groups.is_user_group(item)) {
                 for (const user_id of item.members) {
                     const user = people.get_by_user_id(user_id);
@@ -1166,7 +1147,7 @@ exports.initialize = function () {
 
     exports.initialize_compose_typeahead("#compose-textarea");
 
-    $("#private_message_recipient").blur(function () {
+    $("#private_message_recipient").on("blur", function () {
         const val = $(this).val();
         const recipients = typeahead_helper.get_cleaned_pm_recipients(val);
         $(this).val(recipients.join(", "));

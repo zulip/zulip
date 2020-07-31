@@ -1,4 +1,5 @@
 const util = require("./util");
+
 const stored_messages = new Map();
 
 /*
@@ -199,6 +200,27 @@ exports.add_message_metadata = function (message) {
     }
     stored_messages.set(message.id, message);
     return message;
+};
+
+exports.update_property = function (property, value, info) {
+    switch (property) {
+        case "sender_full_name":
+        case "small_avatar_url":
+            exports.each((msg) => {
+                if (msg.sender_id && msg.sender_id === info.user_id) {
+                    msg[property] = value;
+                }
+            });
+            break;
+        case "stream_name":
+            exports.each((msg) => {
+                if (msg.stream_id && msg.stream_id === info.stream_id) {
+                    msg.display_recipient = value;
+                    msg.stream = value;
+                }
+            });
+            break;
+    }
 };
 
 exports.reify_message_id = function (opts) {

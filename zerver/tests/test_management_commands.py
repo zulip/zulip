@@ -357,7 +357,11 @@ class TestSendToEmailMirror(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
 
-        call_command(self.COMMAND_NAME, f"--fixture={fixture_path}")
+        with self.assertLogs('zerver.lib.email_mirror', level='INFO') as info_log:
+            call_command(self.COMMAND_NAME, f"--fixture={fixture_path}")
+        self.assertEqual(info_log.output, [
+            'INFO:zerver.lib.email_mirror:Successfully processed email to Denmark (zulip)'
+        ])
         message = most_recent_message(user_profile)
 
         # last message should be equal to the body of the email in 1.txt
@@ -369,7 +373,11 @@ class TestSendToEmailMirror(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
 
-        call_command(self.COMMAND_NAME, f"--fixture={fixture_path}")
+        with self.assertLogs('zerver.lib.email_mirror', level='INFO') as info_log:
+            call_command(self.COMMAND_NAME, f"--fixture={fixture_path}")
+        self.assertEqual(info_log.output, [
+            'INFO:zerver.lib.email_mirror:Successfully processed email to Denmark (zulip)'
+        ])
         message = most_recent_message(user_profile)
 
         # last message should be equal to the body of the email in 1.json
@@ -381,7 +389,11 @@ class TestSendToEmailMirror(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark2")
 
-        call_command(self.COMMAND_NAME, f"--fixture={fixture_path}", "--stream=Denmark2")
+        with self.assertLogs('zerver.lib.email_mirror', level='INFO') as info_log:
+            call_command(self.COMMAND_NAME, f"--fixture={fixture_path}", "--stream=Denmark2")
+        self.assertEqual(info_log.output, [
+            'INFO:zerver.lib.email_mirror:Successfully processed email to Denmark2 (zulip)'
+        ])
         message = most_recent_message(user_profile)
 
         # last message should be equal to the body of the email in 1.txt
@@ -395,7 +407,8 @@ class TestConvertMattermostData(ZulipTestCase):
     COMMAND_NAME = 'convert_mattermost_data'
 
     def test_if_command_calls_do_convert_data(self) -> None:
-        with patch('zerver.management.commands.convert_mattermost_data.do_convert_data') as m:
+        with patch('zerver.management.commands.convert_mattermost_data.do_convert_data') as m, \
+                patch('builtins.print') as mock_print:
             mm_fixtures = self.fixture_file_name("", "mattermost_fixtures")
             output_dir = self.make_import_output_dir("mattermost")
             call_command(self.COMMAND_NAME, mm_fixtures, f"--output={output_dir}")
@@ -405,6 +418,9 @@ class TestConvertMattermostData(ZulipTestCase):
             mattermost_data_dir=os.path.realpath(mm_fixtures),
             output_dir=os.path.realpath(output_dir),
         )
+        self.assertEqual(mock_print.mock_calls, [
+            call('Converting Data ...')
+        ])
 
 class TestInvoicePlans(ZulipTestCase):
     COMMAND_NAME = 'invoice_plans'
@@ -427,22 +443,43 @@ class TestExport(ZulipTestCase):
         do_add_reaction(self.example_user("iago"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
         do_add_reaction(self.example_user("hamlet"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
 
-        with patch("zerver.management.commands.export.export_realm_wrapper") as m:
+        with patch("zerver.management.commands.export.export_realm_wrapper") as m, \
+                patch('builtins.print') as mock_print:
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
             m.assert_called_once_with(realm=realm, public_only=False, consent_message_id=message.id,
                                       delete_after_upload=False, threads=mock.ANY, output_dir=mock.ANY,
+                                      percent_callback=mock.ANY,
                                       upload=False)
 
-        with self.assertRaisesRegex(CommandError, "Message with given ID does not"):
+        self.assertEqual(mock_print.mock_calls, [
+            call('\033[94mExporting realm\033[0m: zulip'),
+            call('\n\033[94mMessage content:\033[0m\nThumbs up for export\n'),
+            call('\033[94mNumber of users that reacted outbox:\033[0m 2\n')
+        ])
+
+        with self.assertRaisesRegex(CommandError, "Message with given ID does not"), \
+                patch('builtins.print') as mock_print:
             call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id=123456")
+        self.assertEqual(mock_print.mock_calls, [
+            call('\033[94mExporting realm\033[0m: zulip'),
+        ])
 
         message.last_edit_time = timezone_now()
         message.save()
-        with self.assertRaisesRegex(CommandError, "Message was edited. Aborting..."):
+        with self.assertRaisesRegex(CommandError, "Message was edited. Aborting..."), \
+                patch('builtins.print') as mock_print:
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
+        self.assertEqual(mock_print.mock_calls, [
+            call('\033[94mExporting realm\033[0m: zulip'),
+        ])
 
         message.last_edit_time = None
         message.save()
         do_add_reaction(self.mit_user("sipbtest"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
-        with self.assertRaisesRegex(CommandError, "Users from a different realm reacted to message. Aborting..."):
+        with self.assertRaisesRegex(CommandError, "Users from a different realm reacted to message. Aborting..."), \
+                patch('builtins.print') as mock_print:
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
+
+        self.assertEqual(mock_print.mock_calls, [
+            call('\033[94mExporting realm\033[0m: zulip'),
+        ])

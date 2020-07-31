@@ -10,7 +10,11 @@ zrequire("people");
 zrequire("hash_util");
 zrequire("hashchange");
 zrequire("stream_data");
+zrequire("navigate");
 
+set_global("search", {
+    update_button_visibility: () => {},
+});
 set_global("document", "document-stub");
 set_global("history", {});
 
@@ -155,7 +159,7 @@ run_test("hash_interactions", () => {
     helper.assert_events([
         "overlays.close_for_hash_change",
         "message_viewport.stop_auto_scrolling",
-        "change_tab_to #home",
+        "change_tab_to #message_feed_container",
         "narrow.deactivate",
         "floating_recipient_bar.update",
     ]);
@@ -165,7 +169,7 @@ run_test("hash_interactions", () => {
     helper.assert_events([
         "overlays.close_for_hash_change",
         "message_viewport.stop_auto_scrolling",
-        "change_tab_to #home",
+        "change_tab_to #message_feed_container",
         "narrow.deactivate",
         "floating_recipient_bar.update",
     ]);
@@ -177,7 +181,7 @@ run_test("hash_interactions", () => {
     helper.assert_events([
         "overlays.close_for_hash_change",
         "message_viewport.stop_auto_scrolling",
-        "change_tab_to #home",
+        "change_tab_to #message_feed_container",
         "narrow.activate",
         "floating_recipient_bar.update",
     ]);
@@ -191,7 +195,7 @@ run_test("hash_interactions", () => {
     helper.assert_events([
         "overlays.close_for_hash_change",
         "message_viewport.stop_auto_scrolling",
-        "change_tab_to #home",
+        "change_tab_to #message_feed_container",
         "narrow.activate",
         "floating_recipient_bar.update",
     ]);
@@ -208,31 +212,19 @@ run_test("hash_interactions", () => {
 
     helper.clear_events();
     $(window).trigger($.Event("hashchange", {}));
-    helper.assert_events([
-        "overlays.close_for_hash_change",
-        "message_viewport.stop_auto_scrolling",
-        "info: keyboard-shortcuts",
-    ]);
+    helper.assert_events(["overlays.close_for_hash_change", "info: keyboard-shortcuts"]);
 
     window.location.hash = "#message-formatting/whatever";
 
     helper.clear_events();
     $(window).trigger($.Event("hashchange", {}));
-    helper.assert_events([
-        "overlays.close_for_hash_change",
-        "message_viewport.stop_auto_scrolling",
-        "info: message-formatting",
-    ]);
+    helper.assert_events(["overlays.close_for_hash_change", "info: message-formatting"]);
 
     window.location.hash = "#search-operators/whatever";
 
     helper.clear_events();
     $(window).trigger($.Event("hashchange", {}));
-    helper.assert_events([
-        "overlays.close_for_hash_change",
-        "message_viewport.stop_auto_scrolling",
-        "info: search-operators",
-    ]);
+    helper.assert_events(["overlays.close_for_hash_change", "info: search-operators"]);
 
     window.location.hash = "#drafts";
 

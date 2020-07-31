@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 set_global("$", {});
 
 set_global("reload", {});
@@ -34,11 +36,11 @@ function test_with_mock_ajax(test_params) {
 
 run_test("basics", () => {
     test_with_mock_ajax({
-        run_code: function () {
+        run_code() {
             channel.post({});
         },
 
-        check_ajax_options: function (options) {
+        check_ajax_options(options) {
             assert.equal(options.type, "POST");
             assert.equal(options.dataType, "json");
 
@@ -49,11 +51,11 @@ run_test("basics", () => {
     });
 
     test_with_mock_ajax({
-        run_code: function () {
+        run_code() {
             channel.patch({});
         },
 
-        check_ajax_options: function (options) {
+        check_ajax_options(options) {
             assert.equal(options.type, "POST");
             assert.equal(options.data.method, "PATCH");
             assert.equal(options.dataType, "json");
@@ -65,11 +67,11 @@ run_test("basics", () => {
     });
 
     test_with_mock_ajax({
-        run_code: function () {
+        run_code() {
             channel.put({});
         },
 
-        check_ajax_options: function (options) {
+        check_ajax_options(options) {
             assert.equal(options.type, "PUT");
             assert.equal(options.dataType, "json");
 
@@ -80,11 +82,11 @@ run_test("basics", () => {
     });
 
     test_with_mock_ajax({
-        run_code: function () {
+        run_code() {
             channel.del({});
         },
 
-        check_ajax_options: function (options) {
+        check_ajax_options(options) {
             assert.equal(options.type, "DELETE");
             assert.equal(options.dataType, "json");
 
@@ -95,11 +97,11 @@ run_test("basics", () => {
     });
 
     test_with_mock_ajax({
-        run_code: function () {
+        run_code() {
             channel.get({});
         },
 
-        check_ajax_options: function (options) {
+        check_ajax_options(options) {
             assert.equal(options.type, "GET");
             assert.equal(options.dataType, "json");
 
@@ -124,23 +126,23 @@ run_test("normal_post", () => {
     test_with_mock_ajax({
         xhr: stub_xhr,
 
-        run_code: function () {
+        run_code() {
             channel.post({
-                data: data,
+                data,
                 url: "/json/endpoint",
-                success: function (data, text_status, xhr) {
+                success(data, text_status, xhr) {
                     orig_success_called = true;
                     assert.equal(data, "response data");
                     assert.equal(text_status, "success");
                     assert.equal(xhr, stub_xhr);
                 },
-                error: function () {
+                error() {
                     orig_error_called = true;
                 },
             });
         },
 
-        check_ajax_options: function (options) {
+        check_ajax_options(options) {
             assert.equal(options.type, "POST");
             assert.equal(options.dataType, "json");
             assert.deepEqual(options.data, data);
@@ -159,7 +161,7 @@ run_test("patch_with_form_data", () => {
     let appended;
 
     const data = {
-        append: function (k, v) {
+        append(k, v) {
             assert.equal(k, "method");
             assert.equal(v, "PATCH");
             appended = true;
@@ -167,15 +169,15 @@ run_test("patch_with_form_data", () => {
     };
 
     test_with_mock_ajax({
-        run_code: function () {
+        run_code() {
             channel.patch({
-                data: data,
+                data,
                 processData: false,
             });
             assert(appended);
         },
 
-        check_ajax_options: function (options) {
+        check_ajax_options(options) {
             assert.equal(options.type, "POST");
             assert.equal(options.dataType, "json");
 
@@ -193,11 +195,11 @@ run_test("reload_on_403_error", () => {
             responseText: '{"msg": "CSRF Fehler: etwas", "code": "CSRF_FAILED"}',
         },
 
-        run_code: function () {
+        run_code() {
             channel.post({});
         },
 
-        check_ajax_options: function (options) {
+        check_ajax_options(options) {
             let reload_initiated;
             reload.initiate = function (options) {
                 reload_initiated = true;
@@ -222,11 +224,11 @@ run_test("unexpected_403_response", () => {
             responseText: "unexpected",
         },
 
-        run_code: function () {
+        run_code() {
             channel.post({});
         },
 
-        check_ajax_options: function (options) {
+        check_ajax_options(options) {
             blueslip.expect("error", "Unexpected 403 response from server");
             options.simulate_error();
         },
@@ -235,14 +237,14 @@ run_test("unexpected_403_response", () => {
 
 run_test("retry", () => {
     test_with_mock_ajax({
-        run_code: function () {
+        run_code() {
             channel.post({
                 idempotent: true,
                 data: 42,
             });
         },
 
-        check_ajax_options: function (options) {
+        check_ajax_options(options) {
             global.patch_builtin("setTimeout", (f, delay) => {
                 assert.equal(delay, 0);
                 f();
@@ -250,11 +252,11 @@ run_test("retry", () => {
 
             blueslip.expect("log", "Retrying idempotent[object Object]");
             test_with_mock_ajax({
-                run_code: function () {
+                run_code() {
                     options.simulate_success();
                 },
 
-                check_ajax_options: function (options) {
+                check_ajax_options(options) {
                     assert.equal(options.data, 42);
                 },
             });

@@ -29,8 +29,8 @@ exports.scroll_element_into_container = function (elem, container) {
     const elem_bottom = elem_top + elem.innerHeight();
 
     const opts = {
-        elem_top: elem_top,
-        elem_bottom: elem_bottom,
+        elem_top,
+        elem_bottom,
         container_height: container.height(),
     };
 

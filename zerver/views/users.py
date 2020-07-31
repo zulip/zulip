@@ -250,16 +250,16 @@ def patch_bot_backend(
         else:
             (stream, recipient, sub) = access_stream_by_name(
                 user_profile, default_sending_stream)
-        do_change_default_sending_stream(bot, stream)
+        do_change_default_sending_stream(bot, stream, acting_user=user_profile)
     if default_events_register_stream is not None:
         if default_events_register_stream == "":
             stream = None
         else:
             (stream, recipient, sub) = access_stream_by_name(
                 user_profile, default_events_register_stream)
-        do_change_default_events_register_stream(bot, stream)
+        do_change_default_events_register_stream(bot, stream, acting_user=user_profile)
     if default_all_public_streams is not None:
-        do_change_default_all_public_streams(bot, default_all_public_streams)
+        do_change_default_all_public_streams(bot, default_all_public_streams, acting_user=user_profile)
 
     if service_payload_url is not None:
         check_valid_interface_type(service_interface)

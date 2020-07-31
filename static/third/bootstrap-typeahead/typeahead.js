@@ -115,12 +115,12 @@
   , select: function (e) {
       var val = this.$menu.find('.active').data('typeahead-value')
       if (this.$element.is("[contenteditable]")) {
-        this.$element.html(this.updater(val, e)).change();
+        this.$element.html(this.updater(val, e)).trigger("change");
         // Empty textContent after the change event handler
         // converts the input text to html elements.
         this.$element.html('');
       } else {
-        this.$element.val(this.updater(val, e)).change();
+        this.$element.val(this.updater(val, e)).trigger("change");
       }
 
       return this.hide()
@@ -209,7 +209,7 @@
         }
       }
 
-      items = $.isFunction(this.source) ? this.source(this.query, $.proxy(this.process, this)) : this.source
+      items = typeof this.source === "function" ? this.source(this.query, this.process.bind(this)) : this.source
 
       if (!items && this.shown) this.hide();
       return items ? this.process(items) : this
@@ -307,17 +307,17 @@
 
   , listen: function () {
       this.$element
-        .on('blur',     $.proxy(this.blur, this))
-        .on('keypress', $.proxy(this.keypress, this))
-        .on('keyup',    $.proxy(this.keyup, this))
+        .on('blur',     this.blur.bind(this))
+        .on('keypress', this.keypress.bind(this))
+        .on('keyup',    this.keyup.bind(this))
 
       if (this.eventSupported('keydown')) {
-        this.$element.on('keydown', $.proxy(this.keydown, this))
+        this.$element.on('keydown', this.keydown.bind(this))
       }
 
       this.$menu
-        .on('click', $.proxy(this.click, this))
-        .on('mouseenter', 'li', $.proxy(this.mouseenter, this))
+        .on('click', this.click.bind(this))
+        .on('mouseenter', 'li', this.mouseenter.bind(this))
     }
 
   , eventSupported: function(eventName) {

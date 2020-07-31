@@ -16,6 +16,7 @@ IGNORED_PHRASES = [
     r"App Store",
     r"Botserver",
     r"Cookie Bot",
+    r"DevAuthBackend",
     r"Dropbox",
     r"GCM",
     r"GitHub",

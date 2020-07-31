@@ -31,7 +31,7 @@ exports.activate = function (in_opts) {
     const callback = function (data) {
         post_to_server({
             msg_type: "widget",
-            data: data,
+            data,
         });
     };
 
@@ -53,9 +53,9 @@ exports.activate = function (in_opts) {
 
     widgets.get(widget_type).activate({
         elem: widget_elem,
-        callback: callback,
-        message: message,
-        extra_data: extra_data,
+        callback,
+        message,
+        extra_data,
     });
 
     widget_contents.set(message.id, widget_elem);

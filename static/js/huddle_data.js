@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const huddle_timestamps = new Map();
 
 exports.process_loaded_messages = function (messages) {

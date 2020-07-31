@@ -60,9 +60,6 @@ if "GENERATE_STRIPE_FIXTURES" in os.environ:
 # This allows CasperJS to proceed quickly to the next test step.
 POLL_TIMEOUT = 1000
 
-# Don't use the real message log for tests
-EVENT_LOG_DIR = '/tmp/zulip-test-event-log'
-
 # Stores the messages in `django.core.mail.outbox` rather than sending them.
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
@@ -123,6 +120,14 @@ if not CASPER_TESTS:
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 
+    # This logger is used only for automated tests validating the
+    # error-handling behavior of the zulip_admins handler.
+    LOGGING['loggers']['zulip.test_zulip_admins_handler'] = {
+        'handlers': ['zulip_admins'],
+        'propagate': False,
+    }
+
+    # Here we set various loggers to be less noisy for unit tests.
     def set_loglevel(logger_name: str, level: str) -> None:
         LOGGING['loggers'].setdefault(logger_name, {})['level'] = level
     set_loglevel('zulip.requests', 'CRITICAL')
@@ -173,8 +178,9 @@ SOCIAL_AUTH_GOOGLE_KEY = "key"
 SOCIAL_AUTH_GOOGLE_SECRET = "secret"
 SOCIAL_AUTH_SUBDOMAIN = 'auth'
 SOCIAL_AUTH_APPLE_SERVICES_ID = 'com.zulip.chat'
-SOCIAL_AUTH_APPLE_BUNDLE_ID = 'com.zulip.bundle.id'
+SOCIAL_AUTH_APPLE_APP_ID = 'com.zulip.bundle.id'
 SOCIAL_AUTH_APPLE_CLIENT = 'com.zulip.chat'
+SOCIAL_AUTH_APPLE_AUDIENCE = [SOCIAL_AUTH_APPLE_APP_ID, SOCIAL_AUTH_APPLE_SERVICES_ID]
 SOCIAL_AUTH_APPLE_KEY = 'KEYISKEY'
 SOCIAL_AUTH_APPLE_TEAM = 'TEAMSTRING'
 SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("zerver/tests/fixtures/apple/private_key.pem")

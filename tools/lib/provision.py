@@ -391,9 +391,6 @@ def main(options: argparse.Namespace) -> "NoReturn":
     # Install shellcheck.
     run_as_root(["tools/setup/install-shellcheck"])
 
-    # Install semgrep.
-    run_as_root(["tools/setup/install-semgrep"])
-
     setup_venvs.main()
 
     run_as_root(["cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])

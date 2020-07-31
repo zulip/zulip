@@ -1,36 +1,5 @@
-const events = {
-    documentMouseup: [],
-    windowResize: [],
-};
-
-window.onload = function () {
-    document.body.addEventListener("mouseup", (e) => {
-        events.documentMouseup = events.documentMouseup.filter(function (event) {
-            // go through automatic cleanup when running events.
-            if (!document.body.contains(event.canvas)) {
-                return false;
-            }
-
-            event.callback.call(this, e);
-            return true;
-        });
-    });
-
-    window.addEventListener("resize", function (e) {
-        events.windowResize = events.windowResize.filter((event) => {
-            if (!document.body.contains(event.canvas)) {
-                return false;
-            }
-
-            event.callback.call(this, e);
-
-            return true;
-        });
-    });
-};
-
 const funcs = {
-    setZoom: function (meta, zoom) {
+    setZoom(meta, zoom) {
         // condition to handle zooming event by zoom hotkeys
         if (zoom === "+") {
             zoom = meta.zoom * 1.2;
@@ -43,7 +12,7 @@ const funcs = {
 
     // this is a function given a canvas that attaches all of the events
     // required to pan and zoom.
-    attachEvents: function (canvas, context, meta) {
+    attachEvents(canvas, context, meta) {
         let mousedown = false;
 
         // wheelEvent.deltaMode is a value that describes what the unit is
@@ -62,7 +31,7 @@ const funcs = {
         // props don't exist, so we need to create them as a difference of
         // where the last `layerX` and `layerY` movements since the last
         // `mousemove` event in this `mousedown` event were registered.
-        const polyfillMouseMovement = function (e) {
+        const polyfillMouseMovement = (e) => {
             e.movementX = e.layerX - lastPosition.x || 0;
             e.movementY = e.layerY - lastPosition.y || 0;
 
@@ -173,29 +142,29 @@ const funcs = {
         // do so on the document.body as well, though depending on the infra,
         // these are less reliable as preventDefault may prevent these events
         // from propagating all the way to the <body>.
-        events.documentMouseup.push({
-            canvas: canvas,
-            meta: meta,
-            callback: function () {
+        document.body.addEventListener("mouseup", function body_mouseup() {
+            if (document.body.contains(canvas)) {
                 mousedown = false;
-            },
+            } else {
+                document.body.removeEventListener("mouseup", body_mouseup);
+            }
         });
 
-        events.windowResize.push({
-            canvas: canvas,
-            meta: meta,
-            callback: function () {
+        window.addEventListener("resize", function window_resize() {
+            if (document.body.contains(canvas)) {
                 funcs.sizeCanvas(canvas, meta);
                 funcs.displayImage(canvas, context, meta);
-            },
+            } else {
+                window.removeEventListener("resize", window_resize);
+            }
         });
     },
 
-    imageRatio: function (image) {
+    imageRatio(image) {
         return image.naturalWidth / image.naturalHeight;
     },
 
-    displayImage: function (canvas, context, meta) {
+    displayImage(canvas, context, meta) {
         meta.coords.x = Math.max(1 / (meta.zoom * 2), meta.coords.x);
         meta.coords.x = Math.min(1 - 1 / (meta.zoom * 2), meta.coords.x);
 
@@ -225,7 +194,7 @@ const funcs = {
     // as we can, which means that we check if having the photo width = 100%
     // means that the height is less than 100% of the parent height. If so,
     // then we size the photo as w = 100%, h = 100% / 1.5.
-    sizeCanvas: function (canvas, meta) {
+    sizeCanvas(canvas, meta) {
         if (canvas.parentNode === null) {
             return;
         }
@@ -257,11 +226,8 @@ const funcs = {
     },
 };
 
-// a class w/ prototype to create a new `LightboxCanvas` instance.
-const LightboxCanvas = function (el) {
-    const self = this;
-
-    this.meta = {
+class LightboxCanvas {
+    meta = {
         direction: -1,
         zoom: 1,
         image: null,
@@ -276,55 +242,54 @@ const LightboxCanvas = function (el) {
         maxZoom: 10,
     };
 
-    if (el instanceof Node) {
-        this.canvas = el;
-    } else if (typeof el === "string") {
-        this.canvas = document.querySelector(el);
-    } else {
-        blueslip.warn("Error. 'LightboxCanvas' accepts either string selector or node.");
-        return;
+    constructor(el) {
+        if (el instanceof Node) {
+            this.canvas = el;
+        } else if (typeof el === "string") {
+            this.canvas = document.querySelector(el);
+        } else {
+            throw new TypeError("'LightboxCanvas' accepts either string selector or node.");
+        }
+
+        this.context = this.canvas.getContext("2d");
+
+        this.meta.image = new Image();
+        this.meta.image.src = this.canvas.getAttribute("data-src");
+        this.meta.image.addEventListener("load", () => {
+            this.meta.ratio = funcs.imageRatio(this.meta.image);
+
+            funcs.sizeCanvas(this.canvas, this.meta);
+            funcs.displayImage(this.canvas, this.context, this.meta);
+        });
+
+        this.canvas.image = this.meta.image;
+
+        funcs.attachEvents(this.canvas, this.context, this.meta);
     }
 
-    this.context = this.canvas.getContext("2d");
-
-    this.meta.image = new Image();
-    this.meta.image.src = this.canvas.getAttribute("data-src");
-    this.meta.image.onload = function () {
-        self.meta.ratio = funcs.imageRatio(this);
-
-        funcs.sizeCanvas(self.canvas, self.meta);
-        funcs.displayImage(self.canvas, self.context, self.meta);
-    };
-
-    this.canvas.image = this.meta.image;
-
-    funcs.attachEvents(this.canvas, this.context, self.meta);
-};
-
-LightboxCanvas.prototype = {
     // set the speed at which scrolling zooms in on a photo.
-    speed: function (speed) {
+    speed(speed) {
         this.meta.speed = speed;
-    },
+    }
 
     // set the max zoom of the `LightboxCanvas` canvas as a mult of the total width.
-    maxZoom: function (maxZoom) {
+    maxZoom(maxZoom) {
         this.meta.maxZoom = maxZoom;
-    },
+    }
 
-    reverseScrollDirection: function () {
+    reverseScrollDirection() {
         this.meta.direction = 1;
-    },
+    }
 
-    setZoom: function (zoom) {
+    setZoom(zoom) {
         funcs.setZoom(this.meta, zoom);
         funcs.displayImage(this.canvas, this.context, this.meta);
-    },
+    }
 
-    resize: function (callback) {
+    resize(callback) {
         this.meta.onresize = callback;
-    },
-};
+    }
+}
 
 module.exports = LightboxCanvas;
 window.LightboxCanvas = LightboxCanvas;

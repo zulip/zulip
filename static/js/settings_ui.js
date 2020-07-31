@@ -37,9 +37,9 @@ exports.do_settings_change = function (request_method, url, data, status_element
     }
 
     request_method({
-        url: url,
-        data: data,
-        success: function (reponse_data) {
+        url,
+        data,
+        success(reponse_data) {
             setTimeout(() => {
                 ui_report.success(success_msg, spinner, remove_after);
                 exports.display_checkmark(spinner);
@@ -52,7 +52,7 @@ exports.do_settings_change = function (request_method, url, data, status_element
                 }
             }
         },
-        error: function (xhr) {
+        error(xhr) {
             if (opts !== undefined && opts.error_msg_element) {
                 loading.destroy_indicator(spinner);
                 ui_report.error(exports.strings.failure, xhr, opts.error_msg_element);
@@ -75,12 +75,12 @@ exports.do_settings_change = function (request_method, url, data, status_element
 //   when main setting unchecked.
 exports.disable_sub_setting_onchange = function (is_checked, sub_setting_id, disable_on_uncheck) {
     if ((is_checked && disable_on_uncheck) || (!is_checked && !disable_on_uncheck)) {
-        $("#" + sub_setting_id).attr("disabled", false);
+        $("#" + sub_setting_id).prop("disabled", false);
         $("#" + sub_setting_id + "_label")
             .parent()
             .removeClass("control-label-disabled");
     } else if ((is_checked && !disable_on_uncheck) || (!is_checked && disable_on_uncheck)) {
-        $("#" + sub_setting_id).attr("disabled", "disabled");
+        $("#" + sub_setting_id).prop("disabled", true);
         $("#" + sub_setting_id + "_label")
             .parent()
             .addClass("control-label-disabled");

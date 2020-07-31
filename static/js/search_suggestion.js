@@ -1,5 +1,7 @@
-const settings_data = require("./settings_data");
+const Handlebars = require("handlebars/runtime");
+
 const huddle_data = require("./huddle_data");
+const settings_data = require("./settings_data");
 
 exports.max_num_of_search_results = 12;
 
@@ -109,7 +111,7 @@ function get_stream_suggestions(last, operators) {
             negated: last.negated,
         };
         const search_string = Filter.unparse([term]);
-        return {description: description, search_string: search_string};
+        return {description, search_string};
     });
 
     return objs;
@@ -163,7 +165,7 @@ function get_group_suggestions(last, operators) {
         const term = {
             operator: "pm-with",
             operand: all_but_last_part + "," + person.email,
-            negated: negated,
+            negated,
         };
         const name = highlight_person(person);
         const description =
@@ -173,7 +175,7 @@ function get_group_suggestions(last, operators) {
             terms = [{operator: "is", operand: "private"}, term];
         }
         const search_string = Filter.unparse(terms);
-        return {description: description, search_string: search_string};
+        return {description, search_string};
     });
 
     return suggestions;
@@ -256,7 +258,7 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
             terms.unshift({operator: "is", operand: "private"});
         }
         const search_string = Filter.unparse(terms);
-        return {description: description, search_string: search_string};
+        return {description, search_string};
     });
 
     return objs;
@@ -354,7 +356,7 @@ function get_topic_suggestions(last, operators) {
     topics.sort();
 
     return topics.map((topic) => {
-        const topic_term = {operator: "topic", operand: topic, negated: negated};
+        const topic_term = {operator: "topic", operand: topic, negated};
         const operators = suggest_operators.concat([topic_term]);
         return format_as_suggestion(operators);
     });
@@ -521,14 +523,14 @@ function get_sent_by_me_suggestions(last, operators) {
         return [
             {
                 search_string: sender_query,
-                description: description,
+                description,
             },
         ];
     } else if (from_query.startsWith(last_string) || from_me_query.startsWith(last_string)) {
         return [
             {
                 search_string: from_query,
-                description: description,
+                description,
             },
         ];
     }
@@ -551,42 +553,45 @@ function get_operator_suggestions(last) {
     choices = choices.filter((choice) => common.phrase_match(last_operand, choice));
 
     return choices.map((choice) => {
-        const op = [{operator: choice, operand: "", negated: negated}];
+        const op = [{operator: choice, operand: "", negated}];
         return format_as_suggestion(op);
     });
 }
 
-function make_attacher(base) {
-    const self = {};
-    self.result = [];
-    const prev = new Set();
+class Attacher {
+    result = [];
+    prev = new Set();
 
-    function prepend_base(suggestion) {
-        if (base && base.description.length > 0) {
-            suggestion.search_string = base.search_string + " " + suggestion.search_string;
-            suggestion.description = base.description + ", " + suggestion.description;
+    constructor(base) {
+        this.base = base;
+    }
+
+    prepend_base(suggestion) {
+        if (this.base && this.base.description.length > 0) {
+            suggestion.search_string = this.base.search_string + " " + suggestion.search_string;
+            suggestion.description = this.base.description + ", " + suggestion.description;
         }
     }
 
-    self.push = function (suggestion) {
-        if (!prev.has(suggestion.search_string)) {
-            prev.add(suggestion.search_string);
-            self.result.push(suggestion);
+    push(suggestion) {
+        if (!this.prev.has(suggestion.search_string)) {
+            this.prev.add(suggestion.search_string);
+            this.result.push(suggestion);
         }
-    };
+    }
 
-    self.concat = function (suggestions) {
-        suggestions.forEach(self.push);
-    };
-
-    self.attach_many = function (suggestions) {
+    concat(suggestions) {
         for (const suggestion of suggestions) {
-            prepend_base(suggestion);
-            self.push(suggestion);
+            this.push(suggestion);
         }
-    };
+    }
 
-    return self;
+    attach_many(suggestions) {
+        for (const suggestion of suggestions) {
+            this.prepend_base(suggestion);
+            this.push(suggestion);
+        }
+    }
 }
 
 exports.get_search_result = function (base_query, query) {
@@ -646,7 +651,7 @@ exports.get_search_result = function (base_query, query) {
     }
 
     const base = get_default_suggestion(search_operators.slice(0, -1));
-    const attacher = make_attacher(base);
+    const attacher = new Attacher(base);
 
     // Display the default first
     // `has` and `is` operators work only on predefined categories. Default suggestion
@@ -730,8 +735,8 @@ exports.finalize_search_result = function (result) {
 
     const strings = result.map((obj) => obj.search_string);
     return {
-        strings: strings,
-        lookup_table: lookup_table,
+        strings,
+        lookup_table,
     };
 };
 

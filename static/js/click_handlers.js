@@ -1,15 +1,19 @@
-const util = require("./util");
-const settings_panel_menu = require("./settings_panel_menu");
+const _ = require("lodash");
+const WinChan = require("winchan");
+
 // You won't find every click handler here, but it's a good place to start!
 
 const render_buddy_list_tooltip = require("../templates/buddy_list_tooltip.hbs");
 const render_buddy_list_tooltip_content = require("../templates/buddy_list_tooltip_content.hbs");
 
+const settings_panel_menu = require("./settings_panel_menu");
+const util = require("./util");
+
 function convert_enter_to_click(e) {
     const key = e.which;
     if (key === 13) {
         // enter
-        $(e.currentTarget).click();
+        $(e.currentTarget).trigger("click");
     }
 }
 
@@ -200,7 +204,7 @@ exports.initialize = function () {
 
         if (page_params.realm_allow_edit_history) {
             message_edit_history.show_history(message);
-            message_history_cancel_btn.focus();
+            message_history_cancel_btn.trigger("focus");
         }
         e.stopPropagation();
         e.preventDefault();
@@ -216,7 +220,7 @@ exports.initialize = function () {
         const title = reactions.get_reaction_title_data(message_id, local_id);
 
         elem.tooltip({
-            title: title,
+            title,
             trigger: "hover",
             placement: "bottom",
             animation: false,
@@ -265,7 +269,7 @@ exports.initialize = function () {
 
     $("body").on("click", ".notification", function () {
         const payload = $(this).data("narrow");
-        ui_util.change_tab_to("#home");
+        ui_util.change_tab_to("#message_feed_container");
         narrow.activate(payload.raw_operators, payload.opts_notif);
     });
 
@@ -328,7 +332,7 @@ exports.initialize = function () {
             ui_util.blur_active_element();
         }
     });
-    $("#message_edit_form .send-status-close").click(function () {
+    $("#message_edit_form .send-status-close").on("click", function () {
         const row_id = rows.id($(this).closest(".message_row"));
         const send_status = $("#message-edit-send-status-" + row_id);
         $(send_status).stop(true).fadeOut(200);
@@ -448,7 +452,7 @@ exports.initialize = function () {
         return nearest.id;
     }
 
-    $("#home").on("click", ".narrows_by_recipient", function (e) {
+    $("#message_feed_container").on("click", ".narrows_by_recipient", function (e) {
         if (e.metaKey || e.ctrlKey) {
             return;
         }
@@ -457,7 +461,7 @@ exports.initialize = function () {
         narrow.by_recipient(row_id, {trigger: "message header"});
     });
 
-    $("#home").on("click", ".narrows_by_topic", function (e) {
+    $("#message_feed_container").on("click", ".narrows_by_topic", function (e) {
         if (e.metaKey || e.ctrlKey) {
             return;
         }
@@ -495,7 +499,7 @@ exports.initialize = function () {
         .on("click", ".selectable_sidebar_block", (e) => {
             const li = $(e.target).parents("li");
 
-            activity.narrow_for_user({li: li});
+            activity.narrow_for_user({li});
 
             e.preventDefault();
             e.stopPropagation();
@@ -565,16 +569,6 @@ exports.initialize = function () {
 
     // HOME
 
-    $(document).on("click", ".top_left_all_messages", (e) => {
-        ui_util.change_tab_to("#home");
-        narrow.deactivate();
-        search.update_button_visibility();
-        // We need to maybe scroll to the selected message
-        // once we have the proper viewport set up
-        setTimeout(navigate.maybe_scroll_to_selected, 0);
-        e.preventDefault();
-    });
-
     $(".brand").on("click", (e) => {
         if (overlays.is_active()) {
             overlays.close_active();
@@ -601,10 +595,10 @@ exports.initialize = function () {
     notifications.register_click_handlers();
 
     $("body").on("click", ".logout_button", () => {
-        $("#logout_form").submit();
+        $("#logout_form").trigger("submit");
     });
 
-    $(".restart_get_events_button").click(() => {
+    $(".restart_get_events_button").on("click", () => {
         server_events.restart_get_events({dont_block: true});
     });
 
@@ -629,18 +623,18 @@ exports.initialize = function () {
 
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
-    $("#compose-send-status .compose-send-status-close").click(() => {
+    $("#compose-send-status .compose-send-status-close").on("click", () => {
         $("#compose-send-status").stop(true).fadeOut(500);
     });
-    $("#nonexistent_stream_reply_error .compose-send-status-close").click(() => {
+    $("#nonexistent_stream_reply_error .compose-send-status-close").on("click", () => {
         $("#nonexistent_stream_reply_error").stop(true).fadeOut(500);
     });
 
-    $(".compose_stream_button").click(() => {
+    $(".compose_stream_button").on("click", () => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("stream", {trigger: "new topic button"});
     });
-    $(".compose_private_button").click(() => {
+    $(".compose_private_button").on("click", () => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("private");
     });
@@ -654,22 +648,22 @@ exports.initialize = function () {
         compose_actions.start("private");
     });
 
-    $(".compose_reply_button").click(() => {
+    $(".compose_reply_button").on("click", () => {
         compose_actions.respond_to_message({trigger: "reply button"});
     });
 
-    $(".empty_feed_compose_stream").click((e) => {
+    $(".empty_feed_compose_stream").on("click", (e) => {
         compose_actions.start("stream", {trigger: "empty feed message"});
         e.preventDefault();
     });
-    $(".empty_feed_compose_private").click((e) => {
+    $(".empty_feed_compose_private").on("click", (e) => {
         compose_actions.start("private", {trigger: "empty feed message"});
         e.preventDefault();
     });
 
     $("body").on("click", "[data-overlay-trigger]", function () {
         const target = $(this).attr("data-overlay-trigger");
-        info_overlay.show(target);
+        hashchange.go_to_location(target);
     });
 
     function handle_compose_click(e) {
@@ -696,19 +690,19 @@ exports.initialize = function () {
         popovers.hide_all();
     }
 
-    $("#compose_buttons").click(handle_compose_click);
-    $(".compose-content").click(handle_compose_click);
+    $("#compose_buttons").on("click", handle_compose_click);
+    $(".compose-content").on("click", handle_compose_click);
 
-    $("#compose_close").click(() => {
+    $("#compose_close").on("click", () => {
         compose_actions.cancel();
     });
 
-    $("#streams_inline_cog").click((e) => {
+    $("#streams_inline_cog").on("click", (e) => {
         e.stopPropagation();
         hashchange.go_to_location("streams/subscribed");
     });
 
-    $("#streams_filter_icon").click((e) => {
+    $("#streams_filter_icon").on("click", (e) => {
         e.stopPropagation();
         stream_list.toggle_filter_displayed(e);
     });
@@ -724,7 +718,7 @@ exports.initialize = function () {
                 relay_url: "https://webathena.mit.edu/relay.html",
                 params: {
                     realm: "ATHENA.MIT.EDU",
-                    principal: principal,
+                    principal,
                 },
             },
             (err, r) => {
@@ -740,10 +734,10 @@ exports.initialize = function () {
                 channel.post({
                     url: "/accounts/webathena_kerberos_login/",
                     data: {cred: JSON.stringify(r.session)},
-                    success: function () {
+                    success() {
                         $("#zephyr-mirror-error").removeClass("show");
                     },
-                    error: function () {
+                    error() {
                         $("#zephyr-mirror-error").addClass("show");
                     },
                 });
@@ -797,7 +791,7 @@ exports.initialize = function () {
                 $(this).text($(this).attr("data-prev-text"));
                 $("[data-make-editable]").html("");
             } else if (e.which === 13) {
-                $(this).siblings(".checkmark").click();
+                $(this).siblings(".checkmark").trigger("click");
             }
         });
 
@@ -945,7 +939,7 @@ exports.initialize = function () {
         if (compose_state.composing()) {
             if ($(e.target).closest("a").length > 0) {
                 // Refocus compose message text box if link is clicked
-                $("#compose-textarea").focus();
+                $("#compose-textarea").trigger("focus");
                 return;
             } else if (
                 !window.getSelection().toString() &&

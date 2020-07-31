@@ -11,11 +11,13 @@ Chris Bobbe <cbobbe@zulip.com> <csbobbe@gmail.com>
 Greg Price <greg@zulip.com> <gnprice@gmail.com>
 Greg Price <greg@zulip.com> <greg@zulipchat.com>
 Greg Price <greg@zulip.com> <price@mit.edu>
+Jessica McKellar <jesstess@mit.edu> <jesstess@humbughq.com>
+Jessica McKellar <jesstess@mit.edu> <jesstess@zulip.com>
 Ray Kraesig <rkraesig@zulip.com> <rkraesig@zulipchat.com>
-Rishi Gupta <rishig@zulip.com> <rishig+git@mit.edu>
-Rishi Gupta <rishig@zulip.com> <rishig@kandralabs.com>
-Rishi Gupta <rishig@zulip.com> <rishig@users.noreply.github.com>
-Rishi Gupta <rishig@zulip.com> <rishig@zulipchat.com>
+Rishi Gupta <rishig@zulipchat.com> <rishig+git@mit.edu>
+Rishi Gupta <rishig@zulipchat.com> <rishig@kandralabs.com>
+Rishi Gupta <rishig@zulipchat.com> <rishig@users.noreply.github.com>
+Reid Barton <rwbarton@gmail.com> <rwbarton@humbughq.com>
 Steve Howell <showell@zulip.com> <showell30@yahoo.com>
 Steve Howell <showell@zulip.com> <showell@yahoo.com>
 Steve Howell <showell@zulip.com> <showell@zulipchat.com>
@@ -27,3 +29,11 @@ Tim Abbott <tabbott@zulip.com> <tabbott@mit.edu>
 Tim Abbott <tabbott@zulip.com> <tabbott@zulipchat.com>
 Vishnu KS <yo@vishnuks.com> <hackerkid@vishnuks.com>
 Vishnu KS <yo@vishnuks.com> <yo@vishnuks.com>
+
+# Some major contributors of Zulip whose email in commit messages are not associated
+# to any GitHub account. mailmap entry added to group the commits togather so that there
+# are no multiple entries in /team page.
+Allen Rabinovich <allenr@zulip.com> <allenr@humbughq.com>
+Jeff Arnold <jbarnold@zulip.com> <jbarnold@humbughq.com>
+Kevin Mehall <kevin@zulip.com> <kevin@humbughq.com>
+Scott Feeney <scott@zulip.com> <scott@humbughq.com>

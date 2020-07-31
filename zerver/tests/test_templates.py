@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, call, patch
+
 from django.template.loader import get_template
 
 from zerver.lib.exceptions import InvalidMarkdownIncludeStatement
@@ -36,8 +38,8 @@ header
 <p>
   <div class="code-section has-tabs" markdown="1">
     <ul class="nav">
-      <li data-language="ios">iOS</li>
-      <li data-language="desktop-web">Desktop/Web</li>
+      <li data-language="ios" tabindex="0">iOS</li>
+      <li data-language="desktop-web" tabindex="0">Desktop/Web</li>
     </ul>
     <div class="blocks">
       <div data-language="ios" markdown="1"></p>
@@ -54,8 +56,8 @@ header
 <p>
   <div class="code-section has-tabs" markdown="1">
     <ul class="nav">
-      <li data-language="desktop-web">Desktop/Web</li>
-      <li data-language="android">Android</li>
+      <li data-language="desktop-web" tabindex="0">Desktop/Web</li>
+      <li data-language="android" tabindex="0">Android</li>
     </ul>
     <div class="blocks">
       <div data-language="desktop-web" markdown="1"></p>
@@ -72,7 +74,7 @@ header
 <p>
   <div class="code-section no-tabs" markdown="1">
     <ul class="nav">
-      <li data-language="null_tab">None</li>
+      <li data-language="null_tab" tabindex="0">None</li>
     </ul>
     <div class="blocks">
       <div data-language="null_tab" markdown="1"></p>
@@ -104,7 +106,8 @@ footer
                     'non-indentedcodeblockwithmultiplelines</code></pre></div>footer')
         self.assertEqual(content_sans_whitespace, expected)
 
-    def test_custom_markdown_include_extension(self) -> None:
+    @patch('builtins.print')
+    def test_custom_markdown_include_extension(self, mock_print: MagicMock) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
             'markdown_test_file': "zerver/tests/markdown/test_custom_include_extension.md",
@@ -112,6 +115,9 @@ footer
 
         with self.assertRaisesRegex(InvalidMarkdownIncludeStatement, "Invalid markdown include statement"):
             template.render(context)
+        self.assertEqual(mock_print.mock_calls, [
+            call("Warning: could not find file templates/zerver/help/include/nonexistent-macro.md. Error: [Errno 2] No such file or directory: 'templates/zerver/help/include/nonexistent-macro.md'")
+        ])
 
     def test_custom_markdown_include_extension_empty_macro(self) -> None:
         template = get_template("tests/test_markdown.html")

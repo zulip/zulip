@@ -421,7 +421,6 @@ class MarkdownTest(ZulipTestCase):
                 href = 'http://' + url
             return payload % (f"<a href=\"{href}\">{url}</a>",)
 
-        print("Running Markdown Linkify tests")
         with mock.patch('zerver.lib.url_preview.preview.link_embed_data_from_cache', return_value=None):
             for inline_url, reference, url in linkify_tests:
                 try:
@@ -720,6 +719,24 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(converted, '<p>Test: <a href="https://developer.github.com/assets/images/hero-circuit-bg.png">https://developer.github.com/assets/images/hero-circuit-bg.png</a></p>\n<div class="message_inline_image"><a href="https://developer.github.com/assets/images/hero-circuit-bg.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=thumbnail"></a></div>')
+
+    def test_inline_youtube_preview(self) -> None:
+        # Test youtube urls in spoilers
+        msg = """\n```spoiler Check out this Pycon Video\nhttps://www.youtube.com/watch?v=0c46YHS3RY8\n```"""
+        converted = markdown_convert_wrapper(msg)
+
+        self.assertEqual(converted, '<div class="spoiler-block"><div class="spoiler-header">\n\n<p>Check out this Pycon Video</p>\n</div><div class="spoiler-content" aria-hidden="true">\n\n<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">https://www.youtube.com/watch?v=0c46YHS3RY8</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="https://i.ytimg.com/vi/0c46YHS3RY8/default.jpg"></a></div></div></div>')
+
+        # Test youtube urls in normal messages.
+        msg = '[Youtube link](https://www.youtube.com/watch?v=0c46YHS3RY8)'
+        converted = markdown_convert_wrapper(msg)
+
+        self.assertEqual(converted, '<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">Youtube link</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="https://i.ytimg.com/vi/0c46YHS3RY8/default.jpg"></a></div>')
+
+        msg = 'https://www.youtube.com/watch?v=0c46YHS3RY8\n\nSample text\n\nhttps://www.youtube.com/watch?v=lXFO2ULktEI'
+        converted = markdown_convert_wrapper(msg)
+
+        self.assertEqual(converted, '<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">https://www.youtube.com/watch?v=0c46YHS3RY8</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="https://i.ytimg.com/vi/0c46YHS3RY8/default.jpg"></a></div><p>Sample text</p>\n<p><a href="https://www.youtube.com/watch?v=lXFO2ULktEI">https://www.youtube.com/watch?v=lXFO2ULktEI</a></p>\n<div class="youtube-video message_inline_image"><a data-id="lXFO2ULktEI" href="https://www.youtube.com/watch?v=lXFO2ULktEI"><img src="https://i.ytimg.com/vi/lXFO2ULktEI/default.jpg"></a></div>')
 
     def test_twitter_id_extraction(self) -> None:
         self.assertEqual(get_tweet_id('http://twitter.com/#!/VizzQuotes/status/409030735191097344'), '409030735191097344')

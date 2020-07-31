@@ -1071,6 +1071,18 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         div.set("class", "inline-preview-twitter")
         div.insert(0, twitter_data)
 
+    def handle_youtube_url_inlining(
+        self,
+        root: Element,
+        found_url: ResultWithFamily[Tuple[str, Optional[str]]],
+        yt_image: str,
+    ) -> None:
+        info = self.get_inlining_information(root, found_url)
+        (url, text) = found_url.result
+        yt_id = self.youtube_id(url)
+        self.add_a(info['parent'], yt_image, url, None, None, "youtube-video message_inline_image",
+                   yt_id, insertion_index=info['index'], already_thumbnailed=True)
+
     def find_proper_insertion_index(self, grandparent: Element, parent: Element,
                                     parent_index_in_grandparent: int) -> int:
         # If there are several inline images from same paragraph, ensure that
@@ -1194,10 +1206,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 continue
             youtube = self.youtube_image(url)
             if youtube is not None:
-                yt_id = self.youtube_id(url)
-                self.add_a(root, youtube, url, None, None,
-                           "youtube-video message_inline_image",
-                           yt_id, already_thumbnailed=True)
+                self.handle_youtube_url_inlining(root, found_url, youtube)
                 # NOTE: We don't `continue` here, to allow replacing the URL with
                 # the title, if INLINE_URL_EMBED_PREVIEW feature is enabled.
                 # The entire preview would ideally be shown only if the feature

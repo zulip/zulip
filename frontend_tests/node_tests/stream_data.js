@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 set_global("page_params", {
     is_admin: false,
     realm_users: [],
@@ -15,7 +17,6 @@ zrequire("stream_topic_history");
 zrequire("people");
 zrequire("stream_color");
 zrequire("stream_data");
-zrequire("marked", "third/marked/lib/marked");
 zrequire("FetchStatus", "js/fetch_status");
 zrequire("Filter", "js/filter");
 zrequire("MessageListData", "js/message_list_data");
@@ -74,6 +75,7 @@ run_test("basics", () => {
     assert.deepEqual(stream_data.home_view_stream_names(), ["social"]);
     assert.deepEqual(stream_data.subscribed_streams(), ["social", "test"]);
     assert.deepEqual(stream_data.get_colors(), ["red", "yellow"]);
+    assert.deepEqual(stream_data.subscribed_stream_ids(), [social.stream_id, test.stream_id]);
 
     assert(stream_data.is_subscribed("social"));
     assert(stream_data.is_subscribed("Social"));
@@ -950,10 +952,10 @@ run_test("filter inactives", () => {
         const stream_id = 100 + i;
 
         const sub = {
-            name: name,
+            name,
             subscribed: true,
             newly_subscribed: false,
-            stream_id: stream_id,
+            stream_id,
         };
         stream_data.add_sub(sub);
     });

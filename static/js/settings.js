@@ -1,8 +1,11 @@
-const settings_config = require("./settings_config");
+const moment = require("moment-timezone");
+
 const render_settings_tab = require("../templates/settings_tab.hbs");
 
+const settings_config = require("./settings_config");
+
 $("body").ready(() => {
-    $("#settings_overlay_container").click((e) => {
+    $("#settings_overlay_container").on("click", (e) => {
         if (!overlays.is_modal_open()) {
             return;
         }
@@ -60,7 +63,7 @@ exports.build_page = function () {
 
     const rendered_settings_tab = render_settings_tab({
         full_name: people.my_full_name(),
-        page_params: page_params,
+        page_params,
         enable_sound_select:
             page_params.enable_sounds || page_params.enable_stream_audible_notifications,
         zuliprc: "zuliprc",

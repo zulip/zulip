@@ -1,3 +1,5 @@
+const emoji = require("../shared/js/emoji");
+
 function do_narrow_action(action) {
     action(current_msg_list.selected_id(), {trigger: "hotkey"});
     return true;
@@ -94,9 +96,11 @@ const keypress_mappings = {
     100: {name: "open_drafts", message_view_only: true}, // 'd'
     101: {name: "edit_message", message_view_only: true}, // 'e'
     103: {name: "gear_menu", message_view_only: true}, // 'g'
+    104: {name: "vim_left", message_view_only: true}, // 'h'
     105: {name: "message_actions", message_view_only: true}, // 'i'
     106: {name: "vim_down", message_view_only: true}, // 'j'
     107: {name: "vim_up", message_view_only: true}, // 'k'
+    108: {name: "vim_right", message_view_only: true}, // 'l'
     110: {name: "n_key", message_view_only: false}, // 'n'
     112: {name: "p_key", message_view_only: false}, // 'p'
     113: {name: "query_streams", message_view_only: true}, // 'q'
@@ -231,19 +235,19 @@ exports.process_escape_key = function (e) {
         }
 
         if ($("#searchbox").has(":focus")) {
-            $("input:focus,textarea:focus").blur();
+            $("input:focus,textarea:focus").trigger("blur");
             if (page_params.search_pills_enabled) {
-                $("#searchbox .pill").blur();
-                $("#searchbox #search_query").blur();
+                $("#searchbox .pill").trigger("blur");
+                $("#searchbox #search_query").trigger("blur");
             } else {
-                tab_bar.exit_search();
+                message_view_header.exit_search();
             }
             return true;
         }
 
         // We pressed Esc and something was focused, and the composebox
         // wasn't open. In that case, we should blur the input.
-        $("input:focus,textarea:focus").blur();
+        $("input:focus,textarea:focus").trigger("blur");
         return true;
     }
 
@@ -262,7 +266,7 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
-    narrow.deactivate();
+    hashchange.go_to_location("");
     return true;
 };
 
@@ -277,7 +281,7 @@ exports.process_enter_key = function (e) {
     }
 
     if (hotspots.is_open()) {
-        $(e.target).find(".hotspot.overlay.show .hotspot-confirm").click();
+        $(e.target).find(".hotspot.overlay.show .hotspot-confirm").trigger("click");
         return false;
     }
 
@@ -286,7 +290,7 @@ exports.process_enter_key = function (e) {
     }
 
     if (exports.in_content_editable_widget(e)) {
-        $(e.target).parent().find(".checkmark").click();
+        $(e.target).parent().find(".checkmark").trigger("click");
         return false;
     }
 
@@ -336,6 +340,11 @@ exports.process_enter_key = function (e) {
         return false;
     }
 
+    if ($(e.target).attr("role") === "button") {
+        e.target.click();
+        return false;
+    }
+
     if ($("#preview_message_area").is(":visible")) {
         compose.enter_with_preview_open();
         return true;
@@ -359,14 +368,14 @@ exports.process_tab_key = function () {
     if (focused_message_edit_content.length > 0) {
         message_edit_form = focused_message_edit_content.closest(".message_edit_form");
         // Open message edit forms either have a save button or a close button, but not both.
-        message_edit_form.find(".message_edit_save,.message_edit_close").focus();
+        message_edit_form.find(".message_edit_save,.message_edit_close").trigger("focus");
         return true;
     }
 
     const focused_message_edit_save = $(".message_edit_save").filter(":focus");
     if (focused_message_edit_save.length > 0) {
         message_edit_form = focused_message_edit_save.closest(".message_edit_form");
-        message_edit_form.find(".message_edit_cancel").focus();
+        message_edit_form.find(".message_edit_cancel").trigger("focus");
         return true;
     }
 
@@ -391,7 +400,7 @@ exports.process_shift_tab_key = function () {
 
     // Shift-tabbing from the edit message cancel button takes you to save.
     if ($(".message_edit_cancel").filter(":focus").length > 0) {
-        $(".message_edit_save").focus();
+        $(".message_edit_save").trigger("focus");
         return true;
     }
 
@@ -401,7 +410,7 @@ exports.process_shift_tab_key = function () {
         focused_message_edit_save
             .closest(".message_edit_form")
             .find(".message_edit_content")
-            .focus();
+            .trigger("focus");
         return true;
     }
 
@@ -425,6 +434,10 @@ exports.process_hotkey = function (e, hotkey) {
         case "down_arrow":
         case "left_arrow":
         case "right_arrow":
+        case "vim_up":
+        case "vim_down":
+        case "vim_left":
+        case "vim_right":
         case "tab":
         case "shift_tab":
             if (overlays.recent_topics_open()) {
@@ -651,7 +664,7 @@ exports.process_hotkey = function (e, hotkey) {
             gear_menu.open();
             return true;
         case "show_shortcuts": // Show keyboard shortcuts page
-            info_overlay.maybe_show_keyboard_shortcuts();
+            hashchange.go_to_location("keyboard-shortcuts");
             return true;
         case "stream_cycle_backward":
             narrow.stream_cycle_backward();
@@ -793,7 +806,7 @@ exports.process_keydown = function (e) {
     return exports.process_hotkey(e, hotkey);
 };
 
-$(document).keydown((e) => {
+$(document).on("keydown", (e) => {
     if (exports.process_keydown(e)) {
         e.preventDefault();
     }
@@ -807,7 +820,7 @@ exports.process_keypress = function (e) {
     return exports.process_hotkey(e, hotkey);
 };
 
-$(document).keypress((e) => {
+$(document).on("keypress", (e) => {
     if (exports.process_keypress(e)) {
         e.preventDefault();
     }

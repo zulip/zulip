@@ -1,5 +1,6 @@
-var common = require("../casper_lib/common.js");
 var test_credentials = require("../../var/casper/test_credentials.js").test_credentials;
+var common = require("../casper_lib/common.js");
+
 var OUTGOING_WEBHOOK_BOT_TYPE = "3";
 var GENERIC_BOT_TYPE = "1";
 
@@ -48,10 +49,10 @@ casper.then(function () {
             casper.test.assertVisible("#old_password");
             casper.test.assertVisible("#new_password");
 
-            casper.test.assertEqual(casper.getFormValues(form_sel).full_name, "Iago");
+            casper.test.assertEqual(casper.getFormValues(form_sel).full_name, "Desdemona");
 
             casper.fill(form_sel, {
-                full_name: "IagoNew",
+                full_name: "DesdemonaNew",
                 old_password: test_credentials.default_user.password,
                 new_password: "qwertyuiop",
             });
@@ -87,7 +88,7 @@ casper.then(function () {
         /*
         // Change it all back so the next test can still log in
         casper.fill(form_sel, {
-            full_name: "Iago",
+            full_name: "Desdemona",
             old_password: "qwertyuiop",
             new_password: test_credentials.default_user.password,
         });
@@ -294,7 +295,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.test.info("Deleting alert word");
-    casper.click("button.remove-alert-word");
+    casper.click("button.remove-alert-word[data-word='some phrase']");
     casper.test.info("Checking that a success message is displayed");
     casper.waitUntilVisible("#alert_word_status", function () {
         casper.test.assertSelectorHasText(
@@ -308,7 +309,6 @@ casper.then(function () {
     });
     casper.test.info("Checking that the element was deleted");
     casper.waitWhileVisible(".alert-word-item[data-word='some phrase']", function () {
-        casper.test.assertDoesntExist("div.alert-word-information-box");
         casper.test.info("Element deleted successfully");
     });
 });

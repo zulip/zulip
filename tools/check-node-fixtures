@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import subprocess
+import sys
+from typing import Any, Callable, Dict, List, Optional
+
+import ujson
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+ROOT_DIR = os.path.dirname(TOOLS_DIR)
+
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
+USAGE = """
+
+    This program reads in fixture data for our
+    node tests, and then it validates the fixture
+    data with checkers from event_schema.py (which
+    are the same Python functions we use to validate
+    events in test_events.py).
+
+    It currently takes no arguments.
+"""
+
+parser = argparse.ArgumentParser(usage=USAGE)
+parser.parse_args()
+
+# We can eliminate the django dependency in event_schema,
+# but unfortunately it"s coupled to modules like validate.py
+# and topic.py.
+import django
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.test_settings"
+django.setup()
+
+from zerver.lib import event_schema
+
+SKIP_LIST = [
+    # The event_schema checker for user_status is overly strict.
+    "user_status__revoke_away",
+    "user_status__set_away",
+    "user_status__set_status_text",
+]
+
+
+def get_event_checker(
+    event: Dict[str, Any]
+) -> Optional[Callable[[str, Dict[str, Any]], None]]:
+    name = "check_" + event["type"]
+    if "op" in event:
+        name += "_" + event["op"]
+
+    """
+    In our backend tests we always want check_foo
+    to be the "main" API, but often _check_foo actually
+    conforms to validator name/event pattern better
+    than check_foo (which may layer on some more custom
+    checks).  We can clean that up eventually, but now
+    we just work around it here in this younger tooling.
+    """
+    for n in ["_" + name, name]:
+        if hasattr(event_schema, n):
+            return getattr(event_schema, n)
+    return None
+
+
+def check_event(name: str, event: Dict[str, Any]) -> None:
+    event["id"] = 1
+    checker = get_event_checker(event)
+    if checker is not None:
+        checker(name, event)
+    else:
+        print(f"NEED SCHEMA: {name}")
+
+
+def read_fixtures() -> Dict[str, Any]:
+    cmd = [
+        "node",
+        os.path.join(TOOLS_DIR, "node_lib/dump_fixtures.js"),
+    ]
+    schema = subprocess.check_output(cmd)
+    return ujson.loads(schema)
+
+
+def verify_fixtures_are_sorted(names: List[str]) -> None:
+    for i in range(1, len(names)):
+        if names[i] < names[i - 1]:
+            raise Exception(
+                f"""
+                Please keep your fixtures in order within
+                your events.js file.  The following
+                key is out of order
+
+                {names[i]}
+                """
+            )
+
+
+def run() -> None:
+    fixtures = read_fixtures()
+    verify_fixtures_are_sorted(list(fixtures.keys()))
+    for name, event in fixtures.items():
+        if name in SKIP_LIST:
+            print(f"skip {name}")
+            continue
+        check_event(name, event)
+
+
+if __name__ == "__main__":
+    run()

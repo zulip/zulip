@@ -302,7 +302,7 @@ function get_suggestions(str) {
     casper.then(function () {
         casper.evaluate(function (str) {
             $(".create_default_stream")
-                .focus()
+                .trigger("focus")
                 .val(str)
                 .trigger($.Event("keyup", {which: 0}));
         }, str);
@@ -359,7 +359,7 @@ casper.then(function () {
         '#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]';
     casper.waitUntilVisible(selector, function () {
         casper.test.assertEqual(
-            casper.visible("#realm-icon-upload-widget .settings-page-delete-button"),
+            casper.visible("#realm-icon-upload-widget .image-delete-button"),
             false
         );
         // Hack: Rather than submitting the form, we just fill the
@@ -379,7 +379,7 @@ casper.then(function () {
                     '#realm-icon-upload-widget .image-block[src^="/user_avatars/2/realm/icon.png?version=2"]'
                 );
                 casper.test.assertEqual(
-                    casper.visible("#realm-icon-upload-widget .settings-page-delete-button"),
+                    casper.visible("#realm-icon-upload-widget .image-delete-button"),
                     true
                 );
             }
@@ -390,17 +390,14 @@ casper.then(function () {
 // Test deleting realm icon image
 casper.then(function () {
     casper.click("li[data-section='organization-profile']");
-    casper.click("#realm-icon-upload-widget .settings-page-delete-button");
-    casper.test.assertEqual(
-        casper.visible("#realm-icon-upload-widget .settings-page-delete-button"),
-        true
-    );
-    casper.waitWhileVisible("#realm-icon-upload-widget .settings-page-delete-button", function () {
+    casper.click("#realm-icon-upload-widget .image-delete-button");
+    casper.test.assertEqual(casper.visible("#realm-icon-upload-widget .image-delete-button"), true);
+    casper.waitWhileVisible("#realm-icon-upload-widget .image-delete-button", function () {
         casper.test.assertExists(
             '#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]'
         );
         casper.test.assertEqual(
-            casper.visible("#realm-icon-upload-widget .settings-page-delete-button"),
+            casper.visible("#realm-icon-upload-widget .image-delete-button"),
             false
         );
     });

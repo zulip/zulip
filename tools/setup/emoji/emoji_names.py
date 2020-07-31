@@ -16,11 +16,11 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f602': {'canonical_name': 'joy', 'aliases': ['tears', 'laughter_tears']},
     '1f923': {'canonical_name': 'rolling_on_the_floor_laughing', 'aliases': ['rofl']},
     # not sure how the glyphs match relaxed, but both iamcal and gemoji have it
-    '263a': {'canonical_name': 'smile', 'aliases': ['relaxed']},
+    '263a': {'canonical_name': 'smiling_face', 'aliases': ['relaxed']},
     '1f60a': {'canonical_name': 'blush', 'aliases': []},
     # halo comes from gemoji/unicode
     '1f607': {'canonical_name': 'innocent', 'aliases': ['halo']},
-    '1f642': {'canonical_name': 'slight_smile', 'aliases': []},
+    '1f642': {'canonical_name': 'smile', 'aliases': []},
     '1f643': {'canonical_name': 'upside_down', 'aliases': ['oops']},
     '1f609': {'canonical_name': 'wink', 'aliases': []},
     '1f60c': {'canonical_name': 'relieved', 'aliases': []},
@@ -34,11 +34,9 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f60b': {'canonical_name': 'yum', 'aliases': []},
     # crazy from https://beebom.com/emoji-meanings/, seems like best emoji for
     # joking
+    '1f61b': {'canonical_name': 'stuck_out_tongue', 'aliases': ['mischievous']},
     '1f61c': {'canonical_name': 'stuck_out_tongue_wink', 'aliases': ['joking', 'crazy']},
-    '1f61d': {'canonical_name': 'stuck_out_tongue', 'aliases': []},
-    # don't really need two stuck_out_tongues (see People/23), so chose
-    # something else that could fit
-    '1f61b': {'canonical_name': 'mischievous', 'aliases': []},
+    '1f61d': {'canonical_name': 'stuck_out_tongue_closed_eyes', 'aliases': []},
     # kaching suggested by user
     '1f911': {'canonical_name': 'money_face', 'aliases': ['kaching']},
     # arms_open seems like a natural addition

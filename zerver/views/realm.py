@@ -13,7 +13,6 @@ from zerver.lib.actions import (
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
-    do_set_realm_message_deleting,
     do_set_realm_message_editing,
     do_set_realm_notifications_stream,
     do_set_realm_property,
@@ -154,15 +153,12 @@ def update_realm(
             allow_community_topic_editing = realm.allow_community_topic_editing
         do_set_realm_message_editing(realm, allow_message_editing,
                                      message_content_edit_limit_seconds,
-                                     allow_community_topic_editing)
+                                     allow_community_topic_editing,
+                                     acting_user=user_profile)
         data['allow_message_editing'] = allow_message_editing
         data['message_content_edit_limit_seconds'] = message_content_edit_limit_seconds
         data['allow_community_topic_editing'] = allow_community_topic_editing
 
-    if (message_content_delete_limit_seconds is not None and
-            realm.message_content_delete_limit_seconds != message_content_delete_limit_seconds):
-        do_set_realm_message_deleting(realm, message_content_delete_limit_seconds)
-        data['message_content_delete_limit_seconds'] = message_content_delete_limit_seconds
     # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
     # str or integer field, and thus doesn't fit into the do_set_realm_property framework.
     if notifications_stream_id is not None:
@@ -173,7 +169,8 @@ def update_realm(
                 (new_notifications_stream, recipient, sub) = access_stream_by_id(
                     user_profile, notifications_stream_id)
             do_set_realm_notifications_stream(realm, new_notifications_stream,
-                                              notifications_stream_id)
+                                              notifications_stream_id,
+                                              acting_user=user_profile)
             data['notifications_stream_id'] = notifications_stream_id
 
     if signup_notifications_stream_id is not None:
@@ -184,7 +181,8 @@ def update_realm(
                 (new_signup_notifications_stream, recipient, sub) = access_stream_by_id(
                     user_profile, signup_notifications_stream_id)
             do_set_realm_signup_notifications_stream(realm, new_signup_notifications_stream,
-                                                     signup_notifications_stream_id)
+                                                     signup_notifications_stream_id,
+                                                     acting_user=user_profile)
             data['signup_notifications_stream_id'] = signup_notifications_stream_id
 
     if default_code_block_language is not None:

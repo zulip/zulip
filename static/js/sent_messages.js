@@ -14,7 +14,7 @@ function report_send_time(send_time, receive_time, locally_echoed, rendered_chan
     const data = {
         time: send_time.toString(),
         received: receive_time.toString(),
-        locally_echoed: locally_echoed,
+        locally_echoed,
     };
 
     if (locally_echoed) {
@@ -23,7 +23,7 @@ function report_send_time(send_time, receive_time, locally_echoed, rendered_chan
 
     channel.post({
         url: "/json/report/send_times",
-        data: data,
+        data,
     });
 }
 
@@ -40,88 +40,83 @@ exports.start_tracking_message = function (opts) {
         return;
     }
 
-    const state = exports.message_state(opts);
+    const state = new exports.MessageState(opts);
 
     exports.messages.set(local_id, state);
 };
 
-exports.message_state = function (opts) {
-    const self = {};
-    self.data = {};
+class MessageState {
+    start = new Date();
 
-    self.data.start = new Date();
+    received = undefined;
+    send_finished = undefined;
+    rendered_content_disparity = false;
 
-    self.data.local_id = opts.local_id;
-    self.data.locally_echoed = opts.locally_echoed;
+    constructor(opts) {
+        this.local_id = opts.local_id;
+        this.locally_echoed = opts.locally_echoed;
+    }
 
-    self.data.received = undefined;
-    self.data.send_finished = undefined;
-    self.data.rendered_content_disparity = false;
+    start_resend() {
+        this.start = new Date();
+        this.received = undefined;
+        this.send_finished = undefined;
+        this.rendered_content_disparity = false;
+    }
 
-    self.start_resend = function () {
-        self.data.start = new Date();
-        self.data.received = undefined;
-        self.data.send_finished = undefined;
-        self.data.rendered_content_disparity = false;
-    };
-
-    self.maybe_restart_event_loop = function () {
-        if (self.data.received) {
+    maybe_restart_event_loop() {
+        if (this.received) {
             // We got our event, no need to do anything
             return;
         }
 
         blueslip.log(
-            "Restarting get_events due to " +
-                "delayed receipt of sent message " +
-                self.data.local_id,
+            "Restarting get_events due to " + "delayed receipt of sent message " + this.local_id,
         );
 
         server_events.restart_get_events();
-    };
+    }
 
-    self.maybe_report_send_times = function () {
-        if (!self.ready()) {
+    maybe_report_send_times() {
+        if (!this.ready()) {
             return;
         }
-        const data = self.data;
         report_send_time(
-            data.send_finished - data.start,
-            data.received - data.start,
-            data.locally_echoed,
-            data.rendered_content_disparity,
+            this.send_finished - this.start,
+            this.received - this.start,
+            this.locally_echoed,
+            this.rendered_content_disparity,
         );
-    };
+    }
 
-    self.report_event_received = function () {
-        self.data.received = new Date();
-        self.maybe_report_send_times();
-    };
+    report_event_received() {
+        this.received = new Date();
+        this.maybe_report_send_times();
+    }
 
-    self.mark_disparity = function () {
-        self.data.rendered_content_disparity = true;
-    };
+    mark_disparity() {
+        this.rendered_content_disparity = true;
+    }
 
-    self.report_server_ack = function () {
-        self.data.send_finished = new Date();
-        self.maybe_report_send_times();
+    report_server_ack() {
+        this.send_finished = new Date();
+        this.maybe_report_send_times();
 
         // We only start our timer for events coming in here,
         // since it's plausible the server rejected our message,
         // or took a while to process it, but there is nothing
         // wrong with our event loop.
 
-        if (!self.data.received) {
-            setTimeout(self.maybe_restart_event_loop, 5000);
+        if (!this.received) {
+            setTimeout(this.maybe_restart_event_loop, 5000);
         }
-    };
+    }
 
-    self.ready = function () {
-        return self.data.send_finished !== undefined && self.data.received !== undefined;
-    };
-
-    return self;
-};
+    ready() {
+        return this.send_finished !== undefined && this.received !== undefined;
+    }
+}
+exports.MessageState = MessageState;
 
 exports.get_message_state = function (local_id) {
     const state = exports.messages.get(local_id);

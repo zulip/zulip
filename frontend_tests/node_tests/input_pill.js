@@ -1,7 +1,6 @@
 set_global("$", global.make_zjquery());
 zrequire("input_pill");
 
-set_global("Handlebars", global.make_handlebars());
 zrequire("templates");
 
 set_global("document", {});
@@ -34,7 +33,7 @@ function pill_html(value, data_id, img_src) {
     const opts = {
         id: data_id,
         display_value: value,
-        has_image: has_image,
+        has_image,
     };
 
     if (has_image) {
@@ -117,18 +116,18 @@ function set_up() {
     container.set_find_results(".input", pill_input);
 
     const config = {
-        container: container,
-        create_item_from_text: create_item_from_text,
+        container,
+        create_item_from_text,
         get_text_from_item: (item) => item.display_value,
     };
 
     id_seq = 0;
 
     return {
-        config: config,
-        pill_input: pill_input,
-        items: items,
-        container: container,
+        config,
+        pill_input,
+        items,
+        container,
     };
 }
 
@@ -236,13 +235,17 @@ run_test("arrows on pills", () => {
 
     const pill_stub = {
         prev: () => ({
-            focus: () => {
-                prev_focused = true;
+            trigger: (type) => {
+                if (type === "focus") {
+                    prev_focused = true;
+                }
             },
         }),
         next: () => ({
-            focus: () => {
-                next_focused = true;
+            trigger: (type) => {
+                if (type === "focus") {
+                    next_focused = true;
+                }
             },
         }),
     };
@@ -274,8 +277,10 @@ run_test("left arrow on input", () => {
 
     container.set_find_results(".pill", {
         last: () => ({
-            focus: () => {
-                last_pill_focused = true;
+            trigger: (type) => {
+                if (type === "focus") {
+                    last_pill_focused = true;
+                }
             },
         }),
     });
@@ -411,8 +416,10 @@ run_test("insert_remove", () => {
     let next_pill_focused = false;
 
     const next_pill_stub = {
-        focus: () => {
-            next_pill_focused = true;
+        trigger: (type) => {
+            if (type === "focus") {
+                next_pill_focused = true;
+            }
         },
     };
 
@@ -449,8 +456,10 @@ run_test("exit button on pill", () => {
     let next_pill_focused = false;
 
     const next_pill_stub = {
-        focus: () => {
-            next_pill_focused = true;
+        trigger: (type) => {
+            if (type === "focus") {
+                next_pill_focused = true;
+            }
         },
     };
 

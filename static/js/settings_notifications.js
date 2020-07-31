@@ -1,4 +1,5 @@
 const render_stream_specific_notification_row = require("../templates/settings/stream_specific_notification_row.hbs");
+
 const settings_config = require("./settings_config");
 
 exports.get_notifications_table_row_data = function (notify_settings) {
@@ -12,7 +13,7 @@ exports.get_notifications_table_row_data = function (notify_settings) {
             };
         }
         const checkbox = {
-            setting_name: setting_name,
+            setting_name,
             is_disabled: false,
         };
         if (column === "mobile") {
@@ -52,7 +53,7 @@ function rerender_ui() {
     for (const stream of unmatched_streams) {
         unmatched_streams_table.append(
             render_stream_specific_notification_row({
-                stream: stream,
+                stream,
                 stream_specific_notification_settings:
                     settings_config.stream_specific_notification_settings,
                 is_disabled: settings_config.all_notifications().show_push_notifications_tooltip,
@@ -98,7 +99,7 @@ exports.set_up = function () {
         e.stopPropagation();
         const input_elem = $(e.currentTarget);
         if (input_elem.parents("#stream-specific-notify-table").length) {
-            stream_edit.stream_setting_clicked(e);
+            stream_edit.stream_setting_changed(e, true);
             return;
         }
         const setting_name = input_elem.attr("name");
@@ -111,20 +112,20 @@ exports.set_up = function () {
 
     update_desktop_icon_count_display();
 
-    $("#send_test_notification").click(() => {
+    $("#send_test_notification").on("click", () => {
         notifications.send_test_notification(
             i18n.t("This is what a Zulip notification looks like."),
         );
     });
 
-    $("#play_notification_sound").click(() => {
+    $("#play_notification_sound").on("click", () => {
         $("#notifications-area").find("audio")[0].play();
     });
 
     const notification_sound_dropdown = $("#notification_sound");
     notification_sound_dropdown.val(page_params.notification_sound);
 
-    $("#enable_sounds, #enable_stream_audible_notifications").change(() => {
+    $("#enable_sounds, #enable_stream_audible_notifications").on("change", () => {
         if (
             $("#enable_stream_audible_notifications").prop("checked") ||
             $("#enable_sounds").prop("checked")

@@ -1,11 +1,13 @@
 const autosize = require("autosize");
 
-exports.blur_textarea = function () {
-    $(".message_comp").find("input, textarea, button").blur();
+const fenced_code = require("../shared/js/fenced_code");
+
+exports.blur_compose_inputs = function () {
+    $(".message_comp").find("input, textarea, button, #private_message_recipient").trigger("blur");
 };
 
 function hide_box() {
-    exports.blur_textarea();
+    exports.blur_compose_inputs();
     $("#stream-message").hide();
     $("#private-message").hide();
     $(".new_message_textarea").css("min-height", "");
@@ -45,7 +47,7 @@ exports.set_focus = function (msg_type, opts) {
 
     if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
         const elt = $(focus_area);
-        elt.focus().select();
+        elt.trigger("focus").trigger("select");
     }
 };
 
@@ -92,7 +94,7 @@ function clear_box() {
 
 exports.autosize_message_content = function () {
     autosize($("#compose-textarea"), {
-        callback: function () {
+        callback() {
             exports.maybe_scroll_up_selected_message();
         },
     });
@@ -110,7 +112,7 @@ exports.complete_starting_tasks = function (msg_type, opts) {
     // makes testing a bit easier.
 
     exports.maybe_scroll_up_selected_message();
-    ui_util.change_tab_to("#home");
+    ui_util.change_tab_to("#message_feed_container");
     compose_fade.start_compose(msg_type);
     ui_util.decorate_stream_bar(opts.stream, $("#stream-message .message_header_stream"), true);
     $(document).trigger($.Event("compose_started.zulip", opts));
@@ -328,8 +330,8 @@ exports.respond_to_message = function (opts) {
     }
 
     exports.start(msg_type, {
-        stream: stream,
-        topic: topic,
+        stream,
+        topic,
         private_message_recipient: pm_recipient,
         trigger: opts.trigger,
     });
@@ -384,7 +386,7 @@ exports.on_topic_narrow = function () {
     compose_state.topic(narrow_state.topic());
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
-    $("#compose-textarea").focus().select();
+    $("#compose-textarea").trigger("focus").trigger("select");
 };
 
 exports.quote_and_reply = function (opts) {
@@ -438,7 +440,7 @@ exports.quote_and_reply = function (opts) {
     channel.get({
         url: "/json/messages/" + message_id,
         idempotent: true,
-        success: function (data) {
+        success(data) {
             message.raw_content = data.raw_content;
             replace_content(message);
         },

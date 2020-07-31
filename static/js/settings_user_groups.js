@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const render_admin_user_group_list = require("../templates/admin_user_group_list.hbs");
 const render_confirm_delete_user = require("../templates/confirm_delete_user.hbs");
 
@@ -80,12 +82,9 @@ exports.populate_user_groups = function () {
             pill_container.on("click", (e) => {
                 e.stopPropagation();
             });
-            pill_container.find(".pill").hover(
-                () => {
-                    pill_container.find(".pill").find(".exit").css("opacity", "0.5");
-                },
-                () => {},
-            );
+            pill_container.find(".pill").on("mouseenter", () => {
+                pill_container.find(".pill").find(".exit").css("opacity", "0.5");
+            });
         }
         update_membership(data.id);
 
@@ -165,7 +164,7 @@ exports.populate_user_groups = function () {
                     add: JSON.stringify(added),
                     delete: JSON.stringify(removed),
                 },
-                success: function () {
+                success() {
                     setTimeout(show_saved_button, 200);
                 },
             });
@@ -188,14 +187,14 @@ exports.populate_user_groups = function () {
             channel.patch({
                 url: "/json/user_groups/" + data.id,
                 data: {
-                    name: name,
-                    description: description,
+                    name,
+                    description,
                 },
-                success: function () {
+                success() {
                     user_group_status.hide();
                     setTimeout(show_saved_button, 200);
                 },
-                error: function (xhr) {
+                error(xhr) {
                     const errors = JSON.parse(xhr.responseText).msg;
                     xhr.responseText = JSON.stringify({msg: errors});
                     ui_report.error(i18n.t("Failed"), xhr, user_group_status);
@@ -263,7 +262,8 @@ exports.populate_user_groups = function () {
 
         const input = pill_container.children(".input");
         if (exports.can_edit(data.id)) {
-            user_pill.set_up_typeahead_on_pills(input, pills, update_cancel_button);
+            const opts = {update_func: update_cancel_button};
+            user_pill.set_up_typeahead_on_pills(input, pills, opts);
         }
 
         (function pill_remove() {
@@ -275,7 +275,7 @@ exports.populate_user_groups = function () {
                 // the DOM.
                 update_cancel_button();
                 setTimeout(() => {
-                    input.focus();
+                    input.trigger("focus");
                 }, 100);
             });
         })();
@@ -308,12 +308,12 @@ exports.set_up = function () {
             channel.post({
                 url: "/json/user_groups/create",
                 data: group,
-                success: function () {
+                success() {
                     user_group_status.hide();
                     ui_report.success(i18n.t("User group added!"), user_group_status);
                     $("form.admin-user-group-form input[type='text']").val("");
                 },
-                error: function (xhr) {
+                error(xhr) {
                     user_group_status.hide();
                     const errors = JSON.parse(xhr.responseText).msg;
                     xhr.responseText = JSON.stringify({msg: errors});
@@ -336,11 +336,11 @@ exports.set_up = function () {
                 data: {
                     id: group_id,
                 },
-                success: function () {
+                success() {
                     user_groups.remove(user_group);
                     exports.reload();
                 },
-                error: function () {
+                error() {
                     btn.text(i18n.t("Failed!"));
                 },
             });
@@ -356,7 +356,7 @@ exports.set_up = function () {
         confirm_dialog.launch({
             parent: modal_parent,
             html_heading: i18n.t("Delete user group"),
-            html_body: html_body,
+            html_body,
             html_yes_button: i18n.t("Delete"),
             on_click: delete_user_group,
         });

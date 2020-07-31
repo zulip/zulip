@@ -18,7 +18,6 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union, cast
 
-import jwt
 import magic
 import ujson
 from decorator import decorator
@@ -33,11 +32,10 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import ugettext as _
 from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, _LDAPUser, ldap_error
-from jwt.algorithms import RSAAlgorithm
-from jwt.exceptions import PyJWTError
 from lxml.etree import XMLSyntaxError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
 from onelogin.saml2.response import OneLogin_Saml2_Response
+from onelogin.saml2.settings import OneLogin_Saml2_Settings
 from requests import HTTPError
 from social_core.backends.apple import AppleIdAuth
 from social_core.backends.azuread import AzureADOAuth2
@@ -1109,7 +1107,7 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
         # field of the `details` object).  For those backends, we have
         # custom per-backend code to properly fetch only verified
         # email addresses from the appropriate third-party API.
-        verified_emails = backend.get_verified_emails(*args, **kwargs)
+        verified_emails = backend.get_verified_emails(realm, *args, **kwargs)
         verified_emails_length = len(verified_emails)
         if verified_emails_length == 0:
             # TODO: Provide a nice error message screen to the user
@@ -1136,7 +1134,7 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
             if (len(existing_account_emails) != 1 or backend.strategy.session_get('is_signup') == '1'):
                 unverified_emails = []
                 if hasattr(backend, 'get_unverified_emails'):
-                    unverified_emails = backend.get_unverified_emails(*args, **kwargs)
+                    unverified_emails = backend.get_unverified_emails(realm, *args, **kwargs)
                 return render(backend.strategy.request, 'zerver/social_auth_select_email.html', context = {
                     'primary_email': verified_emails[0],
                     'verified_non_primary_emails': verified_emails[1:],
@@ -1183,29 +1181,25 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     user_profile = common_get_active_user(validated_email, realm, return_data)
 
     full_name = kwargs['details'].get('fullname')
-    first_name = kwargs['details'].get('first_name', '')
-    last_name = kwargs['details'].get('last_name', '')
-    if full_name is None:
-        if not first_name and not last_name:
-            # We need custom code here for any social auth backends
-            # that don't provide name details feature.
-            if (backend.name == 'apple'):
-                # Apple authentication provides the user's name only
-                # the very first time a user tries to login.  So if
-                # the user aborts login or otherwise is doing this the
-                # second time, we won't have any name data.  We handle
-                # this by setting full_name to be the empty string.
-                full_name = ""
-            else:
-                raise AssertionError("Social auth backend doesn't provide name")
+    first_name = kwargs['details'].get('first_name')
+    last_name = kwargs['details'].get('last_name')
+    if all(name is None for name in [full_name, first_name, last_name]) and backend.name != "apple":
+        # Apple authentication provides the user's name only the very first time a user tries to login.
+        # So if the user aborts login or otherwise is doing this the second time,
+        # we won't have any name data. So, this case is handled with the code below
+        # setting full name to empty string.
+
+        # We need custom code here for any social auth backends
+        # that don't provide name details feature.
+        raise AssertionError("Social auth backend doesn't provide name")
 
     if full_name:
         return_data["full_name"] = full_name
     else:
-        # In SAML authentication, the IdP may support only sending
-        # the first and last name as separate attributes - in that case
+        # Some authentications methods like Apple and SAML send
+        # first name and last name as seperate attributes. In that case
         # we construct the full name from them.
-        return_data["full_name"] = f"{first_name} {last_name}".strip()  # strip removes the unnecessary ' '
+        return_data["full_name"] = f"{first_name or ''} {last_name or ''}".strip()  # strip removes the unnecessary ' '
 
     return user_profile
 
@@ -1427,18 +1421,18 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             emails = []
         return emails
 
-    def get_unverified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
+    def get_unverified_emails(self, realm: Realm, *args: Any, **kwargs: Any) -> List[str]:
         return [
-            email_obj['email'] for email_obj in self.get_usable_email_objects(*args, **kwargs)
+            email_obj['email'] for email_obj in self.get_usable_email_objects(realm, *args, **kwargs)
             if not email_obj.get('verified')
         ]
 
-    def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
+    def get_verified_emails(self, realm: Realm, *args: Any, **kwargs: Any) -> List[str]:
         # We only let users login using email addresses that are
         # verified by GitHub, because the whole point is for the user
         # to demonstrate that they control the target email address.
         verified_emails: List[str] = []
-        for email_obj in [obj for obj in self.get_usable_email_objects(*args, **kwargs)
+        for email_obj in [obj for obj in self.get_usable_email_objects(realm, *args, **kwargs)
                           if obj.get('verified')]:
             # social_associate_user_helper assumes that the first email in
             # verified_emails is primary.
@@ -1449,15 +1443,21 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
         return verified_emails
 
-    def get_usable_email_objects(self, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
-        # We disallow the
+    def get_usable_email_objects(self, realm: Realm, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
+        # We disallow creation of new accounts with
         # @noreply.github.com/@users.noreply.github.com email
         # addresses, because structurally, we only want to allow email
         # addresses that can receive emails, and those cannot.
+
+        # However, if an account with this address already exists in
+        # the realm (which could happen e.g. as a result of data
+        # import from another chat tool), we will allow signing in to
+        # it.
         email_objs = self.get_all_associated_email_objects(*args, **kwargs)
         return [
             email for email in email_objs
-            if not email["email"].endswith("@users.noreply.github.com")
+            if (not email["email"].endswith("@users.noreply.github.com")
+                or common_get_active_user(email["email"], realm) is not None)
         ]
 
     def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> Dict[str, str]:
@@ -1553,6 +1553,19 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
 
     SCOPE_SEPARATOR = "%20"  # https://github.com/python-social-auth/social-core/issues/470
 
+    @classmethod
+    def check_config(cls) -> Optional[HttpResponse]:
+        obligatory_apple_settings_list = [
+            settings.SOCIAL_AUTH_APPLE_TEAM,
+            settings.SOCIAL_AUTH_APPLE_SERVICES_ID,
+            settings.SOCIAL_AUTH_APPLE_KEY,
+            settings.SOCIAL_AUTH_APPLE_SECRET,
+        ]
+        if any(not setting for setting in obligatory_apple_settings_list):
+            return redirect_to_config_error("apple")
+
+        return None
+
     def is_native_flow(self) -> bool:
         return self.strategy.request_data().get('native_flow', False)
 
@@ -1613,37 +1626,6 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
             if param in self.standard_relay_params:
                 self.strategy.session_set(param, value)
         return request_state
-
-    def decode_id_token(self, id_token: str) -> Dict[str, Any]:
-        '''Decode and validate JWT token from Apple and return payload including user data.
-
-        We override this method from upstream python-social-auth, for two reasons:
-        * To improve error handling (correctly raising AuthFailed; see comment below).
-        * To facilitate this to support the native flow, where
-          the Apple-generated id_token is signed for "Bundle ID"
-          audience instead of "Services ID".
-
-        It is likely that small upstream tweaks could make it possible
-        to make this function a thin wrapper around the upstream
-        method; we may want to submit a PR to achieve that.
-        '''
-        if self.is_native_flow():
-            audience = self.setting("BUNDLE_ID")
-        else:
-            audience = self.setting("SERVICES_ID")
-
-        try:
-            kid = jwt.get_unverified_header(id_token).get('kid')
-            public_key = RSAAlgorithm.from_jwk(self.get_apple_jwk(kid))
-            decoded = jwt.decode(id_token, key=public_key,
-                                 audience=audience, algorithm="RS256")
-        except PyJWTError:
-            # Changed from upstream python-social-auth to raise
-            # AuthFailed, which is more appropriate than upstream's
-            # AuthCanceled, for this case.
-            raise AuthFailed(self, "Token validation failed")
-
-        return decoded
 
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         if not self.is_native_flow():
@@ -1774,8 +1756,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         return data
 
-    @classmethod
-    def get_issuing_idp(cls, SAMLResponse: str) -> Optional[str]:
+    def get_issuing_idp(self, SAMLResponse: str) -> Optional[str]:
         """
         Given a SAMLResponse, returns which of the configured IdPs is declared as the issuer.
         This value MUST NOT be trusted as the true issuer!
@@ -1786,11 +1767,12 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         of the configured IdPs' information to use for parsing and validating the response.
         """
         try:
-            resp = OneLogin_Saml2_Response(settings={}, response=SAMLResponse)
+            config = self.generate_saml_config()
+            saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
+            resp = OneLogin_Saml2_Response(settings=saml_settings, response=SAMLResponse)
             issuers = resp.get_issuers()
-        except cls.SAMLRESPONSE_PARSING_EXCEPTIONS:
-            logger = logging.getLogger(f"zulip.auth.{cls.name}")
-            logger.info("Error while parsing SAMLResponse:", exc_info=True)
+        except self.SAMLRESPONSE_PARSING_EXCEPTIONS:
+            self.logger.info("Error while parsing SAMLResponse:", exc_info=True)
             return None
 
         for idp_name, idp_config in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():

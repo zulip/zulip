@@ -23,7 +23,6 @@
 
         /* Strict type-checking */
         "strict": true,
-        "strictNullChecks": false,
         "forceConsistentCasingInFileNames": true,
         "isolatedModules": true,
 

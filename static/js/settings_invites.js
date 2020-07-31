@@ -1,7 +1,8 @@
-const util = require("./util");
-const settings_config = require("./settings_config");
 const render_admin_invites_list = require("../templates/admin_invites_list.hbs");
 const render_settings_revoke_invite_modal = require("../templates/settings/revoke_invite_modal.hbs");
+
+const settings_config = require("./settings_config");
+const util = require("./util");
 
 const meta = {
     loaded: false,
@@ -43,7 +44,7 @@ function populate_invites(invites_data) {
 
     list_render.create(invites_table, invites_data.invites, {
         name: "admin_invites_list",
-        modifier: function (item) {
+        modifier(item) {
             item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
             item.is_admin = page_params.is_admin;
             item.disable_buttons =
@@ -54,7 +55,7 @@ function populate_invites(invites_data) {
         },
         filter: {
             element: invites_table.closest(".settings-section").find(".search"),
-            predicate: function (item, value) {
+            predicate(item, value) {
                 const referrer_email = people.get_by_user_id(item.invited_by_user_id).email;
                 const referrer_email_matched = referrer_email.toLowerCase().includes(value);
                 if (item.is_multiuse) {
@@ -100,11 +101,11 @@ function do_revoke_invite() {
         url = "/json/invites/multiuse/" + meta.invite_id;
     }
     channel.del({
-        url: url,
-        error: function (xhr) {
+        url,
+        error(xhr) {
             ui_report.generic_row_button_error(xhr, revoke_button);
         },
-        success: function () {
+        success() {
             meta.current_revoke_invite_user_modal_row.remove();
         },
     });
@@ -124,7 +125,7 @@ exports.set_up = function (initialize_event_handlers) {
         url: "/json/invites",
         idempotent: true,
         timeout: 10 * 1000,
-        success: function (data) {
+        success(data) {
             exports.on_load_success(data, initialize_event_handlers);
         },
         error: failed_listing_invites,
@@ -150,8 +151,8 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
         meta.is_multiuse = $(e.currentTarget).attr("data-is-multiuse");
         const ctx = {
             is_multiuse: meta.is_multiuse === "true",
-            email: email,
-            referred_by: referred_by,
+            email,
+            referred_by,
         };
         const rendered_revoke_modal = render_settings_revoke_invite_modal(ctx);
         $("#revoke_invite_modal_holder").html(rendered_revoke_modal);
@@ -161,8 +162,8 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
             meta.is_multiuse,
         );
         $("#revoke_invite_modal").modal("show");
-        $("#do_revoke_invite_button").unbind("click");
-        $("#do_revoke_invite_button").click(do_revoke_invite);
+        $("#do_revoke_invite_button").off("click");
+        $("#do_revoke_invite_button").on("click", do_revoke_invite);
     });
 
     $(".admin_invites_table").on("click", ".resend", (e) => {
@@ -181,7 +182,7 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
         $("#resend_invite_modal").modal("show");
     });
 
-    $("#do_resend_invite_button").click(() => {
+    $("#do_resend_invite_button").on("click", () => {
         const modal_invite_id = $("#resend_invite_modal #do_resend_invite_button").attr(
             "data-invite-id",
         );
@@ -199,10 +200,10 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
         resend_button.prop("disabled", true).text(i18n.t("Working…"));
         channel.post({
             url: "/json/invites/" + meta.invite_id + "/resend",
-            error: function (xhr) {
+            error(xhr) {
                 ui_report.generic_row_button_error(xhr, resend_button);
             },
-            success: function (data) {
+            success(data) {
                 resend_button.text(i18n.t("Sent!"));
                 resend_button.removeClass("resend btn-warning").addClass("sea-green");
                 data.timestamp = timerender.absolute_time(data.timestamp * 1000);

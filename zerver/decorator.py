@@ -37,6 +37,7 @@ from zerver.lib.exceptions import (
     InvalidJSONError,
     JsonableError,
     OrganizationAdministratorRequired,
+    OrganizationMemberRequired,
     OrganizationOwnerRequired,
     UnexpectedWebhookEventType,
 )
@@ -130,14 +131,21 @@ def require_realm_admin(func: ViewFuncT) -> ViewFuncT:
         return func(request, user_profile, *args, **kwargs)
     return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
 
-def require_billing_access(func: ViewFuncT) -> ViewFuncT:
+def require_organization_member(func: ViewFuncT) -> ViewFuncT:
     @wraps(func)
     def wrapper(request: HttpRequest, user_profile: UserProfile, *args: object, **kwargs: object) -> HttpResponse:
-        if not user_profile.is_realm_admin and not user_profile.is_billing_admin:
-            raise JsonableError(_("Must be a billing administrator or an organization administrator"))
+        if user_profile.role > UserProfile.ROLE_MEMBER:
+            raise OrganizationMemberRequired()
         return func(request, user_profile, *args, **kwargs)
     return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
 
+def require_billing_access(func: ViewFuncT) -> ViewFuncT:
+    @wraps(func)
+    def wrapper(request: HttpRequest, user_profile: UserProfile, *args: object, **kwargs: object) -> HttpResponse:
+        if not user_profile.has_billing_access:
+            raise JsonableError(_("Must be a billing administrator or an organization owner"))
+        return func(request, user_profile, *args, **kwargs)
+    return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
 
 def get_client_name(request: HttpRequest) -> str:
     # If the API request specified a client in the request content,

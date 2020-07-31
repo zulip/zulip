@@ -20,14 +20,15 @@
 # Sulian Lanteri, 2017
 # Thomas Chuffart <tchuffart@gmail.com>, 2019
 # Tim Abbott <tabbott@kandralabs.com>, 2018,2020
+# William Wendling <williamwendling7@gmail.com>, 2020
 # yvan karmouta <yvan.karmouta@gmail.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-16 07:24+0000\n"
-"PO-Revision-Date: 2020-07-16 07:24+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"PO-Revision-Date: 2020-07-16 13:17+0000\n"
+"Last-Translator: lavamind <jerome@riseup.net>\n"
 "Language-Team: French (http://www.transifex.com/zulip/zulip/language/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -3730,7 +3731,7 @@ msgstr "Le domaine ne peut contenir que des lettres, des nombres, des '.' et des
 
 #: zerver/lib/email_notifications.py:123 zerver/lib/email_notifications.py:149
 msgid "Open Zulip to see the spoiler content"
-msgstr ""
+msgstr "Ouvrez Zulip pour afficher le contenu masqué"
 
 #: zerver/lib/email_notifications.py:466
 msgid "Zulip missed messages"

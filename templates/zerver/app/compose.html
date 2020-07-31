@@ -95,19 +95,20 @@
                                 <div class="drag"></div>
                                 <div id="below-compose-content">
                                     <input type="file" id="file_input" class="notvisible pull-left" multiple />
-                                    <a class="message-control-button fa fa-smile-o" aria-hidden="true" id="emoji_map" href="#" title="{{ _('Add emoji') }}"></a>
-                                    <a class="message-control-button fa fa-font" aria-hidden="true" title="{{ _('Formatting') }}" data-overlay-trigger="message-formatting"></a>
+                                    <a class="message-control-button fa fa-smile-o" aria-label="{{_('Add emoji')}}" id="emoji_map" tabindex=0 title="{{ _('Add emoji') }}"></a>
+                                    <a class="message-control-button fa fa-font" aria-label="{{ _('Formatting') }}" tabindex=0 title="{{ _('Formatting') }}" data-overlay-trigger="message-formatting"></a>
                                     {% if max_file_upload_size_mib > 0 %}
-                                    <a class="message-control-button fa fa-paperclip notdisplayed" aria-hidden="true" id="attach_files" href="#" title="{{ _('Attach files') }}"></a>
+                                    <a class="message-control-button fa fa-paperclip notdisplayed" aria-label="{{ _('Attach files') }}" id="attach_files" tabindex=0 title="{{ _('Attach files') }}"></a>
                                     {% endif %}
-                                    <a class="message-control-button fa fa-video-camera video_link" aria-hidden="true" href="#" title="{{ _('Add video call') }}"></a>
-                                    <a id="undo_markdown_preview" class="message-control-button fa fa-edit" aria-hidden="true" style="display:none;" title="{{ _('Write') }}"></a>
-                                    <a id="markdown_preview" class="message-control-button fa fa-eye" aria-hidden="true" title="{{ _('Preview') }}"></a>
+                                    <a class="message-control-button fa fa-video-camera video_link" aria-label="{{ _('Add video call') }}" tabindex=0 title="{{ _('Add video call') }}"></a>
+                                    <a id="undo_markdown_preview" class="message-control-button fa fa-edit" aria-label="{{ _('Write') }}" tabindex=0 style="display:none;" title="{{ _('Write') }}"></a>
+                                    <a id="markdown_preview" class="message-control-button fa fa-eye" aria-label="{{ _('Preview') }}" tabindex=0 title="{{ _('Preview') }}"></a>
                                     <a class="drafts-link" href="#drafts" title="{{ _('Drafts') }} (d)">{{ _('Drafts') }}</a>
                                     <span id="sending-indicator"></span>
                                     <div id="send_controls" class="new-style">
-                                        <label id="enter-sends-label" class="compose_checkbox_label">
-                                            <input type="checkbox" id="enter_sends" />{{ _('Press Enter to send') }}
+                                        <label id="enter-sends-label" class="compose_checkbox_label checkbox">
+                                            <input type="checkbox" id="enter_sends" />
+                                            <span></span>{{ _('Press Enter to send') }}
                                         </label>
                                         <button type="submit" id="compose-send-button" class="button small send_message" tabindex="150" title="{{ _('Send') }} (Ctrl + Enter)">{{ _('Send') }}</button>
                                     </div>

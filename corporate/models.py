@@ -66,6 +66,23 @@ class CustomerPlan(models.Model):
 
     # TODO maybe override setattr to ensure billing_cycle_anchor, etc are immutable
 
+    @property
+    def name(self) -> str:
+        return {
+            CustomerPlan.STANDARD: 'Zulip Standard',
+            CustomerPlan.PLUS: 'Zulip Plus',
+            CustomerPlan.ENTERPRISE: 'Zulip Enterprise',
+        }[self.tier]
+
+    def get_plan_status_as_text(self) -> str:
+        return {
+            self.ACTIVE: "Active",
+            self.DOWNGRADE_AT_END_OF_CYCLE: "Scheduled for downgrade at end of cycle",
+            self.FREE_TRIAL: "Free trial",
+            self.ENDED: "Ended",
+            self.NEVER_STARTED: "Never started"
+        }[self.status]
+
 def get_current_plan_by_customer(customer: Customer) -> Optional[CustomerPlan]:
     return CustomerPlan.objects.filter(
         customer=customer, status__lt=CustomerPlan.LIVE_STATUS_THRESHOLD).first()

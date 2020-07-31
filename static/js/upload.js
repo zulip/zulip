@@ -1,6 +1,6 @@
 const Uppy = require("@uppy/core");
-const XHRUpload = require("@uppy/xhr-upload");
 const ProgressBar = require("@uppy/progress-bar");
+const XHRUpload = require("@uppy/xhr-upload");
 
 exports.make_upload_absolute = function (uri) {
     if (uri.startsWith(compose.uploads_path)) {
@@ -110,7 +110,7 @@ exports.upload_files = function (uppy, config, files) {
         );
         return;
     }
-    exports.get_item("send_button", config).attr("disabled", "");
+    exports.get_item("send_button", config).prop("disabled", true);
     exports
         .get_item("send_status", config)
         .addClass("alert-info")
@@ -127,7 +127,7 @@ exports.upload_files = function (uppy, config, files) {
         });
         compose_ui.autosize_textarea();
         uppy.cancelAll();
-        exports.get_item("textarea", config).focus();
+        exports.get_item("textarea", config).trigger("focus");
         setTimeout(() => {
             exports.hide_upload_status(config);
         }, 500);
@@ -228,7 +228,7 @@ exports.setup_upload = function (config) {
         }
         const split_uri = uri.split("/");
         const filename = split_uri[split_uri.length - 1];
-        if (!compose_state.composing()) {
+        if (config.mode === "compose" && !compose_state.composing()) {
             compose_actions.start("stream");
         }
         const absolute_uri = exports.make_upload_absolute(uri);

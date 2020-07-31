@@ -141,7 +141,7 @@ py3dns
 
 # Install Python Social Auth
 social-auth-app-django
-social-auth-core[azuread,saml]
+https://github.com/python-social-auth/social-core/archive/3.4.0.zip/#egg=social-auth-core[azuread,saml]==3.4.0
 
 # For encrypting a login token to the desktop app
 cryptography
@@ -189,3 +189,6 @@ requests-oauthlib
 
 # For OpenAPI schema validation.
 openapi-core
+
+# For reporting errors to sentry.io
+sentry-sdk

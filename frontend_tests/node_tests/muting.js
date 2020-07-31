@@ -1,7 +1,6 @@
 zrequire("timerender");
 zrequire("muting");
 zrequire("stream_data");
-set_global("XDate", zrequire("XDate", "xdate"));
 set_global("page_params", {});
 
 run_test("edge_cases", () => {

@@ -1,0 +1,182 @@
+name: Zulip Production Suite
+
+on:
+  push:
+    paths:
+      - "**/migrations/**"
+      - puppet/**
+      - requirements/**
+      - scripts/**
+      - static/**
+      - tools/**
+      - zproject/**
+      - yarn.lock
+      - .github/workflows/production-suite.yml
+  pull_request:
+    paths:
+      - "**/migrations/**"
+      - puppet/**
+      - requirements/**
+      - scripts/**
+      - static/**
+      - tools/**
+      - zproject/**
+      - yarn.lock
+      - .github/workflows/production-suite.yml
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  production_build:
+    name: Bionic Production Build
+    runs-on: ubuntu-latest
+
+    # This docker image was created by a generated Dockerfile at:
+    #   tools/ci/images/bionic/Dockerfile
+    # Bionic ships with Python 3.6.
+    container: mepriyank/actions:bionic
+    steps:
+      - name: Add required permissions
+        run: |
+          # The checkout actions doesn't clone to ~/zulip or allow
+          # us to use the path option to clone outside the current
+          # /__w/zulip/zulip directory. Since this directory is owned
+          # by root we need to change it's ownership to allow the
+          # github user to clone the code here.
+          # Note: /__w/ is a docker volume mounted to $GITHUB_WORKSPACE
+          # which is /home/runner/work/.
+          sudo chown -R github .
+
+          # This is the GitHub Actions specific cache directory the
+          # the current github user must be able to access for the
+          # cache action to work. It is owned by root currently.
+          sudo chmod -R 0777 /__w/_temp/
+
+      - uses: actions/checkout@v2
+
+      - name: Create cache directories
+        run: |
+          dirs=(/srv/zulip-{npm,venv,emoji}-cache)
+          sudo mkdir -p "${dirs[@]}"
+          sudo chown -R github "${dirs[@]}"
+
+      - name: Restore node_modules cache
+        uses: actions/cache@v2
+        with:
+          path: /srv/zulip-npm-cache
+          key: v1-yarn-deps-${{ github.job }}-${{ hashFiles('package.json') }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: v1-yarn-deps-${{ github.job }}
+
+      - name: Restore python cache
+        uses: actions/cache@v2
+        with:
+          path: /srv/zulip-venv-cache
+          key: v1-venv-${{ github.job }}-${{ hashFiles('requirements/thumbor-dev.txt') }}-${{ hashFiles('requirements/dev.txt') }}
+          restore-keys: v1-venv-${{ github.job }}
+
+      - name: Restore emoji cache
+        uses: actions/cache@v2
+        with:
+          path: /srv/zulip-emoji-cache
+          key: v1-emoji-${{ github.job }}-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
+          restore-keys: v1-emoji-${{ github.job }}
+
+      - name: Do Bionic hack
+        run: |
+          # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
+          # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
+          sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
+
+      - name: Build production tarball
+        run: mispipe "./tools/ci/production-build 2>&1" ts
+
+      - name: Upload production build artifacts for install jobs
+        uses: actions/upload-artifact@v2
+        with:
+          name: production-tarball
+          path: /tmp/production-build
+
+  production_install:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - docker_image: mepriyank/actions:bionic
+            name: Bionic Production Install
+            is_bionic: true
+            os: bionic
+
+          - docker_image: mepriyank/actions:focal
+            name: Focal Production Install
+            is_focal: true
+            os: focal
+
+    name: ${{ matrix.name  }}
+    container: ${{ matrix.docker_image }}
+    runs-on: ubuntu-latest
+    needs: production_build
+
+    steps:
+      - name: Download built production tarball
+        uses: actions/download-artifact@v2
+        with:
+          name: production-tarball
+          path: /tmp
+
+      - name: Add required permissions and setup
+        run: |
+          # This is the GitHub Actions specific cache directory the
+          # the current github user must be able to access for the
+          # cache action to work. It is owned by root currently.
+          sudo chmod -R 0777 /__w/_temp/
+
+          # Create the zulip directory that the tools/ci/ scripts needs
+          mkdir -p /home/github/zulip
+
+          # Since actions/download-artifact@v2 loses all the permissions
+          # of the tarball uploaded by the upload artifact fix those.
+          chmod +x /tmp/production-extract-tarball
+          chmod +x /tmp/production-upgrade-pg
+          chmod +x /tmp/production-install
+          chmod +x /tmp/production-verify
+
+      - name: Create cache directories
+        run: |
+          dirs=(/srv/zulip-{npm,venv,emoji}-cache)
+          sudo mkdir -p "${dirs[@]}"
+          sudo chown -R github "${dirs[@]}"
+
+      - name: Restore node_modules cache
+        uses: actions/cache@v2
+        with:
+          path: /srv/zulip-npm-cache
+          key: v1-yarn-deps-${{ matrix.os }}-${{ hashFiles('package.json') }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: v1-yarn-deps-${{ matrix.os }}
+
+      - name: Do Bionic hack
+        if: ${{ matrix.is_bionic }}
+        run: |
+          # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
+          # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
+          sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
+
+      - name: Production extract tarball
+        run: mispipe "/tmp/production-extract-tarball 2>&1" ts
+
+      - name: Install production
+        run: |
+          sudo service rabbitmq-server restart
+          sudo mispipe "/tmp/production-install 2>&1" ts
+
+      - name: Verify install
+        run: sudo mispipe "/tmp/production-verify 2>&1" ts
+
+      - name: Upgrade postgresql
+        if: ${{ matrix.is_bionic }}
+        run: sudo mispipe "/tmp/production-upgrade-pg 2>&1" ts
+
+      - name: Verify install after upgrading postgresql
+        if: ${{ matrix.is_bionic }}
+        run: sudo mispipe "/tmp/production-verify 2>&1" ts

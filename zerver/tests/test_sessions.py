@@ -89,7 +89,11 @@ class TestSessions(ZulipTestCase):
         self.assertIn('_auth_user_id', self.client.session)
         user_profile_3.is_active = False
         user_profile_3.save()
-        delete_all_deactivated_user_sessions()
+        with self.assertLogs(level='INFO') as info_logs:
+            delete_all_deactivated_user_sessions()
+        self.assertEqual(info_logs.output, [
+            'INFO:root:Deactivating session for deactivated user 8'
+        ])
         result = self.client_get("/")
         self.assertEqual('/login/', result.url)
 

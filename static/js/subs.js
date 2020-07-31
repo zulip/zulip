@@ -1,15 +1,18 @@
-const util = require("./util");
+const _ = require("lodash");
+
 const render_subscription = require("../templates/subscription.hbs");
 const render_subscription_settings = require("../templates/subscription_settings.hbs");
 const render_subscription_table_body = require("../templates/subscription_table_body.hbs");
 const render_subscriptions = require("../templates/subscriptions.hbs");
 
+const util = require("./util");
+
 exports.show_subs_pane = {
-    nothing_selected: function () {
+    nothing_selected() {
         $(".nothing-selected, #stream_settings_title").show();
         $("#add_new_stream_title, .settings, #stream-creation").hide();
     },
-    settings: function () {
+    settings() {
         $(".settings, #stream_settings_title").show();
         $("#add_new_stream_title, #stream-creation, .nothing-selected").hide();
     },
@@ -95,8 +98,8 @@ exports.active_stream = function () {
     }
 };
 
-exports.toggle_home = function (sub, status_element) {
-    stream_muting.update_is_muted(sub, !sub.is_muted);
+exports.set_muted = function (sub, is_muted, status_element) {
+    stream_muting.update_is_muted(sub, is_muted);
     stream_edit.set_stream_property(sub, "is_muted", sub.is_muted, status_element);
 };
 
@@ -141,7 +144,7 @@ exports.update_stream_name = function (sub, new_name) {
     }
 
     // Update navbar if needed
-    tab_bar.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub);
 };
 
 exports.update_stream_description = function (sub, description, rendered_description) {
@@ -156,7 +159,7 @@ exports.update_stream_description = function (sub, description, rendered_descrip
     stream_edit.update_stream_description(sub);
 
     // Update navbar if needed
-    tab_bar.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub);
 };
 
 exports.update_stream_privacy = function (sub, values) {
@@ -173,7 +176,7 @@ exports.update_stream_privacy = function (sub, values) {
     stream_list.redraw_stream_privacy(sub);
 
     // Update navbar if needed
-    tab_bar.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub);
 };
 
 exports.update_stream_post_policy = function (sub, new_value) {
@@ -209,7 +212,7 @@ exports.update_subscribers_ui = function (sub) {
     // We rely on rerender_subscriptions_settings to complete the
     // stream_data subscribers count update
     exports.rerender_subscriptions_settings(sub);
-    tab_bar.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub);
 };
 
 exports.add_sub_to_table = function (sub) {
@@ -241,7 +244,7 @@ exports.add_sub_to_table = function (sub) {
         // good way to associate with this request because the stream
         // ID isn't known yet.  These are appended to the top of the
         // list, so they are more visible.
-        exports.row_for_stream_id(sub.stream_id).click();
+        exports.row_for_stream_id(sub.stream_id).trigger("click");
         stream_create.reset_created_stream();
     }
 };
@@ -343,8 +346,8 @@ function triage_stream(query, sub) {
         const val = sub[attr];
 
         return search_util.vanilla_match({
-            val: val,
-            search_terms: search_terms,
+            val,
+            search_terms,
         });
     }
 
@@ -468,9 +471,9 @@ exports.get_search_params = function () {
     const search_box = $("#stream_filter input[type='text']");
     const input = search_box.expectOne().val().trim();
     const params = {
-        input: input,
-        subscribed_only: subscribed_only,
-        sort_order: sort_order,
+        input,
+        subscribed_only,
+        sort_order,
     };
     return params;
 };
@@ -561,7 +564,7 @@ exports.setup_page = function (callback) {
                 },
             ],
             html_class: "stream_sorter_toggle",
-            callback: function (value, key) {
+            callback(value, key) {
                 exports.switch_stream_sort(key);
             },
         });
@@ -576,7 +579,7 @@ exports.setup_page = function (callback) {
                 {label: i18n.t("Subscribed"), key: "subscribed"},
                 {label: i18n.t("All streams"), key: "all-streams"},
             ],
-            callback: function (value, key) {
+            callback(value, key) {
                 exports.switch_stream_tab(key);
             },
         });
@@ -653,7 +656,7 @@ exports.switch_to_stream_row = function (stream_id) {
     // It's dubious that we need this timeout any more.
     setTimeout(() => {
         if (stream_id === exports.get_active_data().id) {
-            stream_row.click();
+            stream_row.trigger("click");
         }
     }, 100);
 };
@@ -702,14 +705,14 @@ exports.launch = function (section) {
         overlays.open_overlay({
             name: "subscriptions",
             overlay: $("#subscription_overlay"),
-            on_close: function () {
+            on_close() {
                 hashchange.exit_overlay();
             },
         });
         exports.change_state(section);
     });
     if (!exports.get_active_data().id) {
-        $("#search_stream_name").focus();
+        $("#search_stream_name").trigger("focus");
     }
 };
 
@@ -722,7 +725,7 @@ exports.switch_rows = function (event) {
     } else if (!active_data.id || active_data.row.hasClass("notdisplayed")) {
         switch_row = $("div.stream-row:not(.notdisplayed)").first();
         if ($("#search_stream_name").is(":focus")) {
-            $("#search_stream_name").blur();
+            $("#search_stream_name").trigger("blur");
         }
     } else {
         if (event === "up_arrow") {
@@ -733,7 +736,7 @@ exports.switch_rows = function (event) {
         if ($("#search_stream_name").is(":focus")) {
             // remove focus from Filter streams input instead of switching rows
             // if Filter streams input is focused
-            return $("#search_stream_name").blur();
+            return $("#search_stream_name").trigger("blur");
         }
     }
 
@@ -742,7 +745,7 @@ exports.switch_rows = function (event) {
         const stream_id = row_data.id;
         exports.switch_to_stream_row(stream_id);
     } else if (event === "up_arrow" && !row_data) {
-        $("#search_stream_name").focus();
+        $("#search_stream_name").trigger("focus");
     }
     return true;
 };
@@ -817,8 +820,8 @@ function ajaxSubscribe(stream, color, stream_row) {
     }
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([{name: stream, color: color}])},
-        success: function (resp, statusText, xhr) {
+        data: {subscriptions: JSON.stringify([{name: stream, color}])},
+        success(resp, statusText, xhr) {
             if (overlays.streams_open()) {
                 $("#create_stream_name").val("");
             }
@@ -838,7 +841,7 @@ function ajaxSubscribe(stream, color, stream_row) {
                 hide_subscribe_toggle_spinner(stream_row);
             }
         },
-        error: function (xhr) {
+        error(xhr) {
             if (stream_row !== undefined) {
                 hide_subscribe_toggle_spinner(stream_row);
             }
@@ -859,7 +862,7 @@ function ajaxUnsubscribe(sub, stream_row) {
     return channel.del({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([sub.name])},
-        success: function () {
+        success() {
             $(".stream_change_property_info").hide();
             // The rest of the work is done via the unsubscribe event we will get
 
@@ -867,7 +870,7 @@ function ajaxUnsubscribe(sub, stream_row) {
                 hide_subscribe_toggle_spinner(stream_row);
             }
         },
-        error: function (xhr) {
+        error(xhr) {
             if (stream_row !== undefined) {
                 hide_subscribe_toggle_spinner(stream_row);
             }
@@ -884,7 +887,7 @@ exports.do_open_create_stream = function () {
     // Only call this directly for hash changes.
     // Prefer open_create_stream().
 
-    const stream = $.trim($("#search_stream_name").val());
+    const stream = $("#search_stream_name").val().trim();
 
     if (!should_list_all_streams()) {
         // Realms that don't allow listing streams should simply be subscribed to.

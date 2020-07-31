@@ -100,7 +100,7 @@ class ReactionEmojiTest(ZulipTestCase):
 
         expected_reaction_data = [{
             'emoji_name': 'smile',
-            'emoji_code': '263a',
+            'emoji_code': '1f642',
             'reaction_type': 'unicode_emoji',
             'user': {
                 'email': 'user10@zulip.testserver',

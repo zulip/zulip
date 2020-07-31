@@ -1,6 +1,7 @@
 const noop = () => {};
-const {JSDOM} = require("jsdom");
 const fs = require("fs");
+
+const {JSDOM} = require("jsdom");
 
 const template = fs.readFileSync("templates/corporate/billing.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});

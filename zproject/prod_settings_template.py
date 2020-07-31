@@ -294,7 +294,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 #
 #SOCIAL_AUTH_APPLE_TEAM = "<your Team ID>"
 #SOCIAL_AUTH_APPLE_SERVICES_ID = "<your Services ID>"
-#SOCIAL_AUTH_APPLE_BUNDLE_ID = "<your Bundle ID>"
+#SOCIAL_AUTH_APPLE_APP_ID = "<your App ID>"
 #SOCIAL_AUTH_APPLE_KEY = "<your Key ID>"
 
 ########
@@ -365,6 +365,9 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 #ERROR_REPORTING = True
 # For frontend (JavaScript) tracebacks
 #BROWSER_ERROR_REPORTING = False
+
+# Controls the DSN used to report erors to Sentry.io
+#SENTRY_DSN = 'https://bbb@bbb.ingest.sentry.io/1235'
 
 # If True, each log message in the server logs will identify the
 # Python module where it came from.  Useful for tracking down a

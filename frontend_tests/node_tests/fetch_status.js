@@ -6,10 +6,10 @@ set_global("message_scroll", {
     show_loading_newer: () => {},
 });
 
-let fetch_status = FetchStatus();
+let fetch_status = new FetchStatus();
 
 function reset() {
-    fetch_status = FetchStatus();
+    fetch_status = new FetchStatus();
 }
 
 function can_load_newer() {

@@ -1,4 +1,7 @@
+const _ = require("lodash");
+
 const util = require("./util");
+
 let focused_recipient;
 let normal_display = false;
 
@@ -119,13 +122,13 @@ exports.would_receive_message = function (user_id) {
 };
 
 const user_fade_config = {
-    get_user_id: function (li) {
-        return buddy_list.get_key_from_li({li: li});
+    get_user_id(li) {
+        return buddy_list.get_key_from_li({li});
     },
-    fade: function (li) {
+    fade(li) {
         return li.addClass("user-fade");
     },
-    unfade: function (li) {
+    unfade(li) {
         return li.removeClass("user-fade");
     },
 };

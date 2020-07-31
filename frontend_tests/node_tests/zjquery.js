@@ -116,11 +116,11 @@ run_test("clicks", () => {
     const state = {};
 
     function set_up_click_handlers() {
-        $("#widget1").click(() => {
+        $("#widget1").on("click", () => {
             state.clicked = true;
         });
 
-        $(".some-class").keydown(() => {
+        $(".some-class").on("keydown", () => {
             state.keydown = true;
         });
     }
@@ -131,11 +131,11 @@ run_test("clicks", () => {
     assert(!state.keydown);
 
     // But we can simulate clicks.
-    $("#widget1").click();
+    $("#widget1").trigger("click");
     assert.equal(state.clicked, true);
 
     // and keydown
-    $(".some-class").keydown();
+    $(".some-class").trigger("keydown");
     assert.equal(state.keydown, true);
 });
 
@@ -168,7 +168,7 @@ run_test("events", () => {
 
     // Set up a stub event so that stopPropagation doesn't explode on us.
     const stub_event = {
-        stopPropagation: function () {},
+        stopPropagation() {},
     };
 
     // Now call the handler.

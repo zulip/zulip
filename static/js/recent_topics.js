@@ -1,6 +1,9 @@
-const render_recent_topics_body = require("../templates/recent_topics_table.hbs");
+const XDate = require("xdate");
+
 const render_recent_topic_row = require("../templates/recent_topic_row.hbs");
 const render_recent_topics_filters = require("../templates/recent_topics_filters.hbs");
+const render_recent_topics_body = require("../templates/recent_topics_table.hbs");
+
 const topics = new Map(); // Key is stream-id:topic.
 let topics_widget;
 // Sets the number of avatars to display.
@@ -34,7 +37,7 @@ function set_default_focus() {
     // If at any point we are confused about the currently
     // focused element, we switch focus to search.
     current_focus_elem = $("#recent_topics_search");
-    current_focus_elem.focus();
+    current_focus_elem.trigger("focus");
 }
 
 function set_table_focus(row, col) {
@@ -46,7 +49,7 @@ function set_table_focus(row, col) {
         return true;
     }
 
-    topic_rows.eq(row).find(".recent_topics_focusable").eq(col).children().focus();
+    topic_rows.eq(row).find(".recent_topics_focusable").eq(col).children().trigger("focus");
     current_focus_elem = "table";
     return true;
 }
@@ -72,7 +75,7 @@ function revive_current_focus() {
         current_focus_elem = $("#recent_topics_filter_buttons").find(
             "[data-filter='" + filter_button + "']",
         );
-        current_focus_elem.focus();
+        current_focus_elem.trigger("focus");
     }
     return true;
 }
@@ -180,22 +183,22 @@ function format_topic(topic_data) {
 
     return {
         // stream info
-        stream_id: stream_id,
-        stream: stream,
+        stream_id,
+        stream,
         stream_color: stream_info.color,
         invite_only: stream_info.invite_only,
         is_web_public: stream_info.is_web_public,
         stream_url: hash_util.by_stream_uri(stream_id),
 
-        topic: topic,
+        topic,
         topic_key: get_topic_key(stream_id, topic),
-        unread_count: unread_count,
-        last_msg_time: last_msg_time,
+        unread_count,
+        last_msg_time,
         topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
         senders: senders_info,
         other_senders_count: Math.max(0, all_senders.length - MAX_AVATAR),
-        muted: muted,
-        topic_muted: topic_muted,
+        muted,
+        topic_muted,
         participated: topic_data.participated,
         full_last_msg_date_time: full_datetime.date + " " + full_datetime.time,
     };
@@ -224,25 +227,19 @@ exports.topic_in_search_results = function (keyword, stream, topic) {
     if (keyword === "") {
         return true;
     }
-    // Escape speacial characters from input.
-    // https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
-    keyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const text = (stream + " " + topic).toLowerCase().replace(/\s+/g, " ");
-    const search_words = keyword.toLowerCase().replace(/\s+/g, " ").split(" ");
-    return search_words.every((word) => {
-        if (text.search(word) !== -1) {
-            return true;
-        }
-        return false;
-    });
+    const text = (stream + " " + topic).toLowerCase();
+    const search_words = keyword.toLowerCase().split(/\s+/);
+    return search_words.every((word) => text.includes(word));
 };
 
 exports.update_topics_of_message_ids = function (message_ids) {
     const topics_to_rerender = new Map();
     for (const msg_id of message_ids) {
         const message = message_store.get(msg_id);
-        const topic_key = get_topic_key(message.stream_id, message.topic);
-        topics_to_rerender.set(topic_key, [message.stream_id, message.topic]);
+        if (message.type === "stream") {
+            const topic_key = get_topic_key(message.stream_id, message.topic);
+            topics_to_rerender.set(topic_key, [message.stream_id, message.topic]);
+        }
     }
 
     for (const [stream_id, topic] of topics_to_rerender.values()) {
@@ -419,19 +416,19 @@ exports.complete_rerender = function () {
     topics_widget = list_render.create(container, mapped_topic_values, {
         name: "recent_topics_table",
         parent_container: $("#recent_topics_table"),
-        modifier: function (item) {
+        modifier(item) {
             return render_recent_topic_row(format_topic(item));
         },
         filter: {
             // We use update_filters_view & filters_should_hide_topic to do all the
             // filtering for us, which is called using click_handlers.
-            predicate: function (topic_data) {
+            predicate(topic_data) {
                 return !exports.filters_should_hide_topic(topic_data);
             },
         },
         sort_fields: {
-            stream_sort: stream_sort,
-            topic_sort: topic_sort,
+            stream_sort,
+            topic_sort,
         },
         html_selector: get_topic_row,
         simplebar_container: $("#recent_topics_table .table_fix_head"),
@@ -443,7 +440,7 @@ exports.launch = function () {
     overlays.open_overlay({
         name: "recent_topics",
         overlay: $("#recent_topics_overlay"),
-        on_close: function () {
+        on_close() {
             hashchange.exit_overlay();
         },
     });
@@ -459,12 +456,6 @@ exports.change_focused_element = function (e, input_key) {
     // returning true will cause the caller to do
     // preventDefault/stopPropagation; false will let the browser
     // handle the key.
-    if (input_key === "tab") {
-        input_key = "right_arrow";
-    } else if (input_key === "shift_tab") {
-        input_key = "left_arrow";
-    }
-
     const $elem = $(e.target);
 
     if ($("#recent_topics_table").find(":focus").length === 0) {
@@ -488,11 +479,22 @@ exports.change_focused_element = function (e, input_key) {
         }
 
         switch (input_key) {
+            case "vim_left":
+            case "vim_right":
+            case "vim_down":
+            case "vim_up":
+                return false;
+            case "shift_tab":
+                current_focus_elem = filter_buttons().last();
+                break;
             case "left_arrow":
                 if (start !== 0 || is_selected) {
                     return false;
                 }
                 current_focus_elem = filter_buttons().last();
+                break;
+            case "tab":
+                current_focus_elem = filter_buttons().first();
                 break;
             case "right_arrow":
                 if (end !== text_length || is_selected) {
@@ -505,7 +507,7 @@ exports.change_focused_element = function (e, input_key) {
                 return true;
             case "click":
                 // Note: current_focus_elem can be different here, so we just
-                // set current_focus_elem to the input box, we don't want .focus() on
+                // set current_focus_elem to the input box, we don't want .trigger("focus") on
                 // it since it is already focused.
                 // We only do this for search beacuse we don't want the focus to
                 // go away from the input box when `revive_current_focus` is called
@@ -515,6 +517,8 @@ exports.change_focused_element = function (e, input_key) {
         }
     } else if ($elem.hasClass("btn-recent-filters")) {
         switch (input_key) {
+            case "shift_tab":
+            case "vim_left":
             case "left_arrow":
                 if (filter_buttons().first()[0] === $elem[0]) {
                     current_focus_elem = $("#recent_topics_search");
@@ -522,6 +526,8 @@ exports.change_focused_element = function (e, input_key) {
                     current_focus_elem = $elem.prev();
                 }
                 break;
+            case "tab":
+            case "vim_right":
             case "right_arrow":
                 if (filter_buttons().last()[0] === $elem[0]) {
                     current_focus_elem = $("#recent_topics_search");
@@ -529,6 +535,7 @@ exports.change_focused_element = function (e, input_key) {
                     current_focus_elem = $elem.next();
                 }
                 break;
+            case "vim_down":
             case "down_arrow":
                 set_table_focus(row_focus, col_focus);
                 return true;
@@ -538,21 +545,27 @@ exports.change_focused_element = function (e, input_key) {
         // wraparound.  Going off the top or the bottom takes one
         // to the navigation at the top (see set_table_focus).
         switch (input_key) {
+            case "shift_tab":
+            case "vim_left":
             case "left_arrow":
                 col_focus -= 1;
                 if (col_focus < 0) {
                     col_focus = MAX_SELECTABLE_COLS - 1;
                 }
                 break;
+            case "tab":
+            case "vim_right":
             case "right_arrow":
                 col_focus += 1;
                 if (col_focus >= MAX_SELECTABLE_COLS) {
                     col_focus = 0;
                 }
                 break;
+            case "vim_down":
             case "down_arrow":
                 row_focus += 1;
                 break;
+            case "vim_up":
             case "up_arrow":
                 row_focus -= 1;
         }
@@ -560,7 +573,7 @@ exports.change_focused_element = function (e, input_key) {
         return true;
     }
     if (current_focus_elem) {
-        current_focus_elem.focus();
+        current_focus_elem.trigger("focus");
     }
 
     return true;

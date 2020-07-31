@@ -1,8 +1,13 @@
-const util = require("./util");
+const md5 = require("blueimp-md5");
+const _ = require("lodash");
+const moment = require("moment-timezone");
+
 require("unorm"); // String.prototype.normalize polyfill for IE11
-const FoldDict = require("./fold_dict").FoldDict;
 const typeahead = require("../shared/js/typeahead");
+
+const FoldDict = require("./fold_dict").FoldDict;
 const settings_data = require("./settings_data");
+const util = require("./util");
 
 let people_dict;
 let people_by_name_dict;
@@ -1168,7 +1173,7 @@ exports.extract_people_from_message = function (message) {
 
         exports._add_user({
             email: person.email,
-            user_id: user_id,
+            user_id,
             full_name: person.full_name,
             is_admin: person.is_realm_admin || false,
             is_bot: person.is_bot || false,

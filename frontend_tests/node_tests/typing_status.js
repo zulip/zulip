@@ -61,8 +61,8 @@ run_test("basics", () => {
 
     worker = {
         get_current_time: returns_time(5),
-        notify_server_start: notify_server_start,
-        notify_server_stop: notify_server_stop,
+        notify_server_start,
+        notify_server_stop,
     };
 
     // Start talking to alice.

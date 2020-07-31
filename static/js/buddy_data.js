@@ -11,13 +11,13 @@ const util = require("./util");
 exports.max_size_before_shrinking = 600;
 
 const fade_config = {
-    get_user_id: function (item) {
+    get_user_id(item) {
         return item.user_id;
     },
-    fade: function (item) {
+    fade(item) {
         item.faded = true;
     },
-    unfade: function (item) {
+    unfade(item) {
         item.faded = false;
     },
 };
@@ -182,12 +182,12 @@ exports.info_for = function (user_id) {
     return {
         href: hash_util.pm_with_uri(person.email),
         name: person.full_name,
-        user_id: user_id,
-        my_user_status: my_user_status,
+        user_id,
+        my_user_status,
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
-        user_circle_class: user_circle_class,
-        user_circle_status: user_circle_status,
+        user_circle_class,
+        user_circle_status,
     };
 };
 
@@ -196,7 +196,7 @@ function get_last_seen(active_status, last_seen) {
         return last_seen;
     }
 
-    const last_seen_text = i18n.t("Last active: __last_seen__", {last_seen: last_seen});
+    const last_seen_text = i18n.t("Last active: __last_seen__", {last_seen});
     return last_seen_text;
 }
 

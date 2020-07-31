@@ -1,6 +1,8 @@
+const _ = require("lodash");
+
+const render_settings_api_key_modal = require("../templates/settings/api_key_modal.hbs");
 const render_settings_custom_user_profile_field = require("../templates/settings/custom_user_profile_field.hbs");
 const render_settings_dev_env_email_access = require("../templates/settings/dev_env_email_access.hbs");
-const render_settings_api_key_modal = require("../templates/settings/api_key_modal.hbs");
 
 exports.update_email = function (new_email) {
     const email_input = $("#email_value");
@@ -47,51 +49,45 @@ exports.user_can_change_avatar = function () {
 
 exports.update_name_change_display = function () {
     if (!exports.user_can_change_name()) {
-        $("#full_name").attr("disabled", "disabled");
+        $("#full_name").prop("disabled", true);
         $(".change_name_tooltip").show();
     } else {
-        $("#full_name").attr("disabled", false);
+        $("#full_name").prop("disabled", false);
         $(".change_name_tooltip").hide();
     }
 };
 
 exports.update_email_change_display = function () {
     if (page_params.realm_email_changes_disabled && !page_params.is_admin) {
-        $("#change_email .button").attr("disabled", "disabled");
+        $("#change_email .button").prop("disabled", true);
         $(".change_email_tooltip").show();
     } else {
-        $("#change_email .button").attr("disabled", false);
+        $("#change_email .button").prop("disabled", false);
         $(".change_email_tooltip").hide();
     }
 };
 
 exports.update_avatar_change_display = function () {
     if (!exports.user_can_change_avatar()) {
-        $("#user-avatar-upload-widget .image_upload_button").attr("disabled", "disabled");
-        $("#user-avatar-upload-widget .settings-page-delete-button .button").attr(
-            "disabled",
-            "disabled",
-        );
+        $("#user-avatar-upload-widget .image_upload_button").prop("disabled", true);
+        $("#user-avatar-upload-widget .image-delete-button .button").prop("disabled", true);
     } else {
-        $("#user-avatar-upload-widget .image_upload_button").attr("disabled", false);
-        $("#user-avatar-upload-widget .settings-page-delete-button .button").attr(
-            "disabled",
-            false,
-        );
+        $("#user-avatar-upload-widget .image_upload_button").prop("disabled", false);
+        $("#user-avatar-upload-widget .image-delete-button .button").prop("disabled", false);
     }
 };
 
 function display_avatar_upload_complete() {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
-    $("#user-avatar-upload-widget .settings-page-upload-text").show();
-    $("#user-avatar-upload-widget .settings-page-delete-button").show();
+    $("#user-avatar-upload-widget .image-upload-text").show();
+    $("#user-avatar-upload-widget .image-delete-button").show();
 }
 
 function display_avatar_upload_started() {
     $("#user-avatar-source").hide();
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
-    $("#user-avatar-upload-widget .settings-page-upload-text").hide();
-    $("#user-avatar-upload-widget .settings-page-delete-button").hide();
+    $("#user-avatar-upload-widget .image-upload-text").hide();
+    $("#user-avatar-upload-widget .image-delete-button").hide();
 }
 
 function settings_change_error(message, xhr) {
@@ -167,14 +163,14 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
         }
 
         const html = render_settings_custom_user_profile_field({
-            field: field,
+            field,
             field_type: all_field_template_types.get(field.type),
-            field_value: field_value,
+            field_value,
             is_long_text_field: field.type === all_field_types.LONG_TEXT.id,
             is_user_field: field.type === all_field_types.USER.id,
             is_date_field: field.type === all_field_types.DATE.id,
-            is_choice_field: is_choice_field,
-            field_choices: field_choices,
+            is_choice_field,
+            field_choices,
         });
         $(element_id).append(html);
     });
@@ -258,12 +254,13 @@ exports.initialize_custom_user_type_fields = function (
             if (is_editable) {
                 const input = pill_container.children(".input");
                 if (set_handler_on_update) {
-                    user_pill.set_up_typeahead_on_pills(input, pills, update_custom_user_field);
+                    const opts = {update_func: update_custom_user_field};
+                    user_pill.set_up_typeahead_on_pills(input, pills, opts);
                     pills.onPillRemove(() => {
                         update_custom_user_field();
                     });
                 } else {
-                    user_pill.set_up_typeahead_on_pills(input, pills, () => {});
+                    user_pill.set_up_typeahead_on_pills(input, pills, {});
                 }
             }
             user_pills.set(field.id, pills);
@@ -300,8 +297,8 @@ exports.set_up = function () {
         function request_api_key(data) {
             channel.post({
                 url: "/json/fetch_api_key",
-                data: data,
-                success: function (data) {
+                data,
+                success(data) {
                     $("#get_api_key_password").val("");
                     $("#api_key_value").text(data.api_key);
                     // The display property on the error bar is set to important
@@ -311,7 +308,7 @@ exports.set_up = function () {
                     $("#password_confirmation").hide();
                     $("#show_api_key").show();
                 },
-                error: function (xhr) {
+                error(xhr) {
                     ui_report.error(i18n.t("Error"), xhr, $("#api_key_status").expectOne());
                     $("#show_api_key").hide();
                     $("#api_key_modal").show();
@@ -340,10 +337,10 @@ exports.set_up = function () {
         $("#show_api_key").on("click", "button.regenerate_api_key", (e) => {
             channel.post({
                 url: "/json/users/me/api_key/regenerate",
-                success: function (data) {
+                success(data) {
                     $("#api_key_value").text(data.api_key);
                 },
-                error: function (xhr) {
+                error(xhr) {
                     $("#user_api_key_error").text(JSON.parse(xhr.responseText).msg).show();
                 },
             });
@@ -362,7 +359,7 @@ exports.set_up = function () {
         });
     });
 
-    $("#api_key_button").click((e) => {
+    $("#api_key_button").on("click", (e) => {
         setup_api_key_modal();
         overlays.open_modal("#api_key_modal");
         e.preventDefault();
@@ -447,7 +444,7 @@ exports.set_up = function () {
         }
 
         const opts = {
-            success_continuation: function () {
+            success_continuation() {
                 overlays.close_modal("#change_password_modal");
             },
             error_msg_element: change_password_error,
@@ -478,7 +475,7 @@ exports.set_up = function () {
         data.full_name = $(".full_name_change_container").find("input[name='full_name']").val();
 
         const opts = {
-            success_continuation: function () {
+            success_continuation() {
                 overlays.close_modal("#change_full_name_modal");
             },
             error_msg_element: change_full_name_error,
@@ -500,7 +497,7 @@ exports.set_up = function () {
         data.email = $(".email_change_container").find("input[name='email']").val();
 
         const opts = {
-            success_continuation: function () {
+            success_continuation() {
                 if (page_params.development_environment) {
                     const email_msg = render_settings_dev_env_email_access();
                     ui_report.success(
@@ -559,7 +556,7 @@ exports.set_up = function () {
             10,
         );
         if (value) {
-            fields.push({id: field_id, value: value});
+            fields.push({id: field_id, value});
             update_user_custom_profile_fields(fields, channel.patch);
         } else {
             fields.push(field_id);
@@ -579,11 +576,11 @@ exports.set_up = function () {
         setTimeout(() => {
             channel.del({
                 url: "/json/users/me",
-                success: function () {
+                success() {
                     $("#deactivate_self_modal").modal("hide");
                     window.location.href = "/login/";
                 },
-                error: function (xhr) {
+                error(xhr) {
                     const error_last_admin = i18n.t(
                         "Error: Cannot deactivate the only organization administrator.",
                     );
@@ -645,13 +642,13 @@ exports.set_up = function () {
             cache: false,
             processData: false,
             contentType: false,
-            success: function () {
+            success() {
                 display_avatar_upload_complete();
                 $("#user-avatar-upload-widget .image_file_input_error").hide();
                 $("#user-avatar-source").hide();
                 // Rest of the work is done via the user_events -> avatar_url event we will get
             },
-            error: function (xhr) {
+            error(xhr) {
                 display_avatar_upload_complete();
                 if (page_params.avatar_source === "G") {
                     $("#user-avatar-source").show();

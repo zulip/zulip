@@ -1,3 +1,5 @@
+const moment = require("moment-timezone");
+
 $(() => {
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
@@ -36,7 +38,7 @@ $(() => {
             new_password1: "password_strength",
         },
         errorElement: "p",
-        errorPlacement: function (error, element) {
+        errorPlacement(error, element) {
             // NB: this is called at most once, when the error element
             // is created.
             element.next(".help-inline.alert.alert-error").remove();
@@ -81,8 +83,8 @@ $(() => {
     // Code in this block will be executed when the /accounts/send_confirm
     // endpoint is visited i.e. accounts_send_confirm.html is rendered.
     if ($("[data-page-id='accounts-send-confirm']").length > 0) {
-        $("#resend_email_link").click(() => {
-            $(".resend_confirm").submit();
+        $("#resend_email_link").on("click", () => {
+            $(".resend_confirm").trigger("submit");
         });
     }
 
@@ -109,12 +111,12 @@ $(() => {
 
     $("#send_confirm").validate({
         errorElement: "div",
-        errorPlacement: function (error) {
+        errorPlacement(error) {
             $(".email-frontend-error").empty();
             $("#send_confirm .alert.email-backend-error").remove();
             error.appendTo(".email-frontend-error").addClass("text-error");
         },
-        success: function () {
+        success() {
             $("#errors").empty();
         },
     });
@@ -125,7 +127,7 @@ $(() => {
         // check if it is the "focusout" or if it is a keydown, then check if
         // the keycode was the one for "enter" (13).
         if (e.type === "focusout" || e.which === 13) {
-            $(this).val($.trim($(this).val()));
+            $(this).val($(this).val().trim());
         }
     });
 
@@ -134,25 +136,25 @@ $(() => {
         $("#subdomain_section")[action]();
     };
 
-    $("#realm_in_root_domain").change(function () {
+    $("#realm_in_root_domain").on("change", function () {
         show_subdomain_section($(this).is(":checked"));
     });
 
     $("#login_form").validate({
         errorClass: "text-error",
         wrapper: "div",
-        submitHandler: function (form) {
+        submitHandler(form) {
             $("#login_form").find(".loader").css("display", "inline-block");
             $("#login_form").find("button .text").hide();
 
             form.submit();
         },
-        invalidHandler: function () {
+        invalidHandler() {
             // this removes all previous errors that were put on screen
             // by the server.
             $("#login_form .alert.alert-error").remove();
         },
-        showErrors: function (error_map) {
+        showErrors(error_map) {
             if (error_map.password) {
                 $("#login_form .alert.alert-error").remove();
             }
@@ -188,7 +190,7 @@ $(() => {
         }
     }
 
-    $("#source_realm_select").change(update_full_name_section);
+    $("#source_realm_select").on("change", update_full_name_section);
     update_full_name_section();
 
     let timer;

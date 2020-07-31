@@ -1,7 +1,7 @@
 import filecmp
-import logging
 import os
 from typing import Any, Dict, List
+from unittest.mock import call, patch
 
 import ujson
 
@@ -31,10 +31,6 @@ from zerver.models import Message, Reaction, Recipient, UserProfile, get_realm, 
 
 
 class MatterMostImporter(ZulipTestCase):
-    logger = logging.getLogger()
-    # set logger to a higher level to suppress 'logger.INFO' outputs
-    logger.setLevel(logging.WARNING)
-
     def test_mattermost_data_file_to_dict(self) -> None:
         fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
         mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
@@ -300,12 +296,15 @@ class MatterMostImporter(ZulipTestCase):
         fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
         mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
         output_dir = self.make_import_output_dir("mattermost")
-        zerver_realm_emoji = write_emoticon_data(
-            realm_id=3,
-            custom_emoji_data=mattermost_data["emoji"],
-            data_dir=self.fixture_file_name("", "mattermost_fixtures"),
-            output_dir = output_dir,
-        )
+
+        with self.assertLogs(level="INFO"):
+            zerver_realm_emoji = write_emoticon_data(
+                realm_id=3,
+                custom_emoji_data=mattermost_data["emoji"],
+                data_dir=self.fixture_file_name("", "mattermost_fixtures"),
+                output_dir = output_dir,
+            )
+
         self.assertEqual(len(zerver_realm_emoji), 2)
         self.assertEqual(zerver_realm_emoji[0]["file_name"], "peerdium")
         self.assertEqual(zerver_realm_emoji[0]["realm"], 3)
@@ -454,12 +453,13 @@ class MatterMostImporter(ZulipTestCase):
             {"user": "harry", "create_at": 1553166540957, "emoji_name": "world_map"},
         ]
 
-        zerver_realmemoji = write_emoticon_data(
-            realm_id=3,
-            custom_emoji_data=mattermost_data["emoji"],
-            data_dir=self.fixture_file_name("", "mattermost_fixtures"),
-            output_dir=self.make_import_output_dir("mattermost"),
-        )
+        with self.assertLogs(level="INFO"):
+            zerver_realmemoji = write_emoticon_data(
+                realm_id=3,
+                custom_emoji_data=mattermost_data["emoji"],
+                data_dir=self.fixture_file_name("", "mattermost_fixtures"),
+                output_dir=self.make_import_output_dir("mattermost"),
+            )
 
         # Make sure tick is present in fixture data
         self.assertEqual(zerver_realmemoji[1]["name"], "tick")
@@ -502,11 +502,20 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        do_convert_data(
-            mattermost_data_dir=mattermost_data_dir,
-            output_dir=output_dir,
-            masking_content=False,
-        )
+        with patch('builtins.print') as mock_print, self.assertLogs(level='WARNING') as warn_log:
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=False,
+            )
+        self.assertEqual(mock_print.mock_calls, [
+            call('Generating data for', 'gryffindor'),
+            call('Generating data for', 'slytherin')
+        ])
+        self.assertEqual(warn_log.output, [
+            'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
+            'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
+        ])
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
         self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, 'avatars')), True)
@@ -557,10 +566,12 @@ class MatterMostImporter(ZulipTestCase):
         exported_usermessage_messages = self.get_set(messages['zerver_usermessage'], 'message')
         self.assertEqual(exported_usermessage_messages, exported_messages_id)
 
-        do_import_realm(
-            import_dir=harry_team_output_dir,
-            subdomain='gryffindor',
-        )
+        with self.assertLogs(level="INFO"):
+            do_import_realm(
+                import_dir=harry_team_output_dir,
+                subdomain='gryffindor',
+            )
+
         realm = get_realm('gryffindor')
 
         self.assertFalse(get_user("harry@zulip.com", realm).is_mirror_dummy)
@@ -575,11 +586,15 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("direct_channel", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        do_convert_data(
-            mattermost_data_dir=mattermost_data_dir,
-            output_dir=output_dir,
-            masking_content=False,
-        )
+        with patch('builtins.print') as mock_print, self.assertLogs(level="INFO"):
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=False,
+            )
+        self.assertEqual(mock_print.mock_calls, [
+            call('Generating data for', 'gryffindor'),
+        ])
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
         self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, 'avatars')), True)
@@ -630,10 +645,12 @@ class MatterMostImporter(ZulipTestCase):
         exported_usermessage_messages = self.get_set(messages['zerver_usermessage'], 'message')
         self.assertEqual(exported_usermessage_messages, exported_messages_id)
 
-        do_import_realm(
-            import_dir=harry_team_output_dir,
-            subdomain='gryffindor',
-        )
+        with self.assertLogs(level="INFO"):
+            do_import_realm(
+                import_dir=harry_team_output_dir,
+                subdomain='gryffindor',
+            )
+
         realm = get_realm('gryffindor')
 
         messages = Message.objects.filter(sender__realm=realm)
@@ -666,11 +683,20 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        do_convert_data(
-            mattermost_data_dir=mattermost_data_dir,
-            output_dir=output_dir,
-            masking_content=True,
-        )
+        with patch('builtins.print') as mock_print, self.assertLogs(level='WARNING') as warn_log:
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=True,
+            )
+        self.assertEqual(mock_print.mock_calls, [
+            call('Generating data for', 'gryffindor'),
+            call('Generating data for', 'slytherin')
+        ])
+        self.assertEqual(warn_log.output, [
+            'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
+            'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
+        ])
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
         messages = self.read_file(harry_team_output_dir, 'messages-000001.json')
@@ -681,18 +707,29 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        do_convert_data(
-            mattermost_data_dir=mattermost_data_dir,
-            output_dir=output_dir,
-            masking_content=True,
-        )
+        with patch('builtins.print') as mock_print, self.assertLogs(level='WARNING') as warn_log:
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=True,
+            )
+        self.assertEqual(mock_print.mock_calls, [
+            call('Generating data for', 'gryffindor'),
+            call('Generating data for', 'slytherin')
+        ])
+        self.assertEqual(warn_log.output, [
+            'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
+            'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
+        ])
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
 
-        do_import_realm(
-            import_dir=harry_team_output_dir,
-            subdomain='gryffindor',
-        )
+        with self.assertLogs(level="INFO"):
+            do_import_realm(
+                import_dir=harry_team_output_dir,
+                subdomain='gryffindor',
+            )
+
         realm = get_realm('gryffindor')
 
         realm_users = UserProfile.objects.filter(realm=realm)

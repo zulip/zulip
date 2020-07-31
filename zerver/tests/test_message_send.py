@@ -1,5 +1,4 @@
 import datetime
-import time
 from typing import Any, Optional, Set
 from unittest import mock
 
@@ -266,10 +265,12 @@ class MessagePOSTTest(ZulipTestCase):
         user = self.example_user('hamlet')
         user.default_sending_stream_id = get_stream('Verona', user.realm).id
         user.save()
+        # The `to` field is required according to OpenAPI specification
         result = self.api_post(user, "/api/v1/messages", {"type": "stream",
                                                           "client": "test suite",
                                                           "content": "Test message no to",
-                                                          "topic": "Test topic"})
+                                                          "topic": "Test topic"},
+                               intentionally_undocumented=True)
         self.assert_json_success(result)
 
         sent_message = self.get_last_message()
@@ -941,8 +942,10 @@ class ScheduledMessageTest(ZulipTestCase):
                    "tz_guess": tz_guess}
         if defer_until:
             payload["deliver_at"] = defer_until
-
-        result = self.client_post("/json/messages", payload)
+        # `Topic` cannot be empty according to OpenAPI specification.
+        intentionally_undocumented: bool = (topic_name == '')
+        result = self.client_post("/json/messages", payload,
+                                  intentionally_undocumented=intentionally_undocumented)
         return result
 
     def test_schedule_message(self) -> None:
@@ -1143,13 +1146,8 @@ class StreamMessagesTest(ZulipTestCase):
 
         before_um_count = UserMessage.objects.count()
 
-        t = time.time()
         for i in range(num_messages):
             send_test_message()
-
-        delay = time.time() - t
-        assert(delay)  # quiet down lint
-        # print(delay)
 
         after_um_count = UserMessage.objects.count()
         ums_created = after_um_count - before_um_count
@@ -1888,6 +1886,25 @@ class CheckMessageTest(ZulipTestCase):
         topic_name = 'issue'
         message_content = 'whatever'
         addressee = Addressee.for_stream_name(stream_name, topic_name)
+        ret = check_message(sender, client, addressee, message_content)
+        self.assertEqual(ret['message'].sender.id, sender.id)
+
+    def test_guest_user_can_send_message(self) -> None:
+        # Guest users can write to web_public streams.
+        sender = self.example_user("polonius")
+        client = make_client(name="test suite")
+        rome_stream = get_stream("Rome", sender.realm)
+
+        is_sender_subscriber = Subscription.objects.filter(
+            user_profile=sender,
+            recipient__type_id=rome_stream.id,
+        ).exists()
+        self.assertFalse(is_sender_subscriber)
+        self.assertTrue(rome_stream.is_web_public)
+
+        topic_name = 'issue'
+        message_content = 'whatever'
+        addressee = Addressee.for_stream_name(rome_stream.name, topic_name)
         ret = check_message(sender, client, addressee, message_content)
         self.assertEqual(ret['message'].sender.id, sender.id)
 

@@ -1,7 +1,6 @@
 zrequire("search_pill");
 zrequire("input_pill");
 zrequire("Filter", "js/filter");
-set_global("Handlebars", global.make_handlebars());
 
 const is_starred_item = {
     display_value: "is:starred",
@@ -54,7 +53,7 @@ run_test("get_items", () => {
     const items = [is_starred_item, is_private_item];
 
     const pill_widget = {
-        items: function () {
+        items() {
             return items;
         },
     };

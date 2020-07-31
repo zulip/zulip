@@ -588,12 +588,12 @@ domain for your server).
 1. Create a [Sign in with Apple private key][apple-create-private-key].
 
 1. Store the resulting private key at
-   `/etc/zulip/apple/zulip-private-key.key`.  Be sure to set
+   `/etc/zulip/apple-auth-key.p8`.  Be sure to set
    permissions correctly:
 
    ```
-   chown -R zulip:zulip /etc/zulip/apple/
-   chmod 640 /etc/zulip/apple/zulip-private-key.key
+   chown zulip:zulip /etc/zulip/apple-auth-key.p8
+   chmod 640 /etc/zulip/apple-auth-key.p8
    ```
 
 1. Configure Apple authentication in `/etc/zulip/settings.py`:
@@ -601,7 +601,7 @@ domain for your server).
      string like "A1B2C3D4E5".
    * `SOCIAL_AUTH_APPLE_SERVICES_ID`: The Services ID you created in
      step 1, which might look like "com.example.services".
-   * `SOCIAL_AUTH_APPLE_BUNDLE_ID`: The Bundle ID, or App ID, of your
+   * `SOCIAL_AUTH_APPLE_APP_ID`: The App ID, or Bundle ID, of your
      app that you used in step 1 to configure your Services ID.
      This might look like "com.example.app".
    * `SOCIAL_AUTH_APPLE_KEY`: Despite the name this is not a key, but

@@ -31,7 +31,7 @@ function make_cursor_helper() {
     };
 
     return {
-        events: events,
+        events,
     };
 }
 

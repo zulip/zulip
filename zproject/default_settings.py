@@ -81,7 +81,7 @@ GOOGLE_OAUTH2_CLIENT_ID: Optional[str] = None
 
 # Apple:
 SOCIAL_AUTH_APPLE_SERVICES_ID = get_secret('social_auth_apple_services_id', development_only=True)
-SOCIAL_AUTH_APPLE_BUNDLE_ID = get_secret('social_auth_apple_bundle_id', development_only=True)
+SOCIAL_AUTH_APPLE_APP_ID = get_secret('social_auth_apple_app_id', development_only=True)
 SOCIAL_AUTH_APPLE_KEY = get_secret('social_auth_apple_key', development_only=True)
 SOCIAL_AUTH_APPLE_TEAM = get_secret('social_auth_apple_team', development_only=True)
 SOCIAL_AUTH_APPLE_SCOPE = ['name', 'email']
@@ -107,6 +107,9 @@ ERROR_REPORTING = True
 BROWSER_ERROR_REPORTING = False
 LOGGING_SHOW_MODULE = False
 LOGGING_SHOW_PID = False
+
+# Sentry.io error defaults to off
+SENTRY_DSN: Optional[str] = None
 
 # File uploads and avatars
 DEFAULT_AVATAR_URI = '/static/images/default-avatar.png'
@@ -222,11 +225,6 @@ EXTRA_INSTALLED_APPS = ['analytics']
 
 # Default GOOGLE_CLIENT_ID to the value needed for Android auth to work
 GOOGLE_CLIENT_ID = '835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com'
-
-# Legacy event logs configuration.  Our plans include removing
-# log_event entirely in favor of RealmAuditLog, at which point we
-# can remove this setting.
-EVENT_LOGS_ENABLED = False
 
 # Used to construct URLs to point to the Zulip server.  Since we
 # only support HTTPS in production, this is just for development.

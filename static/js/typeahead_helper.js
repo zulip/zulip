@@ -1,8 +1,13 @@
-const util = require("./util");
+const Handlebars = require("handlebars/runtime");
+const _ = require("lodash");
+
 const pygments_data = require("../generated/pygments_data.json");
+const emoji = require("../shared/js/emoji");
 const typeahead = require("../shared/js/typeahead");
 const render_typeahead_list_item = require("../templates/typeahead_list_item.hbs");
+
 const settings_data = require("./settings_data");
+const util = require("./util");
 
 // Returns an array of private message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
@@ -13,9 +18,7 @@ exports.get_cleaned_pm_recipients = function (query_string) {
 };
 
 exports.build_highlight_regex = function (query) {
-    // the regex below is based on bootstrap code
-    query = query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-    const regex = new RegExp("(" + query + ")", "ig");
+    const regex = new RegExp("(" + _.escapeRegExp(query) + ")", "ig");
     return regex;
 };
 

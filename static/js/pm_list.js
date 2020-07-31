@@ -85,14 +85,14 @@ exports._get_convos = function () {
 
         const display_message = {
             recipients: recipients_string,
-            user_ids_string: user_ids_string,
+            user_ids_string,
             unread: num_unread,
             is_zero: num_unread === 0,
-            is_active: is_active,
+            is_active,
             url: hash_util.pm_with_uri(reply_to),
-            user_circle_class: user_circle_class,
-            fraction_present: fraction_present,
-            is_group: is_group,
+            user_circle_class,
+            fraction_present,
+            is_group,
         };
         display_messages.push(display_message);
     }

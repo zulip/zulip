@@ -8,7 +8,7 @@ run_test("get_hotkey_deprecation_notice", () => {
     const expected =
         'translated: We\'ve replaced the "*" hotkey with "Ctrl + s" to make this common shortcut easier to trigger.';
     const actual = ui.get_hotkey_deprecation_notice("*", "Ctrl + s");
-    assert.equal(expected, actual);
+    assert.equal(actual, expected);
 });
 
 run_test("get_hotkey_deprecation_notice_mac", () => {
@@ -17,7 +17,7 @@ run_test("get_hotkey_deprecation_notice_mac", () => {
     const expected =
         'translated: We\'ve replaced the "*" hotkey with "Cmd + s" to make this common shortcut easier to trigger.';
     const actual = ui.get_hotkey_deprecation_notice("*", "Cmd + s");
-    assert.equal(expected, actual);
+    assert.equal(actual, expected);
     // Reset userAgent
     global.navigator.userAgent = "";
 });

@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 set_global("$", global.make_zjquery());
 zrequire("people");
 zrequire("buddy_data");
@@ -168,13 +170,13 @@ run_test("find_li w/force_render", () => {
     };
 
     const empty_li = buddy_list.find_li({
-        key: key,
+        key,
     });
     assert.equal(empty_li, stub_li);
     assert(!shown);
 
     const li = buddy_list.find_li({
-        key: key,
+        key,
         force_render: true,
     });
 
@@ -193,12 +195,6 @@ run_test("find_li w/force_render", () => {
 });
 
 run_test("scrolling", () => {
-    let scroll_f;
-
-    $(buddy_list.scroll_container_sel).scroll = (f) => {
-        scroll_f = f;
-    };
-
     buddy_list.populate({
         keys: [],
     });
@@ -212,7 +208,7 @@ run_test("scrolling", () => {
     assert(!tried_to_fill);
 
     buddy_list.start_scroll_handler();
-    scroll_f();
+    $(buddy_list.scroll_container_sel).trigger("scroll");
 
     assert(tried_to_fill);
 });

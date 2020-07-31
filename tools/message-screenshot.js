@@ -1,7 +1,9 @@
-const puppeteer = require("puppeteer");
-const commander = require("commander");
 const path = require("path");
+
+const commander = require("commander");
 const mkdirp = require("mkdirp");
+const puppeteer = require("puppeteer");
+
 const host = "localhost:9991";
 const options = {};
 
@@ -65,7 +67,7 @@ async function run() {
         const imagePath = options.imagePath;
         const imageDir = path.dirname(imagePath);
         mkdirp.sync(imageDir);
-        await page.screenshot({path: imagePath, clip: clip});
+        await page.screenshot({path: imagePath, clip});
     } catch (e) {
         console.log(e);
         process.exit(1);

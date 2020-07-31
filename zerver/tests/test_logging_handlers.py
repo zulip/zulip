@@ -71,11 +71,22 @@ class AdminNotifyHandlerTest(ZulipTestCase):
 
     def simulate_error(self) -> logging.LogRecord:
         self.login('hamlet')
-        with patch("zerver.decorator.rate_limit") as rate_limit_patch:
+        with patch("zerver.decorator.rate_limit") as rate_limit_patch, \
+                self.assertLogs('django.request', level='ERROR') as request_error_log, \
+                self.assertLogs('zerver.middleware.json_error_handler', level='ERROR') as json_error_handler_log:
             rate_limit_patch.side_effect = capture_and_throw
             result = self.client_get("/json/users")
             self.assert_json_error(result, "Internal server error", status_code=500)
             rate_limit_patch.assert_called_once()
+        self.assertEqual(request_error_log.output, [
+            'ERROR:django.request:Internal Server Error: /json/users'
+        ])
+        self.assertTrue(
+            'ERROR:zerver.middleware.json_error_handler:Traceback (most recent call last):' in json_error_handler_log.output[0]
+        )
+        self.assertTrue(
+            'Exception: Request error' in json_error_handler_log.output[0]
+        )
 
         record = self.logger.makeRecord(
             'name',
@@ -215,12 +226,16 @@ class ErrorFiltersTest(ZulipTestCase):
                          "api_key=******&stream=******&topic=******")
 
 class RateLimitFilterTest(ZulipTestCase):
+    # This logger has special settings configured in
+    # test_extra_settings.py.
+    logger = logging.getLogger("zulip.test_zulip_admins_handler")
+
     def test_recursive_filter_handling(self) -> None:
         def mocked_cache_get(key: str) -> int:
-            logging.error("Log an error to trigger recursive filter() calls in _RateLimitFilter.")
+            self.logger.error("Log an error to trigger recursive filter() calls in _RateLimitFilter.")
             raise Exception
 
         with patch("zerver.lib.logging_util.cache.get", side_effect=mocked_cache_get) as m:
-            logging.error("Log an error to trigger initial _RateLimitFilter.filter() call.")
+            self.logger.error("Log an error to trigger initial _RateLimitFilter.filter() call.")
             # cache.get should have only been called once, by the original filter() call:
             m.assert_called_once()

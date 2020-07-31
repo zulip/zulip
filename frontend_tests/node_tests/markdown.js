@@ -1,25 +1,22 @@
 zrequire("hash_util");
-set_global("katex", zrequire("katex", "katex/dist/katex.min.js"));
-set_global("marked", zrequire("marked", "third/marked/lib/marked"));
 
-zrequire("fenced_code");
-zrequire("stream_data");
-zrequire("people");
-zrequire("user_groups");
+const emoji = zrequire("emoji", "shared/js/emoji");
 const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
-zrequire("emoji");
-zrequire("message_store");
+const fenced_code = zrequire("fenced_code", "shared/js/fenced_code");
 const markdown_config = zrequire("markdown_config");
+const marked = zrequire("marked", "third/marked/lib/marked");
+
 zrequire("markdown");
+zrequire("message_store");
+zrequire("people");
+zrequire("stream_data");
+zrequire("user_groups");
 
 set_global("location", {
     origin: "http://zulip.zulipdev.com",
 });
 
-set_global("moment", require("moment-timezone"));
-
-set_global("page_params", {
-    realm_users: [],
+const emoji_params = {
     realm_emoji: {
         1: {
             id: 1,
@@ -28,6 +25,11 @@ set_global("page_params", {
             deactivated: false,
         },
     },
+    emoji_codes,
+};
+
+set_global("page_params", {
+    realm_users: [],
     realm_filters: [
         ["#(?P<id>[0-9]{2,8})", "https://trac.example.com/ticket/%(id)s"],
         ["ZBUG_(?P<id>[0-9]{2,8})", "https://trac2.zulip.net/ticket/%(id)s"],
@@ -43,7 +45,7 @@ function Image() {
     return {};
 }
 set_global("Image", Image);
-emoji.initialize();
+emoji.initialize(emoji_params);
 
 const doc = "";
 set_global("document", doc);
@@ -384,7 +386,6 @@ run_test("marked", () => {
             expected:
                 '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
         },
-        {input: "\u{1f6b2}", expected: "<p>\u{1f6b2}</p>"},
         {
             input: "Silent mention: @_**Cordelia Lear**",
             expected:
@@ -467,7 +468,7 @@ run_test("marked", () => {
         {
             input: ":)",
             expected:
-                '<p><span aria-label="slight smile" class="emoji emoji-1f642" role="img" title="slight smile">:slight_smile:</span></p>',
+                '<p><span aria-label="smile" class="emoji emoji-1f642" role="img" title="smile">:smile:</span></p>',
             translate_emoticons: true,
         },
         // Test HTML Escape in Custom Zulip Rules
@@ -521,11 +522,6 @@ run_test("marked", () => {
         },
     ];
 
-    // We remove one of the unicode emoji we put as input in one of the test
-    // cases (U+1F6B2), to verify that we display the emoji as it was input if it
-    // isn't present in emoji_codes.codepoint_to_name.
-    delete emoji_codes.codepoint_to_name["1f6b2"];
-
     test_cases.forEach((test_case) => {
         // Disable emoji conversion by default.
         page_params.translate_emoticons = test_case.translate_emoticons || false;
@@ -536,7 +532,7 @@ run_test("marked", () => {
         const message = {raw_content: input};
         markdown.apply_markdown(message);
         const output = message.content;
-        assert.equal(expected, output);
+        assert.equal(output, expected);
     });
 });
 
@@ -696,21 +692,12 @@ run_test("python_to_js_filter", () => {
     assert.deepEqual(actual_value, expected_value);
 });
 
-run_test("katex_throws_unexpected_exceptions", () => {
-    katex.renderToString = function () {
-        throw new Error("some-exception");
-    };
-    blueslip.expect("error", "Error: some-exception");
-    const message = {raw_content: "$$a$$"};
-    markdown.apply_markdown(message);
-});
-
 run_test("translate_emoticons_to_names", () => {
     // Simple test
     const test_text = "Testing :)";
-    const expected = "Testing :slight_smile:";
+    const expected = "Testing :smile:";
     const result = markdown.translate_emoticons_to_names(test_text);
-    assert.equal(expected, result);
+    assert.equal(result, expected);
 
     // Extensive tests.
     // The following code loops over the test cases and each emoticon conversion
@@ -752,4 +739,26 @@ run_test("translate_emoticons_to_names", () => {
             assert.equal(result, expected);
         }
     }
+});
+
+run_test("missing unicode emojis", () => {
+    const message = {raw_content: "\u{1f6b2}"};
+
+    markdown.apply_markdown(message);
+    assert.equal(
+        message.content,
+        '<p><span aria-label="bike" class="emoji emoji-1f6b2" role="img" title="bike">:bike:</span></p>',
+    );
+
+    // Now simulate that we don't know any emoji names.
+    function fake_get_emoji_name(codepoint) {
+        assert.equal(codepoint, "1f6b2");
+        // return undefined
+    }
+
+    with_field(emoji, "get_emoji_name", fake_get_emoji_name, () => {
+        markdown.apply_markdown(message);
+    });
+
+    assert.equal(message.content, "<p>\u{1f6b2}</p>");
 });

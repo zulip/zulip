@@ -13,6 +13,7 @@ from django.utils.timezone import now as timezone_now
 from corporate.models import Customer, CustomerPlan
 from zerver.lib.actions import do_change_logo_source, do_create_user
 from zerver.lib.events import add_realm_logo_fields
+from zerver.lib.home import get_furthest_read_time
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_user_messages, queries_captured
@@ -28,7 +29,7 @@ from zerver.models import (
     get_system_bot,
     get_user,
 )
-from zerver.views.home import compute_navbar_logo_url, get_furthest_read_time
+from zerver.views.home import compute_navbar_logo_url
 from zerver.worker.queue_processors import UserActivityWorker
 
 
@@ -317,7 +318,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.assertEqual(result.status_code, 200)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 40)
+            self.assert_length(queries, 39)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user('hamlet')
@@ -680,19 +681,27 @@ class HomeTest(ZulipTestCase):
 
     def test_show_billing(self) -> None:
         customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
+        user = self.example_user('desdemona')
 
-        # realm admin, but no CustomerPlan -> no billing link
-        user = self.example_user('iago')
+        # realm owner, but no CustomerPlan -> no billing link
+        user.role = UserProfile.ROLE_REALM_OWNER
+        user.save(update_fields=["role"])
         self.login_user(user)
         result_html = self._get_home_page().content.decode('utf-8')
         self.assertNotIn('Billing', result_html)
 
-        # realm admin, with inactive CustomerPlan -> show billing link
+        # realm owner, with inactive CustomerPlan -> show billing link
         CustomerPlan.objects.create(customer=customer, billing_cycle_anchor=timezone_now(),
                                     billing_schedule=CustomerPlan.ANNUAL, next_invoice_date=timezone_now(),
                                     tier=CustomerPlan.STANDARD, status=CustomerPlan.ENDED)
         result_html = self._get_home_page().content.decode('utf-8')
         self.assertIn('Billing', result_html)
+
+        # realm admin, with CustomerPlan -> no billing link
+        user.role = UserProfile.ROLE_REALM_ADMINISTRATOR
+        user.save(update_fields=["role"])
+        result_html = self._get_home_page().content.decode('utf-8')
+        self.assertNotIn('Billing', result_html)
 
         # billing admin, with CustomerPlan -> show billing link
         user.role = UserProfile.ROLE_MEMBER
@@ -734,11 +743,16 @@ class HomeTest(ZulipTestCase):
 
     def test_show_plans(self) -> None:
         realm = get_realm("zulip")
-        self.login('hamlet')
 
-        # Show plans link to all users if plan_type is LIMITED
+        # Don't show plans to guest users
+        self.login('polonius')
         realm.plan_type = Realm.LIMITED
         realm.save(update_fields=["plan_type"])
+        result_html = self._get_home_page().content.decode('utf-8')
+        self.assertNotIn('Plans', result_html)
+
+        # Show plans link to all other users if plan_type is LIMITED
+        self.login('hamlet')
         result_html = self._get_home_page().content.decode('utf-8')
         self.assertIn('Plans', result_html)
 
@@ -892,7 +906,11 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(user_msg_list[-1].content, message)
         self.logout()
 
-        do_soft_deactivate_users([long_term_idle_user])
+        with self.assertLogs(level='INFO') as info_log:
+            do_soft_deactivate_users([long_term_idle_user])
+        self.assertEqual(info_log.output, [
+            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+        ])
 
         self.login_user(long_term_idle_user)
         message = 'Test Message 2'
@@ -912,7 +930,11 @@ class HomeTest(ZulipTestCase):
         # We are sending this message to ensure that long_term_idle_user has
         # at least one UserMessage row.
         self.send_test_message('Testing', sender_name='hamlet')
-        do_soft_deactivate_users([long_term_idle_user])
+        with self.assertLogs(level='INFO') as info_log:
+            do_soft_deactivate_users([long_term_idle_user])
+        self.assertEqual(info_log.output, [
+            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+        ])
 
         message = 'Test Message 1'
         self.send_test_message(message)
@@ -936,7 +958,11 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(idle_user_msg_list[-1].content, message)
         self.logout()
 
-        do_soft_deactivate_users([long_term_idle_user])
+        with self.assertLogs(level='INFO') as info_log:
+            do_soft_deactivate_users([long_term_idle_user])
+        self.assertEqual(info_log.output, [
+            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+        ])
 
         message = 'Test Message 3'
         self.send_test_message(message)

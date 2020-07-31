@@ -60,7 +60,7 @@ const DropdownListWidget = function (opts) {
             const value = $(this).attr("data-value");
             update(value);
         });
-        $(`#${opts.container_id} .dropdown_list_reset_button`).click((e) => {
+        $(`#${opts.container_id} .dropdown_list_reset_button`).on("click", (e) => {
             update(opts.null_value);
             e.preventDefault();
         });
@@ -74,33 +74,33 @@ const DropdownListWidget = function (opts) {
 
         list_render.create(dropdown_list_body, opts.data, {
             name: `${opts.widget_name}_list`,
-            modifier: function (item) {
-                return render_dropdown_list({item: item});
+            modifier(item) {
+                return render_dropdown_list({item});
             },
             filter: {
                 element: search_input,
-                predicate: function (item, value) {
+                predicate(item, value) {
                     return item.name.toLowerCase().includes(value);
                 },
             },
             simplebar_container: $(`#${opts.container_id} .dropdown-list-wrapper`),
         });
-        $(`#${opts.container_id} .dropdown-search`).click((e) => {
+        $(`#${opts.container_id} .dropdown-search`).on("click", (e) => {
             e.stopPropagation();
         });
 
-        dropdown_toggle.click(() => {
+        dropdown_toggle.on("click", () => {
             search_input.val("").trigger("input");
         });
 
-        dropdown_toggle.focus((e) => {
+        dropdown_toggle.on("focus", (e) => {
             // On opening a Bootstrap Dropdown, the parent element recieves focus.
             // Here, we want our search input to have focus instead.
             e.preventDefault();
-            search_input.focus();
+            search_input.trigger("focus");
         });
 
-        search_input.keydown((e) => {
+        search_input.on("keydown", (e) => {
             if (!/(38|40|27)/.test(e.keyCode)) {
                 return;
             }

@@ -1,3 +1,9 @@
+const _ = require("lodash");
+
+const generated_emoji_codes = require("../generated/emoji/emoji_codes.json");
+const emoji = require("../shared/js/emoji");
+const render_edit_content_button = require("../templates/edit_content_button.hbs");
+
 const emojisets = require("./emojisets");
 const markdown_config = require("./markdown_config");
 
@@ -37,24 +43,13 @@ function message_hover(message_row) {
     }
 
     // But the message edit hover icon is determined by whether the message is still editable
-    if (
-        message_edit.get_editability(message) === message_edit.editability_types.FULL &&
-        !message.status_message
-    ) {
-        message_row
-            .find(".edit_content")
-            .html(
-                '<i class="fa fa-pencil edit_content_button" aria-hidden="true" title="Edit (e)"></i>',
-            );
-    } else {
-        message_row
-            .find(".edit_content")
-            .html(
-                '<i class="fa fa-file-code-o edit_content_button" aria-hidden="true" title="View source (e)" data-message-id="' +
-                    id +
-                    '"></i>',
-            );
-    }
+    const is_message_editable =
+        message_edit.get_editability(message) === message_edit.editability_types.FULL;
+    const args = {
+        is_editable: is_message_editable && !message.status_message,
+        msg_id: id,
+    };
+    message_row.find(".edit_content").html(render_edit_content_button(args));
 }
 
 exports.initialize_kitchen_sink_stuff = function () {
@@ -92,7 +87,7 @@ exports.initialize_kitchen_sink_stuff = function () {
         // preventDefault, allowing the modal to scroll normally.
     });
 
-    $(window).resize(_.throttle(resize.handler, 50));
+    $(window).on("resize", _.throttle(resize.handler, 50));
 
     // Scrolling in overlays. input boxes, and other elements that
     // explicitly scroll should not scroll the main view.  Stop
@@ -394,6 +389,8 @@ exports.initialize_everything = function () {
 
     const alert_words_params = pop_fields("alert_words");
 
+    const emoji_params = pop_fields("realm_emoji");
+
     const bot_params = pop_fields("realm_bots");
 
     const people_params = pop_fields("realm_users", "realm_non_active_users", "cross_realm_bots");
@@ -435,7 +432,7 @@ exports.initialize_everything = function () {
     overlays.initialize();
     invite.initialize();
     timerender.initialize();
-    tab_bar.initialize();
+    message_view_header.initialize();
     server_events.initialize();
     user_status.initialize(user_status_params);
     compose_pm_pill.initialize();
@@ -446,7 +443,10 @@ exports.initialize_everything = function () {
     bot_data.initialize(bot_params); // Must happen after people.initialize()
     message_fetch.initialize();
     message_scroll.initialize();
-    emoji.initialize();
+    emoji.initialize({
+        realm_emoji: emoji_params.realm_emoji,
+        emoji_codes: generated_emoji_codes,
+    });
     markdown.initialize(page_params.realm_filters, markdown_config.get_helpers());
     compose.initialize();
     composebox_typeahead.initialize(); // Must happen after compose.initialize()

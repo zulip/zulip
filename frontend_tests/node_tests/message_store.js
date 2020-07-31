@@ -25,6 +25,18 @@ set_global("page_params", {
     is_admin: true,
 });
 
+const denmark = {
+    subscribed: false,
+    name: "Denmark",
+    stream_id: 20,
+};
+
+const devel = {
+    subscribed: true,
+    name: "Devel",
+    stream_id: 21,
+};
+
 const me = {
     email: "me@example.com",
     user_id: 101,
@@ -145,7 +157,7 @@ run_test("message_booleans_parity", () => {
     // This test asserts that both have identical behavior for the
     // flags common between them.
     const assert_bool_match = (flags, expected_message) => {
-        const set_message = {topic: "set_message_booleans", flags: flags};
+        const set_message = {topic: "set_message_booleans", flags};
         const update_message = {topic: "update_booleans"};
         message_store.set_message_booleans(set_message);
         message_store.update_booleans(update_message, flags);
@@ -206,7 +218,7 @@ run_test("errors", () => {
     // This should early return and not run pm_conversation.set_partner
     let num_partner = 0;
     set_global("pm_conversation", {
-        set_partner: function () {
+        set_partner() {
             num_partner += 1;
         },
     });
@@ -251,6 +263,55 @@ run_test("update_booleans", () => {
     assert.equal(message.unread, true);
 });
 
+run_test("update_property", () => {
+    const message1 = {
+        type: "stream",
+        sender_full_name: alice.full_name,
+        sender_id: alice.user_id,
+        small_avatar_url: "alice_url",
+        stream_id: devel.stream_id,
+        stream: devel.name,
+        display_recipient: devel.name,
+        id: 100,
+    };
+    const message2 = {
+        type: "stream",
+        sender_full_name: bob.full_name,
+        sender_id: bob.user_id,
+        small_avatar_url: "bob_url",
+        stream_id: denmark.stream_id,
+        stream: denmark.name,
+        display_recipient: denmark.name,
+        id: 101,
+    };
+    for (const message of [message1, message2]) {
+        message_store.set_message_booleans(message);
+        message_store.add_message_metadata(message);
+    }
+
+    assert.equal(message1.sender_full_name, alice.full_name);
+    assert.equal(message2.sender_full_name, bob.full_name);
+    message_store.update_property("sender_full_name", "Bobby", {user_id: bob.user_id});
+    assert.equal(message1.sender_full_name, alice.full_name);
+    assert.equal(message2.sender_full_name, "Bobby");
+
+    assert.equal(message1.small_avatar_url, "alice_url");
+    assert.equal(message2.small_avatar_url, "bob_url");
+    message_store.update_property("small_avatar_url", "bobby_url", {user_id: bob.user_id});
+    assert.equal(message1.small_avatar_url, "alice_url");
+    assert.equal(message2.small_avatar_url, "bobby_url");
+
+    assert.equal(message1.stream, devel.name);
+    assert.equal(message1.display_recipient, devel.name);
+    assert.equal(message2.stream, denmark.name);
+    assert.equal(message2.display_recipient, denmark.name);
+    message_store.update_property("stream_name", "Prod", {stream_id: devel.stream_id});
+    assert.equal(message1.stream, "Prod");
+    assert.equal(message1.display_recipient, "Prod");
+    assert.equal(message2.stream, denmark.name);
+    assert.equal(message2.display_recipient, denmark.name);
+});
+
 run_test("each", () => {
     message_store.each((message) => {
         assert(message.alerted !== undefined);
@@ -270,7 +331,7 @@ run_test("message_id_change", () => {
 
     set_global("pointer", {
         furthest_read: 401,
-        set_furthest_read: function (value) {
+        set_furthest_read(value) {
             this.furthest_read = value;
         },
     });

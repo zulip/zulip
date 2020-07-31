@@ -12,7 +12,6 @@ page_params.realm_email_address_visibility =
 const huddle_data = zrequire("huddle_data");
 
 zrequire("typeahead_helper");
-set_global("Handlebars", global.make_handlebars());
 zrequire("Filter", "js/filter");
 zrequire("narrow_state");
 zrequire("stream_data");
@@ -330,9 +329,9 @@ run_test("group_suggestions", () => {
         return {
             type: "private",
             display_recipient: user_ids.map((id) => ({
-                id: id,
+                id,
             })),
-            timestamp: timestamp,
+            timestamp,
         };
     }
 
@@ -680,7 +679,7 @@ run_test("topic_suggestions", () => {
     for (const topic_name of ["team", "ignore", "test"]) {
         stream_topic_history.add_message({
             stream_id: office_id,
-            topic_name: topic_name,
+            topic_name,
         });
     }
 

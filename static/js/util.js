@@ -1,3 +1,4 @@
+const _ = require("lodash");
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
 exports.random_int = function random_int(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -150,11 +151,6 @@ exports.make_strcmp = function () {
 };
 exports.strcmp = exports.make_strcmp();
 
-exports.escape_regexp = function (string) {
-    // code from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
-    return string.replace(/([.*+?^=!:${}()|[\]/\\])/g, "\\$1");
-};
-
 exports.array_compare = function util_array_compare(a, b) {
     if (a.length !== b.length) {
         return false;
@@ -176,23 +172,25 @@ exports.array_compare = function util_array_compare(a, b) {
  * which should be a function that computes the uncached value.
  */
 const unassigned_value_sentinel = {};
-exports.CachedValue = function (opts) {
-    this._value = unassigned_value_sentinel;
-    Object.assign(this, opts);
-};
+class CachedValue {
+    _value = unassigned_value_sentinel;
 
-exports.CachedValue.prototype = {
-    get: function CachedValue_get() {
+    constructor(opts) {
+        Object.assign(this, opts);
+    }
+
+    get() {
         if (this._value === unassigned_value_sentinel) {
             this._value = this.compute_value();
         }
         return this._value;
-    },
+    }
 
-    reset: function CachedValue_reset() {
+    reset() {
         this._value = unassigned_value_sentinel;
-    },
-};
+    }
+}
+exports.CachedValue = CachedValue;
 
 exports.find_wildcard_mentions = function (message_content) {
     const mention = message_content.match(/(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/);
@@ -227,7 +225,7 @@ exports.sorted_ids = function (ids) {
     // it also makes sure we don't mutate the list.
     let id_list = ids.map(to_int);
     id_list.sort((a, b) => a - b);
-    id_list = _.uniq(id_list, true);
+    id_list = _.sortedUniq(id_list);
 
     return id_list;
 };

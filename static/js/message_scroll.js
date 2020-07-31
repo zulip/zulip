@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 let actively_scrolling = false;
 
 // Tracks whether the next scroll that will complete is initiated by
@@ -113,7 +115,7 @@ exports.actively_scrolling = function () {
 exports.scroll_finished = function () {
     actively_scrolling = false;
 
-    if (!$("#home").hasClass("active")) {
+    if (!$("#message_feed_container").hasClass("active")) {
         return;
     }
 
@@ -152,7 +154,8 @@ function scroll_finish() {
 }
 
 exports.initialize = function () {
-    message_viewport.message_pane.scroll(
+    message_viewport.message_pane.on(
+        "scroll",
         _.throttle(() => {
             unread_ops.process_visible();
             scroll_finish();

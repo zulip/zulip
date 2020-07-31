@@ -10,20 +10,20 @@ exports.open_overlay = function () {
     const overlay = $(".user_status_overlay");
     overlays.open_overlay({
         name: "user_status_overlay",
-        overlay: overlay,
-        on_close: function () {},
+        overlay,
+        on_close() {},
     });
 
     const user_id = people.my_current_user_id();
     const old_status_text = user_status.get_status_text(user_id);
     const field = exports.input_field();
     field.val(old_status_text);
-    field.select();
-    field.focus();
+    field.trigger("select");
+    field.trigger("focus");
     exports.toggle_clear_message_button();
 
     const button = exports.submit_button();
-    button.attr("disabled", true);
+    button.prop("disabled", true);
 };
 
 exports.close_overlay = function () {
@@ -43,7 +43,7 @@ exports.submit_new_status = function () {
 
     user_status.server_update({
         status_text: new_status_text,
-        success: function () {
+        success() {
             exports.close_overlay();
         },
     });
@@ -57,9 +57,9 @@ exports.update_button = function () {
     const button = exports.submit_button();
 
     if (old_status_text === new_status_text) {
-        button.attr("disabled", true);
+        button.prop("disabled", true);
     } else {
-        button.attr("disabled", false);
+        button.prop("disabled", false);
     }
 };
 

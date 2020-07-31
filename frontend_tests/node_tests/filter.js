@@ -1,7 +1,6 @@
 zrequire("unread");
 zrequire("stream_data");
 zrequire("people");
-set_global("Handlebars", global.make_handlebars());
 global.stub_out_jquery();
 set_global("$", global.make_zjquery());
 zrequire("message_util", "js/message_util");
@@ -42,7 +41,7 @@ function assert_same_operators(result, terms) {
             negated = false;
         }
         return {
-            negated: negated,
+            negated,
             operator: term.operator,
             operand: term.operand,
         };
@@ -524,8 +523,8 @@ function get_predicate(operators) {
 
 function make_sub(name, stream_id) {
     const sub = {
-        name: name,
-        stream_id: stream_id,
+        name,
+        stream_id,
     };
     global.stream_data.add_sub(sub);
 }
@@ -546,8 +545,8 @@ run_test("predicate_basics", () => {
         ["topic", "Bar"],
     ]);
 
-    assert(predicate({type: "stream", stream_id: stream_id, topic: "bar"}));
-    assert(!predicate({type: "stream", stream_id: stream_id, topic: "whatever"}));
+    assert(predicate({type: "stream", stream_id, topic: "bar"}));
+    assert(!predicate({type: "stream", stream_id, topic: "whatever"}));
     assert(!predicate({type: "stream", stream_id: 9999999}));
     assert(!predicate({type: "private"}));
 
@@ -1175,9 +1174,9 @@ run_test("term_type", () => {
 
     function term(operator, operand, negated) {
         return {
-            operator: operator,
-            operand: operand,
-            negated: negated,
+            operator,
+            operand,
+            negated,
         };
     }
 
@@ -1277,8 +1276,8 @@ run_test("update_email", () => {
 
 function make_private_sub(name, stream_id) {
     const sub = {
-        name: name,
-        stream_id: stream_id,
+        name,
+        stream_id,
         invite_only: true,
     };
     global.stream_data.add_sub(sub);
@@ -1286,8 +1285,8 @@ function make_private_sub(name, stream_id) {
 
 function make_web_public_sub(name, stream_id) {
     const sub = {
-        name: name,
-        stream_id: stream_id,
+        name,
+        stream_id,
         is_web_public: true,
     };
     global.stream_data.add_sub(sub);

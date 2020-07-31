@@ -1,8 +1,13 @@
-zrequire("people");
+const _ = require("lodash");
+const moment = require("moment-timezone");
+const rewiremock = require("rewiremock/node");
+
+rewiremock.proxy(() => zrequire("people"), {
+    "moment-timezone": () => moment("20130208T080910"),
+});
 set_global("message_store", {});
 set_global("page_params", {});
 set_global("settings_data", {});
-set_global("md5", (s) => "md5-" + s);
 
 const settings_config = zrequire("settings_config");
 const visibility = settings_config.email_address_visibility_values;
@@ -390,9 +395,6 @@ run_test("user_timezone", () => {
     global.page_params.twenty_four_hour_time = false;
     assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
 
-    const actual_moment = zrequire("actual_moment", "moment-timezone");
-    set_global("moment", () => actual_moment("20130208T080910"));
-
     global.page_params.twenty_four_hour_time = true;
     assert.equal(people.get_user_time(me.user_id), "0:09");
 
@@ -486,10 +488,10 @@ initialize();
 
 run_test("recipient_counts", () => {
     const user_id = 99;
-    assert.equal(people.get_recipient_count({user_id: user_id}), 0);
+    assert.equal(people.get_recipient_count({user_id}), 0);
     people.incr_recipient_count(user_id);
     people.incr_recipient_count(user_id);
-    assert.equal(people.get_recipient_count({user_id: user_id}), 2);
+    assert.equal(people.get_recipient_count({user_id}), 2);
 
     assert.equal(people.get_recipient_count({pm_recipient_count: 5}), 5);
 });
@@ -608,7 +610,7 @@ run_test("message_methods", () => {
 
     assert.equal(
         people.small_avatar_url_for_person(maria),
-        "https://secure.gravatar.com/avatar/md5-athens@example.com?d=identicon&s=50",
+        "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=50",
     );
 
     assert.deepEqual(people.sender_info_with_small_avatar_urls_for_sender_ids([30]), [
@@ -656,7 +658,7 @@ run_test("message_methods", () => {
     };
     assert.equal(
         people.small_avatar_url(message),
-        "https://secure.gravatar.com/avatar/md5-athens@example.com?d=identicon&s=50",
+        "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=50",
     );
 
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 9999999");
@@ -667,7 +669,7 @@ run_test("message_methods", () => {
     };
     assert.equal(
         people.small_avatar_url(message),
-        "https://secure.gravatar.com/avatar/md5-foo@example.com?d=identicon&s=50",
+        "https://secure.gravatar.com/avatar/b48def645758b95537d4424c84d1a9ff?d=identicon&s=50",
     );
 
     message = {
@@ -852,7 +854,7 @@ run_test("updates", () => {
 
     let person = {
         email: old_email,
-        user_id: user_id,
+        user_id,
         full_name: "Foo Barson",
     };
     people.add_active_user(person);

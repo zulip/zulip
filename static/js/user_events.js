@@ -3,6 +3,7 @@
 // dependencies that existed when this code was in people.js.
 // (We should do bot updates here too.)
 const settings_config = require("./settings_config");
+
 exports.update_person = function update(person) {
     const person_obj = people.get_by_user_id(person.user_id);
 

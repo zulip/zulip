@@ -64,7 +64,7 @@ from zerver.models import (
     get_user,
     get_user_by_delivery_email,
 )
-from zerver.openapi.openapi import validate_against_openapi_schema
+from zerver.openapi.openapi import validate_against_openapi_schema, validate_request
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 from zilencer.models import get_remote_server_by_uuid
 
@@ -151,7 +151,21 @@ class ZulipTestCase(TestCase):
         elif 'HTTP_USER_AGENT' not in kwargs:
             kwargs['HTTP_USER_AGENT'] = default_user_agent
 
-    def validate_api_response_openapi(self, url: str, method: str, result: HttpResponse) -> None:
+    def extract_api_suffix_url(self, url: str) -> Tuple[str, Dict[str, Any]]:
+        """
+        Function that extracts the url after `/api/v1` or `/json` and also
+        returns the query data in the url, if there is any.
+        """
+        url_split = url.split('?')
+        data: Dict[str, Any] = {}
+        if len(url_split) == 2:
+            data = urllib.parse.parse_qs(url_split[1])
+        url = url_split[0]
+        url = url.replace("/json/", "/").replace("/api/v1/", "/")
+        return (url, data)
+
+    def validate_api_response_openapi(self, url: str, method: str, result: HttpResponse, data: Dict[str, Any],
+                                      http_headers: Dict[str, Any], intentionally_undocumented: Optional[bool] = False) -> None:
         """
         Validates all API responses received by this test against Zulip's API documentation,
         declared in zerver/openapi/zulip.yaml.  This powerful test lets us use Zulip's
@@ -160,18 +174,26 @@ class ZulipTestCase(TestCase):
         """
         if not (url.startswith("/json") or url.startswith("/api/v1")):
             return
-
         try:
             content = ujson.loads(result.content)
         except ValueError:
             return
-        url = re.sub(r"\?.*", "", url)
-        validate_against_openapi_schema(content,
-                                        url.replace("/json/", "/").replace("/api/v1/", "/"),
-                                        method, str(result.status_code))
+        json_url = False
+        if url.startswith('/json'):
+            json_url = True
+        url, query_data = self.extract_api_suffix_url(url)
+        if len(query_data) != 0:
+            # In some cases the query parameters are defined in the url itself. In such cases
+            # The `data` argument of our function is not used. Hence get `data` arguement
+            # from url.
+            data = query_data
+        response_validated = validate_against_openapi_schema(content, url, method, str(result.status_code))
+        if response_validated:
+            validate_request(url, method, data, http_headers, json_url, str(result.status_code),
+                             intentionally_undocumented=intentionally_undocumented)
 
     @instrument_url
-    def client_patch(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
+    def client_patch(self, url: str, info: Dict[str, Any]={}, intentionally_undocumented: bool=False, **kwargs: Any) -> HttpResponse:
         """
         We need to urlencode, since Django's function won't do it for us.
         """
@@ -179,7 +201,7 @@ class ZulipTestCase(TestCase):
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
         result = django_client.patch(url, encoded, **kwargs)
-        self.validate_api_response_openapi(url, "patch", result)
+        self.validate_api_response_openapi(url, "patch", result, info, kwargs, intentionally_undocumented=intentionally_undocumented)
         return result
 
     @instrument_url
@@ -200,7 +222,7 @@ class ZulipTestCase(TestCase):
             encoded,
             content_type=MULTIPART_CONTENT,
             **kwargs)
-        self.validate_api_response_openapi(url, "patch", result)
+        self.validate_api_response_openapi(url, "patch", result, info, kwargs)
         return result
 
     @instrument_url
@@ -216,7 +238,7 @@ class ZulipTestCase(TestCase):
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
         result = django_client.delete(url, encoded, **kwargs)
-        self.validate_api_response_openapi(url, "delete", result)
+        self.validate_api_response_openapi(url, "delete", result, info, kwargs)
         return result
 
     @instrument_url
@@ -234,11 +256,11 @@ class ZulipTestCase(TestCase):
         return django_client.head(url, encoded, **kwargs)
 
     @instrument_url
-    def client_post(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
+    def client_post(self, url: str, info: Dict[str, Any]={}, intentionally_undocumented: bool=False, **kwargs: Any) -> HttpResponse:
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
         result = django_client.post(url, info, **kwargs)
-        self.validate_api_response_openapi(url, "post", result)
+        self.validate_api_response_openapi(url, "post", result, info, kwargs, intentionally_undocumented=intentionally_undocumented)
         return result
 
     @instrument_url
@@ -256,11 +278,11 @@ class ZulipTestCase(TestCase):
         return match.func(req)
 
     @instrument_url
-    def client_get(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
+    def client_get(self, url: str, info: Dict[str, Any]={}, intentionally_undocumented: bool=False, **kwargs: Any) -> HttpResponse:
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
         result = django_client.get(url, info, **kwargs)
-        self.validate_api_response_openapi(url, "get", result)
+        self.validate_api_response_openapi(url, "get", result, info, kwargs, intentionally_undocumented=intentionally_undocumented)
         return result
 
     example_user_map = dict(
@@ -550,9 +572,9 @@ class ZulipTestCase(TestCase):
         kwargs['HTTP_AUTHORIZATION'] = self.encode_user(user)
         return self.client_get(*args, **kwargs)
 
-    def api_post(self, user: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+    def api_post(self, user: UserProfile, *args: Any, intentionally_undocumented: bool=False, **kwargs: Any) -> HttpResponse:
         kwargs['HTTP_AUTHORIZATION'] = self.encode_user(user)
-        return self.client_post(*args, **kwargs)
+        return self.client_post(*args, intentionally_undocumented=intentionally_undocumented, **kwargs)
 
     def api_patch(self, user: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
         kwargs['HTTP_AUTHORIZATION'] = self.encode_user(user)
@@ -730,6 +752,7 @@ class ZulipTestCase(TestCase):
 
     def make_stream(self, stream_name: str, realm: Optional[Realm]=None,
                     invite_only: bool=False,
+                    is_web_public: bool=False,
                     history_public_to_subscribers: Optional[bool]=None) -> Stream:
         if realm is None:
             realm = get_realm('zulip')
@@ -742,6 +765,7 @@ class ZulipTestCase(TestCase):
                 realm=realm,
                 name=stream_name,
                 invite_only=invite_only,
+                is_web_public=is_web_public,
                 history_public_to_subscribers=history_public_to_subscribers,
             )
         except IntegrityError:  # nocoverage -- this is for bugs in the tests
@@ -785,9 +809,11 @@ class ZulipTestCase(TestCase):
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(self, user: UserProfile, streams: Iterable[str],
                                     extra_post_data: Dict[str, Any]={}, invite_only: bool=False,
+                                    is_web_public: bool=False,
                                     allow_fail: bool=False,
                                     **kwargs: Any) -> HttpResponse:
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
+                     'is_web_public': ujson.dumps(is_web_public),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
         result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, **kwargs)

@@ -1,7 +1,8 @@
-const settings_config = require("./settings_config");
+const pygments_data = require("../generated/pygments_data.json");
 const render_settings_admin_auth_methods_list = require("../templates/settings/admin_auth_methods_list.hbs");
 const render_settings_admin_realm_domains_list = require("../templates/settings/admin_realm_domains_list.hbs");
-const pygments_data = require("../generated/pygments_data.json");
+
+const settings_config = require("./settings_config");
 
 const meta = {
     loaded: false,
@@ -18,21 +19,21 @@ exports.maybe_disable_widgets = function () {
 
     $(".organization-box [data-name='auth-methods']")
         .find("input, button, select, checked")
-        .attr("disabled", true);
+        .prop("disabled", true);
 
     if (page_params.is_admin) {
-        $("#deactivate_realm_button").attr("disabled", true);
-        $("#org-message-retention").find("input, select").attr("disabled", true);
+        $("#deactivate_realm_button").prop("disabled", true);
+        $("#org-message-retention").find("input, select").prop("disabled", true);
         return;
     }
 
     $(".organization-box [data-name='organization-profile']")
         .find("input, textarea, button, select")
-        .attr("disabled", true);
+        .prop("disabled", true);
 
     $(".organization-box [data-name='organization-settings']")
         .find("input, textarea, button, select")
-        .attr("disabled", true);
+        .prop("disabled", true);
 
     $(".organization-box [data-name='organization-settings']")
         .find(".control-label-disabled")
@@ -40,7 +41,7 @@ exports.maybe_disable_widgets = function () {
 
     $(".organization-box [data-name='organization-permissions']")
         .find("input, textarea, button, select")
-        .attr("disabled", true);
+        .prop("disabled", true);
 
     $(".organization-box [data-name='organization-permissions']")
         .find(".control-label-disabled")
@@ -50,7 +51,7 @@ exports.maybe_disable_widgets = function () {
 exports.get_sorted_options_list = function (option_values_object) {
     const options_list = Object.keys(option_values_object).map((key) => ({
         ...option_values_object[key],
-        key: key,
+        key,
     }));
     let comparator = (x, y) => x.order - y.order;
     if (!options_list[0].order) {
@@ -302,7 +303,7 @@ exports.populate_realm_domains = function (realm_domains) {
     if (domains.length === 0) {
         domains = i18n.t("None");
     }
-    $("#allowed_domains_label").text(i18n.t("Allowed domains: __domains__", {domains: domains}));
+    $("#allowed_domains_label").text(i18n.t("Allowed domains: __domains__", {domains}));
 
     const realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
     realm_domains_table_body.find("tr").remove();
@@ -310,7 +311,7 @@ exports.populate_realm_domains = function (realm_domains) {
     for (const realm_domain of realm_domains) {
         realm_domains_table_body.append(
             render_settings_admin_realm_domains_list({
-                realm_domain: realm_domain,
+                realm_domain,
             }),
         );
     }
@@ -699,12 +700,12 @@ exports.build_page = function () {
         exports.change_save_button_state(save_btn_container, "saving");
         channel.patch({
             url: "/json/realm",
-            data: data,
-            success: function () {
+            data,
+            success() {
                 failed_alert_elem.hide();
                 exports.change_save_button_state(save_btn_container, "succeeded");
             },
-            error: function (xhr) {
+            error(xhr) {
                 exports.change_save_button_state(save_btn_container, "failed");
                 save_button.hide();
                 ui_report.error(i18n.t("Save failed"), xhr, failed_alert_elem);
@@ -865,11 +866,11 @@ exports.build_page = function () {
             $(e.target)
                 .closest(".org-subsection-parent")
                 .find(".subsection-changes-save button")
-                .click();
+                .trigger("click");
         }
     });
 
-    $("#id_realm_msg_edit_limit_setting").change((e) => {
+    $("#id_realm_msg_edit_limit_setting").on("change", (e) => {
         const msg_edit_limit_dropdown_value = e.target.value;
         change_element_block_display_property(
             "id_realm_message_content_edit_limit_minutes",
@@ -877,7 +878,7 @@ exports.build_page = function () {
         );
     });
 
-    $("#id_realm_msg_delete_limit_setting").change((e) => {
+    $("#id_realm_msg_delete_limit_setting").on("change", (e) => {
         const msg_delete_limit_dropdown_value = e.target.value;
         change_element_block_display_property(
             "id_realm_message_content_delete_limit_minutes",
@@ -885,7 +886,7 @@ exports.build_page = function () {
         );
     });
 
-    $("#id_realm_message_retention_setting").change((e) => {
+    $("#id_realm_message_retention_setting").on("change", (e) => {
         const message_retention_setting_dropdown_value = e.target.value;
         change_element_block_display_property(
             "id_realm_message_retention_days",
@@ -893,7 +894,7 @@ exports.build_page = function () {
         );
     });
 
-    $("#id_realm_waiting_period_setting").change(function () {
+    $("#id_realm_waiting_period_setting").on("change", function () {
         const waiting_period_threshold = this.value;
         change_element_block_display_property(
             "id_realm_waiting_period_threshold",
@@ -901,7 +902,7 @@ exports.build_page = function () {
         );
     });
 
-    $("#id_realm_org_join_restrictions").change((e) => {
+    $("#id_realm_org_join_restrictions").on("change", (e) => {
         const org_join_restrictions = e.target.value;
         const node = $("#allowed_domains_label").parent();
         if (org_join_restrictions === "only_selected_domain") {
@@ -914,7 +915,7 @@ exports.build_page = function () {
         }
     });
 
-    $("#id_realm_org_join_restrictions").click((e) => {
+    $("#id_realm_org_join_restrictions").on("click", (e) => {
         // This prevents the disappearance of modal when there are
         // no allowed domains otherwise it gets closed due to
         // the click event handler attached to `#settings_overlay_container`
@@ -933,19 +934,19 @@ exports.build_page = function () {
         const realm_domains_info = $(".realm_domains_info");
 
         channel.del({
-            url: url,
-            success: function () {
+            url,
+            success() {
                 ui_report.success(i18n.t("Deleted successfully!"), realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
-            error: function (xhr) {
+            error(xhr) {
                 ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
         });
     });
 
-    $("#submit-add-realm-domain").click(() => {
+    $("#submit-add-realm-domain").on("click", () => {
         const realm_domains_info = $(".realm_domains_info");
         const widget = $("#add-realm-domain-widget");
         const domain = widget.find(".new-realm-domain").val();
@@ -957,8 +958,8 @@ exports.build_page = function () {
 
         channel.post({
             url: "/json/realm/domains",
-            data: data,
-            success: function () {
+            data,
+            success() {
                 $("#add-realm-domain-widget .new-realm-domain").val("");
                 $("#add-realm-domain-widget .new-realm-domain-allow-subdomains").prop(
                     "checked",
@@ -967,7 +968,7 @@ exports.build_page = function () {
                 ui_report.success(i18n.t("Added successfully!"), realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
-            error: function (xhr) {
+            error(xhr) {
                 ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
@@ -985,27 +986,27 @@ exports.build_page = function () {
         };
 
         channel.patch({
-            url: url,
-            data: data,
-            success: function () {
+            url,
+            data,
+            success() {
                 if (allow_subdomains) {
                     ui_report.success(
                         i18n.t("Update successful: Subdomains allowed for __domain__", {
-                            domain: domain,
+                            domain,
                         }),
                         realm_domains_info,
                     );
                 } else {
                     ui_report.success(
                         i18n.t("Update successful: Subdomains no longer allowed for __domain__", {
-                            domain: domain,
+                            domain,
                         }),
                         realm_domains_info,
                     );
                 }
                 fade_status_element(realm_domains_info);
             },
-            error: function (xhr) {
+            error(xhr) {
                 ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
@@ -1046,21 +1047,21 @@ exports.build_page = function () {
             form_data.append("night", JSON.stringify(night));
         }
         const spinner = $(`${widget} .upload-spinner-background`).expectOne();
-        const upload_text = $(`${widget}  .settings-page-upload-text`).expectOne();
-        const delete_button = $(`${widget}  .settings-page-delete-button`).expectOne();
+        const upload_text = $(`${widget}  .image-upload-text`).expectOne();
+        const delete_button = $(`${widget}  .image-delete-button`).expectOne();
         const error_field = $(`${widget}  .image_file_input_error`).expectOne();
         realm_icon_logo_upload_start(spinner, upload_text, delete_button);
         error_field.hide();
         channel.post({
-            url: url,
+            url,
             data: form_data,
             cache: false,
             processData: false,
             contentType: false,
-            success: function () {
+            success() {
                 realm_icon_logo_upload_complete(spinner, upload_text, delete_button);
             },
-            error: function (xhr) {
+            error(xhr) {
                 realm_icon_logo_upload_complete(spinner, upload_text, delete_button);
                 ui_report.error("", xhr, error_field);
             },
@@ -1087,7 +1088,7 @@ exports.build_page = function () {
         }
         channel.post({
             url: "/json/realm/deactivate",
-            error: function (xhr) {
+            error(xhr) {
                 ui_report.error(
                     i18n.t("Failed"),
                     xhr,

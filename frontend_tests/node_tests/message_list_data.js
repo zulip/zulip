@@ -87,7 +87,7 @@ run_test("basics", () => {
 
     mld.get(125.01).id = 145;
     mld.change_message_id(125.01, 145, {
-        re_render: () => {},
+        rerender_view: () => {},
     });
     assert_contents(mld, [120, 130, 140, 145]);
 

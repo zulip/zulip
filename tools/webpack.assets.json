@@ -8,8 +8,6 @@
     "archive": [
         "./static/js/bundles/portico.js",
         "katex/dist/katex.min.js",
-        "xdate/src/xdate.js",
-        "handlebars/dist/cjs/handlebars.runtime.js",
         "./static/js/archive.js",
         "./static/js/colorspace.js",
         "./static/js/floating_recipient_bar.js",
@@ -29,7 +27,6 @@
         "./static/styles/portico/landing-page.scss",
         "./static/js/billing/helpers.js",
         "./static/js/billing/billing.js",
-        "handlebars/dist/cjs/handlebars.runtime.js",
         "./static/js/templates.js",
         "./static/js/loading.js",
         "./static/styles/portico/billing.scss"
@@ -40,22 +37,17 @@
         "./static/styles/portico/landing-page.scss",
         "./static/js/billing/helpers.js",
         "./static/js/billing/upgrade.js",
-        "handlebars/dist/cjs/handlebars.runtime.js",
         "./static/js/templates.js",
         "./static/js/loading.js",
         "./static/styles/portico/billing.scss"
     ],
-    "portico": [
-        "./static/js/bundles/portico.js"
-    ],
+    "portico": ["./static/js/bundles/portico.js"],
     "error-styles": [
         "./static/third/bootstrap/css/bootstrap.css",
         "./static/third/bootstrap/css/bootstrap-responsive.css",
         "./static/styles/portico/portico-styles.scss"
     ],
-    "common": [
-        "./static/js/bundles/common.js"
-    ],
+    "common": ["./static/js/bundles/common.js"],
     "help": [
         "./static/js/bundles/portico.js",
         "simplebar/dist/simplebar.css",
@@ -97,14 +89,8 @@
         "./static/js/analytics/support.js",
         "./static/styles/app_components.scss"
     ],
-    "dev-login": [
-        "./static/js/bundles/portico.js",
-        "./static/js/portico/dev-login.js"
-    ],
-    "desktop-login": [
-        "./static/js/bundles/portico.js",
-        "./static/js/portico/desktop-login.js"
-    ],
+    "dev-login": ["./static/js/bundles/portico.js", "./static/js/portico/dev-login.js"],
+    "desktop-login": ["./static/js/bundles/portico.js", "./static/js/portico/desktop-login.js"],
     "desktop-redirect": [
         "./static/js/bundles/portico.js",
         "./static/js/portico/desktop-redirect.js"
@@ -125,14 +111,8 @@
     "stats": [
         "./static/js/bundles/portico.js",
         "./static/styles/portico/stats.scss",
-        "./static/js/stats/stats.js",
-        "plotly.js/dist/plotly-basic.min.js"
+        "./static/js/stats/stats.js"
     ],
-    "app": [
-        "./static/js/bundles/app.js",
-        "katex/dist/katex.min.js"
-    ],
-    "digest": [
-        "./static/js/bundles/portico.js"
-    ]
+    "app": ["./static/js/bundles/app.js", "katex/dist/katex.min.js"],
+    "digest": ["./static/js/bundles/portico.js"]
 }

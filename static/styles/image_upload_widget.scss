@@ -1,5 +1,5 @@
 /* common CSS for all image upload widget's */
-.avatar-icon-logo-settings {
+.image_upload_widget {
     position: relative;
     border-radius: 5px;
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
@@ -12,7 +12,7 @@
         height: 100%;
     }
 
-    .settings-page-image-background {
+    .image-upload-background {
         content: '';
         background-color: hsl(0, 0%, 0%);
         height: 100%;
@@ -24,7 +24,7 @@
         cursor: pointer;
     }
 
-    .settings-page-delete-button {
+    .image-delete-button {
         cursor: pointer;
         color: hsl(0, 0%, 75%);
         opacity: 0;
@@ -35,19 +35,19 @@
         z-index: 99;
     }
 
-    .settings-page-delete-button:hover {
+    .image-delete-button:hover {
         color: hsl(0, 0%, 100%);
     }
 
-    .settings-page-delete-button:hover ~ .settings-page-upload-text {
+    .image-delete-button:hover ~ .image-upload-text {
         visibility: hidden;
     }
 
-    .settings-page-delete-button:hover ~ .settings-page-delete-text {
+    .image-delete-button:hover ~ .image-delete-text {
         visibility: visible;
     }
 
-    .settings-page-delete-text {
+    .image-delete-text {
         color: hsl(0, 0%, 100%);
         font-size: 0.85rem;
         position: absolute;
@@ -55,7 +55,7 @@
         z-index: 99;
     }
 
-    .settings-page-upload-text {
+    .image-upload-text {
         cursor: pointer;
         font-size: 0.85rem;
         color: hsl(0, 0%, 85%);
@@ -64,7 +64,7 @@
         visibility: hidden;
     }
 
-    .settings-page-upload-text:hover {
+    .image-upload-text:hover {
         color: hsl(0, 0%, 100%);
     }
 
@@ -87,15 +87,15 @@
     }
 
     &:hover {
-        .settings-page-delete-button {
+        .image-delete-button {
             opacity: 1;
         }
 
-        .settings-page-upload-text {
+        .image-upload-text {
             visibility: visible;
         }
 
-        .settings-page-image-background {
+        .image-upload-background {
             display: block;
         }
     }
@@ -122,18 +122,18 @@
         z-index: 99;
     }
 
-    .settings-page-delete-button {
+    .image-delete-button {
         font-size: 3rem;
     }
 
-    .settings-page-delete-text {
+    .image-delete-text {
         top: 90px;
         right: 40px;
     }
 
-    .settings-page-upload-text {
+    .image-upload-text {
         top: 90px;
-        right: 20px;
+        right: 24px;
     }
 
     .image_upload_spinner {
@@ -168,12 +168,12 @@
     border-radius: 5px;
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
 
-    .settings-page-delete-text {
+    .image-delete-text {
         top: 40px;
         right: 18px;
     }
 
-    .settings-page-upload-text {
+    .image-upload-text {
         top: 40px;
         right: 18px;
     }
@@ -200,8 +200,8 @@
     text-align: center;
     margin: 0px 80px 0px 20px;
 
-    .settings-page-upload-text,
-    .settings-page-delete-text {
+    .image-upload-text,
+    .image-delete-text {
         top: 17px;
         right: 80px;
     }

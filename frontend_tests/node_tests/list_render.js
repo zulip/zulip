@@ -269,7 +269,7 @@ function sort_button(opts) {
     const classList = new Set();
 
     const button = {
-        data: data,
+        data,
         closest: lookup(".progressive-table-wrapper", {
             data: lookup("list-render", opts.list_name),
         }),
@@ -637,7 +637,7 @@ run_test("opts.get_item", () => {
     const predicate_opts = {
         get_item: (n) => items[n],
         filter: {
-            predicate: predicate,
+            predicate,
         },
     };
 
@@ -691,7 +691,7 @@ run_test("render item", () => {
     const widget = list_render.create(container, list, {
         name: "replace-list",
         modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
-        get_item: get_item,
+        get_item,
         html_selector: (item) => `tr[data-item='${item}']`,
         simplebar_container: scroll_container,
     });
@@ -726,7 +726,7 @@ run_test("render item", () => {
     list_render.create(container, list, {
         name: "replace-list",
         modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
-        get_item: get_item,
+        get_item,
         html_selector: "hello world",
         simplebar_container: scroll_container,
     });
@@ -751,7 +751,7 @@ run_test("render item", () => {
     const widget_3 = list_render.create(container, list, {
         name: "replace-list",
         modifier: (item) => (rendering_item ? undefined : `${item}\n`),
-        get_item: get_item,
+        get_item,
         html_selector: (item) => `tr[data-item='${item}']`,
         simplebar_container: scroll_container,
     });

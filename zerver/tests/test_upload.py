@@ -343,7 +343,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # dummy_2 should not exist in database or the uploads folder
         do_delete_old_unclaimed_attachments(2)
         self.assertTrue(not Attachment.objects.filter(path_id = d2_path_id).exists())
-        self.assertTrue(not delete_message_image(d2_path_id))
+        with self.assertLogs(level='WARNING') as warn_log:
+            self.assertTrue(not delete_message_image(d2_path_id))
+        self.assertEqual(warn_log.output, [
+            'WARNING:root:dummy_2.txt does not exist. Its entry in the database will be removed.'
+        ])
 
     def test_attachment_url_without_upload(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -393,7 +397,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Then, try having a user who didn't receive the message try to publish it, and fail
         body = f"Illegal message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
-        self.send_stream_message(self.example_user("cordelia"), "Denmark", body, "test")
+        with self.assertLogs(level='WARNING') as warn_log:
+            self.send_stream_message(self.example_user("cordelia"), "Denmark", body, "test")
+        self.assertTrue('WARNING:root:User 8 tried to share upload' in warn_log.output[0]
+                        and 'but lacks permission' in warn_log.output[0])
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 1)
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
 
@@ -1580,7 +1587,11 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(expected_url, uri)
 
         # Delete the tarball.
-        self.assertIsNone(delete_export_tarball('not_a_file'))
+        with self.assertLogs(level='WARNING') as warn_log:
+            self.assertIsNone(delete_export_tarball('not_a_file'))
+        self.assertEqual(warn_log.output, [
+            'WARNING:root:not_a_file does not exist. Its entry in the database will be removed.'
+        ])
         path_id = urllib.parse.urlparse(uri).path
         self.assertEqual(delete_export_tarball(path_id), path_id)
 
@@ -1635,7 +1646,11 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_message_image_delete_when_file_doesnt_exist(self) -> None:
-        self.assertEqual(False, delete_message_image('non-existant-file'))
+        with self.assertLogs(level='WARNING') as warn_log:
+            self.assertEqual(False, delete_message_image('non-existant-file'))
+        self.assertEqual(warn_log.output, [
+            'WARNING:root:non-existant-file does not exist. Its entry in the database will be removed.'
+        ])
 
     @use_s3_backend
     def test_file_upload_authed(self) -> None:
@@ -1868,7 +1883,16 @@ class S3Test(ZulipTestCase):
         with open(tarball_path, 'w') as f:
             f.write('dummy')
 
-        uri = upload_export_tarball(user_profile.realm, tarball_path)
+        total_bytes_transferred = 0
+
+        def percent_callback(bytes_transferred: int) -> None:
+            nonlocal total_bytes_transferred
+            total_bytes_transferred += bytes_transferred
+
+        uri = upload_export_tarball(user_profile.realm, tarball_path,
+                                    percent_callback=percent_callback)
+        # Verify the percent_callback API works
+        self.assertEqual(total_bytes_transferred, 5)
 
         result = re.search(re.compile(r"([0-9a-fA-F]{32})"), uri)
         if result is not None:
@@ -1877,7 +1901,11 @@ class S3Test(ZulipTestCase):
         self.assertEqual(uri, expected_url)
 
         # Delete the tarball.
-        self.assertIsNone(delete_export_tarball('not_a_file'))
+        with self.assertLogs(level='WARNING') as warn_log:
+            self.assertIsNone(delete_export_tarball('not_a_file'))
+        self.assertEqual(warn_log.output, [
+            'WARNING:root:not_a_file does not exist. Its entry in the database will be removed.'
+        ])
         path_id = urllib.parse.urlparse(uri).path
         self.assertEqual(delete_export_tarball(path_id), path_id)
 

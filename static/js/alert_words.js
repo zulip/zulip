@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 // For simplicity, we use a list for our internal
 // data, since that matches what the server sends us.
 let my_alert_words = [];
@@ -19,12 +21,6 @@ exports.has_alert_word = function (word) {
     return my_alert_words.includes(word);
 };
 
-// escape_user_regex taken from jquery-ui/autocomplete.js,
-// licensed under MIT license.
-function escape_user_regex(value) {
-    return value.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-}
-
 exports.process_message = function (message) {
     // Parsing for alert words is expensive, so we rely on the host
     // to tell us there any alert words to even look for.
@@ -33,7 +29,7 @@ exports.process_message = function (message) {
     }
 
     for (const word of my_alert_words) {
-        const clean = escape_user_regex(word);
+        const clean = _.escapeRegExp(word);
         const before_punctuation = "\\s|^|>|[\\(\\\".,';\\[]";
         const after_punctuation = "\\s|$|<|[\\)\\\"\\?!:.,';\\]!]";
 

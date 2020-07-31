@@ -140,7 +140,7 @@ exports.create = function ($container, list, opts) {
             numeric: exports.numeric_sort,
         },
         offset: 0,
-        list: list,
+        list,
         filtered_list: list,
         reverse_mode: false,
         filter_value: "",

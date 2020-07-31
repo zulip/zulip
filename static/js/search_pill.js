@@ -3,7 +3,7 @@ exports.create_item_from_search_string = function (search_string) {
     const description = Filter.describe(operator);
     return {
         display_value: search_string,
-        description: description,
+        description,
     };
 };
 

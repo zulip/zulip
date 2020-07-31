@@ -1,4 +1,5 @@
 const util = require("./util");
+
 let previous_pinned;
 let previous_normal;
 let previous_dormant;
@@ -7,8 +8,21 @@ let all_streams = [];
 exports.get_streams = function () {
     // Right now this is only used for testing, but we should
     // use it for things like hotkeys that cycle through streams.
-    return all_streams;
+    const sorted_streams = all_streams.map((stream_id) =>
+        stream_data.maybe_get_stream_name(stream_id),
+    );
+    return sorted_streams;
 };
+
+function compare_function(a, b) {
+    const stream_a = stream_data.get_sub_by_id(a);
+    const stream_b = stream_data.get_sub_by_id(b);
+
+    const stream_name_a = stream_a ? stream_a.name : "";
+    const stream_name_b = stream_b ? stream_b.name : "";
+
+    return util.strcmp(stream_name_a, stream_name_b);
+}
 
 function filter_streams_by_search(streams, search_term) {
     if (search_term === "") {
@@ -20,7 +34,7 @@ function filter_streams_by_search(streams, search_term) {
 
     const filtered_streams = streams.filter((stream) =>
         search_terms.some((search_term) => {
-            const lower_stream_name = stream.toLowerCase();
+            const lower_stream_name = stream_data.get_sub_by_id(stream).name.toLowerCase();
             const cands = lower_stream_name.split(" ");
             cands.push(lower_stream_name);
             return cands.some((name) => name.startsWith(search_term));
@@ -46,7 +60,7 @@ exports.sort_groups = function (streams, search_term) {
     const dormant_streams = [];
 
     for (const stream of streams) {
-        const sub = stream_data.get_sub(stream);
+        const sub = stream_data.get_sub_by_id(stream);
         const pinned = sub.pin_to_top;
         if (pinned) {
             pinned_streams.push(stream);
@@ -57,9 +71,9 @@ exports.sort_groups = function (streams, search_term) {
         }
     }
 
-    pinned_streams.sort(util.strcmp);
-    normal_streams.sort(util.strcmp);
-    dormant_streams.sort(util.strcmp);
+    pinned_streams.sort(compare_function);
+    normal_streams.sort(compare_function);
+    dormant_streams.sort(compare_function);
 
     const same_as_before =
         previous_pinned !== undefined &&
@@ -76,33 +90,19 @@ exports.sort_groups = function (streams, search_term) {
     }
 
     return {
-        same_as_before: same_as_before,
-        pinned_streams: pinned_streams,
-        normal_streams: normal_streams,
-        dormant_streams: dormant_streams,
+        same_as_before,
+        pinned_streams,
+        normal_streams,
+        dormant_streams,
     };
 };
-
-function pos(stream_id) {
-    const sub = stream_data.get_sub_by_id(stream_id);
-    const name = sub.name;
-    const i = all_streams.indexOf(name);
-
-    if (i < 0) {
-        return;
-    }
-
-    return i;
-}
 
 function maybe_get_stream_id(i) {
     if (i < 0 || i >= all_streams.length) {
         return;
     }
 
-    const name = all_streams[i];
-    const stream_id = stream_data.get_stream_id(name);
-    return stream_id;
+    return all_streams[i];
 }
 
 exports.first_stream_id = function () {
@@ -110,9 +110,9 @@ exports.first_stream_id = function () {
 };
 
 exports.prev_stream_id = function (stream_id) {
-    const i = pos(stream_id);
+    const i = all_streams.indexOf(stream_id);
 
-    if (i === undefined) {
+    if (i < 0) {
         return;
     }
 
@@ -120,9 +120,9 @@ exports.prev_stream_id = function (stream_id) {
 };
 
 exports.next_stream_id = function (stream_id) {
-    const i = pos(stream_id);
+    const i = all_streams.indexOf(stream_id);
 
-    if (i === undefined) {
+    if (i < 0) {
         return;
     }
 

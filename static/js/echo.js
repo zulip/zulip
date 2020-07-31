@@ -72,7 +72,7 @@ exports.build_display_recipient = function (message) {
             // the requirement that we have an actual user object in
             // `people.js` when sending messages.
             return {
-                email: email,
+                email,
                 full_name: email,
                 unknown_local_echo_user: true,
             };

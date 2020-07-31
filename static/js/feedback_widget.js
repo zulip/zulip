@@ -26,7 +26,7 @@ const meta = {
 };
 
 const animate = {
-    maybe_close: function () {
+    maybe_close() {
         if (!meta.opened) {
             return;
         }
@@ -38,7 +38,7 @@ const animate = {
 
         setTimeout(animate.maybe_close, 100);
     },
-    fadeOut: function () {
+    fadeOut() {
         if (!meta.opened) {
             return;
         }
@@ -49,7 +49,7 @@ const animate = {
             meta.alert_hover_state = false;
         }
     },
-    fadeIn: function () {
+    fadeIn() {
         if (meta.opened) {
             return;
         }
@@ -70,7 +70,7 @@ function set_up_handlers() {
     meta.handlers_set = true;
 
     // if the user mouses over the notification, don't hide it.
-    meta.$container.mouseenter(() => {
+    meta.$container.on("mouseenter", () => {
         if (!meta.opened) {
             return;
         }
@@ -79,7 +79,7 @@ function set_up_handlers() {
     });
 
     // once the user's mouse leaves the notification, restart the countdown.
-    meta.$container.mouseleave(() => {
+    meta.$container.on("mouseleave", () => {
         if (!meta.opened) {
             return;
         }

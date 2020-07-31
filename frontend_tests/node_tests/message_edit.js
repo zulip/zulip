@@ -5,7 +5,6 @@ set_global("page_params", {
 
 global.stub_out_jquery();
 
-set_global("XDate", zrequire("XDate", "xdate/src/xdate"));
 zrequire("message_edit");
 
 const get_editability = message_edit.get_editability;

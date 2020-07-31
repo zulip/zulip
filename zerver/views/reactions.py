@@ -73,7 +73,7 @@ def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: in
         # Otherwise, use the name provided in this request, but verify
         # it is valid in the user's realm (e.g. not a deactivated
         # realm emoji).
-        check_emoji_request(message.sender.realm, emoji_name,
+        check_emoji_request(user_profile.realm, emoji_name,
                             emoji_code, reaction_type)
 
     if user_message is None:

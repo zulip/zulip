@@ -6,12 +6,11 @@ import os
 import random
 import re
 import shutil
-import sys
 import unicodedata
 import urllib
 from datetime import timedelta
 from mimetypes import guess_extension, guess_type
-from typing import Any, Optional, Tuple
+from typing import Any, Callable, Optional, Tuple
 
 import boto3
 import botocore
@@ -253,7 +252,8 @@ class ZulipUploadBackend:
     def get_emoji_url(self, emoji_file_name: str, realm_id: int) -> str:
         raise NotImplementedError()
 
-    def upload_export_tarball(self, realm: Realm, tarball_path: str) -> str:
+    def upload_export_tarball(self, realm: Realm, tarball_path: str,
+                              percent_callback: Optional[Callable[[Any], None]]=None) -> str:
         raise NotImplementedError()
 
     def delete_export_tarball(self, path_id: str) -> Optional[str]:
@@ -588,11 +588,8 @@ class S3UploadBackend(ZulipUploadBackend):
                                                         emoji_file_name=emoji_file_name)
         return f"{self.avatar_bucket_url}/{emoji_path}"
 
-    def upload_export_tarball(self, realm: Optional[Realm], tarball_path: str) -> str:
-        def percent_callback(bytes_transferred: Any) -> None:
-            sys.stdout.write('.')
-            sys.stdout.flush()
-
+    def upload_export_tarball(self, realm: Optional[Realm], tarball_path: str,
+                              percent_callback: Optional[Callable[[Any], None]]=None) -> str:
         # We use the avatar bucket, because it's world-readable.
         key = self.avatar_bucket.Object(os.path.join("exports", generate_random_token(32),
                                                      os.path.basename(tarball_path)))
@@ -817,7 +814,8 @@ class LocalUploadBackend(ZulipUploadBackend):
             "/user_avatars",
             RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm_id, emoji_file_name=emoji_file_name))
 
-    def upload_export_tarball(self, realm: Realm, tarball_path: str) -> str:
+    def upload_export_tarball(self, realm: Realm, tarball_path: str,
+                              percent_callback: Optional[Callable[[Any], None]]=None) -> str:
         path = os.path.join(
             'exports',
             str(realm.id),
@@ -902,8 +900,10 @@ def upload_message_image_from_request(request: HttpRequest, user_file: File,
     return upload_message_file(uploaded_file_name, uploaded_file_size,
                                content_type, user_file.read(), user_profile)
 
-def upload_export_tarball(realm: Realm, tarball_path: str) -> str:
-    return upload_backend.upload_export_tarball(realm, tarball_path)
+def upload_export_tarball(realm: Realm, tarball_path: str,
+                          percent_callback: Optional[Callable[[Any], None]]=None) -> str:
+    return upload_backend.upload_export_tarball(realm, tarball_path,
+                                                percent_callback=percent_callback)
 
 def delete_export_tarball(path_id: str) -> Optional[str]:
     return upload_backend.delete_export_tarball(path_id)

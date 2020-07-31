@@ -12,16 +12,21 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
     <div class="center-block new-style" style="padding: 20px 0px">
 
         <div class="pitch">
+            {% if creating_new_team %}
+            <h1>{{ _('Create your organization') }}</h1>
+            {% else %}
+            <h1>{{ _('Create your account') }}</h1>
+            {% endif %}
+
             {% trans %}
-            <h1>You&rsquo;re almost there.</h1>
-            <p>We just need you to do one last thing.</p>
+            <p>You&rsquo;re almost there! We just need you to do one last thing.</p>
             {% endtrans %}
         </div>
 
         <form method="post" class="form-horizontal white-box" id="registration" action="{{ url('zerver.views.registration.accounts_register') }}">
             {{ csrf_input }}
 
-            <section class="org-registration">
+            <fieldset class="org-registration">
                 {% if creating_new_team %}
                 <div class="input-box">
                     <div class="inline-block relative">
@@ -37,7 +42,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         {% endfor %}
                     {% endif %}
 
-                    <div class="help-box margin-top">
+                    <div class="help-text">
                         {{ _('Shorter is better than longer.') }}
                     </div>
                 </div>
@@ -74,14 +79,17 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                             {% endfor %}
                         {% endif %}
                     </div>
-                    <div class="help-box margin-top">
-                        {{ _("The address you'll use to log in to your organization.") }}
+                    <div class="help-text">
+                        {{ _("The URL users will use to access the new organization.") }}
                     </div>
                 </div>
                 {% endif %}
-            </section>
+            </fieldset>
 
-            <section class="user-registration">
+            <fieldset class="user-registration">
+                {% if creating_new_team %}
+                <legend>{{ _('Your account') }}</legend>
+                {% endif %}
                 {% if realm_name and not creating_new_team %}
                 <img class="avatar inline-block" src="{{ realm_icon }}" alt="" />
                 <div class="info-box inline-block">
@@ -93,8 +101,8 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 <div class="input-box no-validation">
                     <input type='hidden' name='key' value='{{ key }}' />
                     <input type='hidden' name='timezone' id='timezone'/>
-                    <input id="id_email" type='text' disabled="true" placeholder="{{ email }}" required />
                     <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
+                    <div id="id_email">{{ email }}</div>
                 </div>
 
                 {% if accounts %}
@@ -170,8 +178,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     </div>
                 </div>
                 {% endif %}
-            </section>
-
+            </fieldset>
             {% if default_stream_groups %}
             <hr>
             <div class="default-stream-groups">

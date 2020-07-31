@@ -56,7 +56,7 @@ function call(args, idempotent) {
             } catch (ex) {
                 blueslip.error(
                     "Unexpected 403 response from server",
-                    {xhr: xhr.responseText, args: args},
+                    {xhr: xhr.responseText, args},
                     ex.stack,
                 );
             }

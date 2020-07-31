@@ -1,7 +1,9 @@
+const XDate = require("xdate");
+
 let is_floating_recipient_bar_showing = false;
 
 function top_offset(elem) {
-    return elem.offset().top - $("#tab_bar").safeOuterHeight();
+    return elem.offset().top - $("#message_view_header").safeOuterHeight();
 }
 
 exports.first_visible_message = function (bar) {
@@ -192,11 +194,11 @@ exports.relevant_recipient_bars = function () {
         const title = elem.find(".message_label_clickable").last().attr("title");
 
         const item = {
-            elem: elem,
-            title: title,
-            date_html: date_html,
-            date_text: date_text,
-            need_frb: need_frb,
+            elem,
+            title,
+            date_html,
+            date_text,
+            need_frb,
         };
 
         return item;

@@ -13,7 +13,7 @@ exports.initialize = function () {
             {label: i18n.t("Settings"), key: "settings"},
             {label: i18n.t("Organization"), key: "organization"},
         ],
-        callback: function (name, key) {
+        callback(name, key) {
             if (key === "organization") {
                 settings_panel_menu.show_org_settings();
             } else {

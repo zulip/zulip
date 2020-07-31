@@ -1,4 +1,3 @@
-import logging
 from unittest.mock import Mock, patch
 
 from django.conf import settings
@@ -19,9 +18,6 @@ from zerver.models import Attachment, RealmEmoji
 
 
 class TransferUploadsToS3Test(ZulipTestCase):
-    logger = logging.getLogger()
-    logger.setLevel(logging.WARNING)
-
     @patch("zerver.lib.transfer.transfer_avatars_to_s3")
     @patch("zerver.lib.transfer.transfer_message_files_to_s3")
     @patch("zerver.lib.transfer.transfer_emoji_to_s3")
@@ -42,7 +38,8 @@ class TransferUploadsToS3Test(ZulipTestCase):
 
         user = self.example_user("hamlet")
 
-        transfer_avatars_to_s3(1)
+        with self.assertLogs(level="INFO"):
+            transfer_avatars_to_s3(1)
 
         path_id = user_avatar_path(user)
         image_key = bucket.Object(path_id)
@@ -63,7 +60,8 @@ class TransferUploadsToS3Test(ZulipTestCase):
         upload_message_file('dummy1.txt', len(b'zulip1!'), 'text/plain', b'zulip1!', hamlet)
         upload_message_file('dummy2.txt', len(b'zulip2!'), 'text/plain', b'zulip2!', othello)
 
-        transfer_message_files_to_s3(1)
+        with self.assertLogs(level="INFO"):
+            transfer_message_files_to_s3(1)
 
         attachments = Attachment.objects.all()
 
@@ -89,7 +87,8 @@ class TransferUploadsToS3Test(ZulipTestCase):
             emoji_file_name=emoji.file_name,
         )
 
-        transfer_emoji_to_s3(1)
+        with self.assertLogs(level="INFO"):
+            transfer_emoji_to_s3(1)
 
         self.assertEqual(len(list(bucket.objects.all())), 2)
         original_key = bucket.Object(emoji_path + ".original")

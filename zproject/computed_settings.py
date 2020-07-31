@@ -31,7 +31,6 @@ from .configured_settings import (
     EMAIL_BACKEND,
     EMAIL_HOST,
     ERROR_REPORTING,
-    EVENT_LOGS_ENABLED,
     EXTERNAL_HOST,
     EXTERNAL_HOST_WITHOUT_PORT,
     EXTERNAL_URI_SCHEME,
@@ -47,6 +46,8 @@ from .configured_settings import (
     REMOTE_POSTGRES_PORT,
     REMOTE_POSTGRES_SSLMODE,
     SENDFILE_BACKEND,
+    SENTRY_DSN,
+    SOCIAL_AUTH_APPLE_APP_ID,
     SOCIAL_AUTH_APPLE_SERVICES_ID,
     SOCIAL_AUTH_GITHUB_KEY,
     SOCIAL_AUTH_GITHUB_ORG_NAME,
@@ -688,15 +689,6 @@ SCHEDULED_MESSAGE_DELIVERER_LOG_PATH = zulip_path("/var/log/zulip/scheduled_mess
 RETENTION_LOG_PATH = zulip_path("/var/log/zulip/message_retention.log")
 AUTH_LOG_PATH = zulip_path("/var/log/zulip/auth.log")
 
-# The EVENT_LOGS feature is an ultra-legacy piece of code, which
-# originally logged all significant database changes for debugging.
-# We plan to replace it with RealmAuditLog, stored in the database,
-# everywhere that code mentioning it appears.
-if EVENT_LOGS_ENABLED:
-    EVENT_LOG_DIR: Optional[str] = zulip_path("/home/zulip/logs/event_log")
-else:
-    EVENT_LOG_DIR = None
-
 ZULIP_WORKER_TEST_FILE = '/tmp/zulip-worker-test-file'
 
 
@@ -927,9 +919,16 @@ LOGGING: Dict[str, Any] = {
         'zulip.slow_queries': {
             'level': 'INFO',
             'handlers': ['slow_queries_file'],
+            'propagate': False,
         },
         'zulip.soft_deactivation': {
             'handlers': ['file', 'errors_file'],
+            'propagate': False,
+        },
+        # This logger is used only for automated tests validating the
+        # error-handling behavior of the zulip_admins handler.
+        'zulip.test_zulip_admins_handler': {
+            'handlers': ['zulip_admins'],
             'propagate': False,
         },
         'zulip.zerver.lib.webhooks.common': {
@@ -1030,8 +1029,10 @@ SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
 # SERVICES_ID to make things more readable in the configuration
 # and our own custom backend code.
 SOCIAL_AUTH_APPLE_CLIENT = SOCIAL_AUTH_APPLE_SERVICES_ID
+SOCIAL_AUTH_APPLE_AUDIENCE = [id for id in [SOCIAL_AUTH_APPLE_CLIENT, SOCIAL_AUTH_APPLE_APP_ID] if id is not None]
+
 if PRODUCTION:
-    SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("/etc/zulip/apple/zulip-private-key.key")
+    SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("/etc/zulip/apple-auth-key.p8")
 else:
     SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("zproject/dev_apple.key")
 
@@ -1132,3 +1133,9 @@ CROSS_REALM_BOT_EMAILS = {
 THUMBOR_KEY = get_secret('thumbor_key')
 
 TWO_FACTOR_PATCH_ADMIN = False
+
+# Allow the environment to override the default DSN
+SENTRY_DSN = os.environ.get("SENTRY_DSN", SENTRY_DSN)
+if SENTRY_DSN:
+    from .sentry import setup_sentry
+    setup_sentry(SENTRY_DSN)

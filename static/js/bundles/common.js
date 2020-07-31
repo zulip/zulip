@@ -1,16 +1,12 @@
 import "core-js/features/promise";
 import "core-js/features/symbol";
 import "../../../tools/debug-require";
-import "jquery/dist/jquery.js";
-import "underscore/underscore.js";
+import "jquery";
 import "../page_params.js";
 import "../csrf.js";
 import "../blueslip.js";
 import "../../third/bootstrap/js/bootstrap.js";
 import "../common.js";
-import "moment/min/moment.min.js";
-import "moment-timezone/builds/moment-timezone-with-data.min.js";
-import "sortablejs/Sortable.js";
 import "../../third/bootstrap/css/bootstrap.css";
 import "../../third/bootstrap/css/bootstrap-btn.css";
 import "../../third/bootstrap/css/bootstrap-responsive.css";

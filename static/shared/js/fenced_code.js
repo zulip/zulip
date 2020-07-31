@@ -1,3 +1,6 @@
+import katex from "katex/dist/katex.min.js";
+import _ from "lodash";
+
 // Parsing routine that can be dropped in to message parsing
 // and formats code blocks
 //
@@ -27,7 +30,7 @@ let stash_func = function (text) {
     return text;
 };
 
-exports.wrap_code = function (code) {
+export function wrap_code(code) {
     // Trim trailing \n until there's just one left
     // This mirrors how pygments handles code input
     return (
@@ -35,7 +38,7 @@ exports.wrap_code = function (code) {
         _.escape(code.replace(/^\n+|\n+$/g, "")) +
         "\n</code></pre></div>\n"
     );
-};
+}
 
 function wrap_quote(text) {
     const paragraphs = text.split("\n\n");
@@ -80,11 +83,11 @@ function wrap_spoiler(header, text, stash_func) {
     return output.join("\n\n");
 }
 
-exports.set_stash_func = function (stash_handler) {
+export function set_stash_func(stash_handler) {
     stash_func = stash_handler;
-};
+}
 
-exports.process_fenced_code = function (content) {
+export function process_fenced_code(content) {
     const input = content.split("\n");
     const output = [];
     const handler_stack = [];
@@ -97,7 +100,7 @@ exports.process_fenced_code = function (content) {
             const lines = [];
             if (lang === "quote") {
                 return {
-                    handle_line: function (line) {
+                    handle_line(line) {
                         if (line === fence) {
                             this.done();
                         } else {
@@ -105,7 +108,7 @@ exports.process_fenced_code = function (content) {
                         }
                     },
 
-                    done: function () {
+                    done() {
                         const text = wrap_quote(lines.join("\n"));
                         output_lines.push("");
                         output_lines.push(text);
@@ -117,7 +120,7 @@ exports.process_fenced_code = function (content) {
 
             if (lang === "math") {
                 return {
-                    handle_line: function (line) {
+                    handle_line(line) {
                         if (line === fence) {
                             this.done();
                         } else {
@@ -125,7 +128,7 @@ exports.process_fenced_code = function (content) {
                         }
                     },
 
-                    done: function () {
+                    done() {
                         const text = wrap_tex(lines.join("\n"));
                         const placeholder = stash_func(text, true);
                         output_lines.push("");
@@ -138,7 +141,7 @@ exports.process_fenced_code = function (content) {
 
             if (lang === "spoiler") {
                 return {
-                    handle_line: function (line) {
+                    handle_line(line) {
                         if (line === fence) {
                             this.done();
                         } else {
@@ -146,7 +149,7 @@ exports.process_fenced_code = function (content) {
                         }
                     },
 
-                    done: function () {
+                    done() {
                         const text = wrap_spoiler(header, lines.join("\n"), stash_func);
                         output_lines.push("");
                         output_lines.push(text);
@@ -157,7 +160,7 @@ exports.process_fenced_code = function (content) {
             }
 
             return {
-                handle_line: function (line) {
+                handle_line(line) {
                     if (line === fence) {
                         this.done();
                     } else {
@@ -165,8 +168,8 @@ exports.process_fenced_code = function (content) {
                     }
                 },
 
-                done: function () {
-                    const text = exports.wrap_code(lines.join("\n"));
+                done() {
+                    const text = wrap_code(lines.join("\n"));
                     // insert safe HTML that is passed through the parsing
                     const placeholder = stash_func(text, true);
                     output_lines.push("");
@@ -180,10 +183,10 @@ exports.process_fenced_code = function (content) {
 
     function default_hander() {
         return {
-            handle_line: function (line) {
+            handle_line(line) {
                 consume_line(output, line);
             },
-            done: function () {
+            done() {
                 handler_stack.pop();
             },
         };
@@ -222,10 +225,10 @@ exports.process_fenced_code = function (content) {
     }
 
     return output.join("\n");
-};
+}
 
 const fence_length_re = /^ {0,3}(`{3,})/gm;
-exports.get_unused_fence = (content) => {
+export function get_unused_fence(content) {
     // we only return ``` fences, not ~~~.
     let length = 3;
     let match;
@@ -234,6 +237,4 @@ exports.get_unused_fence = (content) => {
         length = Math.max(length, match[1].length + 1);
     }
     return "`".repeat(length);
-};
-
-window.fenced_code = exports;
+}

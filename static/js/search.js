@@ -9,7 +9,7 @@ exports.narrow_or_search_for_term = function (search_string) {
         // while using input tool
         return search_query_box.val();
     }
-    ui_util.change_tab_to("#home");
+    ui_util.change_tab_to("#message_feed_container");
 
     let operators;
     if (page_params.search_pills_enabled) {
@@ -32,7 +32,7 @@ exports.narrow_or_search_for_term = function (search_string) {
     // Narrowing will have already put some operators in the search box,
     // so leave the current text in.
     if (!page_params.search_pills_enabled) {
-        search_query_box.blur();
+        search_query_box.trigger("blur");
     }
     return search_query_box.val();
 };
@@ -64,7 +64,7 @@ exports.initialize = function () {
     let search_map = new Map();
 
     search_query_box.typeahead({
-        source: function (query) {
+        source(query) {
             let base_query = "";
             if (page_params.search_pills_enabled) {
                 base_query = search_pill.get_search_string_for_current_filter(
@@ -80,27 +80,27 @@ exports.initialize = function () {
         items: search_suggestion.max_num_of_search_results,
         helpOnEmptyStrings: true,
         naturalSearch: true,
-        highlighter: function (item) {
+        highlighter(item) {
             const obj = search_map.get(item);
             return obj.description;
         },
-        matcher: function () {
+        matcher() {
             return true;
         },
-        updater: function (search_string) {
+        updater(search_string) {
             if (page_params.search_pills_enabled) {
                 search_pill.append_search_string(search_string, search_pill_widget.widget);
                 return search_query_box.val();
             }
             return exports.narrow_or_search_for_term(search_string);
         },
-        sorter: function (items) {
+        sorter(items) {
             return items;
         },
         stopAdvance: page_params.search_pills_enabled,
         advanceKeyCodes: [8],
 
-        on_move: function () {
+        on_move() {
             if (page_params.search_pills_enabled) {
                 ui_util.place_caret_at_end(search_query_box[0]);
                 return true;
@@ -108,7 +108,7 @@ exports.initialize = function () {
         },
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.
-        on_escape: tab_bar.exit_search,
+        on_escape: message_view_header.exit_search,
     });
 
     searchbox_form.on("compositionend", () => {
@@ -121,7 +121,7 @@ exports.initialize = function () {
     });
 
     searchbox_form
-        .keydown((e) => {
+        .on("keydown", (e) => {
             exports.update_button_visibility();
             const code = e.which;
             if (code === 13 && search_query_box.is(":focus")) {
@@ -131,7 +131,7 @@ exports.initialize = function () {
                 return false;
             }
         })
-        .keyup((e) => {
+        .on("keyup", (e) => {
             if (exports.is_using_input_method) {
                 exports.is_using_input_method = false;
                 return;
@@ -147,7 +147,7 @@ exports.initialize = function () {
 
                 // Pill is already added during keydown event of input pills.
                 exports.narrow_or_search_for_term(search_query_box.val());
-                search_query_box.blur();
+                search_query_box.trigger("blur");
                 update_buttons_with_focus(false);
             }
         });
@@ -195,7 +195,7 @@ exports.initialize = function () {
         // while we want to add box-shadow to `#searchbox`. This could have been done
         // with `:focus-within` CSS selector, but it is not supported in IE or Opera.
         searchbox.on("focusout", () => {
-            tab_bar.close_search_bar_and_open_narrow_description();
+            message_view_header.close_search_bar_and_open_narrow_description();
             searchbox.css({"box-shadow": "unset"});
         });
     }
@@ -207,18 +207,18 @@ exports.focus_search = function () {
 };
 
 exports.initiate_search = function () {
-    tab_bar.open_search_bar_and_close_narrow_description();
+    message_view_header.open_search_bar_and_close_narrow_description();
     $("#searchbox").css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
-    $("#search_query").typeahead("lookup").select();
+    $("#search_query").typeahead("lookup").trigger("select");
     if (page_params.search_pills_enabled) {
-        $("#search_query").focus();
+        $("#search_query").trigger("focus");
         ui_util.place_caret_at_end($("#search_query")[0]);
     }
 };
 
 exports.clear_search_form = function () {
     $("#search_query").val("");
-    $("#search_query").blur();
+    $("#search_query").trigger("blur");
     $(".search_button").prop("disabled", true);
 };
 

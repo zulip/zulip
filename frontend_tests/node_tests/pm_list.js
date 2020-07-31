@@ -5,7 +5,7 @@ set_global("ui", {
     get_content_element: (element) => element,
 });
 set_global("stream_popover", {
-    hide_topic_popover: function () {},
+    hide_topic_popover() {},
 });
 set_global("unread", {});
 set_global("unread_ui", {});
@@ -223,10 +223,7 @@ run_test("is_all_privates", () => {
 });
 
 function with_fake_list(f) {
-    const orig = pm_list._build_private_messages_list;
-    pm_list._build_private_messages_list = () => "PM_LIST_CONTENTS";
-    f();
-    pm_list._build_private_messages_list = orig;
+    with_field(pm_list, "_build_private_messages_list", () => "PM_LIST_CONTENTS", f);
 }
 
 run_test("expand", () => {
@@ -261,15 +258,17 @@ run_test("update_private_messages", () => {
             find();
         };
 
-        const orig_is_all_privates = pm_list.is_all_privates;
-        pm_list.is_all_privates = () => true;
-
-        pm_list.update_private_messages();
+        with_field(
+            pm_list,
+            "is_all_privates",
+            () => true,
+            () => {
+                pm_list.update_private_messages();
+            },
+        );
 
         assert(html_updated);
         assert($(".top_left_private_messages").hasClass("active-filter"));
-
-        pm_list.is_all_privates = orig_is_all_privates;
     });
 });
 

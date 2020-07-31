@@ -1,10 +1,10 @@
 $(() => {
     $(".portico-header li.logout").on("click", () => {
-        $("#logout_form").submit();
+        $("#logout_form").trigger("submit");
         return false;
     });
 
-    $("body").click((e) => {
+    $("body").on("click", (e) => {
         const $this = $(e.target);
 
         if (

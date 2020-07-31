@@ -1,7 +1,8 @@
-const settings_config = require("./settings_config");
-const settings_data = require("./settings_data");
 const render_admin_tab = require("../templates/admin_tab.hbs");
 const render_settings_organization_settings_tip = require("../templates/settings/organization_settings_tip.hbs");
+
+const settings_config = require("./settings_config");
+const settings_data = require("./settings_data");
 
 const admin_settings_label = {
     // Organization settings

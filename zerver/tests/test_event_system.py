@@ -1,5 +1,3 @@
-import os
-import shutil
 import time
 from typing import Any, Callable, Dict, List
 from unittest import mock
@@ -8,12 +6,7 @@ import ujson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
-from zerver.lib.actions import (
-    check_send_message,
-    do_change_user_role,
-    do_set_realm_property,
-    log_event,
-)
+from zerver.lib.actions import check_send_message, do_change_user_role, do_set_realm_property
 from zerver.lib.events import fetch_initial_state_data, get_raw_user_data
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import POSTRequestMock, queries_captured, stub_event_queue_user_events
@@ -36,27 +29,6 @@ from zerver.tornado.event_queue import (
 )
 from zerver.tornado.views import get_events
 from zerver.views.events_register import _default_all_public_streams, _default_narrow
-
-
-class LogEventsTest(ZulipTestCase):
-    def test_with_missing_event_log_dir_setting(self) -> None:
-        with self.settings(EVENT_LOG_DIR=None):
-            log_event(dict())
-
-    def test_log_event_mkdir(self) -> None:
-        dir_name = os.path.join(settings.TEST_WORKER_DIR, "test-log-dir")
-
-        try:
-            shutil.rmtree(dir_name)
-        except OSError:  # nocoverage
-            # assume it doesn't exist already
-            pass
-
-        self.assertFalse(os.path.exists(dir_name))
-        with self.settings(EVENT_LOG_DIR=dir_name):
-            event: Dict[str, int] = {}
-            log_event(event)
-        self.assertTrue(os.path.exists(dir_name))
 
 
 class EventsEndpointTest(ZulipTestCase):

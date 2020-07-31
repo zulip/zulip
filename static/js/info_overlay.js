@@ -11,10 +11,10 @@ exports.set_up_toggler = function () {
             {label: i18n.t("Message formatting"), key: "message-formatting"},
             {label: i18n.t("Search operators"), key: "search-operators"},
         ],
-        callback: function (name, key) {
+        callback(name, key) {
             $(".overlay-modal").hide();
             $("#" + key).show();
-            ui.get_scroll_element($("#" + key).find(".modal-body")).focus();
+            ui.get_scroll_element($("#" + key).find(".modal-body")).trigger("focus");
         },
     };
 
@@ -55,9 +55,9 @@ exports.show = function (target) {
     if (!overlay.hasClass("show")) {
         overlays.open_overlay({
             name: "informationalOverlays",
-            overlay: overlay,
-            on_close: function () {
-                hashchange.changehash("");
+            overlay,
+            on_close() {
+                hashchange.exit_overlay();
             },
         });
     }

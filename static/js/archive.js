@@ -1,3 +1,6 @@
+const _ = require("lodash");
+const XDate = require("xdate");
+
 const render_archive_message_group = require("../templates/archive_message_group.hbs");
 
 function should_separate_into_groups(current_msg_time, next_msg_time) {
@@ -100,18 +103,18 @@ exports.initialize = function () {
 };
 
 exports.current_msg_list = {
-    selected_row: function () {
+    selected_row() {
         return $(".message_row").last();
     },
 };
 exports.rows = {
-    get_message_recipient_row: function (message_row) {
+    get_message_recipient_row(message_row) {
         return $(message_row).parent(".recipient_row");
     },
-    first_message_in_group: function (message_group) {
+    first_message_in_group(message_group) {
         return $("div.message_row", message_group).first();
     },
-    id: function (message_row) {
+    id(message_row) {
         return parseFloat(message_row.attr("zid"));
     },
 };
@@ -129,7 +132,8 @@ $(() => {
     $.fn.safeOuterWidth = function (...args) {
         return this.outerWidth(...args) || 0;
     };
-    $(".app").scroll(
+    $(".app").on(
+        "scroll",
         _.throttle(() => {
             scroll_finish();
         }, 50),

@@ -1,3 +1,5 @@
+const marked = require("../third/marked/lib/marked");
+
 /*
 
 What in the heck is a zcommand?
@@ -20,18 +22,18 @@ exports.send = function (opts) {
     const command = opts.command;
     const on_success = opts.on_success;
     const data = {
-        command: command,
+        command,
     };
 
     channel.post({
         url: "/json/zcommand",
-        data: data,
-        success: function (data) {
+        data,
+        success(data) {
             if (on_success) {
                 on_success(data);
             }
         },
-        error: function () {
+        error() {
             exports.tell_user("server did not respond");
         },
     });
@@ -51,14 +53,14 @@ exports.tell_user = function (msg) {
 exports.enter_day_mode = function () {
     exports.send({
         command: "/day",
-        on_success: function (data) {
+        on_success(data) {
             night_mode.disable();
             feedback_widget.show({
-                populate: function (container) {
+                populate(container) {
                     const rendered_msg = marked(data.msg).trim();
                     container.html(rendered_msg);
                 },
-                on_undo: function () {
+                on_undo() {
                     exports.send({
                         command: "/night",
                     });
@@ -73,14 +75,14 @@ exports.enter_day_mode = function () {
 exports.enter_night_mode = function () {
     exports.send({
         command: "/night",
-        on_success: function (data) {
+        on_success(data) {
             night_mode.enable();
             feedback_widget.show({
-                populate: function (container) {
+                populate(container) {
                     const rendered_msg = marked(data.msg).trim();
                     container.html(rendered_msg);
                 },
-                on_undo: function () {
+                on_undo() {
                     exports.send({
                         command: "/day",
                     });
@@ -95,14 +97,14 @@ exports.enter_night_mode = function () {
 exports.enter_fluid_mode = function () {
     exports.send({
         command: "/fluid-width",
-        on_success: function (data) {
+        on_success(data) {
             scroll_bar.set_layout_width();
             feedback_widget.show({
-                populate: function (container) {
+                populate(container) {
                     const rendered_msg = marked(data.msg).trim();
                     container.html(rendered_msg);
                 },
-                on_undo: function () {
+                on_undo() {
                     exports.send({
                         command: "/fixed-width",
                     });
@@ -117,14 +119,14 @@ exports.enter_fluid_mode = function () {
 exports.enter_fixed_mode = function () {
     exports.send({
         command: "/fixed-width",
-        on_success: function (data) {
+        on_success(data) {
             scroll_bar.set_layout_width();
             feedback_widget.show({
-                populate: function (container) {
+                populate(container) {
                     const rendered_msg = marked(data.msg).trim();
                     container.html(rendered_msg);
                 },
-                on_undo: function () {
+                on_undo() {
                     exports.send({
                         command: "/fluid-width",
                     });
@@ -144,7 +146,7 @@ exports.process = function (message_content) {
 
         exports.send({
             command: content,
-            on_success: function () {
+            on_success() {
                 const end_time = new Date();
                 let diff = end_time - start_time;
                 diff = Math.round(diff);

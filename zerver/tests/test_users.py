@@ -1147,9 +1147,10 @@ class UserProfileTest(ZulipTestCase):
         polonius = self.example_user("polonius")
         self.login('polonius')
         self.assertTrue(polonius.is_guest)
+        self.assertTrue(stream.is_web_public)
 
-        result = self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}")
-        self.assert_json_error(result, "Invalid stream id")
+        result = ujson.loads(self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content)
+        self.assertTrue(result['is_subscribed'])
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:

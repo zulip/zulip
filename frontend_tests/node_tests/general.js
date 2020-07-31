@@ -327,7 +327,7 @@ set_global("settings_users", {});
 
 zrequire("user_events");
 
-run_test("update_user_event", () => {
+run_test("update_user_event", (override) => {
     const new_bob = {
         email: "bob@example.com",
         user_id: bob.user_id,
@@ -341,10 +341,10 @@ run_test("update_user_event", () => {
     };
 
     // We have to stub a few things:
-    activity.redraw = noop;
-    message_live_update.update_user_full_name = noop;
-    pm_list.update_private_messages = noop;
-    settings_users.update_user_data = noop;
+    override("activity.redraw", noop);
+    override("message_live_update.update_user_full_name", noop);
+    override("pm_list.update_private_messages", noop);
+    override("settings_users.update_user_data", noop);
 
     // Dispatch the realm_user/update event, which will update
     // data structures and have other side effects that are
@@ -381,7 +381,7 @@ function test_helper() {
                 events.push(full_name);
             };
         },
-        events: events,
+        events,
     };
 }
 
@@ -412,7 +412,9 @@ set_global("unread_ui", {});
 
 zrequire("message_events");
 
-run_test("insert_message", () => {
+run_test("insert_message", (override) => {
+    override("pm_list.update_private_messages", noop);
+
     const helper = test_helper();
 
     const new_message = {

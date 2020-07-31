@@ -1,3 +1,5 @@
+const moment = require("moment");
+
 /*
     rendered_markdown
 
@@ -171,7 +173,7 @@ exports.update_elements = (content) => {
     content.find("div.spoiler-header").each(function () {
         // If a spoiler block has no header content, it should have a default header.
         // We do this client side to allow for i18n by the client.
-        if ($.trim($(this).html()).length === 0) {
+        if ($(this).html().trim().length === 0) {
             $(this).append(`<p>${i18n.t("Spoiler")}</p>`);
         }
 

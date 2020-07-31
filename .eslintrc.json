@@ -1,20 +1,15 @@
 {
     "env": {
-        "node": true,
-        "es6": true
+        "es2020": true,
+        "node": true
     },
-    "extends": [
-        "eslint:recommended",
-        "prettier"
-    ],
+    "extends": ["eslint:recommended", "plugin:import/errors", "plugin:import/warnings", "prettier"],
+    "parser": "babel-eslint",
     "parserOptions": {
-        "ecmaVersion": 2019,
         "warnOnUnsupportedTypeScriptVersion": false,
         "sourceType": "module"
     },
-    "plugins": [
-        "eslint-plugin-empty-returns"
-    ],
+    "plugins": ["eslint-plugin-empty-returns"],
     "rules": {
         "array-callback-return": "error",
         "arrow-body-style": "error",
@@ -24,7 +19,18 @@
         "empty-returns/main": "error",
         "eqeqeq": "error",
         "guard-for-in": "error",
-        "new-cap": [ "error",
+        "import/first": "error",
+        "import/newline-after-import": "error",
+        "import/no-unresolved": ["error", {"ignore": ["!"]}],
+        "import/order": [
+            "error",
+            {
+                "alphabetize": {"order": "asc"},
+                "newlines-between": "always"
+            }
+        ],
+        "new-cap": [
+            "error",
             {
                 "capIsNew": false
             }
@@ -59,9 +65,10 @@
         "no-self-compare": "error",
         "no-sync": "error",
         "no-undef-init": "error",
-        "no-unneeded-ternary": [ "error", { "defaultAssignment": false } ],
+        "no-unneeded-ternary": ["error", {"defaultAssignment": false}],
         "no-unused-expressions": "error",
-        "no-unused-vars": [ "error",
+        "no-unused-vars": [
+            "error",
             {
                 "vars": "local",
                 "varsIgnorePattern": "print_elapsed_time|check_duplicate_ids"
@@ -70,40 +77,33 @@
         "no-use-before-define": "error",
         "no-useless-constructor": "error",
         "no-var": "error",
-        "one-var": [ "error", "never" ],
+        "object-shorthand": "error",
+        "one-var": ["error", "never"],
         "prefer-arrow-callback": "error",
-        "prefer-const": [ "error",
+        "prefer-const": [
+            "error",
             {
                 "ignoreReadBeforeAssign": true
             }
         ],
         "radix": "error",
-        "sort-imports": "error",
         "spaced-comment": "off",
         "strict": "off",
-        "valid-typeof": [ "error", { "requireStringLiterals": true } ],
+        "valid-typeof": ["error", {"requireStringLiterals": true}],
         "yoda": "error"
     },
     "overrides": [
         {
-            "files": [
-                "frontend_tests/**/*.{js,ts}",
-                "static/js/**/*.{js,ts}"
-            ],
+            "files": ["frontend_tests/**", "static/js/**"],
             "globals": {
                 "$": false,
-                "ClipboardJS": false,
                 "FetchStatus": false,
                 "Filter": false,
-                "Handlebars": false,
                 "LightboxCanvas": false,
+                "ListCursor": false,
                 "MessageListData": false,
                 "MessageListView": false,
-                "Plotly": false,
-                "Sortable": false,
-                "WinChan": false,
-                "XDate": false,
-                "_": false,
+                "UserSearch": false,
                 "activity": false,
                 "admin": false,
                 "alert_words": false,
@@ -137,12 +137,10 @@
                 "drafts": false,
                 "dropdown_list_widget": false,
                 "echo": false,
-                "emoji": false,
                 "emoji_picker": false,
                 "favicon": false,
                 "feature_flags": false,
                 "feedback_widget": false,
-                "fenced_code": false,
                 "flatpickr": false,
                 "floating_recipient_bar": false,
                 "gear_menu": false,
@@ -157,10 +155,8 @@
                 "input_pill": false,
                 "invite": false,
                 "jQuery": false,
-                "katex": false,
                 "keydown_util": false,
                 "lightbox": false,
-                "list_cursor": false,
                 "list_render": false,
                 "list_util": false,
                 "loading": false,
@@ -169,8 +165,6 @@
                 "localstorage": false,
                 "location": false,
                 "markdown": false,
-                "marked": false,
-                "md5": false,
                 "message_edit": false,
                 "message_edit_history": false,
                 "message_events": false,
@@ -182,7 +176,6 @@
                 "message_store": false,
                 "message_util": false,
                 "message_viewport": false,
-                "moment": false,
                 "muting": false,
                 "muting_ui": false,
                 "narrow": false,
@@ -260,7 +253,7 @@
                 "StripeCheckout": false,
                 "submessage": false,
                 "subs": false,
-                "tab_bar": false,
+                "message_view_header": false,
                 "templates": false,
                 "tictactoe_widget": false,
                 "timerender": false,
@@ -288,7 +281,6 @@
                 "user_events": false,
                 "user_groups": false,
                 "user_pill": false,
-                "user_search": false,
                 "user_status": false,
                 "user_status_ui": false,
                 "poll_widget": false,
@@ -300,20 +292,10 @@
             }
         },
         {
-            "files": [
-                "frontend_tests/casper_tests/*.js",
-                "frontend_tests/casper_lib/*.js"
-            ],
-            "rules": {
-                // Don’t require ES features that PhantomJS doesn’t support
-                "no-var": "off",
-                "prefer-arrow-callback": "off"
-            }
-        },
-        {
             "files": ["**/*.ts"],
             "extends": [
                 "plugin:@typescript-eslint/recommended",
+                "plugin:import/typescript",
                 "prettier/@typescript-eslint"
             ],
             "parserOptions": {
@@ -328,7 +310,10 @@
                 "@typescript-eslint/array-type": "error",
                 "@typescript-eslint/await-thenable": "error",
                 "@typescript-eslint/consistent-type-assertions": "error",
-                "@typescript-eslint/explicit-function-return-type": ["error", { "allowExpressions": true }],
+                "@typescript-eslint/explicit-function-return-type": [
+                    "error",
+                    {"allowExpressions": true}
+                ],
                 "@typescript-eslint/member-ordering": "error",
                 "@typescript-eslint/no-explicit-any": "off",
                 "@typescript-eslint/no-extraneous-class": "error",
@@ -336,7 +321,7 @@
                 "@typescript-eslint/no-parameter-properties": "error",
                 "@typescript-eslint/no-unnecessary-qualifier": "error",
                 "@typescript-eslint/no-unnecessary-type-assertion": "error",
-                "@typescript-eslint/no-unused-vars": ["error", { "varsIgnorePattern": "^_" } ],
+                "@typescript-eslint/no-unused-vars": ["error", {"varsIgnorePattern": "^_"}],
                 "@typescript-eslint/no-use-before-define": "error",
                 "@typescript-eslint/no-useless-constructor": "error",
                 "@typescript-eslint/prefer-includes": "error",
@@ -344,6 +329,71 @@
                 "@typescript-eslint/prefer-string-starts-ends-with": "error",
                 "@typescript-eslint/promise-function-async": "error",
                 "@typescript-eslint/unified-signatures": "error"
+            }
+        },
+        {
+            "files": ["frontend_tests/**"],
+            "globals": {
+                "assert": false,
+                "casper": false,
+                "document": false,
+                "set_global": false,
+                "window": false,
+                "with_field": false,
+                "zrequire": false
+            },
+            "rules": {
+                "no-sync": "off"
+            }
+        },
+        {
+            "files": [
+                "frontend_tests/casper_lib/**",
+                "frontend_tests/casper_tests/**",
+                "tools/debug-require.js"
+            ],
+            "env": {
+                "browser": true,
+                "es2020": false
+            },
+            "rules": {
+                // Don’t require ES features that PhantomJS doesn’t support
+                "no-var": "off",
+                "object-shorthand": "off",
+                "prefer-arrow-callback": "off"
+            }
+        },
+        {
+            "files": ["static/**"],
+            "env": {
+                "browser": true,
+                "commonjs": true,
+                "node": false
+            },
+            "rules": {
+                "no-console": "error"
+            }
+        },
+        {
+            "files": ["static/shared/**"],
+            "env": {
+                "browser": false,
+                "commonjs": false,
+                "shared-node-browser": true
+            },
+            "rules": {
+                "import/no-restricted-paths": [
+                    "error",
+                    {
+                        "zones": [
+                            {
+                                "target": "./static/shared",
+                                "from": ".",
+                                "except": ["./node_modules", "./static/shared"]
+                            }
+                        ]
+                    }
+                ]
             }
         }
     ]

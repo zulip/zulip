@@ -21,7 +21,7 @@ set_global("hashchange", {});
 set_global("home_msg_list", {});
 set_global("message_fetch", {});
 set_global("message_list", {
-    set_narrowed: function (value) {
+    set_narrowed(value) {
         this.narrowed = value;
     },
 });
@@ -31,17 +31,17 @@ set_global("notifications", {});
 set_global("page_params", {});
 set_global("search", {});
 set_global("stream_list", {});
-set_global("tab_bar", {});
+set_global("message_view_header", {});
 set_global("top_left_corner", {});
 set_global("typing_events", {});
 set_global("ui_util", {});
 set_global("unread_ops", {});
 set_global("search_pill_widget", {
     widget: {
-        clear: function () {
+        clear() {
             return true;
         },
-        appendValue: function () {
+        appendValue() {
             return true;
         },
     },
@@ -86,7 +86,7 @@ function test_helper() {
     stub("notifications", "redraw_title");
     stub("search", "update_button_visibility");
     stub("stream_list", "handle_narrow_activated");
-    stub("tab_bar", "initialize");
+    stub("message_view_header", "initialize");
     stub("top_left_corner", "handle_narrow_activated");
     stub("typing_events", "render_notifications_for_narrow");
     stub("ui_util", "change_tab_to");
@@ -112,7 +112,7 @@ function stub_message_list() {
         const list = this;
         this.data = opts.data;
         this.view = {
-            set_message_offset: function (offset) {
+            set_message_offset(offset) {
                 list.view.offset = offset;
             },
         };
@@ -121,15 +121,15 @@ function stub_message_list() {
     };
 
     message_list.MessageList.prototype = {
-        get: function (msg_id) {
+        get(msg_id) {
             return this.data.get(msg_id);
         },
 
-        empty: function () {
+        empty() {
             return this.data.empty();
         },
 
-        select_id: function (msg_id) {
+        select_id(msg_id) {
             this.selected_id = msg_id;
         },
     };
@@ -209,7 +209,7 @@ run_test("basics", () => {
         "top_left_corner.handle_narrow_activated",
         "stream_list.handle_narrow_activated",
         "typing_events.render_notifications_for_narrow",
-        "tab_bar.initialize",
+        "message_view_header.initialize",
     ]);
 
     current_msg_list.selected_id = () => -1;

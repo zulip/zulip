@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const render_stream_privacy = require("../templates/stream_privacy.hbs");
 const render_stream_sidebar_row = require("../templates/stream_sidebar_row.hbs");
 
@@ -24,35 +26,32 @@ exports.update_count_in_dom = function (unread_count_elem, count) {
     value_span.text(count);
 };
 
-exports.stream_sidebar = (function () {
-    const self = {};
+class StreamSidebar {
+    rows = new Map(); // stream id -> row widget
 
-    self.rows = new Map(); // stream id -> row widget
+    set_row(stream_id, widget) {
+        this.rows.set(stream_id, widget);
+    }
 
-    self.set_row = function (stream_id, widget) {
-        self.rows.set(stream_id, widget);
-    };
+    get_row(stream_id) {
+        return this.rows.get(stream_id);
+    }
 
-    self.get_row = function (stream_id) {
-        return self.rows.get(stream_id);
-    };
+    has_row_for(stream_id) {
+        return this.rows.has(stream_id);
+    }
 
-    self.has_row_for = function (stream_id) {
-        return self.rows.has(stream_id);
-    };
-
-    self.remove_row = function (stream_id) {
+    remove_row(stream_id) {
         // This only removes the row from our data structure.
         // Our caller should use build_stream_list() to re-draw
         // the sidebar, so that we don't have to deal with edge
         // cases like removing the last pinned stream (and removing
         // the divider).
 
-        self.rows.delete(stream_id);
-    };
-
-    return self;
-})();
+        this.rows.delete(stream_id);
+    }
+}
+exports.stream_sidebar = new StreamSidebar();
 
 function get_search_term() {
     const search_box = $(".stream-list-filter");
@@ -88,7 +87,7 @@ exports.build_stream_list = function () {
     // sidebar rows.  Our job here is to build the bigger widget,
     // which largely is a matter of arranging the individual rows in
     // the right order.
-    const streams = stream_data.subscribed_streams();
+    const streams = stream_data.subscribed_stream_ids();
     if (streams.length === 0) {
         return;
     }
@@ -104,9 +103,8 @@ exports.build_stream_list = function () {
     const parent = $("#stream_filters");
     const elems = [];
 
-    function add_sidebar_li(stream) {
-        const sub = stream_data.get_sub(stream);
-        const sidebar_row = exports.stream_sidebar.get_row(sub.stream_id);
+    function add_sidebar_li(stream_id) {
+        const sidebar_row = exports.stream_sidebar.get_row(stream_id);
         sidebar_row.update_whether_active();
         elems.push(sidebar_row.get_li());
     }
@@ -219,7 +217,7 @@ exports.set_in_home_view = function (stream_id, in_home) {
 function build_stream_sidebar_li(sub) {
     const name = sub.name;
     const args = {
-        name: name,
+        name,
         id: sub.stream_id,
         uri: hash_util.by_stream_uri(sub.stream_id),
         is_muted: stream_data.is_muted(sub.stream_id) === true,
@@ -233,34 +231,37 @@ function build_stream_sidebar_li(sub) {
     return list_item;
 }
 
-function build_stream_sidebar_row(sub) {
-    const self = {};
-    const list_item = build_stream_sidebar_li(sub);
+class StreamSidebarRow {
+    constructor(sub) {
+        this.sub = sub;
+        this.list_item = build_stream_sidebar_li(sub);
+        this.update_unread_count();
+    }
 
-    self.update_whether_active = function () {
-        if (stream_data.is_active(sub) || sub.pin_to_top === true) {
-            list_item.removeClass("inactive_stream");
+    update_whether_active() {
+        if (stream_data.is_active(this.sub) || this.sub.pin_to_top === true) {
+            this.list_item.removeClass("inactive_stream");
         } else {
-            list_item.addClass("inactive_stream");
+            this.list_item.addClass("inactive_stream");
         }
-    };
+    }
 
-    self.get_li = function () {
-        return list_item;
-    };
+    get_li() {
+        return this.list_item;
+    }
 
-    self.remove = function () {
-        list_item.remove();
-    };
+    remove() {
+        this.list_item.remove();
+    }
 
-    self.update_unread_count = function () {
-        const count = unread.num_unread_for_stream(sub.stream_id);
-        exports.update_count_in_dom(list_item, count);
-    };
+    update_unread_count() {
+        const count = unread.num_unread_for_stream(this.sub.stream_id);
+        exports.update_count_in_dom(this.list_item, count);
+    }
+}
 
-    self.update_unread_count();
-
-    exports.stream_sidebar.set_row(sub.stream_id, self);
+function build_stream_sidebar_row(sub) {
+    exports.stream_sidebar.set_row(sub.stream_id, new StreamSidebarRow(sub));
 }
 
 exports.create_sidebar_row = function (sub) {
@@ -286,7 +287,7 @@ exports.redraw_stream_privacy = function (sub) {
 
     const args = {
         invite_only: sub.invite_only,
-        dark_background: dark_background,
+        dark_background,
     };
 
     const html = render_stream_privacy(args);
@@ -496,7 +497,7 @@ exports.set_event_handlers = function () {
 
     $("#streams_header")
         .expectOne()
-        .click((e) => {
+        .on("click", (e) => {
             exports.toggle_filter_displayed(e);
         });
 
@@ -507,10 +508,10 @@ exports.set_event_handlers = function () {
         $(this).off("scroll");
     });
 
-    exports.stream_cursor = list_cursor({
+    exports.stream_cursor = new ListCursor({
         list: {
             scroll_container_sel: "#stream-filters-container",
-            find_li: function (opts) {
+            find_li(opts) {
                 const stream_id = opts.key;
                 const li = exports.get_stream_li(stream_id);
                 return li;
@@ -527,15 +528,15 @@ exports.set_event_handlers = function () {
     keydown_util.handle({
         elem: $search_input,
         handlers: {
-            enter_key: function () {
+            enter_key() {
                 keydown_enter_key();
                 return true;
             },
-            up_arrow: function () {
+            up_arrow() {
                 exports.stream_cursor.prev();
                 return true;
             },
-            down_arrow: function () {
+            down_arrow() {
                 exports.stream_cursor.next();
                 return true;
             },
@@ -543,7 +544,7 @@ exports.set_event_handlers = function () {
     });
 
     $search_input.on("click", focus_stream_filter);
-    $search_input.on("focusout", exports.stream_cursor.clear);
+    $search_input.on("focusout", () => exports.stream_cursor.clear());
     $search_input.on("input", update_streams_for_search);
 };
 
@@ -569,7 +570,7 @@ exports.clear_search = function (e) {
         return;
     }
     filter.val("");
-    filter.blur();
+    filter.trigger("blur");
     update_streams_for_search();
 };
 
@@ -592,7 +593,7 @@ exports.initiate_search = function () {
         popovers.hide_all();
         stream_popover.show_streamlist_sidebar();
     }
-    filter.focus();
+    filter.trigger("focus");
 
     exports.stream_cursor.reset();
 };
@@ -604,7 +605,7 @@ exports.clear_and_hide_search = function () {
         update_streams_for_search();
     }
     exports.stream_cursor.clear();
-    filter.blur();
+    filter.trigger("blur");
 
     exports.hide_search_section();
 };

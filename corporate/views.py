@@ -37,7 +37,11 @@ from corporate.models import (
     get_current_plan_by_realm,
     get_customer_by_realm,
 )
-from zerver.decorator import require_billing_access, zulip_login_required
+from zerver.decorator import (
+    require_billing_access,
+    require_organization_member,
+    zulip_login_required,
+)
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.send_email import FromAddress, send_email
@@ -100,6 +104,7 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
         email=settings.ZULIP_ADMINISTRATOR,
     )  # nocoverage
 
+@require_organization_member
 @has_request_variables
 def upgrade(request: HttpRequest, user: UserProfile,
             billing_modality: str=REQ(validator=check_string),
@@ -144,10 +149,10 @@ def upgrade(request: HttpRequest, user: UserProfile,
 
 @zulip_login_required
 def initial_upgrade(request: HttpRequest) -> HttpResponse:
-    if not settings.BILLING_ENABLED:
-        return render(request, "404.html")
-
     user = request.user
+
+    if not settings.BILLING_ENABLED or user.is_guest:
+        return render(request, "404.html", status=404)
 
     customer = get_customer_by_realm(user.realm)
     if customer is not None and (get_current_plan_by_customer(customer) is not None or customer.sponsorship_pending):
@@ -184,6 +189,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     response = render(request, 'corporate/upgrade.html', context=context)
     return response
 
+@require_organization_member
 @has_request_variables
 def sponsorship(request: HttpRequest, user: UserProfile,
                 organization_type: str=REQ("organization-type", validator=check_string),
@@ -192,14 +198,7 @@ def sponsorship(request: HttpRequest, user: UserProfile,
     realm = user.realm
 
     requested_by = user.full_name
-
-    role_id_to_name_map = {
-        UserProfile.ROLE_REALM_OWNER: "Realm owner",
-        UserProfile.ROLE_REALM_ADMINISTRATOR: "Realm adminstrator",
-        UserProfile.ROLE_MEMBER: "Member",
-        UserProfile.ROLE_GUEST: "Guest"
-    }
-    user_role = role_id_to_name_map[user.role]
+    user_role = user.get_role_name()
 
     support_realm_uri = get_realm(settings.STAFF_SUBDOMAIN).uri
     support_url = urljoin(support_realm_uri, urlunsplit(("", "", reverse('analytics.views.support'),
@@ -265,10 +264,6 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             if new_plan is not None:  # nocoverage
                 plan = new_plan
             assert(plan is not None)  # for mypy
-            plan_name = {
-                CustomerPlan.STANDARD: 'Zulip Standard',
-                CustomerPlan.PLUS: 'Zulip Plus',
-            }[plan.tier]
             free_trial = plan.status == CustomerPlan.FREE_TRIAL
             downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
             switch_to_annual_at_end_of_cycle = plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
@@ -285,7 +280,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 payment_method = 'Billed by invoice'
 
             context.update({
-                'plan_name': plan_name,
+                'plan_name': plan.name,
                 'has_active_plan': True,
                 'free_trial': free_trial,
                 'downgrade_at_end_of_cycle': downgrade_at_end_of_cycle,

@@ -150,7 +150,7 @@ run_test("fchain", () => {
     const mults = function (n) {
         let ret = 0;
         return {
-            next: function () {
+            next() {
                 ret += n;
                 return ret <= 100 ? ret : undefined;
             },

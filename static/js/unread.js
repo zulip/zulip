@@ -1,5 +1,5 @@
-const util = require("./util");
 const FoldDict = require("./fold_dict").FoldDict;
+const util = require("./util");
 
 // The unread module tracks the message IDs and locations of the
 // user's unread messages.  The tracking is initialized with
@@ -20,155 +20,154 @@ exports.set_messages_read_in_narrow = function (value) {
 
 const unread_messages = new Set();
 
-function make_bucketer(options) {
-    const self = {};
-    const key_to_bucket = new options.KeyDict();
-    const reverse_lookup = new Map();
+class Bucketer {
+    reverse_lookup = new Map();
 
-    self.clear = function () {
-        key_to_bucket.clear();
-        reverse_lookup.clear();
-    };
+    constructor(options) {
+        this.key_to_bucket = new options.KeyDict();
+        this.make_bucket = options.make_bucket;
+    }
 
-    self.add = function (opts) {
+    clear() {
+        this.key_to_bucket.clear();
+        this.reverse_lookup.clear();
+    }
+
+    add(opts) {
         const bucket_key = opts.bucket_key;
         const item_id = opts.item_id;
         const add_callback = opts.add_callback;
 
-        let bucket = key_to_bucket.get(bucket_key);
+        let bucket = this.key_to_bucket.get(bucket_key);
         if (!bucket) {
-            bucket = options.make_bucket();
-            key_to_bucket.set(bucket_key, bucket);
+            bucket = this.make_bucket();
+            this.key_to_bucket.set(bucket_key, bucket);
         }
         if (add_callback) {
             add_callback(bucket, item_id);
         } else {
             bucket.add(item_id);
         }
-        reverse_lookup.set(item_id, bucket);
-    };
+        this.reverse_lookup.set(item_id, bucket);
+    }
 
-    self.delete = function (item_id) {
-        const bucket = reverse_lookup.get(item_id);
+    delete(item_id) {
+        const bucket = this.reverse_lookup.get(item_id);
         if (bucket) {
             bucket.delete(item_id);
-            reverse_lookup.delete(item_id);
+            this.reverse_lookup.delete(item_id);
         }
-    };
+    }
 
-    self.get_bucket = function (bucket_key) {
-        return key_to_bucket.get(bucket_key);
-    };
+    get_bucket(bucket_key) {
+        return this.key_to_bucket.get(bucket_key);
+    }
 
-    self.keys = function () {
-        return key_to_bucket.keys();
-    };
+    keys() {
+        return this.key_to_bucket.keys();
+    }
 
-    self.values = function () {
-        return key_to_bucket.values();
-    };
+    values() {
+        return this.key_to_bucket.values();
+    }
 
-    self[Symbol.iterator] = function () {
-        return key_to_bucket[Symbol.iterator]();
-    };
-
-    return self;
+    [Symbol.iterator]() {
+        return this.key_to_bucket[Symbol.iterator]();
+    }
 }
 
-exports.unread_pm_counter = (function () {
-    const self = {};
-
-    const bucketer = make_bucketer({
+class UnreadPMCounter {
+    bucketer = new Bucketer({
         KeyDict: Map,
         make_bucket: () => new Set(),
     });
 
-    self.clear = function () {
-        bucketer.clear();
-    };
+    clear() {
+        this.bucketer.clear();
+    }
 
-    self.set_pms = function (pms) {
+    set_pms(pms) {
         for (const obj of pms) {
             const user_ids_string = obj.sender_id.toString();
-            self.set_message_ids(user_ids_string, obj.unread_message_ids);
+            this.set_message_ids(user_ids_string, obj.unread_message_ids);
         }
-    };
+    }
 
-    self.set_huddles = function (huddles) {
+    set_huddles(huddles) {
         for (const obj of huddles) {
             const user_ids_string = people.pm_lookup_key(obj.user_ids_string);
-            self.set_message_ids(user_ids_string, obj.unread_message_ids);
+            this.set_message_ids(user_ids_string, obj.unread_message_ids);
         }
-    };
+    }
 
-    self.set_message_ids = function (user_ids_string, unread_message_ids) {
+    set_message_ids(user_ids_string, unread_message_ids) {
         for (const msg_id of unread_message_ids) {
-            bucketer.add({
+            this.bucketer.add({
                 bucket_key: user_ids_string,
                 item_id: msg_id,
             });
         }
-    };
+    }
 
-    self.add = function (message) {
+    add(message) {
         const user_ids_string = people.pm_reply_user_string(message);
         if (user_ids_string) {
-            bucketer.add({
+            this.bucketer.add({
                 bucket_key: user_ids_string,
                 item_id: message.id,
             });
         }
-    };
+    }
 
-    self.delete = function (message_id) {
-        bucketer.delete(message_id);
-    };
+    delete(message_id) {
+        this.bucketer.delete(message_id);
+    }
 
-    self.get_counts = function () {
+    get_counts() {
         const pm_dict = new Map(); // Hash by user_ids_string -> count
         let total_count = 0;
-        for (const [user_ids_string, id_set] of bucketer) {
+        for (const [user_ids_string, id_set] of this.bucketer) {
             const count = id_set.size;
             pm_dict.set(user_ids_string, count);
             total_count += count;
         }
         return {
-            total_count: total_count,
-            pm_dict: pm_dict,
+            total_count,
+            pm_dict,
         };
-    };
+    }
 
-    self.num_unread = function (user_ids_string) {
+    num_unread(user_ids_string) {
         if (!user_ids_string) {
             return 0;
         }
 
-        const bucket = bucketer.get_bucket(user_ids_string);
+        const bucket = this.bucketer.get_bucket(user_ids_string);
 
         if (!bucket) {
             return 0;
         }
         return bucket.size;
-    };
+    }
 
-    self.get_msg_ids = function () {
+    get_msg_ids() {
         const ids = [];
 
-        for (const id_set of bucketer.values()) {
+        for (const id_set of this.bucketer.values()) {
             for (const id of id_set) {
                 ids.push(id);
             }
         }
 
         return util.sorted_ids(ids);
-    };
+    }
 
-    self.get_msg_ids_for_person = function (user_ids_string) {
+    get_msg_ids_for_person(user_ids_string) {
         if (!user_ids_string) {
             return [];
         }
 
-        const bucket = bucketer.get_bucket(user_ids_string);
+        const bucket = this.bucketer.get_bucket(user_ids_string);
 
         if (!bucket) {
             return [];
@@ -176,64 +175,61 @@ exports.unread_pm_counter = (function () {
 
         const ids = Array.from(bucket);
         return util.sorted_ids(ids);
-    };
-
-    return self;
-})();
+    }
+}
+exports.unread_pm_counter = new UnreadPMCounter();
 
 function make_per_stream_bucketer() {
-    return make_bucketer({
+    return new Bucketer({
         KeyDict: FoldDict, // bucket keys are topics
         make_bucket: () => new Set(),
     });
 }
 
-exports.unread_topic_counter = (function () {
-    const self = {};
-
-    const bucketer = make_bucketer({
+class UnreadTopicCounter {
+    bucketer = new Bucketer({
         KeyDict: Map, // bucket keys are stream_ids
         make_bucket: make_per_stream_bucketer,
     });
 
-    self.clear = function () {
-        bucketer.clear();
-    };
+    clear() {
+        this.bucketer.clear();
+    }
 
-    self.set_streams = function (objs) {
+    set_streams(objs) {
         for (const obj of objs) {
             const stream_id = obj.stream_id;
             const topic = obj.topic;
             const unread_message_ids = obj.unread_message_ids;
 
             for (const msg_id of unread_message_ids) {
-                self.add(stream_id, topic, msg_id);
+                this.add(stream_id, topic, msg_id);
             }
         }
-    };
+    }
 
-    self.add = function (stream_id, topic, msg_id) {
-        bucketer.add({
+    add(stream_id, topic, msg_id) {
+        this.bucketer.add({
             bucket_key: stream_id,
             item_id: msg_id,
-            add_callback: function (per_stream_bucketer) {
+            add_callback(per_stream_bucketer) {
                 per_stream_bucketer.add({
                     bucket_key: topic,
                     item_id: msg_id,
                 });
             },
         });
-    };
+    }
 
-    self.delete = function (msg_id) {
-        bucketer.delete(msg_id);
-    };
+    delete(msg_id) {
+        this.bucketer.delete(msg_id);
+    }
 
-    self.get_counts = function () {
+    get_counts() {
         const res = {};
         res.stream_unread_messages = 0;
         res.stream_count = new Map(); // hash by stream_id -> count
-        for (const [stream_id, per_stream_bucketer] of bucketer) {
+        for (const [stream_id, per_stream_bucketer] of this.bucketer) {
             // We track unread counts for streams that may be currently
             // unsubscribed.  Since users may re-subscribe, we don't
             // completely throw away the data.  But we do ignore it here,
@@ -257,13 +253,13 @@ exports.unread_topic_counter = (function () {
         }
 
         return res;
-    };
+    }
 
-    self.get_missing_topics = function (opts) {
+    get_missing_topics(opts) {
         const stream_id = opts.stream_id;
         const topic_dict = opts.topic_dict;
 
-        const per_stream_bucketer = bucketer.get_bucket(stream_id);
+        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
         if (!per_stream_bucketer) {
             return [];
         }
@@ -282,12 +278,12 @@ exports.unread_topic_counter = (function () {
         });
 
         return result;
-    };
+    }
 
-    self.get_stream_count = function (stream_id) {
+    get_stream_count(stream_id) {
         let stream_count = 0;
 
-        const per_stream_bucketer = bucketer.get_bucket(stream_id);
+        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
 
         if (!per_stream_bucketer) {
             return 0;
@@ -301,10 +297,10 @@ exports.unread_topic_counter = (function () {
         }
 
         return stream_count;
-    };
+    }
 
-    self.get = function (stream_id, topic) {
-        const per_stream_bucketer = bucketer.get_bucket(stream_id);
+    get(stream_id, topic) {
+        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
         if (!per_stream_bucketer) {
             return 0;
         }
@@ -315,10 +311,10 @@ exports.unread_topic_counter = (function () {
         }
 
         return topic_bucket.size;
-    };
+    }
 
-    self.get_msg_ids_for_stream = function (stream_id) {
-        const per_stream_bucketer = bucketer.get_bucket(stream_id);
+    get_msg_ids_for_stream(stream_id) {
+        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
 
         if (!per_stream_bucketer) {
             return [];
@@ -335,10 +331,10 @@ exports.unread_topic_counter = (function () {
         }
 
         return util.sorted_ids(ids);
-    };
+    }
 
-    self.get_msg_ids_for_topic = function (stream_id, topic) {
-        const per_stream_bucketer = bucketer.get_bucket(stream_id);
+    get_msg_ids_for_topic(stream_id, topic) {
+        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
         if (!per_stream_bucketer) {
             return [];
         }
@@ -350,10 +346,10 @@ exports.unread_topic_counter = (function () {
 
         const ids = Array.from(topic_bucket);
         return util.sorted_ids(ids);
-    };
+    }
 
-    self.topic_has_any_unread = function (stream_id, topic) {
-        const per_stream_bucketer = bucketer.get_bucket(stream_id);
+    topic_has_any_unread(stream_id, topic) {
+        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
 
         if (!per_stream_bucketer) {
             return false;
@@ -365,10 +361,9 @@ exports.unread_topic_counter = (function () {
         }
 
         return id_set.size !== 0;
-    };
-
-    return self;
-})();
+    }
+}
+exports.unread_topic_counter = new UnreadTopicCounter();
 
 exports.unread_mentions_counter = new Set();
 

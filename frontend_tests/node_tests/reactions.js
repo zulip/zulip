@@ -1,12 +1,17 @@
 set_global("document", "document-stub");
 set_global("$", global.make_zjquery());
 
-zrequire("emoji");
+const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+const emoji = zrequire("emoji", "shared/js/emoji");
+
 zrequire("people");
 zrequire("reactions");
 
 set_global("page_params", {
     user_id: 5,
+});
+
+const emoji_params = {
     realm_emoji: {
         991: {
             id: "991",
@@ -27,13 +32,14 @@ set_global("page_params", {
             deactivated: false,
         },
     },
-});
+    emoji_codes,
+};
 
-emoji.initialize();
+emoji.initialize(emoji_params);
 
 set_global("channel", {});
 set_global("emoji_picker", {
-    hide_emoji_popover: function () {},
+    hide_emoji_popover() {},
 });
 
 const alice = {
@@ -58,8 +64,8 @@ people.add_active_user(cali);
 const message = {
     id: 1001,
     reactions: [
-        {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "263a"},
-        {emoji_name: "smile", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "263a"},
+        {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
+        {emoji_name: "smile", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f642"},
         {emoji_name: "frown", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f641"},
         {
             emoji_name: "inactive_realm_emoji",
@@ -75,20 +81,20 @@ const message = {
 };
 
 set_global("message_store", {
-    get: function (message_id) {
+    get(message_id) {
         assert.equal(message_id, 1001);
         return message;
     },
 });
 
 set_global("current_msg_list", {
-    selected_message: function () {
+    selected_message() {
         return {sent_by_me: true};
     },
-    selected_row: function () {
+    selected_row() {
         return $(".selected-row");
     },
-    selected_id: function () {
+    selected_id() {
         return 42;
     },
 });
@@ -126,7 +132,7 @@ run_test("basics", () => {
     blueslip.expect("warn", "Unknown user_id 8888 in reaction for message 1001");
     blueslip.expect("warn", "Unknown user_id 9999 in reaction for message 1001");
     const result = reactions.get_message_reactions(message);
-    assert(reactions.current_user_has_reacted_to_emoji(message, "unicode_emoji,263a"));
+    assert(reactions.current_user_has_reacted_to_emoji(message, "unicode_emoji,1f642"));
     assert(!reactions.current_user_has_reacted_to_emoji(message, "bogus"));
 
     result.sort((a, b) => a.count - b.count);
@@ -159,8 +165,8 @@ run_test("basics", () => {
         {
             emoji_name: "smile",
             reaction_type: "unicode_emoji",
-            emoji_code: "263a",
-            local_id: "unicode_emoji,263a",
+            emoji_code: "1f642",
+            local_id: "unicode_emoji,1f642",
             count: 2,
             user_ids: [5, 6],
             label: "You (click to remove) and Bob van Roberts reacted with :smile:",
@@ -171,14 +177,12 @@ run_test("basics", () => {
     assert.deepEqual(result, expected_result);
 });
 
-run_test("sending", () => {
+run_test("sending", (override) => {
     const message_id = 1001; // see above for setup
     let emoji_name = "smile"; // should be a current reaction
 
-    const orig_remove_reaction = reactions.remove_reaction;
-    const orig_add_reaction = reactions.add_reaction;
-    reactions.remove_reaction = function () {};
-    reactions.add_reaction = function () {};
+    override("reactions.add_reaction", () => {});
+    override("reactions.remove_reaction", () => {});
 
     global.with_stub((stub) => {
         global.channel.del = stub.f;
@@ -188,7 +192,7 @@ run_test("sending", () => {
         assert.deepEqual(args.data, {
             reaction_type: "unicode_emoji",
             emoji_name: "smile",
-            emoji_code: "263a",
+            emoji_code: "1f642",
         });
         // args.success() does nothing; just make sure it doesn't crash
         args.success();
@@ -247,8 +251,6 @@ run_test("sending", () => {
     emoji_name = "unknown-emoji"; // Test sending an emoji unknown to frontend.
     blueslip.expect("warn", "Bad emoji name: " + emoji_name);
     reactions.toggle_emoji_reaction(message_id, emoji_name);
-    reactions.add_reaction = orig_add_reaction;
-    reactions.remove_reaction = orig_remove_reaction;
 });
 
 run_test("set_reaction_count", () => {
@@ -277,7 +279,7 @@ run_test("get_reaction_section", () => {
 
 run_test("emoji_reaction_title", () => {
     const message_id = 1001;
-    const local_id = "unicode_emoji,263a";
+    const local_id = "unicode_emoji,1f642";
 
     assert.equal(
         reactions.get_reaction_title_data(message_id, local_id),
@@ -461,8 +463,8 @@ run_test("with_view_stubs", () => {
         function add_call_func(name) {
             return function (opts) {
                 calls.push({
-                    name: name,
-                    opts: opts,
+                    name,
+                    opts,
                 });
             };
         }
@@ -503,7 +505,7 @@ run_test("with_view_stubs", () => {
     };
 
     test_view_calls({
-        run_code: function () {
+        run_code() {
             reactions.add_reaction(alice_8ball_event);
         },
         expected_view_calls: [
@@ -521,7 +523,7 @@ run_test("with_view_stubs", () => {
     });
 
     test_view_calls({
-        run_code: function () {
+        run_code() {
             reactions.add_reaction(bob_8ball_event);
         },
         expected_view_calls: [
@@ -540,7 +542,7 @@ run_test("with_view_stubs", () => {
     });
 
     test_view_calls({
-        run_code: function () {
+        run_code() {
             reactions.add_reaction(cali_airplane_event);
         },
         expected_view_calls: [
@@ -558,7 +560,7 @@ run_test("with_view_stubs", () => {
     });
 
     test_view_calls({
-        run_code: function () {
+        run_code() {
             reactions.remove_reaction(bob_8ball_event);
         },
         expected_view_calls: [
@@ -577,7 +579,7 @@ run_test("with_view_stubs", () => {
     });
 
     test_view_calls({
-        run_code: function () {
+        run_code() {
             reactions.remove_reaction(alice_8ball_event);
         },
         expected_view_calls: [
@@ -611,15 +613,16 @@ run_test("error_handling", () => {
         user_id: 99,
     };
 
-    const original_func = reactions.current_user_has_reacted_to_emoji;
-    reactions.current_user_has_reacted_to_emoji = function () {
-        return true;
-    };
-    reactions.toggle_emoji_reaction(55, bogus_event.emoji_name);
-    reactions.current_user_has_reacted_to_emoji = original_func;
+    with_field(
+        reactions,
+        "current_user_has_reacted_to_emoji",
+        () => true,
+        () => {
+            reactions.toggle_emoji_reaction(55, bogus_event.emoji_name);
+        },
+    );
 
     reactions.add_reaction(bogus_event);
-
     reactions.remove_reaction(bogus_event);
 });
 
@@ -685,11 +688,11 @@ run_test("process_reaction_click", () => {
     expected_reaction_info = {
         reaction_type: "unicode_emoji",
         emoji_name: "smile",
-        emoji_code: "263a",
+        emoji_code: "1f642",
     };
     global.with_stub((stub) => {
         global.channel.del = stub.f;
-        reactions.process_reaction_click(message_id, "unicode_emoji,263a");
+        reactions.process_reaction_click(message_id, "unicode_emoji,1f642");
         const args = stub.get_args("args").args;
         assert.equal(args.url, "/json/messages/1001/reactions");
         assert.deepEqual(args.data, expected_reaction_info);
@@ -730,12 +733,15 @@ run_test("duplicates", () => {
     const dup_reaction_message = {
         id: 1001,
         reactions: [
-            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "263a"},
-            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "263a"},
+            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
+            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
         ],
     };
 
-    blueslip.expect("error", "server sent duplicate reactions for user 5 (key=unicode_emoji,263a)");
+    blueslip.expect(
+        "error",
+        "server sent duplicate reactions for user 5 (key=unicode_emoji,1f642)",
+    );
     reactions.set_clean_reactions(dup_reaction_message);
 });
 

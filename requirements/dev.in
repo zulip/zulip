@@ -47,14 +47,14 @@ gitlint
 # Needed for visualising cprofile reports
 snakeviz
 
-# Needed for creating digital ocean droplets
+# Needed for creating DigitalOcean droplets
 python-digitalocean
 
 # Needed for updating the locked pip dependencies
 pip-tools
 
 # zulip's linting framework - zulint
-https://github.com/zulip/zulint/archive/204a02dbc730253061af08f67a26858dc73754cb.zip#egg=zulint==0.0.1
+https://github.com/zulip/zulint/archive/34e3c78f0f0abe3c7f6745759e3e0472e85fd51d.zip#egg=zulint==0.0.1
 
 -r mypy.in
 
@@ -69,3 +69,6 @@ cairosvg
 
 # Needed for tools/check-thirdparty
 python-debian
+
+# Pattern-based lint tool
+semgrep

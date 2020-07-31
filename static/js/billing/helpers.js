@@ -39,9 +39,9 @@ exports.create_ajax_request = function (
     });
 
     $.post({
-        url: url,
-        data: data,
-        success: function () {
+        url,
+        data,
+        success() {
             $(form_loading).hide();
             $(form_error).hide();
             $(form_success).show();
@@ -54,7 +54,7 @@ exports.create_ajax_request = function (
             }
             window.location.replace(redirect_to);
         },
-        error: function (xhr) {
+        error(xhr) {
             $(form_loading).hide();
             $(form_error).show().text(JSON.parse(xhr.responseText).msg);
             $(form_input_section).show();

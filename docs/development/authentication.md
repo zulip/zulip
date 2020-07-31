@@ -96,8 +96,8 @@ details worth understanding:
 * In `dev-secrets.conf`, set
     * `social_auth_apple_services_id` to your
       "Services ID" (eg. com.application.your).
-    * `social_auth_apple_bundle_id` to "Bundle ID". This is
-      only required if you are testing Apple auth on iOS.
+    * `social_auth_apple_app_id` to "App ID" or "Bundle ID".
+      This is only required if you are testing Apple auth on iOS.
     * `social_auth_apple_key` to your "Key ID".
     * `social_auth_apple_team` to your "Team ID".
 * Put the private key file you got from apple at the path

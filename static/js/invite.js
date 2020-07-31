@@ -1,8 +1,8 @@
+const autosize = require("autosize");
+
 const render_invitation_failed_error = require("../templates/invitation_failed_error.hbs");
 const render_invite_subscription = require("../templates/invite_subscription.hbs");
 const render_settings_dev_env_email_access = require("../templates/settings/dev_env_email_access.hbs");
-
-const autosize = require("autosize");
 
 function reset_error_messages() {
     $("#invite_status").hide().text("").removeClass(common.status_classes);
@@ -24,7 +24,7 @@ function get_common_invitation_data() {
     });
     const data = {
         csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr("value"),
-        invite_as: invite_as,
+        invite_as,
         stream_ids: JSON.stringify(stream_ids),
     };
     return data;
@@ -50,9 +50,9 @@ function submit_invitation_form() {
 
     channel.post({
         url: "/json/invites",
-        data: data,
-        beforeSend: beforeSend,
-        success: function () {
+        data,
+        beforeSend,
+        success() {
             ui_report.success(i18n.t("User(s) invited successfully."), invite_status);
             invitee_emails_group.removeClass("warning");
             invitee_emails.val("");
@@ -62,7 +62,7 @@ function submit_invitation_form() {
                 $("#dev_env_msg").html(rendered_email_msg).addClass("alert-info").show();
             }
         },
-        error: function (xhr) {
+        error(xhr) {
             const arr = JSON.parse(xhr.responseText);
             if (arr.errors === undefined) {
                 // There was a fatal error, no partial processing occurred.
@@ -83,9 +83,9 @@ function submit_invitation_form() {
 
                 const error_response = render_invitation_failed_error({
                     error_message: arr.msg,
-                    error_list: error_list,
+                    error_list,
                     is_admin: page_params.is_admin,
-                    is_invitee_deactivated: is_invitee_deactivated,
+                    is_invitee_deactivated,
                 });
                 ui_report.message(error_response, invite_status, "alert-warning");
                 invitee_emails_group.addClass("warning");
@@ -95,7 +95,7 @@ function submit_invitation_form() {
                 }
             }
         },
-        complete: function () {
+        complete() {
             $("#submit-invitation").button("reset");
         },
     });
@@ -106,9 +106,9 @@ function generate_multiuse_invite() {
     const data = get_common_invitation_data();
     channel.post({
         url: "/json/invites/multiuse",
-        data: data,
-        beforeSend: beforeSend,
-        success: function (data) {
+        data,
+        beforeSend,
+        success(data) {
             ui_report.success(
                 i18n.t('Invitation link: <a href="__link__">__link__</a>', {
                     link: data.invite_link,
@@ -116,10 +116,10 @@ function generate_multiuse_invite() {
                 invite_status,
             );
         },
-        error: function (xhr) {
+        error(xhr) {
             ui_report.error("", xhr, invite_status);
         },
-        complete: function () {
+        complete() {
             $("#submit-invitation").button("reset");
         },
     });
@@ -152,12 +152,12 @@ function prepare_form_to_be_shown() {
 exports.launch = function () {
     $("#submit-invitation").button();
     prepare_form_to_be_shown();
-    autosize($("#invitee_emails").focus());
+    autosize($("#invitee_emails").trigger("focus"));
 
     overlays.open_overlay({
         name: "invite",
         overlay: $("#invite-user"),
-        on_close: function () {
+        on_close() {
             hashchange.exit_overlay();
         },
     });

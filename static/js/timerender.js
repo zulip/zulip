@@ -1,3 +1,6 @@
+const moment = require("moment");
+const XDate = require("xdate");
+
 let next_timerender_id = 0;
 
 const set_to_start_of_day = function (time) {
@@ -51,9 +54,9 @@ exports.render_now = function (time, today) {
         needs_update = false;
     }
     return {
-        time_str: time_str,
-        formal_time_str: formal_time_str,
-        needs_update: needs_update,
+        time_str,
+        formal_time_str,
+        needs_update,
     };
 };
 
@@ -68,7 +71,7 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
         return i18n.t("Just now");
     }
     if (minutes < 60) {
-        return i18n.t("__minutes__ minutes ago", {minutes: minutes});
+        return i18n.t("__minutes__ minutes ago", {minutes});
     }
 
     const hours = Math.floor(minutes / 60);
@@ -76,7 +79,7 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
         return i18n.t("An hour ago");
     }
     if (hours < 24) {
-        return i18n.t("__hours__ hours ago", {hours: hours});
+        return i18n.t("__hours__ hours ago", {hours});
     }
 
     const days = Math.floor(hours / 24);
@@ -85,7 +88,7 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
     }
 
     if (days < 90) {
-        return i18n.t("__days__ days ago", {days: days});
+        return i18n.t("__days__ days ago", {days});
     } else if (days > 90 && days < 365) {
         if (current_date.getFullYear() === last_active_date.getFullYear()) {
             // Online more than 90 days ago, in the same year
@@ -158,9 +161,9 @@ exports.render_date = function (time, time_above, today) {
     }
     maybe_add_update_list_entry({
         needs_update: rendered_time.needs_update,
-        className: className,
-        time: time,
-        time_above: time_above,
+        className,
+        time,
+        time_above,
     });
     return node;
 };
@@ -203,9 +206,9 @@ exports.update_timestamps = function () {
                     }
                     maybe_add_update_list_entry({
                         needs_update: rendered_time.needs_update,
-                        className: className,
-                        time: time,
-                        time_above: time_above,
+                        className,
+                        time,
+                        time_above,
                     });
                 }
             }

@@ -98,8 +98,11 @@ class TestQueueImplementation(ZulipTestCase):
             actual_publish(*args, **kwargs)
 
         with mock.patch("zerver.lib.queue.SimpleQueueClient.publish",
-                        throw_connection_error_once):
+                        throw_connection_error_once), self.assertLogs('zulip.queue', level='WARN') as warn_logs:
             queue_json_publish("test_suite", {"event": "my_event"})
+        self.assertEqual(warn_logs.output, [
+            'WARNING:zulip.queue:Failed to send to rabbitmq, trying to reconnect and send again'
+        ])
 
         result = queue_client.json_drain_queue("test_suite")
         self.assertEqual(len(result), 1)

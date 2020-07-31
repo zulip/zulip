@@ -9,8 +9,8 @@ function then_edit_last_message() {
     casper.then(function () {
         casper.evaluate(function () {
             var msg = $("#zhome .message_row").last();
-            msg.find(".info").click();
-            $(".popover_edit_message").click();
+            msg.find(".info").trigger("click");
+            $(".popover_edit_message").trigger("click");
         });
     });
     casper.then(function () {
@@ -33,7 +33,7 @@ casper.then(function () {
         var msg = $("#zhome .message_row").last();
         msg.find(".message_edit_topic").val("edited");
         msg.find(".message_edit_content").val("test edited");
-        msg.find(".message_edit_save").click();
+        msg.find(".message_edit_save").trigger("click");
     });
 });
 
@@ -54,7 +54,7 @@ casper.then(function () {
         var msg = $("#zhome .message_row").last();
         msg.find(".message_edit_topic").val("edited");
         msg.find(".message_edit_content").val("/me test edited one line with me");
-        msg.find(".message_edit_save").click();
+        msg.find(".message_edit_save").trigger("click");
     });
 });
 
@@ -76,7 +76,7 @@ casper.then(function () {
     casper.evaluate(function () {
         var msg = $("#zhome .message_row").last();
         msg.find(".message_edit_content").val("test edited pm");
-        msg.find(".message_edit_save").click();
+        msg.find(".message_edit_save").trigger("click");
     });
 });
 

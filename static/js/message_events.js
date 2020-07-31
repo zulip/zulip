@@ -1,5 +1,5 @@
-const util = require("./util");
 const huddle_data = require("./huddle_data");
+const util = require("./util");
 
 function maybe_add_narrowed_messages(messages, msg_list) {
     const ids = [];
@@ -15,7 +15,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
             narrow: JSON.stringify(narrow_state.public_operators()),
         },
         timeout: 5000,
-        success: function (data) {
+        success(data) {
             if (msg_list !== current_msg_list) {
                 // We unnarrowed in the mean time
                 return;
@@ -45,7 +45,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
             unread_ops.process_visible();
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
-        error: function () {
+        error() {
             // We might want to be more clever here
             setTimeout(() => {
                 if (msg_list === current_msg_list) {
@@ -230,7 +230,7 @@ exports.update_messages = function update_messages(events) {
                     // remove the message from the current/narrowed message list.
                     const cur_row = current_msg_list.get_row(id);
                     if (cur_row !== undefined) {
-                        messages_to_rerender.push({id: id});
+                        messages_to_rerender.push({id});
                     }
                 }
             }
