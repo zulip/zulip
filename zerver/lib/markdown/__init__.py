@@ -413,9 +413,10 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
             t = e.args[0]
             if len(t) == 1 and ('code' in t[0]):
                 code = t[0]['code']
-                if code == 34:
-                    # Code 34 means that the message doesn't exist; return
-                    # None so that we will cache the error
+                if code in [34, 144, 421, 422]:
+                    # All these "correspond with HTTP 404," and mean
+                    # that the message doesn't exist; return None so
+                    # that we will cache the error.
                     return None
                 elif code in [88, 130]:
                     # Code 88 means that we were rate-limited and 130
