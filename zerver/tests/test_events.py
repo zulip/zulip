@@ -222,7 +222,9 @@ class BaseAction(ZulipTestCase):
         events = client.event_queue.contents()
         content = {
             'queue_id': '123.12',
-            'events': copy.deepcopy(events),
+            # The ujson wrapper helps in converting tuples to lists
+            # as tuples aren't valid JSON structure.
+            'events': ujson.loads(ujson.dumps(copy.deepcopy(events))),
             'msg': '',
             'result': 'success'
         }
