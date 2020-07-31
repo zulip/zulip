@@ -282,7 +282,7 @@ make the following changes in two configuration files.
     ```
 
 
-3. Restart your Zulip server with `/home/zulip/deployments/current/restart-server`.
+3. Restart your Zulip server with `/home/zulip/deployments/current/scripts/restart-server`.
 
 4. Create an Apache2 virtual host configuration file, similar to the
    following.  Place it the appropriate path for your Apache2
