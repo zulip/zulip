@@ -94,6 +94,7 @@ from zerver.lib.event_schema import (
     basic_stream_fields,
     check_alert_words,
     check_custom_profile_fields,
+    check_default_stream_groups,
     check_events_dict,
     check_invites_changed,
     check_message,
@@ -916,16 +917,6 @@ class NormalActionsTest(BaseAction):
         user_group_remove_checker('events[0]', events[0])
 
     def test_default_stream_groups_events(self) -> None:
-        default_stream_groups_checker = check_events_dict([
-            ('type', equals('default_stream_groups')),
-            ('default_stream_groups', check_list(check_dict_only([
-                ('name', check_string),
-                ('id', check_int),
-                ('description', check_string),
-                ('streams', check_list(check_dict_only(basic_stream_fields))),
-            ]))),
-        ])
-
         streams = []
         for stream_name in ["Scotland", "Verona", "Denmark"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
@@ -936,7 +927,7 @@ class NormalActionsTest(BaseAction):
                 "group1",
                 "This is group1",
                 streams))
-        default_stream_groups_checker('events[0]', events[0])
+        check_default_stream_groups('events[0]', events[0])
 
         group = lookup_default_stream_groups(["group1"], self.user_profile.realm)[0]
         venice_stream = get_stream("Venice", self.user_profile.realm)
@@ -945,32 +936,32 @@ class NormalActionsTest(BaseAction):
                 self.user_profile.realm,
                 group,
                 [venice_stream]))
-        default_stream_groups_checker('events[0]', events[0])
+        check_default_stream_groups('events[0]', events[0])
 
         events = self.verify_action(
             lambda: do_remove_streams_from_default_stream_group(
                 self.user_profile.realm,
                 group,
                 [venice_stream]))
-        default_stream_groups_checker('events[0]', events[0])
+        check_default_stream_groups('events[0]', events[0])
 
         events = self.verify_action(
             lambda: do_change_default_stream_group_description(
                 self.user_profile.realm,
                 group,
                 "New description"))
-        default_stream_groups_checker('events[0]', events[0])
+        check_default_stream_groups('events[0]', events[0])
 
         events = self.verify_action(
             lambda: do_change_default_stream_group_name(
                 self.user_profile.realm,
                 group,
                 "New Group Name"))
-        default_stream_groups_checker('events[0]', events[0])
+        check_default_stream_groups('events[0]', events[0])
 
         events = self.verify_action(
             lambda: do_remove_default_stream_group(self.user_profile.realm, group))
-        default_stream_groups_checker('events[0]', events[0])
+        check_default_stream_groups('events[0]', events[0])
 
     def test_default_stream_group_events_guest(self) -> None:
         streams = []
