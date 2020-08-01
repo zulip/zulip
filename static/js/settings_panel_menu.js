@@ -15,9 +15,6 @@ class SettingsPanelMenu {
         this.main_elem = opts.main_elem;
         this.hash_prefix = opts.hash_prefix;
         this.curr_li = this.main_elem.children("li").eq(0);
-        if (this.curr_li === undefined) {
-            throw new Error("CURR_LI IS UNDEFINED RHJRWKTDSF");
-        }
 
         this.main_elem.on("click", "li[data-section]", (e) => {
             const section = $(e.currentTarget).attr("data-section");
@@ -102,9 +99,6 @@ class SettingsPanelMenu {
         }
 
         this.curr_li = this.li_for_section(section);
-        if (this.curr_li === undefined) {
-            throw new Error("CURR_LI IS UNDEFINED WEJRGWKJ");
-        }
 
         this.main_elem.children("li").removeClass("active");
         this.curr_li.addClass("active");
