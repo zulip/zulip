@@ -327,7 +327,7 @@ has_class() {
 # The home directory here should match what's declared in base.pp.
 id -u zulip &>/dev/null || useradd -m zulip --home-dir /home/zulip
 if [ -n "$NO_OVERWRITE_SETTINGS" ] && [ -e "/etc/zulip/zulip.conf" ]; then
-    "$ZULIP_PATH"/scripts/zulip-puppet-apply --force --noop \
+    "$ZULIP_PATH"/scripts/zulip-puppet-apply --noop \
                  --write-catalog-summary \
                  --classfile=/var/lib/puppet/classes.txt \
                  >/dev/null
@@ -351,7 +351,7 @@ EOF
         crudini --set /etc/zulip/zulip.conf postgresql missing_dictionaries true
     fi
 
-    "$ZULIP_PATH"/scripts/zulip-puppet-apply --force --noop \
+    "$ZULIP_PATH"/scripts/zulip-puppet-apply --noop \
                  --write-catalog-summary \
                  --classfile=/var/lib/puppet/classes.txt \
                  >/dev/null

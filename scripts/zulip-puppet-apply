@@ -14,6 +14,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 parser = argparse.ArgumentParser(description="Run puppet")
 parser.add_argument('--force', '-f', action="store_true",
                     help="Do not prompt with proposed changes")
+parser.add_argument('--noop', action="store_true",
+                    help="Do not apply the changes")
 parser.add_argument('--config', action="store",
                     default="/etc/zulip/zulip.conf",
                     help="Alternate zulip.conf path")
@@ -34,6 +36,8 @@ for pclass in re.split(r'\s*,\s*', config.get('machine', 'puppet_classes')):
 scripts_path = os.path.join(BASE_DIR, "scripts")
 puppet_module_path = os.path.join(BASE_DIR, "puppet")
 puppet_cmd = ["puppet", "apply", "--modulepath", puppet_module_path, "-e", puppet_config]
+if args.noop:
+    puppet_cmd += ["--noop"]
 puppet_cmd += extra_args
 
 # Set the scripts path to be a factor so it can be used by puppet code
@@ -45,7 +49,7 @@ puppet_env["FACTER_zulip_scripts_path"] = scripts_path
 if (distro_info['ID'], distro_info['VERSION_ID']) in [('ubuntu', '20.04')]:
     puppet_env["RUBYOPT"] = "-W0"
 
-if not args.force:
+if not args.noop and not args.force:
     subprocess.check_call(puppet_cmd + ['--noop', '--show_diff'], env=puppet_env)
 
     do_apply = None
