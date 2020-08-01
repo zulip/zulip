@@ -46,7 +46,10 @@ global.stub_out_jquery = namespace.stub_out_jquery;
 global.with_overrides = namespace.with_overrides;
 
 global.window = new Proxy(global, {
-    set: (obj, prop, value) => namespace.set_global(prop, value),
+    set: (obj, prop, value) => {
+        namespace.set_global(prop, value);
+        return true;
+    },
 });
 global.to_$ = () => window;
 
