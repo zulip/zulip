@@ -26,7 +26,6 @@ function get_last_element(array) {
 }
 
 async function test_send_messages(page) {
-    await page.waitForSelector("#zhome .message_row", {visible: true});
     const initial_msgs_count = await page.evaluate(() => $("#zhome .message_row").length);
 
     await common.send_multiple_messages(page, [
