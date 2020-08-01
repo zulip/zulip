@@ -541,7 +541,7 @@ function validate_stream_message_post_policy(sub) {
     const person = people.get_by_user_id(page_params.user_id);
     const current_datetime = new Date(Date.now());
     const person_date_joined = new Date(person.date_joined);
-    const days = new Date(current_datetime - person_date_joined).getDate();
+    const days = (current_datetime - person_date_joined) / 1000 / 86400;
     let error_text;
     if (
         stream_post_policy === stream_post_permission_type.non_new_members.code &&
