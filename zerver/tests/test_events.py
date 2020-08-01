@@ -95,6 +95,7 @@ from zerver.lib.event_schema import (
     check_alert_words,
     check_custom_profile_fields,
     check_default_stream_groups,
+    check_default_streams,
     check_events_dict,
     check_invites_changed,
     check_message,
@@ -983,18 +984,13 @@ class NormalActionsTest(BaseAction):
             num_events=0)
 
     def test_default_streams_events(self) -> None:
-        default_streams_checker = check_events_dict([
-            ('type', equals('default_streams')),
-            ('default_streams', check_list(check_dict_only(basic_stream_fields))),
-        ])
-
         stream = get_stream("Scotland", self.user_profile.realm)
         events = self.verify_action(
             lambda: do_add_default_stream(stream))
-        default_streams_checker('events[0]', events[0])
+        check_default_streams('events[0]', events[0])
         events = self.verify_action(
             lambda: do_remove_default_stream(stream))
-        default_streams_checker('events[0]', events[0])
+        check_default_streams('events[0]', events[0])
 
     def test_default_streams_events_guest(self) -> None:
         do_change_user_role(self.user_profile, UserProfile.ROLE_GUEST)
