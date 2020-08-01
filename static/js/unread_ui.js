@@ -1,3 +1,5 @@
+"use strict";
+
 const XDate = require("xdate");
 
 let last_mention_count = 0;

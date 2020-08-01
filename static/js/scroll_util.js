@@ -1,3 +1,5 @@
+"use strict";
+
 exports.scroll_delta = function (opts) {
     const elem_top = opts.elem_top;
     const container_height = opts.container_height;

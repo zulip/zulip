@@ -1,3 +1,5 @@
+"use strict";
+
 /*
 
 These runtime schema validators are defensive and

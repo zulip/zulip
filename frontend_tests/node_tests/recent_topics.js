@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("message_util");
 
 const noop = () => {};

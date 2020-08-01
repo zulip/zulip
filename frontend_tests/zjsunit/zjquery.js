@@ -1,3 +1,5 @@
+"use strict";
+
 const noop = function () {};
 
 class Event {

@@ -1,3 +1,5 @@
+"use strict";
+
 const util = require("./util");
 
 exports.initialize_pill = function () {

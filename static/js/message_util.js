@@ -1,3 +1,5 @@
+"use strict";
+
 exports.do_unread_count_updates = function do_unread_count_updates(messages) {
     unread.process_loaded_messages(messages);
     unread_ui.update_unread_counts();

@@ -1,3 +1,5 @@
+"use strict";
+
 /*
     This whole module is dedicated to adding
     one line of coverage for markdown.js.

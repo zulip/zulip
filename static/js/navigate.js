@@ -1,3 +1,5 @@
+"use strict";
+
 function go_to_row(msg_id) {
     current_msg_list.select_id(msg_id, {then_scroll: true, from_scroll: true});
 }

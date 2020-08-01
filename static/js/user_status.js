@@ -1,3 +1,5 @@
+"use strict";
+
 const away_user_ids = new Set();
 const user_info = new Map();
 

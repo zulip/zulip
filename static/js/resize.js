@@ -1,3 +1,5 @@
+"use strict";
+
 const autosize = require("autosize");
 
 const util = require("./util");

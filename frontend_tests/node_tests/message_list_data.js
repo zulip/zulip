@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("unread");
 
 zrequire("Filter", "js/filter");

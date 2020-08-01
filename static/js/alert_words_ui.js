@@ -1,3 +1,5 @@
+"use strict";
+
 const render_alert_word_settings_item = require("../templates/settings/alert_word_settings_item.hbs");
 
 exports.render_alert_words_ui = function () {

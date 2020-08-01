@@ -1,3 +1,5 @@
+"use strict";
+
 const typeahead = zrequire("typeahead", "shared/js/typeahead");
 
 // The data structures here may be different for

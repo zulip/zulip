@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 const render_subscription = require("../templates/subscription.hbs");

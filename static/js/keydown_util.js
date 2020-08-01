@@ -1,3 +1,5 @@
+"use strict";
+
 /*
     See hotkey.js for handlers that are more app-wide.
 */

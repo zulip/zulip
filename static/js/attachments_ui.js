@@ -1,3 +1,5 @@
+"use strict";
+
 const XDate = require("xdate");
 
 const render_settings_upload_space_stats = require("../templates/settings/upload_space_stats.hbs");

@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("stream_data");
 zrequire("people");
 zrequire("compose_fade");

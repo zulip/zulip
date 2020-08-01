@@ -1,3 +1,5 @@
+"use strict";
+
 let toggler;
 
 exports.highlight_toggle = function (tab_name) {

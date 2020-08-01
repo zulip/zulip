@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("unread");
 zrequire("unread_ops");
 zrequire("message_flags");

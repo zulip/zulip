@@ -1,3 +1,5 @@
+"use strict";
+
 const render_settings_deactivation_stream_modal = require("../templates/settings/deactivation_stream_modal.hbs");
 const render_stream_member_list_entry = require("../templates/stream_member_list_entry.hbs");
 const render_subscription_settings = require("../templates/subscription_settings.hbs");

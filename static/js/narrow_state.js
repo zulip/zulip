@@ -1,3 +1,5 @@
+"use strict";
+
 let current_filter;
 
 exports.reset_current_filter = function () {

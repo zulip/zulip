@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("scroll_util");
 set_global("ui", {
     get_scroll_element: (element) => element,

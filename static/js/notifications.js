@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 const render_compose_notification = require("../templates/compose_notification.hbs");

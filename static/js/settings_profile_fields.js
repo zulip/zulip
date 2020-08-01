@@ -1,3 +1,5 @@
+"use strict";
+
 const Sortable = require("sortablejs").default;
 
 const render_admin_profile_field_list = require("../templates/admin_profile_field_list.hbs");

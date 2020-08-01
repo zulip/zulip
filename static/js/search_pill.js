@@ -1,3 +1,5 @@
+"use strict";
+
 exports.create_item_from_search_string = function (search_string) {
     const operator = Filter.parse(search_string);
     const description = Filter.describe(operator);

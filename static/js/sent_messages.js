@@ -1,3 +1,5 @@
+"use strict";
+
 exports.messages = new Map();
 
 exports.reset_id_state = function () {

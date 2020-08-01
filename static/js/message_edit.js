@@ -1,3 +1,5 @@
+"use strict";
+
 const ClipboardJS = require("clipboard");
 const XDate = require("xdate");
 

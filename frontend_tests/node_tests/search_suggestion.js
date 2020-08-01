@@ -1,3 +1,5 @@
+"use strict";
+
 set_global("page_params", {
     search_pills_enabled: true,
 });

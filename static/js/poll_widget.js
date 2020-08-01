@@ -1,3 +1,5 @@
+"use strict";
+
 const render_widgets_poll_widget = require("../templates/widgets/poll_widget.hbs");
 const render_widgets_poll_widget_results = require("../templates/widgets/poll_widget_results.hbs");
 

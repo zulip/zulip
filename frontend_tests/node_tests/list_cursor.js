@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("list_cursor");
 
 run_test("config errors", () => {

@@ -1,3 +1,5 @@
+"use strict";
+
 const emoji = require("../shared/js/emoji");
 
 const settings_config = require("./settings_config");

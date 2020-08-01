@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 const render_admin_user_group_list = require("../templates/admin_user_group_list.hbs");

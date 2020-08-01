@@ -1,3 +1,5 @@
+"use strict";
+
 const Handlebars = require("handlebars/runtime");
 const XDate = require("xdate");
 

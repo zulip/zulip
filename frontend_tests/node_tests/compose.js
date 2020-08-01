@@ -1,3 +1,5 @@
+"use strict";
+
 const {JSDOM} = require("jsdom");
 const rewiremock = require("rewiremock/node");
 

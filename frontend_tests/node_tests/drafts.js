@@ -1,3 +1,5 @@
+"use strict";
+
 const XDate = require("xdate");
 
 set_global("$", global.make_zjquery());

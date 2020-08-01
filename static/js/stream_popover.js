@@ -1,3 +1,5 @@
+"use strict";
+
 const render_all_messages_sidebar_actions = require("../templates/all_messages_sidebar_actions.hbs");
 const render_delete_topic_modal = require("../templates/delete_topic_modal.hbs");
 const render_move_topic_to_stream = require("../templates/move_topic_to_stream.hbs");

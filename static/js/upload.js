@@ -1,3 +1,5 @@
+"use strict";
+
 const Uppy = require("@uppy/core");
 const ProgressBar = require("@uppy/progress-bar");
 const XHRUpload = require("@uppy/xhr-upload");

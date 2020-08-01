@@ -1,3 +1,5 @@
+"use strict";
+
 function rerender_messages_view() {
     for (const list of [home_msg_list, message_list.narrowed, message_list.all]) {
         if (list === undefined) {

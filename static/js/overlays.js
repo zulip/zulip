@@ -1,3 +1,5 @@
+"use strict";
+
 let active_overlay;
 let close_handler;
 let open_overlay_name;

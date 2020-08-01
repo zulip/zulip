@@ -1,3 +1,5 @@
+"use strict";
+
 const events = require("./lib/events.js");
 
 const event_fixtures = events.fixtures;

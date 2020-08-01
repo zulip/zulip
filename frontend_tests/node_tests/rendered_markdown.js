@@ -1,3 +1,5 @@
+"use strict";
+
 const rm = zrequire("rendered_markdown");
 zrequire("people");
 zrequire("user_groups");

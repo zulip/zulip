@@ -1,3 +1,5 @@
+"use strict";
+
 const load_func_dict = new Map(); // group -> function
 const loaded_groups = new Set();
 

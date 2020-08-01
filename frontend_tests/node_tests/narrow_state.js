@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("people");
 zrequire("Filter", "js/filter");
 zrequire("stream_data");

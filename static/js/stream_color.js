@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 exports.default_color = "#c2c2c2";

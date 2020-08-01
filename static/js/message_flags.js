@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 function send_flag_update(message, flag, op) {

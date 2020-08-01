@@ -1,3 +1,5 @@
+"use strict";
+
 const params = {
     alert_words: ["alertone", "alerttwo", "alertthree", "al*rt.*s", ".+", "emoji"],
 };

@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 // For simplicity, we use a list for our internal

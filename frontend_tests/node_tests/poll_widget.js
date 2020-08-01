@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("poll_widget");
 
 set_global("$", global.make_zjquery());

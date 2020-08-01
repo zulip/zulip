@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 const render_settings_api_key_modal = require("../templates/settings/api_key_modal.hbs");

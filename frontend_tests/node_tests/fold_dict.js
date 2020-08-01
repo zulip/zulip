@@ -1,3 +1,5 @@
+"use strict";
+
 const FoldDict = zrequire("fold_dict").FoldDict;
 
 run_test("basic", () => {

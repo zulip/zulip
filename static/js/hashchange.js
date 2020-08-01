@@ -1,3 +1,5 @@
+"use strict";
+
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 // or locally: docs/subsystems/hashchange-system.md
 let changing_hash = false;

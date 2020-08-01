@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 const render_stream_privacy = require("../templates/stream_privacy.hbs");

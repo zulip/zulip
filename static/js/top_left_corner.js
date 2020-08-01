@@ -1,3 +1,5 @@
+"use strict";
+
 exports.update_count_in_dom = function (unread_count_elem, count) {
     const count_span = unread_count_elem.find(".count");
     const value_span = count_span.find(".value");

@@ -1,3 +1,5 @@
+"use strict";
+
 exports.enable = function () {
     $("body").removeClass("color-scheme-automatic").addClass("night-mode");
 };

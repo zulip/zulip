@@ -1,3 +1,5 @@
+"use strict";
+
 const rewiremock = require("rewiremock/node");
 
 /*

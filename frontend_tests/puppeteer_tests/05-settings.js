@@ -1,3 +1,5 @@
+"use strict";
+
 const assert = require("assert").strict;
 
 const test_credentials = require("../../var/casper/test_credentials.js").test_credentials;

@@ -1,3 +1,5 @@
+"use strict";
+
 const emoji = require("../shared/js/emoji");
 
 function do_narrow_action(action) {

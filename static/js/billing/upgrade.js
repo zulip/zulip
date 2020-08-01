@@ -1,3 +1,5 @@
+"use strict";
+
 exports.initialize = () => {
     helpers.set_tab("upgrade");
 

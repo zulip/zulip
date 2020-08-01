@@ -1,3 +1,5 @@
+"use strict";
+
 exports.mark_all_as_read = function () {
     unread.declare_bankruptcy();
     unread_ui.update_unread_counts();

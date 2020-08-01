@@ -1,3 +1,5 @@
+"use strict";
+
 const render_message_view_header = require("../templates/message_view_header.hbs");
 
 const rendered_markdown = require("./rendered_markdown");

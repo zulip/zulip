@@ -1,3 +1,5 @@
+"use strict";
+
 const render_admin_bot_form = require("../templates/admin_bot_form.hbs");
 const render_admin_human_form = require("../templates/admin_human_form.hbs");
 const render_admin_user_list = require("../templates/admin_user_list.hbs");

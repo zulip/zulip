@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("colorspace");
 
 run_test("sRGB_to_linear", () => {

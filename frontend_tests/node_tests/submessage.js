@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("submessage");
 
 set_global("channel", {});

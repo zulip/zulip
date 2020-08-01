@@ -1,3 +1,5 @@
+"use strict";
+
 const util = require("./util");
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 

@@ -1,3 +1,5 @@
+"use strict";
+
 exports.update_padding = function (opts) {
     const content = $(opts.content_sel);
     const padding = $(opts.padding_sel);

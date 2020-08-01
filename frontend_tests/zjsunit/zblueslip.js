@@ -1,3 +1,5 @@
+"use strict";
+
 exports.make_zblueslip = function () {
     const lib = {};
 

@@ -1,3 +1,5 @@
+"use strict";
+
 exports.get_message_events = function (message) {
     if (message.locally_echoed) {
         return;

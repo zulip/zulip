@@ -1,3 +1,5 @@
+"use strict";
+
 let prior_dom;
 let private_messages_open = false;
 

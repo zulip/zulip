@@ -1,3 +1,5 @@
+"use strict";
+
 class ListCursor {
     constructor({highlight_class, list}) {
         const config_ok =

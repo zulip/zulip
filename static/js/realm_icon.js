@@ -1,3 +1,5 @@
+"use strict";
+
 exports.build_realm_icon_widget = function (upload_function) {
     const get_file_input = function () {
         return $("#realm-icon-upload-widget .image_file_input").expectOne();

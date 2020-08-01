@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 set_global("narrow_state", {});

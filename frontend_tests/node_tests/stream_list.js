@@ -1,3 +1,5 @@
+"use strict";
+
 set_global("document", "document-stub");
 set_global("$", global.make_zjquery());
 

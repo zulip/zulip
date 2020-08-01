@@ -1,3 +1,5 @@
+"use strict";
+
 const render_widgets_tictactoe_widget = require("../templates/widgets/tictactoe_widget.hbs");
 
 class TicTacToeData {

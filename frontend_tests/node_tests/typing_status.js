@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("typing");
 zrequire("people");
 zrequire("compose_pm_pill");

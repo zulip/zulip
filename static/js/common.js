@@ -1,3 +1,5 @@
+"use strict";
+
 // This reloads the module in development rather than refreshing the page
 if (module.hot) {
     module.hot.accept();

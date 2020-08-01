@@ -1,3 +1,5 @@
+"use strict";
+
 /*
     We want his module to load pretty early in the process
     of starting the app, so that people.js can load early.

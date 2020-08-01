@@ -1,3 +1,5 @@
+"use strict";
+
 // Add functions to this that have no non-trivial
 // dependencies other than jQuery.
 

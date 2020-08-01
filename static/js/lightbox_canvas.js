@@ -1,3 +1,5 @@
+"use strict";
+
 const funcs = {
     setZoom(meta, zoom) {
         // condition to handle zooming event by zoom hotkeys

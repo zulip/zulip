@@ -1,3 +1,5 @@
+"use strict";
+
 exports.input_field = function () {
     return $(".user_status_overlay input.user_status");
 };

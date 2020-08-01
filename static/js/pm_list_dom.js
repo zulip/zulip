@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 const render_pm_list_item = require("../templates/pm_list_item.hbs");

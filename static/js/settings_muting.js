@@ -1,3 +1,5 @@
+"use strict";
+
 exports.loaded = false;
 
 exports.set_up = function () {

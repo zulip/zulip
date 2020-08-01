@@ -1,3 +1,5 @@
+"use strict";
+
 const Handlebars = require("handlebars/runtime");
 
 const render_compose_all_everyone = require("../templates/compose_all_everyone.hbs");

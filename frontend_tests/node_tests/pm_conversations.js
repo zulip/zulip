@@ -1,3 +1,5 @@
+"use strict";
+
 const pmc = zrequire("pm_conversations");
 
 run_test("partners", () => {

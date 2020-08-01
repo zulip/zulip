@@ -1,3 +1,5 @@
+"use strict";
+
 const default_max_file_size = 5;
 
 const supported_types = ["image/jpeg", "image/png", "image/gif", "image/tiff"];

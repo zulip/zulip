@@ -1,3 +1,5 @@
+"use strict";
+
 const ClipboardJS = require("clipboard");
 
 const render_bot_avatar_row = require("../templates/bot_avatar_row.hbs");

@@ -1,3 +1,5 @@
+"use strict";
+
 exports.initialize = function () {
     helpers.set_tab("billing");
 

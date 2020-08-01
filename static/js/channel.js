@@ -1,3 +1,5 @@
+"use strict";
+
 const pending_requests = [];
 
 function add_pending_request(jqXHR) {

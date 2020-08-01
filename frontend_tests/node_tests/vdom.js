@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("vdom");
 
 run_test("basics", () => {

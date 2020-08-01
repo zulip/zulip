@@ -1,3 +1,5 @@
+"use strict";
+
 const noop = function () {};
 const return_false = function () {
     return false;

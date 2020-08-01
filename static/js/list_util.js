@@ -1,3 +1,5 @@
+"use strict";
+
 const list_selectors = ["#stream_filters", "#global_filters", "#user_presences"];
 
 exports.inside_list = function (e) {

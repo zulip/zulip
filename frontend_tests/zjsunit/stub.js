@@ -1,3 +1,5 @@
+"use strict";
+
 const assert = require("assert").strict;
 
 // Stubs don't do any magical modifications to your namespace.  They

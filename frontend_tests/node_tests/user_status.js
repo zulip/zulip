@@ -1,3 +1,5 @@
+"use strict";
+
 set_global("channel", {});
 zrequire("user_status");
 

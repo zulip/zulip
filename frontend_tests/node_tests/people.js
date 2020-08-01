@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 const moment = require("moment-timezone");
 const rewiremock = require("rewiremock/node");

@@ -1,3 +1,5 @@
+"use strict";
+
 const noop = function () {};
 
 set_global("document", {});

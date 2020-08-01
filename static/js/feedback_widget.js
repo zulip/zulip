@@ -1,3 +1,5 @@
+"use strict";
+
 const render_feedback_container = require("../templates/feedback_container.hbs");
 
 /*

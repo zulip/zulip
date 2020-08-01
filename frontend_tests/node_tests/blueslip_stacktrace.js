@@ -1,3 +1,5 @@
+"use strict";
+
 const blueslip_stacktrace = zrequire("blueslip_stacktrace");
 
 run_test("clean_path", () => {

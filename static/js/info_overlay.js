@@ -1,3 +1,5 @@
+"use strict";
+
 // Make it explicit that our toggler is undefined until
 // set_up_toggler is called.
 exports.toggler = undefined;

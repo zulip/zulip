@@ -1,3 +1,5 @@
+"use strict";
+
 module.exports = {
     files: ["./*.svg"],
     fontName: "zulip-icons",

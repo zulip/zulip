@@ -1,3 +1,5 @@
+"use strict";
+
 exports.ids = new Set();
 
 exports.initialize = function () {

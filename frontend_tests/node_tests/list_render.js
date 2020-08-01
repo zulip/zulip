@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("list_render");
 
 // We need these stubs to get by instanceof checks.

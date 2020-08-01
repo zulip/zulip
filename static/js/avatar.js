@@ -1,3 +1,5 @@
+"use strict";
+
 exports.build_bot_create_widget = function () {
     // We have to do strange gyrations with the file input to clear it,
     // where we replace it wholesale, so we generalize the file input with

@@ -1,3 +1,5 @@
+"use strict";
+
 const emojisets = require("./emojisets.js");
 const settings_config = require("./settings_config");
 

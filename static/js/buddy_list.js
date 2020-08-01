@@ -1,3 +1,5 @@
+"use strict";
+
 const render_user_presence_row = require("../templates/user_presence_row.hbs");
 const render_user_presence_rows = require("../templates/user_presence_rows.hbs");
 

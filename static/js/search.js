@@ -1,3 +1,5 @@
+"use strict";
+
 // Exported for unit testing
 exports.is_using_input_method = false;
 

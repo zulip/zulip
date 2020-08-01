@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 /*
     Helpers for detecting user activity and managing user idle states

@@ -1,3 +1,5 @@
+"use strict";
+
 set_global("page_params", {realm_is_zephyr_mirror_realm: false});
 set_global("md5", (s) => "md5-" + s);
 

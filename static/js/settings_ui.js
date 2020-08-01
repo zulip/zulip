@@ -1,3 +1,5 @@
+"use strict";
+
 exports.display_checkmark = function ($elem) {
     const check_mark = document.createElement("img");
     check_mark.src = "/static/images/checkbox-green.svg";

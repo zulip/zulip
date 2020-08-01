@@ -1,3 +1,5 @@
+"use strict";
+
 exports.create_ajax_request = function (
     url,
     form_name,

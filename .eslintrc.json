@@ -7,7 +7,7 @@
     "parser": "babel-eslint",
     "parserOptions": {
         "warnOnUnsupportedTypeScriptVersion": false,
-        "sourceType": "module"
+        "sourceType": "unambiguous"
     },
     "plugins": ["eslint-plugin-empty-returns"],
     "rules": {
@@ -29,6 +29,7 @@
                 "newlines-between": "always"
             }
         ],
+        "import/unambiguous": "error",
         "new-cap": [
             "error",
             {
@@ -88,7 +89,7 @@
         ],
         "radix": "error",
         "spaced-comment": "off",
-        "strict": "off",
+        "strict": "error",
         "valid-typeof": ["error", {"requireStringLiterals": true}],
         "yoda": "error"
     },
@@ -329,6 +330,12 @@
                 "@typescript-eslint/prefer-string-starts-ends-with": "error",
                 "@typescript-eslint/promise-function-async": "error",
                 "@typescript-eslint/unified-signatures": "error"
+            }
+        },
+        {
+            "files": ["**/*.d.ts"],
+            "rules": {
+                "import/unambiguous": "off"
             }
         },
         {

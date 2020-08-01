@@ -1,3 +1,5 @@
+"use strict";
+
 // TODO: These events are not guaranteed to be perfectly
 //       representative of what the server sends.  For
 //       now we just want very basic test coverage.  We

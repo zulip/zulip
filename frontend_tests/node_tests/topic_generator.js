@@ -1,3 +1,5 @@
+"use strict";
+
 set_global("pm_conversations", {
     recent: {},
 });

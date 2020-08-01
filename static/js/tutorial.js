@@ -1,3 +1,5 @@
+"use strict";
+
 function set_tutorial_status(status, callback) {
     return channel.post({
         url: "/json/users/me/tutorial_status",

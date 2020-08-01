@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("search_pill");
 zrequire("input_pill");
 zrequire("Filter", "js/filter");

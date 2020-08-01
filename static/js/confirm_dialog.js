@@ -1,3 +1,5 @@
+"use strict";
+
 const render_confirm_dialog = require("../templates/confirm_dialog.hbs");
 
 /*
