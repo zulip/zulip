@@ -16,8 +16,8 @@ include /etc/nginx/zulip-include/upstreams;
 
 server {
 <% if @nginx_http_only != '' -%>
-    listen 80;
-    listen [::]:80;
+    listen <%= @nginx_listen_port %>;
+    listen [::]:<%= @nginx_listen_port %>;
 <% else -%>
     listen <%= @nginx_listen_port %> http2;
     listen [::]:<%= @nginx_listen_port %> http2;
