@@ -91,7 +91,6 @@ from zerver.lib.actions import (
 )
 from zerver.lib.event_schema import (
     avatar_fields,
-    basic_stream_fields,
     check_alert_words,
     check_custom_profile_fields,
     check_default_stream_groups,
@@ -107,6 +106,7 @@ from zerver.lib.event_schema import (
     check_realm_update,
     check_realm_user_update,
     check_stream_create,
+    check_stream_delete,
     check_stream_update,
     check_submessage,
     check_subscription_add,
@@ -1649,12 +1649,7 @@ class NormalActionsTest(BaseAction):
         action = lambda: do_deactivate_stream(stream)
         events = self.verify_action(action)
 
-        schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('delete')),
-            ('streams', check_list(check_dict_only(basic_stream_fields))),
-        ])
-        schema_checker('events[0]', events[0])
+        check_stream_delete('events[0]', events[0])
 
     def test_subscribe_other_user_never_subscribed(self) -> None:
         action = lambda: self.subscribe(self.example_user("othello"), "test_stream")
