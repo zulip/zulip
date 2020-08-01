@@ -506,6 +506,14 @@ check_stream_create = check_events_dict(
     ]
 )
 
+check_stream_delete = check_events_dict(
+    required_keys=[
+        ("type", equals("stream")),
+        ("op", equals("delete")),
+        ("streams", check_list(check_dict_only(basic_stream_fields))),
+    ]
+)
+
 _check_stream_update = check_events_dict(
     required_keys=[
         ("type", equals("stream")),
