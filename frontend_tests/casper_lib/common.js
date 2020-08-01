@@ -222,7 +222,7 @@ exports.wait_for_message_fully_processed = function (content) {
                     - does it look to have been
                       re-rendered based on server info?
             */
-                const last_msg = current_msg_list.last();
+                var last_msg = current_msg_list.last();
 
                 if (last_msg.raw_content !== content) {
                     return false;
