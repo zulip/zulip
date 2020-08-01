@@ -4098,15 +4098,16 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertIn("Find your Zulip accounts", result.content.decode('utf8'))
 
     def test_result(self) -> None:
+        # We capitalize a letter in cordelia's email to test that the search is case-insensitive.
         result = self.client_post('/accounts/find/',
-                                  dict(emails="iago@zulip.com,cordelia@zulip.com"))
+                                  dict(emails="iago@zulip.com,cordeliA@zulip.com"))
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/accounts/find/?emails=iago%40zulip.com%2Ccordelia%40zulip.com")
+        self.assertEqual(result.url, "/accounts/find/?emails=iago%40zulip.com%2CcordeliA%40zulip.com")
         result = self.client_get(result.url)
         content = result.content.decode('utf8')
         self.assertIn("Emails sent! You will only receive emails", content)
-        self.assertIn(self.example_email("iago"), content)
-        self.assertIn(self.example_email("cordelia"), content)
+        self.assertIn("iago@zulip.com", content)
+        self.assertIn("cordeliA@zulip.com", content)
         from django.core.mail import outbox
 
         # 3 = 1 + 2 -- Cordelia gets an email each for the "zulip" and "lear" realms.
