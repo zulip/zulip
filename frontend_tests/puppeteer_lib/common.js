@@ -189,15 +189,9 @@ class CommonUtils {
             password: credentials.password,
         };
         await this.fill_form(page, "#login_form", params);
+        await page.$eval("#login_form", (form) => form.submit());
 
-        // We wait until DOMContentLoaded event is fired to ensure that zulip JavaScript
-        // is executed since some of our tests access those through page.evaluate. We use defer
-        // tag for script tags that load JavaScript which means that whey will be executed after DOM
-        // is parsed but before DOMContentLoaded event is fired.
-        await Promise.all([
-            page.waitForNavigation({waitUntil: "domcontentloaded"}),
-            page.$eval("#login_form", (form) => form.submit()),
-        ]);
+        await page.waitForSelector("#zhome .message_row", {visible: true});
     }
 
     async log_out(page) {
