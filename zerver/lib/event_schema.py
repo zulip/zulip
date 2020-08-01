@@ -138,6 +138,23 @@ check_custom_profile_fields = check_events_dict(
     ]
 )
 
+_check_stream_group = check_dict_only(
+    required_keys=[
+        ("name", check_string),
+        ("id", check_int),
+        ("description", check_string),
+        ("streams", check_list(check_dict_only(basic_stream_fields))),
+    ]
+)
+
+check_default_stream_groups = check_events_dict(
+    required_keys=[
+        # force vertical
+        ("type", equals("default_stream_groups")),
+        ("default_stream_groups", check_list(_check_stream_group)),
+    ]
+)
+
 check_invites_changed = check_events_dict(
     required_keys=[
         # the most boring event...no metadata
