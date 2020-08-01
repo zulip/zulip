@@ -1,6 +1,5 @@
 import calendar
 import datetime
-import time
 
 
 class TimezoneNotUTCException(Exception):
@@ -41,7 +40,3 @@ def timestamp_to_datetime(timestamp: float) -> datetime.datetime:
 def datetime_to_timestamp(dt: datetime.datetime) -> int:
     verify_UTC(dt)
     return calendar.timegm(dt.timetuple())
-
-def datetime_to_precise_timestamp(dt: datetime.datetime) -> float:
-    verify_UTC(dt)
-    return time.mktime(dt.timetuple()) + dt.microsecond/1000000
