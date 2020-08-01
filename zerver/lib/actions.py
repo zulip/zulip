@@ -5602,8 +5602,11 @@ def do_claim_attachments(message: Message, potential_path_ids: List[str]) -> boo
     for path_id in potential_path_ids:
         user_profile = message.sender
         is_message_realm_public = False
+        is_message_web_public = False
         if message.is_stream_message():
-            is_message_realm_public = Stream.objects.get(id=message.recipient.type_id).is_public()
+            stream = Stream.objects.get(id=message.recipient.type_id)
+            is_message_realm_public = stream.is_public()
+            is_message_web_public = stream.is_web_public
 
         if not validate_attachment_request(user_profile, path_id):
             # Technically, there are 2 cases here:
@@ -5622,7 +5625,10 @@ def do_claim_attachments(message: Message, potential_path_ids: List[str]) -> boo
             continue
 
         claimed = True
-        attachment = claim_attachment(user_profile, path_id, message, is_message_realm_public)
+        attachment = claim_attachment(user_profile,
+                                      path_id, message,
+                                      is_message_realm_public,
+                                      is_message_web_public)
         notify_attachment_update(user_profile, "update", attachment.to_dict())
     return claimed
 

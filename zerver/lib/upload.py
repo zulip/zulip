@@ -879,9 +879,11 @@ def upload_message_file(uploaded_file_name: str, uploaded_file_size: int,
 def claim_attachment(user_profile: UserProfile,
                      path_id: str,
                      message: Message,
-                     is_message_realm_public: bool) -> Attachment:
+                     is_message_realm_public: bool,
+                     is_message_web_public: bool=False) -> Attachment:
     attachment = Attachment.objects.get(path_id=path_id)
     attachment.messages.add(message)
+    attachment.is_web_public = attachment.is_web_public or is_message_web_public
     attachment.is_realm_public = attachment.is_realm_public or is_message_realm_public
     attachment.save()
     return attachment

@@ -403,18 +403,28 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                         and 'but lacks permission' in warn_log.output[0])
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 1)
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
+        self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_web_public)
 
         # Then, have the owner PM it to another user, giving that other user access.
         body = f"Second message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
         self.send_personal_message(self.example_user("hamlet"), self.example_user("othello"), body)
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
+        self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_web_public)
 
         # Then, have that new recipient user publish it.
         body = f"Third message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
         self.send_stream_message(self.example_user("othello"), "Denmark", body, "test")
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 3)
         self.assertTrue(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
+        self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_web_public)
+
+        # Finally send to Rome, the web-public stream, and confirm it's now web-public
+        body = f"Fourth message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
+        self.send_stream_message(self.example_user("othello"), "Rome", body, "test")
+        self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 4)
+        self.assertTrue(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
+        self.assertTrue(Attachment.objects.get(path_id=d1_path_id).is_web_public)
 
     def test_check_attachment_reference_update(self) -> None:
         f1 = StringIO("file1")
