@@ -31,7 +31,7 @@ page_params.custom_profile_field_types = {
 };
 
 rewiremock.proxy(() => zrequire("settings_profile_fields"), {
-    sortablejs: {create: () => {}},
+    sortablejs: {default: {create: () => {}}},
 });
 
 function test_populate(opts) {
