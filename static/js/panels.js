@@ -1,3 +1,5 @@
+"use strict";
+
 const util = require("./util");
 
 const resize_app = function () {

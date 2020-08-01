@@ -1,3 +1,5 @@
+"use strict";
+
 function collapse_spoiler(spoiler) {
     const spoiler_height = spoiler.height();
 

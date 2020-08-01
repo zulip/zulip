@@ -1,3 +1,5 @@
+"use strict";
+
 exports.t = function (str, context) {
     // HAPPY PATH: most translations are a simple string:
     if (context === undefined) {

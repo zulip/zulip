@@ -1,3 +1,5 @@
+"use strict";
+
 /* eslint-disable no-console */
 
 // System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html

@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("people");
 
 const return_false = function () {

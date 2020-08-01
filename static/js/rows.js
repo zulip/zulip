@@ -1,3 +1,5 @@
+"use strict";
+
 // We don't need an andSelf() here because we already know
 // that our next element is *not* a message_row, so this
 // isn't going to end up empty unless we're at the bottom or top.

@@ -1,3 +1,5 @@
+"use strict";
+
 /* eslint-env browser */
 
 // PhantomJS doesn’t support new DOMParser().parseFromString(…, "text/html").

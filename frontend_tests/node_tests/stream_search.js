@@ -1,3 +1,5 @@
+"use strict";
+
 // This tests the stream searching functionality which currently
 // lives in stream_list.js.
 

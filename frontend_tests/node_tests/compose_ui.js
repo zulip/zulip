@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("compose_ui");
 zrequire("people");
 zrequire("user_status");

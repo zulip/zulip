@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("schema");
 
 run_test("basics", () => {

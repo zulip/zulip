@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("user_groups");
 
 run_test("user_groups", () => {

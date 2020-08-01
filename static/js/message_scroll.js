@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 let actively_scrolling = false;

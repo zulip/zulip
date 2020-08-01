@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
 exports.random_int = function random_int(min, max) {

@@ -1,3 +1,5 @@
+"use strict";
+
 const render_widgets_zform_choices = require("../templates/widgets/zform_choices.hbs");
 
 exports.validate_extra_data = function (data) {

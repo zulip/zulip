@@ -1,3 +1,5 @@
+"use strict";
+
 // This will be used for pills for things like composing PMs
 // or adding users to a stream/group.
 const settings_data = require("./settings_data");

@@ -1,3 +1,5 @@
+"use strict";
+
 // Convert an sRGB value in [0, 255] to a linear intensity
 // value in [0, 1].
 //

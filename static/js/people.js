@@ -1,3 +1,5 @@
+"use strict";
+
 const md5 = require("blueimp-md5");
 const _ = require("lodash");
 const moment = require("moment-timezone");

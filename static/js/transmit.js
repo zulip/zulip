@@ -1,3 +1,5 @@
+"use strict";
+
 exports.send_message = function (request, on_success, error) {
     channel.post({
         url: "/json/messages",

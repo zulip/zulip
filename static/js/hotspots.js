@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 const render_hotspot_overlay = require("../templates/hotspot_overlay.hbs");

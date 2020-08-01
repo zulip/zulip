@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * markdown_assert.js
  *

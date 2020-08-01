@@ -1,3 +1,5 @@
+"use strict";
+
 set_global("zxcvbn", zrequire("zxcvbn", "zxcvbn"));
 zrequire("common");
 

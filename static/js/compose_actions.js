@@ -1,3 +1,5 @@
+"use strict";
+
 const autosize = require("autosize");
 
 const fenced_code = require("../shared/js/fenced_code");

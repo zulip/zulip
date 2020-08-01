@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("timerender");
 zrequire("muting");
 zrequire("stream_data");

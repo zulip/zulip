@@ -1,3 +1,5 @@
+"use strict";
+
 const ui = zrequire("ui");
 
 set_global("navigator", {

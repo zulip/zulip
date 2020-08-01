@@ -1,3 +1,5 @@
+"use strict";
+
 /* eslint-disable arrow-body-style */
 /*
   This file makes use of functional comments in a way that makes the

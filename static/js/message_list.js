@@ -1,3 +1,5 @@
+"use strict";
+
 const autosize = require("autosize");
 
 exports.narrowed = undefined;

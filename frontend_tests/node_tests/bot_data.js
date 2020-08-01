@@ -1,3 +1,5 @@
+"use strict";
+
 const _settings_bots = {
     render_bots: () => {},
 };

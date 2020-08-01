@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("color_data");
 
 run_test("pick_color", () => {

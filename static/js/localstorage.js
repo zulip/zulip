@@ -1,3 +1,5 @@
+"use strict";
+
 const ls = {
     // parse JSON without throwing an error.
     parseJSON(str) {

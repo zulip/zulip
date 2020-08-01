@@ -1,3 +1,5 @@
+"use strict";
+
 const widgets = new Map([
     ["poll", poll_widget],
     ["tictactoe", tictactoe_widget],

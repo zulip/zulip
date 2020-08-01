@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("message_events");
 zrequire("message_store");
 zrequire("muting");

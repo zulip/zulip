@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("typing_data");
 
 run_test("basics", () => {

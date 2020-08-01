@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 exports.eq_array = (a, b, eq) => {

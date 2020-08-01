@@ -1,3 +1,5 @@
+"use strict";
+
 set_global("$", global.make_zjquery());
 set_global("XDate", zrequire("XDate", "xdate"));
 

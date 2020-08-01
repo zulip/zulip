@@ -1,3 +1,5 @@
+"use strict";
+
 const marked = require("../third/marked/lib/marked");
 
 /*

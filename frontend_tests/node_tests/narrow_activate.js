@@ -1,3 +1,5 @@
+"use strict";
+
 const util = zrequire("util");
 set_global("$", global.make_zjquery());
 

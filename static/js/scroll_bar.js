@@ -1,3 +1,5 @@
+"use strict";
+
 // A few of our width properties in zulip depend on the width of the
 // browser scrollbar that is generated at the far right side of the
 // page, which unfortunately varies depending on the browser and

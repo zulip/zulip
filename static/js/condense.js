@@ -1,3 +1,5 @@
+"use strict";
+
 /*
 This library implements two related, similar concepts:
 

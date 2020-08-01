@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 

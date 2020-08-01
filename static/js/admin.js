@@ -1,3 +1,5 @@
+"use strict";
+
 const render_admin_tab = require("../templates/admin_tab.hbs");
 const render_settings_organization_settings_tip = require("../templates/settings/organization_settings_tip.hbs");
 

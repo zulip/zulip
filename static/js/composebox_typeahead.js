@@ -1,3 +1,5 @@
+"use strict";
+
 const autosize = require("autosize");
 const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
 const moment = require("moment");

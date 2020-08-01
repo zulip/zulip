@@ -1,3 +1,5 @@
+"use strict";
+
 const render_subscription_count = require("../templates/subscription_count.hbs");
 const render_subscription_setting_icon = require("../templates/subscription_setting_icon.hbs");
 const render_subscription_type = require("../templates/subscription_type.hbs");

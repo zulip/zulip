@@ -1,3 +1,5 @@
+"use strict";
+
 module.exports = ({file}) => ({
     parser: file.extname === ".scss" ? "postcss-scss" : false,
     plugins: {

@@ -1,3 +1,5 @@
+"use strict";
+
 const emoji_codes = require("../generated/emoji/emoji_codes.json");
 const emoji = require("../shared/js/emoji");
 const typeahead = require("../shared/js/typeahead");

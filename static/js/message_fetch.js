@@ -1,3 +1,5 @@
+"use strict";
+
 const huddle_data = require("./huddle_data");
 
 const consts = {

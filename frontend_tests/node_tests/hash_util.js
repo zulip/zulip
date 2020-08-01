@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("hash_util");
 zrequire("stream_data");
 zrequire("people");

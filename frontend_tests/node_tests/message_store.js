@@ -1,3 +1,5 @@
+"use strict";
+
 const util = zrequire("util");
 zrequire("pm_conversations");
 zrequire("people");

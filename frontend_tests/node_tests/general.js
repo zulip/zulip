@@ -1,3 +1,5 @@
+"use strict";
+
 // This is a general tour of how to write node tests that
 // may also give you some quick insight on how the Zulip
 // browser app is constructed.  Let's start with testing

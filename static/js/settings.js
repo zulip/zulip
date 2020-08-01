@@ -1,3 +1,5 @@
+"use strict";
+
 const moment = require("moment-timezone");
 
 const render_settings_tab = require("../templates/settings_tab.hbs");

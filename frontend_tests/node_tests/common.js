@@ -1,3 +1,5 @@
+"use strict";
+
 const noop = () => {};
 
 set_global("$", global.make_zjquery());

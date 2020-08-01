@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 // These colors are used now for streams.
 const stream_colors = [

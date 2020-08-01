@@ -1,3 +1,5 @@
+"use strict";
+
 const DropdownListWidget = function (opts) {
     const init = () => {
         // Run basic sanity checks on opts, and set up sane defaults.

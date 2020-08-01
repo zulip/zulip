@@ -1,3 +1,5 @@
+"use strict";
+
 var common = require("../casper_lib/common.js");
 
 function waitWhileDraftsVisible(then) {

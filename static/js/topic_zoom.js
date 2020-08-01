@@ -1,3 +1,5 @@
+"use strict";
+
 let zoomed_in = false;
 
 exports.is_zoomed_in = function () {

@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 const render_more_topics = require("../templates/more_topics.hbs");

@@ -1,3 +1,5 @@
+"use strict";
+
 $(() => {
     $("body").on("click", ".scrub-realm-button", function (e) {
         e.preventDefault();

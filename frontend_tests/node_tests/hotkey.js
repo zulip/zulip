@@ -1,3 +1,5 @@
+"use strict";
+
 // Important note on these tests:
 //
 // The way the Zulip hotkey tests work is as follows.  First, we set

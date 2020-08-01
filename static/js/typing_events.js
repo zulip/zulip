@@ -1,3 +1,5 @@
+"use strict";
+
 const render_typing_notifications = require("../templates/typing_notifications.hbs");
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.

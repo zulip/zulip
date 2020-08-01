@@ -1,3 +1,5 @@
+"use strict";
+
 const LazySet = zrequire("lazy_set").LazySet;
 
 /*

@@ -1,3 +1,5 @@
+"use strict";
+
 const typing_status = require("../shared/js/typing_status");
 
 // This module handles the outbound side of typing indicators.

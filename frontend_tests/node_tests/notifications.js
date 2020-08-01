@@ -1,3 +1,5 @@
+"use strict";
+
 // Dependencies
 set_global(
     "$",

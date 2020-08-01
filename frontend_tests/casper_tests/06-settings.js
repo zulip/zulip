@@ -1,3 +1,5 @@
+"use strict";
+
 var test_credentials = require("../../var/casper/test_credentials.js").test_credentials;
 var common = require("../casper_lib/common.js");
 

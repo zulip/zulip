@@ -1,3 +1,5 @@
+"use strict";
+
 /* Script for testing the web client.
 
    This runs under CasperJS.  It's an end-to-end black-box sort of test.  It

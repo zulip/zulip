@@ -1,3 +1,5 @@
+"use strict";
+
 const XDate = require("xdate");
 
 const FoldDict = require("./fold_dict").FoldDict;

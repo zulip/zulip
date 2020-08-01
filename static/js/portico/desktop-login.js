@@ -1,3 +1,5 @@
+"use strict";
+
 document.querySelector("#form").addEventListener("submit", () => {
     document.querySelector("#bad-token").hidden = false;
 });

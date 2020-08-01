@@ -1,3 +1,5 @@
+"use strict";
+
 const render_loader = require("../templates/loader.hbs");
 
 exports.make_indicator = function (outer_container, opts) {

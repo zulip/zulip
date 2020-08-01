@@ -1,3 +1,5 @@
+"use strict";
+
 const XDate = require("xdate");
 
 const render_recent_topic_row = require("../templates/recent_topic_row.hbs");

@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 const generated_emoji_codes = require("../generated/emoji/emoji_codes.json");

@@ -1,3 +1,5 @@
+"use strict";
+
 const settings_config = require("./settings_config");
 
 /*

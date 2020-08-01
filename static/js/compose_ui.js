@@ -1,3 +1,5 @@
+"use strict";
+
 const autosize = require("autosize");
 
 exports.autosize_textarea = function () {

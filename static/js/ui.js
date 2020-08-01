@@ -1,3 +1,5 @@
+"use strict";
+
 const SimpleBar = require("simplebar/dist/simplebar.js");
 
 // What, if anything, obscures the home tab?

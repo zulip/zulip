@@ -1,3 +1,5 @@
+"use strict";
+
 set_global("document", null);
 set_global("page_params", {
     realm_community_topic_editing_limit_seconds: 86400,

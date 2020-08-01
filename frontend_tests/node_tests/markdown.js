@@ -1,3 +1,5 @@
+"use strict";
+
 zrequire("hash_util");
 
 const emoji = zrequire("emoji", "shared/js/emoji");

@@ -1,3 +1,5 @@
+"use strict";
+
 exports.get_search_terms = function (input) {
     const search_terms = input
         .toLowerCase()

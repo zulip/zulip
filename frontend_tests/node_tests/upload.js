@@ -1,3 +1,5 @@
+"use strict";
+
 const rewiremock = require("rewiremock/node");
 
 set_global("$", global.make_zjquery());

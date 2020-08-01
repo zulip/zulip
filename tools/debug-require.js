@@ -1,3 +1,5 @@
+"use strict";
+
 /* global __webpack_require__ */
 
 var webpackModules;

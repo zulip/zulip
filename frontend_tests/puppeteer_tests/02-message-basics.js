@@ -1,3 +1,5 @@
+"use strict";
+
 const common = require("../puppeteer_lib/common");
 
 async function message_basic_tests(page) {

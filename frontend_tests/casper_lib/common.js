@@ -1,3 +1,5 @@
+"use strict";
+
 var util = require("util");
 
 var test_credentials = require("../../var/casper/test_credentials.js").test_credentials;

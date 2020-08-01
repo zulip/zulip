@@ -1,3 +1,5 @@
+"use strict";
+
 const _ = require("lodash");
 
 const huddle_timestamps = new Map();

@@ -1,3 +1,5 @@
+"use strict";
+
 const FetchStatus = zrequire("fetch_status");
 set_global("message_scroll", {
     hide_loading_older: () => {},

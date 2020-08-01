@@ -1,3 +1,5 @@
+"use strict";
+
 const rs = zrequire("recent_senders");
 
 let next_id = 0;

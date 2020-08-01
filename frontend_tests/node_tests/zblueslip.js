@@ -1,3 +1,5 @@
+"use strict";
+
 /*
 
 This test module actually tests our test code, particularly zblueslip, and

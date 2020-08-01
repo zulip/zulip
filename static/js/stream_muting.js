@@ -1,3 +1,5 @@
+"use strict";
+
 exports.update_is_muted = function (sub, value) {
     sub.is_muted = value;
 

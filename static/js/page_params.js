@@ -1,3 +1,5 @@
+"use strict";
+
 /* global __webpack_public_path__:writable */
 
 const t1 = performance.now();

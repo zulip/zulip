@@ -1,3 +1,5 @@
+"use strict";
+
 const XDate = require("xdate");
 
 function truncate_precision(float) {

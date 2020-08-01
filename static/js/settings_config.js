@@ -1,3 +1,5 @@
+"use strict";
+
 /*
     This file contains translations between the integer values used in
     the Zulip API to describe values in dropdowns, radio buttons, and

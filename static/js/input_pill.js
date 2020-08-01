@@ -1,3 +1,5 @@
+"use strict";
+
 const render_input_pill = require("../templates/input_pill.hbs");
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html

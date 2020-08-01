@@ -1,3 +1,5 @@
+"use strict";
+
 var common = require("../casper_lib/common.js");
 
 common.start_and_log_in();
