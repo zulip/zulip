@@ -206,7 +206,7 @@ def extract_body(message: EmailMessage, include_quotes: bool=False, prefer_text:
     html_content = extract_html_body(message, include_quotes)
 
     if plaintext_content is None and html_content is None:
-        logging.warning("Content types: %s", [part.get_content_type() for part in message.walk()])
+        logger.warning("Content types: %s", [part.get_content_type() for part in message.walk()])
         raise ZulipEmailForwardUserError("Unable to find plaintext or HTML message body")
     if not plaintext_content and not html_content:
         raise ZulipEmailForwardUserError("Email has no nonempty body sections; ignoring.")
@@ -416,7 +416,7 @@ def process_message(message: EmailMessage, rcpt_to: Optional[str]=None) -> None:
             process_stream_message(to, message)
     except ZulipEmailForwardUserError as e:
         # TODO: notify sender of error, retry if appropriate.
-        logging.warning(e.args[0])
+        logger.warning(e.args[0])
     except ZulipEmailForwardError as e:
         log_and_report(message, e.args[0], to)
 
