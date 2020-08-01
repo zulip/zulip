@@ -2141,12 +2141,18 @@ class AbstractAttachment(models.Model):
     # Size of the uploaded file, in bytes
     size: int = models.IntegerField()
 
+    # The two fields below lets us avoid looking up the corresponding
+    # messages/streams to check permissions before serving these files.
+
     # Whether this attachment has been posted to a public stream, and
     # thus should be available to all non-guest users in the
     # organization (even if they weren't a recipient of a message
-    # linking to it).  This lets us avoid looking up the corresponding
-    # messages/streams to check permissions before serving these files.
+    # linking to it).
     is_realm_public: bool = models.BooleanField(default=False)
+    # Whether this attachment has been posted to a web-public stream,
+    # and thus should be available to everyone on the internet, even
+    # if the person isn't logged in.
+    is_web_public: bool = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
