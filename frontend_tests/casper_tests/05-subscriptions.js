@@ -1,7 +1,7 @@
 var common = require("../casper_lib/common.js");
 
 function stream_checkbox(stream_name) {
-    const stream_id = common.get_stream_id(stream_name);
+    var stream_id = common.get_stream_id(stream_name);
     return '#stream-checkboxes [data-stream-id="' + stream_id + '"]';
 }
 
