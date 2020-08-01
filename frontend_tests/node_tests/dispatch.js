@@ -7,6 +7,7 @@ const events = require("./lib/events.js");
 const event_fixtures = events.fixtures;
 const test_message = events.test_message;
 const test_user = events.test_user;
+const test_streams = events.test_streams;
 const typing_person1 = events.typing_person1;
 
 set_global("$", global.make_zjquery());
@@ -560,21 +561,23 @@ run_test("stream", (override) => {
         override("settings_streams.update_default_streams_table", noop);
         override("stream_data.remove_default_stream", noop);
 
+        const devel_id = test_streams.devel.stream_id;
+
         override("stream_data.get_sub_by_id", (id) =>
-            id === 42 ? {subscribed: true} : {subscribed: false},
+            id === devel_id ? {subscribed: true} : {subscribed: false},
         );
         override("stream_list.remove_sidebar_row", stub.f);
         dispatch(event);
         const args = stub.get_args("stream_id");
-        assert_same(args.stream_id, 42);
+        assert_same(args.stream_id, devel_id);
 
         override("settings_org.sync_realm_settings", noop);
         override("stream_list.remove_sidebar_row", noop);
-        page_params.realm_notifications_stream_id = 42;
+        page_params.realm_notifications_stream_id = devel_id;
         dispatch(event);
         assert_same(page_params.realm_notifications_stream_id, -1);
 
-        page_params.realm_signup_notifications_stream_id = 42;
+        page_params.realm_signup_notifications_stream_id = devel_id;
         dispatch(event);
         assert_same(page_params.realm_signup_notifications_stream_id, -1);
     });

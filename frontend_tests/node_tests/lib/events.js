@@ -32,7 +32,7 @@ const typing_person2 = {
 exports.typing_person1 = typing_person1;
 exports.typing_person2 = typing_person2;
 
-const streams = {
+exports.test_streams = {
     devel: {
         name: "devel",
         description: ":devel fun:",
@@ -62,6 +62,8 @@ const streams = {
         stream_post_policy: 1,
     },
 };
+
+const streams = exports.test_streams;
 
 exports.fixtures = {
     alert_words: {
@@ -418,7 +420,7 @@ exports.fixtures = {
     stream__delete: {
         type: "stream",
         op: "delete",
-        streams: [{stream_id: 42}, {stream_id: 99}],
+        streams: [streams.devel, streams.test],
     },
 
     stream__update: {
