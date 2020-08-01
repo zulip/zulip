@@ -106,6 +106,7 @@ function set_up() {
 
     const pill_input = $.create("pill_input");
 
+    pill_input[0] = {};
     pill_input.before = () => {};
 
     const create_item_from_text = function (text) {
