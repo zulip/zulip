@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
 from django.core import validators
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -601,8 +602,15 @@ def find_account(request: HttpRequest) -> HttpResponse:
         form = FindMyTeamForm(request.POST)
         if form.is_valid():
             emails = form.cleaned_data['emails']
+
+            # Django doesn't support __iexact__in lookup with EmailField, so we have
+            # to use Qs to get around that without needing to do multiple queries.
+            emails_q = Q()
+            for email in emails:
+                emails_q |= Q(delivery_email__iexact=email)
+
             for user in UserProfile.objects.filter(
-                    delivery_email__in=emails, is_active=True, is_bot=False,
+                    emails_q, is_active=True, is_bot=False,
                     realm__deactivated=False):
                 context = common_context(user)
                 context.update({
