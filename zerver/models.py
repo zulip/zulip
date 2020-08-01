@@ -66,7 +66,7 @@ from zerver.lib.cache import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.timestamp import datetime_to_precise_timestamp, datetime_to_timestamp
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
     DisplayRecipientT,
     ExtendedFieldElement,
@@ -1934,7 +1934,7 @@ class Draft(models.Model):
             "to": to,
             "topic": self.topic,
             "content": self.content,
-            "timestamp": datetime_to_precise_timestamp(self.last_edit_time),
+            "timestamp": self.last_edit_time.timestamp(),
         }
 
 class AbstractReaction(models.Model):

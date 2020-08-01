@@ -1,4 +1,3 @@
-import time
 from datetime import timedelta, timezone
 
 from dateutil import parser
@@ -8,7 +7,6 @@ from zerver.lib.timestamp import (
     TimezoneNotUTCException,
     ceiling_to_hour,
     convert_to_UTC,
-    datetime_to_precise_timestamp,
     datetime_to_timestamp,
     floor_to_day,
     floor_to_hour,
@@ -44,9 +42,3 @@ class TestTimestamp(ZulipTestCase):
         for function in [floor_to_hour, floor_to_day, ceiling_to_hour, ceiling_to_hour]:
             with self.assertRaises(TimezoneNotUTCException):
                 function(non_utc_datetime)
-
-    def test_datetime_to_precise_timestamp(self) -> None:
-        timestamp = round(time.time(), 6)
-        dt = timestamp_to_datetime(timestamp)
-        post_conversion_timestamp = datetime_to_precise_timestamp(dt)
-        self.assertEqual(timestamp, post_conversion_timestamp)
