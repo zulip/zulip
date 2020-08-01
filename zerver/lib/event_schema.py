@@ -155,6 +155,13 @@ check_default_stream_groups = check_events_dict(
     ]
 )
 
+check_default_streams = check_events_dict(
+    required_keys=[
+        ("type", equals("default_streams")),
+        ("default_streams", check_list(check_dict_only(basic_stream_fields))),
+    ]
+)
+
 check_invites_changed = check_events_dict(
     required_keys=[
         # the most boring event...no metadata
