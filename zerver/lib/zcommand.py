@@ -26,20 +26,36 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
 
     if command == 'ping':
         return dict()
-    elif command == 'night':
-        if user_profile.color_scheme == UserProfile.COLOR_SCHEME_NIGHT:
-            return dict(msg='You are still in night mode.')
-        return dict(msg=change_mode_setting(command=command,
-                                            switch_command='day',
-                                            setting='color_scheme',
-                                            setting_value=UserProfile.COLOR_SCHEME_NIGHT))
+    elif command.startswith("theme"):
+        theme = command.split(" ")[1]
+        if theme == 'day' or theme == 'light':
+            if user_profile.color_scheme == UserProfile.COLOR_SCHEME_LIGHT:
+                return dict(msg='You are still in day mode.')
+            return dict(msg=change_mode_setting(command=command,
+                                                switch_command='night',
+                                                setting='color_scheme',
+                                                setting_value=UserProfile.COLOR_SCHEME_LIGHT))
+        elif theme == 'night' or theme == 'dark':
+            if user_profile.color_scheme == UserProfile.COLOR_SCHEME_NIGHT:
+                return dict(msg='You are still in night mode.')
+            return dict(msg=change_mode_setting(command=command,
+                                                switch_command='day',
+                                                setting='color_scheme',
+                                                setting_value=UserProfile.COLOR_SCHEME_NIGHT))
+        else:
+            if user_profile.color_scheme == UserProfile.COLOR_SCHEME_AUTOMATIC:
+                return dict(msg='You are still in automatic mode.')
+            return dict(msg=change_mode_setting(command=command,
+                                                switch_command='auto',
+                                                setting='color_scheme',
+                                                setting_value=UserProfile.COLOR_SCHEME_AUTOMATIC))
     elif command == 'day':
-        if user_profile.color_scheme == UserProfile.COLOR_SCHEME_LIGHT:
-            return dict(msg='You are still in day mode.')
-        return dict(msg=change_mode_setting(command=command,
-                                            switch_command='night',
-                                            setting='color_scheme',
-                                            setting_value=UserProfile.COLOR_SCHEME_LIGHT))
+            if user_profile.color_scheme == UserProfile.COLOR_SCHEME_LIGHT:
+                return dict(msg='You are still in day mode.')
+            return dict(msg=change_mode_setting(command=command,
+                                                switch_command='night',
+                                                setting='color_scheme',
+                                                setting_value=UserProfile.COLOR_SCHEME_LIGHT))
     elif command == 'fluid-width':
         if user_profile.fluid_layout_width:
             return dict(msg='You are still in fluid width mode.')

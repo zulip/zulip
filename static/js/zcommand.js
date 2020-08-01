@@ -50,33 +50,20 @@ exports.tell_user = function (msg) {
     $("#compose-error-msg").text(msg);
 };
 
-exports.enter_day_mode = function () {
+exports.switch_theme = function (theme_argument) {
+    const current_theme = theme.get_current_theme();
+    const title = current_theme.name;
     exports.send({
-        command: "/day",
+        command: "/theme " + theme_argument,
         on_success(data) {
-            night_mode.disable();
-            feedback_widget.show({
-                populate(container) {
-                    const rendered_msg = marked(data.msg).trim();
-                    container.html(rendered_msg);
-                },
-                on_undo() {
-                    exports.send({
-                        command: "/night",
-                    });
-                },
-                title_text: i18n.t("Day mode"),
-                undo_button_text: i18n.t("Night"),
-            });
-        },
-    });
-};
+            if (theme_argument === "day" || "light") {
+                theme.day();
+            } else if (theme_argument === "night" || "dark") {
+                theme.night();
+            } else {
+                theme.auto();
+            }
 
-exports.enter_night_mode = function () {
-    exports.send({
-        command: "/night",
-        on_success(data) {
-            night_mode.enable();
             feedback_widget.show({
                 populate(container) {
                     const rendered_msg = marked(data.msg).trim();
@@ -84,11 +71,11 @@ exports.enter_night_mode = function () {
                 },
                 on_undo() {
                     exports.send({
-                        command: "/day",
+                        command: "/theme " + current_theme.type,
                     });
                 },
-                title_text: i18n.t("Night mode"),
-                undo_button_text: i18n.t("Day"),
+                title_text: title,
+                undo_button_text: current_theme.short,
             });
         },
     });
@@ -154,6 +141,15 @@ exports.process = function (message_content) {
                 exports.tell_user(msg);
             },
         });
+        return true;
+    }
+
+    const theme_options = ["day", "light", "dark", "night", "auto"];
+    if (content.startsWith("/theme")) {
+        const theme_argument = content.split(" ")[1];
+        if (theme_argument && theme_options.includes(theme_argument)) {
+            exports.switch_theme(theme_argument);
+        }
         return true;
     }
 

@@ -100,7 +100,7 @@ import "../ui_report.js";
 import "../message_scroll.js";
 import "../info_overlay.js";
 import "../ui.js";
-import "../night_mode.js";
+import "../theme.js";
 import "../ui_util.js";
 import "../click_handlers.js";
 import "../settings_panel_menu.js";
