@@ -280,3 +280,7 @@ if not args.skip_purge_old_deployments:
     subprocess.check_call(["./scripts/purge-old-deployments"])
 else:
     logging.info("Skipping purging old deployments.")
+
+if args.skip_puppet:
+    logging.info("Showing un-applied puppet changes:")
+    subprocess.check_call(["./scripts/zulip-puppet-apply", "--noop", "--show_diff"])
