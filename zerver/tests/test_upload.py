@@ -416,6 +416,37 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 3)
         self.assertTrue(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
 
+    def test_web_public_attachment_claim(self) -> None:
+        self.login('hamlet')
+        d1 = StringIO("zulip!")
+        d1.name = "dummy_1.txt"
+        result = self.client_post("/json/user_uploads", {'file': d1})
+        d1_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
+        host = self.example_user('hamlet').realm.host
+        attachment = Attachment.objects.get(path_id=d1_path_id)
+        self.assertFalse(attachment.is_web_public)
+
+        self.subscribe(self.example_user("hamlet"), "Rome")
+
+        # Send to the web-public stream, Rome.
+        body = f"First message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
+        self.send_stream_message(self.example_user("hamlet"), "Venice", body, "test")
+        attachment = Attachment.objects.get(path_id=d1_path_id)
+        self.assertTrue(attachment.is_realm_public)
+        self.assertFalse(attachment.is_web_public)
+
+        body = f"First message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+        attachment = Attachment.objects.get(path_id=d1_path_id)
+        self.assertTrue(attachment.is_realm_public)
+        self.assertFalse(attachment.is_web_public)
+
+        body = f"First message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+        attachment = Attachment.objects.get(path_id=d1_path_id)
+        self.assertTrue(attachment.is_realm_public)
+        self.assertFalse(attachment.is_web_public)
+
     def test_check_attachment_reference_update(self) -> None:
         f1 = StringIO("file1")
         f1.name = "file1.txt"
