@@ -67,14 +67,14 @@ casper.then(function () {
     verona_narrow = "narrow/stream/" + verona_id + "-Verona";
     casper.test.info(verona_narrow);
 
-    then_navigate_to(verona_narrow, "home");
-    then_navigate_to("home", "home");
+    then_navigate_to(verona_narrow, "message_feed_container");
+    then_navigate_to("message_feed_container", "message_feed_container");
     then_navigate_to_subscriptions();
-    then_navigate_to("", "home");
+    then_navigate_to("", "message_feed_container");
     then_navigate_to_settings();
-    then_navigate_to("narrow/is/private", "home");
+    then_navigate_to("narrow/is/private", "message_feed_container");
     then_navigate_to_subscriptions();
-    then_navigate_to(verona_narrow, "home");
+    then_navigate_to(verona_narrow, "message_feed_container");
 });
 
 var initial_page_load_time;
