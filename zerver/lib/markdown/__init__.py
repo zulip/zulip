@@ -64,6 +64,7 @@ from zerver.models import (
     MAX_MESSAGE_LENGTH,
     Message,
     Realm,
+    RealmFilter,
     UserGroup,
     UserGroupMembership,
     UserProfile,
@@ -1626,6 +1627,11 @@ def prepare_realm_pattern(source: str) -> str:
     OUTER_CAPTURE_GROUP."""
     return fr"""(?<![^\s'"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?!\w)"""
 
+# Convert user inputted %()s realm filter strings to be {} type strings
+def convert_to_format_string(percent_string: str) -> str:
+    regex = RealmFilter.group_match_regex
+    return regex.sub(lambda m: "{{{}}}".format(m.group('group_name')), percent_string)
+
 # Given a regular expression pattern, linkifies groups that match it
 # using the provided format string to construct the URL.
 class RealmFilterProcessor(markdown.inlinepatterns.InlineProcessor):
@@ -1635,13 +1641,13 @@ class RealmFilterProcessor(markdown.inlinepatterns.InlineProcessor):
                  format_string: str,
                  markdown_instance: Optional[markdown.Markdown]=None) -> None:
         self.pattern = prepare_realm_pattern(source_pattern)
-        self.format_string = format_string
+        self.format_string = convert_to_format_string(format_string)
         super().__init__(self.pattern, markdown_instance)
 
     def handleMatch(self, m: Match[str], data: str) -> Tuple[Optional[Union[Element, str]],
                                                              Optional[int], Optional[int]]:
         db_data = self.md.zulip_db_data
-        substituted_url = self.format_string % m.groupdict()
+        substituted_url = self.format_string.format(**m.groupdict())
         atomic_text = markdown.util.AtomicString(m.group(OUTER_CAPTURE_GROUP))
         url_element = url_to_a(db_data, substituted_url, atomic_text)
         if isinstance(url_element, str):
@@ -2083,8 +2089,9 @@ def topic_links(realm_filters_key: int, topic_name: str) -> List[str]:
 
     for realm_filter in realm_filters:
         pattern = prepare_realm_pattern(realm_filter[0])
+        format_string = convert_to_format_string(realm_filter[1])
         for m in re.finditer(pattern, topic_name):
-            matches += [realm_filter[1] % m.groupdict()]
+            matches += [format_string.format(**m.groupdict())]
 
     # Also make raw urls navigable.
     for sub_string in basic_link_splitter.split(topic_name):

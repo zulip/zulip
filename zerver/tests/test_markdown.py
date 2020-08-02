@@ -1087,6 +1087,8 @@ class MarkdownTest(ZulipTestCase):
                     url_format_string=r'https://trac.example.com/merge/%(num)s').save()
         RealmFilter(realm=realm, pattern=r'~(?P<num>\d+)',
                     url_format_string=r'https://trac.example.com/epic/%(num)s').save()
+        RealmFilter(realm=realm, pattern=r'%(?P<num>\d+)',
+                    url_format_string=r'https://trac.example.com/epic/%(num)s/hello%25world').save()
         assert_conversion('!5')
         assert_conversion('Hello!5', False)
         assert_conversion('Hello!!5', False)
@@ -1098,6 +1100,12 @@ class MarkdownTest(ZulipTestCase):
         assert_conversion('Hello!~5', False)
         assert_conversion('Hello,~5')
         assert_conversion('~5, World')
+
+        assert_conversion('%5')
+        assert_conversion('Hello%5', False)
+        assert_conversion('Hello!%5', False)
+        assert_conversion('Hello,%5')
+        assert_conversion('%5, World')
 
     def test_multiple_matching_realm_patterns(self) -> None:
         realm = get_realm('zulip')

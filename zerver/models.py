@@ -766,6 +766,8 @@ class RealmFilter(models.Model):
     pattern: str = models.TextField(validators=[filter_pattern_validator])
     url_format_string: str = models.TextField()
 
+    group_match_regex = re.compile(r'%\((?P<group_name>[^)]+)\)s')
+
     class Meta:
         unique_together = ("realm", "pattern")
 
@@ -782,14 +784,13 @@ class RealmFilter(models.Model):
             # so we can safely just return here.
             return
         group_list = list(pattern.groupindex.keys())
-        group_match_regex = re.compile(r'%\((?P<group_name>[^)]+)\)s')
 
         # Report regexes without any patterns.
         if len(group_list) == 0:
             raise ValidationError(_("No groups found in URL format string."))
 
         # Report patterns missing in filter pattern.
-        for m in group_match_regex.finditer(self.url_format_string):
+        for m in self.group_match_regex.finditer(self.url_format_string):
             name = m.group('group_name')
             if name not in group_list:
                 raise ValidationError(_("Group '{}' in URL format string is "
@@ -806,7 +807,7 @@ class RealmFilter(models.Model):
                                     "in URL format string.".format(group_name)))
 
         # Substitute all groups with common strings.
-        substituted = group_match_regex.sub('abc12345', self.url_format_string)
+        substituted = self.group_match_regex.sub('abc12345', self.url_format_string)
         try:
             URLValidator()(substituted)
         except ValidationError:
