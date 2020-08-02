@@ -756,6 +756,35 @@ Output:
         self.assertNotEqual(json["msg"], "Error parsing JSON in response!")
         return json
 
+    def get_all_json_errors(self, result: HttpResponse) -> List[str]:
+        """
+        Some API endpoints return multiple error messages and we need to
+        test for all the errors. Example JSON:
+
+        { "result":"error",
+          "msg":"This field cannot be blank.",
+          "errors":{
+            "pattern":["This field cannot be blank."],
+            "__all__":["No groups found in URL format string."]
+          }
+        }
+        """
+
+        try:
+            json = orjson.loads(result.content)
+        except Exception:  # nocoverage
+            json = {'errors': {}}
+        errors = json.get('errors')
+        error_list: List[str] = []
+        for error_type in errors:
+            error_list = error_list + errors.get(error_type)
+        return error_list
+
+    def assert_all_json_errors(self, result: HttpResponse, expected_errors: List[str]) -> None:
+        actual_errors = self.get_all_json_errors(result)
+        self.assertCountEqual(actual_errors, expected_errors)
+        self.assertEqual(result.status_code, 400)
+
     def get_json_error(self, result: HttpResponse, status_code: int=400) -> Dict[str, Any]:
         try:
             json = orjson.loads(result.content)

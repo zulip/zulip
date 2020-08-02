@@ -25,7 +25,7 @@ class RealmFilterTest(ZulipTestCase):
         self.login('iago')
         data = {"pattern": "", "url_format_string": "https://realm.com/my_realm_filter/%(id)s"}
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'This field cannot be blank.')
+        self.assert_all_json_errors(result, ['This field cannot be blank.', 'No groups found in URL format string.'])
 
         data['pattern'] = '$a'
         result = self.client_post("/json/realm/filters", info=data)
