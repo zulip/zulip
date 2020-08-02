@@ -55,20 +55,20 @@
         <hr>
         {{#if can_set_away}}
         <li>
-            <a href="#" class="set_away_status">
+            <a tabindex="0" class="set_away_status">
                 <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as unavailable{{/tr}}
             </a>
         </li>
         {{/if}}
         {{#if can_revoke_away}}
         <li>
-            <a href="#" class="revoke_away_status">
+            <a tabindex="0" class="revoke_away_status">
                 <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as active{{/tr}}
             </a>
         </li>
         {{/if}}
         <li>
-            <a href="#" class="update_status_text">
+            <a tabindex="0" class="update_status_text">
                 <i class="fa fa-comments" aria-hidden="true"></i>
                 {{#if status_text}}
                     {{#tr this}}Edit status message{{/tr}}
@@ -84,7 +84,7 @@
         <li class="user_info_status_text">
             <span id="status_message">
                 {{status_text}}
-                {{#if is_me}}(<a href="#" class="clear_status">{{#tr this}}clear{{/tr}}</a>){{/if}}
+                {{#if is_me}}(<a tabindex="0" class="clear_status">{{#tr this}}clear{{/tr}}</a>){{/if}}
             </span>
         </li>
     {{/if}}
@@ -92,7 +92,7 @@
     <hr>
     {{#if show_user_profile}}
     <li>
-        <a href="#" class="view_user_profile">
+        <a tabindex="0" class="view_user_profile">
             {{#if is_me}}
                 <i class="fa fa-user" aria-hidden="true"></i> {{#tr this}}View your profile{{/tr}}
             {{else}}
@@ -104,7 +104,7 @@
     {{#if is_active}}
         {{#unless is_me}}
         <li>
-            <a href="#" class="{{ private_message_class }}">
+            <a tabindex="0" class="{{ private_message_class }}">
                 <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr this}}Send private message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
             </a>
         </li>
@@ -112,7 +112,7 @@
     {{/if}}
     {{#unless is_me}}
     <li>
-        <a href="#" class="mention_user">
+        <a tabindex="0" class="mention_user">
             <i class="fa fa-at" aria-hidden="true"></i> {{#tr this}}Reply mentioning user{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(@)</span>{{/if}}
         </a>
     </li>
