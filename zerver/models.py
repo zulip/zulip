@@ -2334,7 +2334,7 @@ def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
         delivery_email__iexact=email.strip(), realm=realm)
 
 def get_users_by_delivery_email(emails: Set[str], realm: Realm) -> QuerySet:
-    """This is similar to get_users_by_delivery_email, and
+    """This is similar to get_user_by_delivery_email, and
     it has the same security caveats.  It gets multiple
     users and returns a QuerySet, since most callers
     will only need two or three fields.
