@@ -1,6 +1,6 @@
 "use strict";
 
-const katex = require("katex/dist/katex.min.js");
+const katex = require("katex");
 const _ = require("lodash");
 const moment = require("moment");
 

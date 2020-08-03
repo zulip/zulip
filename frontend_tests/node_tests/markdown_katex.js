@@ -20,7 +20,7 @@ zrequire("stream_data");
 zrequire("user_groups");
 
 const markdown = rewiremock.proxy(() => zrequire("markdown"), {
-    "katex/dist/katex.min.js": {
+    katex: {
         renderToString: () => {
             throw new Error("some-exception");
         },
