@@ -1,8 +1,8 @@
 "use strict";
 
-const assert = require("assert").strict;
+const {strict: assert} = require("assert");
 
-const test_credentials = require("../../var/puppeteer/test_credentials").test_credentials;
+const {test_credentials} = require("../../var/puppeteer/test_credentials");
 const common = require("../puppeteer_lib/common");
 
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";

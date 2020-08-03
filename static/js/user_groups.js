@@ -1,6 +1,6 @@
 "use strict";
 
-const FoldDict = require("./fold_dict").FoldDict;
+const {FoldDict} = require("./fold_dict");
 
 let user_group_name_dict;
 let user_group_by_id_dict;

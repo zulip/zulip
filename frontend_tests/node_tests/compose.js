@@ -15,7 +15,7 @@ set_global("compose_actions", {
     update_placeholder_text: noop,
 });
 
-const LazySet = zrequire("lazy_set").LazySet;
+const {LazySet} = zrequire("lazy_set");
 
 const _navigator = {
     platform: "",

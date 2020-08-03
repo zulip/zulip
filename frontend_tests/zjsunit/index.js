@@ -11,7 +11,7 @@ const handlebars = require("./handlebars");
 const stub_i18n = require("./i18n");
 const namespace = require("./namespace");
 const stub = require("./stub");
-const make_blueslip = require("./zblueslip").make_zblueslip;
+const {make_zblueslip} = require("./zblueslip");
 const zjquery = require("./zjquery");
 
 require("@babel/register")({
@@ -130,7 +130,7 @@ try {
         _.throttle = immediate;
         _.debounce = immediate;
 
-        set_global("blueslip", make_blueslip());
+        set_global("blueslip", make_zblueslip());
         set_global("i18n", stub_i18n);
         namespace.clear_zulip_refs();
 

@@ -1,6 +1,6 @@
 "use strict";
 
-const FoldDict = require("./fold_dict").FoldDict;
+const {FoldDict} = require("./fold_dict");
 
 // topic_senders[stream_id][topic_id][sender_id] = latest_message_id
 const topic_senders = new Map();

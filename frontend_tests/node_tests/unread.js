@@ -12,7 +12,7 @@ set_global("page_params", {
 });
 zrequire("settings_notifications");
 
-const FoldDict = zrequire("fold_dict").FoldDict;
+const {FoldDict} = zrequire("fold_dict");
 
 set_global("narrow_state", {});
 set_global("current_msg_list", {});

@@ -1,7 +1,7 @@
 "use strict";
 
-const FoldDict = require("./fold_dict").FoldDict;
-const LazySet = require("./lazy_set").LazySet;
+const {FoldDict} = require("./fold_dict");
+const {LazySet} = require("./lazy_set");
 const people = require("./people");
 const settings_config = require("./settings_config");
 const util = require("./util");
