@@ -278,7 +278,15 @@ working correctly.
     systemctl restart memcached
     ```
 
-5. Same as for Bionic to Focal.
+5. Finally, we need to reinstall the current version of Zulip, which
+   among other things will recompile Zulip's Python module
+   dependencies for your new version of Python:
+
+    ```
+    rm -rf /srv/zulip-venv-cache/*
+    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
+        /home/zulip/deployments/current/ --ignore-static-assets
+    ```
 
 That last command will finish by restarting your Zulip server; you
 should now be able to navigate to its URL and confirm everything is
@@ -309,7 +317,15 @@ match the new OS version:
     service memcached restart
     ```
 
-5. Same as for Bionic to Focal.
+5. Finally, we need to reinstall the current version of Zulip, which
+   among other things will recompile Zulip's Python module
+   dependencies for your new version of Python:
+
+    ```
+    rm -rf /srv/zulip-venv-cache/*
+    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
+        /home/zulip/deployments/current/ --ignore-static-assets
+    ```
 
 That last command will finish by restarting your Zulip server; you
 should now be able to navigate to its URL and confirm everything is
@@ -348,7 +364,15 @@ working correctly.
     service memcached restart
     ```
 
-5. Same as for Bionic to Focal.
+5. Finally, we need to reinstall the current version of Zulip, which
+   among other things will recompile Zulip's Python module
+   dependencies for your new version of Python:
+
+    ```
+    rm -rf /srv/zulip-venv-cache/*
+    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
+        /home/zulip/deployments/current/ --ignore-static-assets
+    ```
 
 That last command will finish by restarting your Zulip server; you
 should now be able to navigate to its URL and confirm everything is
