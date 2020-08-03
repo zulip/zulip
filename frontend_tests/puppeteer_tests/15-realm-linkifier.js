@@ -1,6 +1,6 @@
 "use strict";
 
-const assert = require("assert").strict;
+const {strict: assert} = require("assert");
 
 const common = require("../puppeteer_lib/common");
 

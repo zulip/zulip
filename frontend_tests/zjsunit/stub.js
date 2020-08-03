@@ -1,6 +1,6 @@
 "use strict";
 
-const assert = require("assert").strict;
+const {strict: assert} = require("assert");
 
 // Stubs don't do any magical modifications to your namespace.  They
 // just provide you a function that records what arguments get passed
