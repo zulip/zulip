@@ -2127,10 +2127,10 @@ babel-plugin-dynamic-import-node@^2.3.3:
   dependencies:
     object.assign "^4.1.0"
 
-babel-plugin-rewire-ts@^1.3.3:
-  version "1.3.4"
-  resolved "https://registry.yarnpkg.com/babel-plugin-rewire-ts/-/babel-plugin-rewire-ts-1.3.4.tgz#d3007a7d9c96fc9d2d5818f395c25bf2504f531f"
-  integrity sha512-7uB9HFnuuXQhxU7nQJqHvBlZxpMMItD3fxR+C9D29ou8PblZz6iXST0v7nyPZkVYme0gFYch4iYLj/DPTm18zw==
+babel-plugin-rewire-ts@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/babel-plugin-rewire-ts/-/babel-plugin-rewire-ts-1.4.0.tgz#6c814d5aa3ef3d8c0d0c7a27891877fb28930e5b"
+  integrity sha512-XVyyWMIx1fNSG42vbUaAro1LANLs/fBW6KurYaeoVjS2U8zLCaow7LKll6zjs1cwcqcbZK2v59zVouPs+JAqxw==
 
 babel-runtime@^6.26.0:
   version "6.26.0"
