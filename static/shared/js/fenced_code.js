@@ -1,4 +1,4 @@
-import katex from "katex/dist/katex.min.js";
+import katex from "katex";
 import _ from "lodash";
 
 // Parsing routine that can be dropped in to message parsing

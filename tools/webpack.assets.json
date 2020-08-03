@@ -7,7 +7,6 @@
     ],
     "archive": [
         "./static/js/bundles/portico.js",
-        "katex/dist/katex.min.js",
         "./static/js/archive.js",
         "./static/js/colorspace.js",
         "./static/js/floating_recipient_bar.js",
@@ -113,6 +112,6 @@
         "./static/styles/portico/stats.scss",
         "./static/js/stats/stats.js"
     ],
-    "app": ["./static/js/bundles/app.js", "katex/dist/katex.min.js"],
+    "app": ["./static/js/bundles/app.js"],
     "digest": ["./static/js/bundles/portico.js"]
 }
