@@ -152,7 +152,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /srv/zulip-npm-cache
-          key: v1-yarn-deps-${{ matrix.os }}-${{ hashFiles('package.json') }}-${{ hashFiles('yarn.lock') }}
+          key: v1-yarn-deps-${{ matrix.os }}-${{ hashFiles('/tmp/package.json') }}-${{ hashFiles('/tmp/yarn.lock') }}
           restore-keys: v1-yarn-deps-${{ matrix.os }}
 
       - name: Do Bionic hack
