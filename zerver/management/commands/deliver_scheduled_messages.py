@@ -65,7 +65,7 @@ Usage: ./manage.py deliver_scheduled_messages
                     with transaction.atomic():
                         do_send_messages([self.construct_message(message)])
                         message.delivered = True
-                        message.save(update_fields=['delivered'])
+                Message.objects.bulk_update(messages_to_deliver, ['delivered'])
 
             cur_time = timezone_now()
             time_next_min = (cur_time + timedelta(minutes=1)).replace(second=0, microsecond=0)

@@ -90,14 +90,14 @@ def bulk_set_users_or_streams_recipient_fields(model: Model,
 
     objects_dict = {obj.id: obj for obj in objects}
 
+    objects_to_update = set()
     for recipient in recipients:
         assert recipient.type == recipient_type
         result = objects_dict.get(recipient.type_id)
         if result is not None:
             result.recipient = recipient
-            # TODO: Django 2.2 has a bulk_update method, so once we manage to migrate to that version,
-            # we take adventage of this, instead of calling save individually.
-            result.save(update_fields=['recipient'])
+            objects_to_update.add(result)
+    model.objects.bulk_update(objects_to_update, ['recipient'])
 
 # This is only sed in populate_db, so doesn't really need tests
 def bulk_create_streams(realm: Realm,
