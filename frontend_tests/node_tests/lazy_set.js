@@ -1,6 +1,6 @@
 "use strict";
 
-const LazySet = zrequire("lazy_set").LazySet;
+const {LazySet} = zrequire("lazy_set");
 
 /*
     We mostly test LazySet indirectly.  This code

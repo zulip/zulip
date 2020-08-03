@@ -17,7 +17,7 @@ zrequire("FetchStatus", "js/fetch_status");
 zrequire("muting");
 zrequire("MessageListData", "js/message_list_data");
 zrequire("MessageListView", "js/message_list_view");
-const MessageList = zrequire("message_list").MessageList;
+const {MessageList} = zrequire("message_list");
 
 function accept_all_filter() {
     const filter = {

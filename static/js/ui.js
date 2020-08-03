@@ -1,6 +1,6 @@
 "use strict";
 
-const SimpleBar = require("simplebar").default;
+const {default: SimpleBar} = require("simplebar");
 
 // What, if anything, obscures the home tab?
 

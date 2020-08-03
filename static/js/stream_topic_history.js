@@ -1,6 +1,6 @@
 "use strict";
 
-const FoldDict = require("./fold_dict").FoldDict;
+const {FoldDict} = require("./fold_dict");
 
 const stream_dict = new Map(); // stream_id -> PerStreamHistory object
 const fetched_stream_ids = new Set();

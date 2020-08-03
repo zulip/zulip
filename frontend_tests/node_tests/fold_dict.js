@@ -1,6 +1,6 @@
 "use strict";
 
-const FoldDict = zrequire("fold_dict").FoldDict;
+const {FoldDict} = zrequire("fold_dict");
 
 run_test("basic", () => {
     const d = new FoldDict();

@@ -20,7 +20,7 @@ const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
 const actual_pygments_data = Object.assign({}, pygments_data);
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
-const LazySet = zrequire("lazy_set").LazySet;
+const {LazySet} = zrequire("lazy_set");
 
 let next_id = 0;
 
