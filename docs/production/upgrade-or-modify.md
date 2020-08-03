@@ -292,6 +292,9 @@ instructions for other supported platforms.
    be able to navigate to its URL and confirm everything is working
    correctly.
 
+6. [Upgrade to the latest Zulip release](#upgrading-to-a-release), now
+   that your server is running a supported operating system.
+
 ### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
 
 1. Upgrade your server to the latest Zulip `2.0.x` release.  You can
@@ -330,6 +333,10 @@ instructions for other supported platforms.
    This will finish by restarting your Zulip server; you should now be
    able to navigate to its URL and confirm everything is working
    correctly.
+
+6. [Upgrade from Xenial to
+   Bionic](#upgrading-from-ubuntu-16-04-xenial-to-18-04-bionic), so
+   that you are running a supported operating system.
 
 ### Upgrading from Debian Stretch to Debian Buster
 
@@ -377,6 +384,9 @@ instructions for other supported platforms.
    This will finish by restarting your Zulip server; you should now
    be able to navigate to its URL and confirm everything is working
    correctly.
+
+6. [Upgrade to the latest Zulip release](#upgrading-to-a-release), now
+   that your server is running a supported operating system.
 
 ## Upgrading PostgreSQL
 
