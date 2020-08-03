@@ -38,5 +38,6 @@ cp -a \
    tools/ci/production-verify \
    tools/ci/production-upgrade-pg \
    tools/ci/production-extract-tarball \
+   package.json yarn.lock \
    \
    /tmp/production-build
