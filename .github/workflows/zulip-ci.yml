@@ -143,7 +143,10 @@ jobs:
           pip install codecov && codecov || echo "Error in uploading coverage reports to codecov.io."
 
       - name: Store puppeteer artifacts
-        if: ${{ matrix.include_frontend_tests }}
+        # We use always() here instead of a matrix.include_frontend_tests
+        # check because of GitHub Action's bug where the step won't run on
+        # unless we use always().
+        if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
           name: puppeteer
