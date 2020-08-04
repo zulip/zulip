@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = {
-    extends: ["stylelint-config-recommended", "stylelint-config-prettier"],
+    extends: ["stylelint-config-standard", "stylelint-config-prettier"],
     rules: {
         // Add some exceptions for recommended rules
         "at-rule-no-unknown": [true, {ignoreAtRules: ["extend"]}],
@@ -14,20 +14,10 @@ module.exports = {
         "no-descending-specificity": null,
         "no-duplicate-selectors": null,
 
-        // Stylistic rules for CSS.
-        "function-whitespace-after": "always",
-
-        "value-keyword-case": "lower",
-
-        "selector-attribute-operator-space-after": "never",
-        "selector-attribute-operator-space-before": "never",
-        "selector-pseudo-element-colon-notation": "double",
-        "selector-type-case": "lower",
-
-        "media-feature-range-operator-space-after": "always",
-        "media-feature-range-operator-space-before": "always",
-
-        "comment-whitespace-inside": "always",
+        // Disable standard rules we don't comply with yet
+        "comment-empty-line-before": null,
+        "declaration-empty-line-before": null,
+        "length-zero-no-unit": null,
 
         // Limit language features
         "color-no-hex": true,

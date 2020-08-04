@@ -55,7 +55,7 @@ table td {
 }
 
 .main {
-    background-color: #ffffff;
+    background-color: #fff;
     border-radius: 3px;
     width: 100%;
 }
@@ -77,7 +77,7 @@ table td {
 .footer p,
 .footer span,
 .footer a {
-    color: #999999;
+    color: #999;
     font-size: 12px;
     text-align: center;
 }
@@ -90,7 +90,7 @@ h1,
 h2,
 h3,
 h4 {
-    color: #000000;
+    color: #000;
     font-family: sans-serif;
     font-weight: 400;
     line-height: 1.4;
@@ -144,7 +144,7 @@ a:hover {
     border-radius: 4px;
     font-size: 16px;
     outline: none;
-    color: #ffffff;
+    color: #fff;
     font-family: sans-serif;
     text-decoration: none;
     text-align: center;
@@ -183,14 +183,14 @@ a.button:hover {
 
 .recipient_block {
     background-color: #f0f4f5;
-    border: 1px solid #000000;
+    border: 1px solid #000;
     margin-bottom: 4px;
 }
 
 .recipient_header {
     color: #e0dada;
-    background-color: #444444;
-    border-bottom: 1px solid #000000;
+    background-color: #444;
+    border-bottom: 1px solid #000;
     font-weight: bold;
     padding: 2px;
 }
@@ -219,13 +219,13 @@ a.button:hover {
 }
 
 .hot_convo_recipient_block {
-    border: 1px solid #000000;
+    border: 1px solid #000;
     margin-bottom: 4px;
 }
 
 .hot_convo_recipient_header {
     background-color: #9ec9ff;
-    border-bottom: 1px solid #000000;
+    border-bottom: 1px solid #000;
     font-weight: bold;
     padding: 2px;
 }
@@ -241,13 +241,13 @@ a.button:hover {
 }
 
 .recipient_block_with_messages {
-    border: 1px solid #000000;
+    border: 1px solid #000;
     margin-bottom: 4px;
 }
 
 .recipient_header_with_messages {
     background-color: #9ecaff;
-    border-bottom: 1px solid #000000;
+    border-bottom: 1px solid #000;
     font-weight: bold;
     padding: 2px;
 }
@@ -259,14 +259,14 @@ a.button:hover {
 
 .recipient_block_without_messages {
     background-color: #f0f4f5;
-    border: 1px solid #000000;
+    border: 1px solid #000;
     margin-bottom: 4px;
 }
 
 .recipient_header_without_messages {
-    color: #ffffff;
-    background-color: #444444;
-    border-bottom: 1px solid #000000;
+    color: #fff;
+    background-color: #444;
+    border-bottom: 1px solid #000;
     font-weight: bold;
     padding: 2px;
 }
