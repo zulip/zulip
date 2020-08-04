@@ -12,6 +12,12 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 
 
+def indent(s: str) -> str:
+    padding = "    "
+    parts = s.split("\n")
+    return "\n".join(padding + part for part in parts)
+
+
 @dataclass
 class DictType:
     def __init__(
@@ -48,6 +54,14 @@ class DictType:
             if k not in keys:
                 raise AssertionError(f"Unknown key {k} in {var_name}")
 
+    def schema(self, var_name: str) -> str:
+        # Our current schema is lossy, since our openapi configs
+        # aren't rigorous about "required" fields yet.
+        keys = sorted(list(self.required_keys) + list(self.optional_keys))
+
+        sub_schema = "\n".join(schema(name, data_type) for name, data_type in keys)
+        return f"{var_name} (dict):\n{indent(sub_schema)}"
+
 
 @dataclass
 class EnumType:
@@ -57,14 +71,26 @@ class EnumType:
         if val not in self.valid_vals:
             raise AssertionError(f"{var_name} is not in {self.valid_vals}")
 
+    def schema(self, var_name: str) -> str:
+        return f"{var_name} in {sorted(self.valid_vals)}"
+
 
 class Equals:
     def __init__(self, expected_value: Any) -> None:
         self.expected_value = expected_value
 
+        # super hack for openapi workaround
+        if self.expected_value is None:
+            self.equalsNone = True
+
     def check_data(self, var_name: str, val: Dict[str, Any]) -> None:
         if val != self.expected_value:
             raise AssertionError(f"{var_name} should be equal to {self.expected_value}")
+
+    def schema(self, var_name: str) -> str:
+        # Treat Equals as the degenerate case of EnumType, which
+        # matches how we do things with openapi.
+        return f"{var_name} in {repr([self.expected_value])}"
 
 
 class ListType:
@@ -80,6 +106,10 @@ class ListType:
             vname = f"{var_name}[{i}]"
             check_data(self.sub_type, vname, sub_val)
 
+    def schema(self, var_name: str) -> str:
+        sub_schema = schema("type", self.sub_type)
+        return f"{var_name} (list):\n{indent(sub_schema)}"
+
 
 @dataclass
 class OptionalType:
@@ -89,6 +119,11 @@ class OptionalType:
         if val is None:
             return
         check_data(self.sub_type, var_name, val)
+
+    def schema(self, var_name: str) -> str:
+        # our openapi spec doesn't support optional types very well yet,
+        # so we just return the schema for our subtype
+        return schema(var_name, self.sub_type)
 
 
 @dataclass
@@ -107,12 +142,29 @@ class UnionType:
 
         raise AssertionError(f"{var_name} does not pass the union type check")
 
+    def schema(self, var_name: str) -> str:
+        # We hack around our openapi specs not accounting for None.
+        sub_schemas = "\n".join(
+            sorted(
+                schema("type", sub_type)
+                for sub_type in self.sub_types
+                if not hasattr(sub_type, "equalsNone")
+            )
+        )
+        return f"{var_name} (union):\n{indent(sub_schemas)}"
+
+
 class UrlType:
     def check_data(self, var_name: str, val: Any) -> None:
         try:
             URLValidator()(val)
-        except ValidationError:
+        except ValidationError:  # nocoverage
             raise AssertionError(f"{var_name} is not a URL")
+
+    def schema(self, var_name: str) -> str:
+        # just report str to match openapi
+        return f"{var_name}: str"
+
 
 def event_dict_type(
     required_keys: Sequence[Tuple[str, Any]],
@@ -144,6 +196,23 @@ def make_checker(data_type: DictType,) -> Callable[[str, Dict[str, object]], Non
         check_data(data_type, var_name, event)
 
     return f
+
+
+def schema(
+    # return a YAML-like string for our data type
+    var_name: str,
+    data_type: Any,
+) -> str:
+    """
+    schema is a glorified repr of a data type, but it
+    also includes a var_name you pass in, plus we dumb
+    things down a bit to match our current openapi spec
+    """
+    if hasattr(data_type, "schema"):
+        return data_type.schema(var_name)
+    if data_type in [bool, dict, int, float, list, str]:
+        return f"{var_name}: {data_type.__name__}"
+    raise AssertionError(f"unknown type {data_type}")
 
 
 def check_data(
