@@ -18,7 +18,7 @@ OPENAPI_SPEC_PATH = os.path.abspath(os.path.join(
 EXCLUDE_UNDOCUMENTED_ENDPOINTS = {"/realm/emoji/{emoji_name}:delete", "/users:patch"}
 # Consists of endpoints with some documentation remaining.
 # These are skipped but return true as the validator cannot exclude objects
-EXCLUDE_DOCUMENTED_ENDPOINTS = {"/register:post", "/settings/notifications:patch"}
+EXCLUDE_DOCUMENTED_ENDPOINTS = {"/settings/notifications:patch"}
 class OpenAPISpec():
     def __init__(self, path: str) -> None:
         self.path = path

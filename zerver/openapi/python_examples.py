@@ -871,6 +871,15 @@ def update_message_flags(client: Client) -> None:
     validate_against_openapi_schema(result, '/messages/flags', 'post',
                                     '200')
 
+def register_queue_all_events(client: Client) -> str:
+
+    # Register the queue and get all events
+    # Mainly for verifying schema of /register.
+    result = client.register()
+
+    validate_against_openapi_schema(result, '/register', 'post', '200')
+    return result['queue_id']
+
 @openapi_test_function("/register:post")
 def register_queue(client: Client) -> str:
 
@@ -1215,6 +1224,7 @@ def test_queues(client: Client) -> None:
     # the effort to come up with asynchronous logic for testing those here.
     queue_id = register_queue(client)
     deregister_queue(client, queue_id)
+    register_queue_all_events(client)
 
 def test_server_organizations(client: Client) -> None:
 
