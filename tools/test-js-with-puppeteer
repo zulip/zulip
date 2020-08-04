@@ -89,10 +89,12 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
             ret = run_tests()[0]
     if ret != 0:
         print("""
-The Puppeteer frontend tests failed! Please report and ask for help in chat.zulip.org""", file=sys.stderr)
+The Puppeteer frontend tests failed! The failure screenshot and
+test recording is stored in var/puppeteer. Alternatively, you can
+also ask for help in chat.zulip.org""", file=sys.stderr)
         if os.environ.get("CIRCLECI"):
             print("", file=sys.stderr)
-            print("In CircleCI, the Artifacts tab contains screenshots of the failure.", file=sys.stderr)
+            print("In CircleCI, the Artifacts tab contains screenshots and recording of the failure.", file=sys.stderr)
             print("", file=sys.stderr)
         sys.exit(ret)
 
