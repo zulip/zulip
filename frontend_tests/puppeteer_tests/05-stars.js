@@ -49,10 +49,18 @@ async function stars_test(page) {
 
     await toggle_test_star_message(page);
     await page.waitForSelector("#zhome .fa-star", {visible: true});
-    assert.strictEqual(await stars_count(page), 1, "Failed to ensure 1 starred message after change.");
+    assert.strictEqual(
+        await stars_count(page),
+        1,
+        "Failed to ensure 1 starred message after change.",
+    );
 
     await test_narrow_to_starred_messages(page);
-    assert.strictEqual(await stars_count(page), 1, "Message star disappeared after switching views.");
+    assert.strictEqual(
+        await stars_count(page),
+        1,
+        "Message star disappeared after switching views.",
+    );
 
     await toggle_test_star_message(page);
     assert.strictEqual(await stars_count(page), 0, "Message was not unstarred correctly.");
