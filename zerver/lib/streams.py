@@ -285,6 +285,13 @@ def get_public_streams_queryset(realm: Realm) -> 'QuerySet[Stream]':
     return Stream.objects.filter(realm=realm, invite_only=False,
                                  history_public_to_subscribers=True)
 
+def get_web_public_streams_queryset(realm: Realm) -> 'QuerySet[Stream]':
+    # In theory, is_web_public=True implies invite_only=False and
+    # history_public_to_subscribers=True, but it's safer to include
+    # this in the query.
+    return Stream.objects.filter(realm=realm, deactivated=False, invite_only=False,
+                                 history_public_to_subscribers=True, is_web_public=True)
+
 def get_stream_by_id(stream_id: int) -> Stream:
     error = _("Invalid stream id")
     try:

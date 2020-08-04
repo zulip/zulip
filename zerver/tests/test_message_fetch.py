@@ -5,6 +5,7 @@ from unittest import mock
 
 import orjson
 from django.db import connection
+from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from sqlalchemy.sql import and_, column, select, table
@@ -18,6 +19,7 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_update_message,
 )
+from zerver.lib.avatar import avatar_url
 from zerver.lib.markdown import MentionData
 from zerver.lib.message import (
     MessageDict,
@@ -93,7 +95,7 @@ class NarrowBuilderTest(ZulipTestCase):
         super().setUp()
         self.realm = get_realm('zulip')
         self.user_profile = self.example_user('hamlet')
-        self.builder = NarrowBuilder(self.user_profile, column('id'))
+        self.builder = NarrowBuilder(self.user_profile, column('id'), self.realm)
         self.raw_query = select([column("id")], None, table("zerver_message"))
         self.hamlet_email = self.example_user('hamlet').email
         self.othello_email = self.example_user('othello').email
@@ -447,6 +449,16 @@ class NarrowBuilderTest(ZulipTestCase):
         query = self._build_query(term)
         self.assertEqual(get_sqlalchemy_sql(query), 'SELECT id \nFROM zerver_message')
 
+    def test_add_term_non_web_public_stream_in_web_public_query(self) -> None:
+        self.make_stream('non-web-public-stream', realm=self.realm)
+        term = dict(operator='stream', operand='non-web-public-stream')
+        builder = NarrowBuilder(self.user_profile, column('id'), self.realm, True)
+
+        def _build_query(term: Dict[str, Any]) -> Query:
+            return builder.add_term(self.raw_query, term)
+
+        self.assertRaises(BadNarrowOperator, _build_query, term)
+
     def _do_add_term_test(self, term: Dict[str, Any], where_clause: str,
                           params: Optional[Dict[str, Any]]=None) -> None:
         query = self._build_query(term)
@@ -523,19 +535,19 @@ class IncludeHistoryTest(ZulipTestCase):
         narrow = [
             dict(operator='stream', operand='public_stream', negated=True),
         ]
-        self.assertFalse(ok_to_include_history(narrow, user_profile))
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
         # streams:public searches should include history for non-guest members.
         narrow = [
             dict(operator='streams', operand='public'),
         ]
-        self.assertTrue(ok_to_include_history(narrow, user_profile))
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
 
         # Negated -streams:public searches should not include history.
         narrow = [
             dict(operator='streams', operand='public', negated=True),
         ]
-        self.assertFalse(ok_to_include_history(narrow, user_profile))
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
         # Definitely forbid seeing history on private streams.
         self.make_stream('private_stream', realm=user_profile.realm, invite_only=True)
@@ -544,7 +556,7 @@ class IncludeHistoryTest(ZulipTestCase):
         narrow = [
             dict(operator='stream', operand='private_stream'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, user_profile))
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
         # Verify that with stream.history_public_to_subscribers, subscribed
         # users can access history.
@@ -555,20 +567,20 @@ class IncludeHistoryTest(ZulipTestCase):
         narrow = [
             dict(operator='stream', operand='private_stream_2'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, user_profile))
-        self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile))
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+        self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile, False))
 
         # History doesn't apply to PMs.
         narrow = [
             dict(operator='is', operand='private'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, user_profile))
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
         # History doesn't apply to unread messages.
         narrow = [
             dict(operator='is', operand='unread'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, user_profile))
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
         # If we are looking for something like starred messages, there is
         # no point in searching historical messages.
@@ -576,7 +588,7 @@ class IncludeHistoryTest(ZulipTestCase):
             dict(operator='stream', operand='public_stream'),
             dict(operator='is', operand='starred'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, user_profile))
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
         # No point in searching history for is operator even if included with
         # streams:public
@@ -584,30 +596,30 @@ class IncludeHistoryTest(ZulipTestCase):
             dict(operator='streams', operand='public'),
             dict(operator='is', operand='mentioned'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, user_profile))
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
         narrow = [
             dict(operator='streams', operand='public'),
             dict(operator='is', operand='unread'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, user_profile))
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
         narrow = [
             dict(operator='streams', operand='public'),
             dict(operator='is', operand='alerted'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, user_profile))
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
         # simple True case
         narrow = [
             dict(operator='stream', operand='public_stream'),
         ]
-        self.assertTrue(ok_to_include_history(narrow, user_profile))
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
 
         narrow = [
             dict(operator='stream', operand='public_stream'),
             dict(operator='topic', operand='whatever'),
             dict(operator='search', operand='needle in haystack'),
         ]
-        self.assertTrue(ok_to_include_history(narrow, user_profile))
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
 
         # Tests for guest user
         guest_user_profile = self.example_user("polonius")
@@ -618,23 +630,23 @@ class IncludeHistoryTest(ZulipTestCase):
         narrow = [
             dict(operator='streams', operand='public'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, guest_user_profile))
+        self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
 
         # Guest user can't access public stream
         self.subscribe(subscribed_user_profile, 'public_stream_2')
         narrow = [
             dict(operator='stream', operand='public_stream_2'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, guest_user_profile))
-        self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile))
+        self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
+        self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile, False))
 
         # Definitely, a guest user can't access the unsubscribed private stream
         self.subscribe(subscribed_user_profile, 'private_stream_3')
         narrow = [
             dict(operator='stream', operand='private_stream_3'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, guest_user_profile))
-        self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile))
+        self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
+        self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile, False))
 
         # Guest user can access (history of) subscribed private streams
         self.subscribe(guest_user_profile, 'private_stream_4')
@@ -642,8 +654,8 @@ class IncludeHistoryTest(ZulipTestCase):
         narrow = [
             dict(operator='stream', operand='private_stream_4'),
         ]
-        self.assertTrue(ok_to_include_history(narrow, guest_user_profile))
-        self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile))
+        self.assertTrue(ok_to_include_history(narrow, guest_user_profile, False))
+        self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile, False))
 
 class PostProcessTest(ZulipTestCase):
     def test_basics(self) -> None:
@@ -1191,6 +1203,157 @@ class GetOldMessagesTest(ZulipTestCase):
                 ).decode(),
             ),
         )
+
+    def test_unauthenticated_get_messages_non_existant_realm(self) -> None:
+        post_params = {
+            "anchor": 10000000000000000,
+            "num_before": 5,
+            "num_after": 1,
+            "narrow": orjson.dumps([dict(operator='streams', operand="web-public")]).decode(),
+        }
+
+        with mock.patch('zerver.views.message_fetch.get_realm_from_request', return_value=None):
+            result = self.client_get("/json/messages", dict(post_params))
+            self.assert_json_error(result, "Invalid subdomain.",
+                                   status_code=400)
+
+    def test_unauthenticated_get_messages_without_web_public(self) -> None:
+        """
+        An unauthenticated call to GET /json/messages with valid parameters
+        returns a 401.
+        """
+        post_params = {
+            "anchor": 1,
+            "num_before": 1,
+            "num_after": 1,
+            "narrow": orjson.dumps([dict(operator='is', operand="private")]).decode(),
+        }
+        result = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_error(result, "Not logged in: API authentication or user session required",
+                               status_code=401)
+
+        post_params = {
+            "anchor": 10000000000000000,
+            "num_before": 5,
+            "num_after": 1,
+        }
+        result = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_error(result, "Not logged in: API authentication or user session required",
+                               status_code=401)
+
+    def test_unauthenticated_get_messages_with_web_public(self) -> None:
+        """
+        An unauthenticated call to GET /json/messages without valid
+        parameters in the `streams:web-public` narrow returns a 401.
+        """
+        post_params: Dict[str, Union[int, str, bool]] = {
+            "anchor": 1,
+            "num_before": 1,
+            "num_after": 1,
+            # "is:private" is not a is_web_public_compatible narrow.
+            "narrow": orjson.dumps([dict(operator="streams", operand="web-public"),
+                                    dict(operator="is", operand="private")]).decode(),
+        }
+        result = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_error(result, 'Not logged in: API authentication or user session required',
+                               status_code=401)
+
+    def test_unauthenticated_narrow_to_non_web_public_streams_without_web_public(self) -> None:
+        """
+        An unauthenticated call to GET /json/messages without `streams:web-public` narrow returns a 401.
+        """
+        post_params: Dict[str, Union[int, str, bool]] = {
+            "anchor": 1,
+            "num_before": 1,
+            "num_after": 1,
+            "narrow": orjson.dumps([dict(operator='stream', operand='Scotland')]).decode(),
+        }
+        result = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_error(result, "Not logged in: API authentication or user session required",
+                               status_code=401)
+
+    def test_unauthenticated_narrow_to_non_web_public_streams_with_web_public(self) -> None:
+        """
+        An unauthenticated call to GET /json/messages with valid
+        parameters in the `streams:web-public` narrow + narrow to stream returns
+        a 400 if the target stream is not web-public.
+        """
+        post_params: Dict[str, Union[int, str, bool]] = {
+            "anchor": 1,
+            "num_before": 1,
+            "num_after": 1,
+            "narrow": orjson.dumps([dict(operator="streams", operand="web-public"),
+                                    dict(operator='stream', operand='Scotland')]).decode(),
+        }
+        result = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_error(result, 'Invalid narrow operator: unknown web-public stream Scotland',
+                               status_code=400)
+
+    def setup_web_public_test(self, num_web_public_message: int=1) -> None:
+        """
+        Send N+2 messages, N in a web-public stream, then one in a non web-public stream
+        and then a private message.
+        """
+        user_profile = self.example_user('iago')
+        self.login('iago')
+        web_public_stream = self.make_stream('web-public-stream', is_web_public=True)
+        non_web_public_stream = self.make_stream('non-web-public-stream')
+        self.subscribe(user_profile, web_public_stream.name)
+        self.subscribe(user_profile, non_web_public_stream.name)
+
+        for _ in range(num_web_public_message):
+            self.send_stream_message(user_profile, web_public_stream.name,
+                                     content="web-public message")
+        self.send_stream_message(user_profile, non_web_public_stream.name,
+                                 content="non web-public message")
+        self.send_personal_message(user_profile, self.example_user('hamlet'),
+                                   content="private message")
+        self.logout()
+
+    def verify_web_public_query_result_success(self, result: HttpResponse, expected_num_messages: int) -> None:
+        self.assert_json_success(result)
+        messages = orjson.loads(result.content)['messages']
+        self.assert_length(messages, expected_num_messages)
+        sender = self.example_user('iago')
+        for msg in messages:
+            self.assertEqual(msg['content'], '<p>web-public message</p>')
+            self.assertEqual(msg['flags'], ['read'])
+            self.assertEqual(msg['sender_email'], sender.email)
+            self.assertEqual(msg['avatar_url'], avatar_url(sender))
+
+    def test_unauthenticated_narrow_to_web_public_streams(self) -> None:
+        self.setup_web_public_test()
+
+        post_params: Dict[str, Union[int, str, bool]] = {
+            "anchor": 1,
+            "num_before": 1,
+            "num_after": 1,
+            "narrow": orjson.dumps([dict(operator="streams", operand="web-public"),
+                                    dict(operator='stream', operand='web-public-stream')]).decode(),
+        }
+        result = self.client_get("/json/messages", dict(post_params))
+        self.verify_web_public_query_result_success(result, 1)
+
+    def test_get_messages_with_web_public(self) -> None:
+        """
+        An unauthenticated call to GET /json/messages with valid parameters
+        including `streams:web-public` narrow returns list of messages in the
+        `web-public` streams.
+        """
+        self.setup_web_public_test(num_web_public_message=8)
+
+        post_params = {
+            "anchor": "first_unread",
+            "num_before": 5,
+            "num_after": 1,
+            "narrow": orjson.dumps([dict(operator='streams', operand="web-public")]).decode(),
+        }
+        result = self.client_get("/json/messages", dict(post_params))
+        # Of the last 7 (num_before + num_after + 1) messages, only 5
+        # messages are returned, which were all web-public messages.
+        # The other two messages should not be returned even though
+        # they are the most recent.
+        self.verify_web_public_query_result_success(result, 5)
 
     def test_client_avatar(self) -> None:
         """
