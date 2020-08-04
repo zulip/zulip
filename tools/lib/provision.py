@@ -141,6 +141,7 @@ COMMON_DEPENDENCIES = [
     "fonts-freefont-ttf",
     "libappindicator1",
     "xdg-utils",
+    "xvfb",
     # Puppeteer dependencies end here.
 ]
 
