@@ -544,6 +544,18 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         case "realm_export":
             settings_exports.populate_exports_table(event.exports);
             break;
+
+        case "update_user_status":{
+            const user_status = [
+                "status_info", 
+            ];
+            if(event.status === settings_config.status_state_values.active.value){
+                user_status.server_set_away();
+            }
+            else{
+                user_status.server_revoke_away();
+            }
+        }
     }
 };
 
