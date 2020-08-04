@@ -5463,6 +5463,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - additionalProperties: false
                   - properties:
                       queue_id:
                         type: string
@@ -5480,6 +5481,1326 @@ paths:
                         type: string
                         description: |
                           The server's version.
+                      alert_words:
+                        type: array
+                        description: |
+                          Present if `alert_words` is present in `event_types`.
+
+                          An array of strings, each a configured [alert word](/help/add-an-alert-word)
+                          of the user.
+                        items:
+                          type: string
+                      custom_profile_fields:
+                        type: array
+                        description: |
+                          Present if `custom_profile_fields` is present in `event_types`.
+
+                           An array of dictionaries where each dictionary contains
+                           details of a single new custom profile field for the Zulip
+                           organization.
+                        items:
+                          $ref: "#/components/schemas/CustomProfileField"
+                      custom_profile_field_types:
+                        type: object
+                        description: |
+                          Present if `custom_profile_fields` is present in `event_types`.
+
+                           An array of dictionaries where each dictionary contains
+                           details of a single new custom profile field type. Each
+                           custom profile type has a id and the `type` property of
+                           a custom profile field is equal to one of these ids.
+                        additionalProperties:
+                          type: object
+                          description: |
+                            `{FIELD_TYPE}`: Dictionary which contains the details
+                            of the field type with the field type as the name of the
+                            property itself. It is usually one of the seven:
+                            * `SHORT_TEXT`
+                            * `LONG_TEXT`
+                            * `DATE` for date-based fields.
+                            * `CHOICE` for a list of options.
+                            * `URL` for links.
+                            * `EXTERNAL_ACCOUNT` for external accounts.
+                            * `USER` for selecting a user for the field.
+                          properties:
+                            id:
+                              type: integer
+                              description: |
+                                The id of the custom profile field type.
+                            name:
+                              type: string
+                              description: |
+                                The name of the custom profile field type.
+                      hotspots:
+                        type: array
+                        description: |
+                          Present if `hotspots` is present in `event_types`.
+
+                           An array of dictionaries where each
+                           dictionary contains details about a single hotspot.
+                        items:
+                          $ref: "#/components/schemas/Hotspot"
+                      max_message_id:
+                        type: integer
+                        deprecated: true
+                        description: |
+                          Present if `message` is present in `event_types`.
+
+                          The integer ID of the last message received by your account.
+
+                          **Deprecated**.  We plan to remove this in favor of recommending
+                          using `GET /messages` with `anchor="newest"`
+                      muted_topics:
+                        type: array
+                        description: |
+                          Present if `muted_topics` is present in `event_types`.
+
+                          Array of tuples, where each tuple describes a muted topic.
+                          The first element of tuple is the stream name in which the topic
+                          has to be muted, the second element is the topic name to be muted
+                          and the third element is an integer UNIX timestamp representing
+                          when the topic was muted.
+                        items:
+                          type: array
+                          items:
+                            oneOf:
+                              - type: string
+                              - type: integer
+                      presences:
+                        type: object
+                        description: |
+                          Present if `presence` is present in `event_types`.
+
+                          A dictionary where each entry describes the presence of a user.
+                        additionalProperties:
+                          type: object
+                          description: |
+                            `{user_id} or {user_email}`: Depending on the value of `slim_presence`.
+                            Each entry contains the details of the presence of the user with the specific
+                            id or email.
+                          additionalProperties:
+                            $ref: "#/components/schemas/Presence"
+                      realm_domains:
+                        type: array
+                        description: |
+                          Present if `realm_domains` is present in `event_types`.
+
+                          An array of dictionaries where each dicitionary describes a realm domain.
+                        items:
+                          $ref: "#/components/schemas/RealmDomain"
+                      realm_emoji:
+                        description: |
+                          Present if `realm_emoji` is present in `event_types`.
+
+                          An array of dictionaries where each dicitionary describes a realm emoji.
+                        oneOf:
+                          - type: object
+                            additionalProperties:
+                              $ref: "#/components/schemas/RealmEmoji"
+                          - type: array
+                            items:
+                              type: integer
+                      realm_filters:
+                        type: array
+                        items:
+                          type: array
+                          items:
+                            oneOf:
+                              - type: integer
+                              - type: string
+                        description: |
+                          Present if `realm_filters` is present in `event_types`.
+
+                          An array of tuples(or arrays) where each tuple describes
+                          a single realm filter. The first element of the tuple is a
+                          string regex pattern which represents the pattern that should
+                          be linkified on matching. The second element is the url with which the
+                          pattern matching string should be linkified with and the third element
+                          is the id of the realm filter.
+                      realm_user_groups:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/UserGroup"
+                        description: |
+                          Present if `realm_user_groups` is present in `event_types`.
+
+                          An array of dictionaries where each dictionary describes a user group.
+                      realm_bots:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Bot"
+                        description: |
+                          Present if `realm_bot` is present in `event_types`.
+
+                          An array of dictionaries where each dictionary describes a bot owned
+                          by the user.
+                      realm_embedded_bots:
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          description: |
+                            Object containing details of the bot.
+                          properties:
+                            name:
+                              type: string
+                              description: |
+                                The name of the bot.
+                            config:
+                              $ref: "#/components/schemas/Config"
+                        description: |
+                          Present if `realm_embedded_bots` is present in `event_types`.
+
+                          An array of dictionaries where each dictionary describes a embedded bot
+                          of the server.
+                      realm_incoming_webhook_bots:
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          description: |
+                            Object containing details of the bot.
+                          properties:
+                            name:
+                              type: string
+                              description: |
+                                The name of the bot.
+                            config:
+                              $ref: "#/components/schemas/Config"
+                        description: |
+                          Present if `realm_incoming_webhook_bots` is present in `event_types`.
+
+                          An array of dictionaries where each dictionary describes a incoming webhook
+                          bot of the server.
+                      raw_recent_private_conversations:
+                        type: object
+                        additionalProperties:
+                          type: object
+                          additionalProperties: false
+                          description: |
+                            `{recipient_id}`: Object describing a single recent
+                            private conversation of the user with the recipient id
+                            of the conversation as the key.
+                          properties:
+                            max_message_id:
+                              type: integer
+                              description: |
+                                The highest message id of the conversation.
+                            user_ids:
+                              type: array
+                              items:
+                                type: integer
+                              description: |
+                                The list of users other than the current user in the private message
+                                conversation(empty for PMs to self).
+                        description: |
+                          Present if `recent_private_conversations` is present in `event_types`.
+
+                          A dictionary where each entry describes one of the user's
+                          recent private conversations.
+                      subscriptions:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Subscriptions"
+                        description: |
+                          Present if `subscription` is present in `event_types`.
+
+                          A array of dictionaries where each dictionary describes one of the
+                          user's subscription to a stream.
+                      unsubscribed:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/BasicStream"
+                        description: |
+                          Present if `subscription` is present in `event_types`.
+
+                          A array of dictionaries where each dictionary describes one of the
+                          streams the user has unsubscribed from.
+                      never_subscribed:
+                        type: array
+                        items:
+                          allOf:
+                            - $ref: "#/components/schemas/BasicStream"
+                            - properties:
+                                stream_weekly_traffic:
+                                  type: integer
+                                  nullable: true
+                                  description: |
+                                    The average number of messages sent to the stream in recent weeks,
+                                    rounded to the nearest integer.
+
+                                    Null means the stream was recently created and there is
+                                    insufficient data to estimate the average traffic.
+                                subscribers:
+                                  type: array
+                                  items:
+                                    type: integer
+                                  description: |
+                                    A list of user IDs of users who are also subscribed
+                                    to a given stream. Included only if `include_subscribers` is `true`.
+                        description: |
+                          Present if `subscription` is present in `event_types`.
+
+                          A array of dictionaries where each dictionary describes one of the
+                          streams that is visible to the user and the user has never subscribed
+                          to. Note: The stream object here contains a few extra keys
+                      raw_unread_msgs:
+                        type: object
+                        items:
+                          $ref: "#/components/schemas/BasicStream"
+                        description: |
+                          Present if `message` and `update_message_flags` are both present in
+                          `event_types`.
+
+                          A dictionary of dictionaries which describes all the unread messages
+                          by the users
+                        properties:
+                          pm_dict:
+                            type: object
+                            description: |
+                              A dictionary which contains details of all unread private messages.
+                            additionalProperties:
+                              type: object
+                              description: |
+                                `{message_id}`: Object containing the details of a unread private
+                                message with the message_id as the key.
+                              properties:
+                                sender_id:
+                                  type: integer
+                                  description: |
+                                    The user id of the the other participant in a PM conversation.
+                                    This field is misnamed.
+                          stream_dict:
+                            type: object
+                            description: |
+                              A dictionary which contains details of all unread stream messages, including
+                              muted streams.
+                            additionalProperties:
+                              type: object
+                              description: |
+                                `{message_id}`: Object containing the details of a unread stream
+                                message with the message_id as the key.
+                              properties:
+                                sender_id:
+                                  type: integer
+                                  description: |
+                                    The id of the user who sent the message.
+                                topic:
+                                  type: string
+                                  description: |
+                                    The topic under which the message was sent.
+                                stream_id:
+                                  type: integer
+                                  description: |
+                                    The id of the stream to which the messsage was sent.
+                          huddle_dict:
+                            type: object
+                            description: |
+                              A dictionary which contains details of all unread group PM
+                              muted streams.
+                            additionalProperties:
+                              type: object
+                              description: |
+                                `{message_id}`: Object containing the details of a unread group PM
+                                message with the message_id as the key.
+                              properties:
+                                user_ids_string:
+                                  type: string
+                                  description: |
+                                    A string containing the ids of all users in the huddle(group PMs)
+                                    seperated by commas(,). Example: "1,2,3".
+                          muted_stream_ids:
+                            type: array
+                            description: |
+                              Array containing the ids of all streams which have been muted
+                              by the user.
+                            items:
+                              type: integer
+                          unmuted_stream_msgs:
+                            type: array
+                            description: |
+                              Array containing the ids of all unread messages from streams which
+                              have NOT been muted by the user.
+                            items:
+                              type: integer
+                          mentions:
+                            type: array
+                            description: |
+                              Array containing the ids of all messages in which the user has been mentioned.
+                              For muted streams wildcard mentions will not be considered for this array.
+                            items:
+                              type: integer
+                      starred_messages:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          Present if `starred_messages` is present in `event_types`.
+
+                          Array containing the ids of all messages which have been
+                          starred by the user.
+                      streams:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/BasicStream"
+                        description: |
+                          Present if `stream` is present in `event_types`.
+
+                          Array of dictionaries where each dictionary contains details about
+                          a single stream visible to the user.
+                      stream_name_max_length:
+                        type: integer
+                        description: |
+                          Present if `stream` is present in `event_types`.
+
+                          The maximum allowed length of the name of a stream for the Zulip
+                          organization.
+                      stream_description_max_length:
+                        type: integer
+                        description: |
+                          Present if `stream` is present in `event_types`.
+
+                          The maximum allowed length of the description of a stream for the Zulip
+                          organization.
+                      realm_default_streams:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/BasicStream"
+                        description: |
+                          Present if `default_streams` is present in `event_types`.
+
+                          An array of dictionaries where each dictionary contains details
+                          about a single default stream of the Zulip organization.
+                      realm_default_stream_groups:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/DefaultStreamGroup"
+                        description: |
+                          Present if `default_stream_groups` is present in `event_types`.
+
+                          An array of dictionaries where each dictionary contains details
+                          about a single default stream group of the Zulip organization.
+                      stop_words:
+                        type: array
+                        items:
+                          type: string
+                        description: |
+                          Present if `stop_words` is present in `event_types`.
+
+                          An array of stop words(string).
+                      user_status:
+                        type: object
+                        description: |
+                          Present if `user_status` is present in `event_types`.
+
+                          A dictionary which contains the status of users on the
+                          Zulip organization.
+                        additionalProperties:
+                          description: |
+                            `{user_id}`: Object containing the status details of a user
+                            with the key of the object being the id of the user.
+                          properties:
+                            away:
+                              type: boolean
+                              description: |
+                                Whether the user has marked themself "away".
+                            status_text:
+                              type: string
+                              description: |
+                                The text content of the status message.
+                      has_zoom_token:
+                        type: boolean
+                        description: |
+                          Present if `video_calls` is present in `event_types`.
+
+                          A boolean which signifies whether the user has a zoom token and has thus completed
+                          OAuth flow for the [Zoom integration](/help/start-a-call).  Clients need
+                          to know whether initiating Zoom OAuth is required before creating a Zoom call.
+                      enable_desktop_notifications:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      enable_digest_emails:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      enable_login_emails:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      enable_offline_email_notifications:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      enable_offline_push_notifications:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      enable_online_push_notifications:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      enable_sounds:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      enable_stream_desktop_notifications:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      enable_stream_email_notifications:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      enable_stream_push_notifications:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      enable_stream_audible_notifications:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      wildcard_mentions_notify:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      message_content_in_email_notifications:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      notification_sound:
+                        type: string
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      pm_content_in_desktop_notifications:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      desktop_icon_count_display:
+                        type: integer
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      realm_name_in_notifications:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      presence_enabled:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Describes user notification setting. For more details
+                          have a look at
+                          [update-notification-settings](/api/update-notification-settings)
+                      available_notification_sounds:
+                        type: array
+                        items:
+                          type: string
+                        description: |
+                          Present if `update_global_notifications` is present in `event_types`.
+
+                          Array containing the list of notification sounds which the variable
+                          `notification_sound` can be set to. For more details have a look
+                          at [update-notification-settings](/api/update-notification-settings)
+                      color_scheme:
+                        type: integer
+                        description: |
+                          Present if `update_display_settings` is present in `event_types`.
+
+                          The color scheme chosen by the user.
+                      default_language:
+                        type: string
+                        description: |
+                          Present if `update_display_settings` is present in `event_types`.
+
+                          The default language chosen by the user.
+                      demote_inactive_streams:
+                        type: integer
+                        description: |
+                          Present if `update_display_settings` is present in `event_types`.
+
+                          Whether the user has chosen to demote inactive streams.
+                      dense_mode:
+                        type: boolean
+                        description: |
+                          Present if `update_display_settings` is present in `event_types`.
+
+                          Whether the user has switched on dense mode.
+                      emojiset:
+                        type: string
+                        description: |
+                          Present if `update_display_settings` is present in `event_types`.
+
+                          The name of the emojiset that the user has chosen.
+                      fluid_layout_width:
+                        type: boolean
+                        description: |
+                          Present if `update_display_settings` is present in `event_types`.
+
+                          Whether the user has chosen for the layout width to be fluid.
+                      high_contrast_mode:
+                        type: boolean
+                        description: |
+                          Present if `update_display_settings` is present in `event_types`.
+
+                          Whether has switched on high contrast mode.
+                      left_side_userlist:
+                        type: boolean
+                        description: |
+                          Present if `update_display_settings` is present in `event_types`.
+
+                          Whether the user has chosen for the userlist to be displayed
+                          on the left side of the screen(for desktop and webapp).
+                      starred_message_counts:
+                        type: boolean
+                        description: |
+                          Present if `update_display_settings` is present in `event_types`.
+
+                          Whether the user has chosen the number of starred messages to
+                          be displayed.
+                      timezone:
+                        type: string
+                        description: |
+                          Present if `update_display_settings` is present in `event_types`.
+
+                          The timezone of the user.
+                      translate_emoticons:
+                        type: boolean
+                        description: |
+                          Present if `update_display_settings` is present in `event_types`.
+
+                          Whether the user has chosen for emoticons to be translated into
+                          strings.
+                      twenty_four_hour_time:
+                        type: boolean
+                        description: |
+                          Present if `update_display_settings` is present in `event_types`.
+
+                          Whether the user has chosen a twenty four hour time display(true)
+                          or a twelve hour one(false).
+                      emojiset_choices:
+                        type: array
+                        items:
+                          type: object
+                          description: |
+                            Object describing a emojiset.
+                          properties:
+                            key:
+                              type: string
+                              description: |
+                                The key or the name of the emojiset which will be the value
+                                of `emojiset` if this emojiset is chosen.
+                            text:
+                              type: string
+                              description: |
+                                The text describing the emojiset.
+                        description: |
+                          Present if `update_display_settings` is present in `event_types`.
+
+                          Array of dictionaries where each dictionary describes a choosable
+                          emojiset.
+                      realm_add_emoji_by_admins_only:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether only admins are allowed to add
+                          emojis to the server.
+                      realm_allow_edit_history:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether edit history of a message is visible to
+                          the recipients of the message in the Zulip organization.
+                      realm_allow_message_deleting:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether messages can be deleted in the Zulip organization.
+                      realm_bot_creation_policy:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The bot creation policy of the organization.
+                      realm_create_stream_policy:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The stream creating policy of the organization.
+                      realm_invite_to_stream_policy:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The policy of the organzation for inviting someeone
+                          to join a stream.
+                      realm_default_language:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The default language of the organization.
+                      realm_default_twenty_four_hour_time:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the organization provides time in twenty
+                          four hour format(true) by default or the twelve
+                          hour format(false).
+                      realm_description:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The description of the organization.
+                      realm_digest_emails_enabled:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the organization has digest emails enabled.
+                      realm_disallow_disposable_email_addresses:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the organization disallows disposable email
+                          addresses.
+                      realm_email_address_visibility:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The policy of the organization regarding the visibility
+                          of a user's email.
+                      realm_email_changes_disabled:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether email changes are allowed in the organization.
+                      realm_invite_required:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the organization can only be joined through
+                          invites.
+                      realm_invite_by_admins_only:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether only admins can invite users to the organization.
+                      realm_inline_image_preview:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether an inline preview of images is shown on the
+                          organization.
+                      realm_inline_url_embed_preview:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether an inline preview of embedded urls is shown on
+                          the organization.
+                      realm_mandatory_topics:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the organization has any mandatory topics.
+                      realm_message_retention_days:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The number of days a message is stored in the organization
+                          before it is deleted.
+                      realm_name:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The name of the organization.
+                      realm_name_changes_disabled:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether name changes are disallowed on the server.
+                      realm_avatar_changes_disabled:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether avatar changes are disallowed on the server.
+                      realm_emails_restricted_to_domains:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the emails are restricted to the domains
+                          on the server.
+                      realm_send_welcome_emails:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the organization sends welcome emails to
+                          users who have newly joined the organization.
+                      realm_message_content_allowed_in_email_notifications:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether notification emails in this organization
+                          contain the message content.
+                      realm_video_chat_provider:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The video chat provider for the organization.
+                      realm_waiting_period_threshold:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The waiting period before a user can start sending
+                          messages on a server.
+                      realm_digest_weekday:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The day of the week when the organization sends
+                          its weekly digest email to the users.
+                      realm_private_message_policy:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The policy of the organization regarding private
+                          messges.
+                      realm_user_group_edit_policy:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The policy of the organization regarding user group
+                          edits.
+                      realm_default_code_block_language:
+                        type: string
+                        nullable: true
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The default language for a code block in the
+                          organization. Null if no default has been set.
+                      realm_message_content_delete_limit_seconds:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The time limit within which a message can be deleted
+                          since the time it was sent.
+                      realm_authentication_methods:
+                        type: object
+                        additionalProperties:
+                          description: |
+                            Boolean describing whether the authentication method(i.e its key)
+                            is allowed or not.
+                          type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Dictionary of 'authentication_method_name': 'boolean' with each
+                          entry describing whether the authentication name can be used for
+                          authenticating into the organization.
+                      realm_allow_message_editing:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the organization allows message editing.
+                      realm_allow_community_topic_editing:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether a topic name can be edited by anyone
+                          in the organization.
+                      realm_message_content_edit_limit_seconds:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The time limit within which a message can be deleted
+                          since the time it was sent.
+                      realm_community_topic_editing_limit_seconds:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The time limit within which a topic name can be deleted
+                          since the time the topic was created.
+                      realm_icon_url:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The url of the organization's icon.
+                      realm_icon_source:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The source of the organization's icon.
+                      max_icon_file_size:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The maximum file size allowed for the organization's
+                          icon.
+                      realm_logo_url:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The url of the organization's logo.
+                      realm_logo_source:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The source of the organization's logo.
+                      realm_night_logo_url:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The url of the organization's logo in night mode.
+                      realm_night_logo_source:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The source of the organization's logo in night
+                          mode.
+                      max_logo_file_size:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The maximum file size allowed for the organization's
+                          logo.
+                      realm_bot_domain:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The email domain for the bots of this organization.
+                      realm_uri:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The uri of the organization.
+                      realm_available_video_chat_providers:
+                        type: object
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Dictionary where each entry describes a video chat provider
+                          that can be user for making video calls in the server.
+                        additionalProperties:
+                          description: |
+                            `{provider_name}`: Dictionary containing the details of the
+                            video chat provider with the name of the chat provider as
+                            the key.
+                          properties:
+                            name:
+                              type: string
+                              description: |
+                                The name of the video chat provider.
+                            id:
+                              type: integer
+                              description: |
+                                The id of the video chat provider.
+                      realm_presence_disabled:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether presence of other users is shown in this
+                          organization.
+                      settings_send_digest_emails:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the digest email contains settings.
+                      realm_is_zephyr_mirror_realm:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the organization is a Zephyr mirror realm.
+                      realm_email_auth_enabled:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the organization allows email authentication.
+                      realm_password_auth_enabled:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the organization allows password based
+                          authentication.
+                      realm_push_notifications_enabled:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the organization sends mobile/push
+                          notifications.
+                      realm_upload_quota:
+                        type: integer
+                        nullable: true
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The upload quota of the organization.
+
+                          Null if the organization can have unlimited uploads.
+                      realm_plan_type:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The plan type of the organization.
+                      zulip_plan_is_not_limited:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the organization is using a limited plan.
+                      upgrade_text_for_wide_organization_logo:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the text should be upgraded for a wide
+                          organization logo.
+                      realm_default_external_accounts:
+                        type: object
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Dictionary where each entry describes a default external
+                          account.
+                        additionalProperties:
+                          description: |
+                            `{site_name}`: Dictionary containing the details of the
+                            default external account provider with the name of the
+                            website as the key.
+                          properties:
+                            name:
+                              type: string
+                              description: |
+                                The name of the external account provider
+                            text:
+                              type: string
+                              description: |
+                                The text describing the external account.
+                            hint:
+                              type: string
+                              description: |
+                                Text that can be shown to the user to
+                                provide the users with a hint as to
+                                what account they have to provide.
+                            url_pattern:
+                              type: string
+                              description: |
+                                The regex pattern of  the url of a profile page
+                                on the external site.
+                      jitsi_server_url:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The url the organization uses for Jitsi video
+                          calls.
+                      development_environment:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the organization is using a development
+                          Zulip environment.
+                      server_generation:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The server generation status.
+                      password_min_length:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The minimum required length for password.
+                      password_min_guesses:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The minimum guesses required for password.
+                      max_file_upload_size_mib:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The maximum file size that can be uploaded to
+                          the server.
+                      max_avatar_file_size_mib:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The maximum avatar size that can be uploaded
+                          to the server.
+                      server_inline_image_preview:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether an inline preview of images is shown on the
+                          server.
+                      server_inline_url_embed_preview:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether an inline preview of embedded urls is shown on
+                          the server.
+                      server_avatar_changes_disabled:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the server allows avatar changes.
+                      server_name_changes_disabled:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          Whether the server allows name changes.
+                      realm_notifications_stream_id:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The id of the stream for which realm
+                          notifications are sent. -1 if no such stream exists.
+                      realm_signup_notifications_stream_id:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `event_types`.
+
+                          The id of the stream for which realm
+                          notifications are sent. -1 if no such stream
+                          exists.
+                      raw_users:
+                        type: object
+                        description: |
+                          Present if `realm_user` is present in `event_types`.
+
+                          Dictionary where each entry is of the form
+                          {user_id}: {object} with the object containing
+                          details of the user with the specific user id.
+                        additionalProperties:
+                          $ref: "#/components/schemas/User"
+                      avatar_source:
+                        type: string
+                        description: |
+                          Present if `realm_user` is present in `event_types`.
+
+                          The avatar data source type for the user.
+
+                          Value values are `G` (gravatar) and `U` (uploaded by user).
+                      avatar_url_medium:
+                        type: string
+                        description: |
+                          Present if `realm_user` is present in `event_types`.
+
+                          The medium-size avatar URL for user.
+                      avatar_url:
+                        type: string
+                        description: |
+                          Present if `realm_user` is present in `event_types`.
+
+                          The url of the avatar URL for user.
+                      can_create_streams:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `event_types`.
+
+                          Whether the user is allowed to create streams.
+                      can_subscribe_other_users:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `event_types`.
+
+                          Whether the user can subscribe other users to
+                          streams.
+                      is_admin:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `event_types`.
+
+                          Whether the user is an admin.
+                      is_owner:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `event_types`.
+
+                          Whether the user is the owner of the Zulip
+                          organization.
+                      is_guest:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `event_types`.
+
+                          Whether the user is a guest.
+                      enter_sends:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `event_types`.
+
+                          Whether the user setting for sending on pressing enter
+                          is on.
+                      user_id:
+                        type: integer
+                        description: |
+                          Present if `realm_user` is present in `event_types`.
+
+                          The id of the user.
+                      email:
+                        type: string
+                        description: |
+                          Present if `realm_user` is present in `event_types`.
+
+                          The email of the user on the organization.
+                      delivery_email:
+                        type: string
+                        description: |
+                          Present if `realm_user` is present in `event_types`.
+
+                          The user's real email address.  This field is present only if
+                          [email address visibility](/help/restrict-visibility-of-email-addresses) is
+                          limited and you are an administrator with access to real email addresses
+                          under the configured policy.
+                      full_name:
+                        type: string
+                        description: |
+                          Present if `realm_user` is present in `event_types`.
+
+                          The full name of the user.
+                      cross_realm_bots:
+                        type: array
+                        description: |
+                          Present if `realm_user` is present in `event_types`.
+
+                          Array of dictionaries where each dictionary contains details of
+                          a single cross realm bot.
+                        items:
+                          allOf:
+                            - $ref: "#/components/schemas/User"
+                            - properties:
+                                is_cross_realm_bot:
+                                  type: boolean
+                                  description: |
+                                    Whether the user is a cross realm bot.
                   - example:
                       {
                         "last_event_id": -1,

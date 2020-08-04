@@ -21,6 +21,7 @@ from zerver.models import (
     get_stream,
     get_system_bot,
 )
+from zerver.openapi.openapi import validate_against_openapi_schema
 from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
@@ -335,6 +336,10 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assert_length(result['realm_bots'], 0)
 
         # additionally the API key for a random bot is not present in the data
+        openapi_content = ujson.loads(ujson.dumps(result))
+        openapi_content["result"] = "success"
+        openapi_content["msg"] = ""
+        validate_against_openapi_schema(openapi_content, "/register", "post", "200")
         api_key = get_api_key(self.notification_bot())
         self.assertNotIn(api_key, str(result))
 
