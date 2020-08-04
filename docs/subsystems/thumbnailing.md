@@ -1,5 +1,12 @@
 # Thumbnailing
 
+Note: Thumbnailing is an experimental feature.  While it is
+implemented in Zulip, due to issues with the upstream Thumbor project
+being almost unmaintained, it is not recommended for production use.
+This is the design document for how thumbnailing will work in Zulip,
+assuming Thumbor recovers as a project or we replace it with a similar
+alternative.
+
 There are two key places one would naturally want to thumbnail images
 in a team chat application like Zulip:
 
