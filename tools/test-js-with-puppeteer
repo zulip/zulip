@@ -96,6 +96,9 @@ also ask for help in chat.zulip.org""", file=sys.stderr)
             print("", file=sys.stderr)
             print("In CircleCI, the Artifacts tab contains screenshots and recording of the failure.", file=sys.stderr)
             print("", file=sys.stderr)
+        if os.environ.get("GITHUB_ACTIONS"):
+            print("", file=sys.stderr)
+            print("The Artifacts dropdown in top-right corner contains screenshots and test recording of the failure.", file=sys.stderr)
         sys.exit(ret)
 
 external_host = "zulipdev.com:9981"
