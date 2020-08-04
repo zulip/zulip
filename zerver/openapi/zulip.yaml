@@ -6830,10 +6830,58 @@ components:
         services:
           type: array
           description: |
-            The services provided by the bot. Empty except for Outgoing webhook
-            and Embedded bots.
+            The "Services" array contains extra configuration fields only relevant
+            for Outgoing webhook bots and Embedded bots.  It is always a single-element
+            array.
+
+            We consider this part of the Zulip API to be unstable; it is used only for
+            UI elements for administering bots and is likely to change.
           items:
-            type: object
+            description: |
+              Object containing details extra details.  Which fields appear depend
+              on the type of bot.
+            oneOf:
+              - type: object
+                additionalProperties: false
+                description: |
+                  When the bot is an outgoing webhook bot.
+                properties:
+                  base_url:
+                    type: string
+                    description: |
+                      The url the outgoing webhook is configured to post to.
+                  token:
+                    type: string
+                    description: |
+                      A unique token that the third-party service can use to confirm
+                      that the request is indeed coming from Zulip.
+                  interface:
+                    type: integer
+                    description: |
+                      Integer indicating what format requests are posted in:
+
+                      * 1 = Zulip's native outgoing webhook format.
+                      * 2 = Emulate the Slack outgoing webhook format.
+              - type: object
+                additionalProperties: false
+                description: |
+                  When the bot is an embedded bot.
+                properties:
+                  service_name:
+                    type: string
+                    description: |
+                      The name of the bot.
+                  config_data:
+                    $ref: "#/components/schemas/Config"
+    Config:
+      type: object
+      description: |
+        A "string: string" dictionary which describes the configuration
+        for the embedded bot (usually details like API keys).
+      additionalProperties:
+        description: |
+          String describing the config data.
+        type: string
     CustomProfileField:
       type: object
       additionalProperties: false
