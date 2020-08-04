@@ -7,6 +7,8 @@ const puppeteer = require("puppeteer");
 
 const test_credentials = require("../../var/puppeteer/test_credentials.js").test_credentials;
 
+const screenCapture = require("./screen-capture");
+
 const root_dir = path.resolve(__dirname, "../../");
 const puppeteer_dir = path.join(root_dir, "var/puppeteer");
 
@@ -60,14 +62,26 @@ class CommonUtils {
     async ensure_browser() {
         if (this.browser === null) {
             const {window_size} = this;
+
+            // This call is needed for CI or development enviorments
+            // that don't have a real display. However, for those
+            // who do have real display, this call will make puppeteer
+            // use the fake display and they can't see the browser.
+            // TODO: Add a command line arg to control this call.
+            screenCapture.initXvfb(window_size);
+
             this.browser = await puppeteer.launch({
                 args: [
                     `--window-size=${window_size.width},${window_size.height}`,
                     "--no-sandbox",
                     "--disable-setuid-sandbox",
+
+                    // The screen capture options adds the extension
+                    // to the browser.
+                    ...screenCapture.launchArgsOptions,
                 ],
                 defaultViewport: {width: 1280, height: 1024},
-                headless: true,
+                headless: false,
             });
         }
     }
@@ -455,13 +469,26 @@ class CommonUtils {
         // a screenshot of it when the test fails.
         const page = await this.get_page();
         try {
+            // IMPORTANT: The page.goto call before the
+            // screenCapture.startRecording call here is
+            // necessary since the extension cannot start
+            // recording until it visits a url.
+            await page.goto(this.realm_url);
+            await screenCapture.startRecording(page);
             await test_function(page);
+            await screenCapture.stopRecording(page);
         } catch (e) {
             console.log(e);
 
             // Take a screenshot, and increment the screenshot_id.
             await this.screenshot(page, `failure-${this.screenshot_id}`);
             this.screenshot_id += 1;
+
+            // Save the recording on failure.
+            await screenCapture.stopRecording(page, {
+                directory: puppeteer_dir,
+                filename: "failure.webm",
+            });
 
             await this.browser.close();
             process.exit(1);
