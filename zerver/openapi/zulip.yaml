@@ -896,34 +896,7 @@ paths:
                                     An object contatining a set of objects which describe the
                                     the user's presence on various platfroms.
                                   additionalProperties:
-                                    type: object
-                                    description: |
-                                      `{client_name}`: Object containing the details of the user's
-                                      presence on a particular platform with the client's platform
-                                      name being the object key.
-                                    properties:
-                                      client:
-                                        type: string
-                                        description: |
-                                          The client's platform name.
-                                      status:
-                                        type: string
-                                        enum:
-                                          - idle
-                                          - active
-                                        description: |
-                                          The status of the user on this client. It is either `idle`
-                                          or `active`.
-                                      timestamp:
-                                        type: integer
-                                        description: |
-                                          The UNIX timestamp of when this client sent the user's presence
-                                          to the server with the precision of a second.
-                                      pushable:
-                                        type: boolean
-                                        description: |
-                                          Whether the client is capable of showing mobile/push notifications
-                                          to the user.
+                                    $ref: "#/components/schemas/Presence"
                               additionalProperties: false
                               example:
                                 {
@@ -1603,30 +1576,7 @@ paths:
                                     An array of dictionaries where each dictionary
                                     contains details about a single default stream group.
                                   items:
-                                    type: object
-                                    description: |
-                                      Dictionary containing details of a default stream
-                                      group.
-                                    properties:
-                                      name:
-                                        type: string
-                                        description: |
-                                          Name of the default stream group.
-                                      description:
-                                        type: string
-                                        description: |
-                                          Description of the default stream group.
-                                      id:
-                                        type: integer
-                                        description: |
-                                          id of the default stream group.
-                                      streams:
-                                        type: array
-                                        description: |
-                                          Array containing details about the streams
-                                          in the default stream group.
-                                        items:
-                                          $ref: "#/components/schemas/BasicStream"
+                                    $ref: "#/components/schemas/DefaultStreamGroup"
                               example:
                                 {
                                   "type": "default_stream_groups",
@@ -2176,30 +2126,7 @@ paths:
                                   enum:
                                     - add
                                 group:
-                                  type: object
-                                  additionalProperties: false
-                                  description: |
-                                    Dictionary containing details of the new user group.
-                                  properties:
-                                    name:
-                                      type: string
-                                      description: |
-                                        The name of the user group.
-                                    description:
-                                      type: string
-                                      description: |
-                                        The description of the user group.
-                                    members:
-                                      type: array
-                                      items:
-                                        type: integer
-                                      description: |
-                                        Array containing the id of the users who are
-                                        members of this user group.
-                                    id:
-                                      type: integer
-                                      description: |
-                                        The ID of the user group.
+                                  $ref: "#/components/schemas/UserGroup"
                               example:
                                 {
                                   "type": "user_group",
@@ -2464,19 +2391,7 @@ paths:
                                   enum:
                                     - add
                                 realm_domain:
-                                  type: object
-                                  additionalProperties: false
-                                  description: |
-                                    Object containing details of the newly added domain.
-                                  properties:
-                                    domain:
-                                      type: string
-                                      description: |
-                                        The new allowed domain.
-                                    allow_subdomains:
-                                      type: boolean
-                                      description: |
-                                        Whether subdomains are allowed for this domain.
+                                  $ref: "#/components/schemas/RealmDomain"
                               example:
                                 {
                                   "type": "realm_domains",
@@ -7007,6 +6922,20 @@ components:
 
             **Changes**: New in Zulip 3.0 (feature level 7).  Previously
             was accessible via and `author` object with an `id` field.
+    RealmDomain:
+      type: object
+      additionalProperties: false
+      description: |
+        Object containing details of the newly added domain.
+      properties:
+        domain:
+          type: string
+          description: |
+            The new allowed domain.
+        allow_subdomains:
+          type: boolean
+          description: |
+            Whether subdomains are allowed for this domain.
     RealmExport:
       type: object
       additionalProperties: false
@@ -7046,6 +6975,31 @@ components:
           type: boolean
           description: |
             Whether the export is pending or not.
+    UserGroup:
+      type: object
+      additionalProperties: false
+      description: |
+        Object containing the user group's attributes.
+      properties:
+        name:
+          type: string
+          description: |
+            The name of the user group.
+        description:
+          type: string
+          description: |
+            The description of the user group.
+        members:
+          type: array
+          items:
+            type: integer
+          description: |
+            Array containing the id of the users who are
+            members of this user group.
+        id:
+          type: integer
+          description: |
+            The ID of the user group.
     Subscriptions:
       type: object
       additionalProperties: false
@@ -7247,6 +7201,31 @@ components:
 
             Null means the stream was recently created and there is
             insufficient data to estimate the average traffic.
+    DefaultStreamGroup:
+      type: object
+      description: |
+        Dictionary containing details of a default stream
+        group.
+      properties:
+        name:
+          type: string
+          description: |
+            Name of the default stream group.
+        description:
+          type: string
+          description: |
+            Description of the default stream group.
+        id:
+          type: integer
+          description: |
+            id of the default stream group.
+        streams:
+          type: array
+          description: |
+            Array containing details about the streams
+            in the default stream group.
+          items:
+            $ref: "#/components/schemas/BasicStream"
     EmojiReaction:
       type: object
       additionalProperties: false
@@ -7476,6 +7455,36 @@ components:
                 HTML-escaped topic of a queried message that matches the narrow, with
                 `<span class="highlight">` elements wrapping the matches for the
                 search keywords.
+    Presence:
+      type: object
+      description: |
+        `{client_name}`: Object containing the details of the user's
+        presence on a particular platform with the client's platform
+        name being the object key.
+      additionalProperties: false
+      properties:
+        client:
+          type: string
+          description: |
+            The client's platform name.
+        status:
+          type: string
+          enum:
+            - idle
+            - active
+          description: |
+            The status of the user on this client. It is either `idle`
+            or `active`.
+        timestamp:
+          type: integer
+          description: |
+            The UNIX timestamp of when this client sent the user's presence
+            to the server with the precision of a second.
+        pushable:
+          type: boolean
+          description: |
+            Whether the client is capable of showing mobile/push notifications
+            to the user.
     User:
       type: object
       additionalProperties: false
