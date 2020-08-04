@@ -943,7 +943,7 @@ form#add_new_subscription {
 
         &:empty::before {
             content: "\f040";
-            font-family: "FontAwesome";
+            font-family: FontAwesome;
             font-size: 0.8rem;
             font-weight: normal;
         }

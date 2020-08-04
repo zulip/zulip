@@ -19,6 +19,9 @@ module.exports = {
         "declaration-empty-line-before": null,
         "length-zero-no-unit": null,
 
+        // Additional stylistic rules
+        "font-family-name-quotes": "always-where-recommended",
+
         // Limit language features
         "color-no-hex": true,
         "color-named": "never",
