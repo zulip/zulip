@@ -177,7 +177,6 @@ js_rules = RuleList(
          'good_lines': ['#my-style {color: blue;}'],
          'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
         *whitespace_rules,
-        *comma_whitespace_rule,
     ],
 )
 
@@ -419,27 +418,10 @@ bash_rules = RuleList(
 css_rules = RuleList(
     langs=['css', 'scss'],
     rules=[
-        {'pattern': r'^[^:]*:\S[^:]*;$',
-         'description': "Missing whitespace after : in CSS",
-         'good_lines': ["background-color: white;", "text-size: 16px;"],
-         'bad_lines': ["background-color:white;", "text-size:16px;"]},
-        {'pattern': '[a-z]{',
-         'description': "Missing whitespace before '{' in CSS.",
-         'good_lines': ["input {", "body {"],
-         'bad_lines': ["input{", "body{"]},
         {'pattern': r'^(?:(?!/\*).)*https?://',
          'description': "Zulip CSS should have no dependencies on external resources",
          'good_lines': ['background: url(/static/images/landing-page/pycon.jpg);'],
          'bad_lines': ['background: url(https://example.com/image.png);']},
-        {'pattern': '^[ ][ ][a-zA-Z0-9]',
-         'description': "Incorrect 2-space indentation in CSS",
-         'strip': '\n',
-         'good_lines': ["    color: white;", "color: white;"],
-         'bad_lines': ["  color: white;"]},
-        {'pattern': r'{\w',
-         'description': "Missing whitespace after '{' in CSS (should be newline).",
-         'good_lines': ["{\n"],
-         'bad_lines': ["{color: LightGoldenRodYellow;"]},
         {'pattern': ' thin[ ;]',
          'description': "thin CSS attribute is under-specified, please use 1px.",
          'good_lines': ["border-width: 1px;"],
@@ -457,7 +439,6 @@ css_rules = RuleList(
          'good_lines': ['hsl(0, 0%, 0%)', 'hsla(0, 0%, 100%, 0.1)'],
          'bad_lines': ['rgb(0, 0, 0)', 'rgba(255, 255, 255, 0.1)']},
         *whitespace_rules,
-        *comma_whitespace_rule,
     ],
 )
 
