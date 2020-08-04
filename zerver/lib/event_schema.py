@@ -5,7 +5,7 @@ It will contain schemas (aka validators) for Zulip events.
 
 Right now it's only intended to be used by test code.
 """
-from typing import Any, Dict, Sequence, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Sequence, Set, Tuple, Union
 
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.validator import (
@@ -693,20 +693,13 @@ update_message_required_fields = [
     ("message_id", check_int),
 ]
 
-update_message_content_fields = [
+update_message_content_fields: List[Tuple[str, Callable[[str, object], object]]] = [
     ("content", check_string),
     ("is_me_message", check_bool),
-    ("mention_user_ids", check_list(check_int)),
     ("orig_content", check_string),
     ("orig_rendered_content", check_string),
-    ("presence_idle_user_ids", check_list(check_int)),
     ("prev_rendered_content_version", check_int),
-    ("prior_mention_user_ids", check_list(check_int)),
-    ("push_notify_user_ids", check_list(check_int)),
     ("rendered_content", check_string),
-    ("stream_email_user_ids", check_list(check_int)),
-    ("stream_push_user_ids", check_list(check_int)),
-    ("wildcard_mention_user_ids", check_list(check_int)),
 ]
 
 update_message_topic_fields = [

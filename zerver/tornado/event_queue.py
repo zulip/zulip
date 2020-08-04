@@ -1007,15 +1007,18 @@ def process_deletion_event(event: Mapping[str, Any], users: Iterable[int]) -> No
                 del compatibility_event['message_ids']
                 client.add_event(compatibility_event)
 
-def process_message_update_event(event_template: Mapping[str, Any],
+def process_message_update_event(orig_event: Mapping[str, Any],
                                  users: Iterable[Mapping[str, Any]]) -> None:
-    prior_mention_user_ids = set(event_template.get('prior_mention_user_ids', []))
-    mention_user_ids = set(event_template.get('mention_user_ids', []))
-    presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))
-    stream_push_user_ids = set(event_template.get('stream_push_user_ids', []))
-    stream_email_user_ids = set(event_template.get('stream_email_user_ids', []))
-    wildcard_mention_user_ids = set(event_template.get('wildcard_mention_user_ids', []))
-    push_notify_user_ids = set(event_template.get('push_notify_user_ids', []))
+    # Extract the parameters passed via the event object that don't
+    # belong in the actual events.
+    event_template = dict(orig_event)
+    prior_mention_user_ids = set(event_template.pop('prior_mention_user_ids', []))
+    mention_user_ids = set(event_template.pop('mention_user_ids', []))
+    presence_idle_user_ids = set(event_template.pop('presence_idle_user_ids', []))
+    stream_push_user_ids = set(event_template.pop('stream_push_user_ids', []))
+    stream_email_user_ids = set(event_template.pop('stream_email_user_ids', []))
+    wildcard_mention_user_ids = set(event_template.pop('wildcard_mention_user_ids', []))
+    push_notify_user_ids = set(event_template.pop('push_notify_user_ids', []))
 
     stream_name = event_template.get('stream_name')
     message_id = event_template['message_id']
