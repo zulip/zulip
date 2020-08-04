@@ -1936,7 +1936,7 @@ class Draft(models.Model):
     def __str__(self) -> str:
         return f"<{self.__class__.__name__}: {self.user_profile.email} / {self.id} / {self.last_edit_time}>"
 
-    def to_dict(self) -> Dict[str, Any]:  # nocoverage  # Will be added in a later commit.
+    def to_dict(self) -> Dict[str, Any]:
         if self.recipient is None:
             _type = ""
             to = []
@@ -1958,7 +1958,7 @@ class Draft(models.Model):
             "to": to,
             "topic": self.topic,
             "content": self.content,
-            "timestamp": self.last_edit_time.timestamp(),
+            "timestamp": int(self.last_edit_time.timestamp()),
         }
 
 class AbstractReaction(models.Model):
