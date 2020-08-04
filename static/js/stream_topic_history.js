@@ -200,6 +200,7 @@ exports.remove_messages = function (opts) {
     const stream_id = opts.stream_id;
     const topic_name = opts.topic_name;
     const num_messages = opts.num_messages;
+    const max_removed_msg_id = opts.max_removed_msg_id;
     const history = stream_dict.get(stream_id);
 
     // This is the special case of "removing" a message from
@@ -211,6 +212,23 @@ exports.remove_messages = function (opts) {
 
     // This is the normal case of an incoming message.
     history.maybe_remove(topic_name, num_messages);
+
+    const existing_topic = history.topics.get(topic_name);
+    if (!existing_topic) {
+        return;
+    }
+
+    // Update max_message_id in topic
+    if (existing_topic.message_id <= max_removed_msg_id) {
+        const msgs_in_topic = message_util.get_messages_in_topic(stream_id, topic_name);
+        let max_message_id = 0;
+        for (const msg of msgs_in_topic) {
+            if (msg.id > max_message_id) {
+                max_message_id = msg.id;
+            }
+        }
+        existing_topic.message_id = max_message_id;
+    }
 };
 
 exports.find_or_create = function (stream_id) {

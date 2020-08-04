@@ -811,6 +811,7 @@ run_test("delete_message", (override) => {
         assert_same(args.opts.stream_id, 99);
         assert_same(args.opts.topic_name, "topic1");
         assert_same(args.opts.num_messages, 1);
+        assert_same(args.opts.max_removed_msg_id, 1337);
     });
 });
 

@@ -200,6 +200,7 @@ exports.edit_locally = function (message, request) {
             stream_id: message.stream_id,
             topic_name: message.topic,
             num_messages: 1,
+            max_removed_msg_id: message.id,
         });
 
         if (new_stream_id !== undefined) {
