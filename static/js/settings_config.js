@@ -318,3 +318,14 @@ exports.all_notifications = () => ({
         enable_online_push_notifications: !page_params.realm_push_notifications_enabled,
     },
 });
+
+exports.status_info_values = {
+    active: {
+        value:true,
+        description: i18n.t("Active"),
+    },
+    inactive: {
+        value:false,
+        description: i18n.t("Inactive"),
+    },
+};

@@ -852,6 +852,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+    /*
     $("body").on("click", ".set_away_status", (e) => {
         exports.hide_all();
         user_status.server_set_away();
@@ -865,6 +866,7 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
         e.preventDefault();
     });
+    */
 
     $("body").on("click", ".update_status_text", (e) => {
         exports.hide_all();

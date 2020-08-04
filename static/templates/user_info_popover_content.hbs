@@ -53,7 +53,13 @@
 
     {{#if is_me}}
         <hr>
-        {{#if can_set_away}}
+        <label for="status_info" class="dropdown-title">{{t "Status:" }}</label>
+        <select name="status_info" id="status_info">
+            {{#each popover_info.settings.status_info_values}}
+            <option value='{{this.value}}'>{{this.description}}</option>
+            {{/each}}
+        </select>
+        <!--{{#if can_set_away}}
         <li>
             <a href="#" class="set_away_status">
                 <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as unavailable{{/tr}}
@@ -66,7 +72,7 @@
                 <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as active{{/tr}}
             </a>
         </li>
-        {{/if}}
+        {{/if}}-->
         <li>
             <a href="#" class="update_status_text">
                 <i class="fa fa-comments" aria-hidden="true"></i>
