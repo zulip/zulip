@@ -29,7 +29,7 @@ from zerver.lib.message import (
 from zerver.lib.narrow import build_narrow_filter, is_web_public_compatible
 from zerver.lib.request import JsonableError
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.streams import create_streams_if_needed
+from zerver.lib.streams import create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import POSTRequestMock, get_user_messages, queries_captured
 from zerver.lib.topic import MATCH_TOPIC, TOPIC_NAME
@@ -41,8 +41,6 @@ from zerver.models import (
     Attachment,
     Message,
     Realm,
-    Recipient,
-    Stream,
     Subscription,
     UserMessage,
     UserProfile,
@@ -1108,11 +1106,8 @@ class GetOldMessagesTest(ZulipTestCase):
         query_ids['othello_id'] = othello_user.id
         query_ids['hamlet_recipient'] = hamlet_user.recipient_id
         query_ids['othello_recipient'] = othello_user.recipient_id
-        recipients = Recipient.objects.filter(
-            type=Recipient.STREAM,
-            type_id__in=Stream.objects.filter(realm=hamlet_user.realm, invite_only=False),
-        ).values('id').order_by('id')
-        query_ids['public_streams_recipents'] = ", ".join(str(r['id']) for r in recipients)
+        recipients = get_public_streams_queryset(hamlet_user.realm).values_list("recipient_id", flat=True).order_by('id')
+        query_ids['public_streams_recipents'] = ", ".join(str(r) for r in recipients)
         return query_ids
 
     def test_content_types(self) -> None:
