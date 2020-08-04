@@ -17,7 +17,8 @@ button {
     padding-left: 10px;
     padding-right: 10px;
     background-color: hsl(173, 100%, 98%);
-    box-shadow: 8px 4px 8px 0 hsla(0, 0%, 0%, 0.2), 0 6px 20px 0 hsla(0, 0%, 0%, 0.19);
+    box-shadow: 8px 4px 8px 0 hsla(0, 0%, 0%, 0.2),
+        0 6px 20px 0 hsla(0, 0%, 0%, 0.19);
 }
 
 #fixture_body {

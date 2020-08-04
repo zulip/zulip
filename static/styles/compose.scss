@@ -258,7 +258,7 @@ div[id^="message-edit-send-status"],
     font-weight: bold;
     color: hsl(0, 0%, 0%);
     text-shadow: 0 1px 0 hsl(0, 0%, 100%);
-    opacity: .2;
+    opacity: 0.2;
     filter: alpha(opacity=20);
     float: right;
 }
@@ -266,7 +266,7 @@ div[id^="message-edit-send-status"],
 .send-status-close:hover,
 .compose-send-status-close:hover {
     cursor: pointer;
-    opacity: .4;
+    opacity: 0.4;
     filter: alpha(opacity=40);
 }
 
@@ -286,7 +286,7 @@ div[id^="message-edit-send-status"],
         font-weight: bold;
         color: hsl(0, 0%, 0%);
         text-shadow: 0 1px 0 hsl(0, 0%, 100%);
-        opacity: .2;
+        opacity: 0.2;
         filter: alpha(opacity=20);
     }
 }
@@ -375,7 +375,8 @@ input.recipient_box {
         color: hsl(0, 0%, 100%);
 
         &:focus {
-            box-shadow: 0px 0px 10px hsl(170, 48%, 54%), 0px 0px 5px hsl(170, 48%, 54%);
+            box-shadow: 0px 0px 10px hsl(170, 48%, 54%),
+                0px 0px 5px hsl(170, 48%, 54%);
         }
     }
 }

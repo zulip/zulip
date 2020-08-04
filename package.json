@@ -102,6 +102,7 @@
     "puppeteer": "^5.2.0",
     "source-map": "^0.6.1",
     "stylelint": "^13.0.0",
+    "stylelint-config-prettier": "^8.0.2",
     "svgo": "^1.2.2",
     "swagger-parser": "^10.0.0",
     "typescript": "^3.5.1",

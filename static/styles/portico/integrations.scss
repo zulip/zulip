@@ -115,7 +115,6 @@ $category-text: hsl(219, 23%, 33%);
     #integration-search {
         margin-bottom: 30px;
 
-
         .searchbar {
             width: calc(100% - 40px);
             display: flex;
@@ -198,13 +197,12 @@ $category-text: hsl(219, 23%, 33%);
 
             h4 {
                 font-weight: 400;
-                font-size: .95em;
+                font-size: 0.95em;
                 padding: 6px 10px 3px;
                 margin: 3px 0;
                 border-radius: 5px;
                 transition: all 0.3s ease;
                 color: $category-text;
-
 
                 &.selected,
                 &:hover {
@@ -274,7 +272,7 @@ $category-text: hsl(219, 23%, 33%);
                 border-right: 1px solid $light-blue-border;
                 border-bottom: 1px solid $light-blue-border;
                 transition: all 0.3s ease;
-                font-size: .9em;
+                font-size: 0.9em;
 
                 &.selected,
                 &:hover {
@@ -342,12 +340,12 @@ $category-text: hsl(219, 23%, 33%);
         .integration-secondary-line-text {
             margin: 0;
             line-height: 10px;
-            font-size: .65em;
+            font-size: 0.65em;
             font-weight: 400;
         }
 
         .integration-category {
-            font-size: .85em;
+            font-size: 0.85em;
             margin-top: 5px;
             font-weight: 400;
             color: hsla(216, 23%, 13%, 0.5);
@@ -404,7 +402,7 @@ $category-text: hsl(219, 23%, 33%);
             }
 
             .integration-category {
-                font-size: .8em;
+                font-size: 0.8em;
             }
         }
 
@@ -426,11 +424,11 @@ $category-text: hsl(219, 23%, 33%);
             }
 
             .integration-name {
-                font-size: .9em;
+                font-size: 0.9em;
             }
 
             .integration-category {
-                font-size: .77em;
+                font-size: 0.77em;
             }
         }
     }
@@ -486,7 +484,7 @@ $category-text: hsl(219, 23%, 33%);
             .categories {
                 order: 2;
                 .integration-category {
-                    font-size: 0.90em;
+                    font-size: 0.9em;
                     font-weight: 400;
                     padding: 6px 3px;
                     margin: 7px 0;

@@ -1,6 +1,6 @@
 body {
     background-color: hsl(0, 0%, 98%);
-    font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
+    font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
     line-height: 150%;
     height: 100%;
     font-weight: 300;
@@ -167,7 +167,7 @@ html {
             font-size: 1.25em;
             line-height: 1.5;
             margin-bottom: 0px;
-            border-bottom: 1px solid hsla(0, 0, 100%, .6);
+            border-bottom: 1px solid hsla(0, 0, 100%, 0.6);
 
             &:not(:first-of-type) {
                 margin-top: 20px;
@@ -446,7 +446,7 @@ img.screenshot {
 .laptop-image {
     width: 787px;
     height: 414px;
-    background-image: url('/static/images/landing-page/laptop.png');
+    background-image: url("/static/images/landing-page/laptop.png");
     background-size: contain;
 }
 
@@ -1113,7 +1113,6 @@ input.new-organization-button {
     }
 }
 
-
 .little-bullet {
     display: inline-block;
     margin-left: 5px;
@@ -1134,7 +1133,7 @@ input.new-organization-button {
 
         &:hover {
             text-decoration: none;
-            background-color: hsla(0, 0%, 100%, 1.0);
+            background-color: hsla(0, 0%, 100%, 1);
             color: hsl(170, 50%, 40%);
         }
     }
@@ -1176,8 +1175,8 @@ input.new-organization-button {
     .input-group {
         margin: 15px 0px;
 
-        input[type=text],
-        input[type=password] {
+        input[type="text"],
+        input[type="password"] {
             width: calc(100% - 14px);
         }
 
@@ -1216,12 +1215,12 @@ input.new-organization-button {
     }
 
     /* --- new settings styling --- */
-    input[type=radio],
-    input[type=checkbox] {
+    input[type="radio"],
+    input[type="checkbox"] {
         margin: 0 10px 0 0;
     }
 
-    input[type=radio] {
+    input[type="radio"] {
         position: relative;
         top: 8px;
     }
@@ -1289,7 +1288,7 @@ input.new-organization-button {
         }
     }
 
-    #send_confirm input[type=text] {
+    #send_confirm input[type="text"] {
         margin-top: 20px;
     }
 
@@ -1306,7 +1305,7 @@ input.new-organization-button {
     min-height: calc(100vh - 290px);
     height: 100%;
     background-color: hsl(163, 42%, 85%);
-    font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
+    font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
 }
 
 .error_page .container {
@@ -1601,7 +1600,6 @@ input.new-organization-button {
     margin-left: auto;
 }
 
-
 .inline-block {
     display: inline-block;
     vertical-align: top;
@@ -1656,7 +1654,7 @@ input.new-organization-button {
 }
 
 .documentation-footer {
-    font-size: .85rem;
+    font-size: 0.85rem;
     opacity: 0.8;
 }
 

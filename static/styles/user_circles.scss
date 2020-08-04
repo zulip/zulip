@@ -22,7 +22,11 @@
 .user_circle_orange {
     border-color: hsl(29, 84%, 51%);
     background-color: hsl(29, 84%, 51%);
-    background: linear-gradient(to bottom, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%);
+    background: linear-gradient(
+        to bottom,
+        hsla(0, 0%, 100%, 0) 50%,
+        hsla(29, 84%, 51%, 1) 50%
+    );
 }
 
 .user_circle_empty {
@@ -34,7 +38,7 @@
     border-color: hsl(0, 0%, 50%);
 
     &::after {
-        content: '';
+        content: "";
         background: hsl(0, 0%, 50%);
         height: 1.5px; // 1px is too thin, 2px is too thick
         width: 6px;

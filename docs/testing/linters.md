@@ -101,7 +101,7 @@ following checks:
 
 - Check Python code with pyflakes.
 - Check JavaScript and TypeScript code with eslint.
-- Check JavaScript, TypeScript, and YAML formatting with Prettier.
+- Check CSS, JavaScript, TypeScript, and YAML formatting with Prettier.
 - Check Python code for custom Zulip rules.
 - Check non-Python code for custom Zulip rules.
 - Check puppet manifests with the puppet validator.

@@ -4,7 +4,6 @@
     border-radius: 5px;
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
 
-
     transition: all 0.3s ease;
 
     .image-block {
@@ -13,7 +12,7 @@
     }
 
     .image-upload-background {
-        content: '';
+        content: "";
         background-color: hsl(0, 0%, 0%);
         height: 100%;
         width: 100%;
@@ -70,7 +69,7 @@
 
     .upload-spinner-background {
         background-color: hsl(0, 0%, 10%);
-        font-size: 0.80rem;
+        font-size: 0.8rem;
         width: 100%;
         opacity: 0.8;
         height: 100%;
@@ -115,7 +114,6 @@
 
 /* SCSS related to settings page user avatar upload widget only */
 #user-avatar-upload-widget {
-
     .image_upload_button {
         border-radius: 5px;
         box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);

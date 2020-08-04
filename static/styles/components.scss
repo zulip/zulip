@@ -8,7 +8,7 @@
         position: relative;
         vertical-align: top;
 
-        input[type=checkbox] {
+        input[type="checkbox"] {
             position: absolute;
             clip: rect(0, 0, 0, 0);
 
@@ -30,7 +30,7 @@
                 border: 1px solid hsla(0, 0%, 0%, 0.6);
 
                 border-radius: 4px;
-                filter: brightness(0.80);
+                filter: brightness(0.8);
 
                 cursor: pointer;
             }
@@ -48,7 +48,7 @@
             }
 
             &:disabled ~ span {
-                opacity: 0.50;
+                opacity: 0.5;
                 cursor: default;
             }
         }

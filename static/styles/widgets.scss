@@ -133,7 +133,7 @@ button {
     margin-left: 5px;
 
     &:hover {
-        opacity: 1.0;
+        opacity: 1;
     }
 }
 
@@ -142,5 +142,5 @@ button {
 }
 
 .current-user-vote {
-    background-color: hsla(156, 10%, 90%, .9);
+    background-color: hsla(156, 10%, 90%, 0.9);
 }

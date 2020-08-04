@@ -75,7 +75,7 @@
             }
 
             input {
-                box-sizing: inherit;  /* IE */
+                box-sizing: inherit; /* IE */
                 box-sizing: initial;
 
                 width: calc(100% - 13px);
@@ -136,7 +136,7 @@ ul {
 
             &::before,
             &::after {
-                content: '';
+                content: "";
                 flex: 1;
                 border-top: 1px solid hsl(0, 0%, 93%);
                 border-bottom: 1px solid hsl(0, 0%, 100%);

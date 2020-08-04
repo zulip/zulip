@@ -568,7 +568,11 @@ nav {
                 width: 400px;
                 height: 280px;
 
-                background: linear-gradient(135deg, hsla(0, 0%, 0%, 0.05), hsla(0, 0%, 0%, 0.2));
+                background: linear-gradient(
+                    135deg,
+                    hsla(0, 0%, 0%, 0.05),
+                    hsla(0, 0%, 0%, 0.2)
+                );
                 border-radius: 4px;
 
                 background-image: url(/static/images/landing-page/notifications.jpg);
@@ -739,7 +743,8 @@ nav {
             font-size: 1.5em;
             font-weight: 300;
             line-height: 1.4;
-            text-shadow: 0px 0px 5px hsla(164, 74%, 15%, 0.3), 0px 0px 20px hsla(0, 0%, 100%, 0.2);
+            text-shadow: 0px 0px 5px hsla(164, 74%, 15%, 0.3),
+                0px 0px 20px hsla(0, 0%, 100%, 0.2);
         }
 
         a {
@@ -792,23 +797,43 @@ nav {
     height: 1100px;
 
     &.dark-blue {
-        background: linear-gradient(10deg, hsla(196, 58%, 14%, 0) 50%, hsla(196, 58%, 14%, 0.7));
+        background: linear-gradient(
+            10deg,
+            hsla(196, 58%, 14%, 0) 50%,
+            hsla(196, 58%, 14%, 0.7)
+        );
     }
 
     &.green {
-        background: linear-gradient(-25deg, hsla(156, 47%, 47%, 0) 40%, hsl(156, 47%, 47%));
+        background: linear-gradient(
+            -25deg,
+            hsla(156, 47%, 47%, 0) 40%,
+            hsl(156, 47%, 47%)
+        );
     }
 
     &.blue {
-        background: linear-gradient(25deg, hsla(196, 38%, 51%, 0) 40%, hsl(196, 38%, 51%));
+        background: linear-gradient(
+            25deg,
+            hsla(196, 38%, 51%, 0) 40%,
+            hsl(196, 38%, 51%)
+        );
     }
 
     &.sunburst {
-        background: linear-gradient(5deg, hsla(49, 71%, 68%, 0) 20%, hsl(49, 71%, 68%));
+        background: linear-gradient(
+            5deg,
+            hsla(49, 71%, 68%, 0) 20%,
+            hsl(49, 71%, 68%)
+        );
     }
 
     &.white-fade {
-        background: linear-gradient(0deg, hsl(0, 0%, 98%) 0%, hsla(0, 0%, 98%, 0) 40%);
+        background: linear-gradient(
+            0deg,
+            hsl(0, 0%, 98%) 0%,
+            hsla(0, 0%, 98%, 0) 40%
+        );
     }
 }
 
@@ -1144,7 +1169,6 @@ nav {
     }
 }
 
-
 .portico-landing.hello .screen {
     position: relative;
     margin: -300px auto 0px auto;
@@ -1337,7 +1361,10 @@ nav {
     margin: 20px auto;
     padding: 30px 20px;
     background-color: hsla(220, 20%, 97%, 0.6);
-    background: linear-gradient(hsla(220, 20%, 97%, 0.4), hsla(220, 20%, 97%, 0.9));
+    background: linear-gradient(
+        hsla(220, 20%, 97%, 0.4),
+        hsla(220, 20%, 97%, 0.9)
+    );
     border-radius: 12px;
     box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.02);
     position: relative;
@@ -1473,7 +1500,6 @@ nav {
     }
 }
 
-
 .tour .carousel-inner .mobile-hide,
 .tour .carousel-inner img.mobile-hide,
 .tour .carousel-inner img.centered-image.mobile-hide {
@@ -1542,7 +1568,7 @@ nav {
     font-size: 2em;
     top: 50%;
     font-weight: 400;
-    opacity: 1.0;
+    opacity: 1;
     border-radius: 0;
 
     &:hover {
@@ -1576,7 +1602,7 @@ nav {
         text-indent: -999px;
         cursor: pointer;
         background-color: hsl(222, 12%, 66%);
-        transition: background .1s ease;
+        transition: background 0.1s ease;
 
         &::before {
             position: absolute;
@@ -2078,12 +2104,21 @@ nav {
     max-width: 600px;
 }
 
-.portico-landing.apps .hero .image img[src="/static/images/landing-page/tar.gz.svg"] {
+.portico-landing.apps
+    .hero
+    .image
+    img[src="/static/images/landing-page/tar.gz.svg"] {
     width: 50%;
 }
 
-.portico-landing.apps .hero .image img[src="/static/images/app-screenshots/zulip-android.png"],
-.portico-landing.apps .hero .image img[src="/static/images/app-screenshots/zulip-iphone-rough.png"] {
+.portico-landing.apps
+    .hero
+    .image
+    img[src="/static/images/app-screenshots/zulip-android.png"],
+.portico-landing.apps
+    .hero
+    .image
+    img[src="/static/images/app-screenshots/zulip-iphone-rough.png"] {
     height: 85%;
 }
 
@@ -2395,7 +2430,13 @@ nav {
 
     transform: translateY(-110px);
 
-    background: linear-gradient(90deg, hsl(0, 0%, 27%) 0%, hsl(0, 0%, 33%) 8%, hsl(0, 0%, 33%) 92%, hsl(0, 0%, 27%) 100%);
+    background: linear-gradient(
+        90deg,
+        hsl(0, 0%, 27%) 0%,
+        hsl(0, 0%, 33%) 8%,
+        hsl(0, 0%, 33%) 92%,
+        hsl(0, 0%, 27%) 100%
+    );
 }
 
 .portico-landing.hello .apps .screen .center-page {
@@ -2462,23 +2503,43 @@ nav {
 }
 
 .gradients .gradient.dark-blue {
-    background: linear-gradient(10deg, hsla(196, 58%, 14%, 0) 50%, hsla(196, 58%, 14%, 0.7));
+    background: linear-gradient(
+        10deg,
+        hsla(196, 58%, 14%, 0) 50%,
+        hsla(196, 58%, 14%, 0.7)
+    );
 }
 
 .gradients .gradient.green {
-    background: linear-gradient(-25deg, hsla(156, 47%, 47%, 0) 40%, hsl(156, 47%, 47%));
+    background: linear-gradient(
+        -25deg,
+        hsla(156, 47%, 47%, 0) 40%,
+        hsl(156, 47%, 47%)
+    );
 }
 
 .gradients .gradient.blue {
-    background: linear-gradient(25deg, hsla(196, 38%, 51%, 0) 40%, hsl(196, 38%, 51%));
+    background: linear-gradient(
+        25deg,
+        hsla(196, 38%, 51%, 0) 40%,
+        hsl(196, 38%, 51%)
+    );
 }
 
 .gradients .gradient.sunburst {
-    background: linear-gradient(5deg, hsla(49, 71%, 68%, 0) 20%, hsl(49, 71%, 68%));
+    background: linear-gradient(
+        5deg,
+        hsla(49, 71%, 68%, 0) 20%,
+        hsl(49, 71%, 68%)
+    );
 }
 
 .gradients .gradient.white-fade {
-    background: linear-gradient(0deg, hsl(0, 0%, 98%) 0%, hsla(0, 0%, 98%, 0) 40%);
+    background: linear-gradient(
+        0deg,
+        hsl(0, 0%, 98%) 0%,
+        hsla(0, 0%, 98%, 0) 40%
+    );
 }
 
 /* -- pricing css -- */
@@ -2533,7 +2594,6 @@ nav {
     height: 500px;
 
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
-
 
     text-align: left;
     background-color: hsl(0, 0%, 100%);
@@ -2669,7 +2729,7 @@ nav {
 }
 
 .pricing-model .pricing-container .text-content .price .price-cents {
-    font-size: .4em;
+    font-size: 0.4em;
     vertical-align: top;
     position: relative;
     top: 6px;
@@ -2753,7 +2813,11 @@ nav {
     text-align: center;
 }
 
-.pricing-overlay.pricing-model .info-box .text-content .feature-detail-box .feature {
+.pricing-overlay.pricing-model
+    .info-box
+    .text-content
+    .feature-detail-box
+    .feature {
     display: inline-block;
     width: calc(33% - 21px);
     height: 200px;
@@ -2802,7 +2866,6 @@ nav {
     background-color: hsl(217, 22%, 93%);
 }
 
-
 @keyframes box-shadow-pulse {
     0% {
         box-shadow: 0px 0px 0px hsla(170, 47%, 60%, 1);
@@ -2833,7 +2896,10 @@ nav {
 }
 
 @media (max-width: 1390px) {
-    .portico-landing.plans .pricing-container .block:not(:first-child) .responsive-title {
+    .portico-landing.plans
+        .pricing-container
+        .block:not(:first-child)
+        .responsive-title {
         color: inherit;
     }
 }
@@ -2867,15 +2933,18 @@ nav {
         height: auto;
     }
 
-    .portico-landing.apps .main .details-box[data-name="linux"] .image .platform,
+    .portico-landing.apps
+        .main
+        .details-box[data-name="linux"]
+        .image
+        .platform,
     .portico-landing.apps .main .details-box[data-name="linux"] .instructions {
         text-align: center;
         width: calc(100% - 40px);
     }
 }
 
-@media (min-width: 1296px),
-    (max-width: 985px) and (min-width: 687px) {
+@media (min-width: 1296px), (max-width: 985px) and (min-width: 687px) {
     /* while there are nine, show only two rows of four. */
     .portico-landing .testimonials .company-box > div:last-of-type {
         display: none;
@@ -3731,15 +3800,27 @@ nav {
        want to have the gradients stay darker for longer.
     */
     .gradients .gradient.green {
-        background: linear-gradient(-25deg, transparent 10%, hsl(156, 47%, 47%) 80%);
+        background: linear-gradient(
+            -25deg,
+            transparent 10%,
+            hsl(156, 47%, 47%) 80%
+        );
     }
 
     .gradients .gradient.blue {
-        background: linear-gradient(25deg, transparent 10%, hsl(196, 38%, 51%) 80%);
+        background: linear-gradient(
+            25deg,
+            transparent 10%,
+            hsl(196, 38%, 51%) 80%
+        );
     }
 
     .gradients .gradient.sunburst {
-        background: linear-gradient(5deg, transparent 20%, hsl(49, 71%, 68%) 80%);
+        background: linear-gradient(
+            5deg,
+            transparent 20%,
+            hsl(49, 71%, 68%) 80%
+        );
     }
 }
 

@@ -4,8 +4,6 @@
     line-height: 1.5;
     overflow: auto;
 
-
-
     h1[id],
     h2[id],
     h3[id],
@@ -79,7 +77,6 @@
             }
         }
     }
-
 
     ul,
     ol {
@@ -201,7 +198,6 @@
             box-shadow: none;
         }
 
-
         &.emoji-small {
             width: 20px;
             box-shadow: none;
@@ -272,18 +268,22 @@
             top: 2px;
 
             &::after {
-                content: '';
+                content: "";
                 background: hsl(0, 0%, 80%);
                 height: 1.5px;
                 width: 6px;
                 display: block;
-                margin: .5px -2px;
+                margin: 0.5px -2px;
             }
         }
 
         &.orange {
             border: 1px solid hsl(29, 84%, 51%);
-            background: linear-gradient(to bottom, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%);
+            background: linear-gradient(
+                to bottom,
+                hsla(0, 0%, 100%, 0) 50%,
+                hsla(29, 84%, 51%, 1) 50%
+            );
         }
 
         &.green {

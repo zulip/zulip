@@ -125,7 +125,11 @@
         margin-right: 2px;
         margin-left: 2px;
         white-space: nowrap;
-        background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+        background: linear-gradient(
+            to bottom,
+            hsla(0, 0%, 0%, 0.1) 0%,
+            hsla(0, 0%, 0%, 0) 100%
+        );
         display: inline-block;
         margin-bottom: 1px;
     }
@@ -174,13 +178,15 @@
         .spoiler-content {
             overflow: hidden;
             border-top: hsl(0, 0%, 50%) 0px solid;
-            transition: height 0.4s ease-in-out, border-top 0.4s step-end, padding 0.4s step-end;
+            transition: height 0.4s ease-in-out, border-top 0.4s step-end,
+                padding 0.4s step-end;
             padding: 0px;
             height: 0px;
 
             &.spoiler-content-open {
                 border-top: hsl(0, 0%, 50%) 1px solid;
-                transition: height 0.4s ease-in-out, border-top 0.4s step-start, padding 0.4s step-start;
+                transition: height 0.4s ease-in-out, border-top 0.4s step-start,
+                    padding 0.4s step-start;
                 padding: 5px;
                 height: auto;
             }
@@ -198,7 +204,6 @@
             }
         }
 
-
         .spoiler-arrow {
             float: right;
             width: 13px;
@@ -214,7 +219,7 @@
             &::before,
             &::after {
                 position: absolute;
-                content: '';
+                content: "";
                 display: inline-block;
                 width: 12px;
                 height: 3px;
@@ -292,7 +297,7 @@
 
     .twitter-tweet {
         border: 1px solid hsl(0, 0%, 87%);
-        padding: .5em .75em;
+        padding: 0.5em 0.75em;
         margin-bottom: 0.25em;
         word-break: break-word;
         min-height: 48px;
@@ -302,7 +307,7 @@
         float: left;
         width: 48px;
         height: 48px;
-        margin-right: .75em;
+        margin-right: 0.75em;
     }
 
     .message_inline_ref {
@@ -422,7 +427,11 @@
             height: 10%;
             bottom: 0;
 
-            background: linear-gradient(0deg, hsl(0, 0%, 100%), transparent 100%);
+            background: linear-gradient(
+                0deg,
+                hsl(0, 0%, 100%),
+                transparent 100%
+            );
         }
     }
 

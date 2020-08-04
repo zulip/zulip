@@ -289,6 +289,12 @@ call a helper function instead.
 
 ### HTML / CSS
 
+Our CSS is formatted with [Prettier](https://prettier.io/).  You can
+ask Prettier to reformat all code via our [linter
+tool](../testing/linters.md) with `tools/lint --only=prettier --fix`.
+You can also [integrate it with your
+editor](https://prettier.io/docs/en/editors.html).
+
 Avoid using the `style=` attribute unless the styling is actually
 dynamic. Instead, define logical classes and put your styles in
 external CSS files such as `zulip.css`.

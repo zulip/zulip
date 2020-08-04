@@ -1,5 +1,5 @@
 body {
-    font-family: 'Source Sans Pro', 'Helvetica Neue', sans-serif !important;
+    font-family: "Source Sans Pro", "Helvetica Neue", sans-serif !important;
     background-color: hsl(0, 0%, 98%);
 }
 
@@ -113,7 +113,7 @@ p {
 }
 
 .button {
-    font-family: 'Source Sans Pro', 'Helvetica Neue', sans-serif !important;
+    font-family: "Source Sans Pro", "Helvetica Neue", sans-serif !important;
     border: none;
     border-radius: 4px;
     outline: none;
@@ -176,7 +176,7 @@ p {
     width: 750px;
     position: relative;
 
-    &[last_value_is_partial='true'] .points path:last-of-type {
+    &[last_value_is_partial="true"] .points path:last-of-type {
         opacity: 0.5;
     }
 }
@@ -204,7 +204,7 @@ p {
 }
 
 .spinner::before {
-    content: '';
+    content: "";
     box-sizing: border-box;
     position: absolute;
     top: 50%;
@@ -227,7 +227,9 @@ p {
 
 @media (min-width: 1680px) {
     .center-charts {
-        width: calc(816px * 2); /* 790px + 4px for borders + 2px for il-block + 20px margins */
+        width: calc(
+            816px * 2
+        ); /* 790px + 4px for borders + 2px for il-block + 20px margins */
 
         .left,
         .right {

@@ -57,7 +57,7 @@ li.show-more-topics {
 #streams_inline_cog,
 #streams_filter_icon {
     float: right;
-    opacity: 0.50;
+    opacity: 0.5;
     font-size: 13px;
     margin-top: 3px;
     margin-left: 10px;
@@ -136,7 +136,7 @@ li.show-more-topics {
     }
 
     .inactive_stream {
-        opacity: .5;
+        opacity: 0.5;
     }
 }
 
@@ -390,7 +390,7 @@ li.top_left_recent_topics {
 .stream-sidebar-menu-icon {
     top: 1px;
     right: 0px;
-    font-size: 1.0em;
+    font-size: 1em;
     text-align: center;
     padding: 0px 6px 0px 6px;
 }
