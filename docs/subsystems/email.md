@@ -65,7 +65,8 @@ account** in `/emails` page. This feature can be used for testing how
 emails gets rendered by different email clients. Before enabling this
 you have to first configure the following SMTP settings.
 
-* The hostname `EMAIL_HOST` in `zproject/dev_settings.py`
+* The hostname `EMAIL_HOST` in `zproject/dev_settings.py`.
+* The port `EMAIL_PORT` in `zproject/dev_settings.py`.
 * The username `EMAIL_HOST_USER` in `zproject/dev_settings.py`.
 * The password `email_password` in `zproject/dev-secrets.conf`.
 
