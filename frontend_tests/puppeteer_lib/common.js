@@ -72,14 +72,9 @@ class CommonUtils {
         }
     }
 
-    async get_page(url = null) {
+    async get_page() {
         await this.ensure_browser();
-
         const page = await this.browser.newPage();
-        if (url !== null) {
-            await page.goto(url);
-        }
-
         return page;
     }
 
