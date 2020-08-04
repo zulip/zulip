@@ -51,6 +51,7 @@ run_test("basics", () => {
 
     set_global("message_util", {
         get_messages_in_topic: () => [{id: 101}, {id: 102}],
+        get_max_message_id_in_stream: () => 103,
     });
     // Removing the last msg in topic1 changes the order
     stream_topic_history.remove_messages({
@@ -61,11 +62,13 @@ run_test("basics", () => {
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["topic2", "Topic1"]);
+    // check if stream's max_message_id is updated.
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
-    assert.deepEqual(max_message_id, 104);
+    assert.deepEqual(max_message_id, 103);
 
     set_global("message_util", {
         get_messages_in_topic: () => [{id: 102}],
+        get_max_message_id_in_stream: () => 103,
     });
     // Removing first topic1 message has no effect.
     stream_topic_history.remove_messages({
@@ -76,7 +79,6 @@ run_test("basics", () => {
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["topic2", "Topic1"]);
-    // Removing a topic message shouldn't effect the max_message_id.
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(max_message_id, 103);
 
