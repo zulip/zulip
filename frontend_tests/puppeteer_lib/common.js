@@ -7,6 +7,9 @@ const puppeteer = require("puppeteer");
 
 const test_credentials = require("../../var/puppeteer/test_credentials.js").test_credentials;
 
+const root_dir = path.resolve(__dirname, "../../");
+const puppeteer_dir = path.join(root_dir, "var/puppeteer");
+
 class CommonUtils {
     constructor() {
         this.browser = null;
@@ -86,8 +89,7 @@ class CommonUtils {
             this.screenshot_id += 1;
         }
 
-        const root_dir = path.resolve(__dirname, "../../");
-        const screenshot_path = path.join(root_dir, "var/puppeteer", `${name}.png`);
+        const screenshot_path = path.join(puppeteer_dir, `${name}.png`);
         await page.screenshot({
             path: screenshot_path,
         });
