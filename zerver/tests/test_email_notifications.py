@@ -517,7 +517,7 @@ class TestMissedMessages(ZulipTestCase):
 
         if show_message_content:
             verify_body_include = [
-                "Othello, the Moor of Venice: 1 2 3 4 5 6 7 8 9 10 @**King Hamlet** -- ",
+                "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > 6 > 7 > 8 > 9 > 10 > @**King Hamlet** -- ",
                 "You are receiving this because you were mentioned in Zulip Dev.",
             ]
             email_subject = "#Denmark > test"
@@ -560,7 +560,7 @@ class TestMissedMessages(ZulipTestCase):
 
         if show_message_content:
             verify_body_include = [
-                "Othello, the Moor of Venice: 1 2 3 4 5 @**all** -- ",
+                "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > @**all** -- ",
                 "You are receiving this because you were mentioned in Zulip Dev.",
             ]
             email_subject = "#Denmark > test"
@@ -598,7 +598,7 @@ class TestMissedMessages(ZulipTestCase):
         self.send_stream_message(self.example_user("othello"), "Denmark", "11", topic_name="test2")
         msg_id = self.send_stream_message(self.example_user("othello"), "denmark", "12")
         verify_body_include = [
-            "Othello, the Moor of Venice: 1 2 3 4 5 6 7 8 9 10 12 -- ",
+            "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > 6 > 7 > 8 > 9 > 10 > 12 -- ",
             "You are receiving this because you have email notifications enabled for this stream.",
         ]
         email_subject = "#Denmark > test"
@@ -618,7 +618,7 @@ class TestMissedMessages(ZulipTestCase):
             self.example_user("othello"), "Denmark", "@**King Hamlet**"
         )
         verify_body_include = [
-            "Cordelia, Lear's daughter: 0 1 2 Othello, the Moor of Venice: @**King Hamlet** -- ",
+            "Cordelia, Lear's daughter: > 0 > 1 > 2 Othello, the Moor of Venice: > @**King Hamlet** -- ",
             "You are receiving this because you were mentioned in Zulip Dev.",
         ]
         email_subject = "#Denmark > test"
@@ -640,7 +640,7 @@ class TestMissedMessages(ZulipTestCase):
         )
 
         if show_message_content:
-            verify_body_include = ["Extremely personal message!"]
+            verify_body_include = ["> Extremely personal message!"]
             email_subject = "PMs with Othello, the Moor of Venice"
             verify_body_does_not_include: List[str] = []
         else:
@@ -708,7 +708,9 @@ class TestMissedMessages(ZulipTestCase):
         )
 
         if show_message_content:
-            verify_body_include = ["Othello, the Moor of Venice: Group personal message! -- Reply"]
+            verify_body_include = [
+                "Othello, the Moor of Venice: > Group personal message! -- Reply"
+            ]
             email_subject = "Group PMs with Iago and Othello, the Moor of Venice"
             verify_body_does_not_include: List[str] = []
         else:
@@ -748,7 +750,7 @@ class TestMissedMessages(ZulipTestCase):
             "Group personal message!",
         )
 
-        verify_body_include = ["Othello, the Moor of Venice: Group personal message! -- Reply"]
+        verify_body_include = ["Othello, the Moor of Venice: > Group personal message! -- Reply"]
         email_subject = (
             "Group PMs with Cordelia, Lear's daughter, Iago, and Othello, the Moor of Venice"
         )
@@ -768,7 +770,7 @@ class TestMissedMessages(ZulipTestCase):
             "Group personal message!",
         )
 
-        verify_body_include = ["Othello, the Moor of Venice: Group personal message! -- Reply"]
+        verify_body_include = ["Othello, the Moor of Venice: > Group personal message! -- Reply"]
         email_subject = "Group PMs with Cordelia, Lear's daughter, Iago, and 2 others"
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
 
@@ -850,7 +852,7 @@ class TestMissedMessages(ZulipTestCase):
         )
 
         expected_email_include = [
-            "Othello, the Moor of Venice: @*hamlet_only* @*hamlet_and_cordelia* -- ",
+            "Othello, the Moor of Venice: > @*hamlet_only* > @*hamlet_and_cordelia* -- ",
             "You are receiving this because @hamlet_only was mentioned in Zulip Dev.",
         ]
 
@@ -890,7 +892,7 @@ class TestMissedMessages(ZulipTestCase):
         )
 
         expected_email_include = [
-            "Othello, the Moor of Venice: @*hamlet_and_cordelia* @**King Hamlet** -- ",
+            "Othello, the Moor of Venice: > @*hamlet_and_cordelia* > @**King Hamlet** -- ",
             "You are receiving this because you were mentioned in Zulip Dev.",
         ]
 
@@ -1137,7 +1139,7 @@ class TestMissedMessages(ZulipTestCase):
 
         assert isinstance(mail.outbox[0], EmailMultiAlternatives)
         assert isinstance(mail.outbox[0].alternatives[0][0], str)
-        self.assertIn("Iago: @**King Hamlet**\n\n--\nYou are", mail.outbox[0].body)
+        self.assertIn("Iago:\n> @**King Hamlet**\n\n--\nYou are", mail.outbox[0].body)
         # If message content starts with <p> tag the sender name is appended inside the <p> tag.
         self.assertIn(
             '<p><b>Iago</b>: <span class="user-mention"', mail.outbox[0].alternatives[0][0]
@@ -1145,7 +1147,7 @@ class TestMissedMessages(ZulipTestCase):
 
         assert isinstance(mail.outbox[1], EmailMultiAlternatives)
         assert isinstance(mail.outbox[1].alternatives[0][0], str)
-        self.assertIn("Iago: * 1\n *2\n\n--\nYou are receiving", mail.outbox[1].body)
+        self.assertIn("Iago:\n> * 1\n>  *2\n\n--\nYou are receiving", mail.outbox[1].body)
         # If message content does not starts with <p> tag sender name is appended before the <p> tag
         self.assertIn(
             "       <b>Iago</b>: <div><ul>\n<li>1<br/>\n *2</li>\n</ul></div>\n",
@@ -1154,7 +1156,7 @@ class TestMissedMessages(ZulipTestCase):
 
         assert isinstance(mail.outbox[2], EmailMultiAlternatives)
         assert isinstance(mail.outbox[2].alternatives[0][0], str)
-        self.assertEqual("Hello\n\n--\n\nReply", mail.outbox[2].body[:16])
+        self.assertEqual("> Hello\n\n--\n\nReply", mail.outbox[2].body[:18])
         # Sender name is not appended to message for PM missed messages
         self.assertIn(
             ">\n                    \n                        <div><p>Hello</p></div>\n",
