@@ -47,10 +47,6 @@ exports.add_new_messages = function (messages, msg_list) {
 };
 
 exports.get_messages_in_topic = function (stream_id, topic) {
-    // This function is very expensive since it searches
-    // all the messages. Please only use it in case of
-    // very rare events like topic edits. Its primary
-    // use case is the new experimental Recent Topics UI.
     return message_list.all
         .all_messages()
         .filter(
@@ -59,6 +55,18 @@ exports.get_messages_in_topic = function (stream_id, topic) {
                 x.stream_id === stream_id &&
                 x.topic.toLowerCase() === topic.toLowerCase(),
         );
+};
+
+exports.get_max_message_id_in_stream = function (stream_id) {
+    let max_message_id = 0;
+    for (const msg of message_list.all.all_messages()) {
+        if (msg.type === "stream" && msg.stream_id === stream_id) {
+            if (msg.id > max_message_id) {
+                max_message_id = msg.id;
+            }
+        }
+    }
+    return max_message_id;
 };
 
 window.message_util = exports;

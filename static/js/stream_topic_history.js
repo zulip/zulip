@@ -231,6 +231,11 @@ exports.remove_messages = function (opts) {
         }
         existing_topic.message_id = max_message_id;
     }
+
+    // Update max_message_id in stream
+    if (history.max_message_id <= max_removed_msg_id) {
+        history.max_message_id = message_util.get_max_message_id_in_stream(stream_id);
+    }
 };
 
 exports.find_or_create = function (stream_id) {
