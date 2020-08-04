@@ -761,7 +761,6 @@ check_update_message_embedded = check_events_dict(
         ("message_id", check_int),
         ("message_ids", check_list(check_int)),
         ("rendered_content", check_string),
-        ("sender", check_string),
     ]
 )
 

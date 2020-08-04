@@ -4403,7 +4403,6 @@ def do_update_embedded_data(user_profile: UserProfile,
                             rendered_content: Optional[str]) -> None:
     event: Dict[str, Any] = {
         'type': 'update_message',
-        'sender': user_profile.email,
         'message_id': message.id}
     changed_messages = [message]
 
