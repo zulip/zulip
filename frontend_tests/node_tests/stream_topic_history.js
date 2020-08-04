@@ -41,11 +41,40 @@ run_test("basics", () => {
     assert.deepEqual(history, ["topic2", "Topic1"]);
     assert.deepEqual(max_message_id, 103);
 
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 104,
+        topic_name: "Topic1",
+    });
+    history = stream_topic_history.get_recent_topic_names(stream_id);
+    max_message_id = stream_topic_history.get_max_message_id(stream_id);
+    assert.deepEqual(history, ["Topic1", "topic2"]);
+    assert.deepEqual(max_message_id, 104);
+
+    set_global("message_util", {
+        get_messages_in_topic: () => [{id: 101}, {id: 102}],
+    });
+    // Removing the last msg in topic1 changes the order
+    stream_topic_history.remove_messages({
+        stream_id,
+        topic_name: "Topic1",
+        num_messages: 1,
+        max_removed_msg_id: 104,
+    });
+    history = stream_topic_history.get_recent_topic_names(stream_id);
+    assert.deepEqual(history, ["topic2", "Topic1"]);
+    max_message_id = stream_topic_history.get_max_message_id(stream_id);
+    assert.deepEqual(max_message_id, 104);
+
+    set_global("message_util", {
+        get_messages_in_topic: () => [{id: 102}],
+    });
     // Removing first topic1 message has no effect.
     stream_topic_history.remove_messages({
         stream_id,
         topic_name: "toPic1",
         num_messages: 1,
+        max_removed_msg_id: 101,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["topic2", "Topic1"]);
@@ -58,6 +87,7 @@ run_test("basics", () => {
         stream_id,
         topic_name: "Topic1",
         num_messages: 1,
+        max_removed_msg_id: 102,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["topic2"]);
@@ -67,6 +97,7 @@ run_test("basics", () => {
         stream_id,
         topic_name: "Topic1",
         num_messages: 1,
+        max_removed_msg_id: 0,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["topic2"]);

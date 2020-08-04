@@ -196,6 +196,7 @@ exports.update_messages = function update_messages(events) {
                     stream_id: msg.stream_id,
                     topic_name: msg.topic,
                     num_messages: 1,
+                    max_removed_msg_id: msg.id,
                 });
 
                 // Update the unread counts; again, this must be called

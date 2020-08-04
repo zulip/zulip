@@ -33,17 +33,20 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             // which returns all the unread messages out of a given list.
             // So double marking something as read would not occur
             unread_ops.process_read_messages_event(msg_ids);
+            // This methods updates message_list too and since stream_topic_history relies on it
+            // this method should be called first.
+            ui.remove_messages(msg_ids);
 
             if (event.message_type === "stream") {
                 stream_topic_history.remove_messages({
                     stream_id: event.stream_id,
                     topic_name: event.topic,
                     num_messages: msg_ids.length,
+                    max_removed_msg_id: Math.max(...msg_ids),
                 });
                 stream_list.update_streams_sidebar();
             }
 
-            ui.remove_messages(msg_ids);
             break;
         }
 
