@@ -26,18 +26,21 @@ from sqlalchemy.sql import (
     union_all,
 )
 
+from zerver.context_processors import get_realm_from_request
 from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import recipient_for_user_profiles
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import get_first_visible_message_id, messages_for_ids
-from zerver.lib.response import json_error, json_success
+from zerver.lib.narrow import is_web_public_compatible, is_web_public_narrow
+from zerver.lib.response import json_error, json_success, json_unauthorized
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
     can_access_stream_history_by_id,
     can_access_stream_history_by_name,
     get_public_streams_queryset,
     get_stream_by_narrow_operand_access_unchecked,
+    get_web_public_streams_queryset,
 )
 from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC, topic_column_sa, topic_match_sa
 from zerver.lib.topic_mutes import exclude_topic_mutes
@@ -132,10 +135,12 @@ class NarrowBuilder:
     #  * anything that would pull in additional rows, or information on
     #    other messages.
 
-    def __init__(self, user_profile: UserProfile, msg_id_column: str) -> None:
+    def __init__(self, user_profile: Optional[UserProfile], msg_id_column: str,
+                 realm: Realm, is_web_public_query: bool=False) -> None:
         self.user_profile = user_profile
         self.msg_id_column = msg_id_column
-        self.realm = user_profile.realm
+        self.realm = realm
+        self.is_web_public_query = is_web_public_query
 
     def add_term(self, query: Query, term: Dict[str, Any]) -> Query:
         """
@@ -178,6 +183,10 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_in(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+        # This operator does not support is_web_public_query.
+        assert not self.is_web_public_query
+        assert self.user_profile is not None
+
         if operand == 'home':
             conditions = exclude_muting_conditions(self.user_profile, [])
             return query.where(and_(*conditions))
@@ -187,6 +196,10 @@ class NarrowBuilder:
         raise BadNarrowOperator("unknown 'in' operand " + operand)
 
     def by_is(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+        # This operator class does not support is_web_public_query.
+        assert not self.is_web_public_query
+        assert self.user_profile is not None
+
         if operand == 'private':
             cond = column("flags").op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))
@@ -234,6 +247,9 @@ class NarrowBuilder:
             # private streams you are no longer subscribed to, we
             # need get_stream_by_narrow_operand_access_unchecked here.
             stream = get_stream_by_narrow_operand_access_unchecked(operand, self.realm)
+
+            if self.is_web_public_query and not stream.is_web_public:
+                raise BadNarrowOperator('unknown web-public stream ' + str(operand))
         except Stream.DoesNotExist:
             raise BadNarrowOperator('unknown stream ' + str(operand))
 
@@ -269,6 +285,8 @@ class NarrowBuilder:
             # Get all both subscribed and non subscribed public streams
             # but exclude any private subscribed streams.
             recipient_queryset = get_public_streams_queryset(self.realm)
+        elif operand == 'web-public':
+            recipient_queryset = get_web_public_streams_queryset(self.realm)
         else:
             raise BadNarrowOperator('unknown streams operand ' + operand)
 
@@ -344,6 +362,9 @@ class NarrowBuilder:
 
     def by_pm_with(self, query: Query, operand: Union[str, Iterable[int]],
                    maybe_negate: ConditionTransform) -> Query:
+        # This operator does not support is_web_public_query.
+        assert not self.is_web_public_query
+        assert self.user_profile is not None
 
         try:
             if isinstance(operand, str):
@@ -405,6 +426,10 @@ class NarrowBuilder:
 
     def by_group_pm_with(self, query: Query, operand: Union[str, int],
                          maybe_negate: ConditionTransform) -> Query:
+        # This operator does not support is_web_public_query.
+        assert not self.is_web_public_query
+        assert self.user_profile is not None
+
         try:
             if isinstance(operand, str):
                 narrow_profile = get_user_including_cross_realm(operand, self.realm)
@@ -580,7 +605,8 @@ def narrow_parameter(json: str) -> OptionalNarrowListT:
 
     return list(map(convert_term, data))
 
-def ok_to_include_history(narrow: OptionalNarrowListT, user_profile: UserProfile) -> bool:
+def ok_to_include_history(narrow: OptionalNarrowListT, user_profile: Optional[UserProfile],
+                          is_web_public_query: bool) -> bool:
     # There are occasions where we need to find Message rows that
     # have no corresponding UserMessage row, because the user is
     # reading a public stream that might include messages that
@@ -591,6 +617,17 @@ def ok_to_include_history(narrow: OptionalNarrowListT, user_profile: UserProfile
     # query that narrows to a particular public stream on the user's realm.
     # If we screw this up, then we can get into a nasty situation of
     # polluting our narrow results with messages from other realms.
+
+    # For web-public queries, we are always returning history.  The
+    # analogues of the below stream access checks for whether streams
+    # have is_web_public set and banning is operators in this code
+    # path are done directly in NarrowBuilder.
+    if is_web_public_query:
+        assert user_profile is None
+        return True
+
+    assert user_profile is not None
+
     include_history = False
     if narrow is not None:
         for term in narrow:
@@ -650,7 +687,7 @@ def exclude_muting_conditions(user_profile: UserProfile,
 
     return conditions
 
-def get_base_query_for_search(user_profile: UserProfile,
+def get_base_query_for_search(user_profile: Optional[UserProfile],
                               need_message: bool,
                               need_user_message: bool) -> Tuple[Query, ColumnElement]:
     # Handle the simple case where user_message isn't involved first.
@@ -662,6 +699,7 @@ def get_base_query_for_search(user_profile: UserProfile,
         inner_msg_id_col = literal_column("zerver_message.id")
         return (query, inner_msg_id_col)
 
+    assert user_profile is not None
     if need_message:
         query = select([column("message_id"), column("flags")],
                        column("user_profile_id") == literal(user_profile.id),
@@ -677,17 +715,19 @@ def get_base_query_for_search(user_profile: UserProfile,
     inner_msg_id_col = column("message_id")
     return (query, inner_msg_id_col)
 
-def add_narrow_conditions(user_profile: UserProfile,
+def add_narrow_conditions(user_profile: Optional[UserProfile],
                           inner_msg_id_col: ColumnElement,
                           query: Query,
-                          narrow: OptionalNarrowListT) -> Tuple[Query, bool]:
+                          narrow: OptionalNarrowListT,
+                          is_web_public_query: bool,
+                          realm: Realm) -> Tuple[Query, bool]:
     is_search = False  # for now
 
     if narrow is None:
         return (query, is_search)
 
     # Build the query for the narrow
-    builder = NarrowBuilder(user_profile, inner_msg_id_col)
+    builder = NarrowBuilder(user_profile, inner_msg_id_col, realm, is_web_public_query)
     search_operands = []
 
     # As we loop through terms, builder does most of the work to extend
@@ -711,8 +751,13 @@ def add_narrow_conditions(user_profile: UserProfile,
     return (query, is_search)
 
 def find_first_unread_anchor(sa_conn: Any,
-                             user_profile: UserProfile,
+                             user_profile: Optional[UserProfile],
                              narrow: OptionalNarrowListT) -> int:
+    # For anonymous web users, all messages are treated as read, and so
+    # always return LARGER_THAN_MAX_MESSAGE_ID.
+    if user_profile is None:
+        return LARGER_THAN_MAX_MESSAGE_ID
+
     # We always need UserMessage in our query, because it has the unread
     # flag for the user.
     need_user_message = True
@@ -735,6 +780,8 @@ def find_first_unread_anchor(sa_conn: Any,
         inner_msg_id_col=inner_msg_id_col,
         query=query,
         narrow=narrow,
+        is_web_public_query=False,
+        realm=user_profile.realm,
     )
 
     condition = column("flags").op("&")(UserMessage.flags.read.mask) == 0
@@ -792,7 +839,7 @@ def parse_anchor_value(anchor_val: Optional[str],
         raise JsonableError(_("Invalid anchor"))
 
 @has_request_variables
-def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
+def get_messages_backend(request: HttpRequest, maybe_user_profile: UserProfile,
                          anchor_val: Optional[str]=REQ(
                              'anchor', str_validator=check_string, default=None),
                          num_before: int=REQ(converter=to_non_negative_int),
@@ -808,19 +855,53 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
             MAX_MESSAGES_PER_FETCH,
         ))
 
-    if user_profile.realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+    if not maybe_user_profile.is_authenticated:
+        # If user is not authenticated, clients must include
+        # `streams:web-public` in their narrow query to indicate this
+        # is a web-public query.  This helps differentiate between
+        # cases of web-public queries (where we should return the
+        # web-public results only) and clients with buggy
+        # authentication code (where we should return an auth error).
+        if not is_web_public_narrow(narrow):
+            return json_unauthorized()
+        assert narrow is not None
+        if not is_web_public_compatible(narrow):
+            return json_unauthorized()
+
+        realm = get_realm_from_request(request)
+        if realm is None:
+            return json_error(_("Invalid subdomain."))
+
+        # We use None to indicate unauthenticated requests as it's more
+        # readable than using AnonymousUser, and the lack of Django
+        # stubs means that mypy can't check AnonymousUser well.
+        user_profile: Optional[UserProfile] = None
+        is_web_public_query = True
+    else:
+        user_profile = maybe_user_profile
+        assert user_profile is not None
+        realm = user_profile.realm
+        is_web_public_query = False
+
+    assert realm is not None
+
+    if is_web_public_query or \
+            realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         # If email addresses are only available to administrators,
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
 
-    include_history = ok_to_include_history(narrow, user_profile)
+    include_history = ok_to_include_history(narrow, user_profile, is_web_public_query)
     if include_history:
         # The initial query in this case doesn't use `zerver_usermessage`,
         # and isn't yet limited to messages the user is entitled to see!
         #
         # This is OK only because we've made sure this is a narrow that
-        # will cause us to limit the query appropriately later.
+        # will cause us to limit the query appropriately elsewhere.
         # See `ok_to_include_history` for details.
+        #
+        # Note that is_web_public_query=True goes here, since
+        # include_history is semantically correct for is_web_public_query.
         need_message = True
         need_user_message = False
     elif narrow is None:
@@ -843,6 +924,8 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         inner_msg_id_col=inner_msg_id_col,
         query=query,
         narrow=narrow,
+        realm=realm,
+        is_web_public_query=is_web_public_query,
     )
 
     if narrow is not None:
@@ -858,7 +941,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     sa_conn = get_sqlalchemy_connection()
 
     if anchor is None:
-        # The use_first_unread_anchor code path
+        # `anchor=None` corresponds to the anchor="first_unread" parameter.
         anchor = find_first_unread_anchor(
             sa_conn,
             user_profile,
@@ -873,7 +956,8 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     if anchored_to_right:
         num_after = 0
 
-    first_visible_message_id = get_first_visible_message_id(user_profile.realm)
+    first_visible_message_id = get_first_visible_message_id(realm)
+
     query = limit_query_to_range(
         query=query,
         num_before=num_before,
@@ -912,7 +996,14 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     # 'messages' list.
     message_ids: List[int] = []
     user_message_flags: Dict[int, List[str]] = {}
-    if include_history:
+    if is_web_public_query:
+        # For web-public users, we treat all historical messages as read.
+        for row in rows:
+            message_id = row[0]
+            message_ids.append(message_id)
+            user_message_flags[message_id] = ["read"]
+    elif include_history:
+        assert user_profile is not None
         message_ids = [row[0] for row in rows]
 
         # TODO: This could be done with an outer join instead of two queries
@@ -951,7 +1042,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         search_fields=search_fields,
         apply_markdown=apply_markdown,
         client_gravatar=client_gravatar,
-        allow_edit_history=user_profile.realm.allow_edit_history,
+        allow_edit_history=realm.allow_edit_history,
     )
 
     statsd.incr('loaded_old_messages', len(message_list))
@@ -1111,6 +1202,7 @@ def post_process_limited_query(rows: List[Any],
         found_oldest=found_oldest,
         history_limited=history_limited,
     )
+
 @has_request_variables
 def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
                                msg_ids: List[int]=REQ(validator=check_list(check_int)),
@@ -1128,7 +1220,7 @@ def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
                         literal_column("zerver_usermessage.message_id") ==
                         literal_column("zerver_message.id")))
 
-    builder = NarrowBuilder(user_profile, column("message_id"))
+    builder = NarrowBuilder(user_profile, column("message_id"), user_profile.realm)
     if narrow is not None:
         for term in narrow:
             query = builder.add_term(query, term)

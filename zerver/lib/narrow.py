@@ -23,7 +23,7 @@ def check_supported_events_narrow_filter(narrow: Iterable[Sequence[str]]) -> Non
         if operator not in ["stream", "topic", "sender", "is"]:
             raise JsonableError(_("Operator {} not supported.").format(operator))
 
-def is_web_public_compatible(narrow: Iterable[Dict[str, str]]) -> bool:
+def is_web_public_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
     for element in narrow:
         operator = element['operator']
         if 'operand' not in element:
@@ -31,6 +31,18 @@ def is_web_public_compatible(narrow: Iterable[Dict[str, str]]) -> bool:
         if operator not in ["streams", "stream", "topic", "sender", "has", "search", "near", "id"]:
             return False
     return True
+
+def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
+    if narrow is None:
+        return False
+
+    for term in narrow:
+        # Web public queries are only allowed for limited types of narrows.
+        # term == {'operator': 'streams', 'operand': 'web-public', 'negated': False}
+        if term['operator'] == 'streams' and term['operand'] == 'web-public' and term['negated'] is False:
+            return True
+
+    return False
 
 def build_narrow_filter(narrow: Iterable[Sequence[str]]) -> Callable[[Mapping[str, Any]], bool]:
     """Changes to this function should come with corresponding changes to
