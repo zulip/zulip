@@ -21,6 +21,7 @@ module.exports = {
 
         // Additional stylistic rules
         "font-family-name-quotes": "always-where-recommended",
+        "function-url-quotes": "never",
 
         // Limit language features
         "color-no-hex": true,

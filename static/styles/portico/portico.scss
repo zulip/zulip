@@ -446,7 +446,7 @@ img.screenshot {
 .laptop-image {
     width: 787px;
     height: 414px;
-    background-image: url("/static/images/landing-page/laptop.png");
+    background-image: url(/static/images/landing-page/laptop.png);
     background-size: contain;
 }
 
@@ -691,7 +691,7 @@ input.text-error {
 
 .main-headline {
     background-color: hsl(218, 84%, 85%);
-    background: url("/static/images/landing-page/gg.jpg");
+    background: url(/static/images/landing-page/gg.jpg);
     background-position: center;
     background-size: cover;
 }
