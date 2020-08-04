@@ -1,6 +1,8 @@
-{
-    "rules": {
-        # Stylistic rules for CSS.
+"use strict";
+
+module.exports = {
+    rules: {
+        // Stylistic rules for CSS.
         "function-comma-space-after": "always",
         "function-comma-space-before": "never",
         "function-max-empty-lines": 0,
@@ -58,10 +60,10 @@
         "at-rule-semicolon-space-before": "never",
 
         "comment-whitespace-inside": "always",
-        "indentation": 4,
-        
-        # Limit language features
+        indentation: 4,
+
+        // Limit language features
         "color-no-hex": true,
         "color-named": "never",
-    }
-}
+    },
+};

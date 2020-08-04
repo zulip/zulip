@@ -215,7 +215,7 @@ clean those files up eventually.
 
 Zulip uses [stylelint](https://github.com/stylelint/stylelint) to lint
 its CSS; see our
-[configuration](https://github.com/zulip/zulip/blob/master/.stylelintrc)
+[configuration](https://github.com/zulip/zulip/blob/master/stylelint.config.js)
 for the rules we currently enforce.
 
 #### Shell scripts
