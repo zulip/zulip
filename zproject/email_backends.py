@@ -52,7 +52,7 @@ class EmailLogBackEnd(BaseEmailBackend):
         msg.add_alternative(text, subtype="plain")
         msg.add_alternative(html, subtype="html")
 
-        smtp = smtplib.SMTP(settings.EMAIL_HOST)
+        smtp = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT)
         smtp.starttls()
         smtp.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
         smtp.send_message(msg)

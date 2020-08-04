@@ -89,6 +89,7 @@ PASSWORD_MIN_GUESSES = 0
 # SMTP settings for forwarding emails sent in development
 # environment to an email account.
 EMAIL_HOST = ""
+EMAIL_PORT = 25
 EMAIL_HOST_USER = ""
 
 # Two factor authentication: Use the fake backend for development.
