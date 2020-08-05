@@ -2430,7 +2430,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 .no-drag {
-    user-drag: none;
+    -webkit-user-drag: none;
     user-select: none;
 }
 

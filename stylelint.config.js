@@ -5,7 +5,7 @@ module.exports = {
     rules: {
         // Add some exceptions for recommended rules
         "at-rule-no-unknown": [true, {ignoreAtRules: ["extend"]}],
-        "property-no-unknown": [true, {ignoreProperties: [/^mso-/, "user-drag"]}],
+        "property-no-unknown": [true, {ignoreProperties: [/^mso-/]}],
 
         // Disable recommended rules we don't comply with yet
         "declaration-block-no-duplicate-properties": null,
