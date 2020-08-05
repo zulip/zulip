@@ -80,7 +80,7 @@ function submit_invitation_form() {
                     if (deactivated) {
                         is_invitee_deactivated = true;
                     }
-                    invitee_emails_errored.push(value[0]);
+                    invitee_emails_errored.push(email);
                 });
 
                 const error_response = render_invitation_failed_error({
