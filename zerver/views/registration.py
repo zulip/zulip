@@ -43,6 +43,7 @@ from zerver.lib.actions import (
     do_set_user_display_setting,
     lookup_default_stream_groups,
 )
+from zerver.lib.avatar import get_gravatar_url
 from zerver.lib.create_user import get_role_for_new_user
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_internal_bots
@@ -171,6 +172,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     require_ldap_password = False
     user_avatar_url = ''
     avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+    user_gravatar_url = get_gravatar_url(prereg_user.email, 1, True)
     if prereg_user.user_avatar_url:
         user_avatar_url = prereg_user.user_avatar_url
         # If the key use_social_avatar isn't present on the request, we set the default
@@ -433,6 +435,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                  'email': email,
                  'key': key,
                  'user_avatar_url': prereg_user.user_avatar_url,
+                 'user_gravatar_url': user_gravatar_url,
                  'full_name': request.session.get('authenticated_full_name', None),
                  'lock_name': name_validated and name_changes_disabled(realm),
                  # password_auth_enabled is normally set via our context processor,
