@@ -770,11 +770,6 @@ form#add_new_subscription {
         fill: hsl(0, 0%, 72%);
     }
 
-    &::-moz-selection,
-    .icon .hashtag::-moz-selection {
-        background-color: transparent;
-    }
-
     &::selection,
     .icon .hashtag::selection {
         background-color: transparent;

@@ -131,10 +131,6 @@ ol a:hover {
     clear: both;
 }
 
-*::-moz-selection {
-    background-color: hsla(31, 84%, 60%, 0.3);
-}
-
 *::selection {
     background-color: hsla(31, 84%, 60%, 0.3);
 }
