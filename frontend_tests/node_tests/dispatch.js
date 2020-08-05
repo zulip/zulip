@@ -858,8 +858,6 @@ run_test("realm_export", (override) => {
         dispatch(event);
 
         const args = stub.get_args("exports");
-        assert.equal(args.exports.acting_user_id, 55);
-        assert.equal(args.exports.event_time, "noon");
-        assert.equal(args.exports.path, "some_path");
+        assert.equal(args.exports, event.exports);
     });
 });
