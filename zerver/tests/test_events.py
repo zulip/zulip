@@ -103,6 +103,7 @@ from zerver.lib.event_schema import (
     check_realm_bot_delete,
     check_realm_bot_remove,
     check_realm_bot_update,
+    check_realm_export,
     check_realm_update,
     check_realm_user_update,
     check_stream_create,
@@ -1833,32 +1834,6 @@ class NormalActionsTest(BaseAction):
         schema_checker('events[0]', events[0])
 
     def test_notify_realm_export(self) -> None:
-        pending_schema_checker = check_events_dict([
-            ('type', equals('realm_export')),
-            ('exports', check_list(check_dict_only([
-                ('id', check_int),
-                ('export_time', check_float),
-                ('acting_user_id', check_int),
-                ('export_url', equals(None)),
-                ('deleted_timestamp', equals(None)),
-                ('failed_timestamp', equals(None)),
-                ('pending', check_bool),
-            ]))),
-        ])
-
-        schema_checker = check_events_dict([
-            ('type', equals('realm_export')),
-            ('exports', check_list(check_dict_only([
-                ('id', check_int),
-                ('export_time', check_float),
-                ('acting_user_id', check_int),
-                ('export_url', check_string),
-                ('deleted_timestamp', equals(None)),
-                ('failed_timestamp', equals(None)),
-                ('pending', check_bool),
-            ]))),
-        ])
-
         do_change_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.login_user(self.user_profile)
 
@@ -1872,60 +1847,40 @@ class NormalActionsTest(BaseAction):
                 'INFO:root:Completed data export for zulip in' in info_logs.output[0]
             )
 
-        # We first notify when an export is initiated,
-        pending_schema_checker('events[0]', events[0])
+        # We get two realm_export events for this action, where the first
+        # is missing the export_url (because it's pending).
+        check_realm_export(
+            "events[0]",
+            events[0],
+            has_export_url=False,
+            has_deleted_timestamp=False,
+            has_failed_timestamp=False,
+        )
 
-        # The second event is then a message from notification-bot.
-        schema_checker('events[2]', events[2])
+        check_realm_export(
+            "events[2]",
+            events[2],
+            has_export_url=True,
+            has_deleted_timestamp=False,
+            has_failed_timestamp=False,
+        )
 
         # Now we check the deletion of the export.
-        deletion_schema_checker = check_events_dict([
-            ('type', equals('realm_export')),
-            ('exports', check_list(check_dict_only([
-                ('id', check_int),
-                ('export_time', check_float),
-                ('acting_user_id', check_int),
-                ('export_url', equals(None)),
-                ('deleted_timestamp', check_float),
-                ('failed_timestamp', equals(None)),
-                ('pending', check_bool),
-            ]))),
-        ])
-
         audit_log_entry = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_EXPORTED).first()
         events = self.verify_action(
             lambda: self.client_delete(f'/json/export/realm/{audit_log_entry.id}'),
             state_change_expected=False, num_events=1)
-        deletion_schema_checker('events[0]', events[0])
+
+        check_realm_export(
+            "events[0]",
+            events[0],
+            has_export_url=False,
+            has_deleted_timestamp=True,
+            has_failed_timestamp=False,
+        )
 
     def test_notify_realm_export_on_failure(self) -> None:
-        pending_schema_checker = check_events_dict([
-            ('type', equals('realm_export')),
-            ('exports', check_list(check_dict_only([
-                ('id', check_int),
-                ('export_time', check_float),
-                ('acting_user_id', check_int),
-                ('export_url', equals(None)),
-                ('deleted_timestamp', equals(None)),
-                ('failed_timestamp', equals(None)),
-                ('pending', check_bool),
-            ]))),
-        ])
-
-        failed_schema_checker = check_events_dict([
-            ('type', equals('realm_export')),
-            ('exports', check_list(check_dict_only([
-                ('id', check_int),
-                ('export_time', check_float),
-                ('acting_user_id', check_int),
-                ('export_url', equals(None)),
-                ('deleted_timestamp', equals(None)),
-                ('failed_timestamp', check_float),
-                ('pending', check_bool),
-            ]))),
-        ])
-
         do_change_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.login_user(self.user_profile)
 
@@ -1942,9 +1897,21 @@ class NormalActionsTest(BaseAction):
             # independent of time bit by not matching exact log but only part of it.
             self.assertTrue("ERROR:root:Data export for zulip failed after" in error_log.output[0])
 
-        pending_schema_checker('events[0]', events[0])
-
-        failed_schema_checker('events[1]', events[1])
+        # We get two events for the export.
+        check_realm_export(
+            "events[0]",
+            events[0],
+            has_export_url=False,
+            has_deleted_timestamp=False,
+            has_failed_timestamp=False,
+        )
+        check_realm_export(
+            "events[1]",
+            events[1],
+            has_export_url=False,
+            has_deleted_timestamp=False,
+            has_failed_timestamp=True,
+        )
 
     def test_has_zoom_token(self) -> None:
         schema_checker = check_events_dict([
