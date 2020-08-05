@@ -403,11 +403,17 @@ exports.fixtures = {
 
     realm_export: {
         type: "realm_export",
-        exports: {
-            acting_user_id: 55,
-            event_time: "noon",
-            path: "some_path",
-        },
+        exports: [
+            {
+                id: 55,
+                export_time: fake_now,
+                acting_user_id: exports.test_user.user_id,
+                export_url: "/some/path/to/export",
+                deleted_timestamp: null,
+                failed_timestamp: null,
+                pending: true,
+            },
+        ],
     },
 
     realm_filters: {
