@@ -26,5 +26,20 @@ module.exports = {
         // Limit language features
         "color-no-hex": true,
         "color-named": "never",
+        "declaration-property-value-blacklist": {
+            // thin/medium/thick is under-specified, please use pixels
+            "/^(border(-top|-right|-bottom|-left)?|outline)(-width)?$/": [
+                /\b(thin|medium|thick)\b/,
+            ],
+        },
+        "function-blacklist": [
+            // We use hsl(a) instead of rgb(a)
+            "rgb",
+            "rgba",
+        ],
+
+        // Zulip CSS should have no dependencies on external resources
+        "function-url-no-scheme-relative": true,
+        "function-url-scheme-whitelist": [],
     },
 };
