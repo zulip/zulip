@@ -259,7 +259,6 @@ div[id^="message-edit-send-status"],
     color: hsl(0, 0%, 0%);
     text-shadow: 0 1px 0 hsl(0, 0%, 100%);
     opacity: 0.2;
-    filter: alpha(opacity=20);
     float: right;
 }
 
@@ -267,7 +266,6 @@ div[id^="message-edit-send-status"],
 .compose-send-status-close:hover {
     cursor: pointer;
     opacity: 0.4;
-    filter: alpha(opacity=40);
 }
 
 #out-of-view-notification {
@@ -287,7 +285,6 @@ div[id^="message-edit-send-status"],
         color: hsl(0, 0%, 0%);
         text-shadow: 0 1px 0 hsl(0, 0%, 100%);
         opacity: 0.2;
-        filter: alpha(opacity=20);
     }
 }
 
