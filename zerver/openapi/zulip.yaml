@@ -353,6 +353,11 @@ paths:
                                           type: integer
                                           description: |
                                             The new role of the user in integer.
+                                          enum:
+                                            - 100
+                                            - 200
+                                            - 400
+                                            - 600
                                     - type: object
                                       additionalProperties: false
                                       description: |
