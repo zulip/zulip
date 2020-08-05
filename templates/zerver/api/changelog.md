@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 33**
+
+* `POST /invites`: Now returns `show_subscription` as well as the
+  anonymous email (4th parameter of the `errors` tuple) when raising
+  an InvitationError.
+
 **Feature level 32**
 
 * [`GET /events`](/api/get-events): Added `op` field to
