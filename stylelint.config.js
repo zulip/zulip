@@ -5,7 +5,6 @@ module.exports = {
     rules: {
         // Add some exceptions for recommended rules
         "at-rule-no-unknown": [true, {ignoreAtRules: ["extend"]}],
-        "property-no-unknown": [true, {ignoreProperties: [/^mso-/]}],
 
         // Disable recommended rules we don't comply with yet
         "font-family-no-missing-generic-family-keyword": null,
@@ -37,5 +36,12 @@ module.exports = {
         // Zulip CSS should have no dependencies on external resources
         "function-url-no-scheme-relative": true,
         "function-url-scheme-whitelist": [],
+
+        // We use autoprefixer to generate vendor prefixes
+        "at-rule-no-vendor-prefix": true,
+        "media-feature-name-no-vendor-prefix": true,
+        "property-no-vendor-prefix": true,
+        "selector-no-vendor-prefix": true,
+        "value-no-vendor-prefix": true,
     },
 };
