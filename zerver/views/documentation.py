@@ -91,11 +91,14 @@ class MarkdownDirectoryView(ApiURLView):
             context["page_is_help_center"] = True
             context["doc_root"] = "/help/"
             (sidebar_index, http_status_ignored) = self.get_path("include/sidebar_index")
+            # We want the sliding/collapsing behavior for /help pages only
+            sidebar_class = "sidebar slide"
             title_base = "Zulip Help Center"
         else:
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
             (sidebar_index, http_status_ignored) = self.get_path("sidebar_index")
+            sidebar_class = "sidebar"
             title_base = "Zulip API Documentation"
 
         # The following is a somewhat hacky approach to extract titles from articles.
@@ -115,6 +118,7 @@ class MarkdownDirectoryView(ApiURLView):
             context["OPEN_GRAPH_DESCRIPTION"] = self.request.placeholder_open_graph_description
 
         context["sidebar_index"] = sidebar_index
+        context["sidebar_class"] = sidebar_class
         # An "article" might require the api_uri_context to be rendered
         api_uri_context: Dict[str, Any] = {}
         add_api_uri_context(api_uri_context, self.request)

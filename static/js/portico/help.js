@@ -111,6 +111,17 @@ const update_page = function (cache, path) {
 
 new SimpleBar($(".sidebar")[0]);
 
+$(".sidebar.slide h2").on("click", (e) => {
+    const $next = $(e.target).next();
+
+    if ($next.is("ul")) {
+        // Close other article's headings first
+        $(".sidebar ul").not($next).hide();
+        // Toggle the heading
+        $next.slideToggle("fast", "swing");
+    }
+});
+
 $(".sidebar a").on("click", function (e) {
     const path = $(this).attr("href");
     const path_dir = path.split("/")[1];
@@ -173,5 +184,3 @@ window.addEventListener("popstate", () => {
 });
 
 $("body").addClass("noscroll");
-
-$(".highlighted")[0].scrollIntoView({block: "center"});
