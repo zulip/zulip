@@ -61,8 +61,6 @@ SKIP_LIST = [
 
 
 EXEMPT_OPENAPI_NAMES = [
-    # openapi does a nicer union
-    "realm_user_update_event",
     # bots
     "realm_bot_add_event",
     "realm_bot_update_event",
