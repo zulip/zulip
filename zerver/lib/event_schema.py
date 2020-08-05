@@ -32,7 +32,7 @@ basic_stream_fields = [
     ("invite_only", bool),
     ("is_announcement_only", bool),
     ("is_web_public", bool),
-    ("message_retention_days", Equals(None)),
+    ("message_retention_days", OptionalType(int)),
     ("name", str),
     ("rendered_description", str),
     ("stream_id", int),
