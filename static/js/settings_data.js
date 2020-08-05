@@ -11,7 +11,6 @@ const settings_config = require("./settings_config");
     some key modules from having to know
     about page_params and settings_config details.
 */
-
 exports.show_email = function () {
     if (
         page_params.realm_email_address_visibility ===

@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional, Union
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
@@ -82,6 +83,8 @@ def update_realm(
             Realm.PRIVATE_MESSAGE_POLICY_TYPES), default=None),
         email_address_visibility: Optional[int]=REQ(validator=check_int_in(
             Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None),
+        oss_showcase_policy: Optional[int]=REQ(validator=check_int_in(
+            Realm.OSS_SHOWCASE_POLICY_TYPES), default=None),
         default_twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
         video_chat_provider: Optional[int]=REQ(validator=check_int, default=None),
         default_code_block_language: Optional[str]=REQ(validator=check_string, default=None),
@@ -105,6 +108,13 @@ def update_realm(
     if (video_chat_provider is not None and
             video_chat_provider not in {p['id'] for p in Realm.VIDEO_CHAT_PROVIDERS.values()}):
         return json_error(_("Invalid video_chat_provider {}").format(video_chat_provider))
+
+    realm_plan_type = realm.plan_type
+    if oss_showcase_policy is not None and realm_plan_type != 4:
+        return json_error(_("Your organization does not qualify to enable this feature."))
+
+    if oss_showcase_policy is not None and settings.OSS_SHOWCASE is not True:
+        return json_error(_("The following feature must be enabled on the hosted system."))
 
     message_retention_days: Optional[int] = None
     if message_retention_days_raw is not None:

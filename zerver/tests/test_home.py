@@ -119,6 +119,7 @@ class HomeTest(ZulipTestCase):
             "needs_tutorial",
             "never_subscribed",
             "notification_sound",
+            "realm_oss_showcase_policy",
             "password_min_guesses",
             "password_min_length",
             "pm_content_in_desktop_notifications",

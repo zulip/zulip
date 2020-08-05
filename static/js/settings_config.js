@@ -193,6 +193,18 @@ const time_limit_dropdown_values = new Map([
         },
     ],
 ]);
+
+exports.oss_showcase_policy_values = {
+    hidden: {
+        code: 1,
+        description: i18n.t("Hidden"),
+    },
+    visible: {
+        code: 2,
+        description: i18n.t("Visible"),
+    },
+};
+
 exports.msg_edit_limit_dropdown_values = time_limit_dropdown_values;
 exports.msg_delete_limit_dropdown_values = time_limit_dropdown_values;
 

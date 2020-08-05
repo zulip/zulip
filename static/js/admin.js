@@ -101,6 +101,7 @@ exports.build_page = function () {
         upgrade_text_for_wide_organization_logo:
             page_params.upgrade_text_for_wide_organization_logo,
         realm_default_external_accounts: page_params.realm_default_external_accounts,
+        realm_plan_type: page_params.plan_type,
     };
 
     options.admin_settings_label = admin_settings_label;
@@ -108,6 +109,7 @@ exports.build_page = function () {
     options.msg_delete_limit_dropdown_values = settings_config.msg_delete_limit_dropdown_values;
     options.bot_creation_policy_values = settings_bots.bot_creation_policy_values;
     options.email_address_visibility_values = settings_config.email_address_visibility_values;
+    options.oss_showcase_policy_values = settings_config.oss_showcase_policy_values;
     Object.assign(options, settings_org.get_organization_settings_options());
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
@@ -127,6 +129,7 @@ exports.build_page = function () {
     $("#id_realm_email_address_visibility").val(page_params.realm_email_address_visibility);
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
+    $("#id_realm_oss_showcase_policy").val(page_params.realm_oss_showcase_policy);
     $("#id_realm_digest_weekday").val(options.realm_digest_weekday);
 
     // default_twenty_four_hour time is a boolean in the API but a

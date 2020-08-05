@@ -337,6 +337,16 @@ class Realm(models.Model):
     STANDARD_FREE = 4
     plan_type: int = models.PositiveSmallIntegerField(default=SELF_HOSTED)
 
+    # Who in the organization is allowed to create streams.
+    OSS_SHOWCASE_HIDDEN = 1
+    OSS_SHOWCASE_LISTED = 2
+    oss_showcase_policy: int = models.PositiveSmallIntegerField(
+        default=OSS_SHOWCASE_HIDDEN)
+    OSS_SHOWCASE_POLICY_TYPES = [
+        OSS_SHOWCASE_HIDDEN,
+        OSS_SHOWCASE_LISTED
+    ]
+
     # This value is also being used in static/js/settings_bots.bot_creation_policy_values.
     # On updating it here, update it there as well.
     BOT_CREATION_EVERYONE = 1
@@ -385,6 +395,7 @@ class Realm(models.Model):
 
     # Define the types of the various automatically managed properties
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
+        oss_showcase_policy=int,
         add_emoji_by_admins_only=bool,
         allow_edit_history=bool,
         allow_message_deleting=bool,
@@ -595,6 +606,14 @@ class Realm(models.Model):
     @property
     def presence_disabled(self) -> bool:
         return self.is_zephyr_mirror_realm
+
+    @property
+    def oss_showcase(self) -> int:
+        return self.oss_showcase_policy
+
+    @property
+    def get_plan_type(self) -> int:
+        return self.plan_type
 
     class Meta:
         permissions = (

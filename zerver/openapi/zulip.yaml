@@ -6320,6 +6320,13 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether messages can be deleted in this Zulip organization.
+                      realm_oss_showcase_policy:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The policy for whether the organization is publicly listed on on
+                          zulip.com/communities.
                       realm_bot_creation_policy:
                         type: integer
                         description: |

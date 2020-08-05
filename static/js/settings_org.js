@@ -15,6 +15,10 @@ exports.reset = function () {
 };
 
 exports.maybe_disable_widgets = function () {
+    if (page_params.realm_plan_type !== 4) {
+        $("#id_realm_oss_showcase_policy").prop("disabled", true);
+    }
+
     if (page_params.is_owner) {
         return;
     }
@@ -721,6 +725,11 @@ exports.build_page = function () {
 
     function get_complete_data_for_subsection(subsection) {
         let data = {};
+
+        if (subsection === "pub_listing") {
+            const oss_showcase_value = $("#id_realm_oss_showcase_policy").val();
+            data.oss_showcase_policy = oss_showcase_value;
+        }
 
         if (subsection === "msg_editing") {
             const edit_limit_setting_value = $("#id_realm_msg_edit_limit_setting").val();
