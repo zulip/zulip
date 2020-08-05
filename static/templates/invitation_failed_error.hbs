@@ -11,3 +11,14 @@
     <p id="invitation_non_admin_message">{{t "Organization administrators can reactivate deactivated users." }}</p>
     {{/if}}
 {{/if}}
+{{#if show_subscription}}
+<p id="subscribe_anyway_message">{{t "To subscribe the existing user(s) to the following stream(s), click on
+the button below." }}</p>
+<ul>
+    {{#each subscriber_stream_names}}
+    <li>#{{this.name}}</li>
+    {{/each}}
+</ul>
+<button id="subscribe_existing_accounts" class="button small round" type="button">
+{{t "Subscribe existing accounts" }}</button>
+{{/if}}
