@@ -117,7 +117,20 @@ exports.fixtures = {
 
     hotspots: {
         type: "hotspots",
-        hotspots: ["nice", "chicken"],
+        hotspots: [
+            {
+                name: "topics",
+                title: "About topics",
+                description: "Topics are good.",
+                delay: 1.5,
+            },
+            {
+                name: "compose",
+                title: "Compose box",
+                description: "This is where you compose messages.",
+                delay: 3.14159,
+            },
+        ],
     },
 
     invites_changed: {
