@@ -97,6 +97,16 @@ class Equals:
         return f"{var_name} in {repr([self.expected_value])}"
 
 
+class NumberType:
+    def check_data(self, var_name: str, val: Optional[Any]) -> None:
+        if isinstance(val, int) or isinstance(val, float):
+            return
+        raise AssertionError(f"{var_name} is not a number")
+
+    def schema(self, var_name: str) -> str:
+        return f"{var_name}: number"
+
+
 class ListType:
     def __init__(self, sub_type: Any, length: Optional[int] = None) -> None:
         self.sub_type = sub_type

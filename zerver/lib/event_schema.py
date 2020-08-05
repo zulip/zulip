@@ -12,6 +12,7 @@ from zerver.lib.data_types import (
     EnumType,
     Equals,
     ListType,
+    NumberType,
     OptionalType,
     UnionType,
     UrlType,
@@ -164,6 +165,25 @@ default_streams_event = event_dict_type(
     ]
 )
 check_default_streams = make_checker(default_streams_event)
+
+_hotspot = DictType(
+    [
+        # force vertical
+        ("name", str),
+        ("title", str),
+        ("description", str),
+        ("delay", NumberType()),
+    ]
+)
+
+hotspots_event = event_dict_type(
+    [
+        # force vertical
+        ("type", Equals("hotspots")),
+        ("hotspots", ListType(_hotspot),),
+    ]
+)
+check_hotspots = make_checker(hotspots_event)
 
 invites_changed_event = event_dict_type(
     required_keys=[

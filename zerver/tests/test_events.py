@@ -95,6 +95,7 @@ from zerver.lib.event_schema import (
     check_default_stream_groups,
     check_default_streams,
     check_events_dict,
+    check_hotspots,
     check_invites_changed,
     check_message,
     check_reaction,
@@ -1597,18 +1598,9 @@ class NormalActionsTest(BaseAction):
         self.user_profile.tutorial_status = UserProfile.TUTORIAL_WAITING
         self.user_profile.save(update_fields=['tutorial_status'])
 
-        schema_checker = check_events_dict([
-            ('type', equals('hotspots')),
-            ('hotspots', check_list(check_dict_only([
-                ('name', check_string),
-                ('title', check_string),
-                ('description', check_string),
-                ('delay', check_float),
-            ]))),
-        ])
         events = self.verify_action(
             lambda: do_mark_hotspot_as_read(self.user_profile, 'intro_reply'))
-        schema_checker('events[0]', events[0])
+        check_hotspots('events[0]', events[0])
 
     def test_rename_stream(self) -> None:
         stream = self.make_stream('old_name')
