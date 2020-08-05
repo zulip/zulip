@@ -416,6 +416,58 @@ def check_realm_bot_update(
     assert {"user_id", field} == set(event["bot"].keys())
 
 
+export_type = DictType(
+    required_keys=[
+        ("id", int),
+        ("export_time", NumberType()),
+        ("acting_user_id", int),
+        ("export_url", OptionalType(str)),
+        ("deleted_timestamp", OptionalType(NumberType())),
+        ("failed_timestamp", OptionalType(NumberType())),
+        ("pending", bool),
+    ]
+)
+
+realm_export_event = event_dict_type(
+    required_keys=[
+        # force vertical
+        ("type", Equals("realm_export")),
+        ("exports", ListType(export_type),),
+    ]
+)
+_check_realm_export = make_checker(realm_export_event)
+
+
+def check_realm_export(
+    var_name: str,
+    event: Dict[str, object],
+    has_export_url: bool,
+    has_deleted_timestamp: bool,
+    has_failed_timestamp: bool,
+) -> None:
+    """
+    Check the overall event first, knowing it has some
+    optional types.
+    """
+    _check_realm_export(var_name, event)
+
+    """
+    Theoretically we can have multiple exports, but until
+    that happens in practice, we assume our tests are
+    gonna have one export.
+    """
+    assert isinstance(event["exports"], list)
+    assert len(event["exports"]) == 1
+    export = event["exports"][0]
+
+    """
+    Now verify which fields have non-None values.
+    """
+    assert has_export_url == (export["export_url"] is not None)
+    assert has_deleted_timestamp == (export["deleted_timestamp"] is not None)
+    assert has_failed_timestamp == (export["failed_timestamp"] is not None)
+
+
 plan_type_extra_data_type = DictType(
     required_keys=[
         # force vertical
