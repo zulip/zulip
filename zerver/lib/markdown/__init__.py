@@ -646,6 +646,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             parsed_url = urllib.parse.urlparse(link)
             domain = '{url.scheme}://{url.netloc}/'.format(url=parsed_url)
             img_link = urllib.parse.urljoin(domain, img_link)
+
+        if settings.THUMBNAIL_IMAGES:
+            img_link = urllib.parse.urlunsplit(
+                ("", "", "/thumbnail", urllib.parse.urlencode({"url": img_link, "size": "thumbnail"}), ""))
+
         img = SubElement(container, "a")
         img.set("style", "background-image: url(" + img_link + ")")
         img.set("href", link)

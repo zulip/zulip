@@ -1,5 +1,6 @@
 from typing import Any, Callable, Dict, Optional
 from unittest import mock
+from urllib.parse import urlencode
 
 import ujson
 from django.test import override_settings
@@ -416,7 +417,7 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIn(embedded_link, msg.rendered_content)
 
     def test_inline_url_embed_preview(self) -> None:
-        with_preview = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://ia.media-imdb.com/images/rock.jpg)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+        with_preview = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(/thumbnail?url=http%3A%2F%2Fia.media-imdb.com%2Fimages%2Frock.jpg&amp;size=thumbnail)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         without_preview = '<p><a href="http://test.org/">http://test.org/</a></p>'
         msg = self._send_message_with_test_org_url(sender=self.example_user('hamlet'))
         self.assertEqual(msg.rendered_content, with_preview)
@@ -440,7 +441,7 @@ class PreviewTestCase(ZulipTestCase):
             patched.assert_not_called()
 
     def test_inline_url_embed_preview_with_relative_image_url(self) -> None:
-        with_preview_relative = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://test.org/images/rock.jpg)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+        with_preview_relative = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(/thumbnail?url=http%3A%2F%2Ftest.org%2Fimages%2Frock.jpg&amp;size=thumbnail)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         # Try case where the opengraph image is a relative url.
         msg = self._send_message_with_test_org_url(sender=self.example_user('prospero'), relative_url=True)
         self.assertEqual(msg.rendered_content, with_preview_relative)
@@ -607,8 +608,9 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIn('image', data)
 
         msg = Message.objects.select_related("sender").get(id=msg_id)
+        encoded_img_link = urlencode({'url': data['image']})
         self.assertIn(data['title'], msg.rendered_content)
-        self.assertIn(data['image'], msg.rendered_content)
+        self.assertIn(encoded_img_link, msg.rendered_content)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_valid_content_type_error_get_data(self) -> None:
