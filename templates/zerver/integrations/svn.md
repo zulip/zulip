@@ -26,4 +26,4 @@ these post-commit Zulips is subscribed to that stream!
 
 {!congrats.md!}
 
-![](/static/images/integrations/svn/001.png)
+![SVN commit bot message](/static/images/integrations/svn/001.png)

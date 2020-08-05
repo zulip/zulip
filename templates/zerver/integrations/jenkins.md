@@ -9,7 +9,7 @@ Install the "Zulip" plugin by going to
 typing in **Zulip**, and clicking **Install without
 restart**.
 
-![](/static/images/integrations/jenkins/001.png)
+![Plugin installation](/static/images/integrations/jenkins/001.png)
 
 ### Configure the plugin
 
@@ -24,7 +24,7 @@ recovers from a failed state).
 (If you don't see this option, you may first need to restart
 Jenkins.)
 
-![](/static/images/integrations/jenkins/002.png)
+![Plugin configuration](/static/images/integrations/jenkins/002.png)
 
 ### Configure a post-build action for your project
 
@@ -39,13 +39,13 @@ If you don't specify a custom topic, the project name will be used as the
 topic instead.
 Then click **Save**.
 
-![](/static/images/integrations/jenkins/003.png)
+![Post-build action configuration](/static/images/integrations/jenkins/003.png)
 
 When your builds fail or succeed, you'll see a message as shown below.
 
 {!congrats.md!}
 
-![](/static/images/integrations/jenkins/004.png)
+![Jenkins bot message](/static/images/integrations/jenkins/004.png)
 
 ### Advanced use cases
 

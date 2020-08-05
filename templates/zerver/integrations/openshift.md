@@ -14,7 +14,7 @@ application’s dashboard, and click **Want to log in to your
 application?**.  There you’ll find the app’s SSH user, address, and
 further information on SSH, in case you need it.
 
-![](/static/images/integrations/openshift/002.png)
+![Connecting to application](/static/images/integrations/openshift/002.png)
 
 {!change-zulip-config-file.md!}
 
@@ -36,7 +36,7 @@ notification.
 
 {!congrats.md!}
 
-![](/static/images/integrations/openshift/001.png)
+![OpenShift integration message](/static/images/integrations/openshift/001.png)
 
 **Testing**
 
