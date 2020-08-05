@@ -1655,7 +1655,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 
 @supports (-moz-appearance: none) {
     #settings_page select {
-        -moz-appearance: none;
+        appearance: none;
         background: hsl(0, 0%, 100%) url(../images/dropdown.png) right / 20px
             no-repeat;
         padding-right: 20px;
