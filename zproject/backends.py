@@ -985,7 +985,7 @@ class ExternalAuthResult:
         if self.user_profile is not None:
             # Ensure data inconsistent with the user_profile wasn't passed in inside the data_dict argument.
             assert 'full_name' not in data_dict or data_dict['full_name'] == self.user_profile.full_name
-            assert 'email' not in data_dict or data_dict['email'] == self.user_profile.delivery_email
+            assert 'email' not in data_dict or data_dict['email'].lower() == self.user_profile.delivery_email.lower()
             # Update these data_dict fields to ensure consistency with self.user_profile. This is mostly
             # defensive code, but is useful in these scenarios:
             # 1. user_profile argument was passed in, and no full_name or email_data in the data_dict arg.

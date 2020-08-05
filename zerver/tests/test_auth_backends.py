@@ -3660,6 +3660,14 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assert_logged_in_user_id(user_profile.id)
 
+    def test_login_case_insensitive(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email_upper = user_profile.delivery_email.upper()
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
+            result = self.client_get('/accounts/login/sso/', REMOTE_USER=email_upper)
+            self.assertEqual(result.status_code, 302)
+            self.assert_logged_in_user_id(user_profile.id)
+
     def test_login_failure(self) -> None:
         email = self.example_email("hamlet")
         result = self.client_get('/accounts/login/sso/', REMOTE_USER=email)
