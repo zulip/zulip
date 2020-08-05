@@ -119,8 +119,9 @@ run_test("alert_words", (override) => {
 });
 
 run_test("attachments", (override) => {
-    const event = event_fixtures.attachment;
+    const event = event_fixtures.attachment__add;
     global.with_stub((stub) => {
+        // attachments_ui is hard to test deeply
         override("attachments_ui.update_attachments", stub.f);
         dispatch(event);
         assert_same(stub.get_args("event").event, event);
@@ -167,7 +168,7 @@ run_test("user groups", (override) => {
 });
 
 run_test("custom profile fields", (override) => {
-    const event = event_fixtures.custom_profile_fields;
+    const event = event_fixtures.custom_profile_fields__update;
     override("settings_profile_fields.populate_profile_fields", noop);
     override("settings_account.add_custom_profile_fields_to_settings", noop);
     dispatch(event);

@@ -87,11 +87,13 @@ exports.fixtures = {
         alert_words: ["fire", "lunch"],
     },
 
-    attachment: {
+    attachment__add: {
         type: "attachment",
+        op: "add",
+        // missing data due to shallow test
     },
 
-    custom_profile_fields: {
+    custom_profile_fields__update: {
         type: "custom_profile_fields",
         op: "update",
         fields: [
