@@ -85,4 +85,4 @@ Zulip notification.
 
 {!congrats.md!}
 
-![](/static/images/integrations/hg/001.png)
+![Mercurial bot message](/static/images/integrations/hg/001.png)

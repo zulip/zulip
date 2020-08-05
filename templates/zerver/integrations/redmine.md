@@ -53,7 +53,7 @@ project's **Settings** page, and select the **Zulip** tab.
 
 {!congrats.md!}
 
-![](/static/images/integrations/redmine/001.png)
+![Redmine bot message](/static/images/integrations/redmine/001.png)
 
 [1]: https://www.redmine.org/projects/redmine/wiki/Plugins
 [2]: https://github.com/zulip/zulip-redmine-plugin

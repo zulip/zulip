@@ -46,4 +46,4 @@ destination stream exists and silently drop messages if it does not.
 
 {!congrats.md!}
 
-![](/static/images/integrations/perforce/001.png)
+![Perforce notification bot message](/static/images/integrations/perforce/001.png)

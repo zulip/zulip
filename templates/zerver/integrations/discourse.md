@@ -3,7 +3,7 @@ On your {{ settings_html|safe }},
 {{ integration_display_name }}. Make sure that you select
 **Incoming webhook** as the **Bot type**:
 
-![](/static/images/integrations/bot_types.png)
+![Bot types](/static/images/integrations/bot_types.png)
 
 The API keys for "Incoming webhook" bots are limited to only
 sending messages via webhooks. Thus, this bot type lessens
@@ -18,4 +18,4 @@ and complete them.
 
 {!congrats.md!}
 
-![](/static/images/integrations/discourse/001.png)
+![Discourse chat integration](/static/images/integrations/discourse/001.png)

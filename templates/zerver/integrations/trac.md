@@ -34,7 +34,7 @@ configured above) with a topic that matches the ticket name.
 
 {!congrats.md!}
 
-![](/static/images/integrations/trac/001.png)
+![Trac bot message](/static/images/integrations/trac/001.png)
 
 **Additional trac configuration**
 

@@ -68,4 +68,4 @@ String issueBaseUrl = "https://jira.COMPANY.com/browse/"
 
 {!congrats.md!}
 
-![](/static/images/integrations/jira/001.png)
+![JIRA bot message](/static/images/integrations/jira/001.png)
