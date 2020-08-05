@@ -5005,6 +5005,15 @@ class EmailValidatorTestCase(ZulipTestCase):
         self.assertEqual(error, 'Already has an account.')
         self.assertEqual(maybe_anonymous_email, cordelia_anonymous_email)
 
+        do_set_realm_property(realm, 'email_address_visibility', Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
+        cordelia.refresh_from_db()
+
+        errors = get_existing_user_errors(realm, {cordelia_email})
+        error, is_deactivated, maybe_anonymous_email = errors[cordelia_email]
+        self.assertEqual(False, is_deactivated)
+        self.assertEqual(error, 'Already has an account.')
+        self.assertEqual(maybe_anonymous_email, cordelia_email)
+
         cordelia.is_active = False
         cordelia.save()
 
@@ -5012,7 +5021,7 @@ class EmailValidatorTestCase(ZulipTestCase):
         error, is_deactivated, maybe_anonymous_email = errors[cordelia_email]
         self.assertEqual(True, is_deactivated)
         self.assertEqual(error, 'Account has been deactivated.')
-        self.assertEqual(maybe_anonymous_email, cordelia_anonymous_email)
+        self.assertEqual(maybe_anonymous_email, cordelia_email)
 
         errors = get_existing_user_errors(realm, {'fred-is-fine@zulip.com'})
         self.assertEqual(errors, {})
