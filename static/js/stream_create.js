@@ -4,7 +4,10 @@ const render_announce_stream_docs = require("../templates/announce_stream_docs.h
 const render_new_stream_users = require("../templates/new_stream_users.hbs");
 const render_subscription_invites_warning_modal = require("../templates/subscription_invites_warning_modal.hbs");
 
+const UserChecklistWidget = require("./user_checklist_widget");
+
 let created_stream;
+let user_checklist_widget;
 
 exports.reset_created_stream = function () {
     created_stream = undefined;
@@ -127,10 +130,7 @@ function update_announce_stream_state() {
 }
 
 function get_principals() {
-    return Array.from($("#stream_creation_form input:checkbox[name=user]:checked"), (elem) => {
-        const label = $(elem).closest(".add-user-label");
-        return parseInt(label.attr("data-user-id"), 10);
-    });
+    return user_checklist_widget.get_checked().map((e) => e.user_id);
 }
 
 function create_stream() {
@@ -269,13 +269,12 @@ exports.show_new_stream_modal = function () {
     // Add current user on top of list
     all_users.unshift(people.get_by_user_id(page_params.user_id));
     const html = render_new_stream_users({
-        users: all_users,
         streams: stream_data.get_streams_for_settings_page(),
         is_admin: page_params.is_admin,
     });
-
     const container = $("#people_to_add");
     container.html(html);
+    user_checklist_widget = new UserChecklistWidget(all_users, "user-checkboxes");
     exports.create_handlers_for_users(container);
 
     // Make the options default to the same each time:
@@ -298,16 +297,17 @@ exports.show_new_stream_modal = function () {
         const stream_id = parseInt(elem.attr("data-stream-id"), 10);
         const checked = elem.find("input").prop("checked");
         const subscriber_ids = stream_data.get_sub_by_id(stream_id).subscribers;
-
-        $("#user-checkboxes label.checkbox").each(function () {
-            const user_elem = $(this);
-            const user_id = parseInt(user_elem.attr("data-user-id"), 10);
-
-            if (subscriber_ids.has(user_id)) {
-                user_elem.find("input").prop("checked", checked);
-            }
+        subscriber_ids.map().forEach((user_id) => {
+            user_checklist_widget.check_user(user_id, checked);
         });
 
+        e.preventDefault();
+    });
+    $("#user-checkboxes-wrapper").on("change", "label.checkbox", function (e) {
+        const elem = $(this);
+        const user_id = parseInt(elem.attr("data-user-id"), 10);
+        const checked = elem.find("input").prop("checked");
+        user_checklist_widget.check_user(user_id, checked);
         e.preventDefault();
     });
 };
@@ -318,26 +318,13 @@ exports.create_handlers_for_users = function (container) {
 
     // 'Check all' and 'Uncheck all' visible users
     container.on("click", ".subs_set_all_users", (e) => {
-        $("#user-checkboxes .checkbox").each((idx, li) => {
-            if (li.style.display !== "none") {
-                $(li.firstElementChild).prop("checked", true);
-            }
-        });
+        user_checklist_widget.check_all(true);
         e.preventDefault();
         update_announce_stream_state();
     });
 
     container.on("click", ".subs_unset_all_users", (e) => {
-        $("#user-checkboxes .checkbox").each((idx, li) => {
-            if (li.style.display !== "none") {
-                // The first checkbox is the one for ourself; this is the code path for:
-                // `stream_subscription_error.cant_create_stream_without_susbscribing`
-                if (idx === 0 && !page_params.is_admin) {
-                    return;
-                }
-                $(li.firstElementChild).prop("checked", false);
-            }
-        });
+        user_checklist_widget.check_all(false);
         e.preventDefault();
         update_announce_stream_state();
     });

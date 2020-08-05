@@ -2044,15 +2044,18 @@ div.floating_recipient {
     color: hsl(0, 0%, 100%);
 }
 
-#user-checkboxes {
-    margin-top: 10px;
+#user-checkboxes-wrapper {
+    height: 50vh; // We need a fixed height for simplebar;
+    #user-checkboxes {
+        margin-top: 10px;
 
-    .checkbox {
-        display: block;
+        .checkbox {
+            display: block;
 
-        input[type="checkbox"] {
-            margin: 5px 0;
-            float: none;
+            input[type="checkbox"] {
+                margin: 5px 0;
+                float: none;
+            }
         }
     }
 }
