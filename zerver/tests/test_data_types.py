@@ -3,6 +3,7 @@ from zerver.lib.data_types import (
     EnumType,
     Equals,
     ListType,
+    NumberType,
     OptionalType,
     UnionType,
     UrlType,
@@ -22,6 +23,7 @@ class MiscTest(ZulipTestCase):
                 ("type", Equals("realm")),
                 ("maybe_n", OptionalType(int)),
                 ("s", str),
+                ("timestamp", NumberType()),
                 ("flag", bool),
                 ("level", EnumType([1, 2, 3])),
                 ("lst", ListType(int)),
@@ -37,6 +39,7 @@ test (dict):
         type: int
     maybe_n: int
     s: str
+    timestamp: number
     type in ['realm']
     url: str
     value (union):
