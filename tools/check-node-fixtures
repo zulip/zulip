@@ -42,10 +42,11 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.test_settings"
 django.setup()
 
 from zerver.lib import event_schema
-from zerver.lib.data_types import (  # force vertical
+from zerver.lib.data_types import (
     DictType,
     EnumType,
     ListType,
+    NumberType,
     UnionType,
     make_checker,
     schema,
@@ -150,7 +151,7 @@ def from_openapi(node: Dict[str, Any]) -> Any:
         return int
 
     if node["type"] == "number":
-        return float
+        return NumberType()
 
     if node["type"] == "string":
         if "enum" in node:
