@@ -152,6 +152,15 @@ class CommonUtils {
         return await page.evaluate((selector) => $(selector).text().trim(), selector);
     }
 
+    async wait_for_text(page, selector, text) {
+        await page.waitForFunction(
+            (selector, text) => $(selector).text().includes(text),
+            {},
+            selector,
+            text,
+        );
+    }
+
     async get_stream_id(page, stream_name) {
         return await page.evaluate(
             (stream_name) => stream_data.get_stream_id(stream_name),
