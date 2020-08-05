@@ -432,7 +432,7 @@ run_test("realm_bot", (override) => {
 });
 
 run_test("realm_emoji", (override) => {
-    const event = event_fixtures.realm_emoji;
+    const event = event_fixtures.realm_emoji__update;
 
     const ui_func_names = [
         "settings_emoji.populate_emoji",

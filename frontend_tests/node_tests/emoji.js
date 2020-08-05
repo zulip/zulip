@@ -6,7 +6,7 @@ const events = require("./lib/events.js");
 
 const emoji = zrequire("emoji", "shared/js/emoji");
 
-const realm_emoji = events.fixtures.realm_emoji.realm_emoji;
+const realm_emoji = events.test_realm_emojis;
 
 emoji.initialize({realm_emoji, emoji_codes});
 

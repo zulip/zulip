@@ -65,6 +65,22 @@ exports.test_streams = {
 
 const streams = exports.test_streams;
 
+exports.test_realm_emojis = {
+    101: {
+        id: "101",
+        name: "spain",
+        source_url: "/some/path/to/spain.png",
+        deactivated: false,
+    },
+    102: {
+        id: "102",
+        name: "green_tick",
+        author_id: 222,
+        deactivated: false,
+        source_url: "/some/path/to/emoji",
+    },
+};
+
 exports.fixtures = {
     alert_words: {
         type: "alert_words",
@@ -349,23 +365,10 @@ exports.fixtures = {
         domain: "ramen",
     },
 
-    realm_emoji: {
+    realm_emoji__update: {
         type: "realm_emoji",
-        realm_emoji: {
-            101: {
-                id: "101",
-                name: "spain",
-                source_url: "/some/path/to/spain.png",
-                deactivated: false,
-            },
-            102: {
-                id: "102",
-                name: "green_tick",
-                author_id: 222,
-                deactivated: false,
-                source_url: "/some/path/to/emoji",
-            },
-        },
+        op: "update",
+        realm_emoji: exports.test_realm_emojis,
     },
 
     realm_export: {
