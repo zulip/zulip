@@ -2162,6 +2162,9 @@ class SubscribeActionTest(BaseAction):
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
         stream = self.make_stream("private", self.user_profile.realm, invite_only=True)
+        stream.message_retention_days = 10
+        stream.save()
+
         user_profile = self.example_user('hamlet')
         action = lambda: bulk_add_subscriptions([stream], [user_profile])
         events = self.verify_action(
@@ -2170,3 +2173,8 @@ class SubscribeActionTest(BaseAction):
             num_events=2)
         check_stream_create('events[0]', events[0])
         check_subscription_add('events[1]', events[1], include_subscribers)
+
+        self.assertEqual(
+            events[0]['streams'][0]['message_retention_days'],
+            10,
+        )
