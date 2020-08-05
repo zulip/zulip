@@ -22,4 +22,4 @@ the bot.
 
 {!congrats.md!}
 
-![](/static/images/integrations/rss/001.png)
+![RSS bot message](/static/images/integrations/rss/001.png)

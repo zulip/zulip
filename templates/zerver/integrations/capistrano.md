@@ -38,4 +38,4 @@ creating that file.
 
 {!congrats.md!}
 
-![](/static/images/integrations/capistrano/001.png)
+![Capistrano bot message](/static/images/integrations/capistrano/001.png)

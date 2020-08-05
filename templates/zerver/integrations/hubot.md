@@ -34,7 +34,7 @@ To test your Hubot installation, send it an @-notification with a
 basic command, for example `@Hubot pug me`, which should produce a
 result like this:
 
-![](/static/images/integrations/hubot/001.png)
+![Hubot message](/static/images/integrations/hubot/001.png)
 
 [Source code for the hubot-zulip adapter is available on GitHub][1]
 [1]: https://github.com/zulip/hubot-zulip

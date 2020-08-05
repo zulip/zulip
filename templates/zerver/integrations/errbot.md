@@ -41,7 +41,7 @@ Run your favorite chatbot in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/errbot/000.png)
+![Errbot message](/static/images/integrations/errbot/000.png)
 
 ### Tips
 

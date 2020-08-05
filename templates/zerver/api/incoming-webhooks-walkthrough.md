@@ -439,7 +439,7 @@ Or, use curl:
 
 {!congrats.md!}
 
-![](/static/images/integrations/helloworld/001.png)
+![Hello World integration](/static/images/integrations/helloworld/001.png)
 
 ```
 

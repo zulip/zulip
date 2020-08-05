@@ -57,8 +57,8 @@ Example command:
 
 Your Zulip messages may look like:
 
-![](/static/images/integrations/irc/001.png)
+![IRC message on Zulip](/static/images/integrations/irc/001.png)
 
 Your IRC messages may look like:
 
-![](/static/images/integrations/irc/002.png)
+![Zulip message on IRC](/static/images/integrations/irc/002.png)

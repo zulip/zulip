@@ -24,7 +24,7 @@ Click on the tab that’s labeled **Your bots** and click on
 download the `zuliprc` file. Save this file as `.zuliprc` to your `~/`
 directory.
 
-![](/static/images/integrations/google/calendar/001.png)
+![Download zuliprc file](/static/images/integrations/google/calendar/001.png)
 
 Run the `get-google-credentials` with this command:
 
@@ -54,7 +54,7 @@ script:
   Address** section. Copy the **Calendar ID** from the right side of the
   page and use that as the value for this flag.
 
-![](/static/images/integrations/google/calendar/002.png)
+![Specify a calendar](/static/images/integrations/google/calendar/002.png)
 
 * `--interval`: This flag specifies the interval of time - in
   minutes - between receiving the reminder, and the actual event. For
@@ -67,4 +67,4 @@ running.
 
 {!congrats.md!}
 
-![](/static/images/integrations/google/calendar/003.png)
+![Calendar demo](/static/images/integrations/google/calendar/003.png)

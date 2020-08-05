@@ -42,7 +42,7 @@ with a topic indicating the service with an issue.
 
 {!congrats.md!}
 
-![](/static/images/integrations/nagios/001.png)
+![Nagios bot message](/static/images/integrations/nagios/001.png)
 
 **Testing**
 
