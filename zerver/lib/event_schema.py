@@ -5,7 +5,7 @@ It will contain schemas (aka validators) for Zulip events.
 
 Right now it's only intended to be used by test code.
 """
-from typing import Dict, List, Sequence, Set, Tuple, Union
+from typing import Dict, List, Sequence, Tuple, Union
 
 from zerver.lib.data_types import (
     DictType,
@@ -463,13 +463,6 @@ def check_realm_update(var_name: str, event: Dict[str, object], prop: str,) -> N
         raise AssertionError(f"Unexpected property type {property_type}")
 
 
-avatar_fields = {
-    "avatar_source",
-    "avatar_url",
-    "avatar_url_medium",
-    "avatar_version",
-}
-
 custom_profile_field_type = DictType(
     required_keys=[
         # vertical formatting
@@ -482,45 +475,85 @@ custom_profile_field_type = DictType(
     ],
 )
 
-realm_user_person_type = DictType(
-    required_keys=[
-        # vertical formatting
-        ("user_id", int),
-    ],
-    optional_keys=[
-        ("avatar_source", str),
-        ("avatar_url", OptionalType(str)),
-        ("avatar_url_medium", OptionalType(str)),
-        ("avatar_version", int),
-        ("bot_owner_id", int),
-        ("custom_profile_field", custom_profile_field_type),
-        ("delivery_email", str),
-        ("full_name", str),
-        ("role", EnumType(UserProfile.ROLE_TYPES)),
-        ("email", str),
-        ("user_id", int),
-        ("timezone", str),
-    ],
+realm_user_person_types = dict(
+    # Note that all flavors of person include user_id.
+    avatar_fields=DictType(
+        required_keys=[
+            ("user_id", int),
+            ("avatar_source", str),
+            ("avatar_url", OptionalType(str)),
+            ("avatar_url_medium", OptionalType(str)),
+            ("avatar_version", int),
+        ],
+    ),
+    bot_owner_id=DictType(
+        required_keys=[
+            # vertical formatting
+            ("user_id", int),
+            ("bot_owner_id", int),
+        ],
+    ),
+    custom_profile_field=DictType(
+        required_keys=[
+            # vertical formatting
+            ("user_id", int),
+            ("custom_profile_field", custom_profile_field_type),
+        ],
+    ),
+    delivery_email=DictType(
+        required_keys=[
+            # vertical formatting
+            ("user_id", int),
+            ("delivery_email", str),
+        ],
+    ),
+    full_name=DictType(
+        required_keys=[
+            # vertical formatting
+            ("user_id", int),
+            ("full_name", str),
+        ],
+    ),
+    role=DictType(
+        required_keys=[
+            # vertical formatting
+            ("user_id", int),
+            ("role", EnumType(UserProfile.ROLE_TYPES)),
+        ],
+    ),
+    timezone=DictType(
+        required_keys=[
+            # we should probably eliminate email here
+            ("user_id", int),
+            ("email", str),
+            ("timezone", str),
+        ],
+    ),
 )
 
 realm_user_update_event = event_dict_type(
     required_keys=[
         ("type", Equals("realm_user")),
         ("op", Equals("update")),
-        ("person", realm_user_person_type),
-    ]
+        ("person", UnionType(list(realm_user_person_types.values()))),
+    ],
 )
 _check_realm_user_update = make_checker(realm_user_update_event)
 
 
 def check_realm_user_update(
-    var_name: str, event: Dict[str, object], optional_fields: Set[str],
+    # person_flavor tells us which extra fields we need
+    var_name: str,
+    event: Dict[str, object],
+    person_flavor: str,
 ) -> None:
     _check_realm_user_update(var_name, event)
 
-    assert isinstance(event["person"], dict)
-    keys = set(event["person"].keys()) - {"user_id"}
-    assert optional_fields == keys
+    check_data(
+        realm_user_person_types[person_flavor],
+        f"{var_name}['person']",
+        event["person"],
+    )
 
 
 stream_create_event = event_dict_type(
