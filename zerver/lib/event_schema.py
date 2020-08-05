@@ -788,7 +788,17 @@ update_message_topic_fields = [
     ("message_ids", ListType(int)),
     ("new_stream_id", int),
     (ORIG_TOPIC, str),
-    ("propagate_mode", str),
+    (
+        "propagate_mode",
+        EnumType(
+            [
+                # order matches openapi spec
+                "change_one",
+                "change_later",
+                "change_all",
+            ]
+        ),
+    ),
     ("stream_id", int),
     ("stream_name", str),
     (TOPIC_LINKS, ListType(str)),
