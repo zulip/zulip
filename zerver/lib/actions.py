@@ -5147,13 +5147,14 @@ def email_not_system_bot(email: str) -> None:
 
 class InvitationError(JsonableError):
     code = ErrorCode.INVITATION_FAILED
-    data_fields = ['errors', 'sent_invitations']
+    data_fields = ['errors', 'sent_invitations', 'show_subscription']
 
     def __init__(self, msg: str, errors: List[Tuple[str, str, bool, str]],
-                 sent_invitations: bool) -> None:
+                 sent_invitations: bool, show_subscription: bool=False) -> None:
         self._msg: str = msg
         self.errors: List[Tuple[str, str, bool, str]] = errors
         self.sent_invitations: bool = sent_invitations
+        self.show_subscription: bool = show_subscription
 
 def estimate_recent_invites(realms: Iterable[Realm], *, days: int) -> int:
     '''An upper bound on the number of invites sent in the last `days` days'''
@@ -5258,7 +5259,7 @@ def do_invite_users(user_profile: UserProfile,
     if skipped and len(skipped) == len(invitee_emails):
         # All e-mails were skipped, so we didn't actually invite anyone.
         raise InvitationError(_("We weren't able to invite anyone."),
-                              skipped, sent_invitations=False)
+                              skipped, sent_invitations=False, show_subscription=True)
 
     # We do this here rather than in the invite queue processor since this
     # is used for rate limiting invitations, rather than keeping track of
@@ -5284,7 +5285,7 @@ def do_invite_users(user_profile: UserProfile,
         raise InvitationError(_("Some of those addresses are already using Zulip, "
                                 "so we didn't send them an invitation. We did send "
                                 "invitations to everyone else!"),
-                              skipped, sent_invitations=True)
+                              skipped, sent_invitations=True, show_subscription=True)
     notify_invites_changed(user_profile)
 
 def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
