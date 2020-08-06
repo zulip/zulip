@@ -32,6 +32,7 @@ const typing_person2 = {
 exports.typing_person1 = typing_person1;
 exports.typing_person2 = typing_person2;
 
+const fake_then = 1596710000;
 const fake_now = 1596713966;
 
 exports.test_streams = {
@@ -41,7 +42,7 @@ exports.test_streams = {
         rendered_description: "<b>devel fun</b>",
         invite_only: false,
         stream_id: 101,
-        date_created: 1595823892,
+        date_created: fake_now,
         first_message_id: 1,
         history_public_to_subscribers: false,
         is_announcement_only: false,
@@ -55,7 +56,7 @@ exports.test_streams = {
         rendered_description: "test desc",
         invite_only: true,
         stream_id: 102,
-        date_created: 1595823893,
+        date_created: fake_then,
         first_message_id: 1,
         history_public_to_subscribers: false,
         is_web_public: false,
@@ -169,7 +170,7 @@ exports.fixtures = {
             is_mirror_dummy: false,
             // etc.
         },
-        server_timestamp: 999999,
+        server_timestamp: fake_now,
     },
 
     reaction__add: {
