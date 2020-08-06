@@ -3,7 +3,7 @@ from operator import itemgetter
 from typing import Any, Dict, List, Tuple
 from unittest import mock
 
-import ujson
+import orjson
 from django.db import IntegrityError
 from django.http import HttpResponse
 
@@ -73,7 +73,7 @@ class EditMessageTest(ZulipTestCase):
         if msg.edit_history:
             self.assertEqual(
                 fetch_message_dict['edit_history'],
-                ujson.loads(msg.edit_history),
+                orjson.loads(msg.edit_history),
             )
 
     def test_query_count_on_to_dict_uncached(self) -> None:
@@ -249,7 +249,7 @@ class EditMessageTest(ZulipTestCase):
         messages_result = self.client_get("/json/messages",
                                           {"anchor": msg_id_1, "num_before": 0, "num_after": 10})
         self.assert_json_success(messages_result)
-        json_messages = ujson.loads(
+        json_messages = orjson.loads(
             messages_result.content.decode('utf-8'))
         for msg in json_messages['messages']:
             self.assertNotIn("edit_history", msg)
@@ -271,7 +271,7 @@ class EditMessageTest(ZulipTestCase):
 
         message_edit_history_1 = self.client_get(
             "/json/messages/" + str(msg_id_1) + "/history")
-        json_response_1 = ujson.loads(
+        json_response_1 = orjson.loads(
             message_edit_history_1.content.decode('utf-8'))
         message_history_1 = json_response_1['message_history']
 
@@ -307,7 +307,7 @@ class EditMessageTest(ZulipTestCase):
 
         message_edit_history_2 = self.client_get(
             "/json/messages/" + str(msg_id_2) + "/history")
-        json_response_2 = ujson.loads(
+        json_response_2 = orjson.loads(
             message_edit_history_2.content.decode('utf-8'))
         message_history_2 = json_response_2['message_history']
 
@@ -342,7 +342,7 @@ class EditMessageTest(ZulipTestCase):
 
         message_edit_history_1 = self.client_get(
             "/json/messages/" + str(msg_id_1) + "/history")
-        json_response_1 = ujson.loads(
+        json_response_1 = orjson.loads(
             message_edit_history_1.content.decode('utf-8'))
         message_history_1 = json_response_1['message_history']
 
@@ -407,7 +407,7 @@ class EditMessageTest(ZulipTestCase):
             'content': 'content 2',
         })
         self.assert_json_success(result)
-        history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
+        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0]['prev_content'], 'content 1')
         self.assertEqual(history[0]['user_id'], hamlet.id)
         self.assertEqual(set(history[0].keys()),
@@ -419,7 +419,7 @@ class EditMessageTest(ZulipTestCase):
             'topic': 'topic 2',
         })
         self.assert_json_success(result)
-        history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
+        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0][LEGACY_PREV_TOPIC], 'topic 1')
         self.assertEqual(history[0]['user_id'], hamlet.id)
         self.assertEqual(set(history[0].keys()), {'timestamp', LEGACY_PREV_TOPIC, 'user_id'})
@@ -430,7 +430,7 @@ class EditMessageTest(ZulipTestCase):
             'topic': 'topic 3',
         })
         self.assert_json_success(result)
-        history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
+        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0]['prev_content'], 'content 2')
         self.assertEqual(history[0][LEGACY_PREV_TOPIC], 'topic 2')
         self.assertEqual(history[0]['user_id'], hamlet.id)
@@ -443,7 +443,7 @@ class EditMessageTest(ZulipTestCase):
             'content': 'content 4',
         })
         self.assert_json_success(result)
-        history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
+        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0]['prev_content'], 'content 3')
         self.assertEqual(history[0]['user_id'], hamlet.id)
 
@@ -453,11 +453,11 @@ class EditMessageTest(ZulipTestCase):
             'topic': 'topic 4',
         })
         self.assert_json_success(result)
-        history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
+        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0][LEGACY_PREV_TOPIC], 'topic 3')
         self.assertEqual(history[0]['user_id'], self.example_user('iago').id)
 
-        history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
+        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0][LEGACY_PREV_TOPIC], 'topic 3')
         self.assertEqual(history[2][LEGACY_PREV_TOPIC], 'topic 2')
         self.assertEqual(history[3][LEGACY_PREV_TOPIC], 'topic 1')
@@ -469,7 +469,7 @@ class EditMessageTest(ZulipTestCase):
         # correct filled-out fields
         message_edit_history = self.client_get("/json/messages/" + str(msg_id) + "/history")
 
-        json_response = ujson.loads(message_edit_history.content.decode('utf-8'))
+        json_response = orjson.loads(message_edit_history.content.decode('utf-8'))
 
         # We reverse the message history view output so that the IDs line up with the above.
         message_history = list(reversed(json_response['message_history']))
@@ -511,9 +511,9 @@ class EditMessageTest(ZulipTestCase):
                                        message_content_edit_limit_seconds: int,
                                        allow_community_topic_editing: bool) -> None:
             result = self.client_patch("/json/realm", {
-                'allow_message_editing': ujson.dumps(allow_message_editing),
+                'allow_message_editing': orjson.dumps(allow_message_editing).decode(),
                 'message_content_edit_limit_seconds': message_content_edit_limit_seconds,
-                'allow_community_topic_editing': ujson.dumps(allow_community_topic_editing),
+                'allow_community_topic_editing': orjson.dumps(allow_community_topic_editing).decode(),
             })
             self.assert_json_success(result)
 
@@ -583,9 +583,9 @@ class EditMessageTest(ZulipTestCase):
                                        message_content_edit_limit_seconds: int,
                                        allow_community_topic_editing: bool) -> None:
             result = self.client_patch("/json/realm", {
-                'allow_message_editing': ujson.dumps(allow_message_editing),
+                'allow_message_editing': orjson.dumps(allow_message_editing).decode(),
                 'message_content_edit_limit_seconds': message_content_edit_limit_seconds,
-                'allow_community_topic_editing': ujson.dumps(allow_community_topic_editing),
+                'allow_community_topic_editing': orjson.dumps(allow_community_topic_editing).decode(),
             })
             self.assert_json_success(result)
 
@@ -1112,7 +1112,7 @@ class DeleteMessageTest(ZulipTestCase):
                                         message_content_delete_limit_seconds: int) -> None:
             self.login('iago')
             result = self.client_patch("/json/realm", {
-                'allow_message_deleting': ujson.dumps(allow_message_deleting),
+                'allow_message_deleting': orjson.dumps(allow_message_deleting).decode(),
                 'message_content_delete_limit_seconds': message_content_delete_limit_seconds,
             })
             self.assert_json_success(result)

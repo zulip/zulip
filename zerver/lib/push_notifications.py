@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Un
 
 import gcm
 import lxml.html
-import ujson
+import orjson
 from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models import F
@@ -249,7 +249,7 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
         # one-way compatibility.
         raise JsonableError(_(
             "Invalid GCM options to bouncer: {}",
-        ).format(ujson.dumps(options)))
+        ).format(orjson.dumps(options).decode()))
 
     return priority  # when this grows a second option, can make it a tuple
 

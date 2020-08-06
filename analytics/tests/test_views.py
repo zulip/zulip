@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 from unittest import mock
 
-import ujson
+import orjson
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
@@ -547,7 +547,7 @@ class TestSupportEndpoint(ZulipTestCase):
         stream_ids = [self.get_stream_id("Denmark")]
         invitee_emails = [self.nonreg_email("test1")]
         self.client_post("/json/invites", {"invitee_emails": invitee_emails,
-                                           "stream_ids": ujson.dumps(stream_ids),
+                                           "stream_ids": orjson.dumps(stream_ids).decode(),
                                            "invite_as": PreregistrationUser.INVITE_AS['MEMBER']})
         result = self.client_get("/activity/support", {"q": self.nonreg_email("test1")})
         check_preregistration_user_query_result(result, self.nonreg_email("test1"), invite=True)

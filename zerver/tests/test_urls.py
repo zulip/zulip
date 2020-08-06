@@ -3,7 +3,7 @@ import os
 from typing import List, Optional
 
 import django.urls.resolvers
-import ujson
+import orjson
 from django.test import Client
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -93,7 +93,7 @@ class PublicURLTest(ZulipTestCase):
             resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEqual(200, resp.status_code,
                              msg=f"Expected 200, received {resp.status_code} for GET /api/v1/fetch_google_client_id")
-            data = ujson.loads(resp.content)
+            data = orjson.loads(resp.content)
             self.assertEqual('success', data['result'])
             self.assertEqual('ABCD', data['google_client_id'])
 

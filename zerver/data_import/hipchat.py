@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict, List, Optional, Set
 
 import dateutil
 import hypchat
-import ujson
+import orjson
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
@@ -74,8 +74,8 @@ def untar_input_file(tar_file: str) -> str:
 def read_user_data(data_dir: str) -> List[ZerverFieldsT]:
     fn = 'users.json'
     data_file = os.path.join(data_dir, fn)
-    with open(data_file) as fp:
-        return ujson.load(fp)
+    with open(data_file, "rb") as fp:
+        return orjson.loads(fp.read())
 
 def convert_user_data(user_handler: UserHandler,
                       slim_mode: bool,
@@ -192,8 +192,8 @@ def convert_avatar_data(avatar_folder: str,
 def read_room_data(data_dir: str) -> List[ZerverFieldsT]:
     fn = 'rooms.json'
     data_file = os.path.join(data_dir, fn)
-    with open(data_file) as f:
-        data = ujson.load(f)
+    with open(data_file, "rb") as f:
+        data = orjson.loads(f.read())
     return data
 
 def convert_room_data(raw_data: List[ZerverFieldsT],
@@ -349,8 +349,8 @@ def write_emoticon_data(realm_id: int,
         logging.warning("As a result, custom emoji cannot be imported.")
         return []
 
-    with open(data_file) as f:
-        data = ujson.load(f)
+    with open(data_file, "rb") as f:
+        data = orjson.loads(f.read())
 
     if isinstance(data, dict) and 'Emoticons' in data:
         # Handle the hc-migrate export format for emoticons.json.
@@ -561,8 +561,8 @@ def process_message_file(realm_id: int,
                          attachment_handler: AttachmentHandler) -> None:
 
     def get_raw_messages(fn: str) -> List[ZerverFieldsT]:
-        with open(fn) as f:
-            data = ujson.load(f)
+        with open(fn, "rb") as f:
+            data = orjson.loads(f.read())
 
         flat_data = [
             d[message_key]

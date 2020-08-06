@@ -27,8 +27,8 @@ from typing import (
     cast,
 )
 
+import orjson
 import tornado.ioloop
-import ujson
 from django.conf import settings
 from django.utils.translation import ugettext as _
 from typing_extensions import TypedDict
@@ -465,9 +465,10 @@ def persistent_queue_filename(port: int, last: bool=False) -> str:
 def dump_event_queues(port: int) -> None:
     start = time.time()
 
-    with open(persistent_queue_filename(port), "w") as stored_queues:
-        ujson.dump([(qid, client.to_dict()) for (qid, client) in clients.items()],
-                   stored_queues)
+    with open(persistent_queue_filename(port), "wb") as stored_queues:
+        stored_queues.write(
+            orjson.dumps([(qid, client.to_dict()) for (qid, client) in clients.items()])
+        )
 
     logging.info('Tornado %d dumped %d event queues in %.3fs',
                  port, len(clients), time.time() - start)
@@ -477,8 +478,8 @@ def load_event_queues(port: int) -> None:
     start = time.time()
 
     try:
-        with open(persistent_queue_filename(port)) as stored_queues:
-            data = ujson.load(stored_queues)
+        with open(persistent_queue_filename(port), "rb") as stored_queues:
+            data = orjson.loads(stored_queues.read())
     except FileNotFoundError:
         pass
     except ValueError:

@@ -2,7 +2,7 @@
 
 from typing import Any, Set, Union
 
-import ujson
+import orjson
 from django.conf import settings
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import migrations
@@ -146,10 +146,10 @@ def ensure_no_empty_passwords(apps: StateApps, schema_editor: DatabaseSchemaEdit
             modified_user=user_profile,
             event_type=event_type,
             event_time=event_time,
-            extra_data=ujson.dumps({
+            extra_data=orjson.dumps({
                 'migration_id': MIGRATION_ID,
                 'affected_user_type': affected_user_type,
-            }),
+            }).decode(),
         )
 
     # If Zulip's built-in password authentication is not enabled on

@@ -231,25 +231,25 @@ class TestSendWebhookFixtureMessage(ZulipTestCase):
 
     @patch('zerver.management.commands.send_webhook_fixture_message.os.path.exists')
     @patch('zerver.management.commands.send_webhook_fixture_message.Client')
-    @patch('zerver.management.commands.send_webhook_fixture_message.ujson')
+    @patch('zerver.management.commands.send_webhook_fixture_message.orjson')
     @patch("zerver.management.commands.send_webhook_fixture_message.open", create=True)
     def test_check_if_command_post_request_to_url_with_fixture(self,
                                                                open_mock: MagicMock,
-                                                               ujson_mock: MagicMock,
+                                                               orjson_mock: MagicMock,
                                                                client_mock: MagicMock,
                                                                os_path_exists_mock: MagicMock) -> None:
-        ujson_mock.load.return_value = {}
-        ujson_mock.dumps.return_value = "{}"
+        orjson_mock.loads.return_value = {}
+        orjson_mock.dumps.return_value = b"{}"
         os_path_exists_mock.return_value = True
 
         client = client_mock()
 
         with self.assertRaises(CommandError):
             call_command(self.COMMAND_NAME, fixture=self.fixture_path, url=self.url)
-        self.assertTrue(ujson_mock.dumps.called)
-        self.assertTrue(ujson_mock.load.called)
+        self.assertTrue(orjson_mock.dumps.called)
+        self.assertTrue(orjson_mock.loads.called)
         self.assertTrue(open_mock.called)
-        client.post.assert_called_once_with(self.url, "{}", content_type="application/json",
+        client.post.assert_called_once_with(self.url, b"{}", content_type="application/json",
                                             HTTP_HOST="zulip.testserver")
 
 class TestGenerateRealmCreationLink(ZulipTestCase):

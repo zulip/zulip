@@ -1,6 +1,6 @@
 from typing import Optional
 
-import ujson
+import orjson
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
 
@@ -84,7 +84,7 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
                                tos_version=tos_version, timezone=timezone,
                                tutorial_status=tutorial_status,
                                enter_sends=enter_sends,
-                               onboarding_steps=ujson.dumps([]),
+                               onboarding_steps=orjson.dumps([]).decode(),
                                default_language=realm.default_language,
                                twenty_four_hour_time=realm.default_twenty_four_hour_time,
                                delivery_email=email)

@@ -1,4 +1,4 @@
-import ujson
+import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
@@ -56,8 +56,8 @@ def team_view(request: HttpRequest) -> HttpResponse:
         return HttpResponseRedirect('https://zulip.com/team/', status=301)
 
     try:
-        with open(settings.CONTRIBUTOR_DATA_FILE_PATH) as f:
-            data = ujson.load(f)
+        with open(settings.CONTRIBUTOR_DATA_FILE_PATH, "rb") as f:
+            data = orjson.loads(f.read())
     except FileNotFoundError:
         data = {'contributors': {}, 'date': "Never ran."}
 

@@ -4,7 +4,7 @@ import zlib
 from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 import ahocorasick
-import ujson
+import orjson
 from django.db import connection
 from django.db.models import Sum
 from django.utils.timezone import now as timezone_now
@@ -154,10 +154,10 @@ def sew_messages_and_submessages(messages: List[Dict[str, Any]],
             message['submessages'].append(submessage)
 
 def extract_message_dict(message_bytes: bytes) -> Dict[str, Any]:
-    return ujson.loads(zlib.decompress(message_bytes).decode("utf-8"))
+    return orjson.loads(zlib.decompress(message_bytes))
 
 def stringify_message_dict(message_dict: Dict[str, Any]) -> bytes:
-    return zlib.compress(ujson.dumps(message_dict).encode())
+    return zlib.compress(orjson.dumps(message_dict))
 
 @cache_with_key(to_dict_cache_key, timeout=3600*24)
 def message_to_dict_json(message: Message, realm_id: Optional[int]=None) -> bytes:
@@ -395,7 +395,7 @@ class MessageDict:
         if last_edit_time is not None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(last_edit_time)
             assert edit_history is not None
-            obj['edit_history'] = ujson.loads(edit_history)
+            obj['edit_history'] = orjson.loads(edit_history)
 
         if Message.need_to_render_content(rendered_content, rendered_content_version, markdown_version):
             # We really shouldn't be rendering objects in this method, but there is

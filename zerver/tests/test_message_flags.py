@@ -1,7 +1,7 @@
 from typing import Any, List, Mapping, Set
 from unittest import mock
 
-import ujson
+import orjson
 from django.db import connection
 from django.http import HttpResponse
 
@@ -87,7 +87,7 @@ class FirstUnreadAnchorTests(ZulipTestCase):
 
         # Let's set this old message to be unread
         result = self.client_post("/json/messages/flags",
-                                  {"messages": ujson.dumps([old_message_id]),
+                                  {"messages": orjson.dumps([old_message_id]).decode(),
                                    "op": "remove",
                                    "flag": "read"})
 
@@ -168,7 +168,7 @@ class UnreadCountTests(ZulipTestCase):
         self.login('hamlet')
 
         result = self.client_post("/json/messages/flags",
-                                  {"messages": ujson.dumps(self.unread_msg_ids),
+                                  {"messages": orjson.dumps(self.unread_msg_ids).decode(),
                                    "op": "add",
                                    "flag": "read"})
         self.assert_json_success(result)
@@ -182,7 +182,7 @@ class UnreadCountTests(ZulipTestCase):
         self.assertEqual(found, 2)
 
         result = self.client_post("/json/messages/flags",
-                                  {"messages": ujson.dumps([self.unread_msg_ids[1]]),
+                                  {"messages": orjson.dumps([self.unread_msg_ids[1]]).decode(),
                                    "op": "remove", "flag": "read"})
         self.assert_json_success(result)
 
@@ -432,13 +432,13 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
 
         property_name = "push_notifications"
         result = self.api_post(user_profile, "/api/v1/users/me/subscriptions/properties",
-                               {"subscription_data": ujson.dumps([{"property": property_name,
-                                                                   "value": True,
-                                                                   "stream_id": stream.id}])})
+                               {"subscription_data": orjson.dumps([{"property": property_name,
+                                                                    "value": True,
+                                                                    "stream_id": stream.id}]).decode()})
         result = self.api_post(user_profile, "/api/v1/users/me/subscriptions/properties",
-                               {"subscription_data": ujson.dumps([{"property": property_name,
-                                                                   "value": True,
-                                                                   "stream_id": second_stream.id}])})
+                               {"subscription_data": orjson.dumps([{"property": property_name,
+                                                                    "value": True,
+                                                                    "stream_id": second_stream.id}]).decode()})
         self.assert_json_success(result)
         self.assertEqual(self.get_mobile_push_notification_ids(user_profile), [])
 
@@ -900,32 +900,32 @@ class MessageAccessTests(ZulipTestCase):
 
         self.login('hamlet')
         result = self.client_post("/json/messages/flags",
-                                  {"messages": ujson.dumps([message]),
+                                  {"messages": orjson.dumps([message]).decode(),
                                    "op": "add",
                                    "flag": "invalid"})
         self.assert_json_error(result, "Invalid flag: 'invalid'")
 
         result = self.client_post("/json/messages/flags",
-                                  {"messages": ujson.dumps([message]),
+                                  {"messages": orjson.dumps([message]).decode(),
                                    "op": "add",
                                    "flag": "is_private"})
         self.assert_json_error(result, "Invalid flag: 'is_private'")
 
         result = self.client_post("/json/messages/flags",
-                                  {"messages": ujson.dumps([message]),
+                                  {"messages": orjson.dumps([message]).decode(),
                                    "op": "add",
                                    "flag": "active_mobile_push_notification"})
         self.assert_json_error(result, "Invalid flag: 'active_mobile_push_notification'")
 
         result = self.client_post("/json/messages/flags",
-                                  {"messages": ujson.dumps([message]),
+                                  {"messages": orjson.dumps([message]).decode(),
                                    "op": "add",
                                    "flag": "mentioned"})
         self.assert_json_error(result, "Flag not editable: 'mentioned'")
 
     def change_star(self, messages: List[int], add: bool=True, **kwargs: Any) -> HttpResponse:
         return self.client_post("/json/messages/flags",
-                                {"messages": ujson.dumps(messages),
+                                {"messages": orjson.dumps(messages).decode(),
                                  "op": "add" if add else "remove",
                                  "flag": "starred"},
                                 **kwargs)
@@ -992,13 +992,13 @@ class MessageAccessTests(ZulipTestCase):
             ),
         ]
         result = self.client_post("/json/messages/flags",
-                                  {"messages": ujson.dumps(sent_message_ids),
+                                  {"messages": orjson.dumps(sent_message_ids).decode(),
                                    "op": "add",
                                    "flag": "read"})
 
         # We can't change flags other than "starred" on historical messages:
         result = self.client_post("/json/messages/flags",
-                                  {"messages": ujson.dumps(message_ids),
+                                  {"messages": orjson.dumps(message_ids).decode(),
                                    "op": "add",
                                    "flag": "read"})
         self.assert_json_error(result, 'Invalid message(s)')

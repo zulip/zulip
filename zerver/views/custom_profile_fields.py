@@ -1,6 +1,6 @@
 from typing import Dict, List, Union
 
-import ujson
+import orjson
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
@@ -93,7 +93,7 @@ def create_realm_custom_profile_field(request: HttpRequest,
                                       name: str=REQ(default=''),
                                       hint: str=REQ(default=''),
                                       field_data: ProfileFieldData=REQ(default={},
-                                                                       converter=ujson.loads),
+                                                                       converter=orjson.loads),
                                       field_type: int=REQ(validator=check_int)) -> HttpResponse:
     validate_custom_profile_field(name, hint, field_type, field_data)
     try:
@@ -136,7 +136,7 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
                                       name: str=REQ(default=''),
                                       hint: str=REQ(default=''),
                                       field_data: ProfileFieldData=REQ(default={},
-                                                                       converter=ujson.loads),
+                                                                       converter=orjson.loads),
                                       ) -> HttpResponse:
     realm = user_profile.realm
     try:
@@ -145,7 +145,7 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
         return json_error(_('Field id {id} not found.').format(id=field_id))
 
     if field.field_type == CustomProfileField.EXTERNAL_ACCOUNT:
-        if is_default_external_field(field.field_type, ujson.loads(field.field_data)):
+        if is_default_external_field(field.field_type, orjson.loads(field.field_data)):
             return json_error(_("Default custom field cannot be updated."))
 
     validate_custom_profile_field(name, hint, field.field_type, field_data)

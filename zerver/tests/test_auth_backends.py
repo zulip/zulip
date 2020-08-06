@@ -11,9 +11,9 @@ from unittest import mock
 
 import jwt
 import ldap
+import orjson
 import requests
 import responses
-import ujson
 from bs4 import BeautifulSoup
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
@@ -324,8 +324,8 @@ class AuthBackendTest(ZulipTestCase):
         self.assert_in_response(realm.name, result)
         self.assert_in_response("Log in to Zulip", result)
 
-        data = dict(description=ujson.dumps("New realm description"),
-                    name=ujson.dumps("New Zulip"))
+        data = dict(description=orjson.dumps("New realm description").decode(),
+                    name=orjson.dumps("New Zulip").decode())
         result = self.client_patch('/json/realm', data)
         self.assert_json_success(result)
 
@@ -1525,7 +1525,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         parsed_url = urllib.parse.urlparse(result.url)
         relay_state = urllib.parse.parse_qs(parsed_url.query)['RelayState'][0]
         # Make sure params are getting encoded into RelayState:
-        data = SAMLAuthBackend.get_data_from_redis(ujson.loads(relay_state)['state_token'])
+        data = SAMLAuthBackend.get_data_from_redis(orjson.loads(relay_state)['state_token'])
         assert data is not None
         if next:
             self.assertEqual(data['next'], next)
@@ -1632,9 +1632,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
                     self.assertLogs(self.logger_string, level='INFO') as m:
                 # This mock causes AuthFailed to be raised.
                 saml_response = self.generate_saml_response(self.email, self.name)
-                relay_state = ujson.dumps(dict(
+                relay_state = orjson.dumps(dict(
                     state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"}),
-                ))
+                )).decode()
                 post_params = {"SAMLResponse": saml_response, "RelayState": relay_state}
                 result = self.client_post('/complete/saml/',  post_params)
                 self.assertEqual(result.status_code, 302)
@@ -1648,9 +1648,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
                             side_effect=AuthStateForbidden('State forbidden')), \
                     self.assertLogs(self.logger_string, level='WARNING') as m:
                 saml_response = self.generate_saml_response(self.email, self.name)
-                relay_state = ujson.dumps(dict(
+                relay_state = orjson.dumps(dict(
                     state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"}),
-                ))
+                )).decode()
                 post_params = {"SAMLResponse": saml_response, "RelayState": relay_state}
                 result = self.client_post('/complete/saml/',  post_params)
                 self.assertEqual(result.status_code, 302)
@@ -1670,9 +1670,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
         # Check that POSTing the RelayState, but with missing SAMLResponse,
         # doesn't cause errors either:
         with self.assertLogs(self.logger_string, level='INFO') as m:
-            relay_state = ujson.dumps(dict(
+            relay_state = orjson.dumps(dict(
                 state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"}),
-            ))
+            )).decode()
             post_params = {"RelayState": relay_state}
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
@@ -1681,9 +1681,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
         # Now test bad SAMLResponses.
         with self.assertLogs(self.logger_string, level='INFO') as m:
-            relay_state = ujson.dumps(dict(
+            relay_state = orjson.dumps(dict(
                 state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"}),
-            ))
+            )).decode()
             post_params = {"RelayState": relay_state, 'SAMLResponse': ''}
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
@@ -1691,9 +1691,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertTrue(m.output != '')
 
         with self.assertLogs(self.logger_string, level='INFO') as m:
-            relay_state = ujson.dumps(dict(
+            relay_state = orjson.dumps(dict(
                 state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"}),
-            ))
+            )).decode()
             post_params = {"RelayState": relay_state, 'SAMLResponse': 'b'}
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
@@ -1701,9 +1701,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertTrue(m.output != '')
 
         with self.assertLogs(self.logger_string, level='INFO') as m:
-            relay_state = ujson.dumps(dict(
+            relay_state = orjson.dumps(dict(
                 state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"}),
-            ))
+            )).decode()
             post_params = {"RelayState": relay_state, 'SAMLResponse': 'dGVzdA=='}  # base64 encoded 'test'
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
@@ -1725,9 +1725,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
         )])
 
     def test_social_auth_complete_wrong_issuing_idp(self) -> None:
-        relay_state = ujson.dumps(dict(
+        relay_state = orjson.dumps(dict(
             state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"}),
-        ))
+        )).decode()
         saml_response = self.generate_saml_response(email=self.example_email("hamlet"),
                                                     name="King Hamlet")
 
@@ -1753,9 +1753,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
         with self.assertLogs(self.logger_string, level='INFO') as m, \
                 mock.patch.object(SAMLAuthBackend, 'get_issuing_idp', return_value='test_idp'):
-            relay_state = ujson.dumps(dict(
+            relay_state = orjson.dumps(dict(
                 state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"}),
-            ))
+            )).decode()
             post_params = {"RelayState": relay_state, 'SAMLResponse': 'dGVzdA=='}
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
@@ -4944,12 +4944,12 @@ class TestAdminSetBackends(ZulipTestCase):
         # Log in as admin
         self.login('iago')
         result = self.client_patch("/json/realm", {
-            'authentication_methods': ujson.dumps({'Email': False, 'Dev': True})})
+            'authentication_methods': orjson.dumps({'Email': False, 'Dev': True}).decode()})
         self.assert_json_error(result, 'Must be an organization owner')
 
         self.login('desdemona')
         result = self.client_patch("/json/realm", {
-            'authentication_methods': ujson.dumps({'Email': False, 'Dev': True})})
+            'authentication_methods': orjson.dumps({'Email': False, 'Dev': True}).decode()})
         self.assert_json_success(result)
         realm = get_realm('zulip')
         self.assertFalse(password_auth_enabled(realm))
@@ -4959,7 +4959,7 @@ class TestAdminSetBackends(ZulipTestCase):
         # Log in as admin
         self.login('desdemona')
         result = self.client_patch("/json/realm", {
-            'authentication_methods': ujson.dumps({'Email': False, 'Dev': False})})
+            'authentication_methods': orjson.dumps({'Email': False, 'Dev': False}).decode()})
         self.assert_json_error(result, 'At least one authentication method must be enabled.')
         realm = get_realm('zulip')
         self.assertTrue(password_auth_enabled(realm))
@@ -4970,7 +4970,7 @@ class TestAdminSetBackends(ZulipTestCase):
         self.login('desdemona')
         # Set some supported and unsupported backends
         result = self.client_patch("/json/realm", {
-            'authentication_methods': ujson.dumps({'Email': False, 'Dev': True, 'GitHub': False})})
+            'authentication_methods': orjson.dumps({'Email': False, 'Dev': True, 'GitHub': False}).decode()})
         self.assert_json_success(result)
         realm = get_realm('zulip')
         # Check that unsupported backend is not enabled

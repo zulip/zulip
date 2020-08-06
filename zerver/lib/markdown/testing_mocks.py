@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
 
-import ujson
+import orjson
 
 NORMAL_TWEET = """{
     "created_at": "Sat Sep 10 22:23:38 +0000 2011",
@@ -221,12 +221,12 @@ EMOJI_TWEET = """{
 
 def twitter(tweet_id: str) -> Optional[Dict[str, Any]]:
     if tweet_id in ["112652479837110273", "287977969287315456", "287977969287315457"]:
-        return ujson.loads(NORMAL_TWEET)
+        return orjson.loads(NORMAL_TWEET)
     elif tweet_id == "287977969287315458":
-        return ujson.loads(MENTION_IN_LINK_TWEET)
+        return orjson.loads(MENTION_IN_LINK_TWEET)
     elif tweet_id == "287977969287315459":
-        return ujson.loads(MEDIA_TWEET)
+        return orjson.loads(MEDIA_TWEET)
     elif tweet_id == "287977969287315460":
-        return ujson.loads(EMOJI_TWEET)
+        return orjson.loads(EMOJI_TWEET)
     else:
         return None

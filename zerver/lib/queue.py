@@ -5,9 +5,9 @@ import time
 from collections import defaultdict
 from typing import Any, Callable, Dict, List, Mapping, Optional, Set
 
+import orjson
 import pika
 import pika.adapters.tornado_connection
-import ujson
 from django.conf import settings
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic
@@ -126,7 +126,7 @@ class SimpleQueueClient:
         self.ensure_queue(queue_name, do_publish)
 
     def json_publish(self, queue_name: str, body: Mapping[str, Any]) -> None:
-        data = ujson.dumps(body).encode()
+        data = orjson.dumps(body)
         try:
             self.publish(queue_name, data)
             return
@@ -164,7 +164,7 @@ class SimpleQueueClient:
                              method: Basic.Deliver,
                              properties: pika.BasicProperties,
                              body: bytes) -> None:
-            callback(ujson.loads(body))
+            callback(orjson.loads(body))
         self.register_consumer(queue_name, wrapped_callback)
 
     def drain_queue(self, queue_name: str) -> List[bytes]:
@@ -185,7 +185,7 @@ class SimpleQueueClient:
         return messages
 
     def json_drain_queue(self, queue_name: str) -> List[Dict[str, Any]]:
-        return list(map(ujson.loads, self.drain_queue(queue_name)))
+        return list(map(orjson.loads, self.drain_queue(queue_name)))
 
     def queue_size(self) -> int:
         assert self.channel is not None

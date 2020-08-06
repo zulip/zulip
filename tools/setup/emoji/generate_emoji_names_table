@@ -8,7 +8,7 @@
 import os
 from typing import Any, Dict, List
 
-import ujson
+import orjson
 
 from emoji_names import EMOJI_NAME_MAPS
 from emoji_setup_utils import EMOJISETS, emoji_is_universal, get_emoji_code
@@ -21,12 +21,12 @@ EMOJI_DATA_FILE = os.path.join(ZULIP_PATH, 'node_modules', 'emoji-datasource-goo
 EMOJI_CACHE = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji')
 OUTPUT_FILE = os.path.join(EMOJI_CACHE, 'emoji_names_table.html')
 
-with open(EMOJI_DATA_FILE) as fp:
-    EMOJI_DATA = ujson.load(fp)
-with open(UNIFIED_REACTIONS_FILE) as fp:
-    UNIFIED_REACTIONS_MAP = ujson.load(fp)
-with open(EMOJI_MAP_FILE) as fp:
-    EMOJI_MAP = ujson.load(fp)
+with open(EMOJI_DATA_FILE, "rb") as fp:
+    EMOJI_DATA = orjson.loads(fp.read())
+with open(UNIFIED_REACTIONS_FILE, "rb") as fp:
+    UNIFIED_REACTIONS_MAP = orjson.loads(fp.read())
+with open(EMOJI_MAP_FILE, "rb") as fp:
+    EMOJI_MAP = orjson.loads(fp.read())
 
 EMOJI_IMAGE_TEMPLATE = """
     <img class="emoji" src="images-{emojiset}-64/{emoji_code}.png" title={emojiset}>

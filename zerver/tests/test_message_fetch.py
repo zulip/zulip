@@ -3,7 +3,7 @@ import os
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
 from unittest import mock
 
-import ujson
+import orjson
 from django.db import connection
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
@@ -464,8 +464,8 @@ class NarrowLibraryTest(ZulipTestCase):
     def test_build_narrow_filter(self) -> None:
         fixtures_path = os.path.join(os.path.dirname(__file__),
                                      'fixtures/narrow.json')
-        with open(fixtures_path) as f:
-            scenarios = ujson.load(f)
+        with open(fixtures_path, "rb") as f:
+            scenarios = orjson.loads(f.read())
         self.assertTrue(len(scenarios) == 9)
         for scenario in scenarios:
             narrow = scenario['narrow']
@@ -1059,7 +1059,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(set(payload["Cache-Control"].split(", ")),
                          {"must-revalidate", "no-store", "no-cache", "max-age=0"})
 
-        result = ujson.loads(payload.content)
+        result = orjson.loads(payload.content)
 
         self.assertIn("messages", result)
         self.assertIsInstance(result["messages"], list)
@@ -1074,11 +1074,11 @@ class GetOldMessagesTest(ZulipTestCase):
                                 message_ids: List[int], pivot_index: int) -> None:
         num_before = len(message_ids)
 
-        post_params = dict(narrow=ujson.dumps(narrow), num_before=num_before,
+        post_params = dict(narrow=orjson.dumps(narrow).decode(), num_before=num_before,
                            num_after=0, anchor=LARGER_THAN_MAX_MESSAGE_ID)
         payload = self.client_get("/json/messages", dict(post_params))
         self.assert_json_success(payload)
-        result = ujson.loads(payload.content)
+        result = orjson.loads(payload.content)
 
         self.assertEqual(len(result["messages"]), len(message_ids))
         for message in result["messages"]:
@@ -1090,7 +1090,7 @@ class GetOldMessagesTest(ZulipTestCase):
             payload = self.client_get("/json/messages", dict(post_params))
 
         self.assert_json_success(payload)
-        result = ujson.loads(payload.content)
+        result = orjson.loads(payload.content)
 
         self.assertEqual(len(result["messages"]), len(message_ids[pivot_index:]))
         for message in result["messages"]:
@@ -1123,7 +1123,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         def get_content_type(apply_markdown: bool) -> str:
             req: Dict[str, Any] = dict(
-                apply_markdown=ujson.dumps(apply_markdown),
+                apply_markdown=orjson.dumps(apply_markdown).decode(),
             )
             result = self.get_and_check_messages(req)
             message = result['messages'][0]
@@ -1183,17 +1183,17 @@ class GetOldMessagesTest(ZulipTestCase):
         # clients around, which might include third party home-grown bots.
         self.get_and_check_messages(
             dict(
-                narrow=ujson.dumps(
+                narrow=orjson.dumps(
                     [['pm-with', othello_email]],
-                ),
+                ).decode(),
             ),
         )
 
         self.get_and_check_messages(
             dict(
-                narrow=ujson.dumps(
+                narrow=orjson.dumps(
                     [dict(operator='pm-with', operand=othello_email)],
-                ),
+                ).decode(),
             ),
         )
 
@@ -1213,14 +1213,14 @@ class GetOldMessagesTest(ZulipTestCase):
         message = result['messages'][0]
         self.assertIn('gravatar.com', message['avatar_url'])
 
-        result = self.get_and_check_messages(dict(client_gravatar=ujson.dumps(True)))
+        result = self.get_and_check_messages(dict(client_gravatar=orjson.dumps(True).decode()))
         message = result['messages'][0]
         self.assertEqual(message['avatar_url'], None)
 
         # Now verify client_gravatar doesn't run with EMAIL_ADDRESS_VISIBILITY_ADMINS
         do_set_realm_property(hamlet.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
-        result = self.get_and_check_messages(dict(client_gravatar=ujson.dumps(True)))
+        result = self.get_and_check_messages(dict(client_gravatar=orjson.dumps(True).decode()))
         message = result['messages'][0]
         self.assertIn('gravatar.com', message['avatar_url'])
 
@@ -1264,7 +1264,7 @@ class GetOldMessagesTest(ZulipTestCase):
             emails = dr_emails(get_display_recipient(personal.recipient))
             self.login_user(me)
             narrow: List[Dict[str, Any]] = [dict(operator='pm-with', operand=emails)]
-            result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
+            result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
 
             for message in result["messages"]:
                 self.assertEqual(dr_emails(message['display_recipient']), emails)
@@ -1272,7 +1272,7 @@ class GetOldMessagesTest(ZulipTestCase):
             # check passing id is conistent with passing emails as operand
             ids = dr_ids(get_display_recipient(personal.recipient))
             narrow = [dict(operator='pm-with', operand=ids)]
-            result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
+            result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
 
             for message in result["messages"]:
                 self.assertEqual(dr_emails(message['display_recipient']), emails)
@@ -1340,7 +1340,7 @@ class GetOldMessagesTest(ZulipTestCase):
         test_operands = [cordelia.email, cordelia.id]
         for operand in test_operands:
             narrow = [dict(operator='group-pm-with', operand=operand)]
-            result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
+            result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
             for message in result["messages"]:
                 self.assertIn(message["id"], matching_message_ids)
                 self.assertNotIn(message["id"], non_matching_message_ids)
@@ -1396,7 +1396,7 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
 
         req = dict(
-            narrow=ujson.dumps(narrow),
+            narrow=orjson.dumps(narrow).decode(),
             anchor=LARGER_THAN_MAX_MESSAGE_ID,
             num_before=100,
             num_after=100,
@@ -1404,7 +1404,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         payload = self.client_get('/json/messages', req)
         self.assert_json_success(payload)
-        result = ujson.loads(payload.content)
+        result = orjson.loads(payload.content)
         messages = result['messages']
         self.assertEqual(len(messages), 2)
 
@@ -1437,7 +1437,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         for operand in [stream_name, stream_id]:
             narrow = [dict(operator='stream', operand=operand)]
-            result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
+            result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
 
             for message in result["messages"]:
                 self.assertEqual(message["type"], "stream")
@@ -1476,7 +1476,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         narrow = [dict(operator='stream', operand='\u03bb-stream')]
         result = self.get_and_check_messages(dict(num_after=2,
-                                                  narrow=ujson.dumps(narrow)),
+                                                  narrow=orjson.dumps(narrow).decode()),
                                              subdomain="zephyr")
 
         messages = get_user_messages(self.mit_user("starnine"))
@@ -1507,7 +1507,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         narrow = [dict(operator='topic', operand='\u03bb-topic')]
         result = self.get_and_check_messages(
-            dict(num_after=100, narrow=ujson.dumps(narrow)),
+            dict(num_after=100, narrow=orjson.dumps(narrow).decode()),
             subdomain="zephyr")
 
         messages = get_user_messages(mit_user_profile)
@@ -1542,7 +1542,7 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.get_and_check_messages(
             dict(num_before=50,
                  num_after=50,
-                 narrow=ujson.dumps(narrow)),
+                 narrow=orjson.dumps(narrow).decode()),
             subdomain="zephyr")
 
         messages = get_user_messages(mit_user_profile)
@@ -1574,7 +1574,7 @@ class GetOldMessagesTest(ZulipTestCase):
         test_operands = [othello.email, othello.id]
         for operand in test_operands:
             narrow = [dict(operator='sender', operand=operand)]
-            result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
+            result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
 
             for message in result["messages"]:
                 self.assertEqual(message["sender_id"], othello.id)
@@ -1616,7 +1616,7 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
 
         raw_params = dict(msg_ids=msg_ids, narrow=narrow)
-        params = {k: ujson.dumps(v) for k, v in raw_params.items()}
+        params = {k: orjson.dumps(v).decode() for k, v in raw_params.items()}
         result = self.client_get('/json/messages/matches_narrow', params)
         self.assert_json_success(result)
         messages = result.json()['messages']
@@ -1661,7 +1661,7 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator='search', operand='lunch'),
         ]
         result: Dict[str, Any] = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(narrow),
+            narrow=orjson.dumps(narrow).decode(),
             anchor=next_message_id,
             num_before=0,
             num_after=10,
@@ -1671,7 +1671,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         narrow = [dict(operator='search', operand='https://google.com')]
         link_search_result: Dict[str, Any] = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(narrow),
+            narrow=orjson.dumps(narrow).decode(),
             anchor=next_message_id,
             num_before=0,
             num_after=10,
@@ -1709,7 +1709,7 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator='search', operand='after'),
         ]
         multi_search_result: Dict[str, Any] = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(multi_search_narrow),
+            narrow=orjson.dumps(multi_search_narrow).decode(),
             anchor=next_message_id,
             num_after=10,
             num_before=0,
@@ -1722,7 +1722,7 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator='search', operand='日本'),
         ]
         result = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(narrow),
+            narrow=orjson.dumps(narrow).decode(),
             anchor=next_message_id,
             num_after=10,
             num_before=0,
@@ -1758,7 +1758,7 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator='search', operand='今日は'),
         ]
         multi_search_result = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(multi_search_narrow),
+            narrow=orjson.dumps(multi_search_narrow).decode(),
             anchor=next_message_id,
             num_after=10,
             num_before=0,
@@ -1806,7 +1806,7 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator='stream', operand='newstream'),
         ]
         stream_search_result: Dict[str, Any] = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(stream_search_narrow),
+            narrow=orjson.dumps(stream_search_narrow).decode(),
             anchor=0,
             num_after=10,
             num_before=10,
@@ -1853,7 +1853,7 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator='search', operand='日本'),
         ]
         result: Dict[str, Any] = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(narrow),
+            narrow=orjson.dumps(narrow).decode(),
             anchor=next_message_id,
             num_after=10,
             num_before=0,
@@ -1889,7 +1889,7 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator='search', operand='wiki'),
         ]
         multi_search_result: Dict[str, Any] = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(multi_search_narrow),
+            narrow=orjson.dumps(multi_search_narrow).decode(),
             anchor=next_message_id,
             num_after=10,
             num_before=0,
@@ -1904,7 +1904,7 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator='search', operand='べました'),
         ]
         multi_search_result = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(multi_search_narrow),
+            narrow=orjson.dumps(multi_search_narrow).decode(),
             anchor=next_message_id,
             num_after=10,
             num_before=0,
@@ -1915,7 +1915,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         narrow = [dict(operator='search', operand='https://google.com')]
         link_search_result: Dict[str, Any] = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(narrow),
+            narrow=orjson.dumps(narrow).decode(),
             anchor=next_message_id,
             num_after=10,
             num_before=0,
@@ -1929,7 +1929,7 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator='search', operand='butter'),
         ]
         special_search_result: Dict[str, Any] = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(special_search_narrow),
+            narrow=orjson.dumps(special_search_narrow).decode(),
             anchor=next_message_id,
             num_after=10,
             num_before=0,
@@ -1942,7 +1942,7 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator='search', operand='&'),
         ]
         special_search_result = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(special_search_narrow),
+            narrow=orjson.dumps(special_search_narrow).decode(),
             anchor=next_message_id,
             num_after=10,
             num_before=0,
@@ -1976,7 +1976,7 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
 
         raw_params = dict(msg_ids=msg_ids, narrow=narrow)
-        params = {k: ujson.dumps(v) for k, v in raw_params.items()}
+        params = {k: orjson.dumps(v).decode() for k, v in raw_params.items()}
         result = self.client_get('/json/messages/matches_narrow', params)
         self.assert_json_success(result)
         messages = result.json()['messages']
@@ -1999,14 +1999,14 @@ class GetOldMessagesTest(ZulipTestCase):
 
         narrow = [dict(operator='sender', operand=cordelia.email)]
         result: Dict[str, Any] = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(narrow),
+            narrow=orjson.dumps(narrow).decode(),
             anchor=anchor, num_before=0,
             num_after=0,
         ))
         self.assertEqual(len(result['messages']), 1)
 
         narrow = [dict(operator='is', operand='mentioned')]
-        result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow),
+        result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode(),
                                                   anchor=anchor, num_before=0,
                                                   num_after=0))
         self.assertEqual(len(result['messages']), 0)
@@ -2332,7 +2332,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login('hamlet')
         for operator in ['', 'foo', 'stream:verona', '__init__']:
             narrow = [dict(operator=operator, operand='')]
-            params = dict(anchor=0, num_before=0, num_after=0, narrow=ujson.dumps(narrow))
+            params = dict(anchor=0, num_before=0, num_after=0, narrow=orjson.dumps(narrow).decode())
             result = self.client_get("/json/messages", params)
             self.assert_json_error_contains(result,
                                             "Invalid narrow operator: unknown operator")
@@ -2373,7 +2373,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         for operand in operands:
             narrow = [dict(operator=operator, operand=operand)]
-            params = dict(anchor=0, num_before=0, num_after=0, narrow=ujson.dumps(narrow))
+            params = dict(anchor=0, num_before=0, num_after=0, narrow=orjson.dumps(narrow).decode())
             result = self.client_get('/json/messages', params)
             self.assert_json_error_contains(result, error_msg)
 
@@ -2383,7 +2383,7 @@ class GetOldMessagesTest(ZulipTestCase):
         other_params: List[Tuple[str, Any]] = [("anchor", 0), ("num_before", 0), ("num_after", 0)]
         for operand in operands:
             post_params = dict(other_params + [
-                ("narrow", ujson.dumps([[operator, operand]]))])
+                ("narrow", orjson.dumps([[operator, operand]]).decode())])
             result = self.client_get("/json/messages", post_params)
             self.assert_json_error_contains(result, error_msg)
 
@@ -2503,7 +2503,7 @@ class GetOldMessagesTest(ZulipTestCase):
         request = POSTRequestMock(query_params, user_profile)
 
         payload = get_messages_backend(request, user_profile)
-        result = ujson.loads(payload.content)
+        result = orjson.loads(payload.content)
         self.assertEqual(result['anchor'], first_message_id)
         self.assertEqual(result['found_newest'], True)
         self.assertEqual(result['found_oldest'], True)
@@ -2947,7 +2947,7 @@ WHERE user_profile_id = {hamlet_id} AND (content ILIKE '%jumping%' OR subject IL
             dict(operator='search', operand=othello.email),
         ]
         result: Dict[str, Any] = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(narrow),
+            narrow=orjson.dumps(narrow).decode(),
             anchor=next_message_id,
             num_after=10,
         ))
@@ -2958,7 +2958,7 @@ WHERE user_profile_id = {hamlet_id} AND (content ILIKE '%jumping%' OR subject IL
             dict(operator='search', operand='othello'),
         ]
         result = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(narrow),
+            narrow=orjson.dumps(narrow).decode(),
             anchor=next_message_id,
             num_after=10,
         ))

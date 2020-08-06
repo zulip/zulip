@@ -10,7 +10,7 @@ import sys
 import tempfile
 from typing import List
 
-import ujson
+import orjson
 
 TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
 ZULIP_PATH = os.path.dirname(TOOLS_DIR)
@@ -64,12 +64,12 @@ def get_requirements_hash(tmp_dir: str, use_test_lock_files: bool = False) -> st
 def may_be_setup_cache() -> None:
     os.makedirs(CACHE_DIR, exist_ok=True)
     if not os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, 'w') as fp:
-            ujson.dump([], fp)
+        with open(CACHE_FILE, 'wb') as fp:
+            fp.write(orjson.dumps([]))
 
 def load_cache() -> List[str]:
-    with open(CACHE_FILE) as fp:
-        hash_list = ujson.load(fp)
+    with open(CACHE_FILE, "rb") as fp:
+        hash_list = orjson.loads(fp.read())
     return hash_list
 
 def update_cache(hash_list: List[str]) -> None:
@@ -77,8 +77,8 @@ def update_cache(hash_list: List[str]) -> None:
     # not a problem as it is cheap to do.
     if len(hash_list) > 100:
         hash_list = hash_list[-100:]
-    with open(CACHE_FILE, 'w') as fp:
-        ujson.dump(hash_list, fp)
+    with open(CACHE_FILE, 'wb') as fp:
+        fp.write(orjson.dumps(hash_list))
 
 def main() -> None:
     may_be_setup_cache()

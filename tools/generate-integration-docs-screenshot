@@ -27,8 +27,8 @@ import subprocess
 from typing import Any, Dict, Optional
 from urllib.parse import parse_qsl, urlencode
 
+import orjson
 import requests
-import ujson
 
 from scripts.lib.zulip_tools import BOLDRED, ENDC
 from tools.lib.test_script import prepare_puppeteer_run
@@ -106,7 +106,7 @@ def custom_headers(headers_json: str) -> Dict[str, str]:
     if not headers_json:
         return {}
     try:
-        return ujson.loads(headers_json)
+        return orjson.loads(headers_json)
     except ValueError as ve:
         raise argparse.ArgumentTypeError(
             'Encountered an error while attempting to parse custom headers: {}\n'
@@ -120,10 +120,11 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
     _, fixture_name = split_fixture_path(fixture_path)
 
     if fixture_name:
-        with open(fixture_path) as f:
-            if json_fixture:
-                data = ujson.load(f)
-            else:
+        if json_fixture:
+            with open(fixture_path, "rb") as fb:
+                data = orjson.loads(fb.read())
+        else:
+            with open(fixture_path) as f:
                 data = f.read().strip()
     else:
         data = ''
@@ -150,7 +151,7 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
         params = parsed_params
 
     elif config.payload_as_query_param:
-        params[config.payload_param_name] = ujson.dumps(data)
+        params[config.payload_param_name] = orjson.dumps(data).decode()
 
     else:
         extra_args = {'json': data}

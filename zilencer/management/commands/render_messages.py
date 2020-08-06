@@ -1,7 +1,7 @@
 import os
 from typing import Any, Iterator
 
-import ujson
+import orjson
 from django.core.management.base import BaseCommand, CommandParser
 from django.db.models import QuerySet
 
@@ -37,8 +37,8 @@ class Command(BaseCommand):
         if not os.path.exists(dest_dir):
             os.makedirs(dest_dir)
 
-        with open(options['destination'], 'w') as result:
-            result.write('[')
+        with open(options['destination'], 'wb') as result:
+            result.write(b'[')
             messages = Message.objects.filter(id__gt=latest - amount, id__lte=latest).order_by('id')
             for message in queryset_iterator(messages):
                 content = message.content
@@ -48,16 +48,16 @@ class Command(BaseCommand):
                 # version, extracting it from the edit history if
                 # necessary.
                 if message.edit_history:
-                    history = ujson.loads(message.edit_history)
+                    history = orjson.loads(message.edit_history)
                     history = sorted(history, key=lambda i: i['timestamp'])
                     for entry in history:
                         if 'prev_content' in entry:
                             content = entry['prev_content']
                             break
-                result.write(ujson.dumps({
+                result.write(orjson.dumps({
                     'id': message.id,
                     'content': render_markdown(message, content),
                 }))
                 if message.id != latest:
-                    result.write(',')
-            result.write(']')
+                    result.write(b',')
+            result.write(b']')

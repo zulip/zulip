@@ -12,7 +12,7 @@ import os
 import re
 from typing import Any, Dict, List
 
-import ujson
+import orjson
 
 from emoji_setup_utils import get_emoji_code
 
@@ -48,8 +48,8 @@ explanation_regex = re.compile(r"    # (?P<explanation_line>[^\r\n\t]+)")
 
 def prepare_sorting_info() -> None:
     emoji_data: List[Dict[str, Any]] = []
-    with open(EMOJI_DATA_PATH) as fp:
-        emoji_data = ujson.load(fp)
+    with open(EMOJI_DATA_PATH, "rb") as fp:
+        emoji_data = orjson.loads(fp.read())
 
     for emoji_dict in emoji_data:
         emoji_code = get_emoji_code(emoji_dict)

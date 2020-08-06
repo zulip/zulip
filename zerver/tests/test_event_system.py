@@ -2,7 +2,7 @@ import time
 from typing import Any, Callable, Dict, List
 from unittest import mock
 
-import ujson
+import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
@@ -60,11 +60,11 @@ class EventsEndpointTest(ZulipTestCase):
         # Test that call is made to deal with a returning soft deactivated user.
         with mock.patch('zerver.lib.events.reactivate_user_if_soft_deactivated') as fa:
             with stub_event_queue_user_events(return_event_queue, return_user_events):
-                result = self.api_post(user, '/json/register', dict(event_types=ujson.dumps([event_type])))
+                result = self.api_post(user, '/json/register', dict(event_types=orjson.dumps([event_type]).decode()))
                 self.assertEqual(fa.call_count, 1)
 
         with stub_event_queue_user_events(return_event_queue, return_user_events):
-            result = self.api_post(user, '/json/register', dict(event_types=ujson.dumps([event_type])))
+            result = self.api_post(user, '/json/register', dict(event_types=orjson.dumps([event_type]).decode()))
 
         self.assert_json_success(result)
         result_dict = result.json()
@@ -76,7 +76,7 @@ class EventsEndpointTest(ZulipTestCase):
         return_user_events = [test_event]
 
         with stub_event_queue_user_events(return_event_queue, return_user_events):
-            result = self.api_post(user, '/json/register', dict(event_types=ujson.dumps([event_type])))
+            result = self.api_post(user, '/json/register', dict(event_types=orjson.dumps([event_type]).decode()))
 
         self.assert_json_success(result)
         result_dict = result.json()
@@ -90,8 +90,8 @@ class EventsEndpointTest(ZulipTestCase):
         return_event_queue = '15:13'
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(user, '/json/register',
-                                   dict(event_types=ujson.dumps([event_type]),
-                                        fetch_event_types=ujson.dumps(['message'])))
+                                   dict(event_types=orjson.dumps([event_type]).decode(),
+                                        fetch_event_types=orjson.dumps(['message']).decode()))
         self.assert_json_success(result)
         result_dict = result.json()
         self.assertEqual(result_dict['last_event_id'], 6)
@@ -105,8 +105,8 @@ class EventsEndpointTest(ZulipTestCase):
         # Now test with `fetch_event_types` matching the event
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(user, '/json/register',
-                                   dict(fetch_event_types=ujson.dumps([event_type]),
-                                        event_types=ujson.dumps(['message'])))
+                                   dict(fetch_event_types=orjson.dumps([event_type]).decode(),
+                                        event_types=orjson.dumps(['message']).decode()))
         self.assert_json_success(result)
         result_dict = result.json()
         self.assertEqual(result_dict['last_event_id'], 6)
@@ -124,14 +124,14 @@ class EventsEndpointTest(ZulipTestCase):
         # the /notify_tornado endpoint, so we can have 100% URL coverage,
         # but it does exercise a little bit of the codepath.
         post_data = dict(
-            data=ujson.dumps(
+            data=orjson.dumps(
                 dict(
                     event=dict(
                         type='other',
                     ),
                     users=[self.example_user('hamlet').id],
                 ),
-            ),
+            ).decode(),
         )
         req = POSTRequestMock(post_data, user_profile=None)
         req.META['REMOTE_ADDR'] = '127.0.0.1'
@@ -159,32 +159,32 @@ class GetEventsTest(ZulipTestCase):
         self.login_user(user_profile)
 
         result = self.tornado_call(get_events, user_profile,
-                                   {"apply_markdown": ujson.dumps(True),
-                                    "client_gravatar": ujson.dumps(True),
-                                    "event_types": ujson.dumps(["message"]),
+                                   {"apply_markdown": orjson.dumps(True).decode(),
+                                    "client_gravatar": orjson.dumps(True).decode(),
+                                    "event_types": orjson.dumps(["message"]).decode(),
                                     "user_client": "website",
-                                    "dont_block": ujson.dumps(True),
+                                    "dont_block": orjson.dumps(True).decode(),
                                     })
         self.assert_json_success(result)
-        queue_id = ujson.loads(result.content)["queue_id"]
+        queue_id = orjson.loads(result.content)["queue_id"]
 
         recipient_result = self.tornado_call(get_events, recipient_user_profile,
-                                             {"apply_markdown": ujson.dumps(True),
-                                              "client_gravatar": ujson.dumps(True),
-                                              "event_types": ujson.dumps(["message"]),
+                                             {"apply_markdown": orjson.dumps(True).decode(),
+                                              "client_gravatar": orjson.dumps(True).decode(),
+                                              "event_types": orjson.dumps(["message"]).decode(),
                                               "user_client": "website",
-                                              "dont_block": ujson.dumps(True),
+                                              "dont_block": orjson.dumps(True).decode(),
                                               })
         self.assert_json_success(recipient_result)
-        recipient_queue_id = ujson.loads(recipient_result.content)["queue_id"]
+        recipient_queue_id = orjson.loads(recipient_result.content)["queue_id"]
 
         result = self.tornado_call(get_events, user_profile,
                                    {"queue_id": queue_id,
                                     "user_client": "website",
                                     "last_event_id": -1,
-                                    "dont_block": ujson.dumps(True),
+                                    "dont_block": orjson.dumps(True).decode(),
                                     })
-        events = ujson.loads(result.content)["events"]
+        events = orjson.loads(result.content)["events"]
         self.assert_json_success(result)
         self.assert_length(events, 0)
 
@@ -204,9 +204,9 @@ class GetEventsTest(ZulipTestCase):
                                    {"queue_id": queue_id,
                                     "user_client": "website",
                                     "last_event_id": -1,
-                                    "dont_block": ujson.dumps(True),
+                                    "dont_block": orjson.dumps(True).decode(),
                                     })
-        events = ujson.loads(result.content)["events"]
+        events = orjson.loads(result.content)["events"]
         self.assert_json_success(result)
         self.assert_length(events, 1)
         self.assertEqual(events[0]["type"], "message")
@@ -233,9 +233,9 @@ class GetEventsTest(ZulipTestCase):
                                    {"queue_id": queue_id,
                                     "user_client": "website",
                                     "last_event_id": last_event_id,
-                                    "dont_block": ujson.dumps(True),
+                                    "dont_block": orjson.dumps(True).decode(),
                                     })
-        events = ujson.loads(result.content)["events"]
+        events = orjson.loads(result.content)["events"]
         self.assert_json_success(result)
         self.assert_length(events, 1)
         self.assertEqual(events[0]["type"], "message")
@@ -248,9 +248,9 @@ class GetEventsTest(ZulipTestCase):
                                              {"queue_id": recipient_queue_id,
                                               "user_client": "website",
                                               "last_event_id": -1,
-                                              "dont_block": ujson.dumps(True),
+                                              "dont_block": orjson.dumps(True).decode(),
                                               })
-        recipient_events = ujson.loads(recipient_result.content)["events"]
+        recipient_events = orjson.loads(recipient_result.content)["events"]
         self.assert_json_success(recipient_result)
         self.assertEqual(len(recipient_events), 2)
         self.assertEqual(recipient_events[0]["type"], "message")
@@ -269,25 +269,25 @@ class GetEventsTest(ZulipTestCase):
                 get_events,
                 user_profile,
                 dict(
-                    apply_markdown=ujson.dumps(apply_markdown),
-                    client_gravatar=ujson.dumps(client_gravatar),
-                    event_types=ujson.dumps(["message"]),
-                    narrow=ujson.dumps([["stream", "denmark"]]),
+                    apply_markdown=orjson.dumps(apply_markdown).decode(),
+                    client_gravatar=orjson.dumps(client_gravatar).decode(),
+                    event_types=orjson.dumps(["message"]).decode(),
+                    narrow=orjson.dumps([["stream", "denmark"]]).decode(),
                     user_client="website",
-                    dont_block=ujson.dumps(True),
+                    dont_block=orjson.dumps(True).decode(),
                 ),
             )
 
             self.assert_json_success(result)
-            queue_id = ujson.loads(result.content)["queue_id"]
+            queue_id = orjson.loads(result.content)["queue_id"]
 
             result = self.tornado_call(get_events, user_profile,
                                        {"queue_id": queue_id,
                                         "user_client": "website",
                                         "last_event_id": -1,
-                                        "dont_block": ujson.dumps(True),
+                                        "dont_block": orjson.dumps(True).decode(),
                                         })
-            events = ujson.loads(result.content)["events"]
+            events = orjson.loads(result.content)["events"]
             self.assert_json_success(result)
             self.assert_length(events, 0)
 
@@ -298,9 +298,9 @@ class GetEventsTest(ZulipTestCase):
                                        {"queue_id": queue_id,
                                         "user_client": "website",
                                         "last_event_id": -1,
-                                        "dont_block": ujson.dumps(True),
+                                        "dont_block": orjson.dumps(True).decode(),
                                         })
-            events = ujson.loads(result.content)["events"]
+            events = orjson.loads(result.content)["events"]
             self.assert_json_success(result)
             self.assert_length(events, 1)
             self.assertEqual(events[0]["type"], "message")

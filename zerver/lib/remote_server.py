@@ -2,8 +2,8 @@ import logging
 import urllib
 from typing import Any, Dict, List, Mapping, Tuple, Union
 
+import orjson
 import requests
-import ujson
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.translation import ugettext as _
@@ -24,7 +24,7 @@ class PushNotificationBouncerRetryLaterError(JsonableError):
 def send_to_push_bouncer(
     method: str,
     endpoint: str,
-    post_data: Union[str, Mapping[str, Union[str, bytes]]],
+    post_data: Union[bytes, Mapping[str, Union[str, bytes]]],
     extra_headers: Mapping[str, str] = {},
 ) -> Dict[str, object]:
     """While it does actually send the notice, this function has a lot of
@@ -74,7 +74,7 @@ def send_to_push_bouncer(
         raise PushNotificationBouncerRetryLaterError(error_msg)
     elif res.status_code >= 400:
         # If JSON parsing errors, just let that exception happen
-        result_dict = ujson.loads(res.content)
+        result_dict = orjson.loads(res.content)
         msg = result_dict['msg']
         if 'code' in result_dict and result_dict['code'] == 'INVALID_ZULIP_SERVER':
             # Invalid Zulip server credentials should email this server's admins
@@ -93,13 +93,13 @@ def send_to_push_bouncer(
             f"Push notification bouncer returned unexpected status code {res.status_code}")
 
     # If we don't throw an exception, it's a successful bounce!
-    return ujson.loads(res.content)
+    return orjson.loads(res.content)
 
 def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Mapping[str, object]) -> None:
     send_to_push_bouncer(
         method,
         endpoint,
-        ujson.dumps(post_data),
+        orjson.dumps(post_data),
         extra_headers={"Content-type": "application/json"},
     )
 
@@ -157,10 +157,10 @@ def send_analytics_to_remote_server() -> None:
         return
 
     request = {
-        'realm_counts': ujson.dumps(realm_count_data),
-        'installation_counts': ujson.dumps(installation_count_data),
-        'realmauditlog_rows': ujson.dumps(realmauditlog_data),
-        'version': ujson.dumps(ZULIP_VERSION),
+        'realm_counts': orjson.dumps(realm_count_data).decode(),
+        'installation_counts': orjson.dumps(installation_count_data).decode(),
+        'realmauditlog_rows': orjson.dumps(realmauditlog_data).decode(),
+        'version': orjson.dumps(ZULIP_VERSION).decode(),
     }
 
     # Gather only entries with an ID greater than last_realm_count_id

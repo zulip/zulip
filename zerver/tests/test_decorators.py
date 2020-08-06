@@ -5,7 +5,7 @@ from collections import defaultdict
 from typing import Any, Dict, Iterable, List, Tuple
 from unittest import mock
 
-import ujson
+import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
@@ -141,7 +141,7 @@ class DecoratorTestCase(ZulipTestCase):
     def test_REQ_converter(self) -> None:
 
         def my_converter(data: str) -> List[int]:
-            lst = ujson.loads(data)
+            lst = orjson.loads(data)
             if not isinstance(lst, list):
                 raise ValueError('not a list')
             if 13 in lst:
@@ -166,17 +166,17 @@ class DecoratorTestCase(ZulipTestCase):
             get_total(request)
         self.assertEqual(str(cm.exception), "Bad value for 'numbers': bad_value")
 
-        request.POST['numbers'] = ujson.dumps('{fun: unfun}')
+        request.POST['numbers'] = orjson.dumps('{fun: unfun}').decode()
         with self.assertRaises(JsonableError) as cm:
             get_total(request)
         self.assertEqual(str(cm.exception), 'Bad value for \'numbers\': "{fun: unfun}"')
 
-        request.POST['numbers'] = ujson.dumps([2, 3, 5, 8, 13, 21])
+        request.POST['numbers'] = orjson.dumps([2, 3, 5, 8, 13, 21]).decode()
         with self.assertRaises(JsonableError) as cm:
             get_total(request)
         self.assertEqual(str(cm.exception), "13 is an unlucky number!")
 
-        request.POST['numbers'] = ujson.dumps([1, 2, 3, 4, 5, 6])
+        request.POST['numbers'] = orjson.dumps([1, 2, 3, 4, 5, 6]).decode()
         result = get_total(request)
         self.assertEqual(result, 21)
 
@@ -201,12 +201,12 @@ class DecoratorTestCase(ZulipTestCase):
             get_total(request)
         self.assertEqual(str(cm.exception), 'Argument "numbers" is not valid JSON.')
 
-        request.POST['numbers'] = ujson.dumps([1, 2, "what?", 4, 5, 6])
+        request.POST['numbers'] = orjson.dumps([1, 2, "what?", 4, 5, 6]).decode()
         with self.assertRaises(JsonableError) as cm:
             get_total(request)
         self.assertEqual(str(cm.exception), 'numbers[2] is not an integer')
 
-        request.POST['numbers'] = ujson.dumps([1, 2, 3, 4, 5, 6])
+        request.POST['numbers'] = orjson.dumps([1, 2, 3, 4, 5, 6]).decode()
         result = get_total(request)
         self.assertEqual(result, 21)
 
@@ -1711,7 +1711,7 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
 
         response = test_function(request)
         self.assert_json_success(response)
-        self.assertNotEqual(ujson.loads(response.content).get('msg'), 'from_test_function')
+        self.assertNotEqual(orjson.loads(response.content).get('msg'), 'from_test_function')
 
     def test_returns_normal_response_if_request_method_is_not_head(self) -> None:
         class HeadRequest:
@@ -1724,7 +1724,7 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
             return json_response(msg='from_test_function')
 
         response = test_function(request)
-        self.assertEqual(ujson.loads(response.content).get('msg'), 'from_test_function')
+        self.assertEqual(orjson.loads(response.content).get('msg'), 'from_test_function')
 
 class RestAPITest(ZulipTestCase):
     def test_method_not_allowed(self) -> None:

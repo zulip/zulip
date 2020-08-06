@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Tuple
 
-import ujson
+import orjson
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
@@ -143,9 +143,9 @@ class LibratoWebhookHandler(LibratoWebhookParser):
 @api_key_only_webhook_view('Librato')
 @has_request_variables
 def api_librato_webhook(request: HttpRequest, user_profile: UserProfile,
-                        payload: Dict[str, Any]=REQ(converter=ujson.loads, default={})) -> HttpResponse:
+                        payload: Dict[str, Any]=REQ(converter=orjson.loads, default={})) -> HttpResponse:
     try:
-        attachments = ujson.loads(request.body).get('attachments', [])
+        attachments = orjson.loads(request.body).get('attachments', [])
     except ValueError:
         attachments = []
 

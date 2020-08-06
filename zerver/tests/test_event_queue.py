@@ -2,7 +2,7 @@ import time
 from typing import Any, Callable, Dict, List, Tuple
 from unittest import mock
 
-import ujson
+import orjson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.lib.actions import do_change_subscription_property, do_mute_topic
@@ -242,13 +242,13 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         def allocate_event_queue() -> ClientDescriptor:
             result = self.tornado_call(get_events, user_profile,
-                                       {"apply_markdown": ujson.dumps(True),
-                                        "client_gravatar": ujson.dumps(True),
-                                        "event_types": ujson.dumps(["message"]),
+                                       {"apply_markdown": orjson.dumps(True).decode(),
+                                        "client_gravatar": orjson.dumps(True).decode(),
+                                        "event_types": orjson.dumps(["message"]).decode(),
                                         "user_client": "website",
-                                        "dont_block": ujson.dumps(True)})
+                                        "dont_block": orjson.dumps(True).decode()})
             self.assert_json_success(result)
-            queue_id = ujson.loads(result.content)["queue_id"]
+            queue_id = orjson.loads(result.content)["queue_id"]
             return get_client_descriptor(queue_id)
 
         def destroy_event_queue(queue_id: str) -> None:

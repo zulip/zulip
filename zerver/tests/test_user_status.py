@@ -1,6 +1,6 @@
 from typing import Any, Dict, Set
 
-import ujson
+import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import EventInfo, capture_event
@@ -159,7 +159,7 @@ class UserStatusTest(ZulipTestCase):
         self.assert_json_error(result, "status_text is too long (limit: 60 characters)")
 
         payload = dict(
-            away=ujson.dumps(True),
+            away=orjson.dumps(True).decode(),
             status_text='on vacation',
         )
 
@@ -179,7 +179,7 @@ class UserStatusTest(ZulipTestCase):
         )
 
         # Now revoke "away" status.
-        payload = dict(away=ujson.dumps(False))
+        payload = dict(away=orjson.dumps(False).decode())
 
         event_info = EventInfo()
         with capture_event(event_info):

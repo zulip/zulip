@@ -1,7 +1,7 @@
 import urllib.parse
 from typing import Any, Dict, Optional
 
-import ujson
+import orjson
 from django.conf import settings
 from django.core import signals
 from django.db import close_old_connections
@@ -83,7 +83,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
             skip_user_agent=True,
         )
         self.assertEqual(response.code, 200)
-        body = ujson.loads(response.body)
+        body = orjson.loads(response.body)
         self.assertEqual(body['events'], [])
         self.assertIn('queue_id', body)
         return body['queue_id']
@@ -116,7 +116,7 @@ class EventsTestCase(TornadoWebTestCase):
 
         self.io_loop.call_later(0.1, process_events)
         response = self.wait()
-        data = ujson.loads(response.body)
+        data = orjson.loads(response.body)
         self.assertEqual(data['events'], [
             {'type': 'test', 'data': 'test data', 'id': 0},
         ])

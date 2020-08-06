@@ -1,4 +1,4 @@
-import ujson
+import orjson
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
@@ -20,7 +20,7 @@ def process_submessage(request: HttpRequest,
     message, user_message = access_message(user_profile, message_id)
 
     try:
-        ujson.loads(content)
+        orjson.loads(content)
     except Exception:
         return json_error(_("Invalid json for submessage"))
 
