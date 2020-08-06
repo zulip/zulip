@@ -205,6 +205,6 @@ run_test("process_message_for_senders", () => {
     // delete message1 and message5 sent by sender1
     messages.splice(4, 1);
     messages.splice(0, 1);
-    rs.update_topics_of_message_ids([message1.id, message5.id]);
+    rs.update_topics_of_deleted_message_ids([message1.id, message5.id]);
     assert.equal(rs.get_topic_recent_senders(stream1, topic1).toString(), "2");
 });

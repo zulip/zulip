@@ -653,7 +653,7 @@ run_test("test_delete_messages", () => {
         Array.from(all_topics.keys()).toString(),
         "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
     );
-    rt.update_topics_of_message_ids([messages[0].id]);
+    rt.update_topics_of_deleted_message_ids([messages[0].id]);
 
     all_topics = rt.get();
     assert.equal(
@@ -672,7 +672,7 @@ run_test("test_delete_messages", () => {
         },
     });
 
-    rt.update_topics_of_message_ids([messages[1].id, messages[2].id]);
+    rt.update_topics_of_deleted_message_ids([messages[1].id, messages[2].id]);
 
     all_topics = rt.get();
     assert.equal(

@@ -234,7 +234,7 @@ exports.topic_in_search_results = function (keyword, stream, topic) {
     return search_words.every((word) => text.includes(word));
 };
 
-exports.update_topics_of_message_ids = function (message_ids) {
+exports.update_topics_of_deleted_message_ids = function (message_ids) {
     const topics_to_rerender = new Map();
     for (const msg_id of message_ids) {
         const message = message_store.get(msg_id);

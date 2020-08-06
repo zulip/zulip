@@ -73,7 +73,7 @@ exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_
     // the messages were moved to another stream or deleted.
 };
 
-exports.update_topics_of_message_ids = function (message_ids) {
+exports.update_topics_of_deleted_message_ids = function (message_ids) {
     const topics_to_update = new Map();
     for (const msg_id of message_ids) {
         // message_store still has data on deleted messages when this runs.
