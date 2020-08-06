@@ -2,7 +2,7 @@ import os
 import subprocess
 import urllib
 
-import ujson
+import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
@@ -97,7 +97,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     stream = get_realm_stream("Denmark", user.realm.id)
     result = client.post("/json/invites",
                          {"invitee_emails": unregistered_email_2,
-                          "stream_ids": ujson.dumps([stream.id])},
+                          "stream_ids": orjson.dumps([stream.id]).decode()},
                          **host_kwargs)
     assert result.status_code == 200
 

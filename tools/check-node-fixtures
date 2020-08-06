@@ -5,7 +5,7 @@ import subprocess
 import sys
 from typing import Any, Callable, Dict, List, Optional
 
-import ujson
+import orjson
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -84,7 +84,7 @@ def read_fixtures() -> Dict[str, Any]:
         os.path.join(TOOLS_DIR, "node_lib/dump_fixtures.js"),
     ]
     schema = subprocess.check_output(cmd)
-    return ujson.loads(schema)
+    return orjson.loads(schema)
 
 
 def verify_fixtures_are_sorted(names: List[str]) -> None:

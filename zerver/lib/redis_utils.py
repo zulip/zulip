@@ -1,8 +1,8 @@
 import re
 from typing import Any, Dict, Mapping, Optional
 
+import orjson
 import redis
-import ujson
 from django.conf import settings
 
 from zerver.lib.utils import generate_random_token
@@ -37,7 +37,7 @@ def put_dict_in_redis(redis_client: redis.StrictRedis, key_format: str,
         token = generate_random_token(token_length)
     key = key_format.format(token=token)
     with redis_client.pipeline() as pipeline:
-        pipeline.set(key, ujson.dumps(data_to_store))
+        pipeline.set(key, orjson.dumps(data_to_store))
         pipeline.expire(key, expiration_seconds)
         pipeline.execute()
 
@@ -57,7 +57,7 @@ def get_dict_from_redis(redis_client: redis.StrictRedis, key_format: str, key: s
     data = redis_client.get(key)
     if data is None:
         return None
-    return ujson.loads(data)
+    return orjson.loads(data)
 
 def validate_key_fits_format(key: str, key_format: str) -> None:
     assert "{token}" in key_format

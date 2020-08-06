@@ -9,9 +9,9 @@ from functools import wraps
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, TypeVar, cast
 from unittest.mock import Mock, patch
 
+import orjson
 import responses
 import stripe
-import ujson
 from django.conf import settings
 from django.core import signing
 from django.http import HttpResponse
@@ -127,7 +127,8 @@ def read_stripe_fixture(decorated_function_name: str,
     def _read_stripe_fixture(*args: Any, **kwargs: Any) -> Any:
         mock = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
         fixture_path = stripe_fixture_path(decorated_function_name, mocked_function_name, mock.call_count)
-        fixture = ujson.load(open(fixture_path))
+        with open(fixture_path, "rb") as f:
+            fixture = orjson.loads(f.read())
         # Check for StripeError fixtures
         if "json_body" in fixture:
             requestor = stripe.api_requestor.APIRequestor()
@@ -331,7 +332,7 @@ class StripeTestCase(ZulipTestCase):
             if key in params:
                 del params[key]
         for key, value in params.items():
-            params[key] = ujson.dumps(value)
+            params[key] = orjson.dumps(value).decode()
         return self.client_post("/json/billing/upgrade", params, **host_args)
 
     # Upgrade without talking to Stripe
@@ -469,7 +470,7 @@ class StripeTest(StripeTestCase):
             # TODO: Check for REALM_PLAN_TYPE_CHANGED
             # (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra()),
         ])
-        self.assertEqual(ujson.loads(RealmAuditLog.objects.filter(
+        self.assertEqual(orjson.loads(RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED).values_list(
                 'extra_data', flat=True).first())['automanage_licenses'], True)
         # Check that we correctly updated Realm
@@ -554,7 +555,7 @@ class StripeTest(StripeTestCase):
             # TODO: Check for REALM_PLAN_TYPE_CHANGED
             # (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra()),
         ])
-        self.assertEqual(ujson.loads(RealmAuditLog.objects.filter(
+        self.assertEqual(orjson.loads(RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED).values_list(
                 'extra_data', flat=True).first())['automanage_licenses'], False)
         # Check that we correctly updated Realm
@@ -631,7 +632,7 @@ class StripeTest(StripeTestCase):
                 # TODO: Check for REALM_PLAN_TYPE_CHANGED
                 # (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra()),
             ])
-            self.assertEqual(ujson.loads(RealmAuditLog.objects.filter(
+            self.assertEqual(orjson.loads(RealmAuditLog.objects.filter(
                 event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED).values_list(
                     'extra_data', flat=True).first())['automanage_licenses'], True)
 
@@ -785,7 +786,7 @@ class StripeTest(StripeTestCase):
                 # TODO: Check for REALM_PLAN_TYPE_CHANGED
                 # (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra()),
             ])
-            self.assertEqual(ujson.loads(RealmAuditLog.objects.filter(
+            self.assertEqual(orjson.loads(RealmAuditLog.objects.filter(
                 event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED).values_list(
                     'extra_data', flat=True).first())['automanage_licenses'], False)
 
@@ -977,7 +978,7 @@ class StripeTest(StripeTestCase):
         self.login_user(hamlet)
         response = self.upgrade(talk_to_stripe=False, salt='badsalt')
         self.assert_json_error_contains(response, "Something went wrong. Please contact")
-        self.assertEqual(ujson.loads(response.content)['error_description'], 'tampered seat count')
+        self.assertEqual(orjson.loads(response.content)['error_description'], 'tampered seat count')
 
     def test_upgrade_race_condition(self) -> None:
         hamlet = self.example_user('hamlet')
@@ -995,7 +996,7 @@ class StripeTest(StripeTestCase):
                         del_args: Sequence[str] = []) -> None:
             response = self.upgrade(talk_to_stripe=False, del_args=del_args, **upgrade_params)
             self.assert_json_error_contains(response, "Something went wrong. Please contact")
-            self.assertEqual(ujson.loads(response.content)['error_description'], error_description)
+            self.assertEqual(orjson.loads(response.content)['error_description'], error_description)
 
         hamlet = self.example_user('hamlet')
         self.login_user(hamlet)
@@ -1015,13 +1016,13 @@ class StripeTest(StripeTestCase):
             response = self.upgrade(invoice=invoice, talk_to_stripe=False,
                                     del_args=del_args, **upgrade_params)
             self.assert_json_error_contains(response, f"at least {min_licenses_in_response} users")
-            self.assertEqual(ujson.loads(response.content)['error_description'], 'not enough licenses')
+            self.assertEqual(orjson.loads(response.content)['error_description'], 'not enough licenses')
 
         def check_max_licenses_error(licenses: int) -> None:
             response = self.upgrade(invoice=True, talk_to_stripe=False,
                                     licenses=licenses)
             self.assert_json_error_contains(response, f"with more than {MAX_INVOICED_LICENSES} licenses")
-            self.assertEqual(ujson.loads(response.content)['error_description'], 'too many licenses')
+            self.assertEqual(orjson.loads(response.content)['error_description'], 'too many licenses')
 
         def check_success(invoice: bool, licenses: Optional[int], upgrade_params: Dict[str, Any]={}) -> None:
             if licenses is None:
@@ -1072,7 +1073,7 @@ class StripeTest(StripeTestCase):
         with patch("corporate.views.process_initial_upgrade", side_effect=Exception):
             response = self.upgrade(talk_to_stripe=False)
         self.assert_json_error_contains(response, "Something went wrong. Please contact desdemona+admin@zulip.com.")
-        self.assertEqual(ujson.loads(response.content)['error_description'], 'uncaught exception during upgrade')
+        self.assertEqual(orjson.loads(response.content)['error_description'], 'uncaught exception during upgrade')
 
     def test_request_sponsorship(self) -> None:
         user = self.example_user("hamlet")
@@ -1081,9 +1082,9 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
 
         data = {
-            "organization-type": ujson.dumps("Open-source"),
-            "website": ujson.dumps("https://infinispan.org/"),
-            "description": ujson.dumps("Infinispan is a distributed in-memory key/value data store with optional schema."),
+            "organization-type": orjson.dumps("Open-source").decode(),
+            "website": orjson.dumps("https://infinispan.org/").decode(),
+            "description": orjson.dumps("Infinispan is a distributed in-memory key/value data store with optional schema.").decode(),
         }
         response = self.client_post("/json/billing/sponsorship", data)
         self.assert_json_success(response)
@@ -1281,10 +1282,10 @@ class StripeTest(StripeTestCase):
         with patch("corporate.lib.stripe.billing_logger.error") as mock_billing_logger:
             with patch("stripe.Invoice.list") as mock_invoice_list:
                 response = self.client_post("/json/billing/sources/change",
-                                            {'stripe_token': ujson.dumps(stripe_token)})
+                                            {'stripe_token': orjson.dumps(stripe_token).decode()})
         mock_billing_logger.assert_called()
         mock_invoice_list.assert_not_called()
-        self.assertEqual(ujson.loads(response.content)['error_description'], 'card error')
+        self.assertEqual(orjson.loads(response.content)['error_description'], 'card error')
         self.assert_json_error_contains(response, 'Your card was declined')
         for stripe_source in stripe_get_customer(stripe_customer_id).sources:
             assert isinstance(stripe_source, stripe.Card)
@@ -1295,9 +1296,9 @@ class StripeTest(StripeTestCase):
         stripe_token = stripe_create_token(card_number='4000000000000341').id
         with patch("corporate.lib.stripe.billing_logger.error") as mock_billing_logger:
             response = self.client_post("/json/billing/sources/change",
-                                        {'stripe_token': ujson.dumps(stripe_token)})
+                                        {'stripe_token': orjson.dumps(stripe_token).decode()})
         mock_billing_logger.assert_called()
-        self.assertEqual(ujson.loads(response.content)['error_description'], 'card error')
+        self.assertEqual(orjson.loads(response.content)['error_description'], 'card error')
         self.assert_json_error_contains(response, 'Your card was declined')
         for stripe_source in stripe_get_customer(stripe_customer_id).sources:
             assert isinstance(stripe_source, stripe.Card)
@@ -1309,7 +1310,7 @@ class StripeTest(StripeTestCase):
         # Replace with a valid card
         stripe_token = stripe_create_token(card_number='5555555555554444').id
         response = self.client_post("/json/billing/sources/change",
-                                    {'stripe_token': ujson.dumps(stripe_token)})
+                                    {'stripe_token': orjson.dumps(stripe_token).decode()})
         self.assert_json_success(response)
         number_of_sources = 0
         for stripe_source in stripe_get_customer(stripe_customer_id).sources:
@@ -1435,8 +1436,8 @@ class StripeTest(StripeTestCase):
         self.assertEqual(annual_ledger_entries.values_list('licenses', 'licenses_at_next_renewal')[1], (25, 25))
         audit_log = RealmAuditLog.objects.get(event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN)
         self.assertEqual(audit_log.realm, user.realm)
-        self.assertEqual(ujson.loads(audit_log.extra_data)["monthly_plan_id"], monthly_plan.id)
-        self.assertEqual(ujson.loads(audit_log.extra_data)["annual_plan_id"], annual_plan.id)
+        self.assertEqual(orjson.loads(audit_log.extra_data)["monthly_plan_id"], monthly_plan.id)
+        self.assertEqual(orjson.loads(audit_log.extra_data)["annual_plan_id"], annual_plan.id)
 
         invoice_plans_as_needed(self.next_month)
 
@@ -1839,7 +1840,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
         self.login_user(self.example_user('hamlet'))
         with patch("corporate.views.do_replace_payment_source") as mocked1:
             response = self.client_post("/json/billing/sources/change",
-                                        {'stripe_token': ujson.dumps('token')})
+                                        {'stripe_token': orjson.dumps('token').decode()})
         self.assert_json_success(response)
         mocked1.assert_called()
 
@@ -1847,7 +1848,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
         self.login_user(self.example_user('desdemona'))
         with patch("corporate.views.do_replace_payment_source") as mocked2:
             response = self.client_post("/json/billing/sources/change",
-                                        {'stripe_token': ujson.dumps('token')})
+                                        {'stripe_token': orjson.dumps('token').decode()})
         self.assert_json_success(response)
         mocked2.assert_called()
 
@@ -1858,21 +1859,21 @@ class RequiresBillingAccessTest(ZulipTestCase):
             self.assert_json_error_contains(response, error_message)
 
         verify_user_cant_access_endpoint("polonius", "/json/billing/upgrade",
-                                         {'billing_modality': ujson.dumps("charge_automatically"), 'schedule': ujson.dumps("annual"),
-                                          'signed_seat_count': ujson.dumps('signed count'), 'salt': ujson.dumps('salt')},
+                                         {'billing_modality': orjson.dumps("charge_automatically").decode(), 'schedule': orjson.dumps("annual").decode(),
+                                          'signed_seat_count': orjson.dumps('signed count').decode(), 'salt': orjson.dumps('salt').decode()},
                                          "Must be an organization member")
 
         verify_user_cant_access_endpoint("polonius", "/json/billing/sponsorship",
-                                         {'organization-type': ujson.dumps("event"), 'description': ujson.dumps("event description"),
-                                          'website': ujson.dumps("example.com")},
+                                         {'organization-type': orjson.dumps("event").decode(), 'description': orjson.dumps("event description").decode(),
+                                          'website': orjson.dumps("example.com").decode()},
                                          "Must be an organization member")
 
         for username in ["cordelia", "iago"]:
             self.login_user(self.example_user(username))
-            verify_user_cant_access_endpoint(username, "/json/billing/sources/change", {'stripe_token': ujson.dumps('token')},
+            verify_user_cant_access_endpoint(username, "/json/billing/sources/change", {'stripe_token': orjson.dumps('token').decode()},
                                              "Must be a billing administrator or an organization owner")
 
-            verify_user_cant_access_endpoint(username, "/json/billing/plan/change",  {'status': ujson.dumps(1)},
+            verify_user_cant_access_endpoint(username, "/json/billing/plan/change",  {'status': orjson.dumps(1).decode()},
                                              "Must be a billing administrator or an organization owner")
 
         # Make sure that we are testing all the JSON endpoints

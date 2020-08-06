@@ -1,7 +1,7 @@
 from typing import Any, Callable, Dict, Optional
 from unittest import mock
 
-import ujson
+import orjson
 from django.test import override_settings
 from django.utils.html import escape
 from requests.exceptions import ConnectionError
@@ -48,7 +48,7 @@ class OembedTestCase(ZulipTestCase):
             'version': '1.0',
             'width': 658,
             'height': 400}
-        response.text = ujson.dumps(response_data)
+        response.text = orjson.dumps(response_data).decode()
         url = 'http://instagram.com/p/BLtI2WdAymy'
         data = get_oembed_data(url)
         self.assertIsInstance(data, dict)
@@ -72,7 +72,7 @@ class OembedTestCase(ZulipTestCase):
             'version': '1.0',
             'width': 658,
             'height': 400}
-        response.text = ujson.dumps(response_data)
+        response.text = orjson.dumps(response_data).decode()
         url = 'http://imgur.com/photo/158727223'
         data = get_oembed_data(url)
         self.assertIsInstance(data, dict)
@@ -96,7 +96,7 @@ class OembedTestCase(ZulipTestCase):
             'version': '1.0',
             'width': 658,
             'height': 400}
-        response.text = ujson.dumps(response_data)
+        response.text = orjson.dumps(response_data).decode()
         url = 'http://blip.tv/video/158727223'
         data = get_oembed_data(url)
         self.assertIsInstance(data, dict)

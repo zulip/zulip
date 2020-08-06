@@ -5,7 +5,7 @@ import time
 from typing import Any, Callable, Dict, List, Mapping, Tuple
 from unittest.mock import MagicMock, patch
 
-import ujson
+import orjson
 from django.conf import settings
 from django.test import override_settings
 
@@ -444,7 +444,7 @@ class WorkerTest(ZulipTestCase):
 
         fake_response = MagicMock()
         fake_response.status_code = 400
-        fake_response.text = ujson.dumps({'title': ''})
+        fake_response.content = orjson.dumps({'title': ''})
         with simulated_queue_client(lambda: fake_client):
             worker = queue_processors.SignupWorker()
             worker.setup()
@@ -471,7 +471,7 @@ class WorkerTest(ZulipTestCase):
 
         fake_response = MagicMock()
         fake_response.status_code = 400
-        fake_response.text = ujson.dumps({'title': 'Member Exists'})
+        fake_response.content = orjson.dumps({'title': 'Member Exists'})
         with simulated_queue_client(lambda: fake_client):
             worker = queue_processors.SignupWorker()
             worker.setup()
@@ -500,7 +500,7 @@ class WorkerTest(ZulipTestCase):
 
         fake_response = MagicMock()
         fake_response.status_code = 444  # Any non-400 bad request code.
-        fake_response.text = ujson.dumps({'title': 'Member Exists'})
+        fake_response.content = orjson.dumps({'title': 'Member Exists'})
         with simulated_queue_client(lambda: fake_client):
             worker = queue_processors.SignupWorker()
             worker.setup()
@@ -576,7 +576,7 @@ class WorkerTest(ZulipTestCase):
         self.assertEqual(processed, ['good', 'fine', 'back to normal'])
         with open(fn) as f:
             line = f.readline().strip()
-        events = ujson.loads(line.split('\t')[1])
+        events = orjson.loads(line.split('\t')[1])
         self.assert_length(events, 1)
         event = events[0]
         self.assertEqual(event["type"], 'unexpected behaviour')
@@ -616,7 +616,7 @@ class WorkerTest(ZulipTestCase):
         self.assertEqual(processed, ['good', 'fine'])
         with open(fn) as f:
             line = f.readline().strip()
-        events = ujson.loads(line.split('\t')[1])
+        events = orjson.loads(line.split('\t')[1])
         self.assert_length(events, 4)
 
         self.assertEqual([event["type"] for event in events],

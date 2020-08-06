@@ -5,7 +5,7 @@ from typing import Any, Dict
 from unittest.mock import patch
 
 import lxml.html
-import ujson
+import orjson
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
@@ -268,7 +268,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(actual_keys, expected_keys)
 
         # TODO: Inspect the page_params data further.
-        # print(ujson.dumps(page_params, indent=2))
+        # print(orjson.dumps(page_params, option=orjson.OPT_INDENT_2).decode())
         realm_bots_expected_keys = [
             'api_key',
             'avatar_url',
@@ -366,7 +366,7 @@ class HomeTest(ZulipTestCase):
         doc = lxml.html.document_fromstring(result.content)
         [div] = doc.xpath("//div[@id='page-params']")
         page_params_json = div.get("data-params")
-        page_params = ujson.loads(page_params_json)
+        page_params = orjson.loads(page_params_json)
         return page_params
 
     def _sanity_check(self, result: HttpResponse) -> None:
@@ -836,7 +836,7 @@ class HomeTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         self.login_user(hamlet)
         self.client_post("/json/messages/flags",
-                         {"messages": ujson.dumps([msg_id]),
+                         {"messages": orjson.dumps([msg_id]).decode(),
                           "op": "add",
                           "flag": "read"})
 

@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Mapping
 from unittest import mock
 
-import ujson
+import orjson
 from django.http import HttpResponse
 
 from zerver.lib.cache import cache_get, to_dict_cache_key_id
@@ -299,7 +299,7 @@ class ReactionTest(ZulipTestCase):
                                                 "content": "Test message",
                                                 "to": pm_recipient.email})
         self.assert_json_success(pm)
-        content = ujson.loads(pm.content)
+        content = orjson.loads(pm.content)
 
         pm_id = content['id']
 
@@ -329,7 +329,7 @@ class ReactionTest(ZulipTestCase):
                                                 "to": pm_recipient.email})
         self.assert_json_success(pm)
 
-        content = ujson.loads(pm.content)
+        content = orjson.loads(pm.content)
         pm_id = content['id']
         reaction_info = {
             'emoji_name': 'smile',

@@ -1,7 +1,7 @@
 import time
 from typing import Iterable, Optional, Sequence
 
-import ujson
+import orjson
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
@@ -22,7 +22,7 @@ from zerver.tornado.handlers import AsyncDjangoHandler
 
 @internal_notify_view(True)
 def notify(request: HttpRequest) -> HttpResponse:
-    process_notification(ujson.loads(request.POST['data']))
+    process_notification(orjson.loads(request.POST['data']))
     return json_success()
 
 @has_request_variables

@@ -2,7 +2,7 @@ import sys
 from argparse import ArgumentParser
 from typing import IO, Any
 
-import ujson
+import orjson
 from django.core.management.base import BaseCommand
 
 from zerver.lib.queue import queue_json_publish
@@ -51,7 +51,7 @@ You can use "-" to represent stdin.
             print(f'Queueing to queue {queue_name}: {payload}')
 
             # Verify that payload is valid json.
-            data = ujson.loads(payload)
+            data = orjson.loads(payload)
 
             # This is designed to use the `error` method rather than
             # the call_consume_in_tests flow.

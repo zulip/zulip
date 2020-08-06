@@ -5,7 +5,7 @@ from typing import List, Sequence
 from unittest.mock import patch
 
 import ldap
-import ujson
+import orjson
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
@@ -110,7 +110,7 @@ class TestFollowupEmails(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         enqueue_welcome_emails(hamlet)
         scheduled_emails = ScheduledEmail.objects.filter(users=hamlet)
-        email_data = ujson.loads(scheduled_emails[0].data)
+        email_data = orjson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["context"]["email"], self.example_email("hamlet"))
         self.assertEqual(email_data["context"]["is_realm_admin"], False)
         self.assertEqual(email_data["context"]["getting_started_link"], "https://zulip.com")
@@ -121,7 +121,7 @@ class TestFollowupEmails(ZulipTestCase):
         iago = self.example_user("iago")
         enqueue_welcome_emails(iago)
         scheduled_emails = ScheduledEmail.objects.filter(users=iago)
-        email_data = ujson.loads(scheduled_emails[0].data)
+        email_data = orjson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["context"]["email"], self.example_email("iago"))
         self.assertEqual(email_data["context"]["is_realm_admin"], True)
         self.assertEqual(email_data["context"]["getting_started_link"],
@@ -147,7 +147,7 @@ class TestFollowupEmails(ZulipTestCase):
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
             self.assertEqual(len(scheduled_emails), 2)
-            email_data = ujson.loads(scheduled_emails[0].data)
+            email_data = orjson.loads(scheduled_emails[0].data)
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(email_data["context"]["ldap_username"], "newuser_email_as_uid@zulip.com")
 
@@ -167,7 +167,7 @@ class TestFollowupEmails(ZulipTestCase):
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
             self.assertEqual(len(scheduled_emails), 2)
-            email_data = ujson.loads(scheduled_emails[0].data)
+            email_data = orjson.loads(scheduled_emails[0].data)
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(email_data["context"]["ldap_username"], "newuser")
 
@@ -186,7 +186,7 @@ class TestFollowupEmails(ZulipTestCase):
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
             self.assertEqual(len(scheduled_emails), 2)
-            email_data = ujson.loads(scheduled_emails[0].data)
+            email_data = orjson.loads(scheduled_emails[0].data)
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(email_data["context"]["ldap_username"], "newuser_with_email")
 
@@ -199,8 +199,8 @@ class TestFollowupEmails(ZulipTestCase):
         scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
             "scheduled_timestamp")
         self.assertEqual(2, len(scheduled_emails))
-        self.assertEqual(ujson.loads(scheduled_emails[1].data)["template_prefix"], 'zerver/emails/followup_day2')
-        self.assertEqual(ujson.loads(scheduled_emails[0].data)["template_prefix"], 'zerver/emails/followup_day1')
+        self.assertEqual(orjson.loads(scheduled_emails[1].data)["template_prefix"], 'zerver/emails/followup_day2')
+        self.assertEqual(orjson.loads(scheduled_emails[0].data)["template_prefix"], 'zerver/emails/followup_day1')
 
         ScheduledEmail.objects.all().delete()
 
@@ -208,7 +208,7 @@ class TestFollowupEmails(ZulipTestCase):
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia)
         # Cordelia has account in more than 1 realm so day2 email should not be sent
         self.assertEqual(len(scheduled_emails), 1)
-        email_data = ujson.loads(scheduled_emails[0].data)
+        email_data = orjson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["template_prefix"], 'zerver/emails/followup_day1')
 
 class TestMissedMessages(ZulipTestCase):
@@ -875,7 +875,7 @@ class TestMissedMessages(ZulipTestCase):
         # Run `relative_to_full_url()` function over test fixtures present in
         # 'markdown_test_cases.json' and check that it converts all the relative
         # URLs to absolute URLs.
-        fixtures = ujson.loads(self.fixture_data("markdown_test_cases.json"))
+        fixtures = orjson.loads(self.fixture_data("markdown_test_cases.json"))
         test_fixtures = {}
         for test in fixtures['regular_tests']:
             test_fixtures[test['name']] = test
@@ -949,7 +949,7 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(actual_output, expected_output)
 
         # test against our markdown_test_cases so these features do not get out of sync.
-        fixtures = ujson.loads(self.fixture_data("markdown_test_cases.json"))
+        fixtures = orjson.loads(self.fixture_data("markdown_test_cases.json"))
         test_fixtures = {}
         for test in fixtures['regular_tests']:
             if 'spoiler' in test['name']:

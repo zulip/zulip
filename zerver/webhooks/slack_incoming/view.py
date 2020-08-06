@@ -2,7 +2,7 @@
 import re
 from typing import Any, Dict, Optional
 
-import ujson
+import orjson
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
@@ -20,7 +20,7 @@ def api_slack_incoming_webhook(request: HttpRequest, user_profile: UserProfile,
                                user_specified_topic: Optional[str]=REQ("topic", default=None),
                                payload: Optional[Dict[str, Any]] = REQ(
                                    'payload',
-                                   converter=ujson.loads,
+                                   converter=orjson.loads,
                                    default=None)) -> HttpResponse:
 
     # Slack accepts webhook payloads as payload="encoded json" as
@@ -30,7 +30,7 @@ def api_slack_incoming_webhook(request: HttpRequest, user_profile: UserProfile,
     # # we were given JSON.
     if payload is None:
         try:
-            payload = ujson.loads(request.body)
+            payload = orjson.loads(request.body)
         except ValueError:  # nocoverage
             raise InvalidJSONError(_("Malformed JSON"))
 

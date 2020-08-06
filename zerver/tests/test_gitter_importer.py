@@ -2,7 +2,7 @@ import os
 from typing import Any
 from unittest import mock
 
-import ujson
+import orjson
 
 from zerver.data_import.gitter import do_convert_data, get_usermentions
 from zerver.lib.import_realm import do_import_realm
@@ -21,8 +21,8 @@ class GitterImporter(ZulipTestCase):
 
         def read_file(output_file: str) -> Any:
             full_path = os.path.join(output_dir, output_file)
-            with open(full_path) as f:
-                return ujson.load(f)
+            with open(full_path, "rb") as f:
+                return orjson.loads(f.read())
 
         self.assertEqual(os.path.exists(os.path.join(output_dir, 'avatars')), True)
         self.assertEqual(os.path.exists(os.path.join(output_dir, 'emoji')), True)

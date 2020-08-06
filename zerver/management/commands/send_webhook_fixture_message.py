@@ -1,7 +1,7 @@
 import os
 from typing import Dict, Optional, Union
 
-import ujson
+import orjson
 from django.conf import settings
 from django.core.management.base import CommandParser
 from django.test import Client
@@ -55,7 +55,7 @@ approach shown above.
         if not custom_headers:
             return {}
         try:
-            custom_headers_dict = ujson.loads(custom_headers)
+            custom_headers_dict = orjson.loads(custom_headers)
         except ValueError as ve:
             raise CommandError('Encountered an error while attempting to parse custom headers: {}\n'
                                'Note: all strings must be enclosed within "" instead of \'\''.format(ve))
@@ -90,6 +90,6 @@ approach shown above.
     def _does_fixture_path_exist(self, fixture_path: str) -> bool:
         return os.path.exists(fixture_path)
 
-    def _get_fixture_as_json(self, fixture_path: str) -> str:
-        with open(fixture_path) as f:
-            return ujson.dumps(ujson.load(f))
+    def _get_fixture_as_json(self, fixture_path: str) -> bytes:
+        with open(fixture_path, "rb") as f:
+            return orjson.dumps(orjson.loads(f.read()))

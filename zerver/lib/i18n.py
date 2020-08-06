@@ -4,7 +4,7 @@ import os
 from itertools import zip_longest
 from typing import Any, Dict, List
 
-import ujson
+import orjson
 from django.conf import settings
 from django.utils import translation
 from django.utils.lru_cache import lru_cache
@@ -25,8 +25,8 @@ def with_language(string: str, language: str) -> str:
 @lru_cache()
 def get_language_list() -> List[Dict[str, Any]]:
     path = os.path.join(settings.DEPLOY_ROOT, 'locale', 'language_name_map.json')
-    with open(path) as reader:
-        languages = ujson.load(reader)
+    with open(path, "rb") as reader:
+        languages = orjson.loads(reader.read())
         return languages['name_map']
 
 def get_language_list_for_templates(default_language: str) -> List[Dict[str, Dict[str, str]]]:
@@ -88,8 +88,8 @@ def get_language_translation_data(language: str) -> Dict[str, str]:
         language = 'id_ID'
     path = os.path.join(settings.DEPLOY_ROOT, 'locale', language, 'translations.json')
     try:
-        with open(path) as reader:
-            return ujson.load(reader)
+        with open(path, "rb") as reader:
+            return orjson.loads(reader.read())
     except FileNotFoundError:
         print(f'Translation for {language} not found at {path}')
         return {}

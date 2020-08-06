@@ -2,7 +2,7 @@ import os
 import re
 from typing import Optional, Tuple
 
-import ujson
+import orjson
 from django.utils.translation import ugettext as _
 
 from zerver.lib.exceptions import OrganizationAdministratorRequired
@@ -20,8 +20,8 @@ if not os.path.exists(emoji_codes_path):  # nocoverage
         "../../static/generated/emoji/emoji_codes.json",
     )
 
-with open(emoji_codes_path) as fp:
-    emoji_codes = ujson.load(fp)
+with open(emoji_codes_path, "rb") as fp:
+    emoji_codes = orjson.loads(fp.read())
 
 name_to_codepoint = emoji_codes["name_to_codepoint"]
 codepoint_to_name = emoji_codes["codepoint_to_name"]

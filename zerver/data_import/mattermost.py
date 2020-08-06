@@ -9,7 +9,7 @@ import shutil
 import subprocess
 from typing import Any, Callable, Dict, List, Set
 
-import ujson
+import orjson
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
@@ -690,9 +690,9 @@ def mattermost_data_file_to_dict(mattermost_data_file: str) -> Dict[str, Any]:
     mattermost_data["emoji"] = []
     mattermost_data["direct_channel"] = []
 
-    with open(mattermost_data_file) as fp:
+    with open(mattermost_data_file, "rb") as fp:
         for line in fp:
-            row = ujson.loads(line.rstrip("\n"))
+            row = orjson.loads(line)
             data_type = row["type"]
             if data_type == "post":
                 mattermost_data["post"]["channel_post"].append(row["post"])

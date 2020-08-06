@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Union
 from unittest import mock
 
-import ujson
+import orjson
 
 from zerver.lib.actions import (
     do_remove_realm_custom_profile_field,
@@ -85,49 +85,49 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         error_msg = "Bad value for 'field_data': invalid"
         self.assert_json_error(result, error_msg)
 
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             'python': ['1'],
             'java': ['2'],
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, 'field_data is not a dict')
 
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             'python': {'text': 'Python'},
             'java': {'text': 'Java'},
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "order key is missing from field_data")
 
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             'python': {'text': 'Python', 'order': ''},
             'java': {'text': 'Java', 'order': '2'},
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, 'field_data["order"] cannot be blank.')
 
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             '': {'text': 'Python', 'order': '1'},
             'java': {'text': 'Java', 'order': '2'},
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "'value' cannot be blank.")
 
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             'python': {'text': 'Python', 'order': 1},
             'java': {'text': 'Java', 'order': '2'},
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, 'field_data["order"] is not a string')
 
-        data["field_data"] = ujson.dumps({})
+        data["field_data"] = orjson.dumps({}).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, 'Field must have at least one choice.')
 
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             'python': {'text': 'Python', 'order': '1'},
             'java': {'text': 'Java', 'order': '2'},
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
 
@@ -135,9 +135,9 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.login('iago')
         realm = get_realm("zulip")
         field_type: int = CustomProfileField.EXTERNAL_ACCOUNT
-        field_data: str = ujson.dumps({
+        field_data: str = orjson.dumps({
             'subtype': 'twitter',
-        })
+        }).decode()
         invalid_field_name: str = "Not required field name"
         invalid_field_hint: str = "Not required field hint"
 
@@ -189,86 +189,86 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "Bad value for 'field_data': invalid")
 
-        data['field_data'] = ujson.dumps({})
+        data['field_data'] = orjson.dumps({}).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "subtype key is missing from field_data")
 
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             'subtype': '',
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, 'field_data["subtype"] cannot be blank.')
 
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             'subtype': '123',
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, 'Invalid external account type')
 
         non_default_external_account = 'linkedin'
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             'subtype': non_default_external_account,
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, 'Invalid external account type')
 
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             'subtype': 'twitter',
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
 
         twitter_field = CustomProfileField.objects.get(name="Twitter", realm=realm)
         self.assertEqual(twitter_field.field_type, CustomProfileField.EXTERNAL_ACCOUNT)
         self.assertEqual(twitter_field.name, "Twitter")
-        self.assertEqual(ujson.loads(twitter_field.field_data)['subtype'], 'twitter')
+        self.assertEqual(orjson.loads(twitter_field.field_data)['subtype'], 'twitter')
 
         data['name'] = 'Reddit'
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             'subtype': 'custom',
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, 'Custom external account must define url pattern')
 
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             'subtype': 'custom',
             'url_pattern': 123,
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, 'field_data["url_pattern"] is not a string')
 
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             'subtype': 'custom',
             'url_pattern': 'invalid',
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, 'Malformed URL pattern.')
 
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             'subtype': 'custom',
             'url_pattern': 'https://www.reddit.com/%(username)s/user/%(username)s',
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, 'Malformed URL pattern.')
 
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             'subtype': 'custom',
             'url_pattern': 'reddit.com/%(username)s',
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, 'field_data["url_pattern"] is not a URL')
 
-        data["field_data"] = ujson.dumps({
+        data["field_data"] = orjson.dumps({
             'subtype': 'custom',
             'url_pattern': 'https://www.reddit.com/user/%(username)s',
-        })
+        }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
 
         custom_field = CustomProfileField.objects.get(name="Reddit", realm=realm)
         self.assertEqual(custom_field.field_type, CustomProfileField.EXTERNAL_ACCOUNT)
         self.assertEqual(custom_field.name, "Reddit")
-        field_data = ujson.loads(custom_field.field_data)
+        field_data = orjson.loads(custom_field.field_data)
         self.assertEqual(field_data['subtype'], 'custom')
         self.assertEqual(field_data['url_pattern'], 'https://www.reddit.com/user/%(username)s')
 
@@ -311,7 +311,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         invalid_field_id = 1234
         result = self.client_delete("/json/users/me/profile_data", {
-            'data': ujson.dumps([invalid_field_id]),
+            'data': orjson.dumps([invalid_field_id]).decode(),
         })
         self.assert_json_error(result,
                                f'Field id {invalid_field_id} not found.')
@@ -327,13 +327,13 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual([self.example_user("aaron").id], converter(iago_value.value))
 
         result = self.client_delete("/json/users/me/profile_data", {
-            'data': ujson.dumps([field.id]),
+            'data': orjson.dumps([field.id]).decode(),
         })
         self.assert_json_success(result)
 
         # Don't throw an exception here
         result = self.client_delete("/json/users/me/profile_data", {
-            'data': ujson.dumps([field.id]),
+            'data': orjson.dumps([field.id]).decode(),
         })
         self.assert_json_success(result)
 
@@ -420,21 +420,21 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
                   'field_data': 'invalid'})
         self.assert_json_error(result, "Bad value for 'field_data': invalid")
 
-        field_data = ujson.dumps({
+        field_data = orjson.dumps({
             'vim': 'Vim',
             'emacs': {'order': '2', 'text': 'Emacs'},
-        })
+        }).decode()
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={'name': 'Favorite editor',
                   'field_data': field_data})
         self.assert_json_error(result, "field_data is not a dict")
 
-        field_data = ujson.dumps({
+        field_data = orjson.dumps({
             'vim': {'order': '1', 'text': 'Vim'},
             'emacs': {'order': '2', 'text': 'Emacs'},
             'notepad': {'order': '3', 'text': 'Notepad'},
-        })
+        }).decode()
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={'name': 'Favorite editor',
@@ -465,14 +465,14 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         # Update value of field
         result = self.client_patch("/json/users/me/profile_data",
-                                   {'data': ujson.dumps([{"id": field.id, "value": new_value}])})
+                                   {'data': orjson.dumps([{"id": field.id, "value": new_value}]).decode()})
         self.assert_json_error(result, error_msg)
 
     def test_update_invalid_field(self) -> None:
         self.login('iago')
         data = [{'id': 1234, 'value': '12'}]
         result = self.client_patch("/json/users/me/profile_data", {
-            'data': ujson.dumps(data),
+            'data': orjson.dumps(data).decode(),
         })
         self.assert_json_error(result,
                                "Field id 1234 not found.")
@@ -527,7 +527,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         # Update value of field
         result = self.client_patch(
             "/json/users/me/profile_data",
-            {"data": ujson.dumps([{"id": f["id"], "value": f["value"]} for f in data])},
+            {"data": orjson.dumps([{"id": f["id"], "value": f["value"]} for f in data]).decode()},
         )
         self.assert_json_success(result)
 
@@ -554,7 +554,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         }]
 
         result = self.client_patch("/json/users/me/profile_data",
-                                   {'data': ujson.dumps(data)})
+                                   {'data': orjson.dumps(data).decode()})
         self.assert_json_success(result)
         for field_dict in iago.profile_data:
             if field_dict['id'] == field.id:
@@ -575,7 +575,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         }]
 
         result = self.client_patch("/json/users/me/profile_data",
-                                   {'data': ujson.dumps(data)})
+                                   {'data': orjson.dumps(data).decode()})
         self.assert_json_success(result)
 
     def test_null_value_and_rendered_value(self) -> None:
@@ -727,7 +727,7 @@ class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
             .values_list('order', flat=True)
         )
         result = self.client_patch("/json/realm/profile_fields",
-                                   info={'order': ujson.dumps(order)})
+                                   info={'order': orjson.dumps(order).decode()})
         self.assert_json_success(result)
         fields = CustomProfileField.objects.filter(realm=realm).order_by('order')
         for field in fields:
@@ -743,7 +743,7 @@ class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
         )
         order.append(4)
         result = self.client_patch("/json/realm/profile_fields",
-                                   info={'order': ujson.dumps(order)})
+                                   info={'order': orjson.dumps(order).decode()})
         self.assert_json_success(result)
         fields = CustomProfileField.objects.filter(realm=realm).order_by('order')
         for field in fields:
@@ -758,18 +758,18 @@ class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
             .values_list('order', flat=True)
         )
         result = self.client_patch("/json/realm/profile_fields",
-                                   info={'order': ujson.dumps(order)})
+                                   info={'order': orjson.dumps(order).decode()})
         self.assert_json_error(result, "Must be an organization administrator")
 
     def test_reorder_invalid(self) -> None:
         self.login('iago')
         order = [100, 200, 300]
         result = self.client_patch("/json/realm/profile_fields",
-                                   info={'order': ujson.dumps(order)})
+                                   info={'order': orjson.dumps(order).decode()})
         self.assert_json_error(
             result, 'Invalid order mapping.')
         order = [1, 2]
         result = self.client_patch("/json/realm/profile_fields",
-                                   info={'order': ujson.dumps(order)})
+                                   info={'order': orjson.dumps(order).decode()})
         self.assert_json_error(
             result, 'Invalid order mapping.')

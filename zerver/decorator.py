@@ -7,7 +7,7 @@ from io import BytesIO
 from typing import Callable, Dict, Optional, Tuple, TypeVar, Union, cast
 
 import django_otp
-import ujson
+import orjson
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth import login as django_login
@@ -285,7 +285,7 @@ def log_exception_to_webhook_logger(
 
     if request.content_type == 'application/json':
         try:
-            payload = ujson.dumps(ujson.loads(payload), indent=4)
+            payload = orjson.dumps(orjson.loads(payload), option=orjson.OPT_INDENT_2).decode()
         except ValueError:
             request_body = str(payload)
     else:

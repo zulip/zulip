@@ -3,7 +3,7 @@ import re
 from typing import Any, Dict, List, Mapping
 from unittest import mock
 
-import ujson
+import orjson
 from django.conf import settings
 
 from confirmation.models import Confirmation, create_confirmation_link
@@ -94,7 +94,7 @@ class RealmTest(ZulipTestCase):
     def test_update_realm_description(self) -> None:
         self.login('iago')
         new_description = 'zulip dev group'
-        data = dict(description=ujson.dumps(new_description))
+        data = dict(description=orjson.dumps(new_description).decode())
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/realm', data)
@@ -112,7 +112,7 @@ class RealmTest(ZulipTestCase):
 
     def test_realm_description_length(self) -> None:
         new_description = 'A' * 1001
-        data = dict(description=ujson.dumps(new_description))
+        data = dict(description=orjson.dumps(new_description).decode())
 
         # create an admin user
         self.login('iago')
@@ -124,7 +124,7 @@ class RealmTest(ZulipTestCase):
 
     def test_realm_name_length(self) -> None:
         new_name = 'A' * (Realm.MAX_REALM_NAME_LENGTH + 1)
-        data = dict(name=ujson.dumps(new_name))
+        data = dict(name=orjson.dumps(new_name).decode())
 
         # create an admin user
         self.login('iago')
@@ -139,7 +139,7 @@ class RealmTest(ZulipTestCase):
 
         self.login('othello')
 
-        req = dict(name=ujson.dumps(new_name))
+        req = dict(name=orjson.dumps(new_name).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Must be an organization administrator')
 
@@ -269,14 +269,14 @@ class RealmTest(ZulipTestCase):
         self.login('iago')
 
         disabled_notif_stream_id = -1
-        req = dict(notifications_stream_id = ujson.dumps(disabled_notif_stream_id))
+        req = dict(notifications_stream_id = orjson.dumps(disabled_notif_stream_id).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         realm = get_realm('zulip')
         self.assertEqual(realm.notifications_stream, None)
 
         new_notif_stream_id = 4
-        req = dict(notifications_stream_id = ujson.dumps(new_notif_stream_id))
+        req = dict(notifications_stream_id = orjson.dumps(new_notif_stream_id).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         realm = get_realm('zulip')
@@ -284,7 +284,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.notifications_stream.id, new_notif_stream_id)
 
         invalid_notif_stream_id = 1234
-        req = dict(notifications_stream_id = ujson.dumps(invalid_notif_stream_id))
+        req = dict(notifications_stream_id = orjson.dumps(invalid_notif_stream_id).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid stream id')
         realm = get_realm('zulip')
@@ -308,14 +308,14 @@ class RealmTest(ZulipTestCase):
         self.login('iago')
 
         disabled_signup_notifications_stream_id = -1
-        req = dict(signup_notifications_stream_id = ujson.dumps(disabled_signup_notifications_stream_id))
+        req = dict(signup_notifications_stream_id = orjson.dumps(disabled_signup_notifications_stream_id).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         realm = get_realm('zulip')
         self.assertEqual(realm.signup_notifications_stream, None)
 
         new_signup_notifications_stream_id = 4
-        req = dict(signup_notifications_stream_id = ujson.dumps(new_signup_notifications_stream_id))
+        req = dict(signup_notifications_stream_id = orjson.dumps(new_signup_notifications_stream_id).decode())
 
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
@@ -324,7 +324,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.signup_notifications_stream.id, new_signup_notifications_stream_id)
 
         invalid_signup_notifications_stream_id = 1234
-        req = dict(signup_notifications_stream_id = ujson.dumps(invalid_signup_notifications_stream_id))
+        req = dict(signup_notifications_stream_id = orjson.dumps(invalid_signup_notifications_stream_id).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid stream id')
         realm = get_realm('zulip')
@@ -350,7 +350,7 @@ class RealmTest(ZulipTestCase):
         # we need an admin user.
         self.login('iago')
 
-        req = dict(default_language=ujson.dumps(new_lang))
+        req = dict(default_language=orjson.dumps(new_lang).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         realm = get_realm('zulip')
@@ -360,7 +360,7 @@ class RealmTest(ZulipTestCase):
         # as the default realm language, correct validation error is
         # raised and the invalid language is not saved in db
         invalid_lang = "invalid_lang"
-        req = dict(default_language=ujson.dumps(invalid_lang))
+        req = dict(default_language=orjson.dumps(invalid_lang).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, f"Invalid language '{invalid_lang}'")
         realm = get_realm('zulip')
@@ -389,12 +389,12 @@ class RealmTest(ZulipTestCase):
     def test_change_bot_creation_policy(self) -> None:
         # We need an admin user.
         self.login('iago')
-        req = dict(bot_creation_policy = ujson.dumps(Realm.BOT_CREATION_LIMIT_GENERIC_BOTS))
+        req = dict(bot_creation_policy = orjson.dumps(Realm.BOT_CREATION_LIMIT_GENERIC_BOTS).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
 
         invalid_add_bot_permission = 4
-        req = dict(bot_creation_policy = ujson.dumps(invalid_add_bot_permission))
+        req = dict(bot_creation_policy = orjson.dumps(invalid_add_bot_permission).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid bot_creation_policy')
 
@@ -406,14 +406,14 @@ class RealmTest(ZulipTestCase):
 
         self.login_user(user_profile)
         invalid_value = 12
-        req = dict(email_address_visibility = ujson.dumps(invalid_value))
+        req = dict(email_address_visibility = orjson.dumps(invalid_value).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid email_address_visibility')
 
         reset_emails_in_zulip_realm()
         realm = get_realm("zulip")
 
-        req = dict(email_address_visibility = ujson.dumps(Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS))
+        req = dict(email_address_visibility = orjson.dumps(Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         realm = get_realm("zulip")
@@ -437,7 +437,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(result.json()['user'].get('delivery_email'),
                          hamlet.delivery_email)
 
-        req = dict(email_address_visibility = ujson.dumps(Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY))
+        req = dict(email_address_visibility = orjson.dumps(Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
 
@@ -457,48 +457,48 @@ class RealmTest(ZulipTestCase):
     def test_change_stream_creation_policy(self) -> None:
         # We need an admin user.
         self.login('iago')
-        req = dict(create_stream_policy = ujson.dumps(Realm.POLICY_ADMINS_ONLY))
+        req = dict(create_stream_policy = orjson.dumps(Realm.POLICY_ADMINS_ONLY).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
 
         invalid_value = 10
-        req = dict(create_stream_policy = ujson.dumps(invalid_value))
+        req = dict(create_stream_policy = orjson.dumps(invalid_value).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid create_stream_policy')
 
     def test_change_invite_to_stream_policy(self) -> None:
         # We need an admin user.
         self.login('iago')
-        req = dict(invite_to_stream_policy = ujson.dumps(Realm.POLICY_ADMINS_ONLY))
+        req = dict(invite_to_stream_policy = orjson.dumps(Realm.POLICY_ADMINS_ONLY).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
 
         invalid_value = 10
-        req = dict(invite_to_stream_policy = ujson.dumps(invalid_value))
+        req = dict(invite_to_stream_policy = orjson.dumps(invalid_value).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid invite_to_stream_policy')
 
     def test_user_group_edit_policy(self) -> None:
         # We need an admin user.
         self.login('iago')
-        req = dict(user_group_edit_policy = ujson.dumps(Realm.USER_GROUP_EDIT_POLICY_ADMINS))
+        req = dict(user_group_edit_policy = orjson.dumps(Realm.USER_GROUP_EDIT_POLICY_ADMINS).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
 
         invalid_value = 10
-        req = dict(user_group_edit_policy = ujson.dumps(invalid_value))
+        req = dict(user_group_edit_policy = orjson.dumps(invalid_value).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid user_group_edit_policy')
 
     def test_private_message_policy(self) -> None:
         # We need an admin user.
         self.login('iago')
-        req = dict(private_message_policy = ujson.dumps(Realm.PRIVATE_MESSAGE_POLICY_DISABLED))
+        req = dict(private_message_policy = orjson.dumps(Realm.PRIVATE_MESSAGE_POLICY_DISABLED).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
 
         invalid_value = 10
-        req = dict(private_message_policy = ujson.dumps(invalid_value))
+        req = dict(private_message_policy = orjson.dumps(invalid_value).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid private_message_policy')
 
@@ -549,29 +549,29 @@ class RealmTest(ZulipTestCase):
         self.login('iago')
 
         invalid_video_chat_provider_value = 10
-        req = {"video_chat_provider": ujson.dumps(invalid_video_chat_provider_value)}
+        req = {"video_chat_provider": orjson.dumps(invalid_video_chat_provider_value).decode()}
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result,
                                ("Invalid video_chat_provider {}").format(invalid_video_chat_provider_value))
 
-        req = {"video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['disabled']['id'])}
+        req = {"video_chat_provider": orjson.dumps(Realm.VIDEO_CHAT_PROVIDERS['disabled']['id']).decode()}
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         self.assertEqual(get_realm('zulip').video_chat_provider,
                          Realm.VIDEO_CHAT_PROVIDERS['disabled']['id'])
 
-        req = {"video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])}
+        req = {"video_chat_provider": orjson.dumps(Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id']).decode()}
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         self.assertEqual(get_realm('zulip').video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])
 
-        req = {"video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['big_blue_button']['id'])}
+        req = {"video_chat_provider": orjson.dumps(Realm.VIDEO_CHAT_PROVIDERS['big_blue_button']['id']).decode()}
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         self.assertEqual(get_realm('zulip').video_chat_provider,
                          Realm.VIDEO_CHAT_PROVIDERS['big_blue_button']['id'])
 
-        req = {"video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['zoom']['id'])}
+        req = {"video_chat_provider": orjson.dumps(Realm.VIDEO_CHAT_PROVIDERS['zoom']['id']).decode()}
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
 
@@ -629,45 +629,45 @@ class RealmTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
 
-        req = dict(message_retention_days=ujson.dumps(10))
+        req = dict(message_retention_days=orjson.dumps(10).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, "Must be an organization owner")
 
         self.login('desdemona')
 
-        req = dict(message_retention_days=ujson.dumps(0))
+        req = dict(message_retention_days=orjson.dumps(0).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, "Bad value for 'message_retention_days': 0")
 
-        req = dict(message_retention_days=ujson.dumps(-10))
+        req = dict(message_retention_days=orjson.dumps(-10).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(
             result, "Bad value for 'message_retention_days': -10")
 
-        req = dict(message_retention_days=ujson.dumps('invalid'))
+        req = dict(message_retention_days=orjson.dumps('invalid').decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, "Bad value for 'message_retention_days': invalid")
 
-        req = dict(message_retention_days=ujson.dumps(-1))
+        req = dict(message_retention_days=orjson.dumps(-1).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, "Bad value for 'message_retention_days': -1")
 
-        req = dict(message_retention_days=ujson.dumps('forever'))
+        req = dict(message_retention_days=orjson.dumps('forever').decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
 
-        req = dict(message_retention_days=ujson.dumps(10))
+        req = dict(message_retention_days=orjson.dumps(10).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
 
         do_change_plan_type(realm, Realm.LIMITED)
-        req = dict(message_retention_days=ujson.dumps(10))
+        req = dict(message_retention_days=orjson.dumps(10).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(
             result, "Available on Zulip Standard. Upgrade to access.")
 
         do_change_plan_type(realm, Realm.STANDARD)
-        req = dict(message_retention_days=ujson.dumps(10))
+        req = dict(message_retention_days=orjson.dumps(10).decode())
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
 
@@ -683,7 +683,7 @@ class RealmAPITest(ZulipTestCase):
         realm.save(update_fields=[attr])
 
     def update_with_api(self, name: str, value: int) -> Realm:
-        result = self.client_patch('/json/realm', {name: ujson.dumps(value)})
+        result = self.client_patch('/json/realm', {name: orjson.dumps(value).decode()})
         self.assert_json_success(result)
         return get_realm('zulip')  # refresh data
 
@@ -725,7 +725,7 @@ class RealmAPITest(ZulipTestCase):
                                       Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY],
             video_chat_provider=[
                 dict(
-                    video_chat_provider=ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id']),
+                    video_chat_provider=orjson.dumps(Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id']).decode(),
                 ),
             ],
             message_content_delete_limit_seconds=[1000, 1100, 1200]
@@ -740,7 +740,7 @@ class RealmAPITest(ZulipTestCase):
         if name == 'video_chat_provider':
             self.set_up_db(name, vals[0][name])
             realm = self.update_with_api_multiple_value(vals[0])
-            self.assertEqual(getattr(realm, name), ujson.loads(vals[0][name]))
+            self.assertEqual(getattr(realm, name), orjson.loads(vals[0][name]))
         else:
             self.set_up_db(name, vals[0])
             realm = self.update_with_api(name, vals[1])

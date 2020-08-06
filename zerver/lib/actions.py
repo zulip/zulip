@@ -22,7 +22,7 @@ from typing import (
 )
 
 import django.db.utils
-import ujson
+import orjson
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -576,9 +576,9 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
     RealmAuditLog.objects.create(
         realm=user_profile.realm, acting_user=acting_user, modified_user=user_profile,
         event_type=RealmAuditLog.USER_CREATED, event_time=event_time,
-        extra_data=ujson.dumps({
+        extra_data=orjson.dumps({
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-        }))
+        }).decode())
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
     if settings.BILLING_ENABLED:
@@ -607,9 +607,9 @@ def do_activate_user(user_profile: UserProfile, acting_user: Optional[UserProfil
     RealmAuditLog.objects.create(
         realm=user_profile.realm, modified_user=user_profile, acting_user=acting_user,
         event_type=RealmAuditLog.USER_ACTIVATED, event_time=event_time,
-        extra_data=ujson.dumps({
+        extra_data=orjson.dumps({
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-        }))
+        }).decode())
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
     if settings.BILLING_ENABLED:
@@ -627,9 +627,9 @@ def do_reactivate_user(user_profile: UserProfile, acting_user: Optional[UserProf
     RealmAuditLog.objects.create(
         realm=user_profile.realm, modified_user=user_profile, acting_user=acting_user,
         event_type=RealmAuditLog.USER_REACTIVATED, event_time=event_time,
-        extra_data=ujson.dumps({
+        extra_data=orjson.dumps({
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-        }))
+        }).decode())
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
     if settings.BILLING_ENABLED:
@@ -668,11 +668,11 @@ def do_set_realm_property(realm: Realm, name: str, value: Any,
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED, event_time=event_time,
-        acting_user=acting_user, extra_data=ujson.dumps({
+        acting_user=acting_user, extra_data=orjson.dumps({
             RealmAuditLog.OLD_VALUE: old_value,
             RealmAuditLog.NEW_VALUE: value,
             'property': name,
-        }))
+        }).decode())
 
     if name == "email_address_visibility":
         if Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE not in [old_value, value]:
@@ -703,11 +703,11 @@ def do_set_realm_authentication_methods(realm: Realm,
     updated_value = realm.authentication_methods_dict()
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED, event_time=timezone_now(),
-        acting_user=acting_user, extra_data=ujson.dumps({
+        acting_user=acting_user, extra_data=orjson.dumps({
             RealmAuditLog.OLD_VALUE: old_value,
             RealmAuditLog.NEW_VALUE: updated_value,
             'property': 'authentication_methods',
-        }))
+        }).decode())
     event = dict(
         type="realm",
         op="update_dict",
@@ -739,11 +739,11 @@ def do_set_realm_message_editing(realm: Realm,
             continue
         RealmAuditLog.objects.create(
             realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED, event_time=event_time,
-            acting_user=acting_user, extra_data=ujson.dumps({
+            acting_user=acting_user, extra_data=orjson.dumps({
                 RealmAuditLog.OLD_VALUE: old_values[updated_property],
                 RealmAuditLog.NEW_VALUE: updated_value,
                 'property': updated_property,
-            }))
+            }).decode())
 
     realm.save(update_fields=list(updated_properties.keys()))
     event = dict(
@@ -763,11 +763,11 @@ def do_set_realm_notifications_stream(realm: Realm, stream: Optional[Stream], st
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED, event_time=event_time,
-        acting_user=acting_user, extra_data=ujson.dumps({
+        acting_user=acting_user, extra_data=orjson.dumps({
             RealmAuditLog.OLD_VALUE: old_value,
             RealmAuditLog.NEW_VALUE: stream_id,
             'property': 'notifications_stream',
-        }))
+        }).decode())
 
     event = dict(
         type="realm",
@@ -786,11 +786,11 @@ def do_set_realm_signup_notifications_stream(realm: Realm, stream: Optional[Stre
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED, event_time=event_time,
-        acting_user=acting_user, extra_data=ujson.dumps({
+        acting_user=acting_user, extra_data=orjson.dumps({
             RealmAuditLog.OLD_VALUE: old_value,
             RealmAuditLog.NEW_VALUE: stream_id,
             'property': 'signup_notifications_stream',
-        }))
+        }).decode())
     event = dict(
         type="realm",
         op="update",
@@ -818,9 +818,9 @@ def do_deactivate_realm(realm: Realm, acting_user: Optional[UserProfile]=None) -
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED, event_time=event_time,
-        acting_user=acting_user, extra_data=ujson.dumps({
+        acting_user=acting_user, extra_data=orjson.dumps({
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
-        }))
+        }).decode())
 
     ScheduledEmail.objects.filter(realm=realm).delete()
     for user in active_humans_in_realm(realm):
@@ -840,9 +840,9 @@ def do_reactivate_realm(realm: Realm) -> None:
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_REACTIVATED, event_time=event_time,
-        extra_data=ujson.dumps({
+        extra_data=orjson.dumps({
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
-        }))
+        }).decode())
 
 def do_change_realm_subdomain(realm: Realm, new_subdomain: str) -> None:
     realm.string_id = new_subdomain
@@ -890,9 +890,9 @@ def do_deactivate_user(user_profile: UserProfile,
     RealmAuditLog.objects.create(
         realm=user_profile.realm, modified_user=user_profile, acting_user=acting_user,
         event_type=RealmAuditLog.USER_DEACTIVATED, event_time=event_time,
-        extra_data=ujson.dumps({
+        extra_data=orjson.dumps({
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-        }))
+        }).decode())
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time, increment=-1)
     if settings.BILLING_ENABLED:
@@ -2026,7 +2026,7 @@ def extract_stream_indicator(s: str) -> Union[str, int]:
     # it for legacy reasons.
 
     try:
-        data = ujson.loads(s)
+        data = orjson.loads(s)
     except (ValueError, TypeError):
         # If there was no JSON encoding, then we just
         # have a raw stream name.
@@ -2054,7 +2054,7 @@ def extract_private_recipients(s: str) -> Union[List[str], List[int]]:
     # See test_extract_recipients() for examples of what we allow.
 
     try:
-        data = ujson.loads(s)
+        data = orjson.loads(s)
     except (ValueError, TypeError):
         data = s
 
@@ -2374,7 +2374,7 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
 
     if widget_content is not None:
         try:
-            widget_content = ujson.loads(widget_content)
+            widget_content = orjson.loads(widget_content)
         except Exception:
             raise JsonableError(_('Widgets: API programmer sent invalid JSON content'))
 
@@ -3143,11 +3143,11 @@ def do_change_subscription_property(user_profile: UserProfile, sub: Subscription
     RealmAuditLog.objects.create(
         realm=user_profile.realm, event_type=RealmAuditLog.SUBSCRIPTION_PROPERTY_CHANGED,
         event_time=event_time, modified_user=user_profile, acting_user=acting_user,
-        modified_stream=stream, extra_data=ujson.dumps({
+        modified_stream=stream, extra_data=orjson.dumps({
             RealmAuditLog.OLD_VALUE: old_value,
             RealmAuditLog.NEW_VALUE: database_value,
             'property': database_property_name,
-        }))
+        }).decode())
 
     event = dict(type="subscription",
                  op="update",
@@ -3437,10 +3437,10 @@ def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional
     RealmAuditLog.objects.create(
         realm=user_profile.realm, event_type=RealmAuditLog.USER_DEFAULT_SENDING_STREAM_CHANGED,
         event_time=event_time, modified_user=user_profile,
-        acting_user=acting_user, extra_data=ujson.dumps({
+        acting_user=acting_user, extra_data=orjson.dumps({
             RealmAuditLog.OLD_VALUE: old_value,
             RealmAuditLog.NEW_VALUE: None if stream is None else stream.id,
-        }))
+        }).decode())
 
     if user_profile.is_bot:
         if stream:
@@ -3466,10 +3466,10 @@ def do_change_default_events_register_stream(user_profile: UserProfile,
     RealmAuditLog.objects.create(
         realm=user_profile.realm, event_type=RealmAuditLog.USER_DEFAULT_REGISTER_STREAM_CHANGED,
         event_time=event_time, modified_user=user_profile,
-        acting_user=acting_user, extra_data=ujson.dumps({
+        acting_user=acting_user, extra_data=orjson.dumps({
             RealmAuditLog.OLD_VALUE: old_value,
             RealmAuditLog.NEW_VALUE: None if stream is None else stream.id,
-        }))
+        }).decode())
 
     if user_profile.is_bot:
         if stream:
@@ -3494,10 +3494,10 @@ def do_change_default_all_public_streams(user_profile: UserProfile, value: bool,
     RealmAuditLog.objects.create(
         realm=user_profile.realm, event_type=RealmAuditLog.USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED,
         event_time=event_time, modified_user=user_profile,
-        acting_user=acting_user, extra_data=ujson.dumps({
+        acting_user=acting_user, extra_data=orjson.dumps({
             RealmAuditLog.OLD_VALUE: old_value,
             RealmAuditLog.NEW_VALUE: value,
-        }))
+        }).decode())
 
     if user_profile.is_bot:
         send_event(user_profile.realm,
@@ -3515,11 +3515,11 @@ def do_change_user_role(user_profile: UserProfile, value: int, acting_user: Opti
     RealmAuditLog.objects.create(
         realm=user_profile.realm, modified_user=user_profile, acting_user=acting_user,
         event_type=RealmAuditLog.USER_ROLE_CHANGED, event_time=timezone_now(),
-        extra_data=ujson.dumps({
+        extra_data=orjson.dumps({
             RealmAuditLog.OLD_VALUE: old_value,
             RealmAuditLog.NEW_VALUE: value,
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-        }))
+        }).decode())
     event = dict(type="realm_user", op="update",
                  person=dict(user_id=user_profile.id, role=user_profile.role))
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
@@ -3590,10 +3590,10 @@ def do_rename_stream(stream: Stream,
     RealmAuditLog.objects.create(
         realm=stream.realm, acting_user=user_profile, modified_stream=stream,
         event_type=RealmAuditLog.STREAM_NAME_CHANGED, event_time=timezone_now(),
-        extra_data=ujson.dumps({
+        extra_data=orjson.dumps({
             RealmAuditLog.OLD_VALUE: old_name,
             RealmAuditLog.NEW_VALUE: new_name,
-        }))
+        }).decode())
 
     recipient_id = stream.recipient_id
     messages = Message.objects.filter(recipient_id=recipient_id).only("id")
@@ -3766,11 +3766,11 @@ def do_change_notification_settings(user_profile: UserProfile, name: str,
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=user_profile.realm, event_type=RealmAuditLog.USER_NOTIFICATION_SETTINGS_CHANGED, event_time=event_time,
-        acting_user=acting_user, modified_user=user_profile, extra_data=ujson.dumps({
+        acting_user=acting_user, modified_user=user_profile, extra_data=orjson.dumps({
             RealmAuditLog.OLD_VALUE: old_value,
             RealmAuditLog.NEW_VALUE: value,
             'property': name,
-        }))
+        }).decode())
 
     send_event(user_profile.realm, event, [user_profile.id])
 
@@ -4653,11 +4653,11 @@ def do_update_message(user_profile: UserProfile, message: Message,
             send_event(user_profile.realm, delete_event, delete_event_notify_user_ids)
 
     if message.edit_history is not None:
-        edit_history = ujson.loads(message.edit_history)
+        edit_history = orjson.loads(message.edit_history)
         edit_history.insert(0, edit_history_event)
     else:
         edit_history = [edit_history_event]
-    message.edit_history = ujson.dumps(edit_history)
+    message.edit_history = orjson.dumps(edit_history).decode()
 
     # This does message.save(update_fields=[...])
     save_message_for_edit_use_case(message=message)
@@ -5667,7 +5667,7 @@ def try_add_realm_default_custom_profile_field(realm: Realm,
     field = CustomProfileField(realm=realm, name=field_data['name'],
                                field_type=CustomProfileField.EXTERNAL_ACCOUNT,
                                hint=field_data['hint'],
-                               field_data=ujson.dumps(dict(subtype=field_subtype)))
+                               field_data=orjson.dumps(dict(subtype=field_subtype)).decode())
     field.save()
     field.order = field.id
     field.save(update_fields=['order'])
@@ -5681,7 +5681,7 @@ def try_add_realm_custom_profile_field(realm: Realm, name: str, field_type: int,
     field.hint = hint
     if (field.field_type == CustomProfileField.CHOICE or
             field.field_type == CustomProfileField.EXTERNAL_ACCOUNT):
-        field.field_data = ujson.dumps(field_data or {})
+        field.field_data = orjson.dumps(field_data or {}).decode()
 
     field.save()
     field.order = field.id
@@ -5707,7 +5707,7 @@ def try_update_realm_custom_profile_field(realm: Realm, field: CustomProfileFiel
     field.hint = hint
     if (field.field_type == CustomProfileField.CHOICE or
             field.field_type == CustomProfileField.EXTERNAL_ACCOUNT):
-        field.field_data = ujson.dumps(field_data or {})
+        field.field_data = orjson.dumps(field_data or {}).decode()
     field.save()
     notify_realm_custom_profile_fields(realm, 'update')
 
@@ -5726,7 +5726,7 @@ def notify_user_update_custom_profile_data(user_profile: UserProfile,
                                            field: Dict[str, Union[int, str, List[int], None]]) -> None:
     data = dict(id=field['id'])
     if field['type'] == CustomProfileField.USER:
-        data["value"] = ujson.dumps(field['value'])
+        data["value"] = orjson.dumps(field['value']).decode()
     else:
         data['value'] = field['value']
     if field['rendered_value']:
@@ -5988,11 +5988,11 @@ def notify_realm_export(user_profile: UserProfile) -> None:
     send_event(user_profile.realm, event, [user_profile.id])
 
 def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> None:
-    # Give mypy a hint so it knows `ujson.loads`
+    # Give mypy a hint so it knows `orjson.loads`
     # isn't being passed an `Optional[str]`.
     export_extra_data = export.extra_data
     assert export_extra_data is not None
-    export_data = ujson.loads(export_extra_data)
+    export_data = orjson.loads(export_extra_data)
     export_path = export_data.get('export_path')
 
     if export_path:
@@ -6000,7 +6000,7 @@ def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> 
         delete_export_tarball(export_path)
 
     export_data.update({'deleted_timestamp': timezone_now().timestamp()})
-    export.extra_data = ujson.dumps(export_data)
+    export.extra_data = orjson.dumps(export_data).decode()
     export.save(update_fields=['extra_data'])
     notify_realm_export(user_profile)
 

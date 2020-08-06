@@ -2,7 +2,7 @@ import time
 from typing import Any, Dict
 from unittest import mock
 
-import ujson
+import orjson
 from django.http import HttpResponse
 from django.test import override_settings
 
@@ -25,14 +25,14 @@ class ChangeSettingsTest(ZulipTestCase):
         self.login('hamlet')
         user_profile = self.example_user('hamlet')
         json_result = self.client_post(pattern,
-                                       {param: ujson.dumps(True)})
+                                       {param: orjson.dumps(True).decode()})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
         user_profile = self.example_user('hamlet')
         self.assertEqual(getattr(user_profile, param), True)
 
         json_result = self.client_post(pattern,
-                                       {param: ujson.dumps(False)})
+                                       {param: orjson.dumps(False).decode()})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
         user_profile = self.example_user('hamlet')
@@ -44,14 +44,14 @@ class ChangeSettingsTest(ZulipTestCase):
         self.login('hamlet')
         user_profile = self.example_user('hamlet')
         json_result = self.client_patch(pattern,
-                                        {param: ujson.dumps(True)})
+                                        {param: orjson.dumps(True).decode()})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
         user_profile = self.example_user('hamlet')
         self.assertEqual(getattr(user_profile, param), True)
 
         json_result = self.client_patch(pattern,
-                                        {param: ujson.dumps(False)})
+                                        {param: orjson.dumps(False).decode()})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
         user_profile = self.example_user('hamlet')
@@ -72,7 +72,7 @@ class ChangeSettingsTest(ZulipTestCase):
                 new_password='foobar1',
             ))
         self.assert_json_success(json_result)
-        result = ujson.loads(json_result.content)
+        result = orjson.loads(json_result.content)
         self.check_well_formed_change_settings_response(result)
 
         user.refresh_from_db()
@@ -177,11 +177,11 @@ class ChangeSettingsTest(ZulipTestCase):
         self.login_user(user_profile)
 
         json_result = self.client_patch(pattern,
-                                        {param: ujson.dumps("invalid")})
+                                        {param: orjson.dumps("invalid").decode()})
         self.assert_json_error(json_result, "Invalid notification sound 'invalid'")
 
         json_result = self.client_patch(pattern,
-                                        {param: ujson.dumps("ding")})
+                                        {param: orjson.dumps("ding").decode()})
         self.assert_json_success(json_result)
 
         # refetch user_profile object to correctly handle caching
@@ -189,7 +189,7 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assertEqual(getattr(user_profile, param), "ding")
 
         json_result = self.client_patch(pattern,
-                                        {param: ujson.dumps('zulip')})
+                                        {param: orjson.dumps('zulip').decode()})
 
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
@@ -339,7 +339,7 @@ class ChangeSettingsTest(ZulipTestCase):
             invalid_value: Any = 100
         else:
             invalid_value = 'invalid_' + setting_name
-        data = {setting_name: ujson.dumps(test_value)}
+        data = {setting_name: orjson.dumps(test_value).decode()}
 
         result = self.client_patch("/json/settings/display", data)
         self.assert_json_success(result)
@@ -348,7 +348,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
         # Test to make sure invalid settings are not accepted
         # and saved in the db.
-        data = {setting_name: ujson.dumps(invalid_value)}
+        data = {setting_name: orjson.dumps(invalid_value).decode()}
 
         result = self.client_patch("/json/settings/display", data)
         # the json error for multiple word setting names (ex: default_language)
@@ -366,7 +366,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def do_change_emojiset(self, emojiset: str) -> HttpResponse:
         self.login('hamlet')
-        data = {'emojiset': ujson.dumps(emojiset)}
+        data = {'emojiset': orjson.dumps(emojiset).decode()}
         result = self.client_patch("/json/settings/display", data)
         return result
 

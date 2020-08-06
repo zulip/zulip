@@ -2,7 +2,7 @@
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-import ujson
+import orjson
 from defusedxml.ElementTree import fromstring as xml_fromstring
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -73,7 +73,7 @@ UNSUPPORTED_EVENT_TYPES = [
 ]
 
 def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str]:
-    payload = ujson.loads(request.body)
+    payload = orjson.loads(request.body)
 
     event_type = payload["kind"]
 

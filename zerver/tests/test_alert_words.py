@@ -1,4 +1,4 @@
-import ujson
+import orjson
 
 from zerver.lib.actions import do_add_alert_words, do_remove_alert_words
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words
@@ -24,7 +24,7 @@ class AlertWordTests(ZulipTestCase):
         self.login_user(user)
 
         params = {
-            'alert_words': ujson.dumps(['milk', 'cookies']),
+            'alert_words': orjson.dumps(['milk', 'cookies']).decode(),
         }
         result = self.client_post('/json/users/me/alert_words', params)
         self.assert_json_success(result)
@@ -135,7 +135,7 @@ class AlertWordTests(ZulipTestCase):
         self.login_user(user)
 
         result = self.client_post('/json/users/me/alert_words',
-                                  {'alert_words': ujson.dumps(['one ', '\n two', 'three'])})
+                                  {'alert_words': orjson.dumps(['one ', '\n two', 'three']).decode()})
         self.assert_json_success(result)
         self.assertEqual(set(result.json()['alert_words']), {'one', 'two', 'three'})
 
@@ -144,12 +144,12 @@ class AlertWordTests(ZulipTestCase):
         self.login_user(user)
 
         result = self.client_post('/json/users/me/alert_words',
-                                  {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+                                  {'alert_words': orjson.dumps(['one', 'two', 'three']).decode()})
         self.assert_json_success(result)
         self.assertEqual(set(result.json()['alert_words']), {'one', 'two', 'three'})
 
         result = self.client_delete('/json/users/me/alert_words',
-                                    {'alert_words': ujson.dumps(['one'])})
+                                    {'alert_words': orjson.dumps(['one']).decode()})
         self.assert_json_success(result)
         self.assertEqual(set(result.json()['alert_words']), {'two', 'three'})
 
@@ -164,7 +164,7 @@ class AlertWordTests(ZulipTestCase):
         self.login_user(user)
 
         result = self.client_post('/json/users/me/alert_words',
-                                  {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+                                  {'alert_words': orjson.dumps(['one', 'two', 'three']).decode()})
         self.assert_json_success(result)
         self.assertEqual(set(result.json()['alert_words']), {'one', 'two', 'three'})
 
@@ -192,7 +192,7 @@ class AlertWordTests(ZulipTestCase):
         self.login_user(user)
 
         result = self.client_post('/json/users/me/alert_words',
-                                  {'alert_words': ujson.dumps(['ALERT'])})
+                                  {'alert_words': orjson.dumps(['ALERT']).decode()})
 
         content = 'this is an ALERT for you'
         self.send_stream_message(user, "Denmark", content)

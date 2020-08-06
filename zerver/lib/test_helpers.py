@@ -26,7 +26,7 @@ from unittest import mock
 import boto3
 import fakeldap
 import ldap
-import ujson
+import orjson
 from boto3.resources.base import ServiceResource
 from django.conf import settings
 from django.db.migrations.state import StateApps
@@ -336,6 +336,16 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
             else:
                 extra_info = ''
 
+            if isinstance(info, POSTRequestMock):
+                info = "<POSTRequestMock>"
+            elif isinstance(info, bytes):
+                info = "<bytes>"
+            elif isinstance(info, dict):
+                info = {
+                    k: "<file object>" if hasattr(v, "read") and callable(getattr(v, "read")) else v
+                    for k, v in info.items()
+                }
+
             append_instrumentation_data(dict(
                 url=url,
                 status_code=result.status_code,
@@ -425,20 +435,9 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
 
         var_dir = 'var'  # TODO make sure path is robust here
         fn = os.path.join(var_dir, 'url_coverage.txt')
-        with open(fn, 'w') as f:
+        with open(fn, 'wb') as f:
             for call in calls:
-                try:
-                    line = ujson.dumps(call)
-                    f.write(line + '\n')
-                except OverflowError:  # nocoverage -- test suite error handling
-                    print('''
-                        A JSON overflow error was encountered while
-                        producing the URL coverage report.  Sometimes
-                        this indicates that a test is passing objects
-                        into methods like client_post(), which is
-                        unnecessary and leads to false positives.
-                        ''')
-                    print(call)
+                f.write(orjson.dumps(call, option=orjson.OPT_APPEND_NEWLINE))
 
         if full_suite:
             print(f'INFO: URL coverage report is in {fn}')

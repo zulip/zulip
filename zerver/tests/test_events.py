@@ -7,7 +7,7 @@ from io import StringIO
 from typing import Any, Callable, Dict, List, Optional, Set
 from unittest import mock
 
-import ujson
+import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
@@ -224,9 +224,9 @@ class BaseAction(ZulipTestCase):
         events = client.event_queue.contents()
         content = {
             'queue_id': '123.12',
-            # The ujson wrapper helps in converting tuples to lists
+            # The JSON wrapper helps in converting tuples to lists
             # as tuples aren't valid JSON structure.
-            'events': ujson.loads(ujson.dumps(copy.deepcopy(events))),
+            'events': orjson.loads(orjson.dumps(events)),
             'msg': '',
             'result': 'success'
         }
@@ -234,17 +234,17 @@ class BaseAction(ZulipTestCase):
         self.assertEqual(len(events), num_events)
         initial_state = copy.deepcopy(hybrid_state)
         post_process_state(self.user_profile, initial_state, notification_settings_null)
-        before = ujson.dumps(initial_state)
+        before = orjson.dumps(initial_state)
         apply_events(hybrid_state, events, self.user_profile,
                      client_gravatar=client_gravatar,
                      slim_presence=slim_presence,
                      include_subscribers=include_subscribers)
         post_process_state(self.user_profile, hybrid_state, notification_settings_null)
-        after = ujson.dumps(hybrid_state)
+        after = orjson.dumps(hybrid_state)
 
         if state_change_expected:
             if before == after:  # nocoverage
-                print(ujson.dumps(initial_state, indent=2))
+                print(orjson.dumps(initial_state, option=orjson.OPT_INDENT_2).decode())
                 print(events)
                 raise AssertionError('Test does not exercise enough code -- events do not change state.')
         else:
@@ -1437,7 +1437,7 @@ class NormalActionsTest(BaseAction):
 
         action = lambda: self.create_bot('test_outgoing_webhook',
                                          full_name='Outgoing Webhook Bot',
-                                         payload_url=ujson.dumps('https://foo.bar.com'),
+                                         payload_url=orjson.dumps('https://foo.bar.com').decode(),
                                          interface_type=Service.GENERIC,
                                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT)
         events = self.verify_action(action, num_events=2)
@@ -1448,7 +1448,7 @@ class NormalActionsTest(BaseAction):
         action = lambda: self.create_bot('test_embedded',
                                          full_name='Embedded Bot',
                                          service_name='helloworld',
-                                         config_data=ujson.dumps({'foo': 'bar'}),
+                                         config_data=orjson.dumps({'foo': 'bar'}).decode(),
                                          bot_type=UserProfile.EMBEDDED_BOT)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_add('events[1]', events[1])
@@ -1574,7 +1574,7 @@ class NormalActionsTest(BaseAction):
         bot = self.create_test_bot('test', self.user_profile,
                                    full_name='Test Bot',
                                    bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-                                   payload_url=ujson.dumps('http://hostname.domain2.com'),
+                                   payload_url=orjson.dumps('http://hostname.domain2.com').decode(),
                                    interface_type=Service.GENERIC,
                                    )
         action = lambda: do_update_outgoing_webhook_service(bot, 2, 'http://hostname.domain2.com')
@@ -2018,11 +2018,11 @@ class RealmPropertyActionTest(BaseAction):
             self.assertEqual(RealmAuditLog.objects.filter(
                 realm=self.user_profile.realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
                 event_time__gte=now, acting_user=self.user_profile,
-                extra_data=ujson.dumps({
+                extra_data=orjson.dumps({
                     RealmAuditLog.OLD_VALUE: old_value,
                     RealmAuditLog.NEW_VALUE: val,
                     'property': name,
-                })).count(), 1)
+                }).decode()).count(), 1)
             check_realm_update('events[0]', events[0], name)
 
     def test_change_realm_property(self) -> None:

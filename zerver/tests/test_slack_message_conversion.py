@@ -1,7 +1,7 @@
 import os
 from typing import Any, Dict, List, Tuple
 
-import ujson
+import orjson
 
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
@@ -23,8 +23,8 @@ class SlackMessageConversion(ZulipTestCase):
     def load_slack_message_conversion_tests(self) -> Dict[Any, Any]:
         test_fixtures = {}
         with open(os.path.join(os.path.dirname(__file__),
-                               'fixtures/slack_message_conversion.json')) as f:
-            data = ujson.load(f)
+                               'fixtures/slack_message_conversion.json'), "rb") as f:
+            data = orjson.loads(f.read())
         for test in data['regular_tests']:
             test_fixtures[test['name']] = test
 

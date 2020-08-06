@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-import ujson
+import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
@@ -79,7 +79,7 @@ def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int)
     except RealmAuditLog.DoesNotExist:
         return json_error(_("Invalid data export ID"))
 
-    export_data = ujson.loads(audit_log_entry.extra_data)
+    export_data = orjson.loads(audit_log_entry.extra_data)
     if 'deleted_timestamp' in export_data:
         return json_error(_("Export already deleted"))
     do_delete_realm_export(user, audit_log_entry)

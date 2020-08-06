@@ -11,7 +11,7 @@ import pprint
 from collections import defaultdict
 from typing import Any, Dict, List, Set
 
-import ujson
+import orjson
 
 Call = Dict[str, Any]
 
@@ -39,7 +39,7 @@ def encode_info(info: Any) -> str:
     try:
         result = ''
         try:
-            info = ujson.loads(info)
+            info = orjson.loads(info)
             result = '(stringified)\n'
         except Exception:
             pass
@@ -106,9 +106,8 @@ def create_user_docs() -> None:
             </style>
             ''')
 
-        calls = []
-        for line in open(fn):
-            calls.append(ujson.loads(line))
+        with open(fn, "rb") as coverage:
+            calls = [orjson.loads(line) for line in coverage]
 
         pattern_dict: Dict[str, List[Call]] = defaultdict(list)
         for call in calls:

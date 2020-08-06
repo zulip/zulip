@@ -1,4 +1,4 @@
-import ujson
+import orjson
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 
@@ -26,10 +26,10 @@ class RealmDomainTest(ZulipTestCase):
         RealmDomain.objects.create(realm=realm, domain='acme.com', allow_subdomains=True)
         result = self.client_get("/json/realm/domains")
         self.assert_json_success(result)
-        received = ujson.dumps(result.json()['domains'], sort_keys=True)
-        expected = ujson.dumps([{'domain': 'zulip.com', 'allow_subdomains': False},
-                                {'domain': 'acme.com', 'allow_subdomains': True}],
-                               sort_keys=True)
+        received = orjson.dumps(result.json()['domains'], option=orjson.OPT_SORT_KEYS)
+        expected = orjson.dumps([{'domain': 'zulip.com', 'allow_subdomains': False},
+                                 {'domain': 'acme.com', 'allow_subdomains': True}],
+                                option=orjson.OPT_SORT_KEYS)
         self.assertEqual(received, expected)
 
     def test_not_realm_admin(self) -> None:
@@ -43,12 +43,12 @@ class RealmDomainTest(ZulipTestCase):
 
     def test_create_realm_domain(self) -> None:
         self.login('iago')
-        data = {'domain': ujson.dumps(''),
-                'allow_subdomains': ujson.dumps(True)}
+        data = {'domain': orjson.dumps('').decode(),
+                'allow_subdomains': orjson.dumps(True).decode()}
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_error(result, 'Invalid domain: Domain can\'t be empty.')
 
-        data['domain'] = ujson.dumps('acme.com')
+        data['domain'] = orjson.dumps('acme.com').decode()
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_success(result)
         realm = get_realm('zulip')
@@ -73,7 +73,7 @@ class RealmDomainTest(ZulipTestCase):
         RealmDomain.objects.create(realm=realm, domain='acme.com',
                                    allow_subdomains=False)
         data = {
-            'allow_subdomains': ujson.dumps(True),
+            'allow_subdomains': orjson.dumps(True).decode(),
         }
         url = "/json/realm/domains/acme.com"
         result = self.client_patch(url, data)

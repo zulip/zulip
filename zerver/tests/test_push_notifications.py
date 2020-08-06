@@ -8,8 +8,8 @@ from typing import Any, Dict, Iterator, List, Optional
 from unittest import mock
 from unittest.mock import call
 
+import orjson
 import requests
-import ujson
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F
@@ -500,9 +500,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
         result = self.uuid_post(
             self.server_uuid,
             '/api/v1/remotes/server/analytics',
-            {'realm_counts': ujson.dumps(realm_count_data),
-             'installation_counts': ujson.dumps(installation_count_data),
-             'realmauditlog_rows': ujson.dumps(realmauditlog_data)},
+            {'realm_counts': orjson.dumps(realm_count_data).decode(),
+             'installation_counts': orjson.dumps(installation_count_data).decode(),
+             'realmauditlog_rows': orjson.dumps(realmauditlog_data).decode()},
             subdomain="")
         self.assert_json_error(result, "Data is out of order.")
 
@@ -514,9 +514,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 result = self.uuid_post(
                     self.server_uuid,
                     '/api/v1/remotes/server/analytics',
-                    {'realm_counts': ujson.dumps(realm_count_data),
-                     'installation_counts': ujson.dumps(installation_count_data),
-                     'realmauditlog_rows': ujson.dumps(realmauditlog_data)},
+                    {'realm_counts': orjson.dumps(realm_count_data).decode(),
+                     'installation_counts': orjson.dumps(installation_count_data).decode(),
+                     'realmauditlog_rows': orjson.dumps(realmauditlog_data).decode()},
                     subdomain="")
             self.assert_json_error(result, "Invalid data.")
             self.assertEqual(warn_log.output, [
@@ -1630,12 +1630,12 @@ class TestSendNotificationsToBouncer(ZulipTestCase):
         }
         mock_send.assert_called_with('POST',
                                      'push/notify',
-                                     ujson.dumps(post_data),
+                                     orjson.dumps(post_data),
                                      extra_headers={'Content-type':
                                                     'application/json'})
 
 class Result:
-    def __init__(self, status: int=200, content: str=ujson.dumps({'msg': 'error'})) -> None:
+    def __init__(self, status: int=200, content: bytes=orjson.dumps({'msg': 'error'})) -> None:
         self.status_code = status
         self.content = content
 
@@ -1660,21 +1660,19 @@ class TestSendToPushBouncer(ZulipTestCase):
         error_obj = InvalidZulipServerError("testRole")
         with mock.patch('requests.request',
                         return_value=Result(status=400,
-                                            content=ujson.dumps(error_obj.to_json()))):
+                                            content=orjson.dumps(error_obj.to_json()))):
             with self.assertRaises(PushNotificationBouncerException) as exc:
                 send_to_push_bouncer('register', 'register', {'msg': 'true'})
         self.assertEqual(str(exc.exception),
                          'Push notifications bouncer error: '
                          'Zulip server auth failure: testRole is not registered')
 
-    @mock.patch('requests.request', return_value=Result(status=400, content='/'))
+    @mock.patch('requests.request', return_value=Result(status=400, content=b'/'))
     def test_400_error_when_content_is_not_serializable(self, mock_request: mock.MagicMock) -> None:
-        with self.assertRaises(ValueError) as exc:
+        with self.assertRaises(orjson.JSONDecodeError):
             send_to_push_bouncer('register', 'register', {'msg': 'true'})
-        self.assertEqual(str(exc.exception),
-                         'Expected object or value')
 
-    @mock.patch('requests.request', return_value=Result(status=300, content='/'))
+    @mock.patch('requests.request', return_value=Result(status=300, content=b'/'))
     def test_300_error(self, mock_request: mock.MagicMock) -> None:
         with self.assertRaises(PushNotificationBouncerException) as exc:
             send_to_push_bouncer('register', 'register', {'msg': 'true'})
@@ -2090,7 +2088,7 @@ class TestReceivesNotificationsFunctions(ZulipTestCase):
 
 class TestPushNotificationsContent(ZulipTestCase):
     def test_fixtures(self) -> None:
-        fixtures = ujson.loads(self.fixture_data("markdown_test_cases.json"))
+        fixtures = orjson.loads(self.fixture_data("markdown_test_cases.json"))
         tests = fixtures["regular_tests"]
         for test in tests:
             if "text_content" in test:

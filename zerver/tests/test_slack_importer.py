@@ -4,7 +4,7 @@ from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 from unittest import mock
 from unittest.mock import ANY, call
 
-import ujson
+import orjson
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
@@ -723,13 +723,13 @@ class SlackImporter(ZulipTestCase):
         messages_file_2 = os.path.join(output_dir, 'messages-000002.json')
         self.assertTrue(os.path.exists(messages_file_2))
 
-        with open(messages_file_1) as f:
-            message_json = ujson.load(f)
+        with open(messages_file_1, "rb") as f:
+            message_json = orjson.loads(f.read())
         self.assertEqual(message_json['zerver_message'], zerver_message[:1])
         self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage[:2])
 
-        with open(messages_file_2) as f:
-            message_json = ujson.load(f)
+        with open(messages_file_2, "rb") as f:
+            message_json = orjson.loads(f.read())
         self.assertEqual(message_json['zerver_message'], zerver_message[1:2])
         self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage[2:5])
 
@@ -764,8 +764,8 @@ class SlackImporter(ZulipTestCase):
         # Also the unzipped data file should be removed if the test fails at 'do_convert_data'
         self.rm_tree(test_slack_unzipped_file)
 
-        user_data_fixture = ujson.loads(self.fixture_data('user_data.json', type='slack_fixtures'))
-        team_info_fixture = ujson.loads(self.fixture_data('team_info.json', type='slack_fixtures'))
+        user_data_fixture = orjson.loads(self.fixture_data('user_data.json', type='slack_fixtures'))
+        team_info_fixture = orjson.loads(self.fixture_data('team_info.json', type='slack_fixtures'))
         mock_get_slack_api_data.side_effect = [user_data_fixture['members'], {}, team_info_fixture["team"]]
         mock_requests_get.return_value.raw = get_test_image_file("img.png")
 
@@ -779,8 +779,8 @@ class SlackImporter(ZulipTestCase):
         realm_icon_records_path = os.path.join(realm_icons_path, 'records.json')
 
         self.assertTrue(os.path.exists(realm_icon_records_path))
-        with open(realm_icon_records_path) as f:
-            records = ujson.load(f)
+        with open(realm_icon_records_path, "rb") as f:
+            records = orjson.loads(f.read())
             self.assertEqual(len(records), 2)
             self.assertEqual(records[0]["path"], "0/icon.original")
             self.assertTrue(os.path.exists(os.path.join(realm_icons_path, records[0]["path"])))

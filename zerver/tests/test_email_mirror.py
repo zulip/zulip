@@ -7,7 +7,7 @@ from email.message import EmailMessage, MIMEPart
 from typing import Any, Callable, Dict, Mapping, Optional
 from unittest import mock
 
-import ujson
+import orjson
 from django.conf import settings
 from django.http import HttpResponse
 
@@ -730,7 +730,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "test_receive_missed_message_email_messages",
                                                      "client": "test suite",
-                                                     "to": ujson.dumps([othello.id])})
+                                                     "to": orjson.dumps([othello.id]).decode()})
         self.assert_json_success(result)
 
         user_profile = self.example_user('othello')
@@ -770,7 +770,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "test_receive_missed_message_email_messages",
                                                      "client": "test suite",
-                                                     "to": ujson.dumps([cordelia.id, iago.id])})
+                                                     "to": orjson.dumps([cordelia.id, iago.id]).decode()})
         self.assert_json_success(result)
 
         user_profile = self.example_user('cordelia')
@@ -990,7 +990,7 @@ class TestEmptyGatewaySetting(ZulipTestCase):
             type="private",
             content="test_receive_missed_message_email_messages",
             client="test suite",
-            to=ujson.dumps([cordelia.id, iago.id]),
+            to=orjson.dumps([cordelia.id, iago.id]).decode(),
         )
         result = self.client_post("/json/messages", payload)
         self.assert_json_success(result)
@@ -1166,7 +1166,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
                 "type": "private",
                 "content": "test_receive_missed_message_email_messages",
                 "client": "test suite",
-                "to": ujson.dumps([cordelia.id, iago.id]),
+                "to": orjson.dumps([cordelia.id, iago.id]).decode(),
             })
         self.assert_json_success(result)
 
@@ -1277,7 +1277,7 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
         self.assertEqual("(no topic)", message.topic_name())
 
     def test_strip_from_subject(self) -> None:
-        subject_list = ujson.loads(self.fixture_data('subjects.json', type='email'))
+        subject_list = orjson.loads(self.fixture_data('subjects.json', type='email'))
         for subject in subject_list:
             stripped = strip_from_subject(subject['original_subject'])
             self.assertEqual(stripped, subject['stripped_subject'])
@@ -1414,7 +1414,7 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
                 "type": "private",
                 "content": "test_redact_email_message",
                 "client": "test suite",
-                "to": ujson.dumps([cordelia.email, iago.email]),
+                "to": orjson.dumps([cordelia.email, iago.email]).decode(),
             })
         self.assert_json_success(result)
 

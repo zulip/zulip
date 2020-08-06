@@ -5,11 +5,14 @@ import sys
 
 def check_venv(filename: str) -> None:
     try:
+        # Here we import 3 modules that we expect to be in any valid
+        # Zulip virtualenv but are unlikely to all be present on a
+        # host system to help check whether we're in Vagrant.
+        import bitfield
         import django
-        import ujson
         import zulip
+        bitfield
         django
-        ujson
         zulip
     except ImportError:
         print(f"You need to run {filename} inside a Zulip dev environment.")

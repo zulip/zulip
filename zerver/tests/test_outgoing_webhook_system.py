@@ -1,8 +1,8 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 from unittest import mock
 
+import orjson
 import requests
-import ujson
 
 from version import ZULIP_VERSION
 from zerver.lib.actions import do_create_user
@@ -18,10 +18,10 @@ from zerver.models import Recipient, Service, UserProfile, get_display_recipient
 
 
 class ResponseMock:
-    def __init__(self, status_code: int, content: Optional[Any]=None) -> None:
+    def __init__(self, status_code: int, content: bytes=b"") -> None:
         self.status_code = status_code
         self.content = content
-        self.text = ujson.dumps(content)
+        self.text = content.decode()
 
 def request_exception_error(http_method: Any, final_url: Any, data: Any, **request_kwargs: Any) -> Any:
     raise requests.exceptions.RequestException("I'm a generic exception :(")
@@ -53,7 +53,7 @@ class DoRestCallTests(ZulipTestCase):
         mock_event = self.mock_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
-        response = ResponseMock(200, dict(content='whatever'))
+        response = ResponseMock(200, orjson.dumps(dict(content='whatever')))
         expect_200 = mock.patch('requests.request', return_value=response)
 
         expect_send_response = mock.patch('zerver.lib.outgoing_webhook.send_response_message')
@@ -222,7 +222,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         for item in m.call_args_list:
             args = item[0]
             base_url = args[0]
-            request_data = ujson.loads(args[1])
+            request_data = orjson.loads(args[1])
             tup = (base_url, request_data['token'])
             url_token_tups.add(tup)
             message_data = request_data['message']
@@ -237,7 +237,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             },
         )
 
-    @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))
+    @mock.patch('requests.request', return_value=ResponseMock(200, orjson.dumps({"response_string": "Hidley ho, I'm a webhook responding!"})))
     def test_pm_to_outgoing_webhook_bot(self, mock_requests_request: mock.Mock) -> None:
         bot_owner = self.example_user("othello")
         bot = self.create_outgoing_bot(bot_owner)
@@ -257,7 +257,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             Recipient.PERSONAL,
         )
 
-    @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))
+    @mock.patch('requests.request', return_value=ResponseMock(200, orjson.dumps({"response_string": "Hidley ho, I'm a webhook responding!"})))
     def test_stream_message_to_outgoing_webhook_bot(self, mock_requests_request: mock.Mock) -> None:
         bot_owner = self.example_user("othello")
         bot = self.create_outgoing_bot(bot_owner)

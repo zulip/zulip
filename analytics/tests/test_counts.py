@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple, Type
 from unittest import mock
 
-import ujson
+import orjson
 from django.apps import apps
 from django.db import models
 from django.db.models import Sum
@@ -1393,7 +1393,7 @@ class TestRealmActiveHumans(AnalyticsTestCase):
             end_time = self.TIME_ZERO
         UserCount.objects.create(
             user=user, realm=user.realm, property='active_users_audit:is_bot:day',
-            subgroup=ujson.dumps(user.is_bot), end_time=end_time, value=1)
+            subgroup=orjson.dumps(user.is_bot).decode(), end_time=end_time, value=1)
 
     def mark_15day_active(self, user: UserProfile, end_time: Optional[datetime]=None) -> None:
         if end_time is None:
