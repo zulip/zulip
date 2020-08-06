@@ -5,10 +5,12 @@ import render_stream_member_list_entry from "../templates/stream_member_list_ent
 import render_stream_subscription_info from "../templates/stream_subscription_info.hbs";
 import render_subscription_settings from "../templates/subscription_settings.hbs";
 import render_subscription_stream_privacy_modal from "../templates/subscription_stream_privacy_modal.hbs";
+import render_unsubscribe_private_stream_modal from "../templates/unsubscribe_private_stream_modal.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
+import * as confirm_dialog from "./confirm_dialog";
 import * as hash_util from "./hash_util";
 import {i18n} from "./i18n";
 import * as input_pill from "./input_pill";
@@ -818,6 +820,24 @@ export function initialize() {
                 .removeClass("text-success");
         }
 
+        function remove_user_from_private_stream() {
+            remove_user_from_stream(target_user_id, sub, removal_success, removal_failure);
+        }
+
+        if (sub.invite_only && people.is_my_user_id(target_user_id)) {
+            const modal_parent = $("#subscriptions_table");
+            const html_body = render_unsubscribe_private_stream_modal();
+
+            confirm_dialog.launch({
+                parent: modal_parent,
+                html_heading: i18n.t("Unsubscribe from __stream_name__", {stream_name: sub.name}),
+                html_body,
+                html_yes_button: i18n.t("Yes, unsubscribe from this stream"),
+                on_click: remove_user_from_private_stream,
+            });
+            return;
+        }
+
         remove_user_from_stream(target_user_id, sub, removal_success, removal_failure);
     });
 
@@ -829,7 +849,7 @@ export function initialize() {
         const stream_row = $(
             `#subscriptions_table div.stream-row[data-stream-id='${CSS.escape(sub.stream_id)}']`,
         );
-        subs.sub_or_unsub(sub, stream_row);
+        subs.sub_or_unsub(sub, false, stream_row);
 
         if (!sub.subscribed) {
             open_edit_panel_for_row(stream_row);

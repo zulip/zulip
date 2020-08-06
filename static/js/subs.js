@@ -5,12 +5,14 @@ import render_subscription from "../templates/subscription.hbs";
 import render_subscription_settings from "../templates/subscription_settings.hbs";
 import render_subscription_table_body from "../templates/subscription_table_body.hbs";
 import render_subscriptions from "../templates/subscriptions.hbs";
+import render_unsubscribe_private_stream_modal from "../templates/unsubscribe_private_stream_modal.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as components from "./components";
 import * as compose_state from "./compose_state";
+import * as confirm_dialog from "./confirm_dialog";
 import * as hash_util from "./hash_util";
 import {i18n} from "./i18n";
 import * as loading from "./loading";
@@ -787,7 +789,7 @@ export function keyboard_sub() {
     const active_data = get_active_data();
     const row_data = get_row_data(active_data.row);
     if (row_data) {
-        sub_or_unsub(row_data.object);
+        sub_or_unsub(row_data.object, false);
     }
 }
 
@@ -934,8 +936,41 @@ export function open_create_stream() {
     browser_history.update("#streams/new");
 }
 
-export function sub_or_unsub(sub, stream_row) {
+export function unsubscribe_from_private_stream(sub, from_stream_popover) {
+    let modal_parent = $("#subscriptions_table");
+    const html_body = render_unsubscribe_private_stream_modal();
+
+    if (from_stream_popover) {
+        modal_parent = $(".left-sidebar-modal-holder");
+    }
+
+    function unsubscribe_from_stream() {
+        let stream_row;
+        if (overlays.streams_open()) {
+            stream_row = $(
+                "#subscriptions_table div.stream-row[data-stream-id='" + sub.stream_id + "']",
+            );
+        }
+
+        ajaxUnsubscribe(sub, stream_row);
+    }
+
+    confirm_dialog.launch({
+        parent: modal_parent,
+        html_heading: i18n.t("Unsubscribe from __stream_name__", {stream_name: sub.name}),
+        html_body,
+        html_yes_button: i18n.t("Yes, unsubscribe"),
+        on_click: unsubscribe_from_stream,
+    });
+}
+
+export function sub_or_unsub(sub, from_stream_popover, stream_row) {
     if (sub.subscribed) {
+        // TODO: This next line should allow guests to access web-public streams.
+        if (sub.invite_only || page_params.is_guest) {
+            unsubscribe_from_private_stream(sub, from_stream_popover);
+            return;
+        }
         ajaxUnsubscribe(sub, stream_row);
     } else {
         ajaxSubscribe(sub.name, sub.color, stream_row);

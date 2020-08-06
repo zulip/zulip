@@ -477,7 +477,7 @@ export function register_stream_handlers() {
         $(this).closest(".popover").fadeOut(500).delay(500).remove();
 
         const sub = stream_popover_sub(e);
-        subs.sub_or_unsub(sub);
+        subs.sub_or_unsub(sub, true);
         e.preventDefault();
         e.stopPropagation();
     });
