@@ -1954,6 +1954,7 @@ class Draft(models.Model):
                     if not r["id"] == self.user_profile_id:
                         to.append(r["id"])
         return {
+            "id": self.id,
             "type": _type,
             "to": to,
             "topic": self.topic,

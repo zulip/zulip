@@ -26,6 +26,7 @@ class DraftCreationTests(ZulipTestCase):
         new_draft_dicts = []
         for draft in Draft.objects.order_by("last_edit_time"):
             draft_dict = draft.to_dict()
+            draft_dict.pop("id")
             new_draft_dicts.append(draft_dict)
         if expected_draft_dicts is None:
             expected_draft_dicts = draft_dicts
@@ -314,6 +315,7 @@ class DraftEditTests(ZulipTestCase):
         # Now make sure that the change was made successfully.
         new_draft = Draft.objects.get(id=new_draft_id, user_profile=hamlet)
         new_draft_dict = new_draft.to_dict()
+        new_draft_dict.pop("id")
         self.assertEqual(new_draft_dict, draft_dict)
 
     def test_edit_non_existant_draft(self) -> None:
@@ -370,6 +372,7 @@ class DraftEditTests(ZulipTestCase):
         # Now make sure that no changes were made.
         existing_draft = Draft.objects.get(id=new_draft_id, user_profile=hamlet)
         existing_draft_dict = existing_draft.to_dict()
+        existing_draft_dict.pop("id")
         self.assertEqual(existing_draft_dict, draft_dict)
 
 class DraftDeleteTests(ZulipTestCase):
@@ -447,6 +450,7 @@ class DraftDeleteTests(ZulipTestCase):
         # Now make sure that no changes were made either.
         existing_draft = Draft.objects.get(id=new_draft_id, user_profile=hamlet)
         existing_draft_dict = existing_draft.to_dict()
+        existing_draft_dict.pop("id")
         self.assertEqual(existing_draft_dict, draft_dict)
 
 class DraftFetchTest(ZulipTestCase):
@@ -463,21 +467,21 @@ class DraftFetchTest(ZulipTestCase):
                 "to": [visible_stream_id],
                 "topic": "thinking out loud",
                 "content": "What if pigs really could fly?",
-                "timestamp": 15954790199,
-            },
-            {
-                "type": "private",
-                "to": [zoe.id],
-                "topic": "",
-                "content": "What if made it possible to sync drafts in Zulip?",
-                "timestamp": 1595479020,
+                "timestamp": 15954790197,
             },
             {
                 "type": "private",
                 "to": [zoe.id, othello.id],
                 "topic": "",
                 "content": "What if made it possible to sync drafts in Zulip?",
-                "timestamp": 1595479021,
+                "timestamp": 15954790198,
+            },
+            {
+                "type": "private",
+                "to": [zoe.id],
+                "topic": "",
+                "content": "What if made it possible to sync drafts in Zulip?",
+                "timestamp": 15954790199,
             },
         ]
         payload = {"drafts": orjson.dumps(draft_dicts).decode()}
@@ -492,7 +496,7 @@ class DraftFetchTest(ZulipTestCase):
                 "to": [hamlet.id],
                 "topic": "",
                 "content": "Hello there!",
-                "timestamp": 15954790199,
+                "timestamp": 15954790200,
             },
         ]
         payload = {"drafts": orjson.dumps(zoe_draft_dicts).decode()}
@@ -509,8 +513,11 @@ class DraftFetchTest(ZulipTestCase):
         self.assertEqual(data["count"], 3)
 
         first_draft_id = Draft.objects.order_by("id")[0].id
-        expected_draft_contents = {
-            "{}".format(i+first_draft_id): draft_dicts[i] for i in range(0, 3)
-        }  # In JSON, all keys must be strings.
+        expected_draft_contents = [
+            {
+                "id": first_draft_id + i,
+                **draft_dicts[i]
+            } for i in range(0, 3)
+        ]
 
         self.assertEqual(data["drafts"], expected_draft_contents)
