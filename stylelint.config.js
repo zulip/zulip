@@ -8,7 +8,6 @@ module.exports = {
         "property-no-unknown": [true, {ignoreProperties: [/^mso-/]}],
 
         // Disable recommended rules we don't comply with yet
-        "declaration-block-no-duplicate-properties": null,
         "declaration-block-no-shorthand-property-overrides": null,
         "font-family-no-missing-generic-family-keyword": null,
         "no-descending-specificity": null,

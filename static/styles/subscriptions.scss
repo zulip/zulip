@@ -129,7 +129,6 @@
 .stream-email .email-address {
     display: block;
     margin: auto;
-    white-space: pre-wrap;
     word-wrap: break-word;
     word-break: break-all;
     white-space: normal;
@@ -1152,7 +1151,6 @@ ul.grey-box {
         left: 101%;
 
         top: 45px;
-        border-top: 1px solid hsl(0, 0%, 87%);
         background-color: hsl(0, 0%, 100%);
         border-top: none;
 

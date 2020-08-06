@@ -889,7 +889,6 @@ input[type="checkbox"] {
     .api_key .api-key-value-and-button {
         display: block;
         margin-left: 0px;
-        white-space: pre-wrap;
         word-wrap: break-word;
         word-break: break-all;
         white-space: normal;
@@ -906,7 +905,6 @@ input[type="checkbox"] {
     }
 
     .field {
-        font-weight: 300;
         text-transform: uppercase;
         font-weight: 600;
         color: hsl(0, 0%, 67%);
@@ -1010,7 +1008,6 @@ input[type="checkbox"] {
 
     .alert_word_listing .value {
         display: block;
-        white-space: pre-wrap;
         word-wrap: break-word;
         word-break: break-all;
         white-space: normal;
