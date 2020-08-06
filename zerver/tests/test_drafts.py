@@ -1,6 +1,6 @@
 import time
 from copy import deepcopy
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import orjson
 
@@ -10,7 +10,7 @@ from zerver.models import Draft
 
 class DraftCreationTests(ZulipTestCase):
     def create_and_check_drafts_for_success(self, draft_dicts: List[Dict[str, Any]],
-                                            expected_draft_dicts: List[Dict[str, Any]]) -> None:
+                                            expected_draft_dicts: Optional[List[Dict[str, Any]]]=None) -> None:
         hamlet = self.example_user("hamlet")
 
         # Make sure that there are no drafts in the database before
@@ -23,7 +23,12 @@ class DraftCreationTests(ZulipTestCase):
         self.assert_json_success(resp)
 
         # Finally check to make sure that the drafts were actually created properly.
-        new_draft_dicts = [d.to_dict() for d in Draft.objects.order_by("last_edit_time")]
+        new_draft_dicts = []
+        for draft in Draft.objects.order_by("last_edit_time"):
+            draft_dict = draft.to_dict()
+            new_draft_dicts.append(draft_dict)
+        if expected_draft_dicts is None:
+            expected_draft_dicts = draft_dicts
         self.assertEqual(new_draft_dicts, expected_draft_dicts)
 
     def create_and_check_drafts_for_error(self, draft_dicts: List[Dict[str, Any]],
@@ -55,14 +60,7 @@ class DraftCreationTests(ZulipTestCase):
             "content": "Let's add backend support for syncing drafts.",
             "timestamp": 1595479019,
         }]
-        expected_draft_dicts = [{
-            "type": "stream",
-            "to": [visible_stream_id],
-            "topic": "sync drafts",
-            "content": "Let's add backend support for syncing drafts.",
-            "timestamp": 1595479019,  # We only go as far seconds and drop any extra precision.
-        }]
-        self.create_and_check_drafts_for_success(draft_dicts, expected_draft_dicts)
+        self.create_and_check_drafts_for_success(draft_dicts)
 
     def test_create_one_personal_message_draft_properly(self) -> None:
         zoe = self.example_user("ZOE")
@@ -118,7 +116,7 @@ class DraftCreationTests(ZulipTestCase):
             {
                 "type": "private",
                 "to": [zoe.id],
-                "topic": "This topic should be ignored.",
+                "topic": "",
                 "content": "What if we made it possible to sync drafts in Zulip?",
                 "timestamp": 1595479020,
             },  # Private message draft
@@ -130,30 +128,7 @@ class DraftCreationTests(ZulipTestCase):
                 "timestamp": 1595479021,
             },  # Private group message draft
         ]
-        expected_draft_dicts = [
-            {
-                "type": "stream",
-                "to": [visible_stream_id],
-                "topic": "sync drafts",
-                "content": "Let's add backend support for syncing drafts.",
-                "timestamp": 1595479019,
-            },
-            {
-                "type": "private",
-                "to": [zoe.id],
-                "topic": "",
-                "content": "What if we made it possible to sync drafts in Zulip?",
-                "timestamp": 1595479020,
-            },
-            {
-                "type": "private",
-                "to": [zoe.id, othello.id],
-                "topic": "",
-                "content": "What if we made it possible to sync drafts in Zulip?",
-                "timestamp": 1595479021,
-            }
-        ]
-        self.create_and_check_drafts_for_success(draft_dicts, expected_draft_dicts)
+        self.create_and_check_drafts_for_success(draft_dicts)
 
     def test_missing_timestamps(self) -> None:
         """ If a timestamp is not provided for a draft dict then it should be automatically
