@@ -602,6 +602,13 @@ exports.change_stream_description = function (e) {
     const description = sub_settings.find(".stream-description-editable").text().trim();
     $(".stream_change_property_info").hide();
 
+    if (description === sub.description) {
+        sub_settings
+            .find(".stream-description-editable")
+            .html(util.clean_user_content_links(sub.rendered_description));
+        return;
+    }
+
     channel.patch({
         // Description might contain unsafe characters so we must encode it first.
         url: "/json/streams/" + stream_id,
