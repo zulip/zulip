@@ -295,18 +295,37 @@ div[id^="message-edit-send-status"],
     position: relative;
 }
 
-textarea.new_message_textarea {
+.wrapper > * {
     display: table-cell;
     width: calc(100% - 12px);
     padding: 5px;
     height: 1.5em;
     max-height: 22em;
     margin-bottom: 0;
-    resize: vertical !important;
     margin-top: 5px;
+    overflow: hidden;
 }
 
-textarea.new_message_textarea,
+.overflow_text {
+    position: absolute;
+    z-index: -1;
+}
+
+.highligth {
+    background-color: hsl(352, 100%, 86%);
+    color: transparent;
+}
+
+.transparent {
+    color: transparent;
+}
+
+.new_message_textarea {
+    background-color: transparent;
+    resize: vertical !important;
+}
+
+.wrapper > textarea,
 .compose_table .recipient_box {
     border: 1px solid hsla(0, 0%, 0%, 0.2);
     box-shadow: none;

@@ -300,6 +300,25 @@ run_test("validate", () => {
     compose_state.topic("");
     assert(!compose.validate());
     assert.equal($("#compose-error-msg").html(), i18n.t("Please specify a topic"));
+
+    // test validating message length
+    const sub = {
+        stream_id: 101,
+        name: "social",
+        subscribed: true,
+    };
+    stream_data.add_sub(sub);
+    page_params.user_id = 30;
+    const message = "a".repeat(10000 + 1);
+
+    $("#compose-textarea").val(message);
+    compose_state.stream_name("social");
+    compose_state.topic("topic nam e");
+    assert(!compose.validate());
+    assert.equal($("#compose-error-msg").html(), i18n.t("Your message is too long!"));
+
+    $("#compose-textarea").val("a");
+    assert(compose.validate());
 });
 
 run_test("get_invalid_recipient_emails", () => {
@@ -1772,4 +1791,12 @@ run_test("test_video_chat_button_toggle", () => {
     page_params.jitsi_server_url = "https://meet.jit.si";
     compose.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), true);
+});
+
+run_test("test_overflow_text", () => {
+    const overflowdiv = $("#overflow");
+    const textarea = $("#compose-textarea");
+    textarea.value = "a".repeat(10000 + 1);
+    compose.check_and_set_overflow_text("", [textarea]);
+    assert(overflowdiv.html().includes("highligth"));
 });

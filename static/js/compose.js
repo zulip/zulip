@@ -11,6 +11,8 @@ const render_compose_private_stream_alert = require("../templates/compose_privat
 const rendered_markdown = require("./rendered_markdown");
 const util = require("./util");
 
+const MAX_MESSAGE_LENGTH = 10000;
+
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
 /* Track the state of the @all warning. The user must acknowledge that they are spamming the entire
@@ -719,10 +721,33 @@ exports.validate = function () {
         return false;
     }
 
+    if (message_content.length > MAX_MESSAGE_LENGTH) {
+        compose_error(i18n.t("Your message is too long!"), $("#compose-textarea"));
+        return false;
+    }
+
     if (compose_state.get_message_type() === "private") {
         return validate_private_message();
     }
     return validate_stream_message();
+};
+
+exports.check_and_set_overflow_text = (event, textarea) => {
+    const text = textarea[0].value;
+    const overflow = $("#overflow");
+    if (textarea.height) {
+        overflow.height(textarea.height());
+    }
+
+    const left = text.substring(0, MAX_MESSAGE_LENGTH);
+    const right = text.substring(MAX_MESSAGE_LENGTH);
+
+    if (right.length > 0) {
+        const html = `<span class=transparent>${left}</span><span class="highligth">${right}</span>`;
+        overflow.html(html);
+    } else {
+        overflow.empty();
+    }
 };
 
 exports.handle_keydown = function (event, textarea) {
@@ -1000,6 +1025,10 @@ exports.initialize = function () {
     });
     $("#compose-textarea").on("keyup", (event) => {
         exports.handle_keyup(event, $("#compose-textarea").expectOne());
+    });
+
+    $("#compose-textarea").on("input propertychange", (event) => {
+        exports.check_and_set_overflow_text(event, $("#compose-textarea").expectOne());
     });
 
     $("#compose form").on("submit", (e) => {
