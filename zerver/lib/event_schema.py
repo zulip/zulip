@@ -15,6 +15,7 @@ from zerver.lib.data_types import (
     NumberType,
     OptionalType,
     StringDictType,
+    TupleType,
     UnionType,
     UrlType,
     check_data,
@@ -243,6 +244,23 @@ invites_changed_event = event_dict_type(
     ]
 )
 check_invites_changed = make_checker(invites_changed_event)
+
+muted_topic_type = TupleType(
+    [
+        # We should use objects, not tuples!
+        str,  # stream name
+        str,  # topic name
+        int,  # timestamp
+    ]
+)
+
+muted_topics_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("muted_topics")),
+        ("muted_topics", ListType(muted_topic_type)),
+    ]
+)
+check_muted_topics = make_checker(muted_topics_event)
 
 message_fields = [
     ("avatar_url", OptionalType(str)),
