@@ -62,19 +62,16 @@
         }
 
         .table_fix_head {
-            padding: 10px;
-            padding-top: 0 !important;
-            max-height: 89%;
+            padding: 0 !important;
+            /* 100px = space occupied by `recent_topics_filter_buttons`( ~49px)
+                     + give user some extra space at the bottom so that last
+                       topic row is clearly visible. */
+            max-height: calc(100vh - 100px);
         }
 
         .table_fix_head table {
             /* To keep border properties to the thead th. */
             border-collapse: separate;
-        }
-
-        .table_fix_head {
-            max-height: 80vh;
-            padding-top: 0px !important;
         }
 
         #recent_topics_filter_buttons {
