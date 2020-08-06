@@ -916,6 +916,9 @@ def do_deactivate_user(user_profile: UserProfile,
             do_deactivate_user(profile, acting_user=acting_user, _cascade=False)
 
 def do_deactivate_stream(stream: Stream, log: bool=True, acting_user: Optional[UserProfile]=None) -> None:
+    # We want to mark all messages in the stream as read .
+    event = {"type": "mark_all_stream_messages_as_read", "stream_recipient_id": stream.recipient_id}
+    queue_json_publish("deferred_work", event)
 
     # Get the affected user ids *before* we deactivate everybody.
     affected_user_ids = can_access_stream_user_ids(stream)

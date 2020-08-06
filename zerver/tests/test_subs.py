@@ -62,6 +62,7 @@ from zerver.lib.streams import (
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_subscription,
+    most_recent_usermessage,
     queries_captured,
     reset_emails_in_zulip_realm,
     tornado_redirected_to_list,
@@ -497,6 +498,32 @@ class StreamAdminTest(ZulipTestCase):
 
         do_deactivate_stream(streams_to_remove[0])
         self.assertEqual(get_streams(default_stream_groups[0]), streams_to_keep)
+
+    def test_deactivate_stream_marks_messages_as_read(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        stream = self.make_stream('new_stream')
+        self.subscribe(hamlet, stream.name)
+        self.subscribe(cordelia, stream.name)
+        self.subscribe(hamlet, "Denmark")
+        self.subscribe(cordelia, "Denmark")
+
+        self.send_stream_message(hamlet, stream.name)
+        new_stream_usermessage = most_recent_usermessage(cordelia)
+
+        # We send a message to a different stream too, to verify that the
+        # deactivation of new_stream won't corrupt read state of UserMessage elsewhere.
+        self.send_stream_message(hamlet, "Denmark")
+        denmark_usermessage = most_recent_usermessage(cordelia)
+
+        self.assertFalse(new_stream_usermessage.flags.read)
+        self.assertFalse(denmark_usermessage.flags.read)
+
+        do_deactivate_stream(stream)
+        new_stream_usermessage.refresh_from_db()
+        denmark_usermessage.refresh_from_db()
+        self.assertTrue(new_stream_usermessage.flags.read)
+        self.assertFalse(denmark_usermessage.flags.read)
 
     def test_vacate_private_stream_removes_default_stream(self) -> None:
         stream = self.make_stream('new_stream', invite_only=True)

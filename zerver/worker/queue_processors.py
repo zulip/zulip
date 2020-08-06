@@ -35,6 +35,7 @@ import requests
 import ujson
 from django.conf import settings
 from django.db import connection
+from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
@@ -700,6 +701,17 @@ class DeferredWorker(QueueProcessingWorker):
                 (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id,
                                                                require_active=False)
                 do_mark_stream_messages_as_read(user_profile, client, stream)
+        elif event["type"] == 'mark_all_stream_messages_as_read':
+            batch_size = 100
+            offset = 0
+            while True:
+                messages = Message.objects.filter(recipient_id=event["stream_recipient_id"]) \
+                    .order_by("id")[offset:offset + batch_size]
+                UserMessage.objects.filter(message__in=messages).extra(where=[UserMessage.where_unread()]) \
+                    .update(flags=F('flags').bitor(UserMessage.flags.read))
+                offset += len(messages)
+                if len(messages) < batch_size:
+                    break
         elif event['type'] == 'clear_push_device_tokens':
             try:
                 clear_push_device_tokens(event["user_profile_id"])
