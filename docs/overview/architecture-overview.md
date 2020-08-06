@@ -136,18 +136,10 @@ from outside.
     compiles, minifies, and installs the static assets into the
     `prod-static/` tree form. In development, files are served directly
     from `/static/` in the git repository.
--   Requests to `/json/events` and `/api/v1/events` are
-    sent to the Tornado server. These are requests to the real-time push
-    system, because the user's web browser sets up a long-lived TCP
-    connection with Tornado to serve as [a channel for push
-    notifications](https://en.wikipedia.org/wiki/Push_technology#Long_polling).
-    nginx gets the hostname for the Tornado server via
-    `puppet/zulip/files/nginx/zulip-include-frontend/upstreams`.
--   Requests to all other paths are sent to the Django app via the UNIX
-    socket `unix:/home/zulip/deployments/uwsgi-socket` (defined in
-    `puppet/zulip/files/nginx/zulip-include-frontend/upstreams`). We use
-    `zproject/wsgi.py` to implement uWSGI here (see
-    `django.core.wsgi`).
+-   Requests to `/json/events` and `/api/v1/events`, i.e. the
+    real-time push system, are sent to the Tornado server.
+-   Requests to all other paths are sent to the Django app running via
+    `uWSGI` via `unix:/home/zulip/deployments/uwsgi-socket`.
 - By default (i.e. if `LOCAL_UPLOADS_DIR` is set), nginx will serve
   user-uploaded content like avatars, custom emoji, and uploaded
   files.  However, one can configure Zulip to store these in a cloud
