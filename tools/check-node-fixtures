@@ -68,6 +68,8 @@ EXEMPT_OPENAPI_NAMES = [
     "update_global_notifications_event",
     # Additional keys(push_users_notify) due to bug in API.
     "message_event",
+    # tuple handling
+    "muted_topics_event",
 ]
 
 

@@ -101,6 +101,7 @@ from zerver.lib.event_schema import (
     check_hotspots,
     check_invites_changed,
     check_message,
+    check_muted_topics,
     check_reaction,
     check_realm_bot_add,
     check_realm_bot_delete,
@@ -1016,14 +1017,6 @@ class NormalActionsTest(BaseAction):
             num_events=0)
 
     def test_muted_topics_events(self) -> None:
-        muted_topics_checker = check_events_dict([
-            ('type', equals('muted_topics')),
-            ('muted_topics', check_list(check_tuple([
-                check_string,  # stream name
-                check_string,  # topic name
-                check_int,  # timestamp
-            ]))),
-        ])
         stream = get_stream('Denmark', self.user_profile.realm)
         recipient = stream.recipient
         events = self.verify_action(
@@ -1032,14 +1025,14 @@ class NormalActionsTest(BaseAction):
                 stream,
                 recipient,
                 "topic"))
-        muted_topics_checker('events[0]', events[0])
+        check_muted_topics('events[0]', events[0])
 
         events = self.verify_action(
             lambda: do_unmute_topic(
                 self.user_profile,
                 stream,
                 "topic"))
-        muted_topics_checker('events[0]', events[0])
+        check_muted_topics('events[0]', events[0])
 
     def test_change_avatar_fields(self) -> None:
         events = self.verify_action(

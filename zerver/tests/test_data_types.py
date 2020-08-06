@@ -6,6 +6,7 @@ from zerver.lib.data_types import (
     NumberType,
     OptionalType,
     StringDictType,
+    TupleType,
     UnionType,
     UrlType,
     schema,
@@ -26,6 +27,7 @@ class MiscTest(ZulipTestCase):
                 ("s", str),
                 ("timestamp", NumberType()),
                 ("flag", bool),
+                ("tup", TupleType([int, str])),
                 ("level", EnumType([1, 2, 3])),
                 ("lst", ListType(int)),
                 ("config", StringDictType()),
@@ -43,6 +45,9 @@ test (dict):
     maybe_n: int
     s: str
     timestamp: number
+    tup (tuple):
+        0: int
+        1: str
     type in ['realm']
     url: str
     value (union):
