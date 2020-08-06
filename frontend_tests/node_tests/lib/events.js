@@ -156,8 +156,8 @@ exports.fixtures = {
     muted_topics: {
         type: "muted_topics",
         muted_topics: [
-            ["devel", "js"],
-            ["lunch", "burritos"],
+            ["devel", "js", fake_then],
+            ["lunch", "burritos", fake_now],
         ],
     },
 
