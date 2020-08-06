@@ -552,7 +552,13 @@ exports.change_stream_name = function (e) {
     const stream_id = get_stream_id(e.target);
     const new_name_box = sub_settings.find(".stream-name-editable");
     const new_name = new_name_box.text().trim();
+    const old_name = stream_data.maybe_get_stream_name(stream_id);
+
     $(".stream_change_property_info").hide();
+
+    if (old_name === new_name) {
+        return;
+    }
 
     channel.patch({
         // Stream names might contain unsafe characters so we must encode it first.
@@ -566,7 +572,7 @@ exports.change_stream_name = function (e) {
             );
         },
         error(xhr) {
-            new_name_box.text(stream_data.maybe_get_stream_name(stream_id));
+            new_name_box.text(old_name);
             ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
         },
     });
