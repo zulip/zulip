@@ -2581,18 +2581,13 @@ paths:
                                   enum:
                                     - update
                                 bot:
-                                  type: object
-                                  description: |
-                                    Object containing details about the changed bot.
-                                    It contains two properties: the user id of the bot and
-                                    the property to be changed. The changed property is one
-                                    of the properties of bot which can be seen in the `bot`
-                                    `add` event.
-                                  properties:
-                                    user_id:
-                                      type: integer
-                                      description: |
-                                        The user ID of the modified bot.
+                                  allOf:
+                                    - description: |
+                                        Object containing details about the changed bot.
+                                        It contains two properties: the user id of the bot and
+                                        the property to be changed. The changed property is one
+                                        of the remaining properties listed below.
+                                    - $ref: "#/components/schemas/BasicBot"
                               example:
                                 {
                                   "type": "realm_bot",
@@ -2626,7 +2621,6 @@ paths:
                                   type: string
                                   enum:
                                     - remove
-                                    - delete
                                 bot:
                                   type: object
                                   description: |
@@ -2644,6 +2638,40 @@ paths:
                                 {
                                   "type": "realm_bot",
                                   "op": "remove",
+                                  "bot":
+                                    {"user_id": 35, "full_name": "Foo Bot"},
+                                  "id": 1,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to all users when a bot has been deactivated.
+                                Note that this is very similar to the bot_remove event
+                                and one of them will be removed soon.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - realm_bot
+                                op:
+                                  type: string
+                                  enum:
+                                    - delete
+                                bot:
+                                  type: object
+                                  description: |
+                                    Object containing details about the deactivated bot.
+                                  properties:
+                                    user_id:
+                                      type: integer
+                                      description: |
+                                        The user ID of the deactivated bot.
+                              example:
+                                {
+                                  "type": "realm_bot",
+                                  "op": "delete",
                                   "bot":
                                     {"user_id": 35, "full_name": "Foo Bot"},
                                   "id": 1,
@@ -8271,16 +8299,10 @@ components:
 
             **Changes**: Deprecated in Zulip 3.0 (feature level 1), use
             `stream_post_policy` instead.
-    Bot:
+    BasicBot:
       type: object
       additionalProperties: false
-      description: |
-        Object containing details of a bot.
       properties:
-        email:
-          type: string
-          description: |
-            The email of the bot.
         user_id:
           type: integer
           description: |
@@ -8289,19 +8311,6 @@ components:
           type: string
           description: |
             The full name of the bot.
-        bot_type:
-          type: integer
-          nullable: true
-          description: |
-            An integer describing the type of bot:
-            * `1` for a `Generic` bot.
-            * `2` for an `Incoming webhook` bot.
-            * `3` for an `Outgoing webhook` bot.
-            * `4` for an `Embedded` bot.
-        is_active:
-          type: boolean
-          description: |
-            A boolean describing whether the user account has been deactivated.
         api_key:
           type: string
           description: |
@@ -8379,6 +8388,29 @@ components:
                       The name of the bot.
                   config_data:
                     $ref: "#/components/schemas/Config"
+    Bot:
+      allOf:
+        - $ref: "#/components/schemas/BasicBot"
+        - description: |
+            Object containing details of a bot.
+        - properties:
+            email:
+              type: string
+              description: |
+                The email of the bot.
+            bot_type:
+              type: integer
+              nullable: true
+              description: |
+                An integer describing the type of bot:
+                * `1` for a `Generic` bot.
+                * `2` for an `Incoming webhook` bot.
+                * `3` for an `Outgoing webhook` bot.
+                * `4` for an `Embedded` bot.
+            is_active:
+              type: boolean
+              description: |
+                A boolean describing whether the user account has been deactivated.
     Config:
       type: object
       description: |
