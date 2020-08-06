@@ -47,6 +47,7 @@ from zerver.lib.data_types import (
     EnumType,
     ListType,
     NumberType,
+    StringDictType,
     UnionType,
     make_checker,
     schema,
@@ -62,9 +63,6 @@ SKIP_LIST = [
 
 
 EXEMPT_OPENAPI_NAMES = [
-    # bots
-    "realm_bot_add_event",
-    "realm_bot_update_event",
     # users field missing
     "update_display_settings_event",
     "update_global_notifications_event",
@@ -132,6 +130,8 @@ def from_openapi(node: Dict[str, Any]) -> Any:
             # this might be a glitch in our current spec?  or
             # maybe I just understand it yet
             if isinstance(node["additionalProperties"], dict):
+                if node["additionalProperties"].get("type", "") == "string":
+                    return StringDictType()
                 return from_openapi(node["additionalProperties"])
 
         if "properties" not in node:
