@@ -32,6 +32,8 @@ const typing_person2 = {
 exports.typing_person1 = typing_person1;
 exports.typing_person2 = typing_person2;
 
+const fake_now = 1596713966;
+
 exports.test_streams = {
     devel: {
         name: "devel",
@@ -90,7 +92,20 @@ exports.fixtures = {
     attachment__add: {
         type: "attachment",
         op: "add",
-        // missing data due to shallow test
+        attachment: {
+            id: 99,
+            name: "foo.png",
+            size: 4096,
+            path_id: "path_id",
+            create_time: fake_now,
+            messages: [
+                {
+                    id: 1000,
+                    date_sent: fake_now,
+                },
+            ],
+        },
+        upload_space_used: 90000,
     },
 
     custom_profile_fields__update: {
