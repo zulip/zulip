@@ -29,7 +29,7 @@ html {
 }
 
 .container-fluid {
-    padding: 0px;
+    padding: 0;
     min-height: 100%;
 
     /* Hack for IE */
@@ -44,11 +44,11 @@ html {
 }
 
 .navbar {
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
 .navbar-inner {
-    border-radius: 0px;
+    border-radius: 0;
 }
 
 .header {
@@ -58,7 +58,7 @@ html {
     height: 29px;
 
     background-color: hsl(0, 0%, 100%);
-    box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.1);
+    box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
 
     z-index: 100;
 }
@@ -123,7 +123,7 @@ html {
 .app.help {
     display: inline-flex;
 
-    box-shadow: 0px -20px 50px hsla(0, 0%, 0%, 0.04);
+    box-shadow: 0 -20px 50px hsla(0, 0%, 0%, 0.04);
     overflow: auto;
 
     color: hsl(0, 0%, 27%);
@@ -141,7 +141,7 @@ html {
 
     /* Markdown processor generates lots of spurious <p></p> */
     p:empty {
-        margin: 0px;
+        margin: 0;
     }
 
     .sidebar {
@@ -166,7 +166,7 @@ html {
             font-weight: 400;
             font-size: 1.25em;
             line-height: 1.5;
-            margin-bottom: 0px;
+            margin-bottom: 0;
             border-bottom: 1px solid hsla(0, 0, 100%, 0.6);
 
             &:not(:first-of-type) {
@@ -222,7 +222,7 @@ html {
         }
 
         ul {
-            margin: 5px 0px 10px 12px;
+            margin: 5px 0 10px 12px;
         }
 
         &.slide ul {
@@ -298,7 +298,7 @@ html {
     max-width: 500px;
 
     padding: 10px;
-    margin: 10px 0px;
+    margin: 10px 0;
 
     font-size: 0.9rem;
     font-weight: 400;
@@ -311,7 +311,7 @@ html {
     background-color: hsl(0, 0%, 98%);
 
     .blob {
-        margin-top: 0px;
+        margin-top: 0;
     }
 }
 
@@ -393,7 +393,7 @@ img.screenshot {
 
 #registration #pw_strength {
     width: 325px;
-    margin: 7px auto 0px;
+    margin: 7px auto 0;
 }
 
 .def::before {
@@ -431,7 +431,7 @@ img.screenshot {
 }
 
 .landing-page {
-    padding: 2em 0em;
+    padding: 2em 0;
 
     h2,
     h4 {
@@ -510,8 +510,8 @@ input.text-error {
     font-size: 0.9em;
 
     .footer-navigation {
-        margin-left: 0px;
-        margin-right: 0px;
+        margin-left: 0;
+        margin-right: 0;
     }
 
     a {
@@ -520,7 +520,7 @@ input.text-error {
 
     section {
         width: calc(25% - 40px);
-        margin: 0px 20px;
+        margin: 0 20px;
         max-width: 150px;
         display: inline-block;
         vertical-align: top;
@@ -567,7 +567,7 @@ input.text-error {
     .portico-logo {
         height: 28px;
         width: auto;
-        padding: 6px 0px 6px 0px;
+        padding: 6px 0 6px 0;
     }
 }
 
@@ -579,15 +579,15 @@ input.text-error {
         ul {
             display: none;
             position: absolute;
-            right: 0px;
+            right: 0;
             margin: 10px 0 0 0;
             list-style-type: none;
             width: 200px;
             background-color: hsl(0, 0%, 100%);
-            padding: 5px 0px;
+            padding: 5px 0;
             border-radius: 4px;
             border: 1px solid hsl(0, 0%, 87%);
-            box-shadow: 0px 2px 5px hsla(0, 0%, 0%, 0.1);
+            box-shadow: 0 2px 5px hsla(0, 0%, 0%, 0.1);
 
             &::before {
                 content: "\25B2";
@@ -614,8 +614,8 @@ input.text-error {
 
                 a {
                     display: block;
-                    margin: 2px 0px;
-                    padding: 0px;
+                    margin: 2px 0;
+                    padding: 0;
                     transition: none;
                     font-size: 0.9em;
                     font-weight: 400;
@@ -647,8 +647,8 @@ input.text-error {
         .realm-name {
             display: inline-block;
             vertical-align: top;
-            margin: 0px 5px 0px -4px;
-            padding: 1px 0px 1px 5px;
+            margin: 0 5px 0 -4px;
+            padding: 1px 0 1px 5px;
             font-size: 0.9em;
             font-weight: 600;
             line-height: 1.6;
@@ -709,7 +709,7 @@ a.bottom-signup-button {
 .devlogin_subheader {
     margin-top: 10px;
     margin-bottom: 20px;
-    padding-top: 0px;
+    padding-top: 0;
     text-align: center;
     font-size: 16px;
 }
@@ -726,7 +726,7 @@ a.bottom-signup-button {
 
 .table.table-striped {
     background-color: hsl(0, 0%, 100%);
-    box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.1);
+    box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
 }
 
 .team-profiles {
@@ -928,11 +928,11 @@ input#terminal:checked ~ #tab-terminal {
 }
 
 .btn-direct {
-    margin-top: 0px;
-    margin-bottom: 0px;
+    margin-top: 0;
+    margin-bottom: 0;
     padding: 8px;
     font-size: 18px;
-    border-radius: 0px;
+    border-radius: 0;
     min-width: 300px;
 }
 
@@ -1073,8 +1073,8 @@ input.new-organization-button {
 .header-main,
 .footer-main {
     min-width: 350px;
-    margin: 0px auto;
-    padding: 0px 20px 0px 20px;
+    margin: 0 auto;
+    padding: 0 20px 0 20px;
     position: relative;
 }
 
@@ -1151,7 +1151,7 @@ input.new-organization-button {
     width: 328px;
 
     form {
-        margin: 0px;
+        margin: 0;
     }
 
     #pw_strength {
@@ -1168,7 +1168,7 @@ input.new-organization-button {
     }
 
     .input-group {
-        margin: 15px 0px;
+        margin: 15px 0;
 
         input[type="text"],
         input[type="password"] {
@@ -1200,7 +1200,7 @@ input.new-organization-button {
 
 .input-group {
     &.margin {
-        margin: 10px 0px;
+        margin: 10px 0;
     }
 
     .progress {
@@ -1222,7 +1222,7 @@ input.new-organization-button {
 
     label {
         margin: 0;
-        padding: 5px 0px;
+        padding: 5px 0;
 
         &.inline-block {
             /* eyeballing off-centered aesth. */
@@ -1235,7 +1235,7 @@ input.new-organization-button {
     }
 
     &.grid {
-        padding: 10px 0px;
+        padding: 10px 0;
         border-bottom: 1px solid hsl(0, 0%, 87%);
 
         label.inline-block {
@@ -1254,7 +1254,7 @@ input.new-organization-button {
 }
 
 .center-block .submit-button-box .controls {
-    margin: 0px;
+    margin: 0;
 }
 
 .center-block {
@@ -1303,7 +1303,7 @@ input.new-organization-button {
 }
 
 .error_page .container {
-    padding: 20px 0px;
+    padding: 20px 0;
 }
 
 .error_page .row-fluid {
@@ -1440,7 +1440,7 @@ input.new-organization-button {
 
 @media (max-width: 767px) {
     body {
-        padding: 0px !important;
+        padding: 0 !important;
     }
 
     .input-medium,
@@ -1448,7 +1448,7 @@ input.new-organization-button {
         display: block !important;
         width: 100% !important;
         min-height: 30px !important;
-        margin: 0px !important;
+        margin: 0 !important;
         padding: 4px 6px !important;
         line-height: 20px !important;
         box-sizing: border-box !important;
@@ -1479,7 +1479,7 @@ input.new-organization-button {
 
     .contributors-list {
         width: 100%;
-        margin-left: 0px;
+        margin-left: 0;
     }
 }
 
@@ -1534,7 +1534,7 @@ input.new-organization-button {
     }
 
     .header {
-        padding: 4px 0px 6px 0px;
+        padding: 4px 0 6px 0;
     }
 
     .header-main {
@@ -1560,7 +1560,7 @@ input.new-organization-button {
         width: auto;
 
         section {
-            margin: 0px 3px;
+            margin: 0 3px;
             width: calc(50% - 8px);
         }
     }
@@ -1583,7 +1583,7 @@ input.new-organization-button {
 }
 
 .m-v-20 {
-    margin: 20px 0px;
+    margin: 20px 0;
 }
 
 label.label-title {
@@ -1665,7 +1665,7 @@ label.label-title {
 }
 
 .portico-page.error {
-    padding-bottom: 0px;
+    padding-bottom: 0;
 }
 
 .portico-page.error .portico-page-container {
@@ -1741,7 +1741,7 @@ label.label-title {
     font-weight: 600;
     text-align: center;
     position: relative;
-    top: 0px;
+    top: 0;
     padding: 10px;
     border-bottom: 1px solid hsl(177, 52%, 55%);
     z-index: 5;

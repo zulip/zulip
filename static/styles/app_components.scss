@@ -33,7 +33,7 @@
 }
 
 .box-shadow {
-    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
+    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
 }
 
 .bg-white {
@@ -72,10 +72,10 @@
 
         /* -- button style variations -- */
         &.no-style {
-            padding: 0px;
+            padding: 0;
             background-color: transparent;
             border: none;
-            min-width: 0px;
+            min-width: 0;
             width: auto;
             outline: none;
             box-shadow: none !important;
@@ -201,7 +201,7 @@
         .ind-tab {
             display: inline-block;
             width: 90px;
-            margin: 0px -0.5px;
+            margin: 0 -0.5px;
             text-align: center;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -222,7 +222,7 @@
             }
 
             &.first {
-                border-radius: 5px 0px 0px 5px;
+                border-radius: 5px 0 0 5px;
                 border-right: 1px solid transparent;
             }
 
@@ -231,7 +231,7 @@
             }
 
             &.last {
-                border-radius: 0px 5px 5px 0px;
+                border-radius: 0 5px 5px 0;
             }
 
             &.selected {
@@ -306,7 +306,7 @@
         transition: opacity 0.2s ease-out;
 
         .overlay-content {
-            transform: translateY(0px);
+            transform: translateY(0);
             transition-timing-function: ease-out;
         }
     }
@@ -321,7 +321,7 @@
 .new-style input[type="text"] {
     border-radius: 5px;
     box-shadow: none;
-    margin: 0px;
+    margin: 0;
 }
 
 .clear_search_button {
@@ -359,7 +359,7 @@
 }
 
 .grey-box {
-    margin: 0px;
+    margin: 0;
     padding: 5px 10px;
     background-color: hsl(0, 0%, 98%);
     border: 1px solid hsl(0, 0%, 87%);
@@ -400,12 +400,12 @@
 
 .stream-selection-header-colorblock {
     /* box-shadow: 0px 2px 3px hsl(0, 0%, 80%); */
-    box-shadow: inset 0px 2px 1px -2px hsl(0, 0%, 20%),
-        inset 2px 0px 1px -2px hsl(0, 0%, 20%),
-        inset 0px -2px 1px -2px hsl(0, 0%, 20%);
+    box-shadow: inset 0 2px 1px -2px hsl(0, 0%, 20%),
+        inset 2px 0 1px -2px hsl(0, 0%, 20%),
+        inset 0 -2px 1px -2px hsl(0, 0%, 20%);
     width: 10px;
-    border-radius: 3px 0px 0px 3px;
-    border-bottom: 0px;
+    border-radius: 3px 0 0 3px;
+    border-bottom: 0;
 }
 
 .stream_header_colorblock {
@@ -419,7 +419,7 @@
     font-size: 0.9em;
     -webkit-text-stroke: 0.05em;
     position: relative;
-    margin: 0px 5px;
+    margin: 0 5px;
     top: 9px;
 }
 
@@ -449,7 +449,7 @@
     &:hover {
         color: hsl(0, 0%, 20%);
         border: 1px solid hsl(49, 20%, 60%);
-        box-shadow: 0px 0px 4px hsla(199, 79%, 56%, 0.2);
+        box-shadow: 0 0 4px hsla(199, 79%, 56%, 0.2);
 
         text-decoration: none;
     }
@@ -463,7 +463,7 @@
     border: 1px solid hsl(49, 20%, 84%);
     border-radius: 4px;
     padding: 10px;
-    margin: 10px 0px;
+    margin: 10px 0;
     font-size: 1rem;
     line-height: 1.5;
     color: hsl(0, 0%, 40%);

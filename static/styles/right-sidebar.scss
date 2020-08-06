@@ -30,11 +30,11 @@
         .user-list-sidebar-menu-icon {
             position: absolute;
             top: 1px;
-            right: 0px;
+            right: 0;
             font-size: 1em;
             display: none;
             text-align: center;
-            padding: 0px 6px 0px 6px;
+            padding: 0 6px 0 6px;
 
             i {
                 padding-right: 0.25em;
@@ -67,8 +67,8 @@
     .user_circle {
         width: 8px;
         height: 8px;
-        margin-top: 0px;
-        margin-bottom: 0px;
+        margin-top: 0;
+        margin-bottom: 0;
         margin-left: 5px;
         margin-right: 5px;
         display: block;
@@ -76,7 +76,7 @@
 
     a {
         color: inherit;
-        margin-left: 0px;
+        margin-left: 0;
     }
 }
 
@@ -140,8 +140,8 @@
 #userlist-toggle {
     display: none;
     position: absolute;
-    top: 0px;
-    right: 0px;
+    top: 0;
+    right: 0;
     text-align: center;
     vertical-align: middle;
     border-left: 1px solid hsl(0, 0%, 88%);
@@ -225,7 +225,7 @@
 
     #userlist-toggle-button {
         height: 30px;
-        padding-top: 0px;
-        padding-bottom: 0px;
+        padding-top: 0;
+        padding-bottom: 0;
     }
 }

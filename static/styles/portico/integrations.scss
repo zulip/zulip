@@ -26,7 +26,7 @@ $category-text: hsl(219, 23%, 33%);
         margin: 0 auto;
 
         background-color: hsl(0, 0%, 100%);
-        box-shadow: 0px 0px 80px hsla(0, 0%, 0%, 0.12);
+        box-shadow: 0 0 80px hsla(0, 0%, 0%, 0.12);
 
         visibility: hidden;
 
@@ -125,14 +125,14 @@ $category-text: hsl(219, 23%, 33%);
                 position: relative;
 
                 input {
-                    box-shadow: 0px 0px 7px 2px hsla(0, 0%, 0%, 0.03);
+                    box-shadow: 0 0 7px 2px hsla(0, 0%, 0%, 0.03);
 
                     font-size: 1em;
                     font-family: inherit;
 
                     width: 500px;
                     height: 45px;
-                    padding: 0px 20px 0px 50px;
+                    padding: 0 20px 0 50px;
                     border-radius: 40px;
                     border: 1px solid $light-blue-border;
                     display: block;
@@ -178,7 +178,7 @@ $category-text: hsl(219, 23%, 33%);
         .integration-categories-sidebar {
             float: left;
             width: 200px;
-            padding: 0 30px 0 0px;
+            padding: 0 30px 0 0;
             margin: 0;
 
             &.sticky {
@@ -192,7 +192,7 @@ $category-text: hsl(219, 23%, 33%);
             h3 {
                 font-weight: 400;
                 font-size: 1.1em;
-                margin: 0px;
+                margin: 0;
             }
 
             h4 {

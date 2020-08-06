@@ -4,7 +4,7 @@
     width: 70%;
     max-width: 1200px;
     max-height: 1000px;
-    padding: 0px;
+    padding: 0;
     border-radius: 4px;
     background-color: hsl(0, 0%, 100%);
     overflow: hidden;
@@ -53,7 +53,7 @@
     }
 
     .recent_topics_table {
-        margin: 0px;
+        margin: 0;
         padding: 15px;
         overflow: hidden !important;
         display: flex;
@@ -68,7 +68,7 @@
             display: inline-block;
 
             & > * {
-                outline: 0px;
+                outline: 0;
             }
 
             &:focus-within {
@@ -103,7 +103,7 @@
 
         .table_fix_head {
             padding: 10px;
-            padding-top: 0px !important;
+            padding-top: 0 !important;
             overflow-y: auto;
             max-height: 89%;
         }
@@ -123,7 +123,7 @@
         .search_group {
             display: flex;
             flex-grow: 1;
-            margin: 0 0 10px 0px;
+            margin: 0 0 10px 0;
         }
 
         #recent_topics_search {

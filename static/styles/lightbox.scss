@@ -8,7 +8,7 @@
         position: relative;
         width: 100%;
         height: calc(100% - 65px - 95px);
-        margin: 0px;
+        margin: 0;
 
         background-size: contain;
         background-repeat: no-repeat;
@@ -30,7 +30,7 @@
 
             background-size: 20px 20px;
 
-            background-position: 0 0, 50px 0, 50px -50px, 0px 50px;
+            background-position: 0 0, 50px 0, 50px -50px, 0 50px;
         }
 
         canvas {
@@ -43,7 +43,7 @@
 
         color: hsla(0, 0%, 100%, 0.8);
         font-size: 2rem;
-        margin: 24px 20px 0px 0px;
+        margin: 24px 20px 0 0;
 
         transform: scaleY(0.75);
         font-weight: 300;
@@ -78,9 +78,9 @@
 
             min-width: 75px;
 
-            margin: 0px;
+            margin: 0;
             margin-right: 5px;
-            padding: 0px 5px;
+            padding: 0 5px;
 
             border-radius: 4px;
 
@@ -130,7 +130,7 @@
             border-radius: 4px;
             text-decoration: none;
             display: inline-block;
-            margin: 0px 5px;
+            margin: 0 5px;
 
             &:hover {
                 background-color: hsl(0, 0%, 100%);
@@ -223,9 +223,9 @@
         .image-list {
             position: relative;
             display: inline-block;
-            padding: 15px 0px 12px 0px;
+            padding: 15px 0 12px 0;
             height: 50px;
-            font-size: 0px;
+            font-size: 0;
 
             max-width: 40vw;
             overflow: hidden;
@@ -236,7 +236,7 @@
                 vertical-align: top;
                 width: 50px;
                 height: 50px;
-                margin: 0px 2px;
+                margin: 0 2px;
 
                 background-color: hsla(0, 0%, 94%, 0.2);
                 opacity: 0.5;

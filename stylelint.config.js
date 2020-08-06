@@ -14,7 +14,6 @@ module.exports = {
         // Disable standard rules we don't comply with yet
         "comment-empty-line-before": null,
         "declaration-empty-line-before": null,
-        "length-zero-no-unit": null,
 
         // Additional stylistic rules
         "font-family-name-quotes": "always-where-recommended",

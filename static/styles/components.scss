@@ -3,7 +3,7 @@
 
 .new-style {
     label.checkbox {
-        padding: 0px;
+        padding: 0;
         display: inline-block;
         position: relative;
         vertical-align: top;
@@ -19,7 +19,7 @@
                 top: -2px;
 
                 padding: 2px;
-                margin: 0px 5px 0px 0px;
+                margin: 0 5px 0 0;
                 height: 10px;
                 width: 10px;
 
@@ -75,7 +75,7 @@ a.no-underline:hover {
 .simplebar-track {
     .simplebar-scrollbar::before {
         background-color: hsl(0, 0%, 0%);
-        box-shadow: 0px 0px 0px 1px hsla(0, 0%, 100%, 0.33);
+        box-shadow: 0 0 0 1px hsla(0, 0%, 100%, 0.33);
     }
 
     &.simplebar-vertical {

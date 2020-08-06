@@ -39,7 +39,7 @@
         &#zulip-administration {
             font-size: 1.75em;
             padding: 10px 0;
-            margin-bottom: 0px;
+            margin-bottom: 0;
             line-height: 100%;
         }
     }
@@ -47,7 +47,7 @@
     h2 {
         font-size: 1.5em;
         line-height: 1.25;
-        margin: 20px 0px 5px 0px;
+        margin: 20px 0 5px 0;
     }
 
     h3 {
@@ -143,15 +143,15 @@
         }
 
         @media (max-width: 500px) {
-            margin-left: 0px;
+            margin-left: 0;
         }
     }
 
     ul {
-        margin: 0px 10px 15px 25px;
+        margin: 0 10px 15px 25px;
 
         & > li {
-            margin: 5px 0px;
+            margin: 5px 0;
 
             ::before {
                 content: none;
@@ -169,7 +169,7 @@
         }
 
         i.zulip-icon {
-            margin: 0px 2px 2px 2px;
+            margin: 0 2px 2px 2px;
             vertical-align: middle;
         }
 
@@ -189,7 +189,7 @@
 
     img {
         vertical-align: top;
-        box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.05);
+        box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.05);
         border: 1px solid hsl(0, 0%, 87%);
         border-radius: 4px;
 
@@ -221,7 +221,7 @@
         border: 1px solid hsl(210, 22%, 90%);
         border-radius: 4px;
         padding: 10px;
-        margin: 5px 0px;
+        margin: 5px 0;
 
         p {
             margin-bottom: 0;
@@ -302,7 +302,7 @@
         unicode-bidi: embed;
         direction: ltr;
         white-space: initial;
-        padding: 0px;
+        padding: 0;
         padding-right: 4px;
         background-color: hsl(0, 0%, 100%);
     }
@@ -335,7 +335,7 @@
 
                     border: 1px solid hsl(0, 0%, 87%);
                     border-bottom: 1px solid hsl(0, 0%, 100%);
-                    border-radius: 4px 4px 0px 0px;
+                    border-radius: 4px 4px 0 0;
                 }
             }
         }
@@ -355,7 +355,7 @@
         }
 
         &.has-tabs .blocks {
-            border-radius: 0px 6px 6px 6px;
+            border-radius: 0 6px 6px 6px;
         }
 
         &.no-tabs .blocks {

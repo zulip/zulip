@@ -38,7 +38,7 @@
         .emoji {
             display: inline-block;
             vertical-align: top;
-            top: 0px;
+            top: 0;
             margin: 1px 3px;
 
             height: 17px;
@@ -54,7 +54,7 @@
         display: inline-block;
         vertical-align: top;
         color: hsl(200, 100%, 40%);
-        margin: 0px 1px 0px 0px;
+        margin: 0 1px 0 0;
         line-height: 1em;
     }
 
@@ -151,11 +151,11 @@
             position: relative;
 
             padding: 8px 10px;
-            margin-bottom: 0px;
+            margin-bottom: 0;
 
             background-color: hsl(0, 0%, 93%);
 
-            border-radius: 5px 5px 0px 0px;
+            border-radius: 5px 5px 0 0;
 
             .fa-search {
                 position: absolute;
@@ -199,7 +199,7 @@
 
         .emoji-popover-emoji-map,
         .emoji-search-results-container {
-            padding: 0px;
+            padding: 0;
             position: relative;
             overflow-x: hidden;
             overflow-y: auto;
@@ -268,7 +268,7 @@
             height: 32px;
             left: 5px;
             top: 6px;
-            margin-top: 0px;
+            margin-top: 0;
         }
 
         .emoji-canonical-name {
@@ -290,7 +290,7 @@
     font-size: 0.8em;
     display: inline-block;
     vertical-align: top;
-    margin: 0px 1px 0px 0px;
+    margin: 0 1px 0 0;
     line-height: 1em;
 }
 

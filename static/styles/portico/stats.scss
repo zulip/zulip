@@ -8,7 +8,7 @@ hr {
 }
 
 p {
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
 .app-main {
@@ -33,7 +33,7 @@ p {
 .chart-container {
     display: inline-block;
     vertical-align: top;
-    margin: 10px 0px;
+    margin: 10px 0;
     padding: 20px;
     border: 2px solid hsl(0, 0%, 93%);
     background-color: hsl(0, 0%, 100%);
@@ -44,7 +44,7 @@ p {
     }
 
     h1 {
-        margin-top: 0px;
+        margin-top: 0;
         font-size: 1.5em;
     }
 
@@ -144,7 +144,7 @@ p {
 }
 
 .last-update {
-    margin: 0px 0px 30px 0px;
+    margin: 0 0 30px 0;
 
     font-size: 0.8em;
     font-weight: 400;
@@ -198,7 +198,7 @@ p {
     font-size: 0.8em;
     font-weight: 400;
     position: relative;
-    height: 0px;
+    height: 0;
     top: -35px;
     left: 40px;
 }
@@ -235,7 +235,7 @@ p {
         .right {
             display: inline-block;
             vertical-align: top;
-            margin: 0px 10px;
+            margin: 0 10px;
             width: 790px;
         }
     }

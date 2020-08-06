@@ -23,8 +23,8 @@ body {
 
 table {
     border-collapse: separate;
-    mso-table-lspace: 0pt;
-    mso-table-rspace: 0pt;
+    mso-table-lspace: 0;
+    mso-table-rspace: 0;
     width: 100%;
 }
 
@@ -62,7 +62,7 @@ table td {
 
 .wrapper {
     box-sizing: border-box;
-    padding: 0px 20px 20px 20px;
+    padding: 0 20px 20px 20px;
 }
 
 .footer {
@@ -83,7 +83,7 @@ table td {
 }
 
 .footer .content-block p {
-    margin-top: 0px;
+    margin-top: 0;
 }
 
 h1,
@@ -111,7 +111,7 @@ ol {
     font-family: sans-serif;
     font-size: 14px;
     font-weight: normal;
-    margin: 10px 0px;
+    margin: 10px 0;
 }
 
 p li,
@@ -136,7 +136,7 @@ a:hover {
 
 .button {
     display: block;
-    padding: 10px 0px;
+    padding: 10px 0;
     margin: 20px auto;
     width: 200px;
     border: 1px solid #80d1ba;
@@ -319,7 +319,7 @@ a.button:hover {
     }
 
     table[class="body"] .wrapper {
-        padding: 0px 10px 10px 10px;
+        padding: 0 10px 10px 10px;
     }
 
     table[class="body"] .article {

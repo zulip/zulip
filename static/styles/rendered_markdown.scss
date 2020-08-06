@@ -2,7 +2,7 @@
     /* The default top/bottom margins for paragraphs are small, to make sure
        they look nice next to blockquotes, lists, etc. */
     p {
-        margin: 3px 0px 3px 0px;
+        margin: 3px 0 3px 0;
     }
 
     /* The spacing between two paragraphs is significantly larger.  We
@@ -50,7 +50,7 @@
         font-size: 14px;
         font-weight: 600;
         line-height: 1.4;
-        margin-top: 0px;
+        margin-top: 0;
         margin-bottom: 5px;
         text-decoration: underline;
     }
@@ -120,7 +120,7 @@
     .user-mention {
         border-radius: 3px;
         padding: 0 0.2em;
-        box-shadow: 0px 0px 0px 1px hsl(0, 0%, 80%);
+        box-shadow: 0 0 0 1px hsl(0, 0%, 80%);
         margin-right: 2px;
         margin-left: 2px;
         white-space: nowrap;
@@ -142,7 +142,7 @@
         background: hsl(0, 0%, 93%);
         border-radius: 3px;
         padding: 0 0.2em;
-        box-shadow: 0px 0px 0px 1px hsl(0, 0%, 80%);
+        box-shadow: 0 0 0 1px hsl(0, 0%, 80%);
         white-space: nowrap;
         margin-left: 2px;
         margin-right: 2px;
@@ -152,7 +152,7 @@
 
     /* LaTeX styling */
     .katex-display {
-        margin: 0em 0;
+        margin: 0 0;
     }
 
     .tex-error {
@@ -176,11 +176,11 @@
 
         .spoiler-content {
             overflow: hidden;
-            border-top: hsl(0, 0%, 50%) 0px solid;
+            border-top: hsl(0, 0%, 50%) 0 solid;
             transition: height 0.4s ease-in-out, border-top 0.4s step-end,
                 padding 0.4s step-end;
-            padding: 0px;
-            height: 0px;
+            padding: 0;
+            height: 0;
 
             &.spoiler-content-open {
                 border-top: hsl(0, 0%, 50%) 1px solid;
@@ -246,7 +246,7 @@
     /* CSS for message content widgets */
     table.tictactoe {
         width: 80px;
-        margin-left: 0px;
+        margin-left: 0;
     }
 
     td.tictactoe {
@@ -370,7 +370,7 @@
     .message_embed {
         display: block;
         position: relative;
-        margin: 5px 0px;
+        margin: 5px 0;
         border: none;
         border-left: 3px solid hsl(0, 0%, 93%);
         height: 80px;
@@ -379,7 +379,7 @@
         text-shadow: hsla(0, 0%, 0%, 0.01) 0 0 1px;
 
         .message_embed_title {
-            padding-top: 0px;
+            padding-top: 0;
             /* to remove the spacing that the font has from the top of the container. */
             margin-top: -5px;
 
@@ -406,7 +406,7 @@
 
         .data-container {
             position: relative;
-            padding: 0px 5px;
+            padding: 0 5px;
             display: inline-block;
             vertical-align: top;
             max-width: calc(100% - 115px);
@@ -479,7 +479,7 @@ code {
 
 .rendered_markdown code {
     white-space: pre-wrap;
-    padding: 0px 4px;
+    padding: 0 4px;
     background-color: hsl(0, 0%, 100%);
 }
 

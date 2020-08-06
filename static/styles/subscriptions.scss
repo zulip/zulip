@@ -117,13 +117,13 @@
 .sp-preview {
     width: 20px;
     border: none;
-    box-shadow: 0px 0px 1px hsla(0, 0%, 0%, 1);
+    box-shadow: 0 0 1px hsla(0, 0%, 0%, 1);
 }
 
 .sp-replacer {
     margin-right: 12px;
     border: none;
-    box-shadow: 0px 0px 2px hsla(0, 0%, 0%, 0.8);
+    box-shadow: 0 0 2px hsla(0, 0%, 0%, 0.8);
 }
 
 .stream-email .email-address {
@@ -167,7 +167,7 @@
     float: right;
     padding: 3px 10px;
     border: 1px solid hsl(0, 0%, 80%);
-    margin: 9px 10px 0px 0px;
+    margin: 9px 10px 0 0;
     color: hsl(0, 0%, 20%);
 }
 
@@ -183,7 +183,7 @@ form#add_new_subscription {
 }
 
 .create_stream_button {
-    margin: 0px 0px 0px 5px;
+    margin: 0 0 0 5px;
 
     border: none;
     outline: none;
@@ -196,8 +196,8 @@ form#add_new_subscription {
 
     display: inline-block;
     transition: all 0.2s ease;
-    padding-bottom: 0px;
-    padding-top: 0px;
+    padding-bottom: 0;
+    padding-top: 0;
 
     &:hover {
         color: hsl(0, 0%, 27%);
@@ -258,7 +258,7 @@ form#add_new_subscription {
                 }
 
                 td {
-                    padding: 4px 0px;
+                    padding: 4px 0;
 
                     &:first-of-type {
                         padding-left: 10px;
@@ -322,7 +322,7 @@ form#add_new_subscription {
 }
 
 .subscriber_list_add .form-inline {
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
 .add_subscribers_container {
@@ -336,7 +336,7 @@ form#add_new_subscription {
 }
 
 .remove-subscriber-form {
-    margin: 0px 0px 0px 0px;
+    margin: 0 0 0 0;
 }
 
 #subscription-status {
@@ -383,7 +383,7 @@ form#add_new_subscription {
 .subscriptions-container .subscriptions-header .fa-chevron-left,
 #settings_overlay_container .settings-header.mobile .fa-chevron-left {
     position: relative;
-    transform: translate(-50px, 0px);
+    transform: translate(-50px, 0);
     opacity: 0;
     color: hsl(0, 0%, 67%);
 
@@ -399,7 +399,7 @@ form#add_new_subscription {
 #settings_overlay_container
     .settings-header.mobile.slide-left
     .fa-chevron-left {
-    transform: translate(-0px, 0px);
+    transform: translate(0, 0);
     opacity: 1;
 }
 
@@ -407,7 +407,7 @@ form#add_new_subscription {
     position: relative;
     height: 95%;
     border-radius: 4px;
-    padding: 0px;
+    padding: 0;
     width: 97%;
     overflow: hidden;
     max-width: 1200px;
@@ -431,7 +431,7 @@ form#add_new_subscription {
         .subscriptions-title {
             display: inline-block;
             transition: all 0.3s ease;
-            transform: translate(-13px, 0px);
+            transform: translate(-13px, 0);
         }
 
         .exit {
@@ -460,7 +460,7 @@ form#add_new_subscription {
         vertical-align: top;
         width: 50%;
         height: calc(100% - 45px);
-        margin: 0px -2px;
+        margin: 0 -2px;
     }
 
     .left {
@@ -512,7 +512,7 @@ form#add_new_subscription {
                 display: none;
                 font-size: 1em;
                 line-height: 1;
-                margin: 9px 0px;
+                margin: 9px 0;
                 font-weight: 600;
             }
         }
@@ -522,7 +522,7 @@ form#add_new_subscription {
             height: calc(100% - 45px);
             border: none;
             background-color: hsl(0, 0%, 98%);
-            box-shadow: inset 0px 0px 50px hsla(0, 0%, 0%, 0.5);
+            box-shadow: inset 0 0 50px hsla(0, 0%, 0%, 0.5);
             background-image: url(../images/preview-loading.png);
             background-size: 150px auto;
             background-position: center center;
@@ -551,7 +551,7 @@ form#add_new_subscription {
 #search_stream_name {
     width: 100%;
     padding: 3px 5px;
-    margin: 8px 0px;
+    margin: 8px 0;
     margin-left: 10px;
     margin-right: -15px !important;
     display: inline-block;
@@ -802,7 +802,7 @@ form#add_new_subscription {
         }
 
         .add-user-label {
-            margin: 8px 0px;
+            margin: 8px 0;
         }
 
         .add-user-list-filter {
@@ -810,7 +810,7 @@ form#add_new_subscription {
         }
 
         #stream_creation_form {
-            margin: 0px;
+            margin: 0;
 
             #stream_creating_indicator {
                 &:not(:empty) {
@@ -1030,7 +1030,7 @@ ul.grey-box {
         #stream_privacy_modal &,
         #subscription_overlay & {
             border-bottom: 1px solid hsl(0, 0%, 87%);
-            padding: 5px 0px;
+            padding: 5px 0;
         }
 
         input[type="checkbox"] {
@@ -1039,7 +1039,7 @@ ul.grey-box {
             }
 
             #subscription_overlay & {
-                margin-top: 0px;
+                margin-top: 0;
             }
         }
 
@@ -1075,7 +1075,7 @@ ul.grey-box {
 
         select {
             width: auto;
-            margin-bottom: 0px;
+            margin-bottom: 0;
         }
     }
 }
@@ -1108,7 +1108,7 @@ ul.grey-box {
 
     .subscriber_list_settings input {
         float: left;
-        margin: 0px 5px 0px 0px;
+        margin: 0 5px 0 0;
         width: calc(50% - 45px);
     }
 }

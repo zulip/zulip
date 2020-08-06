@@ -85,15 +85,15 @@ li.show-more-topics {
 
     li {
         a {
-            padding: 1px 0px;
+            padding: 1px 0;
         }
 
         ul {
-            margin-left: 0px;
+            margin-left: 0;
 
             &.topic-list li {
                 padding-top: 2px;
-                padding-right: 0px;
+                padding-right: 0;
                 padding-bottom: 2px;
                 padding-left: $topic_indent;
             }
@@ -105,7 +105,7 @@ li.show-more-topics {
     }
 
     .subscription_block {
-        padding: 0px;
+        padding: 0;
         margin-right: 25px;
         margin-left: $far_left_gutter_size;
         display: flex;
@@ -187,7 +187,7 @@ li.show-more-topics {
 
 ul.filters {
     list-style-type: none;
-    margin-left: 0px;
+    margin-left: 0;
 
     a {
         color: inherit;
@@ -317,7 +317,7 @@ li.top_left_recent_topics {
 .top_left_starred_messages .count {
     background-color: transparent;
     color: inherit;
-    padding: 2px 1px 0px 3px;
+    padding: 2px 1px 0 3px;
     border-color: hsl(105, 2%, 50%);
 }
 
@@ -389,10 +389,10 @@ li.top_left_recent_topics {
 .starred-messages-sidebar-menu-icon,
 .stream-sidebar-menu-icon {
     top: 1px;
-    right: 0px;
+    right: 0;
     font-size: 1em;
     text-align: center;
-    padding: 0px 6px 0px 6px;
+    padding: 0 6px 0 6px;
 }
 
 /*
@@ -401,11 +401,11 @@ li.top_left_recent_topics {
     which also affects it positioning.
 */
 .topic-sidebar-menu-icon {
-    top: 0px;
-    right: 0px;
+    top: 0;
+    right: 0;
     font-size: 0.9em;
     text-align: center;
-    padding: 1px 6px 0px 6px;
+    padding: 1px 6px 0 6px;
 }
 
 /*
@@ -430,7 +430,7 @@ ul.expanded_private_messages {
     list-style-type: none;
     font-size: 13px;
     font-weight: 400;
-    margin-left: 0px;
+    margin-left: 0;
     padding-bottom: 2px;
     margin-top: 3px;
 }
@@ -446,7 +446,7 @@ li.expanded_private_message {
     padding-bottom: 1px;
 
     a {
-        margin: 1px 0px;
+        margin: 1px 0;
     }
 }
 
@@ -475,11 +475,11 @@ li.expanded_private_message {
     .user_circle {
         min-width: 8px;
         height: 8px;
-        margin-top: 0px;
-        margin-bottom: 0px;
+        margin-top: 0;
+        margin-bottom: 0;
         margin-left: 2px;
         position: relative;
-        top: 0px;
+        top: 0;
     }
 }
 
@@ -511,7 +511,7 @@ li.expanded_private_message {
 }
 
 #streams_header {
-    margin-right: 0px;
+    margin-right: 0;
     padding-left: $far_left_gutter_size;
     cursor: pointer;
     margin-top: 3px;
