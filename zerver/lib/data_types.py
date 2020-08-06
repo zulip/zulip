@@ -152,6 +152,30 @@ class OptionalType:
 
 
 @dataclass
+class TupleType:
+    sub_types: Sequence[Any]
+
+    def check_data(self, var_name: str, val: Any) -> None:
+        if not (isinstance(val, list) or isinstance(val, tuple)):
+            raise AssertionError(f"{var_name} is not a list/tuple")
+
+        if len(val) != len(self.sub_types):
+            raise AssertionError(f"{var_name} should have {len(self.sub_types)} items")
+
+        for i, sub_type in enumerate(self.sub_types):
+            vname = f"{var_name}[{i}]"
+            check_data(sub_type, vname, val[i])
+
+    def schema(self, var_name: str) -> str:
+        sub_schemas = "\n".join(
+            sorted(
+                schema(str(i), sub_type) for i, sub_type in enumerate(self.sub_types)
+            )
+        )
+        return f"{var_name} (tuple):\n{indent(sub_schemas)}"
+
+
+@dataclass
 class UnionType:
     sub_types: Sequence[Any]
 
