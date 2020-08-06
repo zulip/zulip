@@ -236,10 +236,6 @@ on a dark background, and don't change the dark labels dark either. */
     .message-header-contents,
     .message_header_private_message .message-header-contents {
         background-color: hsla(0, 0%, 0%, 0.2);
-    }
-
-    .message-header-contents,
-    .message_header_private_message .message-header-contents {
         border-color: transparent;
     }
 

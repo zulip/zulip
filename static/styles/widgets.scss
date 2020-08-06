@@ -76,6 +76,20 @@ button {
         border-color: hsl(157, 18%, 77%);
         padding: 0px;
     }
+
+    &.add-task,
+    &.add-desc,
+    &.poll-option,
+    &.poll-question {
+        border-radius: 3px;
+        border: 1px solid hsl(0, 0%, 80%);
+        background-color: hsl(0, 0%, 100%);
+        width: 100px;
+
+        &:hover {
+            border-color: hsl(0, 0%, 60%);
+        }
+    }
 }
 
 img.task-completed {
@@ -90,22 +104,6 @@ button {
     &.poll-question {
         padding: 4px 6px;
         margin: 2px 0px 2px 0px;
-    }
-}
-
-button {
-    &.add-task,
-    &.add-desc,
-    &.poll-option,
-    &.poll-question {
-        border-radius: 3px;
-        border: 1px solid hsl(0, 0%, 80%);
-        background-color: hsl(0, 0%, 100%);
-        width: 100px;
-
-        &:hover {
-            border-color: hsl(0, 0%, 60%);
-        }
     }
 }
 

@@ -45,6 +45,14 @@
 .compose-content {
     border-top: 1px solid hsla(0, 0%, 0%, 0.07);
     transition: background-color 200ms linear;
+
+    padding: 8px 10px 8px 10px;
+    margin-left: 250px;
+    margin-right: 250px;
+    position: relative;
+
+    border-left: 1px solid hsl(0, 0%, 93%);
+    border-right: 1px solid hsl(0, 0%, 93%);
 }
 
 .ztable_comp_col1 {
@@ -163,16 +171,6 @@
     // This should match the value for .app-main
     max-width: 1400px;
     margin: auto;
-}
-
-.compose-content {
-    padding: 8px 10px 8px 10px;
-    margin-left: 250px;
-    margin-right: 250px;
-    position: relative;
-
-    border-left: 1px solid hsl(0, 0%, 93%);
-    border-right: 1px solid hsl(0, 0%, 93%);
 }
 
 #compose_close {

@@ -54,7 +54,7 @@ html {
 .header {
     position: relative;
 
-    padding: 6px 0px;
+    padding: 15px 0;
     height: 29px;
 
     background-color: hsl(0, 0%, 100%);
@@ -544,10 +544,6 @@ input.text-error {
 }
 
 /* -- end new footer -- */
-
-.header {
-    padding: 15px 0;
-}
 
 .header-main {
     .logo {
@@ -1592,10 +1588,6 @@ input.new-organization-button {
 
 label.label-title {
     font-weight: 600;
-}
-
-input.new-organization-button {
-    margin-left: auto;
 }
 
 .inline-block {

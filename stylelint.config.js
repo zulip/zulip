@@ -10,7 +10,6 @@ module.exports = {
         // Disable recommended rules we don't comply with yet
         "font-family-no-missing-generic-family-keyword": null,
         "no-descending-specificity": null,
-        "no-duplicate-selectors": null,
 
         // Disable standard rules we don't comply with yet
         "comment-empty-line-before": null,

@@ -351,9 +351,7 @@ nav {
     padding-top: 120px;
 
     z-index: 1;
-}
 
-.portico-landing {
     &.show {
         opacity: 1;
     }
@@ -2057,9 +2055,6 @@ nav {
 .portico-landing.apps .hero h1 {
     font-size: 3em;
     margin-bottom: 0px;
-}
-
-.portico-landing.apps .hero h1 {
     margin-top: 0px;
 }
 
@@ -3303,9 +3298,6 @@ nav {
     .portico-landing.why-page .hero {
         padding-left: 20px;
         padding-right: 20px;
-    }
-
-    .portico-landing.why-page .hero {
         font-size: 0.6em;
     }
 
@@ -3464,28 +3456,24 @@ nav {
     }
 
     nav {
-        ul {
-            margin-top: 0px;
-            text-align: left;
-        }
-
-        .content {
-            display: inline-block;
-            z-index: 11;
-        }
-
         .hamburger {
             display: inline-block;
             float: right;
         }
 
         .content {
+            display: inline-block;
+            z-index: 11;
+
             > ul.show {
                 outline-color: hsla(203, 43%, 22%, 0.7);
             }
         }
 
         ul {
+            margin-top: 0px;
+            text-align: left;
+
             position: fixed;
             float: none;
             top: 0;

@@ -922,9 +922,6 @@ td.pointer {
 .summary_row {
     .message_header {
         padding: 5px 0px 4px 5px;
-    }
-
-    .message_header {
         border-radius: 0;
     }
 
@@ -2562,12 +2559,8 @@ select.inline_select_topic_edit {
         box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
 
         &::after {
-            right: 10px;
+            right: 21px;
         }
-    }
-
-    .nav .dropdown-menu::after {
-        right: 21px;
     }
 
     .column-middle {
@@ -2759,15 +2752,11 @@ select.inline_select_topic_edit {
 
     #message_view_header_underpadding {
         top: 30px;
+        height: 10px;
     }
 
     .messagebox-content {
         padding-right: 15px;
-    }
-
-    .message_time {
-        right: auto;
-        left: -3px;
     }
 
     /* In mobile views we place it just to the right of the time element */
@@ -2792,10 +2781,6 @@ select.inline_select_topic_edit {
         white-space: nowrap;
         text-overflow: ellipsis;
         line-height: 15px;
-    }
-
-    #message_view_header_underpadding {
-        height: 10px;
     }
 
     #floating_recipient_bar {

@@ -57,10 +57,7 @@ $alert-error-red: hsl(0, 80%, 40%);
     overscroll-behavior: contain;
 
     .stacktrace {
-        @extend .alert-display;
-    }
-    .stacktrace {
-        @extend .alert-animations;
+        @extend .alert-display, .alert-animations;
 
         font-size: 1rem;
         color: hsl(0, 80%, 40%);

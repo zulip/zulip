@@ -167,6 +167,15 @@ ul {
 
     margin: -14px;
     padding: 0;
+
+    .popover-title {
+        padding: 0;
+        border-color: hsla(0, 0%, 0%, 0.2);
+    }
+
+    .popover_info li {
+        word-wrap: break-word;
+    }
 }
 
 .message-info-popover {
@@ -225,17 +234,6 @@ ul {
     &:hover {
         cursor: pointer;
         color: hsl(200, 100%, 40%);
-    }
-}
-
-.user_popover {
-    .popover-title {
-        padding: 0;
-        border-color: hsla(0, 0%, 0%, 0.2);
-    }
-
-    .popover_info li {
-        word-wrap: break-word;
     }
 }
 
