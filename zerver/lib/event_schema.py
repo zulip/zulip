@@ -14,6 +14,7 @@ from zerver.lib.data_types import (
     ListType,
     NumberType,
     OptionalType,
+    StringDictType,
     UnionType,
     UrlType,
     check_data,
@@ -313,16 +314,13 @@ bot_services_outgoing_type = DictType(
     ]
 )
 
-# We use a strict check here, because our tests
-# don't specifically focus on seeing how
-# flexible we can make the types be for config_data.
-_ad_hoc_config_data_schema = Equals(dict(foo="bar"))
+config_data_schema = StringDictType()
 
 bot_services_embedded_type = DictType(
     required_keys=[
         # force vertical
         ("service_name", str),
-        ("config_data", _ad_hoc_config_data_schema),
+        ("config_data", config_data_schema),
     ]
 )
 

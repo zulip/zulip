@@ -5,6 +5,7 @@ from zerver.lib.data_types import (
     ListType,
     NumberType,
     OptionalType,
+    StringDictType,
     UnionType,
     UrlType,
     schema,
@@ -27,12 +28,14 @@ class MiscTest(ZulipTestCase):
                 ("flag", bool),
                 ("level", EnumType([1, 2, 3])),
                 ("lst", ListType(int)),
+                ("config", StringDictType()),
                 ("value", UnionType([int, str])),
                 ("url", UrlType()),
             ]
         )
         expected = """
 test (dict):
+    config: string_dict
     flag: bool
     level in [1, 2, 3]
     lst (list):
