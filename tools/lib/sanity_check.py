@@ -6,10 +6,10 @@ import sys
 def check_venv(filename: str) -> None:
     try:
         import django
-        import ujson
+        import orjson
         import zulip
         django
-        ujson
+        orjson
         zulip
     except ImportError:
         print(f"You need to run {filename} inside a Zulip dev environment.")

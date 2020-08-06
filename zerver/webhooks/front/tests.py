@@ -1,4 +1,4 @@
-import ujson
+import orjson
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -172,9 +172,9 @@ class FrontHookTests(WebhookTestCase):
 
     def test_unknown_webhook_request(self) -> None:
         payload = self.get_body('conversation_assigned')
-        payload_json = ujson.loads(payload)
+        payload_json = orjson.loads(payload)
         payload_json['type'] = 'qwerty'
-        result = self.client_post(self.url, ujson.dumps(payload_json),
+        result = self.client_post(self.url, orjson.dumps(payload_json),
                                   content_type="application/x-www-form-urlencoded")
 
         self.assert_json_error(result, "Unknown webhook request")

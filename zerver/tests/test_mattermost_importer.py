@@ -3,7 +3,7 @@ import os
 from typing import Any, Dict, List
 from unittest.mock import call, patch
 
-import ujson
+import orjson
 
 from zerver.data_import.import_util import SubscriberHandler
 from zerver.data_import.mattermost import (
@@ -315,8 +315,8 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(zerver_realm_emoji[1]["deactivated"], False)
 
         records_file = os.path.join(output_dir, "emoji", "records.json")
-        with open(records_file) as f:
-            records_json = ujson.load(f)
+        with open(records_file, "rb") as f:
+            records_json = orjson.loads(f.read())
 
         self.assertEqual(records_json[0]["file_name"], "peerdium")
         self.assertEqual(records_json[0]["realm_id"], 3)
@@ -495,8 +495,8 @@ class MatterMostImporter(ZulipTestCase):
 
     def read_file(self, team_output_dir: str, output_file: str) -> Any:
         full_path = os.path.join(team_output_dir, output_file)
-        with open(full_path) as f:
-            return ujson.load(f)
+        with open(full_path, "rb") as f:
+            return orjson.loads(f.read())
 
     def test_do_convert_data(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")

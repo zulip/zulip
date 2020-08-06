@@ -5,7 +5,7 @@ from textwrap import dedent
 from typing import Any, Dict, List, Optional, Set, Tuple
 from unittest import mock
 
-import ujson
+import orjson
 from django.conf import settings
 from django.test import override_settings
 
@@ -371,8 +371,8 @@ class MarkdownTest(ZulipTestCase):
 
     def load_markdown_tests(self) -> Tuple[Dict[str, Any], List[List[str]]]:
         test_fixtures = {}
-        with open(os.path.join(os.path.dirname(__file__), 'fixtures/markdown_test_cases.json')) as f:
-            data = ujson.load(f)
+        with open(os.path.join(os.path.dirname(__file__), 'fixtures/markdown_test_cases.json'), "rb") as f:
+            data = orjson.loads(f.read())
         for test in data['regular_tests']:
             test_fixtures[test['name']] = test
 

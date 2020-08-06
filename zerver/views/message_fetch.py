@@ -1,7 +1,7 @@
 import re
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
-import ujson
+import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import connection
@@ -520,7 +520,7 @@ def get_search_fields(rendered_content: str, topic_name: str, content_matches: I
 
 def narrow_parameter(json: str) -> OptionalNarrowListT:
 
-    data = ujson.loads(json)
+    data = orjson.loads(json)
     if not isinstance(data, list):
         raise ValueError("argument is not a list")
     if len(data) == 0:

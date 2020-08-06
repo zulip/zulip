@@ -7,7 +7,7 @@ import shutil
 import sys
 from typing import Any, Dict, Iterator, List, Optional
 
-import ujson
+import orjson
 
 from emoji_names import EMOJI_NAME_MAPS
 from emoji_setup_utils import (
@@ -284,8 +284,8 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
     GOOGLE_BLOB_EMOJI_DATA_PATH = os.path.join(NODE_MODULES_PATH,
                                                'emoji-datasource-google-blob',
                                                'emoji.json')
-    with open(GOOGLE_BLOB_EMOJI_DATA_PATH) as fp:
-        blob_emoji_data = ujson.load(fp)
+    with open(GOOGLE_BLOB_EMOJI_DATA_PATH, "rb") as fp:
+        blob_emoji_data = orjson.loads(fp.read())
     setup_emoji_farm('google-blob', blob_emoji_data, 'google')
 
 def setup_old_emoji_farm(cache_path: str,
@@ -328,24 +328,24 @@ def generate_map_files(cache_path: str, emoji_catalog: Dict[str, List[str]]) -> 
     name_to_codepoint = generate_name_to_codepoint_map(EMOJI_NAME_MAPS)
 
     EMOJI_CODES_FILE_PATH = os.path.join(cache_path, 'emoji_codes.json')
-    with open(EMOJI_CODES_FILE_PATH, 'w') as emoji_codes_file:
-        ujson.dump({
+    with open(EMOJI_CODES_FILE_PATH, 'wb') as emoji_codes_file:
+        emoji_codes_file.write(orjson.dumps({
             'names': names,
             'name_to_codepoint': name_to_codepoint,
             'codepoint_to_name': codepoint_to_name,
             'emoji_catalog': emoji_catalog,
             'emoticon_conversions': EMOTICON_CONVERSIONS,
-        }, emoji_codes_file)
+        }))
 
 def dump_emojis(cache_path: str) -> None:
-    with open('emoji_map.json') as emoji_map_file:
-        emoji_map = ujson.load(emoji_map_file)
+    with open('emoji_map.json', "rb") as emoji_map_file:
+        emoji_map = orjson.loads(emoji_map_file.read())
 
     # `emoji.json` or any other data file can be sourced from any of the supported
     # emojiset packages, they all contain the same data files.
     EMOJI_DATA_FILE_PATH = os.path.join(NODE_MODULES_PATH, 'emoji-datasource-google', 'emoji.json')
-    with open(EMOJI_DATA_FILE_PATH) as emoji_data_file:
-        emoji_data = ujson.load(emoji_data_file)
+    with open(EMOJI_DATA_FILE_PATH, "rb") as emoji_data_file:
+        emoji_data = orjson.loads(emoji_data_file.read())
     emoji_catalog = generate_emoji_catalog(emoji_data, EMOJI_NAME_MAPS)
 
     # Setup emoji farms.

@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple, Union
 from unittest import mock
 
-import ujson
+import orjson
 from django.apps import apps
 from django.conf import settings
 from django.db import connection
@@ -182,7 +182,7 @@ class ZulipTestCase(TestCase):
         if not (url.startswith("/json") or url.startswith("/api/v1")):
             return
         try:
-            content = ujson.loads(result.content)
+            content = orjson.loads(result.content)
         except ValueError:
             return
         json_url = False
@@ -655,7 +655,7 @@ class ZulipTestCase(TestCase):
                               use_first_unread_anchor: bool=False) -> Dict[str, List[Dict[str, Any]]]:
         post_params = {"anchor": anchor, "num_before": num_before,
                        "num_after": num_after,
-                       "use_first_unread_anchor": ujson.dumps(use_first_unread_anchor)}
+                       "use_first_unread_anchor": orjson.dumps(use_first_unread_anchor).decode()}
         result = self.client_get("/json/messages", dict(post_params))
         data = result.json()
         return data
@@ -683,7 +683,7 @@ class ZulipTestCase(TestCase):
         "msg": ""}.
         """
         try:
-            json = ujson.loads(result.content)
+            json = orjson.loads(result.content)
         except Exception:  # nocoverage
             json = {'msg': "Error parsing JSON in response!"}
         self.assertEqual(result.status_code, 200, json['msg'])
@@ -696,7 +696,7 @@ class ZulipTestCase(TestCase):
 
     def get_json_error(self, result: HttpResponse, status_code: int=400) -> Dict[str, Any]:
         try:
-            json = ujson.loads(result.content)
+            json = orjson.loads(result.content)
         except Exception:  # nocoverage
             json = {'msg': "Error parsing JSON in response!"}
         self.assertEqual(result.status_code, status_code, msg=json.get('msg'))
@@ -826,9 +826,9 @@ class ZulipTestCase(TestCase):
                                     is_web_public: bool=False,
                                     allow_fail: bool=False,
                                     **kwargs: Any) -> HttpResponse:
-        post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
-                     'is_web_public': ujson.dumps(is_web_public),
-                     'invite_only': ujson.dumps(invite_only)}
+        post_data = {'subscriptions': orjson.dumps([{"name": stream} for stream in streams]).decode(),
+                     'is_web_public': orjson.dumps(is_web_public).decode(),
+                     'invite_only': orjson.dumps(invite_only).decode()}
         post_data.update(extra_post_data)
         result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, **kwargs)
         if not allow_fail:
@@ -929,7 +929,7 @@ class ZulipTestCase(TestCase):
         directory. If new user entries are needed to test for some additional unusual
         scenario, it's most likely best to add that to directory.json.
         """
-        directory = ujson.loads(self.fixture_data("directory.json", type="ldap"))
+        directory = orjson.loads(self.fixture_data("directory.json", type="ldap"))
 
         for dn, attrs in directory.items():
             if 'uid' in attrs:
@@ -1072,7 +1072,7 @@ class WebhookTestCase(ZulipTestCase):
         """Can be implemented either as returning a dictionary containing the
         post parameters or as string containing the body of the request."""
         assert self.FIXTURE_DIR_NAME is not None
-        return ujson.dumps(ujson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name)))
+        return orjson.dumps(orjson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name))).decode()
 
     def do_test_topic(self, msg: Message, expected_topic: Optional[str]) -> None:
         if expected_topic is not None:

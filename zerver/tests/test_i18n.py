@@ -2,7 +2,7 @@ from http.cookies import SimpleCookie
 from typing import Any
 from unittest import mock
 
-import ujson
+import orjson
 from django.conf import settings
 from django.core import mail
 from django.http import HttpResponse
@@ -44,7 +44,7 @@ class EmailTranslationTestCase(ZulipTestCase):
         check_translation("Incrível!", "post", "/accounts/home/", {"email": "new-email@zulip.com"}, HTTP_ACCEPT_LANGUAGE="pt")
         check_translation("Danke, dass du", "post", '/accounts/find/', {'emails': hamlet.delivery_email})
         check_translation("Hallo", "post", "/json/invites",  {"invitee_emails": "new-email@zulip.com",
-                                                              "stream_ids": ujson.dumps([stream.id])})
+                                                              "stream_ids": orjson.dumps([stream.id]).decode()})
 
         with self.settings(DEVELOPMENT_LOG_EMAILS=True):
             enqueue_welcome_emails(hamlet)

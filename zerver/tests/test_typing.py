@@ -1,6 +1,6 @@
 from typing import Any, List, Mapping
 
-import ujson
+import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured, tornado_redirected_to_list
@@ -14,7 +14,7 @@ class TypingValidateOperatorTest(ZulipTestCase):
         """
         sender = self.example_user("hamlet")
         params = dict(
-            to=ujson.dumps([sender.id]),
+            to=orjson.dumps([sender.id]).decode(),
         )
         result = self.api_post(sender, '/api/v1/typing', params)
         self.assert_json_error(result, 'Missing \'op\' argument')
@@ -25,7 +25,7 @@ class TypingValidateOperatorTest(ZulipTestCase):
         """
         sender = self.example_user("hamlet")
         params = dict(
-            to=ujson.dumps([sender.id]),
+            to=orjson.dumps([sender.id]).decode(),
             op='foo',
         )
         result = self.api_post(sender, '/api/v1/typing', params)
@@ -75,7 +75,7 @@ class TypingHappyPathTest(ZulipTestCase):
         expected_recipient_ids = {user.id for user in expected_recipients}
 
         params = dict(
-            to=ujson.dumps([recipient_user.id]),
+            to=orjson.dumps([recipient_user.id]).decode(),
             op='start',
         )
 
@@ -113,7 +113,7 @@ class TypingHappyPathTest(ZulipTestCase):
         events: List[Mapping[str, Any]] = []
 
         params = dict(
-            to=ujson.dumps([user.id for user in recipient_users]),
+            to=orjson.dumps([user.id for user in recipient_users]).decode(),
             op='start',
         )
 
@@ -156,7 +156,7 @@ class TypingHappyPathTest(ZulipTestCase):
                 user,
                 '/api/v1/typing',
                 {
-                    'to': ujson.dumps([user.id]),
+                    'to': orjson.dumps([user.id]).decode(),
                     'op': 'start',
                 },
             )
@@ -187,7 +187,7 @@ class TypingHappyPathTest(ZulipTestCase):
         expected_recipient_ids = {user.id for user in expected_recipients}
 
         params = dict(
-            to=ujson.dumps([recipient.id]),
+            to=orjson.dumps([recipient.id]).decode(),
             op='start',
         )
 
@@ -223,7 +223,7 @@ class TypingHappyPathTest(ZulipTestCase):
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             params = dict(
-                to=ujson.dumps([user.id]),
+                to=orjson.dumps([user.id]).decode(),
                 op='stop',
             )
             result = self.api_post(user, '/api/v1/typing', params)
@@ -257,7 +257,7 @@ class TypingHappyPathTest(ZulipTestCase):
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             params = dict(
-                to=ujson.dumps([recipient.id]),
+                to=orjson.dumps([recipient.id]).decode(),
                 op='stop',
             )
             result = self.api_post(sender, '/api/v1/typing', params)

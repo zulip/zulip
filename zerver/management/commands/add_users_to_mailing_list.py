@@ -2,8 +2,8 @@ import argparse
 from datetime import datetime
 from typing import Any, Optional
 
+import orjson
 import requests
-import ujson
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.timezone import now as timezone_now
@@ -66,7 +66,7 @@ class Command(BaseCommand):
                 },
             }
             r = requests.post(endpoint, auth=('apikey', api_key), json=data, timeout=10)
-            if r.status_code == 400 and ujson.loads(r.text)['title'] == 'Member Exists':
+            if r.status_code == 400 and orjson.loads(r.content)['title'] == 'Member Exists':
                 print("{} is already a part of the list.".format(data['email_address']))
             elif r.status_code >= 400:
                 print(r.text)

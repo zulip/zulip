@@ -2,7 +2,7 @@ import os
 from typing import Any, Callable, Dict, FrozenSet, List, Optional, Set, Tuple
 from unittest.mock import patch
 
-import ujson
+import orjson
 from django.conf import settings
 from django.db.models import Q
 from django.utils.timezone import now as timezone_now
@@ -229,8 +229,8 @@ class ImportExportTest(ZulipTestCase):
 
         def read_file(fn: str) -> Any:
             full_fn = os.path.join(output_dir, fn)
-            with open(full_fn) as f:
-                return ujson.load(f)
+            with open(full_fn, "rb") as f:
+                return orjson.loads(f.read())
 
         result = {}
         result['realm'] = read_file('realm.json')
@@ -644,8 +644,8 @@ class ImportExportTest(ZulipTestCase):
 
         def read_file(fn: str) -> Any:
             full_fn = os.path.join(output_dir, fn)
-            with open(full_fn) as f:
-                return ujson.load(f)
+            with open(full_fn, "rb") as f:
+                return orjson.loads(f.read())
 
         messages = read_file('messages-000001.json')
         user = read_file('user.json')
@@ -809,7 +809,7 @@ class ImportExportTest(ZulipTestCase):
                 return UserProfile.objects.get(id=user_id).email
 
             def get_email_from_value(field_value: CustomProfileFieldValue) -> Set[str]:
-                user_id_list = ujson.loads(field_value.value)
+                user_id_list = orjson.loads(field_value.value)
                 return {get_email(user_id) for user_id in user_id_list}
 
             def custom_profile_field_values_for(fields: List[CustomProfileField]) -> Set[FrozenSet[str]]:

@@ -1,7 +1,7 @@
 import os
 from typing import Any, Dict, List, Optional
 
-import ujson
+import orjson
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.test import Client
@@ -65,7 +65,7 @@ def get_fixtures(request: HttpResponse,
         with open(fixture_path) as f:
             body = f.read()
         try:
-            body = ujson.loads(body)
+            body = orjson.loads(body)
         except ValueError:
             pass  # The file extension will be used to determine the type.
 
@@ -90,7 +90,7 @@ def check_send_webhook_fixture_message(request: HttpRequest,
                                        is_json: bool=REQ(validator=check_bool),
                                        custom_headers: str=REQ()) -> HttpResponse:
     try:
-        custom_headers_dict = ujson.loads(custom_headers)
+        custom_headers_dict = orjson.loads(custom_headers)
     except ValueError as ve:
         return json_error(f"Custom HTTP headers are not in a valid JSON format. {ve}")  # nolint
 

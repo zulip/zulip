@@ -31,8 +31,8 @@ from typing import (
     cast,
 )
 
+import orjson
 import requests
-import ujson
 from django.conf import settings
 from django.db import connection
 from django.utils.timezone import now as timezone_now
@@ -200,10 +200,10 @@ class QueueProcessingWorker(ABC):
         fn = os.path.join(settings.QUEUE_STATS_DIR, fname)
         with lockfile(fn + '.lock'):
             tmp_fn = fn + '.tmp'
-            with open(tmp_fn, 'w') as f:
-                serialized_dict = ujson.dumps(stats_dict, indent=2)
-                serialized_dict += '\n'
-                f.write(serialized_dict)
+            with open(tmp_fn, 'wb') as f:
+                f.write(
+                    orjson.dumps(stats_dict, option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2)
+                )
             os.rename(tmp_fn, fn)
 
     @abstractmethod
@@ -254,7 +254,7 @@ class QueueProcessingWorker(ABC):
         # flow. 'queue_name' is always a constant string.
         fname = mark_sanitized(f'{self.queue_name}.errors')
         fn = os.path.join(settings.QUEUE_ERROR_DIR, fname)
-        line = f'{time.asctime()}\t{ujson.dumps(events)}\n'
+        line = f'{time.asctime()}\t{orjson.dumps(events).decode()}\n'
         lock_fn = fn + '.lock'
         with lockfile(lock_fn):
             with open(fn, 'ab') as f:
@@ -319,7 +319,7 @@ class SignupWorker(QueueProcessingWorker):
             params['list_id'] = settings.ZULIP_FRIENDS_LIST_ID
             params['status'] = 'subscribed'
             r = requests.post(endpoint, auth=('apikey', settings.MAILCHIMP_API_KEY), json=params, timeout=10)
-            if r.status_code == 400 and ujson.loads(r.text)['title'] == 'Member Exists':
+            if r.status_code == 400 and orjson.loads(r.content)['title'] == 'Member Exists':
                 logging.warning("Attempted to sign up already existing email to list: %s",
                                 data['email_address'])
             elif r.status_code == 400:
@@ -595,10 +595,10 @@ class TestWorker(QueueProcessingWorker):
     # and appends it to a file in /tmp.
     def consume(self, event: Mapping[str, Any]) -> None:  # nocoverage
         fn = settings.ZULIP_WORKER_TEST_FILE
-        message = ujson.dumps(event)
-        logging.info("TestWorker should append this message to %s: %s", fn, message)
-        with open(fn, 'a') as f:
-            f.write(message + '\n')
+        message = orjson.dumps(event)
+        logging.info("TestWorker should append this message to %s: %s", fn, message.decode())
+        with open(fn, 'ab') as f:
+            f.write(message + b'\n')
 
 @assign_queue('embed_links')
 class FetchLinksEmbedData(QueueProcessingWorker):
@@ -721,9 +721,9 @@ class DeferredWorker(QueueProcessingWorker):
                                                   threads=6, upload=True, public_only=True,
                                                   delete_after_upload=True)
             except Exception:
-                export_event.extra_data = ujson.dumps(dict(
+                export_event.extra_data = orjson.dumps(dict(
                     failed_timestamp=timezone_now().timestamp(),
-                ))
+                )).decode()
                 export_event.save(update_fields=['extra_data'])
                 logging.error(
                     "Data export for %s failed after %s",
@@ -735,9 +735,9 @@ class DeferredWorker(QueueProcessingWorker):
             assert public_url is not None
 
             # Update the extra_data field now that the export is complete.
-            export_event.extra_data = ujson.dumps(dict(
+            export_event.extra_data = orjson.dumps(dict(
                 export_path=urllib.parse.urlparse(public_url).path,
-            ))
+            )).decode()
             export_event.save(update_fields=['extra_data'])
 
             # Send a private message notification letting the user who

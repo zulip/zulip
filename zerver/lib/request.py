@@ -15,7 +15,7 @@ from typing import (
     overload,
 )
 
-import ujson
+import orjson
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -296,7 +296,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
             if param.argument_type == 'body':
                 try:
-                    val = ujson.loads(request.body)
+                    val = orjson.loads(request.body)
                 except ValueError:
                     raise InvalidJSONError(_("Malformed JSON"))
                 kwargs[func_var_name] = val
@@ -345,7 +345,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
             # Validators are like converters, but they don't handle JSON parsing; we do.
             if param.validator is not None and not default_assigned:
                 try:
-                    val = ujson.loads(val)
+                    val = orjson.loads(val)
                 except Exception:
                     raise JsonableError(_('Argument "{}" is not valid JSON.').format(post_var_name))
 

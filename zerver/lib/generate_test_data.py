@@ -3,14 +3,14 @@ import os
 import random
 from typing import Any, Dict, List
 
-import ujson
+import orjson
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 
 
 def load_config() -> Dict[str, Any]:
-    with open("zerver/tests/fixtures/config.generate_data.json") as infile:
-        config = ujson.load(infile)
+    with open("zerver/tests/fixtures/config.generate_data.json", "rb") as infile:
+        config = orjson.loads(infile.read())
 
     return config
 
@@ -182,8 +182,8 @@ def remove_line_breaks(fh: Any) -> List[str]:
 
 def write_file(paragraphs: List[str], filename: str) -> None:
 
-    with open(filename, "w") as outfile:
-        outfile.write(ujson.dumps(paragraphs))
+    with open(filename, "wb") as outfile:
+        outfile.write(orjson.dumps(paragraphs))
 
 def create_test_data() -> None:
 

@@ -13,7 +13,7 @@ from typing import (
     Union,
 )
 
-import ujson
+import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -340,7 +340,7 @@ def compose_views(
             response = method(request, user_profile, **kwargs)
             if response.status_code != 200:
                 raise JsonableError(response.content)
-            json_dict.update(ujson.loads(response.content))
+            json_dict.update(orjson.loads(response.content))
     return json_success(json_dict)
 
 check_principals: Validator[Union[List[str], List[int]]] = check_union(

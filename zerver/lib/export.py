@@ -16,7 +16,7 @@ import tempfile
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import boto3
-import ujson
+import orjson
 from boto3.resources.base import ServiceResource
 from django.apps import apps
 from django.conf import settings
@@ -344,8 +344,13 @@ def sanity_check_output(data: TableData) -> None:
             logging.warning('??? NO DATA EXPORTED FOR TABLE %s!!!', table)
 
 def write_data_to_file(output_file: Path, data: Any) -> None:
-    with open(output_file, "w") as f:
-        f.write(ujson.dumps(data, indent=4))
+    with open(output_file, "wb") as f:
+        # Because we don't pass a default handler, OPT_PASSTHROUGH_DATETIME
+        # actually causes orjson to raise a TypeError on datetime objects. This
+        # is what we want, because it helps us check that we correctly
+        # post-processed them to serialize to UNIX timestamps rather than ISO
+        # 8601 strings for historical reasons.
+        f.write(orjson.dumps(data, option=orjson.OPT_INDENT_2 | orjson.OPT_PASSTHROUGH_DATETIME))
 
 def make_raw(query: Any, exclude: Optional[List[Field]]=None) -> List[Record]:
     '''
@@ -972,8 +977,8 @@ def export_usermessages_batch(input_path: Path, output_path: Path,
     batch of Message objects and adds the corresponding UserMessage
     objects. (This is called by the export_usermessage_batch
     management command)."""
-    with open(input_path) as input_file:
-        output = ujson.load(input_file)
+    with open(input_path, "rb") as input_file:
+        output = orjson.loads(input_file.read())
     message_ids = [item['id'] for item in output['zerver_message']]
     user_profile_ids = set(output['zerver_userprofile_ids'])
     del output['zerver_userprofile_ids']
@@ -1317,8 +1322,8 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
         if (count % 100 == 0):
             logging.info("Finished %s", count)
 
-    with open(os.path.join(output_dir, "records.json"), "w") as records_file:
-        ujson.dump(records, records_file, indent=4)
+    with open(os.path.join(output_dir, "records.json"), "wb") as records_file:
+        records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
 
 def export_uploads_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
 
@@ -1350,8 +1355,8 @@ def export_uploads_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
 
         if (count % 100 == 0):
             logging.info("Finished %s", count)
-    with open(os.path.join(output_dir, "records.json"), "w") as records_file:
-        ujson.dump(records, records_file, indent=4)
+    with open(os.path.join(output_dir, "records.json"), "wb") as records_file:
+        records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
 
 def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
 
@@ -1396,8 +1401,8 @@ def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
             if (count % 100 == 0):
                 logging.info("Finished %s", count)
 
-    with open(os.path.join(output_dir, "records.json"), "w") as records_file:
-        ujson.dump(records, records_file, indent=4)
+    with open(os.path.join(output_dir, "records.json"), "wb") as records_file:
+        records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
 
 def export_realm_icons(realm: Realm, local_dir: Path, output_dir: Path) -> None:
     records = []
@@ -1414,8 +1419,8 @@ def export_realm_icons(realm: Realm, local_dir: Path, output_dir: Path) -> None:
                       s3_path=icon_relative_path)
         records.append(record)
 
-    with open(os.path.join(output_dir, "records.json"), "w") as records_file:
-        ujson.dump(records, records_file, indent=4)
+    with open(os.path.join(output_dir, "records.json"), "wb") as records_file:
+        records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
 
 def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
 
@@ -1454,8 +1459,8 @@ def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> 
         count += 1
         if (count % 100 == 0):
             logging.info("Finished %s", count)
-    with open(os.path.join(output_dir, "records.json"), "w") as records_file:
-        ujson.dump(records, records_file, indent=4)
+    with open(os.path.join(output_dir, "records.json"), "wb") as records_file:
+        records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
 
 def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
     stats_file = os.path.join(output_dir, 'stats.txt')
@@ -1469,8 +1474,8 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
     with open(stats_file, 'w') as f:
         for fn in fns:
             f.write(os.path.basename(fn) + '\n')
-            with open(fn) as filename:
-                data = ujson.load(filename)
+            with open(fn, "rb") as filename:
+                data = orjson.loads(filename.read())
             for k in sorted(data):
                 f.write(f'{len(data[k]):5} {k}\n')
             f.write('\n')
@@ -1480,8 +1485,8 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
 
         for fn in [avatar_file, uploads_file]:
             f.write(fn+'\n')
-            with open(fn) as filename:
-                data = ujson.load(filename)
+            with open(fn, "rb") as filename:
+                data = orjson.loads(filename.read())
             f.write(f'{len(data):5} records\n')
             f.write('\n')
 
@@ -1810,7 +1815,7 @@ def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
         if export.extra_data is not None:
             pending = False
 
-            export_data = ujson.loads(export.extra_data)
+            export_data = orjson.loads(export.extra_data)
             deleted_timestamp = export_data.get('deleted_timestamp')
             failed_timestamp = export_data.get('failed_timestamp')
             export_path = export_data.get('export_path')

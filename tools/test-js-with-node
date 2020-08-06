@@ -17,7 +17,7 @@ from tools.lib import sanity_check
 sanity_check.check_venv(__file__)
 
 # Import this after we do the sanity_check so it doesn't crash.
-import ujson
+import orjson
 from zulint.printer import BOLDRED, CYAN, ENDC, GREEN
 
 INDEX_JS = 'frontend_tests/zjsunit/index.js'
@@ -267,8 +267,8 @@ def check_line_coverage(fn: str, line_coverage: Dict[Any, Any], line_mapping: Di
 def read_coverage() -> Any:
     coverage_json = None
     try:
-        with open(NODE_COVERAGE_PATH) as f:
-            coverage_json = ujson.load(f)
+        with open(NODE_COVERAGE_PATH, "rb") as f:
+            coverage_json = orjson.loads(f.read())
     except OSError:
         print(NODE_COVERAGE_PATH + " doesn't exist. Cannot enforce fully covered files.")
         raise

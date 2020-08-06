@@ -4,7 +4,7 @@ import re
 import subprocess
 from typing import Optional
 
-import ujson
+import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -34,7 +34,7 @@ def webathena_kerberos_login(request: HttpRequest, user_profile: UserProfile,
         return json_error(_("Webathena login not enabled"))
 
     try:
-        parsed_cred = ujson.loads(cred)
+        parsed_cred = orjson.loads(cred)
         user = parsed_cred["cname"]["nameString"][0]
         if user in kerberos_alter_egos:
             user = kerberos_alter_egos[user]

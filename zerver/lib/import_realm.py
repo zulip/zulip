@@ -5,7 +5,7 @@ import shutil
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import boto3
-import ujson
+import orjson
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.db import connection
@@ -240,14 +240,14 @@ def fix_customprofilefield(data: TableData) -> None:
 
     for item in data['zerver_customprofilefieldvalue']:
         if item['field_id'] in field_type_USER_id_list:
-            old_user_id_list = ujson.loads(item['value'])
+            old_user_id_list = orjson.loads(item['value'])
 
             new_id_list = re_map_foreign_keys_many_to_many_internal(
                 table='zerver_customprofilefieldvalue',
                 field_name='value',
                 related_table='user_profile',
                 old_id_list=old_user_id_list)
-            item['value'] = ujson.dumps(new_id_list)
+            item['value'] = orjson.dumps(new_id_list).decode()
 
 def fix_message_rendered_content(realm: Realm,
                                  sender_map: Dict[int, Record],
@@ -614,8 +614,8 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
         logging.info("Importing uploaded files")
 
     records_filename = os.path.join(import_dir, "records.json")
-    with open(records_filename) as records_file:
-        records: List[Dict[str, Any]] = ujson.load(records_file)
+    with open(records_filename, "rb") as records_file:
+        records: List[Dict[str, Any]] = orjson.loads(records_file.read())
     timestamp = datetime_to_timestamp(timezone_now())
 
     re_map_foreign_keys_internal(records, 'records', 'realm_id', related_table="realm",
@@ -795,8 +795,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
         create_internal_realm()
 
     logging.info("Importing realm data from %s", realm_data_filename)
-    with open(realm_data_filename) as f:
-        data = ujson.load(f)
+    with open(realm_data_filename, "rb") as f:
+        data = orjson.loads(f.read())
     remove_denormalized_recipient_column_from_data(data)
 
     sort_by_date = data.get('sort_by_date', False)
@@ -1073,8 +1073,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
         raise Exception("Missing attachment.json file!")
 
     logging.info("Importing attachment data from %s", fn)
-    with open(fn) as f:
-        data = ujson.load(f)
+    with open(fn, "rb") as f:
+        data = orjson.loads(f.read())
 
     import_attachments(data)
 
@@ -1149,8 +1149,8 @@ def get_incoming_message_ids(import_dir: Path,
         if not os.path.exists(message_filename):
             break
 
-        with open(message_filename) as f:
-            data = ujson.load(f)
+        with open(message_filename, "rb") as f:
+            data = orjson.loads(f.read())
 
         # Aggressively free up memory.
         del data['zerver_usermessage']
@@ -1192,8 +1192,8 @@ def import_message_data(realm: Realm,
         if not os.path.exists(message_filename):
             break
 
-        with open(message_filename) as f:
-            data = ujson.load(f)
+        with open(message_filename, "rb") as f:
+            data = orjson.loads(f.read())
 
         logging.info("Importing message dump %s", message_filename)
         re_map_foreign_keys(data, 'zerver_message', 'sender', related_table="user_profile")
@@ -1311,8 +1311,8 @@ def import_analytics_data(realm: Realm, import_dir: Path) -> None:
         return
 
     logging.info("Importing analytics data from %s", analytics_filename)
-    with open(analytics_filename) as f:
-        data = ujson.load(f)
+    with open(analytics_filename, "rb") as f:
+        data = orjson.loads(f.read())
 
     # Process the data through the fixer functions.
     fix_datetime_fields(data, 'analytics_realmcount')

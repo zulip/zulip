@@ -101,9 +101,7 @@ sourcemap
 tornado==4.*  # https://github.com/zulip/zulip/issues/8913
 
 # Fast JSON parser
-# Forked for an issue related to unpaired Unicode surrogates:
-# https://github.com/zulip/zulip/issues/6332, https://github.com/esnme/ultrajson/pull/284
-https://github.com/zulip/ultrajson/archive/70ac02becc3e11174cd5072650f885b30daab8a8.zip#egg=ujson==1.35+git
+orjson
 
 # Django extension for serving webpack modules
 django-webpack4-loader

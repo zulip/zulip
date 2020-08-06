@@ -2,7 +2,7 @@ import base64
 import urllib
 from io import StringIO
 
-import ujson
+import orjson
 from django.conf import settings
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -40,7 +40,7 @@ class ThumbnailTest(ZulipTestCase):
 
         result = self.client_post("/json/user_uploads", {'file': fp})
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
+        json = orjson.loads(result.content)
         self.assertIn("uri", json)
         uri = json["uri"]
         base = '/user_uploads/'
@@ -165,7 +165,7 @@ class ThumbnailTest(ZulipTestCase):
 
         result = self.client_post("/json/user_uploads", {'file': fp})
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
+        json = orjson.loads(result.content)
         self.assertIn("uri", json)
         uri = json["uri"]
         base = '/user_uploads/'
@@ -192,7 +192,7 @@ class ThumbnailTest(ZulipTestCase):
 
         result = self.client_post("/json/user_uploads", {'file': fp})
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
+        json = orjson.loads(result.content)
         self.assertIn("uri", json)
         uri = json["uri"]
 
@@ -262,7 +262,7 @@ class ThumbnailTest(ZulipTestCase):
 
         result = self.client_post("/json/user_uploads", {'file': fp})
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
+        json = orjson.loads(result.content)
         self.assertIn("uri", json)
         uri = json["uri"]
         base = '/user_uploads/'
@@ -306,7 +306,7 @@ class ThumbnailTest(ZulipTestCase):
 
         result = self.client_post("/json/user_uploads", {'file': fp})
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
+        json = orjson.loads(result.content)
         self.assertIn("uri", json)
         uri = json["uri"]
         base = '/user_uploads/'
@@ -338,7 +338,7 @@ class ThumbnailTest(ZulipTestCase):
 
         result = self.client_post("/json/user_uploads", {'file': fp})
         self.assert_json_success(result)
-        json = ujson.loads(result.content)
+        json = orjson.loads(result.content)
         self.assertIn("uri", json)
         uri = json["uri"]
         base = '/user_uploads/'

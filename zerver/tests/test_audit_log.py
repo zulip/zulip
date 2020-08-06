@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Any, Dict, Union
 
-import ujson
+import orjson
 from django.contrib.auth.password_validation import validate_password
 from django.utils.timezone import now as timezone_now
 
@@ -81,7 +81,7 @@ class TestRealmAuditLog(ZulipTestCase):
         for event in RealmAuditLog.objects.filter(
                 realm=realm, acting_user=user, modified_user=user, modified_stream=None,
                 event_time__gte=now, event_time__lte=now+timedelta(minutes=60)):
-            extra_data = ujson.loads(event.extra_data)
+            extra_data = orjson.loads(event.extra_data)
             self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
             self.assertNotIn(RealmAuditLog.OLD_VALUE, extra_data)
 
@@ -102,7 +102,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.USER_ROLE_CHANGED,
                 realm=realm, modified_user=user_profile, acting_user=acting_user,
                 event_time__gte=now, event_time__lte=now+timedelta(minutes=60)):
-            extra_data = ujson.loads(event.extra_data)
+            extra_data = orjson.loads(event.extra_data)
             self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
             self.assertIn(RealmAuditLog.OLD_VALUE, extra_data)
             self.assertIn(RealmAuditLog.NEW_VALUE, extra_data)
@@ -149,7 +149,7 @@ class TestRealmAuditLog(ZulipTestCase):
         start = timezone_now()
         new_name = 'George Hamletovich'
         self.login('iago')
-        req = dict(full_name=ujson.dumps(new_name))
+        req = dict(full_name=orjson.dumps(new_name).decode())
         result = self.client_patch('/json/users/{}'.format(self.example_user("hamlet").id), req)
         self.assertTrue(result.status_code == 200)
         query = RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
@@ -228,12 +228,12 @@ class TestRealmAuditLog(ZulipTestCase):
         realm = get_realm('zulip')
         do_deactivate_realm(realm)
         log_entry = RealmAuditLog.objects.get(realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED)
-        extra_data = ujson.loads(log_entry.extra_data)
+        extra_data = orjson.loads(log_entry.extra_data)
         self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
 
         do_reactivate_realm(realm)
         log_entry = RealmAuditLog.objects.get(realm=realm, event_type=RealmAuditLog.REALM_REACTIVATED)
-        extra_data = ujson.loads(log_entry.extra_data)
+        extra_data = orjson.loads(log_entry.extra_data)
         self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
 
     def test_create_stream_if_needed(self) -> None:
@@ -268,7 +268,7 @@ class TestRealmAuditLog(ZulipTestCase):
         realm_audit_logs = RealmAuditLog.objects.filter(realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
                                                         event_time__gte=now, acting_user=user)
         self.assertEqual(realm_audit_logs.count(), 1)
-        extra_data = ujson.loads(realm_audit_logs[0].extra_data)
+        extra_data = orjson.loads(realm_audit_logs[0].extra_data)
         expected_new_value = auth_method_dict
         self.assertEqual(extra_data[RealmAuditLog.OLD_VALUE], expected_old_value)
         self.assertEqual(extra_data[RealmAuditLog.NEW_VALUE], expected_new_value)
@@ -305,7 +305,7 @@ class TestRealmAuditLog(ZulipTestCase):
         realm_audit_logs = RealmAuditLog.objects.filter(realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
                                                         event_time__gte=now, acting_user=user).order_by("id")
         self.assertEqual(realm_audit_logs.count(), 2)
-        self.assertEqual([ujson.loads(entry.extra_data) for entry in realm_audit_logs],
+        self.assertEqual([orjson.loads(entry.extra_data) for entry in realm_audit_logs],
                          values_expected)
 
     def test_set_realm_notifications_stream(self) -> None:
@@ -320,11 +320,11 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(RealmAuditLog.objects.filter(
             realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
             event_time__gte=now, acting_user=user,
-            extra_data=ujson.dumps({
+            extra_data=orjson.dumps({
                 RealmAuditLog.OLD_VALUE: old_value,
                 RealmAuditLog.NEW_VALUE: stream.id,
                 'property': 'notifications_stream',
-            })).count(), 1)
+            }).decode()).count(), 1)
 
     def test_set_realm_signup_notifications_stream(self) -> None:
         now = timezone_now()
@@ -338,11 +338,11 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(RealmAuditLog.objects.filter(
             realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
             event_time__gte=now, acting_user=user,
-            extra_data=ujson.dumps({
+            extra_data=orjson.dumps({
                 RealmAuditLog.OLD_VALUE: old_value,
                 RealmAuditLog.NEW_VALUE: stream.id,
                 'property': 'signup_notifications_stream',
-            })).count(), 1)
+            }).decode()).count(), 1)
 
     def test_change_icon_source(self) -> None:
         test_start = timezone_now()
@@ -389,7 +389,7 @@ class TestRealmAuditLog(ZulipTestCase):
             self.assertEqual(RealmAuditLog.objects.filter(
                 realm=user.realm, event_type=RealmAuditLog.SUBSCRIPTION_PROPERTY_CHANGED,
                 event_time__gte=now, acting_user=user, modified_user=user,
-                extra_data=ujson.dumps(expected_extra_data)).count(), 1)
+                extra_data=orjson.dumps(expected_extra_data).decode()).count(), 1)
             self.assertEqual(getattr(sub, property), value)
 
     def test_change_default_streams(self) -> None:
@@ -402,10 +402,10 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(RealmAuditLog.objects.filter(
             realm=user.realm, event_type=RealmAuditLog.USER_DEFAULT_SENDING_STREAM_CHANGED,
             event_time__gte=now, acting_user=user,
-            extra_data=ujson.dumps({
+            extra_data=orjson.dumps({
                 RealmAuditLog.OLD_VALUE: old_value,
                 RealmAuditLog.NEW_VALUE: stream.id,
-            })).count(), 1)
+            }).decode()).count(), 1)
         self.assertEqual(user.default_sending_stream, stream)
 
         old_value = user.default_events_register_stream_id
@@ -413,10 +413,10 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(RealmAuditLog.objects.filter(
             realm=user.realm, event_type=RealmAuditLog.USER_DEFAULT_REGISTER_STREAM_CHANGED,
             event_time__gte=now, acting_user=user,
-            extra_data=ujson.dumps({
+            extra_data=orjson.dumps({
                 RealmAuditLog.OLD_VALUE: old_value,
                 RealmAuditLog.NEW_VALUE: stream.id,
-            })).count(), 1)
+            }).decode()).count(), 1)
         self.assertEqual(user.default_events_register_stream, stream)
 
         old_value = user.default_all_public_streams
@@ -424,10 +424,10 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(RealmAuditLog.objects.filter(
             realm=user.realm, event_type=RealmAuditLog.USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED,
             event_time__gte=now, acting_user=user,
-            extra_data=ujson.dumps({
+            extra_data=orjson.dumps({
                 RealmAuditLog.OLD_VALUE: old_value,
                 RealmAuditLog.NEW_VALUE: False
-            })).count(), 1)
+            }).decode()).count(), 1)
         self.assertEqual(user.default_all_public_streams, False)
 
     def test_rename_stream(self) -> None:
@@ -439,10 +439,10 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(RealmAuditLog.objects.filter(
             realm=user.realm, event_type=RealmAuditLog.STREAM_NAME_CHANGED,
             event_time__gte=now, acting_user=user, modified_stream=stream,
-            extra_data=ujson.dumps({
+            extra_data=orjson.dumps({
                 RealmAuditLog.OLD_VALUE: old_name,
                 RealmAuditLog.NEW_VALUE: 'updated name'
-            })).count(), 1)
+            }).decode()).count(), 1)
         self.assertEqual(stream.name, 'updated name')
 
     def test_change_notification_settings(self) -> None:
@@ -467,5 +467,5 @@ class TestRealmAuditLog(ZulipTestCase):
             self.assertEqual(RealmAuditLog.objects.filter(
                 realm=user.realm, event_type=RealmAuditLog.USER_NOTIFICATION_SETTINGS_CHANGED,
                 event_time__gte=now, acting_user=user, modified_user=user,
-                extra_data=ujson.dumps(expected_extra_data)).count(), 1)
+                extra_data=orjson.dumps(expected_extra_data).decode()).count(), 1)
             self.assertEqual(getattr(user, setting), value)

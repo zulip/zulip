@@ -31,7 +31,7 @@ import re
 from datetime import datetime
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Union, cast, overload
 
-import ujson
+import orjson
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import ugettext as _
@@ -315,7 +315,7 @@ def validate_choice_field(var_name: str, field_data: str, value: object) -> str:
     choice field. This is not used to validate admin data.
     """
     s = check_string(var_name, value)
-    field_data_dict = ujson.loads(field_data)
+    field_data_dict = orjson.loads(field_data)
     if s not in field_data_dict:
         msg = _("'{value}' is not a valid choice for '{field_name}'.")
         raise ValidationError(msg.format(value=value, field_name=var_name))

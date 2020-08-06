@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 
-import ujson
+import orjson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
@@ -56,7 +56,7 @@ def get_recipients_text(recipients: List[str]) -> str:
 @has_request_variables
 def api_hellosign_webhook(request: HttpRequest, user_profile: UserProfile,
                           payload: Dict[str, Dict[str, Any]]=REQ(
-                              whence='json', converter=ujson.loads)) -> HttpResponse:
+                              whence='json', converter=orjson.loads)) -> HttpResponse:
     if "signature_request" in payload:
         body = get_message_body(payload)
         topic = payload['signature_request']['title']

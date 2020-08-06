@@ -4,8 +4,8 @@ import re
 from subprocess import CalledProcessError, check_output
 from typing import Any, Dict, List
 
+import orjson
 import polib
-import ujson
 from django.conf import settings
 from django.conf.locale import LANG_INFO
 from django.core.management.base import CommandParser
@@ -38,8 +38,8 @@ class Command(compilemessages.Command):
         path = join(deploy_root, 'locale', 'language_options.json')
         output_path = join(deploy_root, 'locale', 'language_name_map.json')
 
-        with open(path) as reader:
-            languages = ujson.load(reader)
+        with open(path, "rb") as reader:
+            languages = orjson.loads(reader.read())
             lang_list = []
             for lang_info in languages['languages']:
                 lang_info['name'] = lang_info['name_local']
@@ -48,9 +48,13 @@ class Command(compilemessages.Command):
 
             lang_list.sort(key=lambda lang: lang['name'])
 
-        with open(output_path, 'w') as output_file:
-            ujson.dump({'name_map': lang_list}, output_file, indent=4, sort_keys=True)
-            output_file.write('\n')
+        with open(output_path, 'wb') as output_file:
+            output_file.write(
+                orjson.dumps(
+                    {'name_map': lang_list},
+                    option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS,
+                )
+            )
 
     def get_po_filename(self, locale_path: str, locale: str) -> str:
         po_template = '{}/{}/LC_MESSAGES/django.po'
@@ -145,15 +149,15 @@ class Command(compilemessages.Command):
         total = len(po.translated_entries()) + not_translated
 
         # frontend stats
-        with open(self.get_json_filename(locale_path, locale)) as reader:
-            for key, value in ujson.load(reader).items():
+        with open(self.get_json_filename(locale_path, locale), "rb") as reader:
+            for key, value in orjson.loads(reader.read()).items():
                 total += 1
                 if value == '':
                     not_translated += 1
 
         # mobile stats
-        with open(os.path.join(locale_path, 'mobile_info.json')) as mob:
-            mobile_info = ujson.load(mob)
+        with open(os.path.join(locale_path, 'mobile_info.json'), "rb") as mob:
+            mobile_info = orjson.loads(mob.read())
         try:
             info = mobile_info[locale]
         except KeyError:

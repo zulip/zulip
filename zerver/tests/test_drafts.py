@@ -2,7 +2,7 @@ import time
 from copy import deepcopy
 from typing import Any, Dict, List
 
-import ujson
+import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Draft
@@ -18,7 +18,7 @@ class DraftCreationTests(ZulipTestCase):
         self.assertEqual(Draft.objects.count(), 0)
 
         # Now send a POST request to the API endpoint.
-        payload = {"drafts": ujson.dumps(draft_dicts)}
+        payload = {"drafts": orjson.dumps(draft_dicts).decode()}
         resp = self.api_post(hamlet, "/api/v1/drafts", payload)
         self.assert_json_success(resp)
 
@@ -35,7 +35,7 @@ class DraftCreationTests(ZulipTestCase):
         self.assertEqual(Draft.objects.count(), 0)
 
         # Now send a POST request to the API endpoint.
-        payload = {"drafts": ujson.dumps(draft_dicts)}
+        payload = {"drafts": orjson.dumps(draft_dicts).decode()}
         resp = self.api_post(hamlet, "/api/v1/drafts", payload)
         self.assert_json_error(resp, expected_message)
 
@@ -172,7 +172,7 @@ class DraftCreationTests(ZulipTestCase):
         self.assertEqual(Draft.objects.count(), 0)
 
         current_time = round(time.time(), 6)
-        payload = {"drafts": ujson.dumps(draft_dicts)}
+        payload = {"drafts": orjson.dumps(draft_dicts).decode()}
         resp = self.api_post(hamlet, "/api/v1/drafts", payload)
         self.assert_json_success(resp)
 
@@ -321,9 +321,9 @@ class DraftEditTests(ZulipTestCase):
             "content": "The API should be good",
             "timestamp": 1595505700.85247
         }
-        resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": ujson.dumps([draft_dict])})
+        resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": orjson.dumps([draft_dict]).decode()})
         self.assert_json_success(resp)
-        new_draft_id = ujson.loads(resp.content)["ids"][0]
+        new_draft_id = orjson.loads(resp.content)["ids"][0]
 
         # Change the draft data.
         draft_dict["content"] = "The API needs to be structured yet simple to use."
@@ -333,7 +333,7 @@ class DraftEditTests(ZulipTestCase):
 
         # Update this change in the backend.
         resp = self.api_patch(hamlet, f"/api/v1/drafts/{new_draft_id}",
-                              {"draft": ujson.dumps(draft_dict)})
+                              {"draft": orjson.dumps(draft_dict).decode()})
         self.assert_json_success(resp)
 
         # Now make sure that the change was made successfully.
@@ -356,7 +356,7 @@ class DraftEditTests(ZulipTestCase):
             "timestamp": 1595505700.85247
         }
         resp = self.api_patch(hamlet, "/api/v1/drafts/999999999",
-                              {"draft": ujson.dumps(draft_dict)})
+                              {"draft": orjson.dumps(draft_dict).decode()})
         self.assert_json_error(resp, "Draft does not exist", status_code=404)
 
         # Now make sure that no changes were made.
@@ -378,9 +378,9 @@ class DraftEditTests(ZulipTestCase):
             "content": "The API should be good",
             "timestamp": 1595505700.85247
         }
-        resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": ujson.dumps([draft_dict])})
+        resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": orjson.dumps([draft_dict]).decode()})
         self.assert_json_success(resp)
-        new_draft_id = ujson.loads(resp.content)["ids"][0]
+        new_draft_id = orjson.loads(resp.content)["ids"][0]
 
         # Change the draft data.
         modified_draft_dict = deepcopy(draft_dict)
@@ -389,7 +389,7 @@ class DraftEditTests(ZulipTestCase):
         # Update this change in the backend as a different user.
         zoe = self.example_user("ZOE")
         resp = self.api_patch(zoe, f"/api/v1/drafts/{new_draft_id}",
-                              {"draft": ujson.dumps(draft_dict)})
+                              {"draft": orjson.dumps(draft_dict).decode()})
         self.assert_json_error(resp, "Draft does not exist", status_code=404)
 
         # Now make sure that no changes were made.
@@ -414,9 +414,9 @@ class DraftDeleteTests(ZulipTestCase):
             "content": "The API should be good",
             "timestamp": 1595505700.85247
         }
-        resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": ujson.dumps([draft_dict])})
+        resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": orjson.dumps([draft_dict]).decode()})
         self.assert_json_success(resp)
-        new_draft_id = ujson.loads(resp.content)["ids"][0]
+        new_draft_id = orjson.loads(resp.content)["ids"][0]
 
         # Make sure that exactly 1 draft exists now.
         self.assertEqual(Draft.objects.count(), 1)
@@ -457,9 +457,9 @@ class DraftDeleteTests(ZulipTestCase):
             "content": "The API should be good",
             "timestamp": 1595505700.85247
         }
-        resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": ujson.dumps([draft_dict])})
+        resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": orjson.dumps([draft_dict]).decode()})
         self.assert_json_success(resp)
-        new_draft_id = ujson.loads(resp.content)["ids"][0]
+        new_draft_id = orjson.loads(resp.content)["ids"][0]
 
         # Delete this draft in the backend as a different user.
         zoe = self.example_user("ZOE")
@@ -505,7 +505,7 @@ class DraftFetchTest(ZulipTestCase):
                 "timestamp": 1595479021.439161,
             },
         ]
-        payload = {"drafts": ujson.dumps(draft_dicts)}
+        payload = {"drafts": orjson.dumps(draft_dicts).decode()}
         resp = self.api_post(hamlet, "/api/v1/drafts", payload)
         self.assert_json_success(resp)
 
@@ -520,7 +520,7 @@ class DraftFetchTest(ZulipTestCase):
                 "timestamp": 1595479019.439159,
             },
         ]
-        payload = {"drafts": ujson.dumps(zoe_draft_dicts)}
+        payload = {"drafts": orjson.dumps(zoe_draft_dicts).decode()}
         resp = self.api_post(zoe, "/api/v1/drafts", payload)
         self.assert_json_success(resp)
 
@@ -530,7 +530,7 @@ class DraftFetchTest(ZulipTestCase):
         # his drafts and exactly as he made them.
         resp = self.api_get(hamlet, "/api/v1/drafts")
         self.assert_json_success(resp)
-        data = ujson.loads(resp.content)
+        data = orjson.loads(resp.content)
         self.assertEqual(data["count"], 3)
 
         first_draft_id = Draft.objects.order_by("id")[0].id

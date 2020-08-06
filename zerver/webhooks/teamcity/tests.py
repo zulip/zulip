@@ -1,4 +1,4 @@
-import ujson
+import orjson
 
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import WebhookTestCase
@@ -35,7 +35,7 @@ class TeamcityHookTests(WebhookTestCase):
 
     def test_teamcity_personal(self) -> None:
         expected_message = "Your personal build for Project :: Compile build 5535 - CL 123456 is broken with status Exit code 1 (new)! :thumbs_down: See [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv) and [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)."
-        payload = ujson.dumps(ujson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, 'personal')))
+        payload = orjson.dumps(orjson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, 'personal')))
         self.client_post(self.url, payload, content_type="application/json")
         msg = self.get_last_message()
 

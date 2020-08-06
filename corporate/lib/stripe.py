@@ -6,8 +6,8 @@ from decimal import Decimal
 from functools import wraps
 from typing import Callable, Dict, Optional, Tuple, TypeVar, cast
 
+import orjson
 import stripe
-import ujson
 from django.conf import settings
 from django.core.signing import Signer
 from django.db import transaction
@@ -297,10 +297,10 @@ def make_end_of_cycle_updates_if_needed(plan: CustomerPlan,
             RealmAuditLog.objects.create(
                 realm=new_plan.customer.realm, event_time=event_time,
                 event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN,
-                extra_data=ujson.dumps({
+                extra_data=orjson.dumps({
                     "monthly_plan_id": plan.id,
                     "annual_plan_id": new_plan.id,
-                })
+                }).decode()
             )
             return new_plan, new_plan_ledger_entry
 
@@ -347,6 +347,11 @@ def compute_plan_parameters(
         period_end = billing_cycle_anchor + timedelta(days=settings.FREE_TRIAL_DAYS)
         next_invoice_date = period_end
     return billing_cycle_anchor, next_invoice_date, period_end, price_per_license
+
+def decimal_to_float(obj: object) -> object:
+    if isinstance(obj, Decimal):
+        return float(obj)
+    raise TypeError  # nocoverage
 
 # Only used for cloud signups
 @catch_stripe_errors
@@ -424,7 +429,7 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
         RealmAuditLog.objects.create(
             realm=realm, acting_user=user, event_time=billing_cycle_anchor,
             event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED,
-            extra_data=ujson.dumps(plan_params))
+            extra_data=orjson.dumps(plan_params, default=decimal_to_float).decode())
 
     if not free_trial:
         stripe.InvoiceItem.create(

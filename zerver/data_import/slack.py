@@ -7,8 +7,8 @@ from collections import defaultdict
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 from urllib.parse import urlencode
 
+import orjson
 import requests
-import ujson
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
@@ -728,7 +728,7 @@ def channel_message_to_zerver_message(realm_id: int,
                 message['text'], users, added_channels, slack_user_id_to_zulip_user_id)
         except Exception:
             print("Slack message unexpectedly missing text representation:")
-            print(ujson.dumps(message, indent=4))
+            print(orjson.dumps(message, option=orjson.OPT_INDENT_2).decode())
             continue
         rendered_content = None
 
@@ -1120,8 +1120,8 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     logging.info("Zulip data dump created at %s", output_dir)
 
 def get_data_file(path: str) -> Any:
-    with open(path) as fp:
-        data = ujson.load(fp)
+    with open(path, "rb") as fp:
+        data = orjson.loads(fp.read())
         return data
 
 def log_token_warning(token: str) -> None:

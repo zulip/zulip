@@ -3,7 +3,7 @@ from typing import Any, Dict, Sequence
 from unittest import mock
 from urllib.parse import urlsplit
 
-import ujson
+import orjson
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import override_settings
@@ -28,7 +28,7 @@ class DocPageTest(ZulipTestCase):
             return
         print("Error processing URL:", url)
         if response.get('Content-Type') == 'application/json':
-            content = ujson.loads(response.content)
+            content = orjson.loads(response.content)
             print()
             print("======================================================================")
             print("ERROR: {}".format(content.get('msg')))

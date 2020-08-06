@@ -8,7 +8,7 @@ from email.policy import default
 from email.utils import formataddr, parseaddr
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
-import ujson
+import orjson
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.management import CommandError
@@ -187,7 +187,7 @@ def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[
         type=EMAIL_TYPES[template_name],
         scheduled_timestamp=timezone_now() + delay,
         realm=realm,
-        data=ujson.dumps(email_fields))
+        data=orjson.dumps(email_fields).decode())
 
     # We store the recipients in the ScheduledEmail object itself,
     # rather than the JSON data object, so that we can find and clear
@@ -241,7 +241,7 @@ def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
         del job['to_user_id']
 
 def deliver_email(email: ScheduledEmail) -> None:
-    data = ujson.loads(email.data)
+    data = orjson.loads(email.data)
     if email.users.exists():
         data['to_user_ids'] = [user.id for user in email.users.all()]
     if email.address is not None:

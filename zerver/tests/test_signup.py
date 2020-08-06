@@ -6,7 +6,7 @@ import urllib
 from typing import Any, List, Optional, Sequence
 from unittest.mock import MagicMock, patch
 
-import ujson
+import orjson
 from django.conf import settings
 from django.contrib.auth.views import INTERNAL_RESET_URL_TOKEN
 from django.contrib.contenttypes.models import ContentType
@@ -820,7 +820,7 @@ class InviteUserBase(ZulipTestCase):
             stream_ids.append(self.get_stream_id(stream_name))
         return self.client_post("/json/invites",
                                 {"invitee_emails": invitee_emails,
-                                 "stream_ids": ujson.dumps(stream_ids),
+                                 "stream_ids": orjson.dumps(stream_ids).decode(),
                                  "invite_as": invite_as})
 
 class InviteUserTest(InviteUserBase):
@@ -1710,7 +1710,7 @@ class InvitationsTestCase(InviteUserBase):
 
         result = self.client_get("/json/invites")
         self.assertEqual(result.status_code, 200)
-        invites = ujson.loads(result.content)["invites"]
+        invites = orjson.loads(result.content)["invites"]
         self.assertEqual(len(invites), 2)
 
         self.assertFalse(invites[0]["is_multiuse"])
@@ -2141,7 +2141,7 @@ class MultiuseInviteTest(ZulipTestCase):
         stream_ids = [stream.id for stream in streams]
 
         result = self.client_post('/json/invites/multiuse',
-                                  {"stream_ids": ujson.dumps(stream_ids)})
+                                  {"stream_ids": orjson.dumps(stream_ids).decode()})
         self.assert_json_success(result)
 
         invite_link = result.json()["invite_link"]
@@ -2168,12 +2168,12 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_multiuse_link_for_inviting_as_owner(self) -> None:
         self.login('iago')
         result = self.client_post('/json/invites/multiuse',
-                                  {"invite_as": ujson.dumps(PreregistrationUser.INVITE_AS['REALM_OWNER'])})
+                                  {"invite_as": orjson.dumps(PreregistrationUser.INVITE_AS['REALM_OWNER']).decode()})
         self.assert_json_error(result, "Must be an organization owner")
 
         self.login('desdemona')
         result = self.client_post('/json/invites/multiuse',
-                                  {"invite_as": ujson.dumps(PreregistrationUser.INVITE_AS['REALM_OWNER'])})
+                                  {"invite_as": orjson.dumps(PreregistrationUser.INVITE_AS['REALM_OWNER']).decode()})
         self.assert_json_success(result)
 
         invite_link = result.json()["invite_link"]
@@ -2182,7 +2182,7 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_create_multiuse_link_invalid_stream_api_call(self) -> None:
         self.login('iago')
         result = self.client_post('/json/invites/multiuse',
-                                  {"stream_ids": ujson.dumps([54321])})
+                                  {"stream_ids": orjson.dumps([54321]).decode()})
         self.assert_json_error(result, "Invalid stream id 54321. No invites were sent.")
 
 class EmailUnsubscribeTests(ZulipTestCase):

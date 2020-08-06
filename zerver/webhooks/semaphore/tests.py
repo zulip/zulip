@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-import ujson
+import orjson
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -118,6 +118,6 @@ class SemaphoreHookTests(WebhookTestCase):
 
     def get_unknown_event(self, fixture_name: str) -> str:
         """Return modified payload with revision.reference_type changed"""
-        fixture_data = ujson.loads(self.webhook_fixture_data("semaphore", fixture_name, file_type="json"))
+        fixture_data = orjson.loads(self.webhook_fixture_data("semaphore", fixture_name, file_type="json"))
         fixture_data['revision']['reference_type'] = 'unknown'
         return fixture_data

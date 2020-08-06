@@ -5,7 +5,7 @@ import os
 from email.message import EmailMessage
 from typing import Optional
 
-import ujson
+import orjson
 from django.conf import settings
 from django.core.management.base import CommandParser
 
@@ -80,8 +80,8 @@ Example:
         return os.path.exists(fixture_path)
 
     def _parse_email_json_fixture(self, fixture_path: str) -> EmailMessage:
-        with open(fixture_path) as fp:
-            json_content = ujson.load(fp)[0]
+        with open(fixture_path, "rb") as fp:
+            json_content = orjson.loads(fp.read())[0]
 
         message = EmailMessage()
         message['From'] = json_content['from']

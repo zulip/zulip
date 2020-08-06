@@ -1,7 +1,7 @@
 import datetime
 from typing import Any, Dict, List, Optional, Set
 
-import ujson
+import orjson
 from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
@@ -84,7 +84,7 @@ def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
 
     # Extract the message edit history from the message
     if message.edit_history is not None:
-        message_edit_history = ujson.loads(message.edit_history)
+        message_edit_history = orjson.loads(message.edit_history)
     else:
         message_edit_history = []
 

@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-import ujson
+import orjson
 
 from zerver.lib.bot_lib import EmbeddedBotQuitException
 from zerver.lib.test_classes import ZulipTestCase
@@ -21,7 +21,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
                                                 full_name='Embedded bot',
                                                 bot_type=UserProfile.EMBEDDED_BOT,
                                                 service_name='helloworld',
-                                                config_data=ujson.dumps({'foo': 'bar'}))
+                                                config_data=orjson.dumps({'foo': 'bar'}).decode())
 
     def test_pm_to_embedded_bot(self) -> None:
         assert self.bot_profile is not None

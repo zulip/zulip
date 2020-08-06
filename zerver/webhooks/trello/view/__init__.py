@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 from typing import Any, Mapping, Optional, Tuple
 
-import ujson
+import orjson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view, return_success_on_head_request
@@ -20,7 +20,7 @@ from .card_actions import IGNORED_CARD_ACTIONS, SUPPORTED_CARD_ACTIONS, process_
 def api_trello_webhook(request: HttpRequest,
                        user_profile: UserProfile,
                        payload: Mapping[str, Any]=REQ(argument_type='body')) -> HttpResponse:
-    payload = ujson.loads(request.body)
+    payload = orjson.loads(request.body)
     action_type = payload['action'].get('type')
     try:
         message = get_subject_and_body(payload, action_type)

@@ -17,8 +17,8 @@ from typing import Iterator, List
 from unittest import mock
 
 import django
+import orjson
 import responses
-import ujson
 from django.conf import settings
 from django.test.utils import get_runner
 
@@ -142,16 +142,16 @@ FAILED_TEST_PATH = 'var/last_test_failure.json'
 
 def get_failed_tests() -> List[str]:
     try:
-        with open(FAILED_TEST_PATH) as f:
-            return ujson.load(f)
+        with open(FAILED_TEST_PATH, "rb") as f:
+            return orjson.loads(f.read())
     except OSError:
         print("var/last_test_failure.json doesn't exist; running all tests.")
         return []
 
 def write_failed_tests(failed_tests: List[str]) -> None:
     if failed_tests:
-        with open(FAILED_TEST_PATH, 'w') as f:
-            ujson.dump(failed_tests, f)
+        with open(FAILED_TEST_PATH, 'wb') as f:
+            f.write(orjson.dumps(failed_tests))
 
 @contextlib.contextmanager
 def block_internet() -> Iterator[None]:

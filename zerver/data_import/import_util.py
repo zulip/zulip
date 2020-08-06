@@ -16,8 +16,8 @@ from typing import (
     TypeVar,
 )
 
+import orjson
 import requests
-import ujson
 from django.forms.models import model_to_dict
 
 from zerver.data_import.sequencer import NEXT_ID
@@ -709,5 +709,5 @@ def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
 def create_converted_data_files(data: Any, output_dir: str, file_path: str) -> None:
     output_file = output_dir + file_path
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open(output_file, 'w') as fp:
-        ujson.dump(data, fp, indent=4)
+    with open(output_file, 'wb') as fp:
+        fp.write(orjson.dumps(data, option=orjson.OPT_INDENT_2))
