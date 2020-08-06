@@ -91,6 +91,9 @@ from zerver.lib.actions import (
 )
 from zerver.lib.event_schema import (
     check_alert_words,
+    check_attachment_add,
+    check_attachment_remove,
+    check_attachment_update,
     check_custom_profile_fields,
     check_default_stream_groups,
     check_default_streams,
@@ -1758,23 +1761,6 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(result['max_message_id'], -1)
 
     def test_add_attachment(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('attachment')),
-            ('op', equals('add')),
-            ('attachment', check_dict_only([
-                ('id', check_int),
-                ('name', check_string),
-                ('size', check_int),
-                ('path_id', check_string),
-                ('create_time', check_int),
-                ('messages', check_list(check_dict_only([
-                    ('id', check_int),
-                    ('date_sent', check_int),
-                ]))),
-            ])),
-            ('upload_space_used', equals(6)),
-        ])
-
         self.login('hamlet')
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
@@ -1793,29 +1779,13 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(
             lambda: do_upload(),
             num_events=1, state_change_expected=False)
-        schema_checker('events[0]', events[0])
+
+        check_attachment_add("events[0]", events[0])
+        self.assertEqual(events[0]["upload_space_used"], 6)
 
         # Verify that the DB has the attachment marked as unclaimed
         entry = Attachment.objects.get(file_name='zulip.txt')
         self.assertEqual(entry.is_claimed(), False)
-
-        # Now we send an actual message using this attachment.
-        schema_checker = check_events_dict([
-            ('type', equals('attachment')),
-            ('op', equals('update')),
-            ('attachment', check_dict_only([
-                ('id', check_int),
-                ('name', check_string),
-                ('size', check_int),
-                ('path_id', check_string),
-                ('create_time', check_int),
-                ('messages', check_list(check_dict_only([
-                    ('id', check_int),
-                    ('date_sent', check_int),
-                ]))),
-            ])),
-            ('upload_space_used', equals(6)),
-        ])
 
         hamlet = self.example_user("hamlet")
         self.subscribe(hamlet, "Denmark")
@@ -1824,22 +1794,17 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(
             lambda: self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test"),
             num_events=2)
-        schema_checker('events[0]', events[0])
+
+        check_attachment_update("events[0]", events[0])
+        self.assertEqual(events[0]["upload_space_used"], 6)
 
         # Now remove the attachment
-        schema_checker = check_events_dict([
-            ('type', equals('attachment')),
-            ('op', equals('remove')),
-            ('attachment', check_dict_only([
-                ('id', check_int),
-            ])),
-            ('upload_space_used', equals(0)),
-        ])
-
         events = self.verify_action(
             lambda: self.client_delete(f"/json/attachments/{entry.id}"),
             num_events=1, state_change_expected=False)
-        schema_checker('events[0]', events[0])
+
+        check_attachment_remove("events[0]", events[0])
+        self.assertEqual(events[0]["upload_space_used"], 0)
 
     def test_notify_realm_export(self) -> None:
         do_change_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
