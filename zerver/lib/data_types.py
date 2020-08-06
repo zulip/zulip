@@ -122,6 +122,21 @@ class ListType:
 
 
 @dataclass
+class StringDictType:
+    def check_data(self, var_name: str, val: Dict[Any, Any]) -> None:
+        if not isinstance(val, dict):
+            raise AssertionError(f"{var_name} is not a dictionary")
+
+        for key, value in val.items():
+            if isinstance(key, str) and isinstance(value, str):
+                continue
+            raise AssertionError(f"{var_name} is not a string:string dictionary")
+
+    def schema(self, var_name: str) -> str:
+        return f"{var_name}: string_dict"
+
+
+@dataclass
 class OptionalType:
     sub_type: Any
 
