@@ -34,7 +34,7 @@
   "alternateResult": {
     "fulfillment": {
       "speech": ""
-    },
+    }
   },
   "status": {
     "code": 200,
