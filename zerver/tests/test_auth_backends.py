@@ -3158,15 +3158,13 @@ class JSONFetchAPIKeyTest(ZulipTestCase):
         user = self.example_user('hamlet')
         self.login_user(user)
         result = self.client_post("/json/fetch_api_key",
-                                  dict(user_profile=user,
-                                       password=initial_password(user.delivery_email)))
+                                  dict(password=initial_password(user.delivery_email)))
         self.assert_json_success(result)
 
     def test_not_loggedin(self) -> None:
         user = self.example_user('hamlet')
         result = self.client_post("/json/fetch_api_key",
-                                  dict(user_profile=user,
-                                       password=initial_password(user.delivery_email)))
+                                  dict(password=initial_password(user.delivery_email)))
         self.assert_json_error(result,
                                "Not logged in: API authentication or user session required", 401)
 
@@ -3174,8 +3172,7 @@ class JSONFetchAPIKeyTest(ZulipTestCase):
         user = self.example_user('hamlet')
         self.login_user(user)
         result = self.client_post("/json/fetch_api_key",
-                                  dict(user_profile=user,
-                                       password="wrong"))
+                                  dict(password="wrong"))
         self.assert_json_error(result, "Your username or password is incorrect.", 400)
 
 class FetchAPIKeyTest(ZulipTestCase):
