@@ -261,7 +261,7 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         realm = get_realm('zulip')
         user = self.example_user('hamlet')
-        expected_old_value = {'property': 'authentication_methods', 'value': realm.authentication_methods_dict()}
+        expected_old_value = realm.authentication_methods_dict()
         auth_method_dict = {'Google': False, 'Email': False, 'GitHub': False, 'Apple': False, 'Dev': True, 'SAML': True, 'GitLab': False}
 
         do_set_realm_authentication_methods(realm, auth_method_dict, acting_user=user)
@@ -269,7 +269,7 @@ class TestRealmAuditLog(ZulipTestCase):
                                                         event_time__gte=now, acting_user=user)
         self.assertEqual(realm_audit_logs.count(), 1)
         extra_data = ujson.loads(realm_audit_logs[0].extra_data)
-        expected_new_value = {'property': 'authentication_methods', 'value': auth_method_dict}
+        expected_new_value = auth_method_dict
         self.assertEqual(extra_data[RealmAuditLog.OLD_VALUE], expected_old_value)
         self.assertEqual(extra_data[RealmAuditLog.NEW_VALUE], expected_new_value)
 
@@ -288,26 +288,25 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         realm = get_realm('zulip')
         user = self.example_user('hamlet')
-        old_values_expected = [{'property': 'message_content_edit_limit_seconds', 'value': realm.message_content_edit_limit_seconds},
-                               {'property': 'allow_community_topic_editing', 'value': realm.allow_community_topic_editing}]
+        values_expected = [
+            {
+                'property': 'message_content_edit_limit_seconds',
+                RealmAuditLog.OLD_VALUE: realm.message_content_edit_limit_seconds,
+                RealmAuditLog.NEW_VALUE: 1000,
+            },
+            {
+                'property': 'allow_community_topic_editing',
+                RealmAuditLog.OLD_VALUE: True,
+                RealmAuditLog.NEW_VALUE: False,
+            },
+        ]
 
         do_set_realm_message_editing(realm, True, 1000, False, acting_user=user)
         realm_audit_logs = RealmAuditLog.objects.filter(realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
                                                         event_time__gte=now, acting_user=user).order_by("id")
         self.assertEqual(realm_audit_logs.count(), 2)
-
-        # allow_message_editing was already True.
-        new_values_expected = [{'property': 'message_content_edit_limit_seconds', 'value': 1000},
-                               {'property': 'allow_community_topic_editing', 'value': False}]
-        new_values_seen = []
-        old_values_seen = []
-        for realm_audit_log in realm_audit_logs:
-            extra_data = ujson.loads(realm_audit_log.extra_data)
-            new_values_seen.append(extra_data[RealmAuditLog.NEW_VALUE])
-            old_values_seen.append(extra_data[RealmAuditLog.OLD_VALUE])
-
-        self.assertEqual(new_values_seen, new_values_expected)
-        self.assertEqual(old_values_seen, old_values_expected)
+        self.assertEqual([ujson.loads(entry.extra_data) for entry in realm_audit_logs],
+                         values_expected)
 
     def test_set_realm_notifications_stream(self) -> None:
         now = timezone_now()
@@ -322,8 +321,9 @@ class TestRealmAuditLog(ZulipTestCase):
             realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
             event_time__gte=now, acting_user=user,
             extra_data=ujson.dumps({
-                RealmAuditLog.OLD_VALUE: {'property': 'notifications_stream', 'value': old_value},
-                RealmAuditLog.NEW_VALUE: {'property': 'notifications_stream', 'value': stream.id}
+                RealmAuditLog.OLD_VALUE: old_value,
+                RealmAuditLog.NEW_VALUE: stream.id,
+                'property': 'notifications_stream',
             })).count(), 1)
 
     def test_set_realm_signup_notifications_stream(self) -> None:
@@ -339,8 +339,9 @@ class TestRealmAuditLog(ZulipTestCase):
             realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
             event_time__gte=now, acting_user=user,
             extra_data=ujson.dumps({
-                RealmAuditLog.OLD_VALUE: {'property': 'signup_notifications_stream', 'value': old_value},
-                RealmAuditLog.NEW_VALUE: {'property': 'signup_notifications_stream', 'value': stream.id}
+                RealmAuditLog.OLD_VALUE: old_value,
+                RealmAuditLog.NEW_VALUE: stream.id,
+                'property': 'signup_notifications_stream',
             })).count(), 1)
 
     def test_change_icon_source(self) -> None:
@@ -380,8 +381,11 @@ class TestRealmAuditLog(ZulipTestCase):
             old_value = getattr(sub, property)
             self.assertNotEqual(old_value, value)
             do_change_subscription_property(user, sub, stream, property, value, acting_user=user)
-            expected_extra_data = {RealmAuditLog.OLD_VALUE: {'property': property, 'value': old_value},
-                                   RealmAuditLog.NEW_VALUE: {'property': property, 'value': value}}
+            expected_extra_data = {
+                RealmAuditLog.OLD_VALUE: old_value,
+                RealmAuditLog.NEW_VALUE: value,
+                'property': property,
+            }
             self.assertEqual(RealmAuditLog.objects.filter(
                 realm=user.realm, event_type=RealmAuditLog.SUBSCRIPTION_PROPERTY_CHANGED,
                 event_time__gte=now, acting_user=user, modified_user=user,
@@ -455,8 +459,11 @@ class TestRealmAuditLog(ZulipTestCase):
 
             old_value = getattr(user, setting)
             do_change_notification_settings(user, setting, value, acting_user=user)
-            expected_extra_data = {RealmAuditLog.OLD_VALUE: {'property': setting, 'value': old_value},
-                                   RealmAuditLog.NEW_VALUE: {'property': setting, 'value': value}}
+            expected_extra_data = {
+                RealmAuditLog.OLD_VALUE: old_value,
+                RealmAuditLog.NEW_VALUE: value,
+                'property': setting,
+            }
             self.assertEqual(RealmAuditLog.objects.filter(
                 realm=user.realm, event_type=RealmAuditLog.USER_NOTIFICATION_SETTINGS_CHANGED,
                 event_time__gte=now, acting_user=user, modified_user=user,

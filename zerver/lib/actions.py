@@ -669,8 +669,9 @@ def do_set_realm_property(realm: Realm, name: str, value: Any,
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED, event_time=event_time,
         acting_user=acting_user, extra_data=ujson.dumps({
-            RealmAuditLog.OLD_VALUE: {'property': name, 'value': old_value},
-            RealmAuditLog.NEW_VALUE: {'property': name, 'value': value}
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: value,
+            'property': name,
         }))
 
     if name == "email_address_visibility":
@@ -703,8 +704,9 @@ def do_set_realm_authentication_methods(realm: Realm,
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED, event_time=timezone_now(),
         acting_user=acting_user, extra_data=ujson.dumps({
-            RealmAuditLog.OLD_VALUE: {'property': 'authentication_methods', 'value': old_value},
-            RealmAuditLog.NEW_VALUE: {'property': 'authentication_methods', 'value': updated_value}
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: updated_value,
+            'property': 'authentication_methods',
         }))
     event = dict(
         type="realm",
@@ -738,8 +740,9 @@ def do_set_realm_message_editing(realm: Realm,
         RealmAuditLog.objects.create(
             realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED, event_time=event_time,
             acting_user=acting_user, extra_data=ujson.dumps({
-                RealmAuditLog.OLD_VALUE: {'property': updated_property, 'value': old_values[updated_property]},
-                RealmAuditLog.NEW_VALUE: {'property': updated_property, 'value': updated_value}
+                RealmAuditLog.OLD_VALUE: old_values[updated_property],
+                RealmAuditLog.NEW_VALUE: updated_value,
+                'property': updated_property,
             }))
 
     realm.save(update_fields=list(updated_properties.keys()))
@@ -761,8 +764,9 @@ def do_set_realm_notifications_stream(realm: Realm, stream: Optional[Stream], st
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED, event_time=event_time,
         acting_user=acting_user, extra_data=ujson.dumps({
-            RealmAuditLog.OLD_VALUE: {'property': 'notifications_stream', 'value': old_value},
-            RealmAuditLog.NEW_VALUE: {'property': 'notifications_stream', 'value': stream_id}
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: stream_id,
+            'property': 'notifications_stream',
         }))
 
     event = dict(
@@ -783,8 +787,9 @@ def do_set_realm_signup_notifications_stream(realm: Realm, stream: Optional[Stre
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED, event_time=event_time,
         acting_user=acting_user, extra_data=ujson.dumps({
-            RealmAuditLog.OLD_VALUE: {'property': 'signup_notifications_stream', 'value': old_value},
-            RealmAuditLog.NEW_VALUE: {'property': 'signup_notifications_stream', 'value': stream_id}
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: stream_id,
+            'property': 'signup_notifications_stream',
         }))
     event = dict(
         type="realm",
@@ -3139,8 +3144,9 @@ def do_change_subscription_property(user_profile: UserProfile, sub: Subscription
         realm=user_profile.realm, event_type=RealmAuditLog.SUBSCRIPTION_PROPERTY_CHANGED,
         event_time=event_time, modified_user=user_profile, acting_user=acting_user,
         modified_stream=stream, extra_data=ujson.dumps({
-            RealmAuditLog.OLD_VALUE: {'property': database_property_name, 'value': old_value},
-            RealmAuditLog.NEW_VALUE: {'property': database_property_name, 'value': database_value}
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: database_value,
+            'property': database_property_name,
         }))
 
     event = dict(type="subscription",
@@ -3761,8 +3767,9 @@ def do_change_notification_settings(user_profile: UserProfile, name: str,
     RealmAuditLog.objects.create(
         realm=user_profile.realm, event_type=RealmAuditLog.USER_NOTIFICATION_SETTINGS_CHANGED, event_time=event_time,
         acting_user=acting_user, modified_user=user_profile, extra_data=ujson.dumps({
-            RealmAuditLog.OLD_VALUE: {'property': name, 'value': old_value},
-            RealmAuditLog.NEW_VALUE: {'property': name, 'value': value}
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: value,
+            'property': name,
         }))
 
     send_event(user_profile.realm, event, [user_profile.id])
