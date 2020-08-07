@@ -2,7 +2,7 @@
 
 const settings_config = require("./settings_config");
 
-exports.build_realm_logo_widget = function (upload_function, is_night) {
+exports.build_realm_logo_widget = function (is_night) {
     let logo_section_id = "#realm-day-logo-upload-widget";
     let logo_source = page_params.realm_logo_source;
 
@@ -44,7 +44,6 @@ exports.build_realm_logo_widget = function (upload_function, is_night) {
         get_file_input,
         file_input_error_elem.expectOne(),
         upload_button_elem.expectOne(),
-        upload_function,
         page_params.max_logo_file_size,
     );
 };

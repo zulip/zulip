@@ -152,6 +152,7 @@
                 "home_msg_list": false,
                 "hotspots": false,
                 "i18n": false,
+                "image_upload_widget": false,
                 "info_overlay": false,
                 "input_pill": false,
                 "invite": false,

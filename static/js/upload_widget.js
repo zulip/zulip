@@ -1,5 +1,7 @@
 "use strict";
 
+const ImageUploadWidget = require("./image_upload_widget");
+
 const default_max_file_size = 5;
 
 const supported_types = ["image/jpeg", "image/png", "image/gif", "image/tiff"];
@@ -115,21 +117,25 @@ exports.build_direct_upload_widget = function (
     get_file_input, // function returns a jQuery file input object
     input_error, // jQuery object for error text
     upload_button, // jQuery button to open file dialog
-    upload_function,
     max_file_upload_size,
 ) {
     // default value of max uploaded file size
     max_file_upload_size = max_file_upload_size || default_max_file_size;
     function accept() {
         input_error.hide();
-        const realm_logo_section = upload_button.closest(".image_upload_widget");
-        if (realm_logo_section.attr("id") === "realm-night-logo-upload-widget") {
-            upload_function(get_file_input(), true, false);
-        } else if (realm_logo_section.attr("id") === "realm-day-logo-upload-widget") {
-            upload_function(get_file_input(), false, false);
+        const widget = upload_button.closest(".image_upload_widget").attr("id");
+        let url;
+        let night_param = false;
+        if (widget === "realm-icon-upload-widget") {
+            url = "/json/realm/icon";
         } else {
-            upload_function(get_file_input(), null, true);
+            if (widget === "realm-night-logo-upload-widget") {
+                night_param = true;
+            }
+            url = "/json/realm/logo";
         }
+        const upload_widget = new ImageUploadWidget(widget, url, night_param);
+        upload_widget.upload_image(get_file_input());
     }
 
     function clear() {
