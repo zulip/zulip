@@ -804,28 +804,28 @@ def apply_event(state: Dict[str, Any],
             state['realm_user_groups'] = [ug for ug in state['realm_user_groups']
                                           if ug['id'] != event['group_id']]
     elif event['type'] == 'user_status':
-        user_id = event['user_id']
+        user_id_str = str(event['user_id'])
         user_status = state['user_status']
         away = event.get('away')
         status_text = event.get('status_text')
 
-        if user_id not in user_status:
-            user_status[user_id] = dict()
+        if user_id_str not in user_status:
+            user_status[user_id_str] = dict()
 
         if away is not None:
             if away:
-                user_status[user_id]['away'] = True
+                user_status[user_id_str]['away'] = True
             else:
-                user_status[user_id].pop('away', None)
+                user_status[user_id_str].pop('away', None)
 
         if status_text is not None:
             if status_text == '':
-                user_status[user_id].pop('status_text', None)
+                user_status[user_id_str].pop('status_text', None)
             else:
-                user_status[user_id]['status_text'] = status_text
+                user_status[user_id_str]['status_text'] = status_text
 
-        if not user_status[user_id]:
-            user_status.pop(user_id, None)
+        if not user_status[user_id_str]:
+            user_status.pop(user_id_str, None)
 
         state['user_status'] = user_status
     elif event['type'] == 'has_zoom_token':
