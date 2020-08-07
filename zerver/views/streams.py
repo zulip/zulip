@@ -153,6 +153,8 @@ def add_default_stream(request: HttpRequest,
                        user_profile: UserProfile,
                        stream_id: int=REQ(validator=check_int)) -> HttpResponse:
     (stream, sub) = access_stream_by_id(user_profile, stream_id)
+    if stream.invite_only:
+        return json_error(_("Private streams cannot be made default."))
     do_add_default_stream(stream)
     return json_success()
 
