@@ -78,4 +78,23 @@ exports.get_max_message_id_in_stream = function (stream_id) {
     return max_message_id;
 };
 
+exports.get_topics_for_message_ids = function (message_ids) {
+    const topics = new Map(); // key = stream_id:topic
+    for (const msg_id of message_ids) {
+        // message_store still has data on deleted messages when this runs.
+        const message = message_store.get(msg_id);
+        if (message === undefined) {
+            // We may not have the deleted message cached locally in
+            // message_store; if so, we can just skip processing it.
+            continue;
+        }
+        if (message.type === "stream") {
+            // Create unique keys for stream_id and topic.
+            const topic_key = message.stream_id + ":" + message.topic;
+            topics.set(topic_key, [message.stream_id, message.topic]);
+        }
+    }
+    return topics;
+};
+
 window.message_util = exports;
