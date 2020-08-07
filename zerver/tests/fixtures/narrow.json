@@ -246,7 +246,7 @@
         "accept_events":[
             {
                 "message":null,
-                "flags": [],
+                "flags": []
             }
         ],
         "reject_events":[
