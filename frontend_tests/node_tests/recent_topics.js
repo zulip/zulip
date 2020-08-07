@@ -679,6 +679,9 @@ run_test("test_delete_messages", () => {
         Array.from(all_topics.keys()).toString(),
         "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3",
     );
+    // test deleting a message which is not locally
+    // stored, doesn't raise any errors.
+    rt.update_topics_of_deleted_message_ids([-1]);
 });
 
 run_test("test_topic_edit", () => {
