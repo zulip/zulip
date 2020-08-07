@@ -65,7 +65,7 @@ TAB_DISPLAY_NAMES = {
     'allow-anyone-to-join': 'Allow anyone to join',
     'restrict-by-email-domain': 'Restrict by email domain',
 
-    'zoom': 'Zoom (experimental)',
+    'zoom': 'Zoom',
     'jitsi-meet': 'Jitsi Meet',
     'bigbluebutton': 'Big Blue Button',
     'disable': 'Disabled',
