@@ -617,6 +617,10 @@ exports.initialize = function () {
         settings_toggle.toggle_org_setting_collapse();
     });
 
+    $(".organization-box").on("show.bs.modal", () => {
+        popovers.hide_all();
+    });
+
     $(".alert-box").on("click", ".stackframe .expand", function () {
         $(this).parent().siblings(".code-context").toggle("fast");
     });
