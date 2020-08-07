@@ -5,13 +5,17 @@ const rs = zrequire("recent_senders");
 let next_id = 0;
 const messages = [];
 
-set_global("message_util", {
-    get_messages_in_topic: (stream_id, topic) =>
-        messages.filter(
-            (x) => x.stream_id === stream_id && x.topic.toLowerCase() === topic.toLowerCase(),
-        ),
+set_global("message_store", {
+    get: (msg_id) => messages[msg_id - 1],
 });
-
+set_global("message_list", {
+    all: {
+        all_messages() {
+            return messages;
+        },
+    },
+});
+zrequire("message_util.js");
 run_test("process_message_for_senders", () => {
     const stream1 = 1;
     const stream2 = 2;
@@ -197,14 +201,24 @@ run_test("process_message_for_senders", () => {
     assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "");
     assert.equal(rs.get_topic_recent_senders(stream5, topic4).toString(), "2,3");
 
-    set_global("message_store", {
-        get: () => message1,
+    set_global("message_list", {
+        all: {
+            all_messages() {
+                // messages[0] (message1) and messages[4] (message5) were removed.
+                const reduced_msgs = [...messages];
+                reduced_msgs.splice(4, 1);
+                reduced_msgs.splice(0, 1);
+                return reduced_msgs;
+            },
+        },
     });
-
     assert.equal(rs.get_topic_recent_senders(stream1, topic1).toString(), "2,1");
     // delete message1 and message5 sent by sender1
-    messages.splice(4, 1);
-    messages.splice(0, 1);
     rs.update_topics_of_deleted_message_ids([message1.id, message5.id]);
     assert.equal(rs.get_topic_recent_senders(stream1, topic1).toString(), "2");
+
+    // deleting an old message which isn't locally stored.
+    // We are just testing that it doesn't raise an error;
+    // no changes should take place in this case.
+    rs.update_topics_of_deleted_message_ids([-1]);
 });

@@ -97,7 +97,6 @@ EXEMPT_FILES = {
     'static/js/ready.js',
     'static/js/realm_icon.js',
     'static/js/realm_logo.js',
-    'static/js/recent_senders.js',
     'static/js/recent_topics.js',
     'static/js/reload.js',
     'static/js/reload_state.js',
