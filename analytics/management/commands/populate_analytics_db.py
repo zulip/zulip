@@ -116,9 +116,21 @@ class Command(BaseCommand):
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)
 
+        stat = COUNT_STATS['7day_actives::day']
+        realm_data = {
+            None: self.generate_fixture_data(stat, .2, .07, 3, .3, 6, partial_sum=True),
+        }
+        insert_fixture_data(stat, realm_data, RealmCount)
+        installation_data = {
+            None: self.generate_fixture_data(stat, 2, .7, 4, .3, 6, partial_sum=True),
+        }
+        insert_fixture_data(stat, installation_data, InstallationCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
+
         stat = COUNT_STATS['realm_active_humans::day']
         realm_data = {
-            None: self.generate_fixture_data(stat, .1, .03, 3, .5, 3, partial_sum=True),
+            None: self.generate_fixture_data(stat, .8, .08, 3, .5, 3, partial_sum=True),
         }
         insert_fixture_data(stat, realm_data, RealmCount)
         installation_data = {
@@ -130,11 +142,13 @@ class Command(BaseCommand):
 
         stat = COUNT_STATS['active_users_audit:is_bot:day']
         realm_data = {
-            'false': self.generate_fixture_data(stat, .1, .03, 3.5, .8, 2, partial_sum=True),
+            'false': self.generate_fixture_data(stat, 1, .2, 3.5, .8, 2, partial_sum=True),
+            'true': self.generate_fixture_data(stat, .3, .05, 3, .3, 2, partial_sum=True),
         }
         insert_fixture_data(stat, realm_data, RealmCount)
         installation_data = {
-            'false': self.generate_fixture_data(stat, 1, .3, 6, .8, 2, partial_sum=True),
+            'false': self.generate_fixture_data(stat, 3, 1, 4, .8, 2, partial_sum=True),
+            'true': self.generate_fixture_data(stat, 1, .4, 4, .8, 2, partial_sum=True),
         }
         insert_fixture_data(stat, installation_data, InstallationCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
