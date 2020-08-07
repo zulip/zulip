@@ -399,6 +399,22 @@ class CommonUtils {
         assert.deepStrictEqual(last_n_messages, messages);
     }
 
+    async manage_organization(page) {
+        const menu_selector = "#settings-dropdown";
+        await page.waitForSelector(menu_selector, {visible: true});
+        await page.click(menu_selector);
+
+        const organization_settings = 'a[href="#organization"]';
+        await page.click(organization_settings);
+        await page.waitForSelector("#settings_overlay_container.show", {visible: true});
+
+        const url = page.url();
+        assert(/^http:\/\/[^/]+\/#organization/.test(url), "Unexpected manage organization URL");
+
+        const organization_settings_data_section = "li[data-section='organization-settings']";
+        await page.click(organization_settings_data_section);
+    }
+
     async run_test(test_function) {
         // Pass a page instance to test so we can take
         // a screenshot of it when the test fails.
