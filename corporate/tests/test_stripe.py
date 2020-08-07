@@ -304,7 +304,7 @@ class StripeTestCase(ZulipTestCase):
         host_args = {}
         if realm is not None:  # nocoverage: TODO
             host_args['HTTP_HOST'] = realm.host
-        response = self.client_get("/upgrade/", **host_args)
+        response = self.client_get("/upgrade/", {}, **host_args)
         params: Dict[str, Any] = {
             'schedule': 'annual',
             'signed_seat_count': self.get_signed_seat_count_from_response(response),

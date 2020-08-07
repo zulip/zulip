@@ -3640,7 +3640,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_start_remote_user_sso_with_desktop_app(self) -> None:
         headers = dict(HTTP_USER_AGENT="ZulipElectron/5.0.0")
-        result = self.client_get('/accounts/login/start/sso/', **headers)
+        result = self.client_get('/accounts/login/start/sso/', {}, **headers)
         self.verify_desktop_flow_app_page(result)
 
     def test_login_success(self) -> None:
@@ -4451,7 +4451,9 @@ class TestLDAP(ZulipLDAPTestCase):
 
             # Verify avatar gets created
             self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_USER)
-            result = self.client_get(avatar_url(user_profile))
+            url = avatar_url(user_profile)
+            assert url is not None
+            result = self.client_get(url)
             self.assertEqual(result.status_code, 200)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))

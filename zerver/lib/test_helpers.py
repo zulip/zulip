@@ -19,6 +19,7 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
+    cast,
 )
 from unittest import mock
 
@@ -315,7 +316,7 @@ class MockPythonResponse:
 INSTRUMENTING = os.environ.get('TEST_INSTRUMENT_URL_COVERAGE', '') == 'TRUE'
 INSTRUMENTED_CALLS: List[Dict[str, Any]] = []
 
-UrlFuncT = Callable[..., HttpResponse]  # TODO: make more specific
+UrlFuncT = TypeVar("UrlFuncT", bound=Callable[..., HttpResponse])  # TODO: make more specific
 
 def append_instrumentation_data(data: Dict[str, Any]) -> None:
     INSTRUMENTED_CALLS.append(data)
@@ -324,7 +325,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
     if not INSTRUMENTING:  # nocoverage -- option is always enabled; should we remove?
         return f
     else:
-        def wrapper(self: 'ZulipTestCase', url: str, info: Dict[str, Any]={},
+        def wrapper(self: 'ZulipTestCase', url: str, info: object = {},
                     **kwargs: Any) -> HttpResponse:
             start = time.time()
             result = f(self, url, info, **kwargs)
@@ -345,7 +346,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
                 test_name=test_name,
                 kwargs=kwargs))
             return result
-        return wrapper
+        return cast(UrlFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
 
 def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> None:
     if INSTRUMENTING:

@@ -31,7 +31,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
     def get_app(self) -> Application:
         return create_tornado_application(9993)
 
-    def client_get(self, path: str, **kwargs: Any) -> HTTPResponse:
+    def tornado_client_get(self, path: str, **kwargs: Any) -> HTTPResponse:
         self.add_session_cookie(kwargs)
         kwargs['skip_user_agent'] = True
         self.set_http_headers(kwargs)
@@ -77,8 +77,11 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         kwargs['headers'] = headers
 
     def create_queue(self, **kwargs: Any) -> str:
-        response = self.client_get('/json/events?dont_block=true', subdomain="zulip",
-                                   skip_user_agent=True)
+        response = self.tornado_client_get(
+            '/json/events?dont_block=true',
+            subdomain="zulip",
+            skip_user_agent=True,
+        )
         self.assertEqual(response.code, 200)
         body = ujson.loads(response.body)
         self.assertEqual(body['events'], [])

@@ -164,8 +164,15 @@ class ZulipTestCase(TestCase):
         url = url.replace("/json/", "/").replace("/api/v1/", "/")
         return (url, data)
 
-    def validate_api_response_openapi(self, url: str, method: str, result: HttpResponse, data: Dict[str, Any],
-                                      http_headers: Dict[str, Any], intentionally_undocumented: Optional[bool] = False) -> None:
+    def validate_api_response_openapi(
+        self,
+        url: str,
+        method: str,
+        result: HttpResponse,
+        data: Union[str, bytes, Dict[str, Any]],
+        http_headers: Dict[str, Any],
+        intentionally_undocumented: bool = False,
+    ) -> None:
         """
         Validates all API responses received by this test against Zulip's API documentation,
         declared in zerver/openapi/zulip.yaml.  This powerful test lets us use Zulip's
@@ -256,7 +263,13 @@ class ZulipTestCase(TestCase):
         return django_client.head(url, encoded, **kwargs)
 
     @instrument_url
-    def client_post(self, url: str, info: Dict[str, Any]={}, intentionally_undocumented: bool=False, **kwargs: Any) -> HttpResponse:
+    def client_post(
+        self,
+        url: str,
+        info: Union[str, bytes, Dict[str, Any]] = {},
+        **kwargs: Any,
+    ) -> HttpResponse:
+        intentionally_undocumented: bool = kwargs.pop("intentionally_undocumented", False)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
         result = django_client.post(url, info, **kwargs)
@@ -278,7 +291,8 @@ class ZulipTestCase(TestCase):
         return match.func(req)
 
     @instrument_url
-    def client_get(self, url: str, info: Dict[str, Any]={}, intentionally_undocumented: bool=False, **kwargs: Any) -> HttpResponse:
+    def client_get(self, url: str, info: Dict[str, Any] = {}, **kwargs: Any) -> HttpResponse:
+        intentionally_undocumented: bool = kwargs.pop("intentionally_undocumented", False)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
         result = django_client.get(url, info, **kwargs)
@@ -832,7 +846,7 @@ class ZulipTestCase(TestCase):
             self.assertEqual(x["name"], y.name)
 
     def send_json_payload(self, user_profile: UserProfile, url: str,
-                          payload: Union[str, Dict[str, Any]],
+                          payload: Union[bytes, str, Dict[str, Any]],
                           stream_name: Optional[str]=None, **post_params: Any) -> Message:
         if stream_name is not None:
             self.subscribe(user_profile, stream_name)
