@@ -5,7 +5,6 @@ import traceback
 from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Union
 
 from django.conf import settings
-from django.core.exceptions import DisallowedHost
 from django.core.handlers.wsgi import WSGIRequest
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
@@ -385,32 +384,28 @@ class FlushDisplayRecipientCache(MiddlewareMixin):
         return response
 
 class HostDomainMiddleware(MiddlewareMixin):
-    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
-        if getattr(response, "asynchronous", False):
-            # This special Tornado "asynchronous" response is
-            # discarded after going through this code path as Tornado
-            # intends to block, so we stop here to avoid unnecessary work.
-            return response
+    def process_request(self, request: HttpRequest) -> Optional[HttpResponse]:
+        # Match against ALLOWED_HOSTS, which is rather permissive;
+        # failure will raise DisallowedHost, which is a 400.
+        request.get_host()
 
-        try:
-            request.get_host()
-        except DisallowedHost:
-            # If we get a DisallowedHost exception trying to access
-            # the host, (1) the request is failed anyway and so the
-            # below code will do nothing, and (2) the below will
-            # trigger a recursive exception, breaking things, so we
-            # just return here.
-            return response
+        # This check is important to avoid doing the extra work of
+        # `get_realm` (which does a database query that could be
+        # problematic for Tornado).  Also the error page below is only
+        # appropriate for a page visited in a browser, not the API.
+        #
+        # API authentication will end up checking for an invalid
+        # realm, and throw a JSON-format error if appropriate.
+        if request.path.startswith(("/static/", "/api/", "/json/")):
+            return None
 
-        if (not request.path.startswith("/static/") and not request.path.startswith("/api/") and
-                not request.path.startswith("/json/")):
-            subdomain = get_subdomain(request)
-            if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
-                try:
-                    get_realm(subdomain)
-                except Realm.DoesNotExist:
-                    return render(request, "zerver/invalid_realm.html", status=404)
-        return response
+        subdomain = get_subdomain(request)
+        if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
+            try:
+                request.realm = get_realm(subdomain)
+            except Realm.DoesNotExist:
+                return render(request, "zerver/invalid_realm.html", status=404)
+        return None
 
 class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
     """

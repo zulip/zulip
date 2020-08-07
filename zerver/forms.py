@@ -343,12 +343,7 @@ class OurAuthenticationForm(AuthenticationForm):
 
         if username is not None and password:
             subdomain = get_subdomain(self.request)
-            try:
-                realm = get_realm(subdomain)
-            except Realm.DoesNotExist:
-                logging.warning("User %s attempted password login to nonexistent subdomain %s",
-                                username, subdomain)
-                raise ValidationError("Realm does not exist")
+            realm = get_realm(subdomain)
 
             return_data: Dict[str, Any] = {}
             try:

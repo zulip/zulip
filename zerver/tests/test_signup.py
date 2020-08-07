@@ -627,12 +627,8 @@ class LoginTest(ZulipTestCase):
         self.assert_logged_in_user_id(None)
 
     def test_login_invalid_subdomain(self) -> None:
-        with self.assertLogs(level='WARNING') as warn_log:
-            result = self.login_with_return(self.example_email("hamlet"), "xxx",
-                                            subdomain="invalid")
-        self.assertEqual(warn_log.output, [
-            'WARNING:root:User hamlet@zulip.com attempted password login to nonexistent subdomain invalid'
-        ])
+        result = self.login_with_return(self.example_email("hamlet"), "xxx",
+                                        subdomain="invalid")
         self.assertEqual(result.status_code, 404)
         self.assert_in_response("There is no Zulip organization hosted at this subdomain.", result)
         self.assert_logged_in_user_id(None)
@@ -2407,9 +2403,7 @@ class RealmCreationTest(ZulipTestCase):
 
         result = self.submit_reg_form_for_user(email, password,
                                                realm_subdomain = string_id,
-                                               realm_name=realm_name,
-                                               # Pass HTTP_HOST for the target subdomain
-                                               HTTP_HOST=string_id + ".testserver")
+                                               realm_name=realm_name)
         self.assertEqual(result.status_code, 302)
 
         result = self.client_get(result.url, subdomain=string_id)
@@ -2447,8 +2441,7 @@ class RealmCreationTest(ZulipTestCase):
 
         result = self.submit_reg_form_for_user(email, password,
                                                realm_subdomain = string_id,
-                                               realm_name=realm_name,
-                                               HTTP_HOST=string_id + ".testserver")
+                                               realm_name=realm_name)
         self.assertEqual(result.status_code, 302)
 
         result = self.client_get(result.url, subdomain=string_id)
