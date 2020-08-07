@@ -301,7 +301,10 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
 
     assert len({stat.frequency for stat in stats}) == 1
     end_times = time_range(start, end, stats[0].frequency, min_length)
-    data: Dict[str, Any] = {'end_times': end_times, 'frequency': stats[0].frequency}
+    data: Dict[str, Any] = {
+        'end_times': [int(end_time.timestamp()) for end_time in end_times],
+        'frequency': stats[0].frequency,
+    }
 
     aggregation_level = {
         InstallationCount: 'everyone',
