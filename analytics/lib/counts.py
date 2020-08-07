@@ -665,6 +665,10 @@ def get_count_stats(realm: Optional[Realm]=None) -> Dict[str, CountStat]:
                   sql_data_collector(
                       UserCount, check_useractivityinterval_by_user_query(realm), None),
                   CountStat.DAY, interval=timedelta(days=1)-UserActivityInterval.MIN_INTERVAL_LENGTH),
+        CountStat('7day_actives::day',
+                  sql_data_collector(
+                      UserCount, check_useractivityinterval_by_user_query(realm), None),
+                  CountStat.DAY, interval=timedelta(days=7)-UserActivityInterval.MIN_INTERVAL_LENGTH),
         CountStat('15day_actives::day',
                   sql_data_collector(
                       UserCount, check_useractivityinterval_by_user_query(realm), None),
