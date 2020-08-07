@@ -181,8 +181,8 @@ def normalize_fixture_data(decorated_function: CallableT,
                 if match not in normalized_values[pattern]:
                     normalized_values[pattern][match] = translation % (len(normalized_values[pattern]) + 1,)
                 file_content = file_content.replace(match, normalized_values[pattern][match])
-        file_content = re.sub(r'(?<="risk_score": )(\d+)', '00', file_content)
-        file_content = re.sub(r'(?<="times_redeemed": )(\d+)', '00', file_content)
+        file_content = re.sub(r'(?<="risk_score": )(\d+)', '0', file_content)
+        file_content = re.sub(r'(?<="times_redeemed": )(\d+)', '0', file_content)
         file_content = re.sub(r'(?<="idempotency-key": )"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f-]*)"',
                               '"00000000-0000-0000-0000-000000000000"', file_content)
         # Dates

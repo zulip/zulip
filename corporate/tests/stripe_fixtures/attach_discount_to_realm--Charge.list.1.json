@@ -41,7 +41,7 @@
         "network_status": "approved_by_network",
         "reason": null,
         "risk_level": "normal",
-        "risk_score": 00,
+        "risk_score": 0,
         "seller_message": "Payment complete.",
         "type": "authorized"
       },

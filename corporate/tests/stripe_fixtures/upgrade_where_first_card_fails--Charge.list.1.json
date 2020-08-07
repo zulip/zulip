@@ -41,7 +41,7 @@
         "network_status": "declined_by_network",
         "reason": "generic_decline",
         "risk_level": "normal",
-        "risk_score": 00,
+        "risk_score": 0,
         "seller_message": "The bank did not return any further details with this decline.",
         "type": "issuer_declined"
       },
