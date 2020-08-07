@@ -9,6 +9,6 @@
     "ticket_status":"Pending",
     "ticket_priority":"High",
     "requester_name":"Requester ☃ Bob",
-    "requester_email":"requester-bob@example.com",
+    "requester_email":"requester-bob@example.com"
     }
 }
