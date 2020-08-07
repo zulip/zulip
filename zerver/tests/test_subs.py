@@ -1770,23 +1770,17 @@ class DefaultStreamTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertFalse(stream_name in self.get_default_stream_names(user_profile.realm))
 
-        # Test admin can't add unsubscribed private stream
+        # Test admin can't access unsubscribed private stream for adding.
         stream_name = "private_stream"
         stream = self.make_stream(stream_name, invite_only=True)
         self.subscribe(self.example_user('iago'), stream_name)
         result = self.client_post('/json/default_streams', dict(stream_id=stream.id))
         self.assert_json_error(result, "Invalid stream id")
 
+        # Test admin can't add subscribed private stream also.
         self.subscribe(user_profile, stream_name)
         result = self.client_post('/json/default_streams', dict(stream_id=stream.id))
-        self.assert_json_success(result)
-        self.assertTrue(stream_name in self.get_default_stream_names(user_profile.realm))
-
-        # Test admin can remove unsubscribed private stream
-        self.unsubscribe(user_profile, stream_name)
-        result = self.client_delete('/json/default_streams', dict(stream_id=stream.id))
-        self.assert_json_success(result)
-        self.assertFalse(stream_name in self.get_default_stream_names(user_profile.realm))
+        self.assert_json_error(result, "Private streams cannot be made default.")
 
     def test_guest_user_access_to_streams(self) -> None:
         user_profile = self.example_user("polonius")
