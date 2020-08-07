@@ -237,19 +237,7 @@ exports.topic_in_search_results = function (keyword, stream, topic) {
 };
 
 exports.update_topics_of_deleted_message_ids = function (message_ids) {
-    const topics_to_rerender = new Map();
-    for (const msg_id of message_ids) {
-        const message = message_store.get(msg_id);
-        if (message === undefined) {
-            // We may not have the deleted message cached locally in
-            // message_store; if so, we can just skip processing it.
-            continue;
-        }
-        if (message.type === "stream") {
-            const topic_key = get_topic_key(message.stream_id, message.topic);
-            topics_to_rerender.set(topic_key, [message.stream_id, message.topic]);
-        }
-    }
+    const topics_to_rerender = message_util.get_topics_for_message_ids(message_ids);
 
     for (const [stream_id, topic] of topics_to_rerender.values()) {
         topics.delete(get_topic_key(stream_id, topic));
