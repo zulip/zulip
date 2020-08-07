@@ -11,7 +11,7 @@
       "program": "CROND",
       "severity": "Info",
       "facility": "Cron",
-      "message": "message body",
+      "message": "message body"
     },
     {
       "id": 7711562567655424,
@@ -24,7 +24,7 @@
       "program": "CROND",
       "severity": "Info",
       "facility": "Cron",
-      "message": "A short event",
+      "message": "A short event"
     }
   ],
   "saved_search": {
