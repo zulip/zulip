@@ -431,12 +431,12 @@ def get_custom_profile_field_values(custom_profile_field_values:
     for profile_field in custom_profile_field_values:
         user_id = profile_field.user_profile_id
         if profile_field.field.is_renderable():
-            profiles_by_user_id[user_id][profile_field.field_id] = {
+            profiles_by_user_id[user_id][str(profile_field.field_id)] = {
                 "value": profile_field.value,
                 "rendered_value": profile_field.rendered_value,
             }
         else:
-            profiles_by_user_id[user_id][profile_field.field_id] = {
+            profiles_by_user_id[user_id][str(profile_field.field_id)] = {
                 "value": profile_field.value,
             }
     return profiles_by_user_id

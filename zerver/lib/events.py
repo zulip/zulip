@@ -476,12 +476,12 @@ def apply_event(state: Dict[str, Any],
                         custom_field_id = person['custom_profile_field']['id']
                         custom_field_new_value = person['custom_profile_field']['value']
                         if 'rendered_value' in person['custom_profile_field']:
-                            p['profile_data'][custom_field_id] = {
+                            p['profile_data'][str(custom_field_id)] = {
                                 'value': custom_field_new_value,
                                 'rendered_value': person['custom_profile_field']['rendered_value'],
                             }
                         else:
-                            p['profile_data'][custom_field_id] = {
+                            p['profile_data'][str(custom_field_id)] = {
                                 'value': custom_field_new_value,
                             }
 
