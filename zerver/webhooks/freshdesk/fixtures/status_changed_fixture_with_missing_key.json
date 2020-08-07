@@ -8,6 +8,6 @@
         "ticket_status":"Waiting on Customer",
         "ticket_priority":"Low",
     "requester_name":"Requester Bob",
-        "requester_email":"requester-bob@example.com",
+        "requester_email":"requester-bob@example.com"
     }
 }

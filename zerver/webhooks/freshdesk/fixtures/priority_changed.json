@@ -9,6 +9,6 @@
         "ticket_status":"Resolved",
         "ticket_priority":"Low",
     "requester_name":"Requester Bob",
-        "requester_email":"requester-bob@example.com",
+        "requester_email":"requester-bob@example.com"
     }
 }
