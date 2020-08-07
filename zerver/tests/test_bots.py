@@ -429,7 +429,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             ),
             event['event'],
         )
-        self.assertEqual(event['users'], {user_profile.id})
+        self.assertEqual(event['users'], [user_profile.id])
 
     def test_add_bot_with_default_sending_stream_private_denied(self) -> None:
         self.login('hamlet')
@@ -504,7 +504,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             ),
             event['event'],
         )
-        self.assertEqual(event['users'], {user_profile.id})
+        self.assertEqual(event['users'], [user_profile.id])
 
     def test_add_bot_with_default_events_register_stream_private_denied(self) -> None:
         self.login('hamlet')

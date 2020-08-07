@@ -1184,5 +1184,5 @@ def send_event(realm: Realm, event: Mapping[str, Any],
     the user/message pair."""
     port = get_tornado_port(realm)
     queue_json_publish(notify_tornado_queue_name(port),
-                       dict(event=event, users=users),
+                       dict(event=event, users=list(users)),
                        lambda *args, **kwargs: send_notification_http(realm, *args, **kwargs))
