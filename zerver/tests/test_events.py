@@ -2019,8 +2019,9 @@ class RealmPropertyActionTest(BaseAction):
                 realm=self.user_profile.realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
                 event_time__gte=now, acting_user=self.user_profile,
                 extra_data=ujson.dumps({
-                    RealmAuditLog.OLD_VALUE: {'property': name, 'value': old_value},
-                    RealmAuditLog.NEW_VALUE: {'property': name, 'value': val}
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: val,
+                    'property': name,
                 })).count(), 1)
             check_realm_update('events[0]', events[0], name)
 
