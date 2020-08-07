@@ -721,7 +721,7 @@ class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_reorder(self) -> None:
         self.login('iago')
         realm = get_realm('zulip')
-        order = (
+        order = list(
             CustomProfileField.objects.filter(realm=realm)
             .order_by('-order')
             .values_list('order', flat=True)
@@ -736,12 +736,11 @@ class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_reorder_duplicates(self) -> None:
         self.login('iago')
         realm = get_realm('zulip')
-        order = (
+        order = list(
             CustomProfileField.objects.filter(realm=realm)
             .order_by('-order')
             .values_list('order', flat=True)
         )
-        order = list(order)
         order.append(4)
         result = self.client_patch("/json/realm/profile_fields",
                                    info={'order': ujson.dumps(order)})
@@ -753,7 +752,7 @@ class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_reorder_unauthorized(self) -> None:
         self.login('hamlet')
         realm = get_realm('zulip')
-        order = (
+        order = list(
             CustomProfileField.objects.filter(realm=realm)
             .order_by('-order')
             .values_list('order', flat=True)
