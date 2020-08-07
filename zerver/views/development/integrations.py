@@ -98,7 +98,7 @@ def check_send_webhook_fixture_message(request: HttpRequest,
                                             custom_headers_dict)
     if response.status_code == 200:
         responses = [{"status_code": response.status_code,
-                      "message": response.content}]
+                      "message": response.content.decode()}]
         return json_success({"responses": responses})
     else:
         return response
@@ -133,5 +133,5 @@ def send_all_webhook_fixture_messages(request: HttpRequest,
         response = send_webhook_fixture_message(url, content, is_json, headers)
         responses.append({"status_code": response.status_code,
                           "fixture_name": fixture,
-                          "message": response.content})
+                          "message": response.content.decode()})
     return json_success({"responses": responses})
