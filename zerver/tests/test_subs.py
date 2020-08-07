@@ -3521,7 +3521,7 @@ class SubscriptionAPITest(ZulipTestCase):
 class GetStreamsTest(ZulipTestCase):
     def test_streams_api_for_bot_owners(self) -> None:
         hamlet = self.example_user('hamlet')
-        test_bot = self.create_test_bot('foo', hamlet, bot_owner=hamlet)
+        test_bot = self.create_test_bot('foo', hamlet)
         assert test_bot is not None
         realm = get_realm('zulip')
         self.login_user(hamlet)
