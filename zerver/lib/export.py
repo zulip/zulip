@@ -298,6 +298,11 @@ DATE_FIELDS: Dict[TableName, List[Field]] = {
     'analytics_streamcount': ['end_time'],
 }
 
+BITHANDLER_FIELDS: Dict[TableName, List[Field]] = {
+    'zerver_analytics': ['authentication_methods'],
+    'zerver_realm': ['authentication_methods'],
+}
+
 def sanity_check_output(data: TableData) -> None:
     # First, we verify that the export tool has a declared
     # configuration for every table declared in the `models.py` files.
@@ -377,6 +382,11 @@ def floatify_datetime_fields(data: TableData, table: TableName) -> None:
                 dt = orig_dt
             utc_naive  = dt.replace(tzinfo=None) - dt.utcoffset()
             item[field] = (utc_naive - datetime.datetime(1970, 1, 1)).total_seconds()
+
+def listify_bithandler_fields(data: TableData, table: TableName) -> None:
+    for item in data[table]:
+        for field in BITHANDLER_FIELDS[table]:
+            item[field] = list(item[field])
 
 class Config:
     '''A Config object configures a single table for exporting (and, maybe
@@ -557,6 +567,8 @@ def export_from_config(response: TableData, config: Config, seed_object: Optiona
     for t in exported_tables:
         if t in DATE_FIELDS:
             floatify_datetime_fields(response, t)
+        if table in BITHANDLER_FIELDS:
+            listify_bithandler_fields(response, table)
 
     # Now walk our children.  It's extremely important to respect
     # the order of children here.
