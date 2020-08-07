@@ -90,7 +90,7 @@ def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
 
     # Fill in all the extra data that will make it usable
     fill_edit_history_entries(message_edit_history, message)
-    return json_success({"message_history": reversed(message_edit_history)})
+    return json_success({"message_history": list(reversed(message_edit_history))})
 
 PROPAGATE_MODE_VALUES = ["change_later", "change_one", "change_all"]
 @has_request_variables
