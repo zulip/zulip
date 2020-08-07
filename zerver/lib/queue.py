@@ -16,7 +16,7 @@ from tornado import ioloop
 from zerver.lib.utils import statsd
 
 MAX_REQUEST_RETRIES = 3
-Consumer = Callable[[BlockingChannel, Basic.Deliver, pika.BasicProperties, str], None]
+Consumer = Callable[[BlockingChannel, Basic.Deliver, pika.BasicProperties, bytes], None]
 
 # This simple queuing library doesn't expose much of the power of
 # rabbitmq/pika's queuing system; its purpose is to just provide an
@@ -140,7 +140,7 @@ class SimpleQueueClient:
         def wrapped_consumer(ch: BlockingChannel,
                              method: Basic.Deliver,
                              properties: pika.BasicProperties,
-                             body: str) -> None:
+                             body: bytes) -> None:
             try:
                 consumer(ch, method, properties, body)
                 ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -163,7 +163,7 @@ class SimpleQueueClient:
         def wrapped_callback(ch: BlockingChannel,
                              method: Basic.Deliver,
                              properties: pika.BasicProperties,
-                             body: str) -> None:
+                             body: bytes) -> None:
             callback(ujson.loads(body))
         self.register_consumer(queue_name, wrapped_callback)
 
@@ -316,7 +316,7 @@ class TornadoQueueClient(SimpleQueueClient):
         def wrapped_consumer(ch: BlockingChannel,
                              method: Basic.Deliver,
                              properties: pika.BasicProperties,
-                             body: str) -> None:
+                             body: bytes) -> None:
             consumer(ch, method, properties, body)
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
