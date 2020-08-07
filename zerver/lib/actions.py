@@ -753,7 +753,7 @@ def do_set_realm_message_editing(realm: Realm,
 
 def do_set_realm_notifications_stream(realm: Realm, stream: Optional[Stream], stream_id: int,
                                       acting_user: Optional[UserProfile]=None) -> None:
-    old_value = getattr(realm, 'notifications_stream')
+    old_value = realm.notifications_stream_id
     realm.notifications_stream = stream
     realm.save(update_fields=['notifications_stream'])
 
@@ -775,7 +775,7 @@ def do_set_realm_notifications_stream(realm: Realm, stream: Optional[Stream], st
 
 def do_set_realm_signup_notifications_stream(realm: Realm, stream: Optional[Stream], stream_id: int,
                                              acting_user: Optional[UserProfile]=None) -> None:
-    old_value = getattr(realm, 'signup_notifications_stream')
+    old_value = realm.signup_notifications_stream_id
     realm.signup_notifications_stream = stream
     realm.save(update_fields=['signup_notifications_stream'])
 
@@ -3423,7 +3423,7 @@ def do_change_plan_type(realm: Realm, plan_type: int) -> None:
 
 def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional[Stream],
                                      acting_user: Optional[UserProfile]=None) -> None:
-    old_value = getattr(user_profile, 'default_sending_stream')
+    old_value = user_profile.default_sending_stream_id
     user_profile.default_sending_stream = stream
     user_profile.save(update_fields=['default_sending_stream'])
 
@@ -3433,7 +3433,7 @@ def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional
         event_time=event_time, modified_user=user_profile,
         acting_user=acting_user, extra_data=ujson.dumps({
             RealmAuditLog.OLD_VALUE: old_value,
-            RealmAuditLog.NEW_VALUE: stream,
+            RealmAuditLog.NEW_VALUE: None if stream is None else stream.id,
         }))
 
     if user_profile.is_bot:
@@ -3452,7 +3452,7 @@ def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional
 def do_change_default_events_register_stream(user_profile: UserProfile,
                                              stream: Optional[Stream],
                                              acting_user: Optional[UserProfile]=None) -> None:
-    old_value = getattr(user_profile, 'default_events_register_stream')
+    old_value = user_profile.default_events_register_stream_id
     user_profile.default_events_register_stream = stream
     user_profile.save(update_fields=['default_events_register_stream'])
 
@@ -3462,7 +3462,7 @@ def do_change_default_events_register_stream(user_profile: UserProfile,
         event_time=event_time, modified_user=user_profile,
         acting_user=acting_user, extra_data=ujson.dumps({
             RealmAuditLog.OLD_VALUE: old_value,
-            RealmAuditLog.NEW_VALUE: stream,
+            RealmAuditLog.NEW_VALUE: None if stream is None else stream.id,
         }))
 
     if user_profile.is_bot:
@@ -3480,7 +3480,7 @@ def do_change_default_events_register_stream(user_profile: UserProfile,
 
 def do_change_default_all_public_streams(user_profile: UserProfile, value: bool,
                                          acting_user: Optional[UserProfile]=None) -> None:
-    old_value = getattr(user_profile, 'default_all_public_streams')
+    old_value = user_profile.default_all_public_streams
     user_profile.default_all_public_streams = value
     user_profile.save(update_fields=['default_all_public_streams'])
 

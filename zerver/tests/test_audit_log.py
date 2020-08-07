@@ -313,7 +313,7 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         realm = get_realm('zulip')
         user = self.example_user('hamlet')
-        old_value = getattr(realm, 'notifications_stream')
+        old_value = realm.notifications_stream_id
         stream_name = 'test'
         stream = self.make_stream(stream_name, realm)
 
@@ -330,7 +330,7 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         realm = get_realm('zulip')
         user = self.example_user('hamlet')
-        old_value = getattr(realm, 'signup_notifications_stream')
+        old_value = realm.signup_notifications_stream_id
         stream_name = 'test'
         stream = self.make_stream(stream_name, realm)
 
@@ -393,29 +393,29 @@ class TestRealmAuditLog(ZulipTestCase):
         user = self.example_user('hamlet')
         stream = get_stream("Denmark", user.realm)
 
-        old_value = getattr(user, 'default_sending_stream')
+        old_value = user.default_sending_stream_id
         do_change_default_sending_stream(user, stream, acting_user=user)
         self.assertEqual(RealmAuditLog.objects.filter(
             realm=user.realm, event_type=RealmAuditLog.USER_DEFAULT_SENDING_STREAM_CHANGED,
             event_time__gte=now, acting_user=user,
             extra_data=ujson.dumps({
                 RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: stream
+                RealmAuditLog.NEW_VALUE: stream.id,
             })).count(), 1)
-        self.assertEqual(getattr(user, 'default_sending_stream'), stream)
+        self.assertEqual(user.default_sending_stream, stream)
 
-        old_value = getattr(user, 'default_events_register_stream')
+        old_value = user.default_events_register_stream_id
         do_change_default_events_register_stream(user, stream, acting_user=user)
         self.assertEqual(RealmAuditLog.objects.filter(
             realm=user.realm, event_type=RealmAuditLog.USER_DEFAULT_REGISTER_STREAM_CHANGED,
             event_time__gte=now, acting_user=user,
             extra_data=ujson.dumps({
                 RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: stream
+                RealmAuditLog.NEW_VALUE: stream.id,
             })).count(), 1)
-        self.assertEqual(getattr(user, 'default_events_register_stream'), stream)
+        self.assertEqual(user.default_events_register_stream, stream)
 
-        old_value = getattr(user, 'default_all_public_streams')
+        old_value = user.default_all_public_streams
         do_change_default_all_public_streams(user, False, acting_user=user)
         self.assertEqual(RealmAuditLog.objects.filter(
             realm=user.realm, event_type=RealmAuditLog.USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED,
@@ -424,7 +424,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 RealmAuditLog.OLD_VALUE: old_value,
                 RealmAuditLog.NEW_VALUE: False
             })).count(), 1)
-        self.assertEqual(getattr(user, 'default_all_public_streams'), False)
+        self.assertEqual(user.default_all_public_streams, False)
 
     def test_rename_stream(self) -> None:
         now = timezone_now()
