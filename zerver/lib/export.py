@@ -279,6 +279,7 @@ ANALYTICS_TABLES = {
 # TODO: This data structure could likely eventually be replaced by
 # inspecting the corresponding Django models
 DATE_FIELDS: Dict[TableName, List[Field]] = {
+    'zerver_analytics': ['date_created'],
     'zerver_attachment': ['create_time'],
     'zerver_message': ['last_edit_time', 'date_sent'],
     'zerver_mutedtopic': ['date_muted'],
@@ -288,6 +289,7 @@ DATE_FIELDS: Dict[TableName, List[Field]] = {
     'zerver_useractivityinterval': ['start', 'end'],
     'zerver_userpresence': ['timestamp'],
     'zerver_userprofile': ['date_joined', 'last_login', 'last_reminder'],
+    'zerver_userprofile_mirrordummy': ['date_joined', 'last_login', 'last_reminder'],
     'zerver_realmauditlog': ['event_time'],
     'zerver_userhotspot': ['timestamp'],
     'analytics_installationcount': ['end_time'],
@@ -469,14 +471,13 @@ def export_from_config(response: TableData, config: Config, seed_object: Optiona
     if context is None:
         context = {}
 
-    if table:
-        exported_tables = [table]
-    else:
-        if config.custom_tables is None:
-            raise AssertionError('''
-                You must specify config.custom_tables if you
-                are not specifying config.table''')
+    if config.custom_tables:
         exported_tables = config.custom_tables
+    else:
+        assert table is not None, '''
+            You must specify config.custom_tables if you
+            are not specifying config.table'''
+        exported_tables = [table]
 
     for t in exported_tables:
         logging.info('Exporting via export_from_config:  %s', t)
@@ -548,12 +549,14 @@ def export_from_config(response: TableData, config: Config, seed_object: Optiona
         query = model.objects.filter(**filter_parms)
         rows = list(query)
 
-    # Post-process rows (which won't apply to custom fetches/concats)
     if rows is not None:
         assert table is not None  # Hint for mypy
         response[table] = make_raw(rows, exclude=config.exclude)
-        if table in DATE_FIELDS:
-            floatify_datetime_fields(response, table)
+
+    # Post-process rows
+    for t in exported_tables:
+        if t in DATE_FIELDS:
+            floatify_datetime_fields(response, t)
 
     # Now walk our children.  It's extremely important to respect
     # the order of children here.
