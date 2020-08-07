@@ -174,6 +174,7 @@ import "../settings_invites.js";
 import "../settings_user_groups.js";
 import "../settings_profile_fields.js";
 import "../settings.js";
+import "../image_upload_widget.js";
 import "../admin.js";
 import "../message_view_header.js";
 import "../bot_data.js";

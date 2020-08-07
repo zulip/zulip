@@ -1,6 +1,6 @@
 "use strict";
 
-exports.build_realm_icon_widget = function (upload_function) {
+exports.build_realm_icon_widget = function () {
     const get_file_input = function () {
         return $("#realm-icon-upload-widget .image_file_input").expectOne();
     };
@@ -25,7 +25,6 @@ exports.build_realm_icon_widget = function (upload_function) {
         get_file_input,
         $("#realm-icon-upload-widget .image_file_input_error").expectOne(),
         $("#realm-icon-upload-widget .image_upload_button").expectOne(),
-        upload_function,
         page_params.max_icon_file_size,
     );
 };
