@@ -19,6 +19,6 @@ def highlight_html_differences(s1: str, s2: str, msg_id: Optional[int]=None) -> 
         elem.tag = 'span'
         elem.set('class', 'highlight_text_inserted')
 
-    retval = lxml.html.tostring(fragment)
+    retval = lxml.html.tostring(fragment, encoding="unicode")
 
     return retval
