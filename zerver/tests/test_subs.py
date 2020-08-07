@@ -633,7 +633,7 @@ class StreamAdminTest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             stream_id = stream_name2_exists.id
             result = self.client_patch(f'/json/streams/{stream_id}',
-                                       {'new_name': ujson.dumps('नया नाम'.encode())})
+                                       {'new_name': ujson.dumps('नया नाम')})
         self.assert_json_success(result)
         # While querying, system can handle unicode strings.
         stream_name_uni_exists = get_stream('नया नाम', realm)
@@ -645,7 +645,7 @@ class StreamAdminTest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             stream_id = stream_name_uni_exists.id
             result = self.client_patch(f'/json/streams/{stream_id}',
-                                       {'new_name': ujson.dumps('नाम में क्या रक्खा हे'.encode())})
+                                       {'new_name': ujson.dumps('नाम में क्या रक्खा हे')})
         self.assert_json_success(result)
         # While querying, system can handle unicode strings.
         self.assertRaises(Stream.DoesNotExist, get_stream, 'नया नाम', realm)
@@ -657,7 +657,7 @@ class StreamAdminTest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             stream_id = stream_name_new_uni_exists.id
             result = self.client_patch(f'/json/streams/{stream_id}',
-                                       {'new_name': ujson.dumps('français'.encode())})
+                                       {'new_name': ujson.dumps('français')})
         self.assert_json_success(result)
         stream_name_fr_exists = get_stream('français', realm)
         self.assertTrue(stream_name_fr_exists)
@@ -666,7 +666,7 @@ class StreamAdminTest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             stream_id = stream_name_fr_exists.id
             result = self.client_patch(f'/json/streams/{stream_id}',
-                                       {'new_name': ujson.dumps('français name'.encode())})
+                                       {'new_name': ujson.dumps('français name')})
         self.assert_json_success(result)
         stream_name_mixed_exists = get_stream('français name', realm)
         self.assertTrue(stream_name_mixed_exists)
