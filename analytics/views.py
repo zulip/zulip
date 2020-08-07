@@ -543,107 +543,71 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
             realm.string_id,
             realm.date_created,
             realm.plan_type,
-            coalesce(user_counts.dau_count, 0) dau_count,
-            coalesce(wau_counts.wau_count, 0) wau_count,
-            (
+            coalesce(wau_table.value, 0) wau_count,
+            coalesce(dau_table.value, 0) dau_count,
+            coalesce(user_count_table.value, 0) user_profile_count,
+            coalesce(bot_count_table.value, 0) bot_count
+        FROM
+            zerver_realm as realm
+            LEFT OUTER JOIN (
                 SELECT
-                    count(*)
-                FROM zerver_userprofile up
-                WHERE up.realm_id = realm.id
-                AND is_active
-                AND not is_bot
-            ) user_profile_count,
-            (
-                SELECT
-                    count(*)
-                FROM zerver_userprofile up
-                WHERE up.realm_id = realm.id
-                AND is_active
-                AND is_bot
-            ) bot_count
-        FROM zerver_realm realm
-        LEFT OUTER JOIN
-            (
-                SELECT
-                    up.realm_id realm_id,
-                    count(distinct(ua.user_profile_id)) dau_count
-                FROM zerver_useractivity ua
-                JOIN zerver_userprofile up
-                    ON up.id = ua.user_profile_id
+                    value _14day_active_humans,
+                    realm_id
+                from
+                    analytics_realmcount
                 WHERE
-                    up.is_active
-                AND (not up.is_bot)
-                AND
-                    query in (
-                        '/json/send_message',
-                        'send_message_backend',
-                        '/api/v1/send_message',
-                        '/json/update_pointer',
-                        '/json/users/me/pointer',
-                        'update_pointer_backend'
-                    )
-                AND
-                    last_visit > now() - interval '1 day'
-                GROUP BY realm_id
-            ) user_counts
-            ON user_counts.realm_id = realm.id
-        LEFT OUTER JOIN
-            (
+                    property = 'realm_active_humans::day'
+                    AND end_time > now() - interval '25 hours'
+            ) as _14day_active_humans_table ON realm.id = _14day_active_humans_table.realm_id
+            LEFT OUTER JOIN (
                 SELECT
-                    realm_id,
-                    count(*) wau_count
-                FROM (
-                    SELECT
-                        realm.id as realm_id,
-                        up.delivery_email
-                    FROM zerver_useractivity ua
-                    JOIN zerver_userprofile up
-                        ON up.id = ua.user_profile_id
-                    JOIN zerver_realm realm
-                        ON realm.id = up.realm_id
-                    WHERE up.is_active
-                    AND (not up.is_bot)
-                    AND
-                        ua.query in (
-                            '/json/send_message',
-                            'send_message_backend',
-                            '/api/v1/send_message',
-                            '/json/update_pointer',
-                            '/json/users/me/pointer',
-                            'update_pointer_backend'
-                        )
-                    GROUP by realm.id, up.delivery_email
-                    HAVING max(last_visit) > now() - interval '7 day'
-                ) as wau_users
-                GROUP BY realm_id
-            ) wau_counts
-            ON wau_counts.realm_id = realm.id
+                    value,
+                    realm_id
+                from
+                    analytics_realmcount
+                WHERE
+                    property = '7day_actives::day'
+                    AND end_time > now() - interval '25 hours'
+            ) as wau_table ON realm.id = wau_table.realm_id
+            LEFT OUTER JOIN (
+                SELECT
+                    value,
+                    realm_id
+                from
+                    analytics_realmcount
+                WHERE
+                    property = '1day_actives::day'
+                    AND end_time > now() - interval '25 hours'
+            ) as dau_table ON realm.id = dau_table.realm_id
+            LEFT OUTER JOIN (
+                SELECT
+                    value,
+                    realm_id
+                from
+                    analytics_realmcount
+                WHERE
+                    property = 'active_users_audit:is_bot:day'
+                    AND subgroup = 'false'
+                    AND end_time > now() - interval '25 hours'
+            ) as user_count_table ON realm.id = user_count_table.realm_id
+            LEFT OUTER JOIN (
+                SELECT
+                    value,
+                    realm_id
+                from
+                    analytics_realmcount
+                WHERE
+                    property = 'active_users_audit:is_bot:day'
+                    AND subgroup = 'true'
+                    AND end_time > now() - interval '25 hours'
+            ) as bot_count_table ON realm.id = bot_count_table.realm_id
         WHERE
-            realm.plan_type = 3
-            OR
-            EXISTS (
-                SELECT *
-                FROM zerver_useractivity ua
-                JOIN zerver_userprofile up
-                    ON up.id = ua.user_profile_id
-                WHERE
-                    up.realm_id = realm.id
-                AND up.is_active
-                AND (not up.is_bot)
-                AND
-                    query in (
-                        '/json/send_message',
-                        '/api/v1/send_message',
-                        'send_message_backend',
-                        '/json/update_pointer',
-                        '/json/users/me/pointer',
-                        'update_pointer_backend'
-                    )
-                AND
-                    last_visit > now() - interval '2 week'
-        )
-        ORDER BY dau_count DESC, string_id ASC
-        ''')
+            _14day_active_humans IS NOT NULL
+            or realm.plan_type = 3
+        ORDER BY
+            dau_count DESC,
+            string_id ASC
+    ''')
 
     cursor = connection.cursor()
     cursor.execute(query)
