@@ -51,6 +51,7 @@ from zerver.lib.actions import (
     do_rename_stream,
     do_send_messages,
     gather_subscriptions,
+    get_default_streams_for_realm,
     get_subscriber_emails,
     internal_prep_private_message,
     internal_prep_stream_message,
@@ -281,7 +282,10 @@ def update_stream_backend(
     # But we require even realm administrators to be actually
     # subscribed to make a private stream public.
     if is_private is not None:
+        default_stream_ids = {s.id for s in get_default_streams_for_realm(stream.realm_id)}
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
+        if is_private and stream.id in default_stream_ids:
+            return json_error(_("Default streams cannot be made private."))
         do_change_stream_invite_only(stream, is_private, history_public_to_subscribers)
     return json_success()
 

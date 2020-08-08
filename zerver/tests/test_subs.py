@@ -416,6 +416,16 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream.invite_only)
         self.assertFalse(stream.history_public_to_subscribers)
 
+        default_stream = self.make_stream('default_stream', realm=realm)
+        do_add_default_stream(default_stream)
+        params = {
+            'stream_name': orjson.dumps('default_stream').decode(),
+            'is_private': orjson.dumps(True).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{default_stream.id}", params)
+        self.assert_json_error(result, "Default streams cannot be made private.")
+        self.assertFalse(default_stream.invite_only)
+
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
         params = {
             'stream_name': orjson.dumps('public_stream_2').decode(),
