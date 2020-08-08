@@ -5,7 +5,7 @@ It will contain schemas (aka validators) for Zulip events.
 
 Right now it's only intended to be used by test code.
 """
-from typing import Any, Callable, Dict, List, Sequence, Set, Tuple, Union
+from typing import Callable, Dict, List, Sequence, Set, Tuple, Union
 
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.validator import (
@@ -223,7 +223,7 @@ _check_reaction = check_events_dict(
 )
 
 
-def check_reaction(var_name: str, event: Dict[str, Any], op: str) -> None:
+def check_reaction(var_name: str, event: Dict[str, object], op: str) -> None:
     _check_reaction(var_name, event)
     assert event["op"] == op
 
@@ -289,9 +289,10 @@ _check_realm_bot_add = check_events_dict(
 )
 
 
-def check_realm_bot_add(var_name: str, event: Dict[str, Any],) -> None:
+def check_realm_bot_add(var_name: str, event: Dict[str, object],) -> None:
     _check_realm_bot_add(var_name, event)
 
+    assert isinstance(event["bot"], dict)
     bot_type = event["bot"]["bot_type"]
 
     services_field = f"{var_name}['bot']['services']"
@@ -367,10 +368,16 @@ _check_realm_bot_update = check_events_dict(
 )
 
 
-def check_realm_bot_update(var_name: str, event: Dict[str, Any], field: str,) -> None:
+def check_realm_bot_update(
+    # Check schema plus the field.
+    var_name: str,
+    event: Dict[str, object],
+    field: str,
+) -> None:
     # Check the overall schema first.
     _check_realm_bot_update(var_name, event)
 
+    assert isinstance(event["bot"], dict)
     assert {"user_id", field} == set(event["bot"].keys())
 
 
@@ -400,7 +407,7 @@ _check_realm_update = check_events_dict(
 )
 
 
-def check_realm_update(var_name: str, event: Dict[str, Any], prop: str,) -> None:
+def check_realm_update(var_name: str, event: Dict[str, object], prop: str,) -> None:
     """
     Realm updates have these two fields:
 
@@ -490,10 +497,11 @@ _check_realm_user_update = check_events_dict(
 
 
 def check_realm_user_update(
-    var_name: str, event: Dict[str, Any], optional_fields: Set[str],
+    var_name: str, event: Dict[str, object], optional_fields: Set[str],
 ) -> None:
     _check_realm_user_update(var_name, event)
 
+    assert isinstance(event["person"], dict)
     keys = set(event["person"].keys()) - {"user_id"}
     assert optional_fields == keys
 
@@ -530,7 +538,7 @@ _check_stream_update = check_events_dict(
 )
 
 
-def check_stream_update(var_name: str, event: Dict[str, Any],) -> None:
+def check_stream_update(var_name: str, event: Dict[str, object],) -> None:
     _check_stream_update(var_name, event)
     prop = event["property"]
     value = event["value"]
@@ -597,10 +605,11 @@ _check_subscription_add = check_events_dict(
 
 
 def check_subscription_add(
-    var_name: str, event: Dict[str, Any], include_subscribers: bool,
+    var_name: str, event: Dict[str, object], include_subscribers: bool,
 ) -> None:
     _check_subscription_add(var_name, event)
 
+    assert isinstance(event["subscriptions"], list)
     for sub in event["subscriptions"]:
         if include_subscribers:
             assert "subscribers" in sub.keys()
@@ -673,7 +682,7 @@ _check_update_display_settings = check_events_dict(
 )
 
 
-def check_update_display_settings(var_name: str, event: Dict[str, Any],) -> None:
+def check_update_display_settings(var_name: str, event: Dict[str, object],) -> None:
     """
     Display setting events have a "setting" field that
     is more specifically typed according to the
@@ -683,6 +692,7 @@ def check_update_display_settings(var_name: str, event: Dict[str, Any],) -> None
     setting_name = event["setting_name"]
     setting = event["setting"]
 
+    assert isinstance(setting_name, str)
     setting_type = UserProfile.property_types[setting_name]
     assert isinstance(setting, setting_type)
 
@@ -703,7 +713,7 @@ _check_update_global_notifications = check_events_dict(
 
 
 def check_update_global_notifications(
-    var_name: str, event: Dict[str, Any], desired_val: Union[bool, int, str],
+    var_name: str, event: Dict[str, object], desired_val: Union[bool, int, str],
 ) -> None:
     """
     See UserProfile.notification_setting_types for
@@ -714,6 +724,7 @@ def check_update_global_notifications(
     setting = event["setting"]
     assert setting == desired_val
 
+    assert isinstance(setting_name, str)
     setting_type = UserProfile.notification_setting_types[setting_name]
     assert isinstance(setting, setting_type)
 
@@ -761,7 +772,7 @@ _check_update_message = check_events_dict(
 
 def check_update_message(
     var_name: str,
-    event: Dict[str, Any],
+    event: Dict[str, object],
     has_content: bool,
     has_topic: bool,
     has_new_stream_id: bool,
@@ -808,7 +819,7 @@ _check_update_message_flags = check_events_dict(
 
 
 def check_update_message_flags(
-    var_name: str, event: Dict[str, Any], operation: str
+    var_name: str, event: Dict[str, object], operation: str
 ) -> None:
     _check_update_message_flags(var_name, event)
     assert event["operation"] == operation
