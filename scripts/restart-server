@@ -78,7 +78,7 @@ logging.info("Stopping server core")
 subprocess.check_call(["supervisorctl", "stop", *core_server_services])
 
 logging.info("Starting server core")
-subprocess.check_call(["supervisorctl", "start", *core_server_services])
+subprocess.check_call(["supervisorctl", "start", *reversed(core_server_services)])
 logging.info("Starting workers")
 subprocess.check_call(["supervisorctl", "start", "zulip-workers:*"])
 
