@@ -419,7 +419,7 @@ exports.fixtures = {
 
     realm_filters: {
         type: "realm_filters",
-        realm_filters: [["#[123]", "ticket %(id)s"]],
+        realm_filters: [["#[123]", "ticket %(id)s", 55]],
     },
 
     realm_user__add: {
