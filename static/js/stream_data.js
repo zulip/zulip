@@ -346,10 +346,7 @@ exports.delete_sub = function (stream_id) {
 
 exports.get_non_default_stream_names = function () {
     let subs = Array.from(stream_info.values());
-    subs = subs.filter(
-        (sub) =>
-            !exports.is_default_stream_id(sub.stream_id) && (sub.subscribed || !sub.invite_only),
-    );
+    subs = subs.filter((sub) => !exports.is_default_stream_id(sub.stream_id) && !sub.invite_only);
     const names = subs.map((sub) => sub.name);
     return names;
 };
