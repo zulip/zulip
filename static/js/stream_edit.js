@@ -495,6 +495,8 @@ function change_stream_privacy(e) {
     const stream_id = $(e.target).data("stream-id");
     const sub = stream_data.get_sub_by_id(stream_id);
     const data = {};
+    const stream_privacy_status = $(".stream-privacy-status");
+    stream_privacy_status.hide();
 
     const privacy_setting = $("#stream_privacy_modal input[name=privacy]:checked").val();
     const stream_post_policy = Number.parseInt(
@@ -560,7 +562,8 @@ function change_stream_privacy(e) {
             $("#stream_privacy_modal").remove();
             // The rest will be done by update stream event we will get.
         },
-        error() {
+        error(xhr) {
+            ui_report.error(i18n.t("Failed"), xhr, stream_privacy_status);
             $("#change-stream-privacy-button").text(i18n.t("Try again"));
         },
     });
