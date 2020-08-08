@@ -533,6 +533,25 @@ def check_realm_export(
     assert has_failed_timestamp == (export["failed_timestamp"] is not None)
 
 
+realm_filter_type = TupleType(
+    [
+        # we should make this an object
+        # see realm_filters_for_realm_remote_cache
+        str,  # pattern
+        str,  # format string
+        int,  # id
+    ]
+)
+
+realm_filters_event = event_dict_type(
+    [
+        # force vertical
+        ("type", Equals("realm_filters")),
+        ("realm_filters", ListType(realm_filter_type)),
+    ]
+)
+check_realm_filters = make_checker(realm_filters_event)
+
 plan_type_extra_data_type = DictType(
     required_keys=[
         # force vertical

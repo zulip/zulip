@@ -108,6 +108,7 @@ from zerver.lib.event_schema import (
     check_realm_bot_remove,
     check_realm_bot_update,
     check_realm_export,
+    check_realm_filters,
     check_realm_update,
     check_realm_user_update,
     check_stream_create,
@@ -148,7 +149,6 @@ from zerver.lib.validator import (
     check_list,
     check_none_or,
     check_string,
-    check_tuple,
     equals,
 )
 from zerver.models import (
@@ -1383,21 +1383,13 @@ class NormalActionsTest(BaseAction):
         regex = "#(?P<id>[123])"
         url = "https://realm.com/my_realm_filter/%(id)s"
 
-        schema_checker = check_events_dict([
-            ('type', equals('realm_filters')),
-            ('realm_filters', check_list(check_tuple([
-                check_string,
-                check_string,
-                check_int,
-            ]))),
-        ])
         events = self.verify_action(
             lambda: do_add_realm_filter(self.user_profile.realm, regex, url))
-        schema_checker('events[0]', events[0])
+        check_realm_filters('events[0]', events[0])
 
         events = self.verify_action(
             lambda: do_remove_realm_filter(self.user_profile.realm, "#(?P<id>[123])"))
-        schema_checker('events[0]', events[0])
+        check_realm_filters('events[0]', events[0])
 
     def test_realm_domain_events(self) -> None:
         schema_checker = check_events_dict([
