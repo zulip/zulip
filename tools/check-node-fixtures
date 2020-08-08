@@ -70,6 +70,7 @@ EXEMPT_OPENAPI_NAMES = [
     "message_event",
     # tuple handling
     "muted_topics_event",
+    "realm_filters_event",
 ]
 
 
