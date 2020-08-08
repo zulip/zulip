@@ -25,6 +25,7 @@ VENV_DEPENDENCIES = [
     "libpq-dev",            # Needed by psycopg2
     "libssl-dev",           # Needed to build pycurl and other libraries
     "libmagic1",            # Used for install python-magic
+    "libyaml-dev",          # For fast YAML parsing in PyYAML
     # Needed by python-xmlsec:
     "libxmlsec1-dev",
     "pkg-config",
@@ -42,6 +43,7 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "zlib-devel",
     "libjpeg-turbo-devel",
     "openldap-devel",
+    "libyaml-devel",
     # Needed by python-xmlsec:
     "gcc"
     "python3-devel",
