@@ -12,7 +12,12 @@ from .config import PRODUCTION
 if TYPE_CHECKING:
     from sentry_sdk._types import Event, Hint
 
-def add_context(event: 'Event', hint: 'Hint') -> 'Event':
+def add_context(event: 'Event', hint: 'Hint') -> Optional['Event']:
+    if "exc_info" in hint:
+        _, exc_value, _ = hint["exc_info"]
+        # Ignore GeneratorExit, KeyboardInterrupt, and SystemExit exceptions
+        if not isinstance(exc_value, Exception):
+            return None
     from zerver.models import get_user_profile_by_id
     with capture_internal_exceptions():
         user_info = event.get("user", {})
