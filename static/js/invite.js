@@ -154,7 +154,6 @@ function prepare_form_to_be_shown() {
 exports.launch = function () {
     $("#submit-invitation").button();
     prepare_form_to_be_shown();
-    autosize($("#invitee_emails").trigger("focus"));
 
     overlays.open_overlay({
         name: "invite",
@@ -163,6 +162,8 @@ exports.launch = function () {
             hashchange.exit_overlay();
         },
     });
+
+    autosize($("#invitee_emails").trigger("focus"));
 };
 
 exports.initialize = function () {
