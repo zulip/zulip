@@ -415,6 +415,33 @@ class CommonUtils {
         await page.click(organization_settings_data_section);
     }
 
+    async select_item_via_typeahead(page, field_selector, str, item) {
+        console.log(`Looking in ${field_selector} to select ${str}, ${item}`);
+        await page.evaluate(
+            (field_selector, str, item) => {
+                // Set the value and then send a bogus keyup event to trigger
+                // the typeahead.
+                $(field_selector)
+                    .trigger("focus")
+                    .val(str)
+                    .trigger($.Event("keyup", {which: 0}));
+
+                // Trigger the typeahead.
+                // Reaching into the guts of Bootstrap Typeahead like this is not
+                // great, but I found it very hard to do it any other way.
+
+                const tah = $(field_selector).data().typeahead;
+                tah.mouseenter({
+                    currentTarget: $('.typeahead:visible li:contains("' + item + '")')[0],
+                });
+                tah.select();
+            },
+            field_selector,
+            str,
+            item,
+        );
+    }
+
     async run_test(test_function) {
         // Pass a page instance to test so we can take
         // a screenshot of it when the test fails.
