@@ -199,8 +199,6 @@ export function close_modal(selector) {
 
     const elem = $(selector).expectOne();
     elem.modal("hide").attr("aria-hidden", true);
-    // Enable mouse events for the background as the modal closes.
-    enable_background_mouse_events();
 }
 
 export function close_active_modal() {

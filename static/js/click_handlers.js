@@ -947,6 +947,11 @@ export function initialize() {
         e.stopPropagation();
     });
 
+    $("body").on("hidden.bs.modal", () => {
+        // Enable mouse events for the background as the modal closes.
+        overlays.enable_background_mouse_events();
+    });
+
     // MAIN CLICK HANDLER
 
     $(document).on("click", (e) => {
@@ -964,12 +969,6 @@ export function initialize() {
             ).has(e.target).length === 0
         ) {
             popovers.hide_all();
-        }
-
-        // If user clicks outside an active modal
-        if ($(".modal.in").has(e.target).length === 0) {
-            // Enable mouse events for the background as the modal closes
-            $(".overlay.show").attr("style", null);
         }
 
         if (compose_state.composing()) {

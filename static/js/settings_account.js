@@ -403,14 +403,6 @@ export function set_up() {
             clear_password_change();
         });
 
-    // If the modal is closed using the 'close' button or the 'Cancel' button
-    $(".modal")
-        .find("[data-dismiss=modal]")
-        .on("click", () => {
-            // Enable mouse events for the background on closing modal
-            $(".overlay.show").attr("style", null);
-        });
-
     $("#change_password_button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
