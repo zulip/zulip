@@ -1088,10 +1088,12 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.setup_gcm_tokens()
         self.make_stream('public_stream')
         self.subscribe(self.user_profile, 'public_stream')
-        with self.assertLogs(level='INFO') as info_logs:
+        logger_string = "zulip.soft_deactivation"
+        with self.assertLogs(logger_string, level='INFO') as info_logs:
             do_soft_deactivate_users([self.user_profile])
         self.assertEqual(info_logs.output, [
-            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+            f"INFO:{logger_string}:Soft Deactivated user {self.user_profile.id}",
+            f"INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process"
         ])
         sender = self.example_user('iago')
         message_id = self.send_stream_message(sender, "public_stream", "test")

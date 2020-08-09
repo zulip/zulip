@@ -32,6 +32,7 @@ from zerver.models import (
 from zerver.views.home import compute_navbar_logo_url
 from zerver.worker.queue_processors import UserActivityWorker
 
+logger_string = "zulip.soft_deactivation"
 
 class HomeTest(ZulipTestCase):
     def test_home(self) -> None:
@@ -906,10 +907,11 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(user_msg_list[-1].content, message)
         self.logout()
 
-        with self.assertLogs(level='INFO') as info_log:
+        with self.assertLogs(logger_string, level='INFO') as info_log:
             do_soft_deactivate_users([long_term_idle_user])
         self.assertEqual(info_log.output, [
-            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+            f'INFO:{logger_string}:Soft Deactivated user {long_term_idle_user.id}',
+            f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process'
         ])
 
         self.login_user(long_term_idle_user)
@@ -930,10 +932,11 @@ class HomeTest(ZulipTestCase):
         # We are sending this message to ensure that long_term_idle_user has
         # at least one UserMessage row.
         self.send_test_message('Testing', sender_name='hamlet')
-        with self.assertLogs(level='INFO') as info_log:
+        with self.assertLogs(logger_string, level='INFO') as info_log:
             do_soft_deactivate_users([long_term_idle_user])
         self.assertEqual(info_log.output, [
-            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+            f'INFO:{logger_string}:Soft Deactivated user {long_term_idle_user.id}',
+            f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process'
         ])
 
         message = 'Test Message 1'
@@ -958,10 +961,11 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(idle_user_msg_list[-1].content, message)
         self.logout()
 
-        with self.assertLogs(level='INFO') as info_log:
+        with self.assertLogs(logger_string, level='INFO') as info_log:
             do_soft_deactivate_users([long_term_idle_user])
         self.assertEqual(info_log.output, [
-            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+            f'INFO:{logger_string}:Soft Deactivated user {long_term_idle_user.id}',
+            f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process'
         ])
 
         message = 'Test Message 3'
