@@ -587,7 +587,6 @@ function change_stream_privacy(e) {
 
     if (Object.keys(data).length === 0) {
         overlays.close_modal("#stream_privacy_modal");
-        $("#stream_privacy_modal").remove();
         return;
     }
 
@@ -596,7 +595,6 @@ function change_stream_privacy(e) {
         data,
         success() {
             overlays.close_modal("#stream_privacy_modal");
-            $("#stream_privacy_modal").remove();
             // The rest will be done by update stream event we will get.
         },
         error(xhr) {
@@ -882,17 +880,12 @@ export function initialize() {
     $("#subscriptions_table").on("click", "#do_deactivate_stream_button", (e) => {
         const stream_id = $(e.target).data("stream-id");
         overlays.close_modal("#deactivation_stream_modal");
-        $("#deactivation_stream_modal").remove();
         if (!stream_id) {
             ui_report.client_error(i18n.t("Invalid stream id"), $(".stream_change_property_info"));
             return;
         }
         const row = $(".stream-row.active");
         delete_stream(stream_id, $(".stream_change_property_info"), row);
-    });
-
-    $("#subscriptions_table").on("hide.bs.modal", "#deactivation_stream_modal", () => {
-        $("#deactivation_stream_modal").remove();
     });
 
     $("#subscriptions_table").on("click", ".stream-row", function (e) {
