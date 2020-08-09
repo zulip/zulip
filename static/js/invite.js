@@ -164,6 +164,13 @@ exports.launch = function () {
     });
 
     autosize($("#invitee_emails").trigger("focus"));
+
+    // Ctrl + Enter key to submit form
+    $("#invite-user").on("keydown", (e) => {
+        if (e.key === "Enter" && e.ctrlKey) {
+            submit_invitation_form();
+        }
+    });
 };
 
 exports.initialize = function () {
