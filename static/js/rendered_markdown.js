@@ -5,7 +5,7 @@ const moment = require("moment");
 /*
     rendered_markdown
 
-    This module provies a single function 'update_elements' to
+    This module provides a single function 'update_elements' to
     update any renamed users/streams/groups etc. and other
     dynamic parts of our rendered messages.
 

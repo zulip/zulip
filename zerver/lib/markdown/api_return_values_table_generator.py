@@ -73,7 +73,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 continue
             if 'oneOf' in return_values[return_value]:
                 # For elements using oneOf there are two descriptions. The first description
-                # should be at level with the oneOf and should containg the basic non-specific
+                # should be at level with the oneOf and should contain the basic non-specific
                 # description of the endpoint. Then for each element of oneOf there is a
                 # specialized description for that particular case. The description used
                 # right below is the main description.
@@ -115,7 +115,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                              ' {event_type} {op}</h3></p></div> \n{description}\n\n\n')
         for events in events_dict['oneOf']:
             # `id` is present in every event so it will be redundant to display
-            # it everytime. So remove it from the dictionary.
+            # it every time. So remove it from the dictionary.
             events['properties'].pop('id')
             event_type: Dict[str, Any] = events['properties'].pop('type')
             event_type_str: str = event_type['enum'][0]

@@ -92,7 +92,7 @@ run_test("finding_related_objects", () => {
     update_message_emoji("foo.png");
     assert.equal(emoji.attr("src"), "foo.png");
 
-    // Sometimes you want to deliberatly test paths that do not find an
+    // Sometimes you want to deliberately test paths that do not find an
     // element. You can pass 'false' as the result for those cases.
     emoji.set_find_results(".random", false);
     assert.equal(emoji.find(".random").length, 0);

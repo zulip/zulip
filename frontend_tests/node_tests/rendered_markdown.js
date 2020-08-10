@@ -237,7 +237,7 @@ run_test("emoji", () => {
 
     assert(called);
 
-    // Set page paramaters back so that test run order is independent
+    // Set page parameters back so that test run order is independent
     page_params.emojiset = "apple";
 });
 

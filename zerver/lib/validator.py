@@ -378,14 +378,14 @@ def to_non_negative_int(s: str, max_int_size: int=2**32-1) -> int:
     return x
 
 def to_positive_or_allowed_int(allowed_integer: int) -> Callable[[str], int]:
-    def convertor(s: str) -> int:
+    def converter(s: str) -> int:
         x = int(s)
         if x == allowed_integer:
             return x
         if x == 0:
             raise ValueError("argument is 0")
         return to_non_negative_int(s)
-    return convertor
+    return converter
 
 def check_string_or_int_list(var_name: str, val: object) -> Union[str, List[int]]:
     if isinstance(val, str):

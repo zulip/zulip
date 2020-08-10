@@ -517,7 +517,7 @@ exports.get_stream_topic_data = (hacky_this) => {
     const opts = {};
     const message_row = hacky_this.$element.closest(".message_row");
     if (message_row.length === 1) {
-        // we are editting a message so we try to use it's keys.
+        // we are editing a message so we try to use it's keys.
         const msg = message_store.get(rows.id(message_row));
         if (msg.type === "stream") {
             opts.stream = msg.stream;

@@ -191,7 +191,7 @@ class ZulipTestCase(TestCase):
         url, query_data = self.extract_api_suffix_url(url)
         if len(query_data) != 0:
             # In some cases the query parameters are defined in the url itself. In such cases
-            # The `data` argument of our function is not used. Hence get `data` arguement
+            # The `data` argument of our function is not used. Hence get `data` argument
             # from url.
             data = query_data
         response_validated = validate_against_openapi_schema(content, url, method, str(result.status_code))

@@ -25,10 +25,10 @@ class Command(ZulipBaseCommand):
                             help='Path to a markdown-format body for the email.')
         parser.add_argument('--subject',
                             type=str,
-                            help='Subject for the email. It can be declarated in markdown file in headers')
+                            help='Subject for the email. It can be declared in markdown file in headers')
         parser.add_argument('--from-name',
                             type=str,
-                            help='From line for the email. It can be declarated in markdown file in headers')
+                            help='From line for the email. It can be declared in markdown file in headers')
         parser.add_argument('--reply-to',
                             type=str,
                             help='Optional reply-to line for the email')

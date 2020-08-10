@@ -817,7 +817,7 @@ class TestCleaningArchive(ArchiveMessagesTestingBase):
 class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
     def fix_ordering_of_result(self, result: List[Tuple[Realm, List[Stream]]]) -> None:
         """
-        This is a helper for giving the struture returned by get_realms_and_streams_for_archiving
+        This is a helper for giving the structure returned by get_realms_and_streams_for_archiving
         a consistent ordering.
         """
         # Sort the list of tuples by realm id:

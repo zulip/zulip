@@ -164,7 +164,7 @@ def build_recipient_and_subscription(
 
     # For streams
 
-    # Initial recipients correspond to intitial streams
+    # Initial recipients correspond to initial streams
     # We enumerate all streams, and build a recipient for each
     # Hence 'recipient_id'=n corresponds to 'stream_id'=n
     for stream in zerver_stream:

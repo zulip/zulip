@@ -7,7 +7,7 @@ const DEFAULTS = {
 };
 
 // ----------------------------------------------------
-// This function describes (programatically) how to use
+// This function describes (programmatically) how to use
 // the list_render widget.
 // ----------------------------------------------------
 

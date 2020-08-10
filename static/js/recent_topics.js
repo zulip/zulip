@@ -87,7 +87,7 @@ function get_topic_key(stream_id, topic) {
 }
 
 exports.process_messages = function (messages) {
-    // FIX: Currently, we do a complete_rerender everytime
+    // FIX: Currently, we do a complete_rerender every time
     // we process a new message.
     // While this is inexpensive and handles all the cases itself,
     // the UX can be bad if user wants to scroll down the list as
@@ -516,7 +516,7 @@ exports.change_focused_element = function (e, input_key) {
                 // Note: current_focus_elem can be different here, so we just
                 // set current_focus_elem to the input box, we don't want .trigger("focus") on
                 // it since it is already focused.
-                // We only do this for search beacuse we don't want the focus to
+                // We only do this for search because we don't want the focus to
                 // go away from the input box when `revive_current_focus` is called
                 // on rerender when user is typing.
                 current_focus_elem = $("#recent_topics_search");
