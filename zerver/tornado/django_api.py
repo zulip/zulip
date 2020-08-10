@@ -5,6 +5,8 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Union
 import requests
 import ujson
 from django.conf import settings
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 from zerver.lib.queue import queue_json_publish
 from zerver.models import Client, Realm, UserProfile
@@ -20,6 +22,15 @@ def requests_client() -> requests.Session:
             # Disable trusting the environment, so requests don't
             # go through any env-configured external proxy.
             c.trust_env = False
+
+    # During restarts, the tornado server may be down briefly
+    retry = Retry(
+        total=3,
+        backoff_factor=1,
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    for scheme in ("https://", "http://"):
+        c.mount(scheme, adapter)
     return c
 
 def request_event_queue(user_profile: UserProfile, user_client: Client, apply_markdown: bool,
