@@ -23,7 +23,7 @@ class TornadoAdapter(HTTPAdapter):
         self,
         request: PreparedRequest,
         stream: bool = False,
-        timeout: Union[None, float, Tuple[float, float], Tuple[float, None]] = None,
+        timeout: Union[None, float, Tuple[float, float], Tuple[float, None]] = 0.5,
         verify: Union[bool, str] = True,
         cert: Union[None, bytes, str, Container[Union[bytes, str]]] = None,
         proxies: Optional[Mapping[str, str]] = None,
