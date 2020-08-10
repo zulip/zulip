@@ -399,15 +399,15 @@ class MessageDict:
 
         if Message.need_to_render_content(rendered_content, rendered_content_version, markdown_version):
             # We really shouldn't be rendering objects in this method, but there is
-            # a scenario where we upgrade the version of markdown and fail to run
+            # a scenario where we upgrade the version of Markdown and fail to run
             # management commands to re-render historical messages, and then we
             # need to have side effects.  This method is optimized to not need full
-            # blown ORM objects, but the markdown renderer is unfortunately highly
+            # blown ORM objects, but the Markdown renderer is unfortunately highly
             # coupled to Message, and we also need to persist the new rendered content.
             # If we don't have a message object passed in, we get one here.  The cost
             # of going to the DB here should be overshadowed by the cost of rendering
             # and updating the row.
-            # TODO: see #1379 to eliminate markdown dependencies
+            # TODO: see #1379 to eliminate Markdown dependencies
             message = Message.objects.select_related().get(id=message_id)
 
             assert message is not None  # Hint for mypy.
@@ -689,7 +689,7 @@ def do_render_markdown(message: Message,
                        realm_alert_words_automaton: Optional[ahocorasick.Automaton]=None,
                        mention_data: Optional[MentionData]=None,
                        email_gateway: bool=False) -> str:
-    """Return HTML for given markdown. Markdown may add properties to the
+    """Return HTML for given Markdown. Markdown may add properties to the
     message object such as `mentions_user_ids`, `mentions_user_group_ids`, and
     `mentions_wildcard`.  These are only on this Django object and are not
     saved in the database.
@@ -702,7 +702,7 @@ def do_render_markdown(message: Message,
     message.links_for_preview = set()
     message.user_ids_with_alert_words = set()
 
-    # DO MAIN WORK HERE -- call markdown to convert
+    # DO MAIN WORK HERE -- call markdown_convert to convert
     rendered_content = markdown_convert(
         content,
         realm_alert_words_automaton=realm_alert_words_automaton,

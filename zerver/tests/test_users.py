@@ -338,7 +338,7 @@ class PermissionTest(ZulipTestCase):
         self.assert_json_error(result, 'Name too short!')
 
     def test_not_allowed_format(self) -> None:
-        # Name of format "Alice|999" breaks in markdown
+        # Name of format "Alice|999" breaks in Markdown
         new_name = 'iago|72'
         self.login('iago')
         req = dict(full_name=ujson.dumps(new_name))
@@ -346,7 +346,7 @@ class PermissionTest(ZulipTestCase):
         self.assert_json_error(result, 'Invalid format!')
 
     def test_allowed_format_complex(self) -> None:
-        # Adding characters after r'|d+' doesn't break markdown
+        # Adding characters after r'|d+' doesn't break Markdown
         new_name = 'Hello- 12iago|72k'
         self.login('iago')
         req = dict(full_name=ujson.dumps(new_name))

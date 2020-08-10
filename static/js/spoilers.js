@@ -55,7 +55,7 @@ exports.initialize = function () {
         const spoiler_content = $(this).siblings(".spoiler-content");
         const target = $(e.target);
 
-        // Spoiler headers can contain markdown, including links.  We
+        // Spoiler headers can contain Markdown, including links.  We
         // return so that clicking such links will be be processed by
         // the browser rather than opening the header.
         if (target.closest("a").length > 0) {

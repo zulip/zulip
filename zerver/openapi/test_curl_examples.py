@@ -17,7 +17,7 @@ from zerver.openapi.curl_param_value_generators import (
 
 def test_generated_curl_examples_for_success(client: Client) -> None:
     authentication_line = f"{client.email}:{client.api_key}"
-    # A limited markdown engine that just processes the code example syntax.
+    # A limited Markdown engine that just processes the code example syntax.
     realm = get_realm("zulip")
     md_engine = markdown.Markdown(extensions=[markdown_extension.makeExtension(
         api_url=realm.uri + "/api")])
@@ -29,13 +29,13 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
     for file_name in sorted(glob.glob("templates/zerver/api/*.md")):
         documentation_lines = open(file_name).readlines()
         for line in documentation_lines:
-            # A typical example from the markdown source looks like this:
+            # A typical example from the Markdown source looks like this:
             #     {generate_code_example(curl, ...}
             if not line.startswith("{generate_code_example(curl"):
                 continue
             # To do an end-to-end test on the documentation examples
             # that will be actually shown to users, we use the
-            # markdown rendering pipeline to compute the user-facing
+            # Markdown rendering pipeline to compute the user-facing
             # example, and then run that to test it.
             curl_command_html = md_engine.convert(line.strip())
             unescaped_html = html.unescape(curl_command_html)

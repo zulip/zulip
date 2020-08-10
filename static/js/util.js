@@ -288,7 +288,7 @@ exports.clean_user_content_links = function (html) {
         // rel="opener noreferrer".  This ensures that external links
         // never replace the Zulip webapp while also protecting
         // against reverse tabnapping attacks, without relying on the
-        // correctness of how Zulip's markdown processor generates links.
+        // correctness of how Zulip's Markdown processor generates links.
         //
         // Fragment links, which we intend to only open within the
         // Zulip webapp using our hashchange system, do not require

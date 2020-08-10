@@ -1197,7 +1197,7 @@ def get_recipient_info(recipient: Recipient,
     message_to_user_id_set = set(message_to_user_ids)
 
     user_ids = set(message_to_user_id_set)
-    # Important note: Because we haven't rendered markdown yet, we
+    # Important note: Because we haven't rendered Markdown yet, we
     # don't yet know which of these possibly-mentioned users was
     # actually mentioned in the message (in other words, the
     # mention syntax might have been in a code block or otherwise
@@ -1271,7 +1271,7 @@ def get_recipient_info(recipient: Recipient,
     # mentioned in it, and so can't use get_ids_for.
     #
     # Further in the do_send_messages code path, once
-    # `mentioned_user_ids` has been computed via markdown, we'll filter
+    # `mentioned_user_ids` has been computed via Markdown, we'll filter
     # these data structures for just those users who are either a
     # direct recipient or were mentioned; for now, we're just making
     # sure we have the data we need for that without extra database
@@ -1676,7 +1676,7 @@ def create_user_messages(message: Message,
         ums_to_create.append(um)
 
     # These properties on the Message are set via
-    # render_markdown by code in the markdown inline patterns
+    # render_markdown by code in the Markdown inline patterns
     wildcard = message.mentions_wildcard
     ids_with_alert_words = message.user_ids_with_alert_words
 
@@ -4522,7 +4522,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
         event['is_me_message'] = Message.is_status_message(content, rendered_content)
 
         # message.has_image and message.has_link will have been
-        # already updated by markdown rendering in the caller.
+        # already updated by Markdown rendering in the caller.
         message.has_attachment = check_attachment_reference_change(message)
 
         if message.is_stream_message():

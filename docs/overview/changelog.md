@@ -111,9 +111,9 @@ in bursts.
 - Added documentation for several more API endpoints.
 - Added new email address visibility option hiding real email
   addresses from organization administrators in the Zulip UI.
-- Added new "Mention time" markdown feature to communicate about times
+- Added new "Mention time" Markdown feature to communicate about times
   in a timezone-aware fashion.
-- Added new "Spoiler" markdown feature to hide text until interaction.
+- Added new "Spoiler" Markdown feature to hide text until interaction.
 - Added a new API that allows the mobile/desktop/terminal apps to
   open uploaded files in an external browser that may not be logged in.
 - Added several database indexes that significantly improve
@@ -164,7 +164,7 @@ in bursts.
 - Improved UI for picking which streams to invite new users to.
 - Improved UI for reviewing one's muted topics.
 - Improved UI for message edit history.
-- Fixed many minor issues with Zulip's markdown processors.
+- Fixed many minor issues with Zulip's Markdown processors.
 - Fixed many subtle issues with the message editing UI.
 - Fixed several subtle issues with the default nginx configuration.
 - Fixed minor issues with various keyboard shortcuts.
@@ -222,7 +222,7 @@ in bursts.
   settings system to be more maintainable.
 - This release largely completes the SCSS refactoring of the codebase.
 - Replaced our CasperJS frontend integration test system with Puppeteer.
-- Extracted the typeahead and markdown libraries for reuse in the
+- Extracted the typeahead and Markdown libraries for reuse in the
   mobile apps.
 - Removed the legacy websockets-based system for sending messages.  This
   system was always a hack, was only ever used for one endpoint, and
@@ -372,7 +372,7 @@ details.
   to existing Slack/HipChat/Gitter import tools).  Slack import now
   supports importing data only included in corporate exports,
   including private messages and shared channels.
-- Added markdown support and typeahead for mentioning topics.
+- Added Markdown support and typeahead for mentioning topics.
 - Email notifications have been completely redesigned with a minimal,
   readable style inspired by GitHub's email notifications.
 - We merged significant preparatory work for supporting RHEL/CentOS in
@@ -468,7 +468,7 @@ lose the setting and need to re-enable it.
 - Added a new setting to control whether inactive streams are demoted.
 - Added webapp support for new desktop app features: inline reply
   from notifications, and detecting user presence from OS APIs.
-- Added markdown support for headings, implemented using `# heading`,
+- Added Markdown support for headings, implemented using `# heading`,
   and removed several other unnecessary differences from CommonMark.
 - Added local echo when editing messages for a more responsive experience.
 - Changes to global notification settings for stream messages now
@@ -497,7 +497,7 @@ lose the setting and need to re-enable it.
 - The administrative UI for managing bots now nicely links to the
   bot's owner.
 - Restructured "private messages" widget to have a cleaner design.
-- Significantly improved performance of the backend markdown processor.
+- Significantly improved performance of the backend Markdown processor.
 - Significantly improved Help Center documentation of dozens of features.
 - Simplified and internationalized some notification bot messages.
 - The compose box placeholder now shows users active status.
@@ -507,7 +507,7 @@ lose the setting and need to re-enable it.
 - Improved default nginx TLS settings for stronger security.
 - Improved UI of administrative user management UI.
 - Improved error messages for various classes of invalid searches.
-- Improved styling of both markdown unordered and numbered lists.
+- Improved styling of both Markdown unordered and numbered lists.
 - Compose typeahead now autofills stream field if only subscribed to
   one stream.
 - Bot users can now post to announcement-only streams if their owners
@@ -552,7 +552,7 @@ lose the setting and need to re-enable it.
   sent to a private stream with shared history before the current user
   joined that stream.
 - Fixed several subtle real-time sync issues with "stream settings".
-- Fixed a few subtle markdown processor bugs involving emoji.
+- Fixed a few subtle Markdown processor bugs involving emoji.
 - Fixed several issues where Linkifiers validation was overly restrictive.
 - Fixed several rare/minor UI consistency issues in the left sidebar.
 - Fixed issues involving saving a message edit before file upload completes.
@@ -712,7 +712,7 @@ and is enabled by default in that case. To disable it, set
 - Added internationalization for outgoing emails.
 - Added a ReviewBoard integration, and improved numerous existing integrations.
 - Added support for multi-line messages for the /me feature.
-- Added markdown rendering of text when displaying custom profile fields.
+- Added Markdown rendering of text when displaying custom profile fields.
 - Added "silent mentions" syntax (`@_**Tim Abbott**`), which show
   visually, but don't trigger a notification to the target user.
 - Added support for using lightbox in compose preview.
@@ -720,7 +720,7 @@ and is enabled by default in that case. To disable it, set
   fixes a common source of confusion for new users.
 - Suppressed notifications when quoting a message mentioning yourself.
 - Message editing now has the compose widgets for emoji, video calls, etc.
-- Message editing now has a markdown preview feature just like compose.
+- Message editing now has a Markdown preview feature just like compose.
 - Message editing now uses same "enter-sends" behavior as compose.
 - Organization administrators can now edit users' custom profile fields.
 - Optimized performance of data import from Slack, HipChat, etc.
@@ -973,7 +973,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Added new ctrl+B, ctrl+I, ctrl+L compose shortcuts for inserting
   common syntax.
 - Added warning when linking to a private stream via typeahead.
-- Added support for automatically-numbered markdown lists.
+- Added support for automatically-numbered Markdown lists.
 - Added a big warning when posting to #announce.
 - Added a notification when drafts are saved, to make them more
   discoverable.
@@ -1014,7 +1014,7 @@ Zulip installations; it has minimal changes for existing servers.
   by last modification, not creation.
 - Removed the legacy "Zulip labs" autoscroll_forever setting.  It was
   enabled mostly by accident.
-- Removed some long-deprecated markdown syntax for mentions.
+- Removed some long-deprecated Markdown syntax for mentions.
 - Added support for clicking on a mention to see a user's profile.
 - Links to logged-in content in Zulip now take the user to the
   appropriate upload or view after a user logs in.
@@ -1117,7 +1117,7 @@ This is a security release, with a handful of cherry-picked changes
 since 1.7.1.  All Zulip server admins are encouraged to upgrade
 promptly.
 
-- CVE-2018-9986: Fix XSS issues with frontend markdown processor.
+- CVE-2018-9986: Fix XSS issues with frontend Markdown processor.
 - CVE-2018-9987: Fix XSS issue with muting notifications.
 - CVE-2018-9990: Fix XSS issue with stream names in topic typeahead.
 - CVE-2018-9999: Fix XSS issue with user uploads.  The fix for this
@@ -1310,7 +1310,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
   included in a single missed-message email.
 - Fixed issues with inconsistent visual display of @-all mentions.
 - Fixed zombie process leaks on servers with <4GB of RAM.
-- Fixed markdown previews of /me messages.
+- Fixed Markdown previews of /me messages.
 - Fixed a subtle bug involving timestamps of locally echoed messages.
 - Fixed the behavior of key combintions like Ctrl+Enter in the compose box.
 - Worked around Google Compute Engine's default boto configuration,
@@ -1373,7 +1373,7 @@ Zulip apps.
 
 * Added Basecamp, Gogs, Greenhouse, Home Assistant, Slack, Splunk, and
   WordPress webhook integrations.
-* Added LaTeX support to the markdown processor.
+* Added LaTeX support to the Markdown processor.
 * Added support for filtering branches to all Git integrations.
 * Added read-only access to organization-level settings for all users.
 * Added UI for managing muted topics and uploaded files.
@@ -1388,7 +1388,7 @@ Zulip apps.
 * Added several new permissions-related organization settings.
 * Added new endpoint for fetching presence data, useful in employee directories.
 * Added typeahead for language for syntax highlighting in code blocks.
-* Added support for basic markdown in stream descriptions.
+* Added support for basic Markdown in stream descriptions.
 * Added email notifications on new Zulip logins.
 * Added security hardening before serving uploaded files.
 * Added new PRIVACY_POLICY setting to provide a Markdown privacy policy.
@@ -1412,7 +1412,7 @@ Zulip apps.
 * Improved search typeahead to support group private messages.
 * Improved logic for when the compose box should open/close.
 * Improved lightbox to support scrolling through images.
-* Improved markdown support for bulleted lists.
+* Improved Markdown support for bulleted lists.
 * Improved copy-to-clipboard support in various places.
 * Improved subject lines of missed message emails.
 * Improved handling of users trying to login with OAuth without an account.
@@ -1486,7 +1486,7 @@ Zulip apps.
 #### Full feature changelog
 
 - Added an emoji picker/browser to the compose box.
-- Added markdown preview support to the compose box.
+- Added Markdown preview support to the compose box.
 - Added a new analytics system to track interesting usage statistics.
 - Added a /stats page with graphs of the analytics data.
 - Added display of subscriber counts in Manage streams.
@@ -1495,7 +1495,7 @@ Zulip apps.
 - Added support for copying subscribers from existing streams on creation.
 - Added several new search/filtering UI elements.
 - Added UI for deactivating your own Zulip account.
-- Added support for viewing the raw markdown content of a message.
+- Added support for viewing the raw Markdown content of a message.
 - Added support for deploying Zulip with subdomains for each realm.
   This entailed numerous changes to ensure a consistent experience.
 - Added support for (optionally) using PGRoonga to support full-text
@@ -1522,12 +1522,12 @@ Zulip apps.
   whether Zulip is optimized around protecting user privacy
   vs. administrative control.
 - Added #**streamName** syntax for linking to a stream.
-- Added support for viewing markdown source of messages.
+- Added support for viewing Markdown source of messages.
 - Added setting to always send push notifications.
 - Added setting to hide private message content in desktop
   notifications.
 - Added buttons to download .zuliprc files.
-- Added italics and strikethrough support in markdown implementation.
+- Added italics and strikethrough support in Markdown implementation.
 - Added errors for common installations mistakes (e.g. too little RAM).
 - Added a new /authors page showing the contributors to the current
   Zulip version.
@@ -1552,7 +1552,7 @@ Zulip apps.
 - Fixed several transactionality bugs (e.g. in Huddle creation).
 - Fixed missed-message email configuration error handling.
 - Fixed annoying @-mentions in Jira integration.
-- Fixed various mismatches between frontend and backend markdown
+- Fixed various mismatches between frontend and backend Markdown
   implementations.
 - Fixed various popover-related UI bugs.
 - Fixed duplicate notifications with multiple open Zulip tabs.
@@ -1621,7 +1621,7 @@ Zulip apps.
 - Added year to timestamps in message interstitials for old messages.
 - Added GitHub authentication (and integrated python-social-auth, so it's
   easy to add additional social authentication methods).
-- Added TERMS_OF_SERVICE setting using markdown formatting to configure
+- Added TERMS_OF_SERVICE setting using Markdown formatting to configure
   the terms of service for a Zulip server.
 - Added numerous hooks to puppet modules to enable more configurations.
 - Moved several useful puppet components into the main puppet
@@ -1670,7 +1670,7 @@ Zulip apps.
 - Fixed old deployment directories leaking indefinitely.
 - Fixed need to manually add localhost in ALLOWED_HOSTS.
 - Fixed display positioning for the color picker on subscriptions page.
-- Fixed escaping of Zulip extensions to markdown.
+- Fixed escaping of Zulip extensions to Markdown.
 - Fixed requiring a reload to see newly uploaded avatars.
 - Fixed @all warning firing even for `@all`.
 - Restyled password reset form to look nice.

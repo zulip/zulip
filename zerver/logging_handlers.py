@@ -94,7 +94,7 @@ class AdminNotifyHandler(logging.Handler):
 
         # This parameter determines whether Zulip should attempt to
         # send Zulip messages containing the error report.  If there's
-        # syntax that makes the markdown processor throw an exception,
+        # syntax that makes the Markdown processor throw an exception,
         # we really don't want to send that syntax into a new Zulip
         # message in exception handler (that's the stuff of which
         # recursive exception loops are made).

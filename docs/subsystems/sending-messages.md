@@ -65,13 +65,13 @@ number of purposes:
    * Handling the [local echo details](#local-echo).
    * Handling certain client configuration options that affect
      messages.  E.g. determining whether to send the
-     plaintext/markdown raw content or the rendered HTML (e.g. the
+     plaintext/Markdown raw content or the rendered HTML (e.g. the
      `apply_markdown` and `client_gravatar` features in our
      [events API docs](https://zulip.com/api/register-queue)).
 * Following our standard naming convention, input validation is done
   inside the `check_message` function, which is responsible for
   validating the user can send to the recipient,
-  [rendering the markdown](../subsystems/markdown.md), etc. --
+  [rendering the Markdown](../subsystems/markdown.md), etc. --
   basically everything that can fail due to bad user input.
 * The core `do_send_messages` function (which handles actually sending
   the message) is one of the most optimized and thus complex parts of
@@ -113,10 +113,10 @@ browser, and then replace it with data from the server when it
 changes.
 
 Zulip aims for a near-perfect local echo experience, which requires is
-why our [markdown system](../subsystems/markdown.md) requires both
-an authoritative (backend) markdown implementation and a secondary
-(frontend) markdown implementation, the latter used only for the local
-echo feature.  Read our markdown documentation for all the tricky
+why our [Markdown system](../subsystems/markdown.md) requires both
+an authoritative (backend) Markdown implementation and a secondary
+(frontend) Markdown implementation, the latter used only for the local
+echo feature.  Read our Markdown documentation for all the tricky
 details on how that works and is tested.
 
 The rest of this section details how Zulip manages locally echoed
@@ -231,13 +231,13 @@ from the target URL, and for slow websites, this could result in a
 significant delay in rendering the message and delivering it to other
 users.
 
-* For this case, Zulip's backend markdown processor will render the
+* For this case, Zulip's backend Markdown processor will render the
 message without including the URL embeds/previews, but it will add a
 deferred work item into the `embed_links` queue.
 
 * The [queue processor](../subsystems/queuing.md) for the
 `embed_links` queue will fetch the URLs, and then if they return
-results, rerun the markdown processor and notify clients of the
+results, rerun the Markdown processor and notify clients of the
 updated message `rendered_content`.
 
 * We reuse the `update_message` framework (used for

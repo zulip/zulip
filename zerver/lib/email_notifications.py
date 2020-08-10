@@ -70,7 +70,7 @@ def relative_to_full_url(base_url: str, content: str) -> str:
         container.drop_tree()
 
     # The previous block handles most inline images, but for messages
-    # where the entire markdown input was just the URL of an image
+    # where the entire Markdown input was just the URL of an image
     # (i.e. the entire body is a message_inline_image object), the
     # entire message body will be that image element; here, we need a
     # more drastic edit to the content.

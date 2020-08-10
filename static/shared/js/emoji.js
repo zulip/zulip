@@ -98,7 +98,7 @@ export function get_realm_emoji_url(emoji_name) {
         // may have hand-typed an invalid emoji.
         // The caller can check the result for falsiness
         // and then try alternate ways of parsing the
-        // emoji (in the case of markdown) or just do
+        // emoji (in the case of Markdown) or just do
         // whatever makes sense for the caller.
         return;
     }

@@ -71,7 +71,7 @@ process.
 
 For many of our project ideas, you'll be working inside a Zulip
 development environment (because the documentation is implemented as
-markdown in the main Zulip repository, and can be previewed using
+Markdown in the main Zulip repository, and can be previewed using
 tools in the Zulip development environment).  See
 [our documentation on documentation systems](../documentation/overview.md)
 for details on our various existing documentation systems.
@@ -188,7 +188,7 @@ started.).
 
 Once you have several PRs merged (or at least one significant PR
 merged, or the equivalent of this for projects that don't involve
-writing markdown code), you can start discussing with the Zulip
+writing Markdown code), you can start discussing with the Zulip
 development community the project you'd like to do, and develop a
 specific project plan.  We recommend discussing what you're thinking
 in public streams on chat.zulip.org, so it's easy to get quick
@@ -271,7 +271,7 @@ most cases, our documentation explains how to accomplish a task in the
 Zulip webapp, but doesn't cover how to do those tasks in Zulip's
 mobile and beta terminal apps.
 
-We have recently built a nice markdown-based system to make it easy to show
+We have recently built a nice Markdown-based system to make it easy to show
 information for multiple platforms in a single tabbed widget. An example
 article using this widget is
 [logging in](https://zulip.com/help/logging-in). This project will

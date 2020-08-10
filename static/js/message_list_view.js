@@ -521,7 +521,7 @@ class MessageListView {
         // (and is not possible to handle solely via CSS), this is
         // where we modify the content.  It is a goal to minimize how
         // much logic is present in this function; wherever possible,
-        // we should implement features with the markdown processor,
+        // we should implement features with the Markdown processor,
         // HTML and CSS.
 
         if (row.length !== 1) {

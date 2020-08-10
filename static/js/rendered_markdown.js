@@ -9,13 +9,13 @@ const moment = require("moment");
     update any renamed users/streams/groups etc. and other
     dynamic parts of our rendered messages.
 
-    Use this module wherever some markdown rendered content
+    Use this module wherever some Markdown rendered content
     is being displayed.
 */
 
 function get_user_id_for_mention_button(elem) {
     const user_id_string = $(elem).attr("data-user-id");
-    // Handle legacy markdown that was rendered before we cut
+    // Handle legacy Markdown that was rendered before we cut
     // over to using data-user-id.
     const email = $(elem).attr("data-user-email");
 

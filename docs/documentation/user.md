@@ -39,7 +39,7 @@ form `/help/foo`; with special cases for `/help/` going to `index.md` and
 are usually linked from `static/images/help/`.
 
 This means that you can contribute to the Zulip user documentation by just
-adding to or editing the collection of markdown files under
+adding to or editing the collection of Markdown files under
 `templates/zerver/help`.  If you have the Zulip development environment
 setup, you simply need to reload your browser on
 `http://localhost:9991/help/foo` to see the latest version of `foo.md`
@@ -100,7 +100,7 @@ your documentation to help improve its readability:
 
 * Since raw HTML is supported in Markdown, you can include arbitrary
 HTML/CSS in your documentation as needed.
-* Code blocks allow you to highlight syntax, similar to Zulip's own markdown.
+* Code blocks allow you to highlight syntax, similar to Zulip's own Markdown.
 * Anchor tags can be used to link to headers in other documents.
 * [Images](#images) of Zulip UI can be added to documentation.
 * Inline [icons](#icons) used to refer to features in the Zulip UI.
@@ -108,7 +108,7 @@ HTML/CSS in your documentation as needed.
 documentation.
 * You can create special highlight warning blocks using
 [tips and warnings](#tips-and-warnings).
-* You can create tabs using [markdown tab switcher](#tab-switcher).
+* You can create tabs using [Markdown tab switcher](#tab-switcher).
 
 ### Images
 
@@ -232,7 +232,7 @@ should be formatted as a continuation of a numbered step.
 
 ###  Tab Switcher
 
-Our markdown processor supports easily creating a tab switcher widget
+Our Markdown processor supports easily creating a tab switcher widget
 design to easily show the instructions for different
 [platforms](https://zulip.com/help/logging-out) in user docs,
 languages in API docs, etc.  To create a tab switcher, write:

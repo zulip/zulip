@@ -63,7 +63,7 @@ below by sending email to
 * **.prefer-html**: The body of an email is typically encoded using
   one or both of two common formats: plain text (`text/plain`) and
   HTML (`text/html`).  Zulip supports constructing the Zulip message
-  content using either (converting HTML to markdown for the HTML
+  content using either (converting HTML to Markdown for the HTML
   format).  By default, Zulip will prefer using the plain text version
   of an email over the converted HTML version if both are present.
   This option overrides that behavior to prefer the HTML version

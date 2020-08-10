@@ -175,7 +175,7 @@ class InvalidMarkdownIncludeStatement(JsonableError):
 
     @staticmethod
     def msg_format() -> str:
-        return _("Invalid markdown include statement: {include_statement}")
+        return _("Invalid Markdown include statement: {include_statement}")
 
 class RateLimited(Exception):
     def __init__(self, msg: str="") -> None:

@@ -397,7 +397,7 @@ paths:
                                               type: string
                                               description: |
                                                 The `value` rendered in HTML.  Will only be present for
-                                                custom profile field types that support markdown rendering.
+                                                custom profile field types that support Markdown rendering.
 
                                                 This user-generated HTML content should be rendered
                                                 using the same CSS and client-side security protections
@@ -1855,7 +1855,7 @@ paths:
                                 orig_content:
                                   type: string
                                   description: |
-                                    The original markdown content of the message, before this edit.
+                                    The original Markdown content of the message, before this edit.
                                 orig_rendered_content:
                                   type: string
                                   description: |
@@ -1863,7 +1863,7 @@ paths:
                                 prev_rendered_content_version:
                                   type: integer
                                   description: |
-                                    The markdown processor version number for the pre-edit message.
+                                    The Markdown processor version number for the pre-edit message.
                                 content:
                                   type: string
                                   description: |
@@ -2288,7 +2288,7 @@ paths:
                                 set of configured [Linkifiers](/help/add-a-custom-linkification-filter)
                                 for the organization has changed.
 
-                                Processing this event is important to doing markdown local echo
+                                Processing this event is important to doing Markdown local echo
                                 correctly.
                               properties:
                                 id:
@@ -3106,7 +3106,7 @@ paths:
           description: |
             If `true`, message content is returned in the rendered HTML
             format. If `false`, message content is returned in the raw
-            markdown-format text that user entered.
+            Markdown-format text that user entered.
           schema:
             type: boolean
             default: true
@@ -3706,7 +3706,7 @@ paths:
 
         This is a rarely-used endpoint relevant for clients that primarily
         work with HTML-rendered messages but might need to occasionally fetch
-        the message's raw markdown (e.g. for pre-filling a message-editing
+        the message's raw Markdown (e.g. for pre-filling a message-editing
         UI).
       parameters:
         - $ref: "#/components/parameters/MessageId"
@@ -8043,7 +8043,7 @@ paths:
                   data:
                     type: string
                     description: |
-                      The message content, in raw markdown format (not rendered to HTML).
+                      The message content, in raw Markdown format (not rendered to HTML).
                   trigger:
                     type: string
                     description: |
@@ -9175,7 +9175,7 @@ components:
         maps the integer ID of a custom profile field in the organization to a
         dictionary containing the user's data for that field.  Generally the data
         includes just a single `value` key; for those custom profile fields
-        supporting markdown, a `rendered_value` key will also be present.
+        supporting Markdown, a `rendered_value` key will also be present.
       additionalProperties:
         type: object
         additionalProperties: false
@@ -9191,7 +9191,7 @@ components:
             type: string
             description: |
               The `value` rendered in HTML.  Will only be present for
-              custom profile field types that support markdown rendering.
+              custom profile field types that support Markdown rendering.
 
               This user-generated HTML content should be rendered
               using the same CSS and client-side security protections
