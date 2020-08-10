@@ -1,11 +1,11 @@
-import logging
 from functools import lru_cache
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Union
+from typing import Any, Container, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
 import requests
 import ujson
 from django.conf import settings
-from requests.adapters import HTTPAdapter
+from requests.adapters import ConnectionError, HTTPAdapter
+from requests.models import PreparedRequest, Response
 from requests.packages.urllib3.util.retry import Retry
 
 from zerver.lib.queue import queue_json_publish
@@ -13,6 +13,30 @@ from zerver.models import Client, Realm, UserProfile
 from zerver.tornado.event_queue import process_notification
 from zerver.tornado.sharding import get_tornado_port, get_tornado_uri, notify_tornado_queue_name
 
+
+class TornadoAdapter(HTTPAdapter):
+    def __init__(self) -> None:
+        retry = Retry(total=3, backoff_factor=1)
+        super(TornadoAdapter, self).__init__(max_retries=retry)
+
+    def send(
+        self,
+        request: PreparedRequest,
+        stream: bool = False,
+        timeout: Union[None, float, Tuple[float, float], Tuple[float, None]] = None,
+        verify: Union[bool, str] = True,
+        cert: Union[None, bytes, str, Container[Union[bytes, str]]] = None,
+        proxies: Optional[Mapping[str, str]] = None,
+    ) -> Response:
+        try:
+            resp = super().send(request, stream=stream, timeout=timeout, verify=verify, cert=cert, proxies=proxies)
+        except ConnectionError:
+            raise ConnectionError(
+                f"Django cannot connect to Tornado server ({request.url}); "
+                f"check {settings.ERROR_FILE_LOG_PATH} and tornado.log"
+            )
+        resp.raise_for_status()
+        return resp
 
 @lru_cache(None)
 def requests_client() -> requests.Session:
@@ -23,12 +47,7 @@ def requests_client() -> requests.Session:
             # go through any env-configured external proxy.
             c.trust_env = False
 
-    # During restarts, the tornado server may be down briefly
-    retry = Retry(
-        total=3,
-        backoff_factor=1,
-    )
-    adapter = HTTPAdapter(max_retries=retry)
+    adapter = TornadoAdapter()
     for scheme in ("https://", "http://"):
         c.mount(scheme, adapter)
     return c
@@ -60,18 +79,10 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
     if event_types is not None:
         req['event_types'] = ujson.dumps(event_types)
 
-    try:
-        resp = requests_client().post(tornado_uri + '/api/v1/events/internal',
-                                      data=req)
-    except requests.adapters.ConnectionError:
-        logging.error('Tornado server does not seem to be running, check %s '
-                      'and %s for more information.',
-                      settings.ERROR_FILE_LOG_PATH, "tornado.log")
-        raise requests.adapters.ConnectionError(
-            f"Django cannot connect to Tornado server ({tornado_uri}); try restarting")
-
-    resp.raise_for_status()
-
+    resp = requests_client().post(
+        tornado_uri + '/api/v1/events/internal',
+        data=req
+    )
     return resp.json()['queue_id']
 
 def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int) -> List[Dict[str, Any]]:
@@ -87,10 +98,10 @@ def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int
         'secret': settings.SHARED_SECRET,
         'client': 'internal',
     }
-    resp = requests_client().post(tornado_uri + '/api/v1/events/internal',
-                                  data=post_data)
-    resp.raise_for_status()
-
+    resp = requests_client().post(
+        tornado_uri + '/api/v1/events/internal',
+        data=post_data
+    )
     return resp.json()['events']
 
 def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
