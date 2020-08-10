@@ -22,7 +22,7 @@ from zerver.models import (
     get_stream_by_id_in_realm,
     is_cross_realm_bot_email,
 )
-from zerver.tornado.event_queue import send_event
+from zerver.tornado.django_api import send_event
 
 
 def get_default_value_for_history_public_to_subscribers(

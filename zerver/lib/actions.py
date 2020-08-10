@@ -229,7 +229,7 @@ from zerver.models import (
     stream_name_in_use,
     validate_attachment_request,
 )
-from zerver.tornado.event_queue import send_event
+from zerver.tornado.django_api import send_event
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import downgrade_now, update_license_ledger_if_needed

@@ -57,7 +57,7 @@ from zerver.models import (
     get_realm_domains,
     realm_filters_for_realm,
 )
-from zerver.tornado.event_queue import get_user_events, request_event_queue
+from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
 
