@@ -158,7 +158,7 @@ function populate_messages_sent_over_time(data) {
             buttons: [
                 {stepmode: "backward", ...button1},
                 {stepmode: "backward", ...button2},
-                {step: "all", label: "All time"},
+                {step: "all", label: i18n.t("All time")},
             ],
         };
     }
@@ -589,6 +589,7 @@ function populate_messages_sent_by_message_type(data) {
         for (let i = 0; i < plot_data.labels.length; i += 1) {
             labels.push(plot_data.labels[i] + " (" + plot_data.percentages[i] + ")");
         }
+        const total_string = plot_data.total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         return {
             trace: {
                 values: plot_data.values,
@@ -605,9 +606,9 @@ function populate_messages_sent_by_message_type(data) {
                     colors: ["#68537c", "#be6d68", "#b3b348"],
                 },
             },
-            total_str:
-                "<b>Total messages:</b> " +
-                plot_data.total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+            total_str: i18n.t("<b>Total messages</b>: __total_messages__", {
+                total_messages: total_string,
+            }),
         };
     }
 
