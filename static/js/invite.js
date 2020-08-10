@@ -99,6 +99,8 @@ function submit_invitation_form() {
         },
         complete() {
             $("#submit-invitation").button("reset");
+            $("#invitee_emails").focus();
+            ui.get_scroll_element($('#invite_user_form .modal-body'))[0].scrollTop = 0;
         },
     });
 }
