@@ -142,13 +142,6 @@ COMMON_DEPENDENCIES = [
     "libappindicator1",
     "xdg-utils",
     # Puppeteer dependencies end here.
-
-    # Fixes missing sasl.h headers during
-    # python-ldap installation.
-    "libsasl2-dev",
-    "gcc",
-    "python-dev",
-
 ]
 
 UBUNTU_COMMON_APT_DEPENDENCIES = COMMON_DEPENDENCIES + [
