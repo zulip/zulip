@@ -35,6 +35,7 @@ IGNORED_PHRASES = [
     r"LDAP",
     r"Mac",
     r"macOS",
+    r"Markdown",
     r"MiB",
     r"OAuth",
     r"OTP",

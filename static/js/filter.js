@@ -675,7 +675,7 @@ class Filter {
         if (this.has_operator("has") && is_local_echo) {
             // The has: operators can be applied locally for messages
             // rendered by the backend; links, attachments, and images
-            // are not handled properly by the local echo markdown
+            // are not handled properly by the local echo Markdown
             // processor.
             return false;
         }

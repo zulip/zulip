@@ -922,7 +922,7 @@ class MarkdownTest(ZulipTestCase):
 
         realm = get_realm('zulip')
 
-        # Needs to mock an actual message because that's how markdown obtains the realm
+        # Needs to mock an actual message because that's how Markdown obtains the realm
         msg = Message(sender=self.example_user('hamlet'))
         converted = markdown_convert(":green_tick:", message_realm=realm, message=msg)
         realm_emoji = RealmEmoji.objects.filter(realm=realm,
@@ -1046,7 +1046,7 @@ class MarkdownTest(ZulipTestCase):
         assert_conversion('Hello #123World', False)
         assert_conversion('Hello#123 World', False)
         assert_conversion('Hello#123World', False)
-        # Ideally, these should be converted, but markdown doesn't
+        # Ideally, these should be converted, but Markdown doesn't
         # handle word boundary detection in languages that don't use
         # whitespace for that correctly yet.
         assert_conversion('チケットは#123です', False)
@@ -1229,7 +1229,7 @@ class MarkdownTest(ZulipTestCase):
 
         content = """Hello, everyone. Prod deployment has been completed
         And this is a new line
-        to test out how markdown convert this into something line ending split array
+        to test out how Markdown convert this into something line ending split array
         and this is a new line
         last"""
         render(msg, content)
@@ -1969,7 +1969,7 @@ class MarkdownTest(ZulipTestCase):
         )
 
     def test_mit_rendering(self) -> None:
-        """Test the markdown configs for the MIT Zephyr mirroring system;
+        """Test the Markdown configs for the MIT Zephyr mirroring system;
         verifies almost all inline patterns are disabled, but
         inline_interesting_links is still enabled"""
         msg = "**test**"

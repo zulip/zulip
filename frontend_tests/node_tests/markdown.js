@@ -178,7 +178,7 @@ stream_data.add_sub(edgecase_stream_2);
 stream_data.add_sub(amp_stream);
 
 // Check the default behavior of fenced code blocks
-// works properly before markdown is initialized.
+// works properly before Markdown is initialized.
 run_test("fenced_block_defaults", () => {
     const input = "\n```\nfenced code\n```\n\nand then after\n";
     const expected =

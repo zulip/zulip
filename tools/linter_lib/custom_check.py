@@ -76,7 +76,7 @@ comma_whitespace_rule: List["Rule"] = [
      'bad_lines': ['foo(1,  2, 3)', 'foo(1,    2, 3)']},
 ]
 markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != r'\s+$']) + [
-    # Two spaces trailing a line with other content is okay--it's a markdown line break.
+    # Two spaces trailing a line with other content is okay--it's a Markdown line break.
     # This rule finds one space trailing a non-space, three or more trailing spaces, and
     # spaces on an empty line.
     {'pattern': r'((?<!\s)\s$)|(\s\s\s+$)|(^\s+$)',
@@ -648,7 +648,7 @@ markdown_rules = RuleList(
     langs=['md'],
     rules=markdown_whitespace_rules + prose_style_rules + [
         {'pattern': r'\[(?P<url>[^\]]+)\]\((?P=url)\)',
-         'description': 'Linkified markdown URLs should use cleaner <http://example.com> syntax.'},
+         'description': 'Linkified Markdown URLs should use cleaner <http://example.com> syntax.'},
         {'pattern': 'https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]',
          'exclude': {'docs/overview/contributing.md', 'docs/overview/readme.md', 'docs/README.md'},
          'include_only': {'docs/'},

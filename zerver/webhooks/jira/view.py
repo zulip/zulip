@@ -66,7 +66,7 @@ def convert_jira_markup(content: str, realm: Realm) -> str:
     # In order to support both forms, we don't match a | in bare links
     content = re.sub(r'\[([^\|~]+?)\]', r'[\1](\1)', content)
 
-    # Full links which have a | are converted into a better markdown link
+    # Full links which have a | are converted into a better Markdown link
     full_link_re = re.compile(r'\[(?:(?P<title>[^|~]+)\|)(?P<url>[^\]]*)\]')
     content = re.sub(full_link_re, r'[\g<title>](\g<url>)', content)
 

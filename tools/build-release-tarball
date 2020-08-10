@@ -93,7 +93,7 @@ EOF
 
 ./tools/update-prod-static
 
-# We don't need duplicate copies of emoji with hashed paths, and they would break markdown
+# We don't need duplicate copies of emoji with hashed paths, and they would break Markdown
 find prod-static/serve/generated/emoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png' -delete
 
 echo "$GITID" > build_id

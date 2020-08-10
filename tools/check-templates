@@ -127,7 +127,7 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
     IGNORE_FILES = [
         # zephyr-mirror.html has some whitespace-dependent formatting
         # for code blocks that prevent cleaning it.  Might make sense
-        # to convert it to a /help/ markdown article.
+        # to convert it to a /help/ Markdown article.
         'templates/corporate/zephyr-mirror.html',
         # Can't clean this because of `preserve_spaces`
         'templates/zerver/app/markdown_help.html',

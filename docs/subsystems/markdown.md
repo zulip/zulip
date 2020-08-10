@@ -23,7 +23,7 @@ trip from the server.  Those frontend renderings are only shown to the
 sender of a message, and they are (ideally) identical to the backend
 rendering.
 
-The JavaScript markdown implementation has a function,
+The JavaScript Markdown implementation has a function,
 `markdown.contains_backend_only_syntax`, that is used to check whether a message
 contains any syntax that needs to be rendered to HTML on the backend.
 If `markdown.contains_backend_only_syntax` returns true, the frontend simply won't
@@ -46,10 +46,10 @@ The Python-Markdown implementation is tested by
 A shared set of fixed test data ("test fixtures") is present in
 `zerver/tests/fixtures/markdown_test_cases.json`, and is automatically used
 by both test suites; as a result, it is the preferred place to add new
-tests for Zulip's markdown system.  Some important notes on reading
+tests for Zulip's Markdown system.  Some important notes on reading
 this file:
 
-* `expected_output` is the expected output for the backend markdown
+* `expected_output` is the expected output for the backend Markdown
   processor.
 * When the frontend processor doesn't support a feature and it should
   just be rendered on the backend, we set `backend_only_rendering` to
@@ -87,45 +87,45 @@ is a workaround due to lack of comments support in JSON. Revert your
 tests with `tools/test-js-with-node markdown` and backend tests with
 `tools/test-backend zerver.tests.test_markdown.MarkdownTest.test_markdown_fixtures`.
 
-## Changing Zulip's markdown processor
+## Changing Zulip's Markdown processor
 
 First, you will likely find these third-party resources helpful:
 
-* **[Python-Markdown](https://pypi.python.org/pypi/Markdown)** is the markdown
-  library used by Zulip as a base to build our custom markdown syntax upon.
+* **[Python-Markdown](https://pypi.python.org/pypi/Markdown)** is the Markdown
+  library used by Zulip as a base to build our custom Markdown syntax upon.
 * **[Python's XML ElementTree](https://docs.python.org/3/library/xml.etree.elementtree.html)**
   is the part of the Python standard library used by Python Markdown
   and any custom extensions to generate and modify the output HTML.
 
-When changing Zulip's markdown syntax, you need to update several
+When changing Zulip's Markdown syntax, you need to update several
 places:
 
-* The backend markdown processor (`zerver/lib/markdown/__init__.py`).
-* The frontend markdown processor (`static/js/markdown.js` and sometimes
+* The backend Markdown processor (`zerver/lib/markdown/__init__.py`).
+* The frontend Markdown processor (`static/js/markdown.js` and sometimes
   `static/third/marked/lib/marked.js`), or `markdown.contains_backend_only_syntax` if
   your changes won't be supported in the frontend processor.
 * If desired, the typeahead logic in `static/js/composebox_typeahead.js`.
 * The test suite, probably via adding entries to `zerver/tests/fixtures/markdown_test_cases.json`.
-* The in-app markdown documentation (`templates/zerver/app/markdown_help.html`).
-* The list of changes to markdown at the end of this document.
+* The in-app Markdown documentation (`templates/zerver/app/markdown_help.html`).
+* The list of changes to Markdown at the end of this document.
 
 Important considerations for any changes are:
 
-* Security: A bug in the markdown processor can lead to XSS issues.
+* Security: A bug in the Markdown processor can lead to XSS issues.
   For example, we should not insert unsanitized HTML from a
   third-party web application into a Zulip message.
 * Uniqueness: We want to avoid users having a bad experience due to
-  accidentally triggering markdown syntax or typeahead that isn't
+  accidentally triggering Markdown syntax or typeahead that isn't
   related to what they are trying to express.
 * Performance: Zulip can render a lot of messages very quickly, and
   we'd like to keep it that way.  New regular expressions similar to
   the ones already present are unlikely to be a problem, but we need
   to be thoughtful about expensive computations or third-party API
   requests.
-* Database: The backend markdown processor runs inside a Python thread
+* Database: The backend Markdown processor runs inside a Python thread
   (as part of how we implement timeouts for third-party API queries),
   and for that reason we currently should avoid making database
-  queries inside the markdown processor.  This is a technical
+  queries inside the Markdown processor.  This is a technical
   implementation detail that could be changed with a few days of work,
   but is an important detail to know about until we do that work.
 * Testing: Every new feature should have both positive and negative
@@ -134,7 +134,7 @@ Important considerations for any changes are:
 
 ## Per-realm features
 
-Zulip's markdown processor's rendering supports a number of features
+Zulip's Markdown processor's rendering supports a number of features
 that depend on realm-specific or user-specific data.  For example, the
 realm could have
 [Linkifiers](https://zulip.com/help/add-a-custom-linkification-filter)
@@ -146,9 +146,9 @@ At a backend code level, these are controlled by the `message_realm`
 object and other arguments passed into `do_convert` (`sent_by_bot`,
 `translate_emoticons`, `mention_data`, etc.).  Because
 `python-markdown` doesn't support directly passing arguments into the
-markdown processor, our logic attaches these data to the Markdown
+Markdown processor, our logic attaches these data to the Markdown
 processor object via e.g. `_md_engine.zulip_db_data`, and then
-individual markdown rules can access the data from there.
+individual Markdown rules can access the data from there.
 
 For non-message contexts (e.g. an organization's profile (aka the
 thing on the right-hand side of the login page), stream descriptions,

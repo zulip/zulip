@@ -739,7 +739,7 @@ def filter_format_validator(value: str) -> None:
 
 class RealmFilter(models.Model):
     """Realm-specific regular expressions to automatically linkify certain
-    strings inside the markdown processor.  See "Custom filters" in the settings UI.
+    strings inside the Markdown processor.  See "Custom filters" in the settings UI.
     """
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name='ID')
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)

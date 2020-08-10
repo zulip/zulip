@@ -445,7 +445,7 @@ ENABLE_GRAVATAR = True
 #REMOTE_POSTGRES_SSLMODE = 'require'
 
 # If you want to set a Terms of Service for your server, set the path
-# to your markdown file, and uncomment the following line.
+# to your Markdown file, and uncomment the following line.
 #TERMS_OF_SERVICE = '/etc/zulip/terms.md'
 
 # Similarly if you want to set a Privacy Policy.

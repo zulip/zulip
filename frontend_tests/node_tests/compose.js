@@ -535,7 +535,7 @@ run_test("markdown_shortcuts", () => {
         compose.handle_keydown(event, $("#compose-textarea"));
     }
 
-    // This function cross tests the cmd/ctrl + markdown shortcuts in
+    // This function cross tests the cmd/ctrl + Markdown shortcuts in
     // Mac and Linux/Windows environments.  So in short, this tests
     // that e.g. Cmd+B should be ignored on Linux/Windows and Ctrl+B
     // should be ignored on Mac.
@@ -569,9 +569,9 @@ run_test("markdown_shortcuts", () => {
 
     // Default (Linux/Windows) userAgent tests:
     test_i_typed(false, false);
-    // Check all the ctrl + markdown shortcuts work correctly
+    // Check all the ctrl + Markdown shortcuts work correctly
     all_markdown_test(true, false);
-    // The Cmd + markdown shortcuts should do nothing on Linux/Windows
+    // The Cmd + Markdown shortcuts should do nothing on Linux/Windows
     os_specific_markdown_test(false, true);
 
     // Setting following platform to test in mac env
@@ -579,9 +579,9 @@ run_test("markdown_shortcuts", () => {
 
     // Mac userAgent tests:
     test_i_typed(false, false);
-    // The ctrl + markdown shortcuts should do nothing on mac
+    // The ctrl + Markdown shortcuts should do nothing on mac
     os_specific_markdown_test(true, false);
-    // Check all the Cmd + markdown shortcuts work correctly
+    // Check all the Cmd + Markdown shortcuts work correctly
     all_markdown_test(false, true);
 
     // Reset userAgent

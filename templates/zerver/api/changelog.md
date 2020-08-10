@@ -41,7 +41,7 @@ No changes; feature level used for Zulip 3.0 release.
 
 **Feature level 24**
 
-* The `!avatar()` and `!gravatar()` markdown syntax, which was never
+* The `!avatar()` and `!gravatar()` Markdown syntax, which was never
   documented, had inconsistent syntax, and was rarely used, was
   removed.
 
@@ -106,7 +106,7 @@ No changes; feature level used for Zulip 3.0 release.
 **Feature level 15**
 
 * Added [spoilers](/help/format-your-message-using-markdown#spoilers)
-  to supported markdown features.
+  to supported Markdown features.
 
 **Feature level 14**
 
@@ -166,7 +166,7 @@ No changes; feature level used for Zulip 3.0 release.
   and [`GET /users/me`](/api/get-own-user): User objects now contain the
   `is_owner` field as well.
 * Added [time mentions](/help/format-your-message-using-markdown#mention-a-time)
-  to supported markdown features.
+  to supported Markdown features.
 
 **Feature level 7**
 

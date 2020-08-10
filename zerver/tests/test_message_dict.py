@@ -46,7 +46,7 @@ class MessageDictTest(ZulipTestCase):
         Different clients have different needs
         when it comes to things like generating avatar
         hashes or including both rendered and unrendered
-        markdown, so that explains the different shapes.
+        Markdown, so that explains the different shapes.
 
         And then the two codepaths have different
         performance needs.  In the events codepath, we

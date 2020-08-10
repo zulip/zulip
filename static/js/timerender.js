@@ -170,7 +170,7 @@ exports.render_date = function (time, time_above, today) {
     return node;
 };
 
-// Renders the timestamp returned by the <time:> markdown syntax.
+// Renders the timestamp returned by the <time:> Markdown syntax.
 exports.render_markdown_timestamp = function (time, text) {
     const hourformat = page_params.twenty_four_hour_time ? "HH:mm" : "h:mm A";
     const timestring = time.format("ddd, MMM D YYYY, " + hourformat);

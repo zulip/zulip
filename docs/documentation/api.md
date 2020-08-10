@@ -30,7 +30,7 @@ Our API documentation is defined by a few sets of files:
   [OpenAPI configuration](../documentation/openapi.md) at
   `zerver/openapi/zulip.yaml`.
 * The top-level templates live under `templates/zerver/api/*`, and are
-  written using the markdown framework that powers our [user
+  written using the Markdown framework that powers our [user
   docs](../documentation/user.md), with some special extensions for
   rendering nice code blocks and example responses.  We expect to
   eventually remove most of these files where it is possible to
@@ -268,16 +268,16 @@ above.
    comments. The lines inside these comments are what will be displayed as the
    code example on our `/api` page.
 
-1. Finally, write the markdown file for your API endpoint under
+1. Finally, write the Markdown file for your API endpoint under
    `templates/zerver/api/`.  This is usually pretty easy to template
    off existing endpoints; but refer to the system explanations above
    for details.
 
-1. Add the markdown file to the index in `templates/zerver/help/include/rest-endpoints.md`.
+1. Add the Markdown file to the index in `templates/zerver/help/include/rest-endpoints.md`.
 
 1. Test your endpoint, pretending to be a new user in a hurry, by
    visiting it via the links on `http://localhost:9991/api` (the API
-   docs are rendered from the markdown source files on page load, so
+   docs are rendered from the Markdown source files on page load, so
    just reload to see an updated version as you edit).  You should
    make sure that copy-pasting the code in your examples works, and
    post an example of the output in the pull request.
@@ -287,7 +287,7 @@ above.
 ## Why a custom system?
 
 Given that our documentation is written in large part using the
-OpenAPI format, why maintain a custom markdown system for displaying
+OpenAPI format, why maintain a custom Markdown system for displaying
 it?  There's several major benefits to this system:
 
 * It is extremely common for API documentation to become out of date

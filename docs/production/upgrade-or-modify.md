@@ -132,7 +132,7 @@ help](https://chat.zulip.org/#narrow/stream/31-production-help) in the
 [Zulip development community
 server](../contributing/chat-zulip-org.md) for best-effort help.
 Please include the relevant error output from the above logs in a
-[markdown code
+[Markdown code
 block](https://zulip.com/help/format-your-message-using-markdown#code)
 in any reports.
 

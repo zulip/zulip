@@ -95,7 +95,7 @@ A correctly implemented endpoint will do the following:
 
 * It will calculate a response that we call the "content" of
   the response.
-* It will encode the content in Zulip's flavor of markdown (or
+* It will encode the content in Zulip's flavor of Markdown (or
   just plain text).
 * It will then make a dictionary with key of "content" and
   the value being that content.  (Note that "response_string" is

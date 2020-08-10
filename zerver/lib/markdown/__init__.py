@@ -1,5 +1,5 @@
-# Zulip's main markdown implementation.  See docs/subsystems/markdown.md for
-# detailed documentation on our markdown syntax.
+# Zulip's main Markdown implementation.  See docs/subsystems/markdown.md for
+# detailed documentation on our Markdown syntax.
 import datetime
 import functools
 import html
@@ -102,7 +102,7 @@ class LinkInfo(TypedDict):
 
 DbData = Dict[str, Any]
 
-# Format version of the markdown rendering; stored along with rendered
+# Format version of the Markdown rendering; stored along with rendered
 # messages so that we can efficiently determine what needs to be re-rendered
 version = 1
 
@@ -1124,7 +1124,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         unique_previewable_urls = {found_url.result[0] for found_url in found_urls
                                    if not found_url.family.in_blockquote}
 
-        # Set has_link and similar flags whenever a message is processed by markdown
+        # Set has_link and similar flags whenever a message is processed by Markdown
         if self.md.zulip_message:
             self.md.zulip_message.has_link = len(found_urls) > 0
             self.md.zulip_message.has_image = False  # This is updated in self.add_a
@@ -2096,7 +2096,7 @@ def maybe_update_markdown_engines(realm_filters_key: Optional[int], email_gatewa
         if realm_filters_key not in realm_filter_data or    \
                 realm_filter_data[realm_filters_key] != realm_filters:
             # Realm filters data has changed, update `realm_filter_data` and any
-            # of the existing markdown engines using this set of realm filters.
+            # of the existing Markdown engines using this set of realm filters.
             realm_filter_data[realm_filters_key] = realm_filters
             for email_gateway_flag in [True, False]:
                 if (realm_filters_key, email_gateway_flag) in md_engines:
@@ -2257,7 +2257,7 @@ def do_convert(content: str,
     # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
     # * Nothing is passed in other than content -> just run default options (e.g. for docs)
     # * message is passed, but no realm is -> look up realm from message
-    # * message_realm is passed -> use that realm for markdown purposes
+    # * message_realm is passed -> use that realm for Markdown purposes
     if message is not None:
         if message_realm is None:
             message_realm = message.get_realm()
@@ -2300,7 +2300,7 @@ def do_convert(content: str,
     _md_engine.url_embed_preview_enabled = url_embed_preview_enabled(
         message, message_realm, no_previews)
 
-    # Pre-fetch data from the DB that is used in the markdown thread
+    # Pre-fetch data from the DB that is used in the Markdown thread
     if message_realm is not None:
 
         # Here we fetch the data structures needed to render
@@ -2332,7 +2332,7 @@ def do_convert(content: str,
 
     try:
         # Spend at most 5 seconds rendering; this protects the backend
-        # from being overloaded by bugs (e.g. markdown logic that is
+        # from being overloaded by bugs (e.g. Markdown logic that is
         # extremely inefficient in corner cases) as well as user
         # errors (e.g. a realm filter that makes some syntax
         # infinite-loop).

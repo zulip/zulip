@@ -8,9 +8,9 @@ const emoji = require("../shared/js/emoji");
 const fenced_code = require("../shared/js/fenced_code");
 const marked = require("../third/marked/lib/marked");
 
-// This contains zulip's frontend markdown implementation; see
+// This contains zulip's frontend Markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
-// main piece in rendering markdown client-side is
+// main piece in rendering Markdown client-side is
 // static/third/marked/lib/marked.js, which we have significantly
 // modified from the original implementation.
 
@@ -25,7 +25,7 @@ let helpers;
 const realm_filter_map = new Map();
 let realm_filter_list = [];
 
-// Regexes that match some of our common backend-only markdown syntax
+// Regexes that match some of our common backend-only Markdown syntax
 const backend_only_markdown_re = [
     // Inline image previews, check for contiguous chars ending in image suffix
     // To keep the below regexes simple, split them out for the end-of-message case
@@ -80,7 +80,7 @@ exports.translate_emoticons_to_names = (text) => {
 
 exports.contains_backend_only_syntax = function (content) {
     // Try to guess whether or not a message contains syntax that only the
-    // backend markdown processor can correctly handle.
+    // backend Markdown processor can correctly handle.
     // If it doesn't, we can immediately render it client-side for local echo.
     const markedup = backend_only_markdown_re.find((re) => re.test(content));
 
@@ -319,7 +319,7 @@ function handleTimestamp(time) {
     if (isNaN(time)) {
         // Moment throws a large deprecation warning when it has to fallback
         // to the Date() constructor. We needn't worry here and can let backend
-        // markdown handle any dates that moment misses.
+        // Markdown handle any dates that moment misses.
         moment.suppressDeprecationWarnings = true;
         timeobject = moment(time); // not a Unix timestamp
     } else {
@@ -501,7 +501,7 @@ exports.initialize = function (realm_filters, helper_config) {
         };
     }
 
-    // Configure the marked markdown parser for our usage
+    // Configure the marked Markdown parser for our usage
     const r = new marked.Renderer();
 
     // No <code> around our code blocks instead a codehilite <div> and disable
@@ -512,7 +512,7 @@ exports.initialize = function (realm_filters, helper_config) {
     const old_link = r.link;
     r.link = (href, title, text) => old_link.call(r, href, title, text.trim() ? text : href);
 
-    // Put a newline after a <br> in the generated HTML to match markdown
+    // Put a newline after a <br> in the generated HTML to match Markdown
     r.br = function () {
         return "<br>\n";
     };
