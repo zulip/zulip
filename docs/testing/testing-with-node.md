@@ -64,9 +64,9 @@ working on or debugging the Zulip node tests.
 
 Conceptually, the `zjquery` library provides minimal versions of most
 `jQuery` DOM manipulation functions, and has a convenient system for
-letting you setup return values for more complex functions.  For
+letting you set up return values for more complex functions.  For
 example, if the code you'd like to test calls `$obj.find()`, you can
-use `$obj.set_find_results(selector, $value)` to setup `zjquery` so
+use `$obj.set_find_results(selector, $value)` to set up `zjquery` so
 that calls to `$obj.find(selector)` will return `$value`. See the unit
 test file for details.
 
@@ -175,7 +175,7 @@ notes for other editors are welcome!
 
 These instructions assume you're using the Vagrant development environment.
 
-1. Setup [Vagrant in WebStorm][vagrant-webstorm].
+1. Set up [Vagrant in WebStorm][vagrant-webstorm].
 
 2. In WebStorm, navigate to `Preferences -> Tools -> Vagrant` and
    configure the following:
@@ -206,7 +206,7 @@ These instructions assume you're using the Vagrant development environment.
     1. Under `JavaScript file`, enter `frontend_tests/zjsunit/index.js`
      -- this is the root script for Zulip's node unit tests.
 
-Congratulations!  You've now setup the integration.
+Congratulations!  You've now set up the integration.
 
 ## Running tests with the debugger
 

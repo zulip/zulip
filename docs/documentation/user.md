@@ -41,7 +41,7 @@ are usually linked from `static/images/help/`.
 This means that you can contribute to the Zulip user documentation by just
 adding to or editing the collection of Markdown files under
 `templates/zerver/help`.  If you have the Zulip development environment
-setup, you simply need to reload your browser on
+set up, you simply need to reload your browser on
 `http://localhost:9991/help/foo` to see the latest version of `foo.md`
 rendered.
 

@@ -863,7 +863,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Fixed several subtle unread count corner case bugs.
 - Fixed several installer issues to make it easier to Dockerize Zulip.
 - Fixed several subtle issues with both the LDAP/Active Directory
-  integration and its documentation, making it much easier to setup.
+  integration and its documentation, making it much easier to set up.
 - Fixed several minor bugs and otherwise optimized search typeahead.
 - Fixed a bad nginx configuration interaction with servers that have
   misconfigured IPv6.

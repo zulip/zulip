@@ -124,7 +124,7 @@ you create a pull request.  While you wait for CircleCI jobs
 to run, you can start working on your next task.  When the tests finish,
 you can create a pull request that you already know passes the tests.
 
-### Setup CircleCI
+### Set up CircleCI
 
 First, sign in to [CircleCI][circle-ci] with your GitHub account and authorize
 CircleCI to access your GitHub account and repositories. Once you've logged

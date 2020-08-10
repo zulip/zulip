@@ -42,7 +42,7 @@ follows:
    you'll each need to log out and log back in again in order to start
    getting push notifications.
 
-Congratulations!  You've successfully setup the service.
+Congratulations!  You've successfully set up the service.
 
 If you'd like to verify that everything is working, you can do the
 following.  Please follow the instructions carefully:
@@ -171,7 +171,7 @@ the cost of needing to compile and distribute modified versions of the
 Zulip mobile apps.
 
 We don't recommend this path -- patching and shipping a production
-mobile app can take dozens of hours to setup even for an experienced
+mobile app can take dozens of hours to set up even for an experienced
 developer, and even more time to maintain.  And it doesn't provide
 material privacy benefits -- your organization's push notification
 data would still go through Apple/Google's servers, just not Kandra

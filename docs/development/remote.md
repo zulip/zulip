@@ -31,7 +31,7 @@ networks.
 
 ## Setting up user accounts
 
-You will need a non-root user account with sudo privileges to setup
+You will need a non-root user account with sudo privileges to set up
 the Zulip development environment.  If you have one already, continue
 to the next section.
 
@@ -91,7 +91,7 @@ To properly secure your remote development environment, you can
 [port forward](https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding)
 using ssh instead of running the development environment on an exposed
 interface.  For example, if you're running Zulip on a remote server
-such as a DigitalOcean Droplet or an AWS EC2 instance, you can setup
+such as a DigitalOcean Droplet or an AWS EC2 instance, you can set up
 port-forwarding to access Zulip by running the following command in
 your terminal:
 
@@ -187,7 +187,7 @@ develop remotely from the comfort of your local machine.
 Similar packages/extensions exist for other popular code editors as
 well; contributions of precise documentation for them are welcome!
 
-To setup [rmate](https://github.com/textmate/rmate) for VS Code:
+To set up [rmate](https://github.com/textmate/rmate) for VS Code:
 1. Install the extension
 [Remote VSCode](https://marketplace.visualstudio.com/items?itemName=rafaelmaiolla.remote-vscode).
 2. On your remote machine, run:
@@ -235,7 +235,7 @@ If you are relatively new to working on the command line, or just want to get
 started working quickly, we recommend web-based IDE
 [Codeanywhere][codeanywhere].
 
-To setup Codeanywhere for Zulip:
+To set up Codeanywhere for Zulip:
 
 1. Create a [Codeanywhere][codeanywhere] account and log in.
 2. Create a new **SFTP-SSH** project. Use *Public key* for authentication.
