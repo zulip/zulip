@@ -7,7 +7,7 @@ integrations).
 
 Usually, this involves a few steps:
 
-* Add text explaining all of the steps required to setup the
+* Add text explaining all of the steps required to set up the
   integration, including what URLs to use, etc. See
   [Writing guidelines](#writing-guidelines) for detailed writing guidelines.
 

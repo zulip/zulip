@@ -149,7 +149,7 @@ eventually eliminate this documentation section altogether).
 
 You can use
 [our provisioning tool](#installing-directly-on-ubuntu-debian-centos-or-fedora)
-to setup the Zulip development environment on current versions of
+to set up the Zulip development environment on current versions of
 these platforms reliably and easily, so we no long maintain manual
 installation instructions for these platforms.
 
@@ -285,7 +285,7 @@ AWS Cloud9 is a cloud-based integrated development environment (IDE)
 that lets you write, run, and debug your code with just a browser. It
 includes a code editor, debugger, and terminal.
 
-This section documents how to setup the Zulip development environment
+This section documents how to set up the Zulip development environment
 in a cloud9 workspace.  If you don't have an existing cloud9 account,
 you can sign up [here](https://aws.amazon.com/cloud9/).
 

@@ -1,6 +1,6 @@
 # Customize Zulip
 
-Once you've got Zulip setup, you'll likely want to configure it the
+Once you've got Zulip set up, you'll likely want to configure it the
 way you like.
 
 ## Making changes
