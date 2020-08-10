@@ -295,6 +295,12 @@ instructions for other supported platforms.
 6. [Upgrade to the latest Zulip release](#upgrading-to-a-release), now
    that your server is running a supported operating system.
 
+7. As root, finish by verifying the contents of the full-text indexes:
+
+    ```
+    /home/zulip/deployments/current/manage.py --audit-fts-indexes
+    ```
+
 ### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
 
 1. Upgrade your server to the latest Zulip `2.0.x` release.  You can
@@ -387,6 +393,12 @@ instructions for other supported platforms.
 
 6. [Upgrade to the latest Zulip release](#upgrading-to-a-release), now
    that your server is running a supported operating system.
+
+7. As root, finish by verifying the contents of the full-text indexes:
+
+    ```
+    /home/zulip/deployments/current/manage.py --audit-fts-indexes
+    ```
 
 ## Upgrading PostgreSQL
 
