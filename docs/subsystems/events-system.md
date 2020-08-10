@@ -1,4 +1,4 @@
-# Real-time Push and Events
+# Real-time push and events
 
 Zulip's "events system" is the server-to-client push system that
 powers our real-time sync.  This document explains how it works; to

@@ -16,7 +16,7 @@ Use informal Hindi for translation:
 
 * Balance common verbs and nouns with specific IT-related translations
   of English terms - this can be tricky, try to check how other
-  resources were translated (e.g. GMail, Microsoft websites, Facebook)
+  resources were translated (e.g. Gmail, Microsoft websites, Facebook)
   to decide what wouldn't sound awkward / rude in Hindi.
 
 Some terms are very tricky to translate, so be sure to communicate

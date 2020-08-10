@@ -32,14 +32,14 @@ installation <production/install.html>`_ or `Contributing to Zulip
 Contents:
 
 * :ref:`Overview <overview>`
-* :ref:`Zulip in Production <zulip-in-production>`
-* :ref:`Development Environment <development-environment>`
-* :ref:`Developer Tutorials <developer-tutorials>`
-* :ref:`Git Guide <git-guide>`
-* :ref:`Code Contribution Guide <code-contribution-guide>`
-* :ref:`Code Testing <code-testing>`
-* :ref:`Subsystem Documentation <subsystem-documentation>`
-* :ref:`Writing Documentation <writing-documentation>`
+* :ref:`Zulip in production <zulip-in-production>`
+* :ref:`Development environment <development-environment>`
+* :ref:`Developer tutorials <developer-tutorials>`
+* :ref:`Git guide <git-guide>`
+* :ref:`Code contribution guide <code-contribution-guide>`
+* :ref:`Code testing <code-testing>`
+* :ref:`Subsystem documentation <subsystem-documentation>`
+* :ref:`Writing documentation <writing-documentation>`
 * :ref:`Translating <translating>`
 
 .. _overview:

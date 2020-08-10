@@ -50,7 +50,7 @@ For servers hosting a large number of organizations, like
 = True` in `/etc/zulip/settings.py` so that the homepage for the
 server is a copy of the Zulip homepage.
 
-### SSL Certificates
+### SSL certificates
 
 You'll need to install an SSL certificate valid for all the
 (sub)domains you're using your Zulip server with.  You can get an SSL
@@ -125,7 +125,7 @@ like "Notification Bot", "Welcome Bot", etc. exist.  In the future,
 we're considering moving these bots to exist in every realm, so that
 we wouldn't need the system realm anymore.
 
-### Migrating / Troubleshooting
+### Migrating / troubleshooting
 
 If you're migrating from a configuration using the root domain to one
 with realms hosted on subdomains, be sure to clear cookies in any

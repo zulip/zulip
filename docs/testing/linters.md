@@ -195,7 +195,7 @@ We use Puppet as our tool to manage configuration files, using
 puppet "manifests."  To lint puppet manifests, we use the "parser validate"
 option of puppet.
 
-#### HTML Templates
+#### HTML templates
 
 Zulip uses two HTML templating systems:
 

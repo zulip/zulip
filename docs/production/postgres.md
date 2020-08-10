@@ -139,7 +139,7 @@ with this approach, since it does bypass some of the work that
 pg_ctlcluster does.
 
 
-#### Postgres Vacuuming alerts
+#### Postgres vacuuming alerts
 
 The `autovac_freeze` postgres alert from `check_postgres` is
 particularly important.  This alert indicates that the age (in terms

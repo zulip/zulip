@@ -118,7 +118,7 @@ Organization administrators can also configure a default syntax
 highlighting language.  In this configuration, one can use ````text`
 to display content without any syntax highlighting.
 
-## Latex
+## LaTeX
 ~~~
 Inline: $$O(n^2)$$
 

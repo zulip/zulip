@@ -286,7 +286,7 @@ run_test("basic_chars", () => {
     overlays.is_active = return_false;
     assert_mapping("d", "drafts.launch");
 
-    // Test opening and closing of Recent Topics
+    // Test opening and closing of recent topics
     overlays.is_active = return_true;
     overlays.recent_topics_open = return_true;
     assert_mapping("t", "overlays.close_overlay");

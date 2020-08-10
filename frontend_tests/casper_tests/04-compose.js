@@ -222,7 +222,7 @@ casper.then(function () {
         casper.fill(
             'form[action^="/json/messages"]',
             {
-                content: "**Markdown Preview** >> Test for Markdown preview",
+                content: "**Markdown preview** >> Test for Markdown preview",
             },
             false
         );
@@ -235,7 +235,7 @@ casper.then(function () {
     casper.waitForSelectorTextChange("#preview_content", function () {
         casper.test.assertEquals(
             casper.getHTML("#preview_content"),
-            "<p><strong>Markdown Preview</strong> &gt;&gt; Test for Markdown preview</p>",
+            "<p><strong>Markdown preview</strong> &gt;&gt; Test for Markdown preview</p>",
             "Check Markdown is previewed properly"
         );
     });

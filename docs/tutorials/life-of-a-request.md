@@ -1,4 +1,4 @@
-# Life of a Request
+# Life of a request
 
 It can sometimes be confusing to figure out how to write a new feature,
 or debug an existing one. Let us try to follow a request through the
@@ -37,7 +37,7 @@ location /static/ {
 }
 ```
 
-## Nginx routes other requests [between django and tornado][tornado-django]
+## Nginx routes other requests [between Django and Tornado][tornado-django]
 
 [tornado-django]: ../overview/architecture-overview.html?highlight=tornado#django-and-tornado
 

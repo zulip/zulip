@@ -1,5 +1,5 @@
 ########################
-Subsystems Documentation
+Subsystems documentation
 ########################
 
 .. toctree::

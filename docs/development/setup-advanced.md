@@ -1,4 +1,4 @@
-# Advanced Setup (non-Vagrant)
+# Advanced setup (non-Vagrant)
 
 Contents:
 
@@ -56,7 +56,7 @@ on using the Zulip development
 environment](../development/setup-vagrant.html#step-4-developing),
 ignoring the parts about `vagrant` (since you're not using it).
 
-## Installing directly on Windows 10 (Experimental)
+## Installing directly on Windows 10 (experimental)
 
 We will be using Microsoft's new feature [WSL
 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about) for

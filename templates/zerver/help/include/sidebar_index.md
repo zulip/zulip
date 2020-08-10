@@ -115,7 +115,7 @@
 * [Export your organization](/help/export-your-organization)
 * [Change organization URL](/help/change-organization-url)
 * [Deactivate your organization](/help/deactivate-your-organization)
-* [GDPR Compliance](/help/gdpr-compliance)
+* [GDPR compliance](/help/gdpr-compliance)
 
 ## Organization settings
 * [Restrict stream creation](/help/configure-who-can-create-streams)

@@ -154,13 +154,13 @@ Some titles have been shortened for organizational purposes.
 
 [TypeScript Declaration Files Introduction]: https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html
 
-## Git/Version Control Systems (VCS)
+## Git/version control systems (VCS)
 
 You may want to take a look first at our [Git and GitHub guide][].
 
 [Git and GitHub guide]: ../git/index.md
 
-## Computer Science/Algorithms
+## Computer science/algorithms
 
 *Blog* - [GeeksforGeeks][]
 
@@ -216,7 +216,7 @@ You may want to take a look first at our [Git and GitHub guide][].
 
 [List of good projects for new contributors]: https://github.com/MunGell/awesome-for-beginners
 
-## Competitions/Camps
+## Competitions/camps
 
 [CodeForces][]
 
@@ -226,7 +226,7 @@ You may want to take a look first at our [Git and GitHub guide][].
 
 [Free Code Camp]: https://www.freecodecamp.com
 
-## Massive Open Online Courses (MOOC) Platforms
+## Massive open online courses (MOOC) platforms
 
 [Coursera][]
 

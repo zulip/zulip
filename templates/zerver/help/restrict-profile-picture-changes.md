@@ -1,4 +1,4 @@
-# Restrict Profile picture change
+# Restrict profile picture change
 
 {!admin-only.md!}
 

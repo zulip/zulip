@@ -137,10 +137,10 @@ title="thumbs up"/>**: `+`
   (including All messages), and don't contribute to unread counts. Read more about
   [muting topics](/help/mute-a-topic).
 
-## Recent Topics
+## Recent topics
 
-* **View Recent Topics**: `t`
-* **Hide Recent Topics**: `Esc`
+* **View recent topics**: `t`
+* **Hide recent topics**: `Esc`
 
 Keyboard navigation (e.g. arrow keys) works as expected.
 Use `Enter` to engage with elements.

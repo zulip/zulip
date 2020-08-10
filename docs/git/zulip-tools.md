@@ -3,7 +3,7 @@
 This article documents several useful tools that can save you a lot of
 time when working with Git on the Zulip project.
 
-## Set up git repo script
+## Set up Git repo script
 
 **Extremely useful**.  In the `tools` directory of
 [zulip/zulip][github-zulip-zulip] you'll find a bash script

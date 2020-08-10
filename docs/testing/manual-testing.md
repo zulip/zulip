@@ -11,7 +11,7 @@ This doc assumes you know how to set up a local development server
 and open the Zulip app in the browser.  It also assumes a basic
 knowledge of how to use Zulip.
 
-## Basic Stuff ##
+## Basic stuff ##
 
 When testing Zulip manually, here are things to focus on:
 
@@ -453,7 +453,7 @@ Test per-stream options:
   messages view
 - Verify stream subscriber counts in the main stream view
 
-### User Settings ###
+### User settings ###
 
 You can modify per-user settings by choosing "Settings" in the gear menu.
 Do these tasks as Cordelia.
@@ -492,7 +492,7 @@ Do these tasks as Cordelia.
     - Turn on/off "Enable desktop notifications for new streams" and test.
       (We may eliminate this option soon.)
 
-### Keyboard Shortcuts ###
+### Keyboard shortcuts ###
 
 We mostly test keyboard shortcuts as part of other tasks.
 

@@ -1,7 +1,7 @@
 Zulip architectural overview
 ============================
 
-Key Codebases
+Key codebases
 -------------
 
 The main Zulip codebase is at <https://github.com/zulip/zulip>.  It

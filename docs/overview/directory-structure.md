@@ -43,7 +43,7 @@ paths will be familiar to Django developers.
 
 -------------------------------------------------------------------
 
-### HTML Templates
+### HTML templates
 
 See [our docs](../subsystems/html-css.md) for details on Zulip's
 templating systems.
@@ -126,7 +126,7 @@ Django context (i.e. with database access).
 
 ---------------------------------------------------------
 
-### API and Bots
+### API and bots
 
 * See the [Zulip API repository](https://github.com/zulip/python-zulip-api).
   Zulip's Python API bindings, a number of Zulip integrations and
@@ -163,7 +163,7 @@ This is used to deploy essentially all configuration in production.
 
 -----------------------------------------------------------------------
 
-### Jinja2 Compatibility Files
+### Jinja2 compatibility files
 
 * `zproject/jinja2/__init__.py` Jinja2 environment.
 

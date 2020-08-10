@@ -9,7 +9,7 @@ W3C's Web Content Accessibility Guidelines.
 
 2. Under **Display settings**, select **High contrast mode**.
 
-## Related Articles
+## Related articles
 
 * [Accessibility in Zulip](https://zulip.readthedocs.io/en/latest/contributing/accessibility.html)
 * [View emoji as text](/help/view-emoji-as-text)

@@ -1,4 +1,4 @@
-# Testing Philosophy
+# Testing philosophy
 
 Zulip's automated tests are a huge part of what makes the project able
 to make progress.  This page records some of the key principles behind
@@ -195,4 +195,3 @@ these tests are defense in depth; the main way we prevent invalid
 access to streams is not offering developers a way to get a Stream
 object in server code except as mediated through these security check
 functions.
-

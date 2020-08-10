@@ -32,6 +32,6 @@ Muted streams still appear in the left sidebar, though they are grayed out.
 
 {end_tabs}
 
-## Related Articles
+## Related articles
 
 * [Mute a topic](/help/mute-a-topic)
