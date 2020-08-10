@@ -978,12 +978,6 @@ def logout_then_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     return django_logout_then_login(request, kwargs)
 
 def password_reset(request: HttpRequest) -> HttpResponse:
-    if not Realm.objects.filter(string_id=get_subdomain(request)).exists():
-        # If trying to get to password reset on a subdomain that
-        # doesn't exist, just go to find_account.
-        redirect_url = reverse('zerver.views.registration.find_account')
-        return HttpResponseRedirect(redirect_url)
-
     view_func = DjangoPasswordResetView.as_view(template_name='zerver/reset.html',
                                                 form_class=ZulipPasswordResetForm,
                                                 success_url='/accounts/password/reset/done/')
