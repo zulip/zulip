@@ -150,7 +150,7 @@ class OpenAPIToolsTest(ZulipTestCase):
         # Check that validate_against_openapi_schema correctly
         # descends into 'deep' objects and arrays.  Test 1 should
         # pass, Test 2 has a 'deep' extraneous key and Test 3 has a
-        # 'deep' opaque object. Also the parameters are a heterogenous
+        # 'deep' opaque object. Also the parameters are a heterogeneous
         # mix of arrays and objects to verify that our descent logic
         # correctly gets to the the deeply nested objects.
         with open(os.path.join(os.path.dirname(OPENAPI_SPEC_PATH),
@@ -480,7 +480,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 # checked in the view code.
                 #
                 # Meanwhile `profile_data` in /users/{user_id}: GET is
-                # taken as array of objects. So treat them seperately.
+                # taken as array of objects. So treat them separately.
                 schema = element["content"]["application/json"]["schema"]
                 json_params[name] = schema_type(schema)
                 continue

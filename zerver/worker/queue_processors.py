@@ -369,7 +369,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
 @assign_queue('user_activity', queue_type="loop")
 class UserActivityWorker(LoopQueueProcessingWorker):
     """The UserActivity queue is perhaps our highest-traffic queue, and
-    requires some care to ensure it performes adequately.
+    requires some care to ensure it performs adequately.
 
     We use a LoopQueueProcessingWorker as a performance optimization
     for managing the queue.  The structure of UserActivity records is

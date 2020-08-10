@@ -467,7 +467,7 @@ run_test("redundancies", () => {
     assert(filter.can_bucket_by("is-private", "not-pm-with"));
 });
 
-run_test("canonicalizations", () => {
+run_test("canonicalization", () => {
     assert.equal(Filter.canonicalize_operator("Is"), "is");
     assert.equal(Filter.canonicalize_operator("Stream"), "stream");
     assert.equal(Filter.canonicalize_operator("Subject"), "topic");

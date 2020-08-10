@@ -321,7 +321,7 @@ paths:
                                             The email of the user.
 
                                             **Deprecated**: This field will be removed in a future
-                                            release as it is redunant with the `user_id`.
+                                            release as it is redundant with the `user_id`.
                                           deprecated: true
                                         timezone:
                                           type: string
@@ -883,7 +883,7 @@ paths:
                                     The email of the user.
 
                                     **Deprecated**: This field will be removed in a future
-                                    release as it is redunant with the `user_id`.
+                                    release as it is redundant with the `user_id`.
                                   deprecated: true
                                 server_timestamp:
                                   type: number
@@ -894,7 +894,7 @@ paths:
                                   type: object
                                   description: |
                                     An object contatining a set of objects which describe the
-                                    the user's presence on various platfroms.
+                                    the user's presence on various platforms.
                                   additionalProperties:
                                     $ref: "#/components/schemas/Presence"
                               additionalProperties: false
@@ -2037,7 +2037,7 @@ paths:
                                     - update_message_flags
                                 operation:
                                   description: |
-                                    Whether the flags are added or rmeoved.
+                                    Whether the flags are added or removed.
                                   type: string
                                   enum:
                                     - add
@@ -2082,7 +2082,7 @@ paths:
                                 operation:
                                   type: string
                                   description: |
-                                    Whether the flags are added or rmeoved.
+                                    Whether the flags are added or removed.
                                   enum:
                                     - remove
                                 flag:
@@ -2144,7 +2144,7 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization
-                                when a propety of a user group is changed.
+                                when a property of a user group is changed.
                               properties:
                                 id:
                                   type: integer
@@ -5868,7 +5868,7 @@ paths:
                                 stream_id:
                                   type: integer
                                   description: |
-                                    The id of the stream to which the messsage was sent.
+                                    The id of the stream to which the message was sent.
                                 message_ids:
                                   type: array
                                   description: |
@@ -5891,7 +5891,7 @@ paths:
                                   type: string
                                   description: |
                                     A string containing the ids of all users in the huddle(group PMs)
-                                    seperated by commas(,). Example: "1,2,3".
+                                    separated by commas(,). Example: "1,2,3".
                                 message_ids:
                                   type: array
                                   description: |
@@ -7131,7 +7131,7 @@ paths:
                               description: |
                                 A unique, table, machine-readable name for the authentication method,
                                 intended to be used by clients with special behavior for specific
-                                authenatication methods to correctly identify the method.
+                                authentication methods to correctly identify the method.
                             display_name:
                               type: string
                               description: |

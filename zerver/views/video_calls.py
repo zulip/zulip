@@ -64,7 +64,7 @@ def get_zoom_sid(request: HttpRequest) -> str:
     csrf.get_token(request)
     # Use 'mark_sanitized' to cause Pysa to ignore the flow of user controlled
     # data out of this function. 'request.META' is indeed user controlled, but
-    # post-HMAC ouptut is no longer meaningfully controllable.
+    # post-HMAC output is no longer meaningfully controllable.
     return mark_sanitized(
         ""
         if getattr(request, "_dont_enforce_csrf_checks", False)

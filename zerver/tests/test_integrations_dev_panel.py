@@ -30,7 +30,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             self.assertEqual(ujson.loads(response.content), expected_response)
 
         # Intention of this test looks like to trigger keyError
-        # so just testing KeyError is printed along wth Traceback in logs
+        # so just testing KeyError is printed along with Traceback in logs
         self.assertTrue("KeyError" in logs.output[0])
         self.assertTrue("Traceback (most recent call last)" in logs.output[0])
         self.assertEqual(logs.output[1], "ERROR:django.request:Internal Server Error: /api/v1/external/airbrake")

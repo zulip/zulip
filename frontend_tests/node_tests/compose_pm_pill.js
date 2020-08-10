@@ -169,7 +169,7 @@ run_test("has_unconverted_data", () => {
         items: () => [{user_id: 99}],
     };
 
-    // Our pill is complete and all items containt user_id, so
+    // Our pill is complete and all items contain user_id, so
     // we do NOT have unconverted data.
     assert.equal(compose_pm_pill.has_unconverted_data(), false);
 

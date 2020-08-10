@@ -42,7 +42,7 @@ def check_full_name(full_name_raw: str) -> str:
             raise JsonableError(_("Invalid characters in name!"))
     # Names ending with e.g. `|15` could be ambiguous for
     # sloppily-written parsers of our markdown syntax for mentioning
-    # users with ambigious names, and likely have no real use, so we
+    # users with ambiguous names, and likely have no real use, so we
     # ban them.
     if re.search(r"\|\d+$", full_name_raw):
         raise JsonableError(_("Invalid format!"))

@@ -108,7 +108,7 @@ async function test_user_filter_ui(
     await page.waitForSelector(cordelia_checkbox, {hidden: true});
     await page.waitForSelector(othello_checkbox, {visible: true});
 
-    // Filter shouln't affect streams.
+    // Filter shouldn't affect streams.
     await page.waitForSelector(scotland_checkbox, {visible: true});
     await page.waitForSelector(rome_checkbox, {visible: true});
 

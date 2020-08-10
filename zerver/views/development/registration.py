@@ -34,7 +34,7 @@ def register_development_user(request: HttpRequest) -> HttpResponse:
     activation_url = create_confirmation_link(prereg,
                                               Confirmation.USER_REGISTRATION)
     key = activation_url.split('/')[-1]
-    # Need to add test data to POST request as it doesnt originally contain the required parameters
+    # Need to add test data to POST request as it doesn't originally contain the required parameters
     modify_postdata(request, key=key, full_name=name, password='test', terms='true')
 
     return accounts_register(request)
@@ -50,7 +50,7 @@ def register_development_realm(request: HttpRequest) -> HttpResponse:
     activation_url = create_confirmation_link(prereg,
                                               Confirmation.REALM_CREATION)
     key = activation_url.split('/')[-1]
-    # Need to add test data to POST request as it doesnt originally contain the required parameters
+    # Need to add test data to POST request as it doesn't originally contain the required parameters
     modify_postdata(request, key=key, realm_name=realm_name, full_name=name, password='test',
                     realm_subdomain=realm_name, terms='true')
 

@@ -240,7 +240,7 @@ def linkified_id(object_id: str, lower: bool=False) -> str:
 
         # Undocumented :|
         'py': ('Payment', 'payments'),
-        'pyr': ('Refund', 'refunds'),  # Psuedo refunds. Not fully tested.
+        'pyr': ('Refund', 'refunds'),  # Pseudo refunds. Not fully tested.
 
         # Connect, Fraud, Orders, etc not implemented
     }
