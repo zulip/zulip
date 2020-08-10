@@ -65,8 +65,9 @@ su zulip -c '/home/zulip/deployments/current/manage.py backup'
 ```
 
 The backup tool provides the following options:
-- `--output`: Path where the output file should be stored. If no path is
- provided, the output file is saved to a temporary directory.
+- `--output=/tmp/backup.tar.gz`: Filename to write the backup tarball
+  to (default: write to a file in `/tmp`).  On success, the
+  console output will show the path to the output tarball.
 - `--skip-db`: Skip backup of the database.  Useful if you're using a
   remote postgres host with its own backup system and just need to
   backup non-database state.
