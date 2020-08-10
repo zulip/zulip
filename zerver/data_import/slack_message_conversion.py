@@ -128,7 +128,7 @@ def get_user_mentions(token: str, users: List[ZerverFieldsT],
             return token, user_id
     return token, None
 
-# Map italic, bold and strikethrough markdown
+# Map italic, bold and strikethrough Markdown
 def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
     """
     Returns:

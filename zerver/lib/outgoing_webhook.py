@@ -166,7 +166,7 @@ def send_response_message(bot_id: int, message_info: Dict[str, Any], response_da
         topic - see get_topic_from_message_info
 
     response_data is what the bot wants to send back and has these fields:
-        content - raw markdown content for Zulip to render
+        content - raw Markdown content for Zulip to render
     """
 
     message_type = message_info['type']

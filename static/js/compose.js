@@ -37,7 +37,7 @@ exports.uploads_re = new RegExp(
 );
 
 function make_uploads_relative(content) {
-    // Rewrite uploads in markdown links back to domain-relative form
+    // Rewrite uploads in Markdown links back to domain-relative form
     return content.replace(exports.uploads_re, "]($1)");
 }
 
@@ -857,8 +857,8 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
             loading.make_indicator(spinner);
         } else {
             // For messages that don't appear to contain syntax that
-            // is only supported by our backend markdown processor, we
-            // render using the frontend markdown processor (but still
+            // is only supported by our backend Markdown processor, we
+            // render using the frontend Markdown processor (but still
             // render server-side to ensure the preview is accurate;
             // if the `markdown.contains_backend_only_syntax` logic is
             // wrong, users will see a brief flicker of the locally

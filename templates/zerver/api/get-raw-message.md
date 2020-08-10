@@ -1,4 +1,4 @@
-# Get a message's raw markdown
+# Get a message's raw Markdown
 
 {generate_api_description(/messages/{message_id}:get)}
 

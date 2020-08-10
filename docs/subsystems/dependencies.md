@@ -269,7 +269,7 @@ Zulip uses the [iamcal emoji data package][iamcal] for its emoji data
 and sprite sheets.  We download this dependency using `npm`, and then
 have a tool, `tools/setup/build_emoji`, which reformats the emoji data
 into the files under `static/generated/emoji`.  Those files are in
-turn used by our [markdown processor](../subsystems/markdown.md) and
+turn used by our [Markdown processor](../subsystems/markdown.md) and
 `tools/update-prod-static` to make Zulip's emoji work in the various
 environments where they need to be displayed.
 
@@ -295,10 +295,10 @@ implementation of that tool.
 
 ### Pygments data
 
-The list of languages supported by our markdown syntax highlighting
+The list of languages supported by our Markdown syntax highlighting
 comes from the [pygments][] package.  `tools/setup/build_pygments_data` is
 responsible for generating `static/generated/pygments_data.json` so that
-our JavaScript markdown processor has access to the supported list.
+our JavaScript Markdown processor has access to the supported list.
 
 ## Modifying provisioning
 

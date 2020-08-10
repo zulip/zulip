@@ -109,8 +109,8 @@ to mark the appropriate users as administrators.
   organization using [this
   tool](https://github.com/minrk/archive-gitter/pull/5).
 
-- This tool doesn't translate Gitter's markdown format into Zulip
-  format markdown (there are a few corner cases where the syntax is
+- This tool doesn't translate Gitter's Markdown format into Zulip
+  format Markdown (there are a few corner cases where the syntax is
   different).  Additionally, Gitter's
   [issue mentions](https://gitter.zendesk.com/hc/en-us/articles/200176692-Issue-and-Pull-Request-mentions)
   aren't translated into anything yet.

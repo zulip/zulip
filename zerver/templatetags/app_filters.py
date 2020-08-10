@@ -78,9 +78,9 @@ docs_without_macros = [
 def render_markdown_path(markdown_file_path: str,
                          context: Mapping[str, Any]={},
                          pure_markdown: bool=False) -> str:
-    """Given a path to a markdown file, return the rendered html.
+    """Given a path to a Markdown file, return the rendered html.
 
-    Note that this assumes that any HTML in the markdown file is
+    Note that this assumes that any HTML in the Markdown file is
     trusted; it is intended to be used for documentation, not user
     data."""
 
@@ -136,7 +136,7 @@ def render_markdown_path(markdown_file_path: str,
     jinja = engines['Jinja2']
 
     try:
-        # By default, we do both Jinja2 templating and markdown
+        # By default, we do both Jinja2 templating and Markdown
         # processing on the file, to make it easy to use both Jinja2
         # context variables and markdown includes in the file.
         markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]

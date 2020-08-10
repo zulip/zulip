@@ -259,7 +259,7 @@ def fix_message_rendered_content(realm: Realm,
     for message in messages:
         if message['rendered_content'] is not None:
             # For Zulip->Zulip imports, we use the original rendered
-            # markdown; this avoids issues where e.g. a mention can no
+            # Markdown; this avoids issues where e.g. a mention can no
             # longer render properly because a user has changed their
             # name.
             #
@@ -329,11 +329,11 @@ def fix_message_rendered_content(realm: Realm,
             message['rendered_content_version'] = markdown_version
         except Exception:
             # This generally happens with two possible causes:
-            # * rendering markdown throwing an uncaught exception
-            # * rendering markdown failing with the exception being
-            #   caught in markdown (which then returns None, causing the the
+            # * rendering Markdown throwing an uncaught exception
+            # * rendering Markdown failing with the exception being
+            #   caught in Markdown (which then returns None, causing the the
             #   rendered_content assert above to fire).
-            logging.warning("Error in markdown rendering for message ID %s; continuing", message['id'])
+            logging.warning("Error in Markdown rendering for message ID %s; continuing", message['id'])
 
 def current_table_ids(data: TableData, table: TableName) -> List[int]:
     """
@@ -1218,7 +1218,7 @@ def import_message_data(realm: Realm,
             sender_map=sender_map,
             messages=data['zerver_message'],
         )
-        logging.info("Successfully rendered markdown for message batch")
+        logging.info("Successfully rendered Markdown for message batch")
 
         # A LOT HAPPENS HERE.
         # This is where we actually import the message data.

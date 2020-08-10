@@ -232,7 +232,7 @@ exports.edit_locally = function (message, request) {
             message.mentioned_me_directly = request.mentioned_me_directly;
             message.alerted = request.alerted;
         } else {
-            // Otherwise, we markdown-render the message; this resets
+            // Otherwise, we Markdown-render the message; this resets
             // all flags, so we need to restore those flags that are
             // properties of how the user has interacted with the
             // message, and not its rendering.

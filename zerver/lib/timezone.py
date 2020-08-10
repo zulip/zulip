@@ -51,7 +51,7 @@ timezone_data = None
 
 # _calculate_timezones takes about 25ms to run, so we want to cache
 # its results (while avoiding running it on process startup since we
-# only need it for markdown rendering).
+# only need it for Markdown rendering).
 def get_common_timezones() -> Dict[str, Union[int, Any]]:
     global timezone_data
     if timezone_data is None:

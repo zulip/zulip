@@ -9,11 +9,11 @@
     I also wanted to make some diffs clear before
     doing any major file moves.
 
-    Also, I want the unit tests for markdown to
+    Also, I want the unit tests for Markdown to
     be able to reuse this code easily (and therefore
     didn't just put this in ui_init.js).
 
-    Once the first steps of making markdown be a
+    Once the first steps of making Markdown be a
     shared library are complete, we may tweak
     the file organization a bit.
 

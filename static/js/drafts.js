@@ -272,7 +272,7 @@ exports.format_draft = function (draft) {
         markdown.apply_markdown(formatted);
     } catch (error) {
         // In the unlikely event that there is syntax in the
-        // draft content which our markdown processor is
+        // draft content which our Markdown processor is
         // unable to process, we delete the draft, so that the
         // drafts overlay can be opened without any errors.
         // We also report the exception to the server so that

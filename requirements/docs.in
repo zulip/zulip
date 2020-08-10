@@ -11,5 +11,5 @@
 sphinx
 sphinx-rtd-theme
 
-# Needed to build markdown docs
+# Needed to build Markdown docs
 recommonmark

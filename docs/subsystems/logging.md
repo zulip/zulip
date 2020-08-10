@@ -87,7 +87,7 @@ The format of this output is:
 * HTTP status code
 * Time to process
 * (Optional perf data details, e.g. database time/queries, memcached
-time/queries, Django process startup time, markdown processing time,
+time/queries, Django process startup time, Markdown processing time,
 etc.)
 * Endpoint/URL from zproject/urls.py
 * "email via client" showing user account involved (if logged in) and
@@ -95,7 +95,7 @@ the type of client they used ("web", "Android", etc.).
 
 The performance data details are particularly useful for investigating
 performance problems, since one can see at a glance whether a slow
-request was caused by delays in the database, in the markdown
+request was caused by delays in the database, in the Markdown
 processor, in memcached, or in other Python code.
 
 One useful thing to note, however, is that the database time is only

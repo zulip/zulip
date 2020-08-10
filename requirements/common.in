@@ -14,7 +14,7 @@ dataclasses;python_version<"3.7"
 # Needed for rendering backend templates
 Jinja2
 
-# Needed for markdown processing
+# Needed for Markdown processing
 Markdown
 importlib-metadata;python_version<"3.8"  # for Markdown
 Pygments
@@ -69,7 +69,7 @@ premailer
 # Needed for JWT-based auth
 PyJWT
 
-# Needed for including other markdown files for user docs
+# Needed for including other Markdown files for user docs
 markdown-include
 
 # Needed to access rabbitmq

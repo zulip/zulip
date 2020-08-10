@@ -113,7 +113,7 @@ footer
             'markdown_test_file': "zerver/tests/markdown/test_custom_include_extension.md",
         }
 
-        with self.assertRaisesRegex(InvalidMarkdownIncludeStatement, "Invalid markdown include statement"):
+        with self.assertRaisesRegex(InvalidMarkdownIncludeStatement, "Invalid Markdown include statement"):
             template.render(context)
         self.assertEqual(mock_print.mock_calls, [
             call("Warning: could not find file templates/zerver/help/include/nonexistent-macro.md. Error: [Errno 2] No such file or directory: 'templates/zerver/help/include/nonexistent-macro.md'")

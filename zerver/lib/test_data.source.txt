@@ -177,11 +177,11 @@ on technical design issues.
 
 what if you just want to look at something and go back to where you were?
 
-As a first step, I think it is viable to show the raw markdown, and then
+As a first step, I think it is viable to show the raw Markdown, and then
 replace it when the server sends the update event.
 
 Hmmm, I would not say the current implementation would handle all the math
-and the complex markdown, but it does pass all the tests in that file
+and the complex Markdown, but it does pass all the tests in that file
 
 Wait, is this from the frontend js code or backend python code
 
