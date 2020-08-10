@@ -111,7 +111,7 @@ The upgrade scripts are idempotent, so there's no harm in trying again
 after resolving an issue.  The most common causes of errors are:
 
 * Networking issues (e.g. your Zulip server doesn't have reliable
-  Internet access or needs a proxy setup).  Fix the networking issue
+  Internet access or needs a proxy set up).  Fix the networking issue
   and try again.
 * Especially when using `upgrade-zulip-from-git`, systems with the
   minimal RAM for running Zulip can run into out-of-memory issues

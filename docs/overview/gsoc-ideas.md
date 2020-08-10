@@ -285,7 +285,7 @@ CSS](https://github.com/zulip/zulip/).
   access](https://github.com/zulip/zulip/issues/13172).  Expert: Tim
   Abbott.
 
-- Make Zulip integrations easier for nontechnical users to setup.
+- Make Zulip integrations easier for nontechnical users to set up.
   This includes adding a backend permissions system for managing bot
   permissions (and implementing the enforcement logic), adding an
   OAuth system for presenting those controls to users, as well as

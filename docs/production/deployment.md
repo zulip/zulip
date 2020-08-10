@@ -91,7 +91,7 @@ order to avoid it throwing an error when Zulip attempts to configure
 the database's dictionary files for full-text search; the details are
 below.
 
-#### Step 1: Setup Zulip
+#### Step 1: Set up Zulip
 
 Follow the [standard instructions](../production/install.md), with one
 change.  When running the installer, pass the `--no-init-db`
@@ -224,7 +224,7 @@ instead of HTTPS.
 
 ### nginx configuration
 
-For `nginx` configuration, there's two things you need to setup:
+For `nginx` configuration, there's two things you need to set up:
 * The root `nginx.conf` file.  We recommend using
   `/etc/nginx/nginx.conf` from your Zulip server for our recommended
   settings.  E.g. if you don't set `client_max_body_size`, it won't be

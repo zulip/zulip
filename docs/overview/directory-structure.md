@@ -121,7 +121,7 @@ Django context (i.e. with database access).
   the development environment setup process.
 
 * `tools/ci/` Subdirectory of `tools/` for things only used to
-  setup and run our tests in CI.  Actual test suites should
+  set up and run our tests in CI.  Actual test suites should
   go in `tools/`.
 
 ---------------------------------------------------------

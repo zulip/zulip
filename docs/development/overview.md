@@ -74,7 +74,7 @@ to read these documents to learn how to use it:
 * [Using the Development Environment][using-dev-env]
 * [Testing][testing] (and [Configuring CI][ci])
 
-And if you've setup the Zulip development environment on a remote
+And if you've set up the Zulip development environment on a remote
 machine, take a look at our tips for
 [developing remotely][dev-remote].
 

@@ -148,7 +148,7 @@ As you scale your server, you might want to migrate the uploads from
 your local backend to Amazon S3.  Follow these instructions, step by
 step, to do the migration.
 
-1. First, [setup the S3 backend](#s3-backend-configuration) in the settings
+1. First, [set up the S3 backend](#s3-backend-configuration) in the settings
     (all the auth stuff), but leave `LOCAL_UPLOADS_DIR` set -- the
     migration tool will need that value to know where to find your uploads.
 2. Run `./manage.py transfer_uploads_to_s3`. This will upload all the

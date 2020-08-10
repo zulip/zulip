@@ -52,7 +52,7 @@ want to know; you'll likely also want to read the section on writing
 tests (below) if you get stuck, since the advice on how to write
 correct Casper selectors will likely be relevant.
 
-This is a pain to setup with Vagrant because port `7777` and `9981`
+This is a pain to set up with Vagrant because port `7777` and `9981`
 aren't forwarded to the host by default, but can be pretty useful in
 rare difficult cases.
 

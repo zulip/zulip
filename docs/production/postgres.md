@@ -15,7 +15,7 @@ in a future release.
 
 #### Remote Postgres database
 
-This is a bit annoying to setup, but you can configure Zulip to use a
+This is a bit annoying to set up, but you can configure Zulip to use a
 dedicated postgres server by setting the `REMOTE_POSTGRES_HOST`
 variable in /etc/zulip/settings.py, and configuring Postgres
 certificate authentication (see

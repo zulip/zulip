@@ -27,7 +27,7 @@ For example, our [infrastructure for testing
 authentication](../development/authentication.md) allows using a mock
 LDAP database in both automated tests and the development environment,
 making it much easier now to refactor and improve this important part of
-the product than it was when you needed to setup an LDAP server and
+the product than it was when you needed to set up an LDAP server and
 populate it with some test data in order to test LDAP authentication.
 
 While not every part of Zulip has a great test suite, many components

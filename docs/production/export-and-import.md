@@ -47,7 +47,7 @@ service (or back):
   inexpensively preserve public stream conversations when
   decommissioning a Zulip organization.
 
-* It's possible to setup [postgres streaming
+* It's possible to set up [postgres streaming
   replication](#postgres-streaming-replication) and the [S3 file
   upload
   backend](../production/upload-backends.html#s3-backend-configuration)
@@ -185,7 +185,7 @@ will be stored in that directory and you'll want to back it up.
 
 * Your Zulip configuration including secrets from `/etc/zulip/`.
 E.g. if you lose the value of `secret_key`, all users will need to
-login again when you setup a replacement server since you won't be
+login again when you set up a replacement server since you won't be
 able to verify their cookies. If you lose `avatar_salt`, any
 user-uploaded avatars will need to be re-uploaded (since avatar
 filenames are computed using a hash of `avatar_salt` and user's
