@@ -37,7 +37,7 @@ from zerver.models import (
     get_user_profile_by_email,
 )
 # Class with helper functions useful for testing archiving of reactions:
-from zerver.tornado.event_queue import send_event
+from zerver.tornado.django_api import send_event
 
 ZULIP_REALM_DAYS = 30
 MIT_REALM_DAYS = 100
