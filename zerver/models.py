@@ -1131,7 +1131,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     ROLE_ID_TO_NAME_MAP = {
         ROLE_REALM_OWNER: _("Organization owner"),
-        ROLE_REALM_ADMINISTRATOR: _("Organization adminstrator"),
+        ROLE_REALM_ADMINISTRATOR: _("Organization administrator"),
         ROLE_MEMBER: _("Member"),
         ROLE_GUEST: _("Guest"),
     }

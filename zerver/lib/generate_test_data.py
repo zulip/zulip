@@ -130,7 +130,7 @@ def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[str]:
 def add_md(mode: str, text: str) -> str:
 
     # mode means: bold, italic, etc.
-    # to add a list at the end of a paragraph, * iterm one\n * item two
+    # to add a list at the end of a paragraph, * item one\n * item two
 
     # find out how long the line is, then insert the mode before the end
 

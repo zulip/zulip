@@ -49,7 +49,7 @@ class OpenAPISpec():
         self.last_update = os.path.getmtime(self.path)
 
     def create_regex_dict(self) -> None:
-        # Alogrithm description:
+        # Algorithm description:
         # We have 2 types of endpoints
         # 1.with path arguments 2. without path arguments
         # In validate_against_openapi_schema we directly check
@@ -200,7 +200,7 @@ def fix_events(content: Dict[str, Any]) -> None:
     only zulip.yaml changes and minimal other changes. It should be removed
     as soon as `/events` documentation is complete.
     """
-    # 'user' is deprecated so remove its occurences from the events array
+    # 'user' is deprecated so remove its occurrences from the events array
     for event in content['events']:
         event.pop('user', None)
 

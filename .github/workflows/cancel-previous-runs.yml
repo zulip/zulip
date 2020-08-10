@@ -18,7 +18,7 @@ jobs:
     steps:
       # We get workflow IDs from GitHub API so we don't have to maintain
       # a hard-coded list of IDs which need to be updated when a workflow
-      # is added or removed. And, workflow IDs are diffrent for other forks
+      # is added or removed. And, workflow IDs are different for other forks
       # so this is required.
       - name: Get workflow IDs.
         id: workflow_ids

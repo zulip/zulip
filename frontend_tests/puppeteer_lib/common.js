@@ -22,7 +22,7 @@ class CommonUtils {
                 // pseudo selector to actually wait for typeahead item that
                 // is visible; there can be typeahead item with this selector
                 // that is invisible because it is meant for something else
-                // e.g. private message input typeahead is diffrent from topic
+                // e.g. private message input typeahead is different from topic
                 // input typeahead but both can be present in the dom.
                 await page.waitForFunction(() => {
                     const selector = ".typeahead-menu .active a:visible";
@@ -198,7 +198,7 @@ class CommonUtils {
         await page.goto(this.realm_url);
         const menu_selector = "#settings-dropdown";
         const logout_selector = 'a[href="#logout"]';
-        console.log("Loggin out");
+        console.log("Logging out");
         await page.waitForSelector(menu_selector, {visible: true});
         await page.click(menu_selector);
         await page.waitForSelector(logout_selector);

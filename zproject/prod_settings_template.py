@@ -366,7 +366,7 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 # For frontend (JavaScript) tracebacks
 #BROWSER_ERROR_REPORTING = False
 
-# Controls the DSN used to report erors to Sentry.io
+# Controls the DSN used to report errors to Sentry.io
 #SENTRY_DSN = 'https://bbb@bbb.ingest.sentry.io/1235'
 
 # If True, each log message in the server logs will identify the

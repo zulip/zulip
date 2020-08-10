@@ -1229,7 +1229,7 @@ class MarkdownTest(ZulipTestCase):
 
         content = """Hello, everyone. Prod deployment has been completed
         And this is a new line
-        to test out how markdown convert this into something line ending splitted array
+        to test out how markdown convert this into something line ending split array
         and this is a new line
         last"""
         render(msg, content)
@@ -2156,7 +2156,7 @@ class MarkdownErrorTests(ZulipTestCase):
                 self.send_stream_message(self.example_user("othello"), "Denmark", message)
 
     def test_ultra_long_rendering(self) -> None:
-        """A rendered message with an ultra-long lenght (> 10 * MAX_MESSAGE_LENGTH)
+        """A rendered message with an ultra-long length (> 10 * MAX_MESSAGE_LENGTH)
         throws an exception"""
         msg = 'mock rendered message\n' * MAX_MESSAGE_LENGTH
 

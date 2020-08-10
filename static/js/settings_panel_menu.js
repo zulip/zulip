@@ -32,7 +32,7 @@ class SettingsPanelMenu {
         this.main_elem.show();
         const section = this.current_tab();
         if (two_column_mode()) {
-            // In one colum mode want to show the settings list, not the first settings section.
+            // In one column mode want to show the settings list, not the first settings section.
             this.activate_section_or_default(section);
         }
         this.curr_li.trigger("focus");

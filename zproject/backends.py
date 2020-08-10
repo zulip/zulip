@@ -1197,7 +1197,7 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
         return_data["full_name"] = full_name
     else:
         # Some authentications methods like Apple and SAML send
-        # first name and last name as seperate attributes. In that case
+        # first name and last name as separate attributes. In that case
         # we construct the full name from them.
         return_data["full_name"] = f"{first_name or ''} {last_name or ''}".strip()  # strip removes the unnecessary ' '
 

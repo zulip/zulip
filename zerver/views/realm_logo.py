@@ -36,7 +36,7 @@ def upload_logo(request: HttpRequest, user_profile: UserProfile,
 def delete_logo_backend(request: HttpRequest, user_profile: UserProfile,
                         night: bool=REQ(validator=check_bool)) -> HttpResponse:
     # We don't actually delete the logo because it might still
-    # be needed if the URL was cached and it is rewrited
+    # be needed if the URL was cached and it is rewritten
     # in any case after next update.
     do_change_logo_source(user_profile.realm, user_profile.realm.LOGO_DEFAULT, night, acting_user=user_profile)
     return json_success()

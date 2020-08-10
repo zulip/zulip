@@ -4192,7 +4192,7 @@ def do_update_mobile_push_notification(message: Message,
     #
     # A perfect implementation would also support updating the message
     # in a sent notification if a message was edited to mention a
-    # group rather than a user (or vise versa), though it is likely
+    # group rather than a user (or vice versa), though it is likely
     # not worth the effort to do such a change.
     if not message.is_stream_message():
         return

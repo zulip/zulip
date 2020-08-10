@@ -229,7 +229,7 @@ NON_EXPORTED_TABLES = {
     # Fillstate will require some cleverness to do the right partial export.
     'analytics_fillstate',
 
-    # These are for unfinished features; we'll want to add them ot the
+    # These are for unfinished features; we'll want to add them to the
     # export before they reach full production status.
     'zerver_defaultstreamgroup',
     'zerver_defaultstreamgroup_streams',

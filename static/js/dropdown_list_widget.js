@@ -96,7 +96,7 @@ const DropdownListWidget = function (opts) {
         });
 
         dropdown_toggle.on("focus", (e) => {
-            // On opening a Bootstrap Dropdown, the parent element recieves focus.
+            // On opening a Bootstrap Dropdown, the parent element receives focus.
             // Here, we want our search input to have focus instead.
             e.preventDefault();
             search_input.trigger("focus");
