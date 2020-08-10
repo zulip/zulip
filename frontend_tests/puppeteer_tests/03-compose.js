@@ -160,17 +160,17 @@ const markdown_preview_hide_button = "#undo_markdown_preview";
 
 async function test_markdown_preview_buttons_visibility(page) {
     await page.waitForSelector(markdown_preview_button, {visible: true});
-    await page.waitForSelector(markdown_preview_hide_button, {visible: false});
+    await page.waitForSelector(markdown_preview_hide_button, {hidden: true});
 
     // verify if markdowm preview button works.
     await page.click(markdown_preview_button);
-    await page.waitForSelector(markdown_preview_button, {visible: false});
+    await page.waitForSelector(markdown_preview_button, {hidden: true});
     await page.waitForSelector(markdown_preview_hide_button, {visible: true});
 
     // verify if write button works.
     await page.click(markdown_preview_hide_button);
     await page.waitForSelector(markdown_preview_button, {visible: true});
-    await page.waitForSelector(markdown_preview_hide_button, {visible: false});
+    await page.waitForSelector(markdown_preview_hide_button, {hidden: true});
 }
 
 async function test_markdown_preview_without_any_content(page) {

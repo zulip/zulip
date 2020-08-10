@@ -153,7 +153,7 @@ async function test_edit_bot_form(page) {
     await page.click(save_btn_selector);
 
     // The form gets closed on saving. So, assert it's closed by waiting for it to be hidden.
-    await page.waitForSelector("#edit_bot_modal", {visible: false});
+    await page.waitForSelector("#edit_bot_modal", {hidden: true});
 
     const bot1_name_selector = `.details:has(${bot1_edit_btn}) .name`;
     await page.waitForFunction(
@@ -193,7 +193,7 @@ async function get_alert_words_status_text(page) {
 async function close_alert_words_status(page) {
     const status_close_btn = ".close-alert-word-status";
     await page.click(status_close_btn);
-    await page.waitForSelector(alert_word_status_selector, {visible: false});
+    await page.waitForSelector(alert_word_status_selector, {hidden: true});
 }
 
 async function test_and_close_alert_word_added_successfully_status(page, word) {
