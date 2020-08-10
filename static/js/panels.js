@@ -116,6 +116,14 @@ exports.initialize = function () {
         }
         resize_app();
     });
+
+    // Treat Enter with links in the panels UI focused like a click.,
+    $("#panels").on("keyup", ".alert-link[role=button]", function (e) {
+        e.stopPropagation();
+        if (e.key === "Enter") {
+            $(this).click();
+        }
+    });
 };
 
 exports.open = function ($process) {
