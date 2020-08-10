@@ -1,5 +1,5 @@
 #####################
-Writing Documentation
+Writing documentation
 #####################
 
 .. toctree::

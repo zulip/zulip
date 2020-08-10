@@ -63,7 +63,7 @@ doing the final upgrade at off hours, or buying a support contract.
 See the [troubleshooting guide](#troubleshooting-and-rollback) if you
 run into any issues or need to roll back the upgrade.
 
-## Upgrading from a git repository
+## Upgrading from a Git repository
 
 Zulip supports upgrading a production installation to any commit in a
 Git repository, which is great for [running pre-release changes from
@@ -489,7 +489,7 @@ cd zulip
 git fetch --tags upstream
 git checkout acme-branch
 git rebase --onto 2.1.0 2.0.4
-# Fix any errors or merge conflicts; see Zulip's Git Guide for advice
+# Fix any errors or merge conflicts; see Zulip's Git guide for advice
 
 # Use `git diff` to verify your changes are what you expect
 git diff 2.1.0 acme-branch

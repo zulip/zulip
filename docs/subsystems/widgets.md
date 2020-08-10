@@ -231,7 +231,7 @@ but you don't want to have to modify the Zulip server codebase
 to turn on those features.  This is where our "zform"
 architecture comes to the rescue.
 
-## zform (Trivia Quiz bot)
+## zform (trivia quiz bot)
 
 This section will describe our "zform" architecture.
 

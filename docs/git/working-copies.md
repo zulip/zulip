@@ -41,7 +41,7 @@ names.
 - **origin**: This is your fork.
 - **upstream**: This is the official Zulip repo.
 
-## Relevant git commands
+## Relevant Git commands
 
 The following commands are useful for moving commits between
 working copies:

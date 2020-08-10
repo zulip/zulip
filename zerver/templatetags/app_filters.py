@@ -78,7 +78,7 @@ docs_without_macros = [
 def render_markdown_path(markdown_file_path: str,
                          context: Mapping[str, Any]={},
                          pure_markdown: bool=False) -> str:
-    """Given a path to a Markdown file, return the rendered html.
+    """Given a path to a Markdown file, return the rendered HTML.
 
     Note that this assumes that any HTML in the Markdown file is
     trusted; it is intended to be used for documentation, not user

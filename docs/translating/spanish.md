@@ -1,4 +1,4 @@
-# Spanish Translation Style Guide
+# Spanish translation style guide
 
 Use informal Spanish for translation:
 
@@ -20,7 +20,7 @@ Use informal Spanish for translation:
 
 * Balance common verbs and nouns with specific IT-related translations
   of English terms - this can be tricky, try to check how other
-  resources were translated (e.g. GMail, Microsoft websites, Facebook)
+  resources were translated (e.g. Gmail, Microsoft websites, Facebook)
   to decide what wouldn't sound awkward / rude in Spanish.
 
 * Latest RAE rule ("solo" should

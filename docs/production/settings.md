@@ -21,7 +21,7 @@ su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
 
 ## Specific settings
 
-### Domain and Email settings
+### Domain and email settings
 
 `EXTERNAL_HOST`: the user-accessible domain name for your Zulip
 installation (i.e., what users will type in their web browser). This
@@ -34,7 +34,7 @@ maintaining this installation and who will get support and error
 emails.  If you passed `--email` to the installer, this will be
 prefilled with that value.
 
-### Authentication Backends
+### Authentication backends
 
 `AUTHENTICATION_BACKENDS`: Zulip supports a wide range of popular
 options for authenticating users to your server, including Google

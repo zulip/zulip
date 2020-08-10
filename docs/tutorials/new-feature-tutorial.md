@@ -26,7 +26,7 @@ organized.  And finally, the
 [message sending](../subsystems/sending-messages.md) documentation on
 the additional complexity involved in sending messages.
 
-## General Process
+## General process
 
 ### Files impacted
 
@@ -50,12 +50,12 @@ organization in Zulip). The following files are involved in the process:
   (ex: pushing an organization change to other open browsers and updating
   the application's state).
 
-**Backend Testing**
+**Backend testing**
 - `zerver/tests/test_realm.py`: end-to-end API tests for updating realm settings.
 - `zerver/tests/test_events.py`: tests for possible race bugs in the
   zerver/lib/events.py implementation.
 
-**Frontend Testing**
+**Frontend testing**
 - `frontend_tests/casper_tests/10-admin.js`: end-to-end tests for the organization
   admin settings pages.
 - `frontend_tests/node_tests/dispatch.js`
@@ -134,7 +134,7 @@ or JavaScript/TypeScript code that generates user-facing strings, be sure to
 
 **Testing:** There are two types of frontend tests: node-based unit
 tests and blackbox end-to-end tests. The blackbox tests are run in a
-headless browser using Casper.js and are located in
+headless browser using CasperJS and are located in
 `frontend_tests/casper_tests/`. The unit tests use Node's `assert`
 module are located in `frontend_tests/node_tests/`. For more
 information on writing and running tests, see the
@@ -461,7 +461,7 @@ with the new value. E.g., for `authentication_methods`, we created
 This completes the backend implementation. A great next step is to
 write automated backend tests for your new feature.
 
-### Backend Tests
+### Backend tests
 
 To test the new setting syncs correctly with the `property_types`
 framework, one usually just needs to add a line in each of
@@ -637,7 +637,7 @@ Here are few important cases you should consider when testing your changes:
   buttons, so changes and saving in one subsection shouldn't affect
   the others.
 
-### Front End Tests
+### Front end tests
 
 A great next step is to write front end tests. There are two types of
 frontend tests: [node-based unit tests](../testing/testing-with-node.md) and

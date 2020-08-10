@@ -7,7 +7,7 @@ following general translation rules.
 
 ## Rules
 
-### Formal or Informal?
+### Formal or informal?
 
 **Informal.**
 
@@ -114,7 +114,7 @@ to get a feeling for the vocabulary.
 
 * Balance common verbs and nouns with specific IT-related translations
 of English terms - this can be tricky, try to check how other resources
-were translated (e.g. GMail, Microsoft websites, Facebook) to decide
+were translated (e.g. Gmail, Microsoft websites, Facebook) to decide
 what wouldn't sound awkward / rude in German.
 
 * For additional translation information, feel free to check out
@@ -144,7 +144,7 @@ Since we try to avoid concatenating words whenever possible, don't use
 We go with "markiert" instead of "gesternt" (which is not even a proper
 German word) here, since it comes closer to the original meaning of "starred".
 
-*"Markierte Nachricht" (GMail, Transifex),
+*"Markierte Nachricht" (Gmail, Transifex),
 "Nachricht mit Stern" (WhatsApp)*
 
 *"Bereich" (Transifex), "Community" (Google+)*

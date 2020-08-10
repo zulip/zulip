@@ -192,12 +192,12 @@ async function test_markdown_rendering(page) {
         "",
     );
     await common.fill_form(page, 'form[action^="/json/messages"]', {
-        content: "**Markdown Preview** >> Test for Markdown preview",
+        content: "**Markdown preview** >> Test for Markdown preview",
     });
     await page.click("#markdown_preview");
     await page.waitForSelector("#preview_content", {visible: true});
     const expected_markdown_html =
-        "<p><strong>Markdown Preview</strong> &gt;&gt; Test for Markdown preview</p>";
+        "<p><strong>Markdown preview</strong> &gt;&gt; Test for Markdown preview</p>";
     await page.waitForFunction(() => $("#preview_content").html() !== "");
     markdown_preview_element = await page.$("#preview_content");
     assert.equal(

@@ -1,4 +1,4 @@
-# Fixing Commits
+# Fixing commits
 This is mostly from
 [here](https://help.github.com/en/articles/changing-a-commit-message#rewriting-the-most-recent-commit-message).
 

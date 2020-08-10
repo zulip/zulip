@@ -1,4 +1,4 @@
-# Security Model
+# Security model
 
 This section attempts to document the Zulip security model.  It likely
 does not cover every issue; if there are details you're curious about,
@@ -25,7 +25,7 @@ announcement).
   entire message history, and thus someone with control over the
   server has access to that data as well.
 
-## Encryption and Authentication
+## Encryption and authentication
 
 * Traffic between clients (web, desktop and mobile) and the Zulip is
   encrypted using HTTPS.  By default, all Zulip services talk to each
@@ -90,7 +90,7 @@ strength allowed is controlled by two settings in
 [zxcvbn-paper]: https://www.usenix.org/system/files/conference/usenixsecurity16/sec16_paper_wheeler.pdf
 [Bon12]: http://ieeexplore.ieee.org/document/6234435/
 
-## Messages and History
+## Messages and history
 
 * Zulip message content is rendered using a specialized Markdown
   parser which escapes content to protect against cross-site scripting
@@ -132,7 +132,7 @@ strength allowed is controlled by two settings in
     [Configuring message editing and deletion](https://zulip.com/help/configure-message-editing-and-deletion)
     for more details.
 
-## Users and Bots
+## Users and bots
 
 * There are several types of users in a Zulip organization: Organization
   Owners, Organization Administrators, Members (normal users), Guests,

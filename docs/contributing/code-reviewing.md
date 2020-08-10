@@ -183,7 +183,7 @@ feel free to do that in a new commit, then push your branch to GitHub
 and mention the branch in a comment on the pull request. That'll save
 the maintainer time and get the PR merged quicker.
 
-## Additional Resources
+## Additional resources
 
 We also strongly recommend reviewers to go through the following resources.
 
@@ -194,7 +194,7 @@ We also strongly recommend reviewers to go through the following resources.
 * [Code Review - A consolidation of advice and stuff from the
    sinternet](https://gist.github.com/porterjamesj/002fb27dd70df003646df46f15e898de)
   article by James J. Porter
-* [Zulip Code of Conduct](../code-of-conduct.md)
+* [Zulip code of conduct](../code-of-conduct.md)
 
 [code-style]: ../contributing/code-style.md
 [commit-messages]: ../contributing/version-control.html#commit-messages

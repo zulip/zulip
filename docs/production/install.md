@@ -1,4 +1,4 @@
-# Production Installation
+# Production installation
 
 You'll need an Ubuntu or Debian system that satisfies
 [the installation requirements](../production/requirements.md). Alternatively,
@@ -119,7 +119,7 @@ server.
 ```eval_rst
 .. _installer-details:
 ```
-## Details: What the installer does
+## Details: what the installer does
 
 The install script does several things:
 * Creates the `zulip` user, which the various Zulip servers will run as.

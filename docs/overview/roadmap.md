@@ -1,4 +1,4 @@
-# The Zulip Roadmap
+# The Zulip roadmap
 
 Zulip has received a great deal of interest and attention since it was
 released as free and open source software by Dropbox.  That attention

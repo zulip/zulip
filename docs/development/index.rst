@@ -1,5 +1,5 @@
 #######################
-Development Environment
+Development environment
 #######################
 
 .. toctree::
@@ -7,7 +7,7 @@ Development Environment
 
    Development environment installation <overview>
    Recommended setup (Vagrant) <setup-vagrant>
-   Advanced Setup (non-Vagrant) <setup-advanced>
+   Advanced setup (non-Vagrant) <setup-advanced>
    Using the development environment <using>
    Developing remotely <remote>
    Authentication in the development environment <authentication>

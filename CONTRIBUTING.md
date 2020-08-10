@@ -299,7 +299,7 @@ for ZSoC, we'll contact you when the GSoC results are announced.
 [gsoc-guide]: https://zulip.readthedocs.io/en/latest/overview/gsoc-ideas.html
 [gsoc-faq]: https://developers.google.com/open-source/gsoc/faq
 
-## Zulip Outreach
+## Zulip outreach
 
 **Upvoting Zulip**. Upvotes and reviews make a big difference in the public
 perception of projects like Zulip. We've collected a few sites below

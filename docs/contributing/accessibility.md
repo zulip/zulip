@@ -53,7 +53,7 @@ sometimes report false positives as well.  They are a useful aid in quickly
 identifying potential problems and checking for regressions, but their
 recommendations should not be blindly obeyed.
 
-## GitHub Issues
+## GitHub issues
 
 Problems with Zulip's accessibility should be reported as
 [GitHub issues](https://github.com/zulip/zulip/issues) with the "accessibility"
@@ -65,7 +65,7 @@ comment on the issue:
 If you want to help make Zulip more accessible, here is a list of the
 [currently open accessibility issues][accessibility-issues].
 
-## Additional Resources
+## Additional resources
 
 For more information about making Zulip accessible to as many users as
 possible, the following resources may be useful.

@@ -1,4 +1,4 @@
-# UI: Input Pills
+# UI: input pills
 
 This is a high level and API explanation of the input pill interface in the
 frontend of the Zulip web application.
@@ -15,7 +15,7 @@ A pill container should have the following markup:
 
 The pills will automatically be inserted in before the ".input" in order.
 
-## Basic Usage
+## Basic usage
 
 ```js
 var pill_containter = $("#input_container");

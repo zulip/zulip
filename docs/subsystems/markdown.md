@@ -196,7 +196,7 @@ and users are generally writing quickly. Zulip's Markdown strategy is
 based on the principles of giving users the power they need to express
 complicated ideas in a chat context while minimizing those two error rates.
 
-## Zulip's Changes to Markdown
+## Zulip's changes to Markdown
 
 Below, we document the changes that Zulip has against stock
 Python-Markdown; some of the features we modify / disable may already

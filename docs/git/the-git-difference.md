@@ -8,14 +8,14 @@ from *Pro Git* by Scott Chacon and Ben Straub.
 
 Here are the top things to know:
 
-- **Git works on snapshots:** Unlike other version control systems (e.g.,
+- **Git works on snapshots.** Unlike other version control systems (e.g.,
   Subversion, Perforce, Bazaar), which track files and changes to those files
   made over time, Git tracks *snapshots* of your project. Each time you commit
   or otherwise make a change to your repository, Git takes a snapshot of your
   project and stores a reference to that snapshot. If a file hasn't changed,
   Git creates a link to the identical file rather than storing it again.
 
-- **Most Git operations are local:** Git is a distributed version control
+- **Most Git operations are local.** Git is a distributed version control
   system, so once you've cloned a repository, you have a complete copy of that
   repository's *entire history*. Staging, committing, branching, and browsing
   history are all things you can do locally without network access and without
@@ -56,7 +56,7 @@ Here are the top things to know:
   changes but have not yet been marked for inclusion in the next commit; they
   have not been added to the index.
 
-- **Git commit workflow is as follows:** Edit files in your *working tree*. Add
+- **Git commit workflow is as follows.** Edit files in your *working tree*. Add
   to the *index* (that is *stage*) with `git add`. *Commit* to the HEAD of the
   current branch with `git commit`.
 

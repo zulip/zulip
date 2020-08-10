@@ -1,5 +1,5 @@
 ###################
-Zulip in Production
+Zulip in production
 ###################
 
 .. toctree::

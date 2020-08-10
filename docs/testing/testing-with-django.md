@@ -298,7 +298,7 @@ A common use is to prevent a call to a third-party service from using
 the Internet; `git grep mock.patch | grep requests` is a good way to
 find several examples of doing this.
 
-## Zulip Testing Philosophy
+## Zulip testing philosophy
 
 If there is one word to describe Zulip's philosophy for writing tests,
 it is probably "flexible."  (Hopefully "thorough" goes without saying.)

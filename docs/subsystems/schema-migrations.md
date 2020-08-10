@@ -1,4 +1,4 @@
-# Schema Migrations
+# Schema migrations
 
 Zulip uses the [standard Django system for doing schema
 migrations](https://docs.djangoproject.com/en/1.10/topics/migrations/).

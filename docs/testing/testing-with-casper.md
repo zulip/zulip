@@ -1,4 +1,4 @@
-# Web frontend black-box casperjs tests
+# Web frontend black-box CasperJS tests
 
 These live in `frontend_tests/casper_tests/`. This is a "black box"
 integration test; we load the frontend in a real (headless) browser,
@@ -17,7 +17,7 @@ You can run the casper tests with `./tools/test-js-with-casper` or as
 `./tools/test-js-with-casper 06-settings.js` to run a single test file
 from `frontend_tests/casper_tests/`.
 
-## Debugging Casper.JS
+## Debugging CasperJS
 
 When a Casper test fails, the first things to check (before you bother
 trying to use the Casper debugging tools are:
@@ -46,7 +46,7 @@ can sometimes give insight into exactly what's happening.
 
 ### Remote debugging
 
-Casper.js (via PhantomJS) has support for remote debugging. However, it
+CasperJS (via PhantomJS) has support for remote debugging. However, it
 is not perfect. Here are some steps for using it and gotchas you might
 want to know; you'll likely also want to read the section on writing
 tests (below) if you get stuck, since the advice on how to write

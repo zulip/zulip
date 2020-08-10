@@ -1,4 +1,4 @@
-# SAML Authentication
+# SAML authentication
 
 Zulip supports using SAML authentication for Single Sign On, both when
 self-hosting or on the Zulip Cloud Plus plan.
@@ -57,7 +57,7 @@ Zulip with various common SAML Identity Providers.
      * Optionally you can also send us an icon that should be shown on the button.
 1. We will take care of the server-side setup and let you know as soon as it's ready.
 
-## Related Articles
+## Related articles
 
 * [SAML configuration][saml-readthedocs] for self-hosting.
 

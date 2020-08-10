@@ -1,4 +1,4 @@
-# Requirements and Scalability
+# Requirements and scalability
 
 To run a Zulip server, you will need:
 * A dedicated machine or VM
@@ -26,7 +26,7 @@ disregard our advice and use a server that hosts other services, we
 can't support you, but
 [we do have some notes on issues you'll encounter](install-existing-server.md).
 
-#### Operating System
+#### Operating system
 
 Ubuntu 20.04 Focal, 18.04 Bionic, and Debian 10 Buster are supported
 for running Zulip in production.  64-bit is recommended.  We recommend
@@ -48,7 +48,7 @@ sudo apt update
 https://help.ubuntu.com/community/Repositories/Ubuntu
 [enable-universe]: https://help.ubuntu.com/community/Repositories/CommandLine#Adding_the_Universe_and_Multiverse_Repositories
 
-#### Hardware Specifications
+#### Hardware specifications
 
 * CPU and Memory: For installations with 100+ users you'll need a
   minimum of **2 CPUs** and **4GB RAM**. For installations with fewer
@@ -66,7 +66,7 @@ https://help.ubuntu.com/community/Repositories/Ubuntu
 See our [documentation on scalability](#scalability) below for advice
 on hardware requirements for larger organizations.
 
-#### Network and Security Specifications
+#### Network and security specifications
 
 * Incoming HTTPS access (usually port 443, though this is
   [configurable](../production/deployment.html#using-an-alternate-port))
@@ -96,7 +96,7 @@ on hardware requirements for larger organizations.
 
 ## Credentials needed
 
-#### SSL Certificate
+#### SSL certificate
 
 Your Zulip server will need an SSL certificate for the domain name it
 uses.  For most Zulip servers, the recommended (and simplest) way to

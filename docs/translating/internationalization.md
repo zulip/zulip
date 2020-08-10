@@ -1,4 +1,4 @@
-# Internationalization for Developers
+# Internationalization for developers
 
 Zulip, like many popular applications, is designed with
 internationalization (i18n) in mind, which means users can fully use

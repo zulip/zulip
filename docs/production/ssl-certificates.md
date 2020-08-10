@@ -1,4 +1,4 @@
-# Installing SSL Certificates
+# Installing SSL certificates
 
 To keep your communications secure, Zulip runs over HTTPS only.
 You'll need an SSL/TLS certificate.

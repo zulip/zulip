@@ -1,4 +1,4 @@
-# Zoom Video Calling OAuth Configuration
+# Zoom video calling OAuth configuration
 
 To use the [Zoom](https://zoom.us) integration on a self-hosted
 installation, you'll need to register a custom Zoom Application as

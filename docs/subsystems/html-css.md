@@ -27,7 +27,7 @@ changes made in source files will immediately take effect in open
 browser windows, either by live-updating the CSS or reloading the
 browser window (following backend changes).
 
-## CSS Style guidelines
+## CSS style guidelines
 
 ### Avoid duplicated code
 
@@ -147,7 +147,7 @@ relevant background as well.
 ### Primary build process
 
 Zulip's frontend is primarily JavaScript in the `static/js` directory;
-we are working on migrating these to Typescript modules.  Stylesheets
+we are working on migrating these to TypeScript modules.  Stylesheets
 are written in the Sass extension of CSS (with the scss syntax), they
 are converted from plain CSS, and we have yet to take full advantage of
 the features Sass offers.  We use Webpack to transpile and build JS
@@ -237,7 +237,7 @@ server is restarted, files are copied into that directory.
   without breaking the rendering of old messages (or doing a
   mass-rerender of old messages).
 
-### CommonJS/Typescript modules
+### CommonJS/TypeScript modules
 
 Webpack provides seamless interoperability between different module
 systems such as CommonJS, AMD and ES6. Our JS files are written in the
@@ -257,7 +257,7 @@ analysis. TypeScript uses an ES6-like module system.  Any declaration
 can be made public by adding the `export` keyword. Consuming
 variables, functions, etc exported from another module should be done
 with the `import` statement as oppose to accessing them from the
-global `window` scope.  Internally our typescript compiler is
+global `window` scope.  Internally our TypeScript compiler is
 configured to transpile TS to the ES6 module system.
 
 Read more about these module systems here:
