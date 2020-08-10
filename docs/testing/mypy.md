@@ -87,7 +87,7 @@ an `Any` or `# type: ignore[code]` so you're not blocked waiting for help,
 add a `# TODO: ` comment so it doesn't get forgotten in code review,
 and ask for help in chat.zulip.org.
 
-## mypy stubs for third-party modules.
+## Mypy stubs for third-party modules
 
 For the Python standard library and some popular third-party modules,
 the [typeshed project](https://github.com/python/typeshed) has

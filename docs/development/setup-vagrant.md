@@ -12,18 +12,18 @@ all related services will run.
 Contents:
 * [Requirements](#requirements)
 * [Step 0: Set up Git & GitHub](#step-0-set-up-git-github)
-* [Step 1: Install Prerequisites](#step-1-install-prerequisites)
+* [Step 1: Install prerequisites](#step-1-install-prerequisites)
 * [Step 2: Get Zulip code](#step-2-get-zulip-code)
 * [Step 3: Start the development environment](#step-3-start-the-development-environment)
 * [Step 4: Developing](#step-4-developing)
-* [Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
+* [Troubleshooting and common errors](#troubleshooting-and-common-errors)
 * [Specifying an Ubuntu mirror](#specifying-an-ubuntu-mirror)
 * [Specifying a proxy](#specifying-a-proxy)
 * [Customizing CPU and RAM allocation](#customizing-cpu-and-ram-allocation)
 
 **If you encounter errors installing the Zulip development
-environment,** check [Troubleshooting and Common
-Errors](#troubleshooting-and-common-errors). If that doesn't help,
+environment,** check [troubleshooting and common
+errors](#troubleshooting-and-common-errors). If that doesn't help,
 please visit [#provision
 help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
 [Zulip development community
@@ -63,13 +63,13 @@ docs.
 You can skip this step if you already have Git, GitHub, and SSH access
 to GitHub working on your machine.
 
-Follow our [Git Guide][set-up-git] in order to install Git, set up a
+Follow our [Git guide][set-up-git] in order to install Git, set up a
 GitHub account, create an SSH key to access code on GitHub
 efficiently, etc.  Be sure to create an ssh key and add it to your
 GitHub account using
 [these instructions](https://help.github.com/en/articles/generating-an-ssh-key).
 
-### Step 1: Install Prerequisites
+### Step 1: Install prerequisites
 
 Jump to:
 
@@ -87,7 +87,7 @@ Jump to:
 Fusion][vmware-fusion-dl] with the [VMWare Fusion Vagrant
 plugin][vagrant-vmware-fusion-dl].)
 
-Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code).
+Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
 
 #### Ubuntu
 
@@ -142,7 +142,7 @@ sudo systemctl enable docker
 sudo systemctl start docker
 ```
 
-Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
+Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
 
 #### Debian
 
@@ -200,7 +200,7 @@ true
 ```
 
 If you see `true`, you are ready for [Step 2: Get Zulip
-Code.](#step-2-get-zulip-code)
+code](#step-2-get-zulip-code).
 
 Otherwise, if the above command prints `false` or nothing at all, then symlinks
 have not been enabled.
@@ -223,7 +223,7 @@ $ echo $CYGWIN
 winsymlinks:native
 ```
 
-Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
+Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
 
 (Note: The **GitHub Desktop client** for Windows has a bug where it
 will automatically set `git config core.symlink false` on a repository
@@ -232,7 +232,7 @@ development environment, because we use symbolic links.  For that
 reason, we recommend avoiding using GitHub Desktop client to clone
 projects and to instead follow these instructions exactly.)
 
-### Step 2: Get Zulip Code
+### Step 2: Get Zulip code
 
 1. In your browser, visit <https://github.com/zulip/zulip>
    and click the `fork` button. You will need to be logged in to GitHub to
@@ -268,7 +268,7 @@ Checking out files: 100% (1912/1912), done.`
 ```
 
 Now you are ready for [Step 3: Start the development
-environment.](#step-3-start-the-development-environment)
+environment](#step-3-start-the-development-environment).
 
 ### Step 3: Start the development environment
 
@@ -392,7 +392,7 @@ should see something like:
 2016-05-04 18:21:57,819 INFO     127.0.0.1       GET     200 209ms (db: 7ms/2q) /login/ (unauth@zulip via ?)
 ```
 
-Now you're ready for [Step 4: Developing.](#step-4-developing)
+Now you're ready for [Step 4: Developing](#step-4-developing).
 
 ### Step 4: Developing
 
@@ -424,10 +424,10 @@ there.
 See [Logging](../subsystems/logging.md) for further details on the run-dev.py console
 output.
 
-#### Committing and pushing changes with git
+#### Committing and pushing changes with Git
 
-When you're ready to commit or push changes via git, you will do this by
-running git commands in Terminal (macOS/Ubuntu) or Git BASH (Windows) in the
+When you're ready to commit or push changes via Git, you will do this by
+running Git commands in Terminal (macOS/Ubuntu) or Git BASH (Windows) in the
 directory where you cloned Zulip on your main machine.
 
 If you're new to working with Git/GitHub, check out our [Git & GitHub
@@ -528,7 +528,7 @@ $ vagrant ssh
 $ ./tools/run-dev.py
 ```
 
-### Next Steps
+### Next steps
 
 Next, read the following to learn more about developing for Zulip:
 
@@ -538,7 +538,7 @@ Next, read the following to learn more about developing for Zulip:
 run the full test suite against any branches you push to your fork,
 which can help you optimize your development workflow).
 
-### Troubleshooting and Common Errors
+### Troubleshooting and common errors
 
 Below you'll find a list of common errors and their solutions.  Most
 issues are resolved by just provisioning again (by running

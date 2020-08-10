@@ -1,8 +1,8 @@
-# Git Cheat Sheet
+# Git cheat sheet
 
 See also [fixing commits][fix-commit]
 
-## Common Commands
+## Common commands
 
 - add
     - `git add foo.py`
@@ -53,7 +53,7 @@ See also [fixing commits][fix-commit]
 - status
     - `git status`
 
-## Detailed Cheat Sheet
+## Detailed cheat sheet
 
 - add
     - `git add foo.py`: add `foo.py` to the staging area

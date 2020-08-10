@@ -18,7 +18,7 @@ VIDEO_CHAT_PROVIDERS = {
 def remove_google_hangouts_provider(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     # We are removing the Google Hangout integration because Google has
     # removed the Hangouts brand. All the realms that used Hangouts as
-    # their video chat provided are now set to the default, jitsi.
+    # their video chat provided are now set to the default, Jitsi.
     Realm = apps.get_model('zerver', 'Realm')
     Realm.objects.filter(video_chat_provider=VIDEO_CHAT_PROVIDERS['google_hangouts']['id']).update(
         video_chat_provider=VIDEO_CHAT_PROVIDERS['jitsi_meet']['id']

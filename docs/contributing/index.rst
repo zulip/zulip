@@ -1,5 +1,5 @@
 #######################
-Code Contribution Guide
+Code contribution guide
 #######################
 
 .. toctree::

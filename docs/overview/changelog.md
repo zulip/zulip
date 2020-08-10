@@ -1,4 +1,4 @@
-# Version History
+# Version history
 
 All notable changes to the Zulip server are documented in this file.
 
@@ -16,7 +16,7 @@ in bursts.
 - Redesigned the top navbar/search area to be much cleaner and show
   useful data like subscriber counts and stream descriptions in
   default views.
-- Added a new "Recent Topics" widget, which lets one browse recent
+- Added a new "recent topics" widget, which lets one browse recent
   and ongoing conversations at a glance.  We expect this widget to
   replace "All messages" as the default view in Zulip in the
   next major release.

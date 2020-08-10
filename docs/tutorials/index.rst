@@ -1,5 +1,5 @@
 ###################
-Developer Tutorials
+Developer tutorials
 ###################
 
 .. toctree::

@@ -1,6 +1,6 @@
 # Version control
 
-## Commit Discipline
+## Commit discipline
 
 We follow the Git project's own commit discipline practice of "Each
 commit is a minimal coherent idea". This discipline takes a bit of work,
@@ -83,7 +83,7 @@ you need to do a refactoring partway through writing the feature. When that
 happens, we recommend you stash your partial feature, do the refactoring,
 commit it, and then unstash and finish implementing your feature.
 
-## Commit Messages
+## Commit messages
 
 First, check out
 [these](https://github.com/zulip/zulip/commit/4869e1b0b2bc6d56fcf44b7d0e36ca20f45d0521)

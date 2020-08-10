@@ -1,4 +1,4 @@
-# Production Installation
+# Production installation
 
 You'll need an Ubuntu or Debian system that satisfies
 [the installation requirements](../production/requirements.md). Alternatively,

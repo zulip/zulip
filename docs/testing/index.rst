@@ -1,5 +1,5 @@
 ############
-Code Testing
+Code testing
 ############
 
 .. toctree::

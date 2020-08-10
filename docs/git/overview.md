@@ -1,4 +1,4 @@
-# Quick start: How Zulip uses Git and GitHub
+# Quick start: how Zulip uses Git and GitHub
 
 This quick start provides a brief overview of how Zulip uses Git and GitHub.
 

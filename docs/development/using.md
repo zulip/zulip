@@ -1,4 +1,4 @@
-Using the Development Environment
+Using the development environment
 =================================
 
 This page describes the basic edit/refresh workflows for working with

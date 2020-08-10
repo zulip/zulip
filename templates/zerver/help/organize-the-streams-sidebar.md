@@ -1,4 +1,4 @@
-# Organize the Streams sidebar
+# Organize the streams sidebar
 
 At an organization level, we recommend starting with a few streams and
 growing organically, and doing a cleanup once every year or two to archive

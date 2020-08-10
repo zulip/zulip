@@ -284,7 +284,7 @@ of about 1 second per 2000 users subscribed to receive the message.
 While these delays may not be immediately obvious to users (Zulip,
 like many other chat applications,
 [local echoes](../subsystems/markdown.md) messages that a user sends
-as soon as the user hits “send”), latency beyond a second or two
+as soon as the user hits “Send”), latency beyond a second or two
 significantly impacts the feeling of interactivity in a chat
 experience (i.e. it feels like everyone takes a long time to reply to
 even simple questions).

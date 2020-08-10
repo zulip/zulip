@@ -336,7 +336,7 @@ exports.user_initiated_animate_scroll = function (scroll_amount) {
 exports.recenter_view = function (message, opts) {
     opts = opts || {};
 
-    // Barnowl-style recentering: if the pointer is too high, move it to
+    // BarnOwl-style recentering: if the pointer is too high, move it to
     // the 1/2 marks. If the pointer is too low, move it to the 1/7 mark.
     // See keep_pointer_in_view() for related logic to keep the pointer onscreen.
 

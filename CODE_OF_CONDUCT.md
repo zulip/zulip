@@ -14,7 +14,7 @@ This isn't an exhaustive list of things that you can't do. Rather, take it
 in the spirit in which it's intended --- a guide to make it easier to enrich
 all of us and the technical communities in which we participate.
 
-## Expected Behavior
+## Expected behavior
 
 The following behaviors are expected and requested of all community members:
 
@@ -29,7 +29,7 @@ The following behaviors are expected and requested of all community members:
 * Community event venues may be shared with members of the public; be
   respectful to all patrons of these locations.
 
-## Unacceptable Behavior
+## Unacceptable behavior
 
 The following behaviors are considered harassment and are unacceptable
 within the Zulip community:
@@ -53,7 +53,7 @@ within the Zulip community:
   presentations.
 * Advocating for, or encouraging, any of the behaviors above.
 
-## Reporting and Enforcement
+## Reporting and enforcement
 
 Harassment and other code of conduct violations reduce the value of the
 community for everyone. If someone makes you or anyone else feel unsafe or
@@ -95,7 +95,7 @@ behavior occurring outside the scope of community activities when such
 behavior has the potential to adversely affect the safety and well-being of
 community members.
 
-## License and Attribution
+## License and attribution
 
 This Code of Conduct is adapted from the
 [Citizen Code of Conduct](http://citizencodeofconduct.org/) and the

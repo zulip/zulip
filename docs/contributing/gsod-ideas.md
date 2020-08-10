@@ -77,7 +77,7 @@ tools in the Zulip development environment).  See
 for details on our various existing documentation systems.
 
 In part due to past work by a technical writer, Zulip has a
-well-documented and easy to setup development environment for a
+well-documented and easy-to-set-up development environment for a
 project of its scope. Use
 [our first-time Zulip developer guide](../overview/contributing.html#your-first-codebase-contribution)
 to get your Zulip development environment set up. If you have any
@@ -202,12 +202,12 @@ proposal.  It's also fine for you to come up with your own project
 ideas.
 
 For many of our projects, an important skill to develop is a good
-command of Git; read [our Git Guide](../git/overview.md) in full to
+command of Git; read [our Git guide](../git/overview.md) in full to
 learn how to use it well.  Of particular importance is mastering using
 Git rebase so that you can construct commits that are readable,
 are clearly correct and that explain why they are correct.
 
-**Project name**: REST API Documentation
+**Project name**: REST API documentation
 
 Fill in the gaps in Zulip's
 [REST API documentation](https://zulip.com/api).  Zulip has a

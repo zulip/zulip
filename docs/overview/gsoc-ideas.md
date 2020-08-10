@@ -518,7 +518,7 @@ we have enough strong applicants.
   well.  You'll need to learn React Native as part of getting
   involved.  There's tons of good online tutorials, courses, etc.
 
-### Electron Desktop app
+### Electron desktop app
 
 Code:
 [Our cross-platform desktop app written in JavaScript on Electron](https://github.com/zulip/zulip-desktop).
@@ -528,7 +528,7 @@ Experts: Akash Nimare, Abhighyan Khaund
   application](https://github.com/zulip/zulip-desktop).  There's
   plenty of feature/UI work to do, but focus areas for us include
   things to (1) improve the release process for the app, using
-  automated testing, typescript, etc. and (2) polish the UI.  Browse
+  automated testing, TypeScript, etc. and (2) polish the UI.  Browse
   the open issues and get involved!
 
 **Skills required**: JavaScript experience, Electron experience.  You

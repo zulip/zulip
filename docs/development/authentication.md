@@ -24,7 +24,7 @@ lower-case naming convention for that file.
 Below, we document the procedure for each of the major authentication
 methods supported by Zulip.
 
-### Email and Password
+### Email and password
 
 Zulip's default EmailAuthBackend authenticates users by verifying
 control over their email address, and then allowing them to set a
@@ -204,7 +204,7 @@ exactly what data is being used in the test without looking at other
 resources.  It also gives us more freedom to edit the development
 environment directory without worrying about tests.
 
-## Two Factor Authentication
+## Two factor authentication
 
 Zulip uses [django-two-factor-auth][0] as a beta 2FA integration.
 

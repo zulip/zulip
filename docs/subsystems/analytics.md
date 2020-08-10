@@ -123,7 +123,7 @@ efficient:
   year, most of whose values are 0. A related note is to be cautious about
   adding queries that are typically non-0 instead of being typically 0.
 
-## Backend Testing
+## Backend testing
 
 There are a few types of automated tests that are important for this sort of
 system:
@@ -156,7 +156,7 @@ statistics, etc.). There is currently a reference implementation of a
 
 ## Analytics UI development and testing
 
-### Setup and Testing
+### Setup and testing
 
 The main testing approach for the /stats page UI is manual testing.
 For most UI testing, you can visit `/stats/realm/analytics` while

@@ -230,7 +230,7 @@ All tips/warnings should appear inside tip/warning blocks. There
 should be only one tip/warning inside each block, and they usually
 should be formatted as a continuation of a numbered step.
 
-###  Tab Switcher
+###  Tab switcher
 
 Our Markdown processor supports easily creating a tab switcher widget
 design to easily show the instructions for different

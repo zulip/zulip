@@ -316,7 +316,7 @@ exports.create = function (opts) {
                 const id = $pill.data("id");
                 funcs.removePill(id);
                 $next.trigger("focus");
-                // the "backspace" key in FireFox will go back a page if you do
+                // the "backspace" key in Firefox will go back a page if you do
                 // not prevent it.
                 e.preventDefault();
             }

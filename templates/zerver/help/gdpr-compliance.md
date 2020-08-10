@@ -1,4 +1,4 @@
-# GDPR Compliance
+# GDPR compliance
 
 This page covers how Zulip interacts with the EU's landmark GDPR
 legislation; you can read the
@@ -13,7 +13,7 @@ give them control over how their personal data is collected,
 processed, and used.  The law applies to any company that collects or
 processes the data of European consumers.
 
-## Controllers and Processors
+## Controllers and processors
 
 There are two key relationships that are defined in the GDPR. As a
 customer of Zulip Cloud, you operate as the controller when using our
@@ -35,7 +35,7 @@ personal data. These entities are commonly referred to as
 sub-processors. For example, Kandra Labs leverages cloud service
 providers like Amazon Web Services and Mailgun to host Zulip Cloud.
 
-## How Zulip Supports GDPR Compliance
+## How Zulip supports GDPR compliance
 
 We’re committed to the compliance of all parties including you,
 third-parties, and us.
@@ -66,7 +66,7 @@ this page but not defined have the meaning set forth in Zulip's Terms
 of Service or superseding written agreement between Customer and
 Kandra Labs (the "Agreement").
 
-### Third Parties
+### Third parties
 
 Zulip currently uses third party Subprocessors to provide
 infrastructure services, and to help us provide customer support and

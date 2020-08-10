@@ -340,7 +340,7 @@ extremely useful and even easy to use (at least the 99% of the time).
 
 To learn more about how to use it, read
 [our docs](../git/index.md) on Git and
-Github.
+GitHub.
 
 [This cheatsheet][git-cheat-detailed]
 will be useful in your journey, as well.

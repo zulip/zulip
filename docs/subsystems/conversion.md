@@ -61,11 +61,11 @@ Things that we still may need:
 We have a few major classes of data.  They are listed below in the order
 that we process them in `do_export_realm()`:
 
-#### Public Realm Data
+#### Public realm data
 
 `Realm/RealmDomain/RealmEmoji/RealmFilter/DefaultStream`.
 
-#### Cross Realm Data
+#### Cross realm data
 
 `Client/zerver_userprofile_cross_realm`
 
@@ -75,18 +75,18 @@ This includes `Client` and three bots.
 `UserProfile` or `Realm` (unless you somewhat painfully tie it back to
 users in a bottom-up fashion though other tables).
 
-#### Disjoint User Data
+#### Disjoint user data
 
 `UserProfile/UserActivity/UserActivityInterval/UserPresence`.
 
-#### Recipient Data
+#### Recipient data
 
 `Recipient/Stream/Subscription/Huddle`.
 
 These tables are tied back to users, but they introduce complications
 when you try to deal with multi-user subsets.
 
-#### File-related Data
+#### File-related data
 
 `Attachment`
 
@@ -95,7 +95,7 @@ of `UserProfile`.  Most importantly, of course, it requires us to grab
 files from S3.  Finally, `Attachment`'s `m2m` relationship ties to
 `Message`.
 
-#### Message Data
+#### Message data
 
 `Message/UserMessage`
 
@@ -116,13 +116,13 @@ process the data, which isn't surprising for a top-down approach.)
 
 The next section of the document talks about risk factors.
 
-## Risk Mitigation
+## Risk mitigation
 
 ### Generic considerations
 
 We have two major mechanisms for getting data:
 
-##### Top Down
+##### Top down
 
 Get realm data, then all users in realm, then all recipients, then all
 messages, etc.
@@ -131,7 +131,7 @@ The problem with the top-down approach will be **filtering**.  Also,
 if errors arise during top-down passes, it may be time consuming to
 re-run the processes.
 
-##### Bottom Up
+##### Bottom up
 
 Start with users, get their recipient data, etc.
 
@@ -139,14 +139,14 @@ The problems with the bottom up approach will be **merging**.  Also,
 if we run multiple bottom-up passes, there is the danger of
 duplicating some work, particularly on the message side of things.
 
-### Approved Transfers
+### Approved transfers
 
 We have not yet integrated the approved-transfer model, which tells us
 which users can be moved.
 
 ### Risk factors broken out by data categories
 
-#### Message Data
+#### Message data
 
 - models: `Message`/`UserMessage`.
 - assets: `messages-*.json`, subprocesses, partial files
@@ -165,7 +165,7 @@ We currently have these measures in place for top-down processing:
 - messages are filtered by both sender and recipient
 
 
-#### File Related Data
+#### File related data
 
 - models: `Attachment`
 - assets: S3, `attachment.json`, `uploads-temp/`, image files in
@@ -185,7 +185,7 @@ parts**:
 - At import time we have to populate the `m2m` table (but fortunately,
   this is pretty low risk in terms of breaking anything.)
 
-#### Recipient Data
+#### Recipient data
 - models: `Recipient/Stream/Subscription/Huddle`
 - assets: `realm.json`, `(user,stream,huddle)_(recipient,subscription)`
 
@@ -219,7 +219,7 @@ Recommendation: We probably want to get a backup of all this data that
 is very simply bulk-exported from the entire DB, and we should
 obviously put it in a secure place.
 
-#### Cross Realm Data
+#### Cross realm data
 - models: `Client`
 - assets: `realm.json`, three bots (`notification`/`email`/`welcome`),
   `id_maps`
@@ -245,7 +245,7 @@ example.  As for possibly missing messages that the welcome bot and
 friends have sent in the past, I am not sure what our risk profile is
 there, but I imagine it is relatively low.
 
-#### Disjoint User Data
+#### Disjoint user data
 - models: `UserProfile/UserActivity/UserActivityInterval/UserPresence`
 - assets: `realm.json`, `password`, `api_key`, `avatar salt`,
   `id_maps`
@@ -259,7 +259,7 @@ We have code in place to exclude `password` and `api_key` from
 `UserProfile` rows.  The import process calls
 `set_unusable_password()`.
 
-#### Public Realm Data
+#### Public realm data
 
 - models: `Realm/RealmDomain/RealmEmoji/RealmFilter/DefaultStream`
 - asserts: `realm.json`

@@ -1,4 +1,4 @@
-# Logging and Error reporting
+# Logging and error reporting
 
 Having a good system for logging error reporting is essential to
 making a large project like Zulip successful.  Without reliable error
