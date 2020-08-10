@@ -28,8 +28,11 @@ class TornadoAdapter(HTTPAdapter):
         cert: Union[None, bytes, str, Container[Union[bytes, str]]] = None,
         proxies: Optional[Mapping[str, str]] = None,
     ) -> Response:
+        if not proxies:
+            proxies = {}
+        merged_proxies = {**proxies, "no_proxy": "localhost,127.0.0.1"}
         try:
-            resp = super().send(request, stream=stream, timeout=timeout, verify=verify, cert=cert, proxies=proxies)
+            resp = super().send(request, stream=stream, timeout=timeout, verify=verify, cert=cert, proxies=merged_proxies)
         except ConnectionError:
             raise ConnectionError(
                 f"Django cannot connect to Tornado server ({request.url}); "
@@ -41,12 +44,6 @@ class TornadoAdapter(HTTPAdapter):
 @lru_cache(None)
 def requests_client() -> requests.Session:
     c = requests.Session()
-    if settings.TORNADO_SERVER:
-        if any(host in settings.TORNADO_SERVER for host in ['127.0.0.1', 'localhost']):
-            # Disable trusting the environment, so requests don't
-            # go through any env-configured external proxy.
-            c.trust_env = False
-
     adapter = TornadoAdapter()
     for scheme in ("https://", "http://"):
         c.mount(scheme, adapter)
