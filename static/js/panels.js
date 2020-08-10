@@ -66,7 +66,6 @@ exports.check_profile_incomplete = function () {
     }
 };
 
-
 function handle_keyup(e) {
     e.stopPropagation();
     if (e.keyCode === 13) {
@@ -131,7 +130,6 @@ exports.initialize = function () {
     $(".reject-notifications").on("keyup", handle_keyup);
     $(".accept-bankruptcy").on("keyup", handle_keyup);
     $("#panels").on("keyup", ".alert .exit", handle_keyup);
-
 };
 
 exports.open = function ($process) {
