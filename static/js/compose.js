@@ -731,7 +731,7 @@ exports.handle_keydown = function (event, textarea) {
     const isItalic = code === 73 && !event.shiftKey;
     const isLink = code === 76 && event.shiftKey;
 
-    // detect command and ctrl key
+    // detect Cmd and Ctrl key
     const isCmdOrCtrl = common.has_mac_keyboard() ? event.metaKey : event.ctrlKey;
 
     if ((isBold || isItalic || isLink) && isCmdOrCtrl) {
@@ -744,21 +744,21 @@ exports.handle_keydown = function (event, textarea) {
         }
 
         if (isBold) {
-            // ctrl + b: Convert selected text to bold text
+            // Ctrl + B: Convert selected text to bold text
             wrap_text_with_markdown("**", "**");
             if (!range.length) {
                 textarea.caret(textarea.caret() - 2);
             }
         }
         if (isItalic) {
-            // ctrl + i: Convert selected text to italic text
+            // Ctrl + I: Convert selected text to italic text
             wrap_text_with_markdown("*", "*");
             if (!range.length) {
                 textarea.caret(textarea.caret() - 1);
             }
         }
         if (isLink) {
-            // ctrl + l: Insert a link to selected text
+            // Ctrl + L: Insert a link to selected text
             wrap_text_with_markdown("[", "](url)");
             const position = textarea.caret();
             const txt = document.getElementById(textarea[0].id);

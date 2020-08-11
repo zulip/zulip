@@ -125,7 +125,7 @@ function remove_div(div, ranges, selection) {
 
 exports.copy_handler = function () {
     // This is the main handler for copying message content via
-    // `ctrl+C` in Zulip (note that this is totally independent of the
+    // `Ctrl+C` in Zulip (note that this is totally independent of the
     // "select region" copy behavior on Linux; that is handled
     // entirely by the browser, our HTML layout, and our use of the
     // no-select/auto-select CSS classes).  We put considerable effort
@@ -134,7 +134,7 @@ exports.copy_handler = function () {
     //
     // * If the selection is contained within a single message, we
     //   want to just copy the portion that was selected, which we
-    //   implement by letting the browser handle the ctrl+C event.
+    //   implement by letting the browser handle the Ctrl+C event.
     //
     // * Otherwise, we want to copy the bodies of all messages that
     //   were partially covered by the selection.

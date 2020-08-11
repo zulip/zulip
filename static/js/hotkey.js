@@ -16,14 +16,14 @@ const menu_dropdown_hotkeys = ["down_arrow", "up_arrow", "vim_up", "vim_down", "
 
 // The `message_view_only` property is a convenient and performant way
 // to express a common case of which hotkeys do something in which
-// views.  It is set for hotkeys (like `Ctrl + s`) that only have an effect
+// views.  It is set for hotkeys (like `Ctrl + S`) that only have an effect
 // in the main message view with a selected message.
 // `message_view_only` hotkeys, as a group, are not processed if any
 // overlays are open (e.g. settings, streams, etc.).
 
 const keydown_shift_mappings = {
-    // these can be triggered by shift + key only
-    9: {name: "shift_tab", message_view_only: false}, // tab
+    // these can be triggered by Shift + key only
+    9: {name: "shift_tab", message_view_only: false}, // Tab
     32: {name: "shift_spacebar", message_view_only: true}, // space bar
     37: {name: "left_arrow", message_view_only: false}, // left arrow
     39: {name: "right_arrow", message_view_only: false}, // right arrow
@@ -32,14 +32,14 @@ const keydown_shift_mappings = {
 };
 
 const keydown_unshift_mappings = {
-    // these can be triggered by key only (without shift)
-    9: {name: "tab", message_view_only: false}, // tab
-    27: {name: "escape", message_view_only: false}, // escape
+    // these can be triggered by key only (without Shift)
+    9: {name: "tab", message_view_only: false}, // Tab
+    27: {name: "escape", message_view_only: false}, // Esc
     32: {name: "spacebar", message_view_only: true}, // space bar
-    33: {name: "page_up", message_view_only: true}, // page up
-    34: {name: "page_down", message_view_only: true}, // page down
-    35: {name: "end", message_view_only: true}, // end
-    36: {name: "home", message_view_only: true}, // home
+    33: {name: "page_up", message_view_only: true}, // PgUp
+    34: {name: "page_down", message_view_only: true}, // PgDn
+    35: {name: "end", message_view_only: true}, // End
+    36: {name: "home", message_view_only: true}, // Home
     37: {name: "left_arrow", message_view_only: false}, // left arrow
     39: {name: "right_arrow", message_view_only: false}, // right arrow
     38: {name: "up_arrow", message_view_only: false}, // up arrow
@@ -53,25 +53,25 @@ const keydown_ctrl_mappings = {
 const keydown_cmd_or_ctrl_mappings = {
     67: {name: "copy_with_c", message_view_only: false}, // 'C'
     75: {name: "search_with_k", message_view_only: false}, // 'K'
-    83: {name: "star_message", message_view_only: true}, // 's'
+    83: {name: "star_message", message_view_only: true}, // 'S'
     190: {name: "narrow_to_compose_target", message_view_only: true}, // '.'
 };
 
 const keydown_either_mappings = {
-    // these can be triggered by key or shift + key
+    // these can be triggered by key or Shift + key
     // Note that codes for letters are still case sensitive!
     //
-    // We may want to revisit both of these.  For backspace, we don't
+    // We may want to revisit both of these.  For Backspace, we don't
     // have any specific mapping behavior; we are just trying to disable
     // the normal browser features for certain OSes when we are in the
-    // compose box, and the little bit of backspace-related code here is
-    // dubious, but may apply to shift-backspace.
-    // For enter, there is some possibly that shift-enter is intended to
-    // have special behavior for folks that are used to shift-enter behavior
+    // compose box, and the little bit of Backspace-related code here is
+    // dubious, but may apply to Shift-Backspace.
+    // For Enter, there is some possibly that Shift-Enter is intended to
+    // have special behavior for folks that are used to Shift-Enter behavior
     // in other apps, but that's also slightly dubious.
-    8: {name: "backspace", message_view_only: true}, // backspace
-    13: {name: "enter", message_view_only: false}, // enter
-    46: {name: "delete", message_view_only: false}, // delete
+    8: {name: "backspace", message_view_only: true}, // Backspace
+    13: {name: "enter", message_view_only: false}, // Enter
+    46: {name: "delete", message_view_only: false}, // Delete
 };
 
 const keypress_mappings = {
@@ -231,7 +231,7 @@ exports.process_escape_key = function (e) {
                 return true;
             }
 
-            // If the user hit the escape key, cancel the current compose
+            // If the user hit the Esc key, cancel the current compose
             compose_actions.cancel();
             return true;
         }
@@ -303,7 +303,7 @@ exports.process_enter_key = function (e) {
 
     if (overlays.settings_open()) {
         // On the settings page just let the browser handle
-        // the enter key for things like submitting forms.
+        // the Enter key for things like submitting forms.
         return false;
     }
 
@@ -323,20 +323,20 @@ exports.process_enter_key = function (e) {
         return false;
     }
 
-    // This handles when pressing enter while looking at drafts.
+    // This handles when pressing Rnter while looking at drafts.
     // It restores draft that is focused.
     if (overlays.drafts_open()) {
         drafts.drafts_handle_events(e, "enter");
         return true;
     }
 
-    // If we're on a button or a link and have pressed enter, let the
+    // If we're on a button or a link and have pressed Enter, let the
     // browser handle the keypress
     //
     // This is subtle and here's why: Suppose you have the focus on a
     // stream name in your left sidebar. j and k will still move your
     // cursor up and down, but Enter won't reply -- it'll just trigger
-    // the link on the sidebar! So you keep pressing enter over and
+    // the link on the sidebar! So you keep pressing Enter over and
     // over again. Until you click somewhere or press r.
     if ($("a:focus,button:focus").length > 0) {
         return false;
@@ -353,7 +353,7 @@ exports.process_enter_key = function (e) {
     }
 
     // If we got this far, then we're presumably in the message
-    // view, so in that case "enter" is the hotkey to respond to a message.
+    // view, so in that case "Enter" is the hotkey to respond to a message.
     // Note that "r" has same effect, but that is handled in process_hotkey().
     compose_actions.respond_to_message({trigger: "hotkey enter"});
     return true;
@@ -400,13 +400,13 @@ exports.process_shift_tab_key = function () {
         return true;
     }
 
-    // Shift-tabbing from the edit message cancel button takes you to save.
+    // Shift-Tabbing from the edit message cancel button takes you to save.
     if ($(".message_edit_cancel").filter(":focus").length > 0) {
         $(".message_edit_save").trigger("focus");
         return true;
     }
 
-    // Shift-tabbing from the edit message save button takes you to the content.
+    // Shift-Tabbing from the edit message save button takes you to the content.
     const focused_message_edit_save = $(".message_edit_save").filter(":focus");
     if (focused_message_edit_save.length > 0) {
         focused_message_edit_save
@@ -416,7 +416,7 @@ exports.process_shift_tab_key = function () {
         return true;
     }
 
-    // Shift-tabbing from emoji catalog/search results takes you back to search textbox.
+    // Shift-Tabbing from emoji catalog/search results takes you back to search textbox.
     if (emoji_picker.reactions_popped()) {
         return emoji_picker.navigate("shift_tab");
     }
@@ -430,7 +430,7 @@ exports.process_shift_tab_key = function () {
 exports.process_hotkey = function (e, hotkey) {
     const event_name = hotkey.name;
 
-    // This block needs to be before the `tab` handler.
+    // This block needs to be before the `Tab` handler.
     switch (event_name) {
         case "up_arrow":
         case "down_arrow":
@@ -524,7 +524,7 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (exports.in_content_editable_widget(e)) {
-        // We handle the enter key in process_enter_key().
+        // We handle the Enter key in process_enter_key().
         // We ignore all other keys.
         return false;
     }
@@ -560,7 +560,7 @@ exports.process_hotkey = function (e, hotkey) {
     // browser behavior.
     if (event_name === "backspace") {
         if ($("#compose-send-button").is(":focus")) {
-            // Ignore backspace; don't navigate back a page.
+            // Ignore Backspace; don't navigate back a page.
             return true;
         }
     }
@@ -572,7 +572,7 @@ exports.process_hotkey = function (e, hotkey) {
 
     // Process hotkeys specially when in an input, select, textarea, or send button
     if (exports.processing_text()) {
-        // Note that there is special handling for enter/escape too, but
+        // Note that there is special handling for Enter/Esc too, but
         // we handle this in other functions.
 
         if (event_name === "left_arrow" && compose_state.focus_in_empty_compose()) {
@@ -595,9 +595,9 @@ exports.process_hotkey = function (e, hotkey) {
             $(":focus").caret(Infinity).animate({scrollTop: height}, "fast");
             return true;
         } else if (event_name === "search_with_k") {
-            // Do nothing; this allows one to use ctrl+k inside compose.
+            // Do nothing; this allows one to use Ctrl+K inside compose.
         } else if (event_name === "star_message") {
-            // Do nothing; this allows one to use ctrl+s inside compose.
+            // Do nothing; this allows one to use Ctrl+S inside compose.
         } else {
             // Let the browser handle the key normally.
             return false;
@@ -684,7 +684,7 @@ exports.process_hotkey = function (e, hotkey) {
             drafts.launch();
             return true;
         case "reply_message": // 'r': respond to message
-            // Note that you can "enter" to respond to messages as well,
+            // Note that you can "Enter" to respond to messages as well,
             // but that is handled in process_enter_key().
             compose_actions.respond_to_message({trigger: "hotkey"});
             return true;
@@ -790,7 +790,7 @@ exports.process_hotkey = function (e, hotkey) {
 };
 
 /* We register both a keydown and a keypress function because
-   we want to intercept pgup/pgdn, escape, etc, and process them
+   we want to intercept PgUp/PgDn, Esc, etc, and process them
    as they happen on the keyboard. However, if we processed
    letters/numbers in keydown, we wouldn't know what the case of
    the letters were.

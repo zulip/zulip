@@ -99,7 +99,7 @@ casper.then(function () {
     casper.waitUntilVisible("#private_message_recipient", function () {
         common.pm_recipient.expect("cordelia@zulip.com");
 
-        common.keypress(27); //escape
+        common.keypress(27); //Esc
         casper.page.sendEvent("keypress", "k");
         casper.page.sendEvent("keypress", "r");
     });
@@ -165,7 +165,7 @@ casper.then(function () {
 // Make sure multiple PM recipients display properly.
 var recipients = ["cordelia@zulip.com", "othello@zulip.com"];
 casper.then(function () {
-    common.keypress(27); // escape to dismiss compose box
+    common.keypress(27); // Esc to dismiss compose box
 });
 casper.waitWhileVisible(".message_comp");
 common.then_send_message("private", {
@@ -175,7 +175,7 @@ common.then_send_message("private", {
 });
 
 casper.then(function () {
-    common.keypress(27); // escape to dismiss compose box
+    common.keypress(27); // Esc to dismiss compose box
 });
 casper.then(function () {
     common.un_narrow();

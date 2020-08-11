@@ -228,7 +228,7 @@ def _reload():
             # re-executing in the current process, start a new one
             # and cause the current process to exit.  This isn't
             # ideal since the new process is detached from the parent
-            # terminal and thus cannot easily be killed with ctrl-C,
+            # terminal and thus cannot easily be killed with Ctrl-C,
             # but it's better than not being able to autoreload at
             # all.
             # Unfortunately the errno returned in this case does not

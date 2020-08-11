@@ -217,11 +217,11 @@ Two editors often available by default on Linux systems are:
 * **Nano**: A very simple, beginner-friendly editor. However, it lacks a lot of
   features useful for programming, such as syntax highlighting, so we only
   recommended it for quick edits to things like configuration files. Launch by
-  running command `nano <filename>`. Exit by pressing *control-X*.
+  running command `nano <filename>`. Exit by pressing *Ctrl-X*.
 
 * **[Vim](https://www.vim.org/)**: A very powerful editor that can take a while
-  to learn. Launch by running `vim <filename>`. Quit Vim by pressing *escape*,
-  typing `:q`, and then pressing *return*. Vim comes with a program to learn it
+  to learn. Launch by running `vim <filename>`. Quit Vim by pressing *Esc*,
+  typing `:q`, and then pressing *Enter*. Vim comes with a program to learn it
   called `vimtutor` (just run that command to start it).
 
 Other options include:

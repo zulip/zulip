@@ -37,5 +37,5 @@ There are several ways to access an existing PM or group PM.
 * Click on any user or group in the right sidebar.
 * Start typing a user's name in [search](/help/search-for-messages). You'll be
   able to select PMs or group PMs with that user.
-* Open the compose box, and enter in a (list of) users. Type `Ctr + .` (or
+* Open the compose box, and enter in a (list of) users. Type `Ctrl + .` (or
   `Cmd + .` on a mac) to open that conversation.
