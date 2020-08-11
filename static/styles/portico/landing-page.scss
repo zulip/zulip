@@ -1904,31 +1904,31 @@ nav {
     text-align: center;
 }
 
-.portico-landing.hello .apps .left-side .platform-icons .group h2 {
-    font-size: 1.5em;
-}
-
 .portico-landing.hello .apps .left-side .platform-icons .group {
     display: inline-block;
     vertical-align: top;
     margin: 0 30px;
 
     text-align: center;
-}
 
-.portico-landing.hello .apps .left-side .platform-icons .group a {
-    color: inherit;
-}
+    h2 {
+        font-size: 1.5em;
+    }
 
-.portico-landing.hello .apps .left-side .platform-icons .group i {
-    display: inline-block;
-    width: 80px;
+    a {
+        color: inherit;
+    }
 
-    font-size: 3.5em;
-    opacity: 0.8;
+    i {
+        display: inline-block;
+        width: 80px;
 
-    &:hover {
-        opacity: 1;
+        font-size: 3.5em;
+        opacity: 0.8;
+
+        &:hover {
+            opacity: 1;
+        }
     }
 }
 
