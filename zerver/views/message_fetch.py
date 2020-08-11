@@ -135,7 +135,7 @@ class NarrowBuilder:
     def __init__(self, user_profile: UserProfile, msg_id_column: str) -> None:
         self.user_profile = user_profile
         self.msg_id_column = msg_id_column
-        self.user_realm = user_profile.realm
+        self.realm = user_profile.realm
 
     def add_term(self, query: Query, term: Dict[str, Any]) -> Query:
         """
@@ -268,7 +268,7 @@ class NarrowBuilder:
         if operand == 'public':
             # Get all both subscribed and non subscribed public streams
             # but exclude any private subscribed streams.
-            recipient_ids = get_public_streams_queryset(self.user_realm).values_list("recipient_id", flat=True).order_by('id')
+            recipient_ids = get_public_streams_queryset(self.realm).values_list("recipient_id", flat=True).order_by('id')
             cond = column("recipient_id").in_(recipient_ids)
             return query.where(maybe_negate(cond))
         raise BadNarrowOperator('unknown streams operand ' + operand)
@@ -321,9 +321,9 @@ class NarrowBuilder:
     def by_sender(self, query: Query, operand: Union[str, int], maybe_negate: ConditionTransform) -> Query:
         try:
             if isinstance(operand, str):
-                sender = get_user_including_cross_realm(operand, self.user_realm)
+                sender = get_user_including_cross_realm(operand, self.realm)
             else:
-                sender = get_user_by_id_in_realm_including_cross_realm(operand, self.user_realm)
+                sender = get_user_by_id_in_realm_including_cross_realm(operand, self.realm)
         except UserProfile.DoesNotExist:
             raise BadNarrowOperator('unknown user ' + str(operand))
 
@@ -347,7 +347,7 @@ class NarrowBuilder:
                 email_list = operand.split(",")
                 user_profiles = get_user_profiles(
                     emails=email_list,
-                    realm=self.user_realm,
+                    realm=self.realm,
                 )
             else:
                 """
@@ -356,7 +356,7 @@ class NarrowBuilder:
                 """
                 user_profiles = get_user_profiles_by_ids(
                     user_ids=operand,
-                    realm=self.user_realm,
+                    realm=self.realm,
                 )
 
             recipient = recipient_for_user_profiles(user_profiles=user_profiles,
@@ -404,9 +404,9 @@ class NarrowBuilder:
                          maybe_negate: ConditionTransform) -> Query:
         try:
             if isinstance(operand, str):
-                narrow_profile = get_user_including_cross_realm(operand, self.user_realm)
+                narrow_profile = get_user_including_cross_realm(operand, self.realm)
             else:
-                narrow_profile = get_user_by_id_in_realm_including_cross_realm(operand, self.user_realm)
+                narrow_profile = get_user_by_id_in_realm_including_cross_realm(operand, self.realm)
         except UserProfile.DoesNotExist:
             raise BadNarrowOperator('unknown user ' + str(operand))
 
