@@ -154,7 +154,7 @@ def retry_send_email_failures(
             error_class_name = e.__class__.__name__
 
             def on_failure(event: Dict[str, Any]) -> None:
-                logging.exception("Event %r failed due to exception %s", event, error_class_name)
+                logging.exception("Event %r failed due to exception %s", event, error_class_name, stack_info=True)
 
             retry_event(worker.queue_name, data, on_failure)
 
@@ -262,7 +262,7 @@ class QueueProcessingWorker(ABC):
         check_and_send_restart_signal()
 
     def _log_problem(self) -> None:
-        logging.exception("Problem handling data on queue %s", self.queue_name)
+        logging.exception("Problem handling data on queue %s", self.queue_name, stack_info=True)
 
     def setup(self) -> None:
         self.q = SimpleQueueClient()

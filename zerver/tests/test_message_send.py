@@ -1620,6 +1620,7 @@ class InternalPrepTest(ZulipTestCase):
             "Error queueing internal message by %s: %s",
             "cordelia@zulip.com",
             "Message must not be empty",
+            stack_info=True,
         )
 
         with mock.patch('logging.exception') as m:
@@ -1634,6 +1635,7 @@ class InternalPrepTest(ZulipTestCase):
             "Error queueing internal message by %s: %s",
             "cordelia@zulip.com",
             "Message must not be empty",
+            stack_info=True,
         )
 
         with mock.patch('logging.exception') as m:
@@ -1649,6 +1651,7 @@ class InternalPrepTest(ZulipTestCase):
             "Error queueing internal message by %s: %s",
             "cordelia@zulip.com",
             "Message must not be empty",
+            stack_info=True,
         )
 
         with mock.patch('logging.exception') as m:
@@ -1664,6 +1667,7 @@ class InternalPrepTest(ZulipTestCase):
             "Error queueing internal message by %s: %s",
             "cordelia@zulip.com",
             "Message must not be empty",
+            stack_info=True,
         )
 
     def test_error_handling(self) -> None:
@@ -1694,6 +1698,7 @@ class InternalPrepTest(ZulipTestCase):
             "Error queueing internal message by %s: %s",
             "cordelia@zulip.com",
             "You can't send private messages outside of your organization.",
+            stack_info=True,
         )
 
     def test_ensure_stream_gets_called(self) -> None:

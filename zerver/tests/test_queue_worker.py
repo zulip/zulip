@@ -570,6 +570,7 @@ class WorkerTest(ZulipTestCase):
                 worker.start()
                 logging_exception_mock.assert_called_once_with(
                     "Problem handling data on queue %s", "unreliable_worker",
+                    stack_info=True,
                 )
 
         self.assertEqual(processed, ['good', 'fine', 'back to normal'])
@@ -609,6 +610,7 @@ class WorkerTest(ZulipTestCase):
                     pass
                 logging_exception_mock.assert_called_once_with(
                     "Problem handling data on queue %s", "unreliable_loopworker",
+                    stack_info=True,
                 )
 
         self.assertEqual(processed, ['good', 'fine'])
