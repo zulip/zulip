@@ -62,16 +62,16 @@
                 {{#if is_content_editable}}
                 <div class="message-edit-feature-group">
                     <input type="file" id="message_edit_file_input_{{message_id}}" class="notvisible pull-left" multiple />
-                    <a class="message-control-button fa fa-smile-o" aria-hidden="true" id="emoji_map" href="#" data-message-id="{{message_id}}" title="{{t 'Add emoji' }}"></a>
-                    <a class="message-control-button fa fa-font" aria-hidden="true" title="{{t 'Formatting' }}" data-overlay-trigger="message-formatting" ></a>
+                    <a role="button" tabindex=0 class="message-control-button fa fa-smile-o" aria-label="{{t 'Add emoji' }}" id="emoji_map" tabindex=0 data-message-id="{{message_id}}" title="{{t 'Add emoji' }}"></a>
+                    <a role="button" tabindex=0 class="message-control-button fa fa-font" aria-label="{{t 'Formatting' }}" title="{{t 'Formatting' }}" data-overlay-trigger="message-formatting" ></a>
                     {{#if file_upload_enabled}}
-                    <a class="message-control-button fa fa-paperclip notdisplayed" aria-hidden="true" id="attach_files_{{message_id}}" href="#" title="{{t "Attach files" }}"></a>
+                    <a role="button" tabindex=0 class="message-control-button fa fa-paperclip notdisplayed" aria-label="{{t "Attach files" }}" id="attach_files_{{message_id}}" title="{{t "Attach files" }}"></a>
                     {{/if}}
                     {{#if show_video_chat_button}}
-                    <a class="message-control-button fa fa-video-camera video_link" aria-hidden="true" href="#" data-message-id="{{message_id}}" title="{{t "Add video call" }}"></a>
+                    <a role="button" tabindex=0 class="message-control-button fa fa-video-camera video_link" aria-label="{{t "Add video call" }}" data-message-id="{{message_id}}" title="{{t "Add video call" }}"></a>
                     {{/if}}
-                    <a id="undo_markdown_preview_{{message_id}}" class="message-control-button fa fa-edit" aria-hidden="true" style="display:none;" title="{{t 'Write' }}"></a>
-                    <a id="markdown_preview_{{message_id}}" class="message-control-button fa fa-eye" aria-hidden="true" title="{{t 'Preview' }}"></a>
+                    <a role="button" tabindex=0 id="undo_markdown_preview_{{message_id}}" class="message-control-button fa fa-edit" aria-label="{{t 'Write' }}" style="display:none;" title="{{t 'Write' }}"></a>
+                    <a role="button" tabindex=0 id="markdown_preview_{{message_id}}" class="message-control-button fa fa-eye" aria-label="{{t 'Preview' }}" title="{{t 'Preview' }}"></a>
                 </div>
                 {{/if}}
             {{else}}
