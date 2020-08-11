@@ -152,6 +152,6 @@ replaced with realm settings:
 * Which authentication methods are allowed should probably appear in
   both places; in server settings indicating the capabilities of the
   server, and in the realm settings indicating which methods the realm
-  administrator wants to allow users to login with.
+  administrator wants to allow users to log in with.
 
 [doc-newfeat]: ../tutorials/new-feature-tutorial.md

@@ -815,7 +815,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         * is_signup: Whether we're testing the social flow for
           /register (True) or /login (False).  This is important
           because we need to verify behavior like the
-          "Continue to registration" if you try to login using an
+          "Continue to registration" if you try to log in using an
           account that doesn't exist but is allowed to signup.
         * next: Parameter passed through in production authentication
           to redirect the user to (e.g.) the specific page in the webapp
@@ -2385,7 +2385,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         if expect_choose_email_screen:
             # As GitHub authenticates multiple email addresses,
             # we'll have an additional screen where the user selects
-            # which email address to login using (this screen is a
+            # which email address to log in using (this screen is a
             # "partial" state of the python-social-auth pipeline).
             #
             # TODO: Generalize this testing code for use with other
@@ -2795,7 +2795,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         )])
 
     def test_github_unverified_email_with_existing_account(self) -> None:
-        # check if a user is denied to login if the user manages to
+        # check if a user is denied to log in if the user manages to
         # send an unverified email that has an existing account in
         # organisation through `email` GET parameter.
         account_data_dict = self.get_account_data_dict(email='hamlet@zulip.com', name=self.name)
@@ -5036,7 +5036,7 @@ class LDAPBackendTest(ZulipTestCase):
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.url, reverse('config_error', kwargs={'error_category_name': 'ldap'}))
             response = self.client_get(response.url)
-            self.assert_in_response('You are trying to login using LDAP '
+            self.assert_in_response('You are trying to log in using LDAP '
                                     'without creating an',
                                     response)
         self.assertEqual(warn_log.output, [

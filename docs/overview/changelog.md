@@ -877,7 +877,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Upgraded to modern versions of most of our stale dependencies.
 - Updated our CSS toolchain to support hot module reloading.
 - Updated numerous pages within the /help/ site.
-- We no longer require re-authing to signup after trying to login with
+- We no longer require re-authing to signup after trying to log in with
   an OAuth authentication backend (GitHub or Google).
 - Made major improvements to the Help Center.
 - Improved system for configuring the S3 file uploads backend.
@@ -1415,7 +1415,7 @@ Zulip apps.
 * Improved Markdown support for bulleted lists.
 * Improved copy-to-clipboard support in various places.
 * Improved subject lines of missed message emails.
-* Improved handling of users trying to login with OAuth without an account.
+* Improved handling of users trying to log in with OAuth without an account.
 * Improved UI of off-the-Internet errors to not be hidden in narrow windows.
 * Improved rate-limiting errors to be more easily machine-readable.
 * Parallelized the backend test suite; now runs 1600 tests in <30s.

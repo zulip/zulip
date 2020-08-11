@@ -26,7 +26,7 @@ class Command(ZulipBaseCommand):
 
     Things that are not exported:
     * Confirmation and PreregistrationUser (transient tables)
-    * Sessions (everyone will need to login again post-export)
+    * Sessions (everyone will need to log in again post-export)
     * Users' passwords and API keys (users will need to use SSO or reset password)
     * Mobile tokens for APNS/GCM (users will need to reconnect their mobile devices)
     * ScheduledEmail (Not relevant on a new server)
@@ -38,7 +38,7 @@ class Command(ZulipBaseCommand):
     * Passwords will not be transferred.  They will all need to go
       through the password reset flow to obtain a new password (unless
       they intend to only use e.g. Google Auth).
-    * Users will need to logout and re-login to the Zulip desktop and
+    * Users will need to log out and re-log in to the Zulip desktop and
       mobile apps.  The apps now all have an option on the login page
       where you can specify which Zulip server to use; your users
       should enter <domain name>.
@@ -65,7 +65,7 @@ class Command(ZulipBaseCommand):
     * Use `./manage.py import` to import the realm
 
     * Use `./manage.py reactivate_realm` to reactivate the realm, so
-      users can login again.
+      users can log in again.
 
     * Inform the users about the things broken above.
 

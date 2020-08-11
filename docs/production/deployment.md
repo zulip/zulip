@@ -122,7 +122,7 @@ run the commands in `scripts/setup/create-db.sql` to:
 
 * Create a database called `zulip`.
 * Create a user called `zulip`.
-* Now login with the `zulip` user to create a schema called
+* Now log in with the `zulip` user to create a schema called
   `zulip` in the `zulip` database. You might have to grant `create`
   privileges first for the `zulip` user to do this.
 

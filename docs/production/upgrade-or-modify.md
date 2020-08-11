@@ -36,7 +36,7 @@ to a new Zulip release:
     repository](https://github.com/zulip/zulip) using
     `tools/build-release-tarball`.
 
-1. Login to your Zulip and run as root:
+1. Log in to your Zulip and run as root:
 
     ```
     /home/zulip/deployments/current/scripts/upgrade-zulip zulip-server-VERSION.tar.gz
@@ -458,7 +458,7 @@ git diff 2.0.4 acme-branch
 git push origin +acme-branch
 ```
 
-* Login to your Zulip server and configure and use
+* Log in to your Zulip server and configure and use
 [upgrade-zulip-from-git][] to install the changes; remember to
 configure `git_repo_url` to point to your fork on GitHub and run it as
 `upgrade-zulip-from-git acme-branch`.

@@ -50,10 +50,10 @@ following.  Please follow the instructions carefully:
 * [Configure mobile push notifications to always be sent][mobile-notifications-always]
   (normally they're only sent if you're idle, which isn't ideal for
   this sort of testing).
-* On an Android device, download and login to the
+* On an Android device, download and log in to the
 [Zulip Android app](https://play.google.com/store/apps/details?id=com.zulipmobile).
 If you were already logged in before configuring the server, you'll
-need to logout first, since the app only registers for push
+need to log out first, since the app only registers for push
 notifications on login.
 * Hit the home button, so Zulip is running in the background, and then
 have **another user** send you a **private message** (By default,

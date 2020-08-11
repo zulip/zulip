@@ -131,7 +131,7 @@ it as follows:
 
 6. [Restart the Zulip server](../production/settings.md) to ensure
 your settings changes take effect.  The Zulip login page should now
-have a button for SAML authentication that you can use to login or
+have a button for SAML authentication that you can use to log in or
 create an account (including when creating a new organization).
 
 7. If the configuration was successful, the server's metadata can be
@@ -369,7 +369,7 @@ the Zulip server).  Zulip will then treat users that are disabled via
 the "Disable Account" feature in Active Directory as deactivated in
 Zulip.
 
-Users disabled in active directory will be immediately unable to login
+Users disabled in active directory will be immediately unable to log in
 to Zulip, since Zulip queries the LDAP/Active Directory server on
 every login attempt.  The user will be fully deactivated the next time
 your `manage.py sync_ldap_user_data` cron job runs (at which point

@@ -70,7 +70,7 @@ this file:
 If you're going to manually test some changes in the frontend Markdown
 implementation, the easiest way to do this is as follows:
 
-1. Login to your development server.
+1. Log in to your development server.
 2. Stop your Zulip server with Ctrl-C, leaving the browser open.
 3. Compose and send the messages you'd like to test.  They will be
    locally echoed using the frontend rendering.
