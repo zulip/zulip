@@ -66,14 +66,6 @@ exports.check_profile_incomplete = function () {
     }
 };
 
-function handle_keyup(e) {
-    e.stopPropagation();
-    if (e.keyCode === 13) {
-        e.preventDefault();
-        $(this).trigger("click");
-    }
-}
-
 exports.initialize = function () {
     const ls = localstorage();
     if (page_params.insecure_desktop_app) {
@@ -126,10 +118,12 @@ exports.initialize = function () {
     });
 
     // Configure keyup handlers.
-    $(".request-desktop-notifications").on("keyup", handle_keyup);
-    $(".reject-notifications").on("keyup", handle_keyup);
-    $(".accept-bankruptcy").on("keyup", handle_keyup);
-    $("#panels").on("keyup", ".alert .exit", handle_keyup);
+    $(".alert-link[role=button]").on("keyup", function (e) {
+        e.stopPropagation();
+        if (e.key === "Enter") {
+            $(this).click();
+        }
+    });
 };
 
 exports.open = function ($process) {
