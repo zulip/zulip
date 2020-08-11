@@ -1625,13 +1625,15 @@ nav {
     background-color: hsl(168, 43%, 24%);
 }
 
-.portico-landing .testimonials .text-header .text-content {
-    float: left;
-}
+.portico-landing .testimonials .text-header {
+    .text-content {
+        float: left;
+    }
 
-.portico-landing .testimonials .text-header .action-content {
-    float: right;
-    margin-top: 18px;
+    .action-content {
+        float: right;
+        margin-top: 18px;
+    }
 }
 
 .portico-landing .testimonials .quote-container {
