@@ -34,7 +34,7 @@ if settings.USING_RABBITMQ:
 
 
 def handle_callback_exception(callback: Callable[..., Any]) -> None:
-    logging.exception("Exception in callback")
+    logging.exception("Exception in callback", stack_info=True)
     app_log.error("Exception in callback %r", callback, exc_info=True)
 
 class Command(BaseCommand):

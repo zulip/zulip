@@ -429,7 +429,7 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
             # but for now it seems reasonable to log at error
             # level (so that we get notified), but then cache the
             # failure to proceed with our usual work
-            markdown_logger.exception("Unknown error fetching tweet data")
+            markdown_logger.exception("Unknown error fetching tweet data", stack_info=True)
             return None
     return res
 

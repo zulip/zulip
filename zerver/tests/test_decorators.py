@@ -348,7 +348,7 @@ body:
                 content_type=request.content_type,
                 custom_headers="HTTP_X_CUSTOM_HEADER: custom_value\n",
                 body=request.body,
-            ))
+            ), stack_info=True)
 
         # Test when an unexpected webhook event occurs
         with mock.patch('zerver.decorator.webhook_unexpected_events_logger.exception') as mock_exception:
@@ -379,7 +379,7 @@ body:
                 content_type=request.content_type,
                 custom_headers="HTTP_X_CUSTOM_HEADER: custom_value\n",
                 body=request.body,
-            ))
+            ), stack_info=True)
 
         with self.settings(RATE_LIMITING=True):
             with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
@@ -517,7 +517,7 @@ body:
                 content_type=request.content_type,
                 custom_headers=None,
                 body=request.body,
-            ))
+            ), stack_info=True)
 
     def test_authenticated_rest_api_view_logging_unexpected_event(self) -> None:
         @authenticated_rest_api_view(webhook_client_name="ClientName")
@@ -561,7 +561,7 @@ body:
                 content_type=request.content_type,
                 custom_headers=None,
                 body=request.body,
-            ))
+            ), stack_info=True)
 
     def test_authenticated_rest_api_view_with_non_webhook_view(self) -> None:
         @authenticated_rest_api_view()

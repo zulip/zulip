@@ -601,7 +601,7 @@ def run_parallel_wrapper(f: Callable[[ListJobData], None], full_items: List[List
             try:
                 f(item)
             except Exception:
-                logging.exception("Error processing item: %s", item)
+                logging.exception("Error processing item: %s", item, stack_info=True)
             count += 1
             if count % 1000 == 0:
                 logging.info("A download thread finished %s items", count)

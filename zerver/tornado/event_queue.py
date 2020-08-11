@@ -179,7 +179,7 @@ class ClientDescriptor:
                 finish_handler(self.current_handler_id, self.event_queue.id,
                                self.event_queue.contents(), self.apply_markdown)
             except Exception:
-                logging.exception(err_msg)
+                logging.exception(err_msg, stack_info=True)
             finally:
                 self.disconnect_handler()
                 return True
@@ -482,14 +482,14 @@ def load_event_queues(port: int) -> None:
     except FileNotFoundError:
         pass
     except ValueError:
-        logging.exception("Tornado %d could not deserialize event queues", port)
+        logging.exception("Tornado %d could not deserialize event queues", port, stack_info=True)
     else:
         try:
             clients = {
                 qid: ClientDescriptor.from_dict(client) for (qid, client) in data
             }
         except Exception:
-            logging.exception("Tornado %d could not deserialize event queues", port)
+            logging.exception("Tornado %d could not deserialize event queues", port, stack_info=True)
 
     for client in clients.values():
         # Put code for migrations due to event queue data format changes here

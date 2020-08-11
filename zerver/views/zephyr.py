@@ -63,7 +63,7 @@ def webathena_kerberos_login(request: HttpRequest, user_profile: UserProfile,
                                api_key,
                                base64.b64encode(ccache).decode("utf-8")])
     except Exception:
-        logging.exception("Error updating the user's ccache")
+        logging.exception("Error updating the user's ccache", stack_info=True)
         return json_error(_("We were unable to setup mirroring for you"))
 
     return json_success()

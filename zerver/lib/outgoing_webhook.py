@@ -333,6 +333,6 @@ def do_rest_call(base_url: str,
             f"An exception of type *{type(e).__name__}* occurred for message `{event['command']}`! "
             "See the Zulip server logs for more information."
         )
-        logging.exception("Outhook trigger failed:")
+        logging.exception("Outhook trigger failed:", stack_info=True)
         fail_with_message(event, response_message)
         notify_bot_owner(event, exception=e)
