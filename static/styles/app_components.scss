@@ -177,7 +177,7 @@
             }
         }
 
-        &[disabled="disabled"] {
+        &[disabled] {
             cursor: not-allowed;
             filter: saturate(0);
             background-color: hsl(0, 0%, 93%);
