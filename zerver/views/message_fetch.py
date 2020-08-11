@@ -268,10 +268,13 @@ class NarrowBuilder:
         if operand == 'public':
             # Get all both subscribed and non subscribed public streams
             # but exclude any private subscribed streams.
-            recipient_ids = get_public_streams_queryset(self.realm).values_list("recipient_id", flat=True).order_by('id')
-            cond = column("recipient_id").in_(recipient_ids)
-            return query.where(maybe_negate(cond))
-        raise BadNarrowOperator('unknown streams operand ' + operand)
+            recipient_queryset = get_public_streams_queryset(self.realm)
+        else:
+            raise BadNarrowOperator('unknown streams operand ' + operand)
+
+        recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by('id')
+        cond = column("recipient_id").in_(recipient_ids)
+        return query.where(maybe_negate(cond))
 
     def by_topic(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         if self.user_profile.realm.is_zephyr_mirror_realm:
