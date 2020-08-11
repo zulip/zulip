@@ -331,6 +331,10 @@ jmespath==0.10.0 \
     --hash=sha256:b85d0567b8666149a93172712e68920734333c0ce7e89b78b3e987f71e5ed4f9 \
     --hash=sha256:cdf6525904cc597730141d61b36f2e4b8ecc257c420fa2f4549bac2c2d0cb72f \
     # via boto3, botocore
+jsonref==0.2 \
+    --hash=sha256:b1e82fa0b62e2c2796a13e5401fe51790b248f6d9bf9d7212a3e31a3501b291f \
+    --hash=sha256:f3c45b121cf6257eafabdc3a8008763aed1cd7da06dbabc59a9e4d2a5e4e6697 \
+    # via -r requirements/common.in
 jsonschema==3.2.0 \
     --hash=sha256:4e5b3cf8216f577bee9ce139cbe72eca3ea4f292ec60928ff24758ce626cd163 \
     --hash=sha256:c8a85b28d377cc7737e46e2d9f2b4f44ee3c0e1deac6bf46ddefc7187d30797a \
@@ -655,7 +659,7 @@ pyyaml==5.3.1 \
     --hash=sha256:b8eac752c5e14d3eca0e6dd9199cd627518cb5ec06add0de9d32baeee6fe645d \
     --hash=sha256:cc8955cfbfc7a115fa81d85284ee61147059a753344bc51098f3ccd69b0d7e0c \
     --hash=sha256:d13155f591e6fcc1ec3b30685d50bf0711574e2c0dfffd7644babf8b5102ca1a \
-    # via openapi-spec-validator, yamole
+    # via openapi-spec-validator
 qrcode==6.1 \
     --hash=sha256:3996ee560fc39532910603704c82980ff6d4d5d629f9c3f25f34174ce8606cf5 \
     --hash=sha256:505253854f607f2abf4d16092c61d4e9d511a3b4392e60bff957a68592b04369 \
@@ -833,10 +837,6 @@ xmlsec==1.3.8 \
     --hash=sha256:e3fe3a1256135edec4a35508b577355baaad780a60f4bb34eec9f3281f27cabd \
     --hash=sha256:e6bcac5ee9cd0cb5aa2d4d1e14f3714c5a09185607828285179c2c94fcc083dc \
     # via python3-saml
-yamole==2.1.7 \
-    --hash=sha256:cd37040d1b396d58ac5bd9864999b98700d37156b2e65d9498486874aee38fda \
-    --hash=sha256:f491345f18e9d4133eed196166136144e92bb4bad83e60d44ce5754adf130a36 \
-    # via -r requirements/common.in
 zipp==3.1.0 \
     --hash=sha256:aa36550ff0c0b7ef7fa639055d797116ee891440eac1a56f378e2d3179e0320b \
     --hash=sha256:c599e4d75c98f6798c509911d08a22e6c021d074469042177c8c86fb92eefd96 \

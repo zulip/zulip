@@ -482,6 +482,10 @@ jsonpointer==2.0 \
     --hash=sha256:c192ba86648e05fdae4f08a17ec25180a9aef5008d973407b581798a83975362 \
     --hash=sha256:ff379fa021d1b81ab539f5ec467c7745beb1a5671463f9dcc2b2d458bd361c1e \
     # via jsonpatch
+jsonref==0.2 \
+    --hash=sha256:b1e82fa0b62e2c2796a13e5401fe51790b248f6d9bf9d7212a3e31a3501b291f \
+    --hash=sha256:f3c45b121cf6257eafabdc3a8008763aed1cd7da06dbabc59a9e4d2a5e4e6697 \
+    # via -r requirements/common.in
 jsonschema==3.2.0 \
     --hash=sha256:4e5b3cf8216f577bee9ce139cbe72eca3ea4f292ec60928ff24758ce626cd163 \
     --hash=sha256:c8a85b28d377cc7737e46e2d9f2b4f44ee3c0e1deac6bf46ddefc7187d30797a \
@@ -932,7 +936,7 @@ pyyaml==5.3.1 \
     --hash=sha256:b8eac752c5e14d3eca0e6dd9199cd627518cb5ec06add0de9d32baeee6fe645d \
     --hash=sha256:cc8955cfbfc7a115fa81d85284ee61147059a753344bc51098f3ccd69b0d7e0c \
     --hash=sha256:d13155f591e6fcc1ec3b30685d50bf0711574e2c0dfffd7644babf8b5102ca1a \
-    # via cfn-lint, libcst, moto, openapi-spec-validator, yamole
+    # via cfn-lint, libcst, moto, openapi-spec-validator
 qrcode==6.1 \
     --hash=sha256:3996ee560fc39532910603704c82980ff6d4d5d629f9c3f25f34174ce8606cf5 \
     --hash=sha256:505253854f607f2abf4d16092c61d4e9d511a3b4392e60bff957a68592b04369 \
@@ -1303,10 +1307,6 @@ xmltodict==0.12.0 \
     --hash=sha256:50d8c638ed7ecb88d90561beedbf720c9b4e851a9fa6c47ebd64e99d166d8a21 \
     --hash=sha256:8bbcb45cc982f48b2ca8fe7e7827c5d792f217ecf1792626f808bf41c3b86051 \
     # via moto
-yamole==2.1.7 \
-    --hash=sha256:cd37040d1b396d58ac5bd9864999b98700d37156b2e65d9498486874aee38fda \
-    --hash=sha256:f491345f18e9d4133eed196166136144e92bb4bad83e60d44ce5754adf130a36 \
-    # via -r requirements/common.in
 zipp==3.1.0 \
     --hash=sha256:aa36550ff0c0b7ef7fa639055d797116ee891440eac1a56f378e2d3179e0320b \
     --hash=sha256:c599e4d75c98f6798c509911d08a22e6c021d074469042177c8c86fb92eefd96 \
