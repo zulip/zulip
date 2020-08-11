@@ -1902,32 +1902,32 @@ nav {
 
 .portico-landing.hello .apps .left-side .platform-icons {
     text-align: center;
-}
 
-.portico-landing.hello .apps .left-side .platform-icons .group {
-    display: inline-block;
-    vertical-align: top;
-    margin: 0 30px;
-
-    text-align: center;
-
-    h2 {
-        font-size: 1.5em;
-    }
-
-    a {
-        color: inherit;
-    }
-
-    i {
+    .group {
         display: inline-block;
-        width: 80px;
+        vertical-align: top;
+        margin: 0 30px;
 
-        font-size: 3.5em;
-        opacity: 0.8;
+        text-align: center;
 
-        &:hover {
-            opacity: 1;
+        h2 {
+            font-size: 1.5em;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        i {
+            display: inline-block;
+            width: 80px;
+
+            font-size: 3.5em;
+            opacity: 0.8;
+
+            &:hover {
+                opacity: 1;
+            }
         }
     }
 }
@@ -3220,9 +3220,11 @@ nav {
         }
     }
 
-    .portico-landing.hello .apps .left-side .platform-icons .group {
-        margin: 50px 30px;
-        display: block;
+    .portico-landing.hello .apps .left-side .platform-icons {
+        .group {
+            margin: 50px 30px;
+            display: block;
+        }
     }
 
     .portico-landing.hello .tour .carousel-inner .item-container {
