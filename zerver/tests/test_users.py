@@ -823,7 +823,9 @@ class AdminCreateUserTest(ZulipTestCase):
 
         # Romeo is a newly registered user
         new_user = get_user_by_delivery_email('romeo@zulip.net', get_realm('zulip'))
+        result = orjson.loads(result.content)
         self.assertEqual(new_user.full_name, 'Romeo Montague')
+        self.assertEqual(new_user.id, result['user_id'])
 
         # Make sure the recipient field is set correctly.
         self.assertEqual(new_user.recipient, Recipient.objects.get(type=Recipient.PERSONAL,

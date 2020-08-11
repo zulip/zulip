@@ -175,6 +175,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             if e['event']['type'] == 'realm_bot'
         ]
 
+        self.assertEqual(result["user_id"], bot.id)
         self.assertEqual(
             dict(
                 type='realm_bot',

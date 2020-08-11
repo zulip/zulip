@@ -4081,7 +4081,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - properties:
+                      user_id:
+                        type: integer
+                        description: |
+                          The ID assigned to the newly created user.
+
+                          **Changes**: New in Zulip 4.0 (feature level 30).
+                  - example: {"msg": "", "result": "success", "user_id": 25}
         "400":
           description: Bad request.
           content:

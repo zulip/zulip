@@ -15,6 +15,8 @@ below features are supported.
 * [`GET users/me/subscriptions`](/api/get-subscriptions), [`GET
   /streams`](/api/get-streams): Added `date_created` to Stream
   objects.
+* [`POST /users`](/api/create-user), `POST /bots`: The ID of the newly
+  created user is now returned in the response.
 
 Feature levels 28 and 29 are reserved for future use in 3.x bug fix
 releases.

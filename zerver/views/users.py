@@ -413,6 +413,7 @@ def add_bot_backend(
     api_key = get_api_key(bot_profile)
 
     json_result = dict(
+        user_id=bot_profile.id,
         api_key=api_key,
         avatar_url=avatar_url(bot_profile),
         default_sending_stream=get_stream_name(bot_profile.default_sending_stream),
@@ -521,8 +522,8 @@ def create_user_backend(
     if not check_password_strength(password):
         return json_error(PASSWORD_TOO_WEAK_ERROR)
 
-    do_create_user(email, password, realm, full_name, acting_user=user_profile)
-    return json_success()
+    target_user = do_create_user(email, password, realm, full_name, acting_user=user_profile)
+    return json_success({'user_id': target_user.id})
 
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     raw_user_data = get_raw_user_data(user_profile.realm, user_profile,
