@@ -349,6 +349,23 @@ input.recipient_box {
     width: 100%;
 }
 
+#compose-send-button {
+    border-radius: 4px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    margin-bottom: 0;
+    font-weight: 600;
+    border: 1px solid hsl(170, 68%, 41%);
+    background-color: hsl(170, 48%, 54%);
+    color: hsl(0, 0%, 100%);
+    float: right;
+    font-size: 0.9em;
+
+    &:focus {
+        box-shadow: 0 0 10px hsl(170, 48%, 54%), 0 0 5px hsl(170, 48%, 54%);
+    }
+}
+
 #send_controls {
     float: right;
     position: relative;
@@ -358,20 +375,6 @@ input.recipient_box {
     .compose_checkbox_label {
         color: hsl(0, 0%, 67%);
         margin: 4px;
-    }
-
-    #compose-send-button {
-        border-radius: 4px;
-        padding-top: 3px;
-        padding-bottom: 3px;
-        font-weight: 600;
-        border: 1px solid hsl(170, 68%, 41%);
-        background-color: hsl(170, 48%, 54%);
-        color: hsl(0, 0%, 100%);
-
-        &:focus {
-            box-shadow: 0 0 10px hsl(170, 48%, 54%), 0 0 5px hsl(170, 48%, 54%);
-        }
     }
 }
 
