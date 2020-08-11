@@ -174,7 +174,12 @@ exports.render_date = function (time, time_above, today) {
 exports.render_markdown_timestamp = function (time, text) {
     const hourformat = page_params.twenty_four_hour_time ? "HH:mm" : "h:mm A";
     const timestring = time.format("ddd, MMM D YYYY, " + hourformat);
-    const titlestring = "This time is in your timezone. Original text was '" + text + "'.";
+    const titlestring = i18n.t(
+        "This time is in your timezone. Original text was '__timestamp__'.",
+        {
+            timestamp: text,
+        },
+    );
     return {
         text: timestring,
         title: titlestring,
