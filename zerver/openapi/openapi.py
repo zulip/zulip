@@ -30,6 +30,44 @@ EXCLUDE_DOCUMENTED_ENDPOINTS = {
     ("/settings/notifications", "patch"),
 }
 
+# Most of our code expects allOf to be preprocessed away because that is what
+# yamole did.  Its algorithm for doing so is not standards compliant, but we
+# replicate it here.
+def naively_merge(a: Dict[str, object], b: Dict[str, object]) -> Dict[str, object]:
+    ret: Dict[str, object] = a.copy()
+    for key, b_value in b.items():
+        if key == "example" or key not in ret:
+            ret[key] = b_value
+            continue
+        a_value = ret[key]
+        if isinstance(b_value, list):
+            assert isinstance(a_value, list)
+            ret[key] = a_value + b_value
+        elif isinstance(b_value, dict):
+            assert isinstance(a_value, dict)
+            ret[key] = naively_merge(a_value, b_value)
+    return ret
+
+def naively_merge_allOf(obj: object) -> object:
+    if isinstance(obj, dict):
+        return naively_merge_allOf_dict(obj)
+    elif isinstance(obj, list):
+        return list(map(naively_merge_allOf, obj))
+    else:
+        return obj
+
+def naively_merge_allOf_dict(obj: Dict[str, object]) -> Dict[str, object]:
+    if "allOf" in obj:
+        ret = obj.copy()
+        subschemas = ret.pop("allOf")
+        ret = naively_merge_allOf_dict(ret)
+        assert isinstance(subschemas, list)
+        for subschema in subschemas:
+            assert isinstance(subschema, dict)
+            ret = naively_merge(ret, naively_merge_allOf_dict(subschema))
+        return ret
+    return {key: naively_merge_allOf(value) for key, value in obj.items()}
+
 class OpenAPISpec():
     def __init__(self, openapi_path: str) -> None:
         self.openapi_path = openapi_path
@@ -39,29 +77,31 @@ class OpenAPISpec():
         self._request_validator: Optional[RequestValidator] = None
 
     def check_reload(self) -> None:
-        # Because importing yamole (and in turn, yaml) takes
-        # significant time, and we only use python-yaml for our API
-        # docs, importing it lazily here is a significant optimization
-        # to `manage.py` startup.
+        # Because importing yaml takes significant time, and we only
+        # use python-yaml for our API docs, importing it lazily here
+        # is a significant optimization to `manage.py` startup.
         #
         # There is a bit of a race here...we may have two processes
         # accessing this module level object and both trying to
         # populate self.data at the same time.  Hopefully this will
         # only cause some extra processing at startup and not data
         # corruption.
-        from yamole import YamoleParser
 
-        mtime = os.path.getmtime(self.openapi_path)
-        # Using == rather than >= to cover the corner case of users placing an
-        # earlier version than the current one
-        if self.mtime == mtime:
-            return
+        import yaml
+        from jsonref import JsonRef
 
         with open(self.openapi_path) as f:
-            yamole_parser = YamoleParser(f)
-        self._openapi = yamole_parser.data
-        spec = create_spec(self._openapi)
+            mtime = os.fstat(f.fileno()).st_mtime
+            # Using == rather than >= to cover the corner case of users placing an
+            # earlier version than the current one
+            if self.mtime == mtime:
+                return
+
+            openapi = yaml.load(f, Loader=yaml.CSafeLoader)
+
+        spec = create_spec(openapi)
         self._request_validator = RequestValidator(spec)
+        self._openapi = naively_merge_allOf_dict(JsonRef.replace_refs(openapi))
         self.create_endpoints_dict()
         self.mtime = mtime
 
