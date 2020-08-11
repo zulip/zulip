@@ -1680,16 +1680,6 @@ nav {
     opacity: 1;
 }
 
-.portico-landing .testimonials blockquote::before {
-    content: "“";
-    margin-left: -10px;
-    margin-right: -3px;
-}
-
-.portico-landing .testimonials blockquote::after {
-    content: "”";
-}
-
 .portico-landing .testimonials blockquote + cite {
     display: block;
     margin-top: 5px;
@@ -1709,6 +1699,16 @@ nav {
     border: none;
 
     opacity: 0.8;
+
+    &::before {
+        content: "“";
+        margin-left: -10px;
+        margin-right: -3px;
+    }
+
+    &::after {
+        content: "”";
+    }
 }
 
 .portico-landing .testimonials hr {
