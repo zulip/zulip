@@ -264,7 +264,7 @@ function is_composition(emoji) {
 
 function process_enter_while_filtering(e) {
     if (e.keyCode === 13) {
-        // enter key
+        // Enter key
         e.preventDefault();
         const first_emoji = get_rendered_emoji(0, 0);
         if (first_emoji) {
@@ -411,7 +411,7 @@ exports.navigate = function (event_name, e) {
 
     // If search is active and results are empty then return immediately.
     if (search_is_active === true && search_results.length === 0) {
-        // We don't want to prevent default for keys like backspace and space.
+        // We don't want to prevent default for keys like Backspace and space.
         return false;
     }
 
@@ -513,7 +513,7 @@ function process_keypress(e) {
     if (!is_filter_focused && pressed_key !== 58) {
         // ':' => 58, is a hotkey for toggling reactions popover.
         if ((pressed_key >= 32 && pressed_key <= 126) || pressed_key === 8) {
-            // Handle only printable characters or backspace.
+            // Handle only printable characters or Backspace.
             e.preventDefault();
             e.stopPropagation();
 
@@ -522,7 +522,7 @@ function process_keypress(e) {
             let new_query = "";
 
             if (pressed_key === 8) {
-                // Handles backspace.
+                // Handles Backspace.
                 new_query = old_query.slice(0, -1);
             } else {
                 // Handles any printable character.
@@ -573,10 +573,10 @@ function register_popover_events(popover) {
     $(".emoji-popover-filter").on("keydown", process_enter_while_filtering);
     $(".emoji-popover").on("keypress", process_keypress);
     $(".emoji-popover").on("keydown", (e) => {
-        // Because of cross-browser issues we need to handle backspace
-        // key separately. Firefox fires `keypress` event for backspace
+        // Because of cross-browser issues we need to handle Backspace
+        // key separately. Firefox fires `keypress` event for Backspace
         // key but chrome doesn't so we need to trigger the logic for
-        // handling backspace in `keydown` event which is fired by both.
+        // handling Backspace in `keydown` event which is fired by both.
         if (e.which === 8) {
             process_keypress(e);
         }

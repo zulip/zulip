@@ -285,7 +285,7 @@ run_test("initialize", () => {
     _setup("ver");
     search.is_using_input_method = true;
     searchbox_form.trigger(ev);
-    // No change on enter keyup event when using input tool
+    // No change on Enter keyup event when using input tool
     assert(!is_blurred);
     assert(!search_button.prop("disabled"));
 

@@ -488,8 +488,8 @@ run_test("markdown_shortcuts", () => {
         range_length = selected_word.length;
 
         // Test bold:
-        // Mac env = cmd+b
-        // Windows/Linux = ctrl+b
+        // Mac env = Cmd+b
+        // Windows/Linux = Ctrl+b
         event.keyCode = 66;
         event.ctrlKey = isCtrl;
         event.metaKey = isCmd;
@@ -503,8 +503,8 @@ run_test("markdown_shortcuts", () => {
         assert.equal("****Any **text**.", $("#compose-textarea").val());
 
         // Test italic:
-        // Mac = cmd+i
-        // Windows/Linux = ctrl+i
+        // Mac = Cmd+I
+        // Windows/Linux = Ctrl+I
         $("#compose-textarea").val(input_text);
         range_start = compose_value.search(selected_word);
         range_length = selected_word.length;
@@ -520,8 +520,8 @@ run_test("markdown_shortcuts", () => {
         assert.equal("**Any *text*.", $("#compose-textarea").val());
 
         // Test link insertion:
-        // Mac = cmd+shift+l
-        // Windows/Linux = ctrl+shift+l
+        // Mac = Cmd+Shift+L
+        // Windows/Linux = Ctrl+Shift+L
         $("#compose-textarea").val(input_text);
         range_start = compose_value.search(selected_word);
         range_length = selected_word.length;
@@ -535,7 +535,7 @@ run_test("markdown_shortcuts", () => {
         compose.handle_keydown(event, $("#compose-textarea"));
     }
 
-    // This function cross tests the cmd/ctrl + Markdown shortcuts in
+    // This function cross tests the Cmd/Ctrl + Markdown shortcuts in
     // Mac and Linux/Windows environments.  So in short, this tests
     // that e.g. Cmd+B should be ignored on Linux/Windows and Ctrl+B
     // should be ignored on Mac.
@@ -569,7 +569,7 @@ run_test("markdown_shortcuts", () => {
 
     // Default (Linux/Windows) userAgent tests:
     test_i_typed(false, false);
-    // Check all the ctrl + Markdown shortcuts work correctly
+    // Check all the Ctrl + Markdown shortcuts work correctly
     all_markdown_test(true, false);
     // The Cmd + Markdown shortcuts should do nothing on Linux/Windows
     os_specific_markdown_test(false, true);
@@ -579,7 +579,7 @@ run_test("markdown_shortcuts", () => {
 
     // Mac userAgent tests:
     test_i_typed(false, false);
-    // The ctrl + Markdown shortcuts should do nothing on mac
+    // The Ctrl + Markdown shortcuts should do nothing on mac
     os_specific_markdown_test(true, false);
     // Check all the Cmd + Markdown shortcuts work correctly
     all_markdown_test(false, true);

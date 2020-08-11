@@ -187,15 +187,15 @@ function handle_message_row_edit_keydown(e) {
     switch (code) {
         case 13:
             if ($(e.target).hasClass("message_edit_content")) {
-                // Pressing enter to save edits is coupled with enter to send
+                // Pressing Enter to save edits is coupled with Enter to send
                 if (composebox_typeahead.should_enter_send(e)) {
                     const row = $(".message_edit_content").filter(":focus").closest(".message_row");
                     const message_edit_save_button = row.find(".message_edit_save");
                     if (message_edit_save_button.prop("disabled")) {
                         // In cases when the save button is disabled
-                        // we need to disable save on pressing enter
+                        // we need to disable save on pressing Enter
                         // Prevent default to avoid new-line on pressing
-                        // enter inside the textarea in this case
+                        // Enter inside the textarea in this case
                         e.preventDefault();
                         return;
                     }
@@ -230,13 +230,13 @@ function handle_inline_topic_edit_keydown(e) {
     let row;
     const code = e.keyCode || e.which;
     switch (code) {
-        case 13: // Handle enter key in the recipient bar/inline topic edit form
+        case 13: // Handle Enter key in the recipient bar/inline topic edit form
             row = $(e.target).closest(".recipient_row");
             exports.save_inline_topic_edit(row);
             e.stopPropagation();
             e.preventDefault();
             return;
-        case 27: // handle escape
+        case 27: // handle Esc
             exports.end_if_focused_on_inline_topic_edit();
             e.stopPropagation();
             e.preventDefault();

@@ -114,9 +114,9 @@ exports.initialize = function () {
     });
 
     searchbox_form.on("compositionend", () => {
-        // Set `is_using_input_method` to true if enter is pressed to exit
+        // Set `is_using_input_method` to true if Enter is pressed to exit
         // the input tool popover and get the text in the search bar. Then
-        // we suppress searching triggered by this enter key by checking
+        // we suppress searching triggered by this Enter key by checking
         // `is_using_input_method` before searching.
         // More details in the commit message that added this line.
         exports.is_using_input_method = true;
@@ -140,7 +140,7 @@ exports.initialize = function () {
             }
             const code = e.which;
             if (code === 13 && search_query_box.is(":focus")) {
-                // We just pressed enter and the box had focus, which
+                // We just pressed Enter and the box had focus, which
                 // means we didn't use the typeahead at all.  In that
                 // case, we should act as though we're searching by
                 // operators.  (The reason the other actions don't call

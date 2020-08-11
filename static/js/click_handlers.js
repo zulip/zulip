@@ -14,7 +14,7 @@ const util = require("./util");
 function convert_enter_to_click(e) {
     const key = e.which;
     if (key === 13) {
-        // enter
+        // Enter
         $(e.currentTarget).trigger("click");
     }
 }
@@ -682,7 +682,7 @@ exports.initialize = function () {
 
         // Don't let clicks in the compose area count as
         // "unfocusing" our compose -- in other words, e.g.
-        // clicking "Press enter to send" should not
+        // clicking "Press Enter to send" should not
         // trigger the composebox-closing code above.
         // But do allow our formatting link.
         if (!$(e.target).is("a")) {

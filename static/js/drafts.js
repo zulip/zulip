@@ -471,7 +471,7 @@ exports.drafts_handle_events = function (e, event_key) {
     }
 
     const focused_draft_id = row_with_focus().data("draft-id");
-    // Allows user to delete drafts with backspace
+    // Allows user to delete drafts with Backspace
     if (event_key === "backspace" || event_key === "delete") {
         if (focused_draft_id !== undefined) {
             const draft_row = row_with_focus();
@@ -498,7 +498,7 @@ exports.drafts_handle_events = function (e, event_key) {
         }
     }
 
-    // This handles when pressing enter while looking at drafts.
+    // This handles when pressing Enter while looking at drafts.
     // It restores draft that is focused.
     if (event_key === "enter") {
         if (document.activeElement.parentElement.hasAttribute("data-draft-id")) {

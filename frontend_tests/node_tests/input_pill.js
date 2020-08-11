@@ -329,7 +329,7 @@ run_test("comma", () => {
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 });
 
-run_test("enter key with text", () => {
+run_test("Enter key with text", () => {
     const info = set_up();
     const config = info.config;
     const items = info.items;

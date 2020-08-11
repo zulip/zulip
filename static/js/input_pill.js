@@ -164,7 +164,7 @@ exports.create = function (opts) {
         },
 
         // this will remove the last pill in the container -- by default tied
-        // to the "backspace" key when the value of the input is empty.
+        // to the "Backspace" key when the value of the input is empty.
         // If quiet is a truthy value, the event handler associated with the
         // pill will not be evaluated. This is useful when using clear to reset
         // the pills.
@@ -316,7 +316,7 @@ exports.create = function (opts) {
                 const id = $pill.data("id");
                 funcs.removePill(id);
                 $next.trigger("focus");
-                // the "backspace" key in Firefox will go back a page if you do
+                // the "Backspace" key in Firefox will go back a page if you do
                 // not prevent it.
                 e.preventDefault();
             }
