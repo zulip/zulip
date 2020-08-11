@@ -1751,99 +1751,99 @@ nav {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-}
 
-/* -- company logos -- */
-.portico-landing .testimonials .company-box .company.akamai {
-    background-image: url(/static/images/landing-page/logos/akamai.png);
-    background-color: transparent;
-}
+    /* -- company logos -- */
+    &.akamai {
+        background-image: url(/static/images/landing-page/logos/akamai.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.doctorondemand {
-    background-image: url(/static/images/landing-page/logos/doctorondemand.png);
-    background-color: transparent;
-}
+    &.doctorondemand {
+        background-image: url(/static/images/landing-page/logos/doctorondemand.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.layershift {
-    background-image: url(/static/images/landing-page/logos/layershift.png);
-    background-color: transparent;
-}
+    &.layershift {
+        background-image: url(/static/images/landing-page/logos/layershift.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.recurse {
-    background-image: url(/static/images/landing-page/logos/recurse.png);
-    background-color: transparent;
-}
+    &.recurse {
+        background-image: url(/static/images/landing-page/logos/recurse.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.solano {
-    background-image: url(/static/images/landing-page/logos/solano.png);
-    background-color: transparent;
-}
+    &.solano {
+        background-image: url(/static/images/landing-page/logos/solano.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.veelo {
-    background-image: url(/static/images/landing-page/logos/veelo.png);
-    background-color: transparent;
-}
+    &.veelo {
+        background-image: url(/static/images/landing-page/logos/veelo.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.panjiva {
-    background-image: url(/static/images/landing-page/logos/panjiva.png);
-    background-color: transparent;
-}
+    &.panjiva {
+        background-image: url(/static/images/landing-page/logos/panjiva.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.cmt {
-    background-image: url(/static/images/landing-page/logos/cambridge-mobile-telematics.png);
-    background-color: transparent;
-}
+    &.cmt {
+        background-image: url(/static/images/landing-page/logos/cambridge-mobile-telematics.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.levelup {
-    background-image: url(/static/images/landing-page/logos/levelup.png);
-    background-color: transparent;
-}
+    &.levelup {
+        background-image: url(/static/images/landing-page/logos/levelup.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.wildfly {
-    background-image: url(/static/images/landing-page/logos/wildfly.png);
-    background-color: transparent;
-}
+    &.wildfly {
+        background-image: url(/static/images/landing-page/logos/wildfly.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.mariadb {
-    background-image: url(/static/images/landing-page/logos/mariadb.png);
-    background-color: transparent;
-}
+    &.mariadb {
+        background-image: url(/static/images/landing-page/logos/mariadb.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.infinispan {
-    background-image: url(/static/images/landing-page/logos/infinispan.png);
-    background-color: transparent;
-    height: 50px;
-}
+    &.infinispan {
+        background-image: url(/static/images/landing-page/logos/infinispan.png);
+        background-color: transparent;
+        height: 50px;
+    }
 
-.portico-landing .testimonials .company-box .company.hail {
-    background-image: url(/static/images/landing-page/logos/hail.png);
-    background-color: transparent;
-}
+    &.hail {
+        background-image: url(/static/images/landing-page/logos/hail.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.inspire-hep {
-    background-image: url(/static/images/landing-page/logos/inspire-hep.png);
-    background-color: transparent;
-}
+    &.inspire-hep {
+        background-image: url(/static/images/landing-page/logos/inspire-hep.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.wikimedia-outreach {
-    background-image: url(/static/images/landing-page/logos/wikimedia-outreach.png);
-    background-color: transparent;
-}
+    &.wikimedia-outreach {
+        background-image: url(/static/images/landing-page/logos/wikimedia-outreach.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.fhir {
-    background-image: url(/static/images/landing-page/logos/fhir.png);
-    background-color: transparent;
-}
+    &.fhir {
+        background-image: url(/static/images/landing-page/logos/fhir.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.openshot {
-    background-image: url(/static/images/landing-page/logos/openshot.png);
-    background-color: transparent;
-}
+    &.openshot {
+        background-image: url(/static/images/landing-page/logos/openshot.png);
+        background-color: transparent;
+    }
 
-.portico-landing .testimonials .company-box .company.mixxx {
-    background-image: url(/static/images/landing-page/logos/mixxx.png);
-    background-color: transparent;
-    height: 45px;
+    &.mixxx {
+        background-image: url(/static/images/landing-page/logos/mixxx.png);
+        background-color: transparent;
+        height: 45px;
+    }
 }
 
 .portico-landing.hello .apps {
