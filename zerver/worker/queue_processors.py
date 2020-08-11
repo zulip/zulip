@@ -212,14 +212,14 @@ class QueueProcessingWorker(ABC):
 
     def do_consume(self, consume_func: Callable[[List[Dict[str, Any]]], None],
                    events: List[Dict[str, Any]]) -> None:
+        consume_time_seconds: Optional[float] = None
         try:
             time_start = time.time()
             consume_func(events)
-            consume_time_seconds: Optional[float] = time.time() - time_start
+            consume_time_seconds = time.time() - time_start
             self.consumed_since_last_emptied += len(events)
         except Exception:
             self._handle_consume_exception(events)
-            consume_time_seconds = None
         finally:
             flush_per_request_caches()
             reset_queries()
