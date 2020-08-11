@@ -34,6 +34,8 @@ VENV_DEPENDENCIES = [
     # on upgrade of a production server, and it's not worth adding
     # another call to `apt install` for.
     "jq",                   # Used by scripts/lib/install-node to check yarn version
+
+    "libsasl2-dev",         # For building python-ldap from source
 ]
 
 COMMON_YUM_VENV_DEPENDENCIES = [
