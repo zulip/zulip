@@ -35,7 +35,7 @@ EXCEPTION_EVENT_TEMPLATE = """
 
 EXCEPTION_EVENT_TEMPLATE_WITH_TRACEBACK = EXCEPTION_EVENT_TEMPLATE + """
 Traceback:
-```{platform}
+```{syntax_highlight_as}
 {pre_context}---> {context_line}{post_context}\
 ```
 """
@@ -63,11 +63,12 @@ ISSUE_IGNORED_MESSAGE_TEMPLATE = """
 Issue **{title}** was ignored by **{actor}**.
 """
 
-platforms_map = {
+# Maps "platform" name provided by Sentry to the Pygments lexer name
+syntax_highlight_as_map = {
     "go": "go",
     "node": "javascript",
     "python": "python3",
-}  # We can expand this as and when users use this integration with different platforms.
+}
 
 
 def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
@@ -90,8 +91,8 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
         raise UnexpectedWebhookEventType("Sentry", "Raven SDK")
 
     platform_name = event["platform"]
-    platform = platforms_map.get(platform_name)
-    if platform is None:  # nocoverage
+    syntax_highlight_as = syntax_highlight_as_map.get(platform_name)
+    if syntax_highlight_as is None:  # nocoverage
         raise UnexpectedWebhookEventType("Sentry", f"platform {platform_name}")
 
     context = {
@@ -130,7 +131,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
                 post_context = convert_lines_to_traceback_string(exception_frame["post_context"])
 
                 context.update({
-                    "platform": platform,
+                    "syntax_highlight_as": syntax_highlight_as,
                     "filename": filename,
                     "pre_context": pre_context,
                     "context_line": context_line,
