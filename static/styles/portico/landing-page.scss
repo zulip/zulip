@@ -1876,6 +1876,10 @@ nav {
     background-color: hsl(0, 0%, 100%);
 }
 
+.portico-landing.hello .apps .arrow::after {
+    filter: brightness(4) saturate(0);
+}
+
 .portico-landing.hello .apps .left-side,
 .portico-landing.hello .apps .right-side {
     display: inline-block;
@@ -1926,10 +1930,6 @@ nav {
 
 .portico-landing.hello .apps .left-side .platform-icons .group i:hover {
     opacity: 1;
-}
-
-.portico-landing.hello .apps .arrow::after {
-    filter: brightness(4) saturate(0);
 }
 
 .portico-landing.hello .integrations {
