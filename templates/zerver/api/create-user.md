@@ -27,6 +27,10 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 
 ## Response
 
+#### Return values
+
+{generate_return_values_table|zulip.yaml|/users:post}
+
 #### Example response
 
 A typical successful JSON response may look like:
