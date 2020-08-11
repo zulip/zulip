@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 31**
+
+* [`POST /users`](/api/create-user): The `user_id` of the user
+  created is now returned in the response.
+
 **Feature Level 30**
 
 * [`GET users/me/subscriptions`](/api/get-subscriptions), [`GET

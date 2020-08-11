@@ -4081,7 +4081,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - properties:
+                      user_id:
+                        type: integer
+                        description: |
+                          The User ID of the user created.
+                  - example: {"msg": "", "result": "success", "user_id": 25}
         "400":
           description: Bad request.
           content:
