@@ -53,7 +53,7 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
         for line in mounts:
             fields = line.split()
             if fields[1] == cwd:
-                inotify_broken = fields[2] in ["nfs", "vboxsf"]
+                inotify_broken = fields[2] in ["nfs", "vboxsf", "prl_fs"]
     if inotify_broken:
         webpack_args.append('--watch-poll=1000')
 
