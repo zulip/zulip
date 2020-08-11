@@ -410,8 +410,8 @@ paths:
                                   "person":
                                     {
                                       "avatar_source": "G",
-                                      "avatar_url": "https:\/\/secure.gravatar.com\/avatar\/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=3",
-                                      "avatar_url_medium": "https:\/\/secure.gravatar.com\/avatar\/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&s=500&version=3",
+                                      "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=3",
+                                      "avatar_url_medium": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&s=500&version=3",
                                       "avatar_version": 3,
                                       "user_id": 10,
                                     },
@@ -716,7 +716,7 @@ paths:
                                     {
                                       "id": 31,
                                       "sender_id": 10,
-                                      "content": "<p>First message ...<a href=\"user_uploads\/2\/ce\/2Xpnnwgh8JWKxBXtTfD6BHKV\/zulip.txt\">zulip.txt<\/a><\/p>",
+                                      "content": '<p>First message ...<a href="user_uploads/2/ce/2Xpnnwgh8JWKxBXtTfD6BHKV/zulip.txt">zulip.txt</a></p>',
                                       "recipient_id": 23,
                                       "timestamp": 1594825416,
                                       "client": "test suite",
@@ -733,7 +733,7 @@ paths:
                                       "type": "stream",
                                       "stream_id": 1,
                                       "avatar_url": null,
-                                      "content_type": "text\/html",
+                                      "content_type": "text/html",
                                     },
                                   "flags": [],
                                   "id": 1,
@@ -813,7 +813,7 @@ paths:
                                       "timezone": "",
                                       "is_active": true,
                                       "date_joined": "2020-07-15T15:04:02.030833+00:00",
-                                      "avatar_url": "https:\/\/secure.gravatar.com\/avatar\/c6b5578d4964bd9c5fae593c6868912a?d=identicon&version=1",
+                                      "avatar_url": "https://secure.gravatar.com/avatar/c6b5578d4964bd9c5fae593c6868912a?d=identicon&version=1",
                                       "profile_data": {},
                                     },
                                   "id": 0,
@@ -906,9 +906,9 @@ paths:
                                   "server_timestamp": 1594825445.320078373,
                                   "presence":
                                     {
-                                      "ZulipAndroid\/1.0":
+                                      "ZulipAndroid/1.0":
                                         {
-                                          "client": "ZulipAndroid\/1.0",
+                                          "client": "ZulipAndroid/1.0",
                                           "status": "idle",
                                           "timestamp": 1594825445,
                                           "pushable": false,
@@ -1295,7 +1295,7 @@ paths:
                                     {
                                       "id": 1,
                                       "name": "zulip.txt",
-                                      "path_id": "2\/ce\/2Xpnnwgh8JWKxBXtTfD6BHKV\/zulip.txt",
+                                      "path_id": "2/ce/2Xpnnwgh8JWKxBXtTfD6BHKV/zulip.txt",
                                       "size": 6,
                                       "create_time": 1594825414000,
                                       "messages": [],
@@ -1335,7 +1335,7 @@ paths:
                                     {
                                       "id": 1,
                                       "name": "zulip.txt",
-                                      "path_id": "2\/ce\/2Xpnnwgh8JWKxBXtTfD6BHKV\/zulip.txt",
+                                      "path_id": "2/ce/2Xpnnwgh8JWKxBXtTfD6BHKV/zulip.txt",
                                       "size": 6,
                                       "create_time": 1594825414000,
                                       "messages": [],
@@ -1592,7 +1592,7 @@ paths:
                                               "name": "Scotland",
                                               "stream_id": 3,
                                               "description": "Located in the United Kingdom",
-                                              "rendered_description": "<p>Located in the United Kingdom<\/p>",
+                                              "rendered_description": "<p>Located in the United Kingdom</p>",
                                               "invite_only": false,
                                               "is_web_public": false,
                                               "stream_post_policy": 1,
@@ -1605,7 +1605,7 @@ paths:
                                               "name": "Denmark",
                                               "stream_id": 1,
                                               "description": "A Scandinavian country",
-                                              "rendered_description": "<p>A Scandinavian country<\/p>",
+                                              "rendered_description": "<p>A Scandinavian country</p>",
                                               "invite_only": false,
                                               "is_web_public": false,
                                               "stream_post_policy": 1,
@@ -1618,7 +1618,7 @@ paths:
                                               "name": "Verona",
                                               "stream_id": 5,
                                               "description": "A city in Italy",
-                                              "rendered_description": "<p>A city in Italy<\/p>",
+                                              "rendered_description": "<p>A city in Italy</p>",
                                               "invite_only": false,
                                               "is_web_public": false,
                                               "stream_post_policy": 1,
@@ -1661,7 +1661,7 @@ paths:
                                         "name": "Scotland",
                                         "stream_id": 3,
                                         "description": "Located in the United Kingdom",
-                                        "rendered_description": "<p>Located in the United Kingdom<\/p>",
+                                        "rendered_description": "<p>Located in the United Kingdom</p>",
                                         "invite_only": false,
                                         "is_web_public": false,
                                         "stream_post_policy": 1,
@@ -1936,9 +1936,9 @@ paths:
                                   "message_id": 58,
                                   "stream_name": "Verona",
                                   "orig_content": "hello",
-                                  "orig_rendered_content": "<p>hello<\/p>",
+                                  "orig_rendered_content": "<p>hello</p>",
                                   "content": "new content",
-                                  "rendered_content": "<p>new content<\/p>",
+                                  "rendered_content": "<p>new content</p>",
                                   "prev_rendered_content_version": 1,
                                   "is_me_message": false,
                                   "propagate_mode": "change_all",
@@ -2319,7 +2319,7 @@ paths:
                                     [
                                       [
                                         "#(?P<id>[123])",
-                                        "https:\/\/realm.com\/my_realm_filter\/%(id)s",
+                                        "https://realm.com/my_realm_filter/%(id)s",
                                         1,
                                       ],
                                     ],
@@ -2358,7 +2358,7 @@ paths:
                                         {
                                           "id": "2",
                                           "name": "my_emoji",
-                                          "source_url": "\/user_avatars\/2\/emoji\/images\/2.png",
+                                          "source_url": "/user_avatars/2/emoji/images/2.png",
                                           "deactivated": true,
                                           "author_id": 11,
                                         },
@@ -2366,7 +2366,7 @@ paths:
                                         {
                                           "id": "1",
                                           "name": "green_tick",
-                                          "source_url": "\/user_avatars\/2\/emoji\/images\/1.png",
+                                          "source_url": "/user_avatars/2/emoji/images/1.png",
                                           "deactivated": false,
                                           "author_id": 11,
                                         },
@@ -2550,7 +2550,7 @@ paths:
                                       "default_sending_stream": null,
                                       "default_events_register_stream": null,
                                       "default_all_public_streams": false,
-                                      "avatar_url": "https:\/\/secure.gravatar.com\/avatar\/af8abc2537d283b212a6bd4d1289956d?d=identicon&version=1",
+                                      "avatar_url": "https://secure.gravatar.com/avatar/af8abc2537d283b212a6bd4d1289956d?d=identicon&version=1",
                                       "services": [],
                                       "owner_id": 10,
                                     },
@@ -2598,7 +2598,7 @@ paths:
                                       "services":
                                         [
                                           {
-                                            "base_url": "http:\/\/hostname.domain2.com",
+                                            "base_url": "http://hostname.domain2.com",
                                             "interface": 2,
                                             "token": "grr8I2APXRmVL0FRTMRYAE4DRPQ5Wlaw",
                                           },
