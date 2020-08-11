@@ -67,6 +67,8 @@ Issue **{title}** was ignored by **{actor}**.
 # Maps "platform" name provided by Sentry to the Pygments lexer name
 syntax_highlight_as_map = {
     "go": "go",
+    "java": "java",
+    "javascript": "javascript",
     "node": "javascript",
     "python": "python3",
 }
