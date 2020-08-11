@@ -7,17 +7,39 @@ const jsyaml = require("js-yaml");
 const ExampleValidator = require("openapi-examples-validator");
 const SwaggerParser = require("swagger-parser");
 
+function checkRefSiblings(file, path, data) {
+    let ok = true;
+    if (typeof data === "object" && data !== null) {
+        if ("$ref" in data && Object.entries(data).length !== 1) {
+            console.error(
+                `${file}: Siblings of $ref have no effect at ${JSON.stringify(
+                    path,
+                )}: ${JSON.stringify(data, undefined, 2)}`,
+            );
+            ok = false;
+        }
+        for (const [key, child] of Array.isArray(data) ? data.entries() : Object.entries(data)) {
+            if (!checkRefSiblings(file, [...path, key], child)) {
+                ok = false;
+            }
+        }
+    }
+    return ok;
+}
+
 (async () => {
     // Iterate through the changed files, passed in the arguments.
     // The two first arguments are the call to the Node interpreter and this
     // script, hence the starting point at 2.
     for (const file of process.argv.slice(2)) {
         try {
-            if (
-                jsyaml.safeLoad(await fs.promises.readFile(file, "utf8"), {
-                    filename: file,
-                }).openapi !== undefined
-            ) {
+            const data = jsyaml.safeLoad(await fs.promises.readFile(file, "utf8"), {
+                filename: file,
+            });
+            if (data.openapi !== undefined) {
+                if (!checkRefSiblings(file, [], data)) {
+                    process.exitCode = 1;
+                }
                 await SwaggerParser.validate(file);
                 const res = await ExampleValidator.validateFile(file);
                 if (!res.valid) {
