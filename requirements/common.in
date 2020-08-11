@@ -161,7 +161,7 @@ django-sendfile2
 disposable-email-domains
 
 # Needed for parsing YAML with JSON references from the REST API spec files
-yamole
+jsonref
 
 # Needed for signing thumbnail requests so that they can be authenticated on the
 # other end.
