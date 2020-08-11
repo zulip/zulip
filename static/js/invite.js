@@ -100,7 +100,7 @@ function submit_invitation_form() {
         complete() {
             $("#submit-invitation").button("reset");
             $("#invitee_emails").focus();
-            ui.get_scroll_element($('#invite_user_form .modal-body'))[0].scrollTop = 0;
+            ui.get_scroll_element($("#invite_user_form .modal-body"))[0].scrollTop = 0;
         },
     });
 }
@@ -176,14 +176,12 @@ exports.launch = function () {
 };
 
 exports.initialize = function () {
-    $(document).on("click", ".invite_check_all_button", (e) => {
+    $(document).on("click", "#invite_check_all_button", () => {
         $("#streams_to_add :checkbox").prop("checked", true);
-        e.preventDefault();
     });
 
-    $(document).on("click", ".invite_uncheck_all_button", (e) => {
+    $(document).on("click", "#invite_uncheck_all_button", () => {
         $("#streams_to_add :checkbox").prop("checked", false);
-        e.preventDefault();
     });
 
     $("#submit-invitation").on("click", () => {
