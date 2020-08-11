@@ -58,12 +58,12 @@ def finish_handler(handler_id: int, event_queue_id: str,
                              request, apply_markdown=apply_markdown)
     except OSError as e:
         if str(e) != 'Stream is closed':
-            logging.exception(err_msg)
+            logging.exception(err_msg, stack_info=True)
     except AssertionError as e:
         if str(e) != 'Request closed':
-            logging.exception(err_msg)
+            logging.exception(err_msg, stack_info=True)
     except Exception:
-        logging.exception(err_msg)
+        logging.exception(err_msg, stack_info=True)
 
 
 class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):

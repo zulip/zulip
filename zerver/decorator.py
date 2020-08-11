@@ -323,9 +323,9 @@ body:
     message = message.strip(' ')
 
     if unexpected_event:
-        webhook_unexpected_events_logger.exception(message)
+        webhook_unexpected_events_logger.exception(message, stack_info=True)
     else:
-        webhook_logger.exception(message)
+        webhook_logger.exception(message, stack_info=True)
 
 def full_webhook_client_name(raw_client_name: Optional[str]=None) -> Optional[str]:
     if raw_client_name is None:
