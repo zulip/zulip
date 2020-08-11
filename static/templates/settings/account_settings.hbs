@@ -124,7 +124,9 @@
                 <div class="user-role input-group grid">
                     <label for="user_role" class="inline-block title">{{t "Role" }}</label>
                     <span>
-                        {{#if page_params.is_admin}}
+                        {{#if page_params.is_owner}}
+                        {{t "Owner" }}
+                        {{else if page_params.is_admin}}
                         {{t "Administrator" }}
                         {{else if page_params.is_guest}}
                         {{t "Guest" }}
