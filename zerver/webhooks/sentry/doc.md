@@ -8,6 +8,9 @@ us](/help/contact-support) if a platform you care about is missing.
 
 2. {!create-bot-construct-url-indented.md!}
 
+    The default topic, if not set in the URL, will be the title of the
+    issue or event.
+
 3. Go to your organization's **settings** in Sentry. Then go to
 **Developer Settings** and click on the button to create a
 **New Internal Integration**. There, set the **Webhook URL** to
