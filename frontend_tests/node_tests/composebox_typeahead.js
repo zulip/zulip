@@ -1002,7 +1002,7 @@ run_test("initialize", () => {
     event.target.id = "some_non_existing_id";
     $("form#send_message_form").trigger(event);
 
-    // Setup jquery functions used in compose_textarea enter
+    // Set up jquery functions used in compose_textarea Enter
     // handler.
     let range_length = 0;
     $("#compose-textarea").range = function () {

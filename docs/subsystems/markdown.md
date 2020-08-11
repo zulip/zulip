@@ -18,7 +18,7 @@ slow/expensive/complex features like querying the Twitter API to
 render tweets nicely).  The frontend implementation is in JavaScript,
 based on [marked.js](https://github.com/chjj/marked)
 (`static/js/echo.js`), and is used to preview and locally echo
-messages the moment the sender hits enter, without waiting for round
+messages the moment the sender hits Enter, without waiting for round
 trip from the server.  Those frontend renderings are only shown to the
 sender of a message, and they are (ideally) identical to the backend
 rendering.
@@ -71,7 +71,7 @@ If you're going to manually test some changes in the frontend Markdown
 implementation, the easiest way to do this is as follows:
 
 1. Login to your development server.
-2. Stop your Zulip server with ctrl-C, leaving the browser open.
+2. Stop your Zulip server with Ctrl-C, leaving the browser open.
 3. Compose and send the messages you'd like to test.  They will be
    locally echoed using the frontend rendering.
 

@@ -140,7 +140,7 @@ function create_stream() {
     created_stream = stream_name;
 
     // Even though we already check to make sure that while typing the user cannot enter
-    // newline characters (by pressing the enter key) it would still be possible to copy
+    // newline characters (by pressing the Enter key) it would still be possible to copy
     // and paste over a description with newline characters in it. Prevent that.
     if (description.includes("\n")) {
         ui_report.message(

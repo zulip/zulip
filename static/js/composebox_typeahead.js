@@ -115,7 +115,7 @@ function get_topic_matcher(query) {
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.
 // We can't focus at the time of keydown because we need to wait for typeahead.
 // And we can't compute where to focus at the time of keyup because only the keydown
-// has reliable information about whether it was a tab or a shift+tab.
+// has reliable information about whether it was a Tab or a Shift+Tab.
 let nextFocus = false;
 
 exports.should_enter_send = function (e) {
@@ -129,33 +129,33 @@ exports.should_enter_send = function (e) {
         this_enter_sends = !has_modifier_key;
     } else {
         // If enter_sends is not enabled, just hitting
-        // enter should add a newline, but with a
-        // non-shift modifier key held down, we should
-        // send.  With shift, we shouldn't, because
-        // shift+enter to get a newline is a common
+        // Snter should add a newline, but with a
+        // non-Shift modifier key held down, we should
+        // send.  With Shift, we shouldn't, because
+        // Shift+Enter to get a newline is a common
         // keyboard habit for folks for dealing with other
-        // chat products where enter-always-sends.
+        // chat products where Enter-always-sends.
         this_enter_sends = has_non_shift_modifier_key;
     }
     return this_enter_sends;
 };
 
 exports.handle_enter = function (textarea, e) {
-    // Used only if enter doesn't send.
+    // Used only if Enter doesn't send.
 
-    // Since this enter doesn't send, we just want to do
-    // the browser's default behavior for the "enter" key.
+    // Since this Enter doesn't send, we just want to do
+    // the browser's default behavior for the "Enter" key.
     // Letting the browser handle it works great if the
-    // key actually pressed was enter or shift-enter.
+    // key actually pressed was Enter or Shift-Enter.
 
-    // But the default browser behavior for ctrl/alt/meta
-    // + enter is to do nothing, so we need to emulate
-    // the browser behavior for "enter" in those cases.
+    // But the default browser behavior for Ctrl/Alt/Meta
+    // + Enter is to do nothing, so we need to emulate
+    // the browser behavior for "Enter" in those cases.
     //
     // We do this using caret and range from jquery-caret.
     const has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
     if (has_non_shift_modifier_key) {
-        // To properly emulate browser "enter", if the
+        // To properly emulate browser "Enter", if the
         // user had selected something in the textarea,
         // we need those characters to be cleared.
         const range = textarea.range();
@@ -177,7 +177,7 @@ function handle_keydown(e) {
     const code = e.keyCode || e.which;
 
     if (code === 13 || (code === 9 && !e.shiftKey)) {
-        // Enter key or tab key
+        // Enter key or Tab key
         let target_sel;
 
         if (e.target.id) {
@@ -190,12 +190,12 @@ function handle_keydown(e) {
         const on_compose = target_sel === "#compose-textarea";
 
         if (on_stream || on_topic || on_pm) {
-            // For enter, prevent the form from submitting
-            // For tab, prevent the focus from changing again
+            // For Enter, prevent the form from submitting
+            // For Tab, prevent the focus from changing again
             e.preventDefault();
         }
 
-        // In the compose_textarea box, preventDefault() for tab but not for enter
+        // In the compose_textarea box, preventDefault() for Tab but not for Enter
         if (on_compose && code !== 13) {
             e.preventDefault();
         }
@@ -230,8 +230,8 @@ function handle_keydown(e) {
         ) {
             // If no typeaheads are shown and the user is tabbing from the message content box,
             // then there's no need to wait and we can change the focus right away.
-            // Without this code to change the focus right away, if the user presses enter
-            // before they fully release the tab key, the tab will be lost.  Note that we don't
+            // Without this code to change the focus right away, if the user presses Enter
+            // before they fully release the Tab key, the Tab will be lost.  Note that we don't
             // want to change focus right away in the private_message_recipient box since it
             // takes the typeaheads a little time to open after the user finishes typing, which
             // can lead to the focus moving without the autocomplete having a chance to happen.
@@ -258,7 +258,7 @@ function handle_keydown(e) {
 function handle_keyup(e) {
     const code = e.keyCode || e.which;
     if (code === 13 || (code === 9 && !e.shiftKey)) {
-        // Enter key or tab key
+        // Enter key or Tab key
         if (nextFocus) {
             $(nextFocus).trigger("focus");
             nextFocus = false;
@@ -854,7 +854,7 @@ exports.content_typeahead_selected = function (item, event) {
         }
         beginning += "#**" + item.name;
         if (event && event.key === ">") {
-            // Normally, one accepts typeahead with `tab` or `enter`, but when completing
+            // Normally, one accepts typeahead with `Tab` or `Enter`, but when completing
             // stream typeahead, we allow `>`, the delimiter for stream+topic mentions,
             // as a completion that automatically sets up stream+topic typeahead for you.
             beginning += ">";
@@ -1034,7 +1034,7 @@ exports.initialize_compose_typeahead = function (selector) {
             return items;
         },
         updater: exports.content_typeahead_selected,
-        stopAdvance: true, // Do not advance to the next field on a tab or enter
+        stopAdvance: true, // Do not advance to the next field on a Tab or Enter
         completions,
         automated: exports.compose_automated_selection,
         trigger_selection: exports.compose_trigger_selection,
@@ -1144,7 +1144,7 @@ exports.initialize = function () {
                 compose_pm_pill.set_from_typeahead(item);
             }
         },
-        stopAdvance: true, // Do not advance to the next field on a tab or enter
+        stopAdvance: true, // Do not advance to the next field on a Tab or Enter
     });
 
     exports.initialize_compose_typeahead("#compose-textarea");

@@ -721,7 +721,7 @@ and is enabled by default in that case. To disable it, set
 - Suppressed notifications when quoting a message mentioning yourself.
 - Message editing now has the compose widgets for emoji, video calls, etc.
 - Message editing now has a Markdown preview feature just like compose.
-- Message editing now uses same "enter-sends" behavior as compose.
+- Message editing now uses same "Enter-sends" behavior as compose.
 - Organization administrators can now edit users' custom profile fields.
 - Optimized performance of data import from Slack, HipChat, etc.
 - Improved "new user" emails to clearly indicator login details.
@@ -828,7 +828,7 @@ Zulip installations; it has minimal changes for existing servers.
 #### Full feature changelog
 - Added an organization setting for message deletion time limits.
 - Added an organization setting to control who can edit topics.
-- Added ctrl+K keyboard shortcut for getting to search (same as /, but
+- Added Ctrl+K keyboard shortcut for getting to search (same as /, but
   works even when you're inside compose).
 - Renamed the hotkey for starring a message to Ctrl+S.
 - Added the new `SOCIAL_AUTH_SUBDOMAIN` setting, which all servers using
@@ -970,7 +970,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Added support for uploading files in the message-edit UI.
 - Redesigned the compose are for private messages to use pretty pills
   rather than raw email addresses to display recipients.
-- Added new ctrl+B, ctrl+I, ctrl+L compose shortcuts for inserting
+- Added new Ctrl+B, Ctrl+I, Ctrl+L compose shortcuts for inserting
   common syntax.
 - Added warning when linking to a private stream via typeahead.
 - Added support for automatically-numbered Markdown lists.

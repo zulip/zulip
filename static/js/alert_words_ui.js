@@ -91,7 +91,7 @@ exports.set_up_alert_words = function () {
 
     $("#create_alert_word_form").on("keypress", "#create_alert_word_name", (event) => {
         const key = event.which;
-        // Handle enter (13) as "add".
+        // Handle Enter (13) as "add".
         if (key === 13) {
             event.preventDefault();
 

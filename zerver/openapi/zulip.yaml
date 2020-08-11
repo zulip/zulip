@@ -6963,7 +6963,7 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          Whether the user setting for [sending on pressing enter](/help/enable-enter-to-send)
+                          Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
                           in the compose box is enabled.
                       user_id:
                         type: integer

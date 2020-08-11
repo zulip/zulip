@@ -929,7 +929,7 @@ exports.initialize = function () {
     $(".subscriptions").on("click", "[data-dismiss]", (e) => {
         e.preventDefault();
         // we want to make sure that the click is not just a simulated
-        // click; this fixes an issue where hitting "enter" would
+        // click; this fixes an issue where hitting "Enter" would
         // trigger this code path due to bootstrap magic.
         if (e.clientY !== 0) {
             exports.show_subs_pane.nothing_selected();

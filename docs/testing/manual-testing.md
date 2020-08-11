@@ -249,11 +249,11 @@ populated and where the focus is placed.
       should now be sending to a stream.)
 
 - Click to send
-    - Turn off enter-to-send.
-        - Send a two-paragraph message using tab and enter.
-        - Send a two-paragraph message using control-enter or command-enter.
-    - Turn on enter-to-send.
-        - Hit enter to send.
+    - Turn off Enter-to-send.
+        - Send a two-paragraph message using Tab and Enter.
+        - Send a two-paragraph message using Ctrl-Enter or Cmd-Enter.
+    - Turn on Enter-to-send.
+        - Hit Enter to send.
 
 ### Popover menus ###
 
