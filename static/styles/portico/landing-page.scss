@@ -1870,14 +1870,14 @@ nav {
 .portico-landing.hello .apps .arrow {
     color: hsl(0, 0%, 100%);
     font-weight: 400;
-}
 
-.portico-landing.hello .apps .arrow::before {
-    background-color: hsl(0, 0%, 100%);
-}
+    &::before {
+        background-color: hsl(0, 0%, 100%);
+    }
 
-.portico-landing.hello .apps .arrow::after {
-    filter: brightness(4) saturate(0);
+    &::after {
+        filter: brightness(4) saturate(0);
+    }
 }
 
 .portico-landing.hello .apps .left-side,
