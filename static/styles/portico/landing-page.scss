@@ -1728,14 +1728,16 @@ nav {
     margin-top: 20px;
 }
 
-.portico-landing .testimonials .company-container header h2 {
-    font-weight: 400;
-    font-size: 1.5em;
-}
+.portico-landing .testimonials .company-container header {
+    h2 {
+        font-weight: 400;
+        font-size: 1.5em;
+    }
 
-.portico-landing .testimonials .company-container header .arrow {
-    margin-top: 12px;
-    font-weight: normal;
+    .arrow {
+        margin-top: 12px;
+        font-weight: normal;
+    }
 }
 
 .portico-landing .testimonials .company-box .company {
