@@ -4,7 +4,7 @@ Zulip supports changing the URL for an organization.  Changing the
 organization URL is a disruptive operation for users:
 
 * Users will be logged out of existing sessions on the web, mobile and
-  desktop apps and need to login again.
+  desktop apps and need to log in again.
 * Any [API clients](/api) or [integrations](/integrations) will need
   to be updated to point to the new organization URL.
 

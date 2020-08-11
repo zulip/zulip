@@ -241,13 +241,13 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
     browser to the appropriate place:
 
     * The logged-in app if the user already has a Zulip account and is
-      trying to login, potentially to an initial narrow or page that had been
+      trying to log in, potentially to an initial narrow or page that had been
       saved in the `redirect_to` parameter.
     * The registration form if is_signup was set (i.e. the user is
       trying to create a Zulip account)
     * A special `confirm_continue_registration.html` "do you want to
       register or try another account" if the user doesn't have a
-      Zulip account but is_signup is False (i.e. the user tried to login
+      Zulip account but is_signup is False (i.e. the user tried to log in
       and then did social authentication selecting an email address that does
       not have a Zulip account in this organization).
     * A zulip:// URL to send control back to the mobile or desktop apps if they

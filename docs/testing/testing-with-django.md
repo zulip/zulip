@@ -317,7 +317,7 @@ endpoints support a JSON interface.  Regardless of the interface, an
 endpoint test generally follows this pattern:
 
 - Set up the data.
-- Login with `self.login()` or set up an API key.
+- Log in with `self.login()` or set up an API key.
 - Use a Zulip test helper to hit the endpoint.
 - Assert that the result was either a success or failure.
 - Check the data that comes back from the endpoint.

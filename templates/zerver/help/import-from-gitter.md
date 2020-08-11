@@ -101,7 +101,7 @@ to mark the appropriate users as administrators.
   `{github_username}@users.noreply.github.com`.
 
   Since one cannot receive email at those noreply email addresses,
-  imported users will need to use GitHub authentication to login to
+  imported users will need to use GitHub authentication to log in to
   Zulip and will be unable to receive email notifications until they
   [change their Zulip email address](/help/change-your-email-address).
 

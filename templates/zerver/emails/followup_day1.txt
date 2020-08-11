@@ -13,7 +13,7 @@
 {% if ldap_username %}
 * {{ _('Username:') }} {{ ldap_username }}
 {% else %}
-* {{ _('Use your LDAP account to login') }}
+* {{ _('Use your LDAP account to log in') }}
 {% endif %}
 {% else %}
 * {{ _('Email:') }} {{ email }}

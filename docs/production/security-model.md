@@ -35,7 +35,7 @@ announcement).
 * Zulip requires CSRF tokens in all interactions with the web API to
   prevent CSRF attacks.
 
-* The preferred way to login to Zulip is using an SSO solution like
+* The preferred way to log in to Zulip is using an SSO solution like
   Google Auth, LDAP, or similar, but Zulip also supports password
   authentication.  See
   [the authentication methods documentation](../production/authentication-methods.md)
@@ -184,7 +184,7 @@ strength allowed is controlled by two settings in
   * Incoming webhook bots can only send messages into Zulip.
   * Outgoing webhook bots and Generic bots can essentially do anything a
     non-administrator user can, with a few exceptions (e.g. a bot cannot
-    login to the web application, register for mobile push
+    log in to the web application, register for mobile push
     notifications, or create other bots).
   * API super user bots can send messages that appear to have been sent by
     another user. They also have the ability to see the names of all
