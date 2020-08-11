@@ -233,11 +233,11 @@ class NarrowBuilder:
             # Because you can see your own message history for
             # private streams you are no longer subscribed to, we
             # need get_stream_by_narrow_operand_access_unchecked here.
-            stream = get_stream_by_narrow_operand_access_unchecked(operand, self.user_profile.realm)
+            stream = get_stream_by_narrow_operand_access_unchecked(operand, self.realm)
         except Stream.DoesNotExist:
             raise BadNarrowOperator('unknown stream ' + str(operand))
 
-        if self.user_profile.realm.is_zephyr_mirror_realm:
+        if self.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to "social" to also show messages to
             # /^(un)*social(.d)*$/ (unsocial, ununsocial, social.d, ...).
 
@@ -254,7 +254,7 @@ class NarrowBuilder:
             assert(m is not None)
             base_stream_name = m.group(1)
 
-            matching_streams = get_active_streams(self.user_profile.realm).filter(
+            matching_streams = get_active_streams(self.realm).filter(
                 name__iregex=fr'^(un)*{self._pg_re_escape(base_stream_name)}(\.d)*$')
             recipient_ids = [matching_stream.recipient_id for matching_stream in matching_streams]
             cond = column("recipient_id").in_(recipient_ids)
@@ -277,7 +277,7 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_topic(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
-        if self.user_profile.realm.is_zephyr_mirror_realm:
+        if self.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
             # (foo, foo.d, foo.d.d, etc)
             m = re.search(r'^(.*?)(?:\.d)*$', operand, re.IGNORECASE)
