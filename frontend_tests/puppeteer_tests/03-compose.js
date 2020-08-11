@@ -98,12 +98,12 @@ async function test_reply_with_r_shortcut(page) {
 }
 
 async function test_open_close_compose_box(page) {
-    await page.waitForSelector("#stream-message", {hidden: false});
+    await page.waitForSelector("#stream-message", {visible: true});
     await close_compose_box(page);
     await page.waitForSelector("#stream-message", {hidden: true});
 
     await page.keyboard.press("KeyX");
-    await page.waitForSelector("#private-message", {hidden: false});
+    await page.waitForSelector("#private-message", {visible: true});
     await close_compose_box(page);
     await page.waitForSelector("#private-message", {hidden: true});
 }
