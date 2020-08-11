@@ -330,6 +330,11 @@ exports.process_enter_key = function (e) {
         return true;
     }
 
+    if ($(e.target).attr("role") === "button") {
+        e.target.click();
+        return false;
+    }
+
     // If we're on a button or a link and have pressed Enter, let the
     // browser handle the keypress
     //
@@ -339,11 +344,6 @@ exports.process_enter_key = function (e) {
     // the link on the sidebar! So you keep pressing Enter over and
     // over again. Until you click somewhere or press r.
     if ($("a:focus,button:focus").length > 0) {
-        return false;
-    }
-
-    if ($(e.target).attr("role") === "button") {
-        e.target.click();
         return false;
     }
 
