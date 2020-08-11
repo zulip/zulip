@@ -1184,7 +1184,7 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     first_name = kwargs['details'].get('first_name')
     last_name = kwargs['details'].get('last_name')
     if all(name is None for name in [full_name, first_name, last_name]) and backend.name != "apple":
-        # Apple authentication provides the user's name only the very first time a user tries to login.
+        # Apple authentication provides the user's name only the very first time a user tries to log in.
         # So if the user aborts login or otherwise is doing this the second time,
         # we won't have any name data. So, this case is handled with the code below
         # setting full name to empty string.

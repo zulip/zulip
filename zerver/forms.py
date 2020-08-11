@@ -346,7 +346,7 @@ class OurAuthenticationForm(AuthenticationForm):
             try:
                 realm = get_realm(subdomain)
             except Realm.DoesNotExist:
-                logging.warning("User %s attempted to password login to nonexistent subdomain %s",
+                logging.warning("User %s attempted password login to nonexistent subdomain %s",
                                 username, subdomain)
                 raise ValidationError("Realm does not exist")
 
@@ -368,7 +368,7 @@ class OurAuthenticationForm(AuthenticationForm):
                 raise ValidationError(mark_safe(DEACTIVATED_ACCOUNT_ERROR))
 
             if return_data.get("invalid_subdomain"):
-                logging.warning("User %s attempted to password login to wrong subdomain %s",
+                logging.warning("User %s attempted password login to wrong subdomain %s",
                                 username, subdomain)
                 raise ValidationError(mark_safe(WRONG_SUBDOMAIN_ERROR))
 

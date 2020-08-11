@@ -44,7 +44,7 @@ account.)
 * You can add the user to the sudo group by running the command
 `usermod -aG sudo zulipdev`.
 * Finally, you can switch to the user by running the command `su -
-zulipdev` (or just login to that user using `ssh`).
+zulipdev` (or just log in to that user using `ssh`).
 
 ## Setting up the development environment
 

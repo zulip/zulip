@@ -53,7 +53,7 @@ using an [HTTP reverse proxy][reverse-proxy]).
     1 hostname.example.com
     ```
 
-1.  Login to your Zulip server; the remaining steps all happen there.
+1. Log in to your Zulip server; the remaining steps all happen there.
 
 1. Add `, zulip::postfix_localmail` to `puppet_classes` in
    `/etc/zulip/zulip.conf`.  A typical value after this change is:

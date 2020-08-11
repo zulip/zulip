@@ -631,7 +631,7 @@ class LoginTest(ZulipTestCase):
             result = self.login_with_return(self.example_email("hamlet"), "xxx",
                                             subdomain="invalid")
         self.assertEqual(warn_log.output, [
-            'WARNING:root:User hamlet@zulip.com attempted to password login to nonexistent subdomain invalid'
+            'WARNING:root:User hamlet@zulip.com attempted password login to nonexistent subdomain invalid'
         ])
         self.assertEqual(result.status_code, 404)
         self.assert_in_response("There is no Zulip organization hosted at this subdomain.", result)
