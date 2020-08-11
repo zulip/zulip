@@ -653,7 +653,16 @@ def exclude_muting_conditions(user_profile: UserProfile,
 def get_base_query_for_search(user_profile: UserProfile,
                               need_message: bool,
                               need_user_message: bool) -> Tuple[Query, ColumnElement]:
-    if need_message and need_user_message:
+    # Handle the simple case where user_message isn't involved first.
+    if not need_user_message:
+        assert(need_message)
+        query = select([column("id").label("message_id")],
+                       None,
+                       table("zerver_message"))
+        inner_msg_id_col = literal_column("zerver_message.id")
+        return (query, inner_msg_id_col)
+
+    if need_message:
         query = select([column("message_id"), column("flags")],
                        column("user_profile_id") == literal(user_profile.id),
                        join(table("zerver_usermessage"), table("zerver_message"),
@@ -662,20 +671,11 @@ def get_base_query_for_search(user_profile: UserProfile,
         inner_msg_id_col = column("message_id")
         return (query, inner_msg_id_col)
 
-    if need_user_message:
-        query = select([column("message_id"), column("flags")],
-                       column("user_profile_id") == literal(user_profile.id),
-                       table("zerver_usermessage"))
-        inner_msg_id_col = column("message_id")
-        return (query, inner_msg_id_col)
-
-    else:
-        assert(need_message)
-        query = select([column("id").label("message_id")],
-                       None,
-                       table("zerver_message"))
-        inner_msg_id_col = literal_column("zerver_message.id")
-        return (query, inner_msg_id_col)
+    query = select([column("message_id"), column("flags")],
+                   column("user_profile_id") == literal(user_profile.id),
+                   table("zerver_usermessage"))
+    inner_msg_id_col = column("message_id")
+    return (query, inner_msg_id_col)
 
 def add_narrow_conditions(user_profile: UserProfile,
                           inner_msg_id_col: ColumnElement,
