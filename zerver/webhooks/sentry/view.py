@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Dict, List, Optional, Tuple
 
 from django.http import HttpRequest, HttpResponse
@@ -91,9 +92,9 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
         raise UnexpectedWebhookEventType("Sentry", "Raven SDK")
 
     platform_name = event["platform"]
-    syntax_highlight_as = syntax_highlight_as_map.get(platform_name)
-    if syntax_highlight_as is None:  # nocoverage
-        raise UnexpectedWebhookEventType("Sentry", f"platform {platform_name}")
+    syntax_highlight_as = syntax_highlight_as_map.get(platform_name, "")
+    if syntax_highlight_as == "":  # nocoverage
+        logging.info(f"Unknown Sentry platform: {platform_name}")
 
     context = {
         "title": subject,
