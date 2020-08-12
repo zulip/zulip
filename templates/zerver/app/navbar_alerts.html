@@ -1,10 +1,10 @@
 <div id="panels">
     <div data-process="notifications" class="alert alert-info">
-        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
         <div data-step="1">
             {% trans %}Zulip needs your permission to
             <a class="request-desktop-notifications alert-link" role="button" tabindex=0>enable desktop notifications.</a>
             {% endtrans %}
+            <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
         </div>
         <div data-step="2" style="display: none">
             {{ _('We strongly recommend enabling desktop notifications. They help Zulip keep your team connected.') }}
@@ -15,19 +15,19 @@
                 &bull;
                 <a class="alert-link reject-notifications" role="button" tabindex=0>{{ _('Never ask on this computer') }}</a>
             </span>
+            <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
         </div>
     </div>
     <div data-process="email-server" class="alert alert-info red">
-        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
         <div data-step="1">
             {% trans %}Zulip needs to send email to confirm users' addresses and send notifications.{% endtrans %}
             <a class="alert-link" href="https://zulip.readthedocs.io/en/latest/production/email.html" target="_blank" rel="noopener noreferrer">
                 {% trans %}See how to configure email.{% endtrans %}
             </a>
         </div>
+        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
     </div>
     <div data-process="profile-incomplete" class="alert alert-info">
-        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
         <div data-step="2">
             {% trans %}
             Complete the
@@ -36,9 +36,9 @@
             </a> to brand and explain the purpose of this Zulip organization.
             {% endtrans %}
         </div>
+        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
     </div>
     <div data-process="insecure-desktop-app" class="alert alert-info red">
-        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
         <div data-step="1">
             {% trans apps_page_link="https://zulip.com/apps" %}
             You are using an old version of the Zulip desktop app with known security bugs.
@@ -47,9 +47,9 @@
             </a>
             {% endtrans %}
         </div>
+        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
     </div>
     <div data-process="bankruptcy" class="alert alert-info brankruptcy">
-        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
         <div data-step="1">
             {% trans count=page_params.unread_msgs.count %}
             Welcome back!  You have <span class="bankruptcy_unread_count">{{ count }}</span> unread messages.  Do you want to mark them all as read?
@@ -60,6 +60,7 @@
             </span>
             {% endtrans %}
         </div>
+        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
     </div>
     <div class="alert alert-info bankruptcy-loader" style="display: none;">
         {% trans %}
