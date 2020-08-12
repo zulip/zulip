@@ -196,9 +196,10 @@ class OpenAPIToolsTest(ZulipTestCase):
         self.assertNotEqual(openapi_spec.last_update, 0)
 
         # Now verify calling it again doesn't call reload
-        with mock.patch('zerver.openapi.openapi.openapi_spec.reload') as mock_reload:
-            get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD)
-            self.assertFalse(mock_reload.called)
+        old_spec_dict = openapi_spec.spec()
+        get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD)
+        new_spec_dict = openapi_spec.spec()
+        self.assertIs(old_spec_dict, new_spec_dict)
 
 class OpenAPIArgumentsTest(ZulipTestCase):
     # This will be filled during test_openapi_arguments:
