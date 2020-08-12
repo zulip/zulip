@@ -229,8 +229,8 @@ def generate_curl_example(endpoint: str, method: str,
 
     lines = ["```curl"]
     operation = endpoint + ":" + method.lower()
-    operation_entry = openapi_spec.spec()['paths'][endpoint][method.lower()]
-    global_security = openapi_spec.spec()['security']
+    operation_entry = openapi_spec.openapi()['paths'][endpoint][method.lower()]
+    global_security = openapi_spec.openapi()['security']
 
     operation_params = operation_entry.get("parameters", [])
     operation_request_body = operation_entry.get("requestBody", None)

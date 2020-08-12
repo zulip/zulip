@@ -15,17 +15,23 @@ OPENAPI_SPEC_PATH = os.path.abspath(os.path.join(
 
 # A list of endpoint-methods such that the endpoint
 # has documentation but not with this particular method.
-EXCLUDE_UNDOCUMENTED_ENDPOINTS = {"/realm/emoji/{emoji_name}:delete", "/users:patch"}
+EXCLUDE_UNDOCUMENTED_ENDPOINTS = {
+    ("/realm/emoji/{emoji_name}", "delete"),
+    ("/users", "patch"),
+}
 # Consists of endpoints with some documentation remaining.
 # These are skipped but return true as the validator cannot exclude objects
-EXCLUDE_DOCUMENTED_ENDPOINTS = {"/settings/notifications:patch"}
+EXCLUDE_DOCUMENTED_ENDPOINTS = {
+    ("/settings/notifications", "patch"),
+}
+
 class OpenAPISpec():
-    def __init__(self, path: str) -> None:
-        self.path = path
-        self.last_update: Optional[float] = None
-        self.data: Dict[str, Any] = {}
-        self.regex_dict: Dict[str, str] = {}
-        self.core_data: Any = None
+    def __init__(self, openapi_path: str) -> None:
+        self.openapi_path = openapi_path
+        self.mtime: Optional[float] = None
+        self._openapi: Dict[str, Any] = {}
+        self._endpoints_dict: Dict[str, str] = {}
+        self._request_validator: Optional[RequestValidator] = None
 
     def check_reload(self) -> None:
         # Because importing yamole (and in turn, yaml) takes
@@ -40,21 +46,21 @@ class OpenAPISpec():
         # corruption.
         from yamole import YamoleParser
 
-        last_modified = os.path.getmtime(self.path)
+        mtime = os.path.getmtime(self.openapi_path)
         # Using == rather than >= to cover the corner case of users placing an
         # earlier version than the current one
-        if self.last_update == last_modified:
+        if self.mtime == mtime:
             return
 
-        with open(self.path) as f:
-            yaml_parser = YamoleParser(f)
-        self.data = yaml_parser.data
-        validator_spec = create_spec(self.data)
-        self.core_data = RequestValidator(validator_spec)
-        self.create_regex_dict()
-        self.last_update = last_modified
+        with open(self.openapi_path) as f:
+            yamole_parser = YamoleParser(f)
+        self._openapi = yamole_parser.data
+        spec = create_spec(self._openapi)
+        self._request_validator = RequestValidator(spec)
+        self.create_endpoints_dict()
+        self.mtime = mtime
 
-    def create_regex_dict(self) -> None:
+    def create_endpoints_dict(self) -> None:
         # Algorithm description:
         # We have 2 types of endpoints
         # 1.with path arguments 2. without path arguments
@@ -74,115 +80,112 @@ class OpenAPISpec():
         # such as email they must be substituted with proper regex.
 
         email_regex = r'([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})'
-        self.regex_dict = {}
-        for key in self.data['paths']:
-            if '{' not in key:
+        self._endpoints_dict = {}
+        for endpoint in self._openapi['paths']:
+            if '{' not in endpoint:
                 continue
-            regex_key = '^' + key + '$'
+            path_regex = '^' + endpoint + '$'
             # Numeric arguments have id at their end
             # so find such arguments and replace them with numeric
             # regex
-            regex_key = re.sub(r'{[^}]*id}', r'[0-9]*', regex_key)
+            path_regex = re.sub(r'{[^}]*id}', r'[0-9]*', path_regex)
             # Email arguments end with email
-            regex_key = re.sub(r'{[^}]*email}', email_regex, regex_key)
+            path_regex = re.sub(r'{[^}]*email}', email_regex, path_regex)
             # All other types of arguments are supposed to be
             # all-encompassing string.
-            regex_key = re.sub(r'{[^}]*}', r'[^\/]*', regex_key)
-            regex_key = regex_key.replace(r'/', r'\/')
-            regex_key = fr'{regex_key}'
-            self.regex_dict[regex_key] = key
+            path_regex = re.sub(r'{[^}]*}', r'[^\/]*', path_regex)
+            path_regex = path_regex.replace(r'/', r'\/')
+            self._endpoints_dict[path_regex] = endpoint
 
-    def spec(self) -> Dict[str, Any]:
+    def openapi(self) -> Dict[str, Any]:
         """Reload the OpenAPI file if it has been modified after the last time
         it was read, and then return the parsed data.
         """
         self.check_reload()
-        assert(len(self.data) > 0)
-        return self.data
+        assert(len(self._openapi) > 0)
+        return self._openapi
 
-    def regex_keys(self) -> Dict[str, str]:
+    def endpoints_dict(self) -> Dict[str, str]:
         """Reload the OpenAPI file if it has been modified after the last time
         it was read, and then return the parsed data.
         """
         self.check_reload()
-        assert(len(self.regex_dict) > 0)
-        return self.regex_dict
+        assert(len(self._endpoints_dict) > 0)
+        return self._endpoints_dict
 
-    def core_validator(self) -> Any:
+    def request_validator(self) -> RequestValidator:
         """Reload the OpenAPI file if it has been modified after the last time
         it was read, and then return the openapi_core validator object. Similar
         to preceding functions. Used for proper access to OpenAPI objects.
         """
         self.check_reload()
-        return self.core_data
+        assert self._request_validator is not None
+        return self._request_validator
 
 class SchemaError(Exception):
     pass
 
 openapi_spec = OpenAPISpec(OPENAPI_SPEC_PATH)
 
-def get_schema(endpoint: str, method: str, response: str) -> Dict[str, Any]:
-    if len(response) == 3 and ('oneOf' in (openapi_spec.spec())['paths'][endpoint]
-                               [method.lower()]['responses'][response]['content']
-                               ['application/json']['schema']):
+def get_schema(endpoint: str, method: str, status_code: str) -> Dict[str, Any]:
+    if len(status_code) == 3 and ('oneOf' in openapi_spec.openapi()['paths'][endpoint]
+                                  [method.lower()]['responses'][status_code]['content']
+                                  ['application/json']['schema']):
         # Currently at places where multiple schemas are defined they only
         # differ in example so either can be used.
-        response += '_0'
-    if len(response) == 3:
-        schema = (openapi_spec.spec()['paths'][endpoint][method.lower()]['responses']
-                  [response]['content']['application/json']['schema'])
+        status_code += '_0'
+    if len(status_code) == 3:
+        schema = (openapi_spec.openapi()['paths'][endpoint][method.lower()]['responses']
+                  [status_code]['content']['application/json']['schema'])
         return schema
     else:
-        resp_code = int(response[4])
-        response = response[0:3]
-        schema = (openapi_spec.spec()['paths'][endpoint][method.lower()]['responses']
-                  [response]['content']['application/json']['schema']["oneOf"][resp_code])
+        subschema_index = int(status_code[4])
+        status_code = status_code[0:3]
+        schema = (openapi_spec.openapi()['paths'][endpoint][method.lower()]['responses']
+                  [status_code]['content']['application/json']['schema']["oneOf"][subschema_index])
         return schema
 
 def get_openapi_fixture(endpoint: str, method: str,
-                        response: str='200') -> Dict[str, Any]:
+                        status_code: str='200') -> Dict[str, Any]:
     """Fetch a fixture from the full spec object.
     """
-    return (get_schema(endpoint, method, response)['example'])
+    return get_schema(endpoint, method, status_code)['example']
 
 def get_openapi_description(endpoint: str, method: str) -> str:
     """Fetch a description from the full spec object.
     """
-    description = openapi_spec.spec()['paths'][endpoint][method.lower()]['description']
-    return description
+    return openapi_spec.openapi()['paths'][endpoint][method.lower()]['description']
 
 def get_openapi_paths() -> Set[str]:
-    return set(openapi_spec.spec()['paths'].keys())
+    return set(openapi_spec.openapi()['paths'].keys())
 
 def get_openapi_parameters(endpoint: str, method: str,
                            include_url_parameters: bool=True) -> List[Dict[str, Any]]:
-    openapi_endpoint = openapi_spec.spec()['paths'][endpoint][method.lower()]
+    operation = openapi_spec.openapi()['paths'][endpoint][method.lower()]
     # We do a `.get()` for this last bit to distinguish documented
     # endpoints with no parameters (empty list) from undocumented
     # endpoints (KeyError exception).
-    parameters = openapi_endpoint.get('parameters', [])
+    parameters = operation.get('parameters', [])
     # Also, we skip parameters defined in the URL.
     if not include_url_parameters:
         parameters = [parameter for parameter in parameters if
                       parameter['in'] != 'path']
     return parameters
 
-def get_openapi_return_values(endpoint: str, method: str,
-                              include_url_parameters: bool=True) -> List[Dict[str, Any]]:
-    openapi_endpoint = openapi_spec.spec()['paths'][endpoint][method.lower()]
-    response = openapi_endpoint['responses']['200']['content']['application/json']['schema']
+def get_openapi_return_values(endpoint: str, method: str) -> List[Dict[str, Any]]:
+    operation = openapi_spec.openapi()['paths'][endpoint][method.lower()]
+    schema = operation['responses']['200']['content']['application/json']['schema']
     # In cases where we have used oneOf, the schemas only differ in examples
     # So we can choose any.
-    if 'oneOf' in response:
-        response = response['oneOf'][0]
-    response = response['properties']
-    return response
+    if 'oneOf' in schema:
+        schema = schema['oneOf'][0]
+    return schema['properties']
 
-def match_against_openapi_regex(endpoint: str) -> Optional[str]:
-    for key in openapi_spec.regex_keys():
-        matches = re.match(fr'{key}', endpoint)
+def find_openapi_endpoint(path: str) -> Optional[str]:
+    for path_regex, endpoint in openapi_spec.endpoints_dict().items():
+        matches = re.match(path_regex, path)
         if matches:
-            return openapi_spec.regex_keys()[key]
+            return endpoint
     return None
 
 def get_event_type(event: Dict[str, Any]) -> str:
@@ -198,8 +201,8 @@ def fix_events(content: Dict[str, Any]) -> None:
     for event in content['events']:
         event.pop('user', None)
 
-def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
-                                    method: str, response: str) -> bool:
+def validate_against_openapi_schema(content: Dict[str, Any], path: str,
+                                    method: str, status_code: str) -> bool:
     """Compare a "content" dict with the defined schema for a specific method
     in an endpoint. Return true if validated and false if skipped.
     """
@@ -208,26 +211,27 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
     # hope to eliminate over time as we improve our API documentation.
 
     # No 500 responses have been documented, so skip them
-    if response.startswith('5'):
+    if status_code.startswith('5'):
         return False
-    if endpoint not in openapi_spec.spec()['paths'].keys():
-        match = match_against_openapi_regex(endpoint)
+    if path not in openapi_spec.openapi()['paths'].keys():
+        endpoint = find_openapi_endpoint(path)
         # If it doesn't match it hasn't been documented yet.
-        if match is None:
+        if endpoint is None:
             return False
-        endpoint = match
+    else:
+        endpoint = path
     # Excluded endpoint/methods
-    if endpoint + ':' + method in EXCLUDE_UNDOCUMENTED_ENDPOINTS:
+    if (endpoint, method) in EXCLUDE_UNDOCUMENTED_ENDPOINTS:
         return False
     # Return true for endpoints with only response documentation remaining
-    if endpoint + ':' + method in EXCLUDE_DOCUMENTED_ENDPOINTS:
+    if (endpoint, method) in EXCLUDE_DOCUMENTED_ENDPOINTS:
         return True
     # Check if the response matches its code
-    if response.startswith('2') and (content.get('result', 'success').lower() != 'success'):
+    if status_code.startswith('2') and (content.get('result', 'success').lower() != 'success'):
         raise SchemaError("Response is not 200 but is validating against 200 schema")
     # Code is not declared but appears in various 400 responses. If
     # common, it can be added to 400 response schema
-    if response.startswith('4'):
+    if status_code.startswith('4'):
         # This return statement should ideally be not here. But since
         # we have not defined 400 responses for various paths this has
         # been added as all 400 have the same schema.  When all 400
@@ -235,7 +239,7 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
         return True
     # The actual work of validating that the response matches the
     # schema is done via the third-party OAS30Validator.
-    schema = get_schema(endpoint, method, response)
+    schema = get_schema(endpoint, method, status_code)
     if endpoint == '/events' and method == 'get':
         # This a temporary function for checking only documented events
         # as all events haven't been documented yet.
@@ -250,11 +254,11 @@ def validate_schema_array(schema: Dict[str, Any]) -> None:
     Helper function for validate_schema
     """
     if 'oneOf' in schema['items']:
-        for oneof_schema in schema['items']['oneOf']:
-            if oneof_schema['type'] == 'array':
-                validate_schema_array(oneof_schema)
-            elif oneof_schema['type'] == 'object':
-                validate_schema(oneof_schema)
+        for subschema in schema['items']['oneOf']:
+            if subschema['type'] == 'array':
+                validate_schema_array(subschema)
+            elif subschema['type'] == 'object':
+                validate_schema(subschema)
     else:
         if schema['items']['type'] == 'array':
             validate_schema_array(schema['items'])
@@ -272,18 +276,18 @@ def validate_schema(schema: Dict[str, Any]) -> None:
     if 'additionalProperties' not in schema:
         raise SchemaError('additionalProperties needs to be defined for objects to make' +
                           'sure they have no additional properties left to be documented.')
-    for key in schema.get('properties', dict()):
-        if 'oneOf' in schema['properties'][key]:
-            for types in schema['properties'][key]['oneOf']:
-                if types['type'] == 'object':
-                    validate_schema(types)
-                elif types['type'] == 'array':
-                    validate_schema_array(types)
+    for property_schema in schema.get('properties', dict()).values():
+        if 'oneOf' in property_schema:
+            for subschema in property_schema['oneOf']:
+                if subschema['type'] == 'object':
+                    validate_schema(subschema)
+                elif subschema['type'] == 'array':
+                    validate_schema_array(subschema)
         else:
-            if schema['properties'][key]['type'] == 'object':
-                validate_schema(schema['properties'][key])
-            elif schema['properties'][key]['type'] == 'array':
-                validate_schema_array(schema['properties'][key])
+            if property_schema['type'] == 'object':
+                validate_schema(property_schema)
+            elif property_schema['type'] == 'array':
+                validate_schema_array(property_schema)
     if schema['additionalProperties']:
         if schema['additionalProperties']['type'] == 'array':
             validate_schema_array(schema['additionalProperties'])
@@ -314,14 +318,16 @@ def likely_deprecated_parameter(parameter_description: str) -> bool:
 # Skip those JSON endpoints whose query parameters are different from
 # their `/api/v1` counterpart.  This is a legacy code issue that we
 # plan to fix by changing the implementation.
-SKIP_JSON = {'/fetch_api_key:post'}
+SKIP_JSON = {
+    ('/fetch_api_key', 'post'),
+}
 
 def validate_request(url: str, method: str, data: Dict[str, Any],
                      http_headers: Dict[str, Any], json_url: bool,
                      status_code: str, intentionally_undocumented: bool=False) -> None:
     # Some JSON endpoints have different parameters compared to
     # their `/api/v1` counterparts.
-    if json_url and url + ':' + method in SKIP_JSON:
+    if json_url and (url, method) in SKIP_JSON:
         return
 
     # TODO: Add support for file upload endpoints that lack the /json/
@@ -333,7 +339,7 @@ def validate_request(url: str, method: str, data: Dict[str, Any],
     # against the OpenAPI documentation.
     mock_request = MockRequest('http://localhost:9991/', method, '/api/v1' + url,
                                headers=http_headers, args=data)
-    result = openapi_spec.core_validator().validate(mock_request)
+    result = openapi_spec.request_validator().validate(mock_request)
     if len(result.errors) != 0:
         # Requests that do not validate against the OpenAPI spec must either:
         # * Have returned a 400 (bad request) error
