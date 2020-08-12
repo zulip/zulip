@@ -140,7 +140,8 @@ class TestReport(ZulipTestCase):
         # js_source_map actually gets instantiated.
         with \
                 self.settings(DEVELOPMENT=False, TEST_SUITE=False), \
-                mock.patch('zerver.lib.unminify.SourceMap.annotate_stacktrace') as annotate, \
+                mock.patch('zerver.lib.unminify.SourceMap.annotate_stacktrace',
+                           return_value="Stacktrace Here") as annotate, \
                 self.assertLogs(level='INFO') as info_logs:
             result = self.client_post("/json/report/error", params)
         self.assert_json_success(result)
@@ -154,7 +155,8 @@ class TestReport(ZulipTestCase):
         self.logout()
         with \
                 self.settings(DEVELOPMENT=False, TEST_SUITE=False), \
-                mock.patch('zerver.lib.unminify.SourceMap.annotate_stacktrace') as annotate, \
+                mock.patch('zerver.lib.unminify.SourceMap.annotate_stacktrace',
+                           return_value="Stacktrace Here") as annotate, \
                 self.assertLogs(level='INFO') as info_logs:
             result = self.client_post("/json/report/error", params)
         self.assert_json_success(result)
