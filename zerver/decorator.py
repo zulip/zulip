@@ -286,7 +286,7 @@ def log_exception_to_webhook_logger(
     if request.content_type == 'application/json':
         try:
             payload = orjson.dumps(orjson.loads(payload), option=orjson.OPT_INDENT_2).decode()
-        except ValueError:
+        except orjson.JSONDecodeError:
             request_body = str(payload)
     else:
         request_body = str(payload)

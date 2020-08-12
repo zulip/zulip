@@ -297,7 +297,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
             if param.argument_type == 'body':
                 try:
                     val = orjson.loads(request.body)
-                except ValueError:
+                except orjson.JSONDecodeError:
                     raise InvalidJSONError(_("Malformed JSON"))
                 kwargs[func_var_name] = val
                 continue
