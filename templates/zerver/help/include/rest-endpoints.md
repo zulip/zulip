@@ -35,6 +35,7 @@
 * [Get all users](/api/get-users)
 * [Get own user](/api/get-own-user)
 * [Get a user](/api/get-user)
+* [Get a user by email](/api/get-user-by-email)
 * [Update a user](/api/update-user)
 * [Create a user](/api/create-user)
 * [Deactivate a user](/api/deactivate-user)

@@ -5556,6 +5556,85 @@ paths:
                         "result": "success",
                         "msg": "",
                       }
+  /users/{email}:
+    get:
+      operationId: get_user_by_email
+      tags: ["users"]
+      description: |
+        Fetch details for a single user in the organization.
+
+        `GET {{ api_url }}/v1/users/{email}`
+
+        You can also fetch details on [all users in the organization](/api/get-users).
+
+      parameters:
+        - name: email
+          in: path
+          description: |
+            The taget user's email.
+          schema:
+            type: string
+          example: "cordelia@zulip.com"
+          required: true
+        - $ref: "#/components/parameters/ClientGravatar"
+        - $ref: "#/components/parameters/IncludeCustomProfileFields"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      user:
+                        $ref: "#/components/schemas/User"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "user":
+                          {
+                            "date_joined": "2019-10-20T07:50:53.729659+00:00",
+                            "full_name": "King Hamlet",
+                            "is_guest": false,
+                            "profile_data":
+                              {
+                                "4": {"value": "vim"},
+                                "2":
+                                  {
+                                    "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
+                                    "rendered_value": "<p>I am:</p>\n<ul>\n<li>The prince of Denmark</li>\n<li>Nephew to the usurping Claudius</li>\n</ul>",
+                                  },
+                                "5": {"value": "1900-1-1"},
+                                "7": {"value": "[11]"},
+                                "6": {"value": "https://blog.zulig.org"},
+                                "1":
+                                  {
+                                    "value": "+0-11-23-456-7890",
+                                    "rendered_value": "<p>+0-11-23-456-7890</p>",
+                                  },
+                                "8": {"value": "zulipbot"},
+                                "3":
+                                  {
+                                    "rendered_value": "<p>Dark chocolate</p>",
+                                    "value": "Dark chocolate",
+                                  },
+                              },
+                            "user_id": 10,
+                            "is_bot": false,
+                            "bot_type": null,
+                            "timezone": "",
+                            "is_admin": false,
+                            "is_owner": false,
+                            "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                            "is_active": true,
+                            "email": "hamlet@zulip.com",
+                          },
+                      }
   /users/{user_id}:
     get:
       operationId: get_user

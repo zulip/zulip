@@ -230,6 +230,28 @@ def get_single_user(client: Client) -> None:
     # {code_example|end}
     validate_against_openapi_schema(result, '/users/{user_id}', 'get', '200')
 
+@openapi_test_function("/users/{email}:get")
+def get_user_by_email(client: Client) -> None:
+    # {code_example|start}
+    # Fetch details on a user given a user ID
+    email = "cordelia@zulip.com"
+    result = client.call_endpoint(
+        url=f'/users/{email}',
+        method='GET',
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/users/{email}', 'get', '200')
+
+    # {code_example|start}
+    # If you'd like data on custom profile fields, you can request them as follows:
+    result = client.call_endpoint(
+        url=f'/users/{email}',
+        method='GET',
+        request={'include_custom_profile_fields': True}
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/users/{email}', 'get', '200')
+
 @openapi_test_function("/users/{user_id}:delete")
 def deactivate_user(client: Client) -> None:
 
@@ -1237,6 +1259,7 @@ def test_users(client: Client) -> None:
     create_user(client)
     get_members(client)
     get_single_user(client)
+    get_user_by_email(client)
     deactivate_user(client)
     reactivate_user(client)
     update_user(client)
