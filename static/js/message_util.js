@@ -18,16 +18,30 @@ function add_messages(messages, msg_list, opts) {
     return render_info;
 }
 
+// For the three message_has_* functions below message.content is html which is
+// wrapped inside a <div> and passed to jquery so that jquery can parse html
+// and create jQuery object which can be used to find certain html elements using
+// built-in .find() which finds the descendants which match the selector passed to
+// it.
+//
+// The reason for extra <div> wrapping is to make sure all the elements of
+// message.content are descendants of the extra div and we can find any element in html
+// without issue.
+// Eg. message.content can be:
+// <p>Some message</p><div class='message_inline_image'></div><p>some more</p>
+// In above case without wrapper <div> around message.content won't find the
+// .message_inline_image. Wrapping the above eg. html in <div> will make the
+// .message_inline_image a descendant hence will be esaily found using find().
 exports.message_has_link = function (message) {
-    return $(message.content).find("a").length > 0;
+    return $(`<div>${message.content}</div>`).find("a").length > 0;
 };
 
 exports.message_has_image = function (message) {
-    return $(message.content).find(".message_inline_image").length > 0;
+    return $(`<div>${message.content}</div>`).find(".message_inline_image").length > 0;
 };
 
 exports.message_has_attachment = function (message) {
-    return $(message.content).find("a[href^='/user_uploads']").length > 0;
+    return $(`<div>${message.content}</div>`).find("a[href^='/user_uploads']").length > 0;
 };
 
 exports.add_old_messages = function (messages, msg_list) {
