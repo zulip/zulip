@@ -155,7 +155,7 @@ export default (env?: string): webpack.Configuration[] => {
                 },
                 // load fonts and files
                 {
-                    test: /\.(woff(2)?|ttf|eot|svg|otf|png)$/,
+                    test: /\.(eot|jpg|svg|ttf|otf|png|woff2?)$/,
                     use: [
                         {
                             loader: "file-loader",
