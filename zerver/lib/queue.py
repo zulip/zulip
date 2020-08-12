@@ -363,12 +363,19 @@ def queue_json_publish(
     with queue_lock:
         if settings.USING_RABBITMQ:
             get_queue_client().json_publish(queue_name, event)
-        elif processor:
-            processor(event)
+            return
+
+        # To ensure the tests verify the full logical code path of
+        # JSON dumping and then later loading, we JSON dump and then
+        # load the event before calling the processor functions.  This
+        # catches bugs where E.g. we include a Set in the event.
+        marshalled_event = orjson.loads(orjson.dumps(event))
+        if processor:
+            processor(marshalled_event)
         else:
             # Must be imported here: A top section import leads to obscure not-defined-ish errors.
             from zerver.worker.queue_processors import get_worker
-            get_worker(queue_name).consume_wrapper(event)
+            get_worker(queue_name).consume_wrapper(marshalled_event)
 
 def retry_event(queue_name: str,
                 event: Dict[str, Any],
