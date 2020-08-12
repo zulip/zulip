@@ -25,24 +25,6 @@ const funcs = {
             PAGE: 2,
         };
 
-        // give object structure in `mousedown`, because its props are only
-        // ever set once `mousedown` + `mousemove` is triggered.
-        let lastPosition = {};
-
-        // in browsers such as Safari, the `e.movementX` and `e.movementY`
-        // props don't exist, so we need to create them as a difference of
-        // where the last `layerX` and `layerY` movements since the last
-        // `mousemove` event in this `mousedown` event were registered.
-        const polyfillMouseMovement = (e) => {
-            e.movementX = e.layerX - lastPosition.x || 0;
-            e.movementY = e.layerY - lastPosition.y || 0;
-
-            lastPosition = {
-                x: e.layerX,
-                y: e.layerY,
-            };
-        };
-
         // use the wheel event rather than scroll because this isn't
         // actually an element that can scroll. The wheel event will
         // detect the *gesture* of scrolling over an element, without actually
@@ -89,7 +71,6 @@ const funcs = {
         canvas.addEventListener("mousemove", (e) => {
             // to pan, there must be mousedown and mousemove, check if valid.
             if (mousedown === true) {
-                polyfillMouseMovement(e);
                 // find the percent of movement relative to the canvas width
                 // since e.movementX, e.movementY are in px.
                 const percentMovement = {
@@ -136,9 +117,6 @@ const funcs = {
         // panning events.
         canvas.addEventListener("mouseup", () => {
             mousedown = false;
-            // reset this to be empty so that the values will `NaN` on first
-            // mousemove and default to a change of (0, 0).
-            lastPosition = {};
         });
 
         // do so on the document.body as well, though depending on the infra,
