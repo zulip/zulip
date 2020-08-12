@@ -16,7 +16,6 @@ from typing import (
     Tuple,
     Union,
 )
-from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import yaml
@@ -34,10 +33,10 @@ from zerver.openapi.openapi import (
     OPENAPI_SPEC_PATH,
     OpenAPISpec,
     SchemaError,
+    find_openapi_endpoint,
     get_openapi_fixture,
     get_openapi_parameters,
     get_openapi_paths,
-    match_against_openapi_regex,
     openapi_spec,
     to_python_type,
     validate_against_openapi_schema,
@@ -156,7 +155,7 @@ class OpenAPIToolsTest(ZulipTestCase):
         with open(os.path.join(os.path.dirname(OPENAPI_SPEC_PATH),
                   "testing.yaml")) as test_file:
             test_dict = yaml.safe_load(test_file)
-        openapi_spec.spec()['paths']['testing'] = test_dict
+        openapi_spec.openapi()['paths']['testing'] = test_dict
         try:
             validate_against_openapi_schema((test_dict['test1']['responses']['200']['content']
                                             ['application/json']['example']),
@@ -170,7 +169,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                 validate_schema((test_dict['test3']['responses']['200']
                                 ['content']['application/json']['schema']))
         finally:
-            openapi_spec.spec()['paths'].pop('testing', None)
+            openapi_spec.openapi()['paths'].pop('testing', None)
 
     def test_to_python_type(self) -> None:
         TYPES = {
@@ -188,18 +187,18 @@ class OpenAPIToolsTest(ZulipTestCase):
     def test_live_reload(self) -> None:
         # Force the reload by making the last update date < the file's last
         # modified date
-        openapi_spec.last_update = 0
+        openapi_spec.mtime = 0
         get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD)
 
         # Check that the file has been reloaded by verifying that the last
         # update date isn't zero anymore
-        self.assertNotEqual(openapi_spec.last_update, 0)
+        self.assertNotEqual(openapi_spec.mtime, 0)
 
         # Now verify calling it again doesn't call reload
-        old_spec_dict = openapi_spec.spec()
+        old_openapi = openapi_spec.openapi()
         get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD)
-        new_spec_dict = openapi_spec.spec()
-        self.assertIs(old_spec_dict, new_spec_dict)
+        new_openapi = openapi_spec.openapi()
+        self.assertIs(old_openapi, new_openapi)
 
 class OpenAPIArgumentsTest(ZulipTestCase):
     # This will be filled during test_openapi_arguments:
@@ -908,7 +907,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
     def test_generate_and_render_curl_with_default_examples(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_without_examples
         generated_curl_example = self.curl_example("/mark_stream_as_read", "POST")
@@ -922,7 +921,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
     def test_generate_and_render_curl_with_invalid_method(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_with_invalid_method
         with self.assertRaises(ValueError):
@@ -945,7 +944,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
     def test_generate_and_render_curl_with_object(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_object
         generated_curl_example = self.curl_example("/endpoint", "GET")
@@ -958,19 +957,19 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
     def test_generate_and_render_curl_with_object_without_example(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_object_without_example
         with self.assertRaises(ValueError):
             self.curl_example("/endpoint", "GET")
 
-    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
     def test_generate_and_render_curl_with_array_without_example(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_array_without_example
         with self.assertRaises(ValueError):
             self.curl_example("/endpoint", "GET")
 
-    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
     def test_generate_and_render_curl_with_param_in_path(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_param_in_path
         generated_curl_example = self.curl_example("/endpoint/{param1}", "GET")
@@ -1023,30 +1022,27 @@ class OpenAPIAttributesTest(ZulipTestCase):
         VALID_TAGS = ["users", "server_and_organizations", "authentication",
                       "real_time_events", "streams", "messages", "users",
                       "webhooks"]
-        openapi_spec = OpenAPISpec(OPENAPI_SPEC_PATH).spec()["paths"]
-        for path in openapi_spec:
+        paths = OpenAPISpec(OPENAPI_SPEC_PATH).openapi()["paths"]
+        for path, path_item in paths.items():
             if path in EXCLUDE:
                 continue
-            for method in openapi_spec[path]:
+            for method, operation in path_item.items():
                 # Check if every file has an operationId
-                assert("operationId" in openapi_spec[path][method])
-                assert("tags" in openapi_spec[path][method])
-                tag = openapi_spec[path][method]["tags"][0]
+                assert("operationId" in operation)
+                assert("tags" in operation)
+                tag = operation["tags"][0]
                 assert(tag in VALID_TAGS)
-                for response in openapi_spec[path][method]['responses']:
-                    response_schema = (openapi_spec[path][method]['responses'][response]
-                                       ['content']['application/json']['schema'])
-                    if 'oneOf' in response_schema:
-                        cnt = 0
-                        for entry in response_schema['oneOf']:
-                            validate_schema(entry)
-                            assert(validate_against_openapi_schema(entry['example'], path,
-                                                                   method, response + '_' + str(cnt)))
-                            cnt += 1
+                for status_code, response in operation['responses'].items():
+                    schema = response['content']['application/json']['schema']
+                    if 'oneOf' in schema:
+                        for subschema_index, subschema in enumerate(schema['oneOf']):
+                            validate_schema(subschema)
+                            assert(validate_against_openapi_schema(subschema['example'], path,
+                                                                   method, status_code + '_' + str(subschema_index)))
                         continue
-                    validate_schema(response_schema)
-                    assert(validate_against_openapi_schema(response_schema['example'], path,
-                                                           method, response))
+                    validate_schema(schema)
+                    assert(validate_against_openapi_schema(schema['example'], path,
+                                                           method, status_code))
 
 class OpenAPIRegexTest(ZulipTestCase):
     def test_regex(self) -> None:
@@ -1056,18 +1052,18 @@ class OpenAPIRegexTest(ZulipTestCase):
         """
         # Some of the undocumentd endpoints which are very similar to
         # some of the documented endpoints.
-        assert(match_against_openapi_regex('/users/me/presence') is None)
-        assert(match_against_openapi_regex('/users/me/subscriptions/23') is None)
-        assert(match_against_openapi_regex('/users/iago/subscriptions/23') is None)
-        assert(match_against_openapi_regex('/messages/matches_narrow') is None)
+        assert(find_openapi_endpoint('/users/me/presence') is None)
+        assert(find_openapi_endpoint('/users/me/subscriptions/23') is None)
+        assert(find_openapi_endpoint('/users/iago/subscriptions/23') is None)
+        assert(find_openapi_endpoint('/messages/matches_narrow') is None)
         # Making sure documented endpoints are matched correctly.
-        assert(match_against_openapi_regex('/users/23/subscriptions/21') ==
+        assert(find_openapi_endpoint('/users/23/subscriptions/21') ==
                '/users/{user_id}/subscriptions/{stream_id}')
-        assert(match_against_openapi_regex('/users/iago@zulip.com/presence') ==
+        assert(find_openapi_endpoint('/users/iago@zulip.com/presence') ==
                '/users/{email}/presence')
-        assert(match_against_openapi_regex('/messages/23') ==
+        assert(find_openapi_endpoint('/messages/23') ==
                '/messages/{message_id}')
-        assert(match_against_openapi_regex('/realm/emoji/realm_emoji_1') ==
+        assert(find_openapi_endpoint('/realm/emoji/realm_emoji_1') ==
                '/realm/emoji/{emoji_name}')
 
 class OpenAPIRequestValidatorTest(ZulipTestCase):
