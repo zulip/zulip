@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Optional
 import sentry_sdk
 from sentry_sdk.integrations import Integration
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.redis import RedisIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.utils import capture_internal_exceptions
@@ -41,3 +42,16 @@ def setup_sentry(dsn: Optional[str], *integrations: Integration) -> None:
         ],
         before_send=add_context,
     )
+
+    # Ignore all of the loggers from django.security that are for user
+    # errors; see https://docs.djangoproject.com/en/3.0/ref/exceptions/#suspiciousoperation
+    ignore_logger("django.security.DisallowedHost")
+    ignore_logger("django.security.DisallowedModelAdminLookup")
+    ignore_logger("django.security.DisallowedModelAdminToField")
+    ignore_logger("django.security.DisallowedRedirect")
+    ignore_logger("django.security.InvalidSessionKey")
+    ignore_logger("django.security.RequestDataTooBig")
+    ignore_logger("django.security.SuspiciousFileOperation")
+    ignore_logger("django.security.SuspiciousMultipartForm")
+    ignore_logger("django.security.SuspiciousSession")
+    ignore_logger("django.security.TooManyFieldsSent")
