@@ -721,34 +721,40 @@ run_test("predicate_basics", () => {
     // HTML content of message is used to determine if image have link, image or attachment.
     // We are using jquery to parse the html and find existence of relevant tags/elements.
     // In tests we need to stub the calls to jquery so using zjquery's .set_find_results method.
+    function set_find_results_for_msg_content(msg, jquery_selector, results) {
+        $(`<div>${msg.content}</div>`).set_find_results(jquery_selector, results);
+    }
+
     const has_link = get_predicate([["has", "link"]]);
-    $(img_msg.content).set_find_results("a", [$("<a>")]);
+    set_find_results_for_msg_content(img_msg, "a", [$("<a>")]);
     assert(has_link(img_msg));
-    $(non_img_attachment_msg.content).set_find_results("a", [$("<a>")]);
+    set_find_results_for_msg_content(non_img_attachment_msg, "a", [$("<a>")]);
     assert(has_link(non_img_attachment_msg));
-    $(link_msg.content).set_find_results("a", [$("<a>")]);
+    set_find_results_for_msg_content(link_msg, "a", [$("<a>")]);
     assert(has_link(link_msg));
-    $(no_has_filter_matching_msg.content).set_find_results("a", false);
+    set_find_results_for_msg_content(no_has_filter_matching_msg, "a", false);
     assert(!has_link(no_has_filter_matching_msg));
 
     const has_attachment = get_predicate([["has", "attachment"]]);
-    $(img_msg.content).set_find_results("a[href^='/user_uploads']", [$("<a>")]);
+    set_find_results_for_msg_content(img_msg, "a[href^='/user_uploads']", [$("<a>")]);
     assert(has_attachment(img_msg));
-    $(non_img_attachment_msg.content).set_find_results("a[href^='/user_uploads']", [$("<a>")]);
+    set_find_results_for_msg_content(non_img_attachment_msg, "a[href^='/user_uploads']", [
+        $("<a>"),
+    ]);
     assert(has_attachment(non_img_attachment_msg));
-    $(link_msg.content).set_find_results("a[href^='/user_uploads']", false);
+    set_find_results_for_msg_content(link_msg, "a[href^='/user_uploads']", false);
     assert(!has_attachment(link_msg));
-    $(no_has_filter_matching_msg.content).set_find_results("a[href^='/user_uploads']", false);
+    set_find_results_for_msg_content(no_has_filter_matching_msg, "a[href^='/user_uploads']", false);
     assert(!has_attachment(no_has_filter_matching_msg));
 
     const has_image = get_predicate([["has", "image"]]);
-    $(img_msg.content).set_find_results(".message_inline_image", [$("<img>")]);
+    set_find_results_for_msg_content(img_msg, ".message_inline_image", [$("<img>")]);
     assert(has_image(img_msg));
-    $(non_img_attachment_msg.content).set_find_results(".message_inline_image", false);
+    set_find_results_for_msg_content(non_img_attachment_msg, ".message_inline_image", false);
     assert(!has_image(non_img_attachment_msg));
-    $(link_msg.content).set_find_results(".message_inline_image", false);
+    set_find_results_for_msg_content(link_msg, ".message_inline_image", false);
     assert(!has_image(link_msg));
-    $(no_has_filter_matching_msg.content).set_find_results(".message_inline_image", false);
+    set_find_results_for_msg_content(no_has_filter_matching_msg, ".message_inline_image", false);
     assert(!has_image(no_has_filter_matching_msg));
 });
 
