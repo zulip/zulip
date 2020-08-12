@@ -384,10 +384,6 @@ class FlushDisplayRecipientCache(MiddlewareMixin):
         return response
 
 class HostDomainMiddleware(MiddlewareMixin):
-    def __init__(self, get_response: Callable[[Any, WSGIRequest], Union[HttpResponse, BaseException]]) -> None:
-        super().__init__(get_response)
-        ignore_logger("django.security.DisallowedHost")
-
     def process_request(self, request: HttpRequest) -> Optional[HttpResponse]:
         # Match against ALLOWED_HOSTS, which is rather permissive;
         # failure will raise DisallowedHost, which is a 400.
