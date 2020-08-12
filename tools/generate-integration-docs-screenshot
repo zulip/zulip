@@ -107,7 +107,7 @@ def custom_headers(headers_json: str) -> Dict[str, str]:
         return {}
     try:
         return orjson.loads(headers_json)
-    except ValueError as ve:
+    except orjson.JSONDecodeError as ve:
         raise argparse.ArgumentTypeError(
             'Encountered an error while attempting to parse custom headers: {}\n'
             'Note: all strings must be enclosed within "" instead of \'\''.format(ve))

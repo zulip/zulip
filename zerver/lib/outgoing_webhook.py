@@ -272,7 +272,7 @@ def process_success_response(event: Dict[str, Any],
                              response: Response) -> None:
     try:
         response_json = json.loads(response.text)
-    except ValueError:
+    except json.JSONDecodeError:
         fail_with_message(event, "Invalid JSON in response")
         return
 

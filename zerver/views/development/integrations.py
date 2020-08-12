@@ -66,7 +66,7 @@ def get_fixtures(request: HttpResponse,
             body = f.read()
         try:
             body = orjson.loads(body)
-        except ValueError:
+        except orjson.JSONDecodeError:
             pass  # The file extension will be used to determine the type.
 
         headers_raw = get_fixture_http_headers(valid_integration_name,
@@ -91,7 +91,7 @@ def check_send_webhook_fixture_message(request: HttpRequest,
                                        custom_headers: str=REQ()) -> HttpResponse:
     try:
         custom_headers_dict = orjson.loads(custom_headers)
-    except ValueError as ve:
+    except orjson.JSONDecodeError as ve:
         return json_error(f"Custom HTTP headers are not in a valid JSON format. {ve}")  # nolint
 
     response = send_webhook_fixture_message(url, body, is_json,

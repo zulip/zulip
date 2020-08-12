@@ -56,7 +56,7 @@ approach shown above.
             return {}
         try:
             custom_headers_dict = orjson.loads(custom_headers)
-        except ValueError as ve:
+        except orjson.JSONDecodeError as ve:
             raise CommandError('Encountered an error while attempting to parse custom headers: {}\n'
                                'Note: all strings must be enclosed within "" instead of \'\''.format(ve))
         return standardize_headers(custom_headers_dict)
