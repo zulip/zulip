@@ -124,8 +124,6 @@ export function update_regular_sub_settings(sub) {
         $settings.find(".personal_settings").addClass("in");
     } else {
         $settings.find(".personal_settings").removeClass("in");
-        // Clear email address widget
-        $settings.find(".email-address").html("");
     }
 }
 
