@@ -23,7 +23,7 @@ exports.message_has_link = function (message) {
 };
 
 exports.message_has_image = function (message) {
-    return $(message.content).find(".message_inline_image").length > 0;
+    return $(message.content).hasClass("message_inline_image");
 };
 
 exports.message_has_attachment = function (message) {

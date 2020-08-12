@@ -742,13 +742,10 @@ run_test("predicate_basics", () => {
     assert(!has_attachment(no_has_filter_matching_msg));
 
     const has_image = get_predicate([["has", "image"]]);
-    $(img_msg.content).set_find_results(".message_inline_image", [$("<img>")]);
+    $(img_msg.content).addClass("message_inline_image");
     assert(has_image(img_msg));
-    $(non_img_attachment_msg.content).set_find_results(".message_inline_image", false);
     assert(!has_image(non_img_attachment_msg));
-    $(link_msg.content).set_find_results(".message_inline_image", false);
     assert(!has_image(link_msg));
-    $(no_has_filter_matching_msg.content).set_find_results(".message_inline_image", false);
     assert(!has_image(no_has_filter_matching_msg));
 });
 
