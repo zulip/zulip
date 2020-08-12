@@ -249,22 +249,6 @@ def validate_against_openapi_schema(content: Dict[str, Any], path: str,
     validator.validate(content)
     return True
 
-def validate_schema_array(schema: Dict[str, Any]) -> None:
-    """
-    Helper function for validate_schema
-    """
-    if 'oneOf' in schema['items']:
-        for subschema in schema['items']['oneOf']:
-            if subschema['type'] == 'array':
-                validate_schema_array(subschema)
-            elif subschema['type'] == 'object':
-                validate_schema(subschema)
-    else:
-        if schema['items']['type'] == 'array':
-            validate_schema_array(schema['items'])
-        elif schema['items']['type'] == 'object':
-            validate_schema(schema['items'])
-
 def validate_schema(schema: Dict[str, Any]) -> None:
     """Check if opaque objects are present in the OpenAPI spec; this is an
     important part of our policy for ensuring every detail of Zulip's
@@ -273,25 +257,18 @@ def validate_schema(schema: Dict[str, Any]) -> None:
     This is done by checking for the presence of the
     `additionalProperties` attribute for all objects (dictionaries).
     """
-    if 'additionalProperties' not in schema:
-        raise SchemaError('additionalProperties needs to be defined for objects to make' +
-                          'sure they have no additional properties left to be documented.')
-    for property_schema in schema.get('properties', dict()).values():
-        if 'oneOf' in property_schema:
-            for subschema in property_schema['oneOf']:
-                if subschema['type'] == 'object':
-                    validate_schema(subschema)
-                elif subschema['type'] == 'array':
-                    validate_schema_array(subschema)
-        else:
-            if property_schema['type'] == 'object':
-                validate_schema(property_schema)
-            elif property_schema['type'] == 'array':
-                validate_schema_array(property_schema)
-    if schema['additionalProperties']:
-        if schema['additionalProperties']['type'] == 'array':
-            validate_schema_array(schema['additionalProperties'])
-        elif schema['additionalProperties']['type'] == 'object':
+    if 'oneOf' in schema:
+        for subschema in schema['oneOf']:
+            validate_schema(subschema)
+    elif schema['type'] == 'array':
+        validate_schema(schema['items'])
+    elif schema['type'] == 'object':
+        if 'additionalProperties' not in schema:
+            raise SchemaError('additionalProperties needs to be defined for objects to make' +
+                              'sure they have no additional properties left to be documented.')
+        for property_schema in schema.get('properties', dict()).values():
+            validate_schema(property_schema)
+        if schema['additionalProperties']:
             validate_schema(schema['additionalProperties'])
 
 def to_python_type(py_type: str) -> type:
