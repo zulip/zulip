@@ -33,6 +33,7 @@ import itertools
 import json
 import os
 import re
+import subprocess
 from argparse import ArgumentParser
 from typing import Any, Dict, Iterable, Iterator, List, Mapping
 
@@ -49,10 +50,6 @@ regexes = [r'{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
            r'\(t "(.*?)"\)',
            r'=\(t "(.*?)"\)(?=[^{]*}})',
            r"=\(t '(.*?)'\)(?=[^{]*}})",
-           r"i18n\.t\('([^']*?)'\)",
-           r"i18n\.t\('(.*?)',\s*.*?[^,]\)",
-           r'i18n\.t\("([^"]*?)"\)',
-           r'i18n\.t\("(.*?)",\s*.*?[^,]\)',
            ]
 tags = [('err_', "error"),
         ]
@@ -169,15 +166,18 @@ class Command(makemessages.Command):
                 with open(os.path.join(dirpath, filename)) as reader:
                     data = reader.read()
                     translation_strings.extend(self.extract_strings(data))
+        paths: List[str] = []
         for dirpath, dirnames, filenames in itertools.chain(os.walk("static/js"),
                                                             os.walk("static/shared/js")):
             for filename in [f for f in filenames if f.endswith(".js") or f.endswith(".ts")]:
                 if filename.startswith('.'):
                     continue
-                with open(os.path.join(dirpath, filename)) as reader:
-                    data = reader.read()
-                    data = self.ignore_javascript_comments(data)
-                    translation_strings.extend(self.extract_strings(data))
+                paths.append(os.path.join(dirpath, filename))
+
+        js_output = subprocess.check_output(["zerver/management/scripts/extract-js-strings.js"] + paths)
+        all_strings = json.loads(js_output)
+        strings = [elem['string'] for elem in all_strings]
+        translation_strings.extend(strings)
 
         return list(set(translation_strings))
 
