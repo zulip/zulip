@@ -73,7 +73,7 @@ class MutedTopicsTests(ZulipTestCase):
                 result = self.api_patch(user, url, data)
                 self.assert_json_success(result)
 
-            self.assertIn((stream.name, 'Verona3', mock_date_muted), get_topic_mutes(user))
+            self.assertIn([stream.name, 'Verona3', mock_date_muted], get_topic_mutes(user))
             self.assertTrue(topic_is_muted(user, stream.id, 'Verona3'))
             self.assertTrue(topic_is_muted(user, stream.id, 'verona3'))
 
@@ -106,7 +106,7 @@ class MutedTopicsTests(ZulipTestCase):
                 topic_name='Verona3',
                 date_muted=datetime(2020, 1, 1, tzinfo=timezone.utc),
             )
-            self.assertIn((stream.name, 'Verona3', mock_date_muted), get_topic_mutes(user))
+            self.assertIn([stream.name, 'Verona3', mock_date_muted], get_topic_mutes(user))
 
             result = self.api_patch(user, url, data)
 

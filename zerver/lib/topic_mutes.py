@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from django.utils.timezone import now as timezone_now
 from sqlalchemy.sql import Selectable, and_, column, not_, or_
@@ -9,7 +9,7 @@ from zerver.lib.topic import topic_match_sa
 from zerver.models import MutedTopic, UserProfile, get_stream
 
 
-def get_topic_mutes(user_profile: UserProfile) -> List[Tuple[str, str, float]]:
+def get_topic_mutes(user_profile: UserProfile) -> List[List[Union[str, float]]]:
     rows = MutedTopic.objects.filter(
         user_profile=user_profile,
     ).values(
@@ -18,7 +18,7 @@ def get_topic_mutes(user_profile: UserProfile) -> List[Tuple[str, str, float]]:
         'date_muted',
     )
     return [
-        (row['stream__name'], row['topic_name'], datetime_to_timestamp(row['date_muted']))
+        [row['stream__name'], row['topic_name'], datetime_to_timestamp(row['date_muted'])]
         for row in rows
     ]
 

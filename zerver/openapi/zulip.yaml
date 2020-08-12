@@ -1754,8 +1754,8 @@ paths:
                                 muted_topics:
                                   type: array
                                   description: |
-                                    Array of tuples, where each tuple describes a muted topic.
-                                    The first element of tuple is the stream name in which the topic
+                                    Array of arrays, where each inner array describes a muted topic.
+                                    The first element of an inner array is the stream name in which the topic
                                     has to be muted, the second element is the topic name to be muted
                                     and the third element is an integer UNIX timestamp representing
                                     when the topic was muted.
@@ -2306,8 +2306,8 @@ paths:
                                         - type: integer
                                         - type: string
                                   description: |
-                                    An array of tuples, where each tuple describes a linkifier.
-                                    The first element of the tuple is a
+                                    An array of arrays, where each inner array describes a linkifier.
+                                    The first element of an inner array is a
                                     string regex pattern which represents the pattern that should
                                     be linkified on matching. The second element is the url with which the
                                     pattern matching string should be linkified with and the third element

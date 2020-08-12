@@ -2018,7 +2018,7 @@ class Markdown(markdown.Markdown):
             self.parser.blockprocessors = get_sub_registry(self.parser.blockprocessors, ['paragraph'])
 
 md_engines: Dict[Tuple[int, bool], markdown.Markdown] = {}
-realm_filter_data: Dict[int, List[Tuple[str, str, int]]] = {}
+realm_filter_data: Dict[int, List[List[Union[str, int]]]] = {}
 
 def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
     md_engine_key = (realm_filters_key, email_gateway)
@@ -2032,7 +2032,7 @@ def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
         email_gateway=email_gateway,
     )
 
-def build_engine(realm_filters: List[Tuple[str, str, int]],
+def build_engine(realm_filters: List[List[Union[str, int]]],
                  realm_filters_key: int,
                  email_gateway: bool) -> markdown.Markdown:
     engine = Markdown(

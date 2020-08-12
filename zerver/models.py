@@ -756,21 +756,21 @@ def get_realm_filters_cache_key(realm_id: int) -> str:
     return f'{cache.KEY_PREFIX}:all_realm_filters:{realm_id}'
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
-per_request_realm_filters_cache: Dict[int, List[Tuple[str, str, int]]] = {}
+per_request_realm_filters_cache: Dict[int, List[List[Union[str, int]]]] = {}
 
 def realm_in_local_realm_filters_cache(realm_id: int) -> bool:
     return realm_id in per_request_realm_filters_cache
 
-def realm_filters_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
+def realm_filters_for_realm(realm_id: int) -> List[List[Union[str, int]]]:
     if not realm_in_local_realm_filters_cache(realm_id):
         per_request_realm_filters_cache[realm_id] = realm_filters_for_realm_remote_cache(realm_id)
     return per_request_realm_filters_cache[realm_id]
 
 @cache_with_key(get_realm_filters_cache_key, timeout=3600*24*7)
-def realm_filters_for_realm_remote_cache(realm_id: int) -> List[Tuple[str, str, int]]:
+def realm_filters_for_realm_remote_cache(realm_id: int) -> List[List[Union[str, int]]]:
     filters = []
     for realm_filter in RealmFilter.objects.filter(realm_id=realm_id):
-        filters.append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
+        filters.append([realm_filter.pattern, realm_filter.url_format_string, realm_filter.id])
 
     return filters
 

@@ -142,7 +142,7 @@ from zerver.lib.validator import (
     check_list,
     check_none_or,
     check_string,
-    check_tuple,
+    check_string_or_int,
     equals,
 )
 from zerver.models import (
@@ -1007,11 +1007,8 @@ class NormalActionsTest(BaseAction):
     def test_muted_topics_events(self) -> None:
         muted_topics_checker = check_events_dict([
             ('type', equals('muted_topics')),
-            ('muted_topics', check_list(check_tuple([
-                check_string,  # stream name
-                check_string,  # topic name
-                check_int,  # timestamp
-            ]))),
+            # TODO: We should change `muted_topics` to be a dictionary structure.
+            ('muted_topics', check_list(check_list(check_string_or_int))),
         ])
         stream = get_stream('Denmark', self.user_profile.realm)
         recipient = stream.recipient
@@ -1380,11 +1377,7 @@ class NormalActionsTest(BaseAction):
 
         schema_checker = check_events_dict([
             ('type', equals('realm_filters')),
-            ('realm_filters', check_list(check_tuple([
-                check_string,
-                check_string,
-                check_int,
-            ]))),
+            ('realm_filters', check_list(check_list(check_string_or_int))),
         ])
         events = self.verify_action(
             lambda: do_add_realm_filter(self.user_profile.realm, regex, url))
