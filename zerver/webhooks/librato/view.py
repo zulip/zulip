@@ -146,7 +146,7 @@ def api_librato_webhook(request: HttpRequest, user_profile: UserProfile,
                         payload: Dict[str, Any]=REQ(converter=orjson.loads, default={})) -> HttpResponse:
     try:
         attachments = orjson.loads(request.body).get('attachments', [])
-    except ValueError:
+    except orjson.JSONDecodeError:
         attachments = []
 
     if not attachments and not payload:

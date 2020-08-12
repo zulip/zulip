@@ -482,7 +482,7 @@ def load_event_queues(port: int) -> None:
             data = orjson.loads(stored_queues.read())
     except FileNotFoundError:
         pass
-    except ValueError:
+    except orjson.JSONDecodeError:
         logging.exception("Tornado %d could not deserialize event queues", port, stack_info=True)
     else:
         try:

@@ -31,7 +31,7 @@ def api_slack_incoming_webhook(request: HttpRequest, user_profile: UserProfile,
     if payload is None:
         try:
             payload = orjson.loads(request.body)
-        except ValueError:  # nocoverage
+        except orjson.JSONDecodeError:  # nocoverage
             raise InvalidJSONError(_("Malformed JSON"))
 
     if user_specified_topic is None and "channel" in payload:

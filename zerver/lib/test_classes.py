@@ -183,7 +183,7 @@ class ZulipTestCase(TestCase):
             return
         try:
             content = orjson.loads(result.content)
-        except ValueError:
+        except orjson.JSONDecodeError:
             return
         json_url = False
         if url.startswith('/json'):
