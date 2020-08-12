@@ -16,16 +16,25 @@ function add_messages(messages, msg_list, opts) {
     return render_info;
 }
 
+// We need to check if the message content contains the specified HTML
+// elements.  We wrap the message.content in a <div>; this is
+// important because $("Text <a>link</a>").find("a") returns nothing;
+// one needs an outer element wrapping an object to use this
+// construction.
+function is_element_in_message_content(message, element_selector) {
+    return $(`<div>${message.content}</div>`).find(element_selector).length > 0;
+}
+
 exports.message_has_link = function (message) {
-    return $(message.content).find("a").length > 0;
+    return is_element_in_message_content(message, "a");
 };
 
 exports.message_has_image = function (message) {
-    return $(message.content).find(".message_inline_image").length > 0;
+    return is_element_in_message_content(message, ".message_inline_image");
 };
 
 exports.message_has_attachment = function (message) {
-    return $(message.content).find("a[href^='/user_uploads']").length > 0;
+    return is_element_in_message_content(message, "a[href^='/user_uploads']");
 };
 
 exports.add_old_messages = function (messages, msg_list) {
