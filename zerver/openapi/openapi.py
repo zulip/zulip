@@ -26,7 +26,6 @@ class OpenAPISpec():
         self.data: Dict[str, Any] = {}
         self.regex_dict: Dict[str, str] = {}
         self.core_data: Any = None
-        self.documented_events: Set[str] = set()
 
     def check_reload(self) -> None:
         # Because importing yamole (and in turn, yaml) takes
