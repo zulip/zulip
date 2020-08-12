@@ -1618,7 +1618,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 'message_id': message['message'].id,
                 'message_content': message['message'].content,
                 'message_realm_id': message['realm'].id,
-                'urls': links_for_embed}
+                'urls': list(links_for_embed)}
             queue_json_publish('embed_links', event_data)
 
         if message['message'].recipient.type == Recipient.PERSONAL:

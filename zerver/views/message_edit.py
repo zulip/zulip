@@ -223,7 +223,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
             # `sender.realm_id` must match the decision made in the
             # `render_incoming_message` call earlier in this function.
             'message_realm_id': user_profile.realm_id,
-            'urls': links_for_embed}
+            'urls': list(links_for_embed)}
         queue_json_publish('embed_links', event_data)
     return json_success()
 
