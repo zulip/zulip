@@ -3870,6 +3870,7 @@ paths:
         content:
           multipart/form-data:
             schema:
+              type: object
               properties:
                 filename:
                   type: string
@@ -4921,6 +4922,7 @@ paths:
         content:
           multipart/form-data:
             schema:
+              type: object
               properties:
                 filename:
                   type: string
@@ -8047,6 +8049,7 @@ paths:
           content:
             application/json:
               schema:
+                type: object
                 additionalProperties: false
                 properties:
                   data:
