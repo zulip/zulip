@@ -52,7 +52,7 @@ async function test_subscription_button_verona_stream(page) {
         "[data-stream-name='Verona'] .sub_unsub_button:not(.checked)";
     // assert it's already checked.
     await page.waitForSelector(verona_subscribed_selector, {visible: true});
-    // get subscribe/unsubscribe button emlement.
+    // get subscribe/unsubscribe button element.
     const subscription_checkmark = await page.$("[data-stream-name='Verona'] .sub_unsub_button");
     await subscription_checkmark.click(); // Unsubscribe.
     await page.waitForSelector(verona_unsubscribed_selector); // Unsubscribed.
