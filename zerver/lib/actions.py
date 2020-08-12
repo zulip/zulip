@@ -2961,7 +2961,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
 
 def get_available_notification_sounds() -> List[str]:
     notification_sounds_path = static_path('audio/notification_sounds')
-    available_notification_sounds = []
+    available_notification_sounds = ["silent"]
 
     for file_name in os.listdir(notification_sounds_path):
         root, ext = os.path.splitext(file_name)
