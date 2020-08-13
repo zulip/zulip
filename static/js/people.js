@@ -260,8 +260,10 @@ exports.get_user_type = function (user_id) {
         return i18n.t("Guest");
     } else if (user_profile.is_bot) {
         return i18n.t("Bot");
+    } else if (exports.is_full_member(user_id)) {
+        return i18n.t("Full member");
     }
-    return i18n.t("Member");
+    return i18n.t("New member");
 };
 
 exports.emails_strings_to_user_ids_string = function (emails_string) {

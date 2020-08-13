@@ -164,7 +164,7 @@ run_test("sender_hover", (override) => {
                     user_email: "alice@example.com",
                     user_id: 42,
                     user_time: undefined,
-                    user_type: i18n.t("Member"),
+                    user_type: i18n.t("New member"),
                     user_circle_class: "user_circle_empty",
                     user_last_seen_time_status: "translated: More than 2 weeks ago",
                     pm_with_uri: "#narrow/pm-with/42-alice",

@@ -226,6 +226,7 @@ function human_info(person) {
     info.is_guest = person.is_guest;
     info.is_owner = person.is_owner;
     info.is_active = people.is_person_active(person.user_id);
+    info.is_full_member = people.is_full_member(person.user_id);
     info.user_id = person.user_id;
     info.full_name = person.full_name;
     info.bot_owner_id = person.bot_owner_id;

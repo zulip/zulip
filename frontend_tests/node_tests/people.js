@@ -20,7 +20,12 @@ function set_email_visibility(code) {
     page_params.realm_email_address_visibility = code;
 }
 
+function set_realm_waiting_period_threshold(days) {
+    page_params.realm_waiting_period_threshold = days;
+}
+
 set_email_visibility(admins_only);
+set_realm_waiting_period_threshold(3);
 
 const welcome_bot = {
     email: "welcome-bot@example.com",
@@ -39,6 +44,17 @@ const me = {
     is_guest: false,
     is_bot: false,
     // no avatar, so client should construct a /avatar/{user_id} URL.
+};
+
+const full_member = {
+    email: "full_member@example.com",
+    full_name: "Full member",
+    user_id: 31,
+    is_owner: false,
+    is_admin: false,
+    is_guest: false,
+    is_bot: false,
+    date_joined: "2020-07-13T20:13:50.593265+00:00",
 };
 
 const isaac = {
@@ -409,11 +425,13 @@ run_test("user_type", () => {
     people.init();
 
     people.add_active_user(me);
+    people.add_active_user(full_member);
     people.add_active_user(realm_admin);
     people.add_active_user(guest);
     people.add_active_user(realm_owner);
     people.add_active_user(bot_botson);
-    assert.equal(people.get_user_type(me.user_id), i18n.t("Member"));
+    assert.equal(people.get_user_type(me.user_id), i18n.t("New member"));
+    assert.equal(people.get_user_type(full_member.user_id), i18n.t("Full member"));
     assert.equal(people.get_user_type(realm_admin.user_id), i18n.t("Administrator"));
     assert.equal(people.get_user_type(guest.user_id), i18n.t("Guest"));
     assert.equal(people.get_user_type(realm_owner.user_id), i18n.t("Owner"));
