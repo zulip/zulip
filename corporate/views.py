@@ -20,7 +20,7 @@ from corporate.lib.stripe import (
     BillingError,
     do_change_plan_status,
     do_replace_payment_source,
-    downgrade_now,
+    downgrade_now_without_creating_additional_invoices,
     get_latest_seat_count,
     make_end_of_cycle_updates_if_needed,
     process_initial_upgrade,
@@ -325,7 +325,7 @@ def change_plan_status(request: HttpRequest, user: UserProfile,
         do_change_plan_status(plan, status)
     elif status == CustomerPlan.ENDED:
         assert(plan.status == CustomerPlan.FREE_TRIAL)
-        downgrade_now(user.realm)
+        downgrade_now_without_creating_additional_invoices(user.realm)
     return json_success()
 
 @require_billing_access
