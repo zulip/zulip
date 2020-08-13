@@ -7,7 +7,7 @@ zrequire("templates");
 // that here for the tests.
 set_global("page_params", {
     translation_data: {
-        "Quote and reply": "French translation",
+        "Quote and reply or forward": "French translation",
         "Notification triggers": "Some French text",
     },
 });
