@@ -30,14 +30,15 @@ class MiscTest(ZulipTestCase):
                 ("tup", TupleType([int, str])),
                 ("level", EnumType([1, 2, 3])),
                 ("lst", ListType(int)),
-                ("config", StringDictType()),
+                ("config", StringDictType(str)),
                 ("value", UnionType([int, str])),
                 ("url", UrlType()),
             ]
         )
         expected = """
 test (dict):
-    config: string_dict
+    config (string_dict):
+        value: str
     flag: bool
     level in [1, 2, 3]
     lst (list):

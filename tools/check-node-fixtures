@@ -133,9 +133,7 @@ def from_openapi(node: Dict[str, Any]) -> Any:
             # this might be a glitch in our current spec?  or
             # maybe I just understand it yet
             if isinstance(node["additionalProperties"], dict):
-                if node["additionalProperties"].get("type", "") == "string":
-                    return StringDictType()
-                return from_openapi(node["additionalProperties"])
+                return StringDictType(from_openapi(node["additionalProperties"]))
 
         if "properties" not in node:
             return dict
