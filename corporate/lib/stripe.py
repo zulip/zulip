@@ -636,3 +636,17 @@ def downgrade_now_without_creating_additional_invoices(realm: Realm) -> None:
     plan.invoiced_through = LicenseLedger.objects.filter(plan=plan).order_by('id').last()
     plan.next_invoice_date = next_invoice_date(plan)
     plan.save(update_fields=["invoiced_through", "next_invoice_date"])
+
+def void_all_open_invoices(realm: Realm) -> int:
+    customer = get_customer_by_realm(realm)
+    if customer is None:
+        return 0
+    invoices = stripe.Invoice.list(customer=customer.stripe_customer_id)
+    voided_invoices_count = 0
+    for invoice in invoices:
+        if invoice.status == "open":
+            stripe.Invoice.void_invoice(
+                invoice.id
+            )
+            voided_invoices_count += 1
+    return voided_invoices_count
