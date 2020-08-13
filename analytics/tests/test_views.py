@@ -684,6 +684,36 @@ class TestSupportEndpoint(ZulipTestCase):
             m.assert_called_once_with(lear_realm)
             self.assert_in_success_response(["Realm reactivation email sent to admins of Lear"], result)
 
+    def test_downgrade_realm(self) -> None:
+        cordelia = self.example_user('cordelia')
+        self.login_user(cordelia)
+        result = self.client_post("/activity/support", {"realm_id": f"{cordelia.realm_id}", "plan_type": "2"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        with mock.patch("analytics.views.downgrade_at_the_end_of_billing_cycle") as m:
+            result = self.client_post("/activity/support", {"realm_id": f"{iago.realm_id}",
+                                      "downgrade_method": "downgrade_at_billing_cycle_end"})
+            m.assert_called_once_with(get_realm("zulip"))
+            self.assert_in_success_response(["Zulip Dev marked for downgrade at the end of billing cycle"], result)
+
+        with mock.patch("analytics.views.downgrade_now_without_creating_additional_invoices") as m:
+            result = self.client_post("/activity/support", {"realm_id": f"{iago.realm_id}",
+                                      "downgrade_method": "downgrade_now_without_additional_licenses"})
+            m.assert_called_once_with(get_realm("zulip"))
+            self.assert_in_success_response(["Zulip Dev downgraded without creating additional invoices"], result)
+
+        with mock.patch("analytics.views.downgrade_now_without_creating_additional_invoices") as m1:
+            with mock.patch("analytics.views.void_all_open_invoices", return_value=1) as m2:
+                result = self.client_post("/activity/support", {"realm_id": f"{iago.realm_id}",
+                                          "downgrade_method": "downgrade_now_void_open_invoices"})
+                m1.assert_called_once_with(get_realm("zulip"))
+                m2.assert_called_once_with(get_realm("zulip"))
+                self.assert_in_success_response(["Zulip Dev downgraded and voided 1 open invoices"], result)
+
     def test_scrub_realm(self) -> None:
         cordelia = self.example_user('cordelia')
         lear_realm = get_realm('lear')
