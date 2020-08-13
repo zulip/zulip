@@ -23,6 +23,7 @@ class ImageUploadWidget {
         const form_data = new FormData();
         const night_param = this.night_param;
         const widget = this.selector;
+        const url = this.url;
         form_data.append("night", JSON.stringify(night_param));
         form_data.append("csrfmiddlewaretoken", csrf_token);
         for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
@@ -36,7 +37,7 @@ class ImageUploadWidget {
         exports.image_upload_start(spinner, upload_text, delete_button);
         error_field.hide();
         channel.post({
-            url: this.url,
+            url,
             data: form_data,
             cache: false,
             processData: false,
@@ -44,10 +45,18 @@ class ImageUploadWidget {
             success() {
                 exports.image_upload_complete(spinner, upload_text, delete_button);
                 error_field.hide();
+                if (widget === "user-avatar-upload-widget") {
+                    $("#user-avatar-source").hide();
+                }
             },
             error(xhr) {
                 exports.image_upload_complete(spinner, upload_text, delete_button);
                 ui_report.error("", xhr, error_field);
+                if (widget === "user-avatar-upload-widget") {
+                    if (page_params.avatar_source === "G") {
+                        $("#user-avatar-source").show();
+                    }
+                }
             },
         });
     }

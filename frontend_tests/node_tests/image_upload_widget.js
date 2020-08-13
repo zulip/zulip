@@ -74,6 +74,7 @@ run_test("image_upload_widget", () => {
         assert(posted);
     }
 
+    test_image_upload("user-avatar-upload-widget");
     test_image_upload("realm-icon-upload-widget");
     test_image_upload("realm-day-logo-upload-widget");
     test_image_upload("realm-night-logo-upload-widget");
