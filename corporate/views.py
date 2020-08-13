@@ -20,6 +20,7 @@ from corporate.lib.stripe import (
     BillingError,
     do_change_plan_status,
     do_replace_payment_source,
+    downgrade_at_the_end_of_billing_cycle,
     downgrade_now_without_creating_additional_invoices,
     get_latest_seat_count,
     make_end_of_cycle_updates_if_needed,
@@ -317,7 +318,7 @@ def change_plan_status(request: HttpRequest, user: UserProfile,
         do_change_plan_status(plan, status)
     elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
         assert(plan.status == CustomerPlan.ACTIVE)
-        do_change_plan_status(plan, status)
+        downgrade_at_the_end_of_billing_cycle(user.realm)
     elif status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
         assert(plan.billing_schedule == CustomerPlan.MONTHLY)
         assert(plan.status == CustomerPlan.ACTIVE)

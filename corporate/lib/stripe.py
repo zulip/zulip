@@ -637,6 +637,11 @@ def downgrade_now_without_creating_additional_invoices(realm: Realm) -> None:
     plan.next_invoice_date = next_invoice_date(plan)
     plan.save(update_fields=["invoiced_through", "next_invoice_date"])
 
+def downgrade_at_the_end_of_billing_cycle(realm: Realm) -> None:
+    plan = get_current_plan_by_realm(realm)
+    assert(plan is not None)
+    do_change_plan_status(plan, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
+
 def void_all_open_invoices(realm: Realm) -> int:
     customer = get_customer_by_realm(realm)
     if customer is None:
