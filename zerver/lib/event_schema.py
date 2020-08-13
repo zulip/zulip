@@ -332,7 +332,7 @@ bot_services_outgoing_type = DictType(
     ]
 )
 
-config_data_schema = StringDictType()
+config_data_schema = StringDictType(str)
 
 bot_services_embedded_type = DictType(
     required_keys=[

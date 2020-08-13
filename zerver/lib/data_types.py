@@ -123,17 +123,21 @@ class ListType:
 
 @dataclass
 class StringDictType:
+    value_type: Any
+
     def check_data(self, var_name: str, val: Dict[Any, Any]) -> None:
         if not isinstance(val, dict):
             raise AssertionError(f"{var_name} is not a dictionary")
 
         for key, value in val.items():
-            if isinstance(key, str) and isinstance(value, str):
-                continue
-            raise AssertionError(f"{var_name} is not a string:string dictionary")
+            if not isinstance(key, str):
+                raise AssertionError(f"{var_name} has a non-string key")
+
+            check_data(self.value_type, f"{var_name}[{key}]", value)
 
     def schema(self, var_name: str) -> str:
-        return f"{var_name}: string_dict"
+        sub_schema = schema("value", self.value_type)
+        return f"{var_name} (string_dict):\n{indent(sub_schema)}"
 
 
 @dataclass
