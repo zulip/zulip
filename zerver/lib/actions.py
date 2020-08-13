@@ -852,6 +852,9 @@ def do_change_realm_subdomain(realm: Realm, new_subdomain: str) -> None:
     realm.save(update_fields=["string_id"])
 
 def do_scrub_realm(realm: Realm, acting_user: Optional[UserProfile]=None) -> None:
+    if settings.BILLING_ENABLED:
+        downgrade_now_without_creating_additional_invoices(realm)
+
     users = UserProfile.objects.filter(realm=realm)
     for user in users:
         do_delete_messages_by_sender(user)
