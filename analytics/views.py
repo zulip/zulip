@@ -75,12 +75,15 @@ if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
         approve_sponsorship,
         attach_discount_to_realm,
+        downgrade_at_the_end_of_billing_cycle,
+        downgrade_now_without_creating_additional_invoices,
         get_current_plan_by_realm,
         get_customer_by_realm,
         get_discount_for_realm,
         get_latest_seat_count,
         make_end_of_cycle_updates_if_needed,
         update_sponsorship_status,
+        void_all_open_invoices,
     )
 
 if settings.ZILENCER_ENABLED:
@@ -1183,6 +1186,18 @@ def support(request: HttpRequest) -> HttpResponse:
             if request.POST.get('approve_sponsorship') == "approve_sponsorship":
                 approve_sponsorship(realm)
                 context["message"] = f"Sponsorship approved for {realm.name}"
+        elif request.POST.get('downgrade_method', None) is not None:
+            downgrade_method = request.POST.get('downgrade_method')
+            if downgrade_method == "downgrade_at_billing_cycle_end":
+                downgrade_at_the_end_of_billing_cycle(realm)
+                context["message"] = f"{realm.name} marked for downgrade at the end of billing cycle"
+            elif downgrade_method == "downgrade_now_without_additional_licenses":
+                downgrade_now_without_creating_additional_invoices(realm)
+                context["message"] = f"{realm.name} downgraded without creating additional invoices"
+            elif downgrade_method == "downgrade_now_void_open_invoices":
+                downgrade_now_without_creating_additional_invoices(realm)
+                voided_invoices_count = void_all_open_invoices(realm)
+                context["message"] = f"{realm.name} downgraded and voided {voided_invoices_count} open invoices"
         elif request.POST.get("scrub_realm", None) is not None:
             if request.POST.get("scrub_realm") == "scrub_realm":
                 do_scrub_realm(realm, acting_user=request.user)

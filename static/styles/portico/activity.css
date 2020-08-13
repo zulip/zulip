@@ -94,6 +94,15 @@ tr.admin td:first-child {
     top: -40px;
 }
 
+.downgrade-plan-form {
+    position: relative;
+    top: -70px;
+}
+
+.downgrade-plan-method-select {
+    width: auto;
+}
+
 .scrub-realm-form {
     position: relative;
     top: -40px;
