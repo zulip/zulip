@@ -41,7 +41,7 @@ exports.build_bot_edit_widget = function (target) {
     );
 };
 
-exports.build_user_avatar_widget = function (upload_function) {
+exports.build_user_avatar_widget = function () {
     const get_file_input = function () {
         return $("#user-avatar-upload-widget .image_file_input").expectOne();
     };
@@ -74,7 +74,6 @@ exports.build_user_avatar_widget = function (upload_function) {
             get_file_input,
             $("#user-avatar-upload-widget .image_file_input_error").expectOne(),
             $("#user-avatar-upload-widget .image_upload_button").expectOne(),
-            upload_function,
             page_params.max_avatar_file_size_mib,
         );
     }
