@@ -102,6 +102,7 @@ from zerver.lib.event_schema import (
     check_invites_changed,
     check_message,
     check_muted_topics,
+    check_presence,
     check_reaction,
     check_realm_bot_add,
     check_realm_bot_delete,
@@ -144,7 +145,6 @@ from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.validator import (
     check_bool,
     check_dict_only,
-    check_float,
     check_int,
     check_list,
     check_none_or,
@@ -701,22 +701,6 @@ class NormalActionsTest(BaseAction):
         )
 
     def test_presence_events(self) -> None:
-        fields = [
-            ('type', equals('presence')),
-            ('user_id', check_int),
-            ('server_timestamp', check_float),
-            ('presence', check_dict_only([
-                ('website', check_dict_only([
-                    ('status', equals('active')),
-                    ('timestamp', check_int),
-                    ('client', check_string),
-                    ('pushable', check_bool),
-                ])),
-            ])),
-        ]
-
-        email_field = ('email', check_string)
-
         events = self.verify_action(
             lambda: do_update_user_presence(
                 self.user_profile,
@@ -724,8 +708,14 @@ class NormalActionsTest(BaseAction):
                 timezone_now(),
                 UserPresence.ACTIVE),
             slim_presence=False)
-        schema_checker = check_events_dict([*fields, email_field])
-        schema_checker('events[0]', events[0])
+
+        check_presence(
+            "events[0]",
+            events[0],
+            has_email=True,
+            presence_key="website",
+            status="active",
+        )
 
         events = self.verify_action(
             lambda: do_update_user_presence(
@@ -734,25 +724,16 @@ class NormalActionsTest(BaseAction):
                 timezone_now(),
                 UserPresence.ACTIVE),
             slim_presence=True)
-        schema_checker = check_events_dict(fields)
-        schema_checker('events[0]', events[0])
+
+        check_presence(
+            "events[0]",
+            events[0],
+            has_email=False,
+            presence_key="website",
+            status="active",
+        )
 
     def test_presence_events_multiple_clients(self) -> None:
-        schema_checker_android = check_events_dict([
-            ('type', equals('presence')),
-            ('email', check_string),
-            ('user_id', check_int),
-            ('server_timestamp', check_float),
-            ('presence', check_dict_only([
-                ('ZulipAndroid/1.0', check_dict_only([
-                    ('status', equals('idle')),
-                    ('timestamp', check_int),
-                    ('client', check_string),
-                    ('pushable', check_bool),
-                ])),
-            ])),
-        ])
-
         self.api_post(self.user_profile, "/api/v1/users/me/presence", {'status': 'idle'},
                       HTTP_USER_AGENT="ZulipAndroid/1.0")
         self.verify_action(
@@ -767,7 +748,14 @@ class NormalActionsTest(BaseAction):
                 get_client("ZulipAndroid/1.0"),
                 timezone_now(),
                 UserPresence.IDLE))
-        schema_checker_android('events[0]', events[0])
+
+        check_presence(
+            "events[0]",
+            events[0],
+            has_email=True,
+            presence_key="ZulipAndroid/1.0",
+            status="idle",
+        )
 
     def test_register_events(self) -> None:
         realm_user_add_checker = check_events_dict([
