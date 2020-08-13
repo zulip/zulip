@@ -1599,6 +1599,7 @@ class GetProfileTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         iago = self.example_user('iago')
         desdemona = self.example_user('desdemona')
+        bot = self.example_user("default_bot")
 
         self.login('hamlet')
         result = orjson.loads(self.client_get('/json/users/me').content)
@@ -1627,23 +1628,22 @@ class GetProfileTest(ZulipTestCase):
         self.assertFalse(result['is_guest'])
 
         # Tests the GET ../users/{id} api endpoint.
-        user = self.example_user('hamlet')
-        result = orjson.loads(self.client_get(f'/json/users/{user.id}').content)
-        self.assertEqual(result['user']['email'], user.email)
-        self.assertEqual(result['user']['full_name'], user.full_name)
+        result = orjson.loads(self.client_get(f'/json/users/{hamlet.id}').content)
+        self.assertEqual(result['user']['email'], hamlet.email)
+        self.assertEqual(result['user']['full_name'], hamlet.full_name)
         self.assertIn("user_id", result['user'])
         self.assertNotIn("profile_data", result['user'])
         self.assertFalse(result['user']['is_bot'])
         self.assertFalse(result['user']['is_admin'])
         self.assertFalse(result['user']['is_owner'])
 
-        result = orjson.loads(self.client_get(f'/json/users/{user.id}?include_custom_profile_fields=true').content)
+        result = orjson.loads(self.client_get(f'/json/users/{hamlet.id}?include_custom_profile_fields=true').content)
 
         self.assertIn('profile_data', result['user'])
         result = self.client_get(f'/json/users/{30}?')
         self.assert_json_error(result, "No such user")
 
-        bot = self.example_user("default_bot")
+
         result = orjson.loads(self.client_get(f'/json/users/{bot.id}').content)
         self.assertEqual(result['user']['email'], bot.email)
         self.assertTrue(result['user']['is_bot'])
