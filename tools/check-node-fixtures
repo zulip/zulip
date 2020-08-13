@@ -11,6 +11,8 @@ TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
 
+EVENTS_JS = "frontend_tests/node_tests/lib/events.js"
+
 # check for the venv
 from tools.lib import sanity_check
 
@@ -73,7 +75,11 @@ def check_event(name: str, event: Dict[str, Any]) -> None:
     event["id"] = 1
     checker = get_event_checker(event)
     if checker is not None:
-        checker(name, event)
+        try:
+            checker(name, event)
+        except AssertionError:
+            print(f"\n{EVENTS_JS} has bad data for {name}:\n\n")
+            raise
     else:
         print(f"NEED SCHEMA: {name}")
 
