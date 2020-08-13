@@ -232,7 +232,10 @@ from zerver.models import (
 from zerver.tornado.django_api import send_event
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import downgrade_now, update_license_ledger_if_needed
+    from corporate.lib.stripe import (
+        downgrade_now_without_creating_additional_invoices,
+        update_license_ledger_if_needed,
+    )
 
 # This will be used to type annotate parameters in a function if the function
 # works on both str and unicode in python 2 but in python 3 it only works on str.
@@ -813,7 +816,7 @@ def do_deactivate_realm(realm: Realm, acting_user: Optional[UserProfile]=None) -
     realm.save(update_fields=["deactivated"])
 
     if settings.BILLING_ENABLED:
-        downgrade_now(realm)
+        downgrade_now_without_creating_additional_invoices(realm)
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
