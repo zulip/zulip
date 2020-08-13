@@ -40,6 +40,7 @@ from corporate.lib.stripe import (
     update_license_ledger_for_automanaged_plan,
     update_license_ledger_if_needed,
     update_or_create_stripe_customer,
+    void_all_open_invoices,
 )
 from corporate.models import (
     Customer,
@@ -201,7 +202,7 @@ MOCKED_STRIPE_FUNCTION_NAMES = [f"stripe.{name}" for name in [
     "Charge.create", "Charge.list",
     "Coupon.create",
     "Customer.create", "Customer.retrieve", "Customer.save",
-    "Invoice.create", "Invoice.finalize_invoice", "Invoice.list", "Invoice.pay", "Invoice.upcoming",
+    "Invoice.create", "Invoice.finalize_invoice", "Invoice.list", "Invoice.pay", "Invoice.upcoming", "Invoice.void_invoice",
     "InvoiceItem.create", "InvoiceItem.list",
     "Plan.create",
     "Product.create",
@@ -1815,6 +1816,35 @@ class StripeTest(StripeTestCase):
         old_plan = CustomerPlan.objects.all().order_by("id").first()
         self.assertEqual(old_plan.next_invoice_date, None)
         self.assertEqual(old_plan.status, CustomerPlan.ENDED)
+
+    @mock_stripe()
+    def test_void_all_open_invoices(self, *mock: Mock) -> None:
+        iago = self.example_user("iago")
+        self.assertEqual(void_all_open_invoices(iago.realm), 0)
+        customer = update_or_create_stripe_customer(iago)
+
+        stripe.InvoiceItem.create(
+            currency='usd',
+            customer=customer.stripe_customer_id,
+            description="Zulip standard upgrade",
+            discountable=False,
+            unit_amount=800,
+            quantity=8
+        )
+        stripe_invoice = stripe.Invoice.create(
+            auto_advance=True,
+            billing="send_invoice",
+            customer=customer.stripe_customer_id,
+            days_until_due=30,
+            statement_descriptor='Zulip Standard'
+        )
+        stripe.Invoice.finalize_invoice(stripe_invoice)
+
+        self.assertEqual(void_all_open_invoices(iago.realm), 1)
+        invoices = stripe.Invoice.list(customer=customer.stripe_customer_id)
+        self.assertEqual(len(invoices), 1)
+        for invoice in invoices:
+            self.assertEqual(invoice.status, "void")
 
 class RequiresBillingAccessTest(ZulipTestCase):
     def setUp(self) -> None:
