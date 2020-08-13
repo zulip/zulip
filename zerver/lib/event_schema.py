@@ -293,6 +293,51 @@ message_event = event_dict_type(
 )
 check_message = make_checker(message_event)
 
+presence_type = DictType(
+    required_keys=[
+        ("status", EnumType(["active", "idle"])),
+        ("timestamp", int),
+        ("client", str),
+        ("pushable", bool),
+    ]
+)
+
+presence_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("presence")),
+        ("user_id", int),
+        ("server_timestamp", NumberType()),
+        ("presence", StringDictType(presence_type)),
+    ],
+    optional_keys=[
+        # force vertical
+        ("email", str),
+    ],
+)
+_check_presence = make_checker(presence_event)
+
+
+def check_presence(
+    var_name: str,
+    event: Dict[str, object],
+    has_email: bool,
+    presence_key: str,
+    status: str,
+) -> None:
+    _check_presence(var_name, event)
+
+    assert ("email" in event) == has_email
+
+    assert isinstance(event["presence"], dict)
+
+    # Our tests only have one presence value.
+    assert len(event["presence"]) == 1
+
+    assert list(event["presence"].keys())[0] == presence_key
+
+    assert list(event["presence"].values())[0]["status"] == status
+
+
 # We will eventually just send user_ids.
 reaction_user_type = DictType(
     required_keys=[
