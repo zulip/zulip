@@ -59,6 +59,14 @@ exports.get_by_user_id = function (user_id, ignore_missing) {
     return people_by_user_id_dict.get(user_id);
 };
 
+exports.is_full_member = function (user_id) {
+    const person = exports.get_by_user_id(user_id);
+    const current_datetime = new Date(Date.now());
+    const person_date_joined = new Date(person.date_joined);
+    const days = (current_datetime - person_date_joined) / 1000 / 86400;
+    return days > page_params.realm_waiting_period_threshold;
+};
+
 exports.get_by_email = function (email) {
     const person = people_dict.get(email);
 
