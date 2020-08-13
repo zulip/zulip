@@ -18,8 +18,8 @@ function add_messages(messages, msg_list, opts) {
     return render_info;
 }
 
-// For the three message_has_* functions below message.content is html which is
-// wrapped inside a <div> and passed to jquery so that jquery can parse html
+// is_element_in_message_content finds element inside the message content html by
+// wrapping it inside a <div> and passed to jquery so that jquery can parse html
 // and create jQuery object which can be used to find certain html elements using
 // built-in .find() which finds the descendants which match the selector passed to
 // it.
@@ -32,16 +32,20 @@ function add_messages(messages, msg_list, opts) {
 // In above case without wrapper <div> around message.content won't find the
 // .message_inline_image. Wrapping the above eg. html in <div> will make the
 // .message_inline_image a descendant hence will be esaily found using find().
+function is_element_in_message_content(message, element_selector) {
+    return $(`<div>${message.content}</div>`).find(element_selector).length > 0;
+}
+
 exports.message_has_link = function (message) {
-    return $(`<div>${message.content}</div>`).find("a").length > 0;
+    return is_element_in_message_content(message, "a");
 };
 
 exports.message_has_image = function (message) {
-    return $(`<div>${message.content}</div>`).find(".message_inline_image").length > 0;
+    return is_element_in_message_content(message, ".message_inline_image");
 };
 
 exports.message_has_attachment = function (message) {
-    return $(`<div>${message.content}</div>`).find("a[href^='/user_uploads']").length > 0;
+    return is_element_in_message_content(message, "a[href^='/user_uploads']");
 };
 
 exports.add_old_messages = function (messages, msg_list) {
