@@ -166,9 +166,12 @@ exports.fixtures = {
         email: "alice@example.com",
         user_id: 42,
         presence: {
-            client_name: "electron",
-            is_mirror_dummy: false,
-            // etc.
+            electron: {
+                status: "active",
+                timestamp: fake_now,
+                client: "electron",
+                pushable: false,
+            },
         },
         server_timestamp: fake_now,
     },
