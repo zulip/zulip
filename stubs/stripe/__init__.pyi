@@ -47,6 +47,7 @@ class Customer:
 
 
 class Invoice:
+    id: str
     auto_advance: bool
     amount_due: int
     billing: str
@@ -79,6 +80,10 @@ class Invoice:
 
     @staticmethod
     def pay(invoice: Invoice) -> Invoice:
+        ...
+
+    @staticmethod
+    def void_invoice(id: str) -> None:
         ...
 
     def get(self, key: str) -> Any:
