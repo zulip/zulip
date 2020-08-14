@@ -1166,6 +1166,16 @@ user_group_add_members_event = event_dict_type(
 )
 check_user_group_add_members = make_checker(user_group_add_members_event)
 
+user_group_remove_members_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("user_group")),
+        ("op", Equals("remove_members")),
+        ("group_id", int),
+        ("user_ids", ListType(int)),
+    ]
+)
+check_user_group_remove_members = make_checker(user_group_remove_members_event)
+
 user_status_event = event_dict_type(
     required_keys=[
         ("type", Equals("user_status")),
