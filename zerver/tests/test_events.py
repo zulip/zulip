@@ -132,6 +132,7 @@ from zerver.lib.event_schema import (
     check_user_group_add_members,
     check_user_group_remove,
     check_user_group_remove_members,
+    check_user_group_update,
     check_user_status,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
@@ -819,32 +820,16 @@ class NormalActionsTest(BaseAction):
         check_user_group_add('events[0]', events[0])
 
         # Test name update
-        user_group_update_checker = check_events_dict([
-            ('type', equals('user_group')),
-            ('op', equals('update')),
-            ('group_id', check_int),
-            ('data', check_dict_only([
-                ('name', check_string),
-            ])),
-        ])
         backend = UserGroup.objects.get(name='backend')
         events = self.verify_action(
             lambda: do_update_user_group_name(backend, 'backendteam'))
-        user_group_update_checker('events[0]', events[0])
+        check_user_group_update('events[0]', events[0], 'name')
 
         # Test description update
-        user_group_update_checker = check_events_dict([
-            ('type', equals('user_group')),
-            ('op', equals('update')),
-            ('group_id', check_int),
-            ('data', check_dict_only([
-                ('description', check_string),
-            ])),
-        ])
         description = "Backend team to deal with backend code."
         events = self.verify_action(
             lambda: do_update_user_group_description(backend, description))
-        user_group_update_checker('events[0]', events[0])
+        check_user_group_update('events[0]', events[0], 'description')
 
         # Test add members
         hamlet = self.example_user('hamlet')
