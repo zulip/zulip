@@ -26,6 +26,9 @@ def add_context(event: 'Event', hint: 'Hint') -> Optional['Event']:
 
     from zerver.models import get_user_profile_by_id
     with capture_internal_exceptions():
+        # event.user is the user context, from Sentry, which is
+        # pre-populated with some keys via its Django integration:
+        # https://docs.sentry.io/platforms/python/guides/django/enriching-error-data/additional-data/identify-user/
         user_info = event.get("user", {})
         if user_info.get("id"):
             user_profile = get_user_profile_by_id(user_info["id"])
@@ -34,6 +37,11 @@ def add_context(event: 'Event', hint: 'Hint') -> Optional['Event']:
                 # str() to force the lazy-translation to apply now,
                 # since it won't serialize into json for Sentry otherwise
                 user_info["role"] = str(user_profile.get_role_name())
+        # These are PII, and should be scrubbed
+        if "username" in user_info:
+            del user_info["username"]
+        if "email" in user_info:
+            del user_info["email"]
     return event
 
 def setup_sentry(dsn: Optional[str], *integrations: Integration) -> None:
@@ -50,6 +58,7 @@ def setup_sentry(dsn: Optional[str], *integrations: Integration) -> None:
             *integrations,
         ],
         before_send=add_context,
+        send_default_pii=True,
     )
 
     # Ignore all of the loggers from django.security that are for user
