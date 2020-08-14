@@ -2067,36 +2067,36 @@ nav {
     position: relative;
     padding: 100px 100px 0 100px;
     margin-top: 0;
-}
 
-.portico-landing.hello .call-to-action-bottom .button {
-    display: table;
-    margin: 20px auto 0 auto;
-    padding: 10px 20px;
-    font-size: 1em;
-    font-weight: 600;
-}
+    .button {
+        display: table;
+        margin: 20px auto 0 auto;
+        padding: 10px 20px;
+        font-size: 1em;
+        font-weight: 600;
+    }
 
-.portico-landing.hello .call-to-action-bottom h1 {
-    text-align: center;
-    margin-top: 20px;
-}
+    h1 {
+        text-align: center;
+        margin-top: 20px;
+    }
 
-.portico-landing.hello .call-to-action-bottom .atlassian-migration {
-    margin-top: 60px;
-    text-align: center;
-    font-size: 1.3rem;
-    font-weight: 300;
-}
+    .atlassian-migration {
+        margin-top: 60px;
+        text-align: center;
+        font-size: 1.3rem;
+        font-weight: 300;
+    }
 
-.portico-landing.hello .call-to-action-bottom .zulip-octopus {
-    margin: 130px auto 0 auto;
-    width: 32px;
-    height: 30px;
-    background-image: url(/static/images/landing-page/zulip-octopus.png);
-    background-size: cover;
+    .zulip-octopus {
+        margin: 130px auto 0 auto;
+        width: 32px;
+        height: 30px;
+        background-image: url(/static/images/landing-page/zulip-octopus.png);
+        background-size: cover;
 
-    filter: invert(0.9);
+        filter: invert(0.9);
+    }
 }
 
 .footer.hello {
