@@ -664,6 +664,33 @@ def check_realm_update(var_name: str, event: Dict[str, object], prop: str,) -> N
         raise AssertionError(f"Unexpected property type {property_type}")
 
 
+realm_user_type = DictType(
+    required_keys=[
+        ("user_id", int),
+        ("email", str),
+        ("avatar_url", OptionalType(str)),
+        ("avatar_version", int),
+        ("full_name", str),
+        ("is_admin", bool),
+        ("is_owner", bool),
+        ("is_bot", bool),
+        ("is_guest", bool),
+        ("is_active", bool),
+        ("profile_data", StringDictType(dict)),
+        ("timezone", str),
+        ("date_joined", str),
+    ]
+)
+
+realm_user_add_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm_user")),
+        ("op", Equals("add")),
+        ("person", realm_user_type),
+    ]
+)
+check_realm_user_add = make_checker(realm_user_add_event)
+
 custom_profile_field_type = DictType(
     required_keys=[
         # vertical formatting
