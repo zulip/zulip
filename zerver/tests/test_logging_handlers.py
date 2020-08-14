@@ -11,6 +11,7 @@ from django.http import HttpRequest
 from django.utils.log import AdminEmailHandler
 
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.types import ViewFuncT
 from zerver.logging_handlers import AdminNotifyHandler, HasRequest
 
@@ -188,8 +189,8 @@ class AdminNotifyHandlerTest(ZulipTestCase):
                    side_effect=Exception("queue error")):
             self.handler.emit(record)
         with self.settings(STAGING_ERROR_NOTIFICATIONS=False):
-            with patch('zerver.logging_handlers.queue_json_publish',
-                       side_effect=Exception("queue error")):
+            with mock_queue_publish('zerver.logging_handlers.queue_json_publish',
+                                    side_effect=Exception("queue error")):
                 self.handler.emit(record)
 
         # Test no exc_info

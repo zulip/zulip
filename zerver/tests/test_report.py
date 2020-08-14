@@ -5,6 +5,7 @@ import orjson
 from django.test import override_settings
 
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.utils import statsd
 
 
@@ -109,12 +110,11 @@ class TestReport(ZulipTestCase):
             more_info=dict(foo='bar', draft_content="**draft**"),
         ))
 
-        publish_mock = mock.patch('zerver.views.report.queue_json_publish')
         subprocess_mock = mock.patch(
             'zerver.views.report.subprocess.check_output',
             side_effect=KeyError('foo'),
         )
-        with publish_mock as m, subprocess_mock:
+        with mock_queue_publish('zerver.views.report.queue_json_publish') as m, subprocess_mock:
             result = self.client_post("/json/report/error", params)
         self.assert_json_success(result)
 
@@ -127,7 +127,7 @@ class TestReport(ZulipTestCase):
 
         # Teset with no more_info
         del params['more_info']
-        with publish_mock as m, subprocess_mock:
+        with mock_queue_publish('zerver.views.report.queue_json_publish') as m, subprocess_mock:
             result = self.client_post("/json/report/error", params)
         self.assert_json_success(result)
 
