@@ -2411,26 +2411,26 @@ nav {
     transform: translateY(50px);
 
     background-color: hsl(0, 0%, 100%);
-}
 
-.portico-landing.hello .apps .screen.ios::before {
-    top: 17px;
-    left: calc(50% - 20px);
+    &::before {
+        top: 17px;
+        left: calc(50% - 20px);
 
-    width: 40px;
-    height: 5px;
-    background-color: hsl(0, 0%, 80%);
-}
+        width: 40px;
+        height: 5px;
+        background-color: hsl(0, 0%, 80%);
+    }
 
-.portico-landing.hello .apps .screen.ios::after {
-    top: auto;
-    bottom: 7px;
-    left: calc(50% - 12.5px);
-    background-color: hsl(0, 0%, 80%);
-}
+    &::after {
+        top: auto;
+        bottom: 7px;
+        left: calc(50% - 12.5px);
+        background-color: hsl(0, 0%, 80%);
+    }
 
-.portico-landing.hello .apps .screen.ios .main-page {
-    border-color: hsl(0, 0%, 87%);
+    .main-page {
+        border-color: hsl(0, 0%, 87%);
+    }
 }
 
 .portico-landing.hello .apps .screen.android {
