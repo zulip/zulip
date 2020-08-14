@@ -298,7 +298,7 @@ instructions for other supported platforms.
 7. As root, finish by verifying the contents of the full-text indexes:
 
     ```
-    /home/zulip/deployments/current/manage.py --audit-fts-indexes
+    /home/zulip/deployments/current/manage.py audit_fts_indexes
     ```
 
 ### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
@@ -397,7 +397,7 @@ instructions for other supported platforms.
 7. As root, finish by verifying the contents of the full-text indexes:
 
     ```
-    /home/zulip/deployments/current/manage.py --audit-fts-indexes
+    /home/zulip/deployments/current/manage.py audit_fts_indexes
     ```
 
 ## Upgrading PostgreSQL
