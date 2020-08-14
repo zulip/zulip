@@ -491,9 +491,16 @@ run_test("realm_domains", (override) => {
 
 run_test("realm_user", (override) => {
     let event = event_fixtures.realm_user__add;
-    dispatch(event);
+    dispatch({...event});
     const added_person = people.get_by_user_id(event.person.user_id);
+    // sanity check a few individual fields
     assert.equal(added_person.full_name, "Test User");
+    assert.equal(added_person.timezone, "US/Eastern");
+
+    // ...but really the whole struct gets copied without any
+    // manipulation
+    assert.deepEqual(added_person, event.person);
+
     assert(people.is_active_user_for_popover(event.person.user_id));
 
     event = event_fixtures.realm_user__remove;
