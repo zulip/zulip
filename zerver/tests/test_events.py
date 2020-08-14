@@ -97,6 +97,7 @@ from zerver.lib.event_schema import (
     check_custom_profile_fields,
     check_default_stream_groups,
     check_default_streams,
+    check_delete_message,
     check_events_dict,
     check_hotspots,
     check_invites_changed,
@@ -147,14 +148,7 @@ from zerver.lib.test_helpers import (
     stdout_suppressed,
 )
 from zerver.lib.topic import TOPIC_NAME
-from zerver.lib.validator import (
-    check_bool,
-    check_dict_only,
-    check_int,
-    check_list,
-    check_string,
-    equals,
-)
+from zerver.lib.validator import check_bool, check_dict_only, check_int, check_string, equals
 from zerver.models import (
     Attachment,
     Message,
@@ -1564,13 +1558,6 @@ class NormalActionsTest(BaseAction):
         check_subscription_peer_add('events[1]', events[1])
 
     def test_do_delete_message_stream(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('delete_message')),
-            ('message_ids', check_list(check_int, 2)),
-            ('message_type', equals("stream")),
-            ('stream_id', check_int),
-            ('topic', check_string),
-        ])
         hamlet = self.example_user('hamlet')
         msg_id = self.send_stream_message(hamlet, "Verona")
         msg_id_2 = self.send_stream_message(hamlet, "Verona")
@@ -1582,20 +1569,19 @@ class NormalActionsTest(BaseAction):
             lambda: do_delete_messages(self.user_profile.realm, messages),
             state_change_expected=True,
         )
-        schema_checker('events[0]', events[0])
+        check_delete_message(
+            "events[0]",
+            events[0],
+            message_type="stream",
+            num_message_ids=2,
+            is_legacy=False,
+        )
 
     def test_do_delete_message_stream_legacy(self) -> None:
         """
         Test for legacy method of deleting messages which
         sends an event per message to delete to the client.
         """
-        schema_checker = check_events_dict([
-            ('type', equals('delete_message')),
-            ('message_id', check_int),
-            ('message_type', equals("stream")),
-            ('stream_id', check_int),
-            ('topic', check_string),
-        ])
         hamlet = self.example_user('hamlet')
         msg_id = self.send_stream_message(hamlet, "Verona")
         msg_id_2 = self.send_stream_message(hamlet, "Verona")
@@ -1608,16 +1594,15 @@ class NormalActionsTest(BaseAction):
             state_change_expected=True, bulk_message_deletion=False,
             num_events=2
         )
-        schema_checker('events[0]', events[0])
+        check_delete_message(
+            "events[0]",
+            events[0],
+            message_type="stream",
+            num_message_ids=1,
+            is_legacy=True,
+        )
 
     def test_do_delete_message_personal(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('delete_message')),
-            ('message_ids', check_list(check_int, 1)),
-            ('sender_id', check_int),
-            ('message_type', equals("private")),
-            ('recipient_id', check_int),
-        ])
         msg_id = self.send_personal_message(
             self.example_user("cordelia"),
             self.user_profile,
@@ -1628,16 +1613,15 @@ class NormalActionsTest(BaseAction):
             lambda: do_delete_messages(self.user_profile.realm, [message]),
             state_change_expected=True,
         )
-        schema_checker('events[0]', events[0])
+        check_delete_message(
+            "events[0]",
+            events[0],
+            message_type="private",
+            num_message_ids=1,
+            is_legacy=False,
+        )
 
     def test_do_delete_message_personal_legacy(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('delete_message')),
-            ('message_id', check_int),
-            ('sender_id', check_int),
-            ('message_type', equals("private")),
-            ('recipient_id', check_int),
-        ])
         msg_id = self.send_personal_message(
             self.example_user("cordelia"),
             self.user_profile,
@@ -1648,7 +1632,13 @@ class NormalActionsTest(BaseAction):
             lambda: do_delete_messages(self.user_profile.realm, [message]),
             state_change_expected=True, bulk_message_deletion=False
         )
-        schema_checker('events[0]', events[0])
+        check_delete_message(
+            "events[0]",
+            events[0],
+            message_type="private",
+            num_message_ids=1,
+            is_legacy=True,
+        )
 
     def test_do_delete_message_no_max_id(self) -> None:
         user_profile = self.example_user('aaron')

@@ -218,6 +218,55 @@ default_streams_event = event_dict_type(
 )
 check_default_streams = make_checker(default_streams_event)
 
+delete_message_event = event_dict_type(
+    required_keys=[
+        # force vertical
+        ("type", Equals("delete_message")),
+        ("message_type", EnumType(["private", "stream"])),
+    ],
+    optional_keys=[
+        ("message_id", int),
+        ("message_ids", ListType(int)),
+        ("stream_id", int),
+        ("topic", str),
+        ("recipient_id", int),
+        ("sender_id", int),
+    ],
+)
+_check_delete_message = make_checker(delete_message_event)
+
+
+def check_delete_message(
+    var_name: str,
+    event: Dict[str, object],
+    message_type: str,
+    num_message_ids: int,
+    is_legacy: bool,
+) -> None:
+    _check_delete_message(var_name, event)
+
+    keys = {"id", "type", "message_type"}
+
+    assert event["message_type"] == message_type
+
+    if message_type == "stream":
+        keys |= {"stream_id", "topic"}
+    elif message_type == "private":
+        keys |= {"recipient_id", "sender_id"}
+    else:
+        raise AssertionError("unexpected message_type")
+
+    if is_legacy:
+        assert num_message_ids == 1
+        keys.add("message_id")
+    else:
+        assert isinstance(event["message_ids"], list)
+        assert num_message_ids == len(event["message_ids"])
+        keys.add("message_ids")
+
+    assert set(event.keys()) == keys
+
+
 _hotspot = DictType(
     required_keys=[
         # force vertical
