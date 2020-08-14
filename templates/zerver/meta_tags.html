@@ -1,8 +1,12 @@
 <!-- Google / Search Engine Tags -->
 {% if allow_search_engine_indexing %}
-<meta name="description" content="Zulip combines the immediacy of real-time chat with an email threading model. With Zulip, you can catch up on important conversations while ignoring irrelevant ones.">
+    {% if OPEN_GRAPH_DESCRIPTION %}
+    <meta name="description" content="{{ OPEN_GRAPH_DESCRIPTION }}">
+    {% else %}
+    <meta name="description" content="Zulip combines the immediacy of real-time chat with an email threading model. With Zulip, you can catch up on important conversations while ignoring irrelevant ones.">
+    {% endif %}
 {% else %}
-<meta name="robots" content="noindex,nofollow">
+    <meta name="robots" content="noindex,nofollow">
 {% endif %}
 
 <!-- Open Graph / Facebook / Twitter Meta Tags -->
