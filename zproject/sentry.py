@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Optional
 
 import sentry_sdk
+from django.utils.translation import override as override_language
 from sentry_sdk.integrations import Integration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
@@ -21,13 +22,18 @@ def add_context(event: 'Event', hint: 'Hint') -> Optional['Event']:
         # Ignore GeneratorExit, KeyboardInterrupt, and SystemExit exceptions
         if not isinstance(exc_value, Exception):
             return None
+    from django.conf import settings
+
     from zerver.models import get_user_profile_by_id
     with capture_internal_exceptions():
         user_info = event.get("user", {})
         if user_info.get("id"):
             user_profile = get_user_profile_by_id(user_info["id"])
             user_info["realm"] = user_profile.realm.string_id or 'root'
-            user_info["role"] = user_profile.get_role_name()
+            with override_language(settings.LANGUAGE_CODE):
+                # str() to force the lazy-translation to apply now,
+                # since it won't serialize into json for Sentry otherwise
+                user_info["role"] = str(user_profile.get_role_name())
     return event
 
 def setup_sentry(dsn: Optional[str], *integrations: Integration) -> None:
