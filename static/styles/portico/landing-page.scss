@@ -2101,13 +2101,13 @@ nav {
 
 .footer.hello {
     display: block;
-}
 
-.footer.hello li a {
-    color: hsl(220, 15%, 76%);
+    li a {
+        color: hsl(220, 15%, 76%);
 
-    &:hover {
-        color: hsl(0, 0%, 100%);
+        &:hover {
+            color: hsl(0, 0%, 100%);
+        }
     }
 }
 
