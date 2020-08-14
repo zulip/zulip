@@ -2,7 +2,7 @@ import base64
 import os
 import smtplib
 import time
-from typing import Any, Callable, Dict, List, Mapping, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
 from unittest.mock import MagicMock, patch
 
 import orjson
@@ -16,7 +16,7 @@ from zerver.lib.rate_limiter import RateLimiterLockingException
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import simulated_queue_client
+from zerver.lib.test_helpers import mock_queue_publish, simulated_queue_client
 from zerver.models import PreregistrationUser, UserActivity, get_client, get_realm, get_stream
 from zerver.tornado.event_queue import build_offline_notification
 from zerver.worker import queue_processors
@@ -298,7 +298,7 @@ class WorkerTest(ZulipTestCase):
                 fake_client.queue.append(('missedmessage_mobile_notifications', event_new))
                 fake_client.queue.append(('missedmessage_mobile_notifications', event_remove))
 
-                with patch('zerver.lib.queue.queue_json_publish', side_effect=fake_publish), \
+                with mock_queue_publish('zerver.lib.queue.queue_json_publish', side_effect=fake_publish), \
                         self.assertLogs('zerver.worker.queue_processors', 'WARNING') as warn_logs:
                     worker.start()
                     self.assertEqual(mock_handle_new.call_count, 1 + MAX_REQUEST_RETRIES)
@@ -413,7 +413,7 @@ class WorkerTest(ZulipTestCase):
 
         def fake_publish(queue_name: str,
                          event: Dict[str, Any],
-                         processor: Callable[[Any], None]) -> None:
+                         processor: Optional[Callable[[Any], None]]) -> None:
             fake_client.queue.append((queue_name, event))
 
         with simulated_queue_client(lambda: fake_client):
@@ -421,8 +421,8 @@ class WorkerTest(ZulipTestCase):
             worker.setup()
             with patch('zerver.lib.send_email.build_email',
                        side_effect=smtplib.SMTPServerDisconnected), \
-                    patch('zerver.lib.queue.queue_json_publish',
-                          side_effect=fake_publish), \
+                    mock_queue_publish('zerver.lib.queue.queue_json_publish',
+                                       side_effect=fake_publish), \
                     patch('logging.exception'):
                 worker.start()
 
@@ -436,7 +436,7 @@ class WorkerTest(ZulipTestCase):
         data = {'user_id': user_id, 'id': 'test_missed'}
         fake_client.queue.append(('signups', data))
 
-        def fake_publish(queue_name: str, event: Dict[str, Any], processor: Callable[[Any], None]) -> None:
+        def fake_publish(queue_name: str, event: Dict[str, Any], processor: Optional[Callable[[Any], None]]) -> None:
             fake_client.queue.append((queue_name, event))
 
         fake_response = MagicMock()
@@ -447,8 +447,8 @@ class WorkerTest(ZulipTestCase):
             worker.setup()
             with patch('zerver.worker.queue_processors.requests.post',
                        return_value=fake_response), \
-                    patch('zerver.lib.queue.queue_json_publish',
-                          side_effect=fake_publish), \
+                    mock_queue_publish('zerver.lib.queue.queue_json_publish',
+                                       side_effect=fake_publish), \
                     patch('logging.info'), \
                     self.settings(MAILCHIMP_API_KEY='one-two',
                                   PRODUCTION=True,

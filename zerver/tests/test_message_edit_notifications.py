@@ -6,6 +6,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.actions import get_client
 from zerver.lib.push_notifications import get_apns_badge_count, get_apns_badge_count_future
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import mock_queue_publish
 from zerver.models import Subscription, UserPresence
 from zerver.tornado.event_queue import maybe_enqueue_notifications
 
@@ -124,8 +125,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
                 event=event,
             ))
 
-        with mock.patch('zerver.tornado.event_queue.queue_json_publish') as m:
-            m.side_effect = fake_publish
+        with mock_queue_publish('zerver.tornado.event_queue.queue_json_publish', side_effect=fake_publish) as m:
             maybe_enqueue_notifications(**enqueue_kwargs)
 
         self.assert_json_success(result)

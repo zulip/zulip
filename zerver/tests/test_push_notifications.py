@@ -58,6 +58,7 @@ from zerver.lib.remote_server import (
 from zerver.lib.request import JsonableError
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import mock_queue_publish
 from zerver.models import (
     Message,
     PushDeviceToken,
@@ -1994,7 +1995,7 @@ class TestClearOnRead(ZulipTestCase):
             flags=F('flags').bitor(
                 UserMessage.flags.active_mobile_push_notification))
 
-        with mock.patch("zerver.lib.actions.queue_json_publish") as mock_publish:
+        with mock_queue_publish("zerver.lib.actions.queue_json_publish") as mock_publish:
             do_mark_stream_messages_as_read(hamlet, self.client, stream)
             queue_items = [c[0][1] for c in mock_publish.call_args_list]
             groups = [item['message_ids'] for item in queue_items]
