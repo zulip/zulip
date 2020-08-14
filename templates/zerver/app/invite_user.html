@@ -41,7 +41,6 @@
                             {% if is_admin %}
                             <option name="invite_as" value="{{ invite_as.REALM_ADMIN }}">{{ _('Organization administrators') }}</option>
                             {% endif %}
-                            <option name="invite_as" value="{{ invite_as.GUEST_USER }}">{{ _('Guests') }}</option>
                             {% if is_owner %}
                             <option name="invite_as" value="{{ invite_as.REALM_OWNER }}">{{ _('Organization owners') }}</option>
                             {% endif %}
