@@ -3,6 +3,7 @@ import "./common.js";
 // Import Third party libraries
 import "../../third/bootstrap-notify/js/bootstrap-notify.js";
 import "../../third/bootstrap-typeahead/typeahead.js";
+import "../../third/bootstrap-tooltip/tooltip.js";
 import "jquery-caret-plugin/src/jquery.caret.js";
 import "../../third/jquery-idle/jquery.idle.js";
 import "spectrum-colorpicker";
