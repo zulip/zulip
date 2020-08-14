@@ -551,6 +551,59 @@ strong {
     color: inherit;
 }
 
+// .dropdown-menu from v2.3.2
+// + https://github.com/zulip/zulip/commit/7a3a3be7e547d3e8f0ed00820835104867f2433d
+// basic idea of this fix is to remove decorations from :hover and apply them only
+// on :focus.
+.typeahead-menu {
+    li {
+        a {
+            display: block;
+            padding: 3px 20px;
+            clear: both;
+            font-weight: normal;
+            line-height: 20px;
+            color: hsl(0, 0%, 20%);
+            white-space: nowrap;
+
+            &:hover {
+                text-decoration: none;
+            }
+
+            &:focus {
+                color: hsl(0, 0%, 100%);
+                text-decoration: none;
+                background-color: hsl(200, 100%, 38%);
+                background-image: linear-gradient(
+                    to bottom,
+                    hsl(200, 100%, 40%),
+                    hsl(200, 100%, 35%)
+                );
+                background-repeat: repeat-x;
+                filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
+            }
+        }
+    }
+
+    .active > a {
+        color: hsl(0, 0%, 100%);
+        text-decoration: none;
+        background-color: hsl(200, 100%, 38%);
+        background-image: linear-gradient(
+            to bottom,
+            hsl(200, 100%, 40%),
+            hsl(200, 100%, 35%)
+        );
+        background-repeat: repeat-x;
+        outline: 0;
+        filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
+    }
+
+    .active > a:hover {
+        text-decoration: none;
+    }
+}
+
 li.actual-dropdown-menu i {
     /* In gear menu, make icons the same width so labels line up. */
     display: inline-block;
