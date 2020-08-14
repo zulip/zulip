@@ -23,7 +23,6 @@ from django.http import (
 from django.http.multipartparser import MultiPartParser
 from django.shortcuts import resolve_url
 from django.template.response import SimpleTemplateResponse
-from django.utils.decorators import available_attrs
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
@@ -388,7 +387,11 @@ def redirect_to_login(next: str, login_url: Optional[str]=None,
 
     return HttpResponseRedirect(urllib.parse.urlunparse(login_url_parts))
 
-# From Django 1.8
+# From Django 2.2, modified to pass the request rather than just the
+# user into test_func; this is useful so that we can revalidate the
+# subdomain matches the user's realm.  It is likely that we could make
+# the subdomain validation happen elsewhere and switch to using the
+# stock Django version.
 def user_passes_test(test_func: Callable[[HttpResponse], bool], login_url: Optional[str]=None,
                      redirect_field_name: str=REDIRECT_FIELD_NAME) -> Callable[[ViewFuncT], ViewFuncT]:
     """
@@ -397,7 +400,7 @@ def user_passes_test(test_func: Callable[[HttpResponse], bool], login_url: Optio
     that takes the user object and returns True if the user passes.
     """
     def decorator(view_func: ViewFuncT) -> ViewFuncT:
-        @wraps(view_func, assigned=available_attrs(view_func))
+        @wraps(view_func)
         def _wrapped_view(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
             if test_func(request):
                 return view_func(request, *args, **kwargs)
