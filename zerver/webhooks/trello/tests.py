@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -96,29 +96,19 @@ class TrelloHookTests(WebhookTestCase):
         expected_message = "TomaszKolek renamed the board from Welcome Board to [New name](https://trello.com/b/iqXXzYEj)."
         self.send_and_test_stream_message('renaming_board', "New name", expected_message)
 
-    @patch('zerver.webhooks.trello.view.check_send_webhook_message')
-    def test_trello_webhook_when_card_is_moved_within_single_list_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
-        payload = self.get_body('moving_card_within_single_list')
-        result = self.client_post(self.url, payload, content_type="application/json")
-        self.assertFalse(check_send_webhook_message_mock.called)
-        self.assert_json_success(result)
+    def test_ignored_payloads(self) -> None:
+        fixtures = [
+            "change_board_background_image",
+            "create_check_item",
+            "moving_card_within_single_list",
+        ]
+        for fixture in fixtures:
+            with patch('zerver.webhooks.trello.view.check_send_webhook_message') as m:
+                payload = self.get_body(fixture)
 
-    @patch('zerver.webhooks.trello.view.check_send_webhook_message')
-    def test_trello_webhook_when_board_background_is_changed_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
-        payload = self.get_body('change_board_background_image')
-        result = self.client_post(self.url, payload, content_type="application/json")
-        self.assertFalse(check_send_webhook_message_mock.called)
-        self.assert_json_success(result)
-
-    @patch('zerver.webhooks.trello.view.check_send_webhook_message')
-    def test_create_card_check_item_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
-        payload = self.get_body('create_check_item')
-        result = self.client_post(self.url, payload, content_type="application/json")
-        self.assertFalse(check_send_webhook_message_mock.called)
-        self.assert_json_success(result)
+            self.assertFalse(m.called)
+            result = self.client_post(self.url, payload, content_type="application/json")
+            self.assert_json_success(result)
 
     def test_trello_webhook_when_description_was_added_to_card(self) -> None:
         expected_message = "Marco Matarazzo set description for [New Card](https://trello.com/c/P2r0z66z) to:\n~~~ quote\nNew Description\n~~~"
