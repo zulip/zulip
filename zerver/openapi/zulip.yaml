@@ -1707,6 +1707,9 @@ paths:
                                     The type of message. Either 'stream' or 'private'.  The other keys
                                     present in the event, necessary to update various frontend data structures
                                     that might be tracking the message, depend on the message type.
+                                  enum:
+                                    - private
+                                    - stream
                                 recipient_id:
                                   type: integer
                                   description: |
