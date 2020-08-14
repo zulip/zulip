@@ -279,7 +279,6 @@ ANALYTICS_TABLES = {
 # TODO: This data structure could likely eventually be replaced by
 # inspecting the corresponding Django models
 DATE_FIELDS: Dict[TableName, List[Field]] = {
-    'zerver_analytics': ['date_created'],
     'zerver_attachment': ['create_time'],
     'zerver_message': ['last_edit_time', 'date_sent'],
     'zerver_mutedtopic': ['date_muted'],
@@ -299,7 +298,6 @@ DATE_FIELDS: Dict[TableName, List[Field]] = {
 }
 
 BITHANDLER_FIELDS: Dict[TableName, List[Field]] = {
-    'zerver_analytics': ['authentication_methods'],
     'zerver_realm': ['authentication_methods'],
 }
 
@@ -1739,7 +1737,7 @@ def get_analytics_config() -> Config:
     # analytics.json file in a full-realm export.
 
     analytics_config = Config(
-        table='zerver_analytics',
+        table='zerver_realm',
         is_seeded=True,
     )
 
