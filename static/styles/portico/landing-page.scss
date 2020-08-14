@@ -2448,25 +2448,25 @@ nav {
         hsl(0, 0%, 33%) 92%,
         hsl(0, 0%, 27%) 100%
     );
-}
 
-.portico-landing.hello .apps .screen.android::before {
-    content: none;
-}
+    &::before {
+        content: none;
+    }
 
-.portico-landing.hello .apps .screen.android::after {
-    top: auto;
-    bottom: 10px;
-    left: calc(50% - 17.5px);
+    &::after {
+        top: auto;
+        bottom: 10px;
+        left: calc(50% - 17.5px);
 
-    border-radius: 8px;
-    background-color: hsl(0, 0%, 13%);
-    width: 35px;
-    height: 20px;
-}
+        border-radius: 8px;
+        background-color: hsl(0, 0%, 13%);
+        width: 35px;
+        height: 20px;
+    }
 
-.portico-landing.hello .apps .screen.android .main-page {
-    border-color: hsl(0, 0%, 13%);
+    .main-page {
+        border-color: hsl(0, 0%, 13%);
+    }
 }
 
 .portico-landing.hello .apps .screen .center-page {
