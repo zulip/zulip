@@ -9,6 +9,7 @@ from urllib.parse import SplitResult
 
 from django.conf import settings
 from django.http import HttpRequest
+from django.utils.translation import override as override_language
 from django.views.debug import get_exception_reporter_filter
 from sentry_sdk import capture_exception
 from typing_extensions import Protocol, runtime_checkable
@@ -46,7 +47,10 @@ def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
         else:
             user_full_name = user_profile.full_name
             user_email = user_profile.email
-            user_role = user_profile.get_role_name()
+            with override_language(settings.LANGUAGE_CODE):
+                # str() to force the lazy-translation to apply now,
+                # since it won't serialize into the worker queue.
+                user_role = str(user_profile.get_role_name())
     except Exception:
         # Unexpected exceptions here should be handled gracefully
         traceback.print_exc()
