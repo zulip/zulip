@@ -2131,67 +2131,67 @@ nav {
     color: hsl(0, 0%, 100%);
 
     overflow: hidden;
-}
 
-.portico-landing.apps .hero .inner-content {
-    max-width: 1600px;
-    margin: 0 auto;
-}
-
-.portico-landing.apps .hero h1 {
-    font-size: 3em;
-    margin-bottom: 0;
-    margin-top: 0;
-}
-
-.portico-landing.apps .hero #waves {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-
-    background-image: url(/static/images/waves.svg);
-    background-size: cover;
-    background-repeat: no-repeat;
-}
-
-.portico-landing.apps .hero .info,
-.portico-landing.apps .hero .image {
-    position: relative;
-
-    width: 50%;
-    float: left;
-    height: 100%;
-
-    z-index: 1;
-
-    .flex {
-        height: 500px;
-        min-height: 0;
-    }
-}
-
-.portico-landing.apps .hero .image img {
-    border-radius: 4px 4px 0 0;
-}
-
-.portico-landing.apps .hero .info {
-    .cta {
-        text-shadow: 0 0 60px hsla(0, 0%, 0%, 0.3);
-        max-width: 600px;
+    .inner-content {
+        max-width: 1600px;
+        margin: 0 auto;
     }
 
-    .flex {
-        width: 90%;
+    h1 {
+        font-size: 3em;
+        margin-bottom: 0;
+        margin-top: 0;
     }
 
-    .button {
-        display: inline-block;
-        padding: 10px 20px;
+    #waves {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
 
-        font-size: 1em;
-        font-weight: 600;
+        background-image: url(/static/images/waves.svg);
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
+
+    .info,
+    .image {
+        position: relative;
+
+        width: 50%;
+        float: left;
+        height: 100%;
+
+        z-index: 1;
+
+        .flex {
+            height: 500px;
+            min-height: 0;
+        }
+    }
+
+    .image img {
+        border-radius: 4px 4px 0 0;
+    }
+
+    .info {
+        .cta {
+            text-shadow: 0 0 60px hsla(0, 0%, 0%, 0.3);
+            max-width: 600px;
+        }
+
+        .flex {
+            width: 90%;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+
+            font-size: 1em;
+            font-weight: 600;
+        }
     }
 }
 
@@ -3401,18 +3401,26 @@ nav {
 
     .portico-landing.apps .hero {
         height: 350px;
-    }
 
-    .portico-landing.apps .hero h1 {
-        font-size: 1.9em;
-        font-weight: 400;
-    }
+        h1 {
+            font-size: 1.9em;
+            font-weight: 400;
+        }
 
-    .portico-landing.apps .hero .info,
-    .portico-landing.apps .hero .image {
-        .flex {
-            height: 200px;
-            min-height: 0;
+        .info,
+        .image {
+            .flex {
+                height: 200px;
+                min-height: 0;
+                width: 100%;
+            }
+        }
+
+        .image {
+            display: none;
+        }
+
+        .info {
             width: 100%;
         }
     }
@@ -3447,14 +3455,6 @@ nav {
 
     .portico-landing.apps .other-apps .apps .icon::after {
         content: "";
-    }
-
-    .portico-landing.apps .hero .image {
-        display: none;
-    }
-
-    .portico-landing.apps .hero .info {
-        width: 100%;
     }
 
     .main {
