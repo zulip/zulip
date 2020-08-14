@@ -1730,6 +1730,13 @@ def export_analytics_tables(realm: Realm, output_dir: Path) -> None:
         config=config,
         seed_object=realm,
     )
+
+    # The seeding logic results in a duplicate zerver_realm object
+    # being included in the analytics data.  We don't want it, as that
+    # data is already in `realm.json`, so we just delete it here
+    # before writing to disk.
+    del response['zerver_realm']
+
     write_data_to_file(output_file=export_file, data=response)
 
 def get_analytics_config() -> Config:
