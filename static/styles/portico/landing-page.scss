@@ -2171,27 +2171,29 @@ nav {
     border-radius: 4px 4px 0 0;
 }
 
-.portico-landing.apps .hero .info .cta {
-    text-shadow: 0 0 60px hsla(0, 0%, 0%, 0.3);
-    max-width: 600px;
+.portico-landing.apps .hero .info {
+    .cta {
+        text-shadow: 0 0 60px hsla(0, 0%, 0%, 0.3);
+        max-width: 600px;
+    }
+
+    .flex {
+        width: 90%;
+    }
+
+    .button {
+        display: inline-block;
+        padding: 10px 20px;
+
+        font-size: 1em;
+        font-weight: 600;
+    }
 }
 
 .portico-landing.apps .hero .info .flex,
 .portico-landing.apps .hero .image .flex {
     height: 500px;
     min-height: 0;
-}
-
-.portico-landing.apps .hero .info .flex {
-    width: 90%;
-}
-
-.portico-landing.apps .hero .info .button {
-    display: inline-block;
-    padding: 10px 20px;
-
-    font-size: 1em;
-    font-weight: 600;
 }
 
 .portico-landing.apps
