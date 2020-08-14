@@ -2165,6 +2165,11 @@ nav {
     height: 100%;
 
     z-index: 1;
+
+    .flex {
+        height: 500px;
+        min-height: 0;
+    }
 }
 
 .portico-landing.apps .hero .image img {
@@ -2188,12 +2193,6 @@ nav {
         font-size: 1em;
         font-weight: 600;
     }
-}
-
-.portico-landing.apps .hero .info .flex,
-.portico-landing.apps .hero .image .flex {
-    height: 500px;
-    min-height: 0;
 }
 
 .portico-landing.apps
@@ -3409,11 +3408,13 @@ nav {
         font-weight: 400;
     }
 
-    .portico-landing.apps .hero .info .flex,
-    .portico-landing.apps .hero .image .flex {
-        height: 200px;
-        min-height: 0;
-        width: 100%;
+    .portico-landing.apps .hero .info,
+    .portico-landing.apps .hero .image {
+        .flex {
+            height: 200px;
+            min-height: 0;
+            width: 100%;
+        }
     }
 
     .portico-landing.apps .other-apps {
