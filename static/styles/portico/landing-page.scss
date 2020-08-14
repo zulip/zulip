@@ -2471,10 +2471,10 @@ nav {
 
 .portico-landing.hello .apps .screen .center-page {
     height: calc(100% - 20px);
-}
 
-.portico-landing.hello .apps .screen .center-page .message-feed {
-    margin-top: 10px;
+    .message-feed {
+        margin-top: 10px;
+    }
 }
 
 /* -- gradients -- */
