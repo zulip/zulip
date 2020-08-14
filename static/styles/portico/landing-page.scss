@@ -2176,24 +2176,6 @@ nav {
     max-width: 600px;
 }
 
-.portico-landing.apps
-    .hero
-    .image
-    img[src="/static/images/landing-page/tar.gz.svg"] {
-    width: 50%;
-}
-
-.portico-landing.apps
-    .hero
-    .image
-    img[src="/static/images/app-screenshots/zulip-android.png"],
-.portico-landing.apps
-    .hero
-    .image
-    img[src="/static/images/app-screenshots/zulip-iphone-rough.png"] {
-    height: 85%;
-}
-
 .portico-landing.apps .hero .info .flex,
 .portico-landing.apps .hero .image .flex {
     height: 500px;
@@ -2210,6 +2192,24 @@ nav {
 
     font-size: 1em;
     font-weight: 600;
+}
+
+.portico-landing.apps
+    .hero
+    .image
+    img[src="/static/images/landing-page/tar.gz.svg"] {
+    width: 50%;
+}
+
+.portico-landing.apps
+    .hero
+    .image
+    img[src="/static/images/app-screenshots/zulip-android.png"],
+.portico-landing.apps
+    .hero
+    .image
+    img[src="/static/images/app-screenshots/zulip-iphone-rough.png"] {
+    height: 85%;
 }
 
 .portico-landing.apps .other-apps {
