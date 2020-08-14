@@ -546,6 +546,16 @@ strong {
     color: inherit;
 }
 
+li.actual-dropdown-menu > a:focus {
+    color: hsl(0, 0%, 100%);
+    text-decoration: none;
+    background-color: none;
+    background-image: none;
+    background-repeat: repeat-x;
+    filter: none;
+    outline: 0;
+}
+
 li.actual-dropdown-menu i {
     /* In gear menu, make icons the same width so labels line up. */
     display: inline-block;
