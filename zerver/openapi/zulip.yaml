@@ -3005,11 +3005,11 @@ paths:
                               "name": "166050.jpg",
                               "path_id": "2/ce/DfOkzwdg_IwlrN3myw3KGtiJ/166050.jpg",
                               "size": 571946,
-                              "create_time": 1588145417000,
+                              "create_time": 1588145417,
                               "messages":
                                 [
-                                  {"id": 102, "date_sent": 1588145424000},
-                                  {"id": 103, "date_sent": 1588145448000},
+                                  {"id": 102, "date_sent": 1588145424},
+                                  {"id": 103, "date_sent": 1588145448},
                                 ],
                             },
                           ],
@@ -8190,11 +8190,14 @@ components:
         create_time:
           type: integer
           description: |
-            Time when the attachment was uploaded as a UNIX timestamp
-            multiplied by 1000 (matching the format of getTime() in JavaScript).
+            Time when the attachment was uploaded as a UNIX timestamp.
 
             **Changes**: Changed in Zulip 2.2 (feature level 22).  This field was
             previously a floating point number.
+
+            **Changes**: Changed in Zulip 4.0 (feature level 31).  This field was
+            previously stored the UNIX timestamp multiplied by 1000(Javascript time
+            format).
         messages:
           type: array
           description: |
@@ -8210,12 +8213,15 @@ components:
               date_sent:
                 type: integer
                 description: |
-                  Time when the message was sent as a UNIX timestamp
-                  multiplied by 1000 (matching the format of getTime() in JavaScript).
+                  Time when the message was sent as a UNIX timestamp.
 
                   **Changes**: Changed in Zulip 2.2 (feature level 22).  This
                   field was previously strangely called `name` and was a floating
                   point number.
+
+                  **Changes**: Changed in Zulip 4.0 (feature level 31).  This field was
+                  previously stored the UNIX timestamp multiplied by 1000(Javascript time
+                  format).
               id:
                 type: integer
                 description: |
