@@ -1,13 +1,13 @@
 import logging
 import operator
 import os
+from functools import lru_cache
 from itertools import zip_longest
 from typing import Any, Dict, List
 
 import orjson
 from django.conf import settings
 from django.utils import translation
-from django.utils.lru_cache import lru_cache
 from django.utils.translation import ugettext as _
 
 

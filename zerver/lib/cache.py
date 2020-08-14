@@ -8,7 +8,7 @@ import re
 import sys
 import time
 import traceback
-from functools import wraps
+from functools import lru_cache, wraps
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -29,7 +29,6 @@ from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
 from django.db.models import Q
 from django.http import HttpRequest
-from django.utils.lru_cache import lru_cache
 
 from zerver.lib.utils import make_safe_digest, statsd, statsd_key
 
@@ -669,7 +668,9 @@ def ignore_unhashable_lru_cache(maxsize: int=128, typed: bool=False) -> DECORATO
             # In the development environment, we want every file
             # change to refresh the source files from disk.
             return user_function
-        cache_enabled_user_function = internal_decorator(user_function)
+
+        # Casting to Any since we're about to monkey-patch this.
+        cache_enabled_user_function = cast(Any, internal_decorator(user_function))
 
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             if not hasattr(cache_enabled_user_function, 'key_prefix'):
