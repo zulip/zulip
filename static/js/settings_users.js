@@ -110,7 +110,7 @@ function update_view_on_reactivate(row) {
     button.addClass("btn-danger deactivate");
     button.removeClass("btn-warning reactivate");
     button.attr("title", "Deactivate");
-    button.html('<i class="fa fa-user-plus" aria-hidden="true"></i>');
+    button.html('<i class="fa fa-user-times" aria-hidden="true"></i>');
     row.removeClass("deactivated_user");
 
     if (user_role) {
