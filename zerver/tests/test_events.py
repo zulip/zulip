@@ -130,6 +130,7 @@ from zerver.lib.event_schema import (
     check_update_message_flags,
     check_user_group_add,
     check_user_group_add_members,
+    check_user_group_remove,
     check_user_group_remove_members,
     check_user_status,
 )
@@ -857,15 +858,10 @@ class NormalActionsTest(BaseAction):
             lambda: remove_members_from_user_group(backend, [hamlet]))
         check_user_group_remove_members('events[0]', events[0])
 
-        # Test delete event
-        user_group_remove_checker = check_events_dict([
-            ('type', equals('user_group')),
-            ('op', equals('remove')),
-            ('group_id', check_int),
-        ])
+        # Test remove event
         events = self.verify_action(
             lambda: check_delete_user_group(backend.id, othello))
-        user_group_remove_checker('events[0]', events[0])
+        check_user_group_remove('events[0]', events[0])
 
     def test_default_stream_groups_events(self) -> None:
         streams = []
