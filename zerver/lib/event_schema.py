@@ -1185,6 +1185,36 @@ user_group_remove_members_event = event_dict_type(
 )
 check_user_group_remove_members = make_checker(user_group_remove_members_event)
 
+user_group_data_type = DictType(
+    required_keys=[],
+    optional_keys=[
+        # force vertical
+        ("name", str),
+        ("description", str),
+    ],
+)
+
+user_group_update_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("user_group")),
+        ("op", Equals("update")),
+        ("group_id", int),
+        ("data", user_group_data_type),
+    ]
+)
+_check_user_group_update = make_checker(user_group_update_event)
+
+
+def check_user_group_update(
+    var_name: str, event: Dict[str, object], field: str
+) -> None:
+    _check_user_group_update(var_name, event)
+
+    assert isinstance(event["data"], dict)
+
+    assert set(event["data"].keys()) == {field}
+
+
 user_status_event = event_dict_type(
     required_keys=[
         ("type", Equals("user_status")),
