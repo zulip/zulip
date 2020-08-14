@@ -129,6 +129,7 @@ from zerver.lib.event_schema import (
     check_update_message_embedded,
     check_update_message_flags,
     check_user_group_add,
+    check_user_group_add_members,
     check_user_status,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
@@ -844,16 +845,10 @@ class NormalActionsTest(BaseAction):
         user_group_update_checker('events[0]', events[0])
 
         # Test add members
-        user_group_add_member_checker = check_events_dict([
-            ('type', equals('user_group')),
-            ('op', equals('add_members')),
-            ('group_id', check_int),
-            ('user_ids', check_list(check_int)),
-        ])
         hamlet = self.example_user('hamlet')
         events = self.verify_action(
             lambda: bulk_add_members_to_user_group(backend, [hamlet]))
-        user_group_add_member_checker('events[0]', events[0])
+        check_user_group_add_members('events[0]', events[0])
 
         # Test remove members
         user_group_remove_member_checker = check_events_dict([
