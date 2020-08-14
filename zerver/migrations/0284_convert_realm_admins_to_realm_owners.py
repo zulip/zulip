@@ -26,13 +26,13 @@ def set_realm_admins_as_realm_owners(apps: StateApps, schema_editor: DatabaseSch
     RealmAuditLog.ROLE_COUNT_BOTS = '12'
 
     def realm_user_count_by_role(realm: Any) -> Dict[str, Any]:
-        human_counts = {UserProfile.ROLE_REALM_ADMINISTRATOR: 0,
-                        UserProfile.ROLE_REALM_OWNER: 0,
-                        UserProfile.ROLE_MEMBER: 0,
-                        UserProfile.ROLE_GUEST: 0}
+        human_counts = {str(UserProfile.ROLE_REALM_ADMINISTRATOR): 0,
+                        str(UserProfile.ROLE_REALM_OWNER): 0,
+                        str(UserProfile.ROLE_MEMBER): 0,
+                        str(UserProfile.ROLE_GUEST): 0}
         for value_dict in list(UserProfile.objects.filter(
                 realm=realm, is_bot=False, is_active=True).values('role').annotate(Count('role'))):
-            human_counts[value_dict['role']] = value_dict['role__count']
+            human_counts[str(value_dict['role'])] = value_dict['role__count']
         bot_count = UserProfile.objects.filter(realm=realm, is_bot=True, is_active=True).count()
         return {
             RealmAuditLog.ROLE_COUNT_HUMANS: human_counts,
