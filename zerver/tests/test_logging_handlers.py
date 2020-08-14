@@ -157,6 +157,9 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
 
+        # Put it back so we continue to test the non-anonymous case
+        record.request.user = self.example_user('hamlet')
+
         # Now simulate a DisallowedHost exception
         def get_host_error() -> None:
             raise Exception("Get Host Failure!")
@@ -190,8 +193,17 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             self.handler.emit(record)
         with self.settings(STAGING_ERROR_NOTIFICATIONS=False):
             with mock_queue_publish('zerver.logging_handlers.queue_json_publish',
-                                    side_effect=Exception("queue error")):
-                self.handler.emit(record)
+                                    side_effect=Exception("queue error")) as m:
+                with patch('logging.warning') as log_mock:
+                    self.handler.emit(record)
+                    m.assert_called_once()
+                    log_mock.assert_called_once_with('Reporting an exception triggered an exception!',
+                                                     exc_info=True)
+            with mock_queue_publish('zerver.logging_handlers.queue_json_publish') as m:
+                with patch('logging.warning') as log_mock:
+                    self.handler.emit(record)
+                    m.assert_called_once()
+                    log_mock.assert_not_called()
 
         # Test no exc_info
         record.exc_info = None
