@@ -428,7 +428,19 @@ exports.fixtures = {
     realm_user__add: {
         type: "realm_user",
         op: "add",
-        person: exports.test_user,
+        person: {
+            ...exports.test_user,
+            avatar_url: "/some/path/to/avatar",
+            avatar_version: 1,
+            is_admin: false,
+            is_active: true,
+            is_owner: false,
+            is_bot: false,
+            is_guest: false,
+            profile_data: {},
+            timezone: "US/Eastern",
+            date_joined: "2020-01-01",
+        },
     },
 
     realm_user__remove: {
