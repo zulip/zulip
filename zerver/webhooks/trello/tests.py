@@ -101,6 +101,7 @@ class TrelloHookTests(WebhookTestCase):
             "change_board_background_image",
             "create_check_item",
             "moving_card_within_single_list",
+            "update_check_item",
         ]
         for fixture in fixtures:
             with patch('zerver.webhooks.trello.view.check_send_webhook_message') as m:
