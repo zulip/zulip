@@ -2026,22 +2026,22 @@ nav {
     width: 100%;
     margin: 20px 0;
     text-align: center;
-}
 
-.portico-landing.hello .integrations .integration-icons .group {
-    display: inline-block;
-    vertical-align: top;
-    width: 155px;
-    height: 220px;
-    padding: 0 5px;
-    transition: all 0.3s ease;
-    margin: 10px 5px;
-    color: hsl(219, 23%, 33%);
-    border-radius: 5px;
-    border: 1px solid hsl(206, 44%, 93%);
+    .group {
+        display: inline-block;
+        vertical-align: top;
+        width: 155px;
+        height: 220px;
+        padding: 0 5px;
+        transition: all 0.3s ease;
+        margin: 10px 5px;
+        color: hsl(219, 23%, 33%);
+        border-radius: 5px;
+        border: 1px solid hsl(206, 44%, 93%);
 
-    &:hover {
-        border: 1px solid hsl(170, 47%, 53%);
+        &:hover {
+            border: 1px solid hsl(170, 47%, 53%);
+        }
     }
 }
 
@@ -2870,8 +2870,10 @@ nav {
 
 /* -- media queries -- */
 @media (max-width: 1426px) {
-    .portico-landing.hello .integrations .integration-icons .hide-1 {
-        display: none;
+    .portico-landing.hello .integrations .integration-icons {
+        .hide-1 {
+            display: none;
+        }
     }
 
     .portico-landing.integrations .integration-categories-sidebar {
@@ -3625,8 +3627,10 @@ nav {
 }
 
 @media (max-width: 640px) {
-    .portico-landing.hello .integrations .integration-icons .group {
-        margin: 10px 16px 0 16px;
+    .portico-landing.hello .integrations .integration-icons {
+        .group {
+            margin: 10px 16px 0 16px;
+        }
     }
 
     .portico-landing.features-app {
@@ -3751,8 +3755,10 @@ nav {
         padding: 0;
     }
 
-    .portico-landing.hello .integrations .integration-icons .group {
-        margin: 4px 2px;
+    .portico-landing.hello .integrations .integration-icons {
+        .group {
+            margin: 4px 2px;
+        }
     }
 
     .main {
@@ -3816,13 +3822,15 @@ nav {
 }
 
 @media (max-width: 375px) {
-    .portico-landing.hello .integrations .integration-icons .group {
-        width: 130px;
-        height: 215px;
-    }
+    .portico-landing.hello .integrations .integration-icons {
+        .group {
+            width: 130px;
+            height: 215px;
+        }
 
-    .portico-landing.hello .integrations .integration-icons .integration-logo {
-        width: 60px;
+        .integration-logo {
+            width: 60px;
+        }
     }
 
     .portico-landing.integrations .integration-categories-dropdown {
