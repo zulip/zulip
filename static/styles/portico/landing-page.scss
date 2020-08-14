@@ -1888,6 +1888,43 @@ nav {
 
 .portico-landing.hello .apps .left-side {
     width: calc(60% - 4px);
+
+    .content {
+        width: 650px;
+        margin: 50px auto;
+    }
+
+    .platform-icons {
+        text-align: center;
+
+        .group {
+            display: inline-block;
+            vertical-align: top;
+            margin: 0 30px;
+
+            text-align: center;
+
+            h2 {
+                font-size: 1.5em;
+            }
+
+            a {
+                color: inherit;
+            }
+
+            i {
+                display: inline-block;
+                width: 80px;
+
+                font-size: 3.5em;
+                opacity: 0.8;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+        }
+    }
 }
 
 .portico-landing.hello .apps .right-side {
@@ -1895,42 +1932,6 @@ nav {
     text-align: center;
 }
 
-.portico-landing.hello .apps .left-side .content {
-    width: 650px;
-    margin: 50px auto;
-}
-
-.portico-landing.hello .apps .left-side .platform-icons {
-    text-align: center;
-
-    .group {
-        display: inline-block;
-        vertical-align: top;
-        margin: 0 30px;
-
-        text-align: center;
-
-        h2 {
-            font-size: 1.5em;
-        }
-
-        a {
-            color: inherit;
-        }
-
-        i {
-            display: inline-block;
-            width: 80px;
-
-            font-size: 3.5em;
-            opacity: 0.8;
-
-            &:hover {
-                opacity: 1;
-            }
-        }
-    }
-}
 
 .portico-landing.hello .integrations {
     padding: 80px 80px;
@@ -2946,6 +2947,10 @@ nav {
 
     .portico-landing.hello .apps .left-side {
         width: 100%;
+
+        .content {
+            margin: 0 auto 50px;
+        }
     }
 
     .portico-landing.hello .integrations .content {
@@ -2956,10 +2961,6 @@ nav {
     .portico-landing.hello .integrations .integration-icons {
         max-width: 600px;
         margin: 0 auto;
-    }
-
-    .portico-landing.hello .apps .left-side .content {
-        margin: 0 auto 50px;
     }
 
     .portico-landing .testimonials .company-box .company {
@@ -3138,9 +3139,11 @@ nav {
         padding: 200px 50px 80px 50px;
     }
 
-    .portico-landing.hello .apps .left-side .content {
-        width: 100%;
-        text-align: center;
+    .portico-landing.hello .apps .left-side {
+        .content {
+            width: 100%;
+            text-align: center;
+        }
     }
 
     .portico-landing.hello .integrations {
@@ -3220,10 +3223,12 @@ nav {
         }
     }
 
-    .portico-landing.hello .apps .left-side .platform-icons {
-        .group {
-            margin: 50px 30px;
-            display: block;
+    .portico-landing.hello .apps .left-side {
+        .platform-icons {
+            .group {
+                margin: 50px 30px;
+                display: block;
+            }
         }
     }
 
@@ -3343,8 +3348,10 @@ nav {
         }
     }
 
-    .portico-landing.hello .apps .left-side .content {
-        width: auto;
+    .portico-landing.hello .apps .left-side {
+        .content {
+            width: auto;
+        }
     }
 
     .portico-landing.hello .screen.hero-screen {
