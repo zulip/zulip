@@ -10,6 +10,7 @@ from urllib.parse import SplitResult
 from django.conf import settings
 from django.http import HttpRequest
 from django.views.debug import get_exception_reporter_filter
+from sentry_sdk import capture_exception
 from typing_extensions import Protocol, runtime_checkable
 
 from version import ZULIP_VERSION
@@ -142,6 +143,7 @@ class AdminNotifyHandler(logging.Handler):
             report['message'] = "Exception in preparing exception report!"
             logging.warning(report['message'], exc_info=True)
             report['stack_trace'] = "See /var/log/zulip/errors.log"
+            capture_exception()
 
         if settings.DEBUG_ERROR_REPORTING:  # nocoverage
             logging.warning("Reporting an error to admins...")
@@ -166,3 +168,4 @@ class AdminNotifyHandler(logging.Handler):
             # If this breaks, complain loudly but don't pass the traceback up the stream
             # However, we *don't* want to use logging.exception since that could trigger a loop.
             logging.warning("Reporting an exception triggered an exception!", exc_info=True)
+            capture_exception()
