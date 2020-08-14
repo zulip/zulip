@@ -4,6 +4,7 @@ import re
 import sys
 import time
 from contextlib import contextmanager
+from functools import wraps
 from typing import (
     IO,
     TYPE_CHECKING,
@@ -599,3 +600,31 @@ def zulip_reaction_info() -> Dict[str, str]:
         emoji_code='zulip',
         reaction_type='zulip_extra_emoji',
     )
+
+@contextmanager
+def mock_queue_publish(
+        method_to_patch: str,
+        **kwargs: object,
+) -> Iterator[mock.MagicMock]:
+    inner = mock.MagicMock(**kwargs)
+
+    def verify_serialize(
+        queue_name: str,
+        event: Dict[str, object],
+        processor: Optional[Callable[[object], None]] = None,
+    ) -> None:
+        marshalled_event = orjson.loads(orjson.dumps(event))
+        assert marshalled_event == event
+        inner(queue_name, event, processor)
+
+    with mock.patch(method_to_patch, side_effect=verify_serialize):
+        yield inner
+
+def patch_queue_publish(method_to_patch: str) -> Callable[[Callable[..., None]], Callable[..., None]]:
+    def inner(func: Callable[..., None]) -> Callable[..., None]:
+        @wraps(func)
+        def _wrapped(*args: object, **kwargs: object) -> None:
+            with mock_queue_publish(method_to_patch) as m:
+                func(*args, m, **kwargs)
+        return _wrapped
+    return inner
