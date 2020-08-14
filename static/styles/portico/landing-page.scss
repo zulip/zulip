@@ -1854,162 +1854,162 @@ nav {
     background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
 
     color: hsl(0, 0%, 100%);
-}
 
-.portico-landing.hello .apps .triangle {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 150px 100vw 0 0;
-    border-color: hsl(0, 0%, 98%) transparent transparent transparent;
-}
-
-.portico-landing.hello .apps .arrow {
-    color: hsl(0, 0%, 100%);
-    font-weight: 400;
-
-    &::before {
-        background-color: hsl(0, 0%, 100%);
+    .triangle {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 150px 100vw 0 0;
+        border-color: hsl(0, 0%, 98%) transparent transparent transparent;
     }
 
-    &::after {
-        filter: brightness(4) saturate(0);
-    }
-}
+    .arrow {
+        color: hsl(0, 0%, 100%);
+        font-weight: 400;
 
-.portico-landing.hello .apps .left-side,
-.portico-landing.hello .apps .right-side {
-    display: inline-block;
-    vertical-align: top;
-}
+        &::before {
+            background-color: hsl(0, 0%, 100%);
+        }
 
-.portico-landing.hello .apps .left-side {
-    width: calc(60% - 4px);
-
-    .content {
-        width: 650px;
-        margin: 50px auto;
+        &::after {
+            filter: brightness(4) saturate(0);
+        }
     }
 
-    .platform-icons {
-        text-align: center;
+    .left-side,
+    .right-side {
+        display: inline-block;
+        vertical-align: top;
+    }
 
-        .group {
-            display: inline-block;
-            vertical-align: top;
-            margin: 0 30px;
+    .left-side {
+        width: calc(60% - 4px);
 
+        .content {
+            width: 650px;
+            margin: 50px auto;
+        }
+
+        .platform-icons {
             text-align: center;
 
-            h2 {
-                font-size: 1.5em;
-            }
-
-            a {
-                color: inherit;
-            }
-
-            i {
+            .group {
                 display: inline-block;
-                width: 80px;
+                vertical-align: top;
+                margin: 0 30px;
 
-                font-size: 3.5em;
-                opacity: 0.8;
+                text-align: center;
 
-                &:hover {
-                    opacity: 1;
+                h2 {
+                    font-size: 1.5em;
+                }
+
+                a {
+                    color: inherit;
+                }
+
+                i {
+                    display: inline-block;
+                    width: 80px;
+
+                    font-size: 3.5em;
+                    opacity: 0.8;
+
+                    &:hover {
+                        opacity: 1;
+                    }
                 }
             }
         }
     }
-}
 
-.portico-landing.hello .apps .right-side {
-    width: calc(40% - 4px);
-    text-align: center;
-}
-
-/* -- hello page styling -- */
-.portico-landing.hello .apps .screen {
-    display: inline-block;
-    margin: 0 10px;
-    text-align: left;
-
-    &.ios {
-        width: 200px;
-        height: 350px;
-        padding: 30px 0;
-        border-radius: 20px;
-
-        transform: translateY(50px);
-
-        background-color: hsl(0, 0%, 100%);
-
-        &::before {
-            top: 17px;
-            left: calc(50% - 20px);
-
-            width: 40px;
-            height: 5px;
-            background-color: hsl(0, 0%, 80%);
-        }
-
-        &::after {
-            top: auto;
-            bottom: 7px;
-            left: calc(50% - 12.5px);
-            background-color: hsl(0, 0%, 80%);
-        }
-
-        .main-page {
-            border-color: hsl(0, 0%, 87%);
-        }
+    .right-side {
+        width: calc(40% - 4px);
+        text-align: center;
     }
 
-    &.android {
-        width: 200px;
-        height: 370px;
-        padding: 10px 0 30px 0;
-        border-radius: 20px;
+    /* -- hello page styling -- */
+    .screen {
+        display: inline-block;
+        margin: 0 10px;
+        text-align: left;
 
-        transform: translateY(-110px);
+        &.ios {
+            width: 200px;
+            height: 350px;
+            padding: 30px 0;
+            border-radius: 20px;
 
-        background: linear-gradient(
-            90deg,
-            hsl(0, 0%, 27%) 0%,
-            hsl(0, 0%, 33%) 8%,
-            hsl(0, 0%, 33%) 92%,
-            hsl(0, 0%, 27%) 100%
-        );
+            transform: translateY(50px);
 
-        &::before {
-            content: none;
+            background-color: hsl(0, 0%, 100%);
+
+            &::before {
+                top: 17px;
+                left: calc(50% - 20px);
+
+                width: 40px;
+                height: 5px;
+                background-color: hsl(0, 0%, 80%);
+            }
+
+            &::after {
+                top: auto;
+                bottom: 7px;
+                left: calc(50% - 12.5px);
+                background-color: hsl(0, 0%, 80%);
+            }
+
+            .main-page {
+                border-color: hsl(0, 0%, 87%);
+            }
         }
 
-        &::after {
-            top: auto;
-            bottom: 10px;
-            left: calc(50% - 17.5px);
+        &.android {
+            width: 200px;
+            height: 370px;
+            padding: 10px 0 30px 0;
+            border-radius: 20px;
 
-            border-radius: 8px;
-            background-color: hsl(0, 0%, 13%);
-            width: 35px;
-            height: 20px;
+            transform: translateY(-110px);
+
+            background: linear-gradient(
+                90deg,
+                hsl(0, 0%, 27%) 0%,
+                hsl(0, 0%, 33%) 8%,
+                hsl(0, 0%, 33%) 92%,
+                hsl(0, 0%, 27%) 100%
+            );
+
+            &::before {
+                content: none;
+            }
+
+            &::after {
+                top: auto;
+                bottom: 10px;
+                left: calc(50% - 17.5px);
+
+                border-radius: 8px;
+                background-color: hsl(0, 0%, 13%);
+                width: 35px;
+                height: 20px;
+            }
+
+            .main-page {
+                border-color: hsl(0, 0%, 13%);
+            }
         }
 
-        .main-page {
-            border-color: hsl(0, 0%, 13%);
-        }
-    }
+        .center-page {
+            height: calc(100% - 20px);
 
-    .center-page {
-        height: calc(100% - 20px);
-
-        .message-feed {
-            margin-top: 10px;
+            .message-feed {
+                margin-top: 10px;
+            }
         }
     }
 }
@@ -2940,15 +2940,17 @@ nav {
 }
 
 @media (max-width: 1295px) {
-    .portico-landing.hello .apps .right-side {
-        display: none;
-    }
+    .portico-landing.hello .apps {
+        .right-side {
+            display: none;
+        }
 
-    .portico-landing.hello .apps .left-side {
-        width: 100%;
+        .left-side {
+            width: 100%;
 
-        .content {
-            margin: 0 auto 50px;
+            .content {
+                margin: 0 auto 50px;
+            }
         }
     }
 
