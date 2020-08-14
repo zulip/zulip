@@ -8,7 +8,7 @@ import re
 import sys
 import time
 import traceback
-from functools import wraps
+from functools import lru_cache, wraps
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -29,7 +29,6 @@ from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
 from django.db.models import Q
 from django.http import HttpRequest
-from django.utils.lru_cache import lru_cache
 
 from zerver.lib.utils import make_safe_digest, statsd, statsd_key
 
@@ -662,7 +661,7 @@ def ignore_unhashable_lru_cache(maxsize: int=128, typed: bool=False) -> DECORATO
         * It will not cache result of functions with unhashable arguments.
         * It will clear cache whenever zerver.lib.cache.KEY_PREFIX changes.
     """
-    internal_decorator = lru_cache(maxsize=maxsize, typed=typed)
+    internal_decorator = cast(Any, lru_cache(maxsize=maxsize, typed=typed))
 
     def decorator(user_function: Callable[..., Any]) -> Callable[..., Any]:
         if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
