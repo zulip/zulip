@@ -2569,16 +2569,16 @@ nav {
 .pricing-model .pricing-container .block {
     display: inline-block;
     margin: 40px 20px 20px 20px;
-}
 
-.pricing-model .pricing-container .block .plan-title {
-    padding: 10px;
-    margin-bottom: 3px;
+    .plan-title {
+        padding: 10px;
+        margin-bottom: 3px;
 
-    color: hsl(0, 0%, 100%);
+        color: hsl(0, 0%, 100%);
 
-    font-size: 2em;
-    font-weight: 300;
+        font-size: 2em;
+        font-weight: 300;
+    }
 }
 
 .pricing-model .pricing-container .price-box {
