@@ -2597,14 +2597,14 @@ nav {
     transition-property: all;
     transition-duration: 0.3s;
     transition-timing-function: ease;
-}
 
-.pricing-model .pricing-container .price-box:focus {
-    outline: none;
+    &:focus {
+        outline: none;
 
-    .button {
-        box-shadow: 0 0 25px hsl(169, 48%, 60%);
-        animation: box-shadow-pulse 2s infinite;
+        .button {
+            box-shadow: 0 0 25px hsl(169, 48%, 60%);
+            animation: box-shadow-pulse 2s infinite;
+        }
     }
 }
 
