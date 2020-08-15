@@ -2836,26 +2836,28 @@ nav {
     text-align: center;
 }
 
-.portico-landing.jobs h2 {
-    line-height: 1.4;
-    margin: 20px 0 5px 0;
-}
+.portico-landing.jobs {
+    h2 {
+        line-height: 1.4;
+        margin: 20px 0 5px 0;
+    }
 
-.portico-landing.jobs h3 {
-    line-height: 1.4;
-    margin: 20px 0 7px 0;
-}
+    h3 {
+        line-height: 1.4;
+        margin: 20px 0 7px 0;
+    }
 
-.portico-landing.jobs .open-positions-top .padded-content {
-    padding-bottom: 0;
-}
+    .open-positions-top .padded-content {
+        padding-bottom: 0;
+    }
 
-.portico-landing.jobs .how-we-work .padded-content {
-    padding-top: 25px;
-}
+    .how-we-work .padded-content {
+        padding-top: 25px;
+    }
 
-.portico-landing.jobs .what-were-building {
-    background-color: hsl(217, 22%, 93%);
+    .what-were-building {
+        background-color: hsl(217, 22%, 93%);
+    }
 }
 
 @keyframes box-shadow-pulse {
