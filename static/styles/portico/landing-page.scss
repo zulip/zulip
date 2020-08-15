@@ -2385,45 +2385,45 @@ nav {
     background-image: url(/static/images/landing-page/pycon.jpg);
     background-size: cover;
     background-position: center;
-}
 
-.portico-landing.why-page .bg-pycon.drone {
-    background-image: url(/static/images/landing-page/pycon-drone.jpg);
-}
+    &.drone {
+        background-image: url(/static/images/landing-page/pycon-drone.jpg);
+    }
 
-.portico-landing.why-page .bg-pycon.mit {
-    background-image: url(/static/images/landing-page/mit-lobby-7.jpg);
-}
+    &.mit {
+        background-image: url(/static/images/landing-page/mit-lobby-7.jpg);
+    }
 
-.portico-landing.why-page .bg-pycon.security {
-    background-image: url(/static/images/landing-page/security.jpg);
-}
+    &.security {
+        background-image: url(/static/images/landing-page/security.jpg);
+    }
 
-.portico-landing.why-page .bg-pycon.atlassian {
-    background-size: 300px;
-    background-image: url(/static/images/landing-page/atlassian.jpg);
-    background-repeat: repeat-x;
-}
+    &.atlassian {
+        background-size: 300px;
+        background-image: url(/static/images/landing-page/atlassian.jpg);
+        background-repeat: repeat-x;
+    }
 
-.portico-landing.why-page .bg-pycon.why-zulip {
-    background-image: url(/static/images/landing-page/why-zulip-threads.jpg);
-}
+    &.why-zulip {
+        background-image: url(/static/images/landing-page/why-zulip-threads.jpg);
+    }
 
-.portico-landing.why-page .bg-pycon .bg-dimmer {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
+    .bg-dimmer {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
 
-    background-color: hsla(224, 52%, 12%, 0.7);
+        background-color: hsla(224, 52%, 12%, 0.7);
 
-    z-index: 0;
-}
+        z-index: 0;
+    }
 
-.portico-landing.why-page .bg-pycon .content {
-    position: relative;
-    z-index: 1;
+    .content {
+        position: relative;
+        z-index: 1;
+    }
 }
 
 .portico-landing.why-page .testimonials {
