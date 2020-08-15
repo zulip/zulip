@@ -2633,25 +2633,25 @@ nav {
     font-size: 3.5em;
     font-weight: 600;
     line-height: 0.8;
-}
 
-.pricing-model .pricing-container .text-content .price::before {
-    content: "$";
-    position: relative;
-    vertical-align: top;
-    top: 4px;
-    left: -3px;
+    &::before {
+        content: "$";
+        position: relative;
+        vertical-align: top;
+        top: 4px;
+        left: -3px;
 
-    font-size: 2rem;
-    font-weight: 300;
-    color: hsl(0, 0%, 53%);
-}
+        font-size: 2rem;
+        font-weight: 300;
+        color: hsl(0, 0%, 53%);
+    }
 
-.pricing-model .pricing-container .text-content .price .price-cents {
-    font-size: 0.4em;
-    vertical-align: top;
-    position: relative;
-    top: 6px;
+    .price-cents {
+        font-size: 0.4em;
+        vertical-align: top;
+        position: relative;
+        top: 6px;
+    }
 }
 
 .pricing-model .pricing-container .text-content .standard-price-box {
