@@ -2746,84 +2746,84 @@ nav {
 
     z-index: 10;
     transition: all 0.3s ease;
+
+    .pricing-container {
+        padding: 50px;
+        text-align: left;
+    }
+
+    &.active {
+        opacity: 1;
+        pointer-events: all;
+        background-color: hsla(0, 0%, 0%, 0.6);
+    }
+
+    .price-box {
+        vertical-align: top;
+    }
+
+    .info-box {
+        position: relative;
+        display: inline-block;
+        vertical-align: top;
+        margin-left: 50px;
+        margin-top: -2px;
+        width: calc(100% - 300px - 50px);
+
+        background-color: hsl(0, 0%, 100%);
+        opacity: 0;
+        transform: translateY(300px);
+
+        transition: all 0.3s ease;
+
+        &.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .text-content {
+            position: relative;
+            display: inline-block;
+            height: calc(100% - 40px);
+            width: calc(100% - 300px - 40px);
+
+            h1 {
+                margin-top: 0;
+            }
+
+            p {
+                color: hsl(0, 0%, 53%);
+            }
+
+            .feature-detail-box {
+                position: absolute;
+                width: 100%;
+                bottom: 0;
+                text-align: center;
+
+                .feature {
+                    display: inline-block;
+                    width: calc(33% - 21px);
+                    height: 200px;
+                    background-color: hsl(0, 0%, 93%);
+                    margin: 10px;
+                }
+            }
+        }
+
+        .image {
+            width: 300px;
+            height: 100%;
+
+            float: right;
+
+            background-color: hsl(169, 45%, 43%);
+        }
+    }
 }
 
 .portico-landing.plans .pricing-overlay.pricing-model {
     top: -220px;
-}
-
-.pricing-overlay.pricing-model .pricing-container {
-    padding: 50px;
-    text-align: left;
-}
-
-.pricing-overlay.pricing-model.active {
-    opacity: 1;
-    pointer-events: all;
-    background-color: hsla(0, 0%, 0%, 0.6);
-}
-
-.pricing-overlay.pricing-model .price-box {
-    vertical-align: top;
-}
-
-.pricing-overlay.pricing-model .info-box {
-    position: relative;
-    display: inline-block;
-    vertical-align: top;
-    margin-left: 50px;
-    margin-top: -2px;
-    width: calc(100% - 300px - 50px);
-
-    background-color: hsl(0, 0%, 100%);
-    opacity: 0;
-    transform: translateY(300px);
-
-    transition: all 0.3s ease;
-
-    &.show {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    .text-content {
-        position: relative;
-        display: inline-block;
-        height: calc(100% - 40px);
-        width: calc(100% - 300px - 40px);
-
-        h1 {
-            margin-top: 0;
-        }
-
-        p {
-            color: hsl(0, 0%, 53%);
-        }
-
-        .feature-detail-box {
-            position: absolute;
-            width: 100%;
-            bottom: 0;
-            text-align: center;
-
-            .feature {
-                display: inline-block;
-                width: calc(33% - 21px);
-                height: 200px;
-                background-color: hsl(0, 0%, 93%);
-                margin: 10px;
-            }
-        }
-    }
-
-    .image {
-        width: 300px;
-        height: 100%;
-
-        float: right;
-
-        background-color: hsl(169, 45%, 43%);
-    }
 }
 
 .text-content .pricing-details {
