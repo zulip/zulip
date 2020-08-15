@@ -2540,25 +2540,25 @@ nav {
 /* -- pricing css -- */
 .portico-landing.plans .main {
     width: 100%;
-}
 
-.portico-landing.plans .main .padded-content {
-    > h1 {
-        text-align: center;
-        font-size: 2.5em;
-        margin: 0;
+    .padded-content {
+        > h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin: 0;
 
-        color: hsl(0, 0%, 100%);
-    }
+            color: hsl(0, 0%, 100%);
+        }
 
-    > h2 {
-        text-align: center;
+        > h2 {
+            text-align: center;
 
-        font-size: 1.5em;
+            font-size: 1.5em;
 
-        margin-bottom: 50px;
+            margin-bottom: 50px;
 
-        color: hsl(0, 0%, 100%);
+            color: hsl(0, 0%, 100%);
+        }
     }
 }
 
