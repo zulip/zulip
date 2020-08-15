@@ -2599,6 +2599,15 @@ nav {
     transition-timing-function: ease;
 }
 
+.pricing-model .pricing-container .price-box:focus {
+    outline: none;
+}
+
+.pricing-model .pricing-container .price-box:focus .button {
+    box-shadow: 0 0 25px hsl(169, 48%, 60%);
+    animation: box-shadow-pulse 2s infinite;
+}
+
 .pricing-model .pricing-container .text-content {
     margin: 20px;
 }
@@ -2708,15 +2717,6 @@ nav {
     font-size: 0.9em;
 
     transition: all 0.3s ease;
-}
-
-.pricing-model .pricing-container .price-box:focus {
-    outline: none;
-}
-
-.pricing-model .pricing-container .price-box:focus .button {
-    box-shadow: 0 0 25px hsl(169, 48%, 60%);
-    animation: box-shadow-pulse 2s infinite;
 }
 
 .pricing-model .pricing-container .text-content .standard-price-box {
