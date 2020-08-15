@@ -2792,28 +2792,28 @@ nav {
     display: inline-block;
     height: calc(100% - 40px);
     width: calc(100% - 300px - 40px);
-}
 
-.pricing-overlay.pricing-model .info-box .text-content h1 {
-    margin-top: 0;
-}
+    h1 {
+        margin-top: 0;
+    }
 
-.pricing-overlay.pricing-model .info-box .text-content p {
-    color: hsl(0, 0%, 53%);
-}
+    p {
+        color: hsl(0, 0%, 53%);
+    }
 
-.pricing-overlay.pricing-model .info-box .text-content .feature-detail-box {
-    position: absolute;
-    width: 100%;
-    bottom: 0;
-    text-align: center;
+    .feature-detail-box {
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+        text-align: center;
 
-    .feature {
-        display: inline-block;
-        width: calc(33% - 21px);
-        height: 200px;
-        background-color: hsl(0, 0%, 93%);
-        margin: 10px;
+        .feature {
+            display: inline-block;
+            width: calc(33% - 21px);
+            height: 200px;
+            background-color: hsl(0, 0%, 93%);
+            margin: 10px;
+        }
     }
 }
 
