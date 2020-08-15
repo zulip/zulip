@@ -2610,53 +2610,53 @@ nav {
 
 .pricing-model .pricing-container .text-content {
     margin: 20px;
-}
 
-.pricing-model .pricing-container .text-content h2 {
-    font-size: 1.5em;
-    font-weight: 400;
-    margin-bottom: 0;
+    h2 {
+        font-size: 1.5em;
+        font-weight: 400;
+        margin-bottom: 0;
 
-    text-align: left;
-}
+        text-align: left;
+    }
 
-.pricing-model .pricing-container .text-content .description {
-    font-size: 0.9em;
-    font-weight: 400;
-    color: hsl(0, 0%, 53%);
-}
-
-.pricing-model .pricing-container .text-content .price {
-    display: inline-block;
-    margin-right: 2px;
-
-    font-size: 3.5em;
-    font-weight: 600;
-    line-height: 0.8;
-
-    &::before {
-        content: "$";
-        position: relative;
-        vertical-align: top;
-        top: 4px;
-        left: -3px;
-
-        font-size: 2rem;
-        font-weight: 300;
+    .description {
+        font-size: 0.9em;
+        font-weight: 400;
         color: hsl(0, 0%, 53%);
     }
 
-    .price-cents {
-        font-size: 0.4em;
-        vertical-align: top;
-        position: relative;
-        top: 6px;
-    }
-}
+    .price {
+        display: inline-block;
+        margin-right: 2px;
 
-.pricing-model .pricing-container .text-content .standard-price-box {
-    display: flex;
-    height: 55px;
+        font-size: 3.5em;
+        font-weight: 600;
+        line-height: 0.8;
+
+        &::before {
+            content: "$";
+            position: relative;
+            vertical-align: top;
+            top: 4px;
+            left: -3px;
+
+            font-size: 2rem;
+            font-weight: 300;
+            color: hsl(0, 0%, 53%);
+        }
+
+        .price-cents {
+            font-size: 0.4em;
+            vertical-align: top;
+            position: relative;
+            top: 6px;
+        }
+    }
+
+    .standard-price-box {
+        display: flex;
+        height: 55px;
+    }
 }
 
 .pricing-model .padded-content .text-header .text-content h1 {
