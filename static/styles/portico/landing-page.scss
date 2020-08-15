@@ -2450,16 +2450,6 @@ nav {
     left: -2%;
 }
 
-.portico-landing.why-page .testimonials blockquote::before {
-    content: "“";
-    margin-left: -10px;
-    margin-right: -3px;
-}
-
-.portico-landing.why-page .testimonials blockquote::after {
-    content: "”";
-}
-
 .portico-landing.why-page .testimonials blockquote + cite {
     display: block;
     margin-top: 5px;
@@ -2480,6 +2470,16 @@ nav {
     border: none;
 
     opacity: 0.8;
+
+    &::before {
+        content: "“";
+        margin-left: -10px;
+        margin-right: -3px;
+    }
+
+    &::after {
+        content: "”";
+    }
 }
 
 /* -- gradients -- */
