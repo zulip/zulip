@@ -2291,10 +2291,6 @@ nav {
     color: hsl(223, 6%, 25%);
 }
 
-.portico-landing.why-page .main {
-    max-width: 800px;
-}
-
 .portico-landing.why-page .hero {
     padding: 200px 50px 100px 50px;
 
@@ -2325,6 +2321,10 @@ nav {
 
 .portico-landing.why-page .markdown {
     font-size: 1.1rem;
+}
+
+.portico-landing.why-page .main {
+    max-width: 800px;
 }
 
 .portico-landing.why-page .main blockquote {
