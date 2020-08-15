@@ -2255,10 +2255,10 @@ nav {
 .portico-landing.apps .other-apps .apps .icon.fa-mobile-phone {
     font-size: 4em;
     padding: 11.5px 27px;
-}
 
-.portico-landing.apps .other-apps .apps .icon.fa-mobile-phone::after {
-    margin-top: 1px;
+    &::after {
+        margin-top: 1px;
+    }
 }
 
 .portico-landing.apps .other-apps .apps .icon::after {
