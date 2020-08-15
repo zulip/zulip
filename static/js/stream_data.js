@@ -510,7 +510,7 @@ exports.receives_notifications = function (stream_id, notification_name) {
 };
 
 exports.update_calculated_fields = function (sub) {
-    sub.is_admin = page_params.is_admin;
+    sub.is_realm_admin = page_params.is_admin;
     // Admin can change any stream's name & description either stream is public or
     // private, subscribed or unsubscribed.
     sub.can_change_name_description = page_params.is_admin;
