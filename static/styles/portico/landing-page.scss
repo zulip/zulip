@@ -2230,44 +2230,48 @@ nav {
 .portico-landing.apps .other-apps .apps {
     display: inline-block;
     margin: 50px 0 0 0;
-}
 
-.portico-landing.apps .other-apps .apps .icon {
-    vertical-align: top;
+    .icon {
+        vertical-align: top;
 
-    width: 50px;
-    padding: 20px 30px;
-    border-radius: 70px;
+        width: 50px;
+        padding: 20px 30px;
+        border-radius: 70px;
 
-    color: hsl(0, 0%, 80%);
+        color: hsl(0, 0%, 80%);
 
-    font-size: 3em;
-    text-align: center;
+        font-size: 3em;
+        text-align: center;
 
-    transition: all 0.2s ease;
+        transition: all 0.2s ease;
 
-    &:hover {
-        color: hsl(0, 0%, 47%);
-        background: linear-gradient(-45deg, hsl(0, 0%, 83%), hsl(0, 0%, 98%));
-    }
+        &:hover {
+            color: hsl(0, 0%, 47%);
+            background: linear-gradient(
+                -45deg,
+                hsl(0, 0%, 83%),
+                hsl(0, 0%, 98%)
+            );
+        }
 
-    &.fa-mobile-phone {
-        font-size: 4em;
-        padding: 11.5px 27px;
+        &.fa-mobile-phone {
+            font-size: 4em;
+            padding: 11.5px 27px;
+
+            &::after {
+                margin-top: 1px;
+            }
+        }
 
         &::after {
-            margin-top: 1px;
+            content: attr(data-label);
+            display: block;
+
+            font-size: 0.8rem;
+            font-weight: 600;
+            font-family: "Source Sans Pro", sans-serif;
+            margin-top: 10px;
         }
-    }
-
-    &::after {
-        content: attr(data-label);
-        display: block;
-
-        font-size: 0.8rem;
-        font-weight: 600;
-        font-family: "Source Sans Pro", sans-serif;
-        margin-top: 10px;
     }
 }
 
@@ -3434,26 +3438,28 @@ nav {
         width: 100%;
     }
 
-    .portico-landing.apps .other-apps .apps .icon {
-        padding: 0 14px;
-        width: 30px;
-        padding-top: 8px;
-        padding-bottom: 0;
-        font-size: 2.3em;
+    .portico-landing.apps .other-apps .apps {
+        .icon {
+            padding: 0 14px;
+            width: 30px;
+            padding-top: 8px;
+            padding-bottom: 0;
+            font-size: 2.3em;
 
-        &.fa-mobile-phone {
-            padding: 7px 10px 5px 10px;
-            width: 35px;
-            font-size: 2.5em;
-        }
+            &.fa-mobile-phone {
+                padding: 7px 10px 5px 10px;
+                width: 35px;
+                font-size: 2.5em;
+            }
 
-        &.fa-windows {
-            font-size: 2em;
-            padding: 10px 13px 2px 13px !important;
-        }
+            &.fa-windows {
+                font-size: 2em;
+                padding: 10px 13px 2px 13px !important;
+            }
 
-        &::after {
-            content: "";
+            &::after {
+                content: "";
+            }
         }
     }
 
