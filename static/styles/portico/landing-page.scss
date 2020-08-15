@@ -2681,22 +2681,22 @@ nav {
 
     font-size: 0.9em;
     font-weight: 500;
-}
 
-.pricing-model .pricing-container ul.feature-list li::before {
-    content: " ";
-    position: absolute;
-    top: 10px;
-    left: 0;
-    width: 20px;
-    height: 18px;
+    &::before {
+        content: " ";
+        position: absolute;
+        top: 10px;
+        left: 0;
+        width: 20px;
+        height: 18px;
 
-    background-image: url(/static/images/checkbox-green.svg);
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
+        background-image: url(/static/images/checkbox-green.svg);
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
 
-    filter: invert(0.3);
+        filter: invert(0.3);
+    }
 }
 
 .pricing-model .pricing-container .bottom {
