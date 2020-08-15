@@ -2325,43 +2325,43 @@ nav {
 
 .portico-landing.why-page .main {
     max-width: 800px;
-}
 
-.portico-landing.why-page .main blockquote {
-    background-color: hsl(0, 0%, 100%);
-    border-color: hsl(168, 24%, 51%);
-    padding: 20px 30px;
-    margin-top: 20px;
-    font-size: 1.05em;
-    p {
-        line-height: 1.5;
-        margin: 0;
-        font-weight: 400;
-        color: hsl(220, 23%, 33%);
+    blockquote {
+        background-color: hsl(0, 0%, 100%);
+        border-color: hsl(168, 24%, 51%);
+        padding: 20px 30px;
+        margin-top: 20px;
+        font-size: 1.05em;
+        p {
+            line-height: 1.5;
+            margin: 0;
+            font-weight: 400;
+            color: hsl(220, 23%, 33%);
+        }
+        p:last-child {
+            margin-top: 10px;
+        }
     }
-    p:last-child {
-        margin-top: 10px;
+
+    img {
+        display: block;
+        margin: 0 auto;
+        max-width: 100%;
+        box-shadow: none;
+        border: none;
     }
-}
 
-.portico-landing.why-page .main img {
-    display: block;
-    margin: 0 auto;
-    max-width: 100%;
-    box-shadow: none;
-    border: none;
-}
+    .slack-image {
+        width: 500px;
+    }
 
-.portico-landing.why-page .main .slack-image {
-    width: 500px;
-}
+    .zulip-topics-image {
+        width: 300px;
+    }
 
-.portico-landing.why-page .main .zulip-topics-image {
-    width: 300px;
-}
-
-.portico-landing.why-page .main .zulip-reply-later-image {
-    width: 600px;
+    .zulip-reply-later-image {
+        width: 600px;
+    }
 }
 
 .portico-landing.why-page .photo-description {
