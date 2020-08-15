@@ -1844,6 +1844,12 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         subdomain = self.strategy.session_get('subdomain')
         entitlements: Union[str, List[str]] = attributes.get(org_membership_attribute, [])
+        if isinstance(entitlements, str):  # nocoverage
+            # This shouldn't happen as we'd always expect a list from this attribute even
+            # if it only has one element, but it's safer to have this defensive code.
+            entitlements = [entitlements, ]
+        assert isinstance(entitlements, list)
+
         if subdomain in entitlements:
             return
 
