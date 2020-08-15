@@ -2706,29 +2706,29 @@ nav {
     height: 150px;
 
     background-color: hsl(0, 0%, 93%);
-}
 
-.pricing-model .pricing-container .bottom .details {
-    display: inline-block;
-    vertical-align: top;
-    margin-left: 15px;
-    margin-top: 4px;
+    .details {
+        display: inline-block;
+        vertical-align: top;
+        margin-left: 15px;
+        margin-top: 4px;
 
-    font-size: 0.9em;
-    font-weight: 400;
-    color: hsl(0, 0%, 53%);
+        font-size: 0.9em;
+        font-weight: 400;
+        color: hsl(0, 0%, 53%);
 
-    text-align: left;
-}
+        text-align: left;
+    }
 
-.pricing-model .pricing-container .bottom .button {
-    margin-top: 20px;
-    display: block;
-    text-align: center;
+    .button {
+        margin-top: 20px;
+        display: block;
+        text-align: center;
 
-    font-size: 0.9em;
+        font-size: 0.9em;
 
-    transition: all 0.3s ease;
+        transition: all 0.3s ease;
+    }
 }
 
 /* while the overlay is showing, the transform properties should stay fixed
