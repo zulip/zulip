@@ -631,6 +631,14 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         ldap_disabled = bool(int(account_control_value) & LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK)
         return ldap_disabled
 
+    def is_account_realm_access_forbidden(self, ldap_user: _LDAPUser, realm: Realm) -> bool:
+        if "org_membership" not in settings.AUTH_LDAP_USER_ATTR_MAP:
+            return False
+
+        org_membership_attr = settings.AUTH_LDAP_USER_ATTR_MAP["org_membership"]
+        allowed_orgs: List[str] = ldap_user.attrs.get(org_membership_attr, [])
+        return not is_subdomain_in_allowed_subdomains_list(realm.subdomain, allowed_orgs)
+
     @classmethod
     def get_mapped_name(cls, ldap_user: _LDAPUser) -> str:
         """Constructs the user's Zulip full_name from the LDAP data"""
@@ -766,6 +774,9 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         return_data: Dict[str, Any] = {}
 
         username = self.user_email_from_ldapuser(username, ldap_user)
+
+        if self.is_account_realm_access_forbidden(ldap_user, self._realm):
+            raise ZulipLDAPException("User not allowed to access realm")
 
         if "userAccountControl" in settings.AUTH_LDAP_USER_ATTR_MAP:  # nocoverage
             ldap_disabled = self.is_account_control_disabled_user(ldap_user)

@@ -3782,6 +3782,35 @@ class FetchAPIKeyTest(ZulipTestCase):
             )
         self.assert_json_success(result)
 
+    @override_settings(
+        AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
+        AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "org_membership": "department"},
+    )
+    def test_ldap_auth_email_auth_organization_restriction(self) -> None:
+        self.init_default_ldap_database()
+        # We do test two combinations here:
+        # The first user has no (department) attribute set
+        # The second user has one set, but to a different value
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+
+        self.change_ldap_user_attr("hamlet", "department", "testWrongRealm")
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+
+        self.change_ldap_user_attr("hamlet", "department", "zulip")
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_success(result)
+
     def test_inactive_user(self) -> None:
         do_deactivate_user(self.user_profile)
         result = self.client_post(

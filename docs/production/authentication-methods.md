@@ -284,6 +284,34 @@ details.
 
 [upstream-ldap-groups]: https://django-auth-ldap.readthedocs.io/en/latest/groups.html#limiting-access
 
+### Restricting LDAP user access to specific organizations
+
+If you're hosting multiple Zulip organizations, you can restrict which
+users have access to which organizations.
+This is done by setting `org_membership` in `AUTH_LDAP_USER_ATTR_MAP` to the name of
+the LDAP attribute which will contain a list of  subdomains that the
+user should be allowed to access.
+
+For the root subdomain, `www` in the list will work, or any other of
+`settings.ROOT_SUBDOMAIN_ALIASES`.
+
+For example, with `org_membership` set to `department`, a user with
+the following attributes will have access to the root and `engineering` subdomains:
+```
+...
+department: engineering
+department: www
+...
+```
+
+```eval_rst
+.. warning::
+    Restricting access using this mechanism only affects authentication via LDAP,
+    and won't prevent users from accessing the organization using any other
+    authentication backends that are enabled for the organization.
+```
+
+
 ### Troubleshooting
 
 Most issues with LDAP authentication are caused by misconfigurations of
