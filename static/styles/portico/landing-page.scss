@@ -2821,6 +2821,15 @@ nav {
     margin: 10px;
 }
 
+.pricing-overlay.pricing-model .info-box .image {
+    width: 300px;
+    height: 100%;
+
+    float: right;
+
+    background-color: hsl(169, 45%, 43%);
+}
+
 .text-content .pricing-details {
     padding: 15px 0 15px 0;
     height: 25px;
@@ -2829,15 +2838,6 @@ nav {
     color: hsl(0, 0%, 53%);
     font-style: italic;
     text-align: center;
-}
-
-.pricing-overlay.pricing-model .info-box .image {
-    width: 300px;
-    height: 100%;
-
-    float: right;
-
-    background-color: hsl(169, 45%, 43%);
 }
 
 .portico-landing.jobs h2 {
