@@ -2289,195 +2289,195 @@ nav {
 .portico-landing.why-page {
     padding-top: 0;
     color: hsl(223, 6%, 25%);
-}
 
-.portico-landing.why-page .hero {
-    padding: 200px 50px 100px 50px;
+    .hero {
+        padding: 200px 50px 100px 50px;
 
-    background-color: hsl(153, 32%, 55%);
-    color: hsl(0, 0%, 100%);
-
-    &.small-hero {
-        padding: 120px 50px 30px 50px;
-    }
-
-    h1 {
-        margin: 0 0 20px 0;
-
-        font-size: 3.5em;
-        font-weight: 300;
-    }
-
-    p {
-        width: 70%;
-        margin: 0 auto;
-
-        font-size: 1.3em;
-        text-align: center;
-
-        opacity: 0.7;
-    }
-}
-
-.portico-landing.why-page .markdown {
-    font-size: 1.1rem;
-}
-
-.portico-landing.why-page .main {
-    max-width: 800px;
-
-    blockquote {
-        background-color: hsl(0, 0%, 100%);
-        border-color: hsl(168, 24%, 51%);
-        padding: 20px 30px;
-        margin-top: 20px;
-        font-size: 1.05em;
-        p {
-            line-height: 1.5;
-            margin: 0;
-            font-weight: 400;
-            color: hsl(220, 23%, 33%);
-        }
-        p:last-child {
-            margin-top: 10px;
-        }
-    }
-
-    img {
-        display: block;
-        margin: 0 auto;
-        max-width: 100%;
-        box-shadow: none;
-        border: none;
-    }
-
-    .slack-image {
-        width: 500px;
-    }
-
-    .zulip-topics-image {
-        width: 300px;
-    }
-
-    .zulip-reply-later-image {
-        width: 600px;
-    }
-}
-
-.portico-landing.why-page .photo-description {
-    position: relative;
-    top: -40px;
-    height: 0;
-
-    font-size: 0.8em;
-    font-weight: normal;
-    line-height: 100%;
-    color: hsl(0, 0%, 53%);
-}
-
-.portico-landing.why-page .team h2 {
-    margin-top: 20px;
-}
-
-.portico-landing.why-page .bg-pycon {
-    position: relative;
-
-    background-image: url(/static/images/landing-page/pycon.jpg);
-    background-size: cover;
-    background-position: center;
-
-    &.drone {
-        background-image: url(/static/images/landing-page/pycon-drone.jpg);
-    }
-
-    &.mit {
-        background-image: url(/static/images/landing-page/mit-lobby-7.jpg);
-    }
-
-    &.security {
-        background-image: url(/static/images/landing-page/security.jpg);
-    }
-
-    &.atlassian {
-        background-size: 300px;
-        background-image: url(/static/images/landing-page/atlassian.jpg);
-        background-repeat: repeat-x;
-    }
-
-    &.why-zulip {
-        background-image: url(/static/images/landing-page/why-zulip-threads.jpg);
-    }
-
-    .bg-dimmer {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-
-        background-color: hsla(224, 52%, 12%, 0.7);
-
-        z-index: 0;
-    }
-
-    .content {
-        position: relative;
-        z-index: 1;
-    }
-}
-
-.portico-landing.why-page .testimonials {
-    background-color: hsl(168, 43%, 24%);
-    color: hsl(0, 0%, 100%);
-    margin-bottom: 40px;
-
-    .quote-container {
-        width: 98%;
-        margin: 30px auto 20px auto;
-        padding-left: 2%;
-
-        font-size: 1.2rem;
-    }
-
-    .carousel-quotes {
-        width: 60%;
-        margin: auto;
-    }
-
-    .carousel-inner {
-        width: 100%;
-        left: -2%;
-    }
-
-    blockquote + cite {
-        display: block;
-        margin-top: 5px;
-        margin-bottom: 30px;
-
+        background-color: hsl(153, 32%, 55%);
         color: hsl(0, 0%, 100%);
-        opacity: 0.7;
-        font-weight: 400;
-        line-height: 140%;
-    }
 
-    blockquote {
-        padding: 0;
-
-        font-weight: 400;
-        line-height: 1.6;
-        text-align: left;
-        border: none;
-
-        opacity: 0.8;
-
-        &::before {
-            content: "“";
-            margin-left: -10px;
-            margin-right: -3px;
+        &.small-hero {
+            padding: 120px 50px 30px 50px;
         }
 
-        &::after {
-            content: "”";
+        h1 {
+            margin: 0 0 20px 0;
+
+            font-size: 3.5em;
+            font-weight: 300;
+        }
+
+        p {
+            width: 70%;
+            margin: 0 auto;
+
+            font-size: 1.3em;
+            text-align: center;
+
+            opacity: 0.7;
+        }
+    }
+
+    .markdown {
+        font-size: 1.1rem;
+    }
+
+    .main {
+        max-width: 800px;
+
+        blockquote {
+            background-color: hsl(0, 0%, 100%);
+            border-color: hsl(168, 24%, 51%);
+            padding: 20px 30px;
+            margin-top: 20px;
+            font-size: 1.05em;
+            p {
+                line-height: 1.5;
+                margin: 0;
+                font-weight: 400;
+                color: hsl(220, 23%, 33%);
+            }
+            p:last-child {
+                margin-top: 10px;
+            }
+        }
+
+        img {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            box-shadow: none;
+            border: none;
+        }
+
+        .slack-image {
+            width: 500px;
+        }
+
+        .zulip-topics-image {
+            width: 300px;
+        }
+
+        .zulip-reply-later-image {
+            width: 600px;
+        }
+    }
+
+    .photo-description {
+        position: relative;
+        top: -40px;
+        height: 0;
+
+        font-size: 0.8em;
+        font-weight: normal;
+        line-height: 100%;
+        color: hsl(0, 0%, 53%);
+    }
+
+    .team h2 {
+        margin-top: 20px;
+    }
+
+    .bg-pycon {
+        position: relative;
+
+        background-image: url(/static/images/landing-page/pycon.jpg);
+        background-size: cover;
+        background-position: center;
+
+        &.drone {
+            background-image: url(/static/images/landing-page/pycon-drone.jpg);
+        }
+
+        &.mit {
+            background-image: url(/static/images/landing-page/mit-lobby-7.jpg);
+        }
+
+        &.security {
+            background-image: url(/static/images/landing-page/security.jpg);
+        }
+
+        &.atlassian {
+            background-size: 300px;
+            background-image: url(/static/images/landing-page/atlassian.jpg);
+            background-repeat: repeat-x;
+        }
+
+        &.why-zulip {
+            background-image: url(/static/images/landing-page/why-zulip-threads.jpg);
+        }
+
+        .bg-dimmer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+
+            background-color: hsla(224, 52%, 12%, 0.7);
+
+            z-index: 0;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+    }
+
+    .testimonials {
+        background-color: hsl(168, 43%, 24%);
+        color: hsl(0, 0%, 100%);
+        margin-bottom: 40px;
+
+        .quote-container {
+            width: 98%;
+            margin: 30px auto 20px auto;
+            padding-left: 2%;
+
+            font-size: 1.2rem;
+        }
+
+        .carousel-quotes {
+            width: 60%;
+            margin: auto;
+        }
+
+        .carousel-inner {
+            width: 100%;
+            left: -2%;
+        }
+
+        blockquote + cite {
+            display: block;
+            margin-top: 5px;
+            margin-bottom: 30px;
+
+            color: hsl(0, 0%, 100%);
+            opacity: 0.7;
+            font-weight: 400;
+            line-height: 140%;
+        }
+
+        blockquote {
+            padding: 0;
+
+            font-weight: 400;
+            line-height: 1.6;
+            text-align: left;
+            border: none;
+
+            opacity: 0.8;
+
+            &::before {
+                content: "“";
+                margin-left: -10px;
+                margin-right: -3px;
+            }
+
+            &::after {
+                content: "”";
+            }
         }
     }
 }
@@ -3193,8 +3193,10 @@ nav {
 }
 
 @media (max-width: 906px) {
-    .portico-landing.why-page .hero p br {
-        display: none;
+    .portico-landing.why-page {
+        .hero p br {
+            display: none;
+        }
     }
 
     .portico-landing.features-app {
@@ -3314,38 +3316,40 @@ nav {
         width: auto;
     }
 
-    .portico-landing.why-page .main {
-        width: auto;
-        margin: 0;
-    }
-
-    .portico-landing.why-page .hero {
-        padding-left: 20px;
-        padding-right: 20px;
-        font-size: 0.6em;
-
-        p {
-            font-size: 2em;
-            width: 100%;
+    .portico-landing.why-page {
+        .main {
+            width: auto;
+            margin: 0;
         }
-    }
 
-    .portico-landing.why-page .padded-content {
-        padding: 50px 20px;
-    }
+        .hero {
+            padding-left: 20px;
+            padding-right: 20px;
+            font-size: 0.6em;
 
-    .portico-landing.why-page .testimonials {
+            p {
+                font-size: 2em;
+                width: 100%;
+            }
+        }
+
         .padded-content {
-            padding: 50px;
+            padding: 50px 20px;
         }
 
-        .carousel-quotes {
-            width: 90%;
-        }
+        .testimonials {
+            .padded-content {
+                padding: 50px;
+            }
 
-        .quote-container {
-            padding-left: 4%;
-            font-size: 1em;
+            .carousel-quotes {
+                width: 90%;
+            }
+
+            .quote-container {
+                padding-left: 4%;
+                font-size: 1em;
+            }
         }
     }
 
