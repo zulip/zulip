@@ -204,6 +204,22 @@ def common_get_active_user(email: str, realm: Realm,
 
     return user_profile
 
+def is_subdomain_in_allowed_subdomains_list(subdomain: str, allowed_subdomains: List[str]) -> bool:
+    if subdomain in allowed_subdomains:
+        return True
+
+    # The root subdomain is a special case, as sending an
+    # empty string in the list of values of the attribute may
+    # not be viable. So, any of the ROOT_SUBDOMAIN_ALIASES can
+    # be used to signify the user is authorized for the root
+    # subdomain.
+    if (subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+            and not settings.ROOT_DOMAIN_LANDING_PAGE
+            and any(alias in allowed_subdomains for alias in settings.ROOT_SUBDOMAIN_ALIASES)):
+        return True
+
+    return False
+
 AuthFuncT = TypeVar('AuthFuncT', bound=Callable[..., Optional[UserProfile]])
 rate_limiting_rules = settings.RATE_LIMITING_RULES['authenticate_by_username']
 
@@ -1850,17 +1866,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             entitlements = [entitlements, ]
         assert isinstance(entitlements, list)
 
-        if subdomain in entitlements:
-            return
-
-        # The root subdomain is a special case, as sending an
-        # empty string in the list of values of the attribute may
-        # not be viable. So, any of the ROOT_SUBDOMAIN_ALIASES can
-        # be used to signify the user is authorized for the root
-        # subdomain.
-        if (subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
-                and not settings.ROOT_DOMAIN_LANDING_PAGE
-                and any(alias in entitlements for alias in settings.ROOT_SUBDOMAIN_ALIASES)):
+        if is_subdomain_in_allowed_subdomains_list(subdomain, entitlements):
             return
 
         error_msg = f"SAML user from IdP {idp.name} rejected due to missing entitlement " + \
