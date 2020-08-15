@@ -2245,30 +2245,30 @@ nav {
     text-align: center;
 
     transition: all 0.2s ease;
-}
 
-.portico-landing.apps .other-apps .apps .icon:hover {
-    color: hsl(0, 0%, 47%);
-    background: linear-gradient(-45deg, hsl(0, 0%, 83%), hsl(0, 0%, 98%));
-}
+    &:hover {
+        color: hsl(0, 0%, 47%);
+        background: linear-gradient(-45deg, hsl(0, 0%, 83%), hsl(0, 0%, 98%));
+    }
 
-.portico-landing.apps .other-apps .apps .icon.fa-mobile-phone {
-    font-size: 4em;
-    padding: 11.5px 27px;
+    &.fa-mobile-phone {
+        font-size: 4em;
+        padding: 11.5px 27px;
+
+        &::after {
+            margin-top: 1px;
+        }
+    }
 
     &::after {
-        margin-top: 1px;
+        content: attr(data-label);
+        display: block;
+
+        font-size: 0.8rem;
+        font-weight: 600;
+        font-family: "Source Sans Pro", sans-serif;
+        margin-top: 10px;
     }
-}
-
-.portico-landing.apps .other-apps .apps .icon::after {
-    content: attr(data-label);
-    display: block;
-
-    font-size: 0.8rem;
-    font-weight: 600;
-    font-family: "Source Sans Pro", sans-serif;
-    margin-top: 10px;
 }
 
 .download-from-google-play-store img {
@@ -3440,21 +3440,21 @@ nav {
         padding-top: 8px;
         padding-bottom: 0;
         font-size: 2.3em;
-    }
 
-    .portico-landing.apps .other-apps .apps .icon.fa-mobile-phone {
-        padding: 7px 10px 5px 10px;
-        width: 35px;
-        font-size: 2.5em;
-    }
+        &.fa-mobile-phone {
+            padding: 7px 10px 5px 10px;
+            width: 35px;
+            font-size: 2.5em;
+        }
 
-    .portico-landing.apps .other-apps .apps .icon.fa-windows {
-        font-size: 2em;
-        padding: 10px 13px 2px 13px !important;
-    }
+        &.fa-windows {
+            font-size: 2em;
+            padding: 10px 13px 2px 13px !important;
+        }
 
-    .portico-landing.apps .other-apps .apps .icon::after {
-        content: "";
+        &::after {
+            content: "";
+        }
     }
 
     .main {
