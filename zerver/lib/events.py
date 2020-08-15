@@ -920,6 +920,11 @@ def apply_event(
                         if sub["stream_id"] in stream_ids:
                             subscribers = set(sub["subscribers"]) - user_ids
                             sub["subscribers"] = sorted(list(subscribers))
+        elif event["op"] == "update_role":
+            if user_profile.id == event["user_id"]:
+                for sub in state["subscriptions"]:
+                    if sub["stream_id"] == event["stream_id"]:
+                        sub["role"] = event["value"]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":

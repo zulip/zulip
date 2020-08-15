@@ -1237,6 +1237,34 @@ def do_deactivate_stream(
     # Get the affected user ids *before* we deactivate everybody.
     affected_user_ids = can_access_stream_user_ids(stream)
 
+    stream_admin_subs = Subscription.objects.filter(
+        recipient_id=stream.recipient_id,
+        role=Subscription.ROLE_STREAM_ADMINISTRATOR,
+        active=True,
+        user_profile__is_active=True,
+    )
+    stream_admin_subs.update(role=Subscription.ROLE_MEMBER)
+
+    event_time = timezone_now()
+    subscription_role_changed_logs = [
+        RealmAuditLog(
+            realm=stream.realm,
+            event_type=RealmAuditLog.SUBSCRIPTION_ROLE_CHANGED,
+            event_time=event_time,
+            modified_user=sub.user_profile,
+            acting_user=acting_user,
+            modified_stream=stream,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: Subscription.ROLE_STREAM_ADMINISTRATOR,
+                    RealmAuditLog.NEW_VALUE: Subscription.ROLE_MEMBER,
+                }
+            ).decode(),
+        )
+        for sub in stream_admin_subs
+    ]
+    RealmAuditLog.objects.bulk_create(subscription_role_changed_logs)
+
     get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=True).update(
         active=False
     )
@@ -3864,10 +3892,11 @@ SubAndRemovedT = Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile,
 
 def check_last_stream_admin_cannot_unsubscribe(
     recipient_ids: List[int], subs_to_deactivate: List[SubInfo]
-) -> None:
+) -> List[SubInfo]:
     stream_admin_dict = get_stream_admin_dict_for_streams(
         recipient_ids
     )  # Returns a Dict[id, List[id]]
+    removed_stream_admin_list: List[SubInfo] = []
     for sub_info in subs_to_deactivate:
         recipient_id = sub_info.stream.recipient_id
         user_profile_id = sub_info.user.id
@@ -3875,7 +3904,8 @@ def check_last_stream_admin_cannot_unsubscribe(
             if len(stream_admin_dict[recipient_id]) == 1:
                 raise JsonableError(_("Cannot remove all stream administrators."))
             stream_admin_dict[recipient_id].remove(user_profile_id)
-    return
+            removed_stream_admin_list.append(sub_info)
+    return removed_stream_admin_list
 
 
 def bulk_remove_subscriptions(
@@ -3923,7 +3953,9 @@ def bulk_remove_subscriptions(
             sub_ids_to_deactivate.append(sub_info.sub.id)
 
     recipient_ids = [stream.recipient_id for stream in streams]
-    check_last_stream_admin_cannot_unsubscribe(recipient_ids, subs_to_deactivate)
+    removed_stream_admin_list = check_last_stream_admin_cannot_unsubscribe(
+        recipient_ids, subs_to_deactivate
+    )
 
     our_realm = users[0].realm
 
@@ -3933,11 +3965,37 @@ def bulk_remove_subscriptions(
         occupied_streams_before = list(get_occupied_streams(our_realm))
         Subscription.objects.filter(
             id__in=sub_ids_to_deactivate,
+            role=Subscription.ROLE_STREAM_ADMINISTRATOR,
+        ).update(role=Subscription.ROLE_MEMBER)
+
+        Subscription.objects.filter(
+            id__in=sub_ids_to_deactivate,
         ).update(active=False)
         occupied_streams_after = list(get_occupied_streams(our_realm))
 
         # Log subscription activities in RealmAuditLog
         event_time = timezone_now()
+
+        subscription_role_changed_logs = [
+            RealmAuditLog(
+                realm=sub_info.user.realm,
+                event_type=RealmAuditLog.SUBSCRIPTION_ROLE_CHANGED,
+                event_time=event_time,
+                modified_user=sub_info.user,
+                acting_user=acting_user,
+                modified_stream=sub_info.stream,
+                extra_data=orjson.dumps(
+                    {
+                        RealmAuditLog.OLD_VALUE: Subscription.ROLE_STREAM_ADMINISTRATOR,
+                        RealmAuditLog.NEW_VALUE: Subscription.ROLE_MEMBER,
+                        "reason": "unsubscribe",
+                    }
+                ).decode(),
+            )
+            for sub_info in removed_stream_admin_list
+        ]
+        RealmAuditLog.objects.bulk_create(subscription_role_changed_logs)
+
         event_last_message_id = get_last_message_id()
         all_subscription_logs = [
             RealmAuditLog(
@@ -3961,6 +4019,9 @@ def bulk_remove_subscriptions(
         stream = sub_info.stream
         streams_by_user[sub_info.user.id].append(stream)
         altered_user_dict[stream.id].add(sub_info.user.id)
+
+    stream_sub_list = [(sub_info.stream, sub_info.sub) for sub_info in removed_stream_admin_list]
+    notify_change_stream_role(stream_sub_list)
 
     for user_profile in users:
         if len(streams_by_user[user_profile.id]) == 0:
@@ -4046,6 +4107,18 @@ def do_change_subscription_property(
         stream_id=stream.id,
     )
     send_event(user_profile.realm, event, [user_profile.id])
+
+
+def notify_change_stream_role(stream_sub_list: List[Tuple[Stream, Subscription]]) -> None:
+    for (stream, sub) in stream_sub_list:
+        event = dict(
+            type="subscription",
+            op="update_role",
+            user_id=sub.user_profile_id,
+            value=sub.role,
+            stream_id=stream.id,
+        )
+        send_event(sub.user_profile.realm, event, can_access_stream_user_ids(stream))
 
 
 def do_change_password(user_profile: UserProfile, password: str, commit: bool = True) -> None:

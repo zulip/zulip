@@ -610,6 +610,44 @@ paths:
                                 }
                             - type: object
                               description: |
+                                Event sent to a user's clients when stream-level role of any user is changed.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - subscription
+                                op:
+                                  type: string
+                                  enum:
+                                    - update_role
+                                stream_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the stream whose subscription details have changed.
+                                value:
+                                  description: |
+                                    The new value of the role.
+                                  oneOf:
+                                    - type: integer
+                                user_id:
+                                  type: integer
+                                  description: |
+                                    The id of the user whose role has been changed.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "op": "update_role",
+                                  "type": "subscription",
+                                  "value": 20,
+                                  "stream_id": 11,
+                                  "user_id": 12,
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
                                 Event sent to other users when users have been subscribed to
                                 streams. Sent to all users if the stream is public or to only
                                 the existing subscribers if the stream is private.
