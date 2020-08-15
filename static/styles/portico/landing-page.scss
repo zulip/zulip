@@ -2807,18 +2807,14 @@ nav {
     width: 100%;
     bottom: 0;
     text-align: center;
-}
 
-.pricing-overlay.pricing-model
-    .info-box
-    .text-content
-    .feature-detail-box
     .feature {
-    display: inline-block;
-    width: calc(33% - 21px);
-    height: 200px;
-    background-color: hsl(0, 0%, 93%);
-    margin: 10px;
+        display: inline-block;
+        width: calc(33% - 21px);
+        height: 200px;
+        background-color: hsl(0, 0%, 93%);
+        margin: 10px;
+    }
 }
 
 .pricing-overlay.pricing-model .info-box .image {
