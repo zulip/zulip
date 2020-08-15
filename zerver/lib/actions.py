@@ -147,6 +147,7 @@ from zerver.lib.streams import (
     check_stream_name,
     create_stream_if_needed,
     get_default_value_for_history_public_to_subscribers,
+    get_stream_admin_dict_for_streams,
     render_stream_description,
     send_stream_creation_event,
     subscribed_to_stream,
@@ -3861,6 +3862,22 @@ def notify_subscriptions_removed(user_profile: UserProfile, streams: Iterable[St
 SubAndRemovedT = Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
 
 
+def check_last_stream_admin_cannot_unsubscribe(
+    recipient_ids: List[int], subs_to_deactivate: List[SubInfo]
+) -> None:
+    stream_admin_dict = get_stream_admin_dict_for_streams(
+        recipient_ids
+    )  # Returns a Dict[id, List[id]]
+    for sub_info in subs_to_deactivate:
+        recipient_id = sub_info.stream.recipient_id
+        user_profile_id = sub_info.user.id
+        if user_profile_id in stream_admin_dict[recipient_id]:
+            if len(stream_admin_dict[recipient_id]) == 1:
+                raise JsonableError(_("Cannot remove all stream administrators."))
+            stream_admin_dict[recipient_id].remove(user_profile_id)
+    return
+
+
 def bulk_remove_subscriptions(
     users: Iterable[UserProfile],
     streams: Iterable[Stream],
@@ -3904,6 +3921,9 @@ def bulk_remove_subscriptions(
         for sub_info in sub_infos:
             subs_to_deactivate.append(sub_info)
             sub_ids_to_deactivate.append(sub_info.sub.id)
+
+    recipient_ids = [stream.recipient_id for stream in streams]
+    check_last_stream_admin_cannot_unsubscribe(recipient_ids, subs_to_deactivate)
 
     our_realm = users[0].realm
 
