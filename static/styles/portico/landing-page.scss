@@ -2612,10 +2612,6 @@ nav {
     margin: 20px;
 }
 
-.pricing-model .padded-content .text-header .text-content h1 {
-    margin-top: 0;
-}
-
 .pricing-model .pricing-container .text-content h2 {
     font-size: 1.5em;
     font-weight: 400;
@@ -2624,16 +2620,53 @@ nav {
     text-align: left;
 }
 
-.pricing-model .pricing-container hr {
-    border: none;
-    border-bottom: 2px solid hsl(170, 47%, 53%);
-    margin: 15px 0 15px 0;
-}
-
 .pricing-model .pricing-container .text-content .description {
     font-size: 0.9em;
     font-weight: 400;
     color: hsl(0, 0%, 53%);
+}
+
+.pricing-model .pricing-container .text-content .price {
+    display: inline-block;
+    margin-right: 2px;
+
+    font-size: 3.5em;
+    font-weight: 600;
+    line-height: 0.8;
+}
+
+.pricing-model .pricing-container .text-content .price::before {
+    content: "$";
+    position: relative;
+    vertical-align: top;
+    top: 4px;
+    left: -3px;
+
+    font-size: 2rem;
+    font-weight: 300;
+    color: hsl(0, 0%, 53%);
+}
+
+.pricing-model .pricing-container .text-content .price .price-cents {
+    font-size: 0.4em;
+    vertical-align: top;
+    position: relative;
+    top: 6px;
+}
+
+.pricing-model .pricing-container .text-content .standard-price-box {
+    display: flex;
+    height: 55px;
+}
+
+.pricing-model .padded-content .text-header .text-content h1 {
+    margin-top: 0;
+}
+
+.pricing-model .pricing-container hr {
+    border: none;
+    border-bottom: 2px solid hsl(170, 47%, 53%);
+    margin: 15px 0 15px 0;
 }
 
 .pricing-model .pricing-container ul.feature-list {
@@ -2675,27 +2708,6 @@ nav {
     background-color: hsl(0, 0%, 93%);
 }
 
-.pricing-model .pricing-container .text-content .price::before {
-    content: "$";
-    position: relative;
-    vertical-align: top;
-    top: 4px;
-    left: -3px;
-
-    font-size: 2rem;
-    font-weight: 300;
-    color: hsl(0, 0%, 53%);
-}
-
-.pricing-model .pricing-container .text-content .price {
-    display: inline-block;
-    margin-right: 2px;
-
-    font-size: 3.5em;
-    font-weight: 600;
-    line-height: 0.8;
-}
-
 .pricing-model .pricing-container .bottom .details {
     display: inline-block;
     vertical-align: top;
@@ -2717,18 +2729,6 @@ nav {
     font-size: 0.9em;
 
     transition: all 0.3s ease;
-}
-
-.pricing-model .pricing-container .text-content .standard-price-box {
-    display: flex;
-    height: 55px;
-}
-
-.pricing-model .pricing-container .text-content .price .price-cents {
-    font-size: 0.4em;
-    vertical-align: top;
-    position: relative;
-    top: 6px;
 }
 
 /* while the overlay is showing, the transform properties should stay fixed
