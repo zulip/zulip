@@ -2601,11 +2601,11 @@ nav {
 
 .pricing-model .pricing-container .price-box:focus {
     outline: none;
-}
 
-.pricing-model .pricing-container .price-box:focus .button {
-    box-shadow: 0 0 25px hsl(169, 48%, 60%);
-    animation: box-shadow-pulse 2s infinite;
+    .button {
+        box-shadow: 0 0 25px hsl(169, 48%, 60%);
+        animation: box-shadow-pulse 2s infinite;
+    }
 }
 
 .pricing-model .pricing-container .text-content {
