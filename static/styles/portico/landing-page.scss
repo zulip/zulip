@@ -2430,55 +2430,55 @@ nav {
     background-color: hsl(168, 43%, 24%);
     color: hsl(0, 0%, 100%);
     margin-bottom: 40px;
-}
 
-.portico-landing.why-page .testimonials .quote-container {
-    width: 98%;
-    margin: 30px auto 20px auto;
-    padding-left: 2%;
+    .quote-container {
+        width: 98%;
+        margin: 30px auto 20px auto;
+        padding-left: 2%;
 
-    font-size: 1.2rem;
-}
-
-.portico-landing.why-page .testimonials .carousel-quotes {
-    width: 60%;
-    margin: auto;
-}
-
-.portico-landing.why-page .testimonials .carousel-inner {
-    width: 100%;
-    left: -2%;
-}
-
-.portico-landing.why-page .testimonials blockquote + cite {
-    display: block;
-    margin-top: 5px;
-    margin-bottom: 30px;
-
-    color: hsl(0, 0%, 100%);
-    opacity: 0.7;
-    font-weight: 400;
-    line-height: 140%;
-}
-
-.portico-landing.why-page .testimonials blockquote {
-    padding: 0;
-
-    font-weight: 400;
-    line-height: 1.6;
-    text-align: left;
-    border: none;
-
-    opacity: 0.8;
-
-    &::before {
-        content: "“";
-        margin-left: -10px;
-        margin-right: -3px;
+        font-size: 1.2rem;
     }
 
-    &::after {
-        content: "”";
+    .carousel-quotes {
+        width: 60%;
+        margin: auto;
+    }
+
+    .carousel-inner {
+        width: 100%;
+        left: -2%;
+    }
+
+    blockquote + cite {
+        display: block;
+        margin-top: 5px;
+        margin-bottom: 30px;
+
+        color: hsl(0, 0%, 100%);
+        opacity: 0.7;
+        font-weight: 400;
+        line-height: 140%;
+    }
+
+    blockquote {
+        padding: 0;
+
+        font-weight: 400;
+        line-height: 1.6;
+        text-align: left;
+        border: none;
+
+        opacity: 0.8;
+
+        &::before {
+            content: "“";
+            margin-left: -10px;
+            margin-right: -3px;
+        }
+
+        &::after {
+            content: "”";
+        }
     }
 }
 
@@ -3334,17 +3334,19 @@ nav {
         padding: 50px 20px;
     }
 
-    .portico-landing.why-page .testimonials .padded-content {
-        padding: 50px;
-    }
+    .portico-landing.why-page .testimonials {
+        .padded-content {
+            padding: 50px;
+        }
 
-    .portico-landing.why-page .testimonials .carousel-quotes {
-        width: 90%;
-    }
+        .carousel-quotes {
+            width: 90%;
+        }
 
-    .portico-landing.why-page .testimonials .quote-container {
-        padding-left: 4%;
-        font-size: 1em;
+        .quote-container {
+            padding-left: 4%;
+            font-size: 1em;
+        }
     }
 
     .platform.image {
