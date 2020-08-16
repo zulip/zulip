@@ -8755,6 +8755,9 @@ components:
             access to its message history from the web.
         role:
           type: integer
+          enum:
+            - 20
+            - 50
           description: |
             The user's role within the stream (distinct from the user's
             [organization-level role](/help/roles-and-permissions)).
