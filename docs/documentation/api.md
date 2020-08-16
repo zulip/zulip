@@ -125,6 +125,7 @@ automatically in Zulip's automated test suite.  The code there will
 look something like this:
 
 ``` python
+@openapi_test_function('/messages/render:post')
 def render_message(client: Client) -> None:
     # {code_example|start}
     # Render a message
@@ -137,21 +138,17 @@ def render_message(client: Client) -> None:
     validate_against_openapi_schema(result, '/messages/render', 'post', '200')
 ```
 
-This is an actual Python function which (if registered correctly) will
-be run as part of the `tools/test-api` test suite.  The
-`validate_against_opanapi_schema` function will verify that the result
-of that request is as defined in the examples in
-`zerver/openapi/zulip.yaml`.  To register a function correctly:
+This is an actual Python function which will be run as part of the
+`tools/test-api` test suite.  The `validate_against_opanapi_schema`
+function will verify that the result of that request is as defined in
+the examples in `zerver/openapi/zulip.yaml`.
 
-* You need to add it to the `TEST_FUNCTIONS` map; this declares the
-  relationship between function names like `render_message` and
-  OpenAPI endpoints like `/messages/render:post`.
-* The `render_message` function needs to be called from
-  `test_messages` (or one of the other functions at the bottom of the
-  file).  The final function, `test_the_api`, is what actually runs
-  the tests.
-* Test that your code actually runs in `tools/test-api`; a good way to
-  do this is to break your code and make sure `tools/test-api` fails.
+To run as part of the testsuite, the `render_message` function needs
+to be called from `test_messages` (or one of the other functions at
+the bottom of the file).  The final function, `test_the_api`, is what
+actually runs the tests.  Tests with the `openapi_test_function`
+decorator that are not called will fail tests, as will new endpoints
+that are not covered by an `openapi_test_function`-decorated test.
 
 You will still want to manually test the example using Zulip's Python
 API client by copy-pasting from the website; it's easy to make typos
@@ -230,10 +227,11 @@ above.
    [rest-api-tutorial]: ../tutorials/writing-views.html#writing-api-rest-endpoints
 
 1. Add a function for the endpoint you'd like to document to
-   `zerver/openapi/python_examples.py`. `render_message` is a good
-   example to follow.  There are generally two key pieces to your
-   test: (1) doing an API query and (2) verifying its result has the
-   expected format using `validate_against_openapi_schema`.
+   `zerver/openapi/python_examples.py`, decorated with
+   `@openapi_test_function`. `render_message` is a good example to
+   follow.  There are generally two key pieces to your test: (1) doing
+   an API query and (2) verifying its result has the expected format
+   using `validate_against_openapi_schema`.
 
 1. Make the desired API call inside the function. If our Python
    bindings don't have a dedicated method for a specific API call,
@@ -245,10 +243,9 @@ above.
    documentation for an endpoint that isn't supported by
    `python-zulip-api` yet.
 
-1. Add the function to the `TEST_FUNCTIONS` dict and one of the
-   `test_*` functions at the end of
-   `zerver/openapi/python_examples.py`; these will ensure your function
-   will be called when running `test-api`.
+1. Add the function to one of the `test_*` functions at the end of
+   `zerver/openapi/python_examples.py`; this will ensure your
+   function will be called when running `test-api`.
 
 1. Capture the JSON response returned by the API call (the test
    "fixture").  The easiest way to do this is add an appropriate print
