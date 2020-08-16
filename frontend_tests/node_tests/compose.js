@@ -3,6 +3,8 @@
 const {JSDOM} = require("jsdom");
 const rewiremock = require("rewiremock/node");
 
+const events = require("./lib/events.js");
+
 set_global("bridge", false);
 
 const noop = function () {};
@@ -1495,10 +1497,10 @@ run_test("on_events", () => {
 
         window.open = function (url) {
             assert(url.endsWith("/calls/zoom/register"));
-            server_events_dispatch.dispatch_normal_event({
-                type: "has_zoom_token",
-                value: true,
-            });
+
+            // The event here has value=true.  We keep it in events.js to
+            // allow our tooling to verify its schema.
+            server_events_dispatch.dispatch_normal_event(events.fixtures.has_zoom_token);
         };
 
         channel.post = function (payload) {

@@ -131,6 +131,11 @@ exports.fixtures = {
         topic: "topic1",
     },
 
+    has_zoom_token: {
+        type: "has_zoom_token",
+        value: true,
+    },
+
     hotspots: {
         type: "hotspots",
         hotspots: [
