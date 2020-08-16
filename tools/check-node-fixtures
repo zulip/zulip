@@ -73,6 +73,8 @@ EXEMPT_OPENAPI_NAMES = [
     "realm_filters_event",
     # bots, delivery_email, profile_data
     "realm_user_add_event",
+    # openapi is incomplete
+    "realm_update_dict_event",
 ]
 
 
