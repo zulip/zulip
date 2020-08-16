@@ -713,6 +713,108 @@ def check_realm_update(var_name: str, event: Dict[str, object], prop: str,) -> N
         raise AssertionError(f"Unexpected property type {property_type}")
 
 
+authentication_dict = DictType(
+    required_keys=[
+        ("Google", bool),
+        ("Dev", bool),
+        ("LDAP", bool),
+        ("GitHub", bool),
+        ("Email", bool),
+    ]
+)
+
+authentication_data = DictType(
+    required_keys=[
+        # this single-key dictionary is an annoying
+        # consequence of us using property_type of
+        # "default" for legacy reasons
+        ("authentication_methods", authentication_dict),
+    ]
+)
+
+icon_data = DictType(
+    required_keys=[
+        # force vertical
+        ("icon_url", str),
+        ("icon_source", str),
+    ]
+)
+
+logo_data = DictType(
+    required_keys=[
+        # force vertical
+        ("logo_url", str),
+        ("logo_source", str),
+    ]
+)
+
+message_edit_data = DictType(
+    required_keys=[
+        ("allow_message_editing", bool),
+        ("message_content_edit_limit_seconds", int),
+        ("allow_community_topic_editing", bool),
+    ]
+)
+
+night_logo_data = DictType(
+    required_keys=[
+        # force vertical
+        ("night_logo_url", str),
+        ("night_logo_source", str),
+    ]
+)
+
+update_dict_data = UnionType(
+    [
+        # force vertical
+        authentication_data,
+        icon_data,
+        logo_data,
+        message_edit_data,
+        night_logo_data,
+    ]
+)
+
+realm_update_dict_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm")),
+        ("op", Equals("update_dict")),
+        ("property", EnumType(["default", "icon", "logo", "night_logo"])),
+        ("data", update_dict_data),
+    ]
+)
+_check_realm_update_dict = make_checker(realm_update_dict_event)
+
+
+def check_realm_update_dict(
+    # handle union types
+    var_name: str,
+    event: Dict[str, object],
+) -> None:
+    _check_realm_update_dict(var_name, event)
+
+    if event["property"] == "default":
+        assert isinstance(event["data"], dict)
+
+        if "allow_message_editing" in event["data"]:
+            sub_type = message_edit_data
+        elif "authentication_methods" in event["data"]:
+            sub_type = authentication_data
+        else:
+            raise AssertionError("unhandled fields in data")
+
+    elif event["property"] == "icon":
+        sub_type = icon_data
+    elif event["property"] == "logo":
+        sub_type = logo_data
+    elif event["property"] == "night_logo":
+        sub_type = night_logo_data
+    else:
+        raise AssertionError("unhandled property: {event['property']}")
+
+    check_data(sub_type, f"{var_name}['data']", event["data"])
+
+
 realm_user_type = DictType(
     required_keys=[
         ("user_id", int),

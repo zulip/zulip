@@ -112,6 +112,7 @@ from zerver.lib.event_schema import (
     check_realm_export,
     check_realm_filters,
     check_realm_update,
+    check_realm_update_dict,
     check_realm_user_add,
     check_realm_user_update,
     check_stream_create,
@@ -989,21 +990,6 @@ class NormalActionsTest(BaseAction):
         assert isinstance(events[1]['person']['avatar_url_medium'], str)
 
     def test_change_realm_authentication_methods(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update_dict')),
-            ('property', equals('default')),
-            ('data', check_dict_only([
-                ('authentication_methods', check_dict_only([
-                    ('Google', check_bool),
-                    ('Dev', check_bool),
-                    ('LDAP', check_bool),
-                    ('GitHub', check_bool),
-                    ('Email', check_bool),
-                ])),
-            ])),
-        ])
-
         def fake_backends() -> Any:
             backends = (
                 'zproject.backends.DevAuthBackend',
@@ -1029,7 +1015,7 @@ class NormalActionsTest(BaseAction):
                         self.user_profile.realm,
                         auth_method_dict))
 
-            schema_checker('events[0]', events[0])
+            check_realm_update_dict('events[0]', events[0])
 
     def test_change_pin_stream(self) -> None:
         schema_checker = check_events_dict([
@@ -1091,16 +1077,6 @@ class NormalActionsTest(BaseAction):
                 schema_checker('events[0]', events[0])
 
     def test_change_realm_message_edit_settings(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update_dict')),
-            ('property', equals('default')),
-            ('data', check_dict_only([
-                ('allow_message_editing', check_bool),
-                ('message_content_edit_limit_seconds', check_int),
-                ('allow_community_topic_editing', check_bool),
-            ])),
-        ])
         # Test every transition among the four possibilities {T,F} x {0, non-0}
         for (allow_message_editing, message_content_edit_limit_seconds) in \
             ((True, 0), (False, 0), (False, 1234),
@@ -1110,7 +1086,7 @@ class NormalActionsTest(BaseAction):
                                                      allow_message_editing,
                                                      message_content_edit_limit_seconds,
                                                      False))
-            schema_checker('events[0]', events[0])
+            check_realm_update_dict('events[0]', events[0])
 
     def test_change_realm_notifications_stream(self) -> None:
 
@@ -1385,44 +1361,17 @@ class NormalActionsTest(BaseAction):
     def test_change_realm_icon_source(self) -> None:
         action = lambda: do_change_icon_source(self.user_profile.realm, Realm.ICON_UPLOADED)
         events = self.verify_action(action, state_change_expected=True)
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update_dict')),
-            ('property', equals('icon')),
-            ('data', check_dict_only([
-                ('icon_url', check_string),
-                ('icon_source', check_string),
-            ])),
-        ])
-        schema_checker('events[0]', events[0])
+        check_realm_update_dict('events[0]', events[0])
 
     def test_change_realm_day_mode_logo_source(self) -> None:
         action = lambda: do_change_logo_source(self.user_profile.realm, Realm.LOGO_UPLOADED, False, acting_user=self.user_profile)
         events = self.verify_action(action, state_change_expected=True)
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update_dict')),
-            ('property', equals('logo')),
-            ('data', check_dict_only([
-                ('logo_url', check_string),
-                ('logo_source', check_string),
-            ])),
-        ])
-        schema_checker('events[0]', events[0])
+        check_realm_update_dict('events[0]', events[0])
 
     def test_change_realm_night_mode_logo_source(self) -> None:
         action = lambda: do_change_logo_source(self.user_profile.realm, Realm.LOGO_UPLOADED, True, acting_user=self.user_profile)
         events = self.verify_action(action, state_change_expected=True)
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update_dict')),
-            ('property', equals('night_logo')),
-            ('data', check_dict_only([
-                ('night_logo_url', check_string),
-                ('night_logo_source', check_string),
-            ])),
-        ])
-        schema_checker('events[0]', events[0])
+        check_realm_update_dict('events[0]', events[0])
 
     def test_change_bot_default_all_public_streams(self) -> None:
         bot = self.create_bot('test')
