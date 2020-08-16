@@ -267,6 +267,26 @@ def check_delete_message(
     assert set(event.keys()) == keys
 
 
+has_zoom_token_event = event_dict_type(
+    required_keys=[
+        # force vertical
+        ("type", Equals("has_zoom_token")),
+        ("value", bool),
+    ]
+)
+_check_has_zoom_token = make_checker(has_zoom_token_event)
+
+
+def check_has_zoom_token(
+    # force vertical
+    var_name: str,
+    event: Dict[str, object],
+    value: bool,
+) -> None:
+    _check_has_zoom_token(var_name, event)
+    assert event["value"] == value
+
+
 _hotspot = DictType(
     required_keys=[
         # force vertical
