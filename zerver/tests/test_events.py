@@ -99,6 +99,7 @@ from zerver.lib.event_schema import (
     check_default_streams,
     check_delete_message,
     check_events_dict,
+    check_has_zoom_token,
     check_hotspots,
     check_invites_changed,
     check_message,
@@ -1730,22 +1731,14 @@ class NormalActionsTest(BaseAction):
         )
 
     def test_has_zoom_token(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('has_zoom_token')),
-            ('value', equals(True)),
-        ])
         events = self.verify_action(
             lambda: do_set_zoom_token(self.user_profile, {'access_token': 'token'}),
         )
-        schema_checker('events[0]', events[0])
+        check_has_zoom_token('events[0]', events[0], value=True)
 
-        schema_checker = check_events_dict([
-            ('type', equals('has_zoom_token')),
-            ('value', equals(False)),
-        ])
         events = self.verify_action(
             lambda: do_set_zoom_token(self.user_profile, None))
-        schema_checker('events[0]', events[0])
+        check_has_zoom_token('events[0]', events[0], value=False)
 
 class RealmPropertyActionTest(BaseAction):
     def do_set_realm_property_test(self, name: str) -> None:
