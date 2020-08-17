@@ -1989,6 +1989,103 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Cannot remove all stream administrators.")
 
+    def test_change_subscription_role_for_public_stream(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        self.login("hamlet")
+
+        stream_name = "public_stream"
+        stream = self.make_stream(stream_name)
+        self.subscribe(othello, stream_name)
+        self.subscribe(hamlet, stream_name)
+        sub = get_subscription(stream_name, hamlet)
+        do_change_subscription_role(hamlet, sub, stream, Subscription.ROLE_STREAM_ADMINISTRATOR)
+
+        def change_subscription_role() -> None:
+            for role in [Subscription.ROLE_STREAM_ADMINISTRATOR, Subscription.ROLE_MEMBER]:
+                result = self.client_patch(
+                    f"/json/users/{othello.id}/subscriptions/{stream.id}",
+                    {"role": orjson.dumps(role).decode()},
+                )
+                self.assert_json_success(result)
+                sub = get_subscription(stream_name, othello)
+                self.assertEqual(sub.role, role)
+
+        # Test changing subscription role by stream admin.
+        change_subscription_role()
+
+        # Test changing subscription role by realm admin.
+        self.login("iago")
+        change_subscription_role()
+
+        # test that role of unsubscribed user cannot be changed.
+        cordelia = self.example_user("cordelia")
+        result = self.client_patch(
+            f"/json/users/{cordelia.id}/subscriptions/{stream.id}",
+            {"role": orjson.dumps(Subscription.ROLE_STREAM_ADMINISTRATOR).decode()},
+        )
+        self.assert_json_error(result, "Cannot change role of unsubscribed user.")
+
+    def test_change_subscription_role_for_private_stream(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        self.login("hamlet")
+
+        stream_name = "private_stream"
+        stream = self.make_stream(stream_name, invite_only=True)
+        self.subscribe(othello, stream_name)
+        self.subscribe(hamlet, stream_name)
+        sub = get_subscription(stream_name, hamlet)
+        do_change_subscription_role(hamlet, sub, stream, Subscription.ROLE_STREAM_ADMINISTRATOR)
+
+        # Test changing subscription role by stream admin.
+        result = self.client_patch(
+            f"/json/users/{othello.id}/subscriptions/{stream.id}",
+            {"role": orjson.dumps(Subscription.ROLE_STREAM_ADMINISTRATOR).decode()},
+        )
+        self.assert_json_success(result)
+        sub = get_subscription(stream_name, othello)
+        self.assertEqual(sub.role, Subscription.ROLE_STREAM_ADMINISTRATOR)
+
+        # Unsubscribed realm admin cannot change role for private stream.
+        self.login("iago")
+        result = self.client_patch(
+            f"/json/users/{othello.id}/subscriptions/{stream.id}",
+            {"role": orjson.dumps(Subscription.ROLE_MEMBER).decode()},
+        )
+        self.assert_json_error(
+            result,
+            "Organization administrators cannot change role for unsubscribed private stream.",
+        )
+
+        self.subscribe(self.example_user("iago"), stream_name)
+        # Subscribed realm admin can change role of private stream.
+        result = self.client_patch(
+            f"/json/users/{othello.id}/subscriptions/{stream.id}",
+            {"role": orjson.dumps(Subscription.ROLE_MEMBER).decode()},
+        )
+        self.assert_json_success(result)
+        sub = get_subscription(stream_name, othello)
+        self.assertEqual(sub.role, Subscription.ROLE_MEMBER)
+
+    def test_non_admin_cant_change_subscription_role(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        self.login("hamlet")
+
+        stream_name = "test_stream"
+        stream = self.make_stream(stream_name)
+        self.subscribe(othello, stream_name)
+        self.subscribe(hamlet, stream_name)
+        sub = get_subscription(stream_name, hamlet)
+        do_change_subscription_role(hamlet, sub, stream, Subscription.ROLE_MEMBER)
+
+        result = self.client_patch(
+            f"/json/users/{othello.id}/subscriptions/{stream.id}",
+            {"role": orjson.dumps(Subscription.ROLE_STREAM_ADMINISTRATOR).decode()},
+        )
+        self.assert_json_error(result, "Must be an organization or stream administrator")
+
 
 class DefaultStreamTest(ZulipTestCase):
     def get_default_stream_names(self, realm: Realm) -> Set[str]:

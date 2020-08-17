@@ -29,6 +29,7 @@ from zerver.lib.actions import (
     do_change_stream_message_retention_days,
     do_change_stream_post_policy,
     do_change_subscription_property,
+    do_change_subscription_role,
     do_create_default_stream_group,
     do_deactivate_stream,
     do_delete_messages,
@@ -66,6 +67,7 @@ from zerver.lib.topic import (
     messages_for_topic,
 )
 from zerver.lib.types import Validator
+from zerver.lib.users import access_user_by_id
 from zerver.lib.validator import (
     check_bool,
     check_capped_string,
@@ -83,6 +85,7 @@ from zerver.lib.validator import (
 from zerver.models import (
     Realm,
     Stream,
+    Subscription,
     UserMessage,
     UserProfile,
     get_active_user,
@@ -889,3 +892,32 @@ def update_subscription_properties_backend(
         response_data.append({"stream_id": stream_id, "property": property, "value": value})
 
     return json_success({"subscription_data": response_data})
+
+
+@has_request_variables
+def update_subscription_role(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_id: int = REQ(json_validator=check_int, path_only=True),
+    stream_id: int = REQ(json_validator=check_int, path_only=True),
+    role: int = REQ(json_validator=check_int_in(Subscription.ROLE_TYPES)),
+) -> HttpResponse:
+    (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
+    target_user = access_user_by_id(user_profile, user_id, for_admin=False)
+
+    # We do not allow realm admins to change role of user for an unsubscribed
+    # private stream.
+    if stream.invite_only and sub is None:
+        raise JsonableError(
+            _("Organization administrators cannot change role for unsubscribed private stream.")
+        )
+
+    try:
+        target_user_sub = Subscription.objects.get(
+            user_profile=target_user, recipient=stream.recipient, active=True
+        )
+    except Subscription.DoesNotExist:
+        raise JsonableError(_("Cannot change role of unsubscribed user."))
+
+    do_change_subscription_role(target_user, target_user_sub, stream, role, user_profile)
+    return json_success()

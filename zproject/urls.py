@@ -157,6 +157,7 @@ from zerver.views.streams import (
     update_default_stream_group_streams,
     update_stream_backend,
     update_subscription_properties_backend,
+    update_subscription_role,
     update_subscriptions_backend,
     update_subscriptions_property,
 )
@@ -294,7 +295,11 @@ v1_api_and_json_patterns = [
         PATCH=update_user_backend,
         DELETE=deactivate_user_backend,
     ),
-    rest_path("users/<int:user_id>/subscriptions/<int:stream_id>", GET=get_subscription_backend),
+    rest_path(
+        "users/<int:user_id>/subscriptions/<int:stream_id>",
+        GET=get_subscription_backend,
+        PATCH=(update_subscription_role, {"intentionally_undocumented"}),
+    ),
     rest_path("users/<email>", GET=get_user_by_email),
     rest_path("bots", GET=get_bots_backend, POST=add_bot_backend),
     rest_path("bots/<int:bot_id>/api_key/regenerate", POST=regenerate_bot_api_key),
