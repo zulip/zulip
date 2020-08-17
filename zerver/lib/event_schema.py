@@ -417,10 +417,10 @@ reaction_user_type = DictType(
     ]
 )
 
-reaction_event = event_dict_type(
+reaction_add_event = event_dict_type(
     required_keys=[
         ("type", Equals("reaction")),
-        ("op", equals_add_or_remove),
+        ("op", Equals("add")),
         ("message_id", int),
         ("emoji_name", str),
         ("emoji_code", str),
@@ -429,12 +429,22 @@ reaction_event = event_dict_type(
         ("user", reaction_user_type),
     ]
 )
-_check_reaction = make_checker(reaction_event)
+check_reaction_add = make_checker(reaction_add_event)
 
 
-def check_reaction(var_name: str, event: Dict[str, object], op: str) -> None:
-    _check_reaction(var_name, event)
-    assert event["op"] == op
+reaction_remove_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("reaction")),
+        ("op", Equals("remove")),
+        ("message_id", int),
+        ("emoji_name", str),
+        ("emoji_code", str),
+        ("reaction_type", str),
+        ("user_id", int),
+        ("user", reaction_user_type),
+    ]
+)
+check_reaction_remove = make_checker(reaction_remove_event)
 
 
 bot_services_outgoing_type = DictType(
