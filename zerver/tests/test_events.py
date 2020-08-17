@@ -1148,29 +1148,30 @@ class NormalActionsTest(BaseAction):
                 ('name', check_string),
                 ('email', check_string),
             ])
-        stream = get_stream("Denmark", self.user_profile.realm)
-        sub = get_subscription(stream.name, self.user_profile)
 
-        # First test with notification_settings_null enabled
-        for value in (True, False):
-            events = self.verify_action(
-                lambda: do_change_subscription_property(
-                    self.user_profile,
-                    sub,
-                    stream,
-                    setting_name, value),
-                notification_settings_null=True)
-            schema_checker('events[0]', events[0])
+            stream = get_stream("Denmark", self.user_profile.realm)
+            sub = get_subscription(stream.name, self.user_profile)
 
-        for value in (True, False):
-            events = self.verify_action(
-                lambda: do_change_subscription_property(
-                    self.user_profile,
-                    sub,
-                    stream,
-                    setting_name,
-                    value))
-            schema_checker('events[0]', events[0])
+            # First test with notification_settings_null enabled
+            for value in (True, False):
+                events = self.verify_action(
+                    lambda: do_change_subscription_property(
+                        self.user_profile,
+                        sub,
+                        stream,
+                        setting_name, value),
+                    notification_settings_null=True)
+                schema_checker('events[0]', events[0])
+
+            for value in (True, False):
+                events = self.verify_action(
+                    lambda: do_change_subscription_property(
+                        self.user_profile,
+                        sub,
+                        stream,
+                        setting_name,
+                        value))
+                schema_checker('events[0]', events[0])
 
     def test_change_realm_message_edit_settings(self) -> None:
         schema_checker = check_events_dict([
