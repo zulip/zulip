@@ -194,6 +194,7 @@ class GenericParserTestCase(ZulipTestCase):
           <html>
             <body>
                 <h1>Main header</h1>
+                <img data-src="Not an image">
                 <img src="http://test.com/test.jpg">
                 <div>
                     <p>Description text</p>
