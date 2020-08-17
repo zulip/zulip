@@ -124,6 +124,7 @@ from zerver.lib.event_schema import (
     check_subscription_peer_add,
     check_subscription_peer_remove,
     check_subscription_remove,
+    check_subscription_update,
     check_typing_start,
     check_typing_stop,
     check_update_display_settings,
@@ -1019,15 +1020,6 @@ class NormalActionsTest(BaseAction):
             check_realm_update_dict('events[0]', events[0])
 
     def test_change_pin_stream(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('subscription')),
-            ('op', equals('update')),
-            ('property', equals('pin_to_top')),
-            ('stream_id', check_int),
-            ('value', check_bool),
-            ('name', check_string),
-            ('email', check_string),
-        ])
         stream = get_stream("Denmark", self.user_profile.realm)
         sub = get_subscription(stream.name, self.user_profile)
         do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", False)
@@ -1039,20 +1031,15 @@ class NormalActionsTest(BaseAction):
                     stream,
                     "pin_to_top",
                     pinned))
-            schema_checker('events[0]', events[0])
+            check_subscription_update(
+                "events[0]",
+                events[0],
+                property="pin_to_top",
+                value=pinned,
+            )
 
     def test_change_stream_notification_settings(self) -> None:
         for setting_name in ['email_notifications']:
-            schema_checker = check_events_dict([
-                ('type', equals('subscription')),
-                ('op', equals('update')),
-                ('property', equals(setting_name)),
-                ('stream_id', check_int),
-                ('value', check_bool),
-                ('name', check_string),
-                ('email', check_string),
-            ])
-
             stream = get_stream("Denmark", self.user_profile.realm)
             sub = get_subscription(stream.name, self.user_profile)
 
@@ -1065,7 +1052,12 @@ class NormalActionsTest(BaseAction):
                         stream,
                         setting_name, value),
                     notification_settings_null=True)
-                schema_checker('events[0]', events[0])
+                check_subscription_update(
+                    "events[0]",
+                    events[0],
+                    property=setting_name,
+                    value=value,
+                )
 
             for value in (True, False):
                 events = self.verify_action(
@@ -1075,7 +1067,12 @@ class NormalActionsTest(BaseAction):
                         stream,
                         setting_name,
                         value))
-                schema_checker('events[0]', events[0])
+                check_subscription_update(
+                    "events[0]",
+                    events[0],
+                    property=setting_name,
+                    value=value,
+                )
 
     def test_change_realm_message_edit_settings(self) -> None:
         # Test every transition among the four possibilities {T,F} x {0, non-0}
