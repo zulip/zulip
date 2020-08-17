@@ -605,6 +605,41 @@ def check_realm_bot_update(
     assert {"user_id", field} == set(event["bot"].keys())
 
 
+realm_domain_type = DictType(
+    required_keys=[
+        # force vertical
+        ("domain", str),
+        ("allow_subdomains", bool),
+    ]
+)
+
+realm_domains_add_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm_domains")),
+        ("op", Equals("add")),
+        ("realm_domain", realm_domain_type),
+    ]
+)
+check_realm_domains_add = make_checker(realm_domains_add_event)
+
+realm_domains_change_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm_domains")),
+        ("op", Equals("change")),
+        ("realm_domain", realm_domain_type),
+    ]
+)
+check_realm_domains_change = make_checker(realm_domains_change_event)
+
+realm_domains_remove_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm_domains")),
+        ("op", Equals("remove")),
+        ("domain", str),
+    ]
+)
+check_realm_domains_remove = make_checker(realm_domains_remove_event)
+
 export_type = DictType(
     required_keys=[
         ("id", int),
