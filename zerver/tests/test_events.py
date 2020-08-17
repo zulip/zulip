@@ -105,7 +105,8 @@ from zerver.lib.event_schema import (
     check_message,
     check_muted_topics,
     check_presence,
-    check_reaction,
+    check_reaction_add,
+    check_reaction_remove,
     check_realm_bot_add,
     check_realm_bot_delete,
     check_realm_bot_remove,
@@ -525,7 +526,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile, message, "tada", "1f389", "unicode_emoji"),
             state_change_expected=False,
         )
-        check_reaction('events[0]', events[0], 'add')
+        check_reaction_add("events[0]", events[0])
 
     def test_add_submessage(self) -> None:
         cordelia = self.example_user('cordelia')
@@ -555,7 +556,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile, message, "1f389", "unicode_emoji"),
             state_change_expected=False,
         )
-        check_reaction('events[0]', events[0], 'remove')
+        check_reaction_remove("events[0]", events[0])
 
     def test_invite_user_event(self) -> None:
         self.user_profile = self.example_user('iago')
