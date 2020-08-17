@@ -111,6 +111,9 @@ from zerver.lib.event_schema import (
     check_realm_bot_delete,
     check_realm_bot_remove,
     check_realm_bot_update,
+    check_realm_domains_add,
+    check_realm_domains_change,
+    check_realm_domains_remove,
     check_realm_export,
     check_realm_filters,
     check_realm_update,
@@ -1281,40 +1284,27 @@ class NormalActionsTest(BaseAction):
         check_realm_filters('events[0]', events[0])
 
     def test_realm_domain_events(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('realm_domains')),
-            ('op', equals('add')),
-            ('realm_domain', check_dict_only([
-                ('domain', check_string),
-                ('allow_subdomains', check_bool),
-            ])),
-        ])
         events = self.verify_action(
             lambda: do_add_realm_domain(self.user_profile.realm, 'zulip.org', False))
-        schema_checker('events[0]', events[0])
 
-        schema_checker = check_events_dict([
-            ('type', equals('realm_domains')),
-            ('op', equals('change')),
-            ('realm_domain', check_dict_only([
-                ('domain', equals('zulip.org')),
-                ('allow_subdomains', equals(True)),
-            ])),
-        ])
+        check_realm_domains_add('events[0]', events[0])
+        self.assertEqual(events[0]["realm_domain"]["domain"], "zulip.org")
+        self.assertEqual(events[0]["realm_domain"]["allow_subdomains"], False)
+
         test_domain = RealmDomain.objects.get(realm=self.user_profile.realm,
                                               domain='zulip.org')
         events = self.verify_action(
             lambda: do_change_realm_domain(test_domain, True))
-        schema_checker('events[0]', events[0])
 
-        schema_checker = check_events_dict([
-            ('type', equals('realm_domains')),
-            ('op', equals('remove')),
-            ('domain', equals('zulip.org')),
-        ])
+        check_realm_domains_change("events[0]", events[0])
+        self.assertEqual(events[0]["realm_domain"]["domain"], "zulip.org")
+        self.assertEqual(events[0]["realm_domain"]["allow_subdomains"], True)
+
         events = self.verify_action(
             lambda: do_remove_realm_domain(test_domain))
-        schema_checker('events[0]', events[0])
+
+        check_realm_domains_remove("events[0]", events[0])
+        self.assertEqual(events[0]["domain"], "zulip.org")
 
     def test_create_bot(self) -> None:
         action = lambda: self.create_bot('test')
