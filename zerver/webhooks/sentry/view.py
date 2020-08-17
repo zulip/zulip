@@ -119,7 +119,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
 
         if stacktrace:
             exception_frame = None
-            for frame in stacktrace["frames"]:
+            for frame in reversed(stacktrace["frames"]):
                 if frame["filename"] == filename:
                     exception_frame = frame
                     break
