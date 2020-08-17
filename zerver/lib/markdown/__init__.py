@@ -419,6 +419,10 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
                     # that the message doesn't exist; return None so
                     # that we will cache the error.
                     return None
+                elif code in [63, 179]:
+                    # 63 is that the account is suspended, 179 is that
+                    # it is now locked; cache the None.
+                    return None
                 elif code in [88, 130]:
                     # Code 88 means that we were rate-limited and 130
                     # means Twitter is having capacity issues; either way
