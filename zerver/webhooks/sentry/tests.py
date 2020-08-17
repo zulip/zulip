@@ -44,17 +44,14 @@ Traceback:
 
 Traceback:
 ```javascript
-     const Sentry = require('@sentry/node');
-
-     Sentry.init({
        dsn: 'https://redacted.ingest.sentry.io/5216640',
      });
 
----> Sentry.withScope(function(scope) {
+     Sentry.withScope(function(scope) {
        scope.addEventProcessor(function(event, hint) {
          return event;
        });
-       Sentry.captureException(new Error('Sample error from node.'));
+--->   Sentry.captureException(new Error('Sample error from node.'));
      });
 
 
