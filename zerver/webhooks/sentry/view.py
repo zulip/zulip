@@ -109,7 +109,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
         # The event was triggered by a sentry.capture_exception() call
         # (in the Python Sentry SDK) or something similar.
 
-        filename = event["metadata"]["filename"]
+        filename = event["metadata"].get("filename", None)
 
         stacktrace = None
         for value in event["exception"]["values"]:
@@ -117,14 +117,14 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
                 stacktrace = value["stacktrace"]
                 break
 
-        if stacktrace:
+        if stacktrace and filename:
             exception_frame = None
             for frame in reversed(stacktrace["frames"]):
-                if frame["filename"] == filename:
+                if frame.get("filename", None) == filename:
                     exception_frame = frame
                     break
 
-            if exception_frame:
+            if exception_frame and exception_frame["context_line"]:
                 pre_context = convert_lines_to_traceback_string(exception_frame["pre_context"])
 
                 context_line = exception_frame["context_line"] + "\n"
