@@ -48,6 +48,7 @@ from zerver.lib.actions import (
     do_change_stream_message_retention_days,
     do_change_stream_post_policy,
     do_change_subscription_property,
+    do_change_subscription_role,
     do_change_user_delivery_email,
     do_change_user_role,
     do_create_default_stream_group,
@@ -145,6 +146,7 @@ from zerver.lib.event_schema import (
     check_subscription_peer_add,
     check_subscription_peer_remove,
     check_subscription_remove,
+    check_subscription_role_update,
     check_subscription_update,
     check_typing_start,
     check_typing_stop,
@@ -191,6 +193,7 @@ from zerver.models import (
     RealmPlayground,
     Service,
     Stream,
+    Subscription,
     UserGroup,
     UserMessage,
     UserPresence,
@@ -1219,6 +1222,16 @@ class NormalActionsTest(BaseAction):
                     property=setting_name,
                     value=value,
                 )
+
+    def test_change_subscription_role(self) -> None:
+        stream = get_stream("Denmark", self.user_profile.realm)
+        sub = get_subscription(stream.name, self.user_profile)
+        do_change_subscription_role(self.user_profile, sub, stream, Subscription.ROLE_MEMBER)
+        for role in [Subscription.ROLE_STREAM_ADMINISTRATOR, Subscription.ROLE_MEMBER]:
+            events = self.verify_action(
+                lambda: do_change_subscription_role(self.user_profile, sub, stream, role)
+            )
+            check_subscription_role_update("events[0]", events[0], value=role)
 
     def test_change_realm_message_edit_settings(self) -> None:
         # Test every transition among the four possibilities {T,F} x {0, non-0}

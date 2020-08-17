@@ -1315,6 +1315,25 @@ def check_subscription_update(
     assert event["value"] == value
 
 
+subscription_role_update_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("subscription")),
+        ("op", Equals("update_role")),
+        ("stream_id", int),
+        ("value", int),
+        ("user_id", int),
+    ]
+)
+_check_subscription_role_update = make_checker(subscription_role_update_event)
+
+
+def check_subscription_role_update(
+    var_name: str, event: Dict[str, object], value: Union[bool, int]
+) -> None:
+    _check_subscription_role_update(var_name, event)
+    assert value in Subscription.ROLE_TYPES
+
+
 typing_person_type = DictType(
     required_keys=[
         # we should eventually just send user_id

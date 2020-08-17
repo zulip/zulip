@@ -19,6 +19,7 @@ from zerver.lib.actions import (
     do_change_notification_settings,
     do_change_password,
     do_change_subscription_property,
+    do_change_subscription_role,
     do_change_tos_version,
     do_change_user_delivery_email,
     do_change_user_role,
@@ -540,6 +541,50 @@ class TestRealmAuditLog(ZulipTestCase):
                 1,
             )
             self.assertEqual(getattr(sub, property), value)
+
+    def test_change_subscription_role(self) -> None:
+        user = self.example_user("hamlet")
+        now = timezone_now()
+        # Fetch the Denmark stream for testing
+        stream = get_stream("Denmark", user.realm)
+        sub = Subscription.objects.get(
+            user_profile=user, recipient__type=Recipient.STREAM, recipient__type_id=stream.id
+        )
+        do_change_subscription_role(user, sub, stream, Subscription.ROLE_STREAM_ADMINISTRATOR, user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.SUBSCRIPTION_ROLE_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(
+                    {
+                        RealmAuditLog.OLD_VALUE: Subscription.ROLE_MEMBER,
+                        RealmAuditLog.NEW_VALUE: Subscription.ROLE_STREAM_ADMINISTRATOR,
+                    }
+                ).decode(),
+            ).count(),
+            1,
+        )
+        self.assertEqual(sub.role, Subscription.ROLE_STREAM_ADMINISTRATOR)
+
+        do_change_subscription_role(user, sub, stream, Subscription.ROLE_MEMBER, user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.SUBSCRIPTION_ROLE_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(
+                    {
+                        RealmAuditLog.OLD_VALUE: Subscription.ROLE_STREAM_ADMINISTRATOR,
+                        RealmAuditLog.NEW_VALUE: Subscription.ROLE_MEMBER,
+                    }
+                ).decode(),
+            ).count(),
+            1,
+        )
+        self.assertEqual(sub.role, Subscription.ROLE_MEMBER)
 
     def test_change_default_streams(self) -> None:
         now = timezone_now()
