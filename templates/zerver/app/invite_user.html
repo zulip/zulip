@@ -29,7 +29,7 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="input-group">
+                <div {% if not is_admin %}hidden{% endif %} class="input-group">
                     <label for="invite_as">{{ _('User(s) join as') }}
                         <a href="/help/roles-and-permissions" target="_blank" rel="noopener noreferrer">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
