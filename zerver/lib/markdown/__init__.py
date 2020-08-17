@@ -423,11 +423,12 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
                     # 63 is that the account is suspended, 179 is that
                     # it is now locked; cache the None.
                     return None
-                elif code in [88, 130]:
-                    # Code 88 means that we were rate-limited and 130
-                    # means Twitter is having capacity issues; either way
-                    # just raise the error so we don't cache None and will
-                    # try again later.
+                elif code in [88, 130, 131]:
+                    # Code 88 means that we were rate-limited, 130
+                    # means Twitter is having capacity issues, and 131
+                    # is other 400-equivalent; in these cases, raise
+                    # the error so we don't cache None and will try
+                    # again later.
                     raise
             # It's not clear what to do in cases of other errors,
             # but for now it seems reasonable to log at error
