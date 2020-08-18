@@ -75,6 +75,7 @@ exports.test_realm_emojis = {
         name: "spain",
         source_url: "/some/path/to/spain.png",
         deactivated: false,
+        author_id: test_user.user_id,
     },
     102: {
         id: "102",
