@@ -1,5 +1,6 @@
 "use strict";
 
+const pm_conversations = require("./pm_conversations");
 const util = require("./util");
 
 const stored_messages = new Map();

@@ -4,11 +4,12 @@ set_global("page_params", {realm_is_zephyr_mirror_realm: false});
 set_global("md5", (s) => "md5-" + s);
 
 const settings_config = zrequire("settings_config");
+const pm_conversations = zrequire("pm_conversations");
+
 page_params.realm_email_address_visibility =
     settings_config.email_address_visibility_values.admins_only.code;
 
 zrequire("recent_senders");
-zrequire("pm_conversations");
 zrequire("people");
 zrequire("stream_data");
 zrequire("narrow");
@@ -241,10 +242,10 @@ run_test("sort_recipients", () => {
     stream_data.update_calculated_fields(linux_sub);
 
     // For splitting based on whether a PM was sent
-    global.pm_conversations.set_partner(5);
-    global.pm_conversations.set_partner(6);
-    global.pm_conversations.set_partner(2);
-    global.pm_conversations.set_partner(7);
+    pm_conversations.set_partner(5);
+    pm_conversations.set_partner(6);
+    pm_conversations.set_partner(2);
+    pm_conversations.set_partner(7);
 
     // For splitting based on recency
     global.recent_senders.process_message_for_senders({

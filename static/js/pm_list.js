@@ -1,5 +1,7 @@
 "use strict";
 
+const pm_conversations = require("./pm_conversations");
+
 let prior_dom;
 let private_messages_open = false;
 
