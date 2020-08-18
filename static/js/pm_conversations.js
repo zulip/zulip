@@ -77,5 +77,3 @@ class RecentPrivateMessages {
 }
 
 exports.recent = new RecentPrivateMessages();
-
-window.pm_conversations = exports;

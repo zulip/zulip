@@ -21,7 +21,7 @@ zrequire("presence");
 zrequire("buddy_data");
 zrequire("hash_util");
 zrequire("people");
-zrequire("pm_conversations");
+const pm_conversations = zrequire("pm_conversations");
 zrequire("pm_list");
 
 const alice = {
