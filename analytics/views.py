@@ -80,6 +80,7 @@ if settings.BILLING_ENABLED:
         get_discount_for_realm,
         get_latest_seat_count,
         make_end_of_cycle_updates_if_needed,
+        update_billing_method_of_current_plan,
         update_sponsorship_status,
         void_all_open_invoices,
     )
@@ -1164,6 +1165,14 @@ def support(request: HttpRequest) -> HttpResponse:
             elif status == "deactivated":
                 do_deactivate_realm(realm, request.user)
                 context["message"] = f"{realm.name} deactivated."
+        elif request.POST.get("billing_method", None) is not None:
+            billing_method = request.POST.get("billing_method")
+            if billing_method == "send_invoice":
+                update_billing_method_of_current_plan(realm, charge_automatically=False)
+                context["message"] = f"Billing method of {realm.name} updated to pay by invoice."
+            elif billing_method == "charge_automatically":
+                update_billing_method_of_current_plan(realm, charge_automatically=True)
+                context["message"] = f"Billing method of {realm.name} updated to charge automatically."
         elif request.POST.get("sponsorship_pending", None) is not None:
             sponsorship_pending = request.POST.get("sponsorship_pending")
             if sponsorship_pending == "true":

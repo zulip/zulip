@@ -655,3 +655,9 @@ def void_all_open_invoices(realm: Realm) -> int:
             )
             voided_invoices_count += 1
     return voided_invoices_count
+
+def update_billing_method_of_current_plan(realm: Realm, charge_automatically: bool) -> None:
+    plan = get_current_plan_by_realm(realm)
+    if plan is not None:
+        plan.charge_automatically = charge_automatically
+        plan.save(update_fields=["charge_automatically"])
