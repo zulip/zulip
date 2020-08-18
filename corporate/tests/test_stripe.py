@@ -37,6 +37,7 @@ from corporate.lib.stripe import (
     sign_string,
     stripe_get_customer,
     unsign_string,
+    update_billing_method_of_current_plan,
     update_license_ledger_for_automanaged_plan,
     update_license_ledger_if_needed,
     update_or_create_stripe_customer,
@@ -1845,6 +1846,23 @@ class StripeTest(StripeTestCase):
         self.assertEqual(len(invoices), 1)
         for invoice in invoices:
             self.assertEqual(invoice.status, "void")
+
+    def test_update_billing_method_of_current_plan(self) -> None:
+        realm = get_realm("zulip")
+        customer = Customer.objects.create(realm=realm, stripe_customer_id='cus_12345')
+        plan = CustomerPlan.objects.create(customer=customer, status=CustomerPlan.ACTIVE,
+                                           billing_cycle_anchor=timezone_now(),
+                                           billing_schedule=CustomerPlan.ANNUAL,
+                                           tier=CustomerPlan.STANDARD)
+        self.assertEqual(plan.charge_automatically, False)
+
+        update_billing_method_of_current_plan(realm, True)
+        plan.refresh_from_db()
+        self.assertEqual(plan.charge_automatically, True)
+
+        update_billing_method_of_current_plan(realm, False)
+        plan.refresh_from_db()
+        self.assertEqual(plan.charge_automatically, False)
 
 class RequiresBillingAccessTest(ZulipTestCase):
     def setUp(self) -> None:

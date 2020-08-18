@@ -461,8 +461,9 @@ class TestSupportEndpoint(ZulipTestCase):
                                              '<b>Billing schedule</b>: Annual',
                                              '<b>Licenses</b>: 2/10 (Manual)',
                                              '<b>Price per license</b>: $80.0',
-                                             '<b>Payment method</b>: Send invoice',
                                              '<b>Next invoice date</b>: 02 January 2017',
+                                             '<option value="send_invoice" selected>',
+                                             '<option value="charge_automatically" >'
                                              ], result)
 
         def check_preregistration_user_query_result(result: HttpResponse, email: str, invite: bool=False) -> None:
@@ -571,6 +572,28 @@ class TestSupportEndpoint(ZulipTestCase):
         result = self.client_get("/activity/support", {"q": "zulip"})
         check_realm_reactivation_link_query_result(result)
         check_zulip_realm_query_result(result)
+
+    @mock.patch("analytics.views.update_billing_method_of_current_plan")
+    def test_change_billing_method(self, m: mock.Mock) -> None:
+        cordelia = self.example_user('cordelia')
+        self.login_user(cordelia)
+
+        result = self.client_post("/activity/support", {"realm_id": f"{cordelia.realm_id}", "plan_type": "2"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        result = self.client_post("/activity/support", {"realm_id": f"{iago.realm_id}", "billing_method": "charge_automatically"})
+        m.assert_called_once_with(get_realm("zulip"), charge_automatically=True)
+        self.assert_in_success_response(["Billing method of Zulip Dev updated to charge automatically"], result)
+
+        m.reset_mock()
+
+        result = self.client_post("/activity/support", {"realm_id": f"{iago.realm_id}", "billing_method": "send_invoice"})
+        m.assert_called_once_with(get_realm("zulip"), charge_automatically=False)
+        self.assert_in_success_response(["Billing method of Zulip Dev updated to pay by invoice"], result)
 
     def test_change_plan_type(self) -> None:
         cordelia = self.example_user('cordelia')

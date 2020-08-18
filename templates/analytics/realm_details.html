@@ -72,9 +72,20 @@
     {% else %}
     <b>Fixed price</b>: ${{ realm.current_plan.fixed_price/100 }}<br>
     {% endif %}
-    <b>Payment method</b>: {% if realm.current_plan.charge_automatically %}Card{% else %}Send invoice{% endif %}<br>
     <b>Next invoice date</b>: {{ realm.current_plan.next_invoice_date.strftime('%d %B %Y') }}<br>
 </div>
+
+<form method="POST" class="billing-method-form">
+    <br>
+    <b>Billing method</b><br>
+    {{ csrf_input }}
+    <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+    <select name="billing_method" class="billing-method-select" required>
+        <option value="charge_automatically" {% if realm.current_plan.charge_automatically %}selected{% endif %}>Charge automatically</option>
+        <option value="send_invoice" {% if not realm.current_plan.charge_automatically %}selected{% endif %}>Pay by invoice</option>
+    </select>
+    <button type="submit" class="button rounded small support-submit-button">Update</button>
+</form>
 
 <form method="POST" class="downgrade-plan-form">
     <br>
