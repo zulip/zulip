@@ -1,8 +1,7 @@
 "use strict";
 
-set_global("pm_conversations", {
-    recent: {},
-});
+const pm_conversations = zrequire("pm_conversations");
+pm_conversations.recent = {};
 
 zrequire("muting");
 zrequire("unread");

@@ -1,5 +1,7 @@
 "use strict";
 
+const pm_conversations = require("./pm_conversations");
+
 exports.sub_list_generator = function (lst, lower, upper) {
     // lower/upper has Python range semantics so if you pass
     // in lower=5 and upper=8, you get elements 5/6/7
