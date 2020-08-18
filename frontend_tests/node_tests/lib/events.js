@@ -462,7 +462,7 @@ exports.fixtures = {
         type: "realm_user",
         op: "remove",
         person: {
-            email: test_user.email,
+            full_name: test_user.full_name,
             user_id: test_user.user_id,
         },
     },
