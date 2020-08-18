@@ -1,10 +1,3 @@
-"""
-This is new module that we intend to GROW from test_events.py.
-
-It will contain schemas (aka validators) for Zulip events.
-
-Right now it's only intended to be used by test code.
-"""
 from typing import Dict, List, Sequence, Tuple, Union
 
 from zerver.lib.data_types import (
@@ -23,7 +16,6 @@ from zerver.lib.data_types import (
     make_checker,
 )
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_LINKS, TOPIC_NAME
-from zerver.lib.validator import Validator, check_dict_only, check_int
 from zerver.models import Realm, Stream, Subscription, UserProfile
 
 # These fields are used for "stream" events, and are included in the
@@ -58,33 +50,6 @@ subscription_fields: Sequence[Tuple[str, object]] = [
     ("stream_weekly_traffic", OptionalType(int)),
     ("wildcard_mentions_notify", OptionalType(bool)),
 ]
-
-
-def check_events_dict(
-    required_keys: Sequence[Tuple[str, Validator[object]]],
-    optional_keys: Sequence[Tuple[str, Validator[object]]] = [],
-) -> Validator[Dict[str, object]]:
-    """
-    This is just a tiny wrapper on check_dict_only, but it provides
-    some minor benefits:
-
-        - mark clearly that the schema is for a Zulip event
-        - make sure there's a type field
-        - add id field automatically
-        - sanity check that we have no duplicate keys (we
-          should just make check_dict_only do that, eventually)
-
-    """
-    rkeys = [key[0] for key in required_keys]
-    okeys = [key[0] for key in optional_keys]
-    keys = rkeys + okeys
-    assert len(keys) == len(set(keys))
-    assert "type" in rkeys
-    assert "id" not in keys
-    return check_dict_only(
-        required_keys=[*required_keys, ("id", check_int)],
-        optional_keys=optional_keys,
-    )
 
 
 equals_add_or_remove = UnionType(
@@ -639,6 +604,41 @@ realm_domains_remove_event = event_dict_type(
     ]
 )
 check_realm_domains_remove = make_checker(realm_domains_remove_event)
+
+realm_emoji_type = DictType(
+    required_keys=[
+        ("id", str),
+        ("name", str),
+        ("source_url", str),
+        ("deactivated", bool),
+        ("author_id", int),
+    ]
+)
+
+realm_emoji_update_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm_emoji")),
+        ("op", Equals("update")),
+        ("realm_emoji", StringDictType(realm_emoji_type)),
+    ]
+)
+_check_realm_emoji_update = make_checker(realm_emoji_update_event)
+
+
+def check_realm_emoji_update(var_name: str, event: Dict[str, object]) -> None:
+    """
+    The way we send realm emojis is kinda clumsy--we
+    send a dict mapping the emoji id to a sub_dict with
+    the fields (including the id).  Ideally we can streamline
+    this and just send a list of dicts.  The clients can make
+    a Map as needed.
+    """
+    _check_realm_emoji_update(var_name, event)
+
+    assert isinstance(event["realm_emoji"], dict)
+    for k, v in event["realm_emoji"].items():
+        assert v["id"] == k
+
 
 export_type = DictType(
     required_keys=[

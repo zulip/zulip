@@ -98,7 +98,6 @@ from zerver.lib.event_schema import (
     check_default_stream_groups,
     check_default_streams,
     check_delete_message,
-    check_events_dict,
     check_has_zoom_token,
     check_hotspots,
     check_invites_changed,
@@ -114,6 +113,7 @@ from zerver.lib.event_schema import (
     check_realm_domains_add,
     check_realm_domains_change,
     check_realm_domains_remove,
+    check_realm_emoji_update,
     check_realm_export,
     check_realm_filters,
     check_realm_update,
@@ -156,7 +156,6 @@ from zerver.lib.test_helpers import (
     stdout_suppressed,
 )
 from zerver.lib.topic import TOPIC_NAME
-from zerver.lib.validator import check_bool, check_dict_only, check_int, check_string, equals
 from zerver.models import (
     Attachment,
     Message,
@@ -1229,33 +1228,6 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(state_data['zulip_plan_is_not_limited'], False)
 
     def test_realm_emoji_events(self) -> None:
-        check_realm_emoji_fields = check_dict_only([
-            ('id', check_string),
-            ('name', check_string),
-            ('source_url', check_string),
-            ('deactivated', check_bool),
-            ('author_id', check_int),
-        ])
-
-        def realm_emoji_checker(var_name: str, val: object) -> None:
-            '''
-            The way we send realm emojis is kinda clumsy--we
-            send a dict mapping the emoji id to a sub_dict with
-            the fields (including the id).  Ideally we can streamline
-            this and just send a list of dicts.  The clients can make
-            a Map as needed.
-            '''
-            assert isinstance(val, dict)
-            for k, v in val.items():
-                assert isinstance(k, str)
-                assert v['id'] == k
-                check_realm_emoji_fields(f'{var_name}[{k}]', v)
-
-        schema_checker = check_events_dict([
-            ('type', equals('realm_emoji')),
-            ('op', equals('update')),
-            ('realm_emoji', realm_emoji_checker),
-        ])
         author = self.example_user('iago')
         with get_test_image_file('img.png') as img_file:
             events = self.verify_action(
@@ -1265,11 +1237,11 @@ class NormalActionsTest(BaseAction):
                     author,
                     img_file))
 
-        schema_checker('events[0]', events[0])
+        check_realm_emoji_update('events[0]', events[0])
 
         events = self.verify_action(
             lambda: do_remove_realm_emoji(self.user_profile.realm, "my_emoji"))
-        schema_checker('events[0]', events[0])
+        check_realm_emoji_update('events[0]', events[0])
 
     def test_realm_filter_events(self) -> None:
         regex = "#(?P<id>[123])"
