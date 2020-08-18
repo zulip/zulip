@@ -132,7 +132,8 @@ from zerver.lib.event_schema import (
     check_update_global_notifications,
     check_update_message,
     check_update_message_embedded,
-    check_update_message_flags,
+    check_update_message_flags_add,
+    check_update_message_flags_remove,
     check_user_group_add,
     check_user_group_add_members,
     check_user_group_remove,
@@ -481,13 +482,13 @@ class NormalActionsTest(BaseAction):
             lambda: do_update_message_flags(user_profile, get_client("website"), 'add', 'starred', [message]),
             state_change_expected=True,
         )
-        check_update_message_flags('events[0]', events[0], 'add')
+        check_update_message_flags_add("events[0]", events[0])
 
         events = self.verify_action(
             lambda: do_update_message_flags(user_profile, get_client("website"), 'remove', 'starred', [message]),
             state_change_expected=True,
         )
-        check_update_message_flags('events[0]', events[0], 'remove')
+        check_update_message_flags_remove("events[0]", events[0])
 
     def test_update_read_flag_removes_unread_msg_ids(self) -> None:
 

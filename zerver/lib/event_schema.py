@@ -1321,24 +1321,30 @@ update_message_embedded_event = event_dict_type(
 )
 check_update_message_embedded = make_checker(update_message_embedded_event)
 
-update_message_flags_event = event_dict_type(
+update_message_flags_add_event = event_dict_type(
     required_keys=[
         ("type", Equals("update_message_flags")),
-        ("op", equals_add_or_remove),
-        ("operation", equals_add_or_remove),
+        ("op", Equals("add")),
+        ("operation", Equals("add")),
         ("flag", str),
         ("messages", ListType(int)),
         ("all", bool),
     ]
 )
-_check_update_message_flags = make_checker(update_message_flags_event)
+check_update_message_flags_add = make_checker(update_message_flags_add_event)
 
 
-def check_update_message_flags(
-    var_name: str, event: Dict[str, object], operation: str
-) -> None:
-    _check_update_message_flags(var_name, event)
-    assert event["operation"] == operation and event['op'] == operation
+update_message_flags_remove_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("update_message_flags")),
+        ("op", Equals("remove")),
+        ("operation", Equals("remove")),
+        ("flag", str),
+        ("messages", ListType(int)),
+        ("all", bool),
+    ]
+)
+check_update_message_flags_remove = make_checker(update_message_flags_remove_event)
 
 
 group_type = DictType(
