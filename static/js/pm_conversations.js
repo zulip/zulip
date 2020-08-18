@@ -1,17 +1,15 @@
-"use strict";
-
-const FoldDict = require("./fold_dict").FoldDict;
-const people = require("./people");
+import {FoldDict} from "./fold_dict";
+import * as people from "./people";
 
 const partners = new Set();
 
-exports.set_partner = function (user_id) {
+export function set_partner(user_id) {
     partners.add(user_id);
-};
+}
 
-exports.is_partner = function (user_id) {
+export function is_partner(user_id) {
     return partners.has(user_id);
-};
+}
 
 class RecentPrivateMessages {
     // This data structure keeps track of the sets of users you've had
@@ -77,4 +75,4 @@ class RecentPrivateMessages {
     }
 }
 
-exports.recent = new RecentPrivateMessages();
+export const recent = new RecentPrivateMessages();
