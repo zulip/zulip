@@ -1,12 +1,12 @@
 "use strict";
 
-// TODO: These events are not guaranteed to be perfectly
-//       representative of what the server sends.  For
-//       now we just want very basic test coverage.  We
-//       have more mature tests for events on the backend
-//       side in test_events.py, and we may be able to
-//       re-work both sides (js/python) so that we work off
-//       a shared fixture.
+//  These events are not guaranteed to be perfectly
+//  representative of what the server sends.  We
+//  have a tool called check-node-fixtures that tries
+//  to validate this data against server side schemas,
+//  but there are certain edge cases that the tool now
+//  skips.  And even when the data matches the schema,
+//  it may not be completely representative.
 
 exports.test_user = {
     email: "test@example.com",
