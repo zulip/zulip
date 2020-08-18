@@ -907,6 +907,23 @@ realm_user_add_event = event_dict_type(
 )
 check_realm_user_add = make_checker(realm_user_add_event)
 
+removed_user_type = DictType(
+    required_keys=[
+        # force vertical
+        ("user_id", int),
+        ("full_name", str),
+    ]
+)
+
+realm_user_remove_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm_user")),
+        ("op", Equals("remove")),
+        ("person", removed_user_type),
+    ],
+)
+check_realm_user_remove = make_checker(realm_user_remove_event)
+
 custom_profile_field_type = DictType(
     required_keys=[
         # vertical formatting
