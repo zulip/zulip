@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -87,7 +87,7 @@ GITHUB_URL_TEMPLATES = {
 }
 
 
-@api_key_only_webhook_view('Semaphore')
+@webhook_view('Semaphore')
 @has_request_variables
 def api_semaphore_webhook(request: HttpRequest, user_profile: UserProfile,
                           payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:

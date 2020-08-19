@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -11,7 +11,7 @@ from zerver.models import UserProfile
 ERRBIT_TOPIC_TEMPLATE = '{project_name}'
 ERRBIT_MESSAGE_TEMPLATE = '[{error_class}]({error_url}): "{error_message}" occurred.'
 
-@api_key_only_webhook_view('Errbit')
+@webhook_view('Errbit')
 @has_request_variables
 def api_errbit_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:

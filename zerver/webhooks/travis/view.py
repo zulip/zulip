@@ -3,7 +3,7 @@ from typing import Dict
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_bool, check_dict, check_string
@@ -20,7 +20,7 @@ MESSAGE_TEMPLATE = (
     'Details: [changes]({}), [build log]({})'
 )
 
-@api_key_only_webhook_view('Travis')
+@webhook_view('Travis')
 @has_request_variables
 def api_travis_webhook(request: HttpRequest, user_profile: UserProfile,
                        ignore_pull_requests: bool = REQ(validator=check_bool, default=True),

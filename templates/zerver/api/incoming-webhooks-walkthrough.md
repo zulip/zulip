@@ -86,14 +86,14 @@ from typing import Any, Dict, Iterable, Optional
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_dict, check_string
 from zerver.models import UserProfile
 
-@api_key_only_webhook_view('HelloWorld')
+@webhook_view('HelloWorld')
 @has_request_variables
 def api_helloworld_webhook(
         request: HttpRequest, user_profile: UserProfile,
@@ -116,21 +116,21 @@ def api_helloworld_webhook(
 ```
 
 The above code imports the required functions and defines the main webhook
-function `api_helloworld_webhook`, decorating it with `api_key_only_webhook_view` and
+function `api_helloworld_webhook`, decorating it with `webhook_view` and
 `has_request_variables`. The `has_request_variables` decorator allows you to
 access request variables with `REQ()`. You can find more about `REQ` and request
 variables in [Writing views](
 https://zulip.readthedocs.io/en/latest/tutorials/writing-views.html#request-variables).
 
 You must pass the name of your integration to the
-`api_key_only_webhook_view` decorator; that name will be used to
+`webhook_view` decorator; that name will be used to
 describe your integration in Zulip's analytics (e.g. the `/stats`
 page). Here we have used `HelloWorld`. To be consistent with other
 integrations, use the name of the product you are integrating in camel
 case, spelled as the product spells its own name (except always first
 letter upper-case).
 
-The `api_key_only_webhook_view` decorator indicates that the 3rd party service will
+The `webhook_view` decorator indicates that the 3rd party service will
 send the authorization as an API key in the query parameters. If your service uses
 HTTP Basic authentication, you would instead use the `authenticated_rest_api_view`
 decorator.

@@ -3,7 +3,7 @@ from typing import Any, Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -120,7 +120,7 @@ def format_release_event(payload: Dict[str, Any], include_title: bool=False) -> 
 
     return get_release_event_message(**data)
 
-@api_key_only_webhook_view('Gogs')
+@webhook_view('Gogs')
 @has_request_variables
 def api_gogs_webhook(request: HttpRequest, user_profile: UserProfile,
                      payload: Dict[str, Any]=REQ(argument_type='body'),

@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -84,7 +84,7 @@ EVENT_FUNCTION_MAPPER = {
 }
 
 
-@api_key_only_webhook_view("Harbor")
+@webhook_view("Harbor")
 @has_request_variables
 def api_harbor_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any] = REQ(argument_type='body')) -> HttpResponse:

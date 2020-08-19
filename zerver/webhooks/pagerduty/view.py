@@ -3,7 +3,7 @@ from typing import Any, Dict, Iterable
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -157,7 +157,7 @@ def send_formated_pagerduty(request: HttpRequest,
     body = template.format(**format_dict)
     check_send_webhook_message(request, user_profile, subject, body)
 
-@api_key_only_webhook_view('PagerDuty')
+@webhook_view('PagerDuty')
 @has_request_variables
 def api_pagerduty_webhook(
         request: HttpRequest, user_profile: UserProfile,

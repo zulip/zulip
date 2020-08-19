@@ -26,7 +26,7 @@ other integrations generally should set the first User-Agent element
 on their HTTP requests to something of the form
 ZulipIntegrationName/1.2 so that they are categorized properly.
 
-The `api_key_only_webhook_view` auth decorator, used for most incoming
+The `webhook_view` auth decorator, used for most incoming
 webhooks, accepts the name of the integration as an argument and uses
 it to generate a client name that it adds to the `request` (Django
 [HttpRequest](https://docs.djangoproject.com/en/1.8/ref/request-response/#django.http.HttpRequest))

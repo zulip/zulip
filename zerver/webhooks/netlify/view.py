@@ -2,7 +2,7 @@ from typing import Any, Dict, Iterable
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -17,7 +17,7 @@ EVENTS = ['deploy_failed', 'deploy_locked', 'deploy_unlocked', 'deploy_building'
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_NETLIFY_EVENT")
 
-@api_key_only_webhook_view('Netlify')
+@webhook_view('Netlify')
 @has_request_variables
 def api_netlify_webhook(
         request: HttpRequest, user_profile: UserProfile,

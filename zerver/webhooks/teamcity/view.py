@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.actions import (
     check_send_private_message,
     send_rate_limited_pm_notification_to_bot_owner,
@@ -45,7 +45,7 @@ def get_teamcity_property_value(property_list: List[Dict[str, str]], name: str) 
             return property['value']
     return None
 
-@api_key_only_webhook_view('Teamcity')
+@webhook_view('Teamcity')
 @has_request_variables
 def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
                          payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:

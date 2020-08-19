@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -19,7 +19,7 @@ The {status} **{name}** messaged:
 """.strip()
 
 
-@api_key_only_webhook_view('GoSquared')
+@webhook_view('GoSquared')
 @has_request_variables
 def api_gosquared_webhook(request: HttpRequest, user_profile: UserProfile,
                           payload: Dict[str, Dict[str, Any]]=REQ(argument_type='body')) -> HttpResponse:
