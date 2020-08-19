@@ -10,6 +10,13 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 32**
+
+* [`GET /events`](/api/get-events): Added `op` field to
+  `update_message_flags` events, deprecating the `operation` field
+  (which has the same value).  This removes an unintentional anomaly
+  in the format of this event type.
+
 **Feature level 31**
 
 * [`GET users/me/subscriptions`](/api/get-subscriptions): Added a

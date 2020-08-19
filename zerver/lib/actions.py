@@ -4120,6 +4120,7 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
 
     event = dict(
         type='update_message_flags',
+        op ='add',
         operation='add',
         flag='read',
         messages=[],  # we don't send messages, since the client reloads anyway
@@ -4167,6 +4168,7 @@ def do_mark_stream_messages_as_read(user_profile: UserProfile,
 
     event = dict(
         type='update_message_flags',
+        op='add',
         operation='add',
         flag='read',
         messages=message_ids,
@@ -4274,6 +4276,7 @@ def do_update_message_flags(user_profile: UserProfile,
         raise AssertionError("Invalid message flags operation")
 
     event = {'type': 'update_message_flags',
+             'op': operation,
              'operation': operation,
              'flag': flag,
              'messages': messages,
