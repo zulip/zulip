@@ -52,7 +52,7 @@ if settings.ZILENCER_ENABLED:
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
 log_to_file(webhook_logger, settings.API_KEY_ONLY_WEBHOOK_LOG_PATH)
 
-webhook_unsupported_events_logger = logging.getLogger("zulip.zerver.lib.webhooks.common")
+webhook_unsupported_events_logger = logging.getLogger("zulip.zerver.webhooks.unsupported")
 log_to_file(webhook_unsupported_events_logger,
             settings.WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH)
 
