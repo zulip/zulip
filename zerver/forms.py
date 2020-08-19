@@ -141,7 +141,7 @@ class RegistrationForm(forms.Form):
             return ""
 
         subdomain = self.cleaned_data["realm_subdomain"]
-        if "realm_in_root_domain" in self.data:
+        if self.data.get("realm_url", "") == "realm_in_root_domain":
             subdomain = Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
 
         check_subdomain_available(subdomain)

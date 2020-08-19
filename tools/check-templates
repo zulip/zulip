@@ -61,6 +61,7 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
             "id_password",
             "top_navbar",
             "id_email",
+            "id_team_subdomain",
             "id_terms",
             "send_confirm",
             "register",

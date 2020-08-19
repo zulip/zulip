@@ -2938,7 +2938,7 @@ class RealmCreationTest(ZulipTestCase):
                 email,
                 password,
                 realm_subdomain="abcdef",
-                realm_in_root_domain="true",
+                realm_url="realm_in_root_domain",
                 realm_name=realm_name,
             )
             self.assert_in_response("unavailable", result)
@@ -2948,7 +2948,7 @@ class RealmCreationTest(ZulipTestCase):
             email,
             password,
             realm_subdomain="abcdef",
-            realm_in_root_domain="true",
+            realm_url="realm_in_root_domain",
             realm_name=realm_name,
         )
         self.assertEqual(result.status_code, 302)

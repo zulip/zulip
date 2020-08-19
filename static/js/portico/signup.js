@@ -136,14 +136,24 @@ $(() => {
         },
     );
 
-    const show_subdomain_section = function (bool) {
-        const action = bool ? "hide" : "show";
-        $("#subdomain_section")[action]();
-    };
+    function update_subdomain_input_requirement() {
+        // Required attribute of subdomain field should be updated only when
+        // radio button choices are present, i.e., root domain is available.
+        if ($("#realm_with_subdomain").length > 0) {
+            if ($("#realm_with_subdomain").is(":checked")) {
+                $("#id_team_subdomain").prop("required", true);
+                $("#id_team_subdomain").addClass("required");
+                $("#id_team_subdomain-error").show();
+            } else {
+                $("#id_team_subdomain").prop("required", false);
+                $("#id_team_subdomain").removeClass("required");
+                $("#id_team_subdomain-error").hide();
+            }
+        }
+    }
 
-    $("#realm_in_root_domain").on("change", function () {
-        show_subdomain_section($(this).is(":checked"));
-    });
+    $("input[name='realm_url']:radio").on("change", update_subdomain_input_requirement);
+    update_subdomain_input_requirement();
 
     $("#login_form").validate({
         errorClass: "text-error",
@@ -197,6 +207,12 @@ $(() => {
 
     $("#source_realm_select").on("change", update_full_name_section);
     update_full_name_section();
+
+    $("#subdomain_radio_wrapper #id_team_subdomain").on("input", () => {
+        if (!$("#realm_with_subdomain").is(":checked")) {
+            $("#realm_with_subdomain").trigger("click");
+        }
+    });
 
     let timer;
     $("#id_team_subdomain").on("keydown", () => {
