@@ -4,6 +4,8 @@
 /var/log/zulip/manage.log
 /var/log/zulip/send_email.log
 /var/log/zulip/workers.log
+/var/log/zulip/webhooks_errors.log
+/var/log/zulip/webhooks_unsupported_events.log
 {
     missingok
     rotate 3
