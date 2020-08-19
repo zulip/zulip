@@ -293,6 +293,8 @@ function verify_topic_data(all_topics, stream, topic, last_msg_id, participated)
     assert.equal(topic_data.participated, participated);
 }
 
+let rt = zrequire("recent_topics");
+
 run_test("test_recent_topics_launch", () => {
     // Note: unread count and urls are fake,
     // since they are generated in external libraries
@@ -314,7 +316,7 @@ run_test("test_recent_topics_launch", () => {
         return "<recent_topics table stub>";
     });
 
-    const rt = zrequire("recent_topics");
+    rt = reset_module("recent_topics");
     rt.process_messages(messages);
 
     rt.launch();
@@ -351,7 +353,7 @@ run_test("test_filter_all", () => {
     // topic is not muted
     row_data = generate_topic_data([[1, "topic-1", 0, false, true]]);
     i = row_data.length;
-    const rt = zrequire("recent_topics");
+    rt = reset_module("recent_topics");
     rt.set_filter("all");
     rt.process_messages([messages[0]]);
 
@@ -391,7 +393,7 @@ run_test("test_filter_unread", () => {
     ]);
     let i = 0;
 
-    const rt = zrequire("recent_topics");
+    rt = reset_module("recent_topics");
 
     global.stub_templates(() => "<recent_topics table stub>");
     rt.process_messages(messages);
@@ -455,8 +457,7 @@ run_test("test_filter_participated", () => {
     ]);
     let i = 0;
 
-    const rt = zrequire("recent_topics");
-
+    rt = reset_module("recent_topics");
     global.stub_templates(() => "<recent_topics table stub>");
     rt.process_messages(messages);
     assert.equal(rt.inplace_rerender("1:topic-4"), true);
@@ -495,7 +496,7 @@ run_test("test_filter_participated", () => {
 });
 
 run_test("test_update_unread_count", () => {
-    const rt = zrequire("recent_topics");
+    rt = reset_module("recent_topics");
     rt.set_filter("all");
     global.stub_templates(() => "<recent_topics table stub>");
     rt.process_messages(messages);
@@ -509,7 +510,7 @@ run_test("test_update_unread_count", () => {
 global.stub_templates(() => "<recent_topics table stub>");
 
 run_test("basic assertions", () => {
-    const rt = zrequire("recent_topics");
+    rt = reset_module("recent_topics");
     rt.set_filter("all");
     rt.process_messages(messages);
     let all_topics = rt.get();
@@ -586,7 +587,7 @@ run_test("basic assertions", () => {
 });
 
 run_test("test_reify_local_echo_message", () => {
-    const rt = zrequire("recent_topics");
+    rt = reset_module("recent_topics");
     rt.set_filter("all");
     rt.process_messages(messages);
 
@@ -633,7 +634,7 @@ run_test("test_reify_local_echo_message", () => {
 });
 
 run_test("test_delete_messages", () => {
-    const rt = zrequire("recent_topics");
+    rt = reset_module("recent_topics");
     rt.set_filter("all");
     rt.process_messages(messages);
 
@@ -690,7 +691,7 @@ run_test("test_topic_edit", () => {
         },
     });
     // NOTE: This test should always run in the end as it modified the messages data.
-    const rt = zrequire("recent_topics");
+    rt = reset_module("recent_topics");
     rt.set_filter("all");
     rt.process_messages(messages);
 
@@ -769,7 +770,7 @@ run_test("test_topic_edit", () => {
 });
 
 run_test("test_search", () => {
-    const rt = zrequire("recent_topics");
+    rt = reset_module("recent_topics");
     assert.equal(rt.topic_in_search_results("t", "general", "Recent Topic"), true);
     assert.equal(rt.topic_in_search_results("T", "general", "Recent Topic"), true);
     assert.equal(rt.topic_in_search_results("to", "general", "Recent Topic"), true);
