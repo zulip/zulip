@@ -17,15 +17,26 @@ exports.set_global = function (name, val) {
     return val;
 };
 
-exports.zrequire = function (name, fn) {
+function require_path(name, fn) {
     if (fn === undefined) {
         fn = "../../static/js/" + name;
     } else if (/^generated\/|^js\/|^shared\/|^third\//.test(fn)) {
         // FIXME: Stealing part of the NPM namespace is confusing.
         fn = "../../static/" + fn;
     }
-    delete require.cache[require.resolve(fn)];
+
+    return fn;
+}
+
+exports.zrequire = function (name, fn) {
+    fn = require_path(name, fn);
     requires.push(fn);
+    return require(fn);
+};
+
+exports.reset_module = function (name, fn) {
+    fn = require_path(name, fn);
+    delete require.cache[require.resolve(fn)];
     return require(fn);
 };
 
