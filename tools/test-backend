@@ -108,6 +108,7 @@ not_yet_fully_covered = {path for target in [
     'zerver/lib/server_initialization.py',
     'zerver/lib/test_fixtures.py',
     'zerver/lib/test_runner.py',
+    'zerver/lib/test_console_output.py',
     'zerver/openapi/python_examples.py',
     # Tornado should ideally have full coverage, but we're not there.
     'zerver/tornado/autoreload.py',
@@ -260,8 +261,14 @@ def main() -> None:
                         default=False,
                         help=("Generate Stripe test fixtures by making requests to Stripe test network"))
     parser.add_argument('args', nargs='*')
+    parser.add_argument('--ban-console-output', dest='ban_console_output',
+                        action="store_true",
+                        default=False, help='Require stdout and stderr to be clean of unexpected output.')
 
     options = parser.parse_args()
+    if options.ban_console_output:
+        os.environ["BAN_CONSOLE_OUTPUT"] = "1"
+
     args = options.args
     parallel = options.processes
     include_webhooks = options.coverage or options.include_webhooks

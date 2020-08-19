@@ -56,6 +56,9 @@ if "RUNNING_OPENAPI_CURL_TEST" in os.environ:
 if "GENERATE_STRIPE_FIXTURES" in os.environ:
     GENERATE_STRIPE_FIXTURES = True
 
+if "BAN_CONSOLE_OUTPUT" in os.environ:
+    BAN_CONSOLE_OUTPUT = True
+
 # Decrease the get_updates timeout to 1 second.
 # This allows CasperJS to proceed quickly to the next test step.
 POLL_TIMEOUT = 1000

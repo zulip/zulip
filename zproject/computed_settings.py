@@ -104,6 +104,8 @@ CASPER_TESTS = False
 RUNNING_OPENAPI_CURL_TEST = False
 # This is overridden in test_settings.py for the test suites
 GENERATE_STRIPE_FIXTURES = False
+# This is overridden in test_settings.py for the test suites
+BAN_CONSOLE_OUTPUT = False
 
 # Google Compute Engine has an /etc/boto.cfg that is "nicely
 # configured" to work with GCE's storage service.  However, their
