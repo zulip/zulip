@@ -10,12 +10,7 @@ from zerver.lib.actions import (
     check_send_stream_message,
     send_rate_limited_pm_notification_to_bot_owner,
 )
-from zerver.lib.exceptions import (
-    ErrorCode,
-    JsonableError,
-    StreamDoesNotExistError,
-    UnexpectedWebhookEventType,
-)
+from zerver.lib.exceptions import ErrorCode, JsonableError, StreamDoesNotExistError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import FromAddress
 from zerver.models import UserProfile

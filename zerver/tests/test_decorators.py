@@ -36,7 +36,12 @@ from zerver.lib.actions import (
     do_set_realm_property,
 )
 from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, items_tuple_to_dict
-from zerver.lib.exceptions import InvalidAPIKeyError, InvalidAPIKeyFormatError, JsonableError
+from zerver.lib.exceptions import (
+    InvalidAPIKeyError,
+    InvalidAPIKeyFormatError,
+    JsonableError,
+    UnexpectedWebhookEventType,
+)
 from zerver.lib.initial_password import initial_password
 from zerver.lib.request import (
     REQ,
@@ -76,7 +81,6 @@ from zerver.lib.validator import (
     to_non_negative_int,
     to_positive_or_allowed_int,
 )
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType
 from zerver.models import Realm, UserProfile, get_realm, get_user
 
 if settings.ZILENCER_ENABLED:

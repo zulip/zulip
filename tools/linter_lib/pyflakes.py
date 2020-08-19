@@ -7,9 +7,6 @@ from zulint.linters import run_pyflakes
 def check_pyflakes(files: List[str], options: argparse.Namespace) -> bool:
     suppress_patterns = [
         ("scripts/lib/pythonrc.py", "imported but unused"),
-        # Intentionally imported by zerver/lib/webhooks/common.py
-        ('', "'zerver.lib.exceptions.UnexpectedWebhookEventType' imported but unused"),
-
 
         # Our ipython startup pythonrc file intentionally imports *
         ("scripts/lib/pythonrc.py",
