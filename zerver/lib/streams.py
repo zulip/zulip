@@ -250,7 +250,8 @@ def check_stream_access_for_delete_or_update(user_profile: UserProfile, stream: 
 
     raise StreamAdministratorRequired()
 
-def access_stream_for_delete_or_update(user_profile: UserProfile, stream_id: int) -> Stream:
+def access_stream_for_delete_or_update(user_profile: UserProfile,
+                                       stream_id: int) -> Tuple[Stream, Optional[Subscription]]:
     try:
         stream = Stream.objects.get(id=stream_id)
     except Stream.DoesNotExist:
@@ -264,7 +265,7 @@ def access_stream_for_delete_or_update(user_profile: UserProfile, stream_id: int
         sub = None
 
     check_stream_access_for_delete_or_update(user_profile, stream, sub)
-    return stream
+    return (stream, sub)
 
 # Only set allow_realm_admin flag to True when you want to allow realm admin to
 # access unsubscribed private stream content.

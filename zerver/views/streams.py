@@ -143,7 +143,7 @@ def check_if_removing_someone_else(user_profile: UserProfile,
 def deactivate_stream_backend(request: HttpRequest,
                               user_profile: UserProfile,
                               stream_id: int) -> HttpResponse:
-    stream = access_stream_for_delete_or_update(user_profile, stream_id)
+    (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
     do_deactivate_stream(stream, acting_user=user_profile)
     return json_success()
 
@@ -241,7 +241,7 @@ def update_stream_backend(
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
-    stream = access_stream_for_delete_or_update(user_profile, stream_id)
+    (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
 
     if message_retention_days is not None:
         if not user_profile.is_realm_owner:
