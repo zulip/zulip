@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict, check_list, check_string
@@ -17,7 +17,7 @@ SEARCH_TEMPLATE = """
 ```
 """.strip()
 
-@api_key_only_webhook_view('Papertrail')
+@webhook_view('Papertrail')
 @has_request_variables
 def api_papertrail_webhook(
     request: HttpRequest,

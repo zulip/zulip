@@ -336,11 +336,11 @@ expect that the webhook for a service will allow specification for the
 target server for the webhook, and an API key.
 
 If the webhook does not have an option to provide a bot email, use the
-`api_key_only_webhook_view` decorator, to fill in the `user_profile` and
+`webhook_view` decorator, to fill in the `user_profile` and
 `request.client` fields of a request:
 
 ``` py
-@api_key_only_webhook_view('PagerDuty')
+@webhook_view('PagerDuty')
 @has_request_variables
 def api_pagerduty_webhook(request, user_profile,
                           payload=REQ(argument_type='body'),

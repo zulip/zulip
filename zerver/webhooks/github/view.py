@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view, log_exception_to_webhook_logger
+from zerver.decorator import log_exception_to_webhook_logger, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -605,7 +605,7 @@ IGNORED_TEAM_ACTIONS = [
     "removed_from_repository",
 ]
 
-@api_key_only_webhook_view('GitHub', notify_bot_owner_on_invalid_json=True)
+@webhook_view('GitHub', notify_bot_owner_on_invalid_json=True)
 @has_request_variables
 def api_github_webhook(
         request: HttpRequest, user_profile: UserProfile,

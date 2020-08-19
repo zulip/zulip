@@ -13,7 +13,6 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.decorator import (
-    api_key_only_webhook_view,
     authenticate_notify,
     authenticated_json_view,
     authenticated_rest_api_view,
@@ -25,6 +24,7 @@ from zerver.decorator import (
     rate_limit,
     return_success_on_head_request,
     validate_api_key,
+    webhook_view,
     zulip_login_required,
 )
 from zerver.forms import OurAuthenticationForm
@@ -259,16 +259,16 @@ class DecoratorTestCase(ZulipTestCase):
         request.body = '{"a": "b"}'
         self.assertEqual(get_payload(request), {'a': 'b'})
 
-    def test_api_key_only_webhook_view(self) -> None:
-        @api_key_only_webhook_view('ClientName')
+    def test_webhook_view(self) -> None:
+        @webhook_view('ClientName')
         def my_webhook(request: HttpRequest, user_profile: UserProfile) -> str:
             return user_profile.email
 
-        @api_key_only_webhook_view('ClientName')
+        @webhook_view('ClientName')
         def my_webhook_raises_exception(request: HttpRequest, user_profile: UserProfile) -> None:
             raise Exception("raised by webhook function")
 
-        @api_key_only_webhook_view('ClientName')
+        @webhook_view('ClientName')
         def my_webhook_raises_exception_unsupported_event(
                 request: HttpRequest, user_profile: UserProfile) -> None:
             raise UnsupportedWebhookEventType("helloworld", "test_event")

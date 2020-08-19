@@ -4,7 +4,7 @@ from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -23,7 +23,7 @@ MESSAGE_TEMPLATE = "{user_name} {verb} the message [{title}]({url})"
 TODO_LIST_TEMPLATE = "{user_name} {verb} the todo list [{title}]({url})"
 TODO_TEMPLATE = "{user_name} {verb} the todo task [{title}]({url})"
 
-@api_key_only_webhook_view('Basecamp')
+@webhook_view('Basecamp')
 @has_request_variables
 def api_basecamp_webhook(request: HttpRequest, user_profile: UserProfile,
                          payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:

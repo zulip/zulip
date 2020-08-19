@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, List, Tuple
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -282,7 +282,7 @@ def get_event_handler(event_type: str) -> Callable[..., Tuple[str, str]]:
         raise UnsupportedWebhookEventType("Intercom", event_type)
     return handler
 
-@api_key_only_webhook_view('Intercom')
+@webhook_view('Intercom')
 @has_request_variables
 def api_intercom_webhook(request: HttpRequest, user_profile: UserProfile,
                          payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
