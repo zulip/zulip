@@ -452,4 +452,4 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[
     if event in list(EVENT_FUNCTION_MAPPER.keys()):
         return event
 
-    raise UnsupportedWebhookEventType('GitLab', event)
+    raise UnsupportedWebhookEventType(event)

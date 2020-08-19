@@ -534,7 +534,7 @@ def api_clubhouse_webhook(
     body_func: Any = EVENT_BODY_FUNCTION_MAPPER.get(event)
     topic_func = get_topic_function_based_on_type(payload)
     if body_func is None or topic_func is None:
-        raise UnsupportedWebhookEventType('Clubhouse', event)
+        raise UnsupportedWebhookEventType(event)
     topic = topic_func(payload)
     body = body_func(payload)
 

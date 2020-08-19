@@ -180,6 +180,6 @@ def api_reviewboard_webhook(
         topic = get_review_request_repo_title(payload)
         check_send_webhook_message(request, user_profile, topic, body)
     else:
-        raise UnsupportedWebhookEventType('ReviewBoard', event_type)
+        raise UnsupportedWebhookEventType(event_type)
 
     return json_success()

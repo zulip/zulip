@@ -51,4 +51,4 @@ def get_template(request: HttpRequest, payload: Dict[str, Any]) -> str:
     elif event in EVENTS:
         return message_template + 'is now {state}.'.format(state=payload['state'])
     else:
-        raise UnsupportedWebhookEventType('Netlify', event)
+        raise UnsupportedWebhookEventType(event)

@@ -279,7 +279,7 @@ EVENT_TO_FUNCTION_MAPPER = {
 def get_event_handler(event_type: str) -> Callable[..., Tuple[str, str]]:
     handler: Any = EVENT_TO_FUNCTION_MAPPER.get(event_type)
     if handler is None:
-        raise UnsupportedWebhookEventType("Intercom", event_type)
+        raise UnsupportedWebhookEventType(event_type)
     return handler
 
 @webhook_view('Intercom')

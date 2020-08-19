@@ -29,6 +29,6 @@ def api_transifex_webhook(
     elif reviewed:
         body = f"Resource {resource} fully reviewed."
     else:
-        raise UnsupportedWebhookEventType('Transifex', 'Unknown Event Type')
+        raise UnsupportedWebhookEventType('Unknown Event Type')
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()

@@ -47,7 +47,7 @@ def api_pingdom_webhook(request: HttpRequest, user_profile: UserProfile,
         subject = get_subject_for_http_request(payload)
         body = get_body_for_http_request(payload)
     else:
-        raise UnsupportedWebhookEventType('Pingdom', check_type)
+        raise UnsupportedWebhookEventType(check_type)
 
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()

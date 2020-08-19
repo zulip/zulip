@@ -197,7 +197,7 @@ def gogs_webhook_main(integration_name: str, http_header_name: str,
         )
 
     else:
-        raise UnsupportedWebhookEventType('Gogs', event)
+        raise UnsupportedWebhookEventType(event)
 
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()

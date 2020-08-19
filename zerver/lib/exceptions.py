@@ -261,8 +261,8 @@ class UnsupportedWebhookEventType(JsonableError):
     code = ErrorCode.UNSUPPORTED_WEBHOOK_EVENT_TYPE
     data_fields = ['webhook_name', 'event_type']
 
-    def __init__(self, webhook_name: str, event_type: Optional[str]) -> None:
-        self.webhook_name = webhook_name
+    def __init__(self, event_type: Optional[str]) -> None:
+        self.webhook_name = "(unknown)"
         self.event_type = event_type
 
     @staticmethod

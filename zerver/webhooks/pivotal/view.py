@@ -152,7 +152,7 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> T
         # Known but unsupported Pivotal event types
         pass
     else:
-        raise UnsupportedWebhookEventType('Pivotal Tracker', event_type)
+        raise UnsupportedWebhookEventType(event_type)
 
     return subject, content
 

@@ -43,7 +43,7 @@ def api_newrelic_webhook(request: HttpRequest, user_profile: UserProfile,
         subject = "{} deploy".format(deployment['application_name'])
         content = DEPLOY_TEMPLATE.format(**deployment)
     else:
-        raise UnsupportedWebhookEventType('New Relic', 'Unknown Event Type')
+        raise UnsupportedWebhookEventType('Unknown Event Type')
 
     check_send_webhook_message(request, user_profile, subject, content)
     return json_success()

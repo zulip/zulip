@@ -75,4 +75,4 @@ def get_event_type(event: Dict[str, Any]) -> str:
         event_type = event_type_match.group(1)
         if event_type in EVENT_TYPE_BODY_MAPPER:
             return event_type
-    raise UnsupportedWebhookEventType('Updown', event['event'])
+    raise UnsupportedWebhookEventType(event['event'])

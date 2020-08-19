@@ -271,7 +271,7 @@ class DecoratorTestCase(ZulipTestCase):
         @webhook_view('ClientName')
         def my_webhook_raises_exception_unsupported_event(
                 request: HttpRequest, user_profile: UserProfile) -> None:
-            raise UnsupportedWebhookEventType("helloworld", "test_event")
+            raise UnsupportedWebhookEventType("test_event")
 
         webhook_bot_email = 'webhook-bot@zulip.com'
         webhook_bot_realm = get_realm('zulip')
@@ -363,7 +363,7 @@ body:
 
         # Test when an unsupported webhook event occurs
         with mock.patch('zerver.decorator.webhook_unsupported_events_logger.exception') as mock_exception:
-            exception_msg = "The 'test_event' event isn't currently supported by the helloworld webhook"
+            exception_msg = "The 'test_event' event isn't currently supported by the ClientName webhook"
             with self.assertRaisesRegex(UnsupportedWebhookEventType, exception_msg):
                 request.body = "invalidjson"
                 request.content_type = 'application/json'
@@ -543,7 +543,7 @@ body:
     def test_authenticated_rest_api_view_logging_unsupported_event(self) -> None:
         @authenticated_rest_api_view(webhook_client_name="ClientName")
         def my_webhook_raises_exception(request: HttpRequest, user_profile: UserProfile) -> None:
-            raise UnsupportedWebhookEventType("helloworld", "test_event")
+            raise UnsupportedWebhookEventType("test_event")
 
         webhook_bot_email = 'webhook-bot@zulip.com'
         webhook_bot_realm = get_realm('zulip')
@@ -558,7 +558,7 @@ body:
         request.content_type = 'text/plain'
 
         with mock.patch('zerver.decorator.webhook_unsupported_events_logger.exception') as mock_exception:
-            exception_msg = "The 'test_event' event isn't currently supported by the helloworld webhook"
+            exception_msg = "The 'test_event' event isn't currently supported by the ClientName webhook"
             with self.assertRaisesRegex(UnsupportedWebhookEventType, exception_msg):
                 my_webhook_raises_exception(request)
 

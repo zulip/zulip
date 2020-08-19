@@ -620,7 +620,7 @@ def api_github_webhook(
     """
     header_event = validate_extract_webhook_http_header(request, "X_GITHUB_EVENT", "GitHub")
     if header_event is None:
-        raise UnsupportedWebhookEventType("GitHub", "no header provided")
+        raise UnsupportedWebhookEventType("no header provided")
 
     event = get_zulip_event_name(header_event, payload, branches)
     if event is None:
@@ -691,11 +691,11 @@ def get_zulip_event_name(
         else:
             # this means GH has actually added new actions since September 2020,
             # so it's a bit more cause for alarm
-            raise UnsupportedWebhookEventType("GitHub", f"unsupported team action {action}")
+            raise UnsupportedWebhookEventType(f"unsupported team action {action}")
     elif header_event in list(EVENT_FUNCTION_MAPPER.keys()):
         return header_event
     elif header_event in IGNORED_EVENTS:
         return None
 
     complete_event = "{}:{}".format(header_event, payload.get("action", "???"))  # nocoverage
-    raise UnsupportedWebhookEventType('GitHub', complete_event)
+    raise UnsupportedWebhookEventType(complete_event)
