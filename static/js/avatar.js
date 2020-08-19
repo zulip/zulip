@@ -56,6 +56,7 @@ exports.build_user_avatar_widget = function () {
     $("#user-avatar-upload-widget .image-delete-button").on("click keydown", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        image_upload_widget.widget_loading("user-avatar-upload-widget", "start");
         channel.del({
             url: "/json/users/me/avatar",
             success() {
@@ -65,6 +66,7 @@ exports.build_user_avatar_widget = function () {
                 // where you try to upload the same image you just deleted.
                 get_file_input().val("");
                 // Rest of the work is done via the user_events -> avatar_url event we will get
+                image_upload_widget.widget_loading("user-avatar-upload-widget", "end", "delete");
             },
         });
     });

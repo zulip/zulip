@@ -1,17 +1,24 @@
 "use strict";
 
-exports.widget_loading = function (widget, type) {
+exports.widget_loading = function (widget, type, func) {
     const spinner = $(`#${widget} .upload-spinner-background`).expectOne();
     const upload_text = $(`#${widget}  .image-upload-text`).expectOne();
     const delete_button = $(`#${widget}  .image-delete-button`).expectOne();
+    // These widget loading function can we user for both upload and delete function
+    // when func arg is undefined we will take it as upload function
     if (type === "start") {
         spinner.css({visibility: "visible"});
         upload_text.hide();
         delete_button.hide();
     } else {
+        // type === "end"
         spinner.css({visibility: "hidden"});
         upload_text.show();
-        delete_button.show();
+        // The only place where delete function and upload function differ is
+        // in delete function we don't have to show delete_button after loading completed
+        if (func !== "delete") {
+            delete_button.show();
+        }
     }
 };
 
