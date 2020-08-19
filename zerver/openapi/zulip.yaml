@@ -2043,9 +2043,18 @@ paths:
                                   type: string
                                   enum:
                                     - update_message_flags
+                                op:
+                                  type: string
+                                  enum:
+                                    - add
                                 operation:
+                                  deprecated: true
                                   description: |
                                     Whether the flags are added or removed.
+
+                                    **Deprecated**: After the addition of `op` field
+                                    to `update_message_flags` in API feature level 32, this
+                                    field is redundant and is deprecated.
                                   type: string
                                   enum:
                                     - add
@@ -2087,10 +2096,19 @@ paths:
                                   type: string
                                   enum:
                                     - update_message_flags
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove
                                 operation:
+                                  deprecated: true
                                   type: string
                                   description: |
                                     Whether the flags are added or removed.
+
+                                    **Deprecated**: After the addition of `op` field
+                                    to `update_message_flags` in API feature level 32, this
+                                    field is redundant and is deprecated.
                                   enum:
                                     - remove
                                 flag:

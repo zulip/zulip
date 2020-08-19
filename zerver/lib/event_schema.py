@@ -811,6 +811,7 @@ check_update_message_embedded = check_events_dict(
 _check_update_message_flags = check_events_dict(
     required_keys=[
         ("type", equals("update_message_flags")),
+        ("op", check_add_or_remove),
         ("operation", check_add_or_remove),
         ("flag", check_string),
         ("messages", check_list(check_int)),
@@ -823,7 +824,7 @@ def check_update_message_flags(
     var_name: str, event: Dict[str, object], operation: str
 ) -> None:
     _check_update_message_flags(var_name, event)
-    assert event["operation"] == operation
+    assert event["operation"] == operation and event['op'] == operation
 
 
 _check_group = check_dict_only(

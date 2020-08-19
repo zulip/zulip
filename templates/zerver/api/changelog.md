@@ -12,6 +12,14 @@ below features are supported.
 
 **Feature level 31**
 
+* [`GET /events`](/api/get-events): Added `op` field to
+  `update_message_flags` events. This was an anomaly as all other
+  events use `op` flag but `update_message_flags` used the `operation`
+  The `operation` field is now deprecated and will be removed in a later
+  feature level.
+
+**Feature level 31**
+
 * [`GET users/me/subscriptions`](/api/get-subscriptions): Added a
   `role` field to Subscription objects representing whether the user
   is a stream administrator.

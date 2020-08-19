@@ -742,13 +742,13 @@ def apply_event(state: Dict[str, Any],
         # We don't return messages in `/register`, so most flags we
         # can ignore, but we do need to update the unread_msgs data if
         # unread state is changed.
-        if 'raw_unread_msgs' in state and event['flag'] == 'read' and event['operation'] == 'add':
+        if 'raw_unread_msgs' in state and event['flag'] == 'read' and event['op'] == 'add':
             for remove_id in event['messages']:
                 remove_message_id_from_unread_mgs(state['raw_unread_msgs'], remove_id)
         if event['flag'] == 'starred' and 'starred_messages' in state:
-            if event['operation'] == 'add':
+            if event['op'] == 'add':
                 state['starred_messages'] += event['messages']
-            if event['operation'] == 'remove':
+            if event['op'] == 'remove':
                 state['starred_messages'] = [message for message in state['starred_messages']
                                              if not (message in event['messages'])]
     elif event['type'] == "realm_domains":
