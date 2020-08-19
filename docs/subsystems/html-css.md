@@ -212,7 +212,7 @@ needs to be accessible from one of the entry points defined in
   relevant Jinja2 template to inject the compiled JS and CSS.
 
 If you want to test minified files in development, look for the
-`DEBUG =` line in `zproject/settings.py` and set it to `False`.
+`DEBUG =` line in `zproject/default_settings.py` and set it to `False`.
 
 ### How it works in production
 
