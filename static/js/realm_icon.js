@@ -16,8 +16,12 @@ exports.build_realm_icon_widget = function () {
     $("#realm-icon-upload-widget .image-delete-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        image_upload_widget.widget_loading("realm-icon-upload-widget", "start");
         channel.del({
             url: "/json/realm/icon",
+            success() {
+                image_upload_widget.widget_loading("realm-icon-upload-widget", "end", "delete");
+            },
         });
     });
 
