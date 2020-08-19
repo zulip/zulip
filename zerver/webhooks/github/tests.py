@@ -439,7 +439,7 @@ A temporary team so that I can get some webhook fixtures!
             ),
         )
 
-        log_mock = patch("zerver.decorator.webhook_unexpected_events_logger.exception")
+        log_mock = patch("zerver.decorator.webhook_unsupported_events_logger.exception")
 
         with log_mock as m:
             stream_message = self.send_webhook_payload(

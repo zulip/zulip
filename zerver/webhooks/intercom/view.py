@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List, Tuple
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.exceptions import UnexpectedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -279,7 +279,7 @@ EVENT_TO_FUNCTION_MAPPER = {
 def get_event_handler(event_type: str) -> Callable[..., Tuple[str, str]]:
     handler: Any = EVENT_TO_FUNCTION_MAPPER.get(event_type)
     if handler is None:
-        raise UnexpectedWebhookEventType("Intercom", event_type)
+        raise UnsupportedWebhookEventType("Intercom", event_type)
     return handler
 
 @api_key_only_webhook_view('Intercom')

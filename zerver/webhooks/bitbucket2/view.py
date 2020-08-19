@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.exceptions import UnexpectedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import (
@@ -161,7 +161,7 @@ def get_type(request: HttpRequest, payload: Dict[str, Any]) -> str:
         if event_key == 'repo:updated':
             return event_key
 
-    raise UnexpectedWebhookEventType('BitBucket2', event_key)
+    raise UnsupportedWebhookEventType('BitBucket2', event_key)
 
 def get_body_based_on_type(type: str) -> Any:
     fn = GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER.get(type)

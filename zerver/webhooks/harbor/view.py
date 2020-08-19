@@ -5,7 +5,7 @@ from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.exceptions import UnexpectedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -107,7 +107,7 @@ def api_harbor_webhook(request: HttpRequest, user_profile: UserProfile,
     content_func = EVENT_FUNCTION_MAPPER.get(event)
 
     if content_func is None:
-        raise UnexpectedWebhookEventType('Harbor', event)
+        raise UnsupportedWebhookEventType('Harbor', event)
 
     content: str = content_func(payload, user_profile, operator_username)
 

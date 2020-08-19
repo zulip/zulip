@@ -1,6 +1,6 @@
 from typing import Any, Mapping, Optional, Tuple
 
-from zerver.lib.exceptions import UnexpectedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 
 SUPPORTED_BOARD_ACTIONS = [
     'removeMemberFromBoard',
@@ -39,7 +39,7 @@ def get_proper_action(payload: Mapping[str, Any], action_type: Optional[str]) ->
             return None
         elif data['old']['name']:
             return CHANGE_NAME
-        raise UnexpectedWebhookEventType("Trello", action_type)
+        raise UnsupportedWebhookEventType("Trello", action_type)
     return action_type
 
 def get_subject(payload: Mapping[str, Any]) -> str:

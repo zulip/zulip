@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, Optional
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view, log_exception_to_webhook_logger
-from zerver.lib.exceptions import UnexpectedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import (
@@ -42,7 +42,7 @@ class Helper:
         self._request = request
         self._user_profile = user_profile
 
-    def log_unexpected(self, event: str) -> None:
+    def log_unsupported(self, event: str) -> None:
         summary = f"The '{event}' event isn't currently supported by the GitHub webhook"
         request = self._request
         log_exception_to_webhook_logger(
@@ -50,7 +50,7 @@ class Helper:
             user_profile=self._user_profile,
             summary=summary,
             payload=request.body,
-            unexpected_event=True,
+            unsupported_event=True,
         )
 
 def get_opened_or_update_pull_request_body(helper: Helper) -> str:
@@ -301,7 +301,7 @@ def get_team_body(helper: Helper) -> str:
         return f"Team visibility changed to `{new_visibility}`"
 
     missing_keys = "/".join(sorted(list(changes.keys())))
-    helper.log_unexpected(f"team/edited (changes: {missing_keys})")
+    helper.log_unsupported(f"team/edited (changes: {missing_keys})")
 
     # Do our best to give useful info to the customer--at least
     # if they know something changed, they can go to GitHub for
@@ -620,7 +620,7 @@ def api_github_webhook(
     """
     header_event = validate_extract_webhook_http_header(request, "X_GITHUB_EVENT", "GitHub")
     if header_event is None:
-        raise UnexpectedWebhookEventType("GitHub", "no header provided")
+        raise UnsupportedWebhookEventType("GitHub", "no header provided")
 
     event = get_zulip_event_name(header_event, payload, branches)
     if event is None:
@@ -691,11 +691,11 @@ def get_zulip_event_name(
         else:
             # this means GH has actually added new actions since September 2020,
             # so it's a bit more cause for alarm
-            raise UnexpectedWebhookEventType("GitHub", f"unexpected team action {action}")
+            raise UnsupportedWebhookEventType("GitHub", f"unsupported team action {action}")
     elif header_event in list(EVENT_FUNCTION_MAPPER.keys()):
         return header_event
     elif header_event in IGNORED_EVENTS:
         return None
 
     complete_event = "{}:{}".format(header_event, payload.get("action", "???"))  # nocoverage
-    raise UnexpectedWebhookEventType('GitHub', complete_event)
+    raise UnsupportedWebhookEventType('GitHub', complete_event)

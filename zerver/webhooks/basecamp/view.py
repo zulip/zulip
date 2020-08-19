@@ -5,7 +5,7 @@ from typing import Any, Dict
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.exceptions import UnexpectedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -30,7 +30,7 @@ def api_basecamp_webhook(request: HttpRequest, user_profile: UserProfile,
     event = get_event_type(payload)
 
     if event not in SUPPORT_EVENTS:
-        raise UnexpectedWebhookEventType('Basecamp', event)
+        raise UnsupportedWebhookEventType('Basecamp', event)
 
     subject = get_project_name(payload)
     if event.startswith('document_'):
@@ -48,7 +48,7 @@ def api_basecamp_webhook(request: HttpRequest, user_profile: UserProfile,
     elif event.startswith('comment_'):
         body = get_comment_body(event, payload)
     else:
-        raise UnexpectedWebhookEventType('Basecamp', event)
+        raise UnsupportedWebhookEventType('Basecamp', event)
 
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()

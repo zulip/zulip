@@ -36,7 +36,7 @@ class ErrorCode(AbstractEnum):
     MISSING_HTTP_EVENT_HEADER = ()
     STREAM_DOES_NOT_EXIST = ()
     UNAUTHORIZED_PRINCIPAL = ()
-    UNEXPECTED_WEBHOOK_EVENT_TYPE = ()
+    UNSUPPORTED_WEBHOOK_EVENT_TYPE = ()
     BAD_EVENT_QUEUE_ID = ()
     CSRF_FAILED = ()
     INVITATION_FAILED = ()
@@ -257,8 +257,8 @@ class InvalidAPIKeyFormatError(InvalidAPIKeyError):
     def msg_format() -> str:
         return _("Malformed API key")
 
-class UnexpectedWebhookEventType(JsonableError):
-    code = ErrorCode.UNEXPECTED_WEBHOOK_EVENT_TYPE
+class UnsupportedWebhookEventType(JsonableError):
+    code = ErrorCode.UNSUPPORTED_WEBHOOK_EVENT_TYPE
     data_fields = ['webhook_name', 'event_type']
 
     def __init__(self, webhook_name: str, event_type: Optional[str]) -> None:
