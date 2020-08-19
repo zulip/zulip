@@ -44,6 +44,7 @@ global.with_field = namespace.with_field;
 global.set_global = namespace.set_global;
 global.patch_builtin = namespace.set_global;
 global.zrequire = namespace.zrequire;
+global.reset_module = namespace.reset_module;
 global.stub_out_jquery = namespace.stub_out_jquery;
 global.with_overrides = namespace.with_overrides;
 
