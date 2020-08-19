@@ -50,7 +50,7 @@ if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer, get_remote_server_by_uuid
 
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
-log_to_file(webhook_logger, settings.API_KEY_ONLY_WEBHOOK_LOG_PATH)
+log_to_file(webhook_logger, settings.WEBHOOK_LOG_PATH)
 
 webhook_unsupported_events_logger = logging.getLogger("zulip.zerver.webhooks.unsupported")
 log_to_file(webhook_unsupported_events_logger,
