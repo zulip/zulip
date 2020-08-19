@@ -35,9 +35,12 @@ async function test_change_new_stream_notifications_setting(page) {
         "#realm_notifications_stream_id_widget  .dropdown-search > input[type=text]",
         "verona",
     );
-    await page.click(
-        "#realm_notifications_stream_id_widget .dropdown-list-body > li:nth-of-type(1)",
-    );
+
+    const verona_in_dropdown =
+        "#realm_notifications_stream_id_widget .dropdown-list-body > li:nth-of-type(1)";
+    await page.waitForSelector(verona_in_dropdown, {visible: true});
+    await page.click(verona_in_dropdown);
+
     await submit_notifications_stream_settings(page);
 
     const disable_stream_notifications =
