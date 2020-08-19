@@ -623,7 +623,7 @@ Many third-party services have dozens of different event types. In some cases, w
 may choose to explicitly ignore specific events. In other cases, there may be
 events that are new or events that we don't know about. In such cases, we
 recommend raising `UnexpectedWebhookEventType` (found in
-`zerver/lib/webhooks/common.py`), like so:
+`zerver/lib/exceptions.py`), like so:
 
 ```
 raise UnexpectedWebhookEventType(webhook_name, event_type)
