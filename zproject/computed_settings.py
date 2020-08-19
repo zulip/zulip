@@ -934,12 +934,12 @@ LOGGING: Dict[str, Any] = {
             'handlers': ['zulip_admins'],
             'propagate': False,
         },
-        'zulip.zerver.lib.webhooks.common': {
+        'zulip.zerver.webhooks': {
             'level': 'DEBUG',
             'handlers': ['file', 'errors_file'],
             'propagate': False,
         },
-        'zulip.zerver.webhooks': {
+        'zulip.zerver.webhooks.unsupported': {
             'level': 'DEBUG',
             'handlers': ['file', 'errors_file'],
             'propagate': False,
