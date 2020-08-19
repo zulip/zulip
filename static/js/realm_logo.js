@@ -3,18 +3,17 @@
 const settings_config = require("./settings_config");
 
 exports.build_realm_logo_widget = function (is_night) {
-    let logo_section_id = "#realm-day-logo-upload-widget";
+    let logo_section_id = "realm-day-logo-upload-widget";
     let logo_source = page_params.realm_logo_source;
 
     if (is_night) {
-        logo_section_id = "#realm-night-logo-upload-widget";
+        logo_section_id = "realm-night-logo-upload-widget";
         logo_source = page_params.realm_night_logo_source;
     }
-
-    const delete_button_elem = $(logo_section_id + " .image-delete-button");
-    const file_input_elem = $(logo_section_id + " .image_file_input");
-    const file_input_error_elem = $(logo_section_id + " .image_file_input_error");
-    const upload_button_elem = $(logo_section_id + " .image_upload_button");
+    const delete_button_elem = $(`#${logo_section_id} .image-delete-button`);
+    const file_input_elem = $(`#${logo_section_id} .image_file_input`);
+    const file_input_error_elem = $(`#${logo_section_id} .image_file_input_error`);
+    const upload_button_elem = $(`#${logo_section_id} .image_upload_button`);
 
     const get_file_input = function () {
         return file_input_elem.expectOne();
@@ -34,9 +33,13 @@ exports.build_realm_logo_widget = function (is_night) {
     delete_button_elem.on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        image_upload_widget.widget_loading(logo_section_id, "start");
         channel.del({
             url: "/json/realm/logo",
             data,
+            success() {
+                image_upload_widget.widget_loading(logo_section_id, "end", "delete");
+            },
         });
     });
 
