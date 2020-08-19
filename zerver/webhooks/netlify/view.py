@@ -3,7 +3,7 @@ from typing import Any, Dict, Iterable
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.exceptions import UnexpectedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import (
@@ -51,4 +51,4 @@ def get_template(request: HttpRequest, payload: Dict[str, Any]) -> str:
     elif event in EVENTS:
         return message_template + 'is now {state}.'.format(state=payload['state'])
     else:
-        raise UnexpectedWebhookEventType('Netlify', event)
+        raise UnsupportedWebhookEventType('Netlify', event)

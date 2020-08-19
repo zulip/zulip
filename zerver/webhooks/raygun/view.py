@@ -4,7 +4,7 @@ from typing import Any, Dict
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.exceptions import UnexpectedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -31,7 +31,7 @@ def api_raygun_webhook(request: HttpRequest, user_profile: UserProfile,
     elif event == 'error_activity':
         message = compose_activity_message(payload)
     else:
-        raise UnexpectedWebhookEventType('Raygun', event)
+        raise UnsupportedWebhookEventType('Raygun', event)
 
     topic = 'test'
 
@@ -220,7 +220,7 @@ def compose_notification_message(payload: Dict[str, Any]) -> str:
     elif "FollowUp" in event_type:
         return notification_message_follow_up(payload)
     else:
-        raise UnexpectedWebhookEventType('Raygun', event_type)
+        raise UnsupportedWebhookEventType('Raygun', event_type)
 
 
 def activity_message(payload: Dict[str, Any]) -> str:
@@ -276,7 +276,7 @@ def compose_activity_message(payload: Dict[str, Any]) -> str:
             or event_type == "CommentAdded":
         return activity_message(payload)
     else:
-        raise UnexpectedWebhookEventType('Raygun', event_type)
+        raise UnsupportedWebhookEventType('Raygun', event_type)
 
 
 def parse_time(timestamp: str) -> str:

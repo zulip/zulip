@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.exceptions import UnexpectedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -534,7 +534,7 @@ def api_clubhouse_webhook(
     body_func: Any = EVENT_BODY_FUNCTION_MAPPER.get(event)
     topic_func = get_topic_function_based_on_type(payload)
     if body_func is None or topic_func is None:
-        raise UnexpectedWebhookEventType('Clubhouse', event)
+        raise UnsupportedWebhookEventType('Clubhouse', event)
     topic = topic_func(payload)
     body = body_func(payload)
 

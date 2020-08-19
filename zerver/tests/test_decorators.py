@@ -40,7 +40,7 @@ from zerver.lib.exceptions import (
     InvalidAPIKeyError,
     InvalidAPIKeyFormatError,
     JsonableError,
-    UnexpectedWebhookEventType,
+    UnsupportedWebhookEventType,
 )
 from zerver.lib.initial_password import initial_password
 from zerver.lib.request import (
@@ -269,9 +269,9 @@ class DecoratorTestCase(ZulipTestCase):
             raise Exception("raised by webhook function")
 
         @api_key_only_webhook_view('ClientName')
-        def my_webhook_raises_exception_unexpected_event(
+        def my_webhook_raises_exception_unsupported_event(
                 request: HttpRequest, user_profile: UserProfile) -> None:
-            raise UnexpectedWebhookEventType("helloworld", "test_event")
+            raise UnsupportedWebhookEventType("helloworld", "test_event")
 
         webhook_bot_email = 'webhook-bot@zulip.com'
         webhook_bot_realm = get_realm('zulip')
@@ -361,14 +361,14 @@ body:
             body=request.body,
         ), stack_info=True)
 
-        # Test when an unexpected webhook event occurs
-        with mock.patch('zerver.decorator.webhook_unexpected_events_logger.exception') as mock_exception:
+        # Test when an unsupported webhook event occurs
+        with mock.patch('zerver.decorator.webhook_unsupported_events_logger.exception') as mock_exception:
             exception_msg = "The 'test_event' event isn't currently supported by the helloworld webhook"
-            with self.assertRaisesRegex(UnexpectedWebhookEventType, exception_msg):
+            with self.assertRaisesRegex(UnsupportedWebhookEventType, exception_msg):
                 request.body = "invalidjson"
                 request.content_type = 'application/json'
                 request.META['HTTP_X_CUSTOM_HEADER'] = 'custom_value'
-                my_webhook_raises_exception_unexpected_event(request)
+                my_webhook_raises_exception_unsupported_event(request)
 
         message = """
 summary: {summary}
@@ -540,10 +540,10 @@ body:
             body=request.body,
         ), stack_info=True)
 
-    def test_authenticated_rest_api_view_logging_unexpected_event(self) -> None:
+    def test_authenticated_rest_api_view_logging_unsupported_event(self) -> None:
         @authenticated_rest_api_view(webhook_client_name="ClientName")
         def my_webhook_raises_exception(request: HttpRequest, user_profile: UserProfile) -> None:
-            raise UnexpectedWebhookEventType("helloworld", "test_event")
+            raise UnsupportedWebhookEventType("helloworld", "test_event")
 
         webhook_bot_email = 'webhook-bot@zulip.com'
         webhook_bot_realm = get_realm('zulip')
@@ -557,9 +557,9 @@ body:
         request.POST['payload'] = '{}'
         request.content_type = 'text/plain'
 
-        with mock.patch('zerver.decorator.webhook_unexpected_events_logger.exception') as mock_exception:
+        with mock.patch('zerver.decorator.webhook_unsupported_events_logger.exception') as mock_exception:
             exception_msg = "The 'test_event' event isn't currently supported by the helloworld webhook"
-            with self.assertRaisesRegex(UnexpectedWebhookEventType, exception_msg):
+            with self.assertRaisesRegex(UnsupportedWebhookEventType, exception_msg):
                 my_webhook_raises_exception(request)
 
         message = """

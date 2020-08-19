@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.exceptions import UnexpectedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
@@ -43,7 +43,7 @@ def api_newrelic_webhook(request: HttpRequest, user_profile: UserProfile,
         subject = "{} deploy".format(deployment['application_name'])
         content = DEPLOY_TEMPLATE.format(**deployment)
     else:
-        raise UnexpectedWebhookEventType('New Relic', 'Unknown Event Type')
+        raise UnsupportedWebhookEventType('New Relic', 'Unknown Event Type')
 
     check_send_webhook_message(request, user_profile, subject, content)
     return json_success()

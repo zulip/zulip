@@ -4,7 +4,7 @@ from typing import Any, Dict
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.exceptions import UnexpectedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -47,7 +47,7 @@ def api_pingdom_webhook(request: HttpRequest, user_profile: UserProfile,
         subject = get_subject_for_http_request(payload)
         body = get_body_for_http_request(payload)
     else:
-        raise UnexpectedWebhookEventType('Pingdom', check_type)
+        raise UnsupportedWebhookEventType('Pingdom', check_type)
 
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()

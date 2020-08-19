@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.exceptions import UnexpectedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -92,7 +92,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
 
     # We shouldn't support the officially deprecated Raven series of SDKs.
     if int(event["version"]) < 7:
-        raise UnexpectedWebhookEventType("Sentry", "Raven SDK")
+        raise UnsupportedWebhookEventType("Sentry", "Raven SDK")
 
     platform_name = event["platform"]
     syntax_highlight_as = syntax_highlight_as_map.get(platform_name, "")
@@ -155,7 +155,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
         body = MESSAGE_EVENT_TEMPLATE.format(**context)
 
     else:
-        raise UnexpectedWebhookEventType("Sentry", "unknown-event type")
+        raise UnsupportedWebhookEventType("Sentry", "unknown-event type")
 
     return (subject, body)
 
@@ -205,7 +205,7 @@ def handle_issue_payload(action: str, issue: Dict[str, Any], actor: Dict[str, An
         body = ISSUE_IGNORED_MESSAGE_TEMPLATE.format(**context)
 
     else:
-        raise UnexpectedWebhookEventType("Sentry", "unknown-issue-action type")
+        raise UnsupportedWebhookEventType("Sentry", "unknown-issue-action type")
 
     return (subject, body)
 
@@ -233,7 +233,7 @@ def api_sentry_webhook(request: HttpRequest, user_profile: UserProfile,
         elif "issue" in data:
             subject, body = handle_issue_payload(payload["action"], data["issue"], payload["actor"])
         else:
-            raise UnexpectedWebhookEventType("Sentry", str(list(data.keys())))
+            raise UnsupportedWebhookEventType("Sentry", str(list(data.keys())))
     else:
         subject, body = handle_deprecated_payload(payload)
 

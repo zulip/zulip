@@ -3,7 +3,7 @@ from typing import Any, Dict, Iterable
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.exceptions import UnexpectedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import (
@@ -180,6 +180,6 @@ def api_reviewboard_webhook(
         topic = get_review_request_repo_title(payload)
         check_send_webhook_message(request, user_profile, topic, body)
     else:
-        raise UnexpectedWebhookEventType('ReviewBoard', event_type)
+        raise UnsupportedWebhookEventType('ReviewBoard', event_type)
 
     return json_success()

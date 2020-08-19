@@ -32,7 +32,7 @@ from zerver.lib.exceptions import (
     OrganizationAdministratorRequired,
     OrganizationMemberRequired,
     OrganizationOwnerRequired,
-    UnexpectedWebhookEventType,
+    UnsupportedWebhookEventType,
 )
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.queue import queue_json_publish
@@ -52,9 +52,9 @@ if settings.ZILENCER_ENABLED:
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
 log_to_file(webhook_logger, settings.API_KEY_ONLY_WEBHOOK_LOG_PATH)
 
-webhook_unexpected_events_logger = logging.getLogger("zulip.zerver.lib.webhooks.common")
-log_to_file(webhook_unexpected_events_logger,
-            settings.WEBHOOK_UNEXPECTED_EVENTS_LOG_PATH)
+webhook_unsupported_events_logger = logging.getLogger("zulip.zerver.lib.webhooks.common")
+log_to_file(webhook_unsupported_events_logger,
+            settings.WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH)
 
 FuncT = TypeVar('FuncT', bound=Callable[..., object])
 
@@ -268,7 +268,7 @@ def log_exception_to_webhook_logger(
     user_profile: UserProfile,
     summary: str,
     payload: str,
-    unexpected_event: bool,
+    unsupported_event: bool,
 ) -> None:
     if request.content_type == 'application/json':
         try:
@@ -309,8 +309,8 @@ body:
     )
     message = message.strip(' ')
 
-    if unexpected_event:
-        webhook_unexpected_events_logger.exception(message, stack_info=True)
+    if unsupported_event:
+        webhook_unsupported_events_logger.exception(message, stack_info=True)
     else:
         webhook_logger.exception(message, stack_info=True)
 
@@ -352,7 +352,7 @@ def api_key_only_webhook_view(
                         user_profile=user_profile,
                         summary=str(err),
                         payload=request.body,
-                        unexpected_event=isinstance(err, UnexpectedWebhookEventType),
+                        unsupported_event=isinstance(err, UnsupportedWebhookEventType),
                     )
                 raise err
 
@@ -603,7 +603,7 @@ def authenticated_rest_api_view(
                             user_profile=profile,
                             summary=str(err),
                             payload=request_body,
-                            unexpected_event=isinstance(err, UnexpectedWebhookEventType),
+                            unsupported_event=isinstance(err, UnsupportedWebhookEventType),
                         )
 
                 raise err

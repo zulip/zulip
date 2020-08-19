@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional, Sequence, Tuple
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.exceptions import UnexpectedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -191,7 +191,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
         raise NotImplementedEventType()
 
     if body is None:
-        raise UnexpectedWebhookEventType('Stripe', event_type)
+        raise UnsupportedWebhookEventType('Stripe', event_type)
     return (topic, body)
 
 def amount_string(amount: int, currency: str) -> str:

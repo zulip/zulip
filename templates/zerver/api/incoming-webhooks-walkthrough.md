@@ -622,11 +622,11 @@ webhook bot, notifying them of the missing header.
 Many third-party services have dozens of different event types. In some cases, we
 may choose to explicitly ignore specific events. In other cases, there may be
 events that are new or events that we don't know about. In such cases, we
-recommend raising `UnexpectedWebhookEventType` (found in
+recommend raising `UnsupportedWebhookEventType` (found in
 `zerver/lib/exceptions.py`), like so:
 
 ```
-raise UnexpectedWebhookEventType(webhook_name, event_type)
+raise UnsupportedWebhookEventType(webhook_name, event_type)
 ```
 
 `webhook_name` is the name of the integration that raises the exception.

@@ -5,7 +5,7 @@ import orjson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view, return_success_on_head_request
-from zerver.lib.exceptions import UnexpectedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -40,4 +40,4 @@ def get_subject_and_body(payload: Mapping[str, Any], action_type: str) -> Option
     if action_type in SUPPORTED_BOARD_ACTIONS:
         return process_board_action(payload, action_type)
 
-    raise UnexpectedWebhookEventType("Trello", action_type)
+    raise UnsupportedWebhookEventType("Trello", action_type)
