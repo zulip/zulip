@@ -328,7 +328,7 @@ def api_jira_webhook(request: HttpRequest, user_profile: UserProfile,
     content_func = get_event_handler(event)
 
     if content_func is None:
-        raise UnsupportedWebhookEventType('Jira', event)
+        raise UnsupportedWebhookEventType(event)
 
     subject = get_issue_subject(payload)
     content: str = content_func(payload, user_profile)

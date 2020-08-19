@@ -79,7 +79,7 @@ def get_event_handler(event: str) -> Callable[..., str]:
     # The main reason for this function existence is because of mypy
     handler: Any = EVENTS_FUNCTION_MAPPER.get(event)
     if handler is None:
-        raise UnsupportedWebhookEventType("Groove", event)
+        raise UnsupportedWebhookEventType(event)
     return handler
 
 @webhook_view('Groove')

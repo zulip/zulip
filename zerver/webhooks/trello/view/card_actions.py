@@ -115,7 +115,7 @@ def get_proper_action(payload: Mapping[str, Any], action_type: str) -> Optional[
         for field in ignored_fields:
             if old_data.get(field):
                 return None
-        raise UnsupportedWebhookEventType("Trello", action_type)
+        raise UnsupportedWebhookEventType(action_type)
 
     return action_type
 

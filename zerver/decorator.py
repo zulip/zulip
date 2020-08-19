@@ -348,6 +348,8 @@ def webhook_view(
                     from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
                     notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
                 else:
+                    if isinstance(err, UnsupportedWebhookEventType):
+                        err.webhook_name = webhook_client_name
                     log_exception_to_webhook_logger(
                         request=request,
                         user_profile=user_profile,
@@ -597,6 +599,8 @@ def authenticated_rest_api_view(
                 return target_view_func(request, profile, *args, **kwargs)
             except Exception as err:
                 if is_webhook or webhook_client_name is not None:
+                    if isinstance(err, UnsupportedWebhookEventType) and webhook_client_name is not None:
+                        err.webhook_name = webhook_client_name
                     request_body = request.POST.get('payload')
                     if request_body is not None:
                         log_exception_to_webhook_logger(

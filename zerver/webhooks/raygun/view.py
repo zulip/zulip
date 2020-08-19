@@ -31,7 +31,7 @@ def api_raygun_webhook(request: HttpRequest, user_profile: UserProfile,
     elif event == 'error_activity':
         message = compose_activity_message(payload)
     else:
-        raise UnsupportedWebhookEventType('Raygun', event)
+        raise UnsupportedWebhookEventType(event)
 
     topic = 'test'
 
@@ -220,7 +220,7 @@ def compose_notification_message(payload: Dict[str, Any]) -> str:
     elif "FollowUp" in event_type:
         return notification_message_follow_up(payload)
     else:
-        raise UnsupportedWebhookEventType('Raygun', event_type)
+        raise UnsupportedWebhookEventType(event_type)
 
 
 def activity_message(payload: Dict[str, Any]) -> str:
@@ -276,7 +276,7 @@ def compose_activity_message(payload: Dict[str, Any]) -> str:
             or event_type == "CommentAdded":
         return activity_message(payload)
     else:
-        raise UnsupportedWebhookEventType('Raygun', event_type)
+        raise UnsupportedWebhookEventType(event_type)
 
 
 def parse_time(timestamp: str) -> str:

@@ -161,7 +161,7 @@ def get_type(request: HttpRequest, payload: Dict[str, Any]) -> str:
         if event_key == 'repo:updated':
             return event_key
 
-    raise UnsupportedWebhookEventType('BitBucket2', event_key)
+    raise UnsupportedWebhookEventType(event_key)
 
 def get_body_based_on_type(type: str) -> Any:
     fn = GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER.get(type)

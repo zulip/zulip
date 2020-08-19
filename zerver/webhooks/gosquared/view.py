@@ -55,6 +55,6 @@ def api_gosquared_webhook(request: HttpRequest, user_profile: UserProfile,
             )
             check_send_webhook_message(request, user_profile, topic, body)
     else:
-        raise UnsupportedWebhookEventType('GoSquared', 'unknown_event')
+        raise UnsupportedWebhookEventType('unknown_event')
 
     return json_success()

@@ -191,7 +191,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
         raise NotImplementedEventType()
 
     if body is None:
-        raise UnsupportedWebhookEventType('Stripe', event_type)
+        raise UnsupportedWebhookEventType(event_type)
     return (topic, body)
 
 def amount_string(amount: int, currency: str) -> str:

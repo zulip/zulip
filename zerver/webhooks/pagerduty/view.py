@@ -172,7 +172,7 @@ def api_pagerduty_webhook(
             break
 
         if message_type not in PAGER_DUTY_EVENT_NAMES:
-            raise UnsupportedWebhookEventType('Pagerduty', message_type)
+            raise UnsupportedWebhookEventType(message_type)
 
         format_dict = build_pagerduty_formatdict(message)
         send_formated_pagerduty(request, user_profile, message_type, format_dict)
@@ -186,7 +186,7 @@ def api_pagerduty_webhook(
             break
 
         if event not in PAGER_DUTY_EVENT_NAMES_V2:
-            raise UnsupportedWebhookEventType('Pagerduty', event)
+            raise UnsupportedWebhookEventType(event)
 
         format_dict = build_pagerduty_formatdict_v2(message)
         send_formated_pagerduty(request, user_profile, event, format_dict)

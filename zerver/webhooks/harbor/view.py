@@ -107,7 +107,7 @@ def api_harbor_webhook(request: HttpRequest, user_profile: UserProfile,
     content_func = EVENT_FUNCTION_MAPPER.get(event)
 
     if content_func is None:
-        raise UnsupportedWebhookEventType('Harbor', event)
+        raise UnsupportedWebhookEventType(event)
 
     content: str = content_func(payload, user_profile, operator_username)
 

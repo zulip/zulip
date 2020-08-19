@@ -30,7 +30,7 @@ def api_basecamp_webhook(request: HttpRequest, user_profile: UserProfile,
     event = get_event_type(payload)
 
     if event not in SUPPORT_EVENTS:
-        raise UnsupportedWebhookEventType('Basecamp', event)
+        raise UnsupportedWebhookEventType(event)
 
     subject = get_project_name(payload)
     if event.startswith('document_'):
@@ -48,7 +48,7 @@ def api_basecamp_webhook(request: HttpRequest, user_profile: UserProfile,
     elif event.startswith('comment_'):
         body = get_comment_body(event, payload)
     else:
-        raise UnsupportedWebhookEventType('Basecamp', event)
+        raise UnsupportedWebhookEventType(event)
 
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
