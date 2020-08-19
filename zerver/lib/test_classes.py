@@ -6,7 +6,7 @@ import tempfile
 import urllib
 from contextlib import contextmanager
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple, Union
-from unittest import mock
+from unittest import TestResult, mock
 
 import orjson
 from django.apps import apps
@@ -40,6 +40,12 @@ from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
 from zerver.lib.streams import (
     create_stream_if_needed,
     get_default_value_for_history_public_to_subscribers,
+)
+from zerver.lib.test_console_output import (
+    ExtraConsoleOutputFinder,
+    ExtraConsoleOutputInTestException,
+    TeeStderrAndFindExtraConsoleOutput,
+    TeeStdoutAndFindExtraConsoleOutput,
 )
 from zerver.lib.test_helpers import find_key_by_email, instrument_url
 from zerver.lib.users import get_api_key
@@ -112,6 +118,35 @@ class ZulipTestCase(TestCase):
             if self.mock_ldap is not None:
                 self.mock_ldap.reset()
             self.mock_initialize.stop()
+
+    def run(self, result: Optional[TestResult]=None) -> Optional[TestResult]:  # nocoverage
+        if not settings.BAN_CONSOLE_OUTPUT:
+            return super(ZulipTestCase, self).run(result)
+        extra_output_finder = ExtraConsoleOutputFinder()
+        with TeeStderrAndFindExtraConsoleOutput(extra_output_finder), TeeStdoutAndFindExtraConsoleOutput(extra_output_finder):
+            test_result = super(ZulipTestCase, self).run(result)
+        if extra_output_finder.full_extra_output:
+            exception_message = f"""
+---- UNEXPECTED CONSOLE OUTPUT DETECTED ----
+
+To ensure that we never miss important error output/warnings,
+we require test-backend to have clean console output.
+
+This message usually is triggered by forgotten debugging print()
+statements or new logging statements.  For the latter, you can
+use `with self.assertLogs()` to capture and verify the log output;
+use `git grep assertLogs` to see dozens of correct examples.
+
+You should be able to quickly reproduce this failure with:
+
+test-backend --ban-console-output {self.id()}
+
+Output:
+{extra_output_finder.full_extra_output}
+--------------------------------------------
+"""
+            raise ExtraConsoleOutputInTestException(exception_message)
+        return test_result
 
     '''
     WRAPPER_COMMENT:
