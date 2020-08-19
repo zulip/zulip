@@ -218,8 +218,8 @@ messages).
 ### Paths to state or log files
 
 When writing out state or log files, always pass an absolute path
-through `zulip_path` (found in `zproject/settings.py`), which will do
-the right thing in both development and production.
+through `zulip_path` (found in `zproject/computed_settings.py`), which
+will do the right thing in both development and production.
 
 ## JS array/object manipulation
 

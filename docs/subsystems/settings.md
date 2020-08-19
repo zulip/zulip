@@ -63,10 +63,10 @@ In a production environment, we have:
   `scripts/setup/generate_secrets.py` as part of installation)
   contains secrets used by the Zulip installation.  These are read
   using the standard Python `ConfigParser`, and accessed in
-  `zproject/settings.py` by the `get_secret` function.  All
+  `zproject/computed_settings.py` by the `get_secret` function.  All
   secrets/API keys/etc. used by the Zulip Django application should be
   stored here, and read using the `get_secret` function in
-  `zproject/settings.py`.
+  `zproject/config.py`.
 
 * `zproject/settings.py` is the main Django settings file for Zulip.
   It imports everything from `zproject/configured_settings.py` and
@@ -106,7 +106,7 @@ in two or three places:
   for production environments.
 
 * If the settings has a secret key,
-  you'll add a `get_secret` call in `zproject/settings.py` (and the
+  you'll add a `get_secret` call in `zproject/computed_settings.py` (and the
   user will add the value when they configure the feature).
 
 * In an appropriate section of `zproject/prod_settings_template.py`,

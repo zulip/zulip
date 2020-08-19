@@ -53,7 +53,8 @@ Usage: ./manage.py deliver_scheduled_messages
             # Here doing a check and sleeping indefinitely on this setting might
             # not sound right. Actually we do this check to avoid running this
             # process on every server that might be in service to a realm. See
-            # the comment in zproject/settings.py file about renaming this setting.
+            # the comment in zproject/default_settings.py file about renaming this
+            # setting.
             sleep_forever()
 
         while True:

@@ -22,8 +22,8 @@ certificate authentication (see
 http://www.postgresql.org/docs/9.1/static/ssl-tcp.html and
 http://www.postgresql.org/docs/9.1/static/libpq-ssl.html for
 documentation on how to set this up and deploy the certificates) to
-make the DATABASES configuration in `zproject/settings.py` work (or
-override that configuration).
+make the DATABASES configuration in `zproject/computed_settings.py`
+work (or override that configuration).
 
 If you want to use a remote Postgresql database, you should configure
 the information about the connection with the server. You need a user
