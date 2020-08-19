@@ -324,8 +324,9 @@ def api_key_only_webhook_view(
         webhook_client_name: str,
         notify_bot_owner_on_invalid_json: bool=True,
 ) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
-    # TODO The typing here could be improved by using the Extended Callable types:
-    # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
+    # Unfortunately, callback protocols are insufficient for this:
+    # https://mypy.readthedocs.io/en/stable/protocols.html#callback-protocols
+    # Variadic generics are necessary: https://github.com/python/typing/issues/193
     def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         @csrf_exempt
         @has_request_variables
