@@ -104,12 +104,8 @@ run_test("blueslip", () => {
     const reply_to = people.pm_reply_to(message);
     assert(reply_to.includes("?"));
 
-    people.pm_with_user_ids = function () {
-        return [42];
-    };
-    people.get_by_user_id = function () {
-        return;
-    };
+    people.__Rewire__("pm_with_user_ids", () => [42]);
+    people.__Rewire__("get_by_user_id", () => {});
     blueslip.expect("error", "Unknown people in message");
     const uri = people.pm_with_url({});
     assert.equal(uri.indexOf("unk"), uri.length - 3);
