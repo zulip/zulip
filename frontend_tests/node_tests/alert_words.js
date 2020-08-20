@@ -4,7 +4,7 @@ const params = {
     alert_words: ["alertone", "alerttwo", "alertthree", "al*rt.*s", ".+", "emoji"],
 };
 
-zrequire("people");
+const people = zrequire("people");
 zrequire("alert_words");
 
 alert_words.initialize(params);

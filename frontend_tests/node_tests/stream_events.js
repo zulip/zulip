@@ -18,7 +18,7 @@ set_global("stream_list", {});
 set_global("stream_muting", {});
 set_global("subs", {});
 
-zrequire("people");
+const people = zrequire("people");
 zrequire("stream_data");
 zrequire("stream_events");
 zrequire("Filter", "js/filter");

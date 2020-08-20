@@ -20,7 +20,7 @@ zrequire("user_status");
 zrequire("presence");
 zrequire("buddy_data");
 zrequire("hash_util");
-zrequire("people");
+const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
 zrequire("pm_list");
 

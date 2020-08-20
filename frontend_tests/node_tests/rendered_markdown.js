@@ -1,7 +1,7 @@
 "use strict";
 
 const rm = zrequire("rendered_markdown");
-zrequire("people");
+const people = zrequire("people");
 zrequire("user_groups");
 zrequire("stream_data");
 zrequire("timerender");

@@ -2,6 +2,8 @@
 
 const XDate = require("xdate");
 
+const people = require("./people");
+
 // This module just manages data.  See activity.js for
 // the UI of our buddy list.
 

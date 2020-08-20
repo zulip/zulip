@@ -81,7 +81,7 @@ zrequire("unread");
 zrequire("hash_util");
 zrequire("narrow");
 zrequire("presence");
-zrequire("people");
+const people = zrequire("people");
 zrequire("buddy_data");
 zrequire("buddy_list");
 zrequire("user_search");

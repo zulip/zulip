@@ -17,7 +17,7 @@ assert(util.find_wildcard_mentions("mention @**everyone**"));
 //  * change the data
 //  * get a true value
 
-zrequire("people");
+const people = zrequire("people");
 const isaac = {
     email: "isaac@example.com",
     user_id: 30,

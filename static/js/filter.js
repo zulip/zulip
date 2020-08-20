@@ -3,6 +3,7 @@
 const Handlebars = require("handlebars/runtime");
 const _ = require("lodash");
 
+const people = require("./people");
 const util = require("./util");
 
 function zephyr_stream_name_match(message, operand) {

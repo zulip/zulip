@@ -8,7 +8,7 @@ set_global("location", {
 });
 set_global("to_$", () => window_stub);
 
-zrequire("people");
+const people = zrequire("people");
 zrequire("hash_util");
 zrequire("hashchange");
 zrequire("stream_data");

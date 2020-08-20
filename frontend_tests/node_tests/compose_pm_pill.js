@@ -2,13 +2,7 @@
 
 set_global("$", global.make_zjquery());
 
-const _people = {
-    small_avatar_url_for_person() {
-        return "http://example.com/example.png";
-    },
-};
-
-set_global("people", _people);
+const people = zrequire("people");
 
 zrequire("compose_pm_pill");
 zrequire("input_pill");

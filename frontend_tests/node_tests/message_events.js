@@ -3,7 +3,7 @@
 zrequire("message_events");
 zrequire("message_store");
 zrequire("muting");
-zrequire("people");
+const people = zrequire("people");
 zrequire("recent_senders");
 zrequire("stream_data");
 zrequire("stream_topic_history");

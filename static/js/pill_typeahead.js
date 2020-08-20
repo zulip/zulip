@@ -1,5 +1,6 @@
 "use strict";
 
+const people = require("./people");
 const settings_data = require("./settings_data");
 
 exports.set_up = function (input, pills, opts) {

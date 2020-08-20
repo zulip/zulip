@@ -10,7 +10,7 @@ const marked = zrequire("marked", "third/marked/lib/marked");
 
 zrequire("markdown");
 zrequire("message_store");
-zrequire("people");
+const people = zrequire("people");
 zrequire("stream_data");
 zrequire("user_groups");
 

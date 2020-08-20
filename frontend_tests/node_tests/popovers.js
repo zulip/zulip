@@ -7,7 +7,7 @@ set_global("$", global.make_zjquery());
 zrequire("hash_util");
 zrequire("narrow");
 zrequire("narrow_state");
-zrequire("people");
+const people = zrequire("people");
 zrequire("presence");
 zrequire("buddy_data");
 zrequire("user_status");

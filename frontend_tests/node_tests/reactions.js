@@ -6,7 +6,7 @@ set_global("$", global.make_zjquery());
 const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
 const emoji = zrequire("emoji", "shared/js/emoji");
 
-zrequire("people");
+const people = zrequire("people");
 zrequire("reactions");
 
 set_global("page_params", {

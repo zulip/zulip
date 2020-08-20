@@ -1,7 +1,7 @@
 "use strict";
 
 zrequire("stream_data");
-zrequire("people");
+const people = zrequire("people");
 zrequire("compose_fade");
 
 const me = {
