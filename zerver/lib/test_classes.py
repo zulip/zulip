@@ -1152,7 +1152,10 @@ class WebhookTestCase(ZulipTestCase):
 
     def get_body(self, fixture_name: str) -> str:
         assert self.FIXTURE_DIR_NAME is not None
-        return orjson.dumps(orjson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name))).decode()
+        body = self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name)
+        # fail fast if we don't have valid json
+        orjson.loads(body)
+        return body
 
 class MigrationsTestCase(ZulipTestCase):  # nocoverage
     """
