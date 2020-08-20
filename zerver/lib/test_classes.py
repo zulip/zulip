@@ -1055,7 +1055,7 @@ class WebhookTestCase(ZulipTestCase):
         assert self.STREAM_NAME is not None
         self.subscribe(self.test_user, self.STREAM_NAME)
 
-        payload = self.get_body(fixture_name)
+        payload = self.get_payload(fixture_name)
         if content_type is not None:
             kwargs['content_type'] = content_type
         if self.FIXTURE_DIR_NAME is not None:
@@ -1102,7 +1102,7 @@ class WebhookTestCase(ZulipTestCase):
         Most webhooks send to streams, and you will want to look at
         check_webhook.
         """
-        payload = self.get_body(fixture_name)
+        payload = self.get_payload(fixture_name)
         kwargs['content_type'] = content_type
 
         if self.FIXTURE_DIR_NAME is not None:
@@ -1145,9 +1145,12 @@ class WebhookTestCase(ZulipTestCase):
 
         return url[:-1] if has_arguments else url
 
-    def get_body(self, fixture_name: str) -> Union[str, Dict[str, str]]:
-        """Can be implemented either as returning a dictionary containing the
-        post parameters or as string containing the body of the request."""
+    def get_payload(self, fixture_name: str) -> Union[str, Dict[str, str]]:
+        """
+        Generally webhooks that override this should return dicts."""
+        return self.get_body(fixture_name)
+
+    def get_body(self, fixture_name: str) -> str:
         assert self.FIXTURE_DIR_NAME is not None
         return orjson.dumps(orjson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name))).decode()
 

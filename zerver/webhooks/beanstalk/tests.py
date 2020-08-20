@@ -90,7 +90,7 @@ class BeanstalkHookTests(WebhookTestCase):
     @patch('zerver.webhooks.beanstalk.view.check_send_webhook_message')
     def test_git_single_filtered_by_branches_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
-        payload = self.get_body('git_singlecommit')
+        payload = self.get_payload('git_singlecommit')
         result = self.api_post(self.test_user, self.url, payload)
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
@@ -99,7 +99,7 @@ class BeanstalkHookTests(WebhookTestCase):
     def test_git_multiple_committers_filtered_by_branches_ignore(
             self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
-        payload = self.get_body('git_multiple_committers')
+        payload = self.get_payload('git_multiple_committers')
         result = self.api_post(self.test_user, self.url, payload)
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
@@ -108,7 +108,7 @@ class BeanstalkHookTests(WebhookTestCase):
     def test_git_multiple_filtered_by_branches_ignore(
             self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
-        payload = self.get_body('git_multiple')
+        payload = self.get_payload('git_multiple')
         result = self.api_post(self.test_user, self.url, payload)
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
@@ -117,7 +117,7 @@ class BeanstalkHookTests(WebhookTestCase):
     def test_git_more_than_limit_filtered_by_branches_ignore(
             self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
-        payload = self.get_body('git_morethanlimitcommits')
+        payload = self.get_payload('git_morethanlimitcommits')
         result = self.api_post(self.test_user, self.url, payload)
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
@@ -138,5 +138,5 @@ class BeanstalkHookTests(WebhookTestCase):
         self.api_stream_message(self.test_user, 'svn_changefile', expected_topic, expected_message,
                                 content_type=None)
 
-    def get_body(self, fixture_name: str) -> Dict[str, str]:
+    def get_payload(self, fixture_name: str) -> Dict[str, str]:
         return {'payload': self.webhook_fixture_data('beanstalk', fixture_name)}
