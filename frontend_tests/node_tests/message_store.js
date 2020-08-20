@@ -2,7 +2,7 @@
 
 const util = zrequire("util");
 zrequire("pm_conversations");
-zrequire("people");
+const people = zrequire("people");
 zrequire("message_store");
 
 const noop = function () {};

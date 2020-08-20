@@ -8,6 +8,7 @@ const render_message_group = require("../templates/message_group.hbs");
 const render_recipient_row = require("../templates/recipient_row.hbs");
 const render_single_message = require("../templates/single_message.hbs");
 
+const people = require("./people");
 const rendered_markdown = require("./rendered_markdown");
 const util = require("./util");
 

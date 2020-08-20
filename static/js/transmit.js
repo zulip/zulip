@@ -1,5 +1,7 @@
 "use strict";
 
+const people = require("./people");
+
 exports.send_message = function (request, on_success, error) {
     channel.post({
         url: "/json/messages",

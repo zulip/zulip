@@ -2,6 +2,7 @@
 
 const _ = require("lodash");
 
+const people = require("./people");
 const util = require("./util");
 
 let focused_recipient;

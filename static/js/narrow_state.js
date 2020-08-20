@@ -1,5 +1,7 @@
 "use strict";
 
+const people = require("./people");
+
 let current_filter;
 
 exports.reset_current_filter = function () {

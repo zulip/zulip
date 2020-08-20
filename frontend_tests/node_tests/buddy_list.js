@@ -3,7 +3,7 @@
 const _ = require("lodash");
 
 set_global("$", global.make_zjquery());
-zrequire("people");
+const people = zrequire("people");
 zrequire("buddy_data");
 zrequire("buddy_list");
 zrequire("ui");

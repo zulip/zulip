@@ -3,7 +3,7 @@
 const _ = require("lodash");
 
 zrequire("muting");
-zrequire("people");
+const people = zrequire("people");
 zrequire("stream_data");
 zrequire("unread");
 

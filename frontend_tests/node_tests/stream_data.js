@@ -16,7 +16,7 @@ global.stub_out_jquery();
 zrequire("color_data");
 zrequire("hash_util");
 zrequire("stream_topic_history");
-zrequire("people");
+const people = zrequire("people");
 zrequire("stream_color");
 zrequire("stream_data");
 zrequire("FetchStatus", "js/fetch_status");

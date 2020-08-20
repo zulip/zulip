@@ -5,6 +5,7 @@ const render_stream_member_list_entry = require("../templates/stream_member_list
 const render_subscription_settings = require("../templates/subscription_settings.hbs");
 const render_subscription_stream_privacy_modal = require("../templates/subscription_stream_privacy_modal.hbs");
 
+const people = require("./people");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
 const util = require("./util");

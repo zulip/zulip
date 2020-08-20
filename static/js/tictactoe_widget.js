@@ -2,6 +2,8 @@
 
 const render_widgets_tictactoe_widget = require("../templates/widgets/tictactoe_widget.hbs");
 
+const people = require("./people");
+
 class TicTacToeData {
     me = people.my_current_user_id();
     square_values = new Map();

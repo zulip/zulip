@@ -1,6 +1,7 @@
 "use strict";
 
 const FoldDict = require("./fold_dict").FoldDict;
+const people = require("./people");
 
 const partners = new Set();
 

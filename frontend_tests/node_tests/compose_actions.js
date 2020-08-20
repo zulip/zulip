@@ -20,7 +20,7 @@ set_global("compose_pm_pill", {});
 
 set_global("hash_util", {});
 
-zrequire("people");
+const people = zrequire("people");
 zrequire("compose_ui");
 zrequire("compose");
 zrequire("compose_state");

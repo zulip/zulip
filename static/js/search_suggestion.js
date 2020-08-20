@@ -3,6 +3,7 @@
 const Handlebars = require("handlebars/runtime");
 
 const huddle_data = require("./huddle_data");
+const people = require("./people");
 const settings_data = require("./settings_data");
 
 exports.max_num_of_search_results = 12;

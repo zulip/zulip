@@ -1,5 +1,7 @@
 "use strict";
 
+const people = require("./people");
+
 /*
     This config is in a separate file for partly
     tactical reasons.  We want the webapp to
