@@ -4386,7 +4386,7 @@ paths:
         Delete the requesting user from the realm.
       responses:
         "200":
-          description: Bad Request
+          description: Success.
           content:
             application/json:
               schema:
@@ -4394,7 +4394,7 @@ paths:
                   - $ref: "#/components/schemas/JsonSuccess"
                   - example: {"msg": "", "result": "success"}
         "400":
-          description: Bad Request
+          description: Bad Request.
           content:
             application/json:
               schema:
