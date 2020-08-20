@@ -88,7 +88,6 @@ declare let overlays: any;
 declare let padded_widget: any;
 declare let page_params: any;
 declare let panels: any;
-declare let people: any;
 declare let pill_typeahead: any;
 declare let pm_list: any;
 declare let pointer: any;

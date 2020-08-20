@@ -1,6 +1,7 @@
 "use strict";
 
 const FoldDict = require("./fold_dict").FoldDict;
+const people = require("./people");
 const util = require("./util");
 
 // The unread module tracks the message IDs and locations of the

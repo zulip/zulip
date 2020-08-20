@@ -6,7 +6,7 @@ const _page_params = {};
 
 set_global("page_params", _page_params);
 set_global("$", global.make_zjquery());
-zrequire("people");
+const people = zrequire("people");
 zrequire("presence");
 zrequire("user_status");
 

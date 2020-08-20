@@ -1,6 +1,7 @@
 "use strict";
 
 const huddle_data = require("./huddle_data");
+const people = require("./people");
 
 const consts = {
     backfill_idle_time: 10 * 1000,

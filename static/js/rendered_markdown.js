@@ -5,6 +5,8 @@ const moment = require("moment");
 
 const copy_code_button = require("../templates/copy_code_button.hbs");
 
+const people = require("./people");
+
 /*
     rendered_markdown
 

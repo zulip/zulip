@@ -18,12 +18,11 @@ set_global("overlays", {
     },
     recent_topics_open: () => true,
 });
-set_global("people", {
-    is_my_user_id(id) {
-        return id === 1;
-    },
-    sender_info_with_small_avatar_urls_for_sender_ids: (ids) => ids,
-});
+
+const people = zrequire("people");
+people.is_my_user_id = (id) => id === 1;
+people.sender_info_with_small_avatar_urls_for_sender_ids = (ids) => ids;
+
 set_global("timerender", {
     last_seen_status_from_date: () => "Just now",
     get_full_datetime: () => ({

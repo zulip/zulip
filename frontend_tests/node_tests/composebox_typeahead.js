@@ -6,7 +6,7 @@ zrequire("compose_state");
 zrequire("pm_conversations");
 zrequire("templates");
 zrequire("typeahead_helper");
-zrequire("people");
+const people = zrequire("people");
 zrequire("user_groups");
 zrequire("stream_data");
 zrequire("user_pill");

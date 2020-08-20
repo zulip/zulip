@@ -5,6 +5,7 @@ const _ = require("lodash");
 const render_compose_notification = require("../templates/compose_notification.hbs");
 const render_notification = require("../templates/notification.hbs");
 
+const people = require("./people");
 const settings_config = require("./settings_config");
 
 const notice_memory = new Map();

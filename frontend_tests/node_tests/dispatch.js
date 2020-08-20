@@ -75,7 +75,7 @@ zrequire("stream_topic_history");
 zrequire("stream_list");
 zrequire("message_flags");
 zrequire("message_store");
-zrequire("people");
+const people = zrequire("people");
 zrequire("starred_messages");
 zrequire("user_status");
 zrequire("subs");

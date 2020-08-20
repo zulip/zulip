@@ -18,7 +18,7 @@ zrequire("FetchStatus", "js/fetch_status");
 zrequire("Filter", "js/filter");
 zrequire("MessageListData", "js/message_list_data");
 zrequire("message_list");
-zrequire("people");
+const people = zrequire("people");
 
 set_global("recent_topics", {
     process_messages: noop,

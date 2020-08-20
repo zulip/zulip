@@ -7,7 +7,7 @@ const _settings_bots = {
 set_global("settings_bots", _settings_bots);
 
 zrequire("bot_data");
-zrequire("people");
+const people = zrequire("people");
 
 const me = {
     email: "me@zulip.com",

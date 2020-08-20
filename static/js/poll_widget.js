@@ -3,6 +3,8 @@
 const render_widgets_poll_widget = require("../templates/widgets/poll_widget.hbs");
 const render_widgets_poll_widget_results = require("../templates/widgets/poll_widget_results.hbs");
 
+const people = require("./people");
+
 class PollData {
     // This object just holds data for a poll, although it
     // works closely with the widget's concept of how data

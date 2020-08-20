@@ -1,5 +1,7 @@
 "use strict";
 
+const people = require("./people");
+
 exports.get_hash_category = function (hash) {
     // given "#streams/subscribed", returns "streams"
     return hash ? hash.replace(/^#/, "").split(/\//)[0] : "";

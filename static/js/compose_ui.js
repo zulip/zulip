@@ -2,6 +2,8 @@
 
 const autosize = require("autosize");
 
+const people = require("./people");
+
 exports.autosize_textarea = function () {
     autosize.update($("#compose-textarea"));
 };

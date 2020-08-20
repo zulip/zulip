@@ -36,15 +36,6 @@ set_global("stream_data", {
         return "#FFFFFF";
     },
 });
-set_global("people", {
-    // Mocking get_by_email function, here we are
-    // just returning string before `@` in email
-    get_by_email(email) {
-        return {
-            full_name: email.split("@")[0],
-        };
-    },
-});
 set_global("markdown", {
     apply_markdown: noop,
 });
@@ -268,21 +259,21 @@ run_test("format_drafts", (override) => {
         {
             draft_id: "id2",
             is_stream: false,
-            recipients: "aaron",
+            recipients: "aaron@zulip.com",
             raw_content: "Test Private Message",
             time_stamp: "Jan 30",
         },
         {
             draft_id: "id5",
             is_stream: false,
-            recipients: "aaron",
+            recipients: "aaron@zulip.com",
             raw_content: "Test Private Message 3",
             time_stamp: "Jan 29",
         },
         {
             draft_id: "id4",
             is_stream: false,
-            recipients: "aaron",
+            recipients: "aaron@zulip.com",
             raw_content: "Test Private Message 2",
             time_stamp: "Jan 26",
         },

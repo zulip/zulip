@@ -2,7 +2,7 @@
 
 zrequire("unread");
 zrequire("stream_data");
-zrequire("people");
+const people = zrequire("people");
 global.stub_out_jquery();
 set_global("$", global.make_zjquery());
 zrequire("message_util", "js/message_util");

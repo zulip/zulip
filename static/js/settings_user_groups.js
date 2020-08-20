@@ -5,6 +5,8 @@ const _ = require("lodash");
 const render_admin_user_group_list = require("../templates/admin_user_group_list.hbs");
 const render_confirm_delete_user = require("../templates/confirm_delete_user.hbs");
 
+const people = require("./people");
+
 const meta = {
     loaded: false,
 };

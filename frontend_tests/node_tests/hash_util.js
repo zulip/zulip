@@ -2,7 +2,7 @@
 
 zrequire("hash_util");
 zrequire("stream_data");
-zrequire("people");
+const people = zrequire("people");
 zrequire("Filter", "js/filter");
 zrequire("narrow_state");
 

@@ -1,5 +1,7 @@
 "use strict";
 
+const people = require("./people");
+
 // This will be used for pills for things like composing PMs
 // or adding users to a stream/group.
 

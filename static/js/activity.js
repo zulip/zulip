@@ -1,6 +1,9 @@
 "use strict";
 
 const _ = require("lodash");
+
+const people = require("./people");
+
 /*
     Helpers for detecting user activity and managing user idle states
 */

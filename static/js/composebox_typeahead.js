@@ -8,6 +8,7 @@ const pygments_data = require("../generated/pygments_data.json");
 const emoji = require("../shared/js/emoji");
 const typeahead = require("../shared/js/typeahead");
 
+const people = require("./people");
 const settings_data = require("./settings_data");
 
 //************************************

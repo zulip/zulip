@@ -1319,5 +1319,3 @@ exports.initialize = function (my_user_id, params) {
 
     exports.initialize_current_user(my_user_id);
 };
-
-window.people = exports;

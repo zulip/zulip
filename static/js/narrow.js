@@ -1,5 +1,6 @@
 "use strict";
 
+const people = require("./people");
 const util = require("./util");
 
 let unnarrow_times;

@@ -1,5 +1,6 @@
 "use strict";
 
+const people = require("./people");
 const util = require("./util");
 
 exports.initialize_pill = function () {

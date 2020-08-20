@@ -9,7 +9,7 @@ set_global("compose_fade", {});
 set_global("stream_events", {});
 set_global("subs", {});
 
-zrequire("people");
+const people = zrequire("people");
 zrequire("stream_data");
 zrequire("server_events_dispatch");
 

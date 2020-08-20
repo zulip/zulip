@@ -2,6 +2,8 @@
 
 const render_typing_notifications = require("../templates/typing_notifications.hbs");
 
+const people = require("./people");
+
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
 // This code handles the inbound side of typing notifications.

@@ -31,7 +31,7 @@ set_global("ui", {
 set_global("$", global.make_zjquery());
 
 zrequire("input_pill");
-zrequire("people");
+const people = zrequire("people");
 zrequire("pill_typeahead");
 zrequire("subs");
 zrequire("stream_edit");

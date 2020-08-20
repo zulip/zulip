@@ -1,5 +1,7 @@
 "use strict";
 
+const people = require("./people");
+
 let is_open = false;
 // the asset map is a map of all retrieved images and YouTube videos that are
 // memoized instead of being looked up multiple times.

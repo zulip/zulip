@@ -2,7 +2,7 @@
 
 const XDate = require("xdate");
 
-zrequire("people");
+const people = zrequire("people");
 zrequire("presence");
 
 const return_false = function () {

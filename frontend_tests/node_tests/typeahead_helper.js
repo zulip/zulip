@@ -10,7 +10,7 @@ page_params.realm_email_address_visibility =
     settings_config.email_address_visibility_values.admins_only.code;
 
 zrequire("recent_senders");
-zrequire("people");
+const people = zrequire("people");
 zrequire("stream_data");
 zrequire("narrow");
 zrequire("hash_util");

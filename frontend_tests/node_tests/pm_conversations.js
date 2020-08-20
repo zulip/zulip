@@ -15,7 +15,7 @@ run_test("partners", () => {
     assert.equal(pmc.is_partner(user3_id), true);
 });
 
-zrequire("people");
+const people = zrequire("people");
 
 run_test("insert_recent_private_message", () => {
     const params = {

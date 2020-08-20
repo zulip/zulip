@@ -4,6 +4,7 @@
 // server_events.js simple while breaking some circular
 // dependencies that existed when this code was in people.js.
 // (We should do bot updates here too.)
+const people = require("./people");
 const settings_config = require("./settings_config");
 
 exports.update_person = function update(person) {

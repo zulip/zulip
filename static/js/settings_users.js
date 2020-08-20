@@ -4,6 +4,7 @@ const render_admin_bot_form = require("../templates/admin_bot_form.hbs");
 const render_admin_human_form = require("../templates/admin_human_form.hbs");
 const render_admin_user_list = require("../templates/admin_user_list.hbs");
 
+const people = require("./people");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
 

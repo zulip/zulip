@@ -4,7 +4,7 @@ zrequire("poll_widget");
 
 set_global("$", global.make_zjquery());
 
-set_global("people", {});
+const people = zrequire("people");
 
 const return_false = () => false;
 const return_true = () => true;

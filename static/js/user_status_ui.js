@@ -1,5 +1,7 @@
 "use strict";
 
+const people = require("./people");
+
 exports.input_field = function () {
     return $(".user_status_overlay input.user_status");
 };

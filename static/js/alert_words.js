@@ -2,6 +2,8 @@
 
 const _ = require("lodash");
 
+const people = require("./people");
+
 // For simplicity, we use a list for our internal
 // data, since that matches what the server sends us.
 let my_alert_words = [];

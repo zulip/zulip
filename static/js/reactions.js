@@ -5,6 +5,8 @@ const _ = require("lodash");
 const emoji = require("../shared/js/emoji");
 const render_message_reaction = require("../templates/message_reaction.hbs");
 
+const people = require("./people");
+
 exports.view = {}; // function namespace
 
 exports.get_local_reaction_id = function (reaction_info) {
