@@ -73,6 +73,3 @@ Build update (see [build log](https://ci.solanolabs.com:443/reports/3317799)):
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name, file_type="json")

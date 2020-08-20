@@ -123,6 +123,3 @@ This is a note added to  a ticket
             expected_message,
             content_type="application/x-ww-form-urlencoded",
         )
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("groove", fixture_name, file_type="json")

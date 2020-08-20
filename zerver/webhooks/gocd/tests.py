@@ -34,6 +34,3 @@ class GocdHookTests(WebhookTestCase):
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("gocd", fixture_name, file_type="json")

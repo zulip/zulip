@@ -86,6 +86,3 @@ class BitbucketHookTests(WebhookTestCase):
         result = self.api_post(self.test_user, self.url, payload, content_type="application/json,")
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name)

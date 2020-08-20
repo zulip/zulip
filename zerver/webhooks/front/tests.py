@@ -210,6 +210,3 @@ class FrontHookTests(WebhookTestCase):
                                   content_type="application/x-www-form-urlencoded")
 
         self.assert_json_error(result, "Unknown webhook request")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data('front', fixture_name, file_type="json")

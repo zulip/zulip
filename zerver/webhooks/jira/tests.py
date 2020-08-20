@@ -7,6 +7,7 @@ from zerver.lib.users import get_api_key
 class JiraHookTests(WebhookTestCase):
     STREAM_NAME = 'jira'
     URL_TEMPLATE = "/api/v1/external/jira?api_key={api_key}&stream={stream}"
+    FIXTURE_DIR_NAME = "jira"
 
     def test_custom_stream(self) -> None:
         api_key = get_api_key(self.test_user)
@@ -192,9 +193,6 @@ Adding a comment. Oh, what a comment it is!
 * Changed status from **To Do** to **In Progress**"""
         self.check_webhook("change_status_v1", expected_topic, expected_message)
         self.check_webhook("change_status_v2", expected_topic, expected_message)
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data('jira', fixture_name)
 
     def test_comment_event_comment_created(self) -> None:
         expected_topic = "SP-1: Add support for newer format Jira issue comment events"

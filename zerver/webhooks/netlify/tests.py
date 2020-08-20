@@ -51,6 +51,3 @@ class NetlifyHookTests(WebhookTestCase):
         self.check_webhook(
             "deploy_unlocked", expected_topic, expected_message, content_type="application/json"
         )
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("netlify", fixture_name, file_type="json")

@@ -154,6 +154,3 @@ Job: [#2722 System - Updates - Ubuntu](http://awx.example.co.uk/#/jobs/playbook/
                             "(http://awx.example.co.uk/#/jobs/system/2721) failed.")
 
         self.check_webhook("system_job_failed", expected_topic, expected_message)
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("ansibletower", fixture_name, file_type="json")

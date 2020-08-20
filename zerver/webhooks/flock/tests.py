@@ -4,6 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class FlockHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
     URL_TEMPLATE = "/api/v1/external/flock?api_key={api_key}&stream={stream}"
+    FIXTURE_DIR_NAME = "flock"
 
     def test_flock_message(self) -> None:
         expected_topic = "Flock notifications"
@@ -74,6 +75,3 @@ class FlockHookTests(WebhookTestCase):
         self.check_webhook(
             "todo", expected_topic, expected_message, content_type="application/json"
         )
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("flock", fixture_name, file_type="json")
