@@ -11,6 +11,11 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 73**
+
+* [`PATCH users/{user_id}/subscriptions/{stream_id}`](/api/update-subscription-role):
+  New endpoint added for updating role of user within the stream.
+
 **Feature level 72**
 
 * [`GET users/me/subscriptions`](/api/get-subscriptions): Added `stream_admins`

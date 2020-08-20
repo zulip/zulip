@@ -580,6 +580,25 @@ def list_subscriptions(client: Client) -> None:
     assert streams[0]["description"] == "New stream for testing"
 
 
+@openapi_test_function("/users/{user_id}/subscriptions/{stream_id}:patch")
+def update_subscription_role(client: Client, stream_id: int) -> None:
+    # {code_example|start}
+    request = {
+        "role": 20,
+    }
+    user_id = 11
+    result = client.call_endpoint(
+        url=f"/users/{user_id}/subscriptions/{stream_id}",
+        method="PATCH",
+        request=request,
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(
+        result, "/users/{user_id}/subscriptions/{stream_id}", "patch", "200"
+    )
+
+
 @openapi_test_function("/users/me/subscriptions:delete")
 def remove_subscriptions(client: Client) -> None:
     # Change the role of stream admin to member because
@@ -1501,6 +1520,7 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
     update_stream(client, stream_id)
     get_streams(client)
     get_subscribers(client)
+    update_subscription_role(client, stream_id)
     remove_subscriptions(client)
     toggle_mute_topic(client)
     update_subscription_settings(client)

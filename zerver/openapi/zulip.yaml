@@ -6176,6 +6176,58 @@ paths:
                           Whether the user is subscribed to the stream.
                     example:
                       {"msg": "", "result": "success", "is_subscribed": false}
+    patch:
+      operationId: update_subscription_role
+      tags: ["streams"]
+      description: |
+        {!api-stream-admin-only.md!}
+
+        This endpoint is used to update role of user within the stream.
+
+        For private streams, unsubscribed organization administrators
+        cannot access this endpoint.
+
+        `PATCH {{ api_url }}/v1/users/{user_id}/subscriptions/{stream_id}`
+
+        **Changes**: New in Zulip 5.0 (feature level 73).
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/StreamIdInPath"
+        - name: role
+          in: query
+          description: |
+            New role of user within the stream (distinct from the user's
+            [organization-level role](/help/roles-and-permissions)).
+            Valid values are:
+
+            * 20 => Stream administrator.
+            * 50 => Subscriber.
+
+            **Changes**: New in Zulip 4.0 (feature level 31).
+          schema:
+            type: integer
+            enum:
+              - 20
+              - 50
+          example: 20
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid stream id",
+                        "result": "error",
+                      }
   /realm/emoji/{emoji_name}:
     post:
       operationId: upload_custom_emoji

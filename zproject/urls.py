@@ -298,7 +298,7 @@ v1_api_and_json_patterns = [
     rest_path(
         "users/<int:user_id>/subscriptions/<int:stream_id>",
         GET=get_subscription_backend,
-        PATCH=(update_subscription_role, {"intentionally_undocumented"}),
+        PATCH=update_subscription_role,
     ),
     rest_path("users/<email>", GET=get_user_by_email),
     rest_path("bots", GET=get_bots_backend, POST=add_bot_backend),

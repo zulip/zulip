@@ -24,7 +24,6 @@ OPENAPI_SPEC_PATH = os.path.abspath(
 EXCLUDE_UNDOCUMENTED_ENDPOINTS = {
     ("/realm/emoji/{emoji_name}", "delete"),
     ("/users", "patch"),
-    ("/users/{user_id}/subscriptions/{stream_id}", "patch"),
 }
 # Consists of endpoints with some documentation remaining.
 # These are skipped but return true as the validator cannot exclude objects
