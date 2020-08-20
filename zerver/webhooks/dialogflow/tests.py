@@ -3,6 +3,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class DialogflowHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/dialogflow?api_key={api_key}&email=AARON@zulip.com"
+    FIXTURE_DIR_NAME = "dialogflow"
 
     def test_dialogflow_default(self) -> None:
         self.url = self.build_webhook_url(
@@ -39,8 +40,3 @@ class DialogflowHookTests(WebhookTestCase):
         )
         expected_message = "DialogFlow couldn't process your query."
         self.send_and_test_private_message("exception", expected_message)
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("dialogflow",
-                                         fixture_name,
-                                         file_type="json")

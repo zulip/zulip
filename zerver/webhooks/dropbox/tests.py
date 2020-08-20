@@ -18,9 +18,6 @@ class DropboxHookTests(WebhookTestCase):
             content_type="application/x-www-form-urlencoded",
         )
 
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("dropbox", fixture_name, file_type="json")
-
     def test_verification_request(self) -> None:
         self.subscribe(self.test_user, self.STREAM_NAME)
         get_params = {'stream_name': self.STREAM_NAME,

@@ -219,6 +219,3 @@ New user created:
         self.check_webhook(
             "user_unsubscribed", "Contact: Eeshan Garg", "User unsubscribed from emails.",
         )
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data('intercom', fixture_name, file_type="json")

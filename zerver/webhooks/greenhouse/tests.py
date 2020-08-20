@@ -72,6 +72,3 @@ New Prospect Application Trisha Troy (ID: 968190), applying for:
         result = self.client_post(self.url, payload, content_type=self.CONTENT_TYPE)
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("greenhouse", fixture_name, file_type="json")

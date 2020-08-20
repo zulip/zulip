@@ -6,6 +6,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class HarborHookTests(WebhookTestCase):
     STREAM_NAME = "harbor"
     URL_TEMPLATE = "/api/v1/external/harbor?api_key={api_key}&stream={stream}"
+    FIXTURE_DIR_NAME = "harbor"
 
     def test_push_image(self) -> None:
         expected_topic = "example/test"
@@ -35,6 +36,3 @@ Image scan completed for `example/test:latest`. Vulnerabilities by severity:
         """.strip()
 
         self.check_webhook("scanning_completed", expected_topic, expected_message)
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("harbor", fixture_name, file_type="json")

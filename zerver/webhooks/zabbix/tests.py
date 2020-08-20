@@ -34,6 +34,3 @@ class ZabbixHookTests(WebhookTestCase):
         msg = self.get_last_message()
         self.assertEqual(msg.content, expected_message)
         self.assertEqual(msg.recipient.type, Recipient.PERSONAL)
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("zabbix", fixture_name, file_type="json")

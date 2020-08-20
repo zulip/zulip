@@ -33,6 +33,3 @@ class AppveyorHookTests(WebhookTestCase):
 """.strip()
 
         self.check_webhook("appveyor_build_failure", expected_topic, expected_message)
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("appveyor", fixture_name, file_type="json")

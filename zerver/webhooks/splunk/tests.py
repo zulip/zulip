@@ -165,6 +165,3 @@ Splunk alert from saved search:
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("splunk", fixture_name, file_type="json")
