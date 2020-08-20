@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+import orjson
+
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -111,7 +113,19 @@ class TrelloHookTests(WebhookTestCase):
         self.verify_post_is_ignored(payload)
 
     def test_create_card_check_item_ignore(self) -> None:
-        payload = self.get_body('create_check_item')
+        """
+        Certain card-related actions are now ignored solely based on the
+        action type, and we don't need to do any other parsing to ignore
+        them as invalid.
+        """
+        action = "createCheckItem"
+        data = dict(
+            model="whatever",
+            action=dict(
+                type=action,
+            ),
+        )
+        payload = orjson.dumps(data).decode()
         self.verify_post_is_ignored(payload)
 
     def test_trello_webhook_when_description_was_added_to_card(self) -> None:
