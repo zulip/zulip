@@ -16,7 +16,9 @@ SUPPORTED_CARD_ACTIONS = [
 ]
 
 IGNORED_CARD_ACTIONS = [
-    'createCheckItem',
+    "createCheckItem",
+    "updateCheckItem",
+    "updateList",
 ]
 
 CREATE = 'createCard'
