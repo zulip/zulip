@@ -77,7 +77,7 @@
                 "varsIgnorePattern": "print_elapsed_time|check_duplicate_ids"
             }
         ],
-        "no-use-before-define": "error",
+        "no-use-before-define": ["error", {"functions": false}],
         "no-useless-constructor": "error",
         "no-var": "error",
         "object-shorthand": "error",
