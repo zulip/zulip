@@ -1,6 +1,9 @@
 "use strict";
 
+const ClipboardJS = require("clipboard");
 const moment = require("moment");
+
+const copy_code_button = require("../templates/copy_code_button.hbs");
 
 /*
     rendered_markdown
@@ -183,6 +186,17 @@ exports.update_elements = (content) => {
         const toggle_button_html =
             '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
         $(this).prepend(toggle_button_html);
+    });
+
+    // Display the copy-to-clipboard button inside the div.codehilite element.
+    content.find("div.codehilite").each(function () {
+        const copy_button = $(copy_code_button());
+        $(this).find("pre").prepend(copy_button);
+        new ClipboardJS(copy_button[0], {
+            text(copy_element) {
+                return $(copy_element).siblings("code").text();
+            },
+        });
     });
 
     // Display emoji (including realm emoji) as text if
