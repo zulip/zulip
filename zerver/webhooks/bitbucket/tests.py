@@ -1,4 +1,3 @@
-from typing import Dict, Union
 from unittest.mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
@@ -88,5 +87,5 @@ class BitbucketHookTests(WebhookTestCase):
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    def get_body(self, fixture_name: str) -> Union[str, Dict[str, str]]:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name)
