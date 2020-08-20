@@ -737,20 +737,20 @@ run_test("extract_people_from_message", () => {
     assert(!people.is_known_user_id(maria.user_id));
 
     let reported;
-    people.report_late_add = function (user_id, email) {
+    people.__Rewire__("report_late_add", (user_id, email) => {
         assert.equal(user_id, maria.user_id);
         assert.equal(email, maria.email);
         reported = true;
-    };
+    });
 
     people.extract_people_from_message(message);
     assert(people.is_known_user_id(maria.user_id));
     assert(reported);
 
     // Get line coverage
-    people.report_late_add = function () {
+    people.__Rewire__("report_late_add", () => {
         throw Error("unexpected late add");
-    };
+    });
 
     message = {
         type: "private",
