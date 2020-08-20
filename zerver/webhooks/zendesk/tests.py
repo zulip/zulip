@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Dict
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -7,10 +7,10 @@ class ZenDeskHookTests(WebhookTestCase):
     STREAM_NAME = 'zendesk'
     URL_TEMPLATE = "/api/v1/external/zendesk?stream={stream}"
 
-    def get_body(self, fixture_name: str) -> Dict[str, Any]:
+    def get_payload(self, fixture_name: str) -> Dict[str, str]:
         return {
             'ticket_title': self.TICKET_TITLE,
-            'ticket_id': self.TICKET_ID,
+            'ticket_id': str(self.TICKET_ID),
             'message': self.MESSAGE,
             'stream': self.STREAM_NAME,
         }

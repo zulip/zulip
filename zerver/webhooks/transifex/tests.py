@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Dict
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -39,5 +39,5 @@ class TransifexHookTests(WebhookTestCase):
         )
         self.check_webhook("", expected_topic, expected_message)
 
-    def get_body(self, fixture_name: str) -> Dict[str, Any]:
+    def get_payload(self, fixture_name: str) -> Dict[str, str]:
         return {}
