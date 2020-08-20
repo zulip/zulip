@@ -326,9 +326,6 @@ class HelloWorldHookTests(WebhookTestCase):
         self.check_webhook('hello', expected_topic, expected_message,
                            content_type="application/x-www-form-urlencoded")
 
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("helloworld", fixture_name, file_type="json")
-
 ```
 
 In the above example, `STREAM_NAME`, `URL_TEMPLATE`, and `FIXTURE_DIR_NAME` refer
@@ -345,10 +342,6 @@ value from the fixture. If these don't match, the test will fail.
 `URL_TEMPLATE` defines how the test runner will call your incoming webhook, in the same way
  you would provide a webhook URL to the 3rd party service. `api_key={api_key}` says
 that an API key is expected.
-
-In `get_body`, the first argument in the call to `self.webhook_fixture_data` specifies the
-prefix of your fixture file names, and `file_type` their type. Common types are
-`json` and `txt`.
 
 When writing tests for your webhook, you'll want to include one test function
 (and corresponding fixture) per each distinct message condition that your
@@ -591,14 +584,13 @@ class QuerytestHookTests(WebhookTestCase):
 
         self.check_webhook('test_one', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("querytest", fixture_name, file_type="json")
 ```
 
-You can also override `get_body` if your test data needs to be constructed in
-an unusual way. For more, see the definition for the base class, `WebhookTestCase`
-in `zerver/lib/test_classes.py.`
+You can also override `get_body` or `get_payload` if your test data
+needs to be constructed in an unusual way.
+
+For more, see the definition for the base class, `WebhookTestCase`
+in `zerver/lib/test_classes.py`, or just grep for examples.
 
 
 ### Custom HTTP event-type headers
