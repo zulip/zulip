@@ -4499,7 +4499,7 @@ paths:
                   - $ref: "#/components/schemas/JsonError"
                   - example:
                       {
-                        "msg": "Cannot deactivate the only organization administrator",
+                        "msg": "Cannot deactivate the only organization owner",
                         "result": "error",
                       }
   /users/me/{stream_id}/topics:
@@ -5597,7 +5597,7 @@ paths:
                   - $ref: "#/components/schemas/JsonError"
                   - example:
                       {
-                        "msg": "Cannot deactivate the only organization administrator",
+                        "msg": "Cannot deactivate the only organization owner",
                         "result": "error",
                       }
   /realm/filters:
