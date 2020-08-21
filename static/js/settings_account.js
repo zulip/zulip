@@ -583,16 +583,16 @@ exports.set_up = function () {
                     window.location.href = "/login/";
                 },
                 error(xhr) {
-                    const error_last_admin = i18n.t(
-                        "Error: Cannot deactivate the only organization administrator.",
+                    const error_last_owner = i18n.t(
+                        "Error: Cannot deactivate the only organization owner.",
                     );
                     const error_last_user = i18n.t(
                         'Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <a target="_blank" href="/#organization/organization-profile">Organization profile settings</a>.',
                     );
                     let rendered_error_msg;
                     if (xhr.responseJSON.code === "CANNOT_DEACTIVATE_LAST_USER") {
-                        if (xhr.responseJSON.is_last_admin) {
-                            rendered_error_msg = error_last_admin;
+                        if (xhr.responseJSON.is_last_owner) {
+                            rendered_error_msg = error_last_owner;
                         } else {
                             rendered_error_msg = error_last_user;
                         }
