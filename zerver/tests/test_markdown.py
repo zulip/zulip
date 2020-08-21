@@ -530,6 +530,16 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(msg)
         self.assertIn(thumbnail_img, converted)
 
+    def test_image_without_text_link(self) -> None:
+        sender_user_profile = self.example_user('othello')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        content = 'some text ![foo](url)'
+        expected_preview = '<p>some text <span class="message_inline_image image_without_text_link"><a href="url"><img alt="foo" data-src-fullsize="/thumbnail?url=url&amp;size=full" src="/thumbnail?url=url&amp;size=thumbnail" title="foo"></a></span></p>'
+        converted = render_markdown(msg, content)
+
+        self.assertEqual(converted, expected_preview)
+
     @override_settings(INLINE_IMAGE_PREVIEW=True)
     def test_inline_image_preview(self) -> None:
         with_preview = '<div class="message_inline_image"><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg"><img data-src-fullsize="/thumbnail?url=http%3A%2F%2Fcdn.wallpapersafari.com%2F13%2F6%2F16eVjx.jpeg&amp;size=full" src="/thumbnail?url=http%3A%2F%2Fcdn.wallpapersafari.com%2F13%2F6%2F16eVjx.jpeg&amp;size=thumbnail"></a></div>'
