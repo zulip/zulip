@@ -1,3 +1,4 @@
+from typing import Dict
 from unittest.mock import patch
 
 import orjson
@@ -128,6 +129,27 @@ class TrelloHookTests(WebhookTestCase):
                 model="whatever",
                 action=dict(
                     type=action,
+                ),
+            )
+            payload = orjson.dumps(data).decode()
+            self.verify_post_is_ignored(payload)
+
+    def test_ignoring_card_updates(self) -> None:
+        fields = [
+            "pos",
+        ]
+        for field in fields:
+            card: Dict[str, object] = {}
+            old = {}
+            old[field] = "should-be-ignored"
+            data = dict(
+                model="whatever",
+                action=dict(
+                    type="updateCard",
+                    data=dict(
+                        card=card,
+                        old=old
+                    ),
                 ),
             )
             payload = orjson.dumps(data).decode()
