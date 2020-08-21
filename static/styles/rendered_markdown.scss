@@ -445,9 +445,17 @@
         border: none;
     }
 
+    pre {
+        &:hover .copy_codeblock,
+        &:focus-within .copy_codeblock {
+            visibility: visible;
+        }
+    }
+
     /* TODO: Consolidate with .copy_message */
     /* Style copy-to-clipboard button inside codeblocks */
     .copy_codeblock {
+        visibility: hidden;
         outline-color: hsl(0, 0%, 73%);
         height: 18px;
         width: 10px;
