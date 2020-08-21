@@ -796,6 +796,7 @@ def rate_limit(domain: str='api_by_user') -> Callable[[ViewFuncT], ViewFuncT]:
                 # TODO: implement per-IP non-authed rate limiting
                 return func(request, *args, **kwargs)
 
+            assert isinstance(user, UserProfile)
             rate_limit_user(request, user, domain)
 
             return func(request, *args, **kwargs)

@@ -7,6 +7,7 @@ from unittest import mock
 
 import orjson
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 
@@ -619,6 +620,7 @@ class RateLimitTestCase(ZulipTestCase):
         class Request:
             client = Client()
             META = {'REMOTE_ADDR': '127.0.0.1'}
+            user = AnonymousUser()
 
         req = Request()
 
@@ -641,6 +643,7 @@ class RateLimitTestCase(ZulipTestCase):
         class Request:
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
+            user = AnonymousUser()
 
         req = Request()
 
@@ -664,7 +667,7 @@ class RateLimitTestCase(ZulipTestCase):
         class Request:
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
-            user = 'stub'  # any non-None value here exercises the correct code path
+            user = self.example_user("hamlet")
 
         req = Request()
 
@@ -687,7 +690,7 @@ class RateLimitTestCase(ZulipTestCase):
         class Request:
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
-            user = 'stub'  # any non-None value here exercises the correct code path
+            user = self.example_user("hamlet")
 
         req = Request()
 
