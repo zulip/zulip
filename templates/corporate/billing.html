@@ -150,6 +150,12 @@
                 <div class="tab-content">
                     {% if sponsorship_pending %}
                     <h3>Your organization has requested sponsored or discounted hosting.</h3>
+                    {% elif is_sponsored %}
+                    <center>
+                        <p>
+                            <h3>💚 Your organization is fully sponsored and is on the <b>Zulip Standard</b> plan.</h3>
+                        </p>
+                    </center>
                     {% else %}
                     <center>
                         <p>

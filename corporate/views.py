@@ -154,11 +154,15 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     if not settings.BILLING_ENABLED or user.is_guest:
         return render(request, "404.html", status=404)
 
+    billing_page_url = reverse('corporate.views.billing_home')
+
     customer = get_customer_by_realm(user.realm)
     if customer is not None and (get_current_plan_by_customer(customer) is not None or customer.sponsorship_pending):
-        billing_page_url = reverse('corporate.views.billing_home')
         if request.GET.get("onboarding") is not None:
             billing_page_url = f"{billing_page_url}?onboarding=true"
+        return HttpResponseRedirect(billing_page_url)
+
+    if user.realm.plan_type == user.realm.STANDARD_FREE:
         return HttpResponseRedirect(billing_page_url)
 
     percent_off = Decimal(0)
@@ -232,29 +236,27 @@ def sponsorship(request: HttpRequest, user: UserProfile,
 def billing_home(request: HttpRequest) -> HttpResponse:
     user = request.user
     customer = get_customer_by_realm(user.realm)
-    context: Dict[str, Any] = {}
+    context: Dict[str, Any] = {
+        "admin_access": user.has_billing_access,
+        'has_active_plan': False,
+    }
+
+    if user.realm.plan_type == user.realm.STANDARD_FREE:
+        context["is_sponsored"] = True
+        return render(request, 'corporate/billing.html', context=context)
 
     if customer is None:
         return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
 
     if customer.sponsorship_pending:
-        if user.has_billing_access:
-            context = {"admin_access": True, "sponsorship_pending": True}
-        else:
-            context = {"admin_access": False}
+        context["sponsorship_pending"] = True
         return render(request, 'corporate/billing.html', context=context)
 
     if not CustomerPlan.objects.filter(customer=customer).exists():
         return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
 
     if not user.has_billing_access:
-        context = {'admin_access': False}
         return render(request, 'corporate/billing.html', context=context)
-
-    context = {
-        'admin_access': True,
-        'has_active_plan': False,
-    }
 
     plan = get_current_plan_by_customer(customer)
     if plan is not None:
