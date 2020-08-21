@@ -59,6 +59,7 @@ exports.build_page = function () {
         realm_user_group_edit_policy: page_params.realm_user_group_edit_policy,
         USER_GROUP_EDIT_POLICY_MEMBERS: 1,
         realm_private_message_policy: page_params.realm_private_message_policy,
+        realm_oss_showcase_policy: page_params.realm_oss_showcase_policy,
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
         realm_avatar_changes_disabled: page_params.realm_avatar_changes_disabled,

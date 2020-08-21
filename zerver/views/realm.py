@@ -82,6 +82,8 @@ def update_realm(
             Realm.PRIVATE_MESSAGE_POLICY_TYPES), default=None),
         email_address_visibility: Optional[int]=REQ(validator=check_int_in(
             Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None),
+        oss_showcase_policy: Optional[int]=REQ(validator=check_int_in(
+            Realm.OSS_SHOWCASE_POLICY_TYPES), default=None),
         default_twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
         video_chat_provider: Optional[int]=REQ(validator=check_int, default=None),
         default_code_block_language: Optional[str]=REQ(validator=check_string, default=None),

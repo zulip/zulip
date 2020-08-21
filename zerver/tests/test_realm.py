@@ -518,6 +518,7 @@ class RealmTest(ZulipTestCase):
             user_group_edit_policy=10,
             private_message_policy=10,
             message_content_delete_limit_seconds=-10,
+            oss_showcase_policy=10,
         )
 
         # We need an admin user.
@@ -723,6 +724,8 @@ class RealmAPITest(ZulipTestCase):
             email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
                                       Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
                                       Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY],
+            oss_showcase_policy=[Realm.OSS_SHOWCASE_LISTED,
+                                 Realm.OSS_SHOWCASE_HIDDEN],
             video_chat_provider=[
                 dict(
                     video_chat_provider=orjson.dumps(Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id']).decode(),

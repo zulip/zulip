@@ -181,6 +181,7 @@ class HomeTest(ZulipTestCase):
             "realm_night_logo_url",
             "realm_non_active_users",
             "realm_notifications_stream_id",
+            "realm_oss_showcase_policy",
             "realm_password_auth_enabled",
             "realm_plan_type",
             "realm_presence_disabled",

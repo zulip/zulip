@@ -1983,6 +1983,7 @@ class RealmPropertyActionTest(BaseAction):
             digest_weekday=[0, 1, 2],
             message_retention_days=[10, 20],
             name=['Zulip', 'New Name'],
+            oss_showcase_policy=[2, 1],
             waiting_period_threshold=[10, 20],
             create_stream_policy=[3, 2, 1],
             invite_to_stream_policy=[3, 2, 1],

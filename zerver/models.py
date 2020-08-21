@@ -255,6 +255,18 @@ class Realm(models.Model):
         PRIVATE_MESSAGE_POLICY_DISABLED,
     ]
 
+    # Whether the organization is publicly advertised on
+    # zulip.com/open-communities.
+    OSS_SHOWCASE_HIDDEN = 1
+    OSS_SHOWCASE_LISTED = 2
+    oss_showcase_policy: int = models.PositiveSmallIntegerField(
+        default=OSS_SHOWCASE_HIDDEN
+    )
+    OSS_SHOWCASE_POLICY_TYPES = [
+        OSS_SHOWCASE_HIDDEN,
+        OSS_SHOWCASE_LISTED,
+    ]
+
     # Who in the organization has access to users' actual email
     # addresses.  Controls whether the UserProfile.email field is the
     # same as UserProfile.delivery_email, or is instead garbage.
@@ -406,6 +418,7 @@ class Realm(models.Model):
         message_retention_days=(int, type(None)),
         name=str,
         name_changes_disabled=bool,
+        oss_showcase_policy=int,
         avatar_changes_disabled=bool,
         emails_restricted_to_domains=bool,
         send_welcome_emails=bool,

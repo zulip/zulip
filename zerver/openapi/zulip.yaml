@@ -6321,6 +6321,13 @@ paths:
 
                           The policy for which users can add other users to streams in this
                           organization.
+                      realm_oss_showcase_policy:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The policy for whether the organization is publicly advertised on
+                          zulip.com/open-communities.
                       realm_default_language:
                         type: string
                         description: |

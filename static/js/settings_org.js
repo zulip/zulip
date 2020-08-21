@@ -15,6 +15,10 @@ exports.reset = function () {
 };
 
 exports.maybe_disable_widgets = function () {
+    if (page_params.realm_plan_type !== 4) {
+        $("#id_realm_oss_showcase_policy").prop("disabled", true);
+    }
+
     if (page_params.is_owner) {
         return;
     }
@@ -203,6 +207,7 @@ const simple_dropdown_properties = [
     "realm_private_message_policy",
     "realm_add_emoji_by_admins_only",
     "realm_user_invite_restriction",
+    "realm_oss_showcase_policy",
 ];
 
 function set_property_dropdown_value(property_name) {
