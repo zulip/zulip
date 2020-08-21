@@ -136,6 +136,8 @@ class TrelloHookTests(WebhookTestCase):
 
     def test_ignoring_card_updates(self) -> None:
         fields = [
+            "cover",
+            "idAttachmentCover",
             "pos",
         ]
         for field in fields:
