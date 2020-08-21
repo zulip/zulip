@@ -9,7 +9,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.streams import get_stream_by_id
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic import get_topic_history_for_web_public_stream, messages_for_topic
+from zerver.lib.topic import get_topic_history_for_public_stream, messages_for_topic
 from zerver.models import Message, UserProfile
 
 
@@ -85,6 +85,6 @@ def get_web_public_topics_backend(request: HttpRequest, stream_id: int) -> HttpR
     if not stream.is_web_public:
         return json_success(dict(topics=[]))
 
-    result = get_topic_history_for_web_public_stream(recipient=stream.recipient)
+    result = get_topic_history_for_public_stream(recipient=stream.recipient)
 
     return json_success(dict(topics=result))
