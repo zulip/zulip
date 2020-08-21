@@ -337,6 +337,17 @@ def access_stream_by_name(user_profile: UserProfile,
                                             allow_realm_admin=allow_realm_admin)
     return (stream, recipient, sub)
 
+def access_web_public_stream(stream_id: int, realm: Realm) -> Stream:
+    error = _("Invalid stream id")
+    try:
+        stream = get_stream_by_id_in_realm(stream_id, realm)
+    except Stream.DoesNotExist:
+        raise JsonableError(error)
+
+    if not stream.is_web_public:
+        raise JsonableError(error)
+    return stream
+
 def access_stream_for_unmute_topic_by_name(user_profile: UserProfile,
                                            stream_name: str,
                                            error: str) -> Stream:

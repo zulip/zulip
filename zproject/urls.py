@@ -339,7 +339,8 @@ v1_api_and_json_patterns = [
           'DELETE': 'zerver.views.custom_profile_fields.remove_user_custom_profile_data'}),
 
     path('users/me/<int:stream_id>/topics', rest_dispatch,
-         {'GET': 'zerver.views.streams.get_topics_backend'}),
+         {'GET': ('zerver.views.streams.get_topics_backend',
+                  {'allow_anonymous_user_web'})}),
 
 
     # streams -> zerver.views.streams

@@ -161,6 +161,34 @@ class TopicHistoryTest(ZulipTestCase):
         result = self.client_get(endpoint, {})
         self.assert_json_error(result, 'Invalid stream id')
 
+    def test_get_topics_web_public_stream_web_public_request(self) -> None:
+        stream = self.make_stream('web-public-steram', is_web_public=True)
+        for i in range(3):
+            self.send_stream_message(self.example_user('iago'),
+                                     stream.name, topic_name='topic' + str(i))
+
+        endpoint = f'/json/users/me/{stream.id}/topics'
+        result = self.client_get(endpoint)
+        self.assert_json_success(result)
+        history = result.json()['topics']
+        self.assertEqual([topic['name'] for topic in history], [
+            'topic2',
+            'topic1',
+            'topic0',
+        ])
+
+    def test_get_topics_non_web_public_stream_web_public_request(self) -> None:
+        stream = get_stream('Verona', self.example_user('iago').realm)
+        endpoint = f'/json/users/me/{stream.id}/topics'
+        result = self.client_get(endpoint)
+        self.assert_json_error(result, 'Invalid stream id', 400)
+
+    def test_get_topics_non_existant_stream_web_public_request(self) -> None:
+        non_existant_stream_id = 10000000000000000000000
+        endpoint = f'/json/users/me/{non_existant_stream_id}/topics'
+        result = self.client_get(endpoint)
+        self.assert_json_error(result, 'Invalid stream id', 400)
+
 class TopicDeleteTest(ZulipTestCase):
     def test_topic_delete(self) -> None:
         initial_last_msg_id = self.get_last_message().id
