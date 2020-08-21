@@ -654,10 +654,10 @@ CAMO_URI = '/external_content/'
 #THUMBNAIL_IMAGES = True
 
 # Controls the Jitsi Meet video call integration.  By default, the
-# integration uses the SaaS meet.jit.si server.  You can specify
+# integration uses the SaaS https://meet.jit.si server.  You can specify
 # your own Jitsi Meet server, or if you'd like to disable the
 # integration, set JITSI_SERVER_URL = None.
-#JITSI_SERVER_URL = 'jitsi.example.com'
+#JITSI_SERVER_URL = 'https://jitsi.example.com'
 
 # Controls the Big Blue Button video call integration.  You must also
 # set big_blue_button_secret in zulip-secrets.conf.

@@ -121,7 +121,7 @@ LOCAL_UPLOADS_DIR: Optional[str] = None
 MAX_FILE_UPLOAD_SIZE = 25
 
 # Jitsi Meet video call integration; set to None to disable integration.
-JITSI_SERVER_URL = 'https://meet.jit.si/'
+JITSI_SERVER_URL = 'https://meet.jit.si'
 
 # Allow setting BigBlueButton settings in zulip-secrets.conf in
 # development; this is useful since there are no public BigBlueButton servers.
