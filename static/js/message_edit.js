@@ -156,6 +156,20 @@ exports.update_message_topic_editing_pencil = function () {
     }
 };
 
+exports.hide_message_edit_spinner = function (row) {
+    const spinner = row.find(".message_edit_spinner");
+    loading.destroy_indicator(spinner);
+    $("#message_edit_form .message_edit_save").show();
+    $("#message_edit_form .message_edit_cancel").show();
+};
+
+exports.show_message_edit_spinner = function (row) {
+    const spinner = row.find(".message_edit_spinner");
+    loading.make_indicator(spinner);
+    $("#message_edit_form .message_edit_save").hide();
+    $("#message_edit_form .message_edit_cancel").hide();
+};
+
 exports.show_topic_edit_spinner = function (row) {
     const spinner = row.find(".topic_edit_spinner");
     loading.make_indicator(spinner);
@@ -637,6 +651,8 @@ exports.save_message_row_edit = function (row) {
     let new_stream_id;
     const old_stream_id = message.stream_id;
 
+    exports.show_message_edit_spinner(row);
+
     if (message.type === "stream") {
         new_topic = row.find(".message_edit_topic").val();
         topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
@@ -745,6 +761,7 @@ exports.save_message_row_edit = function (row) {
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
             }
+            exports.hide_message_edit_spinner(row);
         },
         error(xhr) {
             if (msg_list === current_msg_list) {
@@ -773,6 +790,7 @@ exports.save_message_row_edit = function (row) {
                     }
                 }
 
+                exports.hide_message_edit_spinner(row);
                 const message = channel.xhr_error_message(i18n.t("Error saving edit"), xhr);
                 row.find(".edit_error").text(message).show();
             }

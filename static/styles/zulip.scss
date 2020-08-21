@@ -2131,6 +2131,16 @@ div.topic_edit_spinner .loading_indicator_spinner {
     height: 14px;
 }
 
+.message_edit_spinner {
+    margin-right: 8px;
+    padding-top: 5px;
+}
+
+.message_edit_spinner .loading_indicator_spinner {
+    width: 20px;
+    height: 20px;
+}
+
 #do_delete_message_spinner {
     margin: 0 auto;
 }
