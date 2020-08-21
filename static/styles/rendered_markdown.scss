@@ -469,6 +469,14 @@
     }
 }
 
+.preview_content .copy_codeblock {
+    /* We avoid displaying copy_codeblock button in previews, because it
+       feels odd given that you can just copy-paste the code out of
+       the "edit" state.  We may change this decision when we add
+       menu options for viewing the code in a coding playground. */
+    display: none;
+}
+
 @media (max-width: 600px) {
     .rendered_markdown .message_embed {
         height: auto;
