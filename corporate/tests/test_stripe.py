@@ -1118,15 +1118,26 @@ class StripeTest(StripeTestCase):
         response = self.client_get("/billing/")
         self.assert_in_success_response(["You must be an organization owner or a billing administrator to view this page."], response)
 
+        user.realm.plan_type = Realm.STANDARD_FREE
+        user.realm.save()
+        self.login_user(self.example_user("hamlet"))
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(["Your organization is fully sponsored and is on the <b>Zulip Standard</b>"], response)
+
     def test_redirect_for_billing_home(self) -> None:
         user = self.example_user("iago")
         self.login_user(user)
-        # No Customer yet; check that we are redirected to /upgrade
         response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/upgrade/', response.url)
 
-        # Customer, but no CustomerPlan; check that we are still redirected to /upgrade
+        user.realm.plan_type = Realm.STANDARD_FREE
+        user.realm.save()
+        response = self.client_get("/billing/")
+        self.assertEqual(response.status_code, 200)
+
+        user.realm.plan_type = Realm.LIMITED
+        user.realm.save()
         Customer.objects.create(realm=user.realm, stripe_customer_id='cus_123')
         response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
@@ -1135,11 +1146,18 @@ class StripeTest(StripeTestCase):
     def test_redirect_for_upgrade_page(self) -> None:
         user = self.example_user("iago")
         self.login_user(user)
-        # No Customer yet;
+
         response = self.client_get("/upgrade/")
         self.assertEqual(response.status_code, 200)
 
-        # Customer, but no CustomerPlan;
+        user.realm.plan_type = Realm.STANDARD_FREE
+        user.realm.save()
+        response = self.client_get("/upgrade/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/billing/")
+
+        user.realm.plan_type = Realm.LIMITED
+        user.realm.save()
         customer = Customer.objects.create(realm=user.realm, stripe_customer_id='cus_123')
         response = self.client_get("/upgrade/")
         self.assertEqual(response.status_code, 200)
