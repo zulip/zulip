@@ -1,3 +1,4 @@
+from unittest.mock import patch
 from urllib.parse import quote, unquote
 
 from zerver.lib.test_classes import WebhookTestCase
@@ -42,6 +43,28 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
 """.strip()
         self.check_webhook("created_v1", expected_topic, expected_message)
         self.check_webhook("created_v2", expected_topic, expected_message)
+
+    def test_ignored_events(self) -> None:
+        ignored_actions = [
+            "attachment_created",
+            "issuelink_created",
+            "issuelink_deleted",
+            "sprint_closed",
+            "sprint_started",
+            "worklog_created",
+            "worklog_updated",
+        ]
+        for action in ignored_actions:
+            url = self.build_webhook_url()
+            payload = dict(webhookEvent=action)
+            with patch("zerver.webhooks.jira.view.check_send_webhook_message") as m:
+                result = self.client_post(
+                    url,
+                    payload,
+                    content_type="application/json"
+                )
+            self.assertFalse(m.called)
+            self.assert_json_success(result)
 
     def test_created_with_stream_with_spaces_escaped(self) -> None:
         self.STREAM_NAME = quote('jira alerts')
