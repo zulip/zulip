@@ -123,7 +123,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_create_issue_with_two_assignees_event_message(self) -> None:
         expected_subject = "Zulip GitLab Test / Issue #2 Zulip Test Issue 2"
-        expected_message = "Adam Birds created [Issue #2](https://gitlab.com/adambirds/zulip-gitlab-test/issues/2) (assigned to adambirds and eeshangarg):\n\n~~~ quote\nZulip Test Issue 2\n~~~"
+        expected_message = "Adam Birds created [Issue #2](https://gitlab.com/adambirds/zulip-gitlab-test/issues/2) (assigned to Adam Birds and Eeshan Garg):\n\n~~~ quote\nZulip Test Issue 2\n~~~"
 
         self.check_webhook(
             "issue_hook__issue_created_with_two_assignees", expected_subject, expected_message
@@ -131,7 +131,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_create_issue_with_three_assignees_event_message(self) -> None:
         expected_subject = "Zulip GitLab Test / Issue #2 Zulip Test Issue 2"
-        expected_message = "Adam Birds created [Issue #2](https://gitlab.com/adambirds/zulip-gitlab-test/issues/2) (assigned to adambirds, eeshangarg and timabbott):\n\n~~~ quote\nZulip Test Issue 2\n~~~"
+        expected_message = "Adam Birds created [Issue #2](https://gitlab.com/adambirds/zulip-gitlab-test/issues/2) (assigned to Adam Birds, Eeshan Garg and Tim Abbott):\n\n~~~ quote\nZulip Test Issue 2\n~~~"
 
         self.check_webhook(
             "issue_hook__issue_created_with_three_assignees", expected_subject, expected_message
@@ -139,7 +139,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_create_confidential_issue_with_assignee_event_message(self) -> None:
         expected_subject = "testing / Issue #2 Testing"
-        expected_message = "Joe Bloggs created [Issue #2](https://gitlab.example.co.uk/joe.bloggs/testing/issues/2) (assigned to joe.bloggs):\n\n~~~ quote\nTesting\n~~~"
+        expected_message = "Joe Bloggs created [Issue #2](https://gitlab.example.co.uk/joe.bloggs/testing/issues/2) (assigned to Joe Bloggs):\n\n~~~ quote\nTesting\n~~~"
 
         self.check_webhook(
             "issue_hook__confidential_issue_created_with_assignee",
@@ -306,7 +306,7 @@ class GitlabHookTests(WebhookTestCase):
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
         expected_message = "Tomasz Kolek created [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`:\n\n~~~ quote\ndescription of merge request\n~~~"
         self.check_webhook(
-            "merge_request_hook__merge_request_created_with_assignee",
+            'merge_request_hook__merge_request_created_with_assignee',
             expected_topic,
             expected_message,
         )
@@ -356,8 +356,9 @@ class GitlabHookTests(WebhookTestCase):
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
         expected_message = "Tomasz Kolek updated [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`:\n\n~~~ quote\nupdated desc\n~~~"
         self.check_webhook(
-            "merge_request_hook__merge_request_updated", expected_topic, expected_message
-        )
+            'merge_request_hook__merge_request_updated',
+            expected_topic,
+            expected_message)
 
     def test_merge_request_added_commit_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
@@ -529,8 +530,9 @@ class GitlabHookTests(WebhookTestCase):
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
         expected_message = "Tomasz Kolek created [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`:\n\n~~~ quote\ndescription of merge request\n~~~"
         self.check_webhook(
-            "system_hook__merge_request_created_with_assignee", expected_topic, expected_message
-        )
+            'system_hook__merge_request_created_with_assignee',
+            expected_topic,
+            expected_message)
 
     def test_system_merge_request_closed_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #2 NEW MR"

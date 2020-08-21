@@ -1,7 +1,7 @@
 import re
 from functools import partial
 from inspect import signature
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -91,8 +91,7 @@ def get_issue_created_event_body(payload: Dict[str, Any],
         get_object_url(payload),
         payload['object_attributes'].get('iid'),
         description,
-        get_objects_assignee(payload),
-        payload.get('assignees'),
+        assignees=replace_assignees_username_with_name(get_assignees(payload)),
         title=payload['object_attributes'].get('title') if include_title else None,
     )
 
@@ -142,22 +141,31 @@ def get_merge_request_open_or_updated_body(payload: Dict[str, Any], action: str,
         pull_request.get('source_branch'),
         pull_request.get('target_branch'),
         pull_request.get('description'),
-        get_objects_assignee(payload),
+        assignees=replace_assignees_username_with_name(get_assignees(payload)),
         type='MR',
         title=payload['object_attributes'].get('title') if include_title else None,
     )
 
-def get_objects_assignee(payload: Dict[str, Any]) -> Optional[str]:
-    assignee_object = payload.get('assignee')
-    if assignee_object:
-        return assignee_object.get('name')
-    else:
-        assignee_object = payload.get('assignees')
-        if assignee_object:
-            for assignee in assignee_object:
-                return assignee['name']
+def get_assignees(payload: Dict[str, Any]) -> List[Dict[str, str]]:
+    assignee_details = payload.get('assignees')
+    if assignee_details is None:
+        single_assignee_details = payload.get('assignee')
+        if single_assignee_details is None:
+            assignee_details = []
+        else:
+            assignee_details = [single_assignee_details]
+    return assignee_details
 
-    return None
+def replace_assignees_username_with_name(assignees: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    """Replace the username of each assignee with their (full) name.
+
+    This is a hack-like adaptor so that when assignees are passed to
+    `get_pull_request_event_message` we can use the assignee's name
+    and not their username (for more consistency).
+    """
+    for assignee in assignees:
+        assignee["username"] = assignee["name"]
+    return assignees
 
 def get_commented_commit_event_body(payload: Dict[str, Any]) -> str:
     comment = payload['object_attributes']
