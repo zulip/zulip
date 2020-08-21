@@ -103,9 +103,15 @@ def get_proper_action(payload: Mapping[str, Any], action_type: str) -> Optional[
         if old_data.get('closed') and card_data.get('closed') is False:
             return REOPEN
         # we don't support events for when a card is moved up or down
-        # within a single list
-        if old_data.get('pos'):
-            return None
+        # within a single list (pos), or when the cover changes (cover)
+        ignored_fields = [
+            "cover",
+            "idAttachmentCover",
+            "pos",
+        ]
+        for field in ignored_fields:
+            if old_data.get(field):
+                return None
         raise UnexpectedWebhookEventType("Trello", action_type)
 
     return action_type
