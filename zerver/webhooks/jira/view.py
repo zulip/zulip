@@ -13,13 +13,13 @@ from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_we
 from zerver.models import Realm, UserProfile, get_user_by_delivery_email
 
 IGNORED_EVENTS = [
-    'issuelink_created',
-    'attachment_created',
-    'issuelink_deleted',
-    'sprint_started',
-    'sprint_closed',
-    'worklog_created',
-    'worklog_updated',
+    "attachment_created",
+    "issuelink_created",
+    "issuelink_deleted",
+    "sprint_closed",
+    "sprint_started",
+    "worklog_created",
+    "worklog_updated",
 ]
 
 def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> Optional[UserProfile]:
