@@ -236,6 +236,10 @@ class MessageList {
         return i18n.t("You are not subscribed to stream __stream__", {stream: stream_name});
     }
 
+    deactivated_bookend_content() {
+        return i18n.t("This stream has been deactivated");
+    }
+
     // Maintains a trailing bookend element explaining any changes in
     // your subscribed/unsubscribed status at the bottom of the
     // message list.
@@ -251,21 +255,20 @@ class MessageList {
         let trailing_bookend_content;
         let show_button = true;
         const subscribed = stream_data.is_subscribed(stream_name);
-        if (subscribed) {
+        const sub = stream_data.get_sub(stream_name);
+        if (sub === undefined) {
+            trailing_bookend_content = this.deactivated_bookend_content();
+            // Hide the resubscribe button for streams that no longer exist.
+            show_button = false;
+        } else if (subscribed) {
             trailing_bookend_content = this.subscribed_bookend_content(stream_name);
         } else {
             if (!this.last_message_historical) {
                 trailing_bookend_content = this.unsubscribed_bookend_content(stream_name);
 
-                // For invite only streams or streams that no longer
-                // exist, hide the resubscribe button
+                // For invite only streams hide the resubscribe button
                 // Hide button for guest users
-                const sub = stream_data.get_sub(stream_name);
-                if (sub !== undefined) {
-                    show_button = !page_params.is_guest && !sub.invite_only;
-                } else {
-                    show_button = false;
-                }
+                show_button = !page_params.is_guest && !sub.invite_only;
             } else {
                 trailing_bookend_content = this.not_subscribed_bookend_content(stream_name);
             }

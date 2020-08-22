@@ -29,6 +29,7 @@ set_global("markdown", {});
 set_global("message_edit", {});
 set_global("message_list", {});
 set_global("muting_ui", {});
+set_global("narrow_state", {});
 set_global("night_mode", {});
 set_global("notifications", {});
 set_global("overlays", {});
@@ -574,10 +575,19 @@ run_test("stream", (override) => {
         override("stream_data.get_sub_by_id", (id) =>
             id === devel_id ? {subscribed: true} : {subscribed: false},
         );
+
+        narrow_state.is_for_stream_id = () => true;
+
+        let updated = false;
+        override("current_msg_list.update_trailing_bookend", () => {
+            updated = true;
+        });
+
         override("stream_list.remove_sidebar_row", stub.f);
         dispatch(event);
         const args = stub.get_args("stream_id");
         assert_same(args.stream_id, devel_id);
+        assert_same(updated, true);
 
         override("settings_org.sync_realm_settings", noop);
         override("stream_list.remove_sidebar_row", noop);
