@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
@@ -339,83 +339,54 @@ A temporary team so that I can get some webhook fixtures!
         expected_message = """Team visibility changed to `secret`"""
         self.check_webhook("team__edited_privacy_secret", expected_topic, expected_message)
 
-    @patch('zerver.webhooks.github.view.check_send_webhook_message')
-    def test_check_run_in_progress_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+    def verify_post_is_ignored(self, payload: str, http_x_github_event: str) -> None:
+        with patch("zerver.webhooks.github.view.check_send_webhook_message") as m:
+            result = self.client_post(
+                self.url,
+                payload,
+                HTTP_X_GITHUB_EVENT=http_x_github_event,
+                content_type="application/json",
+            )
+        self.assertFalse(m.called)
+        self.assert_json_success(result)
+
+    def test_check_run_in_progress_ignore(self) -> None:
         payload = self.get_body('check_run__in_progress')
-        result = self.client_post(self.url, payload,
-                                  HTTP_X_GITHUB_EVENT='check_run',
-                                  content_type="application/json")
-        self.assertFalse(check_send_webhook_message_mock.called)
-        self.assert_json_success(result)
+        self.verify_post_is_ignored(payload, "check_run")
 
-    @patch('zerver.webhooks.github.view.check_send_webhook_message')
-    def test_pull_request_labeled_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+    def test_pull_request_labeled_ignore(self) -> None:
         payload = self.get_body('pull_request__labeled')
-        result = self.client_post(self.url, payload, HTTP_X_GITHUB_EVENT='pull_request', content_type="application/json")
-        self.assertFalse(check_send_webhook_message_mock.called)
-        self.assert_json_success(result)
+        self.verify_post_is_ignored(payload, "pull_request")
 
-    @patch('zerver.webhooks.github.view.check_send_webhook_message')
-    def test_pull_request_unlabeled_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+    def test_pull_request_unlabeled_ignore(self) -> None:
         payload = self.get_body('pull_request__unlabeled')
-        result = self.client_post(self.url, payload, HTTP_X_GITHUB_EVENT='pull_request', content_type="application/json")
-        self.assertFalse(check_send_webhook_message_mock.called)
-        self.assert_json_success(result)
+        self.verify_post_is_ignored(payload, "pull_request")
 
-    @patch('zerver.webhooks.github.view.check_send_webhook_message')
-    def test_pull_request_request_review_remove_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+    def test_pull_request_request_review_remove_ignore(self) -> None:
         payload = self.get_body('pull_request__request_review_removed')
-        result = self.client_post(self.url, payload, HTTP_X_GITHUB_EVENT='pull_request', content_type="application/json")
-        self.assertFalse(check_send_webhook_message_mock.called)
-        self.assert_json_success(result)
+        self.verify_post_is_ignored(payload, "pull_request")
 
-    @patch('zerver.webhooks.github.view.check_send_webhook_message')
-    def test_push_1_commit_filtered_by_branches_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+    def test_push_1_commit_filtered_by_branches_ignore(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         payload = self.get_body('push__1_commit')
-        result = self.client_post(self.url, payload, content_type="application/json", HTTP_X_GITHUB_EVENT="push")
-        self.assertFalse(check_send_webhook_message_mock.called)
-        self.assert_json_success(result)
+        self.verify_post_is_ignored(payload, "push")
 
-    @patch('zerver.webhooks.github.view.check_send_webhook_message')
-    def test_push_50_commits_filtered_by_branches_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+    def test_push_50_commits_filtered_by_branches_ignore(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         payload = self.get_body('push__50_commits')
-        result = self.client_post(self.url, payload, content_type="application/json", HTTP_X_GITHUB_EVENT="push")
-        self.assertFalse(check_send_webhook_message_mock.called)
-        self.assert_json_success(result)
+        self.verify_post_is_ignored(payload, "push")
 
-    @patch('zerver.webhooks.github.view.check_send_webhook_message')
-    def test_push_multiple_comitters_filtered_by_branches_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+    def test_push_multiple_comitters_filtered_by_branches_ignore(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         payload = self.get_body('push__multiple_committers')
-        result = self.client_post(self.url, payload, content_type="application/json", HTTP_X_GITHUB_EVENT="push")
-        self.assertFalse(check_send_webhook_message_mock.called)
-        self.assert_json_success(result)
+        self.verify_post_is_ignored(payload, "push")
 
-    @patch('zerver.webhooks.github.view.check_send_webhook_message')
-    def test_push_multiple_comitters_with_others_filtered_by_branches_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+    def test_push_multiple_comitters_with_others_filtered_by_branches_ignore(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         payload = self.get_body('push__multiple_committers_with_others')
-        result = self.client_post(self.url, payload, content_type="application/json", HTTP_X_GITHUB_EVENT="push")
-        self.assertFalse(check_send_webhook_message_mock.called)
-        self.assert_json_success(result)
+        self.verify_post_is_ignored(payload, "push")
 
-    @patch('zerver.webhooks.github.view.check_send_webhook_message')
-    def test_repository_vulnerability_alert_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+    def test_repository_vulnerability_alert_ignore(self) -> None:
         self.url = self.build_webhook_url()
         payload = self.get_body('repository_vulnerability_alert')
-        result = self.client_post(self.url, payload,
-                                  HTTP_X_GITHUB_EVENT='repository_vulnerability_alert',
-                                  content_type="application/json")
-        self.assertFalse(check_send_webhook_message_mock.called)
-        self.assert_json_success(result)
+        self.verify_post_is_ignored(payload, "repository_vulnerability_alert")
