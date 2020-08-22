@@ -1173,9 +1173,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 continue
 
             if not self.is_absolute_url(url):
-                if self.is_image(url):
-                    self.handle_image_inlining(root, found_url)
-                # We don't have a strong use case for doing url preview for relative links.
                 continue
 
             dropbox_image = self.dropbox_image(url)
