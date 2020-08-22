@@ -20,7 +20,7 @@ exports.feature_check = function (upload_button) {
 };
 exports.get_translated_status = function (file) {
     const status = i18n.t("Uploading __filename__…", {filename: file.name});
-    return "[" + status + "]()";
+    return "![" + status + "]()";
 };
 
 exports.get_item = function (key, config) {
@@ -234,7 +234,7 @@ exports.setup_upload = function (config) {
             compose_actions.start("stream");
         }
         const absolute_uri = exports.make_upload_absolute(uri);
-        const filename_uri = "[" + filename + "](" + absolute_uri + ")";
+        const filename_uri = "![" + filename + "](" + absolute_uri + ")";
         compose_ui.replace_syntax(
             exports.get_translated_status(file),
             filename_uri,
