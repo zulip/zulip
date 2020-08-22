@@ -17,6 +17,7 @@ IGNORED_EVENTS = [
     "issuelink_created",
     "issuelink_deleted",
     "jira:version_released",
+    "jira:worklog_updated",
     "sprint_closed",
     "sprint_started",
     "worklog_created",
