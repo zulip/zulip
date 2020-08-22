@@ -49,6 +49,7 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
             "attachment_created",
             "issuelink_created",
             "issuelink_deleted",
+            "jira:version_released",
             "sprint_closed",
             "sprint_started",
             "worklog_created",
