@@ -13,16 +13,10 @@ from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth import login as django_login
 from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
 from django.contrib.auth.models import AnonymousUser
-from django.http import (
-    HttpRequest,
-    HttpResponse,
-    HttpResponseNotAllowed,
-    HttpResponseRedirect,
-    QueryDict,
-)
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, QueryDict
 from django.http.multipartparser import MultiPartParser
 from django.shortcuts import resolve_url
-from django.template.response import SimpleTemplateResponse
+from django.template.response import SimpleTemplateResponse, TemplateResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
@@ -44,7 +38,7 @@ from zerver.lib.logging_util import log_to_file
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success, json_unauthorized
+from zerver.lib.response import json_error, json_method_not_allowed, json_success, json_unauthorized
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.types import ViewFuncT
@@ -110,7 +104,10 @@ def require_post(func: ViewFuncT) -> ViewFuncT:
             err_method = request.method
             logging.warning('Method Not Allowed (%s): %s', err_method, request.path,
                             extra={'status_code': 405, 'request': request})
-            return HttpResponseNotAllowed(["POST"])
+            if request.error_format == 'JSON':
+                return json_method_not_allowed(["POST"])
+            else:
+                return TemplateResponse(request, "404.html", context={'status_code': 405}, status=405)
         return func(request, *args, **kwargs)
     return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
 
