@@ -45,6 +45,19 @@ class RateLimitTests(ZulipTestCase):
 
     def setUp(self) -> None:
         super().setUp()
+
+        # Some tests here can be somewhat timing-sensitive in a way
+        # that can't be eliminated, e.g. due to testing things that rely
+        # on redis' internal timing mechanism which we can't mock.
+        # The first API request when running a suite of tests is slow
+        # and can take multiple seconds. This is not a problem when running
+        # multiple tests, but if an individual, time-sensitive test from this class
+        # is run, the first API request it makes taking a lot of time can throw things off
+        # and cause the test to fail. Thus we do a dummy API request here to warm up
+        # the system and allow the tests to assume their requests won't take multiple seconds.
+        user = self.example_user('hamlet')
+        self.api_get(user, "/api/v1/messages")
+
         settings.RATE_LIMITING = True
         add_ratelimit_rule(1, 5)
 
