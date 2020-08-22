@@ -311,6 +311,20 @@ class GitlabHookTests(WebhookTestCase):
             expected_message,
         )
 
+    def test_merge_request_created_with_multiple_assignees_event_message(self) -> None:
+        expected_topic = "Demo Project / MR #1 Make a trivial change to the README."
+        expected_message = """
+Hemanth V. Alluri created [MR #1](https://gitlab.com/Hypro999/demo-project/-/merge_requests/1) (assigned to Hemanth V. Alluri and Hemanth V. Alluri) from `devel` to `master`:
+
+~~~ quote
+A trivial change that should probably be ignored.
+~~~
+        """.strip()
+        self.check_webhook(
+            'merge_request_hook__merge_request_created_with_multiple_assignees',
+            expected_topic,
+            expected_message)
+
     def test_merge_request_closed_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #2 NEW MR"
         expected_message = "Tomasz Kolek closed [MR #2](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2)."
