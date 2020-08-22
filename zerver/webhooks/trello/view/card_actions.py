@@ -102,10 +102,12 @@ def get_proper_action(payload: Mapping[str, Any], action_type: str) -> Optional[
             return ARCHIVE
         if old_data.get('closed') and card_data.get('closed') is False:
             return REOPEN
-        # we don't support events for when a card is moved up or down
-        # within a single list (pos), or when the cover changes (cover)
+        # We don't support events for when a card is moved up or down
+        # within a single list (pos), or when the cover changes (cover).
+        # We also don't know if "dueComplete" is just a new name for "due".
         ignored_fields = [
             "cover",
+            "dueComplete",
             "idAttachmentCover",
             "pos",
         ]
