@@ -1,8 +1,7 @@
 from functools import wraps
 from typing import Any, Dict, cast
 
-from django.conf import settings
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse
 from django.utils.cache import add_never_cache_headers
 from django.utils.module_loading import import_string
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
@@ -13,7 +12,8 @@ from zerver.decorator import (
     authenticated_uploads_api_view,
     process_as_post,
 )
-from zerver.lib.response import json_method_not_allowed, json_unauthorized
+from zerver.lib.exceptions import MissingAuthenticationError
+from zerver.lib.response import json_method_not_allowed
 from zerver.lib.types import ViewFuncT
 
 METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
@@ -142,22 +142,17 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             )(target_function)
         # Pick a way to tell user they're not authed based on how the request was made
         else:
-            # If this looks like a request from a top-level page in a
-            # browser, send the user to the login page
-            if 'text/html' in request.META.get('HTTP_ACCEPT', ''):
-                # TODO: It seems like the `?next=` part is unlikely to be helpful
-                return HttpResponseRedirect(f'{settings.HOME_NOT_LOGGED_IN}?next={request.path}')
-            # Ask for basic auth (email:apiKey)
-            elif request.path.startswith("/api"):
-                return json_unauthorized()
             # Logged out user accessing an endpoint with anonymous user access on JSON; proceed.
-            elif request.path.startswith("/json") and 'allow_anonymous_user_web' in view_flags:
+            # `allow_anonymous_user_web` calls are only restricted to /json calls used
+            # by our webapp.
+            # TODO: Allow /api calls when this is stable enough.
+            if request.path.startswith("/json") and 'allow_anonymous_user_web' in view_flags:
                 auth_kwargs = dict(allow_unauthenticated=True)
                 target_function = csrf_protect(authenticated_json_view(
                     target_function, **auth_kwargs))
-            # Session cookie expired, notify the client
             else:
-                return json_unauthorized(www_authenticate='session')
+                # Don't allow anonymous queries to endpoints witout `allow_anonymous_user_web` flag.
+                raise MissingAuthenticationError()
 
         if request.method not in ["GET", "POST"]:
             # process_as_post needs to be the outer decorator, because
