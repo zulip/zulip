@@ -13,6 +13,26 @@ exports.strings = {
     saving: i18n.t("Saving"),
 };
 
+exports.save_subsection_settings = function (url, data, save_button) {
+    const subsection_parent = save_button.closest(".org-subsection-parent");
+    const save_btn_container = subsection_parent.find(".save-button-controls");
+    const failed_alert_elem = subsection_parent.find(".subsection-failed-status p");
+    settings_org.change_save_button_state(save_btn_container, "saving");
+    channel.patch({
+        url,
+        data,
+        success() {
+            failed_alert_elem.hide();
+            settings_org.change_save_button_state(save_btn_container, "succeeded");
+        },
+        error(xhr) {
+            settings_org.change_save_button_state(save_btn_container, "failed");
+            save_button.hide();
+            ui_report.error(i18n.t("Save failed"), xhr, failed_alert_elem);
+        },
+    });
+};
+
 // Generic function for informing users about changes to the settings
 // UI.  Intended to replace the old system that was built around
 // direct calls to `ui_report`.

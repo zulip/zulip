@@ -695,26 +695,6 @@ exports.build_page = function () {
         },
     );
 
-    exports.save_organization_settings = function (data, save_button) {
-        const subsection_parent = save_button.closest(".org-subsection-parent");
-        const save_btn_container = subsection_parent.find(".save-button-controls");
-        const failed_alert_elem = subsection_parent.find(".subsection-failed-status p");
-        exports.change_save_button_state(save_btn_container, "saving");
-        channel.patch({
-            url: "/json/realm",
-            data,
-            success() {
-                failed_alert_elem.hide();
-                exports.change_save_button_state(save_btn_container, "succeeded");
-            },
-            error(xhr) {
-                exports.change_save_button_state(save_btn_container, "failed");
-                save_button.hide();
-                ui_report.error(i18n.t("Save failed"), xhr, failed_alert_elem);
-            },
-        });
-    };
-
     exports.parse_time_limit = function parse_time_limit(elem) {
         return Math.floor(parseFloat(elem.val(), 10).toFixed(1) * 60);
     };
@@ -858,7 +838,7 @@ exports.build_page = function () {
             ...populate_data_for_request(subsection_elem),
             ...get_complete_data_for_subsection(subsection),
         };
-        exports.save_organization_settings(data, save_button);
+        settings_ui.save_subsection_settings("/json/realm", data, save_button);
     });
 
     $(".org-subsection-parent").on("keydown", "input", (e) => {
