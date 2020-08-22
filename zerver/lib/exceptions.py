@@ -45,6 +45,7 @@ class ErrorCode(AbstractEnum):
     REQUEST_CONFUSING_VAR = ()
     INVALID_API_KEY = ()
     INVALID_ZOOM_TOKEN = ()
+    UNAUTHENTICATED_USER = ()
 
 class JsonableError(Exception):
     '''A standardized error format we can turn into a nice JSON HTTP response.
@@ -266,3 +267,14 @@ class UnexpectedWebhookEventType(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("The '{event_type}' event isn't currently supported by the {webhook_name} webhook")
+
+class MissingAuthenticationError(JsonableError):
+    code = ErrorCode.UNAUTHENTICATED_USER
+    http_status_code = 401
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("User is not authenticated")
