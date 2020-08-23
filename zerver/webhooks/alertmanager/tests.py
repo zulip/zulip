@@ -14,11 +14,8 @@ class AlertmanagerHookTests(WebhookTestCase):
 * CPU core temperature is 17.625C ([graph](http://cobalt:9090/graph?g0.expr=avg+by%28host%29+%28sensors_temp_input%7Bfeature%3D~%22core_%5B0-9%5D%2B%22%7D%29+%3E+15&g0.tab=0))
 """.strip()
 
-        self.send_and_test_stream_message(
-            'alert',
-            expected_topic,
-            expected_message,
-            "application/json",
+        self.check_webhook(
+            "alert", expected_topic, expected_message, "application/json",
         )
 
     def test_single_error_issue_message(self) -> None:
@@ -27,9 +24,6 @@ class AlertmanagerHookTests(WebhookTestCase):
 :squared_ok: **Resolved** CPU core temperature is 34.75C ([graph](http://cobalt:9090/graph?g0.expr=avg+by%28host%29+%28sensors_temp_input%7Bfeature%3D~%22core_%5B0-9%5D%2B%22%7D%29+%3E+15&g0.tab=0))
 """.strip()
 
-        self.send_and_test_stream_message(
-            'single_alert',
-            expected_topic,
-            expected_message,
-            "application/json",
+        self.check_webhook(
+            "single_alert", expected_topic, expected_message, "application/json",
         )

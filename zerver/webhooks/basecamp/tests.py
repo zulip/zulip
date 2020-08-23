@@ -136,4 +136,4 @@ class BasecampHookTests(WebhookTestCase):
         self._send_and_test_message('comment_created', expected_message)
 
     def _send_and_test_message(self, fixture_name: str, expected_message: str) -> None:
-        self.send_and_test_stream_message(fixture_name, TOPIC, expected_message)
+        self.check_webhook(fixture_name, TOPIC, expected_message)

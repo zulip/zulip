@@ -9,19 +9,19 @@ class BuildbotHookTests(WebhookTestCase):
     def test_build_started(self) -> None:
         expected_topic = "buildbot-hello"
         expected_message = "Build [#33](http://exampleurl.com/#builders/1/builds/33) for **runtests** started."
-        self.send_and_test_stream_message("started", expected_topic, expected_message)
+        self.check_webhook("started", expected_topic, expected_message)
 
     def test_build_success(self) -> None:
         expected_topic = "buildbot-hello"
         expected_message = "Build [#33](http://exampleurl.com/#builders/1/builds/33) (result: success) for **runtests** finished."
-        self.send_and_test_stream_message("finished_success", expected_topic, expected_message)
+        self.check_webhook("finished_success", expected_topic, expected_message)
 
     def test_build_failure(self) -> None:
         expected_topic = "general"  # project key is empty
         expected_message = "Build [#34](http://exampleurl.com/#builders/1/builds/34) (result: failure) for **runtests** finished."
-        self.send_and_test_stream_message("finished_failure", expected_topic, expected_message)
+        self.check_webhook("finished_failure", expected_topic, expected_message)
 
     def test_build_cancelled(self) -> None:
         expected_topic = "zulip/zulip-zapier"
         expected_message = "Build [#10434](https://ci.example.org/#builders/79/builds/307) (result: cancelled) for **AMD64 Ubuntu 18.04 Python 3** finished."
-        self.send_and_test_stream_message("finished_cancelled", expected_topic, expected_message)
+        self.check_webhook("finished_cancelled", expected_topic, expected_message)

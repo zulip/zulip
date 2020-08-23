@@ -17,10 +17,12 @@ You are going to derail from goal **gainweight** in **5.6 hours**. You need **+2
 * Pledge: **0$** :relieved:
 """.strip()
 
-        self.send_and_test_stream_message('derail',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "derail",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     @patch('zerver.webhooks.beeminder.view.time.time')
     def test_beeminder_derail_worried(self, time: Any) -> None:
@@ -31,10 +33,9 @@ You are going to derail from goal **gainweight** in **5.6 hours**. You need **+2
 * Pledge: **5$** :worried:
 """.strip()
 
-        self.send_and_test_stream_message('derail_worried',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type="application/json")
+        self.check_webhook(
+            "derail_worried", expected_topic, expected_message, content_type="application/json"
+        )
 
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("beeminder", fixture_name, file_type="json")
