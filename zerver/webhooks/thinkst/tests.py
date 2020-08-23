@@ -21,9 +21,9 @@ class ThinkstHookTests(WebhookTestCase):
             "**Field3:** VALUE3"
         )
 
-        self.send_and_test_stream_message(
-            'canary_dummy',
-            'canary alert - 0000000testnode',
+        self.check_webhook(
+            "canary_dummy",
+            "canary alert - 0000000testnode",
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -46,9 +46,9 @@ class ThinkstHookTests(WebhookTestCase):
             "**Background Context:** You have had 8 incidents from 1.0.0.1 previously."
         )
 
-        self.send_and_test_stream_message(
-            'canary_consolidated_port_scan',
-            'canary alert - foo-bar',
+        self.check_webhook(
+            "canary_consolidated_port_scan",
+            "canary alert - foo-bar",
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -73,9 +73,9 @@ class ThinkstHookTests(WebhookTestCase):
             "**Background Context:** You have had 20 incidents from 1.1.1.1 previously."
         )
 
-        self.send_and_test_stream_message(
-            'canary_file_access',
-            'canary alert - bar-foo',
+        self.check_webhook(
+            "canary_file_access",
+            "canary alert - bar-foo",
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -95,9 +95,9 @@ class ThinkstHookTests(WebhookTestCase):
             "**Partial Ports:** 443, 554, 80, 1723, 22"
         )
 
-        self.send_and_test_stream_message(
-            'canary_host_port_scan',
-            'canary alert - foo-bar',
+        self.check_webhook(
+            "canary_host_port_scan",
+            "canary alert - foo-bar",
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -120,9 +120,9 @@ class ThinkstHookTests(WebhookTestCase):
             "**Background Context:** You have had 14 incidents from 1.1.1.1 previously."
         )
 
-        self.send_and_test_stream_message(
-            'canary_http_login',
-            'canary alert - foo-bar',
+        self.check_webhook(
+            "canary_http_login",
+            "canary alert - foo-bar",
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -144,9 +144,9 @@ class ThinkstHookTests(WebhookTestCase):
             "**Background Context:** You have had 9 incidents from 1.1.1.1 previously."
         )
 
-        self.send_and_test_stream_message(
-            'canary_ssh_login',
-            'canary alert - foo-bar',
+        self.check_webhook(
+            "canary_ssh_login",
+            "canary alert - foo-bar",
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -167,9 +167,9 @@ class ThinkstHookTests(WebhookTestCase):
             "**Field3:** VALUE3"
         )
 
-        self.send_and_test_stream_message(
-            'canary_dummy',
-            'foo',
+        self.check_webhook(
+            "canary_dummy",
+            "foo",
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -194,9 +194,9 @@ class ThinkstHookTests(WebhookTestCase):
             "**User-Agent:** Mozilla/4.0 (compatible; ms-office; MSOffice 16)"
         )
 
-        self.send_and_test_stream_message(
-            'canarytoken_msword',
-            'canarytoken alert - test document',
+        self.check_webhook(
+            "canarytoken_msword",
+            "canarytoken alert - test document",
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -224,9 +224,9 @@ class ThinkstHookTests(WebhookTestCase):
             "Firefox/78.0"
         )
 
-        self.send_and_test_stream_message(
-            'canarytoken_remote_image',
-            'canarytoken alert - test image',
+        self.check_webhook(
+            "canarytoken_remote_image",
+            "canarytoken alert - test image",
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -252,9 +252,9 @@ class ThinkstHookTests(WebhookTestCase):
             "**User-Agent:** Mozilla/4.0 (compatible; ms-office; MSOffice 16)"
         )
 
-        self.send_and_test_stream_message(
-            'canarytoken_msword',
-            'foo',
+        self.check_webhook(
+            "canarytoken_msword",
+            "foo",
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )

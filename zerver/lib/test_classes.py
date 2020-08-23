@@ -1003,11 +1003,34 @@ class WebhookTestCase(ZulipTestCase):
 
     def api_stream_message(self, user: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
         kwargs['HTTP_AUTHORIZATION'] = self.encode_user(user)
-        return self.send_and_test_stream_message(*args, **kwargs)
+        return self.check_webhook(*args, **kwargs)
 
-    def send_and_test_stream_message(self, fixture_name: str, expected_topic: Optional[str]=None,
-                                     expected_message: Optional[str]=None,
-                                     content_type: Optional[str]="application/json", **kwargs: Any) -> Message:
+    def check_webhook(
+        self,
+        fixture_name: str,
+        expected_topic: Optional[str]=None,
+        expected_message: Optional[str]=None,
+        content_type: Optional[str]="application/json",
+        **kwargs: Any,
+    ) -> Message:
+        """
+        check_webhook is the main way to test "normal" webhooks that
+        work by receiving a payload from a third party and then writing
+        some message to a Zulip stream.
+
+        We use `fixture_name` to find the payload data in of our test
+        fixtures.  Then we verify that a message gets sent to a stream:
+
+            self.STREAM_NAME: stream name
+            expected_topic: topic
+            expected_message: content
+
+        We simulate the delivery of the payload with `content_type`,
+        and you can pass other headers via `kwargs`.
+
+        For the rare cases of webhooks actually sending private messages,
+        see send_and_test_private_message.
+        """
         payload = self.get_body(fixture_name)
         if content_type is not None:
             kwargs['content_type'] = content_type
@@ -1029,6 +1052,13 @@ class WebhookTestCase(ZulipTestCase):
         content_type: str = "application/json",
         **kwargs: Any,
     ) -> Message:
+        """
+        For the rare cases that you are testing a webhook that sends
+        private messages, use this function.
+
+        Most webhooks send to streams, and you will want to look at
+        check_webhook.
+        """
         payload = self.get_body(fixture_name)
         kwargs['content_type'] = content_type
 

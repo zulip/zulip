@@ -10,8 +10,12 @@ class AppFollowHookTests(WebhookTestCase):
         expected_topic = "Webhook integration was successful."
         expected_message = """Webhook integration was successful.
 Test User / Acme (Google Play)"""
-        self.send_and_test_stream_message('sample', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "sample",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_reviews(self) -> None:
         expected_topic = "Acme - Group chat"
@@ -22,8 +26,12 @@ App Store, Acme Technologies, Inc.
 Acme enables me to manage the flow of information quite well. I only wish I could create and edit my Acme Post files in the iOS app.
 *by* **Mr RESOLUTIONARY** *for v3.9*
 [Permalink](http://appfollow.io/permalink) · [Add tag](http://watch.appfollow.io/add_tag)"""
-        self.send_and_test_stream_message('review', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "review",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_reviews_with_topic(self) -> None:
         # This temporary patch of URL_TEMPLATE is code smell but required due to the way
@@ -39,8 +47,12 @@ App Store, Acme Technologies, Inc.
 Acme enables me to manage the flow of information quite well. I only wish I could create and edit my Acme Post files in the iOS app.
 *by* **Mr RESOLUTIONARY** *for v3.9*
 [Permalink](http://appfollow.io/permalink) · [Add tag](http://watch.appfollow.io/add_tag)"""
-        self.send_and_test_stream_message('review', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "review",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
         self.URL_TEMPLATE = original_url_template
 
     def get_body(self, fixture_name: str) -> str:
