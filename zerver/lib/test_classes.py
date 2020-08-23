@@ -1025,14 +1025,13 @@ class WebhookTestCase(ZulipTestCase):
     def send_and_test_private_message(
         self,
         fixture_name: str,
-        expected_topic: Optional[str] = None,
-        expected_message: Optional[str] = None,
-        content_type: Optional[str] = "application/json",
+        expected_message: str,
+        content_type: str = "application/json",
         **kwargs: Any,
     ) -> Message:
         payload = self.get_body(fixture_name)
-        if content_type is not None:
-            kwargs['content_type'] = content_type
+        kwargs['content_type'] = content_type
+
         if self.FIXTURE_DIR_NAME is not None:
             headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
             headers = standardize_headers(headers)
