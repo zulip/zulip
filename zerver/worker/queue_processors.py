@@ -16,7 +16,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict, deque
 from email.message import EmailMessage
 from functools import wraps
-from threading import Timer
+from threading import Lock, Timer
 from typing import (
     Any,
     Callable,
@@ -466,6 +466,7 @@ class MissedMessageWorker(QueueProcessingWorker):
     TIMER_FREQUENCY = 5
     BATCH_DURATION = 120
     timer_event: Optional[Timer] = None
+    lock = Lock()
     events_by_recipient: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
     batch_start_by_recipient: Dict[int, float] = {}
 
@@ -481,29 +482,41 @@ class MissedMessageWorker(QueueProcessingWorker):
         self.ensure_timer()
 
     def ensure_timer(self) -> None:
-        if self.timer_event is not None:
+        # We don't want to block the consume() function if the lock is being held
+        # by the maybe_send_batched_emails thread, as that would stop consumption
+        # of new events until all the batches are sent out - which would be exactly
+        # the opposite of the intended purpose of the design of this queue worker.
+        if not self.lock.acquire(blocking=False):
             return
-        self.timer_event = Timer(self.TIMER_FREQUENCY, MissedMessageWorker.maybe_send_batched_emails, [self])
-        self.timer_event.start()
 
-    def stop_timer(self) -> None:
-        if self.timer_event and self.timer_event.is_alive():
-            self.timer_event.cancel()
-            self.timer_event = None
+        try:
+            if self.timer_event is not None:
+                return
+
+            self.timer_event = Timer(self.TIMER_FREQUENCY, MissedMessageWorker.maybe_send_batched_emails,
+                                     [self])
+            self.timer_event.start()
+        finally:
+            self.lock.release()
 
     def maybe_send_batched_emails(self) -> None:
-        self.stop_timer()
+        with self.lock:
+            # self.timer_event just triggered execution of this function in a thread, so now
+            # that we hold the lock we clear the attribute to signal
+            # that no Timer is active, so a new one can be set (once the setter acquires the lock)
+            # if there are more events to process.
+            self.timer_event = None
 
-        current_time = time.time()
-        for user_profile_id, timestamp in list(self.batch_start_by_recipient.items()):
-            if current_time - timestamp < self.BATCH_DURATION:
-                continue
-            events = self.events_by_recipient[user_profile_id]
-            logging.info("Batch-processing %s missedmessage_emails events for user %s",
-                         len(events), user_profile_id)
-            handle_missedmessage_emails(user_profile_id, events)
-            del self.events_by_recipient[user_profile_id]
-            del self.batch_start_by_recipient[user_profile_id]
+            current_time = time.time()
+            for user_profile_id, timestamp in list(self.batch_start_by_recipient.items()):
+                if current_time - timestamp < self.BATCH_DURATION:
+                    continue
+                events = self.events_by_recipient[user_profile_id]
+                logging.info("Batch-processing %s missedmessage_emails events for user %s",
+                             len(events), user_profile_id)
+                handle_missedmessage_emails(user_profile_id, events)
+                del self.events_by_recipient[user_profile_id]
+                del self.batch_start_by_recipient[user_profile_id]
 
         # By only restarting the timer if there are actually events in
         # the queue, we ensure this queue processor is idle when there
