@@ -11,11 +11,13 @@ class JiraHookTests(WebhookTestCase):
     def test_custom_stream(self) -> None:
         api_key = get_api_key(self.test_user)
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
-        msg = self.send_json_payload(self.test_user,
-                                     url,
-                                     self.get_body('created_v2'),
-                                     stream_name="jira_custom",
-                                     content_type="application/json")
+        msg = self.send_webhook_payload(
+            self.test_user,
+            url,
+            self.get_body("created_v2"),
+            stream_name="jira_custom",
+            content_type="application/json",
+        )
         self.assertEqual(msg.topic_name(), "BUG-15: New bug with hook")
         expected_message = """
 Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):

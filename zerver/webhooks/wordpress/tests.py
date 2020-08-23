@@ -82,7 +82,7 @@ class WordPressHookTests(WebhookTestCase):
     def test_unknown_action_no_data(self) -> None:
 
         # Mimic check_webhook() to manually execute a negative test.
-        # Otherwise its call to send_json_payload() would assert on the non-success
+        # Otherwise its call to send_webhook_payload() would assert on the non-success
         # we are testing. The value of result is the error message the webhook should
         # return if no params are sent. The fixture for this test is an empty file.
 
