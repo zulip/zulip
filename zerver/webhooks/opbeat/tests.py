@@ -19,8 +19,9 @@ test comment
 >**Most recent Occurrence**
 >in app.py
 >A warning occurred (42 apples)'''
-        self.send_and_test_stream_message('new_comment', expected_topic, expected_message,
-                                          content_type="application/json")
+        self.check_webhook(
+            "new_comment", expected_topic, expected_message, content_type="application/json"
+        )
 
     def test_new_app(self) -> None:
         expected_topic = "foo"
@@ -31,8 +32,9 @@ App foo created
 **[foo](https://opbeat.com/bar/foo/)**
 >language: nodejs
 >framework: custom'''
-        self.send_and_test_stream_message('new_app', expected_topic, expected_message,
-                                          content_type="application/json")
+        self.check_webhook(
+            "new_app", expected_topic, expected_message, content_type="application/json"
+        )
 
     def test_get_empty_value(self) -> None:
         self.assertEqual(get_value({'key': 'value'}, 'foo'), '')
@@ -42,11 +44,8 @@ App foo created
         expected_message = '''
 **test title**
 test summary'''
-        self.send_and_test_stream_message(
-            'unsupported_object',
-            expected_topic,
-            expected_message,
-            content_type='application/json',
+        self.check_webhook(
+            "unsupported_object", expected_topic, expected_message, content_type="application/json",
         )
 
     def test_error_fixed(self) -> None:
@@ -60,8 +59,9 @@ foo marked the error group as fixed
 >**Most recent Occurrence**
 >in app.py
 >A warning occurred (42 apples)'''
-        self.send_and_test_stream_message(
-            'error_fixed', expected_topic, expected_message, content_type='application/json')
+        self.check_webhook(
+            "error_fixed", expected_topic, expected_message, content_type="application/json"
+        )
 
     def test_error_reopened(self) -> None:
         expected_topic = 'foo reopened E#2'
@@ -74,8 +74,9 @@ foo reopened the error group
 >**Most recent Occurrence**
 >in app.py
 >A warning occurred (42 apples)'''
-        self.send_and_test_stream_message(
-            'error_reopen', expected_topic, expected_message, content_type='application/json')
+        self.check_webhook(
+            "error_reopen", expected_topic, expected_message, content_type="application/json"
+        )
 
     def test_error_regressed(self) -> None:
         expected_topic = 'E#2 regressed'
@@ -88,5 +89,6 @@ The error group regressed
 >**Most recent Occurrence**
 >in app.py
 >A warning occurred (42 apples)'''
-        self.send_and_test_stream_message(
-            'new_error', expected_topic, expected_message, content_type='application/json')
+        self.check_webhook(
+            "new_error", expected_topic, expected_message, content_type="application/json"
+        )
