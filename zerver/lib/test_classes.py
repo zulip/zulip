@@ -850,7 +850,6 @@ class ZulipTestCase(TestCase):
         user_profile: UserProfile,
         url: str,
         payload: Union[str, Dict[str, Any]],
-        stream_name: Optional[str]=None,
         **post_params: Any,
     ) -> Message:
         """
@@ -867,9 +866,10 @@ class ZulipTestCase(TestCase):
         and you'll want the test itself do various assertions.
         Even in those cases, you're often better to simply
         call client_post and assert_json_success.
+
+        If the caller expects a message to be sent to a stream,
+        the caller should make sure the user is subscribed.
         """
-        if stream_name is not None:
-            self.subscribe(user_profile, stream_name)
 
         prior_msg = self.get_last_message()
 
@@ -885,12 +885,13 @@ class ZulipTestCase(TestCase):
                 not write any new messages.  It is probably
                 broken (but still returns 200 due to exception
                 handling).
+
+                One possible gotcha is that you forgot to
+                subscribe the test user to the stream that
+                the webhook sends to.
                 ''')  # nocoverage
 
         self.assertEqual(msg.sender.email, user_profile.email)
-        if stream_name is not None:
-            self.assertEqual(get_display_recipient(msg.recipient), stream_name)
-        # TODO: should also validate recipient for private messages
 
         return msg
 
@@ -1051,6 +1052,9 @@ class WebhookTestCase(ZulipTestCase):
         For the rare cases of webhooks actually sending private messages,
         see send_and_test_private_message.
         """
+        assert self.STREAM_NAME is not None
+        self.subscribe(self.test_user, self.STREAM_NAME)
+
         payload = self.get_body(fixture_name)
         if content_type is not None:
             kwargs['content_type'] = content_type
@@ -1058,13 +1062,14 @@ class WebhookTestCase(ZulipTestCase):
             headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
             headers = standardize_headers(headers)
             kwargs.update(headers)
+
         msg = self.send_webhook_payload(
             self.test_user,
             self.url,
             payload,
-            self.STREAM_NAME,
             **kwargs,
         )
+        self.assertEqual(get_display_recipient(msg.recipient), self.STREAM_NAME)
         self.do_test_topic(msg, expected_topic)
         self.do_test_message(msg, expected_message)
 
@@ -1093,11 +1098,11 @@ class WebhookTestCase(ZulipTestCase):
             kwargs.update(headers)
         # The sender profile shouldn't be passed any further in kwargs, so we pop it.
         sender = kwargs.pop('sender', self.test_user)
+
         msg = self.send_webhook_payload(
             sender,
             self.url,
             payload,
-            stream_name=None,
             **kwargs,
         )
         self.assertEqual(msg.content, expected_message)
