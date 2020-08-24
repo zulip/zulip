@@ -496,14 +496,14 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             break;
 
         case "update_message_flags": {
-            const new_value = event.operation === "add";
+            const new_value = event.op === "add";
             switch (event.flag) {
                 case "starred":
                     for (const message_id of event.messages) {
                         message_flags.update_starred_flag(message_id, new_value);
                     }
 
-                    if (event.operation === "add") {
+                    if (event.op === "add") {
                         starred_messages.add(event.messages);
                     } else {
                         starred_messages.remove(event.messages);
