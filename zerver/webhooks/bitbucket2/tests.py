@@ -273,24 +273,44 @@ class Bitbucket2HookTests(WebhookTestCase):
             "HTTP_X_EVENT_KEY": 'pullrequest:push',
         }
         self.check_webhook("push_more_than_one_tag", **kwargs)
-        msg = self.get_last_message()
-        self.do_test_topic(msg, TOPIC)
-        self.do_test_message(msg, expected_message.format(name='b'))
+
         msg = self.get_second_to_last_message()
-        self.do_test_topic(msg, TOPIC)
-        self.do_test_message(msg, expected_message.format(name='a'))
+        self.assert_stream_message(
+            message=msg,
+            stream_name=self.STREAM_NAME,
+            topic_name=TOPIC,
+            content=expected_message.format(name="a"),
+        )
+
+        msg = self.get_last_message()
+        self.assert_stream_message(
+            message=msg,
+            stream_name=self.STREAM_NAME,
+            topic_name=TOPIC,
+            content=expected_message.format(name="b"),
+        )
 
     def test_bitbucket2_on_more_than_one_push_event(self) -> None:
         kwargs = {
             "HTTP_X_EVENT_KEY": 'pullrequest:push',
         }
         self.check_webhook("more_than_one_push_event", **kwargs)
+
         msg = self.get_second_to_last_message()
-        self.do_test_message(msg, 'kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master.\n\n* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))')
-        self.do_test_topic(msg, TOPIC_BRANCH_EVENTS)
+        self.assert_stream_message(
+            message=msg,
+            stream_name=self.STREAM_NAME,
+            topic_name=TOPIC_BRANCH_EVENTS,
+            content="kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master.\n\n* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"
+        )
+
         msg = self.get_last_message()
-        self.do_test_message(msg, 'kolaszek pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a).')
-        self.do_test_topic(msg, TOPIC)
+        self.assert_stream_message(
+            message=msg,
+            stream_name=self.STREAM_NAME,
+            topic_name=TOPIC,
+            content="kolaszek pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a).",
+        )
 
     def test_bitbucket2_on_more_than_one_push_event_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
@@ -298,12 +318,22 @@ class Bitbucket2HookTests(WebhookTestCase):
             "HTTP_X_EVENT_KEY": 'pullrequest:push',
         }
         self.check_webhook("more_than_one_push_event", **kwargs)
+
         msg = self.get_second_to_last_message()
-        self.do_test_message(msg, 'kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master.\n\n* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))')
-        self.do_test_topic(msg, TOPIC_BRANCH_EVENTS)
+        self.assert_stream_message(
+            message=msg,
+            stream_name=self.STREAM_NAME,
+            topic_name=TOPIC_BRANCH_EVENTS,
+            content="kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master.\n\n* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))",
+        )
+
         msg = self.get_last_message()
-        self.do_test_message(msg, 'kolaszek pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a).')
-        self.do_test_topic(msg, TOPIC)
+        self.assert_stream_message(
+            message=msg,
+            stream_name=self.STREAM_NAME,
+            topic_name=TOPIC,
+            content="kolaszek pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a).",
+        )
 
     def test_bitbucket2_on_more_than_one_push_event_filtered_by_branches_ignore(self) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
