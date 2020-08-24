@@ -68,7 +68,15 @@ class Bitbucket3HookTests(WebhookTestCase):
         branch1_content = """[hypro999](http://139.59.64.214:7990/users/hypro999) pushed to branch branch1. Head is now 3980c2be32a7e23c795741d5dc1a2eecb9b85d6d."""
         master_content = """[hypro999](http://139.59.64.214:7990/users/hypro999) pushed to branch master. Head is now fc43d13cff1abb28631196944ba4fc4ad06a2cf2."""
 
-        self.check_webhook("repo_push_update_multiple_branches")
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        payload = self.get_body("repo_push_update_multiple_branches")
+
+        msg = self.send_webhook_payload(
+            self.test_user,
+            self.url,
+            payload,
+            content_type="application/json",
+        )
 
         msg = self.get_second_to_last_message()
         self.assert_stream_message(
