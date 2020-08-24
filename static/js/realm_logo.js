@@ -35,7 +35,7 @@ exports.build_realm_logo_widget = function (is_night) {
         });
     });
 
-    return upload_widget.build_direct_upload_widget(
+    return image_upload_widget.build_direct_upload_widget(
         logo_section_id,
         "/json/realm/logo",
         page_params.max_logo_file_size,

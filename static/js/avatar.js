@@ -67,7 +67,7 @@ exports.build_user_avatar_widget = function () {
     });
 
     if (settings_account.user_can_change_avatar()) {
-        return upload_widget.build_direct_upload_widget(
+        return image_upload_widget.build_direct_upload_widget(
             "#user-avatar-upload-widget",
             "/json/users/me/avatar",
             page_params.max_avatar_file_size_mib,

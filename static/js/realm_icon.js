@@ -17,7 +17,7 @@ exports.build_realm_icon_widget = function () {
         });
     });
 
-    return upload_widget.build_direct_upload_widget(
+    return image_upload_widget.build_direct_upload_widget(
         "#realm-icon-upload-widget",
         "/json/realm/icon",
         page_params.max_icon_file_size,
