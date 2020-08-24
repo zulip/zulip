@@ -114,7 +114,12 @@ exports.build_widget = function (
     };
 };
 
-exports.build_direct_upload_widget = function (widget_id, max_file_upload_size) {
+exports.build_direct_upload_widget = function (
+    widget_id,
+    url,
+    max_file_upload_size,
+    night_param=false,
+) {
     const get_file_input = function () {
         return $(widget_id + " .image_file_input").expectOne();
     };
@@ -125,18 +130,6 @@ exports.build_direct_upload_widget = function (widget_id, max_file_upload_size) 
     function accept() {
         input_error.hide();
         const widget = upload_button.closest(".image_upload_widget").attr("id");
-        let url;
-        let night_param = false;
-        if (widget === "realm-icon-upload-widget") {
-            url = "/json/realm/icon";
-        } else if (widget === "user-avatar-upload-widget") {
-            url = "/json/users/me/avatar";
-        } else {
-            if (widget === "realm-night-logo-upload-widget") {
-                night_param = true;
-            }
-            url = "/json/realm/logo";
-        }
         const upload_widget = new ImageUploadWidget(widget, url, night_param);
         upload_widget.upload_image(get_file_input());
     }
