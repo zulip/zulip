@@ -1075,6 +1075,17 @@ class WebhookTestCase(ZulipTestCase):
 
         return msg
 
+    def assert_stream_message(
+        self,
+        message: Message,
+        stream_name: str,
+        topic_name: str,
+        content: str,
+    ) -> None:
+        self.assertEqual(get_display_recipient(message.recipient), stream_name)
+        self.assertEqual(message.topic_name(), topic_name)
+        self.assertEqual(message.content, content)
+
     def send_and_test_private_message(
         self,
         fixture_name: str,

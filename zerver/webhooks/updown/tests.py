@@ -22,17 +22,25 @@ class UpdownHookTests(WebhookTestCase):
         self.check_webhook("check_up_first_time", expected_topic, expected_message)
 
     def test_updown_check_up_multiple_events(self) -> None:
-        first_message_expected_topic = "https://updown.io"
-        first_message_expected_message = "Service is `up` again after 1 second."
+        topic_name = "https://updown.io"
 
-        second_message_expected_topic = "https://updown.io"
-        second_message_expected_message = "Service is `down`. It returned a 500 error at 2016-02-07 13:11:43 UTC."
+        down_content = "Service is `down`. It returned a 500 error at 2016-02-07 13:11:43 UTC."
+        up_content = "Service is `up` again after 1 second."
 
         self.check_webhook("check_multiple_events")
-        last_message = self.get_last_message()
-        self.do_test_topic(last_message, first_message_expected_topic)
-        self.do_test_message(last_message, first_message_expected_message)
 
-        second_to_last_message = self.get_second_to_last_message()
-        self.do_test_topic(second_to_last_message, second_message_expected_topic)
-        self.do_test_message(second_to_last_message, second_message_expected_message)
+        msg = self.get_second_to_last_message()
+        self.assert_stream_message(
+            message=msg,
+            stream_name=self.STREAM_NAME,
+            topic_name=topic_name,
+            content=down_content,
+        )
+
+        msg = self.get_last_message()
+        self.assert_stream_message(
+            message=msg,
+            stream_name=self.STREAM_NAME,
+            topic_name=topic_name,
+            content=up_content,
+        )

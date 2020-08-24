@@ -65,17 +65,26 @@ class Bitbucket3HookTests(WebhookTestCase):
         self.check_webhook("repo_push_update_single_branch", expected_topic, expected_message)
 
     def test_push_update_multiple_branches(self) -> None:
-        expected_message_first = """[hypro999](http://139.59.64.214:7990/users/hypro999) pushed to branch branch1. Head is now 3980c2be32a7e23c795741d5dc1a2eecb9b85d6d."""
-        expected_message_second = """[hypro999](http://139.59.64.214:7990/users/hypro999) pushed to branch master. Head is now fc43d13cff1abb28631196944ba4fc4ad06a2cf2."""
+        branch1_content = """[hypro999](http://139.59.64.214:7990/users/hypro999) pushed to branch branch1. Head is now 3980c2be32a7e23c795741d5dc1a2eecb9b85d6d."""
+        master_content = """[hypro999](http://139.59.64.214:7990/users/hypro999) pushed to branch master. Head is now fc43d13cff1abb28631196944ba4fc4ad06a2cf2."""
+
         self.check_webhook("repo_push_update_multiple_branches")
 
-        msg = self.get_last_message()
-        self.do_test_topic(msg, TOPIC_BRANCH_EVENTS.format(branch="master"))
-        self.do_test_message(msg, expected_message_second)
-
         msg = self.get_second_to_last_message()
-        self.do_test_topic(msg, TOPIC_BRANCH_EVENTS.format(branch="branch1"))
-        self.do_test_message(msg, expected_message_first)
+        self.assert_stream_message(
+            message=msg,
+            stream_name=self.STREAM_NAME,
+            topic_name=TOPIC_BRANCH_EVENTS.format(branch="branch1"),
+            content=branch1_content,
+        )
+
+        msg = self.get_last_message()
+        self.assert_stream_message(
+            message=msg,
+            stream_name=self.STREAM_NAME,
+            topic_name=TOPIC_BRANCH_EVENTS.format(branch="master"),
+            content=master_content,
+        )
 
     def test_push_update_multiple_branches_with_branch_filter(self) -> None:
         self.url = self.build_webhook_url(branches='master')
