@@ -113,12 +113,13 @@ exports.build_widget = function (
         close,
     };
 };
-exports.build_direct_upload_widget = function (
-    get_file_input, // function returns a jQuery file input object
-    input_error, // jQuery object for error text
-    upload_button, // jQuery button to open file dialog
-    max_file_upload_size,
-) {
+
+exports.build_direct_upload_widget = function (widget_id, max_file_upload_size) {
+    const get_file_input = function () {
+        return $(widget_id + " .image_file_input").expectOne();
+    };
+    const input_error = $(widget_id + " .image_file_input_error").expectOne();
+    const upload_button = $(widget_id + " .image_upload_button").expectOne();
     // default value of max uploaded file size
     max_file_upload_size = max_file_upload_size || default_max_file_size;
     function accept() {

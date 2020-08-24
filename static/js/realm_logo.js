@@ -12,13 +12,6 @@ exports.build_realm_logo_widget = function (is_night) {
     }
 
     const delete_button_elem = $(logo_section_id + " .image-delete-button");
-    const file_input_elem = $(logo_section_id + " .image_file_input");
-    const file_input_error_elem = $(logo_section_id + " .image_file_input_error");
-    const upload_button_elem = $(logo_section_id + " .image_upload_button");
-
-    const get_file_input = function () {
-        return file_input_elem.expectOne();
-    };
 
     if (!page_params.is_admin) {
         return;
@@ -41,9 +34,7 @@ exports.build_realm_logo_widget = function (is_night) {
     });
 
     return upload_widget.build_direct_upload_widget(
-        get_file_input,
-        file_input_error_elem.expectOne(),
-        upload_button_elem.expectOne(),
+        logo_section_id,
         page_params.max_logo_file_size,
     );
 };

@@ -1,10 +1,6 @@
 "use strict";
 
 exports.build_realm_icon_widget = function () {
-    const get_file_input = function () {
-        return $("#realm-icon-upload-widget .image_file_input").expectOne();
-    };
-
     if (!page_params.is_admin) {
         return;
     }
@@ -22,9 +18,7 @@ exports.build_realm_icon_widget = function () {
     });
 
     return upload_widget.build_direct_upload_widget(
-        get_file_input,
-        $("#realm-icon-upload-widget .image_file_input_error").expectOne(),
-        $("#realm-icon-upload-widget .image_upload_button").expectOne(),
+        "#realm-icon-upload-widget",
         page_params.max_icon_file_size,
     );
 };

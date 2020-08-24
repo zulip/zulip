@@ -42,10 +42,6 @@ exports.build_bot_edit_widget = function (target) {
 };
 
 exports.build_user_avatar_widget = function () {
-    const get_file_input = function () {
-        return $("#user-avatar-upload-widget .image_file_input").expectOne();
-    };
-
     if (page_params.avatar_source === "G") {
         $("#user-avatar-upload-widget .image-delete-button").hide();
         $("#user-avatar-source").show();
@@ -56,6 +52,7 @@ exports.build_user_avatar_widget = function () {
     $("#user-avatar-upload-widget .image-delete-button").on("click keydown", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        const file_input = $("#user-avatar-upload-widget .image_file_input").expectOne();
         channel.del({
             url: "/json/users/me/avatar",
             success() {
@@ -63,7 +60,7 @@ exports.build_user_avatar_widget = function () {
                 $("#user-avatar-source").show();
                 // Need to clear input because of a small edge case
                 // where you try to upload the same image you just deleted.
-                get_file_input().val("");
+                file_input.val("");
                 // Rest of the work is done via the user_events -> avatar_url event we will get
             },
         });
@@ -71,9 +68,7 @@ exports.build_user_avatar_widget = function () {
 
     if (settings_account.user_can_change_avatar()) {
         return upload_widget.build_direct_upload_widget(
-            get_file_input,
-            $("#user-avatar-upload-widget .image_file_input_error").expectOne(),
-            $("#user-avatar-upload-widget .image_upload_button").expectOne(),
+            "#user-avatar-upload-widget",
             page_params.max_avatar_file_size_mib,
         );
     }
