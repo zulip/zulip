@@ -2,7 +2,6 @@ from urllib.parse import quote, unquote
 
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.users import get_api_key
-from zerver.models import get_display_recipient
 
 
 class JiraHookTests(WebhookTestCase):
@@ -19,15 +18,18 @@ class JiraHookTests(WebhookTestCase):
             self.get_body("created_v2"),
             content_type="application/json",
         )
-        self.assertEqual(get_display_recipient(msg.recipient), "jira_custom")
-        self.assertEqual(msg.topic_name(), "BUG-15: New bug with hook")
-        expected_message = """
+        expected_content = """
 Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
 
 * **Priority**: Major
 * **Assignee**: no one
 """.strip()
-        self.assertEqual(msg.content, expected_message)
+        self.assert_stream_message(
+            message=msg,
+            stream_name="jira_custom",
+            topic_name="BUG-15: New bug with hook",
+            content=expected_content,
+        )
 
     def test_created(self) -> None:
         expected_topic = "BUG-15: New bug with hook"
