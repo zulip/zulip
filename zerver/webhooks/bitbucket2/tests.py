@@ -272,7 +272,17 @@ class Bitbucket2HookTests(WebhookTestCase):
         kwargs = {
             "HTTP_X_EVENT_KEY": 'pullrequest:push',
         }
-        self.check_webhook("push_more_than_one_tag", **kwargs)
+
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        payload = self.get_body("push_more_than_one_tag")
+
+        msg = self.send_webhook_payload(
+            self.test_user,
+            self.url,
+            payload,
+            content_type="application/json",
+            **kwargs,
+        )
 
         msg = self.get_second_to_last_message()
         self.assert_stream_message(
@@ -294,7 +304,17 @@ class Bitbucket2HookTests(WebhookTestCase):
         kwargs = {
             "HTTP_X_EVENT_KEY": 'pullrequest:push',
         }
-        self.check_webhook("more_than_one_push_event", **kwargs)
+
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        payload = self.get_body("more_than_one_push_event")
+
+        msg = self.send_webhook_payload(
+            self.test_user,
+            self.url,
+            payload,
+            content_type="application/json",
+            **kwargs,
+        )
 
         msg = self.get_second_to_last_message()
         self.assert_stream_message(
@@ -317,7 +337,17 @@ class Bitbucket2HookTests(WebhookTestCase):
         kwargs = {
             "HTTP_X_EVENT_KEY": 'pullrequest:push',
         }
-        self.check_webhook("more_than_one_push_event", **kwargs)
+
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        payload = self.get_body("more_than_one_push_event")
+
+        msg = self.send_webhook_payload(
+            self.test_user,
+            self.url,
+            payload,
+            content_type="application/json",
+            **kwargs,
+        )
 
         msg = self.get_second_to_last_message()
         self.assert_stream_message(
