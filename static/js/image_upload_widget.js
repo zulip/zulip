@@ -78,6 +78,8 @@ exports.build_direct_upload_widget = function (
     url,
     max_file_upload_size,
     night_param = false,
+    upload_function = undefined, // Function that should be run in a success case of
+    // an image upload. In case it's undefined, the default function will run instead.
 ) {
     const get_file_input = function () {
         return $(widget_id + " .image_file_input").expectOne();
@@ -90,7 +92,11 @@ exports.build_direct_upload_widget = function (
         input_error.hide();
         const widget = upload_button.closest(".image_upload_widget").attr("id");
         const upload_widget = new ImageUploadWidget(widget, url, night_param);
-        upload_widget.upload_image(get_file_input());
+        if (upload_function) {
+            upload_function(get_file_input());
+        } else {
+            upload_widget.upload_image(get_file_input());
+        }
     }
 
     function clear() {
