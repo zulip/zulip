@@ -1040,7 +1040,7 @@ class WebhookTestCase(ZulipTestCase):
         sender = kwargs.pop('sender', self.test_user)
         msg = self.send_json_payload(sender, self.url, payload,
                                      stream_name=None, **kwargs)
-        self.do_test_message(msg, expected_message)
+        self.assertEqual(msg.content, expected_message)
 
         return msg
 
