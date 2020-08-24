@@ -1029,11 +1029,11 @@ class WebhookTestCase(ZulipTestCase):
     def check_webhook(
         self,
         fixture_name: str,
-        expected_topic: Optional[str]=None,
-        expected_message: Optional[str]=None,
+        expected_topic: str,
+        expected_message: str,
         content_type: Optional[str]="application/json",
         **kwargs: Any,
-    ) -> Message:
+    ) -> None:
         """
         check_webhook is the main way to test "normal" webhooks that
         work by receiving a payload from a third party and then writing
@@ -1069,11 +1069,13 @@ class WebhookTestCase(ZulipTestCase):
             payload,
             **kwargs,
         )
-        self.assertEqual(get_display_recipient(msg.recipient), self.STREAM_NAME)
-        self.do_test_topic(msg, expected_topic)
-        self.do_test_message(msg, expected_message)
 
-        return msg
+        self.assert_stream_message(
+            message=msg,
+            stream_name=self.STREAM_NAME,
+            topic_name=expected_topic,
+            content=expected_message,
+        )
 
     def assert_stream_message(
         self,
@@ -1148,14 +1150,6 @@ class WebhookTestCase(ZulipTestCase):
         post parameters or as string containing the body of the request."""
         assert self.FIXTURE_DIR_NAME is not None
         return orjson.dumps(orjson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name))).decode()
-
-    def do_test_topic(self, msg: Message, expected_topic: Optional[str]) -> None:
-        if expected_topic is not None:
-            self.assertEqual(msg.topic_name(), expected_topic)
-
-    def do_test_message(self, msg: Message, expected_message: Optional[str]) -> None:
-        if expected_message is not None:
-            self.assertEqual(msg.content, expected_message)
 
 class MigrationsTestCase(ZulipTestCase):  # nocoverage
     """
