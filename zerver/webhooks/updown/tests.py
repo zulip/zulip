@@ -27,7 +27,15 @@ class UpdownHookTests(WebhookTestCase):
         down_content = "Service is `down`. It returned a 500 error at 2016-02-07 13:11:43 UTC."
         up_content = "Service is `up` again after 1 second."
 
-        self.check_webhook("check_multiple_events")
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        payload = self.get_body("check_multiple_events")
+
+        msg = self.send_webhook_payload(
+            self.test_user,
+            self.url,
+            payload,
+            content_type="application/json",
+        )
 
         msg = self.get_second_to_last_message()
         self.assert_stream_message(
