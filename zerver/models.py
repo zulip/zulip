@@ -1331,6 +1331,9 @@ class UserBaseSettings(models.Model):
     realm_name_in_notifications: bool = models.BooleanField(default=False)
     presence_enabled: bool = models.BooleanField(default=True)
 
+    # Whether or not the user wants to sync their drafts.
+    enable_drafts_synchronization = models.BooleanField(default=True)
+
     # Define the types of the various automatically managed properties
     property_types = dict(
         color_scheme=int,
