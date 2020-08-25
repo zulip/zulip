@@ -8,6 +8,7 @@ const render_topic_edit_form = require("../templates/topic_edit_form.hbs");
 
 const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
+let currently_topic_editing_messages = [];
 const currently_echoing_messages = new Map();
 
 // These variables are designed to preserve the user's most recent
@@ -176,6 +177,18 @@ exports.show_topic_edit_spinner = function (row) {
     spinner.css({height: ""});
     $(".topic_edit_save").hide();
     $(".topic_edit_cancel").hide();
+};
+
+exports.hide_topic_move_spinner = function () {
+    const spinner = $("#move_topic_modal .topic_move_spinner");
+    loading.destroy_indicator(spinner);
+    $("#move_topic_modal .modal-footer").show();
+};
+
+exports.show_topic_move_spinner = function () {
+    const spinner = $("#move_topic_modal .topic_move_spinner");
+    loading.make_indicator(spinner);
+    $("#move_topic_modal .modal-footer").hide();
 };
 
 exports.end_if_focused_on_inline_topic_edit = function () {
@@ -919,6 +932,23 @@ exports.move_topic_containing_message_to_stream = function (
     send_notification_to_new_thread,
     send_notification_to_old_thread,
 ) {
+    function reset_modal_ui() {
+        currently_topic_editing_messages = currently_topic_editing_messages.filter(
+            (id) => id !== message_id,
+        );
+        exports.hide_topic_move_spinner();
+        $("#move_topic_modal").modal("hide");
+    }
+    if (currently_topic_editing_messages.includes(message_id)) {
+        exports.hide_topic_move_spinner();
+        $("#topic_stream_edit_form_error .error-msg").text(
+            i18n.t("A Topic Move already in progress."),
+        );
+        $("#topic_stream_edit_form_error").show();
+        return;
+    }
+    currently_topic_editing_messages.push(message_id);
+
     const request = {
         stream_id: new_stream_id,
         propagate_mode: "change_all",
@@ -934,10 +964,10 @@ exports.move_topic_containing_message_to_stream = function (
         success() {
             // The main UI will update via receiving the event
             // from server_events.js.
-            // TODO: This should probably remove a spinner and
-            // close the modal.
+            reset_modal_ui();
         },
         error(xhr) {
+            reset_modal_ui();
             ui_report.error(i18n.t("Error moving the topic"), xhr, $("#home-error"), 4000);
         },
     });
