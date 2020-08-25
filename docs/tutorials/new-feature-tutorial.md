@@ -540,26 +540,6 @@ in. For example in this case of `mandatory_topics` it will lie in
 better to discuss it in the [community](https://chat.zulip.org/)
 before implementing it.*
 
-When defining the property, you'll also need to specify the property
-field type (i.e. whether it's a `bool`, `integer` or `text`).
-
-``` diff
-
-// static/js/settings_org.js
-var org_settings = {
-    msg_editing: {
-        // ...
-    },
-    msg_feed: {
-        // ...
-+       mandatory_topics: {
-+           type: 'bool',
-+       },
-    },
-};
-
-```
-
 Note that some settings, like `realm_msg_edit_limit_setting`,
 require special treatment, because they don't match the common
 pattern.  We can't extract the property name and compare the value of
