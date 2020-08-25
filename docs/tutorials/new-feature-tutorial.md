@@ -534,7 +534,7 @@ In frontend, we have split the `property_types` into three objects:
 Once you've determined whether the new setting belongs, the next step
 is to find the right subsection of that page to put the setting
 in. For example in this case of `mandatory_topics` it will lie in
-"Message feed" (`msg_feed`) subsection.
+"Other settings" (`other_settings`) subsection.
 
 *If you're not sure in which section your feature belongs, it's is
 better to discuss it in the [community](https://chat.zulip.org/)
