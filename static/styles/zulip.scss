@@ -243,6 +243,7 @@ p.n-margin {
 
 #panels {
     font-size: 1rem;
+    position: relative;
 
     .alert {
         margin: 0;
@@ -266,6 +267,10 @@ p.n-margin {
 
         .close {
             line-height: 24px;
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         .alert-link {
