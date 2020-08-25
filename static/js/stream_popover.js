@@ -294,7 +294,6 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     });
 
     $("#move_topic_modal").modal("show");
-    e.stopPropagation();
 }
 
 exports.register_click_handlers = function () {
@@ -610,6 +609,7 @@ exports.register_topic_handlers = function () {
             ]),
         };
 
+        message_edit.show_topic_move_spinner();
         channel.get({
             url: "/json/messages",
             data,
@@ -631,10 +631,10 @@ exports.register_topic_handlers = function () {
                         send_notification_to_new_thread,
                         send_notification_to_old_thread,
                     );
-                    $("#move_topic_modal").modal("hide");
                 }
             },
             error(xhr) {
+                message_edit.hide_topic_move_spinner();
                 show_error_msg(xhr.responseJSON.msg);
             },
         });
