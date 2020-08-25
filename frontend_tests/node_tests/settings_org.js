@@ -1,5 +1,7 @@
 "use strict";
 
+const rewiremock = require("rewiremock/node");
+
 set_global("$", global.make_zjquery());
 
 const noop = () => {};
@@ -77,7 +79,11 @@ set_global("list_render", _list_render);
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
 zrequire("stream_data");
-zrequire("settings_account");
+rewiremock.proxy(() => zrequire("settings_account"), {
+    // Setup is only imported to set the
+    // setup.password_change_in_progress flag.
+    "../../static/js/setup": {},
+});
 zrequire("settings_org");
 zrequire("settings_ui");
 zrequire("dropdown_list_widget");
