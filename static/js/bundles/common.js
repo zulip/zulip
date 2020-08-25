@@ -9,7 +9,6 @@ import "../../third/bootstrap/js/bootstrap.js";
 import "../common.js";
 import "../../third/bootstrap/css/bootstrap.css";
 import "../../third/bootstrap/css/bootstrap-btn.css";
-import "../../third/bootstrap/css/bootstrap-responsive.css";
 import "simplebar/dist/simplebar.css";
 import "font-awesome/css/font-awesome.css";
 import "../../assets/icons/zulip-icons.font.js";
