@@ -266,6 +266,9 @@ p.n-margin {
 
         .close {
             line-height: 24px;
+            position: fixed;
+            top: 12px;
+            right: 30px;
         }
 
         .alert-link {
