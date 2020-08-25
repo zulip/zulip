@@ -514,6 +514,8 @@ code {
     font-size: 0.857em;
     unicode-bidi: embed;
     direction: ltr;
+    color: hsl(0, 0%, 0%);
+    white-space: pre;
 }
 
 .rendered_markdown code {
