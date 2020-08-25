@@ -1,161 +1,5 @@
-/** @preserve
- Software from "Bootstrap" is Copyright (c) 2012 Twitter, Inc. and is provided
- under the following license (the Bootstrap software has been modified):
- --
- TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
-
- 1. Definitions.
-
- "License" shall mean the terms and conditions for use, reproduction, and
- distribution as defined by Sections 1 through 9 of this document.
-
- "Licensor" shall mean the copyright owner or entity authorized by the copyright
- owner that is granting the License.
-
- "Legal Entity" shall mean the union of the acting entity and all other entities
- that control, are controlled by, or are under common control with that
- entity. For the purposes of this definition, "control" means (i) the power,
- direct or indirect, to cause the direction or management of such entity,
- whether by contract or otherwise, or (ii) ownership of fifty percent (50%) or
- more of the outstanding shares, or (iii) beneficial ownership of such entity.
-
- "You" (or "Your") shall mean an individual or Legal Entity exercising
- permissions granted by this License.
-
- "Source" form shall mean the preferred form for making modifications, including
- but not limited to software source code, documentation source, and
- configuration files.
-
- "Object" form shall mean any form resulting from mechanical transformation or
- translation of a Source form, including but not limited to compiled object
- code, generated documentation, and conversions to other media types.
-
- "Work" shall mean the work of authorship, whether in Source or Object form,
- made available under the License, as indicated by a copyright notice that is
- included in or attached to the work (an example is provided in the Appendix
- below).
-
- "Derivative Works" shall mean any work, whether in Source or Object form, that
- is based on (or derived from) the Work and for which the editorial revisions,
- annotations, elaborations, or other modifications represent, as a whole, an
- original work of authorship. For the purposes of this License, Derivative Works
- shall not include works that remain separable from, or merely link (or bind by
- name) to the interfaces of, the Work and Derivative Works thereof.
-
- "Contribution" shall mean any work of authorship, including the original
- version of the Work and any modifications or additions to that Work or
- Derivative Works thereof, that is intentionally submitted to Licensor for
- inclusion in the Work by the copyright owner or by an individual or Legal
- Entity authorized to submit on behalf of the copyright owner. For the purposes
- of this definition, "submitted" means any form of electronic, verbal, or
- written communication sent to the Licensor or its representatives, including
- but not limited to communication on electronic mailing lists, source code
- control systems, and issue tracking systems that are managed by, or on behalf
- of, the Licensor for the purpose of discussing and improving the Work, but
- excluding communication that is conspicuously marked or otherwise designated in
- writing by the copyright owner as "Not a Contribution."
-
- "Contributor" shall mean Licensor and any individual or Legal Entity on behalf
- of whom a Contribution has been received by Licensor and subsequently
- incorporated within the Work.
-
- 2. Grant of Copyright License. Subject to the terms and conditions of this
- License, each Contributor hereby grants to You a perpetual, worldwide,
- non-exclusive, no-charge, royalty-free, irrevocable copyright license to
- reproduce, prepare Derivative Works of, publicly display, publicly perform,
- sublicense, and distribute the Work and such Derivative Works in Source or
- Object form.
-
- 3. Grant of Patent License. Subject to the terms and conditions of this
- License, each Contributor hereby grants to You a perpetual, worldwide,
- non-exclusive, no-charge, royalty-free, irrevocable (except as stated in this
- section) patent license to make, have made, use, offer to sell, sell, import,
- and otherwise transfer the Work, where such license applies only to those
- patent claims licensable by such Contributor that are necessarily infringed by
- their Contribution(s) alone or by combination of their Contribution(s) with the
- Work to which such Contribution(s) was submitted. If You institute patent
- litigation against any entity (including a cross-claim or counterclaim in a
- lawsuit) alleging that the Work or a Contribution incorporated within the Work
- constitutes direct or contributory patent infringement, then any patent
- licenses granted to You under this License for that Work shall terminate as of
- the date such litigation is filed.
-
- 4. Redistribution. You may reproduce and distribute copies of the Work or
- Derivative Works thereof in any medium, with or without modifications, and in
- Source or Object form, provided that You meet the following conditions:
-
- You must give any other recipients of the Work or Derivative Works a copy of
- this License; and You must cause any modified files to carry prominent notices
- stating that You changed the files; and You must retain, in the Source form of
- any Derivative Works that You distribute, all copyright, patent, trademark, and
- attribution notices from the Source form of the Work, excluding those notices
- that do not pertain to any part of the Derivative Works; and If the Work
- includes a "NOTICE" text file as part of its distribution, then any Derivative
- Works that You distribute must include a readable copy of the attribution
- notices contained within such NOTICE file, excluding those notices that do not
- pertain to any part of the Derivative Works, in at least one of the following
- places: within a NOTICE text file distributed as part of the Derivative Works;
- within the Source form or documentation, if provided along with the Derivative
- Works; or, within a display generated by the Derivative Works, if and wherever
- such third-party notices normally appear. The contents of the NOTICE file are
- for informational purposes only and do not modify the License. You may add Your
- own attribution notices within Derivative Works that You distribute, alongside
- or as an addendum to the NOTICE text from the Work, provided that such
- additional attribution notices cannot be construed as modifying the License.
-
- You may add Your own copyright statement to Your modifications and may provide
- additional or different license terms and conditions for use, reproduction, or
- distribution of Your modifications, or for any such Derivative Works as a
- whole, provided Your use, reproduction, and distribution of the Work otherwise
- complies with the conditions stated in this License.  5. Submission of
- Contributions. Unless You explicitly state otherwise, any Contribution
- intentionally submitted for inclusion in the Work by You to the Licensor shall
- be under the terms and conditions of this License, without any additional terms
- or conditions. Notwithstanding the above, nothing herein shall supersede or
- modify the terms of any separate license agreement you may have executed with
- Licensor regarding such Contributions.
-
- 6. Trademarks. This License does not grant permission to use the trade names,
- trademarks, service marks, or product names of the Licensor, except as required
- for reasonable and customary use in describing the origin of the Work and
- reproducing the content of the NOTICE file.
-
- 7. Disclaimer of Warranty. Unless required by applicable law or agreed to in
- writing, Licensor provides the Work (and each Contributor provides its
- Contributions) on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- KIND, either express or implied, including, without limitation, any warranties
- or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
- PARTICULAR PURPOSE. You are solely responsible for determining the
- appropriateness of using or redistributing the Work and assume any risks
- associated with Your exercise of permissions under this License.
-
- 8. Limitation of Liability. In no event and under no legal theory, whether in
- tort (including negligence), contract, or otherwise, unless required by
- applicable law (such as deliberate and grossly negligent acts) or agreed to in
- writing, shall any Contributor be liable to You for damages, including any
- direct, indirect, special, incidental, or consequential damages of any
- character arising as a result of this License or out of the use or inability to
- use the Work (including but not limited to damages for loss of goodwill, work
- stoppage, computer failure or malfunction, or any and all other commercial
- damages or losses), even if such Contributor has been advised of the
- possibility of such damages.
-
- 9. Accepting Warranty or Additional Liability. While redistributing the Work or
- Derivative Works thereof, You may choose to offer, and charge a fee for,
- acceptance of support, warranty, indemnity, or other liability obligations
- and/or rights consistent with this License. However, in accepting such
- obligations, You may act only on Your own behalf and on Your sole
- responsibility, not on behalf of any other Contributor, and only if You agree
- to indemnify, defend, and hold each Contributor harmless for any liability
- incurred by, or claims asserted against, such Contributor by reason of your
- accepting any such warranty or additional liability.
-
- END OF TERMS AND CONDITIONS
- --
-*/
-
 /* ===================================================
- * bootstrap-transition.js v2.1.0
+ * bootstrap-transition.js v2.1.1
  * http://twitter.github.com/bootstrap/javascript.html#transitions
  * ===================================================
  * Copyright 2012 Twitter, Inc.
@@ -214,7 +58,7 @@
   })
 
 }(window.jQuery);/* ==========================================================
- * bootstrap-alert.js v2.1.0
+ * bootstrap-alert.js v2.1.1
  * http://twitter.github.com/bootstrap/javascript.html#alerts
  * ==========================================================
  * Copyright 2012 Twitter, Inc.
@@ -303,7 +147,7 @@
   })
 
 }(window.jQuery);/* ============================================================
- * bootstrap-button.js v2.1.0
+ * bootstrap-button.js v2.1.1
  * http://twitter.github.com/bootstrap/javascript.html#buttons
  * ============================================================
  * Copyright 2012 Twitter, Inc.
@@ -355,7 +199,7 @@
   }
 
   Button.prototype.toggle = function () {
-    var $parent = this.$element.parent('[data-toggle="buttons-radio"]')
+    var $parent = this.$element.closest('[data-toggle="buttons-radio"]')
 
     $parent && $parent
       .find('.active')
@@ -398,7 +242,7 @@
   })
 
 }(window.jQuery);/* ==========================================================
- * bootstrap-carousel.js v2.1.0
+ * bootstrap-carousel.js v2.1.1
  * http://twitter.github.com/bootstrap/javascript.html#carousel
  * ==========================================================
  * Copyright 2012 Twitter, Inc.
@@ -573,7 +417,7 @@
   })
 
 }(window.jQuery);/* =============================================================
- * bootstrap-collapse.js v2.1.0
+ * bootstrap-collapse.js v2.1.1
  * http://twitter.github.com/bootstrap/javascript.html#collapse
  * =============================================================
  * Copyright 2012 Twitter, Inc.
@@ -730,7 +574,7 @@
   })
 
 }(window.jQuery);/* ============================================================
- * bootstrap-dropdown.js v2.1.0
+ * bootstrap-dropdown.js v2.1.1
  * http://twitter.github.com/bootstrap/javascript.html#dropdowns
  * ============================================================
  * Copyright 2012 Twitter, Inc.
@@ -841,7 +685,7 @@
 
     if (!selector) {
       selector = $this.attr('href')
-      selector = selector && selector.replace(/.*(?=#[^\s]*$)/, '') //strip for ie7
+      selector = selector && /#/.test(selector) && selector.replace(/.*(?=#[^\s]*$)/, '') //strip for ie7
     }
 
     $parent = $(selector)
@@ -879,7 +723,7 @@
   })
 
 }(window.jQuery);/* =========================================================
- * bootstrap-modal.js v2.1.0
+ * bootstrap-modal.js v2.1.1
  * http://twitter.github.com/bootstrap/javascript.html#modals
  * =========================================================
  * Copyright 2012 Twitter, Inc.
@@ -1033,9 +877,7 @@
       }
 
     , removeBackdrop: function () {
-        if (this.$backdrop && this.$backdrop.remove) {
-          this.$backdrop.remove();
-        }
+        this.$backdrop.remove()
         this.$backdrop = null
       }
 
@@ -1119,7 +961,7 @@
   })
 
 }(window.jQuery);/* ===========================================================
- * bootstrap-tooltip.js v2.1.0
+ * bootstrap-tooltip.js v2.1.1
  * http://twitter.github.com/bootstrap/javascript.html#tooltips
  * Inspired by the original jQuery.tipsy by Jason Frame
  * ===========================================================
@@ -1223,9 +1065,6 @@
         , actualHeight
         , placement
         , tp
-        , newtop
-        , left
-        , top
 
       if (this.hasContent() && this.enabled) {
         $tip = this.tip()
@@ -1253,68 +1092,17 @@
 
         switch (inside ? placement.split(' ')[1] : placement) {
           case 'bottom':
-            top = pos.top + pos.height;
-            left = pos.left + pos.width / 2 - actualWidth / 2;
+            tp = {top: pos.top + pos.height, left: pos.left + pos.width / 2 - actualWidth / 2}
             break
           case 'top':
-            top = pos.top - actualHeight;
-            left = pos.left + pos.width / 2 - actualWidth / 2;
+            tp = {top: pos.top - actualHeight, left: pos.left + pos.width / 2 - actualWidth / 2}
             break
           case 'left':
-            top = pos.top + pos.height / 2 - actualHeight / 2;
-            if (this.options.top_offset) {
-                top = this.options.top_offset;
-            }
-            left = pos.left - actualWidth;
+            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left - actualWidth}
             break
           case 'right':
-            top = pos.top + pos.height / 2 - actualHeight / 2;
-            left = pos.left + pos.width;
+            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left + pos.width}
             break
-        }
-
-        if (this.options.fix_positions) {
-            var win_height = $(window).height();
-            var win_width = $(window).width();
-
-            /* Ensure that the popover stays fully onscreen,
-               as best as we can.  It might still not look
-               great--in some cases, we should probably just
-               center--but this patch makes the popover more
-               likely to be usable.  (If the screen is super
-               small, obviously we can't fit it completely.)
-
-               If you use this fix_positions option, you want
-               to also use the "no_arrow_popover" template.
-            */
-            if (top < 0) {
-                top = 0;
-                $tip.find("div.arrow").hide();
-            } else if (top + actualHeight > win_height - 20) {
-                top = win_height - actualHeight - 20;
-                if (top < 0) {
-                    top = 0;
-                }
-                $tip.find("div.arrow").hide();
-            }
-
-            if (left < 0) {
-                left = 0;
-                $tip.find("div.arrow").hide();
-            } else if (left + actualWidth > win_width) {
-                left = win_width - actualWidth;
-                $tip.find("div.arrow").hide();
-            }
-        }
-
-        tp = {top: top, left: left};
-
-        if (this.options.fixed) {
-          // If using position: fixed, position relative to top of
-          // viewport
-          newtop = tp.top - $(document).scrollTop()
-          tp = $.extend(tp, {top: newtop,
-                             position: 'fixed'})
         }
 
         $tip
@@ -1443,13 +1231,12 @@
   , trigger: 'hover'
   , title: ''
   , delay: 0
-  , html: false
-  , fixed: false
+  , html: true
   }
 
 }(window.jQuery);
 /* ===========================================================
- * bootstrap-popover.js v2.1.0
+ * bootstrap-popover.js v2.1.1
  * http://twitter.github.com/bootstrap/javascript.html#popovers
  * ===========================================================
  * Copyright 2012 Twitter, Inc.
@@ -1551,7 +1338,7 @@
   })
 
 }(window.jQuery);/* =============================================================
- * bootstrap-scrollspy.js v2.1.0
+ * bootstrap-scrollspy.js v2.1.1
  * http://twitter.github.com/bootstrap/javascript.html#scrollspy
  * =============================================================
  * Copyright 2012 Twitter, Inc.
@@ -1701,7 +1488,7 @@
   })
 
 }(window.jQuery);/* ========================================================
- * bootstrap-tab.js v2.1.0
+ * bootstrap-tab.js v2.1.1
  * http://twitter.github.com/bootstrap/javascript.html#tabs
  * ========================================================
  * Copyright 2012 Twitter, Inc.
@@ -1834,9 +1621,308 @@
     })
   })
 
+}(window.jQuery);/* =============================================================
+ * bootstrap-typeahead.js v2.1.1
+ * http://twitter.github.com/bootstrap/javascript.html#typeahead
+ * =============================================================
+ * Copyright 2012 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ============================================================ */
+
+
+!function($){
+
+  "use strict"; // jshint ;_;
+
+
+ /* TYPEAHEAD PUBLIC CLASS DEFINITION
+  * ================================= */
+
+  var Typeahead = function (element, options) {
+    this.$element = $(element)
+    this.options = $.extend({}, $.fn.typeahead.defaults, options)
+    this.matcher = this.options.matcher || this.matcher
+    this.sorter = this.options.sorter || this.sorter
+    this.highlighter = this.options.highlighter || this.highlighter
+    this.updater = this.options.updater || this.updater
+    this.$menu = $(this.options.menu).appendTo('body')
+    this.source = this.options.source
+    this.shown = false
+    this.listen()
+  }
+
+  Typeahead.prototype = {
+
+    constructor: Typeahead
+
+  , select: function () {
+      var val = this.$menu.find('.active').attr('data-value')
+      this.$element
+        .val(this.updater(val))
+        .change()
+      return this.hide()
+    }
+
+  , updater: function (item) {
+      return item
+    }
+
+  , show: function () {
+      var pos = $.extend({}, this.$element.offset(), {
+        height: this.$element[0].offsetHeight
+      })
+
+      this.$menu.css({
+        top: pos.top + pos.height
+      , left: pos.left
+      })
+
+      this.$menu.show()
+      this.shown = true
+      return this
+    }
+
+  , hide: function () {
+      this.$menu.hide()
+      this.shown = false
+      return this
+    }
+
+  , lookup: function (event) {
+      var items
+
+      this.query = this.$element.val()
+
+      if (!this.query || this.query.length < this.options.minLength) {
+        return this.shown ? this.hide() : this
+      }
+
+      items = $.isFunction(this.source) ? this.source(this.query, $.proxy(this.process, this)) : this.source
+
+      return items ? this.process(items) : this
+    }
+
+  , process: function (items) {
+      var that = this
+
+      items = $.grep(items, function (item) {
+        return that.matcher(item)
+      })
+
+      items = this.sorter(items)
+
+      if (!items.length) {
+        return this.shown ? this.hide() : this
+      }
+
+      return this.render(items.slice(0, this.options.items)).show()
+    }
+
+  , matcher: function (item) {
+      return ~item.toLowerCase().indexOf(this.query.toLowerCase())
+    }
+
+  , sorter: function (items) {
+      var beginswith = []
+        , caseSensitive = []
+        , caseInsensitive = []
+        , item
+
+      while (item = items.shift()) {
+        if (!item.toLowerCase().indexOf(this.query.toLowerCase())) beginswith.push(item)
+        else if (~item.indexOf(this.query)) caseSensitive.push(item)
+        else caseInsensitive.push(item)
+      }
+
+      return beginswith.concat(caseSensitive, caseInsensitive)
+    }
+
+  , highlighter: function (item) {
+      var query = this.query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+      return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+        return '<strong>' + match + '</strong>'
+      })
+    }
+
+  , render: function (items) {
+      var that = this
+
+      items = $(items).map(function (i, item) {
+        i = $(that.options.item).attr('data-value', item)
+        i.find('a').html(that.highlighter(item))
+        return i[0]
+      })
+
+      items.first().addClass('active')
+      this.$menu.html(items)
+      return this
+    }
+
+  , next: function (event) {
+      var active = this.$menu.find('.active').removeClass('active')
+        , next = active.next()
+
+      if (!next.length) {
+        next = $(this.$menu.find('li')[0])
+      }
+
+      next.addClass('active')
+    }
+
+  , prev: function (event) {
+      var active = this.$menu.find('.active').removeClass('active')
+        , prev = active.prev()
+
+      if (!prev.length) {
+        prev = this.$menu.find('li').last()
+      }
+
+      prev.addClass('active')
+    }
+
+  , listen: function () {
+      this.$element
+        .on('blur',     $.proxy(this.blur, this))
+        .on('keypress', $.proxy(this.keypress, this))
+        .on('keyup',    $.proxy(this.keyup, this))
+
+      if ($.browser.chrome || $.browser.webkit || $.browser.msie) {
+        this.$element.on('keydown', $.proxy(this.keydown, this))
+      }
+
+      this.$menu
+        .on('click', $.proxy(this.click, this))
+        .on('mouseenter', 'li', $.proxy(this.mouseenter, this))
+    }
+
+  , move: function (e) {
+      if (!this.shown) return
+
+      switch(e.keyCode) {
+        case 9: // tab
+        case 13: // enter
+        case 27: // escape
+          e.preventDefault()
+          break
+
+        case 38: // up arrow
+          e.preventDefault()
+          this.prev()
+          break
+
+        case 40: // down arrow
+          e.preventDefault()
+          this.next()
+          break
+      }
+
+      e.stopPropagation()
+    }
+
+  , keydown: function (e) {
+      this.suppressKeyPressRepeat = !~$.inArray(e.keyCode, [40,38,9,13,27])
+      this.move(e)
+    }
+
+  , keypress: function (e) {
+      if (this.suppressKeyPressRepeat) return
+      this.move(e)
+    }
+
+  , keyup: function (e) {
+      switch(e.keyCode) {
+        case 40: // down arrow
+        case 38: // up arrow
+          break
+
+        case 9: // tab
+        case 13: // enter
+          if (!this.shown) return
+          this.select()
+          break
+
+        case 27: // escape
+          if (!this.shown) return
+          this.hide()
+          break
+
+        default:
+          this.lookup()
+      }
+
+      e.stopPropagation()
+      e.preventDefault()
+  }
+
+  , blur: function (e) {
+      var that = this
+      setTimeout(function () { that.hide() }, 150)
+    }
+
+  , click: function (e) {
+      e.stopPropagation()
+      e.preventDefault()
+      this.select()
+    }
+
+  , mouseenter: function (e) {
+      this.$menu.find('.active').removeClass('active')
+      $(e.currentTarget).addClass('active')
+    }
+
+  }
+
+
+  /* TYPEAHEAD PLUGIN DEFINITION
+   * =========================== */
+
+  $.fn.typeahead = function (option) {
+    return this.each(function () {
+      var $this = $(this)
+        , data = $this.data('typeahead')
+        , options = typeof option == 'object' && option
+      if (!data) $this.data('typeahead', (data = new Typeahead(this, options)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  $.fn.typeahead.defaults = {
+    source: []
+  , items: 8
+  , menu: '<ul class="typeahead dropdown-menu"></ul>'
+  , item: '<li><a href="#"></a></li>'
+  , minLength: 1
+  }
+
+  $.fn.typeahead.Constructor = Typeahead
+
+
+ /*   TYPEAHEAD DATA-API
+  * ================== */
+
+  $(function () {
+    $('body').on('focus.typeahead.data-api', '[data-provide="typeahead"]', function (e) {
+      var $this = $(this)
+      if ($this.data('typeahead')) return
+      e.preventDefault()
+      $this.typeahead($this.data())
+    })
+  })
+
 }(window.jQuery);
 /* ==========================================================
- * bootstrap-affix.js v2.1.0
+ * bootstrap-affix.js v2.1.1
  * http://twitter.github.com/bootstrap/javascript.html#affix
  * ==========================================================
  * Copyright 2012 Twitter, Inc.
