@@ -466,45 +466,42 @@ class MissedMessageWorker(QueueProcessingWorker):
     TIMER_FREQUENCY = 5
     BATCH_DURATION = 120
     timer_event: Optional[Timer] = None
-    lock = Lock()
     events_by_recipient: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
     batch_start_by_recipient: Dict[int, float] = {}
 
+    # This lock protects access to all of the data structures declared
+    # above.  A lock is required because maybe_send_batched_emails, as
+    # the argument to Timer, runs in a separate thread from the rest
+    # of the consumer.
+    lock = Lock()
+
     def consume(self, event: Dict[str, Any]) -> None:
-        logging.debug("Received missedmessage_emails event: %s", event)
+        with self.lock:
+            logging.debug("Received missedmessage_emails event: %s", event)
 
-        # When we process an event, just put it into the queue and ensure we have a timer going.
-        user_profile_id = event['user_profile_id']
-        if user_profile_id not in self.batch_start_by_recipient:
-            self.batch_start_by_recipient[user_profile_id] = time.time()
-        self.events_by_recipient[user_profile_id].append(event)
+            # When we process an event, just put it into the queue and ensure we have a timer going.
+            user_profile_id = event['user_profile_id']
+            if user_profile_id not in self.batch_start_by_recipient:
+                self.batch_start_by_recipient[user_profile_id] = time.time()
+            self.events_by_recipient[user_profile_id].append(event)
 
-        self.ensure_timer()
+            self.ensure_timer()
 
     def ensure_timer(self) -> None:
-        # We don't want to block the consume() function if the lock is being held
-        # by the maybe_send_batched_emails thread, as that would stop consumption
-        # of new events until all the batches are sent out - which would be exactly
-        # the opposite of the intended purpose of the design of this queue worker.
-        if not self.lock.acquire(blocking=False):
+        # The caller is responsible for ensuring self.lock is held when it calls this.
+        if self.timer_event is not None:
             return
 
-        try:
-            if self.timer_event is not None:
-                return
-
-            self.timer_event = Timer(self.TIMER_FREQUENCY, MissedMessageWorker.maybe_send_batched_emails,
-                                     [self])
-            self.timer_event.start()
-        finally:
-            self.lock.release()
+        self.timer_event = Timer(self.TIMER_FREQUENCY, MissedMessageWorker.maybe_send_batched_emails,
+                                 [self])
+        self.timer_event.start()
 
     def maybe_send_batched_emails(self) -> None:
         with self.lock:
-            # self.timer_event just triggered execution of this function in a thread, so now
-            # that we hold the lock we clear the attribute to signal
-            # that no Timer is active, so a new one can be set (once the setter acquires the lock)
-            # if there are more events to process.
+            # self.timer_event just triggered execution of this
+            # function in a thread, so now that we hold the lock, we
+            # clear the timer_event attribute to record that no Timer
+            # is active.
             self.timer_event = None
 
             current_time = time.time()
@@ -518,11 +515,12 @@ class MissedMessageWorker(QueueProcessingWorker):
                 del self.events_by_recipient[user_profile_id]
                 del self.batch_start_by_recipient[user_profile_id]
 
-        # By only restarting the timer if there are actually events in
-        # the queue, we ensure this queue processor is idle when there
-        # are no missed-message emails to process.
-        if len(self.batch_start_by_recipient) > 0:
-            self.ensure_timer()
+            # By only restarting the timer if there are actually events in
+            # the queue, we ensure this queue processor is idle when there
+            # are no missed-message emails to process.  This avoids
+            # constant CPU usage when there is no work to do.
+            if len(self.batch_start_by_recipient) > 0:
+                self.ensure_timer()
 
 @assign_queue('email_senders')
 class EmailSendingWorker(QueueProcessingWorker):
