@@ -1,8 +1,9 @@
 "use strict";
 
 const util = require("./util");
-// Miscellaneous early setup.
 
+// Miscellaneous early setup.
+exports.password_change_in_progress = false;
 $(() => {
     if (util.is_mobile()) {
         // Disable the tutorial; it's ugly on mobile.
@@ -35,7 +36,11 @@ $(() => {
 
     // For some reason, jQuery wants this to be attached to an element.
     $(document).ajaxError((event, xhr) => {
-        if (xhr.status === 401) {
+        // Don't redirect to the login page when a password change
+        // is in progress. Since 401 in that process means this is
+        // a race condition caused by a request that was made just
+        // before the session hash was updated in the backend.
+        if (xhr.status === 401 && !exports.password_change_in_progress) {
             // We got logged out somehow, perhaps from another window or a session timeout.
             // We could display an error message, but jumping right to the login page seems
             // smoother and conveys the same information.
