@@ -6,6 +6,8 @@ const render_settings_api_key_modal = require("../templates/settings/api_key_mod
 const render_settings_custom_user_profile_field = require("../templates/settings/custom_user_profile_field.hbs");
 const render_settings_dev_env_email_access = require("../templates/settings/dev_env_email_access.hbs");
 
+const setup = require("./setup");
+
 exports.update_email = function (new_email) {
     const email_input = $("#email_value");
 
@@ -445,9 +447,14 @@ exports.set_up = function () {
             }
         }
 
+        setup.password_change_in_progress = true;
         const opts = {
             success_continuation() {
+                setup.password_change_in_progress = false;
                 overlays.close_modal("#change_password_modal");
+            },
+            error_continuation() {
+                setup.password_change_in_progress = false;
             },
             error_msg_element: change_password_error,
         };
