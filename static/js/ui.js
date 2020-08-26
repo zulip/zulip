@@ -97,7 +97,7 @@ exports.update_starred_view = function (message_id, new_value) {
     // Avoid a full re-render, but update the star in each message
     // table in which it is visible.
     update_message_in_all_views(message_id, (row) => {
-        const elt = row.find(".star");
+        const elt = row.find(".message_star");
         const star_container = row.find(".star_container");
         if (starred) {
             elt.addClass("fa-star").removeClass("fa-star-o");
