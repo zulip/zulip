@@ -140,16 +140,19 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             target_function = authenticated_rest_api_view(
                 is_webhook='allow_incoming_webhooks' in view_flags,
             )(target_function)
-        elif request.path.startswith("/json") and 'allow_anonymous_user_web' in view_flags:
-            # For endpoints that support anonymous web access, we do that.
-            # TODO: Allow /api calls when this is stable enough.
-            auth_kwargs = dict(allow_unauthenticated=True)
-            target_function = csrf_protect(authenticated_json_view(
-                target_function, **auth_kwargs))
+        # Pick a way to tell user they're not authed based on how the request was made
         else:
-            # Otherwise, throw an authentication error; our middleware
-            # will generate the appropriate HTTP response.
-            raise MissingAuthenticationError()
+            # Logged out user accessing an endpoint with anonymous user access on JSON; proceed.
+            # `allow_anonymous_user_web` calls are only restricted to /json calls used
+            # by our webapp.
+            # TODO: Allow /api calls when this is stable enough.
+            if request.path.startswith("/json") and 'allow_anonymous_user_web' in view_flags:
+                auth_kwargs = dict(allow_unauthenticated=True)
+                target_function = csrf_protect(authenticated_json_view(
+                    target_function, **auth_kwargs))
+            else:
+                # Don't allow anonymous queries to endpoints witout `allow_anonymous_user_web` flag.
+                raise MissingAuthenticationError()
 
         if request.method not in ["GET", "POST"]:
             # process_as_post needs to be the outer decorator, because
