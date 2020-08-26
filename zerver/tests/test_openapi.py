@@ -307,15 +307,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
                 3. '/realm/domains' <-> r'/realm\\/domains$'
         """
 
-        # TODO: Probably we should be able to address the below
-        # through alternative solutions (e.g. reordering urls.py
-        # entries or similar url organization, but for now these let
-        # us test more endpoints and so are worth doing).
-        me_pattern = '/(?!me/)'
-        if me_pattern in regex_pattern:
-            # Remove the exclude-me pattern if present.
-            regex_pattern = regex_pattern.replace(me_pattern, "/")
-
         # Handle the presence-email code which has a non-slashes syntax.
         regex_pattern = regex_pattern.replace('[^/]*', '.*').replace('[^/]+', '.*')
 
