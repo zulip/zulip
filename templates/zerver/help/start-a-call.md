@@ -32,7 +32,7 @@ change the organization's video chat provider.
 {tab|jitsi-meet}
 
 Zulip's default video chat provider is [Jitsi
-Meet](https://meet.jit.si/).
+Meet](https://meet.jit.si).
 
 You can also use Zulip with Jitsi Meet on-premise; to configure this,
 just set `JITSI_SERVER_URL` in `/etc/zulip/settings.py`.
