@@ -5010,7 +5010,8 @@ paths:
       operationId: get_custom_profile_fields
       tags: ["server_and_organizations"]
       description: |
-        Get all the custom profile fields in the user's organization.
+        Get all the [custom profile fields](/help/add-custom-profile-fields)
+        configured for the user's organization.
 
         `GET {{ api_url }}/v1/realm/profile_fields`
       responses:
@@ -5025,7 +5026,8 @@ paths:
                       custom_fields:
                         type: array
                         description: |
-                          An array that contains custom profile field objects.
+                          An array containing all the custom profile fields defined in this
+                          Zulip organization.
                         items:
                           $ref: "#/components/schemas/CustomProfileField"
                   - example:
@@ -5109,12 +5111,18 @@ paths:
         Reorder the custom profile fields in the user's organization.
 
         `PATCH {{ api_url }}/v1/realm/profile_fields`
+
+        Custom profile fields are displayed in Zulip UI widgets in order; this
+        endpoint allows administrative settings UI to change the field ordering.
+
+        This endpoint is used to implement the dragging feature described in the
+        [custom profile fields documentation](/help/add-custom-profile-fields).
       parameters:
         - name: order
           in: query
           description: |
-            A list of ids of the respective custom profile fields in the desired
-            order.
+            A list of the IDs of all the custom profile fields defined in this
+            organization, in the desired new order.
           content:
             application/json:
               schema:
@@ -5136,30 +5144,34 @@ paths:
       description: |
         {!api-admin-only.md!}
 
-        Create a custom profile field in the user's organization.
+        [Create a custom profile field](/help/add-custom-profile-fields) in the user's organization.
 
         `POST {{ api_url }}/v1/realm/profile_fields`
       parameters:
         - name: name
           in: query
           description: |
-            The name of the custom profile field.
+            The name of the custom profile field, which will appear both in
+            user-facing settings UI for configuring custom profile fields and
+            in UI displaying a user's profile.
           schema:
             type: string
           example: "Favorite programming language"
         - name: hint
           in: query
           description: |
-            The hint to be displayed for the custom profile field.
+            The help text to be displayed for the custom profile field in user-facing
+            settings UI for configuring custom profile fields.
           schema:
             type: string
           example: "Your favorite programming language."
         - name: field_type
           in: query
           description: |
-            The type can be one of the following types available. See the
-            [Add custom profile fields](/help/add-custom-profile-fields) article for
-            details on what each type means.
+            The field type can be any of the supported custom profile field types. See the
+            [custom profile fields documentation](/help/add-custom-profile-fields)
+            more details on what each type means.
+
             * **1**: Short text
             * **2**: Long text
             * **3**: List of options
@@ -5174,7 +5186,14 @@ paths:
         - name: field_data
           in: query
           description: |
-            The data to be displayed if the field has a list of options.
+            Field types 3 (List of options) and 7 (External account) support storing
+            additional configuration for the field type in the `field_data` attribute.
+
+            For field type 3 (List of options), this attribute is a JSON dictionary
+            defining the choices and the order they will be displayed in the
+            dropdown UI for individual users to select an option.
+
+            The interface for field type 7 is not yet stabilized.
           content:
             application/json:
               schema:
@@ -6997,9 +7016,10 @@ paths:
                             hint:
                               type: string
                               description: |
-                                Text that can be shown to the user to
-                                provide the users with a hint as to
-                                what account they have to provide.
+                                The help text to be displayed for the
+                                custom profile field in user-facing
+                                settings UI for configuring custom
+                                profile fields for this account.
                             url_pattern:
                               type: string
                               description: |
@@ -8657,18 +8677,23 @@ components:
       type: object
       additionalProperties: false
       description: |
-        Dictionary containing details of a single custom profile field.
+        Dictionary containing the details of a custom profile field configured
+        for this organization.
       properties:
         id:
           type: integer
           description: |
-            The id of the custom profile field.
+            The ID of the custom profile field.  This will be referenced in custom
+            the profile fields section of user objects.
         type:
           type: integer
           description: |
-            The type can be one of the following types available. See the
-            [Add custom profile fields](/help/add-custom-profile-fields) article for
-            details on what each type means.
+            An integer indicating the type of the custom profile field, which determines
+            how it is configured and displayed to users.
+
+            See the [Add custom profile fields](/help/add-custom-profile-fields)
+            article for details on what each type means.
+
             * **1**: Short text
             * **2**: Long text
             * **3**: List of options
@@ -8679,8 +8704,8 @@ components:
         order:
           type: integer
           description: |
-            A number describing the order of appearance
-            of the custom profile field.
+            Custom profile fields are displayed in both settings UI and
+            UI showing users' profiles in increasing `order`.
         name:
           type: string
           description: |
@@ -8688,13 +8713,19 @@ components:
         hint:
           type: string
           description: |
-            A hint regarding the custom profile field.
-            For example, 'What are you known for?'.
+            The help text to be displayed for the custom profile field in user-facing
+            settings UI for configuring custom profile fields.
         field_data:
           type: string
           description: |
-            The data to be displayed if the field has
-            a list of options.
+            Field types 3 (List of options) and 7 (External account) support storing
+            additional configuration for the field type in the `field_data` attribute.
+
+            For field type 3 (List of options), this attribute is a JSON dictionary
+            defining the choices and the order they will be displayed in the
+            dropdown UI for individual users to select an option.
+
+            The interface for field type 7 is not yet stabilized.
     Hotspot:
       type: object
       additionalProperties: false
