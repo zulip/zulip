@@ -232,7 +232,7 @@ function render_user_info_popover(
         }),
         html: true,
         trigger: "manual",
-        top_offset: 100,
+        top_offset: $("#userlist-title").offset().top + 15,
         fix_positions: true,
     });
     popover_element.popover("show");
