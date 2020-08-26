@@ -275,5 +275,6 @@ class MissingAuthenticationError(JsonableError):
     def __init__(self) -> None:
         pass
 
-    # No msg_format is defined since this exception is caught and
-    # converted into json_unauthorized in Zulip's middleware.
+    @staticmethod
+    def msg_format() -> str:
+        return _("User is not authenticated")
