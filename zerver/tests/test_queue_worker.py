@@ -188,9 +188,6 @@ class WorkerTest(ZulipTestCase):
             def start(self) -> None:
                 self.is_running = True
 
-            def cancel(self) -> None:
-                self.is_running = False
-
         timer = MockTimer()
         loopworker_sleep_mock = patch(
             'zerver.worker.queue_processors.Timer',
@@ -223,7 +220,7 @@ class WorkerTest(ZulipTestCase):
                     'INFO:root:Batch-processing 1 missedmessage_emails events for user 12'
                 ])
 
-                self.assertFalse(timer.is_alive())
+                self.assertEqual(mmw.timer_event, None)
 
         self.assertEqual(tm.call_args[0][0], 5)  # should sleep 5 seconds
 
