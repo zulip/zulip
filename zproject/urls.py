@@ -134,13 +134,13 @@ v1_api_and_json_patterns = [
     path('realm/deactivate', rest_dispatch,
          {'POST': 'zerver.views.realm.deactivate_realm'}),
 
-    path('realm/presence', rest_dispatch,
-         {'GET': 'zerver.views.presence.get_statuses_for_realm'}),
-
     # users -> zerver.views.users
     path('users', rest_dispatch,
          {'GET': 'zerver.views.users.get_members_backend',
           'POST': 'zerver.views.users.create_user_backend'}),
+    path('users/me', rest_dispatch,
+         {'GET': 'zerver.views.users.get_profile_backend',
+          'DELETE': 'zerver.views.users.deactivate_user_own_backend'}),
     path('users/<int:user_id>/reactivate', rest_dispatch,
          {'POST': 'zerver.views.users.reactivate_user_backend'}),
     path('users/<int:user_id>', rest_dispatch,
@@ -261,12 +261,6 @@ v1_api_and_json_patterns = [
           'GET': 'zerver.views.storage.get_storage',
           'DELETE': 'zerver.views.storage.remove_storage'}),
 
-    # users/me -> zerver.views
-    path('users/me', rest_dispatch,
-         {'GET': 'zerver.views.users.get_profile_backend',
-          'DELETE': 'zerver.views.users.deactivate_user_own_backend'}),
-    path('users/me/status', rest_dispatch,
-         {'POST': 'zerver.views.presence.update_user_status_backend'}),
     # Endpoint used by mobile devices to register their push
     # notification credentials
     path('users/me/apns_device_token', rest_dispatch,
@@ -284,6 +278,10 @@ v1_api_and_json_patterns = [
     # /users/me/presence endpoint.
     path(r'users/<str:email>/presence', rest_dispatch,
          {'GET': 'zerver.views.presence.get_presence_backend'}),
+    path('realm/presence', rest_dispatch,
+         {'GET': 'zerver.views.presence.get_statuses_for_realm'}),
+    path('users/me/status', rest_dispatch,
+         {'POST': 'zerver.views.presence.update_user_status_backend'}),
 
     # user_groups -> zerver.views.user_groups
     path('user_groups', rest_dispatch,
