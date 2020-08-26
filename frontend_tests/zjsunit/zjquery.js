@@ -363,6 +363,12 @@ exports.make_new_elem = function (selector, opts) {
         slice() {
             return self;
         },
+        offset() {
+            return {
+                top: 0,
+                left: 0,
+            };
+        },
     };
 
     if (selector[0] === "<") {
