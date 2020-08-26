@@ -751,15 +751,15 @@ td.pointer {
             opacity: 1 !important;
             visibility: visible !important;
         }
-    }
-}
 
-.message_star {
-    font-size: 14px;
+        .message_star {
+            font-size: 14px;
 
-    &:hover {
-        cursor: pointer;
-        color: hsl(153, 80%, 25%);
+            &:hover {
+                cursor: pointer;
+                color: hsl(153, 80%, 25%);
+            }
+        }
     }
 }
 
