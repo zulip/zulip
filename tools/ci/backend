@@ -12,7 +12,7 @@ set -x
 # docker setup means the auto-detection logic sees the ~36 processes
 # the Docker host has, not the ~2 processes of resources we're
 # allocated.
-./tools/test-backend --coverage --include-webhooks --no-cov-cleanup --parallel=6
+./tools/test-backend --coverage --include-webhooks --no-cov-cleanup --ban-console-output --parallel=6
 
 # We run mypy after the backend tests so we get output from the
 # backend tests, which tend to uncover more serious problems, first.
