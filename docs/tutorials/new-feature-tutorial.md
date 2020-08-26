@@ -495,6 +495,10 @@ To add the checkbox to the admin page, modify the relevant template in
 `organization_permissions_admin.hbs` or `organization_settings_admin.hbs`
 (omitted here since it is relatively straightforward).
 
+If you're adding a non-checkbox field, you'll need to specify the type
+of the field via the `data-setting-widget-type` attribute in the HTML
+template.
+
 Then add the new form control in `static/js/admin.js`.
 
 ``` diff
