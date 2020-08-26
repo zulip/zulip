@@ -290,10 +290,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/fetch_google_client_id',
         # API for video calls we're planning to remove/replace.
         '/calls/zoom/create',
-
-        #### Documented endpoints not properly detected by tooling.
-        # Regex with an unnamed capturing group.
-        '/users/(?!me/)(?P<email>[^/]*)/presence',
     }
 
     # Endpoints where the documentation is currently failing our
