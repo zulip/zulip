@@ -1233,6 +1233,37 @@ class NormalActionsTest(BaseAction):
             )
             check_subscription_role_update("events[0]", events[0], value=role)
 
+        othello = self.example_user("othello")
+        # Test update subscription event flow on role change of some other user.
+        sub = get_subscription(stream.name, othello)
+        for role in [Subscription.ROLE_STREAM_ADMINISTRATOR, Subscription.ROLE_MEMBER]:
+            events = self.verify_action(
+                lambda: do_change_subscription_role(othello, sub, stream, role)
+            )
+            check_subscription_role_update("events[0]", events[0], value=role)
+
+    def test_change_subscription_role_of_another_user_for_unsubscribed_streams(self) -> None:
+        self.unsubscribe(self.example_user("hamlet"), "Denmark")
+
+        othello = self.example_user("othello")
+        stream = get_stream("Denmark", othello.realm)
+        sub = get_subscription(stream.name, othello)
+        for role in [Subscription.ROLE_STREAM_ADMINISTRATOR, Subscription.ROLE_MEMBER]:
+            events = self.verify_action(
+                lambda: do_change_subscription_role(othello, sub, stream, role)
+            )
+            check_subscription_role_update("events[0]", events[0], value=role)
+
+    def test_change_subscription_role_of_another_user_for_never_subscribed_streams(self) -> None:
+        othello = self.example_user("othello")
+        stream = self.subscribe(othello, "test_stream")
+        sub = get_subscription("test_stream", othello)
+        for role in [Subscription.ROLE_STREAM_ADMINISTRATOR, Subscription.ROLE_MEMBER]:
+            events = self.verify_action(
+                lambda: do_change_subscription_role(othello, sub, stream, role)
+            )
+            check_subscription_role_update("events[0]", events[0], value=role)
+
     def test_change_realm_message_edit_settings(self) -> None:
         # Test every transition among the four possibilities {T,F} x {0, non-0}
         for (allow_message_editing, message_content_edit_limit_seconds) in (

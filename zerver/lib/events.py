@@ -57,6 +57,7 @@ from zerver.models import (
     Message,
     Realm,
     Stream,
+    Subscription,
     UserMessage,
     UserProfile,
     custom_profile_fields_for_realm,
@@ -752,6 +753,7 @@ def apply_event(
                     stream_data = copy.deepcopy(stream)
                     if include_subscribers:
                         stream_data["subscribers"] = []
+                        stream_data["stream_admins"] = []
 
                     # We know the stream has no traffic, and this
                     # field is not present in the event.
@@ -863,6 +865,7 @@ def apply_event(
                     if "subscribers" in sub and not include_subscribers:
                         sub = copy.deepcopy(sub)
                         del sub["subscribers"]
+                        del sub["stream_admins"]
                     state["subscriptions"].append(sub)
 
             # remove them from unsubscribed if they had been there
@@ -925,6 +928,15 @@ def apply_event(
                 for sub in state["subscriptions"]:
                     if sub["stream_id"] == event["stream_id"]:
                         sub["role"] = event["value"]
+            if include_subscribers:
+                for sub in (
+                    state["subscriptions"] + state["unsubscribed"] + state["never_subscribed"]
+                ):
+                    if sub["stream_id"] == event["stream_id"]:
+                        if event["value"] == Subscription.ROLE_STREAM_ADMINISTRATOR:
+                            sub["stream_admins"].append(event["user_id"])
+                        elif event["user_id"] in sub["stream_admins"]:
+                            sub["stream_admins"].remove(event["user_id"])
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":

@@ -3539,6 +3539,7 @@ def send_subscription_add_events(
     realm: Realm,
     sub_info_list: List[SubInfo],
     subscriber_dict: Dict[int, Set[int]],
+    stream_admin_dict: Dict[int, List[int]],
 ) -> None:
     info_by_user: Dict[int, List[SubInfo]] = defaultdict(list)
     for sub_info in sub_info_list:
@@ -3563,8 +3564,10 @@ def send_subscription_add_events(
             )
             if stream.is_in_zephyr_realm and not stream.invite_only:
                 sub_dict["subscribers"] = []
+                sub_dict["stream_admins"] = []
             else:
                 sub_dict["subscribers"] = list(subscriber_dict[stream.id])
+                sub_dict["stream_admins"] = stream_admin_dict[stream.recipient_id]
             sub_dicts.append(sub_dict)
 
         # Send a notification to the user who subscribed.
@@ -3648,6 +3651,10 @@ def bulk_add_subscriptions(
         subs_to_activate=subs_to_activate,
     )
 
+    stream_admin_user_id_map = get_stream_admin_dict_for_streams(
+        [stream.recipient_id for stream in streams]
+    )
+
     altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
     for sub_info in subs_to_add + subs_to_activate:
         altered_user_dict[sub_info.stream.id].add(sub_info.user.id)
@@ -3676,6 +3683,7 @@ def bulk_add_subscriptions(
             realm=realm,
             sub_info_list=subs_to_add + subs_to_activate,
             subscriber_dict=subscriber_peer_info.subscribed_ids,
+            stream_admin_dict=stream_admin_user_id_map,
         )
 
     send_peer_subscriber_events(
@@ -6483,9 +6491,14 @@ def gather_subscriptions_helper(
             subscribed_stream_ids,
         )
 
+        recipient_ids = [stream["recipient_id"] for stream in all_streams]
+        stream_admin_map: Mapping[int, List[int]] = get_stream_admin_dict_for_streams(recipient_ids)
+
         for lst in [subscribed, unsubscribed, never_subscribed]:
             for sub in lst:
                 sub["subscribers"] = subscriber_map[sub["stream_id"]]
+                stream = all_streams_map[sub["stream_id"]]
+                sub["stream_admins"] = stream_admin_map[stream["recipient_id"]]
 
     return SubscriptionInfo(
         subscriptions=sorted(subscribed, key=lambda x: x["name"]),

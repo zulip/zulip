@@ -573,6 +573,7 @@ exports.fixtures = {
                 wildcard_mentions_notify: false,
                 role: 20,
                 subscribers: [5, 8, 13, 21],
+                stream_admins: [5, 8],
             },
         ],
     },

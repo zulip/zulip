@@ -3569,7 +3569,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=orjson.dumps([self.test_user.id]).decode()),
                 )
-        self.assert_length(queries, 11)
+        self.assert_length(queries, 12)
 
         self.assert_length(events, 2)
         add_event, add_peer_event = events
@@ -3971,7 +3971,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # The only known O(N) behavior here is that we call
         # principal_to_user_profile for each of our users.
-        self.assert_length(queries, 18)
+        self.assert_length(queries, 19)
         self.assert_length(cache_tries, 4)
 
     def test_subscriptions_add_for_principal(self) -> None:
@@ -4442,7 +4442,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
                 invite_only=True,
             )
-        self.assert_length(queries, 34)
+        self.assert_length(queries, 35)
 
         # Test creating a public stream with announce when realm has a notification stream.
         notifications_stream = get_stream(self.streams[0], self.test_realm)
@@ -4857,7 +4857,7 @@ class GetSubscribersTest(ZulipTestCase):
             if not sub["name"].startswith("stream_"):
                 continue
             self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 6)
 
     def test_never_subscribed_streams(self) -> None:
         """
@@ -4927,7 +4927,7 @@ class GetSubscribersTest(ZulipTestCase):
             with queries_captured() as queries:
                 sub_data = gather_subscriptions_helper(self.user_profile)
             never_subscribed = sub_data.never_subscribed
-            self.assert_length(queries, 4)
+            self.assert_length(queries, 5)
 
             # Ignore old streams.
             never_subscribed = [dct for dct in never_subscribed if dct["name"].startswith("test_")]
@@ -5086,7 +5086,7 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
             else:
                 self.assertTrue(len(sub["subscribers"]) == 0)
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 6)
 
     def test_nonsubscriber(self) -> None:
         """

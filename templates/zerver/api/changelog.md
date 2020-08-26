@@ -11,6 +11,15 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 72**
+
+* [`GET users/me/subscriptions`](/api/get-subscriptions): Added `stream_admins`
+  field to Subscription objects representing the list of user ids of stream
+  admins of the stream.
+
+* [`GET /events`](/api/get-events): Added `stream_admins` field to Subscription
+  objects sent in `subscriptions` events.
+
 **Feature level 71**
 
 * [`GET /events`](/api/get-events): Added `is_web_public` field to

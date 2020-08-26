@@ -81,6 +81,7 @@ subscription_fields: Sequence[Tuple[str, object]] = [
     # the future for clients that don't want subscriber
     # info.
     ("subscribers", ListType(int)),
+    ("stream_admins", ListType(int)),
     ("wildcard_mentions_notify", OptionalType(bool)),
 ]
 

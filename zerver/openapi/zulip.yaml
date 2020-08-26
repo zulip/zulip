@@ -511,6 +511,7 @@ paths:
                                         "email_address": "test_stream.af64447e9e39374841063747ade8e6b0.show-sender@testserver",
                                         "stream_weekly_traffic": null,
                                         "subscribers": [10],
+                                        "stream_admins": [10],
                                       },
                                     ],
                                   "id": 0,
@@ -5665,6 +5666,7 @@ paths:
                               "role": 20,
                               "stream_id": 1,
                               "subscribers": [7, 10, 11, 12, 14],
+                              "stream_admins": [7, 10],
                             },
                             {
                               "audible_notifications": true,
@@ -5680,6 +5682,7 @@ paths:
                               "role": 50,
                               "stream_id": 3,
                               "subscribers": [7, 11, 12, 14],
+                              "stream_admins": [11],
                             },
                           ],
                       }
@@ -7671,6 +7674,20 @@ paths:
                                     a stream, we will send an empty array.  API authors
                                     should use other data to determine whether users like
                                     guest users are forbidden to know the subscribers.
+                                stream_admins:
+                                  type: array
+                                  items:
+                                    type: integer
+                                  description: |
+                                    A list of user IDs of users who are administrators
+                                    of the stream. Included only if `include_subscribers` is `true`.
+
+                                    If a user is not allowed to know the stream admins for
+                                    a stream, we will send an empty array.  API authors
+                                    should use other data to determine whether users like
+                                    guest users are forbidden to know the stream admins.
+
+                                    **Changes**: New in Zulip 5.0 (feature level 72)
 
                         description: |
                           Present if `subscription` is present in `fetch_event_types`.
@@ -11211,6 +11228,21 @@ components:
           description: |
             A list of user IDs of users who are also subscribed
             to a given stream. Included only if `include_subscribers` is `true`.
+        stream_admins:
+          type: array
+          items:
+            type: integer
+          description: |
+            A list of user IDs of users who are administrators of
+            the given stream. Included only if `include_subscribers` is `true`.
+
+            If a user is not allowed to know the stream admins for
+            a stream, we will send an empty array.  API authors
+            should use other data to determine whether users like
+            guest users are forbidden to know the stream admins.
+
+
+            **Changes**: New in Zulip 5.0 (feature level 72)
         desktop_notifications:
           type: boolean
           nullable: true
