@@ -72,7 +72,9 @@ from zerver.models import (
 )
 from zerver.openapi.openapi import validate_against_openapi_schema, validate_request
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
-from zilencer.models import get_remote_server_by_uuid
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import get_remote_server_by_uuid
 
 
 class UploadSerializeMixin(SerializeMixin):

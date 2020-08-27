@@ -3,7 +3,7 @@ import os
 import re
 from collections import defaultdict
 from typing import Any, Dict, Iterable, List, Tuple
-from unittest import mock
+from unittest import mock, skipUnless
 
 import orjson
 from django.conf import settings
@@ -78,7 +78,9 @@ from zerver.lib.validator import (
 )
 from zerver.lib.webhooks.common import UnexpectedWebhookEventType
 from zerver.models import Realm, UserProfile, get_realm, get_user
-from zilencer.models import RemoteZulipServer
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import RemoteZulipServer
 
 
 class DecoratorTestCase(ZulipTestCase):
@@ -708,6 +710,7 @@ class RateLimitTestCase(ZulipTestCase):
 
         self.assertTrue(rate_limit_mock.called)
 
+    @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
     def test_rate_limiting_skipped_if_remote_server(self) -> None:
         server_uuid = "1234-abcd"
         server = RemoteZulipServer(uuid=server_uuid,

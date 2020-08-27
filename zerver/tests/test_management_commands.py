@@ -1,13 +1,13 @@
-import glob
 import os
 import re
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
-from unittest import mock
+from unittest import mock, skipUnless
 from unittest.mock import MagicMock, call, patch
 
+from django.apps import apps
 from django.conf import settings
-from django.core.management import call_command
+from django.core.management import call_command, find_commands
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
@@ -182,10 +182,11 @@ class TestCommandsCanStart(ZulipTestCase):
         super().setUp()
         self.commands = [
             command
-            for filename in glob.iglob('*/management/commands/*.py')
-            for command in [os.path.basename(filename).replace('.py', '')]
-            if command != '__init__'
+            for app_config in apps.get_app_configs()
+            if os.path.dirname(app_config.path) == settings.DEPLOY_ROOT
+            for command in find_commands(os.path.join(app_config.path, "management"))
         ]
+        assert self.commands
 
     def test_management_commands_show_help(self) -> None:
         with stdout_suppressed():
@@ -314,6 +315,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
         result = self.client_get(generated_link)
         self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
 
+@skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
 class TestCalculateFirstVisibleMessageID(ZulipTestCase):
     COMMAND_NAME = 'calculate_first_visible_message_id'
 
@@ -422,6 +424,7 @@ class TestConvertMattermostData(ZulipTestCase):
             call('Converting Data ...')
         ])
 
+@skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
 class TestInvoicePlans(ZulipTestCase):
     COMMAND_NAME = 'invoice_plans'
 
