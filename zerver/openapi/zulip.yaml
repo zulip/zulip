@@ -8331,6 +8331,10 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
+                  bot_email:
+                    type: string
+                    description: |
+                      Email of the bot user.
                   data:
                     type: string
                     description: |
@@ -8343,8 +8347,8 @@ paths:
                   token:
                     type: string
                     description: |
-                      A string of alphanumeric characters that can be use to authenticate the
-                      webhook request.  You can get the token used by a given outgoing webhook bot
+                      A string of alphanumeric characters that can be used to authenticate the
+                      webhook request (each bot user uses a fixed token). You can get the token used by a given outgoing webhook bot
                       in the `zuliprc` file downloaded when creating the bot.
                   message:
                     allOf:
@@ -8357,10 +8361,6 @@ paths:
                             type: string
                             description: |
                               The content/body of the message rendered in HTML.
-                  bot_email:
-                    type: string
-                    description: |
-                      Email of the bot user.
                 example:
                   {
                     "data": "@**Outgoing Webhook Test** Zulip is the world\u2019s most productive group chat!",

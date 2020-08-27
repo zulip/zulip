@@ -35,61 +35,9 @@ There are currently two ways to trigger an outgoing webhook:
 
 ## Zulip message format
 
-The Zulip-format webhook messages post the following data, encoded as JSON:
+### Return values
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td><code>bot_email</code></td>
-            <td>Email of the bot user</td>
-        </tr>
-        <tr>
-            <td><code>data</code></td>
-            <td>The content of the message (in Markdown)</td>
-        </tr>
-        <tr>
-            <td><code>message</code></td>
-            <td>A dict containing details on the message which
-            triggered the outgoing webhook</td>
-        </tr>
-        <tr>
-            <td><code>token</code></td>
-            <td>A string of alphanumeric characters you can use to
-            authenticate the webhook request (each bot user uses a fixed token)</td>
-        </tr>
-        <tr>
-            <td><code>trigger</code></td>
-            <td>Trigger method</td>
-        </tr>
-    </tbody>
-</table>
-
-Some of the important fields in the `message` dict include the following:
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td><code>recipient_id</code></td>
-            <td>Unique ID of the stream that will persist even if the stream is renamed</td>
-        </tr>
-        <tr>
-            <td><code>rendered_content</code></td>
-            <td>The content of the message, rendered in HTML</td>
-        </tr>
-    </tbody>
-</table>
+{generate_return_values_table|zulip.yaml|/zulip-outgoing-webhook:post}
 
 A correctly implemented endpoint will do the following:
 
