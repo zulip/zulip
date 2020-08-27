@@ -10,6 +10,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
+from django.utils.timezone import now as timezone_now
 
 from zerver.decorator import (
     api_key_only_webhook_view,
@@ -77,6 +78,7 @@ from zerver.lib.validator import (
 )
 from zerver.lib.webhooks.common import UnexpectedWebhookEventType
 from zerver.models import Realm, UserProfile, get_realm, get_user
+from zilencer.models import RemoteZulipServer
 
 
 class DecoratorTestCase(ZulipTestCase):
@@ -705,6 +707,35 @@ class RateLimitTestCase(ZulipTestCase):
                     self.assertEqual(f(req), 'some value')
 
         self.assertTrue(rate_limit_mock.called)
+
+    def test_rate_limiting_skipped_if_remote_server(self) -> None:
+        server_uuid = "1234-abcd"
+        server = RemoteZulipServer(uuid=server_uuid,
+                                   api_key="magic_secret_api_key",
+                                   hostname="demo.example.com",
+                                   last_updated=timezone_now())
+
+        class Client:
+            name = 'external'
+
+        class Request:
+            client = Client()
+            META = {'REMOTE_ADDR': '3.3.3.3'}
+            user = server
+
+        req = Request()
+
+        def f(req: Any) -> str:
+            return 'some value'
+
+        f = rate_limit()(f)
+
+        with self.settings(RATE_LIMITING=True):
+            with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
+                with self.errors_disallowed():
+                    self.assertEqual(f(req), 'some value')
+
+        self.assertFalse(rate_limit_mock.called)
 
 class ValidatorTestCase(ZulipTestCase):
     def test_check_string(self) -> None:
