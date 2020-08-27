@@ -5,7 +5,7 @@ import os
 import uuid
 from contextlib import contextmanager
 from typing import Any, Dict, Iterator, List, Optional
-from unittest import mock
+from unittest import mock, skipUnless
 from unittest.mock import call
 
 import orjson
@@ -74,16 +74,19 @@ from zerver.models import (
     receives_online_notifications,
     receives_stream_notifications,
 )
-from zilencer.models import (
-    RemoteInstallationCount,
-    RemotePushDeviceToken,
-    RemoteRealmAuditLog,
-    RemoteRealmCount,
-    RemoteZulipServer,
-)
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import (
+        RemoteInstallationCount,
+        RemotePushDeviceToken,
+        RemoteRealmAuditLog,
+        RemoteRealmCount,
+        RemoteZulipServer,
+    )
 
 ZERVER_DIR = os.path.dirname(os.path.dirname(__file__))
 
+@skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
 class BouncerTestCase(ZulipTestCase):
     def setUp(self) -> None:
         self.server_uuid = "1234-abcd"
@@ -2123,6 +2126,7 @@ class TestPushNotificationsContent(ZulipTestCase):
             actual_output = get_mobile_push_content(test["rendered_content"])
             self.assertEqual(actual_output, test["expected_output"])
 
+@skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
 class PushBouncerSignupTest(ZulipTestCase):
     def test_push_signup_invalid_host(self) -> None:
         zulip_org_id = str(uuid.uuid4())
