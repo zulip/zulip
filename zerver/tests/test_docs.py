@@ -1,6 +1,6 @@
 import os
 from typing import Any, Dict, Sequence
-from unittest import mock
+from unittest import mock, skipUnless
 from urllib.parse import urlsplit
 
 import orjson
@@ -123,11 +123,13 @@ class DocPageTest(ZulipTestCase):
         self._test('/api/subscribe', 'authorization_errors_fatal')
         self._test('/api/create-user', 'zuliprc-admin')
         self._test('/api/unsubscribe', 'not_removed')
-        self._test('/team/', 'industry veterans')
+        if settings.ZILENCER_ENABLED:
+            self._test('/team/', 'industry veterans')
         self._test('/history/', 'Cambridge, Massachusetts')
         # Test the i18n version of one of these pages.
         self._test('/en/history/', 'Cambridge, Massachusetts')
-        self._test('/apps/', 'Apps for every platform.')
+        if settings.ZILENCER_ENABLED:
+            self._test('/apps/', 'Apps for every platform.')
         self._test('/features/', 'Beautiful messaging')
         self._test('/hello/', 'Chat for distributed teams', landing_missing_strings=["Login"])
         self._test('/why-zulip/', 'Why Zulip?')
@@ -325,6 +327,7 @@ class IntegrationTest(ZulipTestCase):
             '<a target="_blank" href="/#streams">streams page</a>')
 
 class AboutPageTest(ZulipTestCase):
+    @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
     def test_endpoint(self) -> None:
         with self.settings(CONTRIBUTOR_DATA_FILE_PATH="zerver/tests/fixtures/authors.json"):
             result = self.client_get('/team/')
