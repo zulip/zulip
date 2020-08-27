@@ -2465,6 +2465,9 @@ div.topic_edit_spinner .loading_indicator_spinner {
         width: 100%;
         min-width: 206px;
         box-sizing: border-box;
+        /* Setting resize as none hides the bottom right diagonal box
+           (which even has a background color of its own!). */
+        resize: none !important;
     }
 
     .control-group.no-margin {
