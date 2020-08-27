@@ -563,22 +563,26 @@ pre {
     white-space: inherit;
 }
 
-/* Ensure the horizontal scrollbar is visible on Mac */
-pre::-webkit-scrollbar {
-    height: 8px;
+/* Both the horizontal scrollbar in <pre/> as well as
+   vertical scrollbar in the <textarea/> is styled similarly. */
+#message_edit_form textarea,
+pre {
+    /* Ensure the horizontal scrollbar is visible on Mac */
+    &::-webkit-scrollbar {
+        height: 8px;
+        width: 10px;
+        background-color: hsla(0, 0%, 0%, 0.05);
+    }
 
-    background-color: hsla(0, 0%, 0%, 0.05);
-}
+    &::-webkit-scrollbar-thumb {
+        background-color: hsla(0, 0%, 0%, 0.3);
+        border-radius: 20px;
+        transition: all 0.2s ease;
+    }
 
-pre::-webkit-scrollbar-thumb {
-    background-color: hsla(0, 0%, 0%, 0.3);
-    border-radius: 20px;
-
-    transition: all 0.2s ease;
-}
-
-pre::-webkit-scrollbar-thumb:hover {
-    background-color: hsla(0, 0%, 0%, 0.6);
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: hsla(0, 0%, 0%, 0.6);
+    }
 }
 
 pre code {
