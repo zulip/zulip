@@ -644,8 +644,8 @@ def find_account(request: HttpRequest) -> HttpResponse:
                            'emails': emails})
 
 def realm_redirect(request: HttpRequest) -> HttpResponse:
-    if request.method == 'POST':
-        form = RealmRedirectForm(request.POST)
+    if request.GET.get('subdomain', None):
+        form = RealmRedirectForm(request.GET)
         if form.is_valid():
             subdomain = form.cleaned_data['subdomain']
             realm = get_realm(subdomain)

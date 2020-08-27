@@ -4326,17 +4326,17 @@ class RealmRedirectTest(ZulipTestCase):
         result = self.client_get("/accounts/go/")
         self.assert_in_success_response(["Enter your organization's Zulip URL"], result)
 
-        result = self.client_post("/accounts/go/", {"subdomain": "zephyr"})
+        result = self.client_get("/accounts/go/", {"subdomain": "zephyr"})
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "http://zephyr.testserver")
 
-        result = self.client_post("/accounts/go/", {"subdomain": "invalid"})
+        result = self.client_get("/accounts/go/", {"subdomain": "invalid"})
         self.assert_in_success_response(["We couldn&#39;t find that Zulip organization."], result)
 
     def test_realm_redirect_with_next_param(self) -> None:
         result = self.client_get("/accounts/go/?next=billing")
-        self.assert_in_success_response(["Enter your organization's Zulip URL", 'action="/accounts/go/?next=billing"'], result)
+        self.assert_in_success_response(["Enter your organization's Zulip URL", 'name="next" value="billing"'], result)
 
-        result = self.client_post("/accounts/go/?next=billing", {"subdomain": "lear"})
+        result = self.client_get("/accounts/go/", {"subdomain": "lear", "next": "billing"})
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "http://lear.testserver/billing")
