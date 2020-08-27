@@ -460,24 +460,11 @@
     /* Style copy-to-clipboard button inside codeblocks */
     .copy_codeblock {
         visibility: hidden;
-        outline-color: hsl(0, 0%, 73%);
-        height: 18px;
-        width: 10px;
-        padding: 6px 6px;
         /* Having absolute positioning here ensures that the element
         doesn't scroll along with the code div in narrow windows */
         position: absolute;
         right: 0;
         margin-top: -6px;
-        display: block;
-        /* The below two avoids the padded element from displaying
-        it's own border and background color */
-        border: none;
-        background-clip: content-box;
-    }
-
-    .copy_codeblock:hover svg path {
-        fill: hsl(200, 100%, 40%);
     }
 
     .code_external_link {
