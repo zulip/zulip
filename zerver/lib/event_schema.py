@@ -669,6 +669,15 @@ check_typing_start = check_events_dict(
     ]
 )
 
+check_typing_stop = check_events_dict(
+    required_keys=[
+        ("type", equals("typing")),
+        ("op", equals("stop")),
+        ("sender", _check_typing_person),
+        ("recipients", check_list(_check_typing_person)),
+    ]
+)
+
 _check_update_display_settings = check_events_dict(
     required_keys=[
         ("type", equals("update_display_settings")),
