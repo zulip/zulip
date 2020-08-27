@@ -114,6 +114,7 @@ from zerver.lib.event_schema import (
     check_subscription_peer_remove,
     check_subscription_remove,
     check_typing_start,
+    check_typing_stop,
     check_update_display_settings,
     check_update_global_notifications,
     check_update_message,
@@ -632,6 +633,12 @@ class NormalActionsTest(BaseAction):
             state_change_expected=False,
         )
         check_typing_start('events[0]', events[0])
+        events = self.verify_action(
+            lambda: check_send_typing_notification(
+                self.user_profile, [self.example_user("cordelia").id], "stop"),
+            state_change_expected=False,
+        )
+        check_typing_stop('events[0]', events[0])
 
     def test_custom_profile_fields_events(self) -> None:
         events = self.verify_action(

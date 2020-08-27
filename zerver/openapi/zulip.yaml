@@ -1962,7 +1962,9 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent when a user starts typing a private or group private message. Sent
-                                to all clients for users who would receive the message being typed.
+                                to all clients for users who would receive the message being typed. It should
+                                be noted that clients should set their own timeouts to stop the typing status
+                                incase `typing: stop` event is not received.
                               properties:
                                 id:
                                   type: integer
@@ -2013,6 +2015,79 @@ paths:
                                 {
                                   "type": "typing",
                                   "op": "start",
+                                  "sender":
+                                    {
+                                      "user_id": 10,
+                                      "email": "user10@zulip.testserver",
+                                    },
+                                  "recipients":
+                                    [
+                                      {
+                                        "user_id": 8,
+                                        "email": "user8@zulip.testserver",
+                                      },
+                                      {
+                                        "user_id": 10,
+                                        "email": "user10@zulip.testserver",
+                                      },
+                                    ],
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent when a user stops typing a private or group private message. Sent
+                                to all clients for users who would receive the message being typed.
+                              properties:
+                                id:
+                                  type: integer
+                                type:
+                                  type: string
+                                  enum:
+                                    - typing
+                                op:
+                                  type: string
+                                  enum:
+                                    - stop
+                                sender:
+                                  additionalProperties: false
+                                  type: object
+                                  description: |
+                                    Object containing user id and email of the sender i.e
+                                    the user who has stopped typing.
+                                  properties:
+                                    user_id:
+                                      type: integer
+                                      description: |
+                                        The ID of the user.
+                                    email:
+                                      type: string
+                                      description: |
+                                        The Zulip display email address for the user.
+                                recipients:
+                                  type: array
+                                  description: |
+                                    Array of dictionaries, where each dictionary contains the
+                                    email and user_id of a single user who will receive the
+                                    typed message.
+                                  items:
+                                    type: object
+                                    additionalProperties: false
+                                    description: |
+                                      Object containing the user id and email of a recipient.
+                                    properties:
+                                      user_id:
+                                        type: integer
+                                        description: |
+                                          The ID of the user.
+                                      email:
+                                        type: string
+                                        description: |
+                                          The Zulip display email address for the user.
+                              example:
+                                {
+                                  "type": "typing",
+                                  "op": "stop",
                                   "sender":
                                     {
                                       "user_id": 10,
