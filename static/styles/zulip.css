@@ -430,6 +430,23 @@ li,
     line-height: 100%;
 }
 
+/* Classes which style copy buttons */
+.copy_button_base {
+    outline-color: hsl(0, 0%, 73%);
+    height: 18px;
+    width: 10px;
+    padding: 6px 6px;
+    display: block;
+    /* The below two avoids the padded element from displaying
+    it's own border and background color */
+    border: none;
+    background-clip: content-box;
+
+    &:hover svg path {
+        fill: hsl(200, 100%, 40%);
+    }
+}
+
 .copy_message,
 .copy_message:focus {
     background-color: hsl(0, 0%, 100%);
