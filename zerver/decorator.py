@@ -52,14 +52,8 @@ from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.utils import has_api_key_format, statsd
 from zerver.models import Realm, UserProfile, get_client, get_user_profile_by_api_key
 
-# This is a hack to ensure that RemoteZulipServer always exists even
-# if Zilencer isn't enabled.
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer, get_remote_server_by_uuid
-else:  # nocoverage # Hack here basically to make impossible code paths compile
-    from unittest.mock import Mock
-    get_remote_server_by_uuid = Mock()
-    RemoteZulipServer = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
 
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
 log_to_file(webhook_logger, settings.API_KEY_ONLY_WEBHOOK_LOG_PATH)
@@ -204,7 +198,7 @@ class InvalidZulipServerKeyError(InvalidZulipServerError):
 
 def validate_api_key(request: HttpRequest, role: Optional[str],
                      api_key: str, is_webhook: bool=False,
-                     client_name: Optional[str]=None) -> Union[UserProfile, RemoteZulipServer]:
+                     client_name: Optional[str]=None) -> Union[UserProfile, "RemoteZulipServer"]:
     # Remove whitespace to protect users from trivial errors.
     api_key = api_key.strip()
     if role is not None:
