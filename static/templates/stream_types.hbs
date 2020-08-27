@@ -36,7 +36,7 @@
             <select name="stream_message_retention_setting"
               class="stream_message_retention_setting" class="prop-element"
               {{#if disable_message_retention_setting}}disabled{{/if}}>
-                <option value="realm_default">{{t 'Use organization level settings '}}{{realm_message_retention_setting}} </option>
+                <option value="realm_default">{{t 'Use organization level settings' }} {{realm_message_retention_setting}}</option>
                 <option value="forever">{{t 'Retain forever' }}</option>
                 <option value="retain_for_period">{{t 'Retain for N days after posting' }}</option>
             </select>
