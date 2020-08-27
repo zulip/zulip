@@ -40,11 +40,8 @@ logger = logging.getLogger(__name__)
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemotePushDeviceToken
-else:  # nocoverage  -- Not convenient to add test for this.
-    from unittest.mock import Mock
-    RemotePushDeviceToken = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
 
-DeviceToken = Union[PushDeviceToken, RemotePushDeviceToken]
+DeviceToken = Union[PushDeviceToken, "RemotePushDeviceToken"]
 
 # We store the token as b64, but apns-client wants hex strings
 def b64_to_hex(data: str) -> str:
@@ -123,6 +120,7 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
         return
 
     if remote:
+        assert settings.ZILENCER_ENABLED
         DeviceTokenClass = RemotePushDeviceToken
     else:
         DeviceTokenClass = PushDeviceToken
@@ -291,6 +289,7 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
             logger.info("GCM: Sent %s as %s", reg_id, msg_id)
 
     if remote:
+        assert settings.ZILENCER_ENABLED
         DeviceTokenClass = RemotePushDeviceToken
     else:
         DeviceTokenClass = PushDeviceToken

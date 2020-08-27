@@ -83,11 +83,6 @@ if settings.BILLING_ENABLED:
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteInstallationCount, RemoteRealmCount, RemoteZulipServer
-else:
-    from unittest.mock import Mock
-    RemoteInstallationCount = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
-    RemoteZulipServer = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
-    RemoteRealmCount = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
 
 MAX_TIME_FOR_FULL_ANALYTICS_GENERATION = timedelta(days=1, minutes=30)
 
@@ -134,6 +129,7 @@ def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
 @has_request_variables
 def stats_for_remote_realm(request: HttpRequest, remote_server_id: int,
                            remote_realm_id: int) -> HttpResponse:
+    assert settings.ZILENCER_ENABLED
     server = RemoteZulipServer.objects.get(id=remote_server_id)
     return render_stats(request, f'/remote/{server.id}/realm/{remote_realm_id}',
                         f"Realm {remote_realm_id} on server {server.hostname}")
@@ -154,6 +150,7 @@ def get_chart_data_for_realm(request: HttpRequest, user_profile: UserProfile,
 def get_chart_data_for_remote_realm(
         request: HttpRequest, user_profile: UserProfile, remote_server_id: int,
         remote_realm_id: int, **kwargs: Any) -> HttpResponse:
+    assert settings.ZILENCER_ENABLED
     server = RemoteZulipServer.objects.get(id=remote_server_id)
     return get_chart_data(request=request, user_profile=user_profile, server=server,
                           remote=True, remote_realm_id=int(remote_realm_id), **kwargs)
@@ -164,6 +161,7 @@ def stats_for_installation(request: HttpRequest) -> HttpResponse:
 
 @require_server_admin
 def stats_for_remote_installation(request: HttpRequest, remote_server_id: int) -> HttpResponse:
+    assert settings.ZILENCER_ENABLED
     server = RemoteZulipServer.objects.get(id=remote_server_id)
     return render_stats(request, f'/remote/{server.id}/installation',
                         f'remote Installation {server.hostname}', True, True)
@@ -182,6 +180,7 @@ def get_chart_data_for_remote_installation(
         remote_server_id: int,
         chart_name: str=REQ(),
         **kwargs: Any) -> HttpResponse:
+    assert settings.ZILENCER_ENABLED
     server = RemoteZulipServer.objects.get(id=remote_server_id)
     return get_chart_data(request=request, user_profile=user_profile, for_installation=True,
                           remote=True, server=server, **kwargs)
@@ -194,15 +193,17 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
                    end: Optional[datetime]=REQ(converter=to_utc_datetime, default=None),
                    realm: Optional[Realm]=None, for_installation: bool=False,
                    remote: bool=False, remote_realm_id: Optional[int]=None,
-                   server: Optional[RemoteZulipServer]=None) -> HttpResponse:
+                   server: Optional["RemoteZulipServer"]=None) -> HttpResponse:
     if for_installation:
         if remote:
+            assert settings.ZILENCER_ENABLED
             aggregate_table = RemoteInstallationCount
             assert server is not None
         else:
             aggregate_table = InstallationCount
     else:
         if remote:
+            assert settings.ZILENCER_ENABLED
             aggregate_table = RemoteRealmCount
             assert server is not None
             assert remote_realm_id is not None
@@ -309,20 +310,26 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
     aggregation_level = {
         InstallationCount: 'everyone',
         RealmCount: 'everyone',
-        RemoteInstallationCount: 'everyone',
-        RemoteRealmCount: 'everyone',
         UserCount: 'user',
     }
+    if settings.ZILENCER_ENABLED:
+        aggregation_level[RemoteInstallationCount] = 'everyone'
+        aggregation_level[RemoteRealmCount] = 'everyone'
+
     # -1 is a placeholder value, since there is no relevant filtering on InstallationCount
     id_value = {
         InstallationCount: -1,
         RealmCount: realm.id,
-        RemoteInstallationCount: server.id if server is not None else None,
-        # TODO: RemoteRealmCount logic doesn't correctly handle
-        # filtering by server_id as well.
-        RemoteRealmCount: remote_realm_id,
         UserCount: user_profile.id,
     }
+    if settings.ZILENCER_ENABLED:
+        if server is not None:
+            id_value[RemoteInstallationCount] = server.id
+        # TODO: RemoteRealmCount logic doesn't correctly handle
+        # filtering by server_id as well.
+        if remote_realm_id is not None:
+            id_value[RemoteRealmCount] = remote_realm_id
+
     for table in tables:
         data[aggregation_level[table]] = {}
         for stat in stats:
@@ -366,9 +373,9 @@ def table_filtered_to_id(table: Type[BaseCount], key_id: int) -> QuerySet:
         return StreamCount.objects.filter(stream_id=key_id)
     elif table == InstallationCount:
         return InstallationCount.objects.all()
-    elif table == RemoteInstallationCount:
+    elif settings.ZILENCER_ENABLED and table == RemoteInstallationCount:
         return RemoteInstallationCount.objects.filter(server_id=key_id)
-    elif table == RemoteRealmCount:
+    elif settings.ZILENCER_ENABLED and table == RemoteRealmCount:
         return RemoteRealmCount.objects.filter(realm_id=key_id)
     else:
         raise AssertionError(f"Unknown table: {table}")
