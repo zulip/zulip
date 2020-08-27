@@ -789,7 +789,8 @@ def rate_limit(domain: str='api_by_user') -> Callable[[ViewFuncT], ViewFuncT]:
 
             user = request.user
 
-            if isinstance(user, AnonymousUser) or isinstance(user, RemoteZulipServer):
+            if isinstance(user, AnonymousUser) or (settings.ZILENCER_ENABLED and
+                                                   isinstance(user, RemoteZulipServer)):
                 # We can only rate-limit logged-in users for now.
                 # We also only support rate-limiting authenticated
                 # views right now.
