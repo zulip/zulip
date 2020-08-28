@@ -4635,7 +4635,11 @@ paths:
                             "already_subscribed": {},
                             "msg": "",
                             "result": "success",
-                            "subscribed": {"iago@zulip.com": ["new stream"]},
+                            "subscribed":
+                              {
+                                "iago@zulip.com":
+                                  [{"name": "new stream", "id": 5}],
+                              },
                           }
                   - allOf:
                       - $ref: "#/components/schemas/AddSubscriptionsResponse"
@@ -4740,11 +4744,21 @@ paths:
                           subscribed to as a result of the query.
                         additionalProperties:
                           description: |
-                            `{email_id}`: A list of the names of streams that
-                            the user was subscribed to as a result of the query.
+                            `{email_id}`: A list of dictionaries containing data
+                            about the streams that the user was subscribed to as
+                            a result of the query.
                           type: array
                           items:
-                            type: string
+                            type: object
+                            description: |
+                              A dictionary containing the name and the ID of the
+                              stream subscribed or created.
+                            additionalProperties: false
+                            properties:
+                              name:
+                                type: string
+                              id:
+                                type: integer
                       already_subscribed:
                         type: object
                         description: |
@@ -9640,11 +9654,20 @@ components:
                 result of the query.
               additionalProperties:
                 description: |
-                  `{email_address}`: List of the names of the streams that were subscribed
-                   to as a result of the query.
+                  `{email_id}`: A list of dictionaries containing data about the streams
+                  that the user was subscribed to as a result of the query.
                 type: array
                 items:
-                  type: string
+                  type: object
+                  description: |
+                    A dictionary containing the name and the ID of the stream subscribed
+                    or created.
+                  additionalProperties: false
+                  properties:
+                    name:
+                      type: string
+                    id:
+                      type: integer
             already_subscribed:
               type: object
               description: |

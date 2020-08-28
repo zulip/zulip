@@ -480,7 +480,7 @@ def add_subscriptions_backend(
 
     result: Dict[str, Any] = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))
     for (subscriber, stream) in subscribed:
-        result["subscribed"][subscriber.email].append(stream.name)
+        result["subscribed"][subscriber.email].append(dict(name=stream.name, id=stream.id))
         email_to_user_profile[subscriber.email] = subscriber
     for (subscriber, stream) in already_subscribed:
         result["already_subscribed"][subscriber.email].append(stream.name)
@@ -493,7 +493,8 @@ def add_subscriptions_backend(
     # or if a new stream was created with the "announce" option.
     notifications = []
     if len(principals) > 0 and result["subscribed"]:
-        for email, subscribed_stream_names in result["subscribed"].items():
+        for email, subscribed_stream_data in result["subscribed"].items():
+            subscribed_stream_names = [stream_data['name'] for stream_data in subscribed_stream_data]
             if email == user_profile.email:
                 # Don't send a Zulip if you invited yourself.
                 continue

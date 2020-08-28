@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 33**
+
+* [`POST users/me/subscriptions`](/api/subscribe): `subscribed` field
+  now returns a list of dictionaries(each with stream name and ID) as
+  values instead of a list of stream names.
+
 **Feature level 32**
 
 * [`GET /events`](/api/get-events): Added `op` field to
