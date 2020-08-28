@@ -447,7 +447,7 @@ run_test("custom sort", () => {
             product: sort_by_product,
             x_value: sort_by_x,
         },
-        init_sort: sort_by_product,
+        init_sort: [sort_by_product],
         simplebar_container: scroll_container,
     });
 
@@ -503,7 +503,7 @@ run_test("clear_event_handlers", () => {
 
 run_test("errors", () => {
     // We don't care about actual data for this test.
-    const list = "stub";
+    const list = ["stub"];
     const container = make_container();
     const scroll_container = make_scroll_container();
 
