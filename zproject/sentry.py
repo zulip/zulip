@@ -48,6 +48,7 @@ def setup_sentry(dsn: Optional[str], *integrations: Integration) -> None:
 
     # Ignore all of the loggers from django.security that are for user
     # errors; see https://docs.djangoproject.com/en/3.0/ref/exceptions/#suspiciousoperation
+    ignore_logger("django.security.SuspiciousOperation")
     ignore_logger("django.security.DisallowedHost")
     ignore_logger("django.security.DisallowedModelAdminLookup")
     ignore_logger("django.security.DisallowedModelAdminToField")
