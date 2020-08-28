@@ -441,37 +441,26 @@ li,
     it's own border and background color */
     border: none;
     background-clip: content-box;
+    /* The z-index here ensures that the copy-message
+    icon is clickable and is needed because of reduced
+    opacity of readonly textarea */
+    z-index: 2;
 
     &:hover svg path {
         fill: hsl(200, 100%, 40%);
     }
 }
 
-.copy_message,
-.copy_message:focus {
-    background-color: hsl(0, 0%, 100%);
-    height: 20px;
-    width: 15px;
-    padding: 5px 10px;
-    border: none;
+.copy_message {
     position: relative;
     top: 28px;
     left: -5px;
     margin-top: -24px;
-    display: block;
-    /* The z-index here ensures that the copy-message
-    icon is clickable and is needed because of reduced
-    opacity of readonly textarea */
-    z-index: 2;
 }
 
 #clipboard_image {
     margin-top: -5px;
     margin-left: -8px;
-}
-
-.copy_message:hover svg path {
-    fill: hsl(0, 0%, 0%);
 }
 
 .btn-large {
