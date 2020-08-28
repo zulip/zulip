@@ -923,6 +923,12 @@ class MessageAccessTests(ZulipTestCase):
                                    "flag": "mentioned"})
         self.assert_json_error(result, "Flag not editable: 'mentioned'")
 
+        result = self.client_post("/json/messages/flags",
+                                  {"messages": orjson.dumps([message]).decode(),
+                                   "op": "bogus",
+                                   "flag": "starred"})
+        self.assert_json_error(result, "Invalid message flag operation: 'bogus'")
+
     def change_star(self, messages: List[int], add: bool=True, **kwargs: Any) -> HttpResponse:
         return self.client_post("/json/messages/flags",
                                 {"messages": orjson.dumps(messages).decode(),

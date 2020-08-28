@@ -4240,6 +4240,8 @@ def do_update_message_flags(user_profile: UserProfile,
         raise JsonableError(_("Invalid flag: '{}'").format(flag))
     if flag in UserMessage.NON_EDITABLE_FLAGS:
         raise JsonableError(_("Flag not editable: '{}'").format(flag))
+    if operation not in ('add', 'remove'):
+        raise JsonableError(_("Invalid message flag operation: '{}'").format(operation))
     flagattr = getattr(UserMessage.flags, flag)
 
     msgs = UserMessage.objects.filter(user_profile=user_profile,
@@ -4272,8 +4274,6 @@ def do_update_message_flags(user_profile: UserProfile,
         count = msgs.update(flags=F('flags').bitor(flagattr))
     elif operation == 'remove':
         count = msgs.update(flags=F('flags').bitand(~flagattr))
-    else:
-        raise AssertionError("Invalid message flags operation")
 
     event = {'type': 'update_message_flags',
              'op': operation,
