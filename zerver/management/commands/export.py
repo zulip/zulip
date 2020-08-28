@@ -116,24 +116,6 @@ class Command(ZulipBaseCommand):
         public_only = options["public_only"]
         consent_message_id = options["consent_message_id"]
 
-        if output_dir is None:
-            output_dir = tempfile.mkdtemp(prefix="zulip-export-")
-        else:
-            output_dir = os.path.realpath(os.path.expanduser(output_dir))
-            if os.path.exists(output_dir):
-                if os.listdir(output_dir):
-                    raise CommandError(
-                        f"Refusing to overwrite nonempty directory: {output_dir}. Aborting...",
-                    )
-            else:
-                os.makedirs(output_dir)
-
-        tarball_path = output_dir.rstrip("/") + ".tar.gz"
-        try:
-            os.close(os.open(tarball_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o666))
-        except FileExistsError:
-            raise CommandError(f"Refusing to overwrite existing tarball: {tarball_path}. Aborting...")
-
         print(f"\033[94mExporting realm\033[0m: {realm.string_id}")
 
         num_threads = int(options['threads'])
@@ -168,6 +150,24 @@ class Command(ZulipBaseCommand):
             print(f"\n\033[94mMessage content:\033[0m\n{message.content}\n")
 
             print(f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)}\n")
+
+        if output_dir is None:
+            output_dir = tempfile.mkdtemp(prefix="zulip-export-")
+        else:
+            output_dir = os.path.realpath(os.path.expanduser(output_dir))
+            if os.path.exists(output_dir):
+                if os.listdir(output_dir):
+                    raise CommandError(
+                        f"Refusing to overwrite nonempty directory: {output_dir}. Aborting...",
+                    )
+            else:
+                os.makedirs(output_dir)
+
+        tarball_path = output_dir.rstrip("/") + ".tar.gz"
+        try:
+            os.close(os.open(tarball_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o666))
+        except FileExistsError:
+            raise CommandError(f"Refusing to overwrite existing tarball: {tarball_path}. Aborting...")
 
         def percent_callback(bytes_transferred: Any) -> None:
             sys.stdout.write('.')
