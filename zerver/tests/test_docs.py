@@ -339,7 +339,7 @@ class AboutPageTest(ZulipTestCase):
             result = self.client_get('/team/')
             self.assertEqual(result.status_code, 200)
             self.assert_in_success_response(['Never ran'], result)
-            m.called_once()
+            m.assert_called_once()
 
         with self.settings(ZILENCER_ENABLED=False):
             result = self.client_get('/team/')
