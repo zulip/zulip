@@ -279,9 +279,8 @@ exports.sort_but_pin_current_user_on_top = function (users) {
     }
 };
 
-function show_subscription_settings(sub_row) {
-    const stream_id = sub_row.data("stream-id");
-    const sub = stream_data.get_sub_by_id(stream_id);
+function show_subscription_settings(sub) {
+    const stream_id = sub.stream_id;
     const sub_settings = exports.settings_for_sub(sub);
 
     const colorpicker = sub_settings.find(".colorpicker");
@@ -397,7 +396,7 @@ exports.show_settings_for = function (node) {
 
     sub_settings.addClass("show");
 
-    show_subscription_settings(sub_settings);
+    show_subscription_settings(sub);
 };
 
 function stream_is_muted_changed(e) {
