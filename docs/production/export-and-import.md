@@ -260,9 +260,9 @@ you're exporting data.  There are two ways to do this:
 preferred if you're not hosting multiple organizations, because it has
 no side effects other than disabling the Zulip server for the
 duration.
-1. `manage.py deactivate_realm  -r 'target_org'`, which deactivates the target
-organization, logging out all active login sessions and preventing all
-accounts from logging in or accessing the API.  This is
+1. Pass `--deactivate` to `./manage export`, which first deactivates
+the target organization, logging out all active login sessions and
+preventing all accounts from logging in or accessing the API.  This is
 preferred for environments like Zulip Cloud where you might want to
 export a single organization without disrupting any other users, and
 the intent is to move hosting of the organization (and forcing users
@@ -281,9 +281,9 @@ following commands:
 
 ```
 cd /home/zulip/deployments/current
-# supervisorctl stop all # Stops the Zulip server
-# ./manage.py deactivate_realm -r ''  # Deactivates the organization
-./manage.py export -r ''  # Exports the data
+# supervisorctl stop all                  # Stops the Zulip server
+# export DEACTIVATE_FLAG="--deactivate"   # Deactivates the organization
+./manage.py export -r '' $DEACTIVATE_FLAG # Exports the data
 ```
 
 (The `-r` option lets you specify the organization to export; `''` is
