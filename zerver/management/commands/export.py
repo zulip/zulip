@@ -9,7 +9,7 @@ from django.core.management.base import CommandError
 
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import Message, Reaction
+from zerver.models import Message, Reaction, UserProfile
 
 
 class Command(ZulipBaseCommand):
@@ -149,7 +149,8 @@ class Command(ZulipBaseCommand):
 
             print(f"\n\033[94mMessage content:\033[0m\n{message.content}\n")
 
-            print(f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)}\n")
+            user_count = UserProfile.objects.filter(realm_id=realm.id).count()
+            print(f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)} / {user_count} total users\n")
 
         if output_dir is None:
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
