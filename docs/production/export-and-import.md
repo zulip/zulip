@@ -382,7 +382,7 @@ importing.
 The commands above create an imported organization on the root domain
 (`EXTERNAL_HOST`) of the Zulip installation. You can also import into a
 custom subdomain, e.g. if you already have an existing organization on the
-root domain. Replace the last two lines above with the following, after replacing
+root domain. Replace the last three lines above with the following, after replacing
 `<subdomain>` with the desired subdomain.
 
 ```
