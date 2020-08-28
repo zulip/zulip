@@ -447,12 +447,14 @@ class TestExport(ZulipTestCase):
         do_add_reaction(self.example_user("hamlet"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
 
         with patch("zerver.management.commands.export.export_realm_wrapper") as m, \
-                patch('builtins.print') as mock_print:
+                patch('builtins.print') as mock_print, \
+                patch('builtins.input', return_value='y') as mock_input:
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
             m.assert_called_once_with(realm=realm, public_only=False, consent_message_id=message.id,
                                       delete_after_upload=False, threads=mock.ANY, output_dir=mock.ANY,
                                       percent_callback=mock.ANY,
                                       upload=False)
+            mock_input.assert_called_once_with('Continue? [y/N] ')
 
         self.assertEqual(mock_print.mock_calls, [
             call('\033[94mExporting realm\033[0m: zulip'),
