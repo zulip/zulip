@@ -456,7 +456,6 @@
         }
     }
 
-    /* TODO: Consolidate with .copy_message */
     /* Style copy-to-clipboard button inside codeblocks */
     .copy_codeblock {
         visibility: hidden;
