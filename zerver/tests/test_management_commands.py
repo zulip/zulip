@@ -328,7 +328,7 @@ class TestCalculateFirstVisibleMessageID(ZulipTestCase):
         with patch(func_name) as m:
             call_command(self.COMMAND_NAME, "--lookback-hours=35")
         calls = [call(realm, 35) for realm in Realm.objects.all()]
-        m.has_calls(calls, any_order=True)
+        m.assert_has_calls(calls, any_order=True)
 
 class TestPasswordRestEmail(ZulipTestCase):
     COMMAND_NAME = "send_password_reset_email"
