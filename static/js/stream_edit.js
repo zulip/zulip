@@ -117,10 +117,7 @@ function set_stream_message_retention_setting_dropdown(stream) {
 }
 
 function get_stream_id(target) {
-    if (target.constructor !== jQuery) {
-        target = $(target);
-    }
-    const row = target.closest(".stream-row, .subscription_settings");
+    const row = $(target).closest(".stream-row, .subscription_settings");
     return parseInt(row.attr("data-stream-id"), 10);
 }
 
@@ -200,8 +197,7 @@ exports.invite_user_to_stream = function (user_ids, sub, success, failure) {
 };
 
 function submit_add_subscriber_form(e) {
-    const settings_row = $(e.target).closest(".subscription_settings");
-    const sub = get_sub_for_target(settings_row);
+    const sub = get_sub_for_target(e.target);
     if (!sub) {
         blueslip.error(".subscriber_list_add form submit fails");
         return;
@@ -578,8 +574,7 @@ exports.change_stream_name = function (e) {
 };
 
 exports.set_raw_description = function (target, destination) {
-    const sub_settings = $(target).closest(".subscription_settings");
-    const sub = get_sub_for_target(sub_settings);
+    const sub = get_sub_for_target(target);
     if (!sub) {
         blueslip.error("set_raw_description() fails");
         return;
@@ -591,7 +586,7 @@ exports.change_stream_description = function (e) {
     e.preventDefault();
 
     const sub_settings = $(e.target).closest(".subscription_settings");
-    const sub = get_sub_for_target(sub_settings);
+    const sub = get_sub_for_target(e.target);
     if (!sub) {
         blueslip.error("change_stream_description() fails");
         return;
@@ -733,9 +728,8 @@ exports.initialize = function () {
 
         const list_entry = $(e.target).closest("tr");
         const target_user_id = parseInt(list_entry.attr("data-subscriber-id"), 10);
-        const settings_row = $(e.target).closest(".subscription_settings");
 
-        const sub = get_sub_for_target(settings_row);
+        const sub = get_sub_for_target(e.target);
         if (!sub) {
             blueslip.error(".subscriber_list_remove form submit fails");
             return;
