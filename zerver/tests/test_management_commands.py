@@ -441,7 +441,7 @@ class TestExport(ZulipTestCase):
         realm = get_realm("zulip")
         self.send_stream_message(self.example_user("othello"), "Verona",
                                  topic_name="Export",
-                                 content="Thumbs up for export")
+                                 content="Outbox emoji for export")
         message = Message.objects.last()
         do_add_reaction(self.example_user("iago"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
         do_add_reaction(self.example_user("hamlet"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
@@ -458,7 +458,7 @@ class TestExport(ZulipTestCase):
 
         self.assertEqual(mock_print.mock_calls, [
             call('\033[94mExporting realm\033[0m: zulip'),
-            call('\n\033[94mMessage content:\033[0m\nThumbs up for export\n'),
+            call('\n\033[94mMessage content:\033[0m\nOutbox emoji for export\n'),
             call('\033[94mNumber of users that reacted outbox:\033[0m 2 / 13 total users\n'),
         ])
 
