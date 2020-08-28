@@ -7,6 +7,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import CommandError
 
+from zerver.lib.actions import do_deactivate_realm
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Message, Reaction, UserProfile
@@ -53,12 +54,8 @@ class Command(ZulipBaseCommand):
 
     The proper procedure for using this to export a realm is as follows:
 
-    * Use `./manage.py deactivate_realm` to deactivate the realm, so
-      nothing happens in the realm being exported during the export
-      process.
-
-    * Use `./manage.py export` to export the realm, producing a data
-      tarball.
+    * Use `./manage.py export --deactivate` to deactivate and export
+      the realm, producing a data tarball.
 
     * Transfer the tarball to the new server and unpack it.
 
@@ -69,9 +66,8 @@ class Command(ZulipBaseCommand):
 
     * Inform the users about the things broken above.
 
-    We recommend testing by exporting without having deactivated the
-    realm first, to make sure you have the procedure right and
-    minimize downtime.
+    We recommend testing by exporting without `--deactivate` first, to
+    make sure you have the procedure right and minimize downtime.
 
     Performance: In one test, the tool exported a realm with hundreds
     of users and ~1M messages of history with --threads=1 in about 3
@@ -94,6 +90,9 @@ class Command(ZulipBaseCommand):
         parser.add_argument('--public-only',
                             action="store_true",
                             help='Export only public stream messages and associated attachments')
+        parser.add_argument('--deactivate-realm',
+                            action="store_true",
+                            help='Deactivate the realm immediately before exporting')
         parser.add_argument('--consent-message-id',
                             dest="consent_message_id",
                             action="store",
@@ -124,6 +123,9 @@ class Command(ZulipBaseCommand):
 
         if public_only and consent_message_id is not None:
             raise CommandError('Please pass either --public-only or --consent-message-id')
+
+        if options["deactivate_realm"] and realm.deactivated:
+            raise CommandError(f"The realm {realm.string_id} is already deactivated.  Aborting...")
 
         if consent_message_id is not None:
             try:
@@ -173,6 +175,10 @@ class Command(ZulipBaseCommand):
             os.close(os.open(tarball_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o666))
         except FileExistsError:
             raise CommandError(f"Refusing to overwrite existing tarball: {tarball_path}. Aborting...")
+
+        if options["deactivate_realm"]:
+            print(f"\033[94mDeactivating realm\033[0m: {realm.string_id}")
+            do_deactivate_realm(realm)
 
         def percent_callback(bytes_transferred: Any) -> None:
             sys.stdout.write('.')
