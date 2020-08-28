@@ -43,7 +43,8 @@ class Command(BaseCommand):
         try:
             os.mkdir(settings.ANALYTICS_LOCK_DIR)
         except OSError:
-            print(WARNING + "Analytics lock %s is unavailable; exiting... " + ENDC)
+            print(f"{WARNING}Analytics lock {settings.ANALYTICS_LOCK_DIR} is unavailable;"
+                  f" exiting.{ENDC}")
             return
 
         try:
