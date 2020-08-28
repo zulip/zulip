@@ -44,13 +44,19 @@ def get_zoom_session(user: UserProfile) -> OAuth2Session:
     if settings.VIDEO_ZOOM_CLIENT_ID is None:
         raise JsonableError(_("Zoom credentials have not been configured"))
 
+    client_id = settings.VIDEO_ZOOM_CLIENT_ID
+    client_secret = settings.VIDEO_ZOOM_CLIENT_SECRET
+    if user.realm.string_id in settings.VIDEO_ZOOM_TESTING_REALMS:  # nocoverage
+        client_id = settings.VIDEO_ZOOM_TESTING_CLIENT_ID
+        client_secret = settings.VIDEO_ZOOM_TESTING_CLIENT_SECRET
+
     return OAuth2Session(
-        settings.VIDEO_ZOOM_CLIENT_ID,
+        client_id,
         redirect_uri=urljoin(settings.ROOT_DOMAIN_URI, "/calls/zoom/complete"),
         auto_refresh_url="https://zoom.us/oauth/token",
         auto_refresh_kwargs={
-            "client_id": settings.VIDEO_ZOOM_CLIENT_ID,
-            "client_secret": settings.VIDEO_ZOOM_CLIENT_SECRET,
+            "client_id": client_id,
+            "client_secret": client_secret,
         },
         token=user.zoom_token,
         token_updater=partial(do_set_zoom_token, user),
@@ -116,12 +122,16 @@ def complete_zoom_user_in_realm(
     if not constant_time_compare(state["sid"], get_zoom_sid(request)):
         raise JsonableError(_("Invalid Zoom session identifier"))
 
+    client_secret = settings.VIDEO_ZOOM_CLIENT_SECRET
+    if request.user.realm.string_id in settings.VIDEO_ZOOM_TESTING_REALMS:  # nocoverage
+        client_secret = settings.VIDEO_ZOOM_TESTING_CLIENT_SECRET
+
     oauth = get_zoom_session(request.user)
     try:
         token = oauth.fetch_token(
             "https://zoom.us/oauth/token",
             code=code,
-            client_secret=settings.VIDEO_ZOOM_CLIENT_SECRET,
+            client_secret=client_secret,
         )
     except OAuth2Error:
         raise JsonableError(_("Invalid Zoom credentials"))
