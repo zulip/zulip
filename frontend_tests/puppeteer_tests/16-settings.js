@@ -286,6 +286,7 @@ async function test_default_language_setting(page) {
     await page.waitForSelector("#default_language", {visible: true});
     await assert_language_changed_to_chinese(page);
     await test_i18n_language_precedence(page);
+    await page.waitForSelector(display_settings_section, {visible: true});
     await page.click(display_settings_section);
 
     // Change the language back to English so that subsequent tests pass.
