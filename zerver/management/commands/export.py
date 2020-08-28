@@ -152,6 +152,10 @@ class Command(ZulipBaseCommand):
             user_count = UserProfile.objects.filter(realm_id=realm.id).count()
             print(f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)} / {user_count} total users\n")
 
+            proceed = input("Continue? [y/N] ")
+            if proceed.lower() not in ('y', 'yes'):
+                raise CommandError("Aborting!")
+
         if output_dir is None:
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
         else:
