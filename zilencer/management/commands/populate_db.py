@@ -24,7 +24,7 @@ from zerver.lib.actions import (
     try_add_realm_custom_profile_field,
     try_add_realm_default_custom_profile_field,
 )
-from zerver.lib.bulk_create import bulk_create_streams
+from zerver.lib.bulk_create import bulk_create_reactions, bulk_create_streams
 from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data, generate_topics
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
@@ -720,7 +720,7 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
     num_messages = 0
     random_max = 1000000
     recipients: Dict[int, Tuple[int, int, Dict[str, Any]]] = {}
-    messages = []
+    messages: List[Message] = []
     while num_messages < tot_messages:
         saved_data: Dict[str, Any] = {}
         message = Message()
@@ -793,6 +793,7 @@ def send_messages(messages: List[Message]) -> None:
     # life of the database, which naturally throws exceptions.
     settings.USING_RABBITMQ = False
     do_send_messages([{'message': message} for message in messages])
+    bulk_create_reactions(messages)
     settings.USING_RABBITMQ = True
 
 def choose_date_sent(num_messages: int, tot_messages: int, threads: int) -> datetime:
