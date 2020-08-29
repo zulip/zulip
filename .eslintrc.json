@@ -19,6 +19,7 @@
         "empty-returns/main": "error",
         "eqeqeq": "error",
         "guard-for-in": "error",
+        "import/extensions": "error",
         "import/first": "error",
         "import/newline-after-import": "error",
         "import/no-unresolved": "error",
