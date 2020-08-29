@@ -478,10 +478,9 @@ html {
             font-size: 0.7em;
             font-weight: 600;
             text-align: left;
-            height: 0;
+            line-height: 1.2;
 
             position: relative;
-            top: -4px;
             left: 1px;
         }
 
@@ -821,11 +820,6 @@ button#register_auth_button_gitlab {
         }
     }
 
-    #id_team_subdomain-error {
-        margin-top: 5px;
-        display: block;
-    }
-
     #subdomain_section {
         .inline-block {
             width: 100%;
@@ -853,6 +847,10 @@ button#register_auth_button_gitlab {
         font-size: 0.9rem;
         font-weight: 400;
         line-height: 1.2;
+    }
+
+    .help-inline {
+        display: block;
     }
 
     legend {
