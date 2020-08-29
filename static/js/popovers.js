@@ -1,7 +1,7 @@
 "use strict";
 
 const ClipboardJS = require("clipboard");
-const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
+const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
 const moment = require("moment");
 
 const render_actions_popover_content = require("../templates/actions_popover_content.hbs");

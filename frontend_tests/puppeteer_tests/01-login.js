@@ -1,6 +1,6 @@
 "use strict";
 
-const test_credentials = require("../../var/puppeteer/test_credentials.js").test_credentials;
+const test_credentials = require("../../var/puppeteer/test_credentials").test_credentials;
 const common = require("../puppeteer_lib/common");
 
 async function login_tests(page) {

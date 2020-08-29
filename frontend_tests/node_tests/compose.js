@@ -3,7 +3,7 @@
 const {JSDOM} = require("jsdom");
 const rewiremock = require("rewiremock/node");
 
-const events = require("./lib/events.js");
+const events = require("./lib/events");
 
 set_global("bridge", false);
 
@@ -12,7 +12,7 @@ const noop = function () {};
 set_global("$", global.make_zjquery());
 set_global("DOMParser", new JSDOM().window.DOMParser);
 
-const LazySet = zrequire("lazy_set.js").LazySet;
+const LazySet = zrequire("lazy_set").LazySet;
 
 const _navigator = {
     platform: "",
