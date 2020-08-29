@@ -10,13 +10,13 @@ import TerserPlugin from "terser-webpack-plugin";
 import webpack from "webpack";
 import BundleTracker from "webpack4-bundle-tracker";
 
-import DebugRequirePlugin from "./debug-require-webpack-plugin";
-import assets from "./webpack.assets.json";
+import DebugRequirePlugin from "./tools/debug-require-webpack-plugin";
+import assets from "./tools/webpack.assets.json";
 
 const cacheLoader: webpack.RuleSetUseItem = {
     loader: "cache-loader",
     options: {
-        cacheDirectory: resolve(__dirname, "../var/webpack-cache"),
+        cacheDirectory: resolve(__dirname, "var/webpack-cache"),
     },
 };
 
@@ -25,12 +25,12 @@ export default (env?: string): webpack.Configuration[] => {
     const config: webpack.Configuration = {
         name: "frontend",
         mode: production ? "production" : "development",
-        context: resolve(__dirname, "../"),
+        context: __dirname,
         entry: assets,
         module: {
             rules: [
                 {
-                    test: require.resolve("./debug-require"),
+                    test: require.resolve("./tools/debug-require"),
                     loader: "expose-loader",
                     options: {exposes: "require"},
                 },
@@ -65,8 +65,8 @@ export default (env?: string): webpack.Configuration[] => {
                 {
                     test: /\.(js|ts)$/,
                     include: [
-                        resolve(__dirname, "../static/shared/js"),
-                        resolve(__dirname, "../static/js"),
+                        resolve(__dirname, "static/shared/js"),
+                        resolve(__dirname, "static/js"),
                     ],
                     use: [cacheLoader, "babel-loader"],
                 },
@@ -101,7 +101,7 @@ export default (env?: string): webpack.Configuration[] => {
                 // scss loader
                 {
                     test: /\.scss$/,
-                    include: resolve(__dirname, "../static/styles"),
+                    include: resolve(__dirname, "static/styles"),
                     use: [
                         {
                             loader: MiniCssExtractPlugin.loader,
@@ -169,7 +169,7 @@ export default (env?: string): webpack.Configuration[] => {
             ],
         },
         output: {
-            path: resolve(__dirname, "../static/webpack-bundles"),
+            path: resolve(__dirname, "static/webpack-bundles"),
             filename: production ? "[name].[contenthash].js" : "[name].js",
             chunkFilename: production ? "[contenthash].js" : "[id].js",
         },
@@ -272,12 +272,12 @@ export default (env?: string): webpack.Configuration[] => {
     const serverConfig: webpack.Configuration = {
         mode: production ? "production" : "development",
         target: "node",
-        context: resolve(__dirname, "../"),
+        context: __dirname,
         entry: {
             "katex-cli": "shebang-loader!katex/cli",
         },
         output: {
-            path: resolve(__dirname, "../static/webpack-bundles"),
+            path: resolve(__dirname, "static/webpack-bundles"),
             filename: "[name].js",
         },
     };
