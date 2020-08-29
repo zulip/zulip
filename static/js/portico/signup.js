@@ -46,6 +46,9 @@ $(() => {
             element.next(".help-inline.alert.alert-error").remove();
             if (element.next().is('label[for="' + element.attr("id") + '"]')) {
                 error.insertAfter(element.next()).addClass("help-inline alert alert-error");
+            } else if (element.parent().is('label[for="' + element.attr("id") + '"]')) {
+                // For checkboxes and radio-buttons
+                error.insertAfter(element.parent()).addClass("help-inline alert alert-error");
             } else {
                 error.insertAfter(element).addClass("help-inline alert alert-error");
             }
