@@ -90,6 +90,7 @@
     "difflib": "^0.2.4",
     "eslint": "^7.2.0",
     "eslint-config-prettier": "^6.11.0",
+    "eslint-import-resolver-webpack": "^0.12.2",
     "eslint-plugin-empty-returns": "^1.0.2",
     "eslint-plugin-import": "^2.22.0",
     "js-yaml": "^3.13.1",
