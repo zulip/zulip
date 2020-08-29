@@ -862,11 +862,12 @@ button#register_auth_button_gitlab {
     }
 
     #id_email {
-        font-weight: normal;
         margin: 2px;
-        padding-top: 25px;
-        text-align: left;
-        overflow-wrap: break-word;
+        padding: 25px 0 0;
+        border: none;
+        background: inherit;
+        width: 100%;
+        cursor: text;
     }
 
     .help-text {
