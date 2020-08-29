@@ -21,7 +21,7 @@
         "guard-for-in": "error",
         "import/first": "error",
         "import/newline-after-import": "error",
-        "import/no-unresolved": ["error", {"ignore": ["!"]}],
+        "import/no-unresolved": "error",
         "import/order": [
             "error",
             {
@@ -377,6 +377,9 @@
             },
             "rules": {
                 "no-console": "error"
+            },
+            "settings": {
+                "import/resolver": "webpack"
             }
         },
         {
