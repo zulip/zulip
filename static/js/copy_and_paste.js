@@ -1,6 +1,6 @@
 "use strict";
 
-const TurndownService = require("turndown/lib/turndown.cjs.js");
+const TurndownService = require("turndown/lib/turndown.cjs");
 
 function find_boundary_tr(initial_tr, iterate_row) {
     let j;

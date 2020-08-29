@@ -1,7 +1,7 @@
 import _ from "lodash";
 
 import blueslip from "./../blueslip";
-import * as google_analytics from "./google-analytics.js";
+import * as google_analytics from "./google-analytics";
 import {path_parts} from "./landing-page";
 
 // these constants are populated immediately with data from the DOM on page load

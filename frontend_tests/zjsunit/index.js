@@ -7,13 +7,13 @@ const path = require("path");
 const Handlebars = require("handlebars/runtime");
 const _ = require("lodash");
 
-const finder = require("./finder.js");
-const handlebars = require("./handlebars.js");
-const stub_i18n = require("./i18n.js");
-const namespace = require("./namespace.js");
-const stub = require("./stub.js");
-const make_blueslip = require("./zblueslip.js").make_zblueslip;
-const zjquery = require("./zjquery.js");
+const finder = require("./finder");
+const handlebars = require("./handlebars");
+const stub_i18n = require("./i18n");
+const namespace = require("./namespace");
+const stub = require("./stub");
+const make_blueslip = require("./zblueslip").make_zblueslip;
+const zjquery = require("./zjquery");
 
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
@@ -94,7 +94,7 @@ function short_tb(tb) {
 }
 
 // Set up Markdown comparison helper
-global.markdown_assert = require("./markdown_assert.js");
+global.markdown_assert = require("./markdown_assert");
 
 let current_file_name;
 

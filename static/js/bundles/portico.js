@@ -1,5 +1,5 @@
-import "./common.js";
-import "../i18n.js";
-import "../portico/header.js";
-import "../portico/google-analytics.js";
+import "./common";
+import "../i18n";
+import "../portico/header";
+import "../portico/google-analytics";
 import "../../styles/portico/portico-styles.scss";
