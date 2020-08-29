@@ -13,7 +13,7 @@ def build_for_prod_or_casper(quiet: bool) -> NoReturn:
     """Builds for production, writing the output to disk"""
 
     webpack_args = ['node', 'node_modules/.bin/webpack-cli',
-                    '--config', 'tools/webpack.config.ts', '-p',
+                    '-p',
                     '--env', 'production']
     if quiet:
         webpack_args += ['--display', 'errors-only']
@@ -27,8 +27,6 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
     # files as devs make edits and serve new assets on the fly.
     webpack_args = ['node', 'node_modules/.bin/webpack-dev-server']
     webpack_args += [
-        '--config',
-        'tools/webpack.config.ts',
         # webpack-cli has a bug where it ignores --watch-poll with
         # multi-config, and we don't need the katex-cli part anyway.
         '--config-name', 'frontend',
