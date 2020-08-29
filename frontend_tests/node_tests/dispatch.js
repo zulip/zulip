@@ -2,7 +2,7 @@
 
 const noop = function () {};
 
-const events = require("./lib/events.js");
+const events = require("./lib/events");
 
 const event_fixtures = events.fixtures;
 const test_message = events.test_message;

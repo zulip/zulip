@@ -2,7 +2,7 @@
 
 const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
 
-const events = require("./lib/events.js");
+const events = require("./lib/events");
 
 const emoji = zrequire("emoji", "shared/js/emoji");
 

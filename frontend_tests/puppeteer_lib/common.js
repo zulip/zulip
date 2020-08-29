@@ -5,7 +5,7 @@ const path = require("path");
 
 const puppeteer = require("puppeteer");
 
-const test_credentials = require("../../var/puppeteer/test_credentials.js").test_credentials;
+const test_credentials = require("../../var/puppeteer/test_credentials").test_credentials;
 
 const root_dir = path.resolve(__dirname, "../../");
 const puppeteer_dir = path.join(root_dir, "var/puppeteer");
