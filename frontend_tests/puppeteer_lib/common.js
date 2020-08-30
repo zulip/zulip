@@ -5,7 +5,7 @@ const path = require("path");
 
 const puppeteer = require("puppeteer");
 
-const test_credentials = require("../../var/casper/test_credentials.js").test_credentials;
+const test_credentials = require("../../var/puppeteer/test_credentials.js").test_credentials;
 
 class CommonUtils {
     constructor() {
@@ -238,7 +238,7 @@ class CommonUtils {
                 actually acks the message, the message will
                 have a temporary id and will not have all
                 the normal message controls.
-                For the Casper tests, we want to avoid all
+                For the Puppeteer tests, we want to avoid all
                 the edge cases with locally echoed messages.
                 In order to make sure a message is processed,
                 we use internals to determine the following:
