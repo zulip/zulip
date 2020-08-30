@@ -96,7 +96,6 @@
     "eslint-plugin-empty-returns": "^1.0.2",
     "jsdom": "^16.1.0",
     "nyc": "^15.0.0",
-    "phantomjs-prebuilt": "^2.1.16",
     "prettier": "^2.0.5",
     "puppeteer": "^5.2.0",
     "source-map": "^0.6.1",
