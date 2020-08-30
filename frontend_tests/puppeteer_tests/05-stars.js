@@ -30,7 +30,7 @@ async function toggle_test_star_message(page) {
 
 async function test_narrow_to_starred_messages(page) {
     await page.click('a[href^="#narrow/is/starred"]');
-    await common.check_messages_sent(page, "zhome", [["Verona > stars", [message]]]);
+    await common.check_messages_sent(page, "zfilt", [["Verona > stars", [message]]]);
 
     // Go back to all messages narrow.
     await page.keyboard.press("Escape");
