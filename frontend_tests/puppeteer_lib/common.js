@@ -390,7 +390,7 @@ class CommonUtils {
     // The method will only check that all the messages in the
     // messages array passed exist in the order they are passed.
     async check_messages_sent(page, table, messages) {
-        await page.waitForSelector("#" + table);
+        await page.waitForSelector("#" + table, {visible: true});
         const rendered_messages = await this.get_rendered_messages(page, table);
 
         // We only check the last n messages because if we run
