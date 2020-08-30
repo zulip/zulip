@@ -1962,9 +1962,9 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent when a user starts typing a private or group private message. Sent
-                                to all clients for users who would receive the message being typed. It should
-                                be noted that clients should set their own timeouts to stop the typing status
-                                incase `typing: stop` event is not received.
+                                to all clients for users who would receive the message being typed.
+
+                                See the [typing endpoint docs](/api/set-typing-status) for more details.
                               properties:
                                 id:
                                   type: integer
@@ -1980,13 +1980,12 @@ paths:
                                   additionalProperties: false
                                   type: object
                                   description: |
-                                    Object containing user id and email of the sender i.e
-                                    the user who has started typing.
+                                    Object describing the "sender" (i.e. the user who is typing a message).
                                   properties:
                                     user_id:
                                       type: integer
                                       description: |
-                                        The ID of the user.
+                                        The user's ID.
                                     email:
                                       type: string
                                       description: |
@@ -1994,9 +1993,10 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
-                                    Array of dictionaries, where each dictionary contains the
-                                    email and user_id of a single user who will receive the
-                                    typed message.
+                                    Array of dictionaries describing the set of users who would be recipients
+                                    of the message being typed.  Each dictionary contains details on one
+                                    one of the recipients users; the sending user is guaranteed to appear
+                                    among the recipients.
                                   items:
                                     type: object
                                     additionalProperties: false
@@ -2037,7 +2037,10 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent when a user stops typing a private or group private message. Sent
-                                to all clients for users who would receive the message being typed.
+                                to all clients for users who would receive the message that was
+                                previously being typed.
+
+                                See the [typing endpoint docs](/api/set-typing-status) for more details.
                               properties:
                                 id:
                                   type: integer
@@ -2053,13 +2056,13 @@ paths:
                                   additionalProperties: false
                                   type: object
                                   description: |
-                                    Object containing user id and email of the sender i.e
-                                    the user who has stopped typing.
+                                    Object describing the "sender" (i.e. the user who was previously
+                                    typing a message).
                                   properties:
                                     user_id:
                                       type: integer
                                       description: |
-                                        The ID of the user.
+                                        The user's ID.
                                     email:
                                       type: string
                                       description: |
@@ -2067,9 +2070,10 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
-                                    Array of dictionaries, where each dictionary contains the
-                                    email and user_id of a single user who will receive the
-                                    typed message.
+                                    Array of dictionaries describing the set of users who would be recipients
+                                    of the message that stopped being typed.  Each dictionary contains
+                                    details on one one of the recipients users; the sending user is
+                                    guaranteed to appear among the recipients.
                                   items:
                                     type: object
                                     additionalProperties: false
@@ -8070,12 +8074,34 @@ paths:
       operationId: set_typing_status
       tags: ["users"]
       description: |
-        Send an event indicating that the user has started or stopped typing
-        on their client.  See
-        [the typing notification docs](https://zulip.readthedocs.io/en/latest/subsystems/typing-indicators.html)
-        for details on Zulip's typing notifications protocol.
+        Notify other users whether the current user is typing a message.
 
         `POST {{ api_url }}/v1/typing`
+
+        Clients implementing Zulip's typing notifications protocol should work as follows:
+
+        * Send a request to this endpoint with `op="start"` when a user starts typing
+          a private message or group private message, and also every
+          `TYPING_STARTED_WAIT_PERIOD=10` seconds that the user continues to actively type
+          or otherwise interact with the compose UI (E.g. interacting with the compose box
+          emoji picker).
+        * Send a request to this endpoint with `op="stop"` when a user pauses using the
+          compose UI for at least `TYPING_STOPPED_WAIT_PERIOD=5` seconds or cancels
+          the compose action (if it had previously sent a "start" operation for that
+          compose action).
+        * Start displaying "Sender is typing" for a given conversation when the client
+          receives an `op="start"` event from the [events API](/api/get-events).
+        * Continue displaying "Sender is typing" until they receive an `op="stop"` event
+          from the [events API](/api/get-events) or `TYPING_STARTED_EXPIRY_PERIOD=15`
+          seconds have passed without a new `op="start"` event for that conversation.
+
+        This protocol is designed to allow the server-side typing notifications implementation
+        to be stateless while being resilient; network failures cannot result in a user being
+        incorrectly displayed as perpetually typing.
+
+        See
+        [the typing notification docs](https://zulip.readthedocs.io/en/latest/subsystems/typing-indicators.html)
+        for additional design details on Zulip's typing notifications protocol.
       parameters:
         - name: op
           in: query
