@@ -2711,10 +2711,6 @@ caseless@~0.12.0:
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
   integrity sha1-G2gcIf+EAzyCZUMJBolCDRhxUdw=
 
-casperjs@casperjs/casperjs:
-  version "1.1.4"
-  resolved "https://codeload.github.com/casperjs/casperjs/tar.gz/4c236d0e139ca5dc90c91acd364445025e7a1522"
-
 ccount@^1.0.0:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/ccount/-/ccount-1.0.5.tgz#ac82a944905a65ce204eb03023157edf29425c17"

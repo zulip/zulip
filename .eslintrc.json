@@ -343,7 +343,6 @@
             "files": ["frontend_tests/**"],
             "globals": {
                 "assert": false,
-                "casper": false,
                 "document": false,
                 "set_global": false,
                 "window": false,
@@ -355,11 +354,7 @@
             }
         },
         {
-            "files": [
-                "frontend_tests/casper_lib/**",
-                "frontend_tests/casper_tests/**",
-                "tools/debug-require.js"
-            ],
+            "files": ["tools/debug-require.js"],
             "env": {
                 "browser": true,
                 "es2020": false
