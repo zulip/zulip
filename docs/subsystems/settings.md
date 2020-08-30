@@ -96,7 +96,7 @@ additionally:
   `zproject/settings.py` and `zproject/test_extra_settings.py`.
 
 * `zproject/test_extra_settings.py` has the (default) settings used
-  for the Zulip tests (both backend and Casper), which are applied on
+  for the Zulip tests (both backend and Puppeteer), which are applied on
   top of the development environment settings.
 
 When adding a new server setting to Zulip, you will typically add it

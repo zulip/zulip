@@ -56,7 +56,7 @@ organization in Zulip). The following files are involved in the process:
   zerver/lib/events.py implementation.
 
 **Frontend testing**
-- `frontend_tests/casper_tests/10-admin.js`: end-to-end tests for the organization
+- `frontend_tests/puppeteer_tests/08-admin.js`: end-to-end tests for the organization
   admin settings pages.
 - `frontend_tests/node_tests/dispatch.js`
 
