@@ -212,15 +212,9 @@ jobs:
       - *upload_coverage_report
 
       - store_artifacts:
-          path: ./var/casper/
-          destination: casper
-
-      - store_artifacts:
           path: ./var/puppeteer/
           destination: puppeteer
 
-      - store_test_results:
-          path: ./var/xunit-test-results/casper/
       - *notify_failure_status
 
   "focal-backend":

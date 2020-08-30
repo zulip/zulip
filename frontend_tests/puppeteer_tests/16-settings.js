@@ -2,7 +2,7 @@
 
 const assert = require("assert").strict;
 
-const test_credentials = require("../../var/casper/test_credentials.js").test_credentials;
+const test_credentials = require("../../var/puppeteer/test_credentials.js").test_credentials;
 const common = require("../puppeteer_lib/common");
 
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";

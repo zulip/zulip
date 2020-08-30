@@ -87,7 +87,7 @@ base_port = 9991
 if options.test:
     base_port = 9981
     settings_module = "zproject.test_settings"
-    # Don't auto-reload when running casper tests
+    # Don't auto-reload when running puppeteer tests
     runserver_args = ['--noreload']
 else:
     settings_module = "zproject.settings"
