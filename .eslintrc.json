@@ -361,6 +361,7 @@
             },
             "rules": {
                 // Don’t require ES features that PhantomJS doesn’t support
+                // TODO: Toggle these settings now that we don't use PhantomJS
                 "no-var": "off",
                 "object-shorthand": "off",
                 "prefer-arrow-callback": "off"

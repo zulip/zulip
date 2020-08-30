@@ -124,7 +124,7 @@ COMMON_DEPENDENCIES = [
     "puppet",               # Used by lint (`puppet parser validate`)
     "gettext",              # Used by makemessages i18n
     "transifex-client",     # Needed to sync translations from transifex
-    "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
+    "curl",                 # Used for testing our API documentation
     "moreutils",            # Used for sponge command
     "unzip",                # Needed for Slack import
     "crudini",              # Used for shell tooling w/ zulip.conf
@@ -149,7 +149,6 @@ UBUNTU_COMMON_APT_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "hunspell-en-us",
     "puppet-lint",
     "netcat",               # Used for flushing memcached
-    "libfontconfig1",       # Required by phantomjs
     "default-jre-headless",  # Required by vnu-jar
 ] + THUMBOR_VENV_DEPENDENCIES
 
@@ -158,11 +157,6 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "hunspell-en-US",
     "rubygem-puppet-lint",
     "nmap-ncat",
-    "fontconfig",  # phantomjs dependencies from here until libstdc++
-    "freetype",
-    "freetype-devel",
-    "fontconfig-devel",
-    "libstdc++",
 ] + YUM_THUMBOR_VENV_DEPENDENCIES
 
 BUILD_PGROONGA_FROM_SOURCE = False
