@@ -211,7 +211,7 @@ time when debugging, since developers don't need to think about things
 like whether some test changed Hamlet's email address and that's why
 login is broken.
 
-More full-stack test suites like `test-js-with-casper` or `test-api`
+More full-stack test suites like `test-js-with-puppeteer` or `test-api`
 use a similar strategy (set a random `KEY_PREFIX` at the start of the
 test run).
 

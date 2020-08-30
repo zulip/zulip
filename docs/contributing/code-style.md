@@ -198,8 +198,7 @@ number without any explicit conversion.
 ### JavaScript `const` and `let`
 
 Always declare JavaScript variables using `const` or `let` rather than
-`var`, except in the Casper tests (since Casper does not support
-`const` and `let`).
+`var`.
 
 ### JavaScript and TypeScript `for (i in myArray)`
 
