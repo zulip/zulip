@@ -78,7 +78,7 @@ templating systems.
 
 * `frontend_tests/node_tests/` Node Frontend unit tests.
 
-* `frontend_tests/casper_tests/` Casper frontend tests.
+* `frontend_tests/puppeteer_tests/` Puppeteer frontend integration tests.
 
 * `tools/test-*` Developer-facing test runner scripts.
 

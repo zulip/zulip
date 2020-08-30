@@ -84,5 +84,5 @@ lookup should still work even if you disable proxy for
 127.0.0.1    testsubdomain.zulipdev.com
 ```
 
-These records are also useful if you want to e.g. run the casper tests
+These records are also useful if you want to e.g. run the Puppeteer tests
 when you are not connected to the Internet.
