@@ -1483,6 +1483,17 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(action, num_events=2)
         check_subscription_peer_add('events[1]', events[1])
 
+    def test_remove_other_user_never_subscribed(self) -> None:
+        self.subscribe(self.example_user("othello"), "test_stream")
+        stream = get_stream("test_stream", self.user_profile.realm)
+
+        action = lambda: bulk_remove_subscriptions(
+            [self.example_user('othello')],
+            [stream],
+            get_client("website"))
+        events = self.verify_action(action)
+        check_subscription_peer_remove('events[0]', events[0])
+
     def test_do_delete_message_stream(self) -> None:
         hamlet = self.example_user('hamlet')
         msg_id = self.send_stream_message(hamlet, "Verona")
