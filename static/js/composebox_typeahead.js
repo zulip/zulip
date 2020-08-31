@@ -185,16 +185,28 @@ function handle_keydown(e) {
         const on_pm = target_sel === "#private_message_recipient";
         const on_compose = target_sel === "#compose-textarea";
 
-        if (on_compose && code === 13) {
-            if (exports.should_enter_send(e)) {
-                e.preventDefault();
-                if (!$("#compose-send-button").prop("disabled")) {
-                    $("#compose-send-button").prop("disabled", true);
-                    compose.finish();
+        if (on_compose) {
+            if (code === 9) {
+                // This if branch is only here to make Tab+Enter work on Safari,
+                // which does not make <button>s tab-accessible by default
+                // (even if we were to set tabindex=0).
+                if (!exports.should_enter_send(e)) {
+                    $("#compose-send-button").trigger("focus");
+                    e.preventDefault();
                 }
-                return;
+            } else {
+                // Enter
+                if (exports.should_enter_send(e)) {
+                    e.preventDefault();
+                    if (!$("#compose-send-button").prop("disabled")) {
+                        $("#compose-send-button").prop("disabled", true);
+                        compose.finish();
+                    }
+                    return;
+                }
+
+                exports.handle_enter($("#compose-textarea"), e);
             }
-            exports.handle_enter($("#compose-textarea"), e);
         } else if (on_stream || on_topic || on_pm) {
             // Prevent the form from submitting
             e.preventDefault();
