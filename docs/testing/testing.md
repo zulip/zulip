@@ -35,7 +35,7 @@ typically involve running subsets of the tests with commands like these:
 ./tools/lint zerver/lib/actions.py # Lint the file you just changed
 ./tools/test-backend zerver.tests.test_markdown.MarkdownTest.test_inline_youtube
 ./tools/test-backend MarkdownTest # Run `test-backend --help` for more options
-./tools/test-js-with-casper 09-navigation.js
+./tools/test-js-with-puppeteer 07-navigation.js
 ./tools/test-js-with-node utils.js
 ```
 
@@ -52,8 +52,8 @@ eventually work with, each with its own page detailing how it works:
 - [Django](../testing/testing-with-django.md): Server/backend Python tests.
 - [Node](../testing/testing-with-node.md): JavaScript tests for the
   frontend run via node.js.
-- [Casper (deprecated)](../testing/testing-with-casper.md): End-to-end
-  UI tests run via a browser.
+- [Puppeteer](../testing/testing-with-puppeteer.md): End-to-end
+  UI tests run via a Chromium browser.
 
 ## Other test suites
 

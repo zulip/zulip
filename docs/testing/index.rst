@@ -9,7 +9,7 @@ Code testing
    linters
    testing-with-django
    testing-with-node
-   testing-with-casper
+   testing-with-puppeteer
    mypy
    typescript
    continuous-integration
