@@ -112,7 +112,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
         filename = event["metadata"].get("filename", None)
 
         stacktrace = None
-        for value in event["exception"]["values"]:
+        for value in reversed(event["exception"]["values"]):
             if "stacktrace" in value:
                 stacktrace = value["stacktrace"]
                 break
