@@ -232,13 +232,13 @@ run_test("title_data", () => {
     let expected_data = {
         first_line: "Human Myself",
         second_line: "out to lunch",
-        third_line: "translated: Active now",
+        third_line: "translated: Online now",
     };
     assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group), expected_data);
 
     expected_data = {
         first_line: "Old User",
-        second_line: "translated: Last active: translated: More than 2 weeks ago",
+        second_line: "translated: Last online: translated: More than 2 weeks ago",
         third_line: "",
     };
     assert.deepEqual(buddy_data.get_title_data(old_user.user_id, is_group), expected_data);
@@ -319,7 +319,7 @@ run_test("level", () => {
 });
 
 run_test("user_last_seen_time_status", () => {
-    assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Active now");
+    assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Online now");
 
     page_params.realm_is_zephyr_mirror_realm = true;
     assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id), "translated: Unknown");

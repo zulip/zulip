@@ -154,7 +154,7 @@ exports.my_user_status = function (user_id) {
 exports.user_last_seen_time_status = function (user_id) {
     const status = presence.get_status(user_id);
     if (status === "active") {
-        return i18n.t("Active now");
+        return i18n.t("Online now");
     }
 
     if (page_params.realm_is_zephyr_mirror_realm) {
@@ -198,7 +198,7 @@ function get_last_seen(active_status, last_seen) {
         return last_seen;
     }
 
-    const last_seen_text = i18n.t("Last active: __last_seen__", {last_seen});
+    const last_seen_text = i18n.t("Last online: __last_seen__", {last_seen});
     return last_seen_text;
 }
 
