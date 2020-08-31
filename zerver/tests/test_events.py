@@ -1844,7 +1844,8 @@ class SubscribeActionTest(BaseAction):
 
         stream = get_stream("test_stream", self.user_profile.realm)
 
-        # Now remove the first user, to test the normal unsubscribe flow
+        # Now remove the first user, to test the normal unsubscribe flow and
+        # 'peer_remove' event for subscribed streams.
         action = lambda: bulk_remove_subscriptions(
             [self.example_user('othello')],
             [stream],
@@ -1871,6 +1872,19 @@ class SubscribeActionTest(BaseAction):
             events[0]['subscriptions'][0]['name'],
             'test_stream',
         )
+
+        self.subscribe(self.example_user("iago"), "test_stream")
+
+        # Remove the user to test 'peer_remove' event flow for unsubscribed stream.
+        action = lambda: bulk_remove_subscriptions(
+            [self.example_user('iago')],
+            [stream],
+            get_client("website"))
+        events = self.verify_action(
+            action,
+            include_subscribers=include_subscribers,
+            state_change_expected=include_subscribers)
+        check_subscription_peer_remove('events[0]', events[0])
 
         # Now resubscribe a user, to make sure that works on a vacated stream
         action = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")
