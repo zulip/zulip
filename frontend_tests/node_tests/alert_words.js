@@ -2,8 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+
+set_global("page_params", {
+    is_spectator: false,
+});
 
 const params = {
     alert_words: ["alertone", "alerttwo", "alertthree", "al*rt.*s", ".+", "emoji"],

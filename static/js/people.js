@@ -9,6 +9,7 @@ import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
 import * as message_user_ids from "./message_user_ids";
 import * as muting from "./muting";
+import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
@@ -1305,7 +1306,7 @@ export function set_custom_profile_field_data(user_id, field) {
 }
 
 export function is_current_user(email) {
-    if (email === null || email === undefined) {
+    if (email === null || email === undefined || page_params.is_spectator) {
         return false;
     }
 
