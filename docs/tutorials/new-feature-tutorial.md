@@ -134,8 +134,8 @@ or JavaScript/TypeScript code that generates user-facing strings, be sure to
 
 **Testing:** There are two types of frontend tests: node-based unit
 tests and blackbox end-to-end tests. The blackbox tests are run in a
-headless browser using CasperJS and are located in
-`frontend_tests/casper_tests/`. The unit tests use Node's `assert`
+headless Chromium browser using Puppeteer and are located in
+`frontend_tests/puppeteer_tests/`. The unit tests use Node's `assert`
 module are located in `frontend_tests/node_tests/`. For more
 information on writing and running tests, see the
 [testing documentation](../testing/testing.md).
@@ -625,7 +625,7 @@ Here are few important cases you should consider when testing your changes:
 
 A great next step is to write front end tests. There are two types of
 frontend tests: [node-based unit tests](../testing/testing-with-node.md) and
-[Casper end-to-end tests](../testing/testing-with-casper.md).
+[Puppeteer end-to-end tests](../testing/testing-with-puppeteer.md).
 
 At the minimum, if you created a new function to update UI in
 `settings_org.js`, you will need to mock that function in

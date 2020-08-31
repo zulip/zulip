@@ -37,7 +37,7 @@ There are many command line options for running Zulip tests, such
 as a `--verbose` option.  The
 best way to learn the options is to use the online help:
 
-    ./tools/test-backend -h
+    ./tools/test-backend --help
 
 We also have ways to instrument our tests for finding code coverage,
 URL coverage, and slow tests.  Use the `-h` option to discover these
