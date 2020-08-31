@@ -163,6 +163,13 @@ function get_events(options) {
         return;
     }
 
+    // TODO: In the future, we may implement Tornado support for live
+    // update for web-public guests, but until then, there's nothing
+    // to do here.
+    if (page_params.is_web_public_guest) {
+        return;
+    }
+
     get_events_params.dont_block = options.dont_block || get_events_failures > 0;
 
     if (get_events_params.dont_block) {
