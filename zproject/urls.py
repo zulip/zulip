@@ -404,9 +404,11 @@ v1_api_and_json_patterns = [
     path('report/send_times', rest_dispatch,
          {'POST': ('zerver.views.report.report_send_times', {'intentionally_undocumented'})}),
     path('report/narrow_times', rest_dispatch,
-         {'POST': ('zerver.views.report.report_narrow_times', {'intentionally_undocumented'})}),
+         {'POST': ('zerver.views.report.report_narrow_times', {'allow_anonymous_user_web',
+                                                               'intentionally_undocumented'})}),
     path('report/unnarrow_times', rest_dispatch,
-         {'POST': ('zerver.views.report.report_unnarrow_times', {'intentionally_undocumented'})}),
+         {'POST': ('zerver.views.report.report_unnarrow_times', {'allow_anonymous_user_web',
+                                                                 'intentionally_undocumented'})}),
 
     # Used to generate a Zoom video call URL
     path('calls/zoom/create', rest_dispatch,

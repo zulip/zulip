@@ -1,14 +1,16 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 import logging
 import subprocess
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, Mapping, Optional, Union
 from urllib.parse import SplitResult
 
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import human_users_only
 from zerver.lib.markdown import privacy_clean_markdown
 from zerver.lib.queue import queue_json_publish
@@ -61,26 +63,26 @@ def report_send_times(request: HttpRequest, user_profile: UserProfile,
         statsd.incr('render_disparity')
     return json_success()
 
-@human_users_only
 @has_request_variables
-def report_narrow_times(request: HttpRequest, user_profile: UserProfile,
+def report_narrow_times(request: HttpRequest, user_profile: Union[UserProfile, AnonymousUser],
                         initial_core: int=REQ(converter=to_non_negative_int),
                         initial_free: int=REQ(converter=to_non_negative_int),
                         network: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
     request._log_data["extra"] = f"[{initial_core}ms/{initial_free}ms/{network}ms]"
-    base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
+    realm = get_valid_realm_from_request(request)
+    base_key = statsd_key(realm.string_id, clean_periods=True)
     statsd.timing(f"narrow.initial_core.{base_key}", initial_core)
     statsd.timing(f"narrow.initial_free.{base_key}", initial_free)
     statsd.timing(f"narrow.network.{base_key}", network)
     return json_success()
 
-@human_users_only
 @has_request_variables
-def report_unnarrow_times(request: HttpRequest, user_profile: UserProfile,
+def report_unnarrow_times(request: HttpRequest, user_profile: Union[UserProfile, AnonymousUser],
                           initial_core: int=REQ(converter=to_non_negative_int),
                           initial_free: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
     request._log_data["extra"] = f"[{initial_core}ms/{initial_free}ms]"
-    base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
+    realm = get_valid_realm_from_request(request)
+    base_key = statsd_key(realm.string_id, clean_periods=True)
     statsd.timing(f"unnarrow.initial_core.{base_key}", initial_core)
     statsd.timing(f"unnarrow.initial_free.{base_key}", initial_free)
     return json_success()

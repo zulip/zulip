@@ -75,9 +75,45 @@ class TestReport(ZulipTestCase):
         ]
         self.assertEqual(stats_mock.func_calls, expected_calls)
 
+    def test_anonymous_user_narrow_time(self) -> None:
+        params = dict(
+            initial_core=5,
+            initial_free=6,
+            network=7,
+        )
+
+        stats_mock = StatsMock(self.settings)
+        with mock.patch('zerver.views.report.statsd', wraps=stats_mock):
+            result = self.client_post("/json/report/narrow_times", params)
+        self.assert_json_success(result)
+
+        expected_calls = [
+            ('timing', ('narrow.initial_core.zulip', 5)),
+            ('timing', ('narrow.initial_free.zulip', 6)),
+            ('timing', ('narrow.network.zulip', 7)),
+        ]
+        self.assertEqual(stats_mock.func_calls, expected_calls)
+
     def test_unnarrow_time(self) -> None:
         self.login('hamlet')
 
+        params = dict(
+            initial_core=5,
+            initial_free=6,
+        )
+
+        stats_mock = StatsMock(self.settings)
+        with mock.patch('zerver.views.report.statsd', wraps=stats_mock):
+            result = self.client_post("/json/report/unnarrow_times", params)
+        self.assert_json_success(result)
+
+        expected_calls = [
+            ('timing', ('unnarrow.initial_core.zulip', 5)),
+            ('timing', ('unnarrow.initial_free.zulip', 6)),
+        ]
+        self.assertEqual(stats_mock.func_calls, expected_calls)
+
+    def test_anonymous_user_unnarrow_time(self) -> None:
         params = dict(
             initial_core=5,
             initial_free=6,
