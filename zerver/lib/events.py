@@ -727,7 +727,7 @@ def apply_event(state: Dict[str, Any],
         elif event['op'] == 'peer_remove':
             stream_ids = set(event["stream_ids"])
             user_ids = set(event["user_ids"])
-            for sub_dict in [state["subscriptions"], state['unsubscribed']]:
+            for sub_dict in [state["subscriptions"], state['unsubscribed'], state['never_subscribed']]:
                 for sub in sub_dict:
                     if sub["stream_id"] in stream_ids:
                         subscribers = set(sub["subscribers"]) - user_ids
