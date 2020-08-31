@@ -1746,7 +1746,7 @@ class GetOldMessagesTest(ZulipTestCase):
             cursor.execute("""
             UPDATE zerver_message SET
             search_tsvector = to_tsvector('zulip.english_us_search',
-            subject || rendered_content)
+            subject || rendered_content || ' ' || extract_url_tokens(rendered_content))
             """)
 
     @override_settings(USING_PGROONGA=False)
@@ -1794,6 +1794,8 @@ class GetOldMessagesTest(ZulipTestCase):
             ('meetings', 'please bring your laptops to take notes'),
             ('dinner', 'Anybody staying late tonight?'),
             ('urltest', 'https://google.com'),
+            ('parts of urltest', 'Checkout why zulip rocks at zulipchat.com/features/'),
+            ('parts of urltest', 'Checkout this url: subdomain.domain.org/testpath/features.html'),
             ('日本', 'こんに ちは 。 今日は いい 天気ですね。'),
             ('日本', '今朝はごはんを食べました。'),
             ('日本', '昨日、日本 のお菓子を送りました。'),
@@ -1837,6 +1839,74 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(link_search_result['messages']), 1)
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com">https://<span class="highlight">google.com</span></a></p>')
+
+        narrow = [dict(operator='search', operand='google')]
+        link_search_result = self.get_and_check_messages(dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor=next_message_id,
+            num_before=0,
+            num_after=10,
+        ))
+        self.assertEqual(len(link_search_result['messages']), 1)
+        self.assertEqual(link_search_result['messages'][0]['match_content'],
+                         '<p><a href="https://google.com">https://google.com</a></p>')
+
+        narrow = [dict(operator='search', operand='domain')]
+        link_search_result = self.get_and_check_messages(dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor=next_message_id,
+            num_before=0,
+            num_after=10,
+        ))
+        self.assertEqual(len(link_search_result['messages']), 1)
+        self.assertEqual(link_search_result['messages'][0]['match_content'],
+                         '<p>Checkout this url: <a href="http://subdomain.domain.org/testpath/features.html">subdomain.domain.org/testpath/features.html</a></p>')
+
+        narrow = [dict(operator='search', operand='subdomain')]
+        link_search_result = self.get_and_check_messages(dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor=next_message_id,
+            num_before=0,
+            num_after=10,
+        ))
+        self.assertEqual(len(link_search_result['messages']), 1)
+        self.assertEqual(link_search_result['messages'][0]['match_content'],
+                         '<p>Checkout this url: <a href="http://subdomain.domain.org/testpath/features.html">subdomain.domain.org/testpath/features.html</a></p>')
+
+        narrow = [dict(operator='search', operand='testpath')]
+        link_search_result = self.get_and_check_messages(dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor=next_message_id,
+            num_before=0,
+            num_after=10,
+        ))
+        self.assertEqual(len(link_search_result['messages']), 1)
+        self.assertEqual(link_search_result['messages'][0]['match_content'],
+                         '<p>Checkout this url: <a href="http://subdomain.domain.org/testpath/features.html">subdomain.domain.org/testpath/features.html</a></p>')
+
+        narrow = [dict(operator='search', operand='org')]
+        link_search_result = self.get_and_check_messages(dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor=next_message_id,
+            num_before=0,
+            num_after=10,
+        ))
+        self.assertEqual(len(link_search_result['messages']), 1)
+        self.assertEqual(link_search_result['messages'][0]['match_content'],
+                         '<p>Checkout this url: <a href="http://subdomain.domain.org/testpath/features.html">subdomain.domain.org/testpath/features.html</a></p>')
+
+        narrow = [dict(operator='search', operand='features')]
+        link_search_result = self.get_and_check_messages(dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor=next_message_id,
+            num_before=0,
+            num_after=10,
+        ))
+        self.assertEqual(len(link_search_result['messages']), 2)
+        self.assertEqual(link_search_result['messages'][0]['match_content'],
+                         '<p>Checkout why zulip rocks at <a href="http://zulipchat.com/features/">zulipchat.com/features/</a></p>')
+        self.assertEqual(link_search_result['messages'][1]['match_content'],
+                         '<p>Checkout this url: <a href="http://subdomain.domain.org/testpath/features.html">subdomain.domain.org/testpath/features.html</a></p>')
 
         (meeting_message,) = [
             m for m in messages
@@ -1986,6 +2056,8 @@ class GetOldMessagesTest(ZulipTestCase):
             ('english', 'I want to go to 日本!'),
             ('english', 'Can you speak https://en.wikipedia.org/wiki/Japanese?'),
             ('english', 'https://google.com'),
+            ('parts of urltest', 'Checkout why zulip rocks at zulipchat.com/features/'),
+            ('parts of urltest', 'Checkout this url: subdomain.domain.org/testpath/features.html'),
             ('bread & butter', 'chalk & cheese'),
         ]
 
@@ -2004,7 +2076,7 @@ class GetOldMessagesTest(ZulipTestCase):
         with connection.cursor() as cursor:
             cursor.execute("""
                 UPDATE zerver_message SET
-                search_pgroonga = escape_html(subject) || ' ' || rendered_content
+                search_pgroonga = escape_html(subject) || ' ' || rendered_content || ' ' || extract_url_tokens(rendered_content)
                 """)
 
         narrow = [
@@ -2082,6 +2154,75 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com"><span class="highlight">https://google.com</span></a></p>')
 
+        narrow = [dict(operator='search', operand='google')]
+        link_search_result = self.get_and_check_messages(dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor=next_message_id,
+            num_before=0,
+            num_after=10,
+        ))
+        self.assertEqual(len(link_search_result['messages']), 1)
+        self.assertEqual(link_search_result['messages'][0]['match_content'],
+                         '<p><a href="https://google.com">https://<span class="highlight">google</span>.com</a></p>')
+
+        narrow = [dict(operator='search', operand='domain')]
+        link_search_result = self.get_and_check_messages(dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor=next_message_id,
+            num_before=0,
+            num_after=10,
+        ))
+        self.assertEqual(len(link_search_result['messages']), 1)
+        self.assertEqual(link_search_result['messages'][0]['match_content'],
+                         '<p>Checkout this url: <a href="http://subdomain.domain.org/testpath/features.html">sub<span class="highlight">domain</span>.<span class="highlight">domain</span>.org/testpath/features.html</a></p>')
+
+        narrow = [dict(operator='search', operand='subdomain')]
+        link_search_result = self.get_and_check_messages(dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor=next_message_id,
+            num_before=0,
+            num_after=10,
+        ))
+        self.assertEqual(len(link_search_result['messages']), 1)
+        self.assertEqual(link_search_result['messages'][0]['match_content'],
+                         '<p>Checkout this url: <a href="http://subdomain.domain.org/testpath/features.html"><span class="highlight">subdomain</span>.domain.org/testpath/features.html</a></p>')
+
+        narrow = [dict(operator='search', operand='testpath')]
+        link_search_result = self.get_and_check_messages(dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor=next_message_id,
+            num_before=0,
+            num_after=10,
+        ))
+        self.assertEqual(len(link_search_result['messages']), 1)
+        self.assertEqual(link_search_result['messages'][0]['match_content'],
+                         '<p>Checkout this url: <a href="http://subdomain.domain.org/testpath/features.html">subdomain.domain.org/<span class="highlight">testpath</span>/features.html</a></p>')
+
+        narrow = [dict(operator='search', operand='org')]
+        link_search_result = self.get_and_check_messages(dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor=next_message_id,
+            num_before=0,
+            num_after=10,
+        ))
+        self.assertEqual(len(link_search_result['messages']), 2)
+        self.assertEqual(link_search_result['messages'][0]['match_content'],
+                         '<p>Can you speak <a href="https://en.wikipedia.org/wiki/Japanese">https://en.wikipedia.<span class="highlight">org</span>/wiki/Japanese</a>?</p>')
+        self.assertEqual(link_search_result['messages'][1]['match_content'],
+                         '<p>Checkout this url: <a href="http://subdomain.domain.org/testpath/features.html">subdomain.domain.<span class="highlight">org</span>/testpath/features.html</a></p>')
+
+        narrow = [dict(operator='search', operand='features')]
+        link_search_result = self.get_and_check_messages(dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor=next_message_id,
+            num_before=0,
+            num_after=10,
+        ))
+        self.assertEqual(len(link_search_result['messages']), 2)
+        self.assertEqual(link_search_result['messages'][0]['match_content'],
+                         '<p>Checkout why zulip rocks at <a href="http://zulipchat.com/features/">zulipchat.com/<span class="highlight">features</span>/</a></p>')
+        self.assertEqual(link_search_result['messages'][1]['match_content'],
+                         '<p>Checkout this url: <a href="http://subdomain.domain.org/testpath/features.html">subdomain.domain.org/testpath/<span class="highlight">features</span>.html</a></p>')
         # Search operands with HTML Special Characters
         special_search_narrow = [
             dict(operator='search', operand='butter'),
