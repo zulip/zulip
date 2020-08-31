@@ -156,7 +156,7 @@ exports.compute_active_status = function () {
     return exports.IDLE;
 };
 
-function send_presence_to_server(want_redraw) {
+exports.send_presence_to_server = function (want_redraw) {
     // Zulip has 2 data feeds coming from the server to the client:
     // The server_events data, and this presence feed.  Data from
     // server_events is nicely serialized, but if we've been offline
@@ -173,6 +173,10 @@ function send_presence_to_server(want_redraw) {
     // which will clear suspect_offline and potentially trigger a
     // reload if the device was offline for more than
     // DEFAULT_EVENT_QUEUE_TIMEOUT_SECS).
+    if (page_params.is_web_public_guest) {
+        return false;
+    }
+
     server_events.check_for_unsuspend();
 
     channel.post({
@@ -200,12 +204,12 @@ function send_presence_to_server(want_redraw) {
             }
         },
     });
-}
+};
 
 function mark_client_active() {
     if (!exports.client_is_active) {
         exports.client_is_active = true;
-        send_presence_to_server(false);
+        exports.send_presence_to_server(false);
     }
 }
 
@@ -230,10 +234,10 @@ exports.initialize = function () {
 
     // Let the server know we're here, but pass "false" for
     // want_redraw, since we just got all this info in page_params.
-    send_presence_to_server(false);
+    exports.send_presence_to_server(false);
 
     function get_full_presence_list_update() {
-        send_presence_to_server(true);
+        exports.send_presence_to_server(true);
     }
 
     setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);

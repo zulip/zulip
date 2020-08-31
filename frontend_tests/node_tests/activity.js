@@ -761,3 +761,10 @@ run_test("electron_bridge", () => {
     activity.client_is_active = true;
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
 });
+
+run_test("test_send_or_receive_no_presence_for_web_public_guest", () => {
+    set_global("page_params", {
+        is_web_public_guest: true,
+    });
+    assert.equal(activity.send_presence_to_server(), false);
+});
