@@ -31,10 +31,10 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import recipient_for_user_profiles
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
-from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
 from zerver.lib.message import get_first_visible_message_id, messages_for_ids
 from zerver.lib.narrow import is_web_public_compatible, is_web_public_narrow
-from zerver.lib.response import json_error, json_success, json_unauthorized
+from zerver.lib.response import json_error, json_success
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
     can_access_stream_history_by_id,
@@ -865,10 +865,10 @@ def get_messages_backend(request: HttpRequest,
         # web-public results only) and clients with buggy
         # authentication code (where we should return an auth error).
         if not is_web_public_narrow(narrow):
-            return json_unauthorized()
+            raise MissingAuthenticationError()
         assert narrow is not None
         if not is_web_public_compatible(narrow):
-            return json_unauthorized()
+            raise MissingAuthenticationError()
 
         realm = get_valid_realm_from_request(request)
         # We use None to indicate unauthenticated requests as it's more
