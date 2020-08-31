@@ -365,6 +365,7 @@ class Realm(models.Model):
         },
         # ID 2 was used for the now-deleted Google Hangouts.
         # ID 3 reserved for optional Zoom, see below.
+        # ID 4 reserved for optional Big Blue Button, see below.
     }
 
     if settings.VIDEO_ZOOM_CLIENT_ID is not None and settings.VIDEO_ZOOM_CLIENT_SECRET is not None:
