@@ -553,7 +553,17 @@ def api_github_webhook(
         payload: Dict[str, Any]=REQ(argument_type='body'),
         branches: Optional[str]=REQ(default=None),
         user_specified_topic: Optional[str]=REQ("topic", default=None)) -> HttpResponse:
-    event = get_event(request, payload, branches)
+    """
+    Github sends the event as an HTTP header.  We have our
+    own Zulip-specific concept of an event that often maps
+    directly to the X_GITHUB_EVENT header's event, but we sometimes
+    refine it based on the payload.
+    """
+    header_event = validate_extract_webhook_http_header(request, "X_GITHUB_EVENT", "GitHub")
+    if header_event is None:
+        raise UnexpectedWebhookEventType("GitHub", "no header provided")
+
+    event = get_zulip_event_name(header_event, payload, branches)
     if event is None:
         # This is nothing to worry about--get_event() returns None
         # for events that are valid but not yet handled by us.
@@ -575,9 +585,17 @@ def api_github_webhook(
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
-def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[str]) -> Optional[str]:
-    event = validate_extract_webhook_http_header(request, 'X_GITHUB_EVENT', 'GitHub')
-    if event == 'pull_request':
+def get_zulip_event_name(
+    header_event: str,
+    payload: Dict[str, Any],
+    branches: Optional[str],
+) -> Optional[str]:
+    """
+    Usually, we return an event name that is a key in EVENT_FUNCTION_MAPPER.
+
+    We return None for an event that we know we don't want to handle.
+    """
+    if header_event == "pull_request":
         action = payload['action']
         if action in ('opened', 'synchronize', 'reopened', 'edited'):
             return 'opened_or_update_pull_request'
@@ -591,7 +609,7 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[
             return 'pull_request_ready_for_review'
         if action in IGNORED_PULL_REQUEST_ACTIONS:
             return None
-    elif event == 'push':
+    elif header_event == "push":
         if is_commit_push_event(payload):
             if branches is not None:
                 branch = get_branch_name_from_ref(payload['ref'])
@@ -600,11 +618,11 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[
             return "push_commits"
         else:
             return "push_tags"
-    elif event == 'check_run':
+    elif header_event == "check_run":
         if payload['check_run']['status'] != 'completed':
             return None
-        return event
-    elif event == "team":
+        return header_event
+    elif header_event == "team":
         action = payload["action"]
         if action == "edited":
             return "team"
@@ -615,12 +633,12 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[
             # this means GH has actually added new actions since September 2020,
             # so it's a bit more cause for alarm
             raise UnexpectedWebhookEventType("GitHub", f"unexpected team action {action}")
-    elif event in list(EVENT_FUNCTION_MAPPER.keys()) or event == 'ping':
-        return event
-    elif event in IGNORED_EVENTS:
+    elif header_event in list(EVENT_FUNCTION_MAPPER.keys()):
+        return header_event
+    elif header_event in IGNORED_EVENTS:
         return None
 
-    complete_event = "{}:{}".format(event, payload.get("action", "???"))  # nocoverage
+    complete_event = "{}:{}".format(header_event, payload.get("action", "???"))  # nocoverage
     raise UnexpectedWebhookEventType('GitHub', complete_event)
 
 def get_body_function_based_on_type(type: str) -> Any:
