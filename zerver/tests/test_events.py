@@ -1830,7 +1830,7 @@ class SubscribeActionTest(BaseAction):
         action: Callable[[], object] = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")
         events = self.verify_action(
             action,
-            event_types=["subscription", "realm_user"],
+            event_types=["subscription"],
             include_subscribers=include_subscribers)
         check_subscription_add('events[0]', events[0], include_subscribers)
 
