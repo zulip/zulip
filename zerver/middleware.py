@@ -5,11 +5,15 @@ import traceback
 from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Union
 
 from django.conf import settings
+from django.conf.urls.i18n import is_language_prefix_patterns_used
 from django.core.handlers.wsgi import WSGIRequest
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, StreamingHttpResponse
 from django.middleware.common import CommonMiddleware
+from django.middleware.locale import LocaleMiddleware as DjangoLocaleMiddleware
 from django.shortcuts import render
+from django.utils import translation
+from django.utils.cache import patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.translation import ugettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
@@ -364,6 +368,21 @@ def csrf_failure(request: HttpRequest, reason: str="") -> HttpResponse:
         return json_response_from_error(CsrfFailureError(reason))
     else:
         return html_csrf_failure(request, reason)
+
+class LocaleMiddleware(DjangoLocaleMiddleware):
+    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
+        # This is the same as the default LocaleMiddleware, minus the
+        # logic that redirects 404's that lack a prefixed language in
+        # the path into having a language.  See
+        # https://code.djangoproject.com/ticket/32005
+        language = translation.get_language()
+        language_from_path = translation.get_language_from_path(request.path_info)
+        urlconf = getattr(request, 'urlconf', settings.ROOT_URLCONF)
+        i18n_patterns_used, _ = is_language_prefix_patterns_used(urlconf)
+        if not (i18n_patterns_used and language_from_path):
+            patch_vary_headers(response, ('Accept-Language',))
+        response.setdefault('Content-Language', language)
+        return response
 
 class RateLimitMiddleware(MiddlewareMixin):
     def set_response_headers(self, response: HttpResponse,
