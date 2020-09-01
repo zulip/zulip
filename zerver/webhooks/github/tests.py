@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+import orjson
+
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 
@@ -354,17 +356,16 @@ A temporary team so that I can get some webhook fixtures!
         payload = self.get_body('check_run__in_progress')
         self.verify_post_is_ignored(payload, "check_run")
 
-    def test_pull_request_labeled_ignore(self) -> None:
-        payload = self.get_body('pull_request__labeled')
-        self.verify_post_is_ignored(payload, "pull_request")
-
-    def test_pull_request_unlabeled_ignore(self) -> None:
-        payload = self.get_body('pull_request__unlabeled')
-        self.verify_post_is_ignored(payload, "pull_request")
-
-    def test_pull_request_request_review_remove_ignore(self) -> None:
-        payload = self.get_body('pull_request__request_review_removed')
-        self.verify_post_is_ignored(payload, "pull_request")
+    def test_ignored_pull_request_actions(self) -> None:
+        ignored_actions = [
+            "labeled",
+            "review_request_removed",
+            "unlabeled",
+        ]
+        for action in ignored_actions:
+            data = dict(action=action)
+            payload = orjson.dumps(data).decode()
+            self.verify_post_is_ignored(payload, "pull_request")
 
     def test_push_1_commit_filtered_by_branches_ignore(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
