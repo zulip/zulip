@@ -390,3 +390,21 @@ A temporary team so that I can get some webhook fixtures!
         self.url = self.build_webhook_url()
         payload = self.get_body('repository_vulnerability_alert')
         self.verify_post_is_ignored(payload, "repository_vulnerability_alert")
+
+    def test_ignored_events(self) -> None:
+        # The payload for these events never gets looked at in the
+        # webhook itself; it only needs to be valid JSON.
+        payload = "{}"
+
+        ignored_events = [
+            "check_suite",
+            "label",
+            "meta",
+            "milestone",
+            "organization",
+            "project_card",
+            "repository_vulnerability_alert",
+        ]
+
+        for event in ignored_events:
+            self.verify_post_is_ignored(payload, event)
