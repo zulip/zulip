@@ -534,6 +534,18 @@ IGNORED_PULL_REQUEST_ACTIONS = [
     "unlabeled",
 ]
 
+IGNORED_TEAM_ACTIONS = [
+    # These are actions that are well documented by github
+    # (https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads)
+    # but we ignore them for now, possibly just due to laziness.
+    # One curious example here is team/added_to_repository, which is
+    # possibly the same as team_add.
+    "added_to_repository",
+    "created",
+    "deleted",
+    "removed_from_repository",
+]
+
 @api_key_only_webhook_view('GitHub', notify_bot_owner_on_invalid_json=True)
 @has_request_variables
 def api_github_webhook(
@@ -584,6 +596,17 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[
         if payload['check_run']['status'] != 'completed':
             return None
         return event
+    elif event == "team":
+        action = payload["action"]
+        if action == "edited":
+            return "team"
+        if action in IGNORED_TEAM_ACTIONS:
+            # no need to spam our logs, we just haven't implemented it yet
+            return None
+        else:
+            # this means GH has actually added new actions since September 2020,
+            # so it's a bit more cause for alarm
+            raise UnexpectedWebhookEventType("GitHub", f"unexpected team action {action}")
     elif event in list(EVENT_FUNCTION_MAPPER.keys()) or event == 'ping':
         return event
     elif event in IGNORED_EVENTS:

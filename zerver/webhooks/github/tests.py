@@ -369,6 +369,18 @@ A temporary team so that I can get some webhook fixtures!
             payload = orjson.dumps(data).decode()
             self.verify_post_is_ignored(payload, "pull_request")
 
+    def test_ignored_team_actions(self) -> None:
+        ignored_actions = [
+            "added_to_repository",
+            "created",
+            "deleted",
+            "removed_from_repository",
+        ]
+        for action in ignored_actions:
+            data = dict(action=action)
+            payload = orjson.dumps(data).decode()
+            self.verify_post_is_ignored(payload, "team")
+
     def test_push_1_commit_filtered_by_branches_ignore(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         payload = self.get_body('push__1_commit')
