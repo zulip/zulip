@@ -52,12 +52,15 @@ class TestStatsEndpoint(ZulipTestCase):
         result = self.client_get('/stats/realm/zulip/')
         self.assertEqual(result.status_code, 302)
 
+        result = self.client_get('/stats/realm/not_existing_realm/')
+        self.assertEqual(result.status_code, 302)
+
         user = self.example_user('hamlet')
         user.is_staff = True
         user.save(update_fields=['is_staff'])
 
         result = self.client_get('/stats/realm/not_existing_realm/')
-        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.status_code, 404)
 
         result = self.client_get('/stats/realm/zulip/')
         self.assertEqual(result.status_code, 200)

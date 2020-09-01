@@ -81,6 +81,7 @@ else:
 i18n_urls = [
     path('confirmation_key/', zerver.views.development.registration.confirmation_key),
 ]
+urls += i18n_urls
 
 # On a production instance, these files would be served by nginx.
 if settings.LOCAL_UPLOADS_DIR is not None:
