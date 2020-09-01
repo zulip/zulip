@@ -423,3 +423,33 @@ A temporary team so that I can get some webhook fixtures!
 
         for event in ignored_events:
             self.verify_post_is_ignored(payload, event)
+
+    def test_team_edited_error_handling(self) -> None:
+        event = "team"
+        payload = dict(
+            action="edited",
+            changes=dict(
+                bogus_key1={},
+                bogus_key2={},
+            ),
+            team=dict(
+                name="My Team"
+            ),
+        )
+
+        log_mock = patch("zerver.decorator.webhook_unexpected_events_logger.exception")
+
+        with log_mock as m:
+            msg = self.client_post(
+                self.url,
+                payload,
+                HTTP_X_GITHUB_EVENT=event,
+                content_type="application/json",
+            )
+
+        m.assert_called_once()
+        msg = m.call_args[0][0]
+        stack_info = m.call_args[1]["stack_info"]
+
+        self.assertIn("content_type: application/json", msg)
+        self.assertTrue(stack_info)
