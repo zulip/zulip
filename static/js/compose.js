@@ -1226,6 +1226,10 @@ exports.initialize = function () {
         compose_actions.update_placeholder_text();
     });
 
+    $("#stream_message_recipient_topic").on("focus", () => {
+        compose_actions.update_placeholder_text();
+    });
+
     if (page_params.narrow !== undefined) {
         if (page_params.narrow_topic !== undefined) {
             compose_actions.start("stream", {topic: page_params.narrow_topic});
