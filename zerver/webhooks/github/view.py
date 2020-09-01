@@ -280,7 +280,7 @@ def get_team_body(helper: Helper) -> str:
     if "privacy" in changes:
         new_visibility = payload["team"]["privacy"]
         return f"Team visibility changed to `{new_visibility}`"
-    else:  # nocoverage
+    else:
         raise UnexpectedWebhookEventType("GitHub", f"Team Edited: {changes.keys()}")
 
 def get_release_body(helper: Helper) -> str:
