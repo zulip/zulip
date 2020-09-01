@@ -1090,7 +1090,7 @@ input[type="checkbox"] {
     overflow: hidden;
     border-radius: 4px;
 
-    .icon-button {
+    .save-discard-widget-button {
         border-radius: 5px;
         border: 1px solid hsl(0, 0%, 80%);
         font-size: 14px;
@@ -1105,7 +1105,7 @@ input[type="checkbox"] {
             border: 1px solid hsl(0, 0%, 61%);
             color: hsl(0, 0%, 18%);
 
-            .icon-button-icon {
+            .save-discard-widget-button-icon {
                 color: hsl(0, 0%, 47%);
             }
         }
@@ -1120,7 +1120,7 @@ input[type="checkbox"] {
                 border: 1px solid hsl(166, 35%, 57%);
             }
 
-            .icon-button-icon {
+            .save-discard-widget-button-icon {
                 font-weight: lighter;
                 color: hsl(0, 0%, 100%);
             }
@@ -1131,7 +1131,7 @@ input[type="checkbox"] {
             }
         }
 
-        .icon-button-icon {
+        .save-discard-widget-button-icon {
             vertical-align: bottom;
             margin-right: 3px;
             margin-bottom: 1px;
@@ -1152,16 +1152,16 @@ input[type="checkbox"] {
     .save-button {
         margin-right: 5px;
 
-        .icon-button-loading {
+        .save-discard-widget-button-loading {
             display: none;
         }
 
         &.saving {
-            .icon-button-icon {
+            .save-discard-widget-button-icon {
                 display: none;
             }
 
-            .icon-button-loading {
+            .save-discard-widget-button-loading {
                 display: inline-block;
                 margin-right: 2px;
             }

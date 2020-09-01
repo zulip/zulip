@@ -150,14 +150,14 @@ function createSaveButtons(subsection) {
     const save_button_controls = $(".save-button-controls");
     const stub_save_button = $(`#org-submit-${subsection}`);
     const stub_discard_button = $(`#org-discard-${subsection}`);
-    const stub_save_button_text = $(".icon-button-text");
+    const stub_save_button_text = $(".save-discard-widget-button-text");
     stub_save_button_header.set_find_results(
         ".subsection-failed-status p",
         $("<failed status element>"),
     );
     stub_save_button.closest = () => stub_save_button_header;
     save_button_controls.set_find_results(".save-button", stub_save_button);
-    stub_save_button.set_find_results(".icon-button-text", stub_save_button_text);
+    stub_save_button.set_find_results(".save-discard-widget-button-text", stub_save_button_text);
     stub_save_button_header.set_find_results(".save-button-controls", save_button_controls);
     stub_save_button_header.set_find_results(
         ".subsection-changes-discard .button",

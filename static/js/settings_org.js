@@ -447,7 +447,7 @@ exports.change_save_button_state = function ($element, state) {
     }
 
     const $saveBtn = $element.find(".save-button");
-    const $textEl = $saveBtn.find(".icon-button-text");
+    const $textEl = $saveBtn.find(".save-discard-widget-button-text");
 
     if (state !== "saving") {
         $saveBtn.removeClass("saving");
