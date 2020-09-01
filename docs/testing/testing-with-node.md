@@ -167,7 +167,7 @@ branch coverage is a good goal.
 The overall project goal is to get to 100% node test coverage on all
 data/logic modules (UI modules are lower priority for unit testing).
 
-# Editor debugger integration
+## Editor debugger integration
 
 Our node test system is pretty simple, and it's possible to configure
 the native debugger features of popular editors to allow stepping
