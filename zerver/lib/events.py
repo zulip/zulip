@@ -165,7 +165,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['zulip_plan_is_not_limited'] = realm.plan_type != Realm.LIMITED
         state['upgrade_text_for_wide_organization_logo'] = str(Realm.UPGRADE_TEXT_STANDARD)
         state['realm_default_external_accounts'] = DEFAULT_EXTERNAL_ACCOUNTS
-        state['jitsi_server_url']                = settings.JITSI_SERVER_URL
+        state['jitsi_server_url']                = settings.JITSI_SERVER_URL.rstrip('/')
         state['development_environment']         = settings.DEVELOPMENT
         state['server_generation']               = settings.SERVER_GENERATION
         state['password_min_length']             = settings.PASSWORD_MIN_LENGTH
