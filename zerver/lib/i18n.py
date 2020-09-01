@@ -7,20 +7,7 @@ from typing import Any, Dict, List
 
 import orjson
 from django.conf import settings
-from django.utils import translation
-from django.utils.translation import ugettext as _
 
-
-def with_language(string: str, language: str) -> str:
-    """
-    This is an expensive function. If you are using it in a loop, it will
-    make your code slow.
-    """
-    old_language = translation.get_language()
-    translation.activate(language)
-    result = _(string)
-    translation.activate(old_language)
-    return result
 
 @lru_cache()
 def get_language_list() -> List[Dict[str, Any]]:

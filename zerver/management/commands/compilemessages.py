@@ -10,9 +10,9 @@ from django.conf import settings
 from django.conf.locale import LANG_INFO
 from django.core.management.base import CommandParser
 from django.core.management.commands import compilemessages
+from django.utils.translation import override as override_language
+from django.utils.translation import ugettext as _
 from django.utils.translation.trans_real import to_language
-
-from zerver.lib.i18n import with_language
 
 
 class Command(compilemessages.Command):
@@ -127,7 +127,8 @@ class Command(compilemessages.Command):
                 # Fallback to getting the name from PO file.
                 filename = self.get_po_filename(locale_path, locale)
                 name = self.get_name_from_po_file(filename, locale)
-                name_local = with_language(name, code)
+                with override_language(code):
+                    name_local = _(name)
 
             info['name'] = name
             info['name_local'] = name_local
