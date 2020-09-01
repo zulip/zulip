@@ -526,6 +526,14 @@ IGNORED_EVENTS = [
     "repository_vulnerability_alert",
 ]
 
+IGNORED_PULL_REQUEST_ACTIONS = [
+    "approved",
+    "converted_to_draft",
+    "labeled",
+    "review_request_removed",
+    "unlabeled",
+]
+
 @api_key_only_webhook_view('GitHub', notify_bot_owner_on_invalid_json=True)
 @has_request_variables
 def api_github_webhook(
@@ -561,8 +569,7 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[
             return f'{event}_{action}'
         if action == 'ready_for_review':
             return 'pull_request_ready_for_review'
-        # Unsupported pull_request events
-        if action in ('labeled', 'unlabeled', 'review_request_removed'):
+        if action in IGNORED_PULL_REQUEST_ACTIONS:
             return None
     elif event == 'push':
         if is_commit_push_event(payload):
