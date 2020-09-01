@@ -27,7 +27,7 @@ from sqlalchemy.sql import (
     union_all,
 )
 
-from zerver.context_processors import get_realm_from_request
+from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import recipient_for_user_profiles
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
@@ -870,10 +870,7 @@ def get_messages_backend(request: HttpRequest,
         if not is_web_public_compatible(narrow):
             return json_unauthorized()
 
-        realm = get_realm_from_request(request)
-        if realm is None:
-            return json_error(_("Invalid subdomain."))
-
+        realm = get_valid_realm_from_request(request)
         # We use None to indicate unauthenticated requests as it's more
         # readable than using AnonymousUser, and the lack of Django
         # stubs means that mypy can't check AnonymousUser well.

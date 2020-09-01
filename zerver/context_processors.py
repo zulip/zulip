@@ -11,6 +11,7 @@ from version import (
     ZULIP_VERSION,
 )
 from zerver.decorator import get_client_name
+from zerver.lib.exceptions import InvalidSubdomainError
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.send_email import FromAddress
@@ -53,6 +54,12 @@ def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
         except Realm.DoesNotExist:
             request.realm = None
     return request.realm
+
+def get_valid_realm_from_request(request: HttpRequest) -> Realm:
+    realm = get_realm_from_request(request)
+    if realm is None:
+        raise InvalidSubdomainError()
+    return realm
 
 def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     """Context available to all Zulip Jinja2 templates that have a request

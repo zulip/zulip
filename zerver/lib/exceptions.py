@@ -46,6 +46,7 @@ class ErrorCode(AbstractEnum):
     INVALID_API_KEY = ()
     INVALID_ZOOM_TOKEN = ()
     UNAUTHENTICATED_USER = ()
+    NONEXISTENT_SUBDOMAIN = ()
 
 class JsonableError(Exception):
     '''A standardized error format we can turn into a nice JSON HTTP response.
@@ -277,3 +278,14 @@ class MissingAuthenticationError(JsonableError):
 
     # No msg_format is defined since this exception is caught and
     # converted into json_unauthorized in Zulip's middleware.
+
+class InvalidSubdomainError(JsonableError):
+    code = ErrorCode.NONEXISTENT_SUBDOMAIN
+    http_status_code = 404
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Invalid subdomain")
