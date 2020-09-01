@@ -1,6 +1,6 @@
 import re
 from functools import partial
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -515,7 +515,7 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
 
     return get_repository_name(payload)
 
-EVENT_FUNCTION_MAPPER = {
+EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
     'commit_comment': get_commit_comment_body,
     'closed_pull_request': get_closed_pull_request_body,
     'create': partial(get_create_or_delete_body, action='created'),
@@ -605,7 +605,7 @@ def api_github_webhook(
 
     subject = get_subject_based_on_type(payload, event)
 
-    body_function = get_body_function_based_on_type(event)
+    body_function = EVENT_FUNCTION_MAPPER[event]
 
     helper = Helper(
         payload=payload,
@@ -671,6 +671,3 @@ def get_zulip_event_name(
 
     complete_event = "{}:{}".format(header_event, payload.get("action", "???"))  # nocoverage
     raise UnexpectedWebhookEventType('GitHub', complete_event)
-
-def get_body_function_based_on_type(type: str) -> Any:
-    return EVENT_FUNCTION_MAPPER.get(type)
