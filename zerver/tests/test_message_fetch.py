@@ -1212,10 +1212,10 @@ class GetOldMessagesTest(ZulipTestCase):
             "narrow": orjson.dumps([dict(operator='streams', operand="web-public")]).decode(),
         }
 
-        with mock.patch('zerver.views.message_fetch.get_realm_from_request', return_value=None):
+        with mock.patch('zerver.context_processors.get_realm', side_effect=Realm.DoesNotExist):
             result = self.client_get("/json/messages", dict(post_params))
-            self.assert_json_error(result, "Invalid subdomain.",
-                                   status_code=400)
+            self.assert_json_error(result, "Invalid subdomain",
+                                   status_code=404)
 
     def test_unauthenticated_get_messages_without_web_public(self) -> None:
         """
