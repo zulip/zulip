@@ -1884,7 +1884,14 @@ class SubscribeActionTest(BaseAction):
             'test_stream',
         )
 
-        self.subscribe(self.example_user("iago"), "test_stream")
+        # Subscribe other user to test 'peer_add' event flow for unsubscribed stream.
+        action = lambda: self.subscribe(self.example_user("iago"), "test_stream")
+        events = self.verify_action(
+            action,
+            event_types=["subscription"],
+            include_subscribers=include_subscribers,
+            state_change_expected=include_subscribers)
+        check_subscription_peer_add('events[0]', events[0])
 
         # Remove the user to test 'peer_remove' event flow for unsubscribed stream.
         action = lambda: bulk_remove_subscriptions(
