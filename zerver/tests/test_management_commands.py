@@ -183,7 +183,7 @@ class TestCommandsCanStart(ZulipTestCase):
         self.commands = [
             command
             for app_config in apps.get_app_configs()
-            if os.path.dirname(app_config.path) == settings.DEPLOY_ROOT
+            if os.path.dirname(os.path.realpath(app_config.path)) == settings.DEPLOY_ROOT
             for command in find_commands(os.path.join(app_config.path, "management"))
         ]
         assert self.commands
