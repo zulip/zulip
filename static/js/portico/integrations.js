@@ -1,6 +1,7 @@
 import _ from "lodash";
 
-import blueslip from "./../blueslip";
+import blueslip from "../blueslip";
+
 import * as google_analytics from "./google-analytics";
 import {path_parts} from "./landing-page";
 
