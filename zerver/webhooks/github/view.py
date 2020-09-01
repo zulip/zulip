@@ -554,17 +554,25 @@ def api_github_webhook(
         branches: Optional[str]=REQ(default=None),
         user_specified_topic: Optional[str]=REQ("topic", default=None)) -> HttpResponse:
     event = get_event(request, payload, branches)
-    if event is not None:
-        subject = get_subject_based_on_type(payload, event)
-        body_function = get_body_function_based_on_type(event)
-        if 'include_title' in signature(body_function).parameters:
-            body = body_function(
-                payload,
-                include_title=user_specified_topic is not None,
-            )
-        else:
-            body = body_function(payload)
-        check_send_webhook_message(request, user_profile, subject, body)
+    if event is None:
+        # This is nothing to worry about--get_event() returns None
+        # for events that are valid but not yet handled by us.
+        # See IGNORED_EVENTS, for example.
+        return json_success()
+
+    subject = get_subject_based_on_type(payload, event)
+
+    body_function = get_body_function_based_on_type(event)
+
+    if 'include_title' in signature(body_function).parameters:
+        body = body_function(
+            payload,
+            include_title=user_specified_topic is not None,
+        )
+    else:
+        body = body_function(payload)
+
+    check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
 def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[str]) -> Optional[str]:
