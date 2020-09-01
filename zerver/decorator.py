@@ -264,22 +264,16 @@ def access_user_by_api_key(request: HttpRequest, api_key: str, email: Optional[s
     return user_profile
 
 def log_exception_to_webhook_logger(
-        request: HttpRequest, user_profile: UserProfile,
-        request_body: Optional[str]=None,
-        unexpected_event: bool=False,
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: str,
+    unexpected_event: bool,
 ) -> None:
-    if request_body is not None:
-        payload = request_body
-    else:
-        payload = request.body
-
     if request.content_type == 'application/json':
         try:
             payload = orjson.dumps(orjson.loads(payload), option=orjson.OPT_INDENT_2).decode()
         except orjson.JSONDecodeError:
-            request_body = str(payload)
-    else:
-        request_body = str(payload)
+            pass
 
     custom_header_template = "{header}: {value}\n"
 
@@ -351,6 +345,7 @@ def api_key_only_webhook_view(
                     notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
                 else:
                     log_exception_to_webhook_logger(
+                        payload=request.body,
                         request=request,
                         user_profile=user_profile,
                         unexpected_event=isinstance(err, UnexpectedWebhookEventType),
@@ -600,9 +595,9 @@ def authenticated_rest_api_view(
                     request_body = request.POST.get('payload')
                     if request_body is not None:
                         log_exception_to_webhook_logger(
-                            request_body=request_body,
                             request=request,
                             user_profile=profile,
+                            payload=request_body,
                             unexpected_event=isinstance(err, UnexpectedWebhookEventType),
                         )
 
