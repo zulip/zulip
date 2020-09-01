@@ -358,6 +358,8 @@ A temporary team so that I can get some webhook fixtures!
 
     def test_ignored_pull_request_actions(self) -> None:
         ignored_actions = [
+            "approved",
+            "converted_to_draft",
             "labeled",
             "review_request_removed",
             "unlabeled",
