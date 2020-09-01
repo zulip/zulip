@@ -184,9 +184,9 @@ MIDDLEWARE = (
     'zerver.middleware.RateLimitMiddleware',
     'zerver.middleware.FlushDisplayRecipientCache',
     'zerver.middleware.ZulipCommonMiddleware',
-    'zerver.middleware.HostDomainMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
+    'zerver.middleware.LocaleMiddleware',
+    'zerver.middleware.HostDomainMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     # Make sure 2FA middlewares come after authentication middleware.
