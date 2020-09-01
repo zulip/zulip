@@ -578,7 +578,7 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[
         if action == 'closed':
             return 'closed_pull_request'
         if action == 'review_requested':
-            return f'{event}_{action}'
+            return "pull_request_review_requested"
         if action == 'ready_for_review':
             return 'pull_request_ready_for_review'
         if action in IGNORED_PULL_REQUEST_ACTIONS:
