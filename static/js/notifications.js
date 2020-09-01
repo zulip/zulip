@@ -115,15 +115,13 @@ function update_notification_sound_source() {
     const audio_file_without_extension =
         "/static/audio/notification_sounds/" + page_params.notification_sound;
     const option = $("#notification_sound").val();
-    console.log(option)
-    if (option === "silent"){
+    if (option === "silent") {
         source.removeAttr("src");
-        $("#notifications-area").find("audio")[0].load();
     } else {
         source.attr("src", get_audio_file_path(audio[0], audio_file_without_extension));
-    // Load it so that it is ready to be played; without this the old sound
-    // is played.
-    $("#notifications-area").find("audio")[0].load();
+        // Load it so that it is ready to be played; without this the old sound
+        // is played.
+        $("#notifications-area").find("audio")[0].load();
     }
 }
 
@@ -789,7 +787,6 @@ exports.handle_global_notification_updates = function (notification_name, settin
     }
 
     if (notification_name === "notification_sound") {
-        console.log(notification_sound);
         // Change the sound source with the new page `notification_sound`.
         update_notification_sound_source();
     }
