@@ -63,7 +63,7 @@
                 {{#if is_content_editable}}
                 <div class="message-edit-feature-group">
                     <input type="file" id="message_edit_file_input_{{message_id}}" class="notvisible pull-left" multiple />
-                    <a role="button" tabindex=0 class="message-control-button fa fa-smile-o" aria-label="{{t 'Add emoji' }}" id="emoji_map" tabindex=0 data-message-id="{{message_id}}" title="{{t 'Add emoji' }}"></a>
+                    <a role="button" tabindex=0 class="message-control-button fa fa-smile-o" aria-label="{{t 'Add emoji' }}" id="emoji_map" data-message-id="{{message_id}}" title="{{t 'Add emoji' }}"></a>
                     <a role="button" tabindex=0 class="message-control-button fa fa-font" aria-label="{{t 'Formatting' }}" title="{{t 'Formatting' }}" data-overlay-trigger="message-formatting" ></a>
                     {{#if file_upload_enabled}}
                     <a role="button" tabindex=0 class="message-control-button fa fa-paperclip notdisplayed" aria-label="{{t "Attach files" }}" id="attach_files_{{message_id}}" title="{{t "Attach files" }}"></a>
