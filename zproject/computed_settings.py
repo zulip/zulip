@@ -791,6 +791,18 @@ LOGGING: Dict[str, Any] = {
             'formatter': 'default',
             'filename': SLOW_QUERIES_LOG_PATH,
         },
+        'webhook_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'formatter': 'default',
+            'filename': WEBHOOK_LOG_PATH,
+        },
+        'webhook_unsupported_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'formatter': 'default',
+            'filename': WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH,
+        },
     },
     'loggers': {
         # The Python logging module uses a hierarchy of logger names for config:
@@ -937,12 +949,12 @@ LOGGING: Dict[str, Any] = {
         },
         'zulip.zerver.webhooks': {
             'level': 'DEBUG',
-            'handlers': ['file', 'errors_file'],
+            'handlers': ['webhook_file'],
             'propagate': False,
         },
         'zulip.zerver.webhooks.unsupported': {
             'level': 'DEBUG',
-            'handlers': ['file', 'errors_file'],
+            'handlers': ['webhook_unsupported_file'],
             'propagate': False,
         },
     },
