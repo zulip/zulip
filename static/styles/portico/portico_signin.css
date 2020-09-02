@@ -274,6 +274,10 @@ html {
 }
 
 .register-account {
+    .new-style {
+        padding: 20px 10px;
+    }
+
     .terms-of-service .input-group,
     .default-stream-groups .input-group,
     .default-stream-groups p {
@@ -740,7 +744,7 @@ button#register_auth_button_gitlab {
 }
 
 #registration {
-    width: 360px;
+    max-width: 375px;
     margin: 30px;
 
     fieldset {
@@ -1062,8 +1066,13 @@ button#register_auth_button_gitlab {
 }
 
 @media (width <= 795px) {
-    .register-account #registration {
-        padding: 10px;
+    .register-account {
+        padding-bottom: 30px;
+
+        #registration {
+            padding: 10px;
+            margin: 30px auto;
+        }
     }
 
     .register-page-container,
@@ -1159,6 +1168,10 @@ button#register_auth_button_gitlab {
 
     .account-creation {
         font-weight: 400;
+    }
+
+    .register-account {
+        padding-top: 60px;
     }
 
     .flex {
