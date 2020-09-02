@@ -334,6 +334,7 @@ class DecoratorTestCase(ZulipTestCase):
                 my_webhook_raises_exception(request)
 
             message = """
+summary: {summary}
 user: {email} ({realm})
 client: {client_name}
 URL: {path_info}
@@ -346,6 +347,7 @@ body:
                 """
             message = message.strip(' ')
             mock_exception.assert_called_with(message.format(
+                summary="raised by webhook function",
                 email=webhook_bot_email,
                 realm=webhook_bot_realm.string_id,
                 client_name=webhook_client_name,
@@ -365,6 +367,7 @@ body:
                 my_webhook_raises_exception_unexpected_event(request)
 
             message = """
+summary: {summary}
 user: {email} ({realm})
 client: {client_name}
 URL: {path_info}
@@ -377,6 +380,7 @@ body:
                 """
             message = message.strip(' ')
             mock_exception.assert_called_with(message.format(
+                summary=exception_msg,
                 email=webhook_bot_email,
                 realm=webhook_bot_realm.string_id,
                 client_name=webhook_client_name,
@@ -503,6 +507,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
                 my_webhook_raises_exception(request)
 
             message = """
+summary: {summary}
 user: {email} ({realm})
 client: {client_name}
 URL: {path_info}
@@ -515,6 +520,7 @@ body:
                 """
             message = message.strip(' ')
             mock_exception.assert_called_with(message.format(
+                summary="raised by webhook function",
                 email=webhook_bot_email,
                 realm=webhook_bot_realm.string_id,
                 client_name='ZulipClientNameWebhook',
@@ -547,6 +553,7 @@ body:
                 my_webhook_raises_exception(request)
 
             message = """
+summary: {summary}
 user: {email} ({realm})
 client: {client_name}
 URL: {path_info}
@@ -559,6 +566,7 @@ body:
                 """
             message = message.strip(' ')
             mock_exception.assert_called_with(message.format(
+                summary=exception_msg,
                 email=webhook_bot_email,
                 realm=webhook_bot_realm.string_id,
                 client_name='ZulipClientNameWebhook',
