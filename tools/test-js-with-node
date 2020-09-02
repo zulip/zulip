@@ -5,7 +5,7 @@ import os
 import pwd
 import subprocess
 import sys
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -203,16 +203,24 @@ def get_dev_host() -> str:
 def print_error(msg: str) -> None:
     print(BOLDRED + 'ERROR:' + ENDC + ' ' + msg)
 
+def clean_file(orig_fn: str) -> str:
+    fn = orig_fn
+    if not fn.endswith(".js"):
+        fn += ".js"
+    if "frontend_tests/" not in fn:
+        fn = os.path.join(ROOT_DIR, "frontend_tests", "node_tests", fn)
+    fn = os.path.abspath(fn)
+    if not os.path.exists(fn):
+        print(f"Cannot find {orig_fn} ({fn})")
+        sys.exit(1)
+    return fn
+
+def clean_files(fns: List[str]) -> List[str]:
+    cleaned_files = [clean_file(fn) for fn in fns]
+    return cleaned_files
+
 def run_tests_via_node_js() -> int:
     os.environ['TZ'] = 'UTC'
-
-    # Add ".js" to the end of all the file arguments, so index.js
-    # can actually verify if the file exists or not.
-    for index, arg in enumerate(options.args):
-        if not arg.endswith('.js') and not arg.endswith('.ts'):
-            # If it doesn't end with ".js" or ".ts", assume it is a JS file,
-            # since most files are currently JS files.
-            options.args[index] = arg + '.js'
 
     # The index.js test runner is the real "driver" here, and we launch
     # with either nyc or node, depending on whether we want coverage
@@ -220,7 +228,12 @@ def run_tests_via_node_js() -> int:
     # tracebacks, so you generally want to get coverage reports only
     # after making sure tests will pass.
     node_tests_cmd = ['node', '--stack-trace-limit=100', INDEX_JS]
-    node_tests_cmd += individual_files
+    if individual_files:
+        files = individual_files
+    else:
+        files = sorted(glob.glob("frontend_tests/node_tests/*.js"))
+
+    node_tests_cmd += clean_files(files)
     if options.coverage:
         coverage_dir = os.path.join(ROOT_DIR, 'var/node-coverage')
 
