@@ -424,7 +424,9 @@ A temporary team so that I can get some webhook fixtures!
         for event in ignored_events:
             self.verify_post_is_ignored(payload, event)
 
-    def test_team_edited_error_handling(self) -> None:
+    def test_team_edited_with_unsupported_keys(self) -> None:
+        self.subscribe(self.test_user, self.STREAM_NAME)
+
         event = "team"
         payload = dict(
             action="edited",
@@ -440,12 +442,20 @@ A temporary team so that I can get some webhook fixtures!
         log_mock = patch("zerver.decorator.webhook_unexpected_events_logger.exception")
 
         with log_mock as m:
-            msg = self.client_post(
+            stream_message = self.send_webhook_payload(
+                self.test_user,
                 self.url,
                 payload,
                 HTTP_X_GITHUB_EVENT=event,
                 content_type="application/json",
             )
+
+        self.assert_stream_message(
+            message=stream_message,
+            stream_name=self.STREAM_NAME,
+            topic_name="team My Team",
+            content="Team has changes to `bogus_key1/bogus_key2` data."
+        )
 
         m.assert_called_once()
         msg = m.call_args[0][0]
