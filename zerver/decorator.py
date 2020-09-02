@@ -266,6 +266,7 @@ def access_user_by_api_key(request: HttpRequest, api_key: str, email: Optional[s
 def log_exception_to_webhook_logger(
     request: HttpRequest,
     user_profile: UserProfile,
+    summary: str,
     payload: str,
     unexpected_event: bool,
 ) -> None:
@@ -286,6 +287,7 @@ def log_exception_to_webhook_logger(
     header_message = header_text if header_text else None
 
     message = """
+summary: {summary}
 user: {email} ({realm})
 client: {client_name}
 URL: {path_info}
@@ -296,6 +298,7 @@ body:
 
 {body}
     """.format(
+        summary=summary,
         email=user_profile.delivery_email,
         realm=user_profile.realm.string_id,
         client_name=request.client.name,
@@ -345,9 +348,10 @@ def api_key_only_webhook_view(
                     notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
                 else:
                     log_exception_to_webhook_logger(
-                        payload=request.body,
                         request=request,
                         user_profile=user_profile,
+                        summary=str(err),
+                        payload=request.body,
                         unexpected_event=isinstance(err, UnexpectedWebhookEventType),
                     )
                 raise err
@@ -597,6 +601,7 @@ def authenticated_rest_api_view(
                         log_exception_to_webhook_logger(
                             request=request,
                             user_profile=profile,
+                            summary=str(err),
                             payload=request_body,
                             unexpected_event=isinstance(err, UnexpectedWebhookEventType),
                         )
