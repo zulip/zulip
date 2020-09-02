@@ -112,7 +112,7 @@ def generate_random_token(length: int) -> str:
 
 def generate_api_key() -> str:
     choices = string.ascii_letters + string.digits
-    altchars = ''.join([choices[ord(os.urandom(1)) % 62] for _ in range(2)]).encode("utf-8")
+    altchars = ''.join(choices[ord(os.urandom(1)) % 62] for _ in range(2)).encode("utf-8")
     api_key = base64.b64encode(os.urandom(24), altchars=altchars).decode("utf-8")
     return api_key
 

@@ -371,9 +371,9 @@ def apply_event(state: Dict[str, Any],
 
                 if recipient_id not in conversations:
                     conversations[recipient_id] = dict(
-                        user_ids=sorted([user_dict['id'] for user_dict in
-                                         event['message']['display_recipient'] if
-                                         user_dict['id'] != user_profile.id]),
+                        user_ids=sorted(user_dict['id'] for user_dict in
+                                        event['message']['display_recipient'] if
+                                        user_dict['id'] != user_profile.id),
                     )
                 conversations[recipient_id]['max_message_id'] = event['message']['id']
             return
@@ -943,11 +943,11 @@ def post_process_state(user_profile: UserProfile, ret: Dict[str, Any],
 
     if 'raw_recent_private_conversations' in ret:
         # Reformat recent_private_conversations to be a list of dictionaries, rather than a dict.
-        ret['recent_private_conversations'] = sorted([
+        ret['recent_private_conversations'] = sorted((
             dict(
                 **value,
             ) for (recipient_id, value) in ret['raw_recent_private_conversations'].items()
-        ], key = lambda x: -x["max_message_id"])
+        ), key = lambda x: -x["max_message_id"])
         del ret['raw_recent_private_conversations']
 
     if not notification_settings_null and 'subscriptions' in ret:

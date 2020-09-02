@@ -360,14 +360,14 @@ class RateLimitMiddleware(MiddlewareMixin):
     def set_response_headers(self, response: HttpResponse,
                              rate_limit_results: List[RateLimitResult]) -> None:
         # The limit on the action that was requested is the minimum of the limits that get applied:
-        limit = min([result.entity.max_api_calls() for result in rate_limit_results])
+        limit = min(result.entity.max_api_calls() for result in rate_limit_results)
         response['X-RateLimit-Limit'] = str(limit)
         # Same principle applies to remaining api calls:
-        remaining_api_calls = min([result.remaining for result in rate_limit_results])
+        remaining_api_calls = min(result.remaining for result in rate_limit_results)
         response['X-RateLimit-Remaining'] = str(remaining_api_calls)
 
         # The full reset time is the maximum of the reset times for the limits that get applied:
-        reset_time = time.time() + max([result.secs_to_freedom for result in rate_limit_results])
+        reset_time = time.time() + max(result.secs_to_freedom for result in rate_limit_results)
         response['X-RateLimit-Reset'] = str(int(reset_time))
 
     def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:

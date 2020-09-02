@@ -72,10 +72,10 @@ def create_user_group(name: str, members: List[UserProfile], realm: Realm,
     with transaction.atomic():
         user_group = UserGroup.objects.create(name=name, realm=realm,
                                               description=description)
-        UserGroupMembership.objects.bulk_create([
+        UserGroupMembership.objects.bulk_create(
             UserGroupMembership(user_profile=member, user_group=user_group)
             for member in members
-        ])
+        )
         return user_group
 
 def get_user_group_members(user_group: UserGroup) -> List[UserProfile]:

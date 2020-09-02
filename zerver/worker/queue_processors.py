@@ -181,8 +181,8 @@ class QueueProcessingWorker(ABC):
         self.update_statistics(0)
 
     def update_statistics(self, remaining_queue_size: int) -> None:
-        total_seconds = sum([seconds for _, seconds in self.recent_consume_times])
-        total_events = sum([events_number for events_number, _ in self.recent_consume_times])
+        total_seconds = sum(seconds for _, seconds in self.recent_consume_times)
+        total_events = sum(events_number for events_number, _ in self.recent_consume_times)
         if total_events == 0:
             recent_average_consume_time = None
         else:

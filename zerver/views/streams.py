@@ -382,7 +382,7 @@ def remove_subscriptions_backend(
 def you_were_just_subscribed_message(acting_user: UserProfile,
                                      recipient_user: UserProfile,
                                      stream_names: Set[str]) -> str:
-    subscriptions = sorted(list(stream_names))
+    subscriptions = sorted(stream_names)
     if len(subscriptions) == 1:
         with override_language(recipient_user.default_language):
             return _("{user_full_name} subscribed you to the stream {stream_name}.").format(
