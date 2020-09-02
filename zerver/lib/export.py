@@ -1692,7 +1692,7 @@ def export_messages_single_user(user_profile: UserProfile, output_dir: Path,
     while True:
         actual_query = user_message_query.select_related(
             "message", "message__sending_client").filter(id__gt=min_id)[0:chunk_size]
-        user_message_chunk = [um for um in actual_query]
+        user_message_chunk = list(actual_query)
         user_message_ids = {um.id for um in user_message_chunk}
 
         if len(user_message_chunk) == 0:

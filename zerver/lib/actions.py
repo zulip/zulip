@@ -1937,9 +1937,7 @@ def get_recipient_from_user_profiles(recipient_profiles: Sequence[UserProfile],
                                      sender: UserProfile) -> Recipient:
 
     # Avoid mutating the passed in list of recipient_profiles.
-    recipient_profiles_map = {}
-    for user_profile in recipient_profiles:
-        recipient_profiles_map[user_profile.id] = user_profile
+    recipient_profiles_map = {user_profile.id: user_profile for user_profile in recipient_profiles}
 
     if forwarded_mirror_message:
         # In our mirroring integrations with some third-party
@@ -1959,15 +1957,15 @@ def get_recipient_from_user_profiles(recipient_profiles: Sequence[UserProfile],
     if (len(recipient_profiles_map) == 2 and sender.id in recipient_profiles_map):
         del recipient_profiles_map[sender.id]
 
-    assert len(recipient_profiles_map) != 0
+    assert recipient_profiles_map
     if len(recipient_profiles_map) == 1:
-        user_profile = list(recipient_profiles_map.values())[0]
+        [user_profile] = recipient_profiles_map.values()
         return user_profile.recipient
 
     # Otherwise, we need a huddle.  Make sure the sender is included in huddle messages
     recipient_profiles_map[sender.id] = sender
 
-    user_ids: Set[int] = {user_id for user_id in recipient_profiles_map}
+    user_ids = set(recipient_profiles_map)
     return get_huddle_recipient(user_ids)
 
 def validate_recipient_user_profiles(user_profiles: Sequence[UserProfile],
@@ -2808,11 +2806,8 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     users = list(users)
 
     recipients_map: Dict[int, int] = {stream.id: stream.recipient_id for stream in streams}
-    recipient_ids: List[int] = [recipient_id for recipient_id in recipients_map.values()]
-
-    stream_map: Dict[int, Stream] = {}
-    for stream in streams:
-        stream_map[recipients_map[stream.id]] = stream
+    recipient_ids = list(recipients_map.values())
+    stream_map = {recipients_map[stream.id]: stream for stream in streams}
 
     subs_by_user: Dict[int, List[Subscription]] = defaultdict(list)
     all_subs_query = get_stream_subscriptions_for_users(users).select_related('user_profile')
@@ -3107,8 +3102,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
     for stream in streams:
         send_peer_remove_event(stream=stream)
 
-    new_vacant_streams = [stream for stream in
-                          set(occupied_streams_before) - set(occupied_streams_after)]
+    new_vacant_streams = set(occupied_streams_before) - set(occupied_streams_after)
     new_vacant_private_streams = [stream for stream in new_vacant_streams
                                   if stream.invite_only]
     new_vacant_public_streams = [stream for stream in new_vacant_streams

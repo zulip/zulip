@@ -200,9 +200,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         users_result = self.client_get('/json/users')
         members = orjson.loads(users_result.content)['members']
-        bots = [m for m in members if m['email'] == 'hambot-bot@zulip.testserver']
-        self.assertEqual(len(bots), 1)
-        bot = bots[0]
+        [bot] = [m for m in members if m['email'] == 'hambot-bot@zulip.testserver']
         self.assertEqual(bot['bot_owner_id'], self.example_user('hamlet').id)
         self.assertEqual(bot['user_id'], self.get_bot_user(email).id)
 
@@ -332,9 +330,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         users_result = self.client_get('/json/users')
         members = orjson.loads(users_result.content)['members']
-        bots = [m for m in members if m['email'] == 'hambot-bot@zulip.testserver']
-        self.assertEqual(len(bots), 1)
-        bot = bots[0]
+        [bot] = [m for m in members if m['email'] == 'hambot-bot@zulip.testserver']
         self.assertEqual(bot['bot_owner_id'], user.id)
         self.assertEqual(bot['user_id'], self.get_bot_user(email).id)
 
@@ -574,9 +570,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
 
-        all_bots = UserProfile.objects.filter(is_bot=True, bot_owner=user, is_active=True)
-        bots = [bot for bot in all_bots]
-        self.assertEqual(len(bots), 2)
+        self.assertEqual(UserProfile.objects.filter(is_bot=True, bot_owner=user, is_active=True).count(), 2)
 
         result = self.client_delete('/json/users/me')
         self.assert_json_success(result)
@@ -584,9 +578,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertFalse(user.is_active)
 
         self.login('iago')
-        all_bots = UserProfile.objects.filter(is_bot=True, bot_owner=user, is_active=True)
-        bots = [bot for bot in all_bots]
-        self.assertEqual(len(bots), 0)
+        self.assertFalse(UserProfile.objects.filter(is_bot=True, bot_owner=user, is_active=True).exists())
 
     def test_cannot_deactivate_other_realm_bot(self) -> None:
         user = self.mit_user('starnine')
@@ -1439,10 +1431,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_email = "outgoingservicebot-bot@zulip.testserver"
         bot_realm = get_realm('zulip')
         bot = get_user(bot_email, bot_realm)
-        services = get_bot_services(bot.id)
-        service = services[0]
+        [service] = get_bot_services(bot.id)
 
-        self.assertEqual(len(services), 1)
         self.assertEqual(service.name, "outgoingservicebot")
         self.assertEqual(service.base_url, "http://127.0.0.1:5002")
         self.assertEqual(service.user_profile, bot)
@@ -1506,11 +1496,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_email = "embeddedservicebot-bot@zulip.testserver"
         bot_realm = get_realm('zulip')
         bot = get_user(bot_email, bot_realm)
-        services = get_bot_services(bot.id)
-        service = services[0]
+        [service] = get_bot_services(bot.id)
         bot_config = get_bot_config(bot)
         self.assertEqual(bot_config, bot_config_info)
-        self.assertEqual(len(services), 1)
         self.assertEqual(service.name, "followup")
         self.assertEqual(service.user_profile, bot)
 
