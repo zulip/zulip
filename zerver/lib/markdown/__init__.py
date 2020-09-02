@@ -2124,7 +2124,7 @@ def privacy_clean_markdown(content: str) -> str:
 
 def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[FullNameInfo]:
     if not mention_texts:
-        return list()
+        return []
 
     # Remove the trailing part of the `name|id` mention syntax,
     # thus storing only full names in full_names.
