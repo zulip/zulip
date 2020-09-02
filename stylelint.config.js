@@ -21,13 +21,13 @@ module.exports = {
         // Limit language features
         "color-no-hex": true,
         "color-named": "never",
-        "declaration-property-value-blacklist": {
+        "declaration-property-value-disallowed-list": {
             // thin/medium/thick is under-specified, please use pixels
             "/^(border(-top|-right|-bottom|-left)?|outline)(-width)?$/": [
                 /\b(thin|medium|thick)\b/,
             ],
         },
-        "function-blacklist": [
+        "function-disallowed-list": [
             // We use hsl(a) instead of rgb(a)
             "rgb",
             "rgba",
@@ -35,7 +35,7 @@ module.exports = {
 
         // Zulip CSS should have no dependencies on external resources
         "function-url-no-scheme-relative": true,
-        "function-url-scheme-whitelist": [],
+        "function-url-scheme-allowed-list": [],
 
         // We use autoprefixer to generate vendor prefixes
         "at-rule-no-vendor-prefix": true,
