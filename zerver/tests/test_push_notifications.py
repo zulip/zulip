@@ -556,7 +556,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         mock_request.side_effect = self.bounce_request
         # Send fixture generated with Zulip 2.0 code
         send_to_push_bouncer('POST', 'server/analytics', {
-            'realm_counts': '[{"id":1,"property":"invites_sent::day","subgroup":null,"end_time":574300800.0,"value":5,"realm":2}]',  # lint:ignore
+            'realm_counts': '[{"id":1,"property":"invites_sent::day","subgroup":null,"end_time":574300800.0,"value":5,"realm":2}]',
             'installation_counts': '[]',
             'version': '"2.0.6+git"'})
         self.assertEqual(mock_request.call_count, 1)

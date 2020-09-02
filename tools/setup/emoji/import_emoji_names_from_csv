@@ -120,10 +120,6 @@ def main() -> None:
         else:
             emoji_entry = ACTIVE_ENTRY % dict(**context)
 
-        # If an entry is longer than 120 then append
-        # `    # ignorelongline` to avoid lint errors.
-        if len(emoji_entry.split('\n')[-1]) >= 110:
-            emoji_entry += '    # ignorelongline'
         emoji_entries += emoji_entry
 
     with open(args.output_file_path, 'w') as fp:
