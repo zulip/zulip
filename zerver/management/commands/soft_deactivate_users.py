@@ -47,7 +47,7 @@ class Command(ZulipBaseCommand):
                             type=int,
                             default=28,
                             help='Number of days of inactivity before soft-deactivation')
-        parser.add_argument('users', metavar='<users>', nargs='*', default=[],
+        parser.add_argument('users', metavar='<users>', nargs='*',
                             help="A list of user emails to soft activate/deactivate.")
 
     def handle(self, *args: Any, **options: Any) -> None:
