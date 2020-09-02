@@ -15,7 +15,6 @@ class Command(ZulipBaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--force',
                             action="store_true",
-                            default=False,
                             help='Override that the domain is restricted to external users.')
         parser.add_argument('emails', metavar='<email>', type=str, nargs='*',
                             help='email of users to generate an activation link for')

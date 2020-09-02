@@ -46,11 +46,11 @@ class Command(BaseCommand):
                                  '(use multiple ports to start multiple servers)')
 
         parser.add_argument('--nokeepalive', action='store_true',
-                            dest='no_keep_alive', default=False,
+                            dest='no_keep_alive',
                             help="Tells Tornado to NOT keep alive http connections.")
 
         parser.add_argument('--noxheaders', action='store_false',
-                            dest='xheaders', default=True,
+                            dest='xheaders',
                             help="Tells Tornado to NOT override remote IP with X-Real-IP.")
 
     def handle(self, addrport: str, **options: bool) -> None:

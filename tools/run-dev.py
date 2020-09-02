@@ -52,16 +52,16 @@ parser.add_argument('--interface',
                     default=None, help='Set the IP or hostname for the proxy to listen on')
 parser.add_argument('--no-clear-memcached',
                     action='store_false', dest='clear_memcached',
-                    default=True, help='Do not clear memcached')
+                    help='Do not clear memcached')
 parser.add_argument('--streamlined',
                     action="store_true",
-                    default=False, help='Avoid thumbor, etc.')
+                    help='Avoid thumbor, etc.')
 parser.add_argument('--force',
                     action="store_true",
-                    default=False, help='Run command despite possible problems.')
+                    help='Run command despite possible problems.')
 parser.add_argument('--enable-tornado-logging',
                     action="store_true",
-                    default=False, help='Enable access logs from tornado proxy server.')
+                    help='Enable access logs from tornado proxy server.')
 options = parser.parse_args()
 
 assert_provisioning_status_ok(options.force)

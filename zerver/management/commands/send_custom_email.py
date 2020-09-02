@@ -16,7 +16,7 @@ class Command(ZulipBaseCommand):
     document used to generate the email, or on the command line."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('--entire-server', action="store_true", default=False,
+        parser.add_argument('--entire-server', action="store_true",
                             help="Send to every user on the server.")
         parser.add_argument('--markdown-template-path', '--path',
                             required=True,

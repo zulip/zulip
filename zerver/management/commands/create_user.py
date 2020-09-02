@@ -24,7 +24,6 @@ Omit both <email> and <full name> for interactive user creation.
         parser.add_argument('--this-user-has-accepted-the-tos',
                             dest='tos',
                             action="store_true",
-                            default=False,
                             help='Acknowledgement that the user has already accepted the ToS.')
         parser.add_argument('--password',
                             type=str,

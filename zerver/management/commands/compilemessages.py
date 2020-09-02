@@ -23,7 +23,6 @@ class Command(compilemessages.Command):
         parser.add_argument(
             '--strict', '-s',
             action='store_true',
-            default=False,
             help='Stop execution in case of errors.')
 
     def handle(self, *args: Any, **options: Any) -> None:

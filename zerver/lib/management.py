@@ -65,7 +65,6 @@ You can use the command list_realms to find ID of the realms in this server."""
         parser.add_argument(
             '-a', '--all-users',
             action="store_true",
-            default=False,
             help=all_users_help)
 
     def get_realm(self, options: Dict[str, Any]) -> Optional[Realm]:
