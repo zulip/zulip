@@ -1,6 +1,5 @@
 import unittest
-
-import mock
+from unittest import mock
 
 from scripts.lib.hash_reqs import expand_reqs, hash_deps
 from tools.setup.setup_venvs import DEV_REQS_FILE
