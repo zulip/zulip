@@ -469,19 +469,24 @@ TWITTER_ACCESS_TOKEN_SECRET = get_secret("twitter_access_token_secret")
 # These are the bots that Zulip sends automated messages as.
 INTERNAL_BOTS = [{'var_name': 'NOTIFICATION_BOT',
                   'email_template': 'notification-bot@%s',
-                  'name': 'Notification Bot'},
+                  'name': 'Notification Bot',
+                  },
                  {'var_name': 'EMAIL_GATEWAY_BOT',
                   'email_template': 'emailgateway@%s',
-                  'name': 'Email Gateway'},
+                  'name': 'Email Gateway',
+                  },
                  {'var_name': 'NAGIOS_SEND_BOT',
                   'email_template': 'nagios-send-bot@%s',
-                  'name': 'Nagios Send Bot'},
+                  'name': 'Nagios Send Bot',
+                  },
                  {'var_name': 'NAGIOS_RECEIVE_BOT',
                   'email_template': 'nagios-receive-bot@%s',
-                  'name': 'Nagios Receive Bot'},
+                  'name': 'Nagios Receive Bot',
+                  },
                  {'var_name': 'WELCOME_BOT',
                   'email_template': 'welcome-bot@%s',
-                  'name': 'Welcome Bot'}]
+                  'name': 'Welcome Bot',
+                  }]
 
 # Bots that are created for each realm like the reminder-bot goes here.
 REALM_INTERNAL_BOTS: List[Dict[str, str]] = []
@@ -490,17 +495,20 @@ REALM_INTERNAL_BOTS: List[Dict[str, str]] = []
 DISABLED_REALM_INTERNAL_BOTS = [
     {'var_name': 'REMINDER_BOT',
      'email_template': 'reminder-bot@%s',
-     'name': 'Reminder Bot'},
+     'name': 'Reminder Bot',
+     },
 ]
 
 if PRODUCTION:
     INTERNAL_BOTS += [
         {'var_name': 'NAGIOS_STAGING_SEND_BOT',
          'email_template': 'nagios-staging-send-bot@%s',
-         'name': 'Nagios Staging Send Bot'},
+         'name': 'Nagios Staging Send Bot',
+         },
         {'var_name': 'NAGIOS_STAGING_RECEIVE_BOT',
          'email_template': 'nagios-staging-receive-bot@%s',
-         'name': 'Nagios Staging Receive Bot'},
+         'name': 'Nagios Staging Receive Bot',
+         },
     ]
 
 INTERNAL_BOT_DOMAIN = "zulip.com"

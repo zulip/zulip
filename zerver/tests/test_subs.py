@@ -3392,7 +3392,8 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assert_json_success(result)
         json = result.json()
         for key, val in json_dict.items():
-            self.assertEqual(sorted(val), sorted(json[key]))  # we don't care about the order of the items
+            # we don't care about the order of the items
+            self.assertEqual(sorted(val), sorted(json[key]))
         user = get_user(email, realm)
         new_streams = self.get_streams(user)
         self.assertEqual(sorted(new_streams), sorted(new_subs))
@@ -3425,7 +3426,8 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         random_streams = self.make_random_stream_names(self.streams)
         self.assertNotEqual(len(random_streams), 0)  # necessary for full test coverage
-        streams_to_remove = random_streams[:1]  # pick only one fake stream, to make checking the error message easy
+        # pick only one fake stream, to make checking the error message easy
+        streams_to_remove = random_streams[:1]
         result = self.client_delete("/json/users/me/subscriptions",
                                     {"subscriptions": orjson.dumps(streams_to_remove).decode()})
         self.assert_json_error(result, f"Stream(s) ({random_streams[0]}) do not exist")

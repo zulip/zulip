@@ -94,18 +94,19 @@ class Database:
         # what the database is as runtime.
         # Also we export ZULIP_DB_NAME which is ignored by dev platform but
         # recognised by test platform and used to migrate correct db.
-        env_prelude = [
+        manage_py = [
             'env',
             'DJANGO_SETTINGS_MODULE=' + self.settings,
             'ZULIP_DB_NAME=' + self.database_name,
+            './manage.py',
         ]
 
         run([
-            *env_prelude, './manage.py', 'migrate', '--no-input',
+            *manage_py, 'migrate', '--no-input'
         ])
 
         run([
-            *env_prelude, './manage.py', 'get_migration_status', '--output='+self.migration_status_file,
+            *manage_py, 'get_migration_status', '--output='+self.migration_status_file
         ])
 
     def what_to_do_with_migrations(self) -> str:

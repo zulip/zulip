@@ -174,15 +174,15 @@ SPLIT_BOUNDARY = '?.!'  # Used to split string into sentences.
 SPLIT_BOUNDARY_REGEX = re.compile(fr'[{SPLIT_BOUNDARY}]')
 
 # Regexes which check capitalization in sentences.
-DISALLOWED_REGEXES = [re.compile(regex) for regex in [
+DISALLOWED = [
     r'^[a-z](?!\})',  # Checks if the sentence starts with a lower case character.
     r'^[A-Z][a-z]+[\sa-z0-9]+[A-Z]',  # Checks if an upper case character exists
     # after a lower case character when the first character is in upper case.
-]]
+]
+DISALLOWED_REGEX = re.compile(r"|".join(DISALLOWED))
 
 BANNED_WORDS = {
-    'realm': ('The term realm should not appear in user-facing strings. '
-              'Use organization instead.'),
+    'realm': 'The term realm should not appear in user-facing strings. Use organization instead.',
 }
 
 def get_safe_phrase(phrase: str) -> str:
@@ -232,18 +232,7 @@ def get_safe_text(text: str) -> str:
 
 def is_capitalized(safe_text: str) -> bool:
     sentences = SPLIT_BOUNDARY_REGEX.split(safe_text)
-    sentences = [sentence.strip()
-                 for sentence in sentences if sentence.strip()]
-
-    if not sentences:
-        return False
-
-    for sentence in sentences:
-        for regex in DISALLOWED_REGEXES:
-            if regex.search(sentence):
-                return False
-
-    return True
+    return not any(DISALLOWED_REGEX.search(sentence.strip()) for sentence in sentences)
 
 def check_banned_words(text: str) -> List[str]:
     lower_cased_text = text.lower()

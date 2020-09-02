@@ -94,7 +94,8 @@ Example:
         else:
             with open(fixture_path, "rb") as fp:
                 message = email.message_from_binary_file(fp, policy=email.policy.default)
-                assert isinstance(message, EmailMessage)  # https://github.com/python/typeshed/issues/2417
+                # https://github.com/python/typeshed/issues/2417
+                assert isinstance(message, EmailMessage)
                 return message
 
     def _prepare_message(self, message: EmailMessage, realm: Realm, stream_name: str) -> None:

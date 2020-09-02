@@ -72,7 +72,7 @@ WORD_SET = {
     'uses', 'using', 'used',
 }
 
-imperative_forms = sorted([
+imperative_forms = [
     'add', 'allow', 'amend', 'bump', 'calculate', 'change', 'clean', 'commit',
     'correct', 'create', 'darken', 'disable', 'display', 'document', 'dry',
     'end', 'enforce', 'enqueue', 'extract', 'finish', 'fix', 'format', 'guard',
@@ -81,7 +81,8 @@ imperative_forms = sorted([
     'refactor', 'remove', 'rename', 'reorder', 'replace', 'require', 'restore',
     'send', 'separate', 'set', 'show', 'simplify', 'skip', 'sort', 'speed',
     'start', 'support', 'take', 'test', 'truncate', 'update', 'use',
-])
+]
+imperative_forms.sort()
 
 
 def head_binary_search(key: Text, words: List[str]) -> str:

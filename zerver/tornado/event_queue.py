@@ -256,7 +256,8 @@ class EventQueue:
 
         self.queue: Deque[Dict[str, Any]] = deque()
         self.next_event_id: int = 0
-        self.newest_pruned_id: Optional[int] = -1  # will only be None for migration from old versions
+        # will only be None for migration from old versions
+        self.newest_pruned_id: Optional[int] = -1
         self.id: str = id
         self.virtual_events: Dict[str, Dict[str, Any]] = {}
 

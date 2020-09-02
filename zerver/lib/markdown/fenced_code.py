@@ -405,8 +405,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
     def format_spoiler(self, header: str, text: str) -> str:
         output = []
         header_div_open_html = '<div class="spoiler-block"><div class="spoiler-header">'
-        end_header_start_content_html = '</div><div class="spoiler-content"' \
-            ' aria-hidden="true">'
+        end_header_start_content_html = '</div><div class="spoiler-content" aria-hidden="true">'
         footer_html = '</div></div>'
 
         output.append(self.placeholder(header_div_open_html))

@@ -22,7 +22,7 @@ import responses
 from django.conf import settings
 from django.test.utils import get_runner
 
-target_fully_covered = {path for target in [
+target_fully_covered = [
     'analytics/lib/*.py',
     'analytics/models.py',
     'analytics/tests/*.py',
@@ -51,9 +51,9 @@ target_fully_covered = {path for target in [
     # 'zerver/webhooks/*/*.py',
     # 'zerver/webhooks/*/*/*.py',
     'zerver/worker/*.py',
-] for path in glob.glob(target)}
+]
 
-not_yet_fully_covered = {path for target in [
+not_yet_fully_covered = [
     # Analytics fixtures library is used to generate test fixtures;
     # isn't properly accounted for in test coverage analysis since it
     # runs before tests.
@@ -136,9 +136,12 @@ not_yet_fully_covered = {path for target in [
     'zerver/webhooks/teamcity/view.py',
     'zerver/webhooks/travis/view.py',
     'zerver/webhooks/zapier/view.py',
-] for path in glob.glob(target)}
+]
 
-enforce_fully_covered = sorted(target_fully_covered - not_yet_fully_covered)
+enforce_fully_covered = sorted(
+    {path for target in target_fully_covered for path in glob.glob(target)}
+    - {path for target in not_yet_fully_covered for path in glob.glob(target)}
+)
 
 FAILED_TEST_PATH = 'var/last_test_failure.json'
 

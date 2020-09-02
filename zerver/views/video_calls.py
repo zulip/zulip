@@ -208,11 +208,14 @@ def join_bigbluebutton(request: HttpRequest, meeting_id: str = REQ(validator=che
         if payload.find("returncode").text != "SUCCESS":
             return json_error(_("Big Blue Button server returned an unexpected error."))
 
-        join_params = urlencode({  # type: ignore[type-var] # https://github.com/python/typeshed/issues/4234
-            "meetingID": meeting_id,
-            "password": password,
-            "fullName": request.user.full_name
-        }, quote_via=quote)
+        join_params = urlencode(  # type: ignore[type-var] # https://github.com/python/typeshed/issues/4234
+            {
+                "meetingID": meeting_id,
+                "password": password,
+                "fullName": request.user.full_name,
+            },
+            quote_via=quote,
+        )
 
         checksum = hashlib.sha1(("join" + join_params + settings.BIG_BLUE_BUTTON_SECRET).encode()).hexdigest()
         redirect_url_base = add_query_to_redirect_url(settings.BIG_BLUE_BUTTON_URL + "api/join", join_params)

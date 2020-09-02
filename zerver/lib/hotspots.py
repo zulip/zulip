@@ -25,8 +25,7 @@ ALL_HOTSPOTS: Dict[str, Dict[str, str]] = {
     },
     'intro_gear': {
         'title': _('Settings'),
-        'description': _('Go to Settings to configure your '
-                         'notifications and display settings.'),
+        'description': _('Go to Settings to configure your notifications and display settings.'),
     },
     'intro_compose': {
         'title': _('Compose'),

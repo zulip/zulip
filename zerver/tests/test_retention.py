@@ -285,7 +285,8 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         # Insert an exception near the end of the archiving process of a chunk:
         with mock.patch("zerver.lib.retention.delete_messages", side_effect=Exception):
             with self.assertRaises(Exception):
-                archive_messages(chunk_size=1000)  # Specify large chunk_size to ensure things happen in a single batch
+                # Specify large chunk_size to ensure things happen in a single batch
+                archive_messages(chunk_size=1000)
 
             # Archiving code has been executed, but because we got an exception, things should have been rolled back:
             self._verify_archive_data([], [])
@@ -373,7 +374,8 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         restore_all_data_from_archive()
         # Attachments should have been restored:
         self.assertEqual(Attachment.objects.count(), 3)
-        self.assertEqual(ArchivedAttachment.objects.count(), 3)  # Archived data doesn't get deleted by restoring.
+        # Archived data doesn't get deleted by restoring.
+        self.assertEqual(ArchivedAttachment.objects.count(), 3)
         self.assertEqual(
             list(Attachment.objects.distinct('messages__id').order_by('messages__id').values_list(
                 'messages__id', flat=True)),

@@ -576,7 +576,8 @@ class RateLimitAuthenticationTests(ZulipTestCase):
                 with mock.patch('time.time', return_value=start_time + 11.0):
                     self.assertIsNone(attempt_authentication(username, wrong_password))
 
-                    self.assertEqual(attempt_authentication(username, correct_password), expected_user_profile)  # Correct password
+                    # Correct password
+                    self.assertEqual(attempt_authentication(username, correct_password), expected_user_profile)
                     # A correct login attempt should reset the rate limits for this user profile,
                     # so the next two attempts shouldn't get limited:
                     self.assertIsNone(attempt_authentication(username, wrong_password))
@@ -1704,7 +1705,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             relay_state = orjson.dumps(dict(
                 state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"}),
             )).decode()
-            post_params = {"RelayState": relay_state, 'SAMLResponse': 'dGVzdA=='}  # base64 encoded 'test'
+            post_params = {"RelayState": relay_state, 'SAMLResponse': base64.b64encode(b"test").decode()}
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
@@ -1756,7 +1757,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             relay_state = orjson.dumps(dict(
                 state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"}),
             )).decode()
-            post_params = {"RelayState": relay_state, 'SAMLResponse': 'dGVzdA=='}
+            post_params = {"RelayState": relay_state, 'SAMLResponse': base64.b64encode(b"test").decode()}
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
@@ -4626,7 +4627,8 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             do_deactivate_user(othello)
             mock_logger = mock.MagicMock()
             result = sync_user_from_ldap(othello, mock_logger)
-            self.assertEqual(mock_logger.method_calls, [])  # In this case the logger shouldn't be used.
+            # In this case the logger shouldn't be used.
+            self.assertEqual(mock_logger.method_calls, [])
             self.assertFalse(result)
 
     def test_update_user_avatar(self) -> None:
