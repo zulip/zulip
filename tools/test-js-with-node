@@ -223,15 +223,13 @@ def run_tests_via_node_js() -> int:
     node_tests_cmd += individual_files
     if options.coverage:
         coverage_dir = os.path.join(ROOT_DIR, 'var/node-coverage')
-        coverage_lcov_file = os.path.join(coverage_dir, 'lcov.info')
 
-        nyc = os.path.join(ROOT_DIR, 'node_modules/.bin/nyc')
-        command = [nyc, '--extension', '.hbs', '--extension', '.ts']
-        command += ['--report-dir', coverage_dir]
-        command += ['--temp-directory', coverage_dir, '-r=text-summary']
+        nyc = os.path.join(ROOT_DIR, "node_modules/.bin/nyc")
+        command = [nyc, "--extension", ".hbs", "--extension", ".ts"]
+        command += ["--report-dir", coverage_dir]
+        command += ["--temp-directory", coverage_dir]
+        command += ["-r=lcov", "-r=json", "-r=text-summary"]
         command += node_tests_cmd
-        command += ['&&', 'nyc', 'report', '-r=lcov', '-r=json']
-        command += ['>', coverage_lcov_file]
     else:
         # Normal testing, no coverage analysis.
         # Run the index.js test runner, which runs all the other tests.
