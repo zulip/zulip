@@ -79,9 +79,9 @@ class TextTestResult(runner.TextTestResult):
 
     def addSkip(self, test: TestCase, reason: str) -> None:
         TestResult.addSkip(self, test, reason)
-        self.stream.writeln("** Skipping {}: {}".format(  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
-            test.id(),
-            reason))
+        self.stream.writeln(  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
+            "** Skipping {}: {}".format(test.id(), reason)
+        )
         self.stream.flush()
 
 class RemoteTestResult(django_runner.RemoteTestResult):

@@ -28,7 +28,7 @@ EXCLUDED_URLS = [
     'https://www.udemy.com/course/the-complete-react-native-and-redux-course/',
 ]
 
-VNU_IGNORE = re.compile(r'|'.join([
+VNU_IGNORE = [
     # Real errors that should be fixed.
     r'Duplicate ID “[^”]*”\.',
     r'The first occurrence of ID “[^”]*” was here\.',
@@ -39,7 +39,8 @@ VNU_IGNORE = re.compile(r'|'.join([
 
     # Warnings that are probably less important.
     r'The “type” attribute is unnecessary for JavaScript resources\.',
-]))
+]
+VNU_IGNORE_REGEX = re.compile(r'|'.join(VNU_IGNORE))
 
 
 class BaseDocumentationSpider(scrapy.Spider):
@@ -91,7 +92,7 @@ class BaseDocumentationSpider(scrapy.Spider):
         def callback(response: Response) -> None:
             vnu_out = json.loads(response.text)
             for message in vnu_out['messages']:
-                if not VNU_IGNORE.fullmatch(message['message']):
+                if not VNU_IGNORE_REGEX.fullmatch(message['message']):
                     self.logger.error(
                         '"%s":%d.%d-%d.%d: %s: %s',
                         url,

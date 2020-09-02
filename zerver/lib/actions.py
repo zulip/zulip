@@ -1534,7 +1534,8 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             if message['stream'] is None:
                 stream_id = message['message'].recipient.type_id
                 message['stream'] = Stream.objects.select_related().get(id=stream_id)
-            assert message['stream'] is not None  # assert needed because stubs for django are missing
+            # assert needed because stubs for django are missing
+            assert message['stream'] is not None
             realm_id = message['stream'].realm_id
 
         # Deliver events to the real-time push system, as well as
@@ -1592,7 +1593,9 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             # notify new_message request if it's a public stream,
             # ensuring that in the tornado server, non-public stream
             # messages are only associated to their subscribed users.
-            assert message['stream'] is not None  # assert needed because stubs for django are missing
+
+            # assert needed because stubs for django are missing
+            assert message['stream'] is not None
             if message['stream'].is_public():
                 event['realm_id'] = message['stream'].realm_id
                 event['stream_name'] = message['stream'].name

@@ -300,7 +300,8 @@ def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT
     recipient = Recipient(
         type_id=type_id,  # stream id
         id=recipient_id,
-        type=type)
+        type=type,
+    )
     recipient_dict = model_to_dict(recipient)
     return recipient_dict
 

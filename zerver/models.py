@@ -1409,7 +1409,7 @@ def filter_to_valid_prereg_users(query: QuerySet) -> QuerySet:
 
 class MultiuseInvite(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name='ID')
-    referred_by: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # Optional[UserProfile]
+    referred_by: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     streams: Manager = models.ManyToManyField('Stream')
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     invited_as: int = models.PositiveSmallIntegerField(default=PreregistrationUser.INVITE_AS['MEMBER'])
@@ -2599,7 +2599,8 @@ class UserPresence(models.Model):
     @staticmethod
     def status_from_string(status: str) -> Optional[int]:
         if status == 'active':
-            status_val: Optional[int] = UserPresence.ACTIVE  # See https://github.com/python/mypy/issues/2611
+            # See https://github.com/python/mypy/issues/2611
+            status_val: Optional[int] = UserPresence.ACTIVE
         elif status == 'idle':
             status_val = UserPresence.IDLE
         else:
