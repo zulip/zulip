@@ -1045,7 +1045,8 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
     auth_backend_name = "RemoteUser"
     name = "remoteuser"
     display_icon = None
-    sort_order = 9000  # If configured, this backend should have its button near the top of the list.
+    # If configured, this backend should have its button near the top of the list.
+    sort_order = 9000
 
     create_unknown_user = False
 
@@ -1199,7 +1200,8 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
         # Some authentications methods like Apple and SAML send
         # first name and last name as separate attributes. In that case
         # we construct the full name from them.
-        return_data["full_name"] = f"{first_name or ''} {last_name or ''}".strip()  # strip removes the unnecessary ' '
+        # strip removes the unnecessary ' '
+        return_data["full_name"] = f"{first_name or ''} {last_name or ''}".strip()
 
     return user_profile
 

@@ -47,10 +47,11 @@ output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
 consumers: Dict[str, int] = defaultdict(int)
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
-queues = set(normal_queues).union({
+queues = {
+    *normal_queues,
     # These queues may not be present if settings.TORNADO_PROCESSES > 1
     'notify_tornado',
-})
+}
 
 for queue_name in queues:
     queue_name = queue_name.strip()

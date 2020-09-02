@@ -53,7 +53,8 @@ def get_imap_messages() -> Generator[EmailMessage, None, None]:
                 assert isinstance(msg_data[0], tuple)
                 msg_as_bytes = msg_data[0][1]
                 message = email.message_from_bytes(msg_as_bytes, policy=email.policy.default)
-                assert isinstance(message, EmailMessage)  # https://github.com/python/typeshed/issues/2417
+                # https://github.com/python/typeshed/issues/2417
+                assert isinstance(message, EmailMessage)
                 yield message
                 mbox.store(message_id, '+FLAGS', '\\Deleted')
             mbox.expunge()

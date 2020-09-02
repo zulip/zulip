@@ -182,11 +182,11 @@ def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
             # results in resized gifs being broken. To work around this we
             # only resize under certain conditions to minimize the chance of
             # creating ugly gifs.
-            should_resize = any((
-                im.size[0] != im.size[1],                            # not square
-                im.size[0] > MAX_EMOJI_GIF_SIZE,                     # dimensions too large
-                len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES,     # filesize too large
-            ))
+            should_resize = (
+                im.size[0] != im.size[1]                             # not square
+                or im.size[0] > MAX_EMOJI_GIF_SIZE                   # dimensions too large
+                or len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES   # filesize too large
+            )
             return resize_gif(im, size) if should_resize else image_data
         else:
             im = exif_rotate(im)

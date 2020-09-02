@@ -17,7 +17,7 @@ def is_disposable_domain(domain: str) -> bool:
         return False
     return domain.lower() in DISPOSABLE_DOMAINS
 
-ZULIP_RESERVED_SUBDOMAINS = frozenset([
+ZULIP_RESERVED_SUBDOMAINS = {
     # zulip terms
     'stream', 'channel', 'topic', 'thread', 'installation', 'organization', 'realm',
     'team', 'subdomain', 'activity', 'octopus', 'acme', 'push',
@@ -40,12 +40,12 @@ ZULIP_RESERVED_SUBDOMAINS = frozenset([
     # Things that sound like security
     'auth', 'authentication', 'security',
     # tech blogs
-    'engineering', 'infrastructure', 'tooling', 'tools', 'javascript', 'python'])
+    'engineering', 'infrastructure', 'tooling', 'tools', 'javascript', 'python'}
 
 # Most of this list was curated from the following sources:
 # http://wiki.dwscoalition.org/notes/List_of_reserved_subdomains (license: CC-BY-SA 3.0)
 # https://stackoverflow.com/questions/11868191/which-saas-subdomains-to-block (license: CC-BY-SA 2.5)
-GENERIC_RESERVED_SUBDOMAINS = frozenset([
+GENERIC_RESERVED_SUBDOMAINS = {
     'about', 'abuse', 'account', 'ad', 'admanager', 'admin', 'admindashboard',
     'administrator', 'adsense', 'adword', 'affiliate', 'alpha', 'anonymous',
     'api', 'assets', 'audio', 'badges', 'beta', 'billing', 'biz', 'blog',
@@ -77,12 +77,12 @@ GENERIC_RESERVED_SUBDOMAINS = frozenset([
     'testers', 'ticket', 'tool', 'tos', 'trac', 'translate', 'update',
     'upgrade', 'uploads', 'use', 'user', 'username', 'validation', 'videos',
     'volunteer', 'web', 'webdisk', 'webmail', 'webmaster', 'whm', 'whois',
-    'wiki', 'www', 'www0', 'www8', 'www9', 'xml', 'xmpp', 'xoxo'])
+    'wiki', 'www', 'www0', 'www8', 'www9', 'xml', 'xmpp', 'xoxo'}
 
-DISPOSABLE_DOMAINS = frozenset(blacklist)
+DISPOSABLE_DOMAINS = set(blacklist)
 
-WHITELISTED_EMAIL_DOMAINS = frozenset([
+WHITELISTED_EMAIL_DOMAINS = {
     # Controlled by https://www.abine.com; more legitimate than most
     # disposable domains
     'opayq.com', 'abinemail.com', 'blurmail.net', 'maskmemail.com',
-])
+}

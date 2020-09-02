@@ -97,9 +97,9 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
         run(
             [
                 os.path.join(
-                    settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions",
+                    settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions"
                 ),
-                db["NAME"],
+                db["NAME"]
             ],
             env=postgres_env,
         )
@@ -136,8 +136,8 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
             run(
                 [
                     os.path.join(settings.DEPLOY_ROOT, "scripts", "zulip-puppet-apply"),
-                    "-f",
-                ],
+                    "-f"
+                ]
             )
 
         # Now, restore the the database backup using pg_restore.  This
