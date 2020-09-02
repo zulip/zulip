@@ -374,7 +374,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         'realm_name_in_notifications': user_profile.realm_name_in_notifications,
     })
 
-    triggers = list(message['trigger'] for message in missed_messages)
+    triggers = [message['trigger'] for message in missed_messages]
     unique_triggers = set(triggers)
     context.update({
         'mention': 'mentioned' in unique_triggers or 'wildcard_mentioned' in unique_triggers,
@@ -456,7 +456,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         })
     else:
         context.update({
-            'messages': build_message_list(user_profile, list(m['message'] for m in missed_messages)),
+            'messages': build_message_list(user_profile, [m['message'] for m in missed_messages]),
             'sender_str': ", ".join(sender.full_name for sender in senders),
             'realm_str': user_profile.realm.name,
             'show_message_content': True,
