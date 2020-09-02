@@ -1024,7 +1024,7 @@ def get_messages_backend(request: HttpRequest,
             user_message_flags[message_id] = UserMessage.flags_list_for_flags(flags)
             message_ids.append(message_id)
 
-    search_fields: Dict[int, Dict[str, str]] = dict()
+    search_fields: Dict[int, Dict[str, str]] = {}
     if is_search:
         for row in rows:
             message_id = row[0]
@@ -1231,7 +1231,7 @@ def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
     sa_conn = get_sqlalchemy_connection()
     query_result = list(sa_conn.execute(query).fetchall())
 
-    search_fields = dict()
+    search_fields = {}
     for row in query_result:
         message_id = row['message_id']
         topic_name = row[DB_TOPIC_NAME]

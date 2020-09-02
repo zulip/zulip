@@ -759,7 +759,7 @@ class LoginTest(ZulipTestCase):
         self.assertEqual(response["Location"], "http://zulip.testserver")
 
     def test_start_two_factor_auth(self) -> None:
-        request = MagicMock(POST=dict())
+        request = MagicMock(POST={})
         with patch('zerver.views.auth.TwoFactorLoginView') as mock_view:
             mock_view.as_view.return_value = lambda *a, **k: HttpResponse()
             response = start_two_factor_auth(request)

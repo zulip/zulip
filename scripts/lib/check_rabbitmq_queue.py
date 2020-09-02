@@ -155,7 +155,7 @@ def check_rabbitmq_queues() -> None:
     list_consumers_output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
                                                     universal_newlines=True)
 
-    queue_counts_rabbitmqctl = dict()
+    queue_counts_rabbitmqctl = {}
     for line in list_queues_output.split("\n"):
         line = line.strip()
         m = pattern.match(line)
@@ -176,7 +176,7 @@ def check_rabbitmq_queues() -> None:
     queue_stats_dir = subprocess.check_output([os.path.join(ZULIP_PATH, 'scripts/get-django-setting'),
                                                'QUEUE_STATS_DIR'],
                                               universal_newlines=True).strip()
-    queue_stats: Dict[str, Dict[str, Any]] = dict()
+    queue_stats: Dict[str, Dict[str, Any]] = {}
     queues_to_check = set(normal_queues).intersection(set(queues_with_consumers))
     for queue in queues_to_check:
         fn = queue + ".stats"

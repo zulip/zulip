@@ -28,7 +28,7 @@ def move_back_to_user_profile(apps: StateApps, schema_editor: DatabaseSchemaEdit
     UserProfile = apps.get_model('zerver', 'UserProfile')
 
     user_ids_and_words = AlertWord.objects.all().values("user_profile_id", "word")
-    user_ids_with_words: Dict[int, List[str]] = dict()
+    user_ids_with_words: Dict[int, List[str]] = {}
 
     for id_and_word in user_ids_and_words:
         user_ids_with_words.setdefault(id_and_word["user_profile_id"], [])

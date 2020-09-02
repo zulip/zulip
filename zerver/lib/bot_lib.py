@@ -125,7 +125,7 @@ class EmbeddedBotHandler:
             return get_bot_config(self.user_profile)
         except ConfigError:
             if optional:
-                return dict()
+                return {}
             raise
 
     def quit(self, message: str= "") -> None:

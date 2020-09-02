@@ -754,7 +754,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # and gifs do not work.
             # TODO: What if image is huge? Should we get headers first?
             if image_info is None:
-                image_info = dict()
+                image_info = {}
             image_info['is_image'] = True
             parsed_url_list = list(parsed_url)
             parsed_url_list[4] = "dl=1"  # Replaces query
@@ -2217,7 +2217,7 @@ class MentionData:
 
 def get_user_group_name_info(realm_id: int, user_group_names: Set[str]) -> Dict[str, UserGroup]:
     if not user_group_names:
-        return dict()
+        return {}
 
     rows = UserGroup.objects.filter(realm_id=realm_id,
                                     name__in=user_group_names)
@@ -2226,7 +2226,7 @@ def get_user_group_name_info(realm_id: int, user_group_names: Set[str]) -> Dict[
 
 def get_stream_name_info(realm: Realm, stream_names: Set[str]) -> Dict[str, FullNameInfo]:
     if not stream_names:
-        return dict()
+        return {}
 
     q_list = {
         Q(name=name)
@@ -2323,7 +2323,7 @@ def do_convert(content: str,
         if content_has_emoji_syntax(content):
             active_realm_emoji = message_realm.get_active_emoji()
         else:
-            active_realm_emoji = dict()
+            active_realm_emoji = {}
 
         _md_engine.zulip_db_data = {
             'realm_alert_words_automaton': realm_alert_words_automaton,

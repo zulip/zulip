@@ -30,7 +30,7 @@ def get_video_chat_provider_detail(providers_dict: Dict[str, Dict[str, Any]],
             return provider
         if (p_id and provider['id'] == p_id):
             return provider
-    return dict()
+    return {}
 
 def update_existing_video_chat_provider_values(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Realm = apps.get_model('zerver', 'Realm')

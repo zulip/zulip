@@ -19,7 +19,7 @@ def get_away_user_ids(realm_id: int) -> Set[int]:
 
 def user_info(user: UserProfile) -> Dict[str, Any]:
     user_dict = get_user_info_dict(user.realm_id)
-    return user_dict.get(str(user.id), dict())
+    return user_dict.get(str(user.id), {})
 
 class UserStatusTest(ZulipTestCase):
     def test_basics(self) -> None:
@@ -92,7 +92,7 @@ class UserStatusTest(ZulipTestCase):
 
         self.assertEqual(
             user_info(hamlet),
-            dict(),
+            {},
         )
 
         away_user_ids = get_away_user_ids(realm_id=realm_id)
@@ -148,7 +148,7 @@ class UserStatusTest(ZulipTestCase):
         self.login_user(hamlet)
 
         # Try to omit parameter--this should be an error.
-        payload: Dict[str, Any] = dict()
+        payload: Dict[str, Any] = {}
         result = self.client_post('/json/users/me/status', payload)
         self.assert_json_error(result, "Client did not pass any new values.")
 

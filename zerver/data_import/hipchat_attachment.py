@@ -8,7 +8,7 @@ from zerver.data_import.import_util import build_attachment, create_converted_da
 
 class AttachmentHandler:
     def __init__(self) -> None:
-        self.info_dict: Dict[str, Dict[str, Any]] = dict()
+        self.info_dict: Dict[str, Dict[str, Any]] = {}
 
     def handle_message_data(self,
                             realm_id: int,

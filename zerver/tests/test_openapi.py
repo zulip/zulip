@@ -433,7 +433,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         Otherwise, we print out the exact differences for convenient debugging and raise an
         AssertionError. """
         openapi_params: Set[Tuple[str, Union[type, Tuple[type, object]]]] = set()
-        json_params: Dict[str, Union[type, Tuple[type, object]]] = dict()
+        json_params: Dict[str, Union[type, Tuple[type, object]]] = {}
         for element in openapi_parameters:
             name: str = element["name"]
             schema = {}
