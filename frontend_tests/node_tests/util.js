@@ -117,11 +117,12 @@ run_test("robust_uri_decode", () => {
 });
 
 run_test("dumb_strcmp", () => {
-    Intl.Collator = undefined;
-    const strcmp = util.make_strcmp();
-    assert.equal(strcmp("a", "b"), -1);
-    assert.equal(strcmp("c", "c"), 0);
-    assert.equal(strcmp("z", "y"), 1);
+    with_field(Intl, "Collator", undefined, () => {
+        const strcmp = util.make_strcmp();
+        assert.equal(strcmp("a", "b"), -1);
+        assert.equal(strcmp("c", "c"), 0);
+        assert.equal(strcmp("z", "y"), 1);
+    });
 });
 
 run_test("get_edit_event_orig_topic", () => {
