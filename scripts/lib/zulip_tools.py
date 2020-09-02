@@ -63,7 +63,7 @@ def parse_cache_script_args(description: str) -> argparse.Namespace:
 
     parser.add_argument(
         "--threshold", dest="threshold_days", type=int, default=14,
-        nargs="?", metavar="<days>", help="Any cache which is not in "
+        metavar="<days>", help="Any cache which is not in "
         "use by a deployment not older than threshold days(current "
         "installation in dev) and older than threshold days will be "
         "deleted. (defaults to 14)")
