@@ -203,10 +203,10 @@ def check_rabbitmq_queues() -> None:
 
     if status > 0:
         queue_error_template = "queue {} problem: {}:{}"
-        error_message = '; '.join([
+        error_message = '; '.join(
             queue_error_template.format(result['name'], states[result['status']], result['message'])
             for result in results if result['status'] > 0
-        ])
+        )
         print(f"{now}|{status}|{states[status]}|{error_message}")
     else:
         print(f"{now}|{status}|{states[status]}|queues normal")

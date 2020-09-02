@@ -64,7 +64,7 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
     if to_user_ids is not None:
         to_users = [get_user_profile_by_id(to_user_id) for to_user_id in to_user_ids]
         if realm is None:
-            assert len(set([to_user.realm_id for to_user in to_users])) == 1
+            assert len({to_user.realm_id for to_user in to_users}) == 1
             realm = to_users[0].realm
         to_emails = [str(Address(display_name=to_user.full_name, addr_spec=to_user.delivery_email)) for to_user in to_users]
 

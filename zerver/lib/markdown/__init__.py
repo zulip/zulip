@@ -1594,7 +1594,7 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
                 else:
                     open_fences.append(Fence(fence_str, is_code))
 
-                in_code_fence = any([fence.is_code for fence in open_fences])
+                in_code_fence = any(fence.is_code for fence in open_fences)
 
             # If we're not in a fenced block and we detect an upcoming list
             # hanging off any block (including a list of another type), add

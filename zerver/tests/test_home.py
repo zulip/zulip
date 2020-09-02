@@ -263,7 +263,7 @@ class HomeTest(ZulipTestCase):
 
         page_params = self._get_page_params(result)
 
-        actual_keys = sorted([str(k) for k in page_params.keys()])
+        actual_keys = sorted(str(k) for k in page_params.keys())
 
         self.assertEqual(actual_keys, expected_keys)
 
@@ -284,7 +284,7 @@ class HomeTest(ZulipTestCase):
             'user_id',
         ]
 
-        realm_bots_actual_keys = sorted([str(key) for key in page_params['realm_bots'][0].keys()])
+        realm_bots_actual_keys = sorted(str(key) for key in page_params['realm_bots'][0].keys())
         self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
 
     def test_home_under_2fa_without_otp_device(self) -> None:

@@ -39,9 +39,9 @@ def report(state: str, short_msg: str, too_old: AbstractSet[Any] = set()) -> Non
     too_old_data = ""
     if too_old:
         too_old_data = "\nLast call to get_message for recently out of date mirrors:\n" + "\n".join(
-            ["{:>16}: {}".format(user.user_profile.email,
-                                 user.last_visit.strftime("%Y-%m-%d %H:%M %Z"),
-                                 ) for user in too_old],
+            "{:>16}: {}".format(user.user_profile.email,
+                                user.last_visit.strftime("%Y-%m-%d %H:%M %Z"),
+                                ) for user in too_old
         )
     print(f"{state}: {short_msg}{too_old_data}")
 

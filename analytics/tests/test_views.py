@@ -101,14 +101,14 @@ class TestGetChartData(ZulipTestCase):
             insert_time = self.end_times_day[2]
             fill_time = self.end_times_day[-1]
 
-        RealmCount.objects.bulk_create([
+        RealmCount.objects.bulk_create(
             RealmCount(property=stat.property, subgroup=subgroup, end_time=insert_time,
                        value=100+i, realm=self.realm)
-            for i, subgroup in enumerate(realm_subgroups)])
-        UserCount.objects.bulk_create([
+            for i, subgroup in enumerate(realm_subgroups))
+        UserCount.objects.bulk_create(
             UserCount(property=stat.property, subgroup=subgroup, end_time=insert_time,
                       value=200+i, realm=self.realm, user=self.user)
-            for i, subgroup in enumerate(user_subgroups)])
+            for i, subgroup in enumerate(user_subgroups))
         FillState.objects.create(property=stat.property, end_time=fill_time, state=FillState.DONE)
 
     def test_number_of_humans(self) -> None:

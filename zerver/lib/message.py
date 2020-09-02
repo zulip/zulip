@@ -765,7 +765,7 @@ def aggregate_message_dict(input_dict: Dict[int, Dict[str, Any]],
     '''
 
     for message_id, attribute_dict in input_dict.items():
-        lookup_key = tuple([attribute_dict[f] for f in lookup_fields])
+        lookup_key = tuple(attribute_dict[f] for f in lookup_fields)
         if lookup_key not in lookup_dict:
             obj = {}
             for f in lookup_fields:
@@ -783,7 +783,7 @@ def aggregate_message_dict(input_dict: Dict[int, Dict[str, Any]],
     for dct in lookup_dict.values():
         dct['unread_message_ids'].sort()
         if collect_senders:
-            dct['sender_ids'] = sorted(list(dct['sender_ids']))
+            dct['sender_ids'] = sorted(dct['sender_ids'])
 
     sorted_keys = sorted(lookup_dict.keys())
 

@@ -893,7 +893,7 @@ def fetch_attachment_data(response: TableData, realm_id: int, message_ids: Set[i
     '''
     for row in response['zerver_attachment']:
         filterer_message_ids = set(row['messages']).intersection(message_ids)
-        row['messages'] = sorted(list(filterer_message_ids))
+        row['messages'] = sorted(filterer_message_ids)
 
     '''
     Attachments can be connected to multiple messages, although

@@ -49,7 +49,7 @@ def api_alertmanager_webhook(request: HttpRequest, user_profile: UserProfile,
             if len(messages) == 1:
                 body = f"{icon} **{title}** {messages[0]}"
             else:
-                message_list = "\n".join([f"* {m}" for m in messages])
+                message_list = "\n".join(f"* {m}" for m in messages)
                 body = f"{icon} **{title}**\n{message_list}"
 
             check_send_webhook_message(request, user_profile, topic, body)

@@ -94,7 +94,7 @@ def update_realmauditlog_values(apps: StateApps, schema_editor: DatabaseSchemaEd
                 new_value = new_value['id']
 
         # Sanity check that the original event has exactly the keys we expect.
-        assert set(extra_data.keys()) <= set([OLD_VALUE, NEW_VALUE])
+        assert set(extra_data.keys()) <= {OLD_VALUE, NEW_VALUE}
 
         ra.extra_data = json.dumps({
             OLD_VALUE: old_value,

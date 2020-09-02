@@ -692,7 +692,7 @@ def get_count_stats(realm: Optional[Realm]=None) -> Dict[str, CountStat]:
                            dependencies=['active_users_audit:is_bot:day', '15day_actives::day']),
     ]
 
-    return OrderedDict([(stat.property, stat) for stat in count_stats_])
+    return OrderedDict((stat.property, stat) for stat in count_stats_)
 
 # To avoid refactoring for now COUNT_STATS can be used as before
 COUNT_STATS = get_count_stats()
