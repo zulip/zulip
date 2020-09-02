@@ -24,7 +24,6 @@ class Command(ZulipBaseCommand):
         parser.add_argument('--output',
                             dest='output_dir',
                             action="store",
-                            default=None,
                             help='Directory to write exported data to.')
         self.add_realm_args(parser)
 
