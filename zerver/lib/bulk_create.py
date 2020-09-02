@@ -20,7 +20,7 @@ def bulk_create_users(realm: Realm,
     """
     existing_users = frozenset(UserProfile.objects.filter(
         realm=realm).values_list('email', flat=True))
-    users = sorted([user_raw for user_raw in users_raw if user_raw[0] not in existing_users])
+    users = sorted(user_raw for user_raw in users_raw if user_raw[0] not in existing_users)
 
     # Now create user_profiles
     profiles_to_create: List[UserProfile] = []
@@ -47,9 +47,9 @@ def bulk_create_users(realm: Realm,
     user_ids = {user.id for user in profiles_to_create}
 
     RealmAuditLog.objects.bulk_create(
-        [RealmAuditLog(realm=realm, modified_user=profile_,
-                       event_type=RealmAuditLog.USER_CREATED, event_time=profile_.date_joined)
-         for profile_ in profiles_to_create])
+        RealmAuditLog(realm=realm, modified_user=profile_,
+                      event_type=RealmAuditLog.USER_CREATED, event_time=profile_.date_joined)
+        for profile_ in profiles_to_create)
 
     recipients_to_create: List[Recipient] = []
     for user_id in user_ids:
@@ -102,9 +102,10 @@ def bulk_set_users_or_streams_recipient_fields(model: Model,
 # This is only sed in populate_db, so doesn't really need tests
 def bulk_create_streams(realm: Realm,
                         stream_dict: Dict[str, Dict[str, Any]]) -> None:  # nocoverage
-    existing_streams = frozenset([name.lower() for name in
-                                  Stream.objects.filter(realm=realm)
-                                  .values_list('name', flat=True)])
+    existing_streams = {
+        name.lower()
+        for name in Stream.objects.filter(realm=realm).values_list('name', flat=True)
+    }
     streams_to_create: List[Stream] = []
     for name, options in stream_dict.items():
         if 'history_public_to_subscribers' not in options:

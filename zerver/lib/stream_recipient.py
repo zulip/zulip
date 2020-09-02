@@ -31,10 +31,10 @@ class StreamRecipientMap:
         self.stream_to_recip[stream_id] = recipient_id
 
     def populate_for_recipient_ids(self, recipient_ids: List[int]) -> None:
-        recipient_ids = sorted([
+        recipient_ids = sorted(
             recip_id for recip_id in recipient_ids
             if recip_id not in self.recip_to_stream
-        ])
+        )
 
         if not recipient_ids:
             return

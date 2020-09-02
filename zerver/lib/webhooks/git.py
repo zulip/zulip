@@ -299,7 +299,7 @@ def get_all_committers(commits_data: List[Dict[str, Any]]) -> List[Tuple[str, in
 
     # Sort by commit count, breaking ties alphabetically.
     committers_items: List[Tuple[str, int]] = sorted(
-        list(committers.items()), key=lambda item: (-item[1], item[0]),
+        committers.items(), key=lambda item: (-item[1], item[0]),
     )
     committers_values: List[int] = [c_i[1] for c_i in committers_items]
 

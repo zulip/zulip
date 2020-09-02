@@ -1188,7 +1188,7 @@ earl-test@zulip.com""", ["Denmark"]))
         self.login('iago')
         invitee_emails = "1@zulip.com, 2@zulip.com"
         self.invite(invitee_emails, ["Denmark"])
-        invitee_emails = ", ".join([str(i) for i in range(get_realm("zulip").max_invites - 1)])
+        invitee_emails = ", ".join(str(i) for i in range(get_realm("zulip").max_invites - 1))
         self.assert_json_error(self.invite(invitee_emails, ["Denmark"]),
                                "You do not have enough remaining invites. "
                                "Please contact desdemona+admin@zulip.com to have your limit raised. "
@@ -4204,7 +4204,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(len(outbox), 0)
 
     def test_find_team_more_than_ten_emails(self) -> None:
-        data = {'emails': ','.join([f'hamlet-{i}@zulip.com' for i in range(11)])}
+        data = {'emails': ','.join(f'hamlet-{i}@zulip.com' for i in range(11))}
         result = self.client_post('/accounts/find/', data)
         self.assertEqual(result.status_code, 200)
         self.assertIn("Please enter at most 10", result.content.decode('utf8'))

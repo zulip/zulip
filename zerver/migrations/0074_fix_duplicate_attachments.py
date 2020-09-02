@@ -20,7 +20,7 @@ def fix_duplicate_attachments(apps: StateApps, schema_editor: DatabaseSchemaEdit
     # Loop through all groups of Attachment objects with the same `path_id`
     for group in Attachment.objects.values('path_id').annotate(Count('id')).order_by().filter(id__count__gt=1):
         # Sort by the minimum message ID, to find the first attachment
-        attachments = sorted(list(Attachment.objects.filter(path_id=group['path_id']).order_by("id")),
+        attachments = sorted(Attachment.objects.filter(path_id=group['path_id']).order_by("id"),
                              key = lambda x: min(x.messages.all().values_list('id')[0]))
         surviving = attachments[0]
         to_cleanup = attachments[1:]

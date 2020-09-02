@@ -332,7 +332,7 @@ class EventQueue:
         virtual_id_map: Dict[str, Dict[str, Any]] = {}
         for event_type in self.virtual_events:
             virtual_id_map[self.virtual_events[event_type]["id"]] = self.virtual_events[event_type]
-        virtual_ids = sorted(list(virtual_id_map.keys()))
+        virtual_ids = sorted(virtual_id_map.keys())
 
         # Merge the virtual events into their final place in the queue
         index = 0

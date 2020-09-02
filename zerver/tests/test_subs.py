@@ -3745,8 +3745,8 @@ class GetStreamsTest(ZulipTestCase):
         self.assert_json_success(owner_subs)
         owner_subs_json = orjson.loads(owner_subs.content)
 
-        self.assertEqual(sorted([s["name"] for s in json["streams"]]),
-                         sorted([s["name"] for s in owner_subs_json["subscriptions"]]))
+        self.assertEqual(sorted(s["name"] for s in json["streams"]),
+                         sorted(s["name"] for s in owner_subs_json["subscriptions"]))
 
         # Check it correctly lists the bot owner's subs and the
         # bot's subs
@@ -3767,7 +3767,7 @@ class GetStreamsTest(ZulipTestCase):
         self.assertIn("streams", json)
         self.assertIsInstance(json["streams"], list)
 
-        actual = sorted([s["name"] for s in json["streams"]])
+        actual = sorted(s["name"] for s in json["streams"])
         expected = [s["name"] for s in owner_subs_json["subscriptions"]]
         expected.append('Scotland')
         expected.sort()
@@ -3787,7 +3787,7 @@ class GetStreamsTest(ZulipTestCase):
         self.assertIn("streams", json)
         self.assertIsInstance(json["streams"], list)
 
-        actual = sorted([s["name"] for s in json["streams"]])
+        actual = sorted(s["name"] for s in json["streams"])
         expected = [s["name"] for s in owner_subs_json["subscriptions"]]
         expected.extend(['Rome', 'Venice', 'Scotland'])
         expected.sort()
@@ -3806,7 +3806,7 @@ class GetStreamsTest(ZulipTestCase):
         self.assertIn("streams", json)
         self.assertIsInstance(json["streams"], list)
 
-        actual = sorted([s["name"] for s in json["streams"]])
+        actual = sorted(s["name"] for s in json["streams"])
         expected = [s["name"] for s in owner_subs_json["subscriptions"]]
         expected.extend(['Rome', 'Venice', 'Scotland', 'private_stream'])
         expected.sort()
@@ -3878,8 +3878,8 @@ class GetStreamsTest(ZulipTestCase):
         self.assert_json_success(result2)
         json2 = orjson.loads(result2.content)
 
-        self.assertEqual(sorted([s["name"] for s in json["streams"]]),
-                         sorted([s["name"] for s in json2["subscriptions"]]))
+        self.assertEqual(sorted(s["name"] for s in json["streams"]),
+                         sorted(s["name"] for s in json2["subscriptions"]))
 
         # Check it correctly lists all public streams with include_subscribed=false
         filters = dict(

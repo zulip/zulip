@@ -3200,7 +3200,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
             msg_ids.append(self.send_stream_message(self.example_user('hamlet'),
                                                     'Denmark', content=msg_content))
         msgs = [Message.objects.get(id=id) for id in msg_ids]
-        self.assertTrue(all([msg.has_link for msg in msgs]))
+        self.assertTrue(all(msg.has_link for msg in msgs))
 
     def test_finds_only_links(self) -> None:
         msg_ids = []
@@ -3209,7 +3209,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
             msg_ids.append(self.send_stream_message(self.example_user('hamlet'),
                                                     'Denmark', content=msg_content))
         msgs = [Message.objects.get(id=id) for id in msg_ids]
-        self.assertFalse(all([msg.has_link for msg in msgs]))
+        self.assertFalse(all(msg.has_link for msg in msgs))
 
     def update_message(self, msg: Message, content: str) -> None:
         hamlet = self.example_user('hamlet')

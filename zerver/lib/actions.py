@@ -1230,7 +1230,7 @@ def get_recipient_info(recipient: Recipient,
         # need this codepath to be fast (it's part of sending messages)
         query = query_for_ids(
             query=query,
-            user_ids=sorted(list(user_ids)),
+            user_ids=sorted(user_ids),
             field='id',
         )
         rows = list(query)
@@ -1502,7 +1502,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
     # Save the message receipts in the database
     user_message_flags: Dict[int, Dict[int, List[str]]] = defaultdict(dict)
     with transaction.atomic():
-        Message.objects.bulk_create([message['message'] for message in messages])
+        Message.objects.bulk_create(message['message'] for message in messages)
 
         # Claim attachments in message
         for message in messages:
@@ -2635,10 +2635,10 @@ def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
         target_stream_dicts.append(stream_dict)
 
     stream_ids = [stream['id'] for stream in target_stream_dicts]
-    recipient_ids = sorted([
+    recipient_ids = sorted(
         stream_recipient.recipient_id_for(stream_id)
         for stream_id in stream_ids
-    ])
+    )
 
     result: Dict[int, List[int]] = {stream["id"]: [] for stream in stream_dicts}
     if not recipient_ids:
@@ -2856,7 +2856,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     # transaction isolation level.
     with transaction.atomic():
         occupied_streams_before = list(get_occupied_streams(realm))
-        Subscription.objects.bulk_create([sub for (sub, stream) in subs_to_add])
+        Subscription.objects.bulk_create(sub for (sub, stream) in subs_to_add)
         sub_ids = [sub.id for (sub, stream) in subs_to_activate]
         Subscription.objects.filter(id__in=sub_ids).update(active=True)
         occupied_streams_after = list(get_occupied_streams(realm))
@@ -3935,10 +3935,10 @@ def get_default_subs(user_profile: UserProfile) -> List[Stream]:
 
 # returns default streams in json serializeable format
 def streams_to_dicts_sorted(streams: List[Stream]) -> List[Dict[str, Any]]:
-    return sorted([stream.to_dict() for stream in streams], key=lambda elt: elt["name"])
+    return sorted((stream.to_dict() for stream in streams), key=lambda elt: elt["name"])
 
 def default_stream_groups_to_dicts_sorted(groups: List[DefaultStreamGroup]) -> List[Dict[str, Any]]:
-    return sorted([group.to_dict() for group in groups], key=lambda elt: elt["name"])
+    return sorted((group.to_dict() for group in groups), key=lambda elt: elt["name"])
 
 def do_update_user_activity_interval(user_profile: UserProfile,
                                      log_time: datetime.datetime) -> None:
@@ -5064,9 +5064,9 @@ def gather_subscriptions(
         for subs in [subscribed, unsubscribed]:
             for sub in subs:
                 if 'subscribers' in sub:
-                    sub['subscribers'] = sorted([
+                    sub['subscribers'] = sorted(
                         email_dict[user_id] for user_id in sub['subscribers']
-                    ])
+                    )
 
     return (subscribed, unsubscribed)
 
@@ -5128,7 +5128,7 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
     ).exclude(client__name="ZulipMobile").distinct('user_profile_id').values('user_profile_id')
     active_user_ids = {row['user_profile_id'] for row in rows}
     idle_user_ids = user_ids - active_user_ids
-    return sorted(list(idle_user_ids))
+    return sorted(idle_user_ids)
 
 def do_send_confirmation_email(invitee: PreregistrationUser,
                                referrer: UserProfile) -> str:
