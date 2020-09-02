@@ -112,25 +112,25 @@ def build_for_most_tests() -> None:
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test',
-                    action='store_true', dest='test', default=False,
+                    action='store_true', default=False,
                     help='generate a stub webpack-stats.json file (for backend testing)')
 parser.add_argument('--quiet',
-                    action='store_true', dest='quiet', default=False,
+                    action='store_true', default=False,
                     help='Minimizes webpack output while running')
 parser.add_argument('--watch',
-                    action='store_true', dest='watch', default=False,
+                    action='store_true', default=False,
                     help='watch for changes to source files (for development)')
 parser.add_argument('--host',
-                    action='store', dest='host',
+                    action='store',
                     default='127.0.0.1', help='set the host for the webpack server to run on')
 parser.add_argument('--port',
-                    action='store', dest='port',
+                    action='store',
                     default='9994', help='set the port for the webpack server to run on')
 parser.add_argument('--minify',
-                    action='store_true', dest='minify', default=False,
+                    action='store_true', default=False,
                     help='Minify and optimize the assets (for development)')
 parser.add_argument('--disable-host-check',
-                    action='store_true', dest='disable_host_check', default=None,
+                    action='store_true', default=None,
                     help='Disable host check for webpack-dev-server')
 
 args = parser.parse_args()

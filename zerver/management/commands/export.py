@@ -83,7 +83,6 @@ class Command(ZulipBaseCommand):
                             default=None,
                             help='Directory to write exported data to.')
         parser.add_argument('--threads',
-                            dest='threads',
                             action="store",
                             default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
                             help='Threads to use in exporting UserMessage objects in parallel')
@@ -94,7 +93,6 @@ class Command(ZulipBaseCommand):
                             action="store_true",
                             help='Deactivate the realm immediately before exporting')
         parser.add_argument('--consent-message-id',
-                            dest="consent_message_id",
                             action="store",
                             default=None,
                             type=int,

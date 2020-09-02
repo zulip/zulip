@@ -42,7 +42,7 @@ class Command(BaseCommand):
                             action="store_true",
                             help='Mask the content for privacy during QA.')
 
-        parser.add_argument('--slim-mode', dest='slim_mode',
+        parser.add_argument('--slim-mode',
                             action="store_true",
                             help="Default to no public stream subscriptions if no token is available." +
                             "  See import docs for details.")

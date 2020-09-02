@@ -68,11 +68,11 @@ def parse_cache_script_args(description: str) -> argparse.Namespace:
         "installation in dev) and older than threshold days will be "
         "deleted. (defaults to 14)")
     parser.add_argument(
-        "--dry-run", dest="dry_run", action="store_true",
+        "--dry-run", action="store_true",
         help="If specified then script will only print the caches "
         "that it will delete/keep back. It will not delete any cache.")
     parser.add_argument(
-        "--verbose", dest="verbose", action="store_true",
+        "--verbose", action="store_true",
         help="If specified then script will print a detailed report "
         "of what is being will deleted/kept back.")
     parser.add_argument(

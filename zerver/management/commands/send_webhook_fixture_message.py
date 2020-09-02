@@ -32,19 +32,16 @@ approach shown above.
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('-f', '--fixture',
-                            dest='fixture',
                             type=str,
                             help='The path to the fixture you\'d like to send '
                                  'into Zulip')
 
         parser.add_argument('-u', '--url',
-                            dest='url',
                             type=str,
                             help='The url on your Zulip server that you want '
                                  'to post the fixture to')
 
         parser.add_argument('-H', '--custom-headers',
-                            dest='custom-headers',
                             type=str,
                             help='The headers you want to provide along with '
                                  'your mock request to Zulip.')
@@ -71,7 +68,7 @@ approach shown above.
         if not self._does_fixture_path_exist(full_fixture_path):
             raise CommandError('Fixture {} does not exist'.format(options['fixture']))
 
-        headers = self.parse_headers(options['custom-headers'])
+        headers = self.parse_headers(options['custom_headers'])
         json = self._get_fixture_as_json(full_fixture_path)
         realm = self.get_realm(options)
         if realm is None:

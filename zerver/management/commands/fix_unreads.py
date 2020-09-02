@@ -21,7 +21,6 @@ class Command(ZulipBaseCommand):
                             help='email address to spelunk')
         parser.add_argument('--all',
                             action='store_true',
-                            dest='all',
                             default=False,
                             help='fix all users in specified realm')
         self.add_realm_args(parser)

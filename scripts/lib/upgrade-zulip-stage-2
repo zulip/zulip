@@ -71,17 +71,17 @@ os.umask(0o22)
 parser = argparse.ArgumentParser()
 parser.add_argument("deploy_path", metavar="deploy_path",
                     help="Path to deployment directory")
-parser.add_argument("--skip-puppet", dest="skip_puppet", action='store_true',
+parser.add_argument("--skip-puppet", action='store_true',
                     help="Skip doing puppet/apt upgrades.")
-parser.add_argument("--skip-migrations", dest="skip_migrations", action='store_true',
+parser.add_argument("--skip-migrations", action='store_true',
                     help="Skip doing migrations.")
-parser.add_argument("--from-git", dest="from_git", action='store_true',
+parser.add_argument("--from-git", action='store_true',
                     help="Upgrading from git, so run update-prod-static.")
-parser.add_argument("--ignore-static-assets", dest="ignore_static_assets", action='store_true',
+parser.add_argument("--ignore-static-assets", action='store_true',
                     help="Do not attempt to copy/manage static assets.")
-parser.add_argument("--skip-purge-old-deployments", dest="skip_purge_old_deployments",
+parser.add_argument("--skip-purge-old-deployments",
                     action="store_true", help="Skip purging old deployments.")
-parser.add_argument("--audit-fts-indexes", dest="audit_fts_indexes",
+parser.add_argument("--audit-fts-indexes",
                     action="store_true", help="Audit and fix full text search indexes.")
 args = parser.parse_args()
 
