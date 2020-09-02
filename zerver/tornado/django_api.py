@@ -17,7 +17,7 @@ from zerver.tornado.sharding import get_tornado_port, get_tornado_uri, notify_to
 class TornadoAdapter(HTTPAdapter):
     def __init__(self) -> None:
         retry = Retry(total=3, backoff_factor=1)
-        super(TornadoAdapter, self).__init__(max_retries=retry)
+        super().__init__(max_retries=retry)
 
     def send(
         self,
