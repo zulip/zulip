@@ -209,18 +209,16 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=usage,
                                      formatter_class=argparse.RawTextHelpFormatter)
 
-    parser.add_argument('--nonfatal-errors', action="store_false", default=True,
+    parser.add_argument('--nonfatal-errors', action="store_false",
                         dest="fatal_errors", help="Continue past test failures to run all tests")
     parser.add_argument('--coverage',
                         action="store_true",
-                        default=False,
                         help='Compute test coverage.')
     parser.add_argument('--verbose-coverage',
                         action="store_true",
-                        default=False, help='Enable verbose print of coverage report.')
+                        help='Enable verbose print of coverage report.')
     parser.add_argument('--no-cov-cleanup',
                         action='store_true',
-                        default=False,
                         help="Do not clean generated coverage files.")
 
     parser.add_argument('--parallel', dest='processes',
@@ -231,39 +229,33 @@ def main() -> None:
                              'tests in. Default is the number of logical CPUs')
     parser.add_argument('--profile',
                         action="store_true",
-                        default=False, help='Profile test runtime.')
+                        help='Profile test runtime.')
     parser.add_argument('--force',
                         action="store_true",
-                        default=False, help='Run tests despite possible problems.')
+                        help='Run tests despite possible problems.')
     parser.add_argument('--no-shallow',
                         action="store_true",
-                        default=False,
                         help="Don't allow shallow testing of templates (deprecated)")
     parser.add_argument('--verbose',
                         action="store_true",
-                        default=False,
                         help="Show detailed output")
     parser.add_argument('--reverse',
                         action="store_true",
-                        default=False,
                         help="Run tests in reverse order.")
     parser.add_argument('--rerun',
                         action="store_true",
-                        default=False,
                         help=("Run the tests which failed the last time "
                               "test-backend was run.  Implies --nonfatal-errors."))
     parser.add_argument('--include-webhooks',
                         action="store_true",
-                        default=False,
                         help=("Include webhook tests.  By default, they are skipped for performance."))
     parser.add_argument('--generate-stripe-fixtures',
                         action="store_true",
-                        default=False,
                         help=("Generate Stripe test fixtures by making requests to Stripe test network"))
     parser.add_argument('args', nargs='*')
     parser.add_argument('--ban-console-output',
                         action="store_true",
-                        default=False, help='Require stdout and stderr to be clean of unexpected output.')
+                        help='Require stdout and stderr to be clean of unexpected output.')
 
     options = parser.parse_args()
     if options.ban_console_output:

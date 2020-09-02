@@ -13,7 +13,7 @@ class Command(ZulipBaseCommand):
     help = """Send email to specified email address."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('--entire-server', action="store_true", default=False,
+        parser.add_argument('--entire-server', action="store_true",
                             help="Send to every user on the server. ")
         self.add_user_list_args(parser,
                                 help="Email addresses of user(s) to send password reset emails to.",

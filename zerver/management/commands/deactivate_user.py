@@ -13,7 +13,6 @@ class Command(ZulipBaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('-f', '--for-real',
                             action='store_true',
-                            default=False,
                             help="Actually deactivate the user. Default is a dry run.")
         parser.add_argument('email', metavar='<email>', type=str,
                             help='email of user to deactivate')

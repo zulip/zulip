@@ -24,7 +24,6 @@ class Command(ZulipBaseCommand):
         parser.add_argument('-b', '--all-bots',
                             dest='bots',
                             action='store_true',
-                            default=False,
                             help="Whether or not to also block all bots for this user.")
         parser.add_argument('operation', metavar='<operation>', type=str, choices=['block', 'unblock'],
                             help="operation to perform (block or unblock)")

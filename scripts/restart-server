@@ -17,7 +17,7 @@ logging.basicConfig(format="%(asctime)s restart-server: %(message)s",
                     level=logging.INFO)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--fill-cache', action='store_true', default=False,
+parser.add_argument('--fill-cache', action='store_true',
                     help='Fill the memcached caches')
 args = parser.parse_args()
 

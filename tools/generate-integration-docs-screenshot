@@ -193,7 +193,7 @@ def generate_screenshot_from_config(integration_name: str, screenshot_config: Sc
 
 parser = argparse.ArgumentParser()
 group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument('--all', default=False, action='store_true')
+group.add_argument('--all', action='store_true')
 group.add_argument('--integration', type=str, help='Name of the integration')
 parser.add_argument('--fixture', type=str, help='Name of the fixture file to use')
 parser.add_argument('--image-name', type=str, help='Name for the screenshot image')

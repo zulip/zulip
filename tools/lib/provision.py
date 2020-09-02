@@ -421,16 +421,13 @@ if __name__ == "__main__":
     description = ("Provision script to install Zulip")
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--force', action='store_true', dest='is_force',
-                        default=False,
                         help="Ignore all provisioning optimizations.")
 
     parser.add_argument('--build-release-tarball-only', action='store_true',
                         dest='is_build_release_tarball_only',
-                        default=False,
                         help="Provision needed to build release tarball.")
 
     parser.add_argument('--skip-dev-db-build', action='store_true',
-                        default=False,
                         help="Don't run migrations on dev database.")
 
     options = parser.parse_args()

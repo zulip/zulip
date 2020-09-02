@@ -223,12 +223,10 @@ class Command(BaseCommand):
 
         parser.add_argument('--nodelete',
                             action="store_false",
-                            default=True,
                             dest='delete',
                             help='Whether to delete all the existing messages.')
 
         parser.add_argument('--test-suite',
-                            default=False,
                             action="store_true",
                             help='Configures populate_db to create a deterministic '
                             'data set for the backend tests.')

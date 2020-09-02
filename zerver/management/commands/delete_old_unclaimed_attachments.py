@@ -21,7 +21,6 @@ class Command(BaseCommand):
 
         parser.add_argument('-f', '--for-real',
                             action='store_true',
-                            default=False,
                             help="Actually remove the files from the storage.")
 
     def handle(self, *args: Any, **options: Any) -> None:

@@ -16,7 +16,7 @@ from linter_lib.custom_check import non_py_rules, python_rules
 
 def run() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--force', default=False,
+    parser.add_argument('--force',
                         action="store_true",
                         help='Run tests despite possible problems.')
     parser.add_argument('--full',
