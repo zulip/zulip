@@ -12,7 +12,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(dest="queue_name", type=str, nargs='?',
                             help="queue to purge", default=None)
-        parser.add_argument('--all', dest="all", action="store_true",
+        parser.add_argument('--all', action="store_true",
                             default=False, help="purge all queues")
 
     help = "Discards all messages from the given queue"

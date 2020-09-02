@@ -37,14 +37,12 @@ Example:
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('-f', '--fixture',
-                            dest='fixture',
                             type=str,
                             help='The path to the email message you\'d like to send '
                                  'to the email mirror.\n'
                                  'Accepted formats: json or raw email file. '
                                  'See zerver/tests/fixtures/email/ for examples')
         parser.add_argument('-s', '--stream',
-                            dest='stream',
                             type=str,
                             help='The name of the stream to which you\'d like to send '
                             'the message. Default: Denmark')

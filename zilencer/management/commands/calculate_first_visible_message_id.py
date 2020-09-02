@@ -14,7 +14,6 @@ class Command(ZulipBaseCommand):
         self.add_realm_args(parser)
         parser.add_argument(
             '--lookback-hours',
-            dest='lookback_hours',
             type=int,
             help="Period a bit larger than that of the cron job that runs "
                  "this command so that the lookback periods are sure to overlap.",

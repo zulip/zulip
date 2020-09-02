@@ -434,7 +434,6 @@ if __name__ == "__main__":
                         help="Provision needed to build release tarball.")
 
     parser.add_argument('--skip-dev-db-build', action='store_true',
-                        dest='skip_dev_db_build',
                         default=False,
                         help="Don't run migrations on dev database.")
 

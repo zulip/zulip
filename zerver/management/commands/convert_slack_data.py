@@ -25,7 +25,6 @@ class Command(BaseCommand):
                             help='Directory to write exported data to.')
 
         parser.add_argument('--threads',
-                            dest='threads',
                             action="store",
                             default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
                             help='Threads to use in exporting UserMessage objects in parallel')

@@ -38,12 +38,10 @@ class Command(ZulipBaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser)
         parser.add_argument('-d', '--deactivate',
-                            dest='deactivate',
                             action='store_true',
                             default=False,
                             help='Used to deactivate user/users.')
         parser.add_argument('-a', '--activate',
-                            dest='activate',
                             action='store_true',
                             default=False,
                             help='Used to activate user/users.')

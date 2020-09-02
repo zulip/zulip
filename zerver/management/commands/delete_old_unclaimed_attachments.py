@@ -20,7 +20,6 @@ class Command(BaseCommand):
                             help="Limiting value of how old the file can be.")
 
         parser.add_argument('-f', '--for-real',
-                            dest='for_real',
                             action='store_true',
                             default=False,
                             help="Actually remove the files from the storage.")

@@ -29,11 +29,9 @@ To restore a specific ArchiveTransaction:
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('-d', '--restore-deleted',
-                            dest='restore_deleted',
                             action='store_true',
                             help='Restore manually deleted messages.')
         parser.add_argument('-t', '--transaction-id',
-                            dest='transaction_id',
                             type=int,
                             help='Restore a specific ArchiveTransaction.')
 

@@ -19,13 +19,11 @@ import a database dump from one or more JSON files."""
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('--destroy-rebuild-database',
-                            dest='destroy_rebuild_database',
                             default=False,
                             action="store_true",
                             help='Destroys and rebuilds the databases prior to import.')
 
         parser.add_argument('--import-into-nonempty',
-                            dest='import_into_nonempty',
                             default=False,
                             action="store_true",
                             help='Import into an existing nonempty database.')
@@ -37,7 +35,6 @@ import a database dump from one or more JSON files."""
                             metavar='<export path>',
                             help="list of export directories to import")
         parser.add_argument('--processes',
-                            dest='processes',
                             action="store",
                             default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
                             help='Number of processes to use for uploading Avatars to S3 in parallel')

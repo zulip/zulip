@@ -19,7 +19,7 @@ class Command(BaseCommand):
                             help="queue to process")
         parser.add_argument('--worker_num', metavar='<worker number>', type=int, nargs='?', default=0,
                             help="worker label")
-        parser.add_argument('--all', dest="all", action="store_true", default=False,
+        parser.add_argument('--all', action="store_true", default=False,
                             help="run all queues")
         parser.add_argument('--multi_threaded', nargs='+',
                             metavar='<list of queue name>',
