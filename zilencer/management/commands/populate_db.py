@@ -186,7 +186,6 @@ class Command(BaseCommand):
 
         parser.add_argument('--max-topics',
                             type=int,
-                            default=None,
                             help='The number of maximum topics to create')
 
         parser.add_argument('--huddles',

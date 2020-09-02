@@ -21,7 +21,7 @@ class Command(BaseCommand):
                             type=str, help='Slack legacy token of the organsation')
 
         parser.add_argument('--output', dest='output_dir',
-                            action="store", default=None,
+                            action="store",
                             help='Directory to write exported data to.')
 
         parser.add_argument('--threads',
