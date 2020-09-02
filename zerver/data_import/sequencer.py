@@ -28,7 +28,7 @@ def sequencer() -> Callable[[str], int]:
         NEXT_ID = sequencer()
         message_id = NEXT_ID('message')
     '''
-    seq_dict: Dict[str, Callable[[], int]] = dict()
+    seq_dict: Dict[str, Callable[[], int]] = {}
 
     def next_one(name: str) -> int:
         if name not in seq_dict:
@@ -59,7 +59,7 @@ def is_int(key: Any) -> bool:
 
 class IdMapper:
     def __init__(self) -> None:
-        self.map: Dict[Any, int] = dict()
+        self.map: Dict[Any, int] = {}
         self.cnt = 0
 
     def has(self, their_id: Any) -> bool:

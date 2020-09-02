@@ -124,7 +124,7 @@ def create_user_docs() -> None:
             ('json', 'legacy'),
         ]
 
-        groups: Dict[str, Set[str]] = dict()
+        groups: Dict[str, Set[str]] = {}
         for prefix, name in tups:
             groups[name] = {p for p in patterns if p.startswith(prefix)}
             patterns -= groups[name]

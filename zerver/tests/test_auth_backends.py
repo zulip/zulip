@@ -255,23 +255,23 @@ class AuthBackendTest(ZulipTestCase):
                                              password=password,
                                              username=username,
                                              realm=get_realm('zulip'),
-                                             return_data=dict()),
+                                             return_data={}),
                             bad_kwargs=dict(request=mock.MagicMock(),
                                             password=password,
                                             username=username,
                                             realm=get_realm('zephyr'),
-                                            return_data=dict()))
+                                            return_data={}))
         self.verify_backend(EmailAuthBackend(),
                             good_kwargs=dict(request=mock.MagicMock(),
                                              password=password,
                                              username=username,
                                              realm=get_realm('zulip'),
-                                             return_data=dict()),
+                                             return_data={}),
                             bad_kwargs=dict(request=mock.MagicMock(),
                                             password=password,
                                             username=username,
                                             realm=get_realm('zephyr'),
-                                            return_data=dict()))
+                                            return_data={}))
 
     def test_email_auth_backend_empty_password(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -600,7 +600,7 @@ class RateLimitAuthenticationTests(ZulipTestCase):
                                                    username=username,
                                                    realm=get_realm("zulip"),
                                                    password=password,
-                                                   return_data=dict())
+                                                   return_data={})
 
         self.do_test_auth_rate_limiting(attempt_authentication,
                                         user_profile.delivery_email,
@@ -619,7 +619,7 @@ class RateLimitAuthenticationTests(ZulipTestCase):
                                                        username=username,
                                                        realm=get_realm("zulip"),
                                                        password=password,
-                                                       return_data=dict())
+                                                       return_data={})
 
         self.do_test_auth_rate_limiting(attempt_authentication,
                                         user_profile.delivery_email,
@@ -643,7 +643,7 @@ class RateLimitAuthenticationTests(ZulipTestCase):
                                 username=username,
                                 realm=get_realm("zulip"),
                                 password=password,
-                                return_data=dict())
+                                return_data={})
 
         self.do_test_auth_rate_limiting(attempt_authentication,
                                         user_profile.delivery_email,

@@ -21,7 +21,7 @@ class TopicHistoryTest(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, stream_name)
         endpoint = f'/json/users/me/{stream.id}/topics'
-        result = self.client_get(endpoint, dict(), subdomain="zephyr")
+        result = self.client_get(endpoint, {}, subdomain="zephyr")
         self.assert_json_success(result)
         history = result.json()['topics']
         self.assertEqual(history, [])
@@ -75,7 +75,7 @@ class TopicHistoryTest(ZulipTestCase):
         topic0_msg_id = create_test_message('topic0')
 
         endpoint = f'/json/users/me/{stream.id}/topics'
-        result = self.client_get(endpoint, dict())
+        result = self.client_get(endpoint, {})
         self.assert_json_success(result)
         history = result.json()['topics']
 
@@ -99,7 +99,7 @@ class TopicHistoryTest(ZulipTestCase):
         # that she doesn't have UserMessage rows.  We should see the
         # same results for a public stream.
         self.login('cordelia')
-        result = self.client_get(endpoint, dict())
+        result = self.client_get(endpoint, {})
         self.assert_json_success(result)
         history = result.json()['topics']
 
@@ -124,7 +124,7 @@ class TopicHistoryTest(ZulipTestCase):
         do_change_stream_invite_only(stream, True)
         self.subscribe(self.example_user("cordelia"), stream.name)
 
-        result = self.client_get(endpoint, dict())
+        result = self.client_get(endpoint, {})
         self.assert_json_success(result)
         history = result.json()['topics']
         history = history[:3]
@@ -140,7 +140,7 @@ class TopicHistoryTest(ZulipTestCase):
 
         # non-sensible stream id
         endpoint = '/json/users/me/9999999999/topics'
-        result = self.client_get(endpoint, dict())
+        result = self.client_get(endpoint, {})
         self.assert_json_error(result, 'Invalid stream id')
 
         # out of realm
@@ -149,7 +149,7 @@ class TopicHistoryTest(ZulipTestCase):
             realm=get_realm('zephyr'),
         )
         endpoint = f'/json/users/me/{bad_stream.id}/topics'
-        result = self.client_get(endpoint, dict())
+        result = self.client_get(endpoint, {})
         self.assert_json_error(result, 'Invalid stream id')
 
         # private stream to which I am not subscribed
@@ -158,7 +158,7 @@ class TopicHistoryTest(ZulipTestCase):
             invite_only=True,
         )
         endpoint = f'/json/users/me/{private_stream.id}/topics'
-        result = self.client_get(endpoint, dict())
+        result = self.client_get(endpoint, {})
         self.assert_json_error(result, 'Invalid stream id')
 
 class TopicDeleteTest(ZulipTestCase):

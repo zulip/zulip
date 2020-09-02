@@ -730,7 +730,7 @@ def huddle_users(recipient_id: int) -> str:
 def aggregate_message_dict(input_dict: Dict[int, Dict[str, Any]],
                            lookup_fields: List[str],
                            collect_senders: bool) -> List[Dict[str, Any]]:
-    lookup_dict: Dict[Tuple[Any, ...], Dict[str, Any]] = dict()
+    lookup_dict: Dict[Tuple[Any, ...], Dict[str, Any]] = {}
 
     '''
     A concrete example might help explain the inputs here:

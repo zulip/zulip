@@ -627,7 +627,7 @@ class SlackImporter(ZulipTestCase):
         dm_members = {'DJ47BL849': ('U066MTL5U', 'U061A5N1G'), 'DHX1UP7EG': ('U061A5N1G', 'U061A1R2R')}
 
         zerver_usermessage: List[Dict[str, Any]] = []
-        subscriber_map: Dict[int, Set[int]] = dict()
+        subscriber_map: Dict[int, Set[int]] = {}
         added_channels: Dict[str, Tuple[str, int]] = {'random': ('c5', 1), 'general': ('c6', 2)}
 
         zerver_message, zerver_usermessage, attachment, uploads, reaction = \

@@ -47,7 +47,7 @@ class EditMessageTest(ZulipTestCase):
             (fetch_message_dict,) = messages_for_ids(
                 message_ids = [msg.id],
                 user_message_flags={msg_id: []},
-                search_fields=dict(),
+                search_fields={},
                 apply_markdown=False,
                 client_gravatar=False,
                 allow_edit_history=True,

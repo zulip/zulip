@@ -768,7 +768,7 @@ class AdminCreateUserTest(ZulipTestCase):
         self.login_user(admin)
         do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
-        result = self.client_post("/json/users", dict())
+        result = self.client_post("/json/users", {})
         self.assert_json_error(result, "Missing 'email' argument")
 
         result = self.client_post("/json/users", dict(

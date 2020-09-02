@@ -8,7 +8,7 @@ from zerver.lib.events import do_events_register
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Client, Message, UserGroup, UserPresence, get_realm
 
-GENERATOR_FUNCTIONS: Dict[str, Callable[[], Dict[str, object]]] = dict()
+GENERATOR_FUNCTIONS: Dict[str, Callable[[], Dict[str, object]]] = {}
 REGISTERED_GENERATOR_FUNCTIONS: Set[str] = set()
 CALLED_GENERATOR_FUNCTIONS: Set[str] = set()
 

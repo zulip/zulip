@@ -507,7 +507,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             self.subscribe(cordelia, stream_name)
 
         all_message_ids: Set[int] = set()
-        message_ids = dict()
+        message_ids = {}
 
         tups = [
             ('social', 'lunch'),

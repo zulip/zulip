@@ -343,7 +343,7 @@ class TestServiceBotConfigHandler(ZulipTestCase):
         with self.assertRaises(ConfigError):
             self.bot_handler.get_config_info('foo')
 
-        self.assertEqual(self.bot_handler.get_config_info('foo', optional=True), dict())
+        self.assertEqual(self.bot_handler.get_config_info('foo', optional=True), {})
 
         config_dict = {"entry 1": "value 1", "entry 2": "value 2"}
         for key, value in config_dict.items():

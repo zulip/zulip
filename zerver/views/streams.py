@@ -476,7 +476,7 @@ def add_subscriptions_backend(
 
     # We can assume unique emails here for now, but we should eventually
     # convert this function to be more id-centric.
-    email_to_user_profile: Dict[str, UserProfile] = dict()
+    email_to_user_profile: Dict[str, UserProfile] = {}
 
     result: Dict[str, Any] = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))
     for (subscriber, stream) in subscribed:

@@ -1151,7 +1151,7 @@ class GetOldMessagesTest(ZulipTestCase):
         Test old `/json/messages` returns reactions.
         """
         self.login('hamlet')
-        messages = self.get_and_check_messages(dict())
+        messages = self.get_and_check_messages({})
         message_id = messages['messages'][0]['id']
 
         self.login('othello')
@@ -1182,7 +1182,7 @@ class GetOldMessagesTest(ZulipTestCase):
         messages.
         """
         self.login('hamlet')
-        self.get_and_check_messages(dict())
+        self.get_and_check_messages({})
 
         othello_email = self.example_user('othello').email
 

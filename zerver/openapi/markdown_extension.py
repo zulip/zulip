@@ -306,7 +306,7 @@ def render_curl_example(function: str, api_url: str,
     parts = function.split(":")
     endpoint = parts[0]
     method = parts[1]
-    kwargs: Dict[str, Any] = dict()
+    kwargs: Dict[str, Any] = {}
     if len(parts) > 2:
         kwargs["auth_email"] = parts[2]
     if len(parts) > 3:

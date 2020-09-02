@@ -687,7 +687,7 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
     """This function has a complete unit test suite in
     `test_enqueue_notifications` that should be expanded as we add
     more features here."""
-    notified: Dict[str, bool] = dict()
+    notified: Dict[str, bool] = {}
 
     if (idle or always_push_notify) and (private_message or mentioned or
                                          wildcard_mention_notify or stream_push_notify):

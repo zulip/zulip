@@ -68,4 +68,4 @@ def load_bot_config_template(bot: str) -> Dict[str, str]:
             config.read_file(conf)
         return dict(config.items(bot))
     else:
-        return dict()
+        return {}

@@ -12,7 +12,7 @@ from zerver.openapi.openapi import validate_against_openapi_schema
 
 ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-TEST_FUNCTIONS: Dict[str, Callable[..., object]] = dict()
+TEST_FUNCTIONS: Dict[str, Callable[..., object]] = {}
 REGISTERED_TEST_FUNCTIONS: Set[str] = set()
 CALLED_TEST_FUNCTIONS: Set[str] = set()
 

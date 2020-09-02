@@ -239,7 +239,7 @@ class LogRequests(MiddlewareMixin):
             # Avoid re-initializing request._log_data if it's already there.
             return
 
-        request._log_data = dict()
+        request._log_data = {}
         record_request_start_data(request._log_data)
 
     def process_view(self, request: HttpRequest, view_func: ViewFuncT,
