@@ -1139,7 +1139,7 @@ def get_incoming_message_ids(import_dir: Path,
     '''
 
     if sort_by_date:
-        tups: List[Tuple[int, int]] = list()
+        tups: List[Tuple[int, int]] = []
     else:
         message_ids: List[int] = []
 

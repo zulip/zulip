@@ -1179,7 +1179,7 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
     for recipient_id, max_message_id in rows:
         recipient_map[recipient_id] = dict(
             max_message_id=max_message_id,
-            user_ids=list(),
+            user_ids=[],
         )
 
     # Now we need to map all the recipient_id objects to lists of user IDs
