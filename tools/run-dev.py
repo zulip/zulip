@@ -49,7 +49,7 @@ parser.add_argument('--minify',
                     help='Minifies assets for testing in dev')
 parser.add_argument('--interface',
                     action='store',
-                    default=None, help='Set the IP or hostname for the proxy to listen on')
+                    help='Set the IP or hostname for the proxy to listen on')
 parser.add_argument('--no-clear-memcached',
                     action='store_false', dest='clear_memcached',
                     help='Do not clear memcached')

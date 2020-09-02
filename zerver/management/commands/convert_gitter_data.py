@@ -18,7 +18,7 @@ class Command(BaseCommand):
                             help="Gitter data in json format")
 
         parser.add_argument('--output', dest='output_dir',
-                            action="store", default=None,
+                            action="store",
                             help='Directory to write exported data to.')
 
         parser.add_argument('--threads',

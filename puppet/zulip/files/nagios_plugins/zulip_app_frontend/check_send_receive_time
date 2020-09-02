@@ -45,7 +45,7 @@ parser.add_argument('--insecure',
 parser.add_argument('--munin',
                     action='store_true')
 
-parser.add_argument('config', nargs='?', default=None)
+parser.add_argument('config', nargs='?')
 
 options = parser.parse_args()
 

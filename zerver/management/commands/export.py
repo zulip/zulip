@@ -80,7 +80,6 @@ class Command(ZulipBaseCommand):
         parser.add_argument('--output',
                             dest='output_dir',
                             action="store",
-                            default=None,
                             help='Directory to write exported data to.')
         parser.add_argument('--threads',
                             action="store",
@@ -94,7 +93,6 @@ class Command(ZulipBaseCommand):
                             help='Deactivate the realm immediately before exporting')
         parser.add_argument('--consent-message-id',
                             action="store",
-                            default=None,
                             type=int,
                             help='ID of the message advertising users to react with thumbs up')
         parser.add_argument('--upload',
