@@ -26,7 +26,6 @@ Omit both <email> and <full name> for interactive user creation.
                             action="store_true",
                             help='Acknowledgement that the user has already accepted the ToS.')
         parser.add_argument('--password',
-                            type=str,
                             default='',
                             help='password of new user. For development only.'
                                  'Note that we recommend against setting '
@@ -34,12 +33,11 @@ Omit both <email> and <full name> for interactive user creation.
                                  'on the server via `ps -ef` or by any superuser with'
                                  'read access to the user\'s bash history.')
         parser.add_argument('--password-file',
-                            type=str,
                             default='',
                             help='The file containing the password of the new user.')
-        parser.add_argument('email', metavar='<email>', type=str, nargs='?', default=argparse.SUPPRESS,
+        parser.add_argument('email', metavar='<email>', nargs='?', default=argparse.SUPPRESS,
                             help='email address of new user')
-        parser.add_argument('full_name', metavar='<full name>', type=str, nargs='?',
+        parser.add_argument('full_name', metavar='<full name>', nargs='?',
                             default=argparse.SUPPRESS,
                             help='full name of new user')
         self.add_realm_args(parser, True, "The name of the existing realm to which to add the user.")

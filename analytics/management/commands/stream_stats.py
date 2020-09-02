@@ -11,7 +11,7 @@ class Command(BaseCommand):
     help = "Generate statistics on the streams for a realm."
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('realms', metavar='<realm>', type=str, nargs='*',
+        parser.add_argument('realms', metavar='<realm>', nargs='*',
                             help="realm to generate statistics for")
 
     def handle(self, *args: Any, **options: str) -> None:

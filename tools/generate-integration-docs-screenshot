@@ -194,16 +194,16 @@ def generate_screenshot_from_config(integration_name: str, screenshot_config: Sc
 parser = argparse.ArgumentParser()
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('--all', action='store_true')
-group.add_argument('--integration', type=str, help='Name of the integration')
-parser.add_argument('--fixture', type=str, help='Name of the fixture file to use')
-parser.add_argument('--image-name', type=str, help='Name for the screenshot image')
-parser.add_argument('--image-dir', type=str, help='Directory name where to save the screenshot image')
-parser.add_argument('--bot-name', type=str, help='Name to use for the bot')
+group.add_argument('--integration', help='Name of the integration')
+parser.add_argument('--fixture', help='Name of the fixture file to use')
+parser.add_argument('--image-name', help='Name for the screenshot image')
+parser.add_argument('--image-dir', help='Directory name where to save the screenshot image')
+parser.add_argument('--bot-name', help='Name to use for the bot')
 parser.add_argument('-A', '--use-basic-auth', action='store_true',
                     help='Add basic auth headers to the request')
 parser.add_argument('-Q', '--payload-as-query-param', action='store_true',
                     help='Send payload as query param instead of body')
-parser.add_argument('-P', '--payload-param-name', type=str,
+parser.add_argument('-P', '--payload-param-name',
                     help='Param name to use for the payload')
 parser.add_argument('-H', '--custom-headers',
                     type=custom_headers,

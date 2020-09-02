@@ -27,7 +27,7 @@ ONLY perform this on customer request from an authorized person.
                             default='administer',
                             choices=['administer', 'api_super_user'],
                             help='Permission to grant/remove.')
-        parser.add_argument('email', metavar='<email>', type=str,
+        parser.add_argument('email', metavar='<email>',
                             help="email of user to knight")
         self.add_realm_args(parser, True)
 

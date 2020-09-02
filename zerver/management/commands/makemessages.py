@@ -74,13 +74,13 @@ class Command(makemessages.Command):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         super().add_arguments(parser)
-        parser.add_argument('--frontend-source', type=str,
+        parser.add_argument('--frontend-source',
                             default='static/templates',
                             help='Name of the Handlebars template directory')
-        parser.add_argument('--frontend-output', type=str,
+        parser.add_argument('--frontend-output',
                             default='locale',
                             help='Name of the frontend messages output directory')
-        parser.add_argument('--frontend-namespace', type=str,
+        parser.add_argument('--frontend-namespace',
                             default='translations.json',
                             help='Namespace of the frontend locale file')
 

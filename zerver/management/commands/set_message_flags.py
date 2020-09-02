@@ -20,20 +20,16 @@ class Command(ZulipBaseCommand):
                             help="Actually change message flags. Default is a dry run.")
 
         parser.add_argument('-f', '--flag',
-                            type=str,
                             help="The flag to add of remove")
 
         parser.add_argument('-o', '--op',
-                            type=str,
                             help="The operation to do: 'add' or 'remove'")
 
         parser.add_argument('-u', '--until',
                             dest='all_until',
-                            type=str,
                             help="Mark all messages <= specific usermessage id")
 
         parser.add_argument('-m', '--email',
-                            type=str,
                             help="Email to set messages for")
         self.add_realm_args(parser)
 

@@ -72,7 +72,7 @@ def main() -> None:
                    "and then verifying that no changes were made in the process.")
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
-        "--input-file", dest="input_file_path", type=str, metavar="<path>",
+        "--input-file", dest="input_file_path", metavar="<path>",
         default=os.path.join(TOOLS_DIR, "setup", "emoji", "emoji_names.csv"),
         help="Path to the CSV file to be used for round-trip conversion.")
 

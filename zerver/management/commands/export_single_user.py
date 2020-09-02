@@ -19,7 +19,7 @@ class Command(ZulipBaseCommand):
     with (for example) any bots owned by the user."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('email', metavar='<email>', type=str,
+        parser.add_argument('email', metavar='<email>',
                             help="email of user to export")
         parser.add_argument('--output',
                             dest='output_dir',

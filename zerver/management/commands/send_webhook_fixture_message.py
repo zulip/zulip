@@ -32,17 +32,14 @@ approach shown above.
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('-f', '--fixture',
-                            type=str,
                             help='The path to the fixture you\'d like to send '
                                  'into Zulip')
 
         parser.add_argument('-u', '--url',
-                            type=str,
                             help='The url on your Zulip server that you want '
                                  'to post the fixture to')
 
         parser.add_argument('-H', '--custom-headers',
-                            type=str,
                             help='The headers you want to provide along with '
                                  'your mock request to Zulip.')
 

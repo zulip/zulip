@@ -15,7 +15,6 @@ class Command(ZulipBaseCommand):
 
         parser.add_argument(
             '-s', '--streams',
-            type=str,
             required=True,
             help='A comma-separated list of stream names.')
 

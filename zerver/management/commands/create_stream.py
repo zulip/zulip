@@ -13,7 +13,7 @@ the command."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser, True, "realm in which to create the stream")
-        parser.add_argument('stream_name', metavar='<stream name>', type=str,
+        parser.add_argument('stream_name', metavar='<stream name>',
                             help='name of stream to create')
 
     def handle(self, *args: Any, **options: str) -> None:
