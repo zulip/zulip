@@ -22,7 +22,7 @@
         "import/extensions": "error",
         "import/first": "error",
         "import/newline-after-import": "error",
-        "import/no-unresolved": "error",
+        "import/no-cycle": "error",
         "import/no-useless-path-segments": "error",
         "import/order": [
             "error",
