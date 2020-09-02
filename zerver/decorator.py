@@ -34,7 +34,6 @@ from zerver.lib.exceptions import (
     OrganizationOwnerRequired,
     UnsupportedWebhookEventType,
 )
-from zerver.lib.logging_util import log_to_file
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
@@ -50,11 +49,7 @@ if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer, get_remote_server_by_uuid
 
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
-log_to_file(webhook_logger, settings.WEBHOOK_LOG_PATH)
-
 webhook_unsupported_events_logger = logging.getLogger("zulip.zerver.webhooks.unsupported")
-log_to_file(webhook_unsupported_events_logger,
-            settings.WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH)
 
 FuncT = TypeVar('FuncT', bound=Callable[..., object])
 
