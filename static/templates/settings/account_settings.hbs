@@ -128,8 +128,10 @@
                         {{t "Administrator" }}
                         {{else if page_params.is_guest}}
                         {{t "Guest" }}
+                        {{else if is_full_member}}
+                        {{t "Full member" }}
                         {{else}}
-                        {{t "Member" }}
+                        {{t "New member"}}
                         {{/if}}
                     </span>
                 </div>

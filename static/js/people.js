@@ -59,6 +59,14 @@ exports.get_by_user_id = function (user_id, ignore_missing) {
     return people_by_user_id_dict.get(user_id);
 };
 
+exports.is_full_member = function (user_id) {
+    const person = exports.get_by_user_id(user_id);
+    const current_datetime = new Date(Date.now());
+    const person_date_joined = new Date(person.date_joined);
+    const days = (current_datetime - person_date_joined) / 1000 / 86400;
+    return days > page_params.realm_waiting_period_threshold;
+};
+
 exports.get_by_email = function (email) {
     const person = people_dict.get(email);
 
@@ -252,8 +260,10 @@ exports.get_user_type = function (user_id) {
         return i18n.t("Guest");
     } else if (user_profile.is_bot) {
         return i18n.t("Bot");
+    } else if (exports.is_full_member(user_id)) {
+        return i18n.t("Full member");
     }
-    return i18n.t("Member");
+    return i18n.t("New member");
 };
 
 exports.emails_strings_to_user_ids_string = function (emails_string) {

@@ -17,8 +17,10 @@
             {{t "Administrator" }}
             {{else if is_guest}}
             {{t "Guest" }}
-            {{else}}
-            {{t "Member" }}
+            {{else if is_full_member }}
+            {{t "Full member" }}
+            {{else }}
+            {{t "New member" }}
             {{/if}}
         </span>
     </td>
