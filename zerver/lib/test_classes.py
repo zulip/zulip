@@ -123,10 +123,10 @@ class ZulipTestCase(TestCase):
 
     def run(self, result: Optional[TestResult]=None) -> Optional[TestResult]:  # nocoverage
         if not settings.BAN_CONSOLE_OUTPUT:
-            return super(ZulipTestCase, self).run(result)
+            return super().run(result)
         extra_output_finder = ExtraConsoleOutputFinder()
         with TeeStderrAndFindExtraConsoleOutput(extra_output_finder), TeeStdoutAndFindExtraConsoleOutput(extra_output_finder):
-            test_result = super(ZulipTestCase, self).run(result)
+            test_result = super().run(result)
         if extra_output_finder.full_extra_output:
             exception_message = f"""
 ---- UNEXPECTED CONSOLE OUTPUT DETECTED ----
