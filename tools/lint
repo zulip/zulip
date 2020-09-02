@@ -2,6 +2,7 @@
 import argparse
 import os
 import random
+import re
 import sys
 
 # check for the venv
@@ -144,6 +145,15 @@ def run() -> None:
         ["css", "js", "json", "ts", "yaml", "yml"],
         fix_arg=["--write"],
         description="Formats CSS, JavaScript, YAML",
+    )
+    linter_config.external_linter(
+        "black",
+        ["black"],
+        ["py"],
+        description="Reformats Python code",
+        check_arg=["--check"],
+        suppress_line=lambda line: line == "All done! ✨ 🍰 ✨\n"
+        or re.fullmatch(r"\d+ files? would be left unchanged\.\n", line) is not None,
     )
 
     semgrep_command = [
