@@ -141,7 +141,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f47b': {'canonical_name': 'ghost', 'aliases': ['boo', 'spooky', 'haunted']},
     '1f480': {'canonical_name': 'skull', 'aliases': []},
     # alternates seemed like reasonable additions
-    '2620': {'canonical_name': 'skull_and_crossbones', 'aliases': ['pirate', 'death', 'hazard', 'toxic', 'poison']},    # ignorelongline
+    '2620': {'canonical_name': 'skull_and_crossbones', 'aliases': ['pirate', 'death', 'hazard', 'toxic', 'poison']},
     # ufo seemed like a natural addition
     '1f47d': {'canonical_name': 'alien', 'aliases': ['ufo']},
     '1f47e': {'canonical_name': 'space_invader', 'aliases': []},
@@ -327,7 +327,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # safety and invincibility inspired by
     # https://mashable.com/2015/10/23/ios-9-1-emoji-guide/. hard_hat and
     # rescue_worker seem like good additions
-    '26d1': {'canonical_name': 'helmet', 'aliases': ['hard_hat', 'rescue_worker', 'safety_first', 'invincible']},    # ignorelongline
+    '26d1': {'canonical_name': 'helmet', 'aliases': ['hard_hat', 'rescue_worker', 'safety_first', 'invincible']},
     # backpack from gemoji, dominates satchel on google trends
     '1f392': {'canonical_name': 'backpack', 'aliases': ['satchel']},
     '1f45d': {'canonical_name': 'pouch', 'aliases': []},
@@ -689,7 +689,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # Seems like the best emoji for hungry and meal. fork_and_knife_and_plate
     # is from gemoji/unicode, and I think is better than the shorter iamcal
     # version in this case. The rest just seemed like good additions.
-    '1f37d': {'canonical_name': 'hungry', 'aliases': ['meal', 'table_setting', 'fork_and_knife_with_plate', 'lets_eat']},    # ignorelongline
+    '1f37d': {'canonical_name': 'hungry', 'aliases': ['meal', 'table_setting', 'fork_and_knife_with_plate', 'lets_eat']},
     # most people interested in this sport call it football
     '26bd': {'canonical_name': 'football', 'aliases': ['soccer']},
     '1f3c0': {'canonical_name': 'basketball', 'aliases': []},
@@ -831,7 +831,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # the iamcal names
     '1f69a': {'canonical_name': 'moving_truck', 'aliases': []},
     # see Places/11 for truck. Rest seem reasonable additions.
-    '1f69b': {'canonical_name': 'truck', 'aliases': ['tractor-trailer', 'big_rig', 'semi_truck', 'transport_truck']},    # ignorelongline
+    '1f69b': {'canonical_name': 'truck', 'aliases': ['tractor-trailer', 'big_rig', 'semi_truck', 'transport_truck']},
     '1f69c': {'canonical_name': 'tractor', 'aliases': []},
     # kick_scooter and scooter seem better for Places/14 and Places /16 than
     # scooter and motor_scooter.
