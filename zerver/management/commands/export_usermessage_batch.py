@@ -15,17 +15,14 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--path',
-                            dest='path',
                             action="store",
                             default=None,
                             help='Path to find messages.json archives')
         parser.add_argument('--thread',
-                            dest='thread',
                             action="store",
                             default=None,
                             help='Thread ID')
         parser.add_argument('--consent-message-id',
-                            dest="consent_message_id",
                             action="store",
                             default=None,
                             type=int,

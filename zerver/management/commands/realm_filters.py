@@ -24,7 +24,6 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--op',
-                            dest='op',
                             type=str,
                             default="show",
                             help='What operation to do (add, show, remove).')

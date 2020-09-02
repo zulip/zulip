@@ -26,7 +26,6 @@ ONLY perform this on customer request from an authorized person.
                             default=True,
                             help='Remove an administrator\'s rights.')
         parser.add_argument('--permission',
-                            dest='permission',
                             action="store",
                             default='administer',
                             choices=['administer', 'api_super_user'],
