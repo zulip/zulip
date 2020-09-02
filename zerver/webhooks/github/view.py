@@ -30,9 +30,6 @@ from zerver.models import UserProfile
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 
-class UnknownEventType(Exception):
-    pass
-
 def get_opened_or_update_pull_request_body(payload: Dict[str, Any],
                                            include_title: bool=False) -> str:
     pull_request = payload['pull_request']
