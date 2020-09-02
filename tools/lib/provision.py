@@ -104,12 +104,6 @@ elif vendor == "centos" and os_version == "7":
     POSTGRES_VERSION = "10"
 else:
     logging.critical("Unsupported platform: %s %s", vendor, os_version)
-    if vendor == 'ubuntu' and os_version == '14.04':
-        print()
-        print("Ubuntu Trusty reached end-of-life upstream and is no longer a supported platform for Zulip")
-        if os.path.exists('/home/vagrant'):
-            print("To upgrade, run `vagrant destroy`, and then recreate the Vagrant guest.\n")
-            print("See: https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html")
     sys.exit(1)
 
 VENV_DEPENDENCIES = get_venv_dependencies(vendor, os_version)

@@ -154,8 +154,8 @@ aliases:
     run:
       name: check tools/provision error message on xenial
       command: |
-        ! tools/provision > >(tee provision.out)
-        grep -Fqx 'CRITICAL:root:Unsupported platform: ubuntu 16.04' provision.out
+        ! tools/provision 2> >(tee provision.err >&2)
+        grep -Fqx 'Error: ubuntu 16.04 is no longer a supported platform for Zulip.' provision.err
 
   - &check_xenial_upgrade_error
     run:
