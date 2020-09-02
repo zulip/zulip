@@ -25,7 +25,7 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
     command = content[1:]
 
     if command == 'ping':
-        return dict()
+        return {}
     elif command == 'night':
         if user_profile.color_scheme == UserProfile.COLOR_SCHEME_NIGHT:
             return dict(msg='You are still in night mode.')

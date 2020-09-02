@@ -810,7 +810,7 @@ def apply_event(state: Dict[str, Any],
         status_text = event.get('status_text')
 
         if user_id_str not in user_status:
-            user_status[user_id_str] = dict()
+            user_status[user_id_str] = {}
 
         if away is not None:
             if away:

@@ -12,7 +12,7 @@ class UserHandler:
     '''
 
     def __init__(self) -> None:
-        self.id_to_user_map: Dict[int, Dict[str, Any]] = dict()
+        self.id_to_user_map: Dict[int, Dict[str, Any]] = {}
 
     def add_user(self, user: Dict[str, Any]) -> None:
         user_id = user['id']

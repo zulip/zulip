@@ -725,7 +725,7 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
                              Subscription.objects.filter(recipient_id=h)]
 
     # Generate different topics for each stream
-    possible_topics = dict()
+    possible_topics = {}
     for stream_id in recipient_streams:
         possible_topics[stream_id] = generate_topics(options["max_topics"])
 

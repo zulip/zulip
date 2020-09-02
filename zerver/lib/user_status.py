@@ -19,13 +19,13 @@ def get_user_info_dict(realm_id: int) -> Dict[str, Dict[str, Any]]:
         'status_text',
     )
 
-    user_dict: Dict[str, Dict[str, Any]] = dict()
+    user_dict: Dict[str, Dict[str, Any]] = {}
     for row in rows:
         away = row['status'] == UserStatus.AWAY
         status_text = row['status_text']
         user_id = row['user_profile_id']
 
-        dct = dict()
+        dct = {}
         if away:
             dct['away'] = away
         if status_text:

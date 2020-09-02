@@ -31,7 +31,7 @@ class WidgetContentTestCase(ZulipTestCase):
         assert_error(dict(widget_type='bogus', extra_data={}),
                      'unknown widget type: bogus')
 
-        extra_data: Dict[str, Any] = dict()
+        extra_data: Dict[str, Any] = {}
         obj = dict(widget_type='zform', extra_data=extra_data)
 
         assert_error(obj, 'zform is missing type field')

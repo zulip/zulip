@@ -15,7 +15,7 @@ from zerver.models import AlertWord, Realm, UserProfile, flush_realm_alert_words
 def alert_words_in_realm(realm: Realm) -> Dict[int, List[str]]:
     user_ids_and_words = AlertWord.objects.filter(
         realm=realm, user_profile__is_active=True).values("user_profile_id", "word")
-    user_ids_with_words: Dict[int, List[str]] = dict()
+    user_ids_with_words: Dict[int, List[str]] = {}
     for id_and_word in user_ids_and_words:
         user_ids_with_words.setdefault(id_and_word["user_profile_id"], [])
         user_ids_with_words[id_and_word["user_profile_id"]].append(id_and_word["word"])

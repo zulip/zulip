@@ -41,8 +41,8 @@ ZerverFieldsT = Dict[str, Any]
 
 class SubscriberHandler:
     def __init__(self) -> None:
-        self.stream_info: Dict[int, Set[int]] = dict()
-        self.huddle_info: Dict[int, Set[int]] = dict()
+        self.stream_info: Dict[int, Set[int]] = {}
+        self.huddle_info: Dict[int, Set[int]] = {}
 
     def set_info(self,
                  users: Set[int],
@@ -129,7 +129,7 @@ def make_subscriber_map(zerver_subscription: List[ZerverFieldsT]) -> Dict[int, S
     This can be convenient for building up UserMessage
     rows.
     '''
-    subscriber_map: Dict[int, Set[int]] = dict()
+    subscriber_map: Dict[int, Set[int]] = {}
     for sub in zerver_subscription:
         user_id = sub['user_profile']
         recipient_id = sub['recipient']
