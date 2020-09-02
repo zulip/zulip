@@ -824,9 +824,11 @@ button#register_auth_button_gitlab {
         width: 150px;
 
         + .realm_subdomain_label {
-            top: 15px;
-            margin-left: 180px;
+            margin-left: 2px;
+            position: static;
             display: inline-block;
+            vertical-align: middle;
+            margin-bottom: 5px;
 
             font-weight: normal;
             font-size: inherit;
