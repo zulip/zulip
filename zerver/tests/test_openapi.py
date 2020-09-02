@@ -369,41 +369,30 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
         E.g. typing.Union[typing.List[typing.Dict[str, typing.Any]], NoneType]
         needs to be mapped to list."""
 
-        if sys.version_info < (3, 7):  # nocoverage  # python 3.5-3.6
-            if sys.version_info < (3, 6) and isinstance(t, type(Union)):  # python 3.5 has special consideration for Union
-                origin = Union
-            else:
-                origin = getattr(t, "__origin__", None)
-        else:  # nocoverage  # python3.7+
-            origin = getattr(t, "__origin__", None)
-            if origin == list:
-                origin = List
-            elif origin == dict:
-                origin = Dict
-            elif origin == abc.Iterable:
-                origin = Iterable
-            elif origin == abc.Mapping:
-                origin = Mapping
-            elif origin == abc.Sequence:
-                origin = Sequence
+        origin = getattr(t, "__origin__", None)
+        if sys.version_info < (3, 7):  # nocoverage
+            if origin == List:
+                origin = list
+            elif origin == Dict:
+                origin = dict
+            elif origin == Iterable:
+                origin = abc.Iterable
+            elif origin == Mapping:
+                origin = abc.Mapping
+            elif origin == Sequence:
+                origin = abc.Sequence
 
         if not origin:
             # Then it's most likely one of the fundamental data types
             # I.E. Not one of the data types from the "typing" module.
             return t
         elif origin == Union:
-            subtypes = []
-            if sys.version_info < (3, 6):  # nocoverage # in python3.6+
-                args = t.__union_params__
-            else:  # nocoverage # in python3.5
-                args = t.__args__
-            for st in args:
-                subtypes.append(self.get_standardized_argument_type(st))
+            subtypes = [self.get_standardized_argument_type(st) for st in t.__args__]
             return self.get_type_by_priority(subtypes)
-        elif origin in [List, Iterable, Sequence]:
+        elif origin in [list, abc.Iterable, abc.Sequence]:
             [st] = t.__args__
             return (list, self.get_standardized_argument_type(st))
-        elif origin in [Dict, Mapping]:
+        elif origin in [dict, abc.Mapping]:
             return dict
         raise AssertionError(f"Unknown origin {origin}")
 
