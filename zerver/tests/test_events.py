@@ -719,7 +719,7 @@ class NormalActionsTest(BaseAction):
                 timezone_now(),
                 UserPresence.ACTIVE),
             slim_presence=False)
-        schema_checker = check_events_dict(fields + [email_field])
+        schema_checker = check_events_dict([*fields, email_field])
         schema_checker('events[0]', events[0])
 
         events = self.verify_action(

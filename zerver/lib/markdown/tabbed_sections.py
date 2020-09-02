@@ -103,7 +103,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
 
             start = tab_section['start_tabs_index']
             end = tab_section['end_tabs_index'] + 1
-            lines = lines[:start] + [rendered_tabs] + lines[end:]
+            lines = [*lines[:start], rendered_tabs, *lines[end:]]
             tab_section = self.parse_tabs(lines)
         return lines
 

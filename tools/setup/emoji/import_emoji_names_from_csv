@@ -56,7 +56,7 @@ def check_valid_emoji_name(emoji_name: str) -> None:
 def check_emoji_names(canonical_name: str, aliases: List[str]) -> None:
     if canonical_name == 'X':
         return
-    names_to_check = [canonical_name] + aliases
+    names_to_check = [canonical_name, *aliases]
     for name in names_to_check:
         check_valid_emoji_name(name)
         check_uniqueness(name)

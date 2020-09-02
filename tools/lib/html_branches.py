@@ -66,10 +66,11 @@ class TagInfo:
         self.classes = classes
         self.ids = ids
         self.token = token
-        self.words = \
-            [self.tag] + \
-            ['.' + s for s in classes] + \
-            ['#' + s for s in ids]
+        self.words = [
+            self.tag,
+            *('.' + s for s in classes),
+            *('#' + s for s in ids),
+        ]
 
     def text(self) -> str:
         s = self.tag

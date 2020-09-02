@@ -460,7 +460,7 @@ def is_root() -> bool:
 def run_as_root(args: List[str], **kwargs: Any) -> None:
     sudo_args = kwargs.pop('sudo_args', [])
     if not is_root():
-        args = ['sudo'] + sudo_args + ['--'] + args
+        args = ['sudo', *sudo_args, '--', *args]
     run(args, **kwargs)
 
 def assert_not_running_as_root() -> None:

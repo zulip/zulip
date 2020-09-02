@@ -75,7 +75,7 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
 
         os.mkdir(os.path.join(tmp, "zulip-backup"))
         tarball_file.seek(0, 0)
-        run(["tar", "-C", tmp] + transform_args + ["-xPz"], stdin=tarball_file)
+        run(["tar", "-C", tmp, *transform_args, "-xPz"], stdin=tarball_file)
 
         # Now, extract the the database backup, destroy the old
         # database, and create a new, empty database.

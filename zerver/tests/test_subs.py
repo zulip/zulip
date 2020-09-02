@@ -2707,9 +2707,9 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         Subscribing to a stream name with non-ASCII characters succeeds.
         """
-        self.helper_check_subs_before_and_after_add(self.streams + ["hümbüǵ"], {},
+        self.helper_check_subs_before_and_after_add([*self.streams, "hümbüǵ"], {},
                                                     ["hümbüǵ"], self.streams, self.test_email,
-                                                    self.streams + ["hümbüǵ"], self.test_realm)
+                                                    [*self.streams, "hümbüǵ"], self.test_realm)
 
     def test_subscriptions_add_too_long(self) -> None:
         """
