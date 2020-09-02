@@ -319,7 +319,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
             timezone_now() - timedelta(ZULIP_REALM_DAYS+1),
         )
 
-        expired_msg_ids = expired_mit_msg_ids + expired_zulip_msg_ids + [expired_crossrealm_msg_id]
+        expired_msg_ids = [*expired_mit_msg_ids, *expired_zulip_msg_ids, expired_crossrealm_msg_id]
         expired_usermsg_ids = self._get_usermessage_ids(expired_msg_ids)
 
         archive_messages(chunk_size=2)  # Specify low chunk_size to test batching.

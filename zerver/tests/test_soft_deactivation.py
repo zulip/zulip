@@ -147,7 +147,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
             self.example_user('iago'),
             self.example_user('cordelia'),
         ]
-        all_users = users + [hamlet]
+        all_users = [*users, hamlet]
         for user in all_users:
             self.subscribe(user, stream)
 
@@ -182,7 +182,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
         sender = self.example_user('hamlet')
         realm = get_realm('zulip')
         stream_name = 'announce'
-        for user in users + [sender]:
+        for user in [*users, sender]:
             self.subscribe(user, stream_name)
 
         client, _ = Client.objects.get_or_create(name='website')

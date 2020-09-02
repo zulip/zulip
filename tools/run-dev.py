@@ -135,10 +135,10 @@ with open(pid_file_path, 'w+') as f:
 
 def server_processes() -> List[List[str]]:
     main_cmds = [
-        ['./manage.py', 'runserver'] +
-        manage_args + runserver_args + [f'127.0.0.1:{django_port}'],
-        ['env', 'PYTHONUNBUFFERED=1', './manage.py', 'runtornado'] +
-        manage_args + [f'127.0.0.1:{tornado_port}'],
+        ['./manage.py', 'runserver',
+         *manage_args, *runserver_args, f'127.0.0.1:{django_port}'],
+        ['env', 'PYTHONUNBUFFERED=1', './manage.py', 'runtornado',
+         *manage_args, f'127.0.0.1:{tornado_port}'],
     ]
 
     if options.streamlined:
@@ -147,7 +147,7 @@ def server_processes() -> List[List[str]]:
         return main_cmds
 
     other_cmds = [
-        ['./manage.py', 'process_queue', '--all'] + manage_args,
+        ['./manage.py', 'process_queue', '--all', *manage_args],
         ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
          './puppet/zulip/files/postgresql/process_fts_updates', '--quiet'],
         ['./manage.py', 'deliver_scheduled_messages'],

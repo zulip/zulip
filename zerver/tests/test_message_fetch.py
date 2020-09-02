@@ -1391,11 +1391,11 @@ class GetOldMessagesTest(ZulipTestCase):
 
         def dr_emails(dr: DisplayRecipientT) -> str:
             assert isinstance(dr, list)
-            return ','.join(sorted(set([r['email'] for r in dr] + [me.email])))
+            return ','.join(sorted({*(r['email'] for r in dr), me.email}))
 
         def dr_ids(dr: DisplayRecipientT) -> List[int]:
             assert isinstance(dr, list)
-            return list(sorted(set([r['id'] for r in dr] + [self.example_user('hamlet').id])))
+            return sorted({*(r['id'] for r in dr), self.example_user('hamlet').id})
 
         self.send_personal_message(me, self.example_user("iago"))
 
@@ -2449,7 +2449,7 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         self.login('hamlet')
 
-        other_params = [("narrow", {}), ("anchor", 0)]
+        other_params = {"narrow": {}, "anchor": 0}
         int_params = ["num_before", "num_after"]
 
         bad_types = (False, "", "-1", -1)
@@ -2457,10 +2457,12 @@ class GetOldMessagesTest(ZulipTestCase):
             for type in bad_types:
                 # Rotate through every bad type for every integer
                 # parameter, one at a time.
-                post_params = dict(other_params + [(param, type)] +
-                                   [(other_param, 0) for other_param in
-                                    int_params[:idx] + int_params[idx + 1:]],
-                                   )
+                post_params = {
+                    **other_params,
+                    param: type,
+                    **{other_param: 0 for other_param in
+                       int_params[:idx] + int_params[idx + 1:]},
+                }
                 result = self.client_get("/json/messages", post_params)
                 self.assert_json_error(result,
                                        f"Bad value for '{param}': {type}")
@@ -2471,14 +2473,14 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         self.login('hamlet')
 
-        other_params: List[Tuple[str, Union[int, str, bool]]] = [("anchor", 0), ("num_before", 0), ("num_after", 0)]
+        other_params = {"anchor": 0, "num_before": 0, "num_after": 0}
 
         bad_types: Tuple[Union[int, str, bool], ...] = (
             False, 0, '', '{malformed json,',
             '{foo: 3}', '[1,2]', '[["x","y","z"]]',
         )
         for type in bad_types:
-            post_params = dict(other_params + [("narrow", type)])
+            post_params = {**other_params, "narrow": type}
             result = self.client_get("/json/messages", post_params)
             self.assert_json_error(result,
                                    f"Bad value for 'narrow': {type}")
@@ -2538,10 +2540,9 @@ class GetOldMessagesTest(ZulipTestCase):
     def exercise_bad_narrow_operand(self, operator: str,
                                     operands: Sequence[Any],
                                     error_msg: str) -> None:
-        other_params: List[Tuple[str, Any]] = [("anchor", 0), ("num_before", 0), ("num_after", 0)]
+        other_params = {"anchor": "0", "num_before": "0", "num_after": "0"}
         for operand in operands:
-            post_params = dict(other_params + [
-                ("narrow", orjson.dumps([[operator, operand]]).decode())])
+            post_params = {**other_params, "narrow": orjson.dumps([[operator, operand]]).decode()}
             result = self.client_get("/json/messages", post_params)
             self.assert_json_error_contains(result, error_msg)
 

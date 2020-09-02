@@ -695,10 +695,10 @@ else:
 # This is disabled in a few tests.
 LOGGING_ENABLED = True
 
-DEFAULT_ZULIP_HANDLERS = (
-    (['zulip_admins'] if ERROR_REPORTING else []) +
-    ['console', 'file', 'errors_file']
-)
+DEFAULT_ZULIP_HANDLERS = [
+    *(['zulip_admins'] if ERROR_REPORTING else []),
+    'console', 'file', 'errors_file',
+]
 
 LOGGING: Dict[str, Any] = {
     'version': 1,
@@ -892,7 +892,7 @@ LOGGING: Dict[str, Any] = {
         },
         'zulip.auth': {
             'level': 'DEBUG',
-            'handlers': DEFAULT_ZULIP_HANDLERS + ['auth_file'],
+            'handlers': [*DEFAULT_ZULIP_HANDLERS, 'auth_file'],
             'propagate': False,
         },
         'zulip.ldap': {

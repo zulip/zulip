@@ -80,7 +80,7 @@ def check_events_dict(
     assert "type" in rkeys
     assert "id" not in keys
     return check_dict_only(
-        required_keys=list(required_keys) + [("id", check_int)],
+        required_keys=[*required_keys, ("id", check_int)],
         optional_keys=optional_keys,
     )
 

@@ -65,7 +65,7 @@ try:
     # version is much better for fixing bugs in the upgrade process).
     deploy_path = deploy_path.strip()
     os.chdir(deploy_path)
-    subprocess.check_call([os.path.abspath("./scripts/lib/upgrade-zulip-stage-2"), deploy_path]
-                          + deploy_options)
+    subprocess.check_call([os.path.abspath("./scripts/lib/upgrade-zulip-stage-2"), deploy_path,
+                           *deploy_options])
 finally:
     release_deployment_lock()

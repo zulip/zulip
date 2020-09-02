@@ -75,7 +75,8 @@ comma_whitespace_rule: List["Rule"] = [
      'good_lines': ['foo(1, 2, 3)', 'foo = bar  # some inline comment'],
      'bad_lines': ['foo(1,  2, 3)', 'foo(1,    2, 3)']},
 ]
-markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != r'\s+$']) + [
+markdown_whitespace_rules: List["Rule"] = [
+    *(rule for rule in whitespace_rules if rule['pattern'] != r'\s+$'),
     # Two spaces trailing a line with other content is okay--it's a Markdown line break.
     # This rule finds one space trailing a non-space, three or more trailing spaces, and
     # spaces on an empty line.
@@ -246,7 +247,7 @@ python_rules = RuleList(
          'exclude': {'scripts/lib/setup_venv.py'},
          'exclude_line': {
              ('scripts/lib/zulip_tools.py', 'sudo_args = kwargs.pop(\'sudo_args\', [])'),
-             ('scripts/lib/zulip_tools.py', 'args = [\'sudo\'] + sudo_args + [\'--\'] + args'),
+             ('scripts/lib/zulip_tools.py', 'args = [\'sudo\', *sudo_args, \'--\', *args]'),
          },
          'description': 'Most scripts are intended to run on systems without sudo.',
          'good_lines': ['subprocess.check_call(["ls"])'],
@@ -442,7 +443,9 @@ prose_style_rules: List["Rule"] = [
      'description': "Use Botserver instead of botserver or bot server."},
     *comma_whitespace_rule,
 ]
-html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
+html_rules: List["Rule"] = [
+    *whitespace_rules,
+    *prose_style_rules,
     {'pattern': 'subject|SUBJECT',
      'exclude': {'templates/zerver/email.html'},
      'exclude_pattern': 'email subject',
@@ -578,7 +581,8 @@ html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
 
 handlebars_rules = RuleList(
     langs=['hbs'],
-    rules=html_rules + [
+    rules=[
+        *html_rules,
         {'pattern': "[<]script",
          'description': "Do not use inline <script> tags here; put JavaScript in static/js instead."},
         {'pattern': '{{ t ("|\')',
@@ -600,7 +604,8 @@ handlebars_rules = RuleList(
 
 jinja2_rules = RuleList(
     langs=['html'],
-    rules=html_rules + [
+    rules=[
+        *html_rules,
         {'pattern': r"{% endtrans %}[\.\?!]",
          'description': "Period should be part of the translatable string."},
         {'pattern': r"{{ _(.+) }}[\.\?!]",
@@ -653,7 +658,9 @@ markdown_docs_length_exclude = {
 
 markdown_rules = RuleList(
     langs=['md'],
-    rules=markdown_whitespace_rules + prose_style_rules + [
+    rules=[
+        *markdown_whitespace_rules,
+        *prose_style_rules,
         {'pattern': r'\[(?P<url>[^\]]+)\]\((?P=url)\)',
          'description': 'Linkified Markdown URLs should use cleaner <http://example.com> syntax.'},
         {'pattern': 'https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]',

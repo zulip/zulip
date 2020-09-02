@@ -103,7 +103,7 @@ def exclude_topic_mutes(conditions: List[Selectable],
         return and_(stream_cond, topic_cond)
 
     condition = not_(or_(*list(map(mute_cond, rows))))
-    return conditions + [condition]
+    return [*conditions, condition]
 
 def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, str], bool]:
     rows = MutedTopic.objects.filter(
