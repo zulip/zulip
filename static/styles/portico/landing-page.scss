@@ -1580,6 +1580,9 @@ nav {
     justify-content: center;
     padding-left: 0;
     list-style: none;
+    position: relative;
+    top: auto;
+    right: auto;
 
     li {
         position: relative;
