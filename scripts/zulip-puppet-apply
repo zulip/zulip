@@ -16,7 +16,7 @@ parser.add_argument('--force', '-f', action="store_true",
                     help="Do not prompt with proposed changes")
 parser.add_argument('--noop', action="store_true",
                     help="Do not apply the changes")
-parser.add_argument('--config', action="store",
+parser.add_argument('--config',
                     default="/etc/zulip/zulip.conf",
                     help="Alternate zulip.conf path")
 args, extra_args = parser.parse_known_args()

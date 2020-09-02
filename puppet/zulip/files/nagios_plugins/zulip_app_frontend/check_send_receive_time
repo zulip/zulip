@@ -33,8 +33,7 @@ usage = """Usage: send-receive.py [options] [config]
 
 parser = argparse.ArgumentParser(usage=usage)
 parser.add_argument('--site',
-                    default="https://api.zulip.com",
-                    action='store')
+                    default="https://api.zulip.com")
 
 parser.add_argument('--nagios',
                     action='store_true')

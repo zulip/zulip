@@ -23,7 +23,6 @@ class Command(ZulipBaseCommand):
                             help="email of user to export")
         parser.add_argument('--output',
                             dest='output_dir',
-                            action="store",
                             help='Directory to write exported data to.')
         self.add_realm_args(parser)
 

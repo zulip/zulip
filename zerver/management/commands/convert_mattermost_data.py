@@ -29,7 +29,6 @@ class Command(BaseCommand):
                             help=dir_help)
 
         parser.add_argument('--output', dest='output_dir',
-                            action="store",
                             help='Directory to write converted data to.')
 
         parser.add_argument('--mask', dest='masking_content',

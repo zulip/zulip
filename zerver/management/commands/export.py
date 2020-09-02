@@ -79,10 +79,8 @@ class Command(ZulipBaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--output',
                             dest='output_dir',
-                            action="store",
                             help='Directory to write exported data to.')
         parser.add_argument('--threads',
-                            action="store",
                             default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
                             help='Threads to use in exporting UserMessage objects in parallel')
         parser.add_argument('--public-only',
@@ -92,7 +90,6 @@ class Command(ZulipBaseCommand):
                             action="store_true",
                             help='Deactivate the realm immediately before exporting')
         parser.add_argument('--consent-message-id',
-                            action="store",
                             type=int,
                             help='ID of the message advertising users to react with thumbs up')
         parser.add_argument('--upload',

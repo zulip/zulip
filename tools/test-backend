@@ -223,7 +223,6 @@ def main() -> None:
 
     parser.add_argument('--parallel', dest='processes',
                         type=int,
-                        action='store',
                         default=default_parallel,
                         help='Specify the number of processes to run the '
                              'tests in. Default is the number of logical CPUs')

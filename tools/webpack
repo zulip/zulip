@@ -121,10 +121,8 @@ parser.add_argument('--watch',
                     action='store_true',
                     help='watch for changes to source files (for development)')
 parser.add_argument('--host',
-                    action='store',
                     default='127.0.0.1', help='set the host for the webpack server to run on')
 parser.add_argument('--port',
-                    action='store',
                     default='9994', help='set the port for the webpack server to run on')
 parser.add_argument('--minify',
                     action='store_true',

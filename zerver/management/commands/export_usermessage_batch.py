@@ -15,13 +15,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--path',
-                            action="store",
                             help='Path to find messages.json archives')
         parser.add_argument('--thread',
-                            action="store",
                             help='Thread ID')
         parser.add_argument('--consent-message-id',
-                            action="store",
                             type=int,
                             help='ID of the message advertising users to react with thumbs up')
 
