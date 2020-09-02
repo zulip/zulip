@@ -35,7 +35,6 @@ class Command(BaseCommand):
                             help="tar of Hipchat data")
 
         parser.add_argument('--output', dest='output_dir',
-                            action="store",
                             help='Directory to write exported data to.')
 
         parser.add_argument('--mask', dest='masking_content',
@@ -48,7 +47,6 @@ class Command(BaseCommand):
                             "  See import docs for details.")
 
         parser.add_argument('--token', dest='api_token',
-                            action="store",
                             help='API token for the HipChat API for fetching subscribers.')
 
         parser.formatter_class = argparse.RawTextHelpFormatter

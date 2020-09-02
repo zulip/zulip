@@ -29,8 +29,7 @@ parser = argparse.ArgumentParser(usage=usage)
 parser.add_argument('--min-threshold',
                     dest='min_count',
                     type=int,
-                    default=1,
-                    action='store')
+                    default=1)
 
 options = parser.parse_args()
 
