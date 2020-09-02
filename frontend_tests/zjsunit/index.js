@@ -7,7 +7,6 @@ const path = require("path");
 const Handlebars = require("handlebars/runtime");
 const _ = require("lodash");
 
-const finder = require("./finder");
 const handlebars = require("./handlebars");
 const stub_i18n = require("./i18n");
 const namespace = require("./namespace");
@@ -34,7 +33,7 @@ function immediate(f) {
 }
 
 // Find the files we need to run.
-const files = finder.find_files_to_run(); // may write to console
+const files = process.argv.slice(2);
 if (files.length === 0) {
     throw "No tests found";
 }
@@ -100,9 +99,9 @@ global.markdown_assert = require("./markdown_assert");
 let current_file_name;
 
 function run_one_module(file) {
-    console.info("running tests for " + file.name);
-    current_file_name = file.name;
-    require(file.full_name);
+    console.info("running test " + path.basename(file, ".js"));
+    current_file_name = file;
+    require(file);
 }
 
 global.run_test = (label, f) => {
