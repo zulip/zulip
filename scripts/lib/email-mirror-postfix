@@ -67,10 +67,10 @@ parser.add_argument('-d', '--dst-host', dest="host", type=str, default='https://
 parser.add_argument('-u', '--dst-url', dest="url", type=str, default='/email_mirror_message',
                     help="Destination relative url for uploading email from email mirror.")
 
-parser.add_argument('-n', '--not-verify-ssl', dest="verify_ssl", action='store_false', default=True,
+parser.add_argument('-n', '--not-verify-ssl', dest="verify_ssl", action='store_false',
                     help="Disable ssl certificate verifying for self-signed certificates")
 
-parser.add_argument('-t', '--test', action='store_true', default=False,
+parser.add_argument('-t', '--test', action='store_true',
                     help="Test mode.")
 
 options = parser.parse_args()

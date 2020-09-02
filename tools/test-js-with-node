@@ -166,10 +166,10 @@ EXEMPT_FILES = {
 parser = argparse.ArgumentParser(USAGE)
 parser.add_argument('--coverage',
                     action="store_true",
-                    default=False, help='Get coverage report')
+                    help='Get coverage report')
 parser.add_argument('--force',
                     action="store_true",
-                    default=False, help='Run tests despite possible problems.')
+                    help='Run tests despite possible problems.')
 parser.add_argument('args', nargs=argparse.REMAINDER)
 options = parser.parse_args()
 individual_files = options.args

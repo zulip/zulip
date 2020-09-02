@@ -17,7 +17,6 @@ class Command(ZulipBaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('-l', '--for-real',
                             action='store_true',
-                            default=False,
                             help="Actually change message flags. Default is a dry run.")
 
         parser.add_argument('-f', '--flag',

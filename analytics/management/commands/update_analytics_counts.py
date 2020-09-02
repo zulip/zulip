@@ -29,15 +29,13 @@ class Command(BaseCommand):
                             default=timezone_now().isoformat())
         parser.add_argument('--utc',
                             action='store_true',
-                            help="Interpret --time in UTC.",
-                            default=False)
+                            help="Interpret --time in UTC.")
         parser.add_argument('--stat', '-s',
                             type=str,
                             help="CountStat to process. If omitted, all stats are processed.")
         parser.add_argument('--verbose',
                             action='store_true',
-                            help="Print timing information to stdout.",
-                            default=False)
+                            help="Print timing information to stdout.")
 
     def handle(self, *args: Any, **options: Any) -> None:
         try:

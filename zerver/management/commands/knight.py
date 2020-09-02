@@ -18,12 +18,10 @@ ONLY perform this on customer request from an authorized person.
         parser.add_argument('-f', '--for-real',
                             dest='ack',
                             action="store_true",
-                            default=False,
                             help='Acknowledgement that this is done according to policy.')
         parser.add_argument('--revoke',
                             dest='grant',
                             action="store_false",
-                            default=True,
                             help='Remove an administrator\'s rights.')
         parser.add_argument('--permission',
                             action="store",

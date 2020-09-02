@@ -12,7 +12,7 @@ from tools.lib.test_script import assert_provisioning_status_ok
 
 def run() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--force', default=False,
+    parser.add_argument('--force',
                         action="store_true",
                         help='Run tests despite possible problems.')
     options = parser.parse_args()

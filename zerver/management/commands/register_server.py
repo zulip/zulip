@@ -21,11 +21,9 @@ class Command(ZulipBaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--agree_to_terms_of_service',
                             action='store_true',
-                            default=False,
                             help="Agree to the Zulipchat Terms of Service: https://zulip.com/terms/.")
         parser.add_argument('--rotate-key',
                             action='store_true',
-                            default=False,
                             help="Automatically rotate your server's zulip_org_key")
 
     def handle(self, **options: Any) -> None:

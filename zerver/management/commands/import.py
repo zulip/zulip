@@ -19,12 +19,10 @@ import a database dump from one or more JSON files."""
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('--destroy-rebuild-database',
-                            default=False,
                             action="store_true",
                             help='Destroys and rebuilds the databases prior to import.')
 
         parser.add_argument('--import-into-nonempty',
-                            default=False,
                             action="store_true",
                             help='Import into an existing nonempty database.')
 

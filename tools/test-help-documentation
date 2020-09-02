@@ -14,10 +14,10 @@ from lib import sanity_check
 sanity_check.check_venv(__file__)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--force', default=False,
+parser.add_argument('--force',
                     action="store_true",
                     help='Run tests despite possible problems.')
-parser.add_argument('--skip-external-links', default=False,
+parser.add_argument('--skip-external-links',
                     dest="skip_external_link_check",
                     action="store_true",
                     help='Skip checking of external links.')
