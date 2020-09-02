@@ -41,7 +41,7 @@ class Command(BaseCommand):
     help = "Starts a Tornado Web server wrapping Django."
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument('addrport', nargs="?", type=str,
+        parser.add_argument('addrport', nargs="?",
                             help='[optional port number or ipaddr:port]\n '
                                  '(use multiple ports to start multiple servers)')
 

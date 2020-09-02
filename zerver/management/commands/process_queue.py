@@ -15,7 +15,7 @@ from zerver.worker.queue_processors import get_active_worker_queues, get_worker
 
 class Command(BaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('--queue_name', metavar='<queue name>', type=str,
+        parser.add_argument('--queue_name', metavar='<queue name>',
                             help="queue to process")
         parser.add_argument('--worker_num', metavar='<worker number>', type=int, default=0,
                             help="worker label")
@@ -23,7 +23,7 @@ class Command(BaseCommand):
                             help="run all queues")
         parser.add_argument('--multi_threaded', nargs='+',
                             metavar='<list of queue name>',
-                            type=str, required=False,
+                            required=False,
                             help="list of queue to process")
 
     help = "Runs a queue processing worker"

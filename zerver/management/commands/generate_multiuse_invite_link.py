@@ -14,12 +14,10 @@ class Command(ZulipBaseCommand):
 
         parser.add_argument(
             '-s', '--streams',
-            type=str,
             help='A comma-separated list of stream names.')
 
         parser.add_argument(
             '--referred-by',
-            type=str,
             help='Email of referrer',
             required=True,
         )

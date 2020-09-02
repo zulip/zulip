@@ -51,7 +51,6 @@ You can use the command list_realms to find ID of the realms in this server."""
             '-r', '--realm',
             dest='realm_id',
             required=required,
-            type=str,
             help=help)
 
     def add_user_list_args(self, parser: ArgumentParser,
@@ -59,7 +58,6 @@ You can use the command list_realms to find ID of the realms in this server."""
                            all_users_help: str="All users in realm.") -> None:
         parser.add_argument(
             '-u', '--users',
-            type=str,
             help=help)
 
         parser.add_argument(

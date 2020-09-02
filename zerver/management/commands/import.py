@@ -27,7 +27,7 @@ import a database dump from one or more JSON files."""
                             help='Import into an existing nonempty database.')
 
         parser.add_argument('subdomain', metavar='<subdomain>',
-                            type=str, help="Subdomain")
+                            help="Subdomain")
 
         parser.add_argument('export_paths', nargs='+',
                             metavar='<export path>',
