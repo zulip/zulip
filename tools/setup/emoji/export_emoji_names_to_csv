@@ -79,11 +79,11 @@ def main() -> None:
                    "takes the path of output csv file and path to `emoji_names.py` as arguments.")
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
-        "--input-file", dest="input_file_path", type=str, metavar="<path>",
+        "--input-file", dest="input_file_path", metavar="<path>",
         default=os.path.join(TOOLS_DIR_PATH, "setup", "emoji", "emoji_names.py"),
         help="Path to the file from which data is to be read.")
     parser.add_argument(
-        "--output-file", dest="output_file_path", type=str, metavar="<path>",
+        "--output-file", dest="output_file_path", metavar="<path>",
         default=os.path.join(TOOLS_DIR_PATH, "setup", "emoji", "emoji_names.csv"),
         help="Path to the output csv file.")
 

@@ -10,7 +10,7 @@ from zerver.worker.queue_processors import get_active_worker_queues
 
 class Command(BaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument(dest="queue_name", type=str, nargs='?',
+        parser.add_argument(dest="queue_name", nargs='?',
                             help="queue to purge")
         parser.add_argument('--all', action="store_true",
                             help="purge all queues")

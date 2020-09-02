@@ -23,7 +23,6 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--time', '-t',
-                            type=str,
                             help='Update stat tables from current state to'
                                  '--time. Defaults to the current time.',
                             default=timezone_now().isoformat())
@@ -31,7 +30,6 @@ class Command(BaseCommand):
                             action='store_true',
                             help="Interpret --time in UTC.")
         parser.add_argument('--stat', '-s',
-                            type=str,
                             help="CountStat to process. If omitted, all stats are processed.")
         parser.add_argument('--verbose',
                             action='store_true',

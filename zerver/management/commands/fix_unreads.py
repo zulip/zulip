@@ -16,7 +16,6 @@ class Command(ZulipBaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('emails',
                             metavar='<emails>',
-                            type=str,
                             nargs='*',
                             help='email address to spelunk')
         parser.add_argument('--all',
