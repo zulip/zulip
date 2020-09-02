@@ -97,7 +97,7 @@ def main() -> None:
     # Cache the hash so that we need not to run the `update_locked_requirements`
     # tool again for checking this set of requirements.
     valid_hash = get_requirements_hash(tmp_dir, use_test_lock_files=True)
-    update_cache([h for h in hash_list if h != valid_hash] + [valid_hash])
+    update_cache([*(h for h in hash_list if h != valid_hash), valid_hash])
     if not requirements_are_consistent:
         for test_locked_file in glob.glob(os.path.join(tmp_dir, "*.txt")):
             fn = os.path.basename(test_locked_file)

@@ -80,7 +80,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 line_split = REGEXP.split(line, maxsplit=0)
                 preceding = line_split[0]
                 following = line_split[-1]
-                text = [preceding] + text + [following]
+                text = [preceding, *text, following]
                 lines = lines[:loc] + text + lines[loc+1:]
                 break
             else:

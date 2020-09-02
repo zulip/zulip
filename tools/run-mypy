@@ -70,8 +70,8 @@ if not python_files and not pyi_files:
 mypy_args: List[str] = []
 if args.quiet:
     mypy_args += ["--no-error-summary"]
-mypy_args += ["--"] + python_files + pyi_files
-rc = subprocess.call([mypy_command] + mypy_args)
+mypy_args += ["--", *python_files, *pyi_files]
+rc = subprocess.call([mypy_command, *mypy_args])
 
 if rc != 0:
     print("")

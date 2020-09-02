@@ -59,12 +59,14 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "jq",
 ]
 
-REDHAT_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
+REDHAT_VENV_DEPENDENCIES = [
+    *COMMON_YUM_VENV_DEPENDENCIES,
     "python36-devel",
     "python-virtualenv",
 ]
 
-FEDORA_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
+FEDORA_VENV_DEPENDENCIES = [
+    *COMMON_YUM_VENV_DEPENDENCIES,
     "python3-pip",
     "virtualenv",  # see https://unix.stackexchange.com/questions/27877/install-virtualenv-on-fedora-16
 ]

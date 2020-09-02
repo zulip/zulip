@@ -249,8 +249,8 @@ def generate_curl_example(endpoint: str, method: str,
         format_dict[param["name"]] = example_value
     example_endpoint = endpoint.format_map(format_dict)
 
-    curl_first_line_parts = ["curl"] + curl_method_arguments(example_endpoint, method,
-                                                             api_url)
+    curl_first_line_parts = ["curl", *curl_method_arguments(example_endpoint, method,
+                                                            api_url)]
     lines.append(" ".join(curl_first_line_parts))
 
     insecure_operations = ['/dev_fetch_api_key:post']
@@ -386,7 +386,7 @@ class APICodeExamplesPreprocessor(Preprocessor):
                     line_split = MACRO_REGEXP.split(line, maxsplit=0)
                     preceding = line_split[0]
                     following = line_split[-1]
-                    text = [preceding] + text + [following]
+                    text = [preceding, *text, following]
                     lines = lines[:loc] + text + lines[loc+1:]
                     break
             else:
@@ -429,7 +429,7 @@ class APIDescriptionPreprocessor(Preprocessor):
                     line_split = MACRO_REGEXP_DESC.split(line, maxsplit=0)
                     preceding = line_split[0]
                     following = line_split[-1]
-                    text = [preceding] + text + [following]
+                    text = [preceding, *text, following]
                     lines = lines[:loc] + text + lines[loc+1:]
                     break
             else:

@@ -145,64 +145,68 @@ COMMON_DEPENDENCIES = [
     # Puppeteer dependencies end here.
 ]
 
-UBUNTU_COMMON_APT_DEPENDENCIES = COMMON_DEPENDENCIES + [
+UBUNTU_COMMON_APT_DEPENDENCIES = [
+    *COMMON_DEPENDENCIES,
     "redis-server",
     "hunspell-en-us",
     "puppet-lint",
     "netcat",               # Used for flushing memcached
     "default-jre-headless",  # Required by vnu-jar
-] + THUMBOR_VENV_DEPENDENCIES
+    *THUMBOR_VENV_DEPENDENCIES,
+]
 
-COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
+COMMON_YUM_DEPENDENCIES = [
+    *COMMON_DEPENDENCIES,
     "redis",
     "hunspell-en-US",
     "rubygem-puppet-lint",
     "nmap-ncat",
-] + YUM_THUMBOR_VENV_DEPENDENCIES
+    *YUM_THUMBOR_VENV_DEPENDENCIES,
+]
 
 BUILD_PGROONGA_FROM_SOURCE = False
 if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version in []:
     # For platforms without a pgroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
-    SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
-        pkg.format(POSTGRES_VERSION) for pkg in [
-            "postgresql-{0}",
-            # Dependency for building pgroonga from source
-            "postgresql-server-dev-{0}",
-            "libgroonga-dev",
-            "libmsgpack-dev",
-            "clang-9",
-            "llvm-9-dev",
-        ]
-    ] + VENV_DEPENDENCIES
+    SYSTEM_DEPENDENCIES = [
+        *UBUNTU_COMMON_APT_DEPENDENCIES,
+        "postgresql-{0}".format(POSTGRES_VERSION),
+        # Dependency for building pgroonga from source
+        "postgresql-server-dev-{0}".format(POSTGRES_VERSION),
+        "libgroonga-dev",
+        "libmsgpack-dev",
+        "clang-9",
+        "llvm-9-dev",
+        *VENV_DEPENDENCIES,
+    ]
 elif "debian" in os_families():
-    SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
-        pkg.format(POSTGRES_VERSION) for pkg in [
-            "postgresql-{0}",
-            "postgresql-{0}-pgroonga",
-        ]
-    ] + VENV_DEPENDENCIES
+    SYSTEM_DEPENDENCIES = [
+        *UBUNTU_COMMON_APT_DEPENDENCIES,
+        "postgresql-{0}".format(POSTGRES_VERSION),
+        "postgresql-{0}-pgroonga".format(POSTGRES_VERSION),
+        *VENV_DEPENDENCIES,
+    ]
 elif "rhel" in os_families():
-    SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
-        pkg.format(POSTGRES_VERSION) for pkg in [
-            "postgresql{0}-server",
-            "postgresql{0}",
-            "postgresql{0}-devel",
-            "postgresql{0}-pgroonga",
-        ]
-    ] + VENV_DEPENDENCIES
+    SYSTEM_DEPENDENCIES = [
+        *COMMON_YUM_DEPENDENCIES,
+        "postgresql{0}-server".format(POSTGRES_VERSION),
+        "postgresql{0}".format(POSTGRES_VERSION),
+        "postgresql{0}-devel".format(POSTGRES_VERSION),
+        "postgresql{0}-pgroonga".format(POSTGRES_VERSION),
+        *VENV_DEPENDENCIES,
+    ]
 elif "fedora" in os_families():
-    SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
-        pkg.format(POSTGRES_VERSION) for pkg in [
-            "postgresql{0}-server",
-            "postgresql{0}",
-            "postgresql{0}-devel",
-            # Needed to build pgroonga from source
-            "groonga-devel",
-            "msgpack-devel",
-        ]
-    ] + VENV_DEPENDENCIES
+    SYSTEM_DEPENDENCIES = [
+        *COMMON_YUM_DEPENDENCIES,
+        "postgresql{0}-server".format(POSTGRES_VERSION),
+        "postgresql{0}".format(POSTGRES_VERSION),
+        "postgresql{0}-devel".format(POSTGRES_VERSION),
+        # Needed to build pgroonga from source
+        "groonga-devel",
+        "msgpack-devel",
+        *VENV_DEPENDENCIES,
+    ]
     BUILD_PGROONGA_FROM_SOURCE = True
 
 if "fedora" in os_families():
@@ -247,9 +251,8 @@ def install_apt_deps(deps_to_install: List[str]) -> None:
     run_as_root(
         [
             "env", "DEBIAN_FRONTEND=noninteractive",
-            "apt-get", "-y", "install", "--no-install-recommends",
+            "apt-get", "-y", "install", "--no-install-recommends", *deps_to_install,
         ]
-        + deps_to_install,
     )
 
 def install_yum_deps(deps_to_install: List[str]) -> None:
@@ -274,7 +277,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
             else:
                 print("Unrecognized output. `subscription-manager` might not be available")
 
-    run_as_root(["yum", "install", "-y"] + yum_extra_flags + deps_to_install)
+    run_as_root(["yum", "install", "-y", *yum_extra_flags, *deps_to_install])
     if "rhel" in os_families():
         # This is how a pip3 is installed to /usr/bin in CentOS/RHEL
         # for python35 and later.
@@ -363,7 +366,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
         "https_proxy=" + os.environ.get("https_proxy", ""),
         "no_proxy=" + os.environ.get("no_proxy", ""),
     ]
-    run_as_root(proxy_env + ["scripts/lib/install-node"], sudo_args = ['-H'])
+    run_as_root([*proxy_env, "scripts/lib/install-node"], sudo_args = ['-H'])
 
     if not os.access(NODE_MODULES_CACHE_PATH, os.W_OK):
         run_as_root(["mkdir", "-p", NODE_MODULES_CACHE_PATH])

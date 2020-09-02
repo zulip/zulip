@@ -1466,7 +1466,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
     attachment_file = os.path.join(output_dir, 'attachment.json')
     analytics_file = os.path.join(output_dir, 'analytics.json')
     message_files = glob.glob(os.path.join(output_dir, 'messages-*.json'))
-    fns = sorted([analytics_file] + [attachment_file] + message_files + [realm_file])
+    fns = sorted([analytics_file, attachment_file, *message_files, realm_file])
 
     logging.info('Writing stats file: %s\n', stats_file)
     with open(stats_file, 'w') as f:

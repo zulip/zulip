@@ -21,9 +21,9 @@ args = parser.parse_args()
 # install dependencies for setting up the virtualenv
 distro_info = parse_os_release()
 if "debian" in os_families():
-    run(["apt-get", "-y", "install"] + THUMBOR_VENV_DEPENDENCIES)
+    run(["apt-get", "-y", "install", *THUMBOR_VENV_DEPENDENCIES])
 elif "fedora" in os_families():
-    run(["yum", "-y", "install"] + YUM_THUMBOR_VENV_DEPENDENCIES)
+    run(["yum", "-y", "install", *YUM_THUMBOR_VENV_DEPENDENCIES])
 else:
     print("Unsupported platform: {}".format(distro_info['ID']))
     sys.exit(1)

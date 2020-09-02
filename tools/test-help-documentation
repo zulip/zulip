@@ -55,14 +55,14 @@ def vnu_servlet() -> Iterator[None]:
 with vnu_servlet(), \
     test_server_running(options.force, external_host, log_file=LOG_FILE,
                         dots=True, use_db=True):
-    ret_help_doc = subprocess.call(['scrapy', 'crawl_with_status'] + extra_args +
-                                   ['help_documentation_crawler'],
+    ret_help_doc = subprocess.call(['scrapy', 'crawl_with_status', *extra_args,
+                                    'help_documentation_crawler'],
                                    cwd='tools/documentation_crawler')
-    ret_api_doc = subprocess.call(['scrapy', 'crawl_with_status'] + extra_args +
-                                  ['api_documentation_crawler'],
+    ret_api_doc = subprocess.call(['scrapy', 'crawl_with_status', *extra_args,
+                                   'api_documentation_crawler'],
                                   cwd='tools/documentation_crawler')
-    ret_portico_doc = subprocess.call(['scrapy', 'crawl_with_status'] + extra_args +
-                                      ['portico_documentation_crawler'],
+    ret_portico_doc = subprocess.call(['scrapy', 'crawl_with_status', *extra_args,
+                                       'portico_documentation_crawler'],
                                       cwd='tools/documentation_crawler')
 
 if ret_help_doc != 0 or ret_api_doc != 0 or ret_portico_doc != 0:

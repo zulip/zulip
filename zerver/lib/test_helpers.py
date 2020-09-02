@@ -416,7 +416,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         assert len(pattern_cnt) > 100
         untested_patterns = {p.replace("\\", "") for p in pattern_cnt if pattern_cnt[p] == 0}
 
-        exempt_patterns = set([
+        exempt_patterns = {
             # We exempt some patterns that are called via Tornado.
             'api/v1/events',
             'api/v1/events/internal',
@@ -429,7 +429,8 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             'docs/(?P<path>.+)',
             'casper/(?P<path>.+)',
             'static/(?P<path>.*)',
-        ] + [webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks])
+            *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
+        }
 
         untested_patterns -= exempt_patterns
 
