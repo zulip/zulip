@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import api_key_only_webhook_view, log_exception_to_webhook_logger
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import (
@@ -30,9 +30,28 @@ from zerver.models import UserProfile
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 
 class Helper:
-    def __init__(self, payload: Dict[str, Any], include_title: bool) -> None:
+    def __init__(
+        self,
+        request: HttpRequest,
+        user_profile: UserProfile,
+        payload: Dict[str, Any],
+        include_title: bool,
+    ) -> None:
         self.payload = payload
         self.include_title = include_title
+        self._request = request
+        self._user_profile = user_profile
+
+    def log_unexpected(self, event: str) -> None:
+        summary = f"The '{event}' event isn't currently supported by the GitHub webhook"
+        request = self._request
+        log_exception_to_webhook_logger(
+            request=request,
+            user_profile=self._user_profile,
+            summary=summary,
+            payload=request.body,
+            unexpected_event=True,
+        )
 
 def get_opened_or_update_pull_request_body(helper: Helper) -> str:
     payload = helper.payload
@@ -282,7 +301,13 @@ def get_team_body(helper: Helper) -> str:
         return f"Team visibility changed to `{new_visibility}`"
 
     missing_keys = "/".join(sorted(list(changes.keys())))
-    raise UnexpectedWebhookEventType("GitHub", f"team/edited (changes: {missing_keys})")
+    helper.log_unexpected(f"team/edited (changes: {missing_keys})")
+
+    # Do our best to give useful info to the customer--at least
+    # if they know something changed, they can go to GitHub for
+    # more details.  And if it's just spam, you can control that
+    # from GitHub.
+    return f"Team has changes to `{missing_keys}` data."
 
 def get_release_body(helper: Helper) -> str:
     payload = helper.payload
@@ -609,6 +634,8 @@ def api_github_webhook(
     body_function = EVENT_FUNCTION_MAPPER[event]
 
     helper = Helper(
+        request=request,
+        user_profile=user_profile,
         payload=payload,
         include_title=user_specified_topic is not None,
     )
