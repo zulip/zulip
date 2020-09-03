@@ -296,19 +296,19 @@ DATABASES: Dict[str, Dict[str, Any]] = {"default": {
 
 if DEVELOPMENT:
     LOCAL_DATABASE_PASSWORD = get_secret("local_database_password")
-    DATABASES["default"].update({
-        'PASSWORD': LOCAL_DATABASE_PASSWORD,
-        'HOST': 'localhost',
-    })
+    DATABASES["default"].update(
+        PASSWORD=LOCAL_DATABASE_PASSWORD,
+        HOST='localhost',
+    )
 elif REMOTE_POSTGRES_HOST != '':
-    DATABASES['default'].update({
-        'HOST': REMOTE_POSTGRES_HOST,
-        'PORT': REMOTE_POSTGRES_PORT,
-    })
+    DATABASES['default'].update(
+        HOST=REMOTE_POSTGRES_HOST,
+        PORT=REMOTE_POSTGRES_PORT,
+    )
     if get_secret("postgres_password") is not None:
-        DATABASES['default'].update({
-            'PASSWORD': get_secret("postgres_password"),
-        })
+        DATABASES['default'].update(
+            PASSWORD=get_secret("postgres_password"),
+        )
     if REMOTE_POSTGRES_SSLMODE != '':
         DATABASES['default']['OPTIONS']['sslmode'] = REMOTE_POSTGRES_SSLMODE
     else:
@@ -599,9 +599,9 @@ base_template_engine_settings: Dict[str, Any] = {
 }
 
 default_template_engine_settings = deepcopy(base_template_engine_settings)
-default_template_engine_settings.update({
-    'NAME': 'Jinja2',
-    'DIRS': [
+default_template_engine_settings.update(
+    NAME='Jinja2',
+    DIRS=[
         # The main templates directory
         os.path.join(DEPLOY_ROOT, 'templates'),
         # The webhook integration templates
@@ -609,20 +609,20 @@ default_template_engine_settings.update({
         # The python-zulip-api:zulip_bots package templates
         os.path.join('static' if DEBUG else STATIC_ROOT, 'generated', 'bots'),
     ],
-    'APP_DIRS': True,
-})
+    APP_DIRS=True,
+)
 
 non_html_template_engine_settings = deepcopy(base_template_engine_settings)
-non_html_template_engine_settings.update({
-    'NAME': 'Jinja2_plaintext',
-    'DIRS': [os.path.join(DEPLOY_ROOT, 'templates')],
-    'APP_DIRS': False,
-})
-non_html_template_engine_settings['OPTIONS'].update({
-    'autoescape': False,
-    'trim_blocks': True,
-    'lstrip_blocks': True,
-})
+non_html_template_engine_settings.update(
+    NAME='Jinja2_plaintext',
+    DIRS=[os.path.join(DEPLOY_ROOT, 'templates')],
+    APP_DIRS=False,
+)
+non_html_template_engine_settings['OPTIONS'].update(
+    autoescape=False,
+    trim_blocks=True,
+    lstrip_blocks=True,
+)
 
 # django-two-factor uses the default Django template engine (not Jinja2), so we
 # need to add config for it here.

@@ -216,7 +216,7 @@ def parse_change_event(change_type: str, message: Mapping[str, Any]) -> Optional
             values["old"] = old
         else:
             event_type = "changed_" + change_type
-            values.update({'old': old, 'new': new})
+            values.update(old=old, new=new)
 
     elif change_type == "is_blocked":
         if message["change"]["diff"]["is_blocked"]["to"]:
@@ -233,12 +233,12 @@ def parse_change_event(change_type: str, message: Mapping[str, Any]) -> Optional
     elif change_type == "user_story":
         old, new = get_old_and_new_values(change_type, message)
         event_type = "changed_us"
-        values.update({'old': old, 'new': new})
+        values.update(old=old, new=new)
 
     elif change_type in ["subject", 'name']:
         event_type = 'renamed'
         old, new = get_old_and_new_values(change_type, message)
-        values.update({'old': old, 'new': new})
+        values.update(old=old, new=new)
 
     elif change_type in ["estimated_finish", "estimated_start", "due_date"]:
         old, new = get_old_and_new_values(change_type, message)
@@ -247,7 +247,7 @@ def parse_change_event(change_type: str, message: Mapping[str, Any]) -> Optional
             values["new"] = new
         elif not old == new:
             event_type = change_type
-            values.update({'old': old, 'new': new})
+            values.update(old=old, new=new)
         else:
             # date hasn't changed
             return None
@@ -255,13 +255,13 @@ def parse_change_event(change_type: str, message: Mapping[str, Any]) -> Optional
     elif change_type in ["priority", "severity", "type", "status"]:
         event_type = 'changed_' + change_type
         old, new = get_old_and_new_values(change_type, message)
-        values.update({'old': old, 'new': new})
+        values.update(old=old, new=new)
 
     else:
         # we are not supporting this type of event
         return None
 
-    evt.update({"type": message["type"], "event": event_type, "values": values})
+    evt.update(type=message["type"], event=event_type, values=values)
     return evt
 
 def parse_webhook_test(message: Mapping[str, Any]) -> Dict[str, Any]:

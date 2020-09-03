@@ -258,7 +258,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # verified name from you on file, use that. Otherwise, fall
             # back to the full name in the request.
             try:
-                postdata.update({'full_name': request.session['authenticated_full_name']})
+                postdata.update(full_name=request.session['authenticated_full_name'])
                 name_validated = True
             except KeyError:
                 pass
@@ -573,9 +573,9 @@ def accounts_home(request: HttpRequest, multiuse_object_key: str="",
     else:
         form = HomepageForm(realm=realm)
     context = login_context(request)
-    context.update({'form': form, 'current_url': request.get_full_path,
-                    'multiuse_object_key': multiuse_object_key,
-                    'from_multiuse_invite': from_multiuse_invite})
+    context.update(form=form, current_url=request.get_full_path,
+                   multiuse_object_key=multiuse_object_key,
+                   from_multiuse_invite=from_multiuse_invite)
     return render(request, 'zerver/accounts_home.html', context=context)
 
 def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: str) -> HttpResponse:
@@ -613,9 +613,9 @@ def find_account(request: HttpRequest) -> HttpResponse:
                     emails_q, is_active=True, is_bot=False,
                     realm__deactivated=False):
                 context = common_context(user)
-                context.update({
-                    'email': user.delivery_email,
-                })
+                context.update(
+                    email=user.delivery_email,
+                )
                 send_email('zerver/emails/find_team', to_user_ids=[user.id], context=context,
                            from_address=FromAddress.SUPPORT)
 

@@ -352,12 +352,12 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         # queue invitation reminder
         if settings.INVITATION_LINK_VALIDITY_DAYS >= 4:
             context = common_context(referrer)
-            context.update({
-                'activate_url': activate_url,
-                'referrer_name': referrer.full_name,
-                'referrer_email': referrer.delivery_email,
-                'referrer_realm_name': referrer.realm.name,
-            })
+            context.update(
+                activate_url=activate_url,
+                referrer_name=referrer.full_name,
+                referrer_email=referrer.delivery_email,
+                referrer_realm_name=referrer.realm.name,
+            )
             send_future_email(
                 "zerver/emails/invitation_reminder",
                 referrer.realm,

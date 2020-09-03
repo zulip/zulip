@@ -133,18 +133,18 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
 
                 post_context = convert_lines_to_traceback_string(exception_frame["post_context"])
 
-                context.update({
-                    "syntax_highlight_as": syntax_highlight_as,
-                    "filename": filename,
-                    "pre_context": pre_context,
-                    "context_line": context_line,
-                    "post_context": post_context,
-                })
+                context.update(
+                    syntax_highlight_as=syntax_highlight_as,
+                    filename=filename,
+                    pre_context=pre_context,
+                    context_line=context_line,
+                    post_context=post_context,
+                )
 
                 body = EXCEPTION_EVENT_TEMPLATE_WITH_TRACEBACK.format(**context)
                 return (subject, body)
 
-        context.update({"filename": filename})  # nocoverage
+        context.update(filename=filename)  # nocoverage
         body = EXCEPTION_EVENT_TEMPLATE.format(**context)  # nocoverage
         return (subject, body)  # nocoverage
 

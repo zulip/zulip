@@ -661,9 +661,9 @@ def get_apns_badge_count_future(user_profile: UserProfile, read_messages_ids: Op
 def get_message_payload_apns(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
     '''A `message` payload for iOS, via APNs.'''
     zulip_data = get_message_payload(user_profile, message)
-    zulip_data.update({
-        'message_ids': [message.id],
-    })
+    zulip_data.update(
+        message_ids=[message.id],
+    )
 
     assert message.rendered_content is not None
     content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
@@ -686,16 +686,16 @@ def get_message_payload_gcm(
     data = get_message_payload(user_profile, message)
     assert message.rendered_content is not None
     content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
-    data.update({
-        'event': 'message',
-        'alert': get_gcm_alert(message),
-        'zulip_message_id': message.id,  # message_id is reserved for CCS
-        'time': datetime_to_timestamp(message.date_sent),
-        'content': content,
-        'content_truncated': truncated,
-        'sender_full_name': message.sender.full_name,
-        'sender_avatar_url': absolute_avatar_url(message.sender),
-    })
+    data.update(
+        event='message',
+        alert=get_gcm_alert(message),
+        zulip_message_id=message.id,  # message_id is reserved for CCS
+        time=datetime_to_timestamp(message.date_sent),
+        content=content,
+        content_truncated=truncated,
+        sender_full_name=message.sender.full_name,
+        sender_avatar_url=absolute_avatar_url(message.sender),
+    )
     gcm_options = {'priority': 'high'}
     return data, gcm_options
 
@@ -704,22 +704,22 @@ def get_remove_payload_gcm(
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     '''A `remove` payload + options, for Android via GCM/FCM.'''
     gcm_payload = get_base_payload(user_profile)
-    gcm_payload.update({
-        'event': 'remove',
-        'zulip_message_ids': ','.join(str(id) for id in message_ids),
+    gcm_payload.update(
+        event='remove',
+        zulip_message_ids=','.join(str(id) for id in message_ids),
         # Older clients (all clients older than 2019-02-13) look only at
         # `zulip_message_id` and ignore `zulip_message_ids`.  Do our best.
-        'zulip_message_id': message_ids[0],
-    })
+        zulip_message_id=message_ids[0],
+    )
     gcm_options = {'priority': 'normal'}
     return gcm_payload, gcm_options
 
 def get_remove_payload_apns(user_profile: UserProfile, message_ids: List[int]) -> Dict[str, Any]:
     zulip_data = get_base_payload(user_profile)
-    zulip_data.update({
-        'event': 'remove',
-        'zulip_message_ids': ','.join(str(id) for id in message_ids),
-    })
+    zulip_data.update(
+        event='remove',
+        zulip_message_ids=','.join(str(id) for id in message_ids),
+    )
     apns_data = {
         'badge': get_apns_badge_count(user_profile, message_ids),
         'custom': {'zulip': zulip_data},

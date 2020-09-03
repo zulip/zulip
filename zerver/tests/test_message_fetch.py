@@ -1094,7 +1094,7 @@ class GetOldMessagesTest(ZulipTestCase):
         for message in result["messages"]:
             assert(message["id"] in message_ids)
 
-        post_params.update({"num_before": len(message_ids[pivot_index:])})
+        post_params.update(num_before=len(message_ids[pivot_index:]))
 
         with first_visible_id_as(message_ids[pivot_index]):
             payload = self.client_get("/json/messages", dict(post_params))

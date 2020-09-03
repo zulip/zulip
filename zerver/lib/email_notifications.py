@@ -367,32 +367,32 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     # we find a clean way to add it back in the future
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "missed_messages")
     context = common_context(user_profile)
-    context.update({
-        'name': user_profile.full_name,
-        'message_count': message_count,
-        'unsubscribe_link': unsubscribe_link,
-        'realm_name_in_notifications': user_profile.realm_name_in_notifications,
-    })
+    context.update(
+        name=user_profile.full_name,
+        message_count=message_count,
+        unsubscribe_link=unsubscribe_link,
+        realm_name_in_notifications=user_profile.realm_name_in_notifications,
+    )
 
     triggers = [message['trigger'] for message in missed_messages]
     unique_triggers = set(triggers)
-    context.update({
-        'mention': 'mentioned' in unique_triggers or 'wildcard_mentioned' in unique_triggers,
-        'stream_email_notify': 'stream_email_notify' in unique_triggers,
-        'mention_count': triggers.count('mentioned') + triggers.count("wildcard_mentioned"),
-    })
+    context.update(
+        mention='mentioned' in unique_triggers or 'wildcard_mentioned' in unique_triggers,
+        stream_email_notify='stream_email_notify' in unique_triggers,
+        mention_count=triggers.count('mentioned') + triggers.count("wildcard_mentioned"),
+    )
 
     # If this setting (email mirroring integration) is enabled, only then
     # can users reply to email to send message to Zulip. Thus, one must
     # ensure to display warning in the template.
     if settings.EMAIL_GATEWAY_PATTERN:
-        context.update({
-            'reply_to_zulip': True,
-        })
+        context.update(
+            reply_to_zulip=True,
+        )
     else:
-        context.update({
-            'reply_to_zulip': False,
-        })
+        context.update(
+            reply_to_zulip=False,
+        )
 
     from zerver.lib.email_mirror import create_missed_message_address
     reply_to_address = create_missed_message_address(user_profile, missed_messages[0]['message'])
@@ -402,9 +402,9 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         reply_to_name = "Zulip"
 
     narrow_url = get_narrow_url(user_profile, missed_messages[0]['message'])
-    context.update({
-        'narrow_url': narrow_url,
-    })
+    context.update(
+        narrow_url=narrow_url,
+    )
 
     senders = list({m['message'].sender for m in missed_messages})
     if (missed_messages[0]['message'].recipient.type == Recipient.HUDDLE):
@@ -413,19 +413,19 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         assert not isinstance(display_recipient, str)
         other_recipients = [r['full_name'] for r in display_recipient
                             if r['id'] != user_profile.id]
-        context.update({'group_pm': True})
+        context.update(group_pm=True)
         if len(other_recipients) == 2:
             huddle_display_name = " and ".join(other_recipients)
-            context.update({'huddle_display_name': huddle_display_name})
+            context.update(huddle_display_name=huddle_display_name)
         elif len(other_recipients) == 3:
             huddle_display_name = f"{other_recipients[0]}, {other_recipients[1]}, and {other_recipients[2]}"
-            context.update({'huddle_display_name': huddle_display_name})
+            context.update(huddle_display_name=huddle_display_name)
         else:
             huddle_display_name = "{}, and {} others".format(
                 ', '.join(other_recipients[:2]), len(other_recipients) - 2)
-            context.update({'huddle_display_name': huddle_display_name})
+            context.update(huddle_display_name=huddle_display_name)
     elif (missed_messages[0]['message'].recipient.type == Recipient.PERSONAL):
-        context.update({'private_message': True})
+        context.update(private_message=True)
     elif (context['mention'] or context['stream_email_notify']):
         # Keep only the senders who actually mentioned the user
         if context['mention']:
@@ -435,32 +435,32 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         message = missed_messages[0]['message']
         stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
         stream_header = f"{stream.name} > {message.topic_name()}"
-        context.update({
-            'stream_header': stream_header,
-        })
+        context.update(
+            stream_header=stream_header,
+        )
     else:
         raise AssertionError("Invalid messages!")
 
     # If message content is disabled, then flush all information we pass to email.
     if not message_content_allowed_in_missedmessage_emails(user_profile):
         realm = user_profile.realm
-        context.update({
-            'reply_to_zulip': False,
-            'messages': [],
-            'sender_str': "",
-            'realm_str': realm.name,
-            'huddle_display_name': "",
-            'show_message_content': False,
-            'message_content_disabled_by_user': not user_profile.message_content_in_email_notifications,
-            'message_content_disabled_by_realm': not realm.message_content_allowed_in_email_notifications,
-        })
+        context.update(
+            reply_to_zulip=False,
+            messages=[],
+            sender_str="",
+            realm_str=realm.name,
+            huddle_display_name="",
+            show_message_content=False,
+            message_content_disabled_by_user=not user_profile.message_content_in_email_notifications,
+            message_content_disabled_by_realm=not realm.message_content_allowed_in_email_notifications,
+        )
     else:
-        context.update({
-            'messages': build_message_list(user_profile, [m['message'] for m in missed_messages]),
-            'sender_str': ", ".join(sender.full_name for sender in senders),
-            'realm_str': user_profile.realm.name,
-            'show_message_content': True,
-        })
+        context.update(
+            messages=build_message_list(user_profile, [m['message'] for m in missed_messages]),
+            sender_str=", ".join(sender.full_name for sender in senders),
+            realm_str=user_profile.realm.name,
+            show_message_content=True,
+        )
 
     with override_language(user_profile.default_language):
         from_name: str = _("Zulip missed messages")
@@ -476,9 +476,9 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         # EMAIL_ADDRESS_VISIBILITY_ADMINS.
         sender = senders[0]
         from_name, from_address = (sender.full_name, sender.email)
-        context.update({
-            'reply_to_zulip': False,
-        })
+        context.update(
+            reply_to_zulip=False,
+        )
 
     email_dict = {
         'template_prefix': 'zerver/emails/missed_message',
@@ -598,14 +598,14 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
         delivery_email__iexact=user.delivery_email).exclude(id=user.id).count()
     unsubscribe_link = one_click_unsubscribe_link(user, "welcome")
     context = common_context(user)
-    context.update({
-        'unsubscribe_link': unsubscribe_link,
-        'keyboard_shortcuts_link': user.realm.uri + '/help/keyboard-shortcuts',
-        'realm_name': user.realm.name,
-        'realm_creation': realm_creation,
-        'email': user.delivery_email,
-        'is_realm_admin': user.role == UserProfile.ROLE_REALM_ADMINISTRATOR,
-    })
+    context.update(
+        unsubscribe_link=unsubscribe_link,
+        keyboard_shortcuts_link=user.realm.uri + '/help/keyboard-shortcuts',
+        realm_name=user.realm.name,
+        realm_creation=realm_creation,
+        email=user.delivery_email,
+        is_realm_admin=user.role == UserProfile.ROLE_REALM_ADMINISTRATOR,
+    )
     if user.is_realm_admin:
         context['getting_started_link'] = (user.realm.uri +
                                            '/help/getting-your-organization-started-with-zulip')

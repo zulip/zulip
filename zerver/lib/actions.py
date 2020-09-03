@@ -1027,11 +1027,11 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
     activation_url = create_confirmation_link(obj, Confirmation.EMAIL_CHANGE)
     from zerver.context_processors import common_context
     context = common_context(user_profile)
-    context.update({
-        'old_email': old_email,
-        'new_email': new_email,
-        'activate_url': activation_url,
-    })
+    context.update(
+        old_email=old_email,
+        new_email=new_email,
+        activate_url=activation_url,
+    )
     language = user_profile.default_language
     send_email('zerver/emails/confirm_new_email', to_emails=[new_email],
                from_name=FromAddress.security_email_from_name(language=language),
@@ -5997,7 +5997,7 @@ def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> 
         # Allow removal even if the export failed.
         delete_export_tarball(export_path)
 
-    export_data.update({'deleted_timestamp': timezone_now().timestamp()})
+    export_data.update(deleted_timestamp=timezone_now().timestamp())
     export.extra_data = orjson.dumps(export_data).decode()
     export.save(update_fields=['extra_data'])
     notify_realm_export(user_profile)
