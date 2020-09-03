@@ -46,7 +46,6 @@ class Helper:
         log_exception_to_webhook_logger(
             request=request,
             summary=summary,
-            payload=request.body,
             unsupported_event=True,
         )
 

@@ -266,14 +266,17 @@ def access_user_by_api_key(request: HttpRequest, api_key: str, email: Optional[s
 def log_exception_to_webhook_logger(
     request: HttpRequest,
     summary: str,
-    payload: str,
     unsupported_event: bool,
 ) -> None:
     if request.content_type == 'application/json':
-        try:
-            payload = orjson.dumps(orjson.loads(payload), option=orjson.OPT_INDENT_2).decode()
-        except orjson.JSONDecodeError:
-            pass
+        payload = request.body
+    else:
+        payload = request.POST.get('payload')
+
+    try:
+        payload = orjson.dumps(orjson.loads(payload), option=orjson.OPT_INDENT_2).decode()
+    except orjson.JSONDecodeError:
+        pass
 
     custom_header_template = "{header}: {value}\n"
 
@@ -352,7 +355,6 @@ def webhook_view(
                     log_exception_to_webhook_logger(
                         request=request,
                         summary=str(err),
-                        payload=request.body,
                         unsupported_event=isinstance(err, UnsupportedWebhookEventType),
                     )
                 raise err
@@ -604,7 +606,6 @@ def authenticated_rest_api_view(
                         log_exception_to_webhook_logger(
                             request=request,
                             summary=str(err),
-                            payload=request_body,
                             unsupported_event=isinstance(err, UnsupportedWebhookEventType),
                         )
 
