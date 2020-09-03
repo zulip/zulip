@@ -1602,11 +1602,11 @@ def launch_user_message_subprocesses(threads: int, output_dir: Path,
         arguments = [
             os.path.join(settings.DEPLOY_ROOT, "manage.py"),
             'export_usermessage_batch',
-            '--path', str(output_dir),
-            '--thread', str(shard_id),
+            f'--path={output_dir}',
+            f'--thread={shard_id}',
         ]
         if consent_message_id is not None:
-            arguments.extend(['--consent-message-id', str(consent_message_id)])
+            arguments.append(f'--consent-message-id={consent_message_id}')
 
         process = subprocess.Popen(arguments)
         pids[process.pid] = shard_id
