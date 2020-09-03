@@ -36,26 +36,38 @@ run_test("initialize", ({override}) => {
     let create_ajax_request_form_call_count = 0;
     helpers.__Rewire__(
         "create_ajax_request",
-        (url, form_name, stripe_token, ignored_inputs, redirect_to) => {
+        (url, form_name, stripe_token, ignored_inputs, type, success_callback) => {
             create_ajax_request_form_call_count += 1;
             switch (form_name) {
                 case "autopay":
                     assert.equal(url, "/json/billing/upgrade");
                     assert.equal(stripe_token, "stripe_add_card_token");
-                    assert.equal(ignored_inputs, undefined);
-                    assert.equal(redirect_to, undefined);
+                    assert.deepEqual(ignored_inputs, []);
+                    assert.equal(type, "POST");
+                    window.location.replace = (new_location) => {
+                        assert.equal(new_location, "/billing");
+                    };
+                    success_callback();
                     break;
                 case "invoice":
                     assert.equal(url, "/json/billing/upgrade");
                     assert.equal(stripe_token, undefined);
-                    assert.equal(ignored_inputs, undefined);
-                    assert.equal(redirect_to, undefined);
+                    assert.deepEqual(ignored_inputs, []);
+                    assert.equal(type, "POST");
+                    window.location.replace = (new_location) => {
+                        assert.equal(new_location, "/billing");
+                    };
+                    success_callback();
                     break;
                 case "sponsorship":
                     assert.equal(url, "/json/billing/sponsorship");
                     assert.equal(stripe_token, undefined);
-                    assert.equal(ignored_inputs, undefined);
-                    assert.equal(redirect_to, "/");
+                    assert.deepEqual(ignored_inputs, []);
+                    assert.equal(type, "POST");
+                    window.location.replace = (new_location) => {
+                        assert.equal(new_location, "/");
+                    };
+                    success_callback();
                     break;
                 default:
                     throw new Error("Unhandled case");
