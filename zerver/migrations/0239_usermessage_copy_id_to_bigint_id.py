@@ -29,7 +29,7 @@ def copy_id_to_bigid(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> No
         return
 
     #  TODO: is  the below lookup fast enough, considering there's no index on bigint_id?
-    first_uncopied_id = UserMessage.objects.filter(bigint_id__isnull=True,
+    first_uncopied_id = UserMessage.objects.filter(bigint_id__isnull=True
                                                    ).aggregate(Min('id'))['id__min']
     # Note: the below id can fall in a segment
     # where bigint_id = id already, but it's not a big problem

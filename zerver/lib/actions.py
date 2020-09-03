@@ -1201,7 +1201,7 @@ def get_recipient_info(recipient: Recipient,
 
     if user_ids:
         query = UserProfile.objects.filter(
-            is_active=True,
+            is_active=True
         ).values(
             'id',
             'enable_online_push_notifications',
@@ -4101,7 +4101,7 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
     do_clear_mobile_push_notifications_for_ids([user_profile.id], all_push_message_ids)
 
     msgs = UserMessage.objects.filter(
-        user_profile=user_profile,
+        user_profile=user_profile
     ).extra(
         where=[UserMessage.where_unread()],
     )
