@@ -99,10 +99,10 @@ class Command(BaseCommand):
                 id_args = {'stream': stream, 'realm': realm}
 
             for subgroup, values in fixture_data.items():
-                table.objects.bulk_create([
+                table.objects.bulk_create(
                     table(property=stat.property, subgroup=subgroup, end_time=end_time,
                           value=value, **id_args)
-                    for end_time, value in zip(end_times, values) if value != 0])
+                    for end_time, value in zip(end_times, values) if value != 0)
 
         stat = COUNT_STATS['1day_actives::day']
         realm_data: Mapping[Optional[str], List[int]] = {
