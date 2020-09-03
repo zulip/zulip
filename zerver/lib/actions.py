@@ -4582,6 +4582,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
         subs_to_new_stream = list(get_active_subscriptions_for_stream_id(
             new_stream.id).select_related("user_profile"))
 
+        old_stream_sub_ids = [user.user_profile_id for user in subscribers]
         new_stream_sub_ids = [user.user_profile_id for user in subs_to_new_stream]
 
         # Get users who aren't subscribed to the new_stream.
@@ -4591,16 +4592,26 @@ def do_update_message(user_profile: UserProfile, message: Message,
         ]
         # Users who can longer access the message without some action
         # from administrators.
-        #
-        # TODO: Extend this list to also contain users losing access
-        # due to the messages moving to a private stream they are not
-        # subscribed to.
-        subs_losing_access = [
-            sub for sub in subs_losing_usermessages
-            if sub.user_profile.is_guest
-        ]
+        if not new_stream.is_public():
+            subs_losing_access = subs_losing_usermessages
+        else:
+            subs_losing_access = [
+                sub for sub in subs_losing_usermessages
+                if sub.user_profile.is_guest
+            ]
         ums = ums.exclude(user_profile_id__in=[
             sub.user_profile_id for sub in subs_losing_usermessages])
+
+        subs_gaining_usermessages = []
+        if not new_stream.is_history_public_to_subscribers():
+            # For private streams, with history not public to subscribers,
+            # We find out users who are not present in the msgs' old stream
+            # and create new UserMessage for these users so that they can
+            # access this message.
+            subs_gaining_usermessages += [
+                user_id for user_id in new_stream_sub_ids
+                if user_id not in old_stream_sub_ids
+            ]
 
     if topic_name is not None:
         topic_name = truncate_topic(topic_name)
@@ -4626,6 +4637,25 @@ def do_update_message(user_profile: UserProfile, message: Message,
 
         if new_stream is not None:
             assert stream_being_edited is not None
+
+            if subs_gaining_usermessages:
+                ums_to_create = []
+                for msg in changed_messages:
+                    for user_profile_id in subs_gaining_usermessages:
+                        # The fact that the user didn't have a UserMessage originally means we can infer that the user
+                        # was not mentioned in the original message (even if mention syntax was present, it would not
+                        # take effect for a user who was not subscribed). If we were editing the message's content, we
+                        # would rerender the message and then use the new stream's data to determine whether this is
+                        # a mention of a subscriber; but as we are not doing so, we choose to preserve the "was this
+                        # mention syntax an actual mention" decision made during the original rendering for implementation
+                        # simplicity. As a result, the only flag to consider applying here is read.
+                        um = UserMessageLite(
+                            user_profile_id=user_profile_id,
+                            message_id=msg.id,
+                            flags=UserMessage.flags.read,
+                        )
+                        ums_to_create.append(um)
+                bulk_insert_ums(ums_to_create)
 
             message_ids = [msg.id for msg in changed_messages]
             # Delete UserMessage objects for users who will no
