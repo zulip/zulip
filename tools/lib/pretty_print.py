@@ -201,12 +201,7 @@ def validate_indent_html(fn: str, fix: bool) -> int:
             return 0
         print('Invalid Indentation detected in file: '
               f'{fn}\nDiff for the file against expected indented file:', flush=True)
-        with subprocess.Popen(
-                ['diff', fn, '-'],
-                stdin=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                universal_newlines=True) as p:
-            p.communicate(phtml)
+        subprocess.run(['diff', fn, '-'], input=phtml, universal_newlines=True)
         print()
         print("This problem can be fixed with the `--fix` option.")
         return 0

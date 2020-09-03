@@ -360,12 +360,9 @@ def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
         return 0
 
     commands = "\n".join(f"DROP DATABASE IF EXISTS {db};" for db in databases_to_drop)
-    p = subprocess.Popen(["psql", "-q", "-v", "ON_ERROR_STOP=1", "-h", "localhost",
-                          "postgres", "zulip_test"],
-                         stdin=subprocess.PIPE)
-    p.communicate(input=commands.encode())
-    if p.returncode != 0:
-        raise RuntimeError("Error cleaning up test databases!")
+    subprocess.run(["psql", "-q", "-v", "ON_ERROR_STOP=1", "-h", "localhost",
+                    "postgres", "zulip_test"],
+                   input=commands, check=True, universal_newlines=True)
     return len(databases_to_drop)
 
 def remove_test_run_directories(expiry_time: int = 60 * 60) -> int:
