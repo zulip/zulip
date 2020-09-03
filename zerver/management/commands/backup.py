@@ -68,11 +68,11 @@ class Command(ZulipBaseCommand):
                 pg_dump_command = [
                     "pg_dump",
                     "--format=directory",
-                    "--file", os.path.join(tmp, "zulip-backup", "database"),
-                    "--host", settings.DATABASES["default"]["HOST"],
-                    "--port", settings.DATABASES["default"]["PORT"],
-                    "--username", settings.DATABASES["default"]["USER"],
-                    "--dbname", settings.DATABASES["default"]["NAME"],
+                    "--file=" + os.path.join(tmp, "zulip-backup", "database"),
+                    "--host=" + settings.DATABASES["default"]["HOST"],
+                    "--port=" + settings.DATABASES["default"]["PORT"],
+                    "--username=" + settings.DATABASES["default"]["USER"],
+                    "--dbname=" + settings.DATABASES["default"]["NAME"],
                     "--no-password",
                 ]
                 os.environ["PGPASSWORD"] = settings.DATABASES["default"]["PASSWORD"]
@@ -115,7 +115,7 @@ class Command(ZulipBaseCommand):
                     tarball_path = options["output"]
 
                 run(
-                    ["tar", "-C", tmp, "-cPzf", tarball_path,
+                    ["tar", f"--directory={tmp}", "-cPzf", tarball_path,
                      *transform_args,
                      "--",
                      *members]

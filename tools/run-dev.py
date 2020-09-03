@@ -150,8 +150,8 @@ def server_processes() -> List[List[str]]:
         ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
          './puppet/zulip/files/postgresql/process_fts_updates', '--quiet'],
         ['./manage.py', 'deliver_scheduled_messages'],
-        ['/srv/zulip-thumbor-venv/bin/thumbor', '-c', './zthumbor/thumbor_settings.py',
-         '-p', f'{thumbor_port}'],
+        ['/srv/zulip-thumbor-venv/bin/thumbor', '--conf=./zthumbor/thumbor_settings.py',
+         f'--port={thumbor_port}'],
     ]
 
     # NORMAL (but slower) operation:
@@ -165,7 +165,7 @@ def do_one_time_webpack_compile() -> None:
     subprocess.check_call(['./tools/webpack', '--quiet', '--test'])
 
 def start_webpack_watcher() -> None:
-    webpack_cmd = ['./tools/webpack', '--watch', '--port', str(webpack_port)]
+    webpack_cmd = ['./tools/webpack', '--watch', f'--port={webpack_port}']
     if options.minify:
         webpack_cmd.append('--minify')
     if options.interface is None:
@@ -173,9 +173,9 @@ def start_webpack_watcher() -> None:
         # to disable the webpack host check so that webpack will serve assets.
         webpack_cmd.append('--disable-host-check')
     if options.interface:
-        webpack_cmd += ["--host", options.interface]
+        webpack_cmd.append(f"--host={options.interface}")
     else:
-        webpack_cmd += ["--host", "0.0.0.0"]
+        webpack_cmd.append("--host=0.0.0.0")
     subprocess.Popen(webpack_cmd)
 
 def transform_url(protocol: str, path: str, query: str, target_port: int, target_host: str) -> str:

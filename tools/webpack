@@ -14,9 +14,9 @@ def build_for_prod_or_casper(quiet: bool) -> NoReturn:
 
     webpack_args = ['node', 'node_modules/.bin/webpack-cli',
                     '-p',
-                    '--env', 'production']
+                    '--env=production']
     if quiet:
-        webpack_args += ['--display', 'errors-only']
+        webpack_args.append('--display=errors-only')
     os.execvp(webpack_args[0], webpack_args)
 
 def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check: bool) -> None:
@@ -29,10 +29,10 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
     webpack_args += [
         # webpack-cli has a bug where it ignores --watch-poll with
         # multi-config, and we don't need the katex-cli part anyway.
-        '--config-name', 'frontend',
-        '--allowed-hosts', ','.join([host, '.zulipdev.com', '.zulipdev.org']),
-        '--host', host,
-        '--port', port,
+        '--config-name=frontend',
+        '--allowed-hosts=' + ','.join([host, '.zulipdev.com', '.zulipdev.org']),
+        f'--host={host}',
+        f'--port={port}',
         # We add the hot flag using the cli because it takes care
         # of addition to entry points and adding the plugin
         # automatically
