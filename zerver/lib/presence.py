@@ -157,7 +157,7 @@ def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict
     presence_rows = list(query)
 
     mobile_query = PushDeviceToken.objects.distinct(
-        'user_id',
+        'user_id'
     ).values_list(
         'user_id',
         flat=True,
