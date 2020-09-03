@@ -20,14 +20,7 @@ def run(args: List[str], dry_run: bool = False) -> str:
         print("Would have run: " + " ".join(map(shlex.quote, args)))
         return ""
 
-    p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-    stdout, stderr = p.communicate()
-    if p.returncode:
-        logger.error("Could not invoke %s\nstdout: %r\nstderror: %r",
-                     args[0], stdout, stderr)
-        sys.exit(1)
-    return stdout.decode()
+    return subprocess.check_output(args, stdin=subprocess.DEVNULL, universal_newlines=True)
 
 recovery_val = run(['psql', '-v', 'ON_ERROR_STOP=1', '-t', '-c', 'SELECT pg_is_in_recovery()']).strip()
 # Assertion to check that we're extracting the value correctly.

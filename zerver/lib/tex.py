@@ -33,14 +33,11 @@ def render_tex(tex: str, is_inline: bool=True) -> Optional[str]:
     command = ['node', katex_path]
     if not is_inline:
         command.extend(['--display-mode'])
-    katex = subprocess.Popen(command,
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-    stdout = katex.communicate(input=tex.encode())[0]
-    if katex.returncode == 0:
+    try:
+        stdout = subprocess.check_output(
+            command, input=tex, stderr=subprocess.DEVNULL, universal_newlines=True
+        )
         # stdout contains a newline at the end
-        assert stdout is not None
-        return stdout.decode('utf-8').strip()
-    else:
+        return stdout.strip()
+    except subprocess.CalledProcessError:
         return None
