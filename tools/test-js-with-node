@@ -341,12 +341,12 @@ if options.coverage and ret == 0:
         if problems_encountered:
             ret = 1
 
+    reports_location = f"http://{get_dev_host()}/node-coverage/index.html"
+    print()
+    print("View coverage reports at " + CYAN + reports_location + ENDC)
+
 print()
 if ret == 0:
-    if options.coverage:
-        reports_location = f'http://{get_dev_host()}/node-coverage/index.html'
-        print('View coverage reports at ' + CYAN + reports_location + ENDC)
-
     print(GREEN + "Test(s) passed. SUCCESS!" + ENDC)
 else:
     print(BOLDRED + "FAIL - Test(s) failed" + ENDC)
