@@ -367,10 +367,10 @@ def get_story_update_attachment_body(payload: Dict[str, Any]) -> Optional[str]:
     file_id = file_ids_added[0]
     for ref in payload["references"]:
         if ref["id"] == file_id:
-            kwargs.update({
-                "type": ref["entity_type"],
-                "file_name": ref["name"],
-            })
+            kwargs.update(
+                type=ref["entity_type"],
+                file_name=ref["name"],
+            )
 
     return FILE_ATTACHMENT_TEMPLATE.format(**kwargs)
 
@@ -401,7 +401,7 @@ def get_story_label_body(payload: Dict[str, Any]) -> Optional[str]:
             if reference["id"] == label_id:
                 label_name = reference.get('name', '')
 
-    kwargs.update({"label_name": label_name})
+    kwargs.update(label_name=label_name)
 
     return STORY_LABEL_TEMPLATE.format(**kwargs)
 
@@ -418,9 +418,9 @@ def get_story_update_project_body(payload: Dict[str, Any]) -> str:
     old_project_id = action["changes"]["project_id"]["old"]
     for ref in payload["references"]:
         if ref["id"] == new_project_id:
-            kwargs.update({"new": ref["name"]})
+            kwargs.update(new=ref["name"])
         if ref["id"] == old_project_id:
-            kwargs.update({"old": ref["name"]})
+            kwargs.update(old=ref["name"])
 
     return STORY_UPDATE_PROJECT_TEMPLATE.format(**kwargs)
 

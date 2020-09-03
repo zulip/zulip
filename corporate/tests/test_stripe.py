@@ -311,9 +311,10 @@ class StripeTestCase(ZulipTestCase):
             'signed_seat_count': self.get_signed_seat_count_from_response(response),
             'salt': self.get_salt_from_response(response)}
         if invoice:  # send_invoice
-            params.update({
-                'billing_modality': 'send_invoice',
-                'licenses': 123})
+            params.update(
+                billing_modality='send_invoice',
+                licenses=123,
+            )
         else:  # charge_automatically
             stripe_token = None
             if not talk_to_stripe:
@@ -321,11 +322,11 @@ class StripeTestCase(ZulipTestCase):
             stripe_token = kwargs.get('stripe_token', stripe_token)
             if stripe_token is None:
                 stripe_token = stripe_create_token().id
-            params.update({
-                'billing_modality': 'charge_automatically',
-                'license_management': 'automatic',
-                'stripe_token': stripe_token,
-            })
+            params.update(
+                billing_modality='charge_automatically',
+                license_management='automatic',
+                stripe_token=stripe_token,
+            )
 
         params.update(kwargs)
         for key in del_args:

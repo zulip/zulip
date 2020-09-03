@@ -221,7 +221,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(subscriber_handler.get_users(stream_id=stream_id_mapper.get("dumbledores-army")), {ron_id, harry_id})
 
         # Converting channel data when a user's `teams` value is `null`.
-        username_to_user["ron"].update({"teams": None})
+        username_to_user["ron"].update(teams=None)
         zerver_stream = convert_channel_data(
             channel_data=mattermost_data["channel"],
             user_data_map=username_to_user,
@@ -417,7 +417,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertFalse(check_user_in_team(snape, "gryffindor"))
         self.assertTrue(check_user_in_team(snape, "slytherin"))
 
-        snape.update({"teams": None})
+        snape.update(teams=None)
         self.assertFalse(check_user_in_team(snape, "slytherin"))
 
     def test_label_mirror_dummy_users(self) -> None:
