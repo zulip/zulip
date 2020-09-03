@@ -1,3 +1,4 @@
+import threading
 from collections import defaultdict
 from functools import wraps
 from types import FunctionType
@@ -366,3 +367,22 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
         return view_func(request, *args, **kwargs)
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+
+
+local = threading.local()
+
+def get_current_request() -> Optional[HttpRequest]:
+    """Returns the current HttpRequest object; this should only be used by
+    logging frameworks, which have no other access to the current
+    request.  All other codepaths should pass through the current
+    request object, rather than rely on this thread-local global.
+
+    """
+    return getattr(local, 'request', None)
+
+def set_request(req: HttpRequest) -> None:
+    setattr(local, 'request', req)
+
+def unset_request() -> None:
+    if hasattr(local, 'request'):
+        delattr(local, 'request')

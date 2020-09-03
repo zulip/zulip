@@ -23,6 +23,7 @@ from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticatio
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.rate_limiter import RateLimitResult
+from zerver.lib.request import set_request, unset_request
 from zerver.lib.response import json_error, json_response_from_error, json_unauthorized
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ViewFuncT
@@ -223,6 +224,14 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
         if len(error_data) > 200:
             error_data = "[content more than 200 characters]"
         logger.info('status=%3d, data=%s, uid=%s', status_code, error_data, requestor_for_logs)
+
+class RequestContext(MiddlewareMixin):
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        set_request(request)
+        try:
+            return self.get_response(request)
+        finally:
+            unset_request()
 
 class LogRequests(MiddlewareMixin):
     # We primarily are doing logging using the process_view hook, but

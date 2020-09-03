@@ -178,6 +178,7 @@ MIDDLEWARE = (
     # our logging middleware should be the top middleware item.
     'zerver.middleware.TagRequests',
     'zerver.middleware.SetRemoteAddrFromForwardedFor',
+    'zerver.middleware.RequestContext',
     'zerver.middleware.LogRequests',
     'zerver.middleware.JsonErrorHandler',
     'zerver.middleware.RateLimitMiddleware',
