@@ -47,7 +47,7 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "openldap-devel",
     "libyaml-devel",
     # Needed by python-xmlsec:
-    "gcc"
+    "gcc",
     "python3-devel",
     "libxml2-devel",
     "xmlsec1-devel",
