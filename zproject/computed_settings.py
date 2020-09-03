@@ -957,20 +957,16 @@ POLL_TIMEOUT = 90 * 1000
 # SSO AND LDAP SETTINGS
 ########################################################################
 
+USING_LDAP = "zproject.backends.ZulipLDAPAuthBackend" in AUTHENTICATION_BACKENDS
+ONLY_LDAP = AUTHENTICATION_BACKENDS == ("zproject.backends.ZulipLDAPAuthBackend",)
 USING_APACHE_SSO = ('zproject.backends.ZulipRemoteUserBackend' in AUTHENTICATION_BACKENDS)
+ONLY_SSO = AUTHENTICATION_BACKENDS == ("zproject.backends.ZulipRemoteUserBackend",)
 
-ONLY_LDAP = False
-if len(AUTHENTICATION_BACKENDS) == 1 and (AUTHENTICATION_BACKENDS[0] ==
-                                          "zproject.backends.ZulipLDAPAuthBackend"):
-    ONLY_LDAP = True
-
-if len(AUTHENTICATION_BACKENDS) == 1 and (AUTHENTICATION_BACKENDS[0] ==
-                                          "zproject.backends.ZulipRemoteUserBackend"):
+if ONLY_SSO:
     HOME_NOT_LOGGED_IN = "/accounts/login/sso/"
-    ONLY_SSO = True
 else:
     HOME_NOT_LOGGED_IN = '/login/'
-    ONLY_SSO = False
+
 AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipDummyBackend',)
 
 # Redirect to /devlogin/ by default in dev mode
@@ -980,13 +976,10 @@ if DEVELOPMENT:
 
 POPULATE_PROFILE_VIA_LDAP = bool(AUTH_LDAP_SERVER_URI)
 
-if POPULATE_PROFILE_VIA_LDAP and \
-   'zproject.backends.ZulipLDAPAuthBackend' not in AUTHENTICATION_BACKENDS:
+if POPULATE_PROFILE_VIA_LDAP and not USING_LDAP:
     AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipLDAPUserPopulator',)
 else:
-    POPULATE_PROFILE_VIA_LDAP = (
-        'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or
-        POPULATE_PROFILE_VIA_LDAP)
+    POPULATE_PROFILE_VIA_LDAP = USING_LDAP or POPULATE_PROFILE_VIA_LDAP
 
 if POPULATE_PROFILE_VIA_LDAP:
     import ldap
@@ -1006,11 +999,7 @@ if REGISTER_LINK_DISABLED is None:
     # The default for REGISTER_LINK_DISABLED is a bit more
     # complicated: we want it to be disabled by default for people
     # using the LDAP backend that auto-creates users on login.
-    if (len(AUTHENTICATION_BACKENDS) == 2 and
-            ('zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS)):
-        REGISTER_LINK_DISABLED = True
-    else:
-        REGISTER_LINK_DISABLED = False
+    REGISTER_LINK_DISABLED = ONLY_LDAP
 
 ########################################################################
 # SOCIAL AUTHENTICATION SETTINGS
