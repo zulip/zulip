@@ -16,5 +16,5 @@ def digest_page(request: HttpRequest) -> HttpResponse:
     cutoff = time.mktime((timezone_now() - timedelta(days=DIGEST_CUTOFF)).timetuple())
     context = handle_digest_email(user_profile_id, cutoff, render_to_web=True)
     if context:
-        context.update({'physical_address': settings.PHYSICAL_ADDRESS})
+        context.update(physical_address=settings.PHYSICAL_ADDRESS)
     return render(request, 'zerver/digest_base.html', context=context)

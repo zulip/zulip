@@ -1476,12 +1476,12 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         referrer = self.example_user(referrer_name)
         link = create_confirmation_link(invitee, Confirmation.INVITATION)
         context = common_context(referrer)
-        context.update({
-            'activate_url': link,
-            'referrer_name': referrer.full_name,
-            'referrer_email': referrer.email,
-            'referrer_realm_name': referrer.realm.name,
-        })
+        context.update(
+            activate_url=link,
+            referrer_name=referrer.full_name,
+            referrer_email=referrer.email,
+            referrer_realm_name=referrer.realm.name,
+        )
         with self.settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'):
             email = data["email"]
             send_future_email(

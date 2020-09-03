@@ -281,24 +281,24 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             else:
                 payment_method = 'Billed by invoice'
 
-            context.update({
-                'plan_name': plan.name,
-                'has_active_plan': True,
-                'free_trial': free_trial,
-                'downgrade_at_end_of_cycle': downgrade_at_end_of_cycle,
-                'automanage_licenses': plan.automanage_licenses,
-                'switch_to_annual_at_end_of_cycle': switch_to_annual_at_end_of_cycle,
-                'licenses': licenses,
-                'licenses_used': licenses_used,
-                'renewal_date': renewal_date,
-                'renewal_amount': f'{renewal_cents / 100.:,.2f}',
-                'payment_method': payment_method,
-                'charge_automatically': charge_automatically,
-                'publishable_key': STRIPE_PUBLISHABLE_KEY,
-                'stripe_email': stripe_customer.email,
-                'CustomerPlan': CustomerPlan,
-                'onboarding': request.GET.get("onboarding") is not None,
-            })
+            context.update(
+                plan_name=plan.name,
+                has_active_plan=True,
+                free_trial=free_trial,
+                downgrade_at_end_of_cycle=downgrade_at_end_of_cycle,
+                automanage_licenses=plan.automanage_licenses,
+                switch_to_annual_at_end_of_cycle=switch_to_annual_at_end_of_cycle,
+                licenses=licenses,
+                licenses_used=licenses_used,
+                renewal_date=renewal_date,
+                renewal_amount=f'{renewal_cents / 100.:,.2f}',
+                payment_method=payment_method,
+                charge_automatically=charge_automatically,
+                publishable_key=STRIPE_PUBLISHABLE_KEY,
+                stripe_email=stripe_customer.email,
+                CustomerPlan=CustomerPlan,
+                onboarding=request.GET.get("onboarding") is not None,
+            )
 
     return render(request, 'corporate/billing.html', context=context)
 

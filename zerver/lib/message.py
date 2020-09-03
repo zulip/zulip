@@ -107,7 +107,7 @@ def messages_for_ids(message_ids: List[int],
 
     for message_id in message_ids:
         msg_dict = message_dicts[message_id]
-        msg_dict.update({"flags": user_message_flags[message_id]})
+        msg_dict.update(flags=user_message_flags[message_id])
         if message_id in search_fields:
             msg_dict.update(search_fields[message_id])
         # Make sure that we never send message edit history to clients
