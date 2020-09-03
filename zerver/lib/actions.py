@@ -1055,22 +1055,6 @@ def create_mirror_user_if_needed(realm: Realm, email: str,
         except IntegrityError:
             return get_user_by_delivery_email(email, realm)
 
-def send_welcome_bot_response(message: MutableMapping[str, Any]) -> None:
-    welcome_bot = get_system_bot(settings.WELCOME_BOT)
-    human_recipient_id = message['message'].sender.recipient_id
-    if Message.objects.filter(sender=welcome_bot, recipient_id=human_recipient_id).count() < 2:
-        content = (
-            _("Congratulations on your first reply!") +
-            " "
-            ":tada:"
-            "\n"
-            "\n" +
-            _("Feel free to continue using this space to practice your new messaging "
-              "skills. Or, try clicking on some of the stream names to your left!")
-        )
-        internal_send_private_message(
-            message['realm'], welcome_bot, message['message'].sender, content)
-
 def render_incoming_message(message: Message,
                             content: str,
                             user_ids: Set[int],
@@ -1625,6 +1609,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             welcome_bot_id = get_system_bot(settings.WELCOME_BOT).id
             if (welcome_bot_id in message['active_user_ids'] and
                     welcome_bot_id != message['message'].sender_id):
+                from zerver.lib.onboarding import send_welcome_bot_response
                 send_welcome_bot_response(message)
 
         for queue_name, events in message['message'].service_queue_events.items():

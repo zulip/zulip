@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Any, Dict, List, MutableMapping
 
 from django.conf import settings
 from django.db.models import Count
@@ -94,6 +94,22 @@ def send_initial_pms(user: UserProfile) -> None:
 
     internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT),
                                   user, content)
+
+def send_welcome_bot_response(message: MutableMapping[str, Any]) -> None:
+    welcome_bot = get_system_bot(settings.WELCOME_BOT)
+    human_recipient_id = message['message'].sender.recipient_id
+    if Message.objects.filter(sender=welcome_bot, recipient_id=human_recipient_id).count() < 2:
+        content = (
+            _("Congratulations on your first reply!") +
+            " "
+            ":tada:"
+            "\n"
+            "\n" +
+            _("Feel free to continue using this space to practice your new messaging "
+              "skills. Or, try clicking on some of the stream names to your left!")
+        )
+        internal_send_private_message(
+            message['realm'], welcome_bot, message['message'].sender, content)
 
 def send_initial_realm_messages(realm: Realm) -> None:
     welcome_bot = get_system_bot(settings.WELCOME_BOT)
