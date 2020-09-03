@@ -39,7 +39,7 @@ RUN apt-get update \
     locales \
     xvfb \
     parallel \
-    netcat unzip zip jq \
+    unzip zip jq \
     python3-pip \
   && ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime \
   && {{ locale-gen en_US.UTF-8 || true; }} \
