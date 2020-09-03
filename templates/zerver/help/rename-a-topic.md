@@ -36,7 +36,7 @@ for the details on when topic editing is allowed.
 
 {!admin-only.md!}
 
-Organization administrators can move a topic from one public stream to
+Organization administrators can move a topic from one stream to
 another.
 
 {start_tabs}
@@ -53,6 +53,12 @@ another.
    to the old location for the topic, new location for the topic, or both.
 
 1. Click **Move topic**.
+
+
+!!! warn ""
+    **Note**: When a topic is moved to a private stream with protected history,
+              messages in the topic will be visible to all the subscribers.
+
 
 {end_tabs}
 

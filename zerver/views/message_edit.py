@@ -187,7 +187,6 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         mention_user_ids = message.mentions_user_ids
 
     new_stream = None
-    old_stream = None
     number_changed = 0
 
     if stream_id is not None:
@@ -196,14 +195,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         if content is not None:
             raise JsonableError(_("Cannot change message content while changing stream"))
 
-        old_stream = get_stream_by_id(message.recipient.type_id)
         new_stream = get_stream_by_id(stream_id)
-
-        if not (old_stream.is_public() and new_stream.is_public()):
-            # We'll likely decide to relax this condition in the
-            # future; it just requires more care with details like the
-            # breadcrumb messages.
-            raise JsonableError(_("Streams must be public"))
 
     number_changed = do_update_message(user_profile, message, new_stream,
                                        topic_name, propagate_mode,

@@ -963,7 +963,7 @@ class EditMessageTest(ZulipTestCase):
                 'propagate_mode': 'change_all',
                 'topic': 'new topic',
             })
-        self.assertEqual(len(queries), 52)
+        self.assertEqual(len(queries), 51)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 1)
@@ -1068,33 +1068,101 @@ class EditMessageTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assertEqual(len(messages), 3)
 
-    def test_move_message_to_stream_to_private_stream(self) -> None:
-        user_profile = self.example_user("iago")
+    def parameterized_test_move_message_involving_private_stream(
+        self,
+        from_invite_only: bool,
+        history_public_to_subscribers: bool,
+        create_user_message: bool,
+        to_invite_only: bool=True,
+    ) -> None:
+        admin_user = self.example_user("iago")
+        user_losing_access = self.example_user('cordelia')
+        user_gaining_access = self.example_user('hamlet')
+
         self.login("iago")
-        stream = self.make_stream("test move stream")
-        new_stream = self.make_stream("new stream", None, True)
-        self.subscribe(user_profile, stream.name)
-        self.subscribe(user_profile, new_stream.name)
-        msg_id = self.send_stream_message(user_profile, stream.name,
+        old_stream = self.make_stream("test move stream", invite_only=from_invite_only)
+        new_stream = self.make_stream("new stream", invite_only=to_invite_only, history_public_to_subscribers=history_public_to_subscribers)
+
+        self.subscribe(admin_user, old_stream.name)
+        self.subscribe(user_losing_access, old_stream.name)
+
+        self.subscribe(admin_user, new_stream.name)
+        self.subscribe(user_gaining_access, new_stream.name)
+
+        msg_id = self.send_stream_message(admin_user, old_stream.name,
                                           topic_name="test", content="First")
-        self.send_stream_message(user_profile, stream.name,
+        self.send_stream_message(admin_user, old_stream.name,
                                  topic_name="test", content="Second")
+
+        self.assertEqual(UserMessage.objects.filter(
+            user_profile_id=user_losing_access.id,
+            message_id=msg_id,
+        ).count(), 1)
+        self.assertEqual(UserMessage.objects.filter(
+            user_profile_id=user_gaining_access.id,
+            message_id=msg_id,
+        ).count(), 0)
 
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'stream_id': new_stream.id,
             'propagate_mode': 'change_all',
         })
+        self.assert_json_success(result)
 
-        self.assert_json_error(result, "Streams must be public")
+        messages = get_topic_messages(admin_user, old_stream, "test")
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(messages[0].content, f"This topic was moved by @_**Iago|{admin_user.id}** to #**new stream>test**")
 
-        # We expect the messages to remain in the original stream/topic
-        messages = get_topic_messages(user_profile, stream, "test")
-        self.assertEqual(len(messages), 2)
+        messages = get_topic_messages(admin_user, new_stream, "test")
+        self.assertEqual(len(messages), 3)
 
-        messages = get_topic_messages(user_profile, new_stream, "test")
-        self.assertEqual(len(messages), 0)
+        self.assertEqual(UserMessage.objects.filter(
+            user_profile_id=user_losing_access.id,
+            message_id=msg_id,
+        ).count(), 0)
+        # When the history is shared, UserMessage is not created for the user but the user
+        # can see the message.
+        self.assertEqual(UserMessage.objects.filter(
+            user_profile_id=user_gaining_access.id,
+            message_id=msg_id,
+        ).count(), 1 if create_user_message else 0)
 
+    def test_move_message_from_public_to_private_stream_not_shared_history(self) -> None:
+        self.parameterized_test_move_message_involving_private_stream(
+            from_invite_only=False,
+            history_public_to_subscribers=False,
+            create_user_message=True,
+        )
+
+    def test_move_message_from_public_to_private_stream_shared_history(self) -> None:
+        self.parameterized_test_move_message_involving_private_stream(
+            from_invite_only=False,
+            history_public_to_subscribers=True,
+            create_user_message=False,
+        )
+
+    def test_move_message_from_private_to_private_stream_not_shared_history(self) -> None:
+        self.parameterized_test_move_message_involving_private_stream(
+            from_invite_only=True,
+            history_public_to_subscribers=False,
+            create_user_message=True,
+        )
+
+    def test_move_message_from_private_to_private_stream_shared_history(self) -> None:
+        self.parameterized_test_move_message_involving_private_stream(
+            from_invite_only=True,
+            history_public_to_subscribers=True,
+            create_user_message=False,
+        )
+
+    def test_move_message_from_private_to_public(self) -> None:
+        self.parameterized_test_move_message_involving_private_stream(
+            from_invite_only=True,
+            history_public_to_subscribers=True,
+            create_user_message=False,
+            to_invite_only=False,
+        )
 
 class DeleteMessageTest(ZulipTestCase):
     def test_delete_message_invalid_request_format(self) -> None:
