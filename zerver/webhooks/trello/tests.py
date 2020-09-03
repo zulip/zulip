@@ -120,6 +120,7 @@ class TrelloHookTests(WebhookTestCase):
         them as invalid.
         """
         actions = [
+            "copyCard",
             "createCheckItem",
             "updateCheckItem",
             "updateList",
