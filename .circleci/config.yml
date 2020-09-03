@@ -154,14 +154,14 @@ aliases:
     run:
       name: check tools/provision error message on xenial
       command: |
-        ! tools/provision 2> >(tee provision.err >&2)
+        { { ! tools/provision 2>&1 >&3; } | tee provision.err; } 3>&1 >&2
         grep -Fqx 'Error: ubuntu 16.04 is no longer a supported platform for Zulip.' provision.err
 
   - &check_xenial_upgrade_error
     run:
       name: check scripts/lib/upgrade-zulip-stage-2 error message on xenial
       command: |
-        ! sudo scripts/lib/upgrade-zulip-stage-2 2> >(tee upgrade.err >&2)
+        { { ! sudo scripts/lib/upgrade-zulip-stage-2 2>&1 >&3; } | tee upgrade.err; } 3>&1 >&2
         grep -Fq 'upgrade-zulip-stage-2: Unsupported platform: ubuntu 16.04' upgrade.err
 
   - &notify_failure_status
