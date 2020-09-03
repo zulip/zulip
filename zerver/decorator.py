@@ -265,7 +265,6 @@ def access_user_by_api_key(request: HttpRequest, api_key: str, email: Optional[s
 
 def log_exception_to_webhook_logger(
     request: HttpRequest,
-    user_profile: UserProfile,
     summary: str,
     payload: str,
     unsupported_event: bool,
@@ -299,8 +298,8 @@ body:
 {body}
     """.format(
         summary=summary,
-        email=user_profile.delivery_email,
-        realm=user_profile.realm.string_id,
+        email=request.user.delivery_email,
+        realm=request.user.realm.string_id,
         client_name=request.client.name,
         body=payload,
         path_info=request.META.get('PATH_INFO', None),
@@ -352,7 +351,6 @@ def webhook_view(
                         err.webhook_name = webhook_client_name
                     log_exception_to_webhook_logger(
                         request=request,
-                        user_profile=user_profile,
                         summary=str(err),
                         payload=request.body,
                         unsupported_event=isinstance(err, UnsupportedWebhookEventType),
@@ -605,7 +603,6 @@ def authenticated_rest_api_view(
                     if request_body is not None:
                         log_exception_to_webhook_logger(
                             request=request,
-                            user_profile=profile,
                             summary=str(err),
                             payload=request_body,
                             unsupported_event=isinstance(err, UnsupportedWebhookEventType),
