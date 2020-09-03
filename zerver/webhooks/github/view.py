@@ -33,21 +33,18 @@ class Helper:
     def __init__(
         self,
         request: HttpRequest,
-        user_profile: UserProfile,
         payload: Dict[str, Any],
         include_title: bool,
     ) -> None:
         self.payload = payload
         self.include_title = include_title
         self._request = request
-        self._user_profile = user_profile
 
     def log_unsupported(self, event: str) -> None:
         summary = f"The '{event}' event isn't currently supported by the GitHub webhook"
         request = self._request
         log_exception_to_webhook_logger(
             request=request,
-            user_profile=self._user_profile,
             summary=summary,
             payload=request.body,
             unsupported_event=True,
@@ -635,7 +632,6 @@ def api_github_webhook(
 
     helper = Helper(
         request=request,
-        user_profile=user_profile,
         payload=payload,
         include_title=user_specified_topic is not None,
     )
