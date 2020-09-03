@@ -27,8 +27,6 @@ class zulip::base {
         'crudini',
         # Used for tools like sponge
         'moreutils',
-        # Used in scripts
-        'netcat',
         # Nagios monitoring plugins
         $zulip::common::nagios_plugins,
         # Required for using HTTPS in apt repositories.

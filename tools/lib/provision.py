@@ -144,7 +144,6 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "redis-server",
     "hunspell-en-us",
     "puppet-lint",
-    "netcat",               # Used for flushing memcached
     "default-jre-headless",  # Required by vnu-jar
     *THUMBOR_VENV_DEPENDENCIES,
 ]
