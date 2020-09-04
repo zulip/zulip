@@ -502,6 +502,18 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid private_message_policy')
 
+    def test_change_wildcard_mention_policy(self) -> None:
+        # We need an admin user.
+        self.login('iago')
+        req = dict(wildcard_mention_policy = orjson.dumps(Realm.WILDCARD_MENTION_POLICY_EVERYONE).decode())
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+
+        invalid_value = 10
+        req = dict(wildcard_mention_policy = orjson.dumps(invalid_value).decode())
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, 'Invalid wildcard_mention_policy')
+
     def test_invalid_integer_attribute_values(self) -> None:
 
         integer_values = [key for key, value in Realm.property_types.items() if value is int]
@@ -518,6 +530,7 @@ class RealmTest(ZulipTestCase):
             user_group_edit_policy=10,
             private_message_policy=10,
             message_content_delete_limit_seconds=-10,
+            wildcard_mention_policy=10,
         )
 
         # We need an admin user.
@@ -719,6 +732,9 @@ class RealmAPITest(ZulipTestCase):
             invite_to_stream_policy=[Realm.POLICY_ADMINS_ONLY,
                                      Realm.POLICY_MEMBERS_ONLY,
                                      Realm.POLICY_FULL_MEMBERS_ONLY],
+            wildcard_mention_policy=[Realm.WILDCARD_MENTION_POLICY_EVERYONE,
+                                     Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS,
+                                     Realm.WILDCARD_MENTION_POLICY_ADMINS],
             bot_creation_policy=[1, 2],
             email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
                                       Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,

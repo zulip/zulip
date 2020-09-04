@@ -6792,6 +6792,24 @@ paths:
 
                           The policy for which users can add other users to streams in this
                           organization.
+                      realm_wildcard_mention_policy:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The policy for who can use wildcard mentions in large streams.
+
+                          * 1 => Any user can use wildcard mentions in large streams.
+                          * 2 => Only members can use wildcard mentions in large streams.
+                          * 3 => Only full members can use wildcard mentions in large streams.
+                          * 4 => Only stream and organization administrators can use wildcard mentions in large streams.
+                          * 5 => Only organization administrators can use wildcard mentions in large streams.
+                          * 6 => Nobody can use wildcard mentions in large streams.
+
+                          All users will receive a warning/reminder when using
+                          mentions in large streams, even when permitted to do so.
+
+                          **Changes**: New in Zulip 4.0 (feature level 33).
                       realm_default_language:
                         type: string
                         description: |
