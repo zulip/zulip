@@ -716,6 +716,9 @@ LOGGING: Dict[str, Any] = {
         'default': {
             '()': 'zerver.lib.logging_util.ZulipFormatter',
         },
+        'webhook_request_data': {
+            '()': 'zerver.lib.logging_util.ZulipWebhookFormatter',
+        },
     },
     'filters': {
         'ZulipLimiter': {
@@ -794,13 +797,13 @@ LOGGING: Dict[str, Any] = {
         'webhook_file': {
             'level': 'DEBUG',
             'class': 'logging.handlers.WatchedFileHandler',
-            'formatter': 'default',
+            'formatter': 'webhook_request_data',
             'filename': WEBHOOK_LOG_PATH,
         },
         'webhook_unsupported_file': {
             'level': 'DEBUG',
             'class': 'logging.handlers.WatchedFileHandler',
-            'formatter': 'default',
+            'formatter': 'webhook_request_data',
             'filename': WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH,
         },
     },

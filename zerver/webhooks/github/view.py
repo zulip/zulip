@@ -32,19 +32,15 @@ fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 class Helper:
     def __init__(
         self,
-        request: HttpRequest,
         payload: Dict[str, Any],
         include_title: bool,
     ) -> None:
         self.payload = payload
         self.include_title = include_title
-        self._request = request
 
     def log_unsupported(self, event: str) -> None:
         summary = f"The '{event}' event isn't currently supported by the GitHub webhook"
-        request = self._request
         log_exception_to_webhook_logger(
-            request=request,
             summary=summary,
             unsupported_event=True,
         )
@@ -630,7 +626,6 @@ def api_github_webhook(
     body_function = EVENT_FUNCTION_MAPPER[event]
 
     helper = Helper(
-        request=request,
         payload=payload,
         include_title=user_specified_topic is not None,
     )

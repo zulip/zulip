@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 from logging import Logger
 from typing import Optional, Tuple
 
+import orjson
 from django.conf import settings
 from django.core.cache import cache
 from django.utils.timezone import now as timezone_now
@@ -208,6 +209,62 @@ class ZulipFormatter(logging.Formatter):
             setattr(record, 'zulip_level_abbrev', abbrev_log_levelname(record.levelname))
             setattr(record, 'zulip_origin', find_log_origin(record))
             setattr(record, 'zulip_decorated', True)
+        return super().format(record)
+
+class ZulipWebhookFormatter(ZulipFormatter):
+    def _compute_fmt(self) -> str:
+        basic = super()._compute_fmt()
+        multiline = [
+            basic,
+            "user: %(user)s",
+            "client: %(client)s",
+            "url: %(url)s",
+            "content_type: %(content_type)s",
+            "custom_headers:",
+            "%(custom_headers)s",
+            "payload:",
+            "%(payload)s",
+        ]
+        return "\n".join(multiline)
+
+    def format(self, record: logging.LogRecord) -> str:
+        from zerver.lib.request import get_current_request
+        request = get_current_request()
+        if not request:
+            setattr(record, 'user', None)
+            setattr(record, 'client', None)
+            setattr(record, 'url', None)
+            setattr(record, 'content_type', None)
+            setattr(record, 'custom_headers', None)
+            setattr(record, 'payload', None)
+            return super().format(record)
+
+        if request.content_type == 'application/json':
+            payload = request.body
+        else:
+            payload = request.POST.get('payload')
+
+        try:
+            payload = orjson.dumps(orjson.loads(payload), option=orjson.OPT_INDENT_2).decode()
+        except orjson.JSONDecodeError:
+            pass
+
+        custom_header_template = "{header}: {value}\n"
+
+        header_text = ""
+        for header in request.META.keys():
+            if header.lower().startswith('http_x'):
+                header_text += custom_header_template.format(
+                    header=header, value=request.META[header])
+
+        header_message = header_text if header_text else None
+
+        setattr(record, 'user', f"{request.user.delivery_email} (request.user.realm.string_id)")
+        setattr(record, 'client', request.client.name)
+        setattr(record, 'url', request.META.get('PATH_INFO', None))
+        setattr(record, 'content_type', request.content_type)
+        setattr(record, 'custom_headers', header_message)
+        setattr(record, 'payload', payload)
         return super().format(record)
 
 def log_to_file(logger: Logger,

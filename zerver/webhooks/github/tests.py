@@ -461,9 +461,8 @@ A temporary team so that I can get some webhook fixtures!
         msg = m.call_args[0][0]
         stack_info = m.call_args[1]["stack_info"]
 
-        self.assertIn("content_type: application/json", msg)
         self.assertIn(
-            "summary: The 'team/edited (changes: bogus_key1/bogus_key2)' event isn't currently supported by the GitHub webhook",
+            "The 'team/edited (changes: bogus_key1/bogus_key2)' event isn't currently supported by the GitHub webhook",
             msg,
         )
         self.assertTrue(stack_info)
