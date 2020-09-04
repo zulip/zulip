@@ -51,6 +51,10 @@ run_test("get_item", () => {
     assert.equal(upload.get_item("file_input_identifier", {mode: "compose"}), "#file_input");
     assert.equal(upload.get_item("source", {mode: "compose"}), "compose-file-input");
     assert.equal(upload.get_item("drag_drop_container", {mode: "compose"}), $("#compose"));
+    assert.equal(
+        upload.get_item("markdown_preview_hide_button", {mode: "compose"}),
+        $("#undo_markdown_preview"),
+    );
 
     assert.equal(upload.get_item("textarea", {mode: "edit", row: 1}), $("#message_edit_content_1"));
 
@@ -89,6 +93,10 @@ run_test("get_item", () => {
     assert.equal(
         upload.get_item("drag_drop_container", {mode: "edit", row: 1}),
         $("#message_edit_form"),
+    );
+    assert.equal(
+        upload.get_item("markdown_preview_hide_button", {mode: "edit", row: 65}),
+        $("#undo_markdown_preview_65"),
     );
 
     assert.throws(
@@ -227,8 +235,13 @@ run_test("upload_files", () => {
     compose_ui.autosize_textarea = () => {
         compose_ui_autosize_textarea_called = true;
     };
+    let markdown_preview_hide_button_clicked = false;
+    $("#undo_markdown_preview").on("click", () => {
+        markdown_preview_hide_button_clicked = true;
+    });
     $("#compose-send-button").prop("disabled", false);
     $("#compose-send-status").removeClass("alert-info").hide();
+    $("#undo_markdown_preview").show();
     upload.upload_files(uppy, config, files);
     assert($("#compose-send-button").prop("disabled"));
     assert($("#compose-send-status").hasClass("alert-info"));
@@ -236,6 +249,7 @@ run_test("upload_files", () => {
     assert.equal($("<p>").text(), "translated: Uploading…");
     assert(compose_ui_insert_syntax_and_focus_called);
     assert(compose_ui_autosize_textarea_called);
+    assert(markdown_preview_hide_button_clicked);
     assert(uppy_add_file_called);
 
     files = [
