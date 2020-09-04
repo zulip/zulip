@@ -639,10 +639,32 @@ exports.initialize = function () {
     $(".compose_stream_button").on("click", () => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("stream", {trigger: "new topic button"});
+        $("#compose-textarea").css(
+            "max-height",
+            parseInt($("#bottom_whitespace").outerHeight(), 10) -
+                (parseInt($("#below-compose-content").outerHeight(), 10) +
+                    parseInt($(".right_part").outerHeight(), 10) +
+                    parseInt($("#compose-textarea").css("padding-top"), 10) +
+                    parseInt($("#compose-textarea").css("padding-bottom"), 10) +
+                    parseInt($("#compose-textarea").css("margin-top"), 10) +
+                    parseInt($(".message_comp.compose-content").css("padding-top"), 10) +
+                    parseInt($(".message_comp.compose-content").css("padding-bottom"), 10)),
+        );
     });
     $(".compose_private_button").on("click", () => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("private");
+        $("#compose-textarea").css(
+            "max-height",
+            parseInt($("#bottom_whitespace").outerHeight(), 10) -
+                (parseInt($("#below-compose-content").outerHeight(), 10) +
+                    parseInt($(".right_part").outerHeight(), 10) +
+                    parseInt($("#compose-textarea").css("padding-top"), 10) +
+                    parseInt($("#compose-textarea").css("padding-bottom"), 10) +
+                    parseInt($("#compose-textarea").css("margin-top"), 10) +
+                    parseInt($(".message_comp.compose-content").css("padding-top"), 10) +
+                    parseInt($(".message_comp.compose-content").css("padding-bottom"), 10)),
+        );
     });
 
     $("body").on("click", ".compose_mobile_stream_button", () => {

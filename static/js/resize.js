@@ -157,6 +157,17 @@ exports.watch_manual_resize = function (element) {
 
 exports.resize_bottom_whitespace = function (h) {
     $("#bottom_whitespace").height(h.bottom_whitespace_height);
+    $("#compose-textarea").css(
+        "max-height",
+        parseInt($("#bottom_whitespace").outerHeight(), 10) -
+            (parseInt($("#below-compose-content").outerHeight(), 10) +
+                parseInt($(".right_part").outerHeight(), 10) +
+                parseInt($("#compose-textarea").css("padding-top"), 10) +
+                parseInt($("#compose-textarea").css("padding-bottom"), 10) +
+                parseInt($("#compose-textarea").css("margin-top"), 10) +
+                parseInt($(".message_comp.compose-content").css("padding-top"), 10) +
+                parseInt($(".message_comp.compose-content").css("padding-bottom"), 10)),
+    );
 };
 
 exports.resize_stream_filters_container = function (h) {
