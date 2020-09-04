@@ -201,7 +201,7 @@ exports.restore_draft = function (draft_id) {
         compose_args.topic = "";
     }
     compose_actions.start(compose_args.type, compose_args);
-    compose_ui.autosize_textarea();
+    compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-textarea").data("draft-id", draft_id);
 };
 
