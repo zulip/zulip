@@ -134,7 +134,7 @@ exports.upload_files = function (uppy, config, files) {
                 exports.get_item("textarea", config),
             );
         });
-        compose_ui.autosize_textarea();
+        compose_ui.autosize_textarea(exports.get_item("textarea", config));
         uppy.cancelAll();
         exports.get_item("textarea", config).trigger("focus");
         setTimeout(() => {
@@ -148,7 +148,7 @@ exports.upload_files = function (uppy, config, files) {
                 exports.get_translated_status(file),
                 exports.get_item("textarea", config),
             );
-            compose_ui.autosize_textarea();
+            compose_ui.autosize_textarea(exports.get_item("textarea", config));
             uppy.addFile({
                 source: exports.get_item("source", config),
                 name: file.name,
@@ -247,7 +247,7 @@ exports.setup_upload = function (config) {
             filename_uri,
             exports.get_item("textarea", config),
         );
-        compose_ui.autosize_textarea();
+        compose_ui.autosize_textarea(exports.get_item("textarea", config));
     });
 
     uppy.on("complete", () => {
@@ -304,7 +304,7 @@ exports.setup_upload = function (config) {
             "",
             exports.get_item("textarea", config),
         );
-        compose_ui.autosize_textarea();
+        compose_ui.autosize_textarea(exports.get_item("textarea", config));
     });
 
     uppy.on("restriction-failed", (file) => {
@@ -313,7 +313,7 @@ exports.setup_upload = function (config) {
             "",
             exports.get_item("textarea", config),
         );
-        compose_ui.autosize_textarea();
+        compose_ui.autosize_textarea(exports.get_item("textarea", config));
     });
 
     return uppy;

@@ -1,5 +1,7 @@
 "use strict";
 
+const autosize = require("autosize");
+
 zrequire("compose_ui");
 const people = zrequire("people");
 zrequire("user_status");
@@ -70,6 +72,27 @@ function make_textbox(s) {
 
     return widget;
 }
+
+run_test("autosize_textarea", () => {
+    const textarea_autosized = {};
+
+    function fake_autosize_update(textarea) {
+        textarea_autosized.textarea = textarea;
+        textarea_autosized.autosized = true;
+    }
+
+    with_field(autosize, "update", fake_autosize_update, () => {
+        // Call autosize_textarea without any argument
+        compose_ui.autosize_textarea();
+        assert.equal(textarea_autosized.textarea, $("#compose-textarea"));
+        assert(textarea_autosized.autosized);
+
+        // Call autosize_textarea with an argument
+        compose_ui.autosize_textarea($("#message_edit_content_65"));
+        assert.equal(textarea_autosized.textarea, $("#message_edit_content_65"));
+        assert(textarea_autosized.autosized);
+    });
+});
 
 run_test("insert_syntax_and_focus", () => {
     $("#compose-textarea").val("xyz ");

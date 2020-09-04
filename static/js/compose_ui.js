@@ -4,8 +4,11 @@ const autosize = require("autosize");
 
 const people = require("./people");
 
-exports.autosize_textarea = function () {
-    autosize.update($("#compose-textarea"));
+exports.autosize_textarea = function (textarea) {
+    if (textarea === undefined) {
+        textarea = $("#compose-textarea");
+    }
+    autosize.update(textarea);
 };
 
 exports.smart_insert = function (textarea, syntax) {

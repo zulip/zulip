@@ -876,7 +876,7 @@ exports.content_typeahead_selected = function (item, event) {
             }
             textbox.val(beginning + rest);
             textbox.caret(beginning.length, beginning.length);
-            compose_ui.autosize_textarea();
+            compose_ui.autosize_textarea(textbox);
         };
         show_flatpickr(this.$element[0], on_timestamp_selection, timestamp);
         return beginning + rest;
@@ -887,7 +887,7 @@ exports.content_typeahead_selected = function (item, event) {
     setTimeout(() => {
         textbox.caret(beginning.length, beginning.length);
         // Also, trigger autosize to check if compose box needs to be resized.
-        compose_ui.autosize_textarea();
+        compose_ui.autosize_textarea(textbox);
     }, 0);
     return beginning + rest;
 };

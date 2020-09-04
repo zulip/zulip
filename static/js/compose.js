@@ -299,7 +299,7 @@ exports.nonexistent_stream_reply_error = nonexistent_stream_reply_error;
 function clear_compose_box() {
     $("#compose-textarea").val("").trigger("focus");
     drafts.delete_draft_after_send();
-    compose_ui.autosize_textarea();
+    compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
     $("#compose-send-button").prop("disabled", false);
     $("#sending-indicator").hide();
@@ -781,7 +781,7 @@ exports.handle_keydown = function (event, textarea) {
             }
         }
 
-        compose_ui.autosize_textarea();
+        compose_ui.autosize_textarea(textarea);
         return;
     }
 };
