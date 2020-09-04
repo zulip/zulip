@@ -17,7 +17,7 @@
                         <textarea rows="2" id="invitee_emails" name="invitee_emails" placeholder="{{ _('One or more email addresses...') }}"></textarea>
                         {% if is_admin %}
                         <div id="invite-method-choice">
-                            {{ _('or') }} <a id="generate_multiuse_invite_button">{{ _('Generate invite link') }}</a>
+                            {{ _('or') }} <a role="button" tabindex="0" id="generate_multiuse_invite_button">{{ _('Generate invite link') }}</a>
                         </div>
                         <div id="multiuse_radio_section">
                             <label class="checkbox display-block" for="generate_multiuse_invite_radio">
