@@ -7,7 +7,6 @@ from io import BytesIO
 from typing import Callable, Dict, Optional, Tuple, TypeVar, Union, cast
 
 import django_otp
-import orjson
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth import login as django_login
@@ -259,57 +258,13 @@ def access_user_by_api_key(request: HttpRequest, api_key: str, email: Optional[s
     return user_profile
 
 def log_exception_to_webhook_logger(
-    request: HttpRequest,
     summary: str,
     unsupported_event: bool,
 ) -> None:
-    if request.content_type == 'application/json':
-        payload = request.body
-    else:
-        payload = request.POST.get('payload')
-
-    try:
-        payload = orjson.dumps(orjson.loads(payload), option=orjson.OPT_INDENT_2).decode()
-    except orjson.JSONDecodeError:
-        pass
-
-    custom_header_template = "{header}: {value}\n"
-
-    header_text = ""
-    for header in request.META.keys():
-        if header.lower().startswith('http_x'):
-            header_text += custom_header_template.format(
-                header=header, value=request.META[header])
-
-    header_message = header_text if header_text else None
-
-    message = """
-summary: {summary}
-user: {email} ({realm})
-client: {client_name}
-URL: {path_info}
-content_type: {content_type}
-custom_http_headers:
-{custom_headers}
-body:
-
-{body}
-    """.format(
-        summary=summary,
-        email=request.user.delivery_email,
-        realm=request.user.realm.string_id,
-        client_name=request.client.name,
-        body=payload,
-        path_info=request.META.get('PATH_INFO', None),
-        content_type=request.content_type,
-        custom_headers=header_message,
-    )
-    message = message.strip(' ')
-
     if unsupported_event:
-        webhook_unsupported_events_logger.exception(message, stack_info=True)
+        webhook_unsupported_events_logger.exception(summary, stack_info=True)
     else:
-        webhook_logger.exception(message, stack_info=True)
+        webhook_logger.exception(summary, stack_info=True)
 
 def full_webhook_client_name(raw_client_name: Optional[str]=None) -> Optional[str]:
     if raw_client_name is None:
@@ -348,7 +303,6 @@ def webhook_view(
                     if isinstance(err, UnsupportedWebhookEventType):
                         err.webhook_name = webhook_client_name
                     log_exception_to_webhook_logger(
-                        request=request,
                         summary=str(err),
                         unsupported_event=isinstance(err, UnsupportedWebhookEventType),
                     )
@@ -599,7 +553,6 @@ def authenticated_rest_api_view(
                     request_body = request.POST.get('payload')
                     if request_body is not None:
                         log_exception_to_webhook_logger(
-                            request=request,
                             summary=str(err),
                             unsupported_event=isinstance(err, UnsupportedWebhookEventType),
                         )
