@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 34**
+
+* [`POST /register`](/api/register-queue): Added a new `wildcard_mention_policy`
+  setting for controlling who can use wildcard mentions in large streams.
+
 **Feature level 33**
 
 * Markdown code blocks now have a `data-code-language` attribute

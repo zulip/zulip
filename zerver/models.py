@@ -256,6 +256,27 @@ class Realm(models.Model):
         PRIVATE_MESSAGE_POLICY_DISABLED,
     ]
 
+    # Global policy for who is allowed to use wildcard mentions in
+    # streams with a large number of subscribers.  Anyone can use
+    # wildcard mentions in small streams regardless of this setting.
+    WILDCARD_MENTION_POLICY_EVERYONE = 1
+    WILDCARD_MENTION_POLICY_MEMBERS = 2
+    WILDCARD_MENTION_POLICY_FULL_MEMBERS = 3
+    WILDCARD_MENTION_POLICY_STREAM_ADMINS = 4
+    WILDCARD_MENTION_POLICY_ADMINS = 5
+    WILDCARD_MENTION_POLICY_NOBODY = 6
+    wildcard_mention_policy: int = models.PositiveSmallIntegerField(
+        default=WILDCARD_MENTION_POLICY_STREAM_ADMINS,
+    )
+    WILDCARD_MENTION_POLICY_TYPES = [
+        WILDCARD_MENTION_POLICY_EVERYONE,
+        WILDCARD_MENTION_POLICY_MEMBERS,
+        WILDCARD_MENTION_POLICY_FULL_MEMBERS,
+        WILDCARD_MENTION_POLICY_STREAM_ADMINS,
+        WILDCARD_MENTION_POLICY_ADMINS,
+        WILDCARD_MENTION_POLICY_NOBODY,
+    ]
+
     # Who in the organization has access to users' actual email
     # addresses.  Controls whether the UserProfile.email field is the
     # same as UserProfile.delivery_email, or is instead garbage.
@@ -419,6 +440,7 @@ class Realm(models.Model):
         user_group_edit_policy=int,
         default_code_block_language=(str, type(None)),
         message_content_delete_limit_seconds=int,
+        wildcard_mention_policy=int,
     )
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
