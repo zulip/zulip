@@ -47,6 +47,8 @@ exports.get_item = function (key, config) {
                 return "compose-file-input";
             case "drag_drop_container":
                 return $("#compose");
+            case "markdown_preview_hide_button":
+                return $("#undo_markdown_preview");
             default:
                 throw Error(`Invalid key name for mode "${config.mode}"`);
         }
@@ -75,6 +77,8 @@ exports.get_item = function (key, config) {
                 return "message-edit-file-input";
             case "drag_drop_container":
                 return $("#message_edit_form");
+            case "markdown_preview_hide_button":
+                return $("#undo_markdown_preview_" + config.row);
             default:
                 throw Error(`Invalid key name for mode "${config.mode}"`);
         }
@@ -111,6 +115,9 @@ exports.upload_files = function (uppy, config, files) {
             i18n.t("File and image uploads have been disabled for this organization."),
         );
         return;
+    }
+    if (exports.get_item("markdown_preview_hide_button", config).is(":visible")) {
+        exports.get_item("markdown_preview_hide_button", config).trigger("click");
     }
     exports.get_item("send_button", config).prop("disabled", true);
     exports
