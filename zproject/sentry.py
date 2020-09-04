@@ -24,24 +24,34 @@ def add_context(event: 'Event', hint: 'Hint') -> Optional['Event']:
             return None
     from django.conf import settings
 
+    from zerver.lib.request import get_current_request
     from zerver.models import get_user_profile_by_id
     with capture_internal_exceptions():
         # event.user is the user context, from Sentry, which is
         # pre-populated with some keys via its Django integration:
         # https://docs.sentry.io/platforms/python/guides/django/enriching-error-data/additional-data/identify-user/
+        event.setdefault("tags", {})
         user_info = event.get("user", {})
         if user_info.get("id"):
             user_profile = get_user_profile_by_id(user_info["id"])
-            user_info["realm"] = user_profile.realm.string_id or 'root'
+            event["tags"]["realm"] = user_info["realm"] = user_profile.realm.string_id or 'root'
             with override_language(settings.LANGUAGE_CODE):
                 # str() to force the lazy-translation to apply now,
                 # since it won't serialize into json for Sentry otherwise
                 user_info["role"] = str(user_profile.get_role_name())
+
         # These are PII, and should be scrubbed
         if "username" in user_info:
             del user_info["username"]
         if "email" in user_info:
             del user_info["email"]
+
+        request = get_current_request()
+        if request:
+            if hasattr(request, 'client'):
+                event['tags']['client'] = request.client.name
+            if hasattr(request, 'realm'):
+                event['tags'].setdefault('realm', request.realm.string_id)
     return event
 
 def setup_sentry(dsn: Optional[str], *integrations: Integration) -> None:
