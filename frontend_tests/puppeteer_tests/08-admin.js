@@ -38,8 +38,10 @@ async function test_change_new_stream_notifications_setting(page) {
 
     const verona_in_dropdown =
         "#realm_notifications_stream_id_widget .dropdown-list-body > li:nth-of-type(1)";
+
+    await common.wait_for_text(page, verona_in_dropdown, "Verona");
     await page.waitForSelector(verona_in_dropdown, {visible: true});
-    await page.click(verona_in_dropdown);
+    await page.evaluate((selector) => $(selector).click(), verona_in_dropdown);
 
     await submit_notifications_stream_settings(page);
 
