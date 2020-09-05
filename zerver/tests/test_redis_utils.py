@@ -45,7 +45,7 @@ class RedisUtilsTest(ZulipTestCase):
 
         # Trying to put data under an overly long key should get stopped before even
         # generating the random token.
-        with mock.patch("zerver.lib.redis_utils.generate_random_token") as mock_generate:
+        with mock.patch("secrets.token_hex") as mock_generate:
             with self.assertRaises(ZulipRedisKeyTooLongError):
                 put_dict_in_redis(self.redis_client, self.key_format, data,
                                   expiration_seconds=self.expiration_seconds,

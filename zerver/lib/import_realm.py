@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+import secrets
 import shutil
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -30,7 +31,7 @@ from zerver.lib.parallel import run_parallel
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.upload import BadImageError, guess_type, random_name, sanitize_name
+from zerver.lib.upload import BadImageError, guess_type, sanitize_name
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import (
     AlertWord,
@@ -668,7 +669,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
             # function 'upload_message_file'
             relative_path = "/".join([
                 str(record['realm_id']),
-                random_name(18),
+                secrets.token_urlsafe(18),
                 sanitize_name(os.path.basename(record['path'])),
             ])
             path_maps['attachment_path'][record['s3_path']] = relative_path

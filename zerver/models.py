@@ -1,6 +1,7 @@
 import ast
 import datetime
 import re
+import secrets
 import time
 from collections import defaultdict
 from datetime import timedelta
@@ -78,7 +79,7 @@ from zerver.lib.types import (
     UserFieldElement,
     Validator,
 )
-from zerver.lib.utils import generate_random_token, make_safe_digest
+from zerver.lib.utils import make_safe_digest
 from zerver.lib.validator import (
     check_date,
     check_int,
@@ -1464,7 +1465,7 @@ class PushDeviceToken(AbstractPushDeviceToken):
         unique_together = ("user", "kind", "token")
 
 def generate_email_token_for_stream() -> str:
-    return generate_random_token(32)
+    return secrets.token_hex(16)
 
 class Stream(models.Model):
     MAX_NAME_LENGTH = 60
