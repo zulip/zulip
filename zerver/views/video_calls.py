@@ -1,7 +1,8 @@
 import hashlib
 import json
 import random
-import string
+import secrets
+from base64 import b32encode
 from functools import partial
 from typing import Dict
 from urllib.parse import quote, urlencode, urljoin
@@ -164,7 +165,7 @@ def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> Ht
     # https://docs.bigbluebutton.org/dev/api.html#create for reference on the api calls
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
     id = "zulip-" + str(random.randint(100000000000, 999999999999))
-    password = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(10))
+    password = b32encode(secrets.token_bytes(7))[:10].decode()
     checksum = hashlib.sha1(("create" + "meetingID=" + id + "&moderatorPW="
                              + password + "&attendeePW=" + password + "a" + settings.BIG_BLUE_BUTTON_SECRET).encode()).hexdigest()
     url = add_query_to_redirect_url("/calls/bigbluebutton/join", urlencode({

@@ -1,5 +1,5 @@
 import logging
-import os
+import secrets
 import urllib
 from functools import wraps
 from typing import Any, Dict, List, Mapping, Optional, cast
@@ -289,7 +289,7 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
     result = ExternalAuthResult(user_profile=user_profile)
     token = result.store_data()
     key = bytes.fromhex(otp)
-    iv = os.urandom(12)
+    iv = secrets.token_bytes(12)
     desktop_data = (iv + AESGCM(key).encrypt(iv, token.encode(), b"")).hex()
     context = {'desktop_data': desktop_data,
                'browser_url': reverse('zerver.views.auth.login_page',

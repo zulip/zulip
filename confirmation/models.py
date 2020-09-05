@@ -2,8 +2,8 @@
 
 __revision__ = '$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $'
 import datetime
-import string
-from random import SystemRandom
+import secrets
+from base64 import b32encode
 from typing import Mapping, Optional, Union
 from urllib.parse import urljoin
 
@@ -37,9 +37,8 @@ def render_confirmation_key_error(request: HttpRequest, exception: ConfirmationK
     return render(request, 'confirmation/link_does_not_exist.html')
 
 def generate_key() -> str:
-    generator = SystemRandom()
     # 24 characters * 5 bits of entropy/character = 120 bits of entropy
-    return ''.join(generator.choice(string.ascii_lowercase + string.digits) for _ in range(24))
+    return b32encode(secrets.token_bytes(15)).decode().lower()
 
 ConfirmationObjT = Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus]
 def get_object_from_key(confirmation_key: str,

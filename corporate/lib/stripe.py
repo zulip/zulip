@@ -1,6 +1,7 @@
 import logging
 import math
 import os
+import secrets
 from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import wraps
@@ -25,7 +26,6 @@ from corporate.models import (
 )
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.utils import generate_random_token
 from zerver.models import Realm, RealmAuditLog, UserProfile, get_system_bot
 from zproject.config import get_secret
 
@@ -54,7 +54,7 @@ def get_latest_seat_count(realm: Realm) -> int:
     return max(non_guests, math.ceil(guests / 5))
 
 def sign_string(string: str) -> Tuple[str, str]:
-    salt = generate_random_token(64)
+    salt = secrets.token_hex(32)
     signer = Signer(salt=salt)
     return signer.sign(string), salt
 

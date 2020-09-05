@@ -1,6 +1,7 @@
 import logging
 import os
 import random
+import secrets
 import shutil
 import subprocess
 from collections import defaultdict
@@ -39,7 +40,7 @@ from zerver.data_import.slack_message_conversion import (
 )
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
-from zerver.lib.upload import random_name, resize_logo, sanitize_name
+from zerver.lib.upload import resize_logo, sanitize_name
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -904,7 +905,7 @@ def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> T
         'SlackImportAttachment',  # This is a special placeholder which should be kept
                                   # in sync with 'exports.py' function 'import_message_data'
         format(random.randint(0, 255), 'x'),
-        random_name(18),
+        secrets.token_urlsafe(18),
         sanitize_name(fileinfo['name']),
     ])
     attachment_path = f'/user_uploads/{s3_path}'
