@@ -122,7 +122,7 @@ os.setpgrp()
 # terminal in question.
 
 if options.test:
-    pid_file_path = os.path.join(os.path.join(os.getcwd(), 'var/casper/run_dev.pid'))
+    pid_file_path = os.path.join(os.path.join(os.getcwd(), 'var/puppeteer/run_dev.pid'))
 else:
     pid_file_path = os.path.join(os.path.join(os.getcwd(), 'var/run/run_dev.pid'))
 
@@ -160,7 +160,7 @@ def server_processes() -> List[List[str]]:
 def do_one_time_webpack_compile() -> None:
     # We just need to compile webpack assets once at startup, not run a daemon,
     # in test mode.  Additionally, webpack-dev-server doesn't support running 2
-    # copies on the same system, so this model lets us run the casper tests
+    # copies on the same system, so this model lets us run the puppeteer tests
     # with a running development server.
     subprocess.check_call(['./tools/webpack', '--quiet', '--test'])
 
