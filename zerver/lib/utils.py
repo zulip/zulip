@@ -1,10 +1,8 @@
-import base64
 import hashlib
 import heapq
 import itertools
-import os
 import re
-import string
+import secrets
 from itertools import zip_longest
 from time import sleep
 from typing import Any, Callable, Iterator, List, Optional, Sequence, Set, Tuple, TypeVar
@@ -107,14 +105,12 @@ def log_statsd_event(name: str) -> None:
     event_name = f"events.{name}"
     statsd.incr(event_name)
 
-def generate_random_token(length: int) -> str:
-    return str(base64.b16encode(os.urandom(length // 2)).decode('utf-8').lower())
-
 def generate_api_key() -> str:
-    choices = string.ascii_letters + string.digits
-    altchars = ''.join(choices[ord(os.urandom(1)) % 62] for _ in range(2)).encode("utf-8")
-    api_key = base64.b64encode(os.urandom(24), altchars=altchars).decode("utf-8")
-    return api_key
+    api_key = ""
+    while len(api_key) < 32:
+        # One iteration suffices 99.4992% of the time.
+        api_key += secrets.token_urlsafe(3 * 9).replace("_", "").replace("-", "")
+    return api_key[:32]
 
 def has_api_key_format(key: str) -> bool:
     return bool(re.fullmatch(r"([A-Za-z0-9]){32}", key))

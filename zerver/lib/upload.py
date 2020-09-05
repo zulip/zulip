@@ -5,6 +5,7 @@ import logging
 import os
 import random
 import re
+import secrets
 import shutil
 import unicodedata
 import urllib
@@ -30,7 +31,6 @@ from PIL.Image import DecompressionBombError
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.utils import generate_random_token
 from zerver.models import Attachment, Message, Realm, RealmEmoji, UserProfile
 
 DEFAULT_AVATAR_SIZE = 100
@@ -93,9 +93,6 @@ def sanitize_name(value: str) -> str:
     value = re.sub(r'[-\s]+', '-', value, flags=re.U)
     assert value not in {'', '.', '..'}
     return mark_safe(value)
-
-def random_name(bytes: int=60) -> str:
-    return base64.urlsafe_b64encode(os.urandom(bytes)).decode('utf-8')
 
 class BadImageError(JsonableError):
     code = ErrorCode.BAD_IMAGE
@@ -362,7 +359,7 @@ class S3UploadBackend(ZulipUploadBackend):
             target_realm = user_profile.realm
         s3_file_name = "/".join([
             str(target_realm.id),
-            random_name(18),
+            secrets.token_urlsafe(18),
             sanitize_name(uploaded_file_name),
         ])
         url = f"/user_uploads/{s3_file_name}"
@@ -591,7 +588,7 @@ class S3UploadBackend(ZulipUploadBackend):
     def upload_export_tarball(self, realm: Optional[Realm], tarball_path: str,
                               percent_callback: Optional[Callable[[Any], None]]=None) -> str:
         # We use the avatar bucket, because it's world-readable.
-        key = self.avatar_bucket.Object(os.path.join("exports", generate_random_token(32),
+        key = self.avatar_bucket.Object(os.path.join("exports", secrets.token_hex(16),
                                                      os.path.basename(tarball_path)))
 
         key.upload_file(tarball_path, Callback=percent_callback)
@@ -672,7 +669,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         path = "/".join([
             str(user_profile.realm_id),
             format(random.randint(0, 255), 'x'),
-            random_name(18),
+            secrets.token_urlsafe(18),
             sanitize_name(uploaded_file_name),
         ])
 
@@ -819,7 +816,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         path = os.path.join(
             'exports',
             str(realm.id),
-            random_name(18),
+            secrets.token_urlsafe(18),
             os.path.basename(tarball_path),
         )
         abs_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'avatars', path)

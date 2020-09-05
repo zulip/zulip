@@ -3,6 +3,7 @@ import copy
 import datetime
 import json
 import re
+import secrets
 import time
 import urllib
 from contextlib import contextmanager
@@ -67,7 +68,6 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.upload import MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.users import get_all_api_keys
-from zerver.lib.utils import generate_random_token
 from zerver.lib.validator import (
     Validator,
     check_bool,
@@ -549,7 +549,7 @@ class RateLimitAuthenticationTests(ZulipTestCase):
         # We have to mock RateLimitedAuthenticationByUsername.key to avoid key collisions
         # if tests run in parallel.
         original_key_method = RateLimitedAuthenticationByUsername.key
-        salt = generate_random_token(32)
+        salt = secrets.token_hex(16)
 
         def _mock_key(self: RateLimitedAuthenticationByUsername) -> str:
             return f"{salt}:{original_key_method(self)}"
@@ -2991,7 +2991,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
             'redirect_to': '',
         }
         with mock.patch("logging.warning") as mock_warn:
-            token = generate_random_token(ExternalAuthResult.LOGIN_TOKEN_LENGTH)
+            token = secrets.token_hex(ExternalAuthResult.LOGIN_TOKEN_LENGTH // 2)
             result = self.get_log_into_subdomain(data, force_token=token)
             mock_warn.assert_called_once_with("log_into_subdomain: Invalid token given: %s", token)
         self.assertEqual(result.status_code, 400)
