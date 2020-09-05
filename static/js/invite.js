@@ -43,6 +43,15 @@ function beforeSend() {
     return true;
 }
 
+function handle_submit_button_click_events() {
+    const is_generate_invite_link = $("#generate_multiuse_invite_radio").prop("checked");
+    if (is_generate_invite_link) {
+        generate_multiuse_invite();
+    } else {
+        submit_invitation_form();
+    }
+}
+
 function submit_invitation_form() {
     const invite_status = $("#invite_status");
     const invitee_emails = $("#invitee_emails");
@@ -166,13 +175,6 @@ exports.launch = function () {
     });
 
     autosize($("#invitee_emails").trigger("focus"));
-
-    // Ctrl + Enter key to submit form
-    $("#invite-user").on("keydown", (e) => {
-        if (e.key === "Enter" && e.ctrlKey) {
-            submit_invitation_form();
-        }
-    });
 };
 
 exports.initialize = function () {
@@ -184,12 +186,13 @@ exports.initialize = function () {
         $("#streams_to_add :checkbox").prop("checked", false);
     });
 
-    $("#submit-invitation").on("click", () => {
-        const is_generate_invite_link = $("#generate_multiuse_invite_radio").prop("checked");
-        if (is_generate_invite_link) {
-            generate_multiuse_invite();
-        } else {
-            submit_invitation_form();
+    $("#submit-invitation").on("click", handle_submit_button_click_events);
+
+    // Ctrl + Enter key to submit form
+    $("#invite-user").on("keydown", (e) => {
+        if (e.key === "Enter" && e.ctrlKey) {
+            e.stopPropagation();
+            handle_submit_button_click_events();
         }
     });
 
