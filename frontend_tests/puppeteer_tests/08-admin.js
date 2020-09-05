@@ -89,12 +89,12 @@ async function test_permissions_change_save_worked(page) {
 
 async function submit_stream_permissions_change(page) {
     const save_button = "#org-submit-stream-permissions";
+    await page.waitForSelector(save_button, {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(page, save_button),
         "Save changes",
         "Save button didn't appear for permissions change.",
     );
-    await page.waitForSelector(save_button, {visible: true});
     await page.click(save_button);
 
     await test_permissions_change_save_worked(page);
