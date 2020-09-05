@@ -1680,6 +1680,15 @@ label.label-title {
 .api-argument {
     .api-argument-name {
         font-family: monospace;
+        .api-argument-hover-link i.fa {
+            opacity: 0;
+            font-size: 0.9em;
+        }
+        &:hover .api-argument-hover-link i.fa {
+            opacity: 1;
+            color: hsl(0, 0%, 0%);
+            cursor: pointer;
+        }
     }
 
     .api-argument-example-label {
