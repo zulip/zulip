@@ -12,6 +12,7 @@ import orjson
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.management import CommandError
+from django.db import transaction
 from django.template import loader
 from django.template.exceptions import TemplateDoesNotExist
 from django.utils.timezone import now as timezone_now
@@ -219,13 +220,28 @@ def clear_scheduled_invitation_emails(email: str) -> None:
                                           type=ScheduledEmail.INVITATION_REMINDER)
     items.delete()
 
+@transaction.atomic()
 def clear_scheduled_emails(user_ids: List[int], email_type: Optional[int]=None) -> None:
-    items = ScheduledEmail.objects.filter(users__in=user_ids).distinct()
+    # We need to obtain a FOR UPDATE lock on the selected rows to keep a concurrent
+    # execution of this function (or something else) from deleting them before we access
+    # the .users attribute.
+    items = ScheduledEmail.objects.filter(users__in=user_ids).select_for_update()
     if email_type is not None:
         items = items.filter(type=email_type)
+
+    deduplicated_items = {}
     for item in items:
+        deduplicated_items[item.id] = item
+    for item in deduplicated_items.values():
+        # Now we want a FOR UPDATE lock on the item.users rows
+        # to prevent a concurrent transaction from mutating them
+        # simultanously.
+        item.users.all().select_for_update()
         item.users.remove(*user_ids)
         if item.users.all().count() == 0:
+            # Due to our transaction holding the row lock we have a guarantee
+            # that the obtained COUNT is accurate, thus we can reliably use it
+            # to decide whether to delete the ScheduledEmail row.
             item.delete()
 
 def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
@@ -242,8 +258,16 @@ def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
 
 def deliver_email(email: ScheduledEmail) -> None:
     data = orjson.loads(email.data)
-    if email.users.exists():
-        data['to_user_ids'] = [user.id for user in email.users.all()]
+    user_ids = list(email.users.values_list('id', flat=True))
+    if not user_ids and not email.address:
+        # This state doesn't make sense, so something must be mutating,
+        # or in the process of deleting, the object. We assume it will bring
+        # things to a correct state, and we just do nothing except logging this event.
+        logger.warning("ScheduledEmail id %s has empty users and address attributes.", email.id)
+        return
+
+    if user_ids:
+        data['to_user_ids'] = user_ids
     if email.address is not None:
         data['to_emails'] = [email.address]
     handle_send_email_format_changes(data)
