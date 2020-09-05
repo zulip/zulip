@@ -9,11 +9,8 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Request the special webpack setup for frontend integration tests,
 # where webpack assets are compiled up front rather than running in
-# watch mode. We prefer the same for puppeteer, so the below line
-# makes the webpack similar to casper.
-#
-# TODO: Eventually, we'll want to rename this parameter.
-os.environ["CASPER_TESTS"] = "1"
+# watch mode.
+os.environ["PUPPETEER_TESTS"] = "1"
 
 os.environ["CHROMIUM_EXECUTABLE"] = os.path.join(ZULIP_PATH, "node_modules/.bin/chromium")
 os.environ.pop("http_proxy", "")

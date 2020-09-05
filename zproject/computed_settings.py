@@ -99,7 +99,7 @@ TEST_SUITE = False
 # The new user tutorial is enabled by default, but disabled for client tests.
 TUTORIAL_ENABLED = True
 # This is overridden in test_settings.py for the test suites
-CASPER_TESTS = False
+PUPPETEER_TESTS = False
 # This is overridden in test_settings.py for the test suites
 RUNNING_OPENAPI_CURL_TEST = False
 # This is overridden in test_settings.py for the test suites

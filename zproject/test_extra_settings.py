@@ -45,8 +45,8 @@ else:
     CAMO_URI = 'https://external-content.zulipcdn.net/external_content/'
     CAMO_KEY = 'dummy'
 
-CASPER_TESTS = "CASPER_TESTS" in os.environ
-if CASPER_TESTS:
+PUPPETEER_TESTS = "PUPPETEER_TESTS" in os.environ
+if PUPPETEER_TESTS:
     # Disable search pills prototype for production use
     SEARCH_PILLS_ENABLED = False
 
@@ -107,7 +107,7 @@ CACHES['database'] = {
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
 # Use production config from Webpack in tests
-if CASPER_TESTS:
+if PUPPETEER_TESTS:
     WEBPACK_FILE = 'webpack-stats-production.json'
 else:
     WEBPACK_FILE = os.path.join('var', 'webpack-stats-test.json')
@@ -117,7 +117,7 @@ WEBPACK_LOADER['DEFAULT']['STATS_FILE'] = os.path.join(DEPLOY_ROOT, WEBPACK_FILE
 # Don't auto-restart Tornado server during automated tests
 AUTORELOAD = False
 
-if not CASPER_TESTS:
+if not PUPPETEER_TESTS:
     # Use local memory cache for backend tests.
     CACHES['default'] = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
