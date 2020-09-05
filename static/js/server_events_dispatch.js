@@ -410,6 +410,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 "dense_mode",
                 "emojiset",
                 "fluid_layout_width",
+                "hide_inline_image_preview",
                 "high_contrast_mode",
                 "left_side_userlist",
                 "timezone",
@@ -419,6 +420,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             ];
             if (user_display_settings.includes(event.setting_name)) {
                 page_params[event.setting_name] = event.setting;
+            }
+            if (event.setting_name === "hide_inline_image_preview") {
+                // Rerender the whole message list UI
+                home_msg_list.rerender();
+                if (current_msg_list === message_list.narrowed) {
+                    message_list.narrowed.rerender();
+                }
             }
             if (event.setting_name === "default_language") {
                 // We additionally need to set the language name.

@@ -287,7 +287,7 @@
         position: relative;
         margin-bottom: 5px;
         margin-left: 5px;
-        height: 100px;
+        max-height: 117px;
         display: block !important;
         border: none !important;
     }
@@ -330,8 +330,7 @@
     .message_inline_image img,
     .message_inline_ref img {
         height: auto;
-        max-height: 100%;
-        float: left;
+        max-height: 100px;
         margin-right: 10px;
     }
 

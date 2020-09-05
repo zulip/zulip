@@ -51,6 +51,7 @@ function setup_settings_label() {
         // display settings
         dense_mode: i18n.t("Dense mode"),
         fluid_layout_width: i18n.t("Use full width on wide screens"),
+        hide_inline_image_preview: i18n.t("Hide inline image preview"),
         high_contrast_mode: i18n.t("High contrast mode"),
         left_side_userlist: i18n.t("Show user list on left sidebar in narrow windows"),
         starred_message_counts: i18n.t("Show counts for starred messages"),

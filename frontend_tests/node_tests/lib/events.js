@@ -640,6 +640,13 @@ exports.fixtures = {
         user: test_user.email,
     },
 
+    update_display_settings__hide_inline_image_preview: {
+        type: "update_display_settings",
+        setting_name: "hide_inline_image_preview",
+        setting: true,
+        user: test_user.email,
+    },
+
     update_display_settings__high_contrast_mode: {
         type: "update_display_settings",
         setting_name: "high_contrast_mode",

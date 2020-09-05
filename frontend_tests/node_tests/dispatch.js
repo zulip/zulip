@@ -673,6 +673,12 @@ run_test("update_display_settings", (override) => {
     assert_same(page_params.twenty_four_hour_time, true);
     assert_same(called, true);
 
+    event = event_fixtures.update_display_settings__hide_inline_image_preview;
+    page_params.hide_inline_image_preview = false;
+    dispatch(event);
+    assert_same(page_params.hide_inline_image_preview, true);
+    assert_same(called, true);
+
     event = event_fixtures.update_display_settings__translate_emoticons;
     page_params.translate_emoticons = false;
     dispatch(event);

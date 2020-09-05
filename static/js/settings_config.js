@@ -59,6 +59,7 @@ exports.get_all_display_settings = () => ({
     settings: {
         user_display_settings: [
             "dense_mode",
+            "hide_inline_image_preview",
             "high_contrast_mode",
             "left_side_userlist",
             "starred_message_counts",

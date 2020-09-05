@@ -6687,6 +6687,12 @@ paths:
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           Whether the user has chosen for the layout width to be fluid.
+                      hide_inline_image_preview:
+                        type: boolean
+                        description: |
+                          Present if `update_display_settings` is present in `fetch_event_types`.
+
+                          Whether the user has chosen to hide inline message image preview.
                       high_contrast_mode:
                         type: boolean
                         description: |

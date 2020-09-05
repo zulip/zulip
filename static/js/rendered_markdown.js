@@ -69,6 +69,17 @@ exports.update_elements = (content) => {
         content.addClass("rtl");
     }
 
+    content.find("div.message_inline_image").each(function () {
+        if (page_params.hide_inline_image_preview) {
+            const title = $(this).find("a").attr("title");
+            const summary = $("<summary>");
+            summary.text(title);
+            $(this).find("img").attr("loading", "lazy");
+            $(this).wrapInner("<details>");
+            $(this).find("details").prepend(summary);
+        }
+    });
+
     content.find(".user-mention").each(function () {
         const user_id = get_user_id_for_mention_button(this);
         // We give special highlights to the mention buttons

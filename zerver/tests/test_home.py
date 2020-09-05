@@ -79,6 +79,7 @@ class HomeTest(ZulipTestCase):
         "furthest_read_time",
         "has_mobile_devices",
         "has_zoom_token",
+        "hide_inline_image_preview",
         "high_contrast_mode",
         "hotspots",
         "initial_servertime",
