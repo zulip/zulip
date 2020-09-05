@@ -69,12 +69,12 @@ def remote_cache_stats_finish() -> None:
     remote_cache_total_time += (time.time() - remote_cache_time_start)
 
 def get_or_create_key_prefix() -> str:
-    if settings.CASPER_TESTS:
-        # This sets the prefix for the benefit of the Casper tests.
+    if settings.PUPPETEER_TESTS:
+        # This sets the prefix for the benefit of the Puppeteer tests.
         #
         # Having a fixed key is OK since we don't support running
-        # multiple copies of the casper tests at the same time anyway.
-        return 'casper_tests:'
+        # multiple copies of the puppeteer tests at the same time anyway.
+        return 'puppeteer_tests:'
     elif settings.TEST_SUITE:
         # The Python tests overwrite KEY_PREFIX on each test, but use
         # this codepath as well, just to save running the more complex
