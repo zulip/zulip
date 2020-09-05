@@ -1284,6 +1284,25 @@ class ActivateTest(ZulipTestCase):
             )
         self.assertEqual(ScheduledEmail.objects.count(), 0)
 
+    def test_deliver_email_no_addressees(self) -> None:
+        iago = self.example_user('iago')
+        hamlet = self.example_user('hamlet')
+        to_user_ids = [hamlet.id, iago.id]
+        send_future_email('zerver/emails/followup_day1', iago.realm,
+                          to_user_ids=to_user_ids, delay=datetime.timedelta(hours=1))
+        self.assertEqual(ScheduledEmail.objects.count(), 1)
+        email = ScheduledEmail.objects.all().first()
+        email.users.remove(*to_user_ids)
+
+        with self.assertLogs('zulip.send_email', level='INFO') as info_log:
+            deliver_email(email)
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 0)
+        self.assertEqual(ScheduledEmail.objects.count(), 1)
+        self.assertEqual(info_log.output, [
+            f'INFO:zulip.send_email:ScheduledEmail id {email.id} has empty users and address attributes.'
+        ])
+
 class RecipientInfoTest(ZulipTestCase):
     def test_stream_recipient_info(self) -> None:
         hamlet = self.example_user('hamlet')
