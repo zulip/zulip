@@ -9,7 +9,7 @@ os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 STATIC_PATH = 'static/'
 
 
-def build_for_prod_or_casper(quiet: bool) -> NoReturn:
+def build_for_prod_or_puppeteer(quiet: bool) -> NoReturn:
     """Builds for production, writing the output to disk"""
 
     webpack_args = ['node', 'node_modules/.bin/webpack-cli',
@@ -83,7 +83,7 @@ def build_for_most_tests() -> None:
     """Generates a stub asset stat file for django so backend test can render a page"""
 
     # Tests like test-backend, test-api, and test-home-documentation use
-    # our "test" configuration.  The one exception is Casper, which uses
+    # our "test" configuration.  The one exception is Puppeteer, which uses
     # our production configuration.
     #
     # It's not completely clear why we don't also use the same
@@ -133,10 +133,10 @@ parser.add_argument('--disable-host-check',
 
 args = parser.parse_args()
 if "PUPPETEER_TESTS" in os.environ:
-    build_for_prod_or_casper(args.quiet)
+    build_for_prod_or_puppeteer(args.quiet)
 elif args.test:
     build_for_most_tests()
 elif args.watch:
     build_for_dev_server(args.host, args.port, args.minify, args.disable_host_check)
 else:
-    build_for_prod_or_casper(args.quiet)
+    build_for_prod_or_puppeteer(args.quiet)
