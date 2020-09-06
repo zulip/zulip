@@ -3,7 +3,7 @@
     {
       "name": "codeblock_hilite",
       "input": "Hamlet said:\n~~~~.python \ndef speak(self):\n    x = 1\n~~~~",
-      "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre><span></span><code><span class=\"k\">def</span> <span class=\"nf\">speak</span><span class=\"p\">(</span><span class=\"bp\">self</span><span class=\"p\">):</span>\n    <span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span>\n</code></pre></div>",
+      "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\" data-codehilite-language=\"Python\"><pre><span></span><code><span class=\"k\">def</span> <span class=\"nf\">speak</span><span class=\"p\">(</span><span class=\"bp\">self</span><span class=\"p\">):</span>\n    <span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span>\n</code></pre></div>",
       "marked_expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre><span></span><code>def speak(self):\n    x = 1\n</code></pre></div>",
       "text_content": "Hamlet said:\ndef speak(self):\n    x = 1\n"
     },
@@ -786,13 +786,13 @@
     {
       "name": "tex_fenced_tex",
       "input": "```tex\n\n\\pi \\textbf{ is not } 3.14\n```",
-      "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"k\">\\pi</span> <span class=\"k\">\\textbf</span><span class=\"nb\">{</span> is not <span class=\"nb\">}</span> 3.14\n</code></pre></div>",
+      "expected_output": "<div class=\"codehilite\" data-codehilite-language=\"TeX\"><pre><span></span><code><span class=\"k\">\\pi</span> <span class=\"k\">\\textbf</span><span class=\"nb\">{</span> is not <span class=\"nb\">}</span> 3.14\n</code></pre></div>",
       "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>\\pi \\textbf{ is not } 3.14\n</code></pre></div>"
     },
     {
       "name": "tex_fenced_latex",
       "input": "```latex\n\n\\pi \\textbf{ is not } 3.14\n```",
-      "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"k\">\\pi</span> <span class=\"k\">\\textbf</span><span class=\"nb\">{</span> is not <span class=\"nb\">}</span> 3.14\n</code></pre></div>",
+      "expected_output": "<div class=\"codehilite\" data-codehilite-language=\"TeX\"><pre><span></span><code><span class=\"k\">\\pi</span> <span class=\"k\">\\textbf</span><span class=\"nb\">{</span> is not <span class=\"nb\">}</span> 3.14\n</code></pre></div>",
       "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>\\pi \\textbf{ is not } 3.14\n</code></pre></div>"
     },
     {
