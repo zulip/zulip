@@ -79,7 +79,7 @@ def analyze_queue_stats(queue_name: str, stats: Dict[str, Any],
                     message='queue appears to be stuck, last update {}, queue size {}'.format(
                         stats['update_time'], queue_count_rabbitmqctl))
 
-    current_size = stats['current_queue_size']
+    current_size = queue_count_rabbitmqctl
     average_consume_time = stats['recent_average_consume_time']
     if average_consume_time is None:
         # Queue just started; we can't effectively estimate anything.
