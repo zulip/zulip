@@ -307,12 +307,12 @@ run_test("marked", () => {
         {
             input: "\n```c#\nfenced code special\n```\n\nand then after\n",
             expected:
-                '<div class="codehilite"><pre><span></span><code>fenced code special\n</code></pre></div>\n\n\n<p>and then after</p>',
+                '<div class="codehilite" data-code-language="C#"><pre><span></span><code>fenced code special\n</code></pre></div>\n\n\n<p>and then after</p>',
         },
         {
             input: "\n```vb.net\nfenced code dot\n```\n\nand then after\n",
             expected:
-                '<div class="codehilite"><pre><span></span><code>fenced code dot\n</code></pre></div>\n\n\n<p>and then after</p>',
+                '<div class="codehilite" data-code-language="VB.net"><pre><span></span><code>fenced code dot\n</code></pre></div>\n\n\n<p>and then after</p>',
         },
         {
             input: "Some text first\n* a\n* list \n* here\n\nand then after",
