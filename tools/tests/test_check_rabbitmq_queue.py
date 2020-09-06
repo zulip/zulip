@@ -10,12 +10,8 @@ class AnalyzeQueueStatsTests(TestCase):
         self.assertEqual(result['status'], UNKNOWN)
 
     def test_queue_stuck(self) -> None:
-        """Last update > 5 minutes ago and there's events in the queue.
+        """Last update > 5 minutes ago and there's events in the queue."""
 
-        In theory, we could be having bad luck with a race where in
-        the last (event_handing_time * 50) a burst was added, but it's
-        unlikely and shouldn't fail 2 in a row for Nagios anyway.
-        """
         result = analyze_queue_stats('name', {'update_time': time.time() - 301}, 100)
         self.assertEqual(result['status'], CRITICAL)
         self.assertIn('queue appears to be stuck', result['message'])
