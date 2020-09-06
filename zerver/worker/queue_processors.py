@@ -177,6 +177,7 @@ class QueueProcessingWorker(ABC):
         self.consumed_since_last_emptied = 0
         self.recent_consume_times: MutableSequence[Tuple[int, float]] = deque(maxlen=50)
         self.consume_interation_counter = 0
+        self.idle = True
 
         self.update_statistics(0)
 
@@ -224,6 +225,14 @@ class QueueProcessingWorker(ABC):
                    events: List[Dict[str, Any]]) -> None:
         consume_time_seconds: Optional[float] = None
         try:
+            if self.idle:
+                # We're reactivating after having gone idle due to emptying the queue.
+                # We should update the stats file to keep it fresh and to make it clear
+                # that the queue started processing, in case the event we're about to process
+                # makes us freeze.
+                self.idle = False
+                self.update_statistics(self.get_remaining_queue_size())
+
             time_start = time.time()
             consume_func(events)
             consume_time_seconds = time.time() - time_start
@@ -241,6 +250,13 @@ class QueueProcessingWorker(ABC):
             if remaining_queue_size == 0:
                 self.queue_last_emptied_timestamp = time.time()
                 self.consumed_since_last_emptied = 0
+                # We've cleared all the events from the queue, so we don't
+                # need to worry about the small overhead of doing a disk write.
+                # We take advantage of this to update the stats file to keep it fresh,
+                # especially since the queue might go idle until new events come in.
+                self.update_statistics(0)
+                self.idle = True
+                return
 
             self.consume_interation_counter += 1
             if self.consume_interation_counter >= self.CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM:

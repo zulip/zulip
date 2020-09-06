@@ -69,11 +69,13 @@ def analyze_queue_stats(queue_name: str, stats: Dict[str, Any],
         # Queue isn't updating the stats file and has some events in
         # the backlog, it's likely stuck.
         #
-        # TODO: There's an unfortunate race where if the queue has
-        # been empty for the last hour (because there haven't been 50
-        # new events in the last hour), and then gets a burst, this
-        # condition will be true for the first (event_handling_time *
-        # 50).
+        # TODO: There's an unlikely race condition here - if the queue
+        # was fully emptied and was idle due to no new events coming for over 180 seconds, suddenly
+        # gets a burst of events and this code runs exactly in the very small
+        # time window between those events popping up and the queue beginning
+        # to process the first one (which will refresh the stats file at the very start),
+        # we'll incorrectly return the CRITICAL status. The chance of that happening
+        # should be neglibile though.
         return dict(status=CRITICAL,
                     name=queue_name,
                     message='queue appears to be stuck, last update {}, queue size {}'.format(
