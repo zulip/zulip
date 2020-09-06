@@ -4,8 +4,10 @@ const ClipboardJS = require("clipboard");
 const moment = require("moment");
 
 const copy_code_button = require("../templates/copy_code_button.hbs");
+const view_code_in_playground = require("../templates/view_code_in_playground.hbs");
 
 const people = require("./people");
+const settings_config = require("./settings_config");
 
 /*
     rendered_markdown
@@ -189,10 +191,30 @@ exports.update_elements = (content) => {
         $(this).prepend(toggle_button_html);
     });
 
-    // Display the copy-to-clipboard button inside the div.codehilite element.
+    // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehilite element.
     content.find("div.codehilite").each(function () {
+        const $codehilite = $(this);
+        const $pre = $codehilite.find("pre");
+        const fenced_code_lang = $codehilite.data("code-language");
+        if (fenced_code_lang !== undefined) {
+            const playground_info = settings_config.get_playground_info_for_languages(
+                fenced_code_lang,
+            );
+            // If the playground info for the language isn't available we don't display the option.
+            if (playground_info !== undefined) {
+                const view_in_playground_button = $(view_code_in_playground());
+                $pre.prepend(view_in_playground_button);
+                if (playground_info.length === 1) {
+                    const title = i18n.t(`View code in ${playground_info[0].name}`);
+                    view_in_playground_button.attr("title", title);
+                    view_in_playground_button.attr("aria-label", title);
+                } else {
+                    view_in_playground_button.attr("aria-haspopup", "true");
+                }
+            }
+        }
         const copy_button = $(copy_code_button());
-        $(this).find("pre").prepend(copy_button);
+        $pre.prepend(copy_button);
         new ClipboardJS(copy_button[0], {
             text(copy_element) {
                 return $(copy_element).siblings("code").text();
