@@ -228,7 +228,10 @@ exports.initialize = function () {
             animation: false,
         });
         elem.tooltip("show");
-        $(".tooltip, .tooltip-inner").css("max-width", "600px");
+        $(".tooltip, .tooltip-inner").css({
+            "margin-left": "15px",
+            "max-width": $(window).width() * 0.6,
+        });
         // Remove the arrow from the tooltip.
         $(".tooltip-arrow").remove();
     });
