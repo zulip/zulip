@@ -80,7 +80,10 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableSequence, Optional
 
 import markdown
 from django.utils.html import escape
+from lxml import etree
 from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
+from pygments.lexers import get_lexer_by_name
+from pygments.util import ClassNotFound
 
 from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.tex import render_tex
@@ -392,6 +395,24 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         else:
             code = CODE_WRAP.format(langclass, self._escape(text))
 
+        # In order to display a "view-in-playground" option in the frontend,
+        # we need to know the language used in the codeblock. We tweak the HTML
+        # CodeHilite generates to add this language as a data-attribute.
+        if lang:
+            parsed_code = etree.HTML(code)
+            div_tag = parsed_code[0][0]
+            # We get the lexer subclass name instead of directly processing the lang, to avoid
+            # different tags being generated for each of the lang's alias. Eg: `js` and `javascript`
+            # would now be mapped to `JavaScript`. In case no lexer with that alias is found, we
+            # return back the text, wrapped in a data-codehilite tag.
+            try:
+                lexer_subclass_name = get_lexer_by_name(lang).name
+            except ClassNotFound:
+                lexer_subclass_name = lang
+            div_tag.attrib['data-codehilite-language'] = lexer_subclass_name
+            # Lxml implicitly converts tags like <span></span> into <span/>
+            # specifying method="c14n" when converting to string, prevents that.
+            code = etree.tostring(div_tag, method="c14n").decode()
         return code
 
     def format_quote(self, text: str) -> str:

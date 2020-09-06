@@ -1376,6 +1376,7 @@ class MarkdownTest(ZulipTestCase):
         msg_without_language = markdown_convert_wrapper(text.format(''))
         msg_with_quote = markdown_convert_wrapper(text.format('quote'))
         msg_with_math = markdown_convert_wrapper(text.format('math'))
+        msg_with_none = markdown_convert_wrapper(text.format('none'))
 
         # Render with default=javascript
         do_set_realm_property(realm, 'default_code_block_language', 'javascript')
@@ -1403,7 +1404,8 @@ class MarkdownTest(ZulipTestCase):
         self.assertTrue(msg_with_python == msg_with_python_default_js == msg_without_language_default_py)
         self.assertTrue(msg_with_quote == msg_without_language_default_quote)
         self.assertTrue(msg_with_math == msg_without_language_default_math)
-        self.assertTrue(msg_without_language == msg_with_none_default_py == msg_without_language_final)
+        self.assertTrue(msg_without_language == msg_without_language_final)
+        self.assertTrue(msg_with_none == msg_with_none_default_py)
 
         # Test checking inside nested quotes
         nested_text = "````quote\n\n{}\n\n{}````".format(text.format('js'), text.format(''))
