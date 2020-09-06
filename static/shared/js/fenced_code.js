@@ -1,6 +1,9 @@
 import katex from "katex";
 import _ from "lodash";
 
+// eslint-disable-next-line
+const pygments_data = require("../../generated/pygments_data.json");
+
 // Parsing routine that can be dropped in to message parsing
 // and formats code blocks
 //
@@ -30,14 +33,21 @@ let stash_func = function (text) {
     return text;
 };
 
-export function wrap_code(code) {
+export function wrap_code(code, lang) {
+    let header = '<div class="codehilite"><pre><span></span><code>';
+    // Mimics the backend logic of adding a data-attribute (data-code-language)
+    // to know what Pygments language was used to highlight this code block.
+    if (lang !== undefined && lang !== "") {
+        const pygments_language_info = pygments_data.langs[lang];
+        let code_language = _.escape(lang);
+        if (pygments_language_info !== undefined) {
+            code_language = pygments_language_info.pretty_name;
+        }
+        header = `<div class="codehilite" data-code-language="${code_language}"><pre><span></span><code>`;
+    }
     // Trim trailing \n until there's just one left
     // This mirrors how pygments handles code input
-    return (
-        '<div class="codehilite"><pre><span></span><code>' +
-        _.escape(code.replace(/^\n+|\n+$/g, "")) +
-        "\n</code></pre></div>\n"
-    );
+    return header + _.escape(code.replace(/^\n+|\n+$/g, "")) + "\n</code></pre></div>\n";
 }
 
 function wrap_quote(text) {
@@ -169,7 +179,7 @@ export function process_fenced_code(content) {
                 },
 
                 done() {
-                    const text = wrap_code(lines.join("\n"));
+                    const text = wrap_code(lines.join("\n"), lang);
                     // insert safe HTML that is passed through the parsing
                     const placeholder = stash_func(text, true);
                     output_lines.push("");
