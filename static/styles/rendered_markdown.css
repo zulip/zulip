@@ -451,7 +451,7 @@
 
     pre {
         &:hover .copy_codeblock,
-        &:focus-within .copy_codeblock {
+        &:hover .code_external_link {
             visibility: visible;
         }
     }
@@ -479,6 +479,21 @@
     .copy_codeblock:hover svg path {
         fill: hsl(200, 100%, 40%);
     }
+
+    .code_external_link {
+        visibility: hidden;
+        position: absolute;
+        right: 23px;
+        margin-top: -2px;
+        font-size: 1.2em;
+        /* The default icon and on-hover colors are inherited from <a> tag.
+        so we set our own to match the copy-to-clipbord icon */
+        color: hsl(0, 0%, 47%);
+
+        &:hover {
+            color: hsl(200, 100%, 40%);
+        }
+    }
 }
 
 .preview_content .copy_codeblock {
@@ -487,6 +502,10 @@
        the "edit" state.  We may change this decision when we add
        menu options for viewing the code in a coding playground. */
     display: none;
+}
+
+.preview_content .code_external_link {
+    right: 12px;
 }
 
 @media (max-width: 600px) {
