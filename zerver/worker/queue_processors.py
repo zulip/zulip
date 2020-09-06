@@ -614,6 +614,10 @@ class TestWorker(QueueProcessingWorker):
 
 @assign_queue('embed_links')
 class FetchLinksEmbedData(QueueProcessingWorker):
+    # This is a slow queue with network requests, so a disk write is neglible.
+    # Update stats file after every consume call.
+    CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 1
+
     def consume(self, event: Mapping[str, Any]) -> None:
         for url in event['urls']:
             start_time = time.time()
