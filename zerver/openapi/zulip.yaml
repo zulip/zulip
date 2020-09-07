@@ -4736,43 +4736,9 @@ paths:
                       - removed
                   - properties:
                       subscribed:
-                        type: object
-                        description: |
-                          A dictionary where the key is the email
-                          address of the user/bot and the value is a
-                          list of the names of the streams that were
-                          subscribed to as a result of the query.
-                        additionalProperties:
-                          description: |
-                            `{email_id}`: A list of dictionaries containing data
-                            about the streams that the user was subscribed to as
-                            a result of the query.
-                          type: array
-                          items:
-                            type: object
-                            description: |
-                              A dictionary containing the name and the ID of the
-                              stream subscribed or created.
-                            additionalProperties: false
-                            properties:
-                              name:
-                                type: string
-                              id:
-                                type: integer
+                        $ref: "#/components/schemas/Subscribed"
                       already_subscribed:
-                        type: object
-                        description: |
-                          A dictionary where the key is the email
-                          address of the user/bot and the value is a
-                          list of the names of the streams that the
-                          user/bot is already subscribed to.
-                        additionalProperties:
-                          description: |
-                            `{email_id}`: A list of the names of streams that
-                            the user was already subscribed to.
-                          type: array
-                          items:
-                            type: string
+                        $ref: "#/components/schemas/AlreadySubscribed"
                       not_removed:
                         type: array
                         items:
@@ -9642,45 +9608,49 @@ components:
               "result": "error",
               "stream": "nonexistent_stream",
             }
+    Subscribed:
+      type: object
+      description: |
+        A dictionary where the key is the email address of the user/bot and the
+        value is a list of the names of the streams that were subscribed to as a
+        result of the query.
+      additionalProperties:
+        description: |
+          `{email_id}`: A list of dictionaries containing data about the streams
+          that the user was subscribed to as a result of the query.
+        type: array
+        items:
+          type: object
+          description: |
+            A dictionary containing the name and the ID of the stream subscribed
+            or created.
+          additionalProperties: false
+          properties:
+            name:
+              type: string
+            id:
+              type: integer
+    AlreadySubscribed:
+      type: object
+      description: |
+        A dictionary where the key is the email address of the user/bot and the
+        value is a list of the names of the streams that the user/bot is already
+        subscribed to.
+      additionalProperties:
+        description: |
+          {email_address}`: List of the names of the streams that the user is
+          already subscribed to.
+        type: array
+        items:
+          type: string
     AddSubscriptionsResponse:
       allOf:
         - $ref: "#/components/schemas/JsonSuccess"
         - properties:
             subscribed:
-              type: object
-              description: |
-                A dictionary where the key is the email address of the user/bot and the
-                value is a list of the names of the streams that were subscribed to as a
-                result of the query.
-              additionalProperties:
-                description: |
-                  `{email_id}`: A list of dictionaries containing data about the streams
-                  that the user was subscribed to as a result of the query.
-                type: array
-                items:
-                  type: object
-                  description: |
-                    A dictionary containing the name and the ID of the stream subscribed
-                    or created.
-                  additionalProperties: false
-                  properties:
-                    name:
-                      type: string
-                    id:
-                      type: integer
+              $ref: "#/components/schemas/Subscribed"
             already_subscribed:
-              type: object
-              description: |
-                A dictionary where the key is the email address of the user/bot and the
-                value is a list of the names of the streams that the user/bot is already
-                subscribed to.
-              additionalProperties:
-                description: |
-                  {email_address}`: List of the names of the streams that the user is
-                  already subscribed to.
-                type: array
-                items:
-                  type: string
+              $ref: "#/components/schemas/AlreadySubscribed"
             unauthorized:
               type: array
               items:
