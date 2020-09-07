@@ -234,7 +234,10 @@ class MessageDict:
     @staticmethod
     def _finalize_payload(obj: Dict[str, Any], apply_markdown: bool, client_gravatar: bool,
                           keep_rendered_content: bool=False) -> None:
-        MessageDict.set_sender_avatar(obj, client_gravatar)
+        try:
+            MessageDict.set_sender_avatar(obj, client_gravatar)
+        except:
+            obj['avatar_url'] = None
         if apply_markdown:
             obj['content_type'] = 'text/html'
             obj['content'] = obj['rendered_content']
@@ -243,14 +246,21 @@ class MessageDict:
 
         if not keep_rendered_content:
             del obj['rendered_content']
-        del obj['sender_realm_id']
-        del obj['sender_avatar_source']
-        del obj['sender_delivery_email']
-        del obj['sender_avatar_version']
+        if 'sender_realm_id' in obj:
+            del obj['sender_realm_id']
+        if 'sender_avatar_source' in obj:
+            del obj['sender_avatar_source']
+        if 'sender_delivery_email' in obj:
+            del obj['sender_delivery_email']
+        if 'sender_avatar_version' in obj:
+            del obj['sender_avatar_version']
 
-        del obj['recipient_type']
-        del obj['recipient_type_id']
-        del obj['sender_is_mirror_dummy']
+        if 'recipient_type' in obj:
+            del obj['recipient_type']
+        if 'recipient_type_id' in obj:
+            del obj['recipient_type_id']
+        if 'sender_is_mirror_dummy' in obj:
+            del obj['sender_is_mirror_dummy']
 
     @staticmethod
     def sew_submessages_and_reactions_to_msgs(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
