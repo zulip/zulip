@@ -188,8 +188,12 @@ export function initialize() {
         if (event.id === -1) {
             return;
         }
+        if (!event.mark_read || event.id === event.previously_selected_id) {
+            // Do not mark selected message read on initial narrow load.
+            return;
+        }
 
-        if (event.mark_read && event.previously_selected_id !== -1) {
+        if (event.previously_selected_id !== -1) {
             // Mark messages between old pointer and new pointer as read
             let messages;
             if (event.id < event.previously_selected_id) {

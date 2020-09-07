@@ -73,9 +73,45 @@ run_test("basics", (override) => {
 
     assert.deepEqual(list.all_messages(), messages);
 
-    override($, "Event", (ev) => {
+    let message_select_events = [];
+    override($, "Event", (ev, opts) => {
         assert.equal(ev, "message_selected.zulip");
+        message_select_events.push(opts);
     });
+
+    assert.equal(list.selected_id(), -1);
+    const stub = make_stub();
+    list.view.rerender_preserving_scrolltop = stub.f;
+    // When narrow initially renders in narrow.update_selection.
+    list.select_id(60, {
+        use_closest: true,
+        force_rerender: true,
+    });
+
+    const expected_message_select_events = [
+        {
+            id: 60,
+            previously_selected_id: 60,
+        },
+        {
+            id: 60,
+            previously_selected_id: -1,
+        },
+    ];
+    const actual_message_select_events = message_select_events.map((e) => ({
+        id: e.id,
+        previously_selected_id: e.previously_selected_id,
+    }));
+
+    // The render function is called which inturn calls selected_id,
+    // before the original message selection event takes place.
+    // Thus the event which contains the updated data is actually
+    // called first, instead of the original selected_id function call.
+    assert.equal(list.selected_id(), 60);
+    assert.equal(message_select_events.length, 2);
+    assert.deepEqual(actual_message_select_events, expected_message_select_events);
+    message_select_events = [];
+
     list.select_id(50);
 
     assert.equal(list.selected_id(), 50);
