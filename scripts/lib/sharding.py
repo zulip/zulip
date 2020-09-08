@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import argparse
+import hashlib
 import json
 import os
 import subprocess
@@ -19,6 +21,15 @@ def write_realm_nginx_config_line(f: Any, host: str, port: str) -> None:
     set $tornado_server http://tornado{port};
 }}\n""")
 
+def hash_sharding_config() -> str:
+    config_file = get_config_file()
+    if not config_file.has_section("tornado_sharding"):
+        return hashlib.sha256(b'').hexdigest()
+    contents = subprocess.check_output([
+        "crudini", "--get", "--format=lines", "/etc/zulip/zulip.conf", "tornado_sharding",
+    ])
+    return hashlib.sha256(contents).hexdigest()
+
 # Basic system to do Tornado sharding.  Writes two output .tmp files that need
 # to be renamed to the following files to finalize the changes:
 # * /etc/zulip/nginx_sharding.conf; nginx needs to be reloaded after changing.
@@ -26,8 +37,28 @@ def write_realm_nginx_config_line(f: Any, host: str, port: str) -> None:
 # after changing.  TODO: We can probably make this live-reload by statting the file.
 #
 # TODO: Restructure this to automatically generate a sharding layout.
+
+parser = argparse.ArgumentParser(description="Adjust Tornado sharding configuration")
+parser.add_argument("--verify", action='store_true',
+                    help="Exits 0 with no action if no changes are required; exits 1 if changes would be made.")
+options = parser.parse_args()
+
+new_hash = hash_sharding_config()
+if os.path.exists('/etc/zulip/nginx_sharding.conf') and os.path.exists('/etc/zulip/sharding.json'):
+    with open('/etc/zulip/nginx_sharding.conf') as old_file:
+        if new_hash in old_file.read():
+            sys.exit(0)
+
+if options.verify:
+    sys.exit(1)
+
+if "SUPPRESS_SHARDING_NOTICE" not in os.environ:
+    print("** Updated sharding; scripts/refresh-sharding-and-restart required")
+
 with open('/etc/zulip/nginx_sharding.conf.tmp', 'w') as nginx_sharding_conf_f, \
         open('/etc/zulip/sharding.json.tmp', 'w') as sharding_json_f:
+    # Puppet uses this to know if it needs to rewrite the files
+    nginx_sharding_conf_f.write(f"# Configuration hash: {new_hash}\n")
 
     config_file = get_config_file()
     if not config_file.has_section("tornado_sharding"):
