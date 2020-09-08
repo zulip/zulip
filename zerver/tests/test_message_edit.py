@@ -6,6 +6,7 @@ from unittest import mock
 import orjson
 from django.db import IntegrityError
 from django.http import HttpResponse
+from typing_extensions import Literal, TypedDict
 
 from zerver.lib.actions import (
     do_set_realm_property,
@@ -17,7 +18,7 @@ from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
 from zerver.lib.topic import LEGACY_PREV_TOPIC, TOPIC_NAME
-from zerver.models import Message, Stream, UserMessage, UserProfile
+from zerver.models import Message, Stream, UserMessage, UserProfile, get_realm, get_stream
 
 
 class EditMessageTest(ZulipTestCase):
@@ -201,6 +202,128 @@ class EditMessageTest(ZulipTestCase):
             'message_id': msg_id,
         })
         self.assert_json_error(result, "Nothing to change")
+
+    def test_edit_message_noop_changes(self) -> None:
+        class MsgDict(TypedDict, total=False):
+            stream_id: int
+            topic: str
+            content: str
+
+        msg_dict_attr_type = Literal['stream_id', 'topic', 'content']
+        msg_dict_attrs: List[msg_dict_attr_type] = ['stream_id', 'topic', 'content']
+
+        HISTORY_KEY_TO_ATTR_NAME = {
+            'prev_stream': 'stream_id',
+            LEGACY_PREV_TOPIC: 'topic',
+            'prev_content': 'content'
+        }
+
+        realm = get_realm('zulip')
+        old_stream = get_stream('Scotland', realm)
+        new_stream = get_stream('Verona', realm)
+
+        original_msg_dict: MsgDict = {
+            'stream_id': old_stream.id,
+            'topic': 'old topic',
+            'content': 'old content',
+        }
+
+        # These subtests do not include edits where all the changes
+        # are actual changes; those edits are commented out. It does
+        # include edits that are currently disallowed – those that edit
+        # the stream and content at the same time – but marks them as
+        # expected to fail. When they become allowed in the future,
+        # those subtests will fail, which will alert whoever is making
+        # the changes to update this test to start really testing those
+        # edits.
+        subtests: List[Tuple[MsgDict, bool]] = [
+            # (edit_dict, should_succeed)
+
+            ({'stream_id': old_stream.id}, True),
+            # ({'stream_id': new_stream.id}, True),
+
+            ({'topic': 'old topic'}, True),
+            # ({'topic': 'new topic'}, True),
+
+            ({'content': 'old content'}, True),
+            # ({'content': 'new content'}, True),
+
+            ({'stream_id': old_stream.id, 'topic': 'old topic'}, True),
+            ({'stream_id': old_stream.id, 'topic': 'new topic'}, True),
+            ({'stream_id': new_stream.id, 'topic': 'old topic'}, True),
+            # ({'stream_id': new_stream.id, 'topic': 'new topic'}, True),
+
+            ({'stream_id': old_stream.id, 'content': 'old content'}, True),
+            ({'stream_id': old_stream.id, 'content': 'new content'}, True),
+            ({'stream_id': new_stream.id, 'content': 'old content'}, True),
+            # ({'stream_id': new_stream.id, 'content': 'new content'}, False),
+
+            ({'topic': 'old topic', 'content': 'old content'}, True),
+            ({'topic': 'old topic', 'content': 'new content'}, True),
+            ({'topic': 'new topic', 'content': 'old content'}, True),
+            # ({'topic': 'new topic', 'content': 'new content'}, True),
+
+            ({'stream_id': old_stream.id, 'topic': 'old topic', 'content': 'old content'}, True),
+            ({'stream_id': old_stream.id, 'topic': 'old topic', 'content': 'new content'}, True),
+            ({'stream_id': old_stream.id, 'topic': 'new topic', 'content': 'old content'}, True),
+            ({'stream_id': old_stream.id, 'topic': 'new topic', 'content': 'new content'}, True),
+            ({'stream_id': new_stream.id, 'topic': 'old topic', 'content': 'old content'}, True),
+            ({'stream_id': new_stream.id, 'topic': 'old topic', 'content': 'new content'}, False),
+            ({'stream_id': new_stream.id, 'topic': 'new topic', 'content': 'old content'}, True),
+            # ({'stream_id': new_stream.id, 'topic': 'new topic', 'content': 'new content'}, False),
+        ]
+
+        # Must be an admin in order to edit the stream of a message
+        self.login('iago')
+
+        for (edit_dict, should_succeed) in subtests:
+            with self.subTest(edit_dict=edit_dict):
+                msg_id = self.send_stream_message(self.example_user("iago"), old_stream.name,
+                                                  topic_name=original_msg_dict['topic'],
+                                                  content=original_msg_dict['content'])
+                result = self.client_patch(f"/json/messages/{msg_id}", {
+                    'message_id': msg_id,
+                    **edit_dict,
+                })
+
+                if not should_succeed:
+                    self.assert_json_error(result, "Cannot change message content while changing stream")
+                    continue
+
+                self.assert_json_success(result)
+
+                msg = Message.objects.get(id=msg_id)
+
+                new_msg_dict: MsgDict = {
+                    'stream_id': msg.recipient.type_id,
+                    'topic': msg.topic_name(),
+                    'content': msg.content
+                }
+
+                # Build the set of attributes that were saved in the latest edit.
+                latest_edit = set()
+                if msg.edit_history:
+                    history = orjson.loads(msg.edit_history)
+                    latest_edit = {
+                        HISTORY_KEY_TO_ATTR_NAME[key]
+                        for key in history[0].keys() if key in HISTORY_KEY_TO_ATTR_NAME
+                    }
+
+                # Build the set of attributes that were really changed, as
+                # opposed to being no-op edits.
+                real_changes = set()
+                for attr in msg_dict_attrs:
+                    if attr in edit_dict:
+                        # No matter what, these should be equal at this point.
+                        # It was either a no-op change, meaning they were already
+                        # the same, or it was a real change, and they should now
+                        # be the same.
+                        self.assertEqual(new_msg_dict[attr], edit_dict[attr])
+
+                        if new_msg_dict[attr] != original_msg_dict[attr]:
+                            real_changes.add(attr)
+
+                self.assertEqual(latest_edit, real_changes)
 
     def test_edit_message_no_topic(self) -> None:
         self.login('hamlet')
