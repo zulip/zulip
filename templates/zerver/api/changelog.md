@@ -157,7 +157,8 @@ No changes; feature level used for Zulip 3.0 release.
 * [`POST /register`](/api/register-queue): Added
   `realm_community_topic_editing_limit_seconds` to the response, the
   time limit before community topic editing is forbidden.  A `null`
-  value means no limit.
+  value means no limit. This was previously hard-coded in the server
+  as 86400 seconds (1 day).
 * [`POST /register`](/api/register-queue): The response now contains a
   `is_owner`, similar to the existing `is_admin` and `is_guest` fields.
 * [`POST /set-typing-status`](/api/set-typing-status): Removed legacy support for sending email
