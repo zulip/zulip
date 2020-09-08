@@ -47,6 +47,7 @@ async function test_change_new_stream_notifications_setting(page) {
 
     const disable_stream_notifications =
         "#realm_notifications_stream_id_widget  .dropdown_list_reset_button";
+    await page.waitForSelector(disable_stream_notifications, {visible: true});
     await page.click(disable_stream_notifications);
     await submit_notifications_stream_settings(page);
 }
