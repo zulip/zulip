@@ -1,0 +1,16 @@
+{
+    "name": "Puppeteer Screen Capture",
+    "version": "0.1.0",
+    "manifest_version": 2,
+    "background": {
+        "scripts": ["background.js"]
+    },
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["content_script.js"],
+            "run_at": "document_start"
+        }
+    ],
+    "permissions": ["desktopCapture", "<all_urls>", "downloads"]
+}
