@@ -1234,13 +1234,19 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 if youtube is not None:
                     title = self.youtube_title(extracted_data)
                     if title is not None:
-                        found_url.family.child.text = title
+                        if url == text:
+                            found_url.family.child.text = title
+                        else:
+                            found_url.family.child.text = text
                     continue
                 self.add_embed(root, url, extracted_data)
                 if self.vimeo_id(url):
                     title = self.vimeo_title(extracted_data)
                     if title:
-                        found_url.family.child.text = title
+                        if url == text:
+                            found_url.family.child.text = title
+                        else:
+                            found_url.family.child.text = text
 
 class Timestamp(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:

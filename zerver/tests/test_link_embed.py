@@ -741,3 +741,34 @@ class PreviewTestCase(ZulipTestCase):
         msg.refresh_from_db()
         expected_content = '<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube - Clearer Code at Scale - Static Types at Zulip and Dropbox</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg"></a></div>'
         self.assertEqual(expected_content, msg.rendered_content)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_custom_title_replaces_youtube_url_title(self) -> None:
+        url = '[Youtube link](https://www.youtube.com/watch?v=eSJTXC7Ixgg)'
+        with mock_queue_publish('zerver.lib.actions.queue_json_publish'):
+            msg_id = self.send_personal_message(
+                self.example_user('hamlet'),
+                self.example_user('cordelia'),
+                content=url,
+            )
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        event = {
+            'message_id': msg_id,
+            'urls': [url],
+            'message_realm_id': msg.sender.realm_id,
+            'message_content': url}
+
+        mocked_data = {'title': 'Clearer Code at Scale - Static Types at Zulip and Dropbox'}
+        mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
+        with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
+            with mock.patch('requests.get', mocked_response), self.assertLogs(level='INFO') as info_logs:
+                with mock.patch('zerver.lib.markdown.link_preview.link_embed_data_from_cache',
+                                lambda *args, **kwargs: mocked_data):
+                    FetchLinksEmbedData().consume(event)
+            self.assertTrue(
+                'INFO:root:Time spent on get_link_embed_data for [Youtube link](https://www.youtube.com/watch?v=eSJTXC7Ixgg):' in info_logs.output[0]
+            )
+
+        msg.refresh_from_db()
+        expected_content = '<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">Youtube link</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg"></a></div>'
+        self.assertEqual(expected_content, msg.rendered_content)
