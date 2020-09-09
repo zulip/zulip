@@ -1,7 +1,3 @@
-upstream django {
-    server unix:/home/zulip/deployments/uwsgi-socket;
-}
-
 <% if @tornado_multiprocess -%>
 <% @tornado_ports.each do |port| -%>
 upstream tornado<%= port %> {
@@ -15,15 +11,3 @@ upstream tornado {
     keepalive 10000;
 }
 <% end -%>
-
-upstream localhost_sso {
-    server 127.0.0.1:8888;
-}
-
-upstream camo {
-    server 127.0.0.1:9292;
-}
-
-upstream thumbor {
-    server localhost:9995;
-}

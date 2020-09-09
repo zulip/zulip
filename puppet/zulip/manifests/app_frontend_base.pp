@@ -53,23 +53,12 @@ class zulip::app_frontend_base {
     }
   }
 
-  # The number of Tornado processes to run on the server; this
-  # defaults to 1, since Tornado sharding is currently only at the
-  # Realm level.
-  $tornado_processes = Integer(zulipconf('application_server', 'tornado_processes', 1))
-  if $tornado_processes > 1 {
-    $tornado_ports = range(9800, 9800 + $tornado_processes - 1)
-    $tornado_multiprocess = true
-  } else {
-    $tornado_multiprocess = false
-  }
-
   file { '/etc/nginx/zulip-include/upstreams':
     require => Package[$zulip::common::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    content => template('zulip/nginx/upstreams.conf.template.erb'),
+    source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/upstreams',
     notify  => Service['nginx'],
   }
 
