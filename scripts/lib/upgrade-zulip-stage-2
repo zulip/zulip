@@ -104,7 +104,7 @@ def shutdown_server() -> None:
         core_server_services.append("zulip-thumbor")
 
     logging.info("Stopping Zulip...")
-    subprocess.check_call(["supervisorctl", "stop", *core_server_services, *worker_services],
+    subprocess.check_call(["supervisorctl", "stop", *worker_services, *core_server_services],
                           preexec_fn=su_to_zulip)
     IS_SERVER_UP = False
 
