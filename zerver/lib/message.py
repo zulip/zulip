@@ -36,7 +36,7 @@ from zerver.lib.stream_subscription import (
     num_subscribers_for_stream_id,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
+from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.topic_mutes import build_topic_mute_checker, topic_is_muted
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
@@ -137,6 +137,18 @@ def truncate_topic(topic: str) -> str:
     return truncate_content(topic, MAX_TOPIC_NAME_LENGTH, "...")
 
 
+def fill_unmatched_field(message: Dict[str, str], match_fields: Dict[str, str]) -> Dict[str, str]:
+    # We fill match_ fields with original data if no match is present
+    # for rendering it.
+    if MATCH_TOPIC not in match_fields:
+        match_fields[MATCH_TOPIC] = message[DB_TOPIC_NAME]
+
+    if "match_content" not in match_fields:
+        match_fields["match_content"] = message["rendered_content"]
+
+    return match_fields
+
+
 def messages_for_ids(
     message_ids: List[int],
     user_message_flags: Dict[int, List[str]],
@@ -165,7 +177,8 @@ def messages_for_ids(
         msg_dict = message_dicts[message_id]
         msg_dict.update(flags=user_message_flags[message_id])
         if message_id in search_fields:
-            msg_dict.update(search_fields[message_id])
+            match_fields = fill_unmatched_field(msg_dict, search_fields[message_id])
+            msg_dict.update(match_fields)
         # Make sure that we never send message edit history to clients
         # in realms with allow_edit_history disabled.
         if "edit_history" in msg_dict and not allow_edit_history:

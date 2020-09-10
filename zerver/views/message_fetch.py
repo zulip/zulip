@@ -1,4 +1,5 @@
 import re
+from enum import Enum
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import orjson
@@ -97,6 +98,13 @@ OptionalNarrowListT = Optional[List[Dict[str, Any]]]
 # These delimiters will not appear in rendered messages or HTML-escaped topics.
 TS_START = "<ts-match>"
 TS_STOP = "</ts-match>"
+
+
+class SearchType(Enum):
+    NO_SEARCH = 1
+    SEARCH = 2
+    TOPIC = 3
+    CONTENT = 4
 
 
 def ts_locs_array(
@@ -492,61 +500,245 @@ class NarrowBuilder:
         cond = column("recipient_id", Integer).in_(recipient_ids)
         return query.where(maybe_negate(cond))
 
+    def by_topic_contains(
+        self, query: Select, operand: str, maybe_negate: ConditionTransform
+    ) -> Select:
+        if settings.USING_PGROONGA:
+            return self._by_topic_contains_pgroonga(query, operand, maybe_negate)
+        else:
+            return self._by_topic_contains_tsearch(query, operand, maybe_negate)
+
+    def by_content_contains(
+        self, query: Select, operand: str, maybe_negate: ConditionTransform
+    ) -> Select:
+        if settings.USING_PGROONGA:
+            return self._by_content_contains_pgroonga(query, operand, maybe_negate)
+        else:
+            return self._by_content_contains_tsearch(query, operand, maybe_negate)
+
     def by_search(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         if settings.USING_PGROONGA:
             return self._by_search_pgroonga(query, operand, maybe_negate)
         else:
             return self._by_search_tsearch(query, operand, maybe_negate)
 
-    def _by_search_pgroonga(
-        self, query: Select, operand: str, maybe_negate: ConditionTransform
-    ) -> Select:
-        match_positions_character = func.pgroonga_match_positions_character
-        query_extract_keywords = func.pgroonga_query_extract_keywords
-        operand_escaped = func.escape_html(operand)
-        keywords = query_extract_keywords(operand_escaped)
-        query = query.column(
-            match_positions_character(column("rendered_content", Text), keywords).label(
-                "content_matches"
-            )
-        )
-        query = query.column(
-            match_positions_character(func.escape_html(topic_column_sa()), keywords).label(
-                "topic_matches"
-            )
-        )
-        condition = column("search_pgroonga").op("&@~")(operand_escaped)
-        return query.where(maybe_negate(condition))
+    def _make_tsquery(self, operand: str) -> "ColumnElement[object]":
+        return func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
 
-    def _by_search_tsearch(
-        self, query: Select, operand: str, maybe_negate: ConditionTransform
-    ) -> Select:
-        tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
-        query = query.column(
-            ts_locs_array(
-                literal("zulip.english_us_search"), column("rendered_content", Text), tsquery
-            ).label("content_matches")
+    def _evaluate_topic_cond_tsearch(self, tsquery: "ColumnElement[object]") -> "ClauseElement":
+        # We need to compare only with "topic" tsvector labelled by A and then perform comparison to tsquery
+        return func.ts_filter(column("search_tsvector", postgresql.TSVECTOR), "{A}").op("@@")(
+            tsquery
         )
-        # We HTML-escape the topic in PostgreSQL to avoid doing a server round-trip
-        query = query.column(
+
+    def _evaluate_content_cond_tsearch(self, tsquery: "ColumnElement[object]") -> "ClauseElement":
+        # We need to compare only with "content" tsvector labelled by B and then perform comparison to tsquery
+        return func.ts_filter(column("search_tsvector", postgresql.TSVECTOR), "{B}").op("@@")(
+            tsquery
+        )
+
+    def _add_match_topic_cols_tsearch(
+        self, query: Select, tsquery: "ColumnElement[object]"
+    ) -> Select:
+        # We HTML-escape the topic in Postgres to avoid doing a server round-trip
+        return query.column(
             ts_locs_array(
                 literal("zulip.english_us_search"), func.escape_html(topic_column_sa()), tsquery
             ).label("topic_matches")
         )
 
+    def _add_match_content_cols_tsearch(
+        self, query: Select, tsquery: "ColumnElement[object]"
+    ) -> Select:
+        return query.column(
+            ts_locs_array(
+                literal("zulip.english_us_search"), column("rendered_content", Text), tsquery
+            ).label("content_matches")
+        )
+
+    def _apply_query_extract_keywords_pgroonga(self, operand: str) -> Any:
+        query_extract_keywords = func.pgroonga_query_extract_keywords
+        return query_extract_keywords(operand)
+
+    def _evaluate_topic_cond_pgroonga(self, operand: str) -> Any:
+        return topic_column_sa().op("&@")(operand)
+
+    def _evaluate_content_cond_pgroonga(self, operand: str) -> Any:
+        return column("rendered_content").op("&@")(operand)
+
+    def _add_match_topic_cols_pgroonga(self, query: Select, operand: str) -> Select:
+        keywords = self._apply_query_extract_keywords_pgroonga(operand)
+        match_positions_character = func.pgroonga_match_positions_character
+        return query.column(
+            match_positions_character(func.escape_html(topic_column_sa()), keywords).label(
+                "topic_matches"
+            )
+        )
+
+    def _add_match_content_cols_pgroonga(self, query: Select, operand: str) -> Select:
+        keywords = self._apply_query_extract_keywords_pgroonga(operand)
+        match_positions_character = func.pgroonga_match_positions_character
+        return query.column(
+            match_positions_character(column("rendered_content", Text), keywords).label(
+                "content_matches"
+            )
+        )
+
+    def _by_topic_contains_tsearch(
+        self, query: Select, operand: str, maybe_negate: ConditionTransform
+    ) -> Select:
+        tsquery = self._make_tsquery(operand)
+        query = self._add_match_topic_cols_tsearch(query, tsquery)
+        cond = self._evaluate_topic_cond_tsearch(tsquery)
+        return query.where(maybe_negate(cond))
+
+    def _by_content_contains_tsearch(
+        self, query: Select, operand: str, maybe_negate: ConditionTransform
+    ) -> Select:
+        tsquery = self._make_tsquery(operand)
+        query = self._add_match_content_cols_tsearch(query, tsquery)
+        cond = self._evaluate_content_cond_tsearch(tsquery)
+        return query.where(maybe_negate(cond))
+
+    def _by_search_tsearch(
+        self, query: Select, operand: Union[str, Dict[str, str]], maybe_negate: ConditionTransform
+    ) -> Select:
+        if isinstance(operand, str):
+            search_operand = operand
+            topic_contains_operand = ""
+            content_contains_operand = ""
+        else:
+            search_operand = operand.get("search_operand", "")
+            topic_contains_operand = operand.get("topic_contains_operand", "")
+            content_contains_operand = operand.get("content_contains_operand", "")
+
+        # Search operands are essentially topic or content search, so on cases where
+        # topic-contains operand or content-contains operand (or both) are non-empty, the WHERE condition will be,
+        # (topic operand matches topic) AND (content operand matches content) AND (search operand matches topic OR search operand matches content)
+        # but the highlight logic doesn't need this complex logic as where clause deals with filtering that,
+        # topic operand or search operand need to match topic column (same for content).
+        search_type_conds = []
+
+        if topic_contains_operand:
+            topic_only_tsquery = self._make_tsquery(topic_contains_operand)
+            topic_only_cond = self._evaluate_topic_cond_tsearch(topic_only_tsquery)
+            search_type_conds.append(topic_only_cond)
+
+        if content_contains_operand:
+            content_only_tsquery = self._make_tsquery(content_contains_operand)
+            content_only_cond = self._evaluate_content_cond_tsearch(content_only_tsquery)
+            search_type_conds.append(content_only_cond)
+
+        if search_operand:
+            search_only_tsquery = self._make_tsquery(search_operand)
+            search_only_cond = column("search_tsvector", postgresql.TSVECTOR).op("@@")(
+                search_only_tsquery
+            )
+            # maybe_negate parameter is only used on search only case, for combination of
+            # search type cases, operands dict must hold those values for each operand.
+            search_type_conds.append(maybe_negate(search_only_cond))
+
+        if search_operand and topic_contains_operand:
+            topic_tsquery = (search_only_tsquery).op("||")(topic_only_tsquery)
+        else:
+            topic_contains_operand = search_operand or topic_contains_operand
+            topic_tsquery = self._make_tsquery(topic_contains_operand)
+
+        if search_operand and content_contains_operand:
+            content_tsquery = (search_only_tsquery).op("||")(content_only_tsquery)
+        else:
+            content_contains_operand = search_operand or content_contains_operand
+            content_tsquery = self._make_tsquery(content_contains_operand)
+
         # Do quoted string matching.  We really want phrase
         # search here so we can ignore punctuation and do
         # stemming, but there isn't a standard phrase search
-        # mechanism in PostgreSQL
-        for term in re.findall(r'"[^"]+"|\S+', operand):
+        # mechanism in Postgres.
+        for term in re.findall(r'"[^"]+"|\S+', search_operand):
             if term[0] == '"' and term[-1] == '"':
                 term = term[1:-1]
                 term = "%" + connection.ops.prep_for_like_query(term) + "%"
                 cond = or_(column("content", Text).ilike(term), topic_column_sa().ilike(term))
                 query = query.where(maybe_negate(cond))
 
-        cond = column("search_tsvector", postgresql.TSVECTOR).op("@@")(tsquery)
+        query = self._add_match_content_cols_tsearch(query, content_tsquery)
+        query = self._add_match_topic_cols_tsearch(query, topic_tsquery)
+
+        search_cond = and_(*search_type_conds)
+        return query.where(search_cond)
+
+    def _by_topic_contains_pgroonga(
+        self, query: Select, operand: str, maybe_negate: ConditionTransform
+    ) -> Select:
+        operand_escaped = func.escape_html(operand)
+        query = self._add_match_topic_cols_pgroonga(query, operand_escaped)
+        cond = self._evaluate_topic_cond_pgroonga(operand_escaped)
         return query.where(maybe_negate(cond))
+
+    def _by_content_contains_pgroonga(
+        self, query: Select, operand: str, maybe_negate: ConditionTransform
+    ) -> Select:
+        operand_escaped = func.escape_html(operand)
+        query = self._add_match_content_cols_pgroonga(query, operand_escaped)
+        cond = self._evaluate_content_cond_pgroonga(operand_escaped)
+        return query.where(maybe_negate(cond))
+
+    def _by_search_pgroonga(
+        self, query: Select, operand: Union[str, Dict[str, str]], maybe_negate: ConditionTransform
+    ) -> Select:
+        # Basic setup is same as tsearch logic, for details on how this works
+        # look at _tsearch comments.
+
+        if isinstance(operand, str):
+            search_operand = operand
+            topic_contains_operand = ""
+            content_contains_operand = ""
+        else:
+            search_operand = operand.get("search_operand", "")
+            topic_contains_operand = operand.get("topic_contains_operand", "")
+            content_contains_operand = operand.get("content_contains_operand", "")
+
+        search_type_conds = []
+
+        if topic_contains_operand:
+            topic_only_operand_escaped = func.escape_html(topic_contains_operand)
+            topic_only_cond = self._evaluate_topic_cond_pgroonga(topic_only_operand_escaped)
+            search_type_conds.append(topic_only_cond)
+
+        if content_contains_operand:
+            content_only_operand_escaped = func.escape_html(content_contains_operand)
+            content_only_cond = self._evaluate_content_cond_pgroonga(content_only_operand_escaped)
+            search_type_conds.append(content_only_cond)
+
+        if search_operand:
+            search_only_operand_escaped = func.escape_html(search_operand)
+            search_only_cond = or_(
+                self._evaluate_topic_cond_pgroonga(search_only_operand_escaped),
+                self._evaluate_content_cond_pgroonga(search_only_operand_escaped),
+            )
+            search_type_conds.append(maybe_negate(search_only_cond))
+
+        if topic_contains_operand and search_operand:
+            topic_contains_operand = f"({search_operand}) OR ({topic_contains_operand})"
+        else:
+            topic_contains_operand = search_operand or topic_contains_operand
+
+        if content_contains_operand and search_operand:
+            content_contains_operand = f"({search_operand}) OR ({content_contains_operand})"
+        else:
+            content_contains_operand = search_operand or content_contains_operand
+
+        topic_contains_operand_escaped = func.escape_html(topic_contains_operand)
+        content_contains_operand_escaped = func.escape_html(content_contains_operand)
+
+        query = self._add_match_content_cols_pgroonga(query, content_contains_operand_escaped)
+        query = self._add_match_topic_cols_pgroonga(query, topic_contains_operand_escaped)
+
+        if len(search_type_conds) > 1:
+            cond = and_(*search_type_conds)
+        else:
+            (cond,) = search_type_conds
+        return query.where(cond)
 
 
 def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
@@ -586,6 +778,18 @@ def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
     return result
 
 
+def get_topic_search_fields(
+    topic_name: str, topic_matches: Iterable[Tuple[int, int]]
+) -> Dict[str, str]:
+    return {MATCH_TOPIC: highlight_string(escape_html(topic_name), topic_matches)}
+
+
+def get_rendered_content_search_fields(
+    rendered_content: str, content_matches: Iterable[Tuple[int, int]]
+) -> Dict[str, str]:
+    return {"match_content": highlight_string(rendered_content, content_matches)}
+
+
 def get_search_fields(
     rendered_content: str,
     topic_name: str,
@@ -593,8 +797,8 @@ def get_search_fields(
     topic_matches: Iterable[Tuple[int, int]],
 ) -> Dict[str, str]:
     return {
-        "match_content": highlight_string(rendered_content, content_matches),
-        MATCH_TOPIC: highlight_string(escape_html(topic_name), topic_matches),
+        **get_topic_search_fields(topic_name, topic_matches),
+        **get_rendered_content_search_fields(rendered_content, content_matches),
     }
 
 
@@ -808,15 +1012,18 @@ def add_narrow_conditions(
     narrow: OptionalNarrowListT,
     is_web_public_query: bool,
     realm: Realm,
-) -> Tuple[Select, bool]:
+) -> Tuple[Select, bool, Enum]:
     is_search = False  # for now
+    search_type = SearchType.NO_SEARCH
 
     if narrow is None:
-        return (query, is_search)
+        return (query, is_search, search_type)
 
     # Build the query for the narrow
     builder = NarrowBuilder(user_profile, inner_msg_id_col, realm, is_web_public_query)
     search_operands = []
+    topic_contains_operands = []
+    content_contains_operands = []
 
     # As we loop through terms, builder does most of the work to extend
     # our query, but we need to collect the search operands and handle
@@ -824,19 +1031,54 @@ def add_narrow_conditions(
     for term in narrow:
         if term["operator"] == "search":
             search_operands.append(term["operand"])
+        elif term["operator"] == "topic-contains":
+            topic_contains_operands.append(term["operand"])
+        elif term["operator"] == "content-contains":
+            content_contains_operands.append(term["operand"])
         else:
             query = builder.add_term(query, term)
 
-    if search_operands:
-        is_search = True
-        query = query.column(topic_column_sa()).column(column("rendered_content", Text))
+    is_search = bool(search_operands or topic_contains_operands or content_contains_operands)
+
+    if search_operands or (topic_contains_operands and content_contains_operands):
+        search_type = SearchType.SEARCH
+        query = query.column(topic_column_sa()).column(column("rendered_content"))
+        operand = {}
+
+        if topic_contains_operands:
+            operand["topic_contains_operand"] = " ".join(topic_contains_operands)
+
+        if content_contains_operands:
+            operand["content_contains_operand"] = " ".join(content_contains_operands)
+
+        if search_operands:
+            operand["search_operand"] = " ".join(search_operands)
+
+        search_term = dict(operator="search", operand=operand)
+        query = builder.add_term(query, search_term)
+        # We return here because search handler already handles these cases:
+        # topic & search, content & search, topic & content, topic & content & search operands.
+        return (query, is_search, search_type)
+
+    if content_contains_operands:
+        search_type = SearchType.CONTENT
+        query = query.column(column("rendered_content"))
         search_term = dict(
-            operator="search",
-            operand=" ".join(search_operands),
+            operator="content-contains",
+            operand=" ".join(content_contains_operands),
         )
         query = builder.add_term(query, search_term)
 
-    return (query, is_search)
+    if topic_contains_operands:
+        search_type = SearchType.TOPIC
+        query = query.column(topic_column_sa())
+        search_term = dict(
+            operator="topic-contains",
+            operand=" ".join(topic_contains_operands),
+        )
+        query = builder.add_term(query, search_term)
+
+    return (query, is_search, search_type)
 
 
 def find_first_unread_anchor(
@@ -864,7 +1106,7 @@ def find_first_unread_anchor(
         need_user_message=need_user_message,
     )
 
-    query, is_search = add_narrow_conditions(
+    query, is_search, search_type = add_narrow_conditions(
         user_profile=user_profile,
         inner_msg_id_col=inner_msg_id_col,
         query=query,
@@ -1017,7 +1259,7 @@ def get_messages_backend(
         need_user_message=need_user_message,
     )
 
-    query, is_search = add_narrow_conditions(
+    query, is_search, search_type = add_narrow_conditions(
         user_profile=user_profile,
         inner_msg_id_col=inner_msg_id_col,
         query=query,
@@ -1122,12 +1364,20 @@ def get_messages_backend(
     if is_search:
         for row in rows:
             message_id = row[0]
-            (topic_name, rendered_content, content_matches, topic_matches) = row[-4:]
-
             try:
-                search_fields[message_id] = get_search_fields(
-                    rendered_content, topic_name, content_matches, topic_matches
-                )
+                if search_type == SearchType.SEARCH:
+                    (topic_name, rendered_content, content_matches, topic_matches) = row[-4:]
+                    search_fields[message_id] = get_search_fields(
+                        rendered_content, topic_name, content_matches, topic_matches
+                    )
+                elif search_type == SearchType.TOPIC:
+                    (topic_name, topic_matches) = row[-2:]
+                    search_fields[message_id] = get_topic_search_fields(topic_name, topic_matches)
+                else:
+                    (rendered_content, content_matches) = row[-2:]
+                    search_fields[message_id] = get_rendered_content_search_fields(
+                        rendered_content, content_matches
+                    )
             except UnicodeDecodeError as err:  # nocoverage
                 # No coverage for this block since it should be
                 # impossible, and we plan to remove it once we've
@@ -1341,17 +1591,17 @@ def messages_in_narrow_backend(
 
     sa_conn = get_sqlalchemy_connection()
     query_result = list(sa_conn.execute(query).fetchall())
-
     search_fields = {}
     for row in query_result:
         message_id = row["message_id"]
         topic_name = row[DB_TOPIC_NAME]
         rendered_content = row["rendered_content"]
+        content_matches = topic_matches = []
         if "content_matches" in row:
             content_matches = row["content_matches"]
+        if "topic_matches" in row:
             topic_matches = row["topic_matches"]
-        else:
-            content_matches = topic_matches = []
+
         search_fields[str(message_id)] = get_search_fields(
             rendered_content,
             topic_name,

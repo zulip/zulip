@@ -143,6 +143,19 @@ export class MessageListData {
     is_search() {
         return this.filter.is_search();
     }
+
+    is_topic_contains() {
+        return this.filter.is_topic_contains();
+    }
+
+    is_content_contains() {
+        return this.filter.is_content_contains();
+    }
+
+    is_search_type() {
+        return this.filter.is_search_type();
+    }
+
     can_mark_messages_read() {
         return this.filter.can_mark_messages_read();
     }

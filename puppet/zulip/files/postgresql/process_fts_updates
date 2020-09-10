@@ -60,21 +60,14 @@ def update_fts_columns(cursor: psycopg2.extensions.cursor) -> int:
     )
     ids = []
     for (id, message_id) in cursor.fetchall():
-        if USING_PGROONGA:
+        if not USING_PGROONGA:
             cursor.execute(
                 "UPDATE zerver_message SET "
-                "search_pgroonga = "
-                "escape_html(subject) || ' ' || rendered_content "
+                "search_tsvector = setweight(to_tsvector('zulip.english_us_search', "
+                "subject), 'A') || setweight(to_tsvector('zulip.english_us_search', rendered_content), 'B') "
                 "WHERE id = %s",
                 (message_id,),
             )
-        cursor.execute(
-            "UPDATE zerver_message SET "
-            "search_tsvector = to_tsvector('zulip.english_us_search', "
-            "subject || rendered_content) "
-            "WHERE id = %s",
-            (message_id,),
-        )
         ids.append(id)
     cursor.execute("DELETE FROM fts_update_log WHERE id = ANY(%s)", (ids,))
     return len(ids)

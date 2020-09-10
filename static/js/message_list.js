@@ -123,6 +123,18 @@ export class MessageList {
         return this.data.is_search();
     }
 
+    is_topic_contains() {
+        return this.data.is_topic_contains();
+    }
+
+    is_content_contains() {
+        return this.data.is_content_contains();
+    }
+
+    is_search_type() {
+        return this.data.is_search_type();
+    }
+
     can_mark_messages_read() {
         return this.data.can_mark_messages_read();
     }

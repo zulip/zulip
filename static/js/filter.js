@@ -408,7 +408,10 @@ export class Filter {
 
     has_operator(operator) {
         return this._operators.some((elem) => {
-            if (elem.negated && !["search", "has"].includes(elem.operator)) {
+            if (
+                elem.negated &&
+                !["search", "topic-contains", "content-contains", "has"].includes(elem.operator)
+            ) {
                 return false;
             }
             return elem.operator === operator;
@@ -421,6 +424,18 @@ export class Filter {
 
     is_non_huddle_pm() {
         return this.has_operator("pm-with") && this.operands("pm-with")[0].split(",").length === 1;
+    }
+
+    is_topic_contains() {
+        return this.has_operator("topic-contains");
+    }
+
+    is_content_contains() {
+        return this.has_operator("content-contains");
+    }
+
+    is_search_type() {
+        return this.is_search() || this.is_topic_contains() || this.is_content_contains();
     }
 
     calc_can_mark_messages_read() {
@@ -675,7 +690,7 @@ export class Filter {
         // Since there can be multiple operators, each block should
         // just return false here.
 
-        if (this.is_search()) {
+        if (this.is_search_type()) {
             // The semantics for matching keywords are implemented
             // by database plugins, and we don't have JS code for
             // that, plus search queries tend to go too far back in
@@ -900,6 +915,12 @@ export class Filter {
 
             case "topic":
                 return verb + "topic";
+
+            case "topic-contains":
+                return verb + "search by topic";
+
+            case "content-contains":
+                return verb + "search by content";
 
             case "sender":
                 return verb + "sent by";

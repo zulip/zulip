@@ -80,12 +80,17 @@ test("basics", () => {
 
     assert.ok(filter.has_operator("stream"));
     assert.ok(!filter.has_operator("search"));
+    assert.ok(!filter.has_operator("topic-contains"));
+    assert.ok(!filter.has_operator("content-contains"));
 
     assert.ok(filter.has_operand("stream", "foo"));
     assert.ok(!filter.has_operand("stream", "exclude_stream"));
     assert.ok(!filter.has_operand("stream", "nada"));
 
+    assert.ok(!filter.is_search_type());
     assert.ok(!filter.is_search());
+    assert.ok(!filter.is_topic_contains());
+    assert.ok(!filter.is_content_contains());
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
@@ -101,6 +106,29 @@ test("basics", () => {
     filter = new Filter(operators);
 
     assert.ok(filter.is_search());
+    assert.ok(filter.is_search());
+    assert.ok(!filter.is_topic_contains());
+    assert.ok(!filter.is_content_contains());
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(!filter.allow_use_first_unread_when_narrowing());
+    assert.ok(!filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(filter.can_bucket_by("stream"));
+    assert.ok(filter.can_bucket_by("stream", "topic"));
+
+    operators = [
+        {operator: "stream", operand: "foo"},
+        {operator: "topic", operand: "bar"},
+        {operator: "topic-contains", operand: "pizza"},
+        {operator: "content-contains", operand: "pizza"},
+    ];
+    filter = new Filter(operators);
+
+    assert.ok(filter.is_search_type());
+    assert.ok(!filter.is_search());
+    assert.ok(filter.is_topic_contains());
+    assert.ok(filter.is_content_contains());
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
@@ -126,6 +154,28 @@ test("basics", () => {
     filter = new Filter(operators);
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(filter.has_operator("search"));
+    assert.ok(filter.is_search_type());
+    assert.ok(filter.is_search());
+    assert.ok(!filter.can_apply_locally());
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.is_personal_filter());
+
+    operators = [{operator: "topic-contains", operand: "stop_word", negated: true}];
+    filter = new Filter(operators);
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.has_operator("topic-contains"));
+    assert.ok(filter.is_search_type());
+    assert.ok(filter.is_topic_contains());
+    assert.ok(!filter.can_apply_locally());
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.is_personal_filter());
+
+    operators = [{operator: "content-contains", operand: "stop_word", negated: true}];
+    filter = new Filter(operators);
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.has_operator("content-contains"));
+    assert.ok(filter.is_search_type());
+    assert.ok(filter.is_content_contains());
     assert.ok(!filter.can_apply_locally());
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(!filter.is_personal_filter());
@@ -269,28 +319,44 @@ function assert_not_mark_read_with_is_operands(additional_operators_to_test) {
     assert.ok(!filter.can_mark_messages_read());
 }
 
-function assert_not_mark_read_when_searching(additional_operators_to_test) {
+function assert_not_mark_read_when_search_type(additional_operators_to_test) {
     additional_operators_to_test = additional_operators_to_test || [];
     let search_op = [{operator: "search", operand: "keyword"}];
     let filter = new Filter(additional_operators_to_test.concat(search_op));
     assert.ok(!filter.can_mark_messages_read());
 
+    let topic_contains_op = [{operator: "topic-contains", operand: "keyword"}];
+    filter = new Filter(additional_operators_to_test.concat(topic_contains_op));
+    assert(!filter.can_mark_messages_read());
+
+    let content_contains_op = [{operator: "topic-contains", operand: "keyword"}];
+    filter = new Filter(additional_operators_to_test.concat(content_contains_op));
+    assert(!filter.can_mark_messages_read());
+
     search_op = [{operator: "search", operand: "keyword", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(search_op));
+    assert.ok(!filter.can_mark_messages_read());
+
+    topic_contains_op = [{operator: "topic-contains", operand: "keyword", negated: true}];
+    filter = new Filter(additional_operators_to_test.concat(topic_contains_op));
+    assert.ok(!filter.can_mark_messages_read());
+
+    content_contains_op = [{operator: "content-contains", operand: "keyword", negated: true}];
+    filter = new Filter(additional_operators_to_test.concat(content_contains_op));
     assert.ok(!filter.can_mark_messages_read());
 }
 
 test("can_mark_messages_read", () => {
     assert_not_mark_read_with_has_operands();
     assert_not_mark_read_with_is_operands();
-    assert_not_mark_read_when_searching();
+    assert_not_mark_read_when_search_type();
 
     const stream_operator = [{operator: "stream", operand: "foo"}];
     let filter = new Filter(stream_operator);
     assert.ok(filter.can_mark_messages_read());
     assert_not_mark_read_with_has_operands(stream_operator);
     assert_not_mark_read_with_is_operands(stream_operator);
-    assert_not_mark_read_when_searching(stream_operator);
+    assert_not_mark_read_when_search_type(stream_operator);
 
     const stream_negated_operator = [{operator: "stream", operand: "foo", negated: true}];
     filter = new Filter(stream_negated_operator);
@@ -304,7 +370,7 @@ test("can_mark_messages_read", () => {
     assert.ok(filter.can_mark_messages_read());
     assert_not_mark_read_with_has_operands(stream_topic_operators);
     assert_not_mark_read_with_is_operands(stream_topic_operators);
-    assert_not_mark_read_when_searching(stream_topic_operators);
+    assert_not_mark_read_when_search_type(stream_topic_operators);
 
     const stream_negated_topic_operators = [
         {operator: "stream", operand: "foo"},
@@ -328,22 +394,22 @@ test("can_mark_messages_read", () => {
     assert_not_mark_read_with_is_operands(pm_with);
     assert_not_mark_read_with_has_operands(group_pm);
     assert_not_mark_read_with_has_operands(pm_with);
-    assert_not_mark_read_when_searching(group_pm);
-    assert_not_mark_read_when_searching(pm_with);
+    assert_not_mark_read_when_search_type(group_pm);
+    assert_not_mark_read_when_search_type(pm_with);
 
     const is_private = [{operator: "is", operand: "private"}];
     filter = new Filter(is_private);
     assert.ok(filter.can_mark_messages_read());
     assert_not_mark_read_with_is_operands(is_private);
     assert_not_mark_read_with_has_operands(is_private);
-    assert_not_mark_read_when_searching(is_private);
+    assert_not_mark_read_when_search_type(is_private);
 
     const in_all = [{operator: "in", operand: "all"}];
     filter = new Filter(in_all);
     assert.ok(filter.can_mark_messages_read());
     assert_not_mark_read_with_is_operands(in_all);
     assert_not_mark_read_with_has_operands(in_all);
-    assert_not_mark_read_when_searching(in_all);
+    assert_not_mark_read_when_search_type(in_all);
 
     const in_home = [{operator: "in", operand: "home"}];
     const in_home_negated = [{operator: "in", operand: "home", negated: true}];
@@ -351,7 +417,7 @@ test("can_mark_messages_read", () => {
     assert.ok(filter.can_mark_messages_read());
     assert_not_mark_read_with_is_operands(in_home);
     assert_not_mark_read_with_has_operands(in_home);
-    assert_not_mark_read_when_searching(in_home);
+    assert_not_mark_read_when_search_type(in_home);
     filter = new Filter(in_home_negated);
     assert.ok(!filter.can_mark_messages_read());
 
@@ -391,6 +457,14 @@ test("show_first_unread", () => {
     operators = [{operator: "search", operand: "query to search"}];
     filter = new Filter(operators);
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
+
+    operators = [{operator: "topic-contains", operand: "query to search"}];
+    filter = new Filter(operators);
+    assert(!filter.allow_use_first_unread_when_narrowing());
+
+    operators = [{operator: "content-contains", operand: "query to search"}];
+    filter = new Filter(operators);
+    assert(!filter.allow_use_first_unread_when_narrowing());
 
     filter = new Filter();
     assert.ok(filter.can_mark_messages_read());
@@ -496,6 +570,12 @@ test("redundancies", () => {
 });
 
 test("canonicalization", () => {
+    function _test_canonicalization(operator, operand, expected_operator, expected_operand) {
+        const term = Filter.canonicalize_term({operator, operand});
+        assert.equal(term.operator, expected_operator);
+        assert.equal(term.operand, expected_operand);
+    }
+
     assert.equal(Filter.canonicalize_operator("Is"), "is");
     assert.equal(Filter.canonicalize_operator("Stream"), "stream");
     assert.equal(Filter.canonicalize_operator("Subject"), "topic");
@@ -514,21 +594,21 @@ test("canonicalization", () => {
     assert.equal(term.operator, "pm-with");
     assert.equal(term.operand, "me@example.com");
 
-    term = Filter.canonicalize_term({operator: "search", operand: "foo"});
-    assert.equal(term.operator, "search");
-    assert.equal(term.operand, "foo");
+    _test_canonicalization("search", "foo", "search", "foo");
+    _test_canonicalization("topic-contains", "foo", "topic-contains", "foo");
+    _test_canonicalization("content-contains", "foo", "content-contains", "foo");
 
-    term = Filter.canonicalize_term({operator: "search", operand: "fOO"});
-    assert.equal(term.operator, "search");
-    assert.equal(term.operand, "foo");
+    _test_canonicalization("search", "fOO", "search", "foo");
+    _test_canonicalization("topic-contains", "fOO", "topic-contains", "foo");
+    _test_canonicalization("content-contains", "fOO", "content-contains", "foo");
 
-    term = Filter.canonicalize_term({operator: "search", operand: 123});
-    assert.equal(term.operator, "search");
-    assert.equal(term.operand, "123");
+    _test_canonicalization("search", 123, "search", "123");
+    _test_canonicalization("topic-contains", 123, "topic-contains", "123");
+    _test_canonicalization("content-contains", 123, "content-contains", "123");
 
-    term = Filter.canonicalize_term({operator: "search", operand: "abc “xyz”"});
-    assert.equal(term.operator, "search");
-    assert.equal(term.operand, 'abc "xyz"');
+    _test_canonicalization("search", "abc “xyz”", "search", 'abc "xyz"');
+    // _test_canonicalization("topic-contains", "abc “xyz”", "topic-contains", 'abc "xyz"');
+    // _test_canonicalization("content-contains", "abc “xyz”", "content-contains", 'abc "xyz"');
 
     term = Filter.canonicalize_term({operator: "has", operand: "attachments"});
     assert.equal(term.operator, "has");
@@ -1117,6 +1197,20 @@ test("describe", () => {
         {operator: "stream", operand: "devel"},
     ];
     string = "exclude messages with one or more image, stream devel";
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: "topic-contains", operand: "abc"},
+        {operator: "content-contains", operand: "def"},
+    ];
+    string = "search by topic abc, search by content def";
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: "topic-contains", operand: "abc", negated: true},
+        {operator: "content-contains", operand: "def", negated: true},
+    ];
+    string = "exclude search by topic abc, exclude search by content def";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [];

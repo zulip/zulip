@@ -1,5 +1,6 @@
 import datetime
 import os
+from functools import partial
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 from unittest import mock
 
@@ -415,7 +416,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="search", operand='"french fries"')
         self._do_add_term_test(
             term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
+            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s) AND (search_tsvector @@ plainto_tsquery(%(param_13)s, %(param_14)s))",
         )
 
     @override_settings(USING_PGROONGA=False)
@@ -423,19 +424,83 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="search", operand='"french fries"', negated=True)
         self._do_add_term_test(
             term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
+            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s) AND NOT (search_tsvector @@ plainto_tsquery(%(param_13)s, %(param_14)s))",
+        )
+
+    @override_settings(USING_PGROONGA=False)
+    def test_add_term_using_topic_contains_operator(self) -> None:
+        term = dict(operator="topic-contains", operand='"french fries"')
+        self._do_add_term_test(
+            term,
+            "WHERE ts_filter(search_tsvector, %(ts_filter_1)s) @@ plainto_tsquery(%(param_4)s, %(param_5)s)",
+        )
+
+    @override_settings(USING_PGROONGA=False)
+    def test_add_term_using_topic_contains_operator_and_negated(self) -> None:
+        term = dict(operator="topic-contains", operand='"french fries"', negated=True)
+        self._do_add_term_test(
+            term,
+            "WHERE NOT (ts_filter(search_tsvector, %(ts_filter_1)s) @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
+        )
+
+    @override_settings(USING_PGROONGA=False)
+    def test_add_term_using_content_contains_operator(self) -> None:
+        term = dict(operator="content-contains", operand='"french fries"')
+        self._do_add_term_test(
+            term,
+            "WHERE ts_filter(search_tsvector, %(ts_filter_1)s) @@ plainto_tsquery(%(param_4)s, %(param_5)s)",
+        )
+
+    @override_settings(USING_PGROONGA=False)
+    def test_add_term_using_content_contains_operator_and_negated(self) -> None:
+        term = dict(operator="content-contains", operand='"french fries"', negated=True)
+        self._do_add_term_test(
+            term,
+            "WHERE NOT (ts_filter(search_tsvector, %(ts_filter_1)s) @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
         )
 
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_pgroonga(self) -> None:
         term = dict(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
+        self._do_add_term_test(
+            term,
+            "WHERE (search_pgroonga_topic &@~ escape_html(%(escape_html_3)s)) OR (search_pgroonga_rendered_content &@~ escape_html(%(escape_html_3)s))",
+        )
 
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
         term = dict(operator="search", operand='"french fries"', negated=True)
         self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
+            term,
+            "WHERE NOT ((search_pgroonga_topic &@~ escape_html(%(escape_html_3)s)) OR (search_pgroonga_rendered_content &@~ escape_html(%(escape_html_3)s)))",
+        )
+
+    @override_settings(USING_PGROONGA=True)
+    def test_add_term_using_topic_contains_operator_pgroonga(self) -> None:
+        term = dict(operator="topic-contains", operand='"french fries"')
+        self._do_add_term_test(
+            term, "WHERE search_pgroonga_topic &@~ escape_html(%(escape_html_1)s)"
+        )
+
+    @override_settings(USING_PGROONGA=True)
+    def test_add_term_using_topic_contains_operator_pgroonga_negated(self) -> None:
+        term = dict(operator="topic-contains", operand='"french fries"', negated=True)
+        self._do_add_term_test(
+            term, "WHERE NOT (search_pgroonga_topic &@~ escape_html(%(escape_html_1)s))"
+        )
+
+    @override_settings(USING_PGROONGA=True)
+    def test_add_term_using_content_contains_operator_pgroonga(self) -> None:
+        term = dict(operator="content-contains", operand='"french fries"')
+        self._do_add_term_test(
+            term, "WHERE search_pgroonga_rendered_content &@~ escape_html(%(escape_html_1)s)"
+        )
+
+    @override_settings(USING_PGROONGA=True)
+    def test_add_term_using_content_contains_operator_pgroonga_negated(self) -> None:
+        term = dict(operator="content-contains", operand='"french fries"', negated=True)
+        self._do_add_term_test(
+            term, "WHERE NOT (search_pgroonga_rendered_content &@~ escape_html(%(escape_html_1)s))"
         )
 
     def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
@@ -2030,8 +2095,8 @@ class GetOldMessagesTest(ZulipTestCase):
             cursor.execute(
                 """
             UPDATE zerver_message SET
-            search_tsvector = to_tsvector('zulip.english_us_search',
-            subject || rendered_content)
+            search_tsvector = setweight(to_tsvector('zulip.english_us_search',
+            subject), 'A') || setweight(to_tsvector('zulip.english_us_search', rendered_content), 'B')
             """
             )
 
@@ -2071,6 +2136,31 @@ class GetOldMessagesTest(ZulipTestCase):
             '<p><span class="highlight">KEYWORDMATCH</span> and should work</p>',
         )
 
+    def send_narrow_and_assert_expected_length_and_matches(
+        self,
+        using_pgroonga: bool,
+        narrow: List[Dict[str, str]],
+        anchor: int,
+        num_before: int,
+        num_after: int,
+        expected_matches: List[Dict[str, str]],
+    ) -> None:
+        with override_settings(USING_PGROONGA=using_pgroonga):
+            result: Dict[str, Any] = self.get_and_check_messages(
+                dict(
+                    narrow=orjson.dumps(narrow).decode(),
+                    anchor=anchor,
+                    num_before=num_before,
+                    num_after=num_after,
+                )
+            )
+
+        self.assert_length(result["messages"], len(expected_matches))
+
+        for expected_message_match, message in zip(expected_matches, result["messages"]):
+            self.assertEqual(expected_message_match[MATCH_TOPIC], message[MATCH_TOPIC])
+            self.assertEqual(expected_message_match["match_content"], message["match_content"])
+
     @override_settings(USING_PGROONGA=False)
     def test_get_messages_with_search(self) -> None:
         self.login("cordelia")
@@ -2085,10 +2175,13 @@ class GetOldMessagesTest(ZulipTestCase):
             ("日本", "こんに ちは 。 今日は いい 天気ですね。"),
             ("日本", "今朝はごはんを食べました。"),
             ("日本", "昨日、日本 のお菓子を送りました。"),
+            ("தமிழ் குழு", "உங்கள் பெயர் என்ன?"),
             ("english", "I want to go to 日本!"),
         ]
 
         next_message_id = self.get_last_message().id + 1
+        num_before = 0
+        num_after = 11
 
         cordelia = self.example_user("cordelia")
 
@@ -2102,94 +2195,187 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self._update_tsvector_index()
 
+        narrow_result_assert = partial(
+            self.send_narrow_and_assert_expected_length_and_matches,
+            using_pgroonga=False,
+            anchor=next_message_id,
+            num_before=num_before,
+            num_after=num_after,
+        )
+
         narrow = [
             dict(operator="sender", operand=cordelia.email),
             dict(operator="search", operand="lunch"),
         ]
-        result: Dict[str, Any] = self.get_and_check_messages(
-            dict(
-                narrow=orjson.dumps(narrow).decode(),
-                anchor=next_message_id,
-                num_before=0,
-                num_after=10,
-            )
+        expected_search_matches = [
+            {
+                MATCH_TOPIC: '<span class="highlight">lunch</span> plans',
+                "match_content": "<p>I am hungry!</p>",
+            },
+            {
+                MATCH_TOPIC: "meetings",
+                "match_content": '<p>discuss <span class="highlight">lunch</span> after '
+                + '<span class="highlight">lunch</span></p>',
+            },
+        ]
+
+        narrow_result_assert(narrow=narrow, expected_matches=expected_search_matches)
+
+        topic_contains_narrow = [
+            dict(operator="sender", operand=cordelia.email),
+            dict(operator="topic-contains", operand="lunch"),
+        ]
+
+        expected_topic_contains_matches = [expected_search_matches[0]]
+
+        narrow_result_assert(
+            narrow=topic_contains_narrow, expected_matches=expected_topic_contains_matches
         )
-        self.assert_length(result["messages"], 2)
-        messages = result["messages"]
+
+        content_contains_narrow = [
+            dict(operator="sender", operand=cordelia.email),
+            dict(operator="content-contains", operand="lunch"),
+        ]
+        expected_content_contains_matches = [expected_search_matches[1]]
+
+        narrow_result_assert(
+            narrow=content_contains_narrow, expected_matches=expected_content_contains_matches
+        )
 
         narrow = [dict(operator="search", operand="https://google.com")]
-        link_search_result: Dict[str, Any] = self.get_and_check_messages(
-            dict(
-                narrow=orjson.dumps(narrow).decode(),
-                anchor=next_message_id,
-                num_before=0,
-                num_after=10,
-            )
-        )
-        self.assert_length(link_search_result["messages"], 1)
-        self.assertEqual(
-            link_search_result["messages"][0]["match_content"],
-            '<p><a href="https://google.com">https://<span class="highlight">google.com</span></a></p>',
-        )
+        expected_link_search_matches = [
+            {
+                MATCH_TOPIC: "urltest",
+                "match_content": '<p><a href="https://google.com">https://<span class="highlight">google.com</span></a></p>',
+            }
+        ]
 
-        (meeting_message,) = [m for m in messages if m[TOPIC_NAME] == "meetings"]
-        self.assertEqual(meeting_message[MATCH_TOPIC], "meetings")
-        self.assertEqual(
-            meeting_message["match_content"],
-            '<p>discuss <span class="highlight">lunch</span> after '
-            + '<span class="highlight">lunch</span></p>',
-        )
+        narrow_result_assert(narrow=narrow, expected_matches=expected_link_search_matches)
 
-        (lunch_message,) = [m for m in messages if m[TOPIC_NAME] == "lunch plans"]
-        self.assertEqual(lunch_message[MATCH_TOPIC], '<span class="highlight">lunch</span> plans')
-        self.assertEqual(lunch_message["match_content"], "<p>I am hungry!</p>")
+        content_contains_narrow = [dict(operator="content-contains", operand="https://google.com")]
+        expected_link_content_matches = expected_link_search_matches
 
-        # Should not crash when multiple search operands are present
+        narrow_result_assert(narrow=narrow, expected_matches=expected_link_content_matches)
+
+        # Should not crash when multiple search type operands are present
         multi_search_narrow = [
             dict(operator="search", operand="discuss"),
             dict(operator="search", operand="after"),
         ]
-        multi_search_result: Dict[str, Any] = self.get_and_check_messages(
-            dict(
-                narrow=orjson.dumps(multi_search_narrow).decode(),
-                anchor=next_message_id,
-                num_after=10,
-                num_before=0,
-            )
+        expected_multi_search_result = [
+            {
+                MATCH_TOPIC: "meetings",
+                "match_content": '<p><span class="highlight">discuss</span> lunch <span class="highlight">after</span> lunch</p>',
+            }
+        ]
+        narrow_result_assert(
+            narrow=multi_search_narrow, expected_matches=expected_multi_search_result
         )
-        self.assert_length(multi_search_result["messages"], 1)
-        self.assertEqual(
-            multi_search_result["messages"][0]["match_content"],
-            '<p><span class="highlight">discuss</span> lunch <span class="highlight">after</span> lunch</p>',
+
+        multi_topic_contains_narrow = [
+            dict(operator="topic-contains", operand="lunch"),
+            dict(operator="topic-contains", operand="plan"),
+        ]
+
+        expected_multi_topic_contains_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">lunch</span> <span class="highlight">plans</span>',
+                "match_content": "<p>I am hungry!</p>",
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=multi_topic_contains_narrow,
+            expected_matches=expected_multi_topic_contains_result,
+        )
+
+        multi_content_contains_narrow = [
+            dict(operator="content-contains", operand="discuss"),
+            dict(operator="content-contains", operand="lunch"),
+        ]
+
+        expected_multi_content_contains_result = [
+            {
+                MATCH_TOPIC: "meetings",
+                "match_content": '<p><span class="highlight">discuss</span> <span class="highlight">lunch</span> '
+                'after <span class="highlight">lunch</span></p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=multi_content_contains_narrow,
+            expected_matches=expected_multi_content_contains_result,
         )
 
         # Test searching in messages with Unicode characters
         narrow = [
             dict(operator="search", operand="日本"),
         ]
-        result = self.get_and_check_messages(
-            dict(
-                narrow=orjson.dumps(narrow).decode(),
-                anchor=next_message_id,
-                num_after=10,
-                num_before=0,
-            )
-        )
-        self.assert_length(result["messages"], 4)
-        messages = result["messages"]
+        expected_unicode_search_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>',
+                "match_content": "<p>こんに ちは 。 今日は いい 天気ですね。</p>",
+            },
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>',
+                "match_content": "<p>今朝はごはんを食べました。</p>",
+            },
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>',
+                "match_content": '<p>昨日、<span class="highlight">日本</span> のお菓子を送りました。</p>',
+            },
+            {
+                MATCH_TOPIC: "english",
+                "match_content": '<p>I want to go to <span class="highlight">日本</span>!</p>',
+            },
+        ]
 
-        japanese_message = [m for m in messages if m[TOPIC_NAME] == "日本"][-1]
-        self.assertEqual(japanese_message[MATCH_TOPIC], '<span class="highlight">日本</span>')
-        self.assertEqual(
-            japanese_message["match_content"],
-            '<p>昨日、<span class="highlight">日本</span>' + " のお菓子を送りました。</p>",
+        narrow_result_assert(narrow=narrow, expected_matches=expected_unicode_search_result)
+
+        topic_contains_narrow = [
+            dict(operator="topic-contains", operand="日本"),
+        ]
+        # For topic-only search, the 3rd expected message differs from search,
+        # creating new expected result Dict
+        expected_unicode_topic_contains_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>',
+                "match_content": "<p>こんに ちは 。 今日は いい 天気ですね。</p>",
+            },
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>',
+                "match_content": "<p>今朝はごはんを食べました。</p>",
+            },
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>',
+                "match_content": "<p>昨日、日本 のお菓子を送りました。</p>",
+            },
+        ]
+
+        narrow_result_assert(
+            narrow=topic_contains_narrow, expected_matches=expected_unicode_topic_contains_result
         )
 
-        (english_message,) = [m for m in messages if m[TOPIC_NAME] == "english"]
-        self.assertEqual(english_message[MATCH_TOPIC], "english")
-        self.assertIn(
-            english_message["match_content"],
-            '<p>I want to go to <span class="highlight">日本</span>!</p>',
+        content_contains_narrow = [
+            dict(operator="content-contains", operand="日本"),
+        ]
+
+        # For content-only search, the expected content-only message match
+        # differs from the 3th search message match, creating new expected result.
+        expected_unicode_content_contains_result = [
+            {
+                MATCH_TOPIC: "日本",
+                "match_content": '<p>昨日、<span class="highlight">日本</span> のお菓子を送りました。</p>',
+            },
+            {
+                MATCH_TOPIC: "english",
+                "match_content": '<p>I want to go to <span class="highlight">日本</span>!</p>',
+            },
+        ]
+
+        narrow_result_assert(
+            narrow=content_contains_narrow,
+            expected_matches=expected_unicode_content_contains_result,
         )
 
         # Multiple search operands with Unicode
@@ -2197,18 +2383,233 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator="search", operand="ちは"),
             dict(operator="search", operand="今日は"),
         ]
-        multi_search_result = self.get_and_check_messages(
-            dict(
-                narrow=orjson.dumps(multi_search_narrow).decode(),
-                anchor=next_message_id,
-                num_after=10,
-                num_before=0,
-            )
+        expected_multi_search_unicode_result = [
+            {
+                MATCH_TOPIC: "日本",
+                "match_content": '<p>こんに <span class="highlight">ちは</span> 。 <span class="highlight">今日は</span> いい 天気ですね。</p>',
+            }
+        ]
+        narrow_result_assert(
+            narrow=multi_search_narrow, expected_matches=expected_multi_search_unicode_result
         )
-        self.assert_length(multi_search_result["messages"], 1)
-        self.assertEqual(
-            multi_search_result["messages"][0]["match_content"],
-            '<p>こんに <span class="highlight">ちは</span> 。 <span class="highlight">今日は</span> いい 天気ですね。</p>',
+
+        multi_topic_contains_narrow = [
+            dict(operator="topic-contains", operand="தமிழ்"),
+            dict(operator="topic-contains", operand="குழு"),
+        ]
+
+        expected_multi_topic_contains_unicode_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">தமிழ்</span> '
+                '<span class="highlight">குழு</span>',
+                "match_content": "<p>உங்கள் பெயர் என்ன?</p>",
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=multi_topic_contains_narrow,
+            expected_matches=expected_multi_topic_contains_unicode_result,
+        )
+
+        multi_content_contains_narrow = [
+            dict(operator="content-contains", operand="பெயர்"),
+            dict(operator="content-contains", operand="என்ன"),
+        ]
+
+        expected_multi_content_contains_unicode_result = [
+            {
+                MATCH_TOPIC: "தமிழ் குழு",
+                "match_content": '<p>உங்கள் <span class="highlight">பெயர்</span> '
+                '<span class="highlight">என்ன</span>?</p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=multi_content_contains_narrow,
+            expected_matches=expected_multi_content_contains_unicode_result,
+        )
+
+        # Search with both topic-contains and content-contains
+        narrow_topic_content_contains = [
+            dict(operator="topic-contains", operand="breakfast"),
+            dict(operator="content-contains", operand="conference"),
+        ]
+
+        expected_topic_content_contains_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">breakfast</span>',
+                "match_content": "<p>there are muffins in the "
+                '<span class="highlight">conference</span> room</p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=narrow_topic_content_contains,
+            expected_matches=expected_topic_content_contains_result,
+        )
+
+        # Chaining topic, content & search operands
+        # topic and search operand with search operand matching topic.
+        topic_search_chain_narrow = [
+            dict(operator="search", operand="lunch"),
+            dict(operator="topic-contains", operand="plans"),
+        ]
+        expected_topic_search_chain_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">lunch</span> <span class="highlight">plans</span>',
+                "match_content": "<p>I am hungry!</p>",
+            },
+        ]
+
+        narrow_result_assert(
+            narrow=topic_search_chain_narrow, expected_matches=expected_topic_search_chain_result
+        )
+
+        # topic and search operands with search operand matching content.
+        topic_search_chain_narrow = [
+            dict(operator="search", operand="lunch"),
+            dict(operator="topic-contains", operand="meetings"),
+        ]
+        expected_topic_search_chain_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">meetings</span>',
+                "match_content": '<p>discuss <span class="highlight">lunch</span> after <span class="highlight">lunch</span></p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=topic_search_chain_narrow, expected_matches=expected_topic_search_chain_result
+        )
+
+        # topic and search operands with search operand matching both topic and content.
+        topic_search_chain_narrow = [
+            dict(operator="search", operand="日本"),
+            dict(operator="topic-contains", operand="日本"),
+        ]
+        expected_topic_search_chain_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>',
+                "match_content": "<p>こんに ちは 。 今日は いい 天気ですね。</p>",
+            },
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>',
+                "match_content": "<p>今朝はごはんを食べました。</p>",
+            },
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>',
+                "match_content": '<p>昨日、<span class="highlight">日本</span> のお菓子を送りました。</p>',
+            },
+        ]
+
+        narrow_result_assert(
+            narrow=topic_search_chain_narrow, expected_matches=expected_topic_search_chain_result
+        )
+
+        # topic and search operands which are disjoint
+        topic_search_chain_narrow = [
+            dict(operator="search", operand="english"),
+            dict(operator="topic-contains", operand="meetings"),
+        ]
+        expected_topic_search_chain_result = []
+
+        narrow_result_assert(
+            narrow=topic_search_chain_narrow, expected_matches=expected_topic_search_chain_result
+        )
+
+        # content and search operand with search operand matching content.
+        content_search_chain_narrow = [
+            dict(operator="search", operand="உங்கள்"),
+            dict(operator="content-contains", operand="என்ன"),
+        ]
+        expected_content_search_chain_result = [
+            {
+                MATCH_TOPIC: "தமிழ் குழு",
+                "match_content": '<p><span class="highlight">உங்கள்</span> பெயர் <span class="highlight">என்ன</span>?</p>',
+            },
+        ]
+
+        narrow_result_assert(
+            narrow=content_search_chain_narrow,
+            expected_matches=expected_content_search_chain_result,
+        )
+
+        # content and search operands with search operand matching topic.
+        content_search_chain_narrow = [
+            dict(operator="search", operand="english"),
+            dict(operator="content-contains", operand="日本"),
+        ]
+        expected_content_search_chain_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">english</span>',
+                "match_content": '<p>I want to go to <span class="highlight">日本</span>!</p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=content_search_chain_narrow,
+            expected_matches=expected_content_search_chain_result,
+        )
+
+        # content and search operands with search operand matching both topic and content.
+        content_search_chain_narrow = [
+            dict(operator="search", operand="日本"),
+            dict(operator="content-contains", operand="昨日"),
+        ]
+        expected_content_search_chain_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>',
+                "match_content": '<p><span class="highlight">昨日</span>、<span class="highlight">日本</span> のお菓子を送りました。</p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=content_search_chain_narrow,
+            expected_matches=expected_content_search_chain_result,
+        )
+
+        # content and search operands which are disjoint
+        content_search_chain_narrow = [
+            dict(operator="search", operand="日本"),
+            dict(operator="content-contains", operand="speak"),
+        ]
+        expected_content_search_chain_result = []
+
+        narrow_result_assert(
+            narrow=content_search_chain_narrow,
+            expected_matches=expected_content_search_chain_result,
+        )
+
+        # topic, content, search operands non-disjoint
+        topic_content_search_chain_narrow = [
+            dict(operator="search", operand="lunch"),
+            dict(operator="content-contains", operand="hungry"),
+            dict(operator="topic-contains", operand="plans"),
+        ]
+
+        expected_topic_content_search_chain_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">lunch</span> <span class="highlight">plans</span>',
+                "match_content": '<p>I am <span class="highlight">hungry</span>!</p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=topic_content_search_chain_narrow,
+            expected_matches=expected_topic_content_search_chain_result,
+        )
+
+        # topic, content search operands with search disjoint
+        topic_content_search_chain_narrow = [
+            dict(operator="search", operand="plans"),
+            dict(operator="content-contains", operand="日本"),
+            dict(operator="topic-contains", operand="lunch"),
+        ]
+
+        expected_topic_content_search_chain_result = []
+
+        narrow_result_assert(
+            narrow=topic_content_search_chain_narrow,
+            expected_matches=expected_topic_content_search_chain_result,
         )
 
     @override_settings(USING_PGROONGA=False)
@@ -2288,8 +2689,13 @@ class GetOldMessagesTest(ZulipTestCase):
             ("english", "I want to go to 日本!"),
             ("english", "Can you speak https://en.wikipedia.org/wiki/Japanese?"),
             ("english", "https://google.com"),
+            ("multiple words", "Hello"),
+            ("தமிழ் குழு", "உங்கள் பெயர் என்ன?"),
             ("bread & butter", "chalk & cheese"),
         ]
+
+        num_before = 0
+        num_after = 10
 
         for topic, content in messages_to_search:
             self.send_stream_message(
@@ -2303,40 +2709,88 @@ class GetOldMessagesTest(ZulipTestCase):
         # for the entire zerver_message table (which is small in test
         # mode).  In production there is an async process which keeps
         # the search index up to date.
+        # TODO: Change this indexing
         with connection.cursor() as cursor:
             cursor.execute(
                 """
                 UPDATE zerver_message SET
-                search_pgroonga = escape_html(subject) || ' ' || rendered_content
+                search_pgroonga_topic = escape_html(subject),
+                search_pgroonga_rendered_content = rendered_content
                 """
             )
+
+        narrow_result_assert = partial(
+            self.send_narrow_and_assert_expected_length_and_matches,
+            using_pgroonga=True,
+            anchor=next_message_id,
+            num_before=num_before,
+            num_after=num_after,
+        )
 
         narrow = [
             dict(operator="search", operand="日本"),
         ]
-        result: Dict[str, Any] = self.get_and_check_messages(
-            dict(
-                narrow=orjson.dumps(narrow).decode(),
-                anchor=next_message_id,
-                num_after=10,
-                num_before=0,
-            )
-        )
-        self.assert_length(result["messages"], 4)
-        messages = result["messages"]
 
-        japanese_message = [m for m in messages if m[TOPIC_NAME] == "日本語"][-1]
-        self.assertEqual(japanese_message[MATCH_TOPIC], '<span class="highlight">日本</span>語')
-        self.assertEqual(
-            japanese_message["match_content"],
-            '<p>昨日、<span class="highlight">日本</span>の' + "お菓子を送りました。</p>",
+        expected_search_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>語',
+                "match_content": "<p>こんにちは。今日はいい天気ですね。</p>",
+            },
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>語',
+                "match_content": "<p>今朝はごはんを食べました。</p>",
+            },
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>語',
+                "match_content": '<p>昨日、<span class="highlight">日本</span>のお菓子を送りました。</p>',
+            },
+            {
+                MATCH_TOPIC: "english",
+                "match_content": '<p>I want to go to <span class="highlight">日本</span>!</p>',
+            },
+        ]
+        narrow_result_assert(narrow=narrow, expected_matches=expected_search_result)
+
+        topic_contains_narrow = [
+            dict(operator="topic-contains", operand="日本"),
+        ]
+
+        expected_topic_contains_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>語',
+                "match_content": "<p>こんにちは。今日はいい天気ですね。</p>",
+            },
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>語',
+                "match_content": "<p>今朝はごはんを食べました。</p>",
+            },
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>語',
+                "match_content": "<p>昨日、日本のお菓子を送りました。</p>",
+            },
+        ]
+
+        narrow_result_assert(
+            narrow=topic_contains_narrow, expected_matches=expected_topic_contains_result
         )
 
-        english_message = [m for m in messages if m[TOPIC_NAME] == "english"][0]
-        self.assertEqual(english_message[MATCH_TOPIC], "english")
-        self.assertEqual(
-            english_message["match_content"],
-            '<p>I want to go to <span class="highlight">日本</span>!</p>',
+        content_contains_narrow = [
+            dict(operator="content-contains", operand="日本"),
+        ]
+
+        expected_content_contains_result = [
+            {
+                MATCH_TOPIC: "日本語",
+                "match_content": '<p>昨日、<span class="highlight">日本</span>のお菓子を送りました。</p>',
+            },
+            {
+                MATCH_TOPIC: "english",
+                "match_content": '<p>I want to go to <span class="highlight">日本</span>!</p>',
+            },
+        ]
+
+        narrow_result_assert(
+            narrow=content_contains_narrow, expected_matches=expected_content_contains_result
         )
 
         # Should not crash when multiple search operands are present
@@ -2345,18 +2799,48 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator="search", operand="speak"),
             dict(operator="search", operand="wiki"),
         ]
-        multi_search_result: Dict[str, Any] = self.get_and_check_messages(
-            dict(
-                narrow=orjson.dumps(multi_search_narrow).decode(),
-                anchor=next_message_id,
-                num_after=10,
-                num_before=0,
-            )
+
+        expected_multi_search_result = [
+            {
+                MATCH_TOPIC: "english",
+                "match_content": '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> '
+                '<a href="https://en.wikipedia.org/wiki/Japanese">https://en.<span class="highlight">wiki</span>pedia.org/<span class="highlight">wiki</span>/Japanese</a>?</p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=multi_search_narrow, expected_matches=expected_multi_search_result
         )
-        self.assert_length(multi_search_result["messages"], 1)
-        self.assertEqual(
-            multi_search_result["messages"][0]["match_content"],
-            '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> <a href="https://en.wikipedia.org/wiki/Japanese">https://en.<span class="highlight">wiki</span>pedia.org/<span class="highlight">wiki</span>/Japanese</a>?</p>',
+
+        multi_content_contains_narrow = [
+            dict(operator="content-contains", operand="can"),
+            dict(operator="content-contains", operand="speak"),
+            dict(operator="content-contains", operand="wiki"),
+        ]
+
+        expected_multi_content_contains_result = expected_multi_search_result
+
+        narrow_result_assert(
+            narrow=multi_content_contains_narrow,
+            expected_matches=expected_multi_content_contains_result,
+        )
+
+        multi_topic_contains_narrow = [
+            dict(operator="topic-contains", operand="multiple"),
+            dict(operator="topic-contains", operand="words"),
+        ]
+
+        expected_multi_topic_contains_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">multiple</span> '
+                '<span class="highlight">words</span>',
+                "match_content": "<p>Hello</p>",
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=multi_topic_contains_narrow,
+            expected_matches=expected_multi_topic_contains_result,
         )
 
         # Multiple search operands with Unicode
@@ -2364,72 +2848,320 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator="search", operand="朝は"),
             dict(operator="search", operand="べました"),
         ]
-        multi_search_result = self.get_and_check_messages(
-            dict(
-                narrow=orjson.dumps(multi_search_narrow).decode(),
-                anchor=next_message_id,
-                num_after=10,
-                num_before=0,
-            )
+
+        expected_multi_search_result = [
+            {
+                MATCH_TOPIC: "日本語",
+                "match_content": '<p>今<span class="highlight">朝は</span>ごはんを食'
+                '<span class="highlight">べました</span>。</p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=multi_search_narrow, expected_matches=expected_multi_search_result
         )
-        self.assert_length(multi_search_result["messages"], 1)
-        self.assertEqual(
-            multi_search_result["messages"][0]["match_content"],
-            '<p>今<span class="highlight">朝は</span>ごはんを食<span class="highlight">べました</span>。</p>',
+
+        multi_topic_contains_narrow = [
+            dict(operator="topic-contains", operand="தமிழ்"),
+            dict(operator="topic-contains", operand="குழு"),
+        ]
+
+        expected_multi_topic_contains_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">தமிழ்</span> '
+                '<span class="highlight">குழு</span>',
+                "match_content": "<p>உங்கள் பெயர் என்ன?</p>",
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=multi_topic_contains_narrow,
+            expected_matches=expected_multi_topic_contains_result,
+        )
+
+        multi_content_contains_narrow = [
+            dict(operator="content-contains", operand="உங்கள்"),
+            dict(operator="content-contains", operand="என்ன"),
+        ]
+
+        expected_multi_content_contains_result = [
+            {
+                MATCH_TOPIC: "தமிழ் குழு",
+                "match_content": '<p><span class="highlight">உங்கள்</span> '
+                'பெயர் <span class="highlight">என்ன</span>?</p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=multi_content_contains_narrow,
+            expected_matches=expected_multi_content_contains_result,
         )
 
         narrow = [dict(operator="search", operand="https://google.com")]
-        link_search_result: Dict[str, Any] = self.get_and_check_messages(
-            dict(
-                narrow=orjson.dumps(narrow).decode(),
-                anchor=next_message_id,
-                num_after=10,
-                num_before=0,
-            )
-        )
-        self.assert_length(link_search_result["messages"], 1)
-        self.assertEqual(
-            link_search_result["messages"][0]["match_content"],
-            '<p><a href="https://google.com"><span class="highlight">https://google.com</span></a></p>',
+        expected_link_search_result = [
+            {
+                MATCH_TOPIC: "english",
+                "match_content": '<p><a href="https://google.com"><span class="highlight">https://google.com</span></a></p>',
+            }
+        ]
+
+        narrow_result_assert(narrow=narrow, expected_matches=expected_link_search_result)
+
+        content_narrow = [dict(operator="content-contains", operand="https://google.com")]
+        expected_link_content_contains_result = expected_link_search_result
+
+        narrow_result_assert(
+            narrow=content_narrow, expected_matches=expected_link_content_contains_result
         )
 
         # Search operands with HTML special characters
         special_search_narrow = [
             dict(operator="search", operand="butter"),
         ]
-        special_search_result: Dict[str, Any] = self.get_and_check_messages(
-            dict(
-                narrow=orjson.dumps(special_search_narrow).decode(),
-                anchor=next_message_id,
-                num_after=10,
-                num_before=0,
-            )
+
+        expected_special_search_result = [
+            {
+                MATCH_TOPIC: 'bread &amp; <span class="highlight">butter</span>',
+                "match_content": "<p>chalk &amp; cheese</p>",
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=special_search_narrow, expected_matches=expected_special_search_result
         )
-        self.assert_length(special_search_result["messages"], 1)
-        self.assertEqual(
-            special_search_result["messages"][0][MATCH_TOPIC],
-            'bread &amp; <span class="highlight">butter</span>',
+
+        special_topic_contains_narrow = [
+            dict(operator="topic-contains", operand="butter"),
+        ]
+
+        expected_special_topic_contains_result = expected_special_search_result
+
+        narrow_result_assert(
+            narrow=special_topic_contains_narrow,
+            expected_matches=expected_special_topic_contains_result,
+        )
+
+        special_content_contains_narrow = [
+            dict(operator="content-contains", operand="chalk"),
+        ]
+
+        expected_special_content_contains_result = [
+            {
+                MATCH_TOPIC: "bread & butter",
+                "match_content": '<p><span class="highlight">chalk</span> &amp; cheese</p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=special_content_contains_narrow,
+            expected_matches=expected_special_content_contains_result,
         )
 
         special_search_narrow = [
             dict(operator="search", operand="&"),
         ]
-        special_search_result = self.get_and_check_messages(
-            dict(
-                narrow=orjson.dumps(special_search_narrow).decode(),
-                anchor=next_message_id,
-                num_after=10,
-                num_before=0,
-            )
+
+        expected_special_search_narrow = [
+            {
+                MATCH_TOPIC: 'bread <span class="highlight">&amp;</span> butter',
+                "match_content": '<p>chalk <span class="highlight">&amp;</span> cheese</p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=special_search_narrow, expected_matches=expected_special_search_narrow
         )
-        self.assert_length(special_search_result["messages"], 1)
-        self.assertEqual(
-            special_search_result["messages"][0][MATCH_TOPIC],
-            'bread <span class="highlight">&amp;</span> butter',
+
+        # Chaining topic, content & search operands
+        # topic and search operand with search operand matching topic.
+        topic_search_chain_narrow = [
+            dict(operator="search", operand="words"),
+            dict(operator="topic-contains", operand="multiple"),
+        ]
+        expected_topic_search_chain_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">multiple</span> <span class="highlight">words</span>',
+                "match_content": "<p>Hello</p>",
+            },
+        ]
+
+        narrow_result_assert(
+            narrow=topic_search_chain_narrow, expected_matches=expected_topic_search_chain_result
         )
-        self.assertEqual(
-            special_search_result["messages"][0]["match_content"],
-            '<p>chalk <span class="highlight">&amp;</span> cheese</p>',
+
+        # topic and search operands with search operand matching content.
+        topic_search_chain_narrow = [
+            dict(operator="search", operand="speak"),
+            dict(operator="topic-contains", operand="english"),
+        ]
+        expected_topic_search_chain_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">english</span>',
+                "match_content": '<p>Can you <span class="highlight">speak</span> <a href="https://en.wikipedia.org/wiki/Japanese">https://en.wikipedia.org/wiki/Japanese</a>?</p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=topic_search_chain_narrow, expected_matches=expected_topic_search_chain_result
+        )
+
+        # topic and search operands with search operand matching both topic and content.
+        topic_search_chain_narrow = [
+            dict(operator="search", operand="日本"),
+            dict(operator="topic-contains", operand="日本語"),
+        ]
+        expected_topic_search_chain_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">日本語</span>',
+                "match_content": "<p>こんにちは。今日はいい天気ですね。</p>",
+            },
+            {
+                MATCH_TOPIC: '<span class="highlight">日本語</span>',
+                "match_content": "<p>今朝はごはんを食べました。</p>",
+            },
+            {
+                MATCH_TOPIC: '<span class="highlight">日本語</span>',
+                "match_content": '<p>昨日、<span class="highlight">日本</span>のお菓子を送りました。</p>',
+            },
+        ]
+
+        narrow_result_assert(
+            narrow=topic_search_chain_narrow, expected_matches=expected_topic_search_chain_result
+        )
+
+        # topic and search operands which are disjoint
+        topic_search_chain_narrow = [
+            dict(operator="search", operand="english"),
+            dict(operator="topic-contains", operand="multiple"),
+        ]
+        expected_topic_search_chain_result = []
+
+        narrow_result_assert(
+            narrow=topic_search_chain_narrow, expected_matches=expected_topic_search_chain_result
+        )
+
+        # content and search operand with search operand matching content.
+        content_search_chain_narrow = [
+            dict(operator="search", operand="உங்கள்"),
+            dict(operator="content-contains", operand="என்ன"),
+        ]
+        expected_content_search_chain_result = [
+            {
+                MATCH_TOPIC: "தமிழ் குழு",
+                "match_content": '<p><span class="highlight">உங்கள்</span> பெயர் <span class="highlight">என்ன</span>?</p>',
+            },
+        ]
+
+        narrow_result_assert(
+            narrow=content_search_chain_narrow,
+            expected_matches=expected_content_search_chain_result,
+        )
+
+        # content and search operands with search operand matching topic.
+        content_search_chain_narrow = [
+            dict(operator="search", operand="english"),
+            dict(operator="content-contains", operand="speak"),
+        ]
+        expected_content_search_chain_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">english</span>',
+                "match_content": '<p>Can you <span class="highlight">speak</span> <a href="https://en.wikipedia.org/wiki/Japanese">https://en.wikipedia.org/wiki/Japanese</a>?</p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=content_search_chain_narrow,
+            expected_matches=expected_content_search_chain_result,
+        )
+
+        # content and search operands with search operand matching both topic and content.
+        content_search_chain_narrow = [
+            dict(operator="search", operand="日本"),
+            dict(operator="content-contains", operand="昨日"),
+        ]
+        expected_content_search_chain_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">日本</span>語',
+                "match_content": '<p><span class="highlight">昨日</span>、<span class="highlight">日本</span>のお菓子を送りました。</p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=content_search_chain_narrow,
+            expected_matches=expected_content_search_chain_result,
+        )
+
+        # content and search operands which are disjoint
+        content_search_chain_narrow = [
+            dict(operator="search", operand="日本語"),
+            dict(operator="content-contains", operand="speak"),
+        ]
+        expected_content_search_chain_result = []
+
+        narrow_result_assert(
+            narrow=content_search_chain_narrow,
+            expected_matches=expected_content_search_chain_result,
+        )
+
+        # topic, content, search operands non-disjoint
+        topic_content_search_chain_narrow = [
+            dict(operator="search", operand="multiple"),
+            dict(operator="content-contains", operand="Hello"),
+            dict(operator="topic-contains", operand="words"),
+        ]
+
+        expected_topic_content_search_chain_result = [
+            {
+                MATCH_TOPIC: '<span class="highlight">multiple</span> <span class="highlight">words</span>',
+                "match_content": '<p><span class="highlight">Hello</span></p>',
+            }
+        ]
+
+        narrow_result_assert(
+            narrow=topic_content_search_chain_narrow,
+            expected_matches=expected_topic_content_search_chain_result,
+        )
+
+        # topic, content search operands with search disjoint
+        topic_content_search_chain_narrow = [
+            dict(operator="search", operand="日本語"),
+            dict(operator="content-contains", operand="Hello"),
+            dict(operator="topic-contains", operand="words"),
+        ]
+
+        expected_topic_content_search_chain_result = []
+
+        narrow_result_assert(
+            narrow=topic_content_search_chain_narrow,
+            expected_matches=expected_topic_content_search_chain_result,
+        )
+
+        # topic, content search operands with topic disjoint
+        topic_content_search_chain_narrow = [
+            dict(operator="search", operand="multiple"),
+            dict(operator="content-contains", operand="Hello"),
+            dict(operator="topic-contains", operand="english"),
+        ]
+
+        expected_topic_content_search_chain_result = []
+
+        narrow_result_assert(
+            narrow=topic_content_search_chain_narrow,
+            expected_matches=expected_topic_content_search_chain_result,
+        )
+
+        # topic, content search operands with content disjoint
+        topic_content_search_chain_narrow = [
+            dict(operator="search", operand="multiple"),
+            dict(operator="content-contains", operand="speak"),
+            dict(operator="topic-contains", operand="words"),
+        ]
+
+        expected_topic_content_search_chain_result = []
+
+        narrow_result_assert(
+            narrow=topic_content_search_chain_narrow,
+            expected_matches=expected_topic_content_search_chain_result,
         )
 
     def test_messages_in_narrow_for_non_search(self) -> None:

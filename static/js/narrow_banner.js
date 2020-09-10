@@ -16,10 +16,32 @@ function show_search_query() {
     // when search bar contains multiple filters, only show search queries
     const current_filter = narrow_state.filter();
     const search_query = current_filter.operands("search")[0];
-    const query_words = search_query.split(" ");
+    const topic_query = current_filter.operands("topic-contains").join(" ");
+    const content_query = current_filter.operands("content-contains").join(" ");
+    const query_map = new Map();
+
+    query_map.set("topic-contains", topic_query);
+    query_map.set("content-contains", content_query);
+    query_map.set("search", search_query);
 
     const search_string_display = $("#empty_search_stop_words_string");
     let query_contains_stop_words = false;
+
+    function add_search_terms(query_words) {
+        for (const query_word of query_words) {
+            search_string_display.append(" ");
+
+            // if query contains stop words, it is enclosed by a <del> tag
+            if (page_params.stop_words.includes(query_word)) {
+                // stop_words do not need sanitization so this is unnecessary but it is fail-safe.
+                search_string_display.append($("<del>").text(query_word));
+                query_contains_stop_words = true;
+            } else {
+                // We use .text("...") to sanitize the user-given query_string.
+                search_string_display.append($("<span>").text(query_word));
+            }
+        }
+    }
 
     // Also removes previous search_string if any
     search_string_display.text($t({defaultMessage: "You searched for:"}));
@@ -40,17 +62,13 @@ function show_search_query() {
         search_string_display.append($("<span>").text(stream_topic_string));
     }
 
-    for (const query_word of query_words) {
-        search_string_display.append(" ");
-
-        // if query contains stop words, it is enclosed by a <del> tag
-        if (page_params.stop_words.includes(query_word)) {
-            // stop_words do not need sanitization so this is unnecessary but it is fail-safe.
-            search_string_display.append($("<del>").text(query_word));
-            query_contains_stop_words = true;
-        } else {
-            // We use .text("...") to sanitize the user-given query_string.
-            search_string_display.append($("<span>").text(query_word));
+    for (const [search_type, query_words] of query_map.entries()) {
+        if (query_words) {
+            if (search_type !== "search") {
+                search_string_display.append(" ");
+                search_string_display.append(search_type + ":");
+            }
+            add_search_terms(query_words.split(" "));
         }
     }
 
@@ -155,6 +173,8 @@ function pick_empty_narrow_banner() {
             // else fallthrough to default case
             break;
         case "search":
+        case "topic-contains":
+        case "content-contains":
             // You are narrowed to empty search results.
             show_search_query();
             return $("#empty_search_narrow_message");
