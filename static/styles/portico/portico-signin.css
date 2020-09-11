@@ -277,6 +277,7 @@ html {
     .terms-of-service .input-group,
     .default-stream-groups .input-group,
     .default-stream-groups p {
+        display: block;
         width: 330px;
         margin: 0 auto 10px;
     }
@@ -412,6 +413,7 @@ html {
 
             border: 1px solid hsl(0, 0%, 87%);
             box-shadow: none;
+            box-sizing: content-box;
             border-radius: 4px;
 
             transition: border 0.3s ease;
@@ -840,6 +842,15 @@ button#register_auth_button_gitlab {
 
     legend {
         margin-bottom: 0;
+        display: block;
+        width: 100%;
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 21px;
+        line-height: 40px;
+        color: #333;
+        border: 0;
+        border-bottom: 1px solid #e5e5e5;
 
         + .input-box {
             margin-top: 20px;
@@ -911,6 +922,7 @@ button#register_auth_button_gitlab {
 }
 
 #source_realm_select {
+    padding: 4px 6px;
     font-size: 1.2rem;
     height: 45px;
     width: 325px;

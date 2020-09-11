@@ -10,6 +10,23 @@
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+nav.navbar {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    z-index: 10;
+    background: transparent;
+}
+
+
+.landing-footer .row {
+        border-top: 4px solid hsl(238, 86%, 71%);
+}
+
+</style>
 {% endblock %}
 
 {% block portico_content %}
@@ -32,97 +49,123 @@
         </div>
     </div>
 
-    <div class="testimonials">
-        <div class="padded-content">
-            <div id="os-quote-carousel" class="carousel slide" data-ride="carousel">
-                <div class="carousel-quotes">
-                    <div class="carousel-inner">
-                        <div class="item active quote-container">
-                            <blockquote>
-                                Zulip helped the FHIR community grow from a
-                                tiny group of dreamers to 500 active users
-                                sending 6000 messages per month, all driving
-                                the creation of better healthcare
-                                standards. Zulip’s topic-based threading
-                                helps us manage simultaneous discussions
-                                with clarity, ensuring the right people can
-                                pay attention to the right messages. This
-                                makes our large-group discussion far more
-                                manageable than what we’ve experienced with
-                                Skype and Slack.”
-                            </blockquote>
-                            <cite>Grahame Grieve, founder, FHIR health care standards body</cite>
-                        </div>
-                        <div class="item quote-container">
-                            <blockquote>
-                                Choosing Zulip over Slack as our group chat is one
-                                of the best decisions we’ve ever made. Zulip makes
-                                it easy for our community of 1000 Recursers around
-                                the world to stay involved, even years after their
-                                batches finish. No other tool has a user
-                                experience that scales to a community of our
-                                size.
-                            </blockquote>
-                            <cite>Nick Bergson-Shilcock, founder and CEO, Recurse Center</cite>
-                        </div>
-                        <div class="item quote-container">
-                            <blockquote>
-                                Wikimedia uses Zulip for its participation
-                                in open source mentoring programs. Zulip’s
-                                threaded discussions help busy organization
-                                administrators and mentors stay in close
-                                communication with students during all
-                                phases of the programs.
-                            </blockquote>
-                            <cite>Srishti Sethi, Developer Advocate, Wikimedia Foundation</cite>
-                        </div>
-                        <div class="item quote-container">
-                            <blockquote>
-                                I highly recommend Zulip to other communities.
-                                We’re coming from Freenode as our only
-                                real-time communication so the difference is
-                                night and day. Slack is a no-go for many due
-                                to not being FLOSS, and I’m concerned about
-                                vendor lock-in if they were to stop being so
-                                generous.
-
-                                Slack’s threading model is much worse than
-                                Zulip’s IMO. The streams/topics flow is an
-                                incredibly intuitive way to keep track of
-                                everything that is going on.
-                            </blockquote>
-                            <cite>RJ Ryan, Mixxx Developer</cite>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="left visibility-control hide">
-                    <a class="fa fa-chevron-left" aria-hidden="true" href="#os-quote-carousel" data-slide="prev"></a>
-                </div>
-                <div class="right visibility-control">
-                    <a class="fa fa-chevron-right" aria-hidden="true" href="#os-quote-carousel" data-slide="next"></a>
+    <div id="testimonials" class="carousel slide" data-ride="carousel">
+        <ol class="carousel-indicators">
+            <li data-target="#testimonials" data-slide-to="0" class="active"></li>
+            <li data-target="#testimonials" data-slide-to="1"></li>
+            <li data-target="#testimonials" data-slide-to="2"></li>
+            <li data-target="#testimonials" data-slide-to="3"></li>
+          </ol>
+        <div class="carousel-inner">
+            <div class="carousel-item active" data-interval="10000">
+                <div class="quote d-flex flex-column m-auto">
+                    <blockquote>
+                        Zulip helped the FHIR community grow from a
+                        tiny group of dreamers to 500 active users
+                        sending 6000 messages per month, all driving
+                        the creation of better healthcare
+                        standards. Zulip’s topic-based threading
+                        helps us manage simultaneous discussions
+                        with clarity, ensuring the right people can
+                        pay attention to the right messages. This
+                        makes our large-group discussion far more
+                        manageable than what we’ve experienced with
+                        Skype and Slack.”
+                    </blockquote>
+                    <cite>Grahame Grieve, founder, FHIR health care standards body</cite>
                 </div>
             </div>
+            <div class="carousel-item" data-interval="2000">
+                <div class="quote d-flex flex-column m-auto">
+                    <blockquote>
+                        Choosing Zulip over Slack as our group chat is one
+                        of the best decisions we’ve ever made. Zulip makes
+                        it easy for our community of 1000 Recursers around
+                        the world to stay involved, even years after their
+                        batches finish. No other tool has a user
+                        experience that scales to a community of our
+                        size.
+                    </blockquote>
+                    <cite>Nick Bergson-Shilcock, founder and CEO, Recurse Center</cite>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="quote d-flex flex-column m-auto">
+                    <blockquote>
+                        Wikimedia uses Zulip for its participation
+                        in open source mentoring programs. Zulip’s
+                        threaded discussions help busy organization
+                        administrators and mentors stay in close
+                        communication with students during all
+                        phases of the programs.
+                    </blockquote>
+                    <cite>Srishti Sethi, Developer Advocate, Wikimedia Foundation</cite>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="quote d-flex flex-column m-auto">
+                    <blockquote>
+                        I highly recommend Zulip to other communities.
+                        We’re coming from Freenode as our only
+                        real-time communication so the difference is
+                        night and day. Slack is a no-go for many due
+                        to not being FLOSS, and I’m concerned about
+                        vendor lock-in if they were to stop being so
+                        generous.
 
-            <hr>
-
-            <div class="company-container">
-                <header>
-                    <h2 class="float left">Leading open source projects use Zulip:</h2>
-                    <div class="float clear"></div>
-                </header>
-                <div class="company-box">
+                        Slack’s threading model is much worse than
+                        Zulip’s IMO. The streams/topics flow is an
+                        incredibly intuitive way to keep track of
+                        everything that is going on.
+                    </blockquote>
+                    <cite>RJ Ryan, Mixxx Developer</cite>
+                </div>
+            </div>
+        </div>
+        <a class="carousel-control-prev" href="#testimonials"
+            role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#testimonials"
+            role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+        </a>
+    </div>
+    <div class='company-logos container'>
+        <header>
+            <h1 class='text-uppercase'>Trusted by</h1>
+        </header>
+        <div class="company-box">
+            <div class="row">
+                <div class="col-md-3 col-6">
                     <div class="company wikimedia-outreach"></div>
-                    <div class="company wildfly"></div>
-                    <div class="company mariadb"></div>
-                    <div class="company hail"></div>
-                    <div class="company infinispan"></div>
-                    <div class="company inspire-hep"></div>
-                    <div class="company mixxx"></div>
-                    <div class="company fhir"></div>
-                    <div class="company openshot"></div>
                 </div>
-            </div>
+                <div class="col-md-3 col-6">
+                    <div class="company wildfly"></div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="company mariadb"></div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="company hail"></div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-3 col-6">
+                    <div class="company infinispan"></div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="company inspire-hep"></div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="company mixxx"></div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="company fhir"></div>
+                </div>
+              </div>
         </div>
     </div>
 </div>

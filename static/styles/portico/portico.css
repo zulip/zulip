@@ -1,3 +1,13 @@
+$dark-blue: hsl(209, 80%, 17%);
+$light-blue: hsl(212, 91%, 69%);
+$purple: hsl(238, 86%, 71%);
+$light-green: hsl(155, 62%, 71%);
+$purple-blue-gradient: linear-gradient(
+    0deg,
+    $purple,
+    $light-blue
+);
+
 body {
     background-color: hsl(0, 0%, 98%);
     font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
@@ -9,6 +19,15 @@ body {
 
 html {
     height: 100%;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+
+    &:hover {
+        text-decoration: none;
+    }
 }
 
 .noscroll {
@@ -28,17 +47,6 @@ html {
     font-family: monospace;
 }
 
-.container-fluid {
-    padding: 0;
-    min-height: 100%;
-
-    /* Hack for IE */
-    height: auto !important;
-    height: 100%;
-
-    margin: 0 auto -56px;
-}
-
 .normal {
     font-weight: normal;
 }
@@ -54,8 +62,7 @@ html {
 .header {
     position: relative;
 
-    padding: 15px 0;
-    height: 29px;
+    padding: 15px 0;;
 
     background-color: hsl(0, 0%, 100%);
     box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
@@ -153,7 +160,7 @@ html {
         border-right: 1px solid hsl(219, 10%, 97%);
         overflow: auto;
 
-        background-color: hsl(153, 32%, 55%);
+        background-color: $dark-blue;
         color: hsl(0, 0%, 100%);
 
         -webkit-overflow-scrolling: touch;
@@ -167,7 +174,8 @@ html {
             font-size: 1.25em;
             line-height: 1.5;
             margin-bottom: 0;
-            border-bottom: 1px solid hsla(0, 0, 100%, 0.6);
+            margin-top: 10px;
+            border-bottom: 1px solid hsla(0, 0%, 100%, 0.6);
 
             &:not(:first-of-type) {
                 margin-top: 20px;
@@ -202,6 +210,7 @@ html {
             font-weight: 400;
             font-size: 1.2em;
             line-height: 1.05;
+            margin-top: 10px;
             margin-bottom: 5px;
         }
 
@@ -223,6 +232,8 @@ html {
 
         ul {
             margin: 5px 0 10px 12px;
+            padding-left: 0px;
+            box-sizing: content-box;
         }
 
         &.slide ul {
@@ -246,17 +257,21 @@ html {
 
         a {
             &.highlighted {
-                background-color: hsl(152, 40%, 42%);
+                background-color: $purple;
 
                 /* Extend highlight to entire width of sidebar, not just link area */
                 /* This has been changed from "+" to "- -" because of issue #8403.
                    If the issue has been fixed, please change this back to "+" again. */
-                width: calc(100% + 20px);
+                width: calc(100% + 60px);
                 margin-left: -40px;
                 padding-left: 40px;
 
                 /* Don't show the focus outline for the highlighted page. */
                 outline: 0;
+            }
+
+            &:focus {
+                outline: none;
             }
         }
     }
@@ -394,6 +409,34 @@ img.screenshot {
 #registration #pw_strength {
     width: 325px;
     margin: 7px auto 0;
+
+    .bar {
+      width: 0%;
+      height: 100%;
+      color: #ffffff;
+      float: left;
+      font-size: 12px;
+      text-align: center;
+      text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+      background-color: #0e90d2;
+      background-image: linear-gradient(to bottom, #149bdf, #0480be);
+      background-repeat: repeat-x;
+      box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+      box-sizing: border-box;
+      transition: width 0.6s ease;
+}
+
+    .bar-success {
+      background-color: #5eb95e;
+      background-image: linear-gradient(to bottom, #62c462, #57a957);
+      background-repeat: repeat-x;
+    }
+
+    .bar-danger {
+        background-color: #dd514c;
+        background-image: linear-gradient(to bottom,#ee5f5b,#c43c35);
+        background-repeat: repeat-x;
+    }
 }
 
 .def::before {
@@ -1201,6 +1244,7 @@ input.new-organization-button {
 .input-group {
     &.margin {
         margin: 10px 0;
+        display: block;
     }
 
     .progress {
@@ -1673,8 +1717,18 @@ label.label-title {
 }
 
 #third-party-apps {
+    color: $dark-blue;
+    font-size: 20px;
     margin-top: 20px;
     padding-right: 10px;
+
+    a {
+        color: hsl(0, 0%, 100%);
+
+        &:hover {
+            color: $dark-blue;
+        }
+    }
 }
 
 .api-argument {
@@ -1748,7 +1802,7 @@ label.label-title {
 
 #navbar-custom-message {
     font-size: 1rem;
-    background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
+    background: $purple-blue-gradient;
     color: hsl(0, 0%, 100%);
     font-weight: 600;
     text-align: center;

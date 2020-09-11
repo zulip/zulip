@@ -1,6 +1,30 @@
+$dark-blue: hsl(209, 80%, 17%);
+$light-blue: hsl(212, 91%, 69%);
+$purple: hsl(238, 86%, 71%);
+$light-green: hsl(155, 62%, 71%);
+$purple-blue-gradient: linear-gradient(
+    0deg,
+    $purple,
+    $light-blue
+);
+
+*,
+html,
+body {
+    max-width: 100%;
+}
+
+.bg-purple {
+    background-color: $purple;
+}
+
+.hide {
+    display: none;
+}
+
 html {
     width: 100vw;
-    overflow-x: hidden;
+    background-color: $dark-blue;
 }
 
 body {
@@ -44,14 +68,19 @@ ul {
 a {
     position: relative;
     cursor: pointer;
-    color: hsl(170, 47%, 33%);
+    color: $light-blue;
+    text-decoration: none;
 
-    &:hover,
-    &:visited {
-        color: hsl(170, 47%, 33%);
+    &:hover {
+        color: $light-blue;
     }
 
     &:hover {
+        text-decoration: none;
+    }
+
+    &:focus {
+        outline: none;
         text-decoration: none;
     }
 
@@ -160,7 +189,8 @@ button {
     }
 
     &.green {
-        color: hsl(0, 0%, 100%);
+        color: $dark-blue;
+        font-weight: 500;
         background-color: hsl(170, 47%, 53%);
         border-color: hsl(169, 45%, 43%);
 
@@ -180,6 +210,18 @@ button {
     }
 }
 
+.btn.btn-secondary {
+    background-color: $light-green;
+    color: $dark-blue;
+}
+
+.big-try-now {
+    padding: 10px 35px;
+    font-weight: 600;
+    font-size: 25px;
+    border-radius: 10px;
+}
+
 .silver {
     color: hsl(0, 0%, 100%) !important;
     opacity: 0.8;
@@ -193,137 +235,107 @@ button {
     }
 }
 
+.portico-container {
+    background-color: $dark-blue;
+}
+
 /* -- navbar styling -- */
 
-nav {
-    width: calc(100% - 80px);
-    position: absolute;
-    color: hsl(0, 0%, 100%);
+nav.navbar {
+    background-color: $dark-blue;
+    padding-top: 50px !important;
 
-    padding: 40px;
+    .navbar-brand {
+        img {
+            width: 150px;
+        }
+    }
 
-    z-index: 4;
-
-    .brand.logo {
+    a:hover {
         text-decoration: none;
+        background-color: inherit;
+        color: $purple;
     }
 
-    &.white {
-        background-color: hsl(0, 0%, 100%);
-
-        li {
-            a,
-            a:hover,
-            a:visited {
-                color: hsl(0, 0%, 27%);
-            }
-        }
-
-        ul {
-            li {
-                &.active {
-                    &::after {
-                        color: hsl(0, 0%, 27%);
-                    }
-                }
-            }
-        }
-
-        .brand.logo {
-            span {
-                color: hsl(0, 0%, 27%);
-            }
-        }
-
-        .hamburger {
-            fill: hsl(0, 0%, 27%);
-        }
+    .navbar-toggler:active {
+        background-color: inherit;
     }
 
-    .hamburger {
-        display: none;
-        fill: hsl(0, 0%, 100%);
-        cursor: pointer;
-        margin-top: 3px;
-    }
-
-    .content {
-        margin: 0 5px 0 10px;
-        position: relative;
-        z-index: 2;
-    }
-
-    .logo {
-        top: 7px;
-
-        span {
-            position: relative;
-            left: 5px;
-            top: 1px;
-            color: hsl(0, 0%, 100%);
-            font-weight: 600;
-            vertical-align: top;
-            text-transform: uppercase;
-            font-size: 1.2rem;
-            letter-spacing: 0.1em;
-        }
-    }
-
-    ul {
-        float: right;
-        list-style-type: none;
+    .try-now-nav {
+        padding: 6px 20px;
         font-weight: 400;
-        margin: 0;
-        padding: 0;
-
-        outline: 1000px solid;
-        outline-color: transparent;
-
-        cursor: pointer;
-        transition: outline-color 0.2s ease;
-
-        .exit {
-            display: none;
-            user-select: none;
-        }
-
-        li {
-            position: relative;
-            display: inline-block;
-            margin: 10px;
-
-            color: hsl(0, 0%, 100%);
-
-            opacity: 0.7;
-
-            &.active,
-            &:hover {
-                opacity: 1;
-            }
-
-            &.active {
-                &::after {
-                    content: "v";
-                    position: absolute;
-                    bottom: -15px;
-                    left: calc(50% - 4px);
-                    font-weight: 100;
-                    transform: scaleX(2) scaleY(0.5);
-                }
-            }
-        }
+        font-size: 20px;
+        border-radius: 9px
     }
 
-    li {
-        a,
-        a:hover,
-        a:visited {
-            text-decoration: none;
-            color: hsl(0, 0%, 100%);
-            font-size: 1.05em;
-        }
+    a.nav-link {
+        font-size: 20px;
+        color: hsl(0, 0%, 100%) !important;
+        padding-right: 50px !important;
+    }
+
+    .dropdown-toggle::after {
+        vertical-align: middle;
     }
 }
+
+.dropdown-menu {
+    margin-top: 0px;
+}
+
+/* navbar animations */
+@media (min-width: 992px) {
+    .animate {
+      animation-duration: 0.3s;
+      -webkit-animation-duration: 0.3s;
+      animation-fill-mode: both;
+      -webkit-animation-fill-mode: both;
+    }
+
+    .dropdown-toggle::after {
+        content: none;
+    }
+
+    .nav-item:hover .dropdown-menu {
+        display: block;
+    }
+}
+
+@keyframes slideIn {
+    0% {
+        transform: translateY(1rem);
+        opacity: 0;
+    }
+    100% {
+        transform:translateY(0rem);
+        opacity: 1;
+    }
+    0% {
+        transform: translateY(1rem);
+        opacity: 0;
+    }
+}
+
+@-webkit-keyframes slideIn {
+    0% {
+        -webkit-transform: transform;
+        -webkit-opacity: 0;
+    }
+    100% {
+        -webkit-transform: translateY(0);
+        -webkit-opacity: 1;
+    }
+    0% {
+        -webkit-transform: translateY(1rem);
+        -webkit-opacity: 0;
+    }
+}
+
+.slideIn {
+    -webkit-animation-name: slideIn;
+    animation-name: slideIn;
+}
+/* navbar animations */
 
 /* -- main panel styling -- */
 .main {
@@ -336,6 +348,7 @@ nav {
     max-width: none;
     min-width: 0;
     padding: 0 !important;
+    background-color: hsl(209, 80%, 17%);
 }
 
 .header,
@@ -346,8 +359,6 @@ nav {
 /* -- features page css -- */
 .portico-landing {
     position: relative;
-
-    padding-top: 120px;
 
     z-index: 1;
 
@@ -371,7 +382,7 @@ nav {
         justify-content: space-around;
         margin: 40px auto;
         padding: 0 30px;
-        color: hsl(219, 21%, 21%);
+        color: hsl(0, 0%, 100%);
 
         &.hero {
             display: flex;
@@ -387,7 +398,7 @@ nav {
 
             color: hsl(0, 0%, 100%);
 
-            background-color: hsla(0, 0%, 0%, 0.1);
+            background: linear-gradient( 0deg, hsl(238, 86%, 71%), hsl(212, 91%, 69%) );
 
             .copy {
                 max-width: 800px;
@@ -490,6 +501,7 @@ nav {
 
         &.notifications {
             position: relative;
+            color: hsl(0, 0%, 0%);
 
             padding: 50px 100px;
             max-width: calc(1000px);
@@ -502,6 +514,7 @@ nav {
             text-align: center;
 
             .envelope {
+                border-radius: 10px;
                 position: absolute;
                 top: 0;
                 left: 0;
@@ -519,11 +532,8 @@ nav {
             .feature-list {
                 position: relative;
 
-                display: inline-block;
                 vertical-align: top;
                 text-align: left;
-
-                margin: 35px 0 0 20px;
 
                 z-index: 1;
 
@@ -558,7 +568,6 @@ nav {
             }
 
             .image-block {
-                width: 400px;
                 height: 280px;
 
                 background: linear-gradient(
@@ -572,8 +581,6 @@ nav {
                 background-size: contain;
                 background-position: center;
                 background-repeat: no-repeat;
-
-                display: inline-block;
             }
         }
 
@@ -606,11 +613,19 @@ nav {
         a {
             &.feature-block {
                 &:hover {
-                    box-shadow: 0 3px 10px hsl(0, 0%, 75%);
+                    box-shadow: 0 1px 1px rgba(0,0,0,0.12),
+                                0 2px 2px rgba(0,0,0,0.12),
+                                0 4px 4px rgba(0,0,0,0.12),
+                                0 8px 8px rgba(0,0,0,0.12),
+                                0 16px 16px rgba(0,0,0,0.12);
                 }
 
                 &:active {
-                    box-shadow: 0 3px 10px hsl(0, 0%, 50%);
+                    box-shadow: 0 1px 1px rgba(0,0,0,0.12),
+                                0 2px 2px rgba(0,0,0,0.12),
+                                0 4px 4px rgba(0,0,0,0.12),
+                                0 8px 8px rgba(0,0,0,0.12),
+                                0 16px 16px rgba(0,0,0,0.12);
                 }
             }
         }
@@ -649,17 +664,32 @@ nav {
 
 /* -- hello page -- */
 .portico-landing.hello {
-    background-color: transparent;
+    background-color: hsl(209, 80%, 17%);
     color: hsl(219, 23%, 33%);
 }
 
 .portico-landing.hello .hero {
     position: relative;
-    padding: 60px 50px 30px 50px;
+    padding: 120px 50px 200px 50px;
 
     color: hsl(0, 0%, 100%);
 
     overflow: hidden;
+
+    .hero-content {
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        p {
+            font-size: 2rem;
+            font-weight: 300;
+            padding-top: 20px;
+        }
+    }
+
 
     .waves {
         position: absolute;
@@ -706,17 +736,6 @@ nav {
         }
     }
 
-    .content {
-        position: relative;
-        z-index: 1;
-
-        text-align: center;
-
-        p {
-            font-weight: 400;
-            opacity: 0.85;
-        }
-    }
 
     header {
         width: 850px;
@@ -781,6 +800,145 @@ nav {
             font-weight: normal;
         }
     }
+}
+
+@media (max-width: 1400px) {
+    .portico-landing.hello .hero {
+        .big-try-now,
+        .watch-video-btn {
+            width: 100%;
+            margin-bottom: 20px;
+            margin-left: 0;
+        }
+    }
+}
+
+.introduction-video-section {
+    background: $purple-blue-gradient;
+    text-align: center;
+
+    .introduction-video {
+        width: 80%;
+        margin: auto;
+        padding: 5%;
+    }
+}
+
+.content {
+    color: hsl(0, 0%, 100%);
+    align-self: center;
+
+    h1 {
+        font-size: 3rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    p {
+        font-size: 1.8rem;
+        font-weight: 300;
+        padding-top: 20px;
+    }
+}
+
+.no-buried-messages {
+    background-image: url("/static/images/landing-page/Homepage_Threading2.svg");
+    background-repeat: no-repeat;
+    background-position: 0% 26%;
+
+    img.threading-1 {
+        padding-top: 60px;
+    }
+
+    .content {
+        padding-right: 20px;
+    }
+}
+
+.feature-section {
+    padding-left: 5%;
+}
+
+.watch-video-btn {
+    color: $light-green !important;
+    background-color: hsla(0, 0%, 0%, 0);
+    border-color: $light-green;
+    font-weight: 600;
+    font-size: 25px;
+    border-radius: 15px;
+    padding: 10px 35px;
+    margin-left: 20px;
+
+    &:hover {
+        color: $light-green;
+        background-color: hsla(0, 0%, 0%, 0);
+        border-color: $light-green;
+    }
+
+    i.fa {
+        padding-right: 10px;
+    }
+}
+
+.transparent-more-btn {
+    color: $light-green !important;
+    background-color: hsla(0, 0%, 0%, 0);
+    border-color: $light-green;
+    font-weight: 600;
+    font-size: 25px;
+    border-radius: 15px;
+    padding: 10px 35px;
+    margin-bottom: 50px;
+
+    &:hover {
+        color: $light-green;
+        background-color: hsla(0, 0%, 0%, 0);
+        border-color: $light-green;
+    }
+}
+
+@media (min-width: 992px) {
+    .homepage_hero_img.desktop-visible {
+        display: block;
+    }
+
+    .homepage_hero_img.mobile-visible {
+        display: none;
+    }
+}
+
+@media (max-width: 992px) {
+    .homepage_hero_img.desktop-visible {
+        display: none;
+    }
+
+    .homepage_hero_img.mobile-visible {
+        display: block;
+    }
+}
+
+@media (min-width: 992px) {
+    .integrations-section {
+        background-image: url("/static/images/landing-page/Homepage_Integration.svg");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        height: 56vw;
+    }
+}
+
+@media (max-width: 992px) {
+    .integrations-section {
+        height: 700px;
+        padding-top: 15%;
+        justify-content: center;
+        text-align: left;
+        margin: auto;
+    }
+}
+
+.integrations-section {
+    padding-left: 5%;
 }
 
 .portico-landing.hello .gradients .gradient {
@@ -884,7 +1042,7 @@ nav {
 
 /* -- compare css -- */
 .compare {
-    background-color: hsl(163, 22%, 31%);
+    background: linear-gradient( 0deg, hsl(238, 86%, 71%), hsl(212, 91%, 69%) );
     color: hsl(0, 0%, 100%);
 
     .text-header .text-content h1 {
@@ -902,8 +1060,6 @@ nav {
         border-collapse: collapse;
 
         font-weight: 400;
-
-        color: hsla(0, 0%, 100%, 0.8);
 
         thead th {
             &:last-of-type {
@@ -1269,77 +1425,6 @@ nav {
     }
 }
 
-.portico-landing.hello .open-source {
-    text-align: center;
-
-    position: relative;
-    z-index: 1;
-
-    background-color: hsl(217, 22%, 93%);
-
-    .flex {
-        min-height: 0;
-        padding: 50px 0;
-    }
-
-    img {
-        margin: 0 2%;
-        width: 28%;
-        max-width: 500px;
-        display: inline-block;
-    }
-
-    .il-block {
-        display: inline-block;
-        vertical-align: top;
-        width: 50%;
-        max-width: 700px;
-        text-align: left;
-    }
-
-    h2 {
-        font-weight: normal;
-    }
-}
-
-.carousel.carousel-fade .carousel-inner {
-    .item {
-        display: block;
-        opacity: 0;
-        height: 0;
-        transition: opacity 0.4s ease;
-        visibility: hidden;
-
-        &.active {
-            opacity: 1;
-            height: auto;
-            visibility: visible;
-
-            &.left,
-            &.right {
-                left: 0;
-                opacity: 0;
-                z-index: 2;
-            }
-        }
-
-        &.next.left,
-        &.prev.right {
-            opacity: 1;
-            z-index: 1;
-        }
-    }
-
-    .item-inner {
-        position: relative;
-    }
-
-    .next.left .item-inner,
-    .prev.right .item-inner {
-        padding: 30px 20px;
-    }
-}
-
 .portico-landing .tour {
     color: hsl(0, 0%, 0%);
     width: 1200px;
@@ -1573,55 +1658,6 @@ nav {
     }
 }
 
-.carousel-indicators {
-    margin: 20px 0 0 0;
-    display: flex;
-    justify-content: center;
-    padding-left: 0;
-    list-style: none;
-    position: relative;
-    top: auto;
-    right: auto;
-
-    li {
-        position: relative;
-        flex: 0 1 auto;
-        width: 10px;
-        height: 10px;
-        border-radius: 10px;
-        margin-right: 10px;
-        margin-left: 10px;
-        text-indent: -999px;
-        cursor: pointer;
-        background-color: hsl(222, 12%, 66%);
-        transition: background 0.1s ease;
-
-        &::before {
-            position: absolute;
-            top: -10px;
-            left: 0;
-            display: inline-block;
-            width: 100%;
-            height: 10px;
-            content: "";
-        }
-
-        &::after {
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            display: inline-block;
-            width: 100%;
-            height: 10px;
-            content: "";
-        }
-
-        &.active {
-            background-color: hsl(220, 23%, 33%);
-        }
-    }
-}
-
 .portico-landing .testimonials {
     color: hsl(0, 0%, 100%);
     background-color: hsl(168, 43%, 24%);
@@ -1637,11 +1673,15 @@ nav {
 }
 
 .portico-landing .testimonials .quote-container {
-    width: 98%;
+    width: 60%;
     margin: 30px auto 20px auto;
     padding-left: 2%;
-
+    float: none !important;
     font-size: 1.2rem;
+}
+
+#quote-carousel {
+    margin: auto;
 }
 
 .portico-landing .testimonials .carousel {
@@ -1738,107 +1778,127 @@ nav {
     font-weight: normal;
 }
 
-.portico-landing .testimonials .company-box .company {
-    display: inline-block;
-    margin: 10px 20px;
+.company-logos {
+    padding: 6.25rem 0;
+    min-width: 100%;
+    background-color: $dark-blue;
 
-    height: 60px;
-    width: calc(25% - 44px);
+    header {
+        text-align: center;
+        padding-bottom: 50px;
 
-    background-color: hsl(0, 0%, 67%);
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
+        h1 {
+            color: $purple;
+            font-weight: 600;
+            font-size: 45px;
+        }
+    }
+
+    .company-box {
+        display: block;
+        padding: 20px;
+
+        .company {
+            display: inline-block;
+            width: 100%;
+            height: 60px;
+            background-color: hsl(0, 0%, 67%);
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 10px 0!important;
+        }
+    }
 }
 
 /* -- company logos -- */
-.portico-landing .testimonials .company-box .company.akamai {
+.company-box .company.akamai {
     background-image: url(../../images/landing-page/logos/akamai.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.doctorondemand {
+.company-box .company.doctorondemand {
     background-image: url(../../images/landing-page/logos/doctorondemand.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.layershift {
+.company-box .company.layershift {
     background-image: url(../../images/landing-page/logos/layershift.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.recurse {
+.company-box .company.recurse {
     background-image: url(../../images/landing-page/logos/recurse.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.solano {
+.company-box .company.solano {
     background-image: url(../../images/landing-page/logos/solano.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.veelo {
+.company-box .company.veelo {
     background-image: url(../../images/landing-page/logos/veelo.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.panjiva {
+.company-box .company.panjiva {
     background-image: url(../../images/landing-page/logos/panjiva.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.cmt {
+.company-box .company.cmt {
     background-image: url(../../images/landing-page/logos/cambridge-mobile-telematics.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.levelup {
+.company-box .company.levelup {
     background-image: url(../../images/landing-page/logos/levelup.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.wildfly {
+.company-box .company.wildfly {
     background-image: url(../../images/landing-page/logos/wildfly.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.mariadb {
+.company-box .company.mariadb {
     background-image: url(../../images/landing-page/logos/mariadb.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.infinispan {
+.company-box .company.infinispan {
     background-image: url(../../images/landing-page/logos/infinispan.png);
     background-color: transparent;
     height: 50px;
 }
 
-.portico-landing .testimonials .company-box .company.hail {
+.company-box .company.hail {
     background-image: url(../../images/landing-page/logos/hail.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.inspire-hep {
+.company-box .company.inspire-hep {
     background-image: url(../../images/landing-page/logos/inspire-hep.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.wikimedia-outreach {
+.company-box .company.wikimedia-outreach {
     background-image: url(../../images/landing-page/logos/wikimedia-outreach.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.fhir {
+.company-box .company.fhir {
     background-image: url(../../images/landing-page/logos/fhir.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.openshot {
+.company-box .company.openshot {
     background-image: url(../../images/landing-page/logos/openshot.png);
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.mixxx {
+.company-box .company.mixxx {
     background-image: url(../../images/landing-page/logos/mixxx.png);
     background-color: transparent;
     height: 45px;
@@ -2041,7 +2101,7 @@ nav {
     position: relative;
 
     padding: 100px 50px 50px 50px;
-    background: linear-gradient(35deg, hsl(197, 100%, 16%), hsl(166, 45%, 49%));
+    background: $dark-blue;
     height: 600px;
 
     color: hsl(0, 0%, 100%);
@@ -2085,6 +2145,7 @@ nav {
 
 .portico-landing.apps .hero .image img {
     border-radius: 4px 4px 0 0;
+    height: 100%;
 }
 
 .portico-landing.apps .hero .info .cta {
@@ -2129,7 +2190,7 @@ nav {
 }
 
 .portico-landing.apps .other-apps {
-    background-color: hsl(0, 0%, 100%);
+    background: $purple-blue-gradient;
     padding: 50px 50px 120px 50px;
 
     text-align: center;
@@ -2138,7 +2199,9 @@ nav {
 .portico-landing.apps .other-apps h2 {
     width: 600px;
     margin: 0 auto;
-
+    font-size: 35px;
+    font-weight: 400;
+    color: $dark-blue;
     text-align: center;
 }
 
@@ -2154,7 +2217,7 @@ nav {
     padding: 20px 30px;
     border-radius: 70px;
 
-    color: hsl(0, 0%, 80%);
+    color: hsl(0, 0%, 100%);
 
     font-size: 3em;
     text-align: center;
@@ -2163,8 +2226,7 @@ nav {
 }
 
 .portico-landing.apps .other-apps .apps .icon:hover {
-    color: hsl(0, 0%, 47%);
-    background: linear-gradient(-45deg, hsl(0, 0%, 83%), hsl(0, 0%, 98%));
+    color: $dark-blue;
 }
 
 .portico-landing.apps .other-apps .apps .icon.fa-mobile-phone {
@@ -2200,6 +2262,7 @@ nav {
 .portico-landing.why-page {
     padding-top: 0;
     color: hsl(223, 6%, 25%);
+    background-color: hsl(0, 0%, 100%);
 }
 
 .portico-landing.why-page .main {
@@ -2209,7 +2272,7 @@ nav {
 .portico-landing.why-page .hero {
     padding: 200px 50px 100px 50px;
 
-    background-color: hsl(153, 32%, 55%);
+    background-color: $dark-blue;
     color: hsl(0, 0%, 100%);
 }
 
@@ -2239,7 +2302,7 @@ nav {
 
 .portico-landing.why-page .main blockquote {
     background-color: hsl(0, 0%, 100%);
-    border-color: hsl(168, 24%, 51%);
+    border-left: $light-green solid 4px;
     padding: 20px 30px;
     margin-top: 20px;
     font-size: 1.05em;
@@ -3010,34 +3073,6 @@ nav {
         height: 1400px;
     }
 
-    .portico-landing {
-        padding-top: 170px;
-    }
-
-    nav {
-        &.white {
-            padding-bottom: 40px;
-        }
-
-        .logo {
-            float: none;
-            display: block;
-            margin: 0 auto;
-            text-align: center;
-
-            span {
-                color: hsl(0, 0%, 100%);
-            }
-        }
-
-        ul {
-            display: block;
-            margin: 20px auto 0 auto;
-            float: none;
-            text-align: center;
-        }
-    }
-
     .portico-landing.features-app {
         section {
             .headliner {
@@ -3261,16 +3296,6 @@ nav {
 }
 
 @media (max-width: 768px) {
-    nav {
-        padding-left: 50px;
-        padding-right: 50px;
-        width: calc(100% - 100px);
-
-        .hamburger {
-            position: relative;
-            z-index: 10;
-        }
-    }
 
     .portico-landing.hello .open-source {
         .flex {
@@ -3376,9 +3401,6 @@ nav {
 }
 
 @media (max-width: 686px) {
-    .portico-landing {
-        padding-top: 120px;
-    }
 
     .portico-landing.apps .hero {
         height: 350px;
@@ -3457,80 +3479,6 @@ nav {
         display: none;
     }
 
-    nav {
-        .hamburger {
-            display: inline-block;
-            float: right;
-        }
-
-        .content {
-            display: inline-block;
-            z-index: 11;
-
-            > ul.show {
-                outline-color: hsla(203, 43%, 22%, 0.7);
-            }
-        }
-
-        ul {
-            margin-top: 0;
-            text-align: left;
-
-            position: fixed;
-            float: none;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: 300px;
-            padding-left: 30px;
-
-            background-color: hsl(0, 0%, 100%);
-            transform: translate(-350px, 0);
-
-            box-shadow: 0 0 80px hsla(0, 0%, 0%, 0.12);
-
-            transition: all 0.5s ease;
-
-            &.show {
-                transform: translate(0, 0);
-            }
-
-            .exit {
-                display: block;
-                position: absolute;
-                top: 10px;
-                right: 25px;
-
-                font-weight: 100;
-                font-size: 3em;
-                color: initial;
-            }
-
-            li {
-                display: block;
-                font-size: 1.5em;
-                font-weight: 300;
-                line-height: 1.5;
-
-                &:first-of-type {
-                    margin-top: 20px;
-                }
-
-                &.active {
-                    font-weight: 400;
-
-                    &::after {
-                        content: ">";
-                        transform: scale(1, 1);
-                        bottom: auto;
-                        left: -25px;
-                        font-weight: 400;
-                    }
-                }
-            }
-        }
-    }
-
     .portico-header .content > ul::before {
         content: "Zulip";
         display: block;
@@ -3556,12 +3504,6 @@ nav {
         height: auto;
         margin: 42px 0 0 0;
         font-size: 0.8em;
-    }
-
-    nav ul li,
-    nav ul li a,
-    .portico-header .dropdown-pill .realm-name {
-        color: hsl(0, 0%, 27%) !important;
     }
 
     .portico-landing.apps .main ul.sidebar {
@@ -3875,4 +3817,93 @@ nav {
     color: hsl(0, 0%, 100%);
     font-size: 13px;
     padding-left: 10px;
+}
+
+.min-vh-lg-100 {
+    min-height: 100vh;
+}
+
+#testimonials {
+    background-color: $purple;
+    padding: 6.25rem 0;
+    font-size: 30px;
+    color: hsl(0, 0%, 100%);
+    font-weight: 500;
+
+    .quote {
+        width: 70%;
+    }
+}
+
+.apps-section {
+    padding: 100px;
+    text-align: center;
+
+    h1 {
+        font-weight: 600;
+        font-size: 45px;
+        color: $purple;
+    }
+
+    h2 {
+        font-weight: 400;
+        font-size: 35px;
+        color: hsl(0, 0%, 100%);
+    }
+
+    .apps-try-now {
+        width: 160px;
+        font-weight: 600;
+        font-size: 25px;
+        border-radius: 15px;
+    }
+}
+
+.apps-section.bg-purple {
+    h1 {
+        color: hsl(0, 0%, 100%) !important;
+    }
+}
+
+.landing-footer {
+    background-color: $dark-blue;
+
+    .row {
+        padding-top: 60px;
+        padding-bottom: 50px;
+    }
+
+    h3 {
+        font-weight: 700;
+        font-size: 30px;
+        padding-bottom: 20px;
+    }
+
+    ul, li, h3 {
+        color: hsl(0, 0%, 100%);
+    }
+
+    a {
+        font-weight: 400;
+        font-size: 20px;
+        color: hsl(0, 0%, 100%);
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: none;
+            color: $purple;
+        }
+    }
+}
+
+@media (max-width: 576px) {
+    .landing-footer {
+        h3 {
+            font-size: 1rem;
+        }
+
+        a {
+            font-size: 0.875rem;
+        }
+    }
 }

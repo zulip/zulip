@@ -1,3 +1,5 @@
+$light-blue: hsl(212, 91%, 69%);
+
 .markdown {
     font-weight: 400;
     font-size: 1rem;
@@ -101,7 +103,7 @@
                 vertical-align: top;
                 padding: 3px 6.5px 3px 7.5px;
                 margin-right: 5px;
-                background-color: hsl(170, 48%, 54%);
+                background-color: $light-blue;
                 color: hsl(0, 0%, 100%);
                 border-radius: 100%;
                 font-size: 0.9em;
@@ -179,7 +181,7 @@
     }
 
     a {
-        color: hsl(176, 46%, 41%);
+        color: $light-blue;
         font-weight: 600;
     }
 
