@@ -85,6 +85,7 @@ rewiremock.proxy(() => zrequire("compose"), {
 });
 zrequire("upload");
 zrequire("server_events_dispatch");
+const settings_config = zrequire("settings_config");
 
 people.small_avatar_url_for_person = function () {
     return "http://example.com/example.png";
@@ -324,6 +325,48 @@ run_test("get_invalid_recipient_emails", () => {
     assert.deepEqual(compose.get_invalid_recipient_emails(), []);
 });
 
+run_test("test_wildcard_mention_allowed", () => {
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.by_everyone.code;
+    page_params.is_guest = true;
+    page_params.is_admin = false;
+    assert(compose.wildcard_mention_allowed());
+
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.nobody.code;
+    page_params.is_admin = true;
+    assert(!compose.wildcard_mention_allowed());
+
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.by_members.code;
+    page_params.is_guest = true;
+    page_params.is_admin = false;
+    assert(!compose.wildcard_mention_allowed());
+
+    page_params.is_guest = false;
+    assert(compose.wildcard_mention_allowed());
+
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.by_stream_admins_only.code;
+    page_params.is_admin = false;
+    assert(!compose.wildcard_mention_allowed());
+
+    // TODO: Add a by_admins_only case when we implement stream-level administrators.
+
+    page_params.is_admin = true;
+    assert(compose.wildcard_mention_allowed());
+
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.by_full_members.code;
+    const person = people.get_by_user_id(page_params.user_id);
+    person.date_joined = new Date(Date.now());
+    page_params.realm_waiting_period_threshold = 10;
+
+    assert(compose.wildcard_mention_allowed());
+    page_params.is_admin = false;
+    assert(!compose.wildcard_mention_allowed());
+});
+
 run_test("validate_stream_message", () => {
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
@@ -354,12 +397,25 @@ run_test("validate_stream_message", () => {
     $("#compose-all-everyone").append = function (data) {
         compose_content = data;
     };
+
+    compose.wildcard_mention_allowed = function () {
+        return true;
+    };
     compose_state.message_content("Hey @**all**");
     assert(!compose.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
     assert(!$("#compose-send-status").visible());
     assert.equal(compose_content, "compose_all_everyone_stub");
     assert($("#compose-all-everyone").visible());
+
+    compose.wildcard_mention_allowed = function () {
+        return false;
+    };
+    assert(!compose.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        i18n.t("You do not have permission to use wildcard mentions in this stream."),
+    );
 });
 
 run_test("test_validate_stream_message_post_policy_admin_only", () => {
