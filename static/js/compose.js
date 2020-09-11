@@ -10,6 +10,7 @@ const render_compose_private_stream_alert = require("../templates/compose_privat
 
 const people = require("./people");
 const rendered_markdown = require("./rendered_markdown");
+const settings_config = require("./settings_config");
 const util = require("./util");
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -481,6 +482,42 @@ function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
     return result;
 }
 
+exports.wildcard_mention_allowed = function () {
+    if (
+        page_params.realm_wildcard_mention_policy ===
+        settings_config.wildcard_mention_policy_values.by_everyone.code
+    ) {
+        return true;
+    }
+    if (
+        page_params.realm_wildcard_mention_policy ===
+        settings_config.wildcard_mention_policy_values.nobody.code
+    ) {
+        return false;
+    }
+    if (
+        page_params.realm_wildcard_mention_policy ===
+        settings_config.wildcard_mention_policy_values.by_admins_only.code
+    ) {
+        return page_params.is_admin;
+    }
+    if (
+        page_params.realm_wildcard_mention_policy ===
+        settings_config.wildcard_mention_policy_values.by_full_members.code
+    ) {
+        if (page_params.is_admin) {
+            return true;
+        }
+        const person = people.get_by_user_id(page_params.user_id);
+        const current_datetime = new Date(Date.now());
+        const person_date_joined = new Date(person.date_joined);
+        const days = (current_datetime - person_date_joined) / 1000 / 86400;
+
+        return days >= page_params.realm_waiting_period_threshold && !page_params.is_guest;
+    }
+    return !page_params.is_guest;
+};
+
 function validate_stream_message_mentions(stream_id) {
     const stream_count = stream_data.get_subscriber_count(stream_id) || 0;
 
@@ -490,14 +527,21 @@ function validate_stream_message_mentions(stream_id) {
         stream_count > exports.wildcard_mention_large_stream_threshold
     ) {
         if (
-            user_acknowledged_all_everyone === undefined ||
-            user_acknowledged_all_everyone === false
+            exports.wildcard_mention_allowed() &&
+            (user_acknowledged_all_everyone === undefined ||
+                user_acknowledged_all_everyone === false)
         ) {
             // user has not seen a warning message yet if undefined
             show_all_everyone_warnings(stream_id);
 
             $("#compose-send-button").prop("disabled", false);
             $("#sending-indicator").hide();
+            return false;
+        }
+        if (!exports.wildcard_mention_allowed()) {
+            compose_error(
+                i18n.t("You do not have permission to use wildcard mentions in this stream."),
+            );
             return false;
         }
     } else {
