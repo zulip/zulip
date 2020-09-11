@@ -103,6 +103,7 @@ from zerver.lib.message import (
     truncate_body,
     truncate_topic,
     update_first_visible_message_id,
+    wildcard_mention_allowed,
 )
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import queue_json_publish
@@ -2416,7 +2417,12 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
     message_dict = {'message': message, 'stream': stream, 'local_id': local_id,
                     'sender_queue_id': sender_queue_id, 'realm': realm,
                     'widget_content': widget_content}
-    return build_message_send_dict(message_dict, email_gateway)
+    message_send_dict = build_message_send_dict(message_dict, email_gateway)
+
+    if stream is not None and message_send_dict['message'].mentions_wildcard:
+        if not wildcard_mention_allowed(sender, stream):
+            raise JsonableError(_("You do not have permission to use wildcard mentions in this stream."))
+    return message_send_dict
 
 def _internal_prep_message(realm: Realm,
                            sender: UserProfile,

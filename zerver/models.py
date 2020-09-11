@@ -178,6 +178,7 @@ class Realm(models.Model):
     AUTHENTICATION_FLAGS = ['Google', 'Email', 'GitHub', 'LDAP', 'Dev',
                             'RemoteUser', 'AzureAD', 'SAML', 'GitLab', 'Apple']
     SUBDOMAIN_FOR_ROOT_DOMAIN = ''
+    WILDCARD_MENTION_THRESHOLD = 15
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name='ID')
 

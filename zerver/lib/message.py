@@ -28,7 +28,10 @@ from zerver.lib.display_recipient import (
 from zerver.lib.markdown import MentionData, markdown_convert, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.request import JsonableError
-from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
+from zerver.lib.stream_subscription import (
+    get_stream_subscriptions_for_user,
+    num_subscribers_for_stream_id,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.topic_mutes import build_topic_mute_checker, topic_is_muted
@@ -1234,3 +1237,34 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
         rec['user_ids'].sort()
 
     return recipient_map
+
+def wildcard_mention_allowed(sender: UserProfile, stream: Stream) -> bool:
+    realm = sender.realm
+
+    # If there are fewer than Realm.WILDCARD_MENTION_THRESHOLD, we
+    # allow sending.  In the future, we may want to make this behavior
+    # a default, and also just allow explicitly setting whether this
+    # applies to a stream as an override.
+    if num_subscribers_for_stream_id(stream.id) <= Realm.WILDCARD_MENTION_THRESHOLD:
+        return True
+
+    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_NOBODY:
+        return False
+
+    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_EVERYONE:
+        return True
+
+    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_ADMINS:
+        return sender.is_realm_admin
+
+    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_STREAM_ADMINS:
+        # TODO: Change this when we implement stream administrators
+        return sender.is_realm_admin
+
+    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS:
+        return sender.is_realm_admin or (not sender.is_new_member and not sender.is_guest)
+
+    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_MEMBERS:
+        return not sender.is_guest
+
+    raise AssertionError("Invalid wildcard mention policy")
