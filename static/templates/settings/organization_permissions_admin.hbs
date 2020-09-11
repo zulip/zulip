@@ -105,6 +105,12 @@
                         {{> dropdown_options_widget option_values=invite_to_stream_policy_values}}
                     </select>
                 </div>
+                <div class="input-group">
+                    <label for="realm_wildcard_mention_policy" class="dropdown-title">{{t "Who can use @all/@everyone mentions in large streams" }}</label>
+                    <select name="realm_wildcard_mention_policy" id="id_realm_wildcard_mention_policy" class="prop-element" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=wildcard_mention_policy_values}}
+                    </select>
+                </div>
             </div>
         </div>
 
