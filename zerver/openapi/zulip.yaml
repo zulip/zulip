@@ -6873,6 +6873,9 @@ paths:
                           Messages sent more than this many seconds ago cannot have
                           their topics edited by other users with this organization's
                           [message edit policy](/help/configure-message-editing-and-deletion).
+
+                          **Changes**: New in Zulip 3.0 (feature level 11).  Previously this
+                          value was hardcoded to 86400 seconds (1 day).
                       realm_icon_url:
                         type: string
                         description: |
