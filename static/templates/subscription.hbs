@@ -1,6 +1,6 @@
 {{! Client-side Mustache template for rendering subscriptions.}}
 {{#with this}}
-<div class="stream-row" data-stream-id="{{stream_id}}" data-stream-name="{{name}}">
+<div class="stream-row" data-stream-id="{{stream_id}}" data-stream-name="{{name}}" tabindex="0" role="button">
 
     <div class="check {{#if subscribed }}checked{{/if}} sub_unsub_button {{#unless should_display_subscription_button}}disabled{{/unless}}">
         <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">

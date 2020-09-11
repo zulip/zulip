@@ -846,6 +846,12 @@ exports.initialize = function () {
         $("#deactivation_stream_modal").remove();
     });
 
+    $("#subscriptions_table").on("keypress", ".stream-row", (e) => {
+        if (e.key === "Enter") {
+            $(e.target).click();
+        }
+    });
+
     $("#subscriptions_table").on("click", ".stream-row", function (e) {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
             exports.open_edit_panel_for_row(this);
