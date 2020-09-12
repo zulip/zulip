@@ -67,4 +67,12 @@ class zulip::postfix_localmail {
     ],
   }
 
+  file {'/etc/postfix/access':
+    ensure  => file,
+    mode    => '0644',
+    owner   => root,
+    group   => root,
+    source  => 'puppet:///modules/zulip/postfix/access',
+    require => Package[postfix],
+  }
 }
