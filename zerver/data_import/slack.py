@@ -6,7 +6,6 @@ import shutil
 import subprocess
 from collections import defaultdict
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
-from urllib.parse import urlencode
 
 import orjson
 import requests
@@ -1135,7 +1134,7 @@ def log_token_warning(token: str) -> None:
 def get_slack_api_data(slack_api_url: str, get_param: str, **kwargs: Any) -> Any:
     if not kwargs.get("token"):
         raise AssertionError("Slack token missing in kwargs")
-    data = requests.get(f"{slack_api_url}?{urlencode(kwargs)}")
+    data = requests.get(slack_api_url, kwargs)
 
     if data.status_code == requests.codes.ok:
         result = data.json()

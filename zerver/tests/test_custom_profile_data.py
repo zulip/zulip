@@ -674,9 +674,8 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.login_user(iago)
         assert(test_bot)
 
-        url = "/json/users?client_gravatar=false&include_custom_profile_fields=true"
         with queries_captured() as queries:
-            response = self.client_get(url)
+            response = self.client_get("/json/users", {"client_gravatar": "false", "include_custom_profile_fields": "true"})
 
         self.assertEqual(len(queries), 4)
 
@@ -712,8 +711,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(test_bot_raw_data["bot_type"], 1)
         self.assertEqual(test_bot_raw_data["bot_owner_id"], iago_raw_data["user_id"])
 
-        url = "/json/users?client_gravatar=false"
-        response = self.client_get(url)
+        response = self.client_get("/json/users", {"client_gravatar": "false"})
         self.assertEqual(response.status_code, 200)
         raw_users_data = response.json()["members"]
         for user_dict in raw_users_data:

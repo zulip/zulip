@@ -312,7 +312,7 @@ class MessageDictTest(ZulipTestCase):
     def test_missing_anchor(self) -> None:
         self.login('hamlet')
         result = self.client_get(
-            '/json/messages?use_first_unread_anchor=false&num_before=1&num_after=1')
+            "/json/messages", {"use_first_unread_anchor": "false", "num_before": "1", "num_after": "1"})
 
         self.assert_json_error(
             result, "Missing 'anchor' argument.")
@@ -320,7 +320,7 @@ class MessageDictTest(ZulipTestCase):
     def test_invalid_anchor(self) -> None:
         self.login('hamlet')
         result = self.client_get(
-            '/json/messages?use_first_unread_anchor=false&num_before=1&num_after=1&anchor=chocolate')
+            "/json/messages", {"use_first_unread_anchor": "false", "num_before": "1", "num_after": "1", "anchor": "chocolate"})
 
         self.assert_json_error(
             result, "Invalid anchor")

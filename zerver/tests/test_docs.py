@@ -518,8 +518,8 @@ class PrivacyTermsTest(ZulipTestCase):
         response = self.client_get("/terms/")
         self.assert_in_success_response(["Plans"], response)
 
-        response = self.client_get("/terms/?nav=no")
+        response = self.client_get("/terms/", {"nav": "no"})
         self.assert_not_in_success_response(["Plans"], response)
 
-        response = self.client_get("/privacy/?nav=no")
+        response = self.client_get("/privacy/", {"nav": "no"})
         self.assert_not_in_success_response(["Plans"], response)
