@@ -58,7 +58,8 @@ def fetch_contributors(repo_name: str, max_retries: int) -> List[Contributor]:
     retry_attempts = 0
     page_index = 1
 
-    api_link = f"https://api.github.com/repos/zulip/{repo_name}/contributors?anon=1"
+    api_link = f"https://api.github.com/repos/zulip/{repo_name}/contributors"
+    api_data = {"anon": "1"}
     certificates = os.environ.get('CUSTOM_CA_CERTIFICATES')
 
     headers: Dict[str, str] = {}
@@ -67,7 +68,7 @@ def fetch_contributors(repo_name: str, max_retries: int) -> List[Contributor]:
         headers = {"Authorization": f"token {personal_access_token}"}
 
     while True:
-        response: requests.Response = requests.get(f"{api_link}&page={page_index}", verify=certificates, headers=headers)
+        response: requests.Response = requests.get(api_link, {**api_data, "page": f"{page_index}"}, verify=certificates, headers=headers)
         if response.status_code == 200:
             data = response.json()
             if len(data) == 0:

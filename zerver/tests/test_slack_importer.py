@@ -59,9 +59,9 @@ class MockResponse:
 
 # This method will be used by the mock to replace requests.get
 def mocked_requests_get(*args: str) -> MockResponse:
-    if args[0] == 'https://slack.com/api/users.list?token=xoxp-valid-token':
+    if args == ("https://slack.com/api/users.list", {"token": "xoxp-valid-token"}):
         return MockResponse({"ok": True, "members": "user_data"}, 200)
-    elif args[0] == 'https://slack.com/api/users.list?token=xoxp-invalid-token':
+    elif args == ("https://slack.com/api/users.list", {"token": "xoxp-invalid-token"}):
         return MockResponse({"ok": False, "error": "invalid_auth"}, 200)
     else:
         return MockResponse(None, 404)

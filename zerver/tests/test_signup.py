@@ -4067,7 +4067,7 @@ class TestLoginPage(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/')
 
-            result = self.client_get("/en/login/?next=/upgrade/")
+            result = self.client_get("/en/login/", {"next": "/upgrade/"})
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/?next=%2Fupgrade%2F')
 
@@ -4079,7 +4079,7 @@ class TestLoginPage(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/')
 
-            result = self.client_get("/en/login/?next=/upgrade/")
+            result = self.client_get("/en/login/", {"next": "/upgrade/"})
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/?next=%2Fupgrade%2F')
 
@@ -4091,7 +4091,7 @@ class TestLoginPage(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/')
 
-            result = self.client_get("/en/login/?next=/upgrade/")
+            result = self.client_get("/en/login/", {"next": "/upgrade/"})
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/?next=%2Fupgrade%2F')
 
@@ -4160,7 +4160,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(len(outbox), 0)
 
         # Just for coverage on perhaps-unnecessary validation code.
-        result = self.client_get('/accounts/find/?emails=invalid')
+        result = self.client_get("/accounts/find/", {"emails": "invalid"})
         self.assertEqual(result.status_code, 200)
 
     def test_find_team_zero_emails(self) -> None:
@@ -4336,7 +4336,7 @@ class RealmRedirectTest(ZulipTestCase):
         self.assert_in_success_response(["We couldn&#39;t find that Zulip organization."], result)
 
     def test_realm_redirect_with_next_param(self) -> None:
-        result = self.client_get("/accounts/go/?next=billing")
+        result = self.client_get("/accounts/go/", {"next": "billing"})
         self.assert_in_success_response(["Enter your organization's Zulip URL", 'action="/accounts/go/?next=billing"'], result)
 
         result = self.client_post("/accounts/go/?next=billing", {"subdomain": "lear"})

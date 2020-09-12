@@ -249,7 +249,7 @@ class PermissionTest(ZulipTestCase):
         self.login_user(user)
 
         # First, verify client_gravatar works normally
-        result = self.client_get('/json/users?client_gravatar=true')
+        result = self.client_get("/json/users", {"client_gravatar": "true"})
         self.assert_json_success(result)
         members = result.json()['members']
         hamlet = find_dict(members, 'user_id', user.id)
@@ -272,7 +272,7 @@ class PermissionTest(ZulipTestCase):
         # is automatically disabled for the user.
         do_set_realm_property(user.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
-        result = self.client_get('/json/users?client_gravatar=true')
+        result = self.client_get("/json/users", {"client_gravatar": "true"})
         self.assert_json_success(result)
         members = result.json()['members']
         hamlet = find_dict(members, 'user_id', user.id)
@@ -300,7 +300,7 @@ class PermissionTest(ZulipTestCase):
         # delivery_email is sent for admins.
         admin.refresh_from_db()
         self.login_user(admin)
-        result = self.client_get('/json/users?client_gravatar=true')
+        result = self.client_get("/json/users", {"client_gravatar": "true"})
         self.assert_json_success(result)
         members = result.json()['members']
         hamlet = find_dict(members, 'user_id', user.id)
@@ -1677,10 +1677,10 @@ class GetProfileTest(ZulipTestCase):
         self.assertFalse(result['user']['is_admin'])
         self.assertFalse(result['user']['is_owner'])
 
-        result = orjson.loads(self.client_get(f'/json/users/{user.id}?include_custom_profile_fields=true').content)
+        result = orjson.loads(self.client_get(f"/json/users/{user.id}", {"include_custom_profile_fields": "true"}).content)
 
         self.assertIn('profile_data', result['user'])
-        result = self.client_get(f'/json/users/{30}?')
+        result = self.client_get("/json/users/30")
         self.assert_json_error(result, "No such user")
 
         bot = self.example_user("default_bot")
