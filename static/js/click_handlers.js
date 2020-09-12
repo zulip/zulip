@@ -329,6 +329,9 @@ exports.initialize = function () {
         row.find(".alert-msg").text(i18n.t("Copied!"));
         row.find(".alert-msg").css("display", "block");
         row.find(".alert-msg").delay(1000).fadeOut(300);
+        if ($(".tooltip").is(":visible")) {
+            $(".tooltip").hide();
+        }
         e.preventDefault();
         e.stopPropagation();
     });
