@@ -485,7 +485,7 @@ def use_s3_backend(method: FuncT) -> FuncT:
             zerver.lib.upload.upload_backend = LocalUploadBackend()
     return new_method
 
-def create_s3_buckets(*bucket_names: Tuple[str]) -> List[ServiceResource]:
+def create_s3_buckets(*bucket_names: str) -> List[ServiceResource]:
     session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
     s3 = session.resource('s3')
     buckets = [s3.create_bucket(Bucket=name) for name in bucket_names]
