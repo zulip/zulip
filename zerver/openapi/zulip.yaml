@@ -2978,7 +2978,13 @@ paths:
 
         `GET {{ api_url }}/v1/get_stream_id`
       parameters:
-        - $ref: "#/components/parameters/Stream"
+        - name: stream
+          in: query
+          description: |
+            The name of the stream to access.
+          schema:
+            type: string
+          example: Denmark
           required: true
       responses:
         "200":
@@ -3029,7 +3035,13 @@ paths:
       description: |
         Mark all the unread messages in a stream as read.
       parameters:
-        - $ref: "#/components/parameters/StreamIdInQuery"
+        - name: stream_id
+          in: query
+          description: |
+            The ID of the stream to access.
+          schema:
+            type: integer
+          example: 42
           required: true
       responses:
         "200":
@@ -3045,7 +3057,13 @@ paths:
       description: |
         Mark all the unread messages in a topic as read.
       parameters:
-        - $ref: "#/components/parameters/StreamIdInQuery"
+        - name: stream_id
+          in: query
+          description: |
+            The ID of the stream to access.
+          schema:
+            type: integer
+          example: 42
           required: true
         - name: topic_name
           in: query
@@ -3656,7 +3674,18 @@ paths:
         `POST {{ api_url }}/v1/messages/{message_id}/reactions`
       parameters:
         - $ref: "#/components/parameters/MessageId"
-        - $ref: "#/components/parameters/EmojiName"
+        - name: emoji_name
+          in: query
+          description: |
+            The target emoji's human-readable name.
+
+            To find an emoji's name, hover over a message to reveal
+            three icons on the right, then click the smiley face icon.
+            Images of available reaction emojis appear. Hover over the
+            emoji you want, and note that emoji's text name.
+          schema:
+            type: string
+          example: "octopus"
           required: true
         - $ref: "#/components/parameters/EmojiCode"
         - $ref: "#/components/parameters/ReactionType"
@@ -3687,7 +3716,18 @@ paths:
         `DELETE {{ api_url }}/v1/messages/{message_id}/reactions`
       parameters:
         - $ref: "#/components/parameters/MessageId"
-        - $ref: "#/components/parameters/EmojiName"
+        - name: emoji_name
+          in: query
+          description: |
+            The target emoji's human-readable name.
+
+            To find an emoji's name, hover over a message to reveal
+            three icons on the right, then click the smiley face icon.
+            Images of available reaction emojis appear. Hover over the
+            emoji you want, and note that emoji's text name.
+          schema:
+            type: string
+          example: "octopus"
           required: false
         - $ref: "#/components/parameters/EmojiCode"
         - $ref: "#/components/parameters/ReactionType"
@@ -3890,7 +3930,13 @@ paths:
             default: true
           example: true
         - $ref: "#/components/parameters/OptionalContent"
-        - $ref: "#/components/parameters/StreamIdInQuery"
+        - name: stream_id
+          in: query
+          description: |
+            The ID of the stream to access.
+          schema:
+            type: integer
+          example: 42
       responses:
         "200":
           description: Success.
@@ -4962,9 +5008,21 @@ paths:
         `PATCH {{ api_url }}/v1/users/me/subscriptions/muted_topics`
 
       parameters:
-        - $ref: "#/components/parameters/Stream"
+        - name: stream
+          in: query
+          description: |
+            The name of the stream to access.
+          schema:
+            type: string
+          example: Denmark
           required: false
-        - $ref: "#/components/parameters/StreamIdInQuery"
+        - name: stream_id
+          in: query
+          description: |
+            The ID of the stream to access.
+          schema:
+            type: integer
+          example: 42
           required: false
         - name: topic
           in: query
@@ -9892,22 +9950,6 @@ components:
         type: string
       example: 1375801870:2942
       required: true
-    Stream:
-      name: stream
-      in: query
-      description: |
-        The name of the stream to access.
-      schema:
-        type: string
-      example: Denmark
-    StreamIdInQuery:
-      name: stream_id
-      in: query
-      description: |
-        The ID of the stream to access.
-      schema:
-        type: integer
-      example: 42
     StreamIdInPath:
       name: stream_id
       in: path
@@ -10015,19 +10057,6 @@ components:
         type: boolean
         default: false
       example: true
-    EmojiName:
-      name: emoji_name
-      in: query
-      description: |
-        The target emoji's human-readable name.
-
-        To find an emoji's name, hover over a message to reveal
-        three icons on the right, then click the smiley face icon.
-        Images of available reaction emojis appear. Hover over the
-        emoji you want, and note that emoji's text name.
-      schema:
-        type: string
-      example: "octopus"
     IncludeCustomProfileFields:
       name: include_custom_profile_fields
       in: query
