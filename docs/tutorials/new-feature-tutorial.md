@@ -482,10 +482,10 @@ the setting enabled).
 Visit Zulip's [Django testing](../testing/testing-with-django.md)
 documentation to learn more about the backend testing framework.
 
-### Update the front end
+### Update the frontend
 
 After completing the process of adding a new feature on the back end,
-you should make the required front end changes: in this case, a checkbox needs
+you should make the required frontend changes: in this case, a checkbox needs
 to be added to the admin page (and its value added to the data sent back
 to server when a realm is updated) and the change event needs to be
 handled on the client.
@@ -621,9 +621,9 @@ Here are few important cases you should consider when testing your changes:
   buttons, so changes and saving in one subsection shouldn't affect
   the others.
 
-### Front end tests
+### Frontend tests
 
-A great next step is to write front end tests. There are two types of
+A great next step is to write frontend tests. There are two types of
 frontend tests: [node-based unit tests](../testing/testing-with-node.md) and
 [Puppeteer end-to-end tests](../testing/testing-with-puppeteer.md).
 
