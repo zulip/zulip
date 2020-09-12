@@ -99,7 +99,14 @@ run_test("sort_streams", () => {
 
 run_test("sort_languages", () => {
     Object.assign(pygments_data, {
-        langs: {python: 40, javscript: 50, php: 38, pascal: 29, perl: 22, css: 0},
+        langs: {
+            python: {priority: 40},
+            javscript: {priority: 50},
+            php: {priority: 38},
+            pascal: {priority: 29},
+            perl: {priority: 22},
+            css: {priority: 0},
+        },
     });
 
     let test_langs = ["pascal", "perl", "php", "python", "javascript"];
@@ -109,7 +116,7 @@ run_test("sort_languages", () => {
     assert.deepEqual(test_langs, ["python", "php", "pascal", "perl", "javascript"]);
 
     // Test if popularity between two languages are the same
-    pygments_data.langs.php = 40;
+    pygments_data.langs.php = {priority: 40};
     test_langs = ["pascal", "perl", "php", "python", "javascript"];
     test_langs = th.sort_languages(test_langs, "p");
 

@@ -268,7 +268,7 @@ exports.sort_people_for_relevance = function (objs, current_stream_name, current
 };
 
 exports.compare_by_popularity = function (lang_a, lang_b) {
-    const diff = pygments_data.langs[lang_b] - pygments_data.langs[lang_a];
+    const diff = pygments_data.langs[lang_b].priority - pygments_data.langs[lang_a].priority;
     if (diff !== 0) {
         return diff;
     }
