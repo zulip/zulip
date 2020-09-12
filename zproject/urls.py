@@ -9,7 +9,7 @@ from django.contrib.auth.views import (
     PasswordResetConfirmView,
     PasswordResetDoneView,
 )
-from django.urls import path, re_path
+from django.urls import path
 from django.utils.module_loading import import_string
 from django.views.generic import RedirectView, TemplateView
 
@@ -83,23 +83,23 @@ v1_api_and_json_patterns = [
     path('generate_204', zerver.views.registration.generate_204,
          name='zerver.views.registration.generate_204'),
 
-    re_path(r'^realm/subdomain/(?P<subdomain>\S+)$', zerver.views.realm.check_subdomain_available,
-            name='zerver.views.realm.check_subdomain_available'),
+    path('realm/subdomain/<subdomain>', zerver.views.realm.check_subdomain_available,
+         name='zerver.views.realm.check_subdomain_available'),
 
     # realm/domains -> zerver.views.realm_domains
     path('realm/domains', rest_dispatch,
          {'GET': 'zerver.views.realm_domains.list_realm_domains',
           'POST': 'zerver.views.realm_domains.create_realm_domain'}),
-    re_path(r'^realm/domains/(?P<domain>\S+)$', rest_dispatch,
-            {'PATCH': 'zerver.views.realm_domains.patch_realm_domain',
-             'DELETE': 'zerver.views.realm_domains.delete_realm_domain'}),
+    path('realm/domains/<domain>', rest_dispatch,
+         {'PATCH': 'zerver.views.realm_domains.patch_realm_domain',
+          'DELETE': 'zerver.views.realm_domains.delete_realm_domain'}),
 
     # realm/emoji -> zerver.views.realm_emoji
     path('realm/emoji', rest_dispatch,
          {'GET': 'zerver.views.realm_emoji.list_emoji'}),
-    re_path(r'^realm/emoji/(?P<emoji_name>.*)$', rest_dispatch,
-            {'POST': 'zerver.views.realm_emoji.upload_emoji',
-             'DELETE': ('zerver.views.realm_emoji.delete_emoji', {"intentionally_undocumented"})}),
+    path('realm/emoji/<emoji_name>', rest_dispatch,
+         {'POST': 'zerver.views.realm_emoji.upload_emoji',
+          'DELETE': ('zerver.views.realm_emoji.delete_emoji', {"intentionally_undocumented"})}),
     # this endpoint throws a status code 400 JsonableError when it should be a 404.
 
     # realm/icon -> zerver.views.realm_icon
@@ -250,10 +250,10 @@ v1_api_and_json_patterns = [
     # user_uploads -> zerver.views.upload
     path('user_uploads', rest_dispatch,
          {'POST': 'zerver.views.upload.upload_file_backend'}),
-    re_path(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)$',
-            rest_dispatch,
-            {'GET': ('zerver.views.upload.serve_file_url_backend',
-                     {'override_api_url_scheme'})}),
+    path('user_uploads/<realm_id_str>/<path:filename>',
+         rest_dispatch,
+         {'GET': ('zerver.views.upload.serve_file_url_backend',
+                  {'override_api_url_scheme'})}),
 
     # bot_storage -> zerver.views.storage
     path('bot_storage', rest_dispatch,
@@ -421,9 +421,11 @@ v1_api_and_json_patterns = [
     path('export/realm', rest_dispatch,
          {'POST': 'zerver.views.realm_export.export_realm',
           'GET': 'zerver.views.realm_export.get_realm_exports'}),
-    re_path(r'^export/realm/(?P<export_id>.*)$', rest_dispatch,
-            {'DELETE': 'zerver.views.realm_export.delete_realm_export'}),
+    path('export/realm/<int:export_id>', rest_dispatch,
+         {'DELETE': 'zerver.views.realm_export.delete_realm_export'}),
 ]
+
+integrations_view = IntegrationView.as_view()
 
 # These views serve pages (HTML). As such, their internationalization
 # must depend on the url.
@@ -442,24 +444,23 @@ i18n_urls = [
     # apps; see https://github.com/zulip/zulip/issues/13081 for
     # background.  We can remove this once older versions of the
     # mobile app are no longer present in the wild.
-    re_path(r'accounts/login/(google)/$', zerver.views.auth.start_social_login,
-            name='login-social'),
+    path('accounts/login/google/', zerver.views.auth.start_social_login, {"backend": "google"}),
 
     path('accounts/login/start/sso/', zerver.views.auth.start_remote_user_sso, name='start-login-sso'),
     path('accounts/login/sso/', zerver.views.auth.remote_user_sso, name='login-sso'),
     path('accounts/login/jwt/', zerver.views.auth.remote_user_jwt, name='login-jwt'),
-    re_path(r'^accounts/login/social/([\w,-]+)$', zerver.views.auth.start_social_login,
-            name='login-social'),
-    re_path(r'^accounts/login/social/([\w,-]+)/([\w,-]+)$', zerver.views.auth.start_social_login,
-            name='login-social-extra-arg'),
-    re_path(r'^accounts/register/social/([\w,-]+)$',
-            zerver.views.auth.start_social_signup,
-            name='signup-social'),
-    re_path(r'^accounts/register/social/([\w,-]+)/([\w,-]+)$',
-            zerver.views.auth.start_social_signup,
-            name='signup-social-extra-arg'),
-    re_path(r'^accounts/login/subdomain/([^/]+)$', zerver.views.auth.log_into_subdomain,
-            name='zerver.views.auth.log_into_subdomain'),
+    path('accounts/login/social/<backend>', zerver.views.auth.start_social_login,
+         name='login-social'),
+    path('accounts/login/social/<backend>/<extra_arg>', zerver.views.auth.start_social_login,
+         name='login-social-extra-arg'),
+    path('accounts/register/social/<backend>',
+         zerver.views.auth.start_social_signup,
+         name='signup-social'),
+    path('accounts/register/social/<backend>/<extra_arg>',
+         zerver.views.auth.start_social_signup,
+         name='signup-social-extra-arg'),
+    path('accounts/login/subdomain/<token>', zerver.views.auth.log_into_subdomain,
+         name='zerver.views.auth.log_into_subdomain'),
     path('accounts/login/local/', zerver.views.auth.dev_direct_login,
          name='zerver.views.auth.dev_direct_login'),
     # We have two entries for accounts/login; only the first one is
@@ -481,11 +482,11 @@ i18n_urls = [
          name='zerver.views.auth.password_reset'),
     path('accounts/password/reset/done/',
          PasswordResetDoneView.as_view(template_name='zerver/reset_emailed.html')),
-    re_path(r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z]+)/(?P<token>.+)/$',
-            PasswordResetConfirmView.as_view(success_url='/accounts/password/done/',
-                                             template_name='zerver/reset_confirm.html',
-                                             form_class=zerver.forms.LoggingSetPasswordForm),
-            name='django.contrib.auth.views.password_reset_confirm'),
+    path('accounts/password/reset/<uidb64>/<token>/',
+         PasswordResetConfirmView.as_view(success_url='/accounts/password/done/',
+                                          template_name='zerver/reset_confirm.html',
+                                          form_class=zerver.forms.LoggingSetPasswordForm),
+         name='django.contrib.auth.views.password_reset_confirm'),
     path('accounts/password/done/',
          PasswordResetCompleteView.as_view(template_name='zerver/reset_done.html')),
     path('accounts/deactivated/',
@@ -498,29 +499,29 @@ i18n_urls = [
     # Registration views, require a confirmation ID.
     path('accounts/home/', zerver.views.registration.accounts_home,
          name='zerver.views.registration.accounts_home'),
-    re_path(r'^accounts/send_confirm/(?P<email>[\S]+)?$',
-            TemplateView.as_view(
-                template_name='zerver/accounts_send_confirm.html'),
-            name='signup_send_confirm'),
-    re_path(r'^accounts/new/send_confirm/(?P<email>[\S]+)?$',
-            TemplateView.as_view(
-                template_name='zerver/accounts_send_confirm.html'),
-            {'realm_creation': True}, name='new_realm_send_confirm'),
+    path('accounts/send_confirm/<email>',
+         TemplateView.as_view(
+             template_name='zerver/accounts_send_confirm.html'),
+         name='signup_send_confirm'),
+    path('accounts/new/send_confirm/<email>',
+         TemplateView.as_view(
+             template_name='zerver/accounts_send_confirm.html'),
+         {'realm_creation': True}, name='new_realm_send_confirm'),
     path('accounts/register/', zerver.views.registration.accounts_register,
          name='zerver.views.registration.accounts_register'),
-    re_path(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)$',
-            zerver.views.registration.check_prereg_key_and_redirect,
-            name='check_prereg_key_and_redirect'),
+    path('accounts/do_confirm/<confirmation_key>',
+         zerver.views.registration.check_prereg_key_and_redirect,
+         name='check_prereg_key_and_redirect'),
 
-    re_path(r'^accounts/confirm_new_email/(?P<confirmation_key>[\w]+)$',
-            zerver.views.user_settings.confirm_email_change,
-            name='zerver.views.user_settings.confirm_email_change'),
+    path('accounts/confirm_new_email/<confirmation_key>',
+         zerver.views.user_settings.confirm_email_change,
+         name='zerver.views.user_settings.confirm_email_change'),
 
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
     # including the welcome emails (day 1 & 2), missed PMs, etc.
-    re_path(r'^accounts/unsubscribe/(?P<email_type>[\w]+)/(?P<confirmation_key>[\w]+)$',
-            zerver.views.unsubscribe.email_unsubscribe,
-            name='zerver.views.unsubscribe.email_unsubscribe'),
+    path('accounts/unsubscribe/<email_type>/<confirmation_key>',
+         zerver.views.unsubscribe.email_unsubscribe,
+         name='zerver.views.unsubscribe.email_unsubscribe'),
 
     # Portico-styled page used to provide email confirmation of terms acceptance.
     path('accounts/accept_terms/', zerver.views.home.accounts_accept_terms,
@@ -537,12 +538,12 @@ i18n_urls = [
     # Realm Creation
     path('new/', zerver.views.registration.create_realm,
          name='zerver.views.create_realm'),
-    re_path(r'^new/(?P<creation_key>[\w]+)$',
-            zerver.views.registration.create_realm, name='zerver.views.create_realm'),
+    path('new/<creation_key>',
+         zerver.views.registration.create_realm, name='zerver.views.create_realm'),
 
     # Realm Reactivation
-    re_path(r'^reactivate/(?P<confirmation_key>[\w]+)$', zerver.views.realm.realm_reactivation,
-            name='zerver.views.realm.realm_reactivation'),
+    path('reactivate/<confirmation_key>', zerver.views.realm.realm_reactivation,
+         name='zerver.views.realm.realm_reactivation'),
 
     # Global public streams (Zulip's way of doing archives)
     path('archive/streams/<int:stream_id>/topics/<topic_name>',
@@ -557,9 +558,9 @@ i18n_urls = [
     path('login/', zerver.views.auth.login_page, {'template_name': 'zerver/login.html'},
          name='zerver.views.auth.login_page'),
 
-    re_path(r'^join/(?P<confirmation_key>\S+)/$',
-            zerver.views.registration.accounts_home_from_multiuse_invite,
-            name='zerver.views.registration.accounts_home_from_multiuse_invite'),
+    path('join/<confirmation_key>/',
+         zerver.views.registration.accounts_home_from_multiuse_invite,
+         name='zerver.views.registration.accounts_home_from_multiuse_invite'),
 
     # Used to generate a Zoom video call URL
     path('calls/zoom/register', zerver.views.video_calls.register_zoom_user),
@@ -573,14 +574,16 @@ i18n_urls = [
     path('integrations/doc-html/<integration_name>',
          zerver.views.documentation.integration_doc,
          name="zerver.views.documentation.integration_doc"),
-    re_path(r'^integrations/(.*)$', IntegrationView.as_view()),
+    path('integrations/', integrations_view),
+    path('integrations/<path:path>', integrations_view),
 
     # Landing page, features pages, signup form, etc.
     path('hello/', zerver.views.portico.hello_view, name='landing-page'),
     path('new-user/', RedirectView.as_view(url='/hello', permanent=True)),
     path('features/', zerver.views.portico.landing_view, {'template_name': 'zerver/features.html'}),
     path('plans/', zerver.views.portico.plans_view, name='plans'),
-    re_path(r'apps/(.*)$', zerver.views.portico.apps_view, name='zerver.views.home.apps_view'),
+    path('apps/', zerver.views.portico.apps_view, name='zerver.views.home.apps_view'),
+    path('apps/<platform>', zerver.views.portico.apps_view, name='zerver.views.home.apps_view'),
     path('team/', zerver.views.portico.team_view),
     path('history/', zerver.views.portico.landing_view, {'template_name': 'zerver/history.html'}),
     path('why-zulip/', zerver.views.portico.landing_view, {'template_name': 'zerver/why-zulip.html'}),
@@ -598,10 +601,10 @@ i18n_urls = [
     # Terms of Service and privacy pages.
     path('terms/', zerver.views.portico.terms_view, name='terms'),
     path('privacy/', zerver.views.portico.privacy_view, name='privacy'),
-    re_path(r'^config-error/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view,
-            name='config_error'),
-    re_path(r'^config-error/remoteuser/(?P<error_category_name>[\w,-]+)$',
-            zerver.views.auth.config_error_view),
+    path('config-error/<error_category_name>', zerver.views.auth.config_error_view,
+         name='config_error'),
+    path('config-error/remoteuser/<error_category_name>',
+         zerver.views.auth.config_error_view),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
@@ -622,13 +625,13 @@ urls += [
 # having to rewrite URLs, and is implemented using the
 # 'override_api_url_scheme' flag passed to rest_dispatch
 urls += [
-    re_path(r'^user_uploads/temporary/([0-9A-Za-z]+)/([^/]+)$',
-            zerver.views.upload.serve_local_file_unauthed,
-            name='zerver.views.upload.serve_local_file_unauthed'),
-    re_path(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)$',
-            rest_dispatch,
-            {'GET': ('zerver.views.upload.serve_file_backend',
-                     {'override_api_url_scheme'})}),
+    path('user_uploads/temporary/<token>/<filename>',
+         zerver.views.upload.serve_local_file_unauthed,
+         name='zerver.views.upload.serve_local_file_unauthed'),
+    path('user_uploads/<realm_id_str>/<path:filename>',
+         rest_dispatch,
+         {'GET': ('zerver.views.upload.serve_file_backend',
+                  {'override_api_url_scheme'})}),
     # This endpoint serves thumbnailed versions of images using thumbor;
     # it requires an exception for the same reason.
     path('thumbnail', rest_dispatch,
@@ -636,14 +639,15 @@ urls += [
                   {'override_api_url_scheme'})}),
     # Avatars have the same constraint because their URLs are included
     # in API data structures used by both the mobile and web clients.
-    re_path(r'^avatar/(?P<email_or_id>[\S]+)/(?P<medium>[\S]+)?$',
-            rest_dispatch,
-            {'GET': ('zerver.views.users.avatar',
-                     {'override_api_url_scheme'})}),
-    re_path(r'^avatar/(?P<email_or_id>[\S]+)$',
-            rest_dispatch,
-            {'GET': ('zerver.views.users.avatar',
-                     {'override_api_url_scheme'})}),
+    path('avatar/<email_or_id>',
+         rest_dispatch,
+         {'GET': ('zerver.views.users.avatar',
+                  {'override_api_url_scheme'})}),
+    path('avatar/<email_or_id>/medium',
+         rest_dispatch,
+         {'GET': ('zerver.views.users.avatar',
+                  {'override_api_url_scheme'}),
+          'medium': True}),
 ]
 
 # This url serves as a way to receive CSP violation reports from the users.
@@ -658,9 +662,9 @@ urls += [
 # such links with images previews. Now thumbor can be used for serving such
 # images.
 urls += [
-    re_path(r'^external_content/(?P<digest>[\S]+)/(?P<received_url>[\S]+)$',
-            zerver.views.camo.handle_camo_url,
-            name='zerver.views.camo.handle_camo_url'),
+    path('external_content/<digest>/<received_url>',
+         zerver.views.camo.handle_camo_url,
+         name='zerver.views.camo.handle_camo_url'),
 ]
 
 # Incoming webhook URLs
@@ -743,12 +747,18 @@ urls += [path('', include('social_django.urls', namespace='social'))]
 urls += [path('saml/metadata.xml', zerver.views.auth.saml_sp_metadata)]
 
 # User documentation site
-urls += [re_path(r'^help/(?P<article>.*)$',
-                 MarkdownDirectoryView.as_view(template_name='zerver/documentation_main.html',
-                                               path_template='/zerver/help/%s.md'))]
-urls += [re_path(r'^api/(?P<article>[-\w]*\/?)$',
-                 MarkdownDirectoryView.as_view(template_name='zerver/documentation_main.html',
-                                               path_template='/zerver/api/%s.md'))]
+help_documentation_view = MarkdownDirectoryView.as_view(
+    template_name='zerver/documentation_main.html', path_template='/zerver/help/%s.md'
+)
+api_documentation_view = MarkdownDirectoryView.as_view(
+    template_name='zerver/documentation_main.html', path_template='/zerver/api/%s.md'
+)
+urls += [
+    path('help/', help_documentation_view),
+    path('help/<path:article>', help_documentation_view),
+    path('api/', api_documentation_view),
+    path('api/<slug:article>', api_documentation_view),
+]
 
 # Two Factor urls
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
