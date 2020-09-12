@@ -460,6 +460,11 @@ class AppsPageTest(ZulipTestCase):
         self.assertEqual(result.status_code, 301)
         self.assertTrue(result['Location'] == 'https://zulip.com/apps/')
 
+        with self.settings(ZILENCER_ENABLED=False):
+            result = self.client_get('/apps/linux')
+        self.assertEqual(result.status_code, 301)
+        self.assertTrue(result['Location'] == 'https://zulip.com/apps/')
+
         with self.settings(ZILENCER_ENABLED=True):
             result = self.client_get('/apps/')
         self.assertEqual(result.status_code, 200)

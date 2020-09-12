@@ -1,3 +1,5 @@
+from typing import Optional
+
 import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -10,7 +12,7 @@ from zerver.models import Realm
 
 
 @add_google_analytics
-def apps_view(request: HttpRequest, _: str) -> HttpResponse:
+def apps_view(request: HttpRequest, platform: Optional[str] = None) -> HttpResponse:
     if settings.ZILENCER_ENABLED:
         return TemplateResponse(
             request,
