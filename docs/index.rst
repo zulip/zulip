@@ -21,8 +21,8 @@ Welcome! Zulip's documentation is split into four parts:
 Zulip has well over 150,000 words of documentation. If you can't find
 what you're looking for, please `let us know
 <contributing/chat-zulip-org.html>`__!  Further information on the
-Zulip project and its features can be found at `https://www.zulip.org
-<https://www.zulip.org>`__.
+Zulip project and its features can be found at `https://www.zulip.com
+<https://www.zulip.com>`__.
 
 This site contains our installation and contributor documentation. If
 this is your first time here, you may want to start with `Production
