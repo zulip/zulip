@@ -533,6 +533,10 @@ exports.initialize = function () {
         ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block",
         (e) => {
             e.stopPropagation();
+            if ($("#gear-menu").hasClass("open")) {
+                $("#gear-menu").removeClass("open");
+                $("#gear-menu").addClass("active");
+            }
             const elem = $(e.currentTarget)
                 .closest(".user_sidebar_entry")
                 .find(".user-presence-link");

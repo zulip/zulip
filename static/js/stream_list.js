@@ -488,6 +488,10 @@ exports.set_event_handlers = function () {
         const sub = stream_data.get_sub_by_id(stream_id);
         popovers.hide_all();
         narrow.by("stream", sub.name, {trigger: "sidebar"});
+        if ($("#gear-menu").hasClass("open")) {
+            $("#gear-menu").removeClass("open");
+            $("#gear-menu").addClass("active");
+        }
 
         exports.clear_and_hide_search();
 
