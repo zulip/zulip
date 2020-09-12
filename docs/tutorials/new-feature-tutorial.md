@@ -484,7 +484,7 @@ documentation to learn more about the backend testing framework.
 
 ### Update the front end
 
-After completing the process of adding a new feature on the back end,
+After completing the process of adding a new feature on the backend,
 you should make the required front end changes: in this case, a checkbox needs
 to be added to the admin page (and its value added to the data sent back
 to server when a realm is updated) and the change event needs to be
