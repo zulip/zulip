@@ -4978,9 +4978,7 @@ paths:
         **Changes**: New in Zulip 3.0 (feature level 11).
       parameters:
         - $ref: "#/components/parameters/UserId"
-          example: 7
         - $ref: "#/components/parameters/StreamIdInPath"
-          example: 1
       responses:
         "200":
           description: Success
@@ -8272,7 +8270,6 @@ paths:
         `POST {{ api_url }}/v1/user_groups/{user_group_id}/members`
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
-          example: 1
         - name: delete
           in: query
           description: |
@@ -9924,7 +9921,7 @@ components:
         The ID of the target user group.
       schema:
         type: integer
-      example: 42
+      example: 1
       required: true
     Topic:
       name: topic
@@ -9957,7 +9954,7 @@ components:
         The ID of the stream to access.
       schema:
         type: integer
-      example: 42
+      example: 1
       required: true
     ClientGravatar:
       name: client_gravatar
