@@ -13,7 +13,6 @@ from django.test import TestCase
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
-from django.urls.resolvers import URLPattern
 
 from scripts.lib.zulip_tools import (
     TEMPLATE_DATABASE_DIR,
@@ -196,22 +195,10 @@ def init_worker(counter: Synchronized) -> None:
     create_test_databases(_worker_id)
     initialize_worker_path(_worker_id)
 
-    def is_upload_avatar_url(url: URLPattern) -> bool:
-        if url.pattern.regex.pattern == r'^user_avatars/(?P<path>.*)$':
-            return True
-        return False
-
     # We manually update the upload directory path in the url regex.
-    from zproject import dev_urls
-    found = False
-    for url in dev_urls.urls:
-        if is_upload_avatar_url(url):
-            found = True
-            new_root = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")
-            url.default_args['document_root'] = new_root
-
-    if not found:
-        print("*** Upload directory not found.")
+    from zproject.dev_urls import avatars_url
+    new_root = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")
+    avatars_url.default_args['document_root'] = new_root
 
 class ParallelTestSuite(django_runner.ParallelTestSuite):
     run_subsuite = run_subsuite

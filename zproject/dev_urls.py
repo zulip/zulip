@@ -84,7 +84,9 @@ i18n_urls = [
 
 # On a production instance, these files would be served by nginx.
 if settings.LOCAL_UPLOADS_DIR is not None:
-    urls += [
-        re_path(r'^user_avatars/(?P<path>.*)$', serve,
-                {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")}),
-    ]
+    avatars_url = re_path(
+        r'^user_avatars/(?P<path>.*)$',
+        serve,
+        {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")},
+    )
+    urls += [avatars_url]
