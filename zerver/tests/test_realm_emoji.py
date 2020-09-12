@@ -107,7 +107,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.login('iago')
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
-            result = self.client_post('/json/realm/emoji/', info=emoji_data)
+            result = self.client_post('/json/realm/emoji/%20', info=emoji_data)
         self.assert_json_error(result, 'Emoji name is missing')
 
     def test_upload_admins_only(self) -> None:

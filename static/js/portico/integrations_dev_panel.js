@@ -220,7 +220,7 @@ function get_fixtures(integration_name) {
 
     // We don't have the fixtures for this integration; fetch them
     // from the backend.  Relative url pattern:
-    // /devtools/integrations/(?P<integration_name>.+)/fixtures
+    // /devtools/integrations/<integration_name>/fixtures
     channel.get({
         url: "/devtools/integrations/" + integration_name + "/fixtures",
         // Since the user may add or modify fixtures as they edit.

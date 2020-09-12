@@ -429,7 +429,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             'node-coverage/(?P<path>.+)',
             'docs/(?P<path>.+)',
             'casper/(?P<path>.+)',
-            'static/(?P<path>.*)',
+            'static/(?P<path>.+)',
             *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
         }
 
