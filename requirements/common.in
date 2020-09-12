@@ -78,8 +78,7 @@ pika
 psycopg2 --no-binary psycopg2
 
 # Needed for memcached usage
-# https://github.com/jaysonsantos/python-binary-memcached/pull/230, https://github.com/jaysonsantos/python-binary-memcached/pull/231
-https://github.com/jaysonsantos/python-binary-memcached/archive/364ce723ea73290a6ae27551cab28070424fd280.zip#egg=python-binary-memcached==0.29.0+git
+python-binary-memcached
 
 # Needed for compression support in memcached via python-binary-memcached
 django-bmemcached
