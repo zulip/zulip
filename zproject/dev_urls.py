@@ -61,7 +61,7 @@ urls = [
          zerver.views.development.integrations.check_send_webhook_fixture_message),
     path('devtools/integrations/send_all_webhook_fixture_messages',
          zerver.views.development.integrations.send_all_webhook_fixture_messages),
-    path('devtools/integrations/<str:integration_name>/fixtures',
+    path('devtools/integrations/<integration_name>/fixtures',
          zerver.views.development.integrations.get_fixtures),
 ]
 

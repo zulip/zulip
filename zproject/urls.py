@@ -276,7 +276,7 @@ v1_api_and_json_patterns = [
     # It's important that this sit after users/me/presence so that
     # Django's URL resolution order doesn't break the
     # /users/me/presence endpoint.
-    path(r'users/<str:email>/presence', rest_dispatch,
+    path(r'users/<email>/presence', rest_dispatch,
          {'GET': 'zerver.views.presence.get_presence_backend'}),
     path('realm/presence', rest_dispatch,
          {'GET': 'zerver.views.presence.get_statuses_for_realm'}),
@@ -545,7 +545,7 @@ i18n_urls = [
             name='zerver.views.realm.realm_reactivation'),
 
     # Global public streams (Zulip's way of doing archives)
-    path('archive/streams/<int:stream_id>/topics/<str:topic_name>',
+    path('archive/streams/<int:stream_id>/topics/<topic_name>',
          zerver.views.archive.archive,
          name='zerver.views.archive.archive'),
     path('archive/streams/<int:stream_id>/topics',
@@ -570,7 +570,7 @@ i18n_urls = [
     path('calls/bigbluebutton/join', zerver.views.video_calls.join_bigbluebutton),
 
     # API and integrations documentation
-    path('integrations/doc-html/<str:integration_name>',
+    path('integrations/doc-html/<integration_name>',
          zerver.views.documentation.integration_doc,
          name="zerver.views.documentation.integration_doc"),
     re_path(r'^integrations/(.*)$', IntegrationView.as_view()),
