@@ -128,6 +128,7 @@ don't have a favorite, here are some suggestions:
 * [vim](https://www.vim.org/)
 * [spacemacs](https://github.com/syl20bnr/spacemacs)
 * [sublime](https://www.sublimetext.com/)
+* [PyCharm](https://www.jetbrains.com/pycharm/)
 
 Next, follow our [Git and GitHub Guide](../git/index.md) to clone and configure
 your fork of zulip on your local computer.
