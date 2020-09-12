@@ -9,8 +9,10 @@
         </div>
 
         <div class="app-main white-box">
+            {% trans %}
             This confirms that the email address for your Zulip account has changed
             from <a href="mailto:{{old_email}}">{{old_email}}</a> to <a href="mailto:{{new_email}}">{{new_email}}</a>.
+            {% endtrans %}
         </div>
     </div>
 </div>
