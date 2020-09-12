@@ -7,17 +7,17 @@
 #
 # For details, see requirements/README.md .
 #
-wheel==0.34.2 \
-    --hash=sha256:8788e9155fe14f54164c1b9eb0a319d98ef02c160725587ad60f14ddc57b6f96 \
-    --hash=sha256:df277cb51e61359aba502208d680f90c0493adec6f0e848af94948778aed386e \
+wheel==0.35.1 \
+    --hash=sha256:497add53525d16c173c2c1c733b8f655510e909ea78cc0e29d374243544b77a2 \
+    --hash=sha256:99a22d87add3f634ff917310a3d87e499f19e663413a52eb9232c447aa646c9f \
     # via -r requirements/pip.in
 
 # The following packages are considered to be unsafe in a requirements file:
-pip==20.1.1 \
-    --hash=sha256:27f8dc29387dd83249e06e681ce087e6061826582198a425085e0bf4c1cf3a55 \
-    --hash=sha256:b27c4dedae8c41aa59108f2fa38bf78e0890e590545bc8ece7cdceb4ba60f6e4 \
+pip==20.2.3 \
+    --hash=sha256:0f35d63b7245205f4060efe1982f5ea2196aa6e5b26c07669adcf800e2542026 \
+    --hash=sha256:30c70b6179711a7c4cf76da89e8a0f5282279dfb0278bec7b94134be92543b6d \
     # via -r requirements/pip.in
-setuptools==49.2.0 \
-    --hash=sha256:272c7f48f5cddc5af5901f4265274c421c7eede5c8bc454ac2903d3f8fc365e9 \
-    --hash=sha256:afe9e81fee0270d3f60d52608549cc8ec4c46dada8c95640c1a00160f577acf2 \
+setuptools==50.3.0 \
+    --hash=sha256:39060a59d91cf5cf403fa3bacbb52df4205a8c3585e0b9ba4b30e0e19d4c4b18 \
+    --hash=sha256:c77b3920663a435c9450d9d971c48f5a7478fca8881b2cd2564e59f970f03536 \
     # via -r requirements/pip.in
