@@ -365,7 +365,7 @@ run_test("update_user_event", (override) => {
    inside the people object, but it obviously kind of glosses over
    the other interactions.
 
-   We can go a step further and verify the sequence of of operations
+   We can go a step further and verify the sequence of operations
    that happen during an event.  This concept is called "mocking",
    and you can find libraries to help do mocking.  Here we will
    just build our own lightweight mocking system, which is almost
