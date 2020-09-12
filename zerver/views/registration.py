@@ -2,6 +2,7 @@ import logging
 import smtplib
 import urllib
 from typing import Dict, List, Optional
+from urllib.parse import urlencode
 
 import pytz
 from django.conf import settings
@@ -163,7 +164,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             validate_email_not_already_in_realm(realm, email)
         except ValidationError:
             view_url = reverse('login')
-            redirect_url = add_query_to_redirect_url(view_url, 'email=' + urllib.parse.quote_plus(email))
+            redirect_url = add_query_to_redirect_url(view_url, urlencode({"email": email}))
             return HttpResponseRedirect(redirect_url)
 
     name_validated = False
@@ -352,7 +353,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                     # particularly matter, because the registration form
                     # is hidden for most users.
                     view_url = reverse('login')
-                    query = 'email=' + urllib.parse.quote_plus(email)
+                    query = urlencode({"email": email})
                     redirect_url = add_query_to_redirect_url(view_url, query)
                     return HttpResponseRedirect(redirect_url)
             elif not realm_creation:
@@ -485,8 +486,7 @@ def send_confirm_registration_email(email: str, activation_url: str, language: s
 
 def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
     login_url = reverse('login')
-    email = urllib.parse.quote_plus(email)
-    redirect_url = add_query_to_redirect_url(login_url, 'already_registered=' + email)
+    redirect_url = add_query_to_redirect_url(login_url, urlencode({"already_registered": email}))
     return HttpResponseRedirect(redirect_url)
 
 def create_realm(request: HttpRequest, creation_key: Optional[str]=None) -> HttpResponse:

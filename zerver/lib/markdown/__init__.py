@@ -25,7 +25,7 @@ from typing import (
     Union,
 )
 from typing.re import Match, Pattern
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urlsplit
 from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
 
@@ -587,12 +587,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # We strip leading '/' from relative URLs here to ensure
             # consistency in what gets passed to /thumbnail
             url = url.lstrip('/')
-            img.set("src", "/thumbnail?url={}&size=thumbnail".format(
-                urllib.parse.quote(url, safe=''),
-            ))
-            img.set('data-src-fullsize', "/thumbnail?url={}&size=full".format(
-                urllib.parse.quote(url, safe=''),
-            ))
+            img.set("src", "/thumbnail?" + urlencode({"url": url, "size": "thumbnail"}))
+            img.set('data-src-fullsize', "/thumbnail?" + urlencode({"url": url, "size": "full"}))
         else:
             img.set("src", url)
 

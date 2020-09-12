@@ -5,6 +5,7 @@ import time
 import urllib
 from typing import Any, List, Optional, Sequence
 from unittest.mock import MagicMock, patch
+from urllib.parse import urlencode
 
 import orjson
 from django.conf import settings
@@ -1643,8 +1644,8 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         url = "/accounts/register/"
         response = self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('login') + '?email=' +
-                         urllib.parse.quote_plus(email))
+        self.assertEqual(response.url, reverse('login') + '?' +
+                         urlencode({"email": email}))
 
 class InvitationsTestCase(InviteUserBase):
     def test_do_get_user_invites(self) -> None:
