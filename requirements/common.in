@@ -18,7 +18,6 @@ Jinja2
 Markdown
 importlib-metadata;python_version<"3.8"  # for Markdown
 Pygments
-hyperlink
 jsx-lexer
 
 # Needed for manage.py
