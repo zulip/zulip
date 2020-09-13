@@ -253,7 +253,7 @@ class ZulipUploadBackend:
                               percent_callback: Optional[Callable[[Any], None]]=None) -> str:
         raise NotImplementedError()
 
-    def delete_export_tarball(self, path_id: str) -> Optional[str]:
+    def delete_export_tarball(self, export_path: str) -> Optional[str]:
         raise NotImplementedError()
 
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
@@ -606,9 +606,11 @@ class S3UploadBackend(ZulipUploadBackend):
         )
         return public_url
 
-    def delete_export_tarball(self, path_id: str) -> Optional[str]:
+    def delete_export_tarball(self, export_path: str) -> Optional[str]:
+        assert export_path.startswith("/")
+        path_id = export_path[1:]
         if self.delete_file_from_s3(path_id, self.avatar_bucket):
-            return path_id
+            return export_path
         return None
 
 ### Local
@@ -825,11 +827,12 @@ class LocalUploadBackend(ZulipUploadBackend):
         public_url = realm.uri + '/user_avatars/' + path
         return public_url
 
-    def delete_export_tarball(self, path_id: str) -> Optional[str]:
+    def delete_export_tarball(self, export_path: str) -> Optional[str]:
         # Get the last element of a list in the form ['user_avatars', '<file_path>']
-        file_path = path_id.strip('/').split('/', 1)[-1]
+        assert export_path.startswith("/")
+        file_path = export_path[1:].split('/', 1)[-1]
         if delete_local_file('avatars', file_path):
-            return path_id
+            return export_path
         return None
 
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
@@ -904,5 +907,5 @@ def upload_export_tarball(realm: Realm, tarball_path: str,
     return upload_backend.upload_export_tarball(realm, tarball_path,
                                                 percent_callback=percent_callback)
 
-def delete_export_tarball(path_id: str) -> Optional[str]:
-    return upload_backend.delete_export_tarball(path_id)
+def delete_export_tarball(export_path: str) -> Optional[str]:
+    return upload_backend.delete_export_tarball(export_path)

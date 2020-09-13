@@ -63,8 +63,9 @@ class RealmExportTest(ZulipTestCase):
         self.assertEqual(audit_log_entry.acting_user_id, admin.id)
 
         # Test that the file is hosted, and the contents are as expected.
-        path_id = orjson.loads(audit_log_entry.extra_data).get('export_path')
-        self.assertIsNotNone(path_id)
+        export_path = orjson.loads(audit_log_entry.extra_data)['export_path']
+        assert export_path.startswith('/')
+        path_id = export_path[1:]
         self.assertEqual(bucket.Object(path_id).get()['Body'].read(), b'zulip!')
 
         result = self.client_get('/json/export/realm')
@@ -74,7 +75,7 @@ class RealmExportTest(ZulipTestCase):
         export_dict = result.json()['exports']
         self.assertEqual(export_dict[0]['id'], audit_log_entry.id)
         self.assertEqual(export_dict[0]['export_url'],
-                         'https://test-avatar-bucket.s3.amazonaws.com' + path_id)
+                         'https://test-avatar-bucket.s3.amazonaws.com' + export_path)
         self.assertEqual(export_dict[0]['acting_user_id'], admin.id)
         self.assert_length(export_dict,
                            RealmAuditLog.objects.filter(
@@ -123,10 +124,10 @@ class RealmExportTest(ZulipTestCase):
         self.assertEqual(audit_log_entry.acting_user_id, admin.id)
 
         # Test that the file is hosted, and the contents are as expected.
-        path_id = orjson.loads(audit_log_entry.extra_data).get('export_path')
-        response = self.client_get(path_id)
+        export_path = orjson.loads(audit_log_entry.extra_data).get('export_path')
+        response = self.client_get(export_path)
         self.assertEqual(response.status_code, 200)
-        self.assert_url_serves_contents_of_file(path_id, b'zulip!')
+        self.assert_url_serves_contents_of_file(export_path, b'zulip!')
 
         result = self.client_get('/json/export/realm')
         self.assert_json_success(result)
@@ -134,7 +135,7 @@ class RealmExportTest(ZulipTestCase):
         # Test that the export we have is the export we created.
         export_dict = result.json()['exports']
         self.assertEqual(export_dict[0]['id'], audit_log_entry.id)
-        self.assertEqual(export_dict[0]['export_url'], admin.realm.uri + path_id)
+        self.assertEqual(export_dict[0]['export_url'], admin.realm.uri + export_path)
         self.assertEqual(export_dict[0]['acting_user_id'], admin.id)
         self.assert_length(export_dict,
                            RealmAuditLog.objects.filter(
@@ -144,7 +145,7 @@ class RealmExportTest(ZulipTestCase):
         # Finally, delete the file.
         result = self.client_delete(f'/json/export/realm/{audit_log_entry.id}')
         self.assert_json_success(result)
-        response = self.client_get(path_id)
+        response = self.client_get(export_path)
         self.assertEqual(response.status_code, 404)
 
         # Try to delete an export with a `deleted_timestamp` key.
