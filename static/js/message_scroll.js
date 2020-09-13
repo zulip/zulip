@@ -170,13 +170,13 @@ exports.initialize = function () {
             return;
         }
 
-        if (event.mark_read && event.previously_selected !== -1) {
+        if (event.mark_read && event.previously_selected_id !== -1) {
             // Mark messages between old pointer and new pointer as read
             let messages;
-            if (event.id < event.previously_selected) {
-                messages = event.msg_list.message_range(event.id, event.previously_selected);
+            if (event.id < event.previously_selected_id) {
+                messages = event.msg_list.message_range(event.id, event.previously_selected_id);
             } else {
-                messages = event.msg_list.message_range(event.previously_selected, event.id);
+                messages = event.msg_list.message_range(event.previously_selected_id, event.id);
             }
             if (event.msg_list.can_mark_messages_read()) {
                 unread_ops.notify_server_messages_read(messages, {from: "pointer"});
