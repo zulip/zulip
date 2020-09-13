@@ -1546,9 +1546,6 @@ class Stream(models.Model):
     def is_history_public_to_subscribers(self) -> bool:
         return self.history_public_to_subscribers
 
-    class Meta:
-        unique_together = ("name", "realm")
-
     # Stream fields included whenever a Stream object is provided to
     # Zulip clients via the API.  A few details worth noting:
     # * "id" is represented as "stream_id" in most API interfaces.
