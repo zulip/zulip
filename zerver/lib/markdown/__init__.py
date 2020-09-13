@@ -26,6 +26,7 @@ from typing import (
     Union,
 )
 from typing.re import Match, Pattern
+from urllib.parse import urlsplit
 from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
 
@@ -36,7 +37,6 @@ import markdown
 import requests
 from django.conf import settings
 from django.db.models import Q
-from hyperlink import parse
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from typing_extensions import TypedDict
 
@@ -2077,9 +2077,12 @@ def topic_links(realm_filters_key: int, topic_name: str) -> List[str]:
         link_match = re.match(get_web_link_regex(), sub_string)
         if link_match:
             url = link_match.group('url')
-            url_object = parse(url)
-            if not url_object.scheme:
-                url = url_object.replace(scheme='https').to_text()
+            result = urlsplit(url)
+            if not result.scheme:
+                if not result.netloc:
+                    i = (result.path + "/").index("/")
+                    result = result._replace(netloc=result.path[:i], path=result.path[i:])
+                url = result._replace(scheme="https").geturl()
             matches.append(url)
 
     return matches

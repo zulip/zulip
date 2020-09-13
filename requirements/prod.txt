@@ -257,14 +257,10 @@ hyperframe==3.2.0 \
     --hash=sha256:05f0e063e117c16fcdd13c12c93a4424a2c40668abfac3bb419a10f57698204e \
     --hash=sha256:4dcab11967482d400853b396d042038e4c492a15a5d2f57259e2b5f89a32f755 \
     # via h2, hyper
-hyperlink==19.0.0 \
-    --hash=sha256:4288e34705da077fada1111a24a0aa08bb1e76699c9ce49876af722441845654 \
-    --hash=sha256:ab4a308feb039b04f855a020a6eda3b18ca5a68e6d8f8c899cbe9e653721d04f \
-    # via -r requirements/common.in
 idna==2.8 \
     --hash=sha256:c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407 \
     --hash=sha256:ea8b7f6188e6fa117537c3df7da9fc686d485087abf6ac197f9c46432f7e4a3c \
-    # via hyperlink, requests
+    # via requests
 ijson==3.1.post0 \
     --hash=sha256:07cd88c9224392726128673fea7a90276746d3bf56d11635e3457769eda6295a \
     --hash=sha256:0ae656f3ca3bd833dc548583f13ba205eaee7c15d27496091549de4523931e00 \

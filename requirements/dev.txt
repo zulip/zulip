@@ -368,7 +368,7 @@ hyperframe==3.2.0 \
 hyperlink==19.0.0 \
     --hash=sha256:4288e34705da077fada1111a24a0aa08bb1e76699c9ce49876af722441845654 \
     --hash=sha256:ab4a308feb039b04f855a020a6eda3b18ca5a68e6d8f8c899cbe9e653721d04f \
-    # via -r requirements/common.in, twisted
+    # via twisted
 idna==2.8 \
     --hash=sha256:c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407 \
     --hash=sha256:ea8b7f6188e6fa117537c3df7da9fc686d485087abf6ac197f9c46432f7e4a3c \
