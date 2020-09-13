@@ -449,7 +449,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
     def django_to_ldap_username(self, username: str) -> str:
         """
-        Translates django username (user_profile.email or whatever the user typed in the login
+        Translates django username (user_profile.delivery_email or whatever the user typed in the login
         field when authenticating via the ldap backend) into ldap username.
         Guarantees that the username it returns actually has an entry in the ldap directory.
         Raises ZulipLDAPExceptionNoMatchingLDAPUser if that's not possible.
