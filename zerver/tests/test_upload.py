@@ -1598,7 +1598,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
         # Delete the tarball.
         with self.assertLogs(level='WARNING') as warn_log:
-            self.assertIsNone(delete_export_tarball('not_a_file'))
+            self.assertIsNone(delete_export_tarball('/not_a_file'))
         self.assertEqual(warn_log.output, [
             'WARNING:root:not_a_file does not exist. Its entry in the database will be removed.'
         ])
@@ -1682,7 +1682,9 @@ class S3Test(ZulipTestCase):
 
         response = self.client_get(uri)
         redirect_url = response['Location']
-        key = urllib.parse.urlparse(redirect_url).path
+        path = urllib.parse.urlparse(redirect_url).path
+        assert path.startswith("/")
+        key = path[1:]
         self.assertEqual(b"zulip!", bucket.Object(key).get()['Body'].read())
 
         # Now try the endpoint that's supposed to return a temporary url for access
@@ -1691,7 +1693,9 @@ class S3Test(ZulipTestCase):
         self.assert_json_success(result)
         data = result.json()
         url_only_url = data['url']
-        key = urllib.parse.urlparse(url_only_url).path
+        path = urllib.parse.urlparse(url_only_url).path
+        assert path.startswith("/")
+        key = path[1:]
         self.assertEqual(b"zulip!", bucket.Object(key).get()['Body'].read())
 
         # Note: Depending on whether the calls happened in the same
@@ -1912,7 +1916,7 @@ class S3Test(ZulipTestCase):
 
         # Delete the tarball.
         with self.assertLogs(level='WARNING') as warn_log:
-            self.assertIsNone(delete_export_tarball('not_a_file'))
+            self.assertIsNone(delete_export_tarball('/not_a_file'))
         self.assertEqual(warn_log.output, [
             'WARNING:root:not_a_file does not exist. Its entry in the database will be removed.'
         ])
