@@ -224,7 +224,7 @@ exports.initialize_kitchen_sink_stuff = function () {
                 const row_from_dom = current_msg_list.get_row(event.id);
                 const messages = event.msg_list.all_messages();
                 blueslip.debug("message_selected missing selected row", {
-                    previously_selected: event.previously_selected,
+                    previously_selected_id: event.previously_selected_id,
                     selected_id: event.id,
                     selected_idx: event.msg_list.selected_idx(),
                     selected_idx_exact: messages.indexOf(event.msg_list.get(event.id)),
@@ -246,7 +246,7 @@ exports.initialize_kitchen_sink_stuff = function () {
                 // just place it in the very center
                 message_viewport.recenter_view(row, {
                     from_scroll: event.from_scroll,
-                    force_center: event.previously_selected === -1,
+                    force_center: event.previously_selected_id === -1,
                 });
             }
         }

@@ -146,7 +146,7 @@ class MessageList {
             ...opts,
             id,
             msg_list: this,
-            previously_selected: this.data.selected_id(),
+            previously_selected_id: this.data.selected_id(),
         };
 
         const convert_id = (str_id) => {
