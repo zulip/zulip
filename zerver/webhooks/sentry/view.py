@@ -97,7 +97,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     platform_name = event["platform"]
     syntax_highlight_as = syntax_highlight_as_map.get(platform_name, "")
     if syntax_highlight_as == "":  # nocoverage
-        logging.info(f"Unknown Sentry platform: {platform_name}")
+        logging.info("Unknown Sentry platform: %s", platform_name)
 
     context = {
         "title": subject,
