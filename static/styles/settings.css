@@ -1543,7 +1543,8 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 #id_realm_invite_to_stream_policy,
 #id_realm_org_join_restrictions,
 #id_realm_bot_creation_policy,
-#id_realm_user_invite_restriction {
+#id_realm_user_invite_restriction,
+#id_realm_wildcard_mention_policy {
     width: 100%;
 }
 

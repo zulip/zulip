@@ -49,8 +49,38 @@ notification. Silent mentions start with `@_` instead of `@`.
 ## Mention everyone on a stream
 
 You can mention everyone on a stream with the `@**all**` mention. Use
-sparingly!  Note that this will not notify anyone who has muted the
-stream, and users can disable receiving email/push notifications for
-these wildcard mentions, either
+sparingly! Used improperly, wildcard mentions can be annoying.
+
+Note that this will not notify anyone who has muted the stream, and
+users can disable receiving email/push notifications for these
+wildcard mentions, either
 [globally](/help/pm-mention-alert-notifications) or for [individual
 streams](/help/stream-notifications).
+
+### Restrictions on wildcard mentions
+
+Organization administrators can set a policy for which users are
+allowed to use wildcard mentions.
+
+Zulip allows anyone to use wildcard mentions in streams with at most
+15 subscribers.
+
+Organizations administrators can configure a policy for which classes
+of users are allowed to use wildcard mentions in streams with more
+than 15 subscribers.  The default allows only organization
+administrators to use wildcard mentions in large streams.
+
+Users permitted to use wildcard mentions by the organization's policy
+are warned that wildcard mentions result in everyone receiving email
+and mobile push notifications.
+
+{start_tabs}
+
+{settings_tab|organization-permissions}
+
+2. Under **Organization permissions**, configure
+   **Who can use wildcard mentions in large streams**.
+
+{!save-changes.md!}
+
+{end_tabs}

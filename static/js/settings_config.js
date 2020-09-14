@@ -137,6 +137,43 @@ exports.private_message_policy_values = {
     },
 };
 
+exports.wildcard_mention_policy_values = {
+    by_everyone: {
+        order: 1,
+        code: 1,
+        description: i18n.t("Admins, members and guests"),
+    },
+    by_members: {
+        order: 2,
+        code: 2,
+        description: i18n.t("Admins and members"),
+    },
+    by_full_members: {
+        order: 3,
+        code: 3,
+        description: i18n.t("Admins and full members"),
+    },
+    // Until we add stream administrators, we mislabel this choice
+    // (which we intend to be the long-term default) as "Admins only"
+    // and don't offer the long-term "Admins only" option.
+    by_stream_admins_only: {
+        order: 4,
+        code: 4,
+        //  description: i18n.t("Organization and stream admins"),
+        description: i18n.t("Admins only"),
+    },
+    // by_admins_only: {
+    //     order: 5,
+    //     code: 5,
+    //     description: i18n.t("Admins only"),
+    // },
+    nobody: {
+        order: 6,
+        code: 6,
+        description: i18n.t("Nobody"),
+    },
+};
+
 const time_limit_dropdown_values = new Map([
     [
         "any_time",

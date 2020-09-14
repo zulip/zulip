@@ -87,6 +87,9 @@ exports.get_organization_settings_options = () => {
     options.private_message_policy_values = exports.get_sorted_options_list(
         settings_config.private_message_policy_values,
     );
+    options.wildcard_mention_policy_values = exports.get_sorted_options_list(
+        settings_config.wildcard_mention_policy_values,
+    );
     return options;
 };
 
@@ -203,6 +206,7 @@ const simple_dropdown_properties = [
     "realm_private_message_policy",
     "realm_add_emoji_by_admins_only",
     "realm_user_invite_restriction",
+    "realm_wildcard_mention_policy",
 ];
 
 function set_property_dropdown_value(property_name) {
