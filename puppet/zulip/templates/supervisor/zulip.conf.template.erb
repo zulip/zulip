@@ -26,7 +26,7 @@ directory=/home/zulip/deployments/current/
 <% if @tornado_multiprocess -%>
 [program:zulip-tornado]
 command=env PYTHONUNBUFFERED=1 /home/zulip/deployments/current/manage.py runtornado 127.0.0.1:98%(process_num)02d
-process_name=port-98%(process_num)02d
+process_name=zulip-tornado-port-98%(process_num)02d
 priority=200                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
