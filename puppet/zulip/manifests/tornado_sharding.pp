@@ -21,7 +21,7 @@ class zulip::tornado_sharding {
     require => User['zulip'],
     owner   => 'zulip',
     group   => 'zulip',
-    mode    => '0640',
+    mode    => '0644',
     content => "{}\n",
     replace => false,
   }
