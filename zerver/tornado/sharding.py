@@ -13,7 +13,7 @@ if os.path.exists("/etc/zulip/sharding.json"):
 
 def get_tornado_port(realm: Realm) -> int:
     if settings.TORNADO_SERVER is None:
-        return 9993
+        return 9800
     if settings.TORNADO_PROCESSES == 1:
         r = urlsplit(settings.TORNADO_SERVER)
         assert r.port is not None

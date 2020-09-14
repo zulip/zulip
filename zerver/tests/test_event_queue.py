@@ -483,16 +483,16 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 class FileReloadLogicTest(ZulipTestCase):
     def test_persistent_queue_filename(self) -> None:
         with self.settings(JSON_PERSISTENT_QUEUE_FILENAME_PATTERN="/home/zulip/tornado/event_queues%s.json"):
-            self.assertEqual(persistent_queue_filename(9993),
+            self.assertEqual(persistent_queue_filename(9800),
                              "/home/zulip/tornado/event_queues.json")
-            self.assertEqual(persistent_queue_filename(9993, last=True),
+            self.assertEqual(persistent_queue_filename(9800, last=True),
                              "/home/zulip/tornado/event_queues.json.last")
         with self.settings(JSON_PERSISTENT_QUEUE_FILENAME_PATTERN="/home/zulip/tornado/event_queues%s.json",
                            TORNADO_PROCESSES=4):
-            self.assertEqual(persistent_queue_filename(9993),
-                             "/home/zulip/tornado/event_queues.9993.json")
-            self.assertEqual(persistent_queue_filename(9993, last=True),
-                             "/home/zulip/tornado/event_queues.9993.last.json")
+            self.assertEqual(persistent_queue_filename(9800),
+                             "/home/zulip/tornado/event_queues.9800.json")
+            self.assertEqual(persistent_queue_filename(9800, last=True),
+                             "/home/zulip/tornado/event_queues.9800.last.json")
 
 class EventQueueTest(ZulipTestCase):
     def get_client_descriptor(self) -> ClientDescriptor:

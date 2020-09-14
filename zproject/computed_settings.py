@@ -2,7 +2,7 @@ import os
 import sys
 import time
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 from urllib.parse import urljoin
 
 from django.template.loaders import app_directories
@@ -231,11 +231,7 @@ INSTALLED_APPS += EXTRA_INSTALLED_APPS
 ZILENCER_ENABLED = 'zilencer' in INSTALLED_APPS
 CORPORATE_ENABLED = 'corporate' in INSTALLED_APPS
 
-# Base URL of the Tornado server
-# We set it to None when running backend tests or populate_db.
-# We override the port number when running frontend tests.
 TORNADO_PROCESSES = int(get_config('application_server', 'tornado_processes', '1'))
-TORNADO_SERVER: Optional[str] = 'http://127.0.0.1:9993'
 RUNNING_INSIDE_TORNADO = False
 AUTORELOAD = DEBUG
 
