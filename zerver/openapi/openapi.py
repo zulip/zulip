@@ -1,5 +1,10 @@
-# Set of helper functions to manipulate the OpenAPI files that define our REST
-# API's specification.
+# Zulip's OpenAPI-based API documentation system is documented at
+#   https://zulip.readthedocs.io/en/latest/documentation/api.html
+#
+# This file contains helper functions to interact with the OpenAPI
+# definitions and validate that Zulip's implementation matches what is
+# described in our documentation.
+
 import os
 import re
 from typing import Any, Dict, List, Optional, Set

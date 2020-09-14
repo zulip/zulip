@@ -1,3 +1,17 @@
+# Zulip's OpenAPI-based API documentation system is documented at
+#   https://zulip.readthedocs.io/en/latest/documentation/api.html
+#
+# This file defines the Python code examples that appears in Zulip's
+# REST API documentation, and also contains a system for running the
+# example code as part of the `tools/test-api` test suite.
+#
+# The actual documentation appears within these blocks:
+#   # {code_example|start}
+#   Code here
+#   # {code_example|end}
+#
+# Whereas the surrounding code is test setup logic.
+
 import json
 import os
 import sys
