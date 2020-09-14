@@ -27,7 +27,7 @@ let user_acknowledged_announce;
 let wildcard_mention;
 let uppy;
 
-exports.all_everyone_warn_threshold = 15;
+exports.wildcard_mention_large_stream_threshold = 15;
 exports.announce_warn_threshold = 60;
 
 exports.uploads_domain = document.location.protocol + "//" + document.location.host;
@@ -485,7 +485,10 @@ function validate_stream_message_mentions(stream_id) {
     const stream_count = stream_data.get_subscriber_count(stream_id) || 0;
 
     // check if wildcard_mention has any mention and henceforth execute the warning message.
-    if (wildcard_mention !== null && stream_count > exports.all_everyone_warn_threshold) {
+    if (
+        wildcard_mention !== null &&
+        stream_count > exports.wildcard_mention_large_stream_threshold
+    ) {
         if (
             user_acknowledged_all_everyone === undefined ||
             user_acknowledged_all_everyone === false
