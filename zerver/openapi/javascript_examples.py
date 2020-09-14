@@ -1,3 +1,9 @@
+# Zulip's OpenAPI-based API documentation system is documented at
+#   https://zulip.readthedocs.io/en/latest/documentation/api.html
+#
+# This Python file wraps the test suite for Zulip's JavaScript API
+# examples and validates the responses against our OpenAPI definitions.
+
 import json
 import os
 import subprocess

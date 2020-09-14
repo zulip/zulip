@@ -1,3 +1,11 @@
+# Zulip's OpenAPI-based API documentation system is documented at
+#   https://zulip.readthedocs.io/en/latest/documentation/api.html
+#
+# This file contains helper functions for generating cURL examples
+# based on Zulip's OpenAPI definitions, as well as test setup and
+# fetching of appropriate parameter values to use when running the
+# cURL examples as part of the tools/test-api test suite.
+
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
