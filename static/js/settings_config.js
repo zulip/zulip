@@ -137,6 +137,40 @@ exports.private_message_policy_values = {
     },
 };
 
+exports.wildcard_mention_policy_values = {
+    by_everyone: {
+        order: 1,
+        code: 1,
+        description: i18n.t("Admins, members and guests"),
+    },
+    by_members: {
+        order: 2,
+        code: 2,
+        description: i18n.t("Admins and members"),
+    },
+    by_full_members: {
+        order: 3,
+        code: 3,
+        description: i18n.t("Admins and full members"),
+    },
+    // This option will be added after stream admin work is completed.
+    // by_stream_admins_only: {
+    //     order: 4,
+    //     code: 4,
+    //     description: i18n.t("Organization and stream admins"),
+    // },
+    by_admins_only: {
+        order: 4,
+        code: 5,
+        description: i18n.t("Admins only"),
+    },
+    nobody: {
+        order: 5,
+        code: 6,
+        description: i18n.t("Nobody"),
+    },
+};
+
 const time_limit_dropdown_values = new Map([
     [
         "any_time",

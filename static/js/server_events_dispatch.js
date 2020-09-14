@@ -143,6 +143,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose.update_video_chat_button_display,
                 waiting_period_threshold: noop,
+                wildcard_mention_policy: noop,
             };
             if (
                 event.op === "update" &&
