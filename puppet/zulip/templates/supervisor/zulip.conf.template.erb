@@ -41,7 +41,7 @@ directory=/home/zulip/deployments/current/
 numprocs=<%= @tornado_processes %>
 <% else -%>
 [program:zulip-tornado]
-command=env PYTHONUNBUFFERED=1 /home/zulip/deployments/current/manage.py runtornado 127.0.0.1:9993
+command=env PYTHONUNBUFFERED=1 /home/zulip/deployments/current/manage.py runtornado 127.0.0.1:9800
 priority=200                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)

@@ -7,7 +7,7 @@ upstream tornado<%= port %> {
 <% end -%>
 <% else -%>
 upstream tornado {
-    server 127.0.0.1:9993;
+    server 127.0.0.1:9800;
     keepalive 10000;
 }
 <% end -%>
