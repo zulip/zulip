@@ -209,3 +209,10 @@ def upload_custom_emoji() -> Dict[str, object]:
     return {
         "filename": "zerver/tests/images/animated_img.gif",
     }
+
+@openapi_param_value_generator(["/users/{user_id}:delete"])
+def deactivate_user() -> Dict[str, object]:
+    client = helpers.nonreg_user("test")
+    return {
+        "user_id": client.id
+    }

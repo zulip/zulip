@@ -27,10 +27,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
     # on "add" tests coming before "remove" tests in some cases.  We
     # should try to either avoid ordering dependencies or make them
     # very explicit.
-    for file_name in sorted(
-        glob.glob("templates/zerver/api/*.md"),
-        key=lambda file_name: (file_name == "templates/zerver/api/deactivate-user.md", file_name),
-    ):
+    for file_name in sorted(glob.glob("templates/zerver/api/*.md")):
         documentation_lines = open(file_name).readlines()
         for line in documentation_lines:
             # A typical example from the Markdown source looks like this:
