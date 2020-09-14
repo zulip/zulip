@@ -952,7 +952,7 @@ LOGGING: Dict[str, Any] = {
         },
         'zulip.zerver.webhooks': {
             'level': 'DEBUG',
-            'handlers': ['webhook_file'],
+            'handlers': ['file', 'errors_file', 'webhook_file'],
             'propagate': False,
         },
         'zulip.zerver.webhooks.unsupported': {
