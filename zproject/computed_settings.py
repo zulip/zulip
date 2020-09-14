@@ -397,8 +397,6 @@ REDIS_PASSWORD = get_secret('redis_password')
 # SECURITY SETTINGS
 ########################################################################
 
-SESSION_COOKIE_SAMESITE = 'Lax'
-
 # Tell the browser to never send our cookies without encryption, e.g.
 # when executing the initial http -> https redirect.
 #

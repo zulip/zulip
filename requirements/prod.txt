@@ -191,9 +191,6 @@ django-bitfield==2.0.1 \
 django-bmemcached==0.3.0 \
     --hash=sha256:4e4b7d97216dbae331c1de10e699ca22804b94ec3a90d2762dd5d146e6986a8a \
     # via -r requirements/common.in
-django-cookies-samesite==0.6.6 \
-    --hash=sha256:a26dc27bfc446279c981a301b053eff845b93d9ba62798e281c90584a7ccaa4a \
-    # via -r requirements/common.in
 django-formtools==2.2 \
     --hash=sha256:304fa777b8ef9e0693ce7833f885cb89ba46b0e46fc23b01176900a93f46742f \
     --hash=sha256:c5272c03c1cd51b2375abf7397a199a3148a9fbbf2f100e186467a84025d13b2 \
@@ -797,10 +794,6 @@ typing-extensions==3.7.4.3 \
     --hash=sha256:99d4073b617d30288f569d3f13d2bd7548c3a7e4c8de87db09a9d29bb3a4a60c \
     --hash=sha256:dafc7639cde7f1b6e1acc0f457842a83e722ccca8eef5270af2d74792619a89f \
     # via -r requirements/common.in
-ua-parser==0.10.0 \
-    --hash=sha256:46ab2e383c01dbd2ab284991b87d624a26a08f72da4d7d413f5bfab8b9036f8a \
-    --hash=sha256:47b1782ed130d890018d983fac37c2a80799d9e0b9c532e734c67cf70f185033 \
-    # via django-cookies-samesite
 uhashring==1.2 \
     --hash=sha256:f7304ca2ff763bbf1e2f8a78f21131721811619c5841de4f8c98063344906931 \
     # via python-binary-memcached
