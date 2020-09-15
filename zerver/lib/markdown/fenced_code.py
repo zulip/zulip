@@ -409,7 +409,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 lexer_subclass_name = get_lexer_by_name(lang).name
             except ClassNotFound:
                 lexer_subclass_name = lang
-            div_tag.attrib['data-codehilite-language'] = lexer_subclass_name
+            div_tag.attrib['data-code-language'] = lexer_subclass_name
             # Lxml implicitly converts tags like <span></span> into <span/>
             # specifying method="c14n" when converting to string, prevents that.
             code = etree.tostring(div_tag, method="c14n").decode()
