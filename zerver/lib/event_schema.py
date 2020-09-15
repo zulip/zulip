@@ -588,6 +588,17 @@ check_submessage = check_events_dict(
     ]
 )
 
+check_preview = check_events_dict(
+    required_keys=[
+        ('type', equals('update_message')),
+        ('flags', check_list(check_string)),
+        ('content', check_string),
+        ('message_id', check_int),
+        ('message_ids', check_list(check_int)),
+        ('rendered_content', check_string),
+    ]
+)
+
 _check_single_subscription = check_dict_only(
     required_keys=subscription_fields,
     optional_keys=[

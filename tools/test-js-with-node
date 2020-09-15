@@ -72,6 +72,7 @@ EXEMPT_FILES = {
     'static/js/localstorage.js',
     'static/js/message_edit.js',
     'static/js/message_edit_history.js',
+    'static/js/message_embed.js',
     'static/js/message_events.js',
     'static/js/message_fetch.js',
     'static/js/message_flags.js',

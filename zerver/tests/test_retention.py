@@ -5,7 +5,12 @@ from unittest import mock
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_add_submessage, do_delete_messages, internal_send_private_message
+from zerver.lib.actions import (
+    do_add_submessage,
+    do_delete_messages,
+    do_remove_preview,
+    internal_send_private_message,
+)
 from zerver.lib.retention import (
     archive_messages,
     clean_archived_data,
@@ -20,12 +25,14 @@ from zerver.lib.upload import create_attachment
 from zerver.models import (
     ArchivedAttachment,
     ArchivedMessage,
+    ArchivedPreviewRemoved,
     ArchivedReaction,
     ArchivedSubMessage,
     ArchivedUserMessage,
     ArchiveTransaction,
     Attachment,
     Message,
+    PreviewRemoved,
     Reaction,
     Realm,
     Stream,
@@ -460,6 +467,40 @@ class TestArchivingSubMessages(ArchiveMessagesTestingBase):
             set(SubMessage.objects.filter(id__in=submessage_ids).values_list('id', flat=True)),
             set(submessage_ids),
         )
+
+class TestArchivingPreviewRemoved(ArchiveMessagesTestingBase):
+    def test_archiving_preview_removed(self) -> None:
+        expired_msg_ids = self._make_expired_zulip_messages(2)
+
+        self._remove_preview_for_url(expired_msg_ids[0], "https://zulip.readthedocs.io")
+        self._remove_preview_for_url(expired_msg_ids[1], "https://github.com/zulip/zulip")
+
+        preview_removed_ids = list(
+            PreviewRemoved.objects.filter(message_id__in=expired_msg_ids).values_list('id', flat=True)
+        )
+
+        self.assertEqual(len(preview_removed_ids), 2)
+        self.assertEqual(PreviewRemoved.objects.filter(id__in=preview_removed_ids).count(), 2)
+        archive_messages()
+        self.assertEqual(PreviewRemoved.objects.filter(id__in=preview_removed_ids).count(), 0)
+
+        self.assertEqual(
+            set(ArchivedPreviewRemoved.objects.filter(id__in=preview_removed_ids).values_list('id', flat=True)),
+            set(preview_removed_ids)
+        )
+        restore_all_data_from_archive()
+        self.assertEqual(
+            set(PreviewRemoved.objects.filter(id__in=preview_removed_ids).values_list('id', flat=True)),
+            set(preview_removed_ids)
+        )
+
+    def _remove_preview_for_url(self, message_id: int, url: str) -> None:
+        message = Message.objects.get(id=message_id)
+        message.links_for_preview = set()
+        with mock.patch("zerver.lib.actions.queue_json_publish"):
+            with mock.patch("zerver.lib.actions.render_incoming_message"):
+                with mock.patch("zerver.lib.actions.get_queue_processor_event_data"):
+                    do_remove_preview(message=message, url=url)
 
 class TestArchivingReactions(ArchiveMessagesTestingBase):
     def test_archiving_reactions(self) -> None:
@@ -952,7 +993,7 @@ class TestDoDeleteMessages(ZulipTestCase):
         with queries_captured() as queries:
             do_delete_messages(realm, messages)
         self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
-        self.assert_length(queries, 18)
+        self.assert_length(queries, 20)
 
         archived_messages = ArchivedMessage.objects.filter(id__in=message_ids)
         self.assertEqual(archived_messages.count(), len(message_ids))

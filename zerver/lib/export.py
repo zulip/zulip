@@ -110,6 +110,7 @@ ALL_ZULIP_TABLES = {
     'zerver_archivedattachment',
     'zerver_archivedattachment_messages',
     'zerver_archivedmessage',
+    'zerver_archivedpreviewremoved',
     'zerver_archivedusermessage',
     'zerver_attachment',
     'zerver_attachment_messages',
@@ -134,6 +135,7 @@ ALL_ZULIP_TABLES = {
     'zerver_preregistrationuser',
     'zerver_preregistrationuser_streams',
     'zerver_pushdevicetoken',
+    'zerver_previewremoved',
     'zerver_reaction',
     'zerver_realm',
     'zerver_realmauditlog',
@@ -209,6 +211,7 @@ NON_EXPORTED_TABLES = {
     'zerver_archivedusermessage',
     'zerver_archivedattachment',
     'zerver_archivedattachment_messages',
+    'zerver_archivedpreviewremoved',
     'zerver_archivedreaction',
     'zerver_archivedsubmessage',
     'zerver_archivetransaction',
@@ -242,6 +245,7 @@ NON_EXPORTED_TABLES = {
     'zerver_draft',
 
     # For any tables listed below here, it's a bug that they are not present in the export.
+    'zerver_previewremoved',
 }
 
 IMPLICIT_TABLES = {

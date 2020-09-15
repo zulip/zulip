@@ -298,7 +298,8 @@ function edit_message(row, raw_content) {
     // been able to click it at the time the mouse entered the message_row. Also
     // a buffer in case their computer is slow, or stalled for a second, etc
     // If you change this number also change edit_limit_buffer in
-    // zerver.views.message_edit.update_message_backend
+    // zerver.views.message_edit.update_message_backend and seconds_left_buffer
+    // in message_embed.js
     const seconds_left_buffer = 5;
     const editability = get_editability(message, seconds_left_buffer);
     const is_editable =

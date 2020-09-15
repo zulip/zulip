@@ -10,6 +10,7 @@ from django.utils.translation import ugettext as _
 from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import (
     do_delete_messages,
+    do_remove_preview,
     do_update_message,
     get_user_info_for_message_updates,
     render_incoming_message,
@@ -23,9 +24,15 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import get_stream_by_id
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import LEGACY_PREV_TOPIC, REQ_topic
+from zerver.lib.url_preview.preview import get_queue_processor_event_data
 from zerver.lib.validator import check_bool, check_string_in, to_non_negative_int
 from zerver.models import Message, Realm, UserMessage, UserProfile
 
+# Allow an extra 20 seconds since we potentially allow editing 15 seconds
+# past the limit, and in case there are network issues, etc. The 15 comes
+# from (min_seconds_to_edit + seconds_left_buffer) in message_edit.js; if
+# you change this value also change those two parameters in message_edit.js.
+EDIT_LIMIT_BUFFER = 20
 
 def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Message) -> None:
     """This fills out the message edit history entries from the database,
@@ -92,6 +99,29 @@ def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
     fill_edit_history_entries(message_edit_history, message)
     return json_success({"message_history": list(reversed(message_edit_history))})
 
+def check_edit_time_expiry(message: Message, user_profile: UserProfile) -> None:
+    if user_profile.realm.message_content_edit_limit_seconds > 0:
+        deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + EDIT_LIMIT_BUFFER
+        if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
+            raise JsonableError(_("The time limit for editing this message has passed"))
+
+@has_request_variables
+def remove_preview(request: HttpRequest, user_profile: UserMessage,
+                   message_id: int=REQ(converter=to_non_negative_int),
+                   url: str=REQ()) -> HttpResponse:
+
+    if not user_profile.realm.allow_message_editing:
+        return json_error(_("Your organization has turned off message editing"))
+
+    message, __ = access_message(user_profile, message_id)
+
+    if message.sender != user_profile:
+        raise JsonableError(_("You don't have permission to edit this message"))
+    check_edit_time_expiry(message, user_profile)
+
+    do_remove_preview(message, url)
+    return json_success()
+
 PROPAGATE_MODE_VALUES = ["change_later", "change_one", "change_all"]
 @has_request_variables
 def update_message_backend(request: HttpRequest, user_profile: UserMessage,
@@ -133,11 +163,8 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # past the limit, and in case there are network issues, etc. The 15 comes
     # from (min_seconds_to_edit + seconds_left_buffer) in message_edit.js; if
     # you change this value also change those two parameters in message_edit.js.
-    edit_limit_buffer = 20
-    if content is not None and user_profile.realm.message_content_edit_limit_seconds > 0:
-        deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
-        if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
-            raise JsonableError(_("The time limit for editing this message has passed"))
+    if content is not None:
+        check_edit_time_expiry(message, user_profile)
 
     # If there is a change to the topic, check that the user is allowed to
     # edit it and that it has not been too long. If this is not the user who
@@ -145,7 +172,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # topics is passed, raise an error.
     if content is None and message.sender != user_profile and not user_profile.is_realm_admin and \
             not is_no_topic_msg:
-        deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer
+        deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + EDIT_LIMIT_BUFFER
         if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))
 
@@ -172,6 +199,11 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         )
         user_info = get_user_info_for_message_updates(message.id)
         prior_mention_user_ids = user_info['mention_user_ids']
+
+        # We clear the PreviewRemoved table for this message to restore any
+        # removed previews, since there is no other way to undo removing
+        # previews from the UI
+        message.clear_preview_removed()
 
         # We render the message using the current user's realm; since
         # the cross-realm bots never edit messages, this should be
@@ -208,14 +240,11 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # Include the number of messages changed in the logs
     request._log_data['extra'] = f"[{number_changed}]"
     if links_for_embed:
-        event_data = {
-            'message_id': message.id,
-            'message_content': message.content,
-            # The choice of `user_profile.realm_id` rather than
-            # `sender.realm_id` must match the decision made in the
-            # `render_incoming_message` call earlier in this function.
-            'message_realm_id': user_profile.realm_id,
-            'urls': list(links_for_embed)}
+        # The choice of `user_profile.realm_id` rather than
+        # `sender.realm_id` must match the decision made in the
+        # `render_incoming_message` call earlier in this function.
+        realm_id = user_profile.realm_id
+        event_data = get_queue_processor_event_data(message, realm_id, links_for_embed)
         queue_json_publish('embed_links', event_data)
     return json_success()
 

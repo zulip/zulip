@@ -59,6 +59,7 @@ from zerver.lib.actions import (
     do_remove_alert_words,
     do_remove_default_stream,
     do_remove_default_stream_group,
+    do_remove_preview,
     do_remove_reaction,
     do_remove_realm_domain,
     do_remove_realm_emoji,
@@ -98,6 +99,7 @@ from zerver.lib.event_schema import (
     check_events_dict,
     check_invites_changed,
     check_message,
+    check_preview,
     check_reaction,
     check_realm_bot_add,
     check_realm_bot_delete,
@@ -550,6 +552,16 @@ class NormalActionsTest(BaseAction):
             state_change_expected=False,
         )
         check_reaction('events[0]', events[0], 'remove')
+
+    def test_remove_preview(self) -> None:
+        url = "https://github.com/zulip/zulip"
+        message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", url)
+        message = Message.objects.get(id=message_id)
+        events = self.verify_action(
+            lambda: do_remove_preview(message, url),
+            state_change_expected=False,
+        )
+        check_preview('events[0]', events[0])
 
     def test_invite_user_event(self) -> None:
         self.user_profile = self.example_user('iago')

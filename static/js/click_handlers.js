@@ -108,6 +108,11 @@ exports.initialize = function () {
             return true;
         }
 
+        // Close button to hide a preview.
+        if (target.is("button.message_embed_remove")) {
+            return true;
+        }
+
         return false;
     }
 
@@ -258,6 +263,11 @@ exports.initialize = function () {
             return;
         }
         window.location.href = $(this).attr("href");
+    });
+
+    $("#main_div").on("click", ".message_embed_remove", (e) => {
+        e.preventDefault();
+        message_embed.remove_preview(e.target);
     });
 
     // USER STATUS MODAL

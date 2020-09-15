@@ -1,3 +1,4 @@
+import datetime
 from typing import Any, Callable, Dict, Optional
 from unittest import mock
 
@@ -741,3 +742,116 @@ class PreviewTestCase(ZulipTestCase):
         msg.refresh_from_db()
         expected_content = '<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube - Clearer Code at Scale - Static Types at Zulip and Dropbox</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg"></a></div>'
         self.assertEqual(expected_content, msg.rendered_content)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_remove_url_preview(self) -> None:
+        url = 'http://test.org/'
+        hamlet = self.example_user('hamlet')
+        embedded_link = '<a href="{0}" title="The Rock">The Rock</a>'.format(url)
+        # When humans send, we should get embedded content.
+        msg = self._send_message_with_test_org_url(sender=hamlet)
+        self.assertIn(embedded_link, msg.rendered_content)
+        self.assertIn('<div class="message_embed">', msg.rendered_content)
+        data = {
+            'title': 'The Rock', 'type': 'video.movie',
+            'url': 'http://www.imdb.com/title/tt0117500/',
+            'image': 'http://ia.media-imdb.com/images/rock.jpg', 'description': 'Description text'}
+        with mock.patch('zerver.lib.url_preview.preview.link_embed_data_from_cache', return_value=data):
+            result = self.api_post(hamlet, "/json/messages/{}/remove_preview".format(msg.id), {'url': url})
+        self.assert_json_success(result)
+        msg.refresh_from_db()
+        self.assertNotIn(embedded_link, msg.rendered_content)
+        expected_content = '<p><a href="http://test.org/">http://test.org/</a></p>'
+        self.assertEqual(expected_content, msg.rendered_content)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_another_user_cannot_remove_url_preview(self) -> None:
+        url = 'http://test.org/'
+        hamlet = self.example_user('hamlet')
+        embedded_link = '<a href="{0}" title="The Rock">The Rock</a>'.format(url)
+        # When humans send, we should get embedded content.
+        msg = self._send_message_with_test_org_url(sender=hamlet)
+        self.assertIn(embedded_link, msg.rendered_content)
+        self.assertIn('<div class="message_embed">', msg.rendered_content)
+
+        cordelia = self.example_user('cordelia')
+        data = {
+            'title': 'The Rock', 'type': 'video.movie',
+            'url': 'http://www.imdb.com/title/tt0117500/',
+            'image': 'http://ia.media-imdb.com/images/rock.jpg', 'description': 'Description text'}
+        with mock.patch('zerver.lib.url_preview.preview.link_embed_data_from_cache', return_value=data):
+            result = self.api_post(cordelia, "/json/messages/{}/remove_preview".format(msg.id), {'url': url})
+        self.assert_json_error_contains(result, "don't have permission")
+        msg.refresh_from_db()
+        self.assertIn(embedded_link, msg.rendered_content)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_message_edit_restores_removed_preview(self) -> None:
+        url = 'http://test.org/'
+        hamlet = self.example_user('hamlet')
+        embedded_link = '<a href="{0}" title="The Rock">The Rock</a>'.format(url)
+        # When humans send, we should get embedded content.
+        msg = self._send_message_with_test_org_url(sender=hamlet)
+        self.assertIn(embedded_link, msg.rendered_content)
+        self.assertIn('<div class="message_embed">', msg.rendered_content)
+        result = self.api_post(hamlet, "/json/messages/{}/remove_preview".format(msg.id), {'url': url})
+        self.assert_json_success(result)
+        msg.refresh_from_db()
+        self.assertNotIn(embedded_link, msg.rendered_content)
+
+        self.login_user(hamlet)
+        # The data would already available in the link embed data cache, but
+        # the call to remove_preview without patching the network causes the
+        # cache to lose this value.
+        data = {
+            'title': 'The Rock', 'type': 'video.movie',
+            'url': 'http://www.imdb.com/title/tt0117500/',
+            'image': 'http://ia.media-imdb.com/images/rock.jpg', 'description': 'Description text'}
+        with mock.patch('zerver.lib.url_preview.preview.link_embed_data_from_cache', return_value=data):
+            result = self.client_patch("/json/messages/" + str(msg.id), {
+                'message_id': msg.id, 'content': '{} change!!!'.format(url),
+            })
+            self.assert_json_success(result)
+        msg.refresh_from_db()
+        self.assertIn(embedded_link, msg.rendered_content)
+        self.assertIn('<div class="message_embed">', msg.rendered_content)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_prevent_remove_url_preview(self) -> None:
+        url = 'http://test.org/'
+        hamlet = self.example_user('hamlet')
+        embedded_link = '<a href="{0}" title="The Rock">The Rock</a>'.format(url)
+        # When humans send, we should get embedded content.
+        msg = self._send_message_with_test_org_url(sender=hamlet)
+        self.assertIn(embedded_link, msg.rendered_content)
+        self.assertIn('<div class="message_embed">', msg.rendered_content)
+        realm = msg.get_realm()
+        realm.allow_message_editing = False
+        realm.save(update_fields=['allow_message_editing'])
+
+        result = self.api_post(hamlet, "/json/messages/{}/remove_preview".format(msg.id), {'url': url})
+        self.assertEqual(result.status_code, 400)
+        msg.refresh_from_db()
+        self.assertIn(embedded_link, msg.rendered_content)
+        self.assertIn('<div class="message_embed">', msg.rendered_content)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_prevent_remove_url_preview_on_old_messages(self) -> None:
+        url = 'http://test.org/'
+        hamlet = self.example_user('hamlet')
+        embedded_link = '<a href="{0}" title="The Rock">The Rock</a>'.format(url)
+        # When humans send, we should get embedded content.
+        msg = self._send_message_with_test_org_url(sender=hamlet)
+        self.assertIn(embedded_link, msg.rendered_content)
+        self.assertIn('<div class="message_embed">', msg.rendered_content)
+        # Realm editing allowed for 10 minutes
+        self.assertEqual(msg.get_realm().message_content_edit_limit_seconds, 600)
+        # Set sent date to older then 10 minutes ago
+        msg.date_sent -= datetime.timedelta(seconds=1000)
+        msg.save(update_fields=['date_sent'])
+
+        result = self.api_post(hamlet, "/json/messages/{}/remove_preview".format(msg.id), {'url': url})
+        self.assert_json_error_contains(result, "time limit")
+        msg.refresh_from_db()
+        self.assertIn(embedded_link, msg.rendered_content)
+        self.assertIn('<div class="message_embed">', msg.rendered_content)
