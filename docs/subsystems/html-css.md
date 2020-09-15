@@ -6,7 +6,7 @@ The Zulip application's CSS can be found in the `static/styles/`
 directory.  Zulip uses [Bootstrap](https://getbootstrap.com/) as its
 main third-party CSS library.
 
-Zulip uses SCSS for its CSS files.  There are two high-level sections
+Zulip uses PostCSS for its CSS files.  There are two high-level sections
 of CSS: the "portico" (logged-out pages like /help/, /login/, etc.),
 and the app.  The portico CSS lives under the `static/styles/portico`
 subdirectory.
@@ -148,9 +148,9 @@ relevant background as well.
 
 Zulip's frontend is primarily JavaScript in the `static/js` directory;
 we are working on migrating these to TypeScript modules.  Stylesheets
-are written in the Sass extension of CSS (with the scss syntax), they
+are written in CSS extended by various PostCSS plugins; they
 are converted from plain CSS, and we have yet to take full advantage of
-the features Sass offers.  We use Webpack to transpile and build JS
+the features PostCSS offers.  We use Webpack to transpile and build JS
 and CSS bundles that the browser can understand, one for each entry
 points specified in `tools/webpack.assets.json`; source maps are
 generated in the process for better debugging experience.
@@ -169,7 +169,7 @@ by comparing the `render_entrypoint` calls in the HTML templates under
 
 ### Adding static files
 
-To add a static file to the app (JavaScript, TypeScript, CSS/Sass, images, etc),
+To add a static file to the app (JavaScript, TypeScript, CSS, images, etc),
 first add it to the appropriate place under `static/`.
 
 - Third-party packages from the NPM repository should be added to
@@ -188,7 +188,7 @@ first add it to the appropriate place under `static/`.
   to eliminate patched third-party code from the project.
 - Our own JavaScript and TypeScript files live under `static/js`.  Ideally,
   new modules should be written in TypeScript (details on this policy below).
-- CSS/Sass files lives under `static/styles`.
+- CSS files live under `static/styles`.
 - Portico JavaScript ("portico" means for logged-out pages) lives under
   `static/js/portico`.
 - Custom SVG graphics living under `static/assets/icons` are compiled into

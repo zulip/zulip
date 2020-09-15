@@ -109,7 +109,7 @@
         }
 
         .table_fix_head table {
-            // To keep border properties to the thead th.
+            /* To keep border properties to the thead th. */
             border-collapse: separate;
         }
 
@@ -131,7 +131,7 @@
         }
 
         .clear_search_button {
-            // Overrides app_components.scss property.
+            /* Overrides app_components.css property. */
             padding-top: 6px !important;
         }
 
@@ -284,9 +284,9 @@
         }
 
         @media (max-width: 750px) {
-            // Hide participants and last message time
-            // on smaller screens. This ensures user always
-            // has a nice UI experience.
+            /* Hide participants and last message time
+               on smaller screens. This ensures user always
+               has a nice UI experience. */
             .recent_topic_users,
             .recent_topic_timestamp,
             thead .participants_header,

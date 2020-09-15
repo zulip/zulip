@@ -50,7 +50,6 @@
     "postcss-extend-rule": "^3.0.0",
     "postcss-loader": "^3.0.0",
     "postcss-nested": "^4.1.2",
-    "postcss-scss": "^2.0.0",
     "postcss-simple-vars": "^5.0.2",
     "regenerator-runtime": "^0.13.3",
     "script-loader": "^0.7.2",
