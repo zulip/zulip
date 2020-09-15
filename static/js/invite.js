@@ -203,11 +203,13 @@ exports.initialize = function () {
         $("#invitee_emails").prop("disabled", true);
         $("#submit-invitation").text(i18n.t("Generate invite link"));
         $("#submit-invitation").data("loading-text", i18n.t("Generating link..."));
+        $("#generate_multiuse_invite_radio").focus();
         reset_error_messages();
     });
 
     $("#invite-user").on("change", "#generate_multiuse_invite_radio", () => {
         $("#invitee_emails").prop("disabled", false);
+        $("#invitee_emails").focus();
         $("#submit-invitation").text(i18n.t("Invite"));
         $("#submit-invitation").data("loading-text", i18n.t("Inviting..."));
         $("#multiuse_radio_section").hide();
