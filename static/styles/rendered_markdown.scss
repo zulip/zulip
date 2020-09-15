@@ -292,6 +292,12 @@
         border: none !important;
     }
 
+    .message_inline_image.image_without_text_link {
+        display: inline-block !important;
+        margin-bottom: unset;
+        margin-top: 5px;
+    }
+
     &.rtl .twitter-image,
     &.rtl .message_inline_image {
         margin-left: unset;

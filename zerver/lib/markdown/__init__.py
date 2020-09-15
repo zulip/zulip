@@ -995,7 +995,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return None
 
     def get_url_data(self, e: Element) -> Optional[Tuple[str, Optional[str]]]:
-        if e.tag == "a":
+        # len(e) == 0 ensures that we are not including images
+        # from ImageInlineProcessor.
+        if e.tag == "a" and len(e) == 0:
             url = e.get("href")
             assert url is not None
             return (url, e.text)
@@ -1171,9 +1173,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 continue
 
             if not self.is_absolute_url(url):
-                if self.is_image(url):
-                    self.handle_image_inlining(root, found_url)
-                # We don't have a strong use case for doing url preview for relative links.
                 continue
 
             dropbox_image = self.dropbox_image(url)
@@ -1840,6 +1839,35 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
             el = self.zulip_specific_link_changes(el)
         return el, match_start, index
 
+class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
+    def handleMatch(self, m: Match[str], data: str) -> Tuple[Union[None, Element], int, int]:
+        img, match_start, match_end = super().handleMatch(m, data)
+        el = None
+        if img is not None:
+            img_url = img.get('src')
+            img.set('title', img.get('alt'))
+
+            if settings.THUMBNAIL_IMAGES:
+                # We strip leading '/' from relative URLs here to ensure
+                # consistency in what gets passed to /thumbnail.
+                url = img_url.lstrip('/')
+                img.set("src", "/thumbnail?url={}&size=thumbnail".format(
+                    urllib.parse.quote(url, safe=''),
+                ))
+                img.set('data-src-fullsize', "/thumbnail?url={}&size=full".format(
+                    urllib.parse.quote(url, safe=''),
+                ))
+            else:
+                img.set("src", img_url)
+
+            a = Element('a')
+            a.set('href', img_url)
+            a.append(img)
+            el = Element('span')
+            el.set('class', 'message_inline_image image_without_text_link')
+            el.append(a)
+        return el, match_start, match_end
+
 def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.util.Registry:
     # Registry is a new class added by py-markdown to replace Ordered List.
     # Since Registry doesn't support .keys(), it is easier to make a new
@@ -1961,7 +1989,8 @@ class Markdown(markdown.Markdown):
         reg.register(Timestamp(r'<time:(?P<time>[^>]*?)>'), 'timestamp', 75)
         reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 65)
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), 'link', 60)
-        reg.register(AutoLink(get_web_link_regex(), self), 'autolink', 55)
+        reg.register(ImageInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), 'image_link', 55)
+        reg.register(AutoLink(get_web_link_regex(), self), 'autolink', 50)
         # Reserve priority 45-54 for Realm Filters
         reg = self.register_realm_filters(reg)
         reg.register(markdown.inlinepatterns.HtmlInlineProcessor(ENTITY_RE, self), 'entity', 40)
