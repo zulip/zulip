@@ -2273,6 +2273,16 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
+#subscribe_existing_accounts {
+    position: relative;
+    left: 270px;
+    background-color: hsl(50, 81%, 94%);
+
+    &:hover {
+        background-color: hsl(50, 36%, 80%);
+    }
+}
+
 #invite_status {
     display: none;
 }

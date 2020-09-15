@@ -120,7 +120,7 @@ def get_existing_user_errors(
     target_realm: Realm,
     emails: Set[str],
     verbose: bool=False,
-) -> Dict[str, Tuple[str, bool]]:
+) -> Dict[str, Tuple[str, bool, str]]:
     '''
     We use this function even for a list of one emails.
 
@@ -129,7 +129,7 @@ def get_existing_user_errors(
     to cross-realm bots and mirror dummies too.
     '''
 
-    errors: Dict[str, Tuple[str, bool]] = {}
+    errors: Dict[str, Tuple[str, bool, str]] = {}
 
     users = get_users_by_delivery_email(emails, target_realm).only(
         'delivery_email',
@@ -154,7 +154,7 @@ def get_existing_user_errors(
             else:
                 msg = _('Reserved for system bots.')
             deactivated = False
-            errors[email] = (msg, deactivated)
+            errors[email] = (msg, deactivated, email)
             return
 
         existing_user_profile = user_dict.get(email.lower())
@@ -181,7 +181,12 @@ def get_existing_user_errors(
         else:
             msg = _("Account has been deactivated.")
 
-        errors[email] = (msg, deactivated)
+        '''
+        The existing_user_profile.email sends back the anonymous emails (different from
+        delivery_email depending on EMAIL_ADDRESS_VISIBILITY_EVERYONE) so that the clients
+        can continue to subscribe these existing users if they wish to.
+        '''
+        errors[email] = (msg, deactivated, existing_user_profile.email)
 
     for email in emails:
         process_email(email)
@@ -205,5 +210,5 @@ def validate_email_not_already_in_realm(target_realm: Realm,
     # Loop through errors, the only key should be our email.
     for key, error_info in error_dict.items():
         assert key == email
-        msg, deactivated = error_info
+        msg, deactivated, _ = error_info
         raise ValidationError(msg)

@@ -5166,13 +5166,14 @@ def email_not_system_bot(email: str) -> None:
 
 class InvitationError(JsonableError):
     code = ErrorCode.INVITATION_FAILED
-    data_fields = ['errors', 'sent_invitations']
+    data_fields = ['errors', 'sent_invitations', 'show_subscription']
 
-    def __init__(self, msg: str, errors: List[Tuple[str, str, bool]],
-                 sent_invitations: bool) -> None:
+    def __init__(self, msg: str, errors: List[Tuple[str, str, bool, str]],
+                 sent_invitations: bool, show_subscription: bool=False) -> None:
         self._msg: str = msg
-        self.errors: List[Tuple[str, str, bool]] = errors
+        self.errors: List[Tuple[str, str, bool, str]] = errors
         self.sent_invitations: bool = sent_invitations
+        self.show_subscription: bool = show_subscription
 
 def estimate_recent_invites(realms: Iterable[Realm], *, days: int) -> int:
     '''An upper bound on the number of invites sent in the last `days` days'''
@@ -5239,7 +5240,7 @@ def do_invite_users(user_profile: UserProfile,
                 [], sent_invitations=False)
 
     good_emails: Set[str] = set()
-    errors: List[Tuple[str, str, bool]] = []
+    errors: List[Tuple[str, str, bool, str]] = []
     validate_email_allowed_in_realm = get_realm_email_validator(user_profile.realm)
     for email in invitee_emails:
         if email == '':
@@ -5250,7 +5251,7 @@ def do_invite_users(user_profile: UserProfile,
         )
 
         if email_error:
-            errors.append((email, email_error, False))
+            errors.append((email, email_error, False, ''))
         else:
             good_emails.add(email)
 
@@ -5261,10 +5262,10 @@ def do_invite_users(user_profile: UserProfile,
     '''
     error_dict = get_existing_user_errors(user_profile.realm, good_emails)
 
-    skipped: List[Tuple[str, str, bool]] = []
+    skipped: List[Tuple[str, str, bool, str]] = []
     for email in error_dict:
-        msg, deactivated = error_dict[email]
-        skipped.append((email, msg, deactivated))
+        msg, deactivated, maybe_anonymous_email = error_dict[email]
+        skipped.append((email, msg, deactivated, maybe_anonymous_email))
         good_emails.remove(email)
 
     validated_emails = list(good_emails)
@@ -5277,7 +5278,7 @@ def do_invite_users(user_profile: UserProfile,
     if skipped and len(skipped) == len(invitee_emails):
         # All e-mails were skipped, so we didn't actually invite anyone.
         raise InvitationError(_("We weren't able to invite anyone."),
-                              skipped, sent_invitations=False)
+                              skipped, sent_invitations=False, show_subscription=True)
 
     # We do this here rather than in the invite queue processor since this
     # is used for rate limiting invitations, rather than keeping track of
@@ -5303,7 +5304,7 @@ def do_invite_users(user_profile: UserProfile,
         raise InvitationError(_("Some of those addresses are already using Zulip, "
                                 "so we didn't send them an invitation. We did send "
                                 "invitations to everyone else!"),
-                              skipped, sent_invitations=True)
+                              skipped, sent_invitations=True, show_subscription=True)
     notify_invites_changed(user_profile)
 
 def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:

@@ -43,6 +43,54 @@ function beforeSend() {
     return true;
 }
 
+function subscribe_existing_accounts(subscriber_stream_names, subscriber_emails) {
+    const invite_status = $("#invite_status");
+    const subscriber_user_ids = [];
+    subscriber_emails.forEach((email) => {
+        const person = people.get_by_email(email);
+        subscriber_user_ids.push(person.user_id);
+    });
+
+    function success(data) {
+        // At this point one of these three things could have happen.
+        // 1. All the users were newly subscribed to the selected streams.
+        // 2. All the users were already part of selected streams.
+        // 3. Some users got newly subscribed, while some others were already subscribed.
+        const all_newly_subscribed = !Object.entries(data.already_subscribed).length;
+        const all_already_subscribed = !Object.entries(data.subscribed).length;
+        if (all_newly_subscribed) {
+            ui_report.success(i18n.t("User(s) subscribed successfully."), invite_status);
+        } else if (all_already_subscribed) {
+            ui_report.success(
+                i18n.t("User(s) already subscribed to the selected stream(s)."),
+                invite_status,
+            );
+        } else {
+            ui_report.success(
+                i18n.t(
+                    "Some of those addresses were already subscribed to the selected stream(s). We subscribed everyone else!",
+                ),
+                invite_status,
+            );
+        }
+    }
+
+    function failure(xhr) {
+        // Some fatal error occured.
+        ui_report.error("", xhr, invite_status);
+    }
+
+    channel.post({
+        url: "/json/users/me/subscriptions",
+        data: {
+            subscriptions: JSON.stringify(subscriber_stream_names),
+            principals: JSON.stringify(subscriber_user_ids),
+        },
+        success,
+        error: failure,
+    });
+}
+
 function submit_invitation_form() {
     const invite_status = $("#invite_status");
     const invitee_emails = $("#invitee_emails");
@@ -72,22 +120,34 @@ function submit_invitation_form() {
             } else {
                 // Some users were not invited.
                 const invitee_emails_errored = [];
+                const subscriber_emails_errored = [];
+                const subscriber_stream_names = [];
+                const subscriber_stream_ids = JSON.parse(data.stream_ids);
                 const error_list = [];
                 let is_invitee_deactivated = false;
                 arr.errors.forEach((value) => {
-                    const [email, error_message, deactivated] = value;
+                    const [email, error_message, deactivated, maybe_anonymous_email] = value;
                     error_list.push(`${email}: ${error_message}`);
                     if (deactivated) {
                         is_invitee_deactivated = true;
+                    } else {
+                        // If they aren't deactivated, they can still be subscribed.
+                        subscriber_emails_errored.push(maybe_anonymous_email);
                     }
                     invitee_emails_errored.push(email);
                 });
-
+                subscriber_stream_ids.forEach((stream_id) => {
+                    subscriber_stream_names.push({name: stream_data.get_sub_by_id(stream_id).name});
+                });
                 const error_response = render_invitation_failed_error({
                     error_message: arr.msg,
                     error_list,
                     is_admin: page_params.is_admin,
                     is_invitee_deactivated,
+                    show_subscription:
+                        arr.show_subscription && subscriber_emails_errored.length > 0,
+                    subscriber_emails_errored,
+                    subscriber_stream_names,
                 });
                 ui_report.message(error_response, invite_status, "alert-warning");
                 invitee_emails_group.addClass("warning");
@@ -95,6 +155,10 @@ function submit_invitation_form() {
                 if (arr.sent_invitations) {
                     invitee_emails.val(invitee_emails_errored.join("\n"));
                 }
+
+                $("#subscribe_existing_accounts").on("click", () => {
+                    subscribe_existing_accounts(subscriber_stream_names, subscriber_emails_errored);
+                });
             }
         },
         complete() {
