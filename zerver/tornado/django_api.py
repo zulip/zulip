@@ -17,7 +17,10 @@ from zerver.tornado.sharding import get_tornado_port, get_tornado_uri, notify_to
 
 class TornadoAdapter(HTTPAdapter):
     def __init__(self) -> None:
-        retry = Retry(total=3, backoff_factor=1)
+        # All of the POST requests we make to Tornado are safe to
+        # retry; allow retries of them, which is not the default.
+        retry_methods = Retry.DEFAULT_METHOD_WHITELIST | set(['POST'])
+        retry = Retry(total=3, backoff_factor=1, method_whitelist=retry_methods)
         super().__init__(max_retries=retry)
 
     def send(
