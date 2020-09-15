@@ -46,7 +46,6 @@ output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
 
 consumers: Dict[str, int] = defaultdict(int)
 
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 queues = {
     *normal_queues,
     # These queues may not be present if settings.TORNADO_PROCESSES > 1
