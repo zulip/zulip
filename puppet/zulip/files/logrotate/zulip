@@ -16,6 +16,8 @@
     create 644 zulip zulip
 }
 
+/var/log/zulip/tornado-*.log
+/var/log/zulip/tornado.log
 /var/log/zulip/server.log
 {
     missingok

@@ -41,7 +41,7 @@
         </a>
     </li>
 
-    {{#if is_admin}}
+    {{#if is_realm_admin}}
 
     <div class="admin-separator">{{#tr this}}ADMIN ACTIONS{{/tr}}</div>
 
@@ -53,7 +53,7 @@
     </li>
     {{/if}}
 
-    {{#if is_admin}}
+    {{#if is_realm_admin}}
     <li>
         <a tabindex="0" class="sidebar-popover-move-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-arrows" aria-hidden="true"></i>

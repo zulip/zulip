@@ -184,9 +184,9 @@ MIDDLEWARE = (
     'zerver.middleware.RateLimitMiddleware',
     'zerver.middleware.FlushDisplayRecipientCache',
     'zerver.middleware.ZulipCommonMiddleware',
-    'zerver.middleware.HostDomainMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
+    'zerver.middleware.LocaleMiddleware',
+    'zerver.middleware.HostDomainMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     # Make sure 2FA middlewares come after authentication middleware.
@@ -396,8 +396,6 @@ REDIS_PASSWORD = get_secret('redis_password')
 ########################################################################
 # SECURITY SETTINGS
 ########################################################################
-
-SESSION_COOKIE_SAMESITE = 'Lax'
 
 # Tell the browser to never send our cookies without encryption, e.g.
 # when executing the initial http -> https redirect.
@@ -952,7 +950,7 @@ LOGGING: Dict[str, Any] = {
         },
         'zulip.zerver.webhooks': {
             'level': 'DEBUG',
-            'handlers': ['webhook_file'],
+            'handlers': ['file', 'errors_file', 'webhook_file'],
             'propagate': False,
         },
         'zulip.zerver.webhooks.unsupported': {

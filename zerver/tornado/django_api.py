@@ -1,5 +1,6 @@
 from functools import lru_cache
 from typing import Any, Container, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from urllib.parse import urlparse
 
 import orjson
 import requests
@@ -34,9 +35,11 @@ class TornadoAdapter(HTTPAdapter):
         try:
             resp = super().send(request, stream=stream, timeout=timeout, verify=verify, cert=cert, proxies=merged_proxies)
         except ConnectionError:
+            parsed_url = urlparse(request.url)
+            logfile = f"tornado-{parsed_url.port}.log" if settings.TORNADO_PROCESSES > 1 else "tornado.log"
             raise ConnectionError(
                 f"Django cannot connect to Tornado server ({request.url}); "
-                f"check {settings.ERROR_FILE_LOG_PATH} and tornado.log"
+                f"check {settings.ERROR_FILE_LOG_PATH} and {logfile}"
             )
         resp.raise_for_status()
         return resp

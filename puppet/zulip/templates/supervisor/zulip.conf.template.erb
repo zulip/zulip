@@ -26,7 +26,7 @@ directory=/home/zulip/deployments/current/
 <% if @tornado_multiprocess -%>
 [program:zulip-tornado]
 command=env PYTHONUNBUFFERED=1 /home/zulip/deployments/current/manage.py runtornado 127.0.0.1:98%(process_num)02d
-process_name=port-98%(process_num)02d
+process_name=zulip-tornado-port-98%(process_num)02d
 priority=200                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
@@ -34,7 +34,7 @@ stopsignal=TERM                 ; signal used to kill process (default TERM)
 stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
-stdout_logfile=/var/log/zulip/tornado.log         ; stdout log path, NONE for none; default AUTO
+stdout_logfile=/var/log/zulip/tornado-98%(process_num)02d.log         ; stdout log path, NONE for none; default AUTO
 stdout_logfile_maxbytes=100MB   ; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/

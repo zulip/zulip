@@ -66,7 +66,7 @@ if tornado_processes > 1:
         # supervisord group where if any individual process is slow to
         # stop, the whole bundle stays stopped for an extended time.
         logging.info("Restarting Tornado process on port %s", p)
-        subprocess.check_call(["supervisorctl", "restart", f"zulip-tornado:port-{p}"])
+        subprocess.check_call(["supervisorctl", "restart", f"zulip-tornado:zulip-tornado-port-{p}"])
 else:
     logging.info("Restarting Tornado process")
     subprocess.check_call(["supervisorctl", "restart", "zulip-tornado", "zulip-tornado:*"])
@@ -78,7 +78,7 @@ logging.info("Stopping server core")
 subprocess.check_call(["supervisorctl", "stop", *core_server_services])
 
 logging.info("Starting server core")
-subprocess.check_call(["supervisorctl", "start", *core_server_services])
+subprocess.check_call(["supervisorctl", "start", *reversed(core_server_services)])
 logging.info("Starting workers")
 subprocess.check_call(["supervisorctl", "start", "zulip-workers:*"])
 

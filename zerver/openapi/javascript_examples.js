@@ -4,6 +4,13 @@
 /*
   This file makes use of functional comments in a way that makes the
   code confusing with the arrow-body-style lint rule applied.
+
+  Zulip's OpenAPI-based API documentation system is documented at
+  https://zulip.readthedocs.io/en/latest/documentation/api.html
+
+  This file contains example code fenced off by comments, and is
+  designed to be run as part of Zulip's test-api test suite to verify
+  that the documented examples are all correct, runnable code.
 */
 
 const ExamplesHandler = function () {

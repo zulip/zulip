@@ -426,6 +426,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             # static content URLs, since the content they point to may
             # or may not exist.
             'coverage/(?P<path>.+)',
+            'confirmation_key/',
             'node-coverage/(?P<path>.+)',
             'docs/(?P<path>.+)',
             'casper/(?P<path>.+)',
