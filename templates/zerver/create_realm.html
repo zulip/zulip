@@ -4,6 +4,8 @@
 {# This is where we pitch the app and solicit signups. #}
 
 {% block portico_content %}
+<script src="../../static/js/jquery.js"></script>
+<script src="../../static/js/mailcheck.js"></script>
 <div class="app register-page">
     <div class="app-main register-page-container new-style flex full-page center">
 
@@ -25,6 +27,7 @@
                         <button type="submit" class="new-organization-button register-button">{{ _("Create organization") }}</button>
                     </div>
                 </form>
+                <div class="bottom-suggestion"><p id="hint"></p></div>
             </div>
             <div class="alert alert-error email-frontend-error"></div>
             {% if form.email.errors %}
@@ -40,4 +43,5 @@
         </div>
     </div>
 </div>
+<script src="../../static/js/email_suggestion.js"></script>
 {% endblock %}
