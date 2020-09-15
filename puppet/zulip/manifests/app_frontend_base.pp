@@ -85,7 +85,7 @@ class zulip::app_frontend_base {
   $uwsgi_listen_backlog_limit = zulipconf('application_server', 'uwsgi_listen_backlog_limit', 128)
   $uwsgi_buffer_size = zulipconf('application_server', 'uwsgi_buffer_size', 8192)
   $uwsgi_processes = zulipconf('application_server', 'uwsgi_processes', $uwsgi_default_processes)
-  $somaxconn = 2 * $uwsgi_listen_backlog_limit
+  $somaxconn = 2 * Integer($uwsgi_listen_backlog_limit)
   file { '/etc/zulip/uwsgi.ini':
     ensure  => file,
     require => Package[supervisor],
