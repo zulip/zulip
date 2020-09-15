@@ -8,6 +8,13 @@
       "text_content": "Hamlet said:\ndef speak(self):\n    x = 1\n"
     },
     {
+      "name": "codeblock_hilite",
+      "input": "``` inventedlanguage\ndef speak(self):\n    x = 1\n```",
+      "expected_output": "<div class=\"codehilite\" data-code-language=\"inventedlanguage\"><pre><span></span><code>def speak(self):\n    x = 1\n</code></pre></div>",
+      "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>def speak(self):\n    x = 1\n</code></pre></div>",
+      "text_content": "def speak(self):\n    x = 1\n"
+    },
+    {
       "name": "ampampamp",
       "input": "& &amp; &amp;amp;\n~~~~\n& &amp; &amp;amp;\n~~~~\n    & &amp; &amp;amp;",
       "expected_output": "<p>&amp; &amp; &amp;amp;</p>\n<div class=\"codehilite\"><pre><span></span><code>&amp; &amp;amp; &amp;amp;amp;\n</code></pre></div>\n\n\n<div class=\"codehilite\"><pre><span></span><code>&amp; &amp;amp; &amp;amp;amp;\n</code></pre></div>"

@@ -395,23 +395,32 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         else:
             code = CODE_WRAP.format(langclass, self._escape(text))
 
-        # In order to display a "view-in-playground" option in the frontend,
-        # we need to know the language used in the codeblock. We tweak the HTML
-        # CodeHilite generates to add this language as a data-attribute.
+        # To support our "view in playground" feature, the frontend
+        # needs to know what Pygments language was used for
+        # highlighting this code block.  We record this in a data
+        # attribute attached to the outer `pre` element.
+        # Unfortunately, the pygments API doesn't offer a way to add
+        # this, so we need to do it in a post-processing step.
         if lang:
             parsed_code = etree.HTML(code)
             div_tag = parsed_code[0][0]
-            # We get the lexer subclass name instead of directly processing the lang, to avoid
-            # different tags being generated for each of the lang's alias. Eg: `js` and `javascript`
-            # would now be mapped to `JavaScript`. In case no lexer with that alias is found, we
-            # return back the text, wrapped in a data-codehilite tag.
+
+            # For the value of our data element, we get the lexer
+            # subclass name instead of directly using the language,
+            # since that canonicalizes aliases (Eg: `js` and
+            # `javascript` will be mapped to `JavaScript`).
             try:
-                lexer_subclass_name = get_lexer_by_name(lang).name
+                code_language = get_lexer_by_name(lang).name
             except ClassNotFound:
-                lexer_subclass_name = lang
-            div_tag.attrib['data-code-language'] = lexer_subclass_name
-            # Lxml implicitly converts tags like <span></span> into <span/>
-            # specifying method="c14n" when converting to string, prevents that.
+                # If there isn't a Pygments lexer by this name, we
+                # still tag it with the user's data-code-language
+                # value, since this allows hooking up a "playground"
+                # for custom "languages" that aren't known to Pygments.
+                code_language = lang
+
+            div_tag.attrib['data-code-language'] = code_language
+            # lxml implicitly converts tags like <span></span> into <span/>.
+            # Specifying method="c14n" when converting to string prevents that.
             code = etree.tostring(div_tag, method="c14n").decode()
         return code
 
