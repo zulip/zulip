@@ -1,4 +1,4 @@
-<% if @tornado_multiprocess -%>
+<% if @tornado_ports.length > 1 -%>
 <% @tornado_ports.each do |port| -%>
 upstream tornado<%= port %> {
     server 127.0.0.1:<%= port %>;

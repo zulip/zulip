@@ -515,6 +515,14 @@ def get_config_file() -> configparser.RawConfigParser:
 def get_deploy_options(config_file: configparser.RawConfigParser) -> List[str]:
     return get_config(config_file, 'deployment', 'deploy_options', "").strip().split()
 
+def get_tornado_ports(config_file: configparser.RawConfigParser) -> List[int]:
+    ports = []
+    if config_file.has_section("tornado_sharding"):
+        ports = [int(port) for port in config_file.options("tornado_sharding")]
+    if not ports:
+        ports = [9800]
+    return ports
+
 def get_or_create_dev_uuid_var_path(path: str) -> str:
     absolute_path = '{}/{}'.format(get_dev_uuid_var_path(), path)
     os.makedirs(absolute_path, exist_ok=True)
