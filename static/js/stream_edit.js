@@ -491,22 +491,10 @@ function get_message_retention_days_from_sub(sub) {
 }
 
 function change_stream_privacy(e) {
-    e.stopPropagation();
-
     const stream_id = $(e.target).data("stream-id");
     const sub = stream_data.get_sub_by_id(stream_id);
-    const data = {};
 
     const privacy_setting = $("#stream_privacy_modal input[name=privacy]:checked").val();
-    const stream_post_policy = parseInt(
-        $("#stream_privacy_modal input[name=stream-post-policy]:checked").val(),
-        10,
-    );
-
-    if (sub.stream_post_policy !== stream_post_policy) {
-        data.stream_post_policy = JSON.stringify(stream_post_policy);
-    }
-
     let invite_only;
     let history_public_to_subscribers;
 
@@ -521,6 +509,7 @@ function change_stream_privacy(e) {
         history_public_to_subscribers = true;
     }
 
+    const data = {};
     if (
         sub.invite_only !== invite_only ||
         sub.history_public_to_subscribers !== history_public_to_subscribers
@@ -528,6 +517,28 @@ function change_stream_privacy(e) {
         data.is_private = JSON.stringify(invite_only);
         data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
     }
+    change_stream_permissions(e, data);
+}
+
+function change_stream_post_policy(e) {
+    const stream_id = $(e.target).data("stream-id");
+    const sub = stream_data.get_sub_by_id(stream_id);
+
+    const stream_post_policy = parseInt(
+        $("#stream_privacy_modal input[name=stream-post-policy]:checked").val(),
+        10,
+    );
+
+    const data = {};
+    if (sub.stream_post_policy !== stream_post_policy) {
+        data.stream_post_policy = JSON.stringify(stream_post_policy);
+    }
+    change_stream_permissions(e, data);
+}
+
+function change_stream_message_retention(e) {
+    const stream_id = $(e.target).data("stream-id");
+    const sub = stream_data.get_sub_by_id(stream_id);
 
     let message_retention_days = $(
         "#stream_privacy_modal select[name=stream_message_retention_setting]",
@@ -539,17 +550,19 @@ function change_stream_privacy(e) {
         );
     }
 
+    const data = {};
     const message_retention_days_from_sub = get_message_retention_days_from_sub(sub);
-
     if (message_retention_days_from_sub !== message_retention_days) {
         data.message_retention_days = JSON.stringify(message_retention_days);
     }
+    change_stream_permissions(e, data);
+}
 
+function change_stream_permissions(e, data) {
+    const stream_id = $(e.target).data("stream-id");
     $(".stream_change_property_info").hide();
 
     if (Object.keys(data).length === 0) {
-        overlays.close_modal("#stream_privacy_modal");
-        $("#stream_privacy_modal").remove();
         return;
     }
 
@@ -706,7 +719,12 @@ exports.initialize = function () {
         e.stopPropagation();
     });
 
-    $("#subscriptions_table").on("click", "#change-stream-privacy-button", change_stream_privacy);
+    $("#subscriptions_table").on("click", "#change-stream-privacy-button", (e) => {
+        e.stopPropagation();
+        change_stream_privacy(e);
+        change_stream_post_policy(e);
+        change_stream_message_retention(e);
+    });
 
     $("#subscriptions_table").on("click", ".close-privacy-modal", (e) => {
         // Re-enable background mouse events when we close the modal
