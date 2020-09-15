@@ -1,5 +1,5 @@
 <ul class="grey-box">
-    <div class="org-subsection-parent subsection-header">
+    <div class="org-subsection-parent subsection-header privacy">
         <h4>{{t 'Who can access the stream?'}}
             {{> help_link_widget link="/help/stream-permissions" }}
         </h4>
@@ -13,7 +13,7 @@
         </label>
     </li>
     {{/each}}
-    <div class="org-subsection-parent subsection-header">
+    <div class="org-subsection-parent subsection-header stream-post-policy">
         <h4>{{t 'Who can post to the stream?'}}
             {{> help_link_widget link="/help/stream-sending-policy" }}
         </h4>
@@ -28,7 +28,7 @@
     </li>
     {{/each}}
     {{#if (or is_owner is_stream_edit)}}
-    <div class="org-subsection-parent subsection-header">
+    <div class="org-subsection-parent subsection-header stream_message_retention_setting stream-message-retention-days">
         <h4>{{t "Message retention for stream" }}
             {{> help_link_widget link="/help/message-retention-policy" }}
         </h4>

@@ -113,7 +113,7 @@ function set_stream_message_retention_setting_dropdown(stream) {
         value = "forever";
     }
 
-    $(".stream_message_retention_setting").val(value);
+    $("#stream_creation_form select[name=stream_message_retention_setting]").val(value);
     change_stream_message_retention_days_block_display_property(value);
 }
 
@@ -480,13 +480,18 @@ exports.set_stream_property = function (sub, property, value, status_element) {
     exports.bulk_set_stream_property([sub_data], status_element);
 };
 
-exports.save_discard_widget_status_handler = (name) => {
+exports.save_discard_widget_status_handler = (e) => {
+    const name = $(e.target).attr("name");
+    const stream_id = $(e.target).closest("#stream_privacy_modal").data("stream-id");
+    const sub = stream_data.get_sub_by_id(stream_id);
     const subsection = $("#stream_privacy_modal").find("." + name);
     subsection.find(".subsection-failed-status p").hide();
     subsection.find(".save-button").show();
 
+    const data = get_changed_property_data(name, sub);
+    const button_state = Object.keys(data).length === 0 ? "discarded" : "unsaved";
     const save_btn_controls = subsection.find(".save-button-controls");
-    settings_org.change_save_button_state(save_btn_controls, "unsaved");
+    settings_org.change_save_button_state(save_btn_controls, button_state);
 };
 
 exports.get_message_retention_days_from_sub = function (sub) {
@@ -498,6 +503,20 @@ exports.get_message_retention_days_from_sub = function (sub) {
     }
     return sub.message_retention_days;
 };
+
+function get_changed_property_data(name, sub) {
+    if (name === "privacy") {
+        return change_stream_privacy(sub);
+    } else if (name === "stream-post-policy") {
+        return change_stream_post_policy(sub);
+    } else if (
+        name === "stream_message_retention_setting" ||
+        name === "stream-message-retention-days" ||
+        name === "stream-message-retention"
+    ) {
+        return change_stream_message_retention(sub);
+    }
+}
 
 function change_stream_privacy(sub) {
     const privacy_setting = $("#stream_privacy_modal input[name=privacy]:checked").val();
@@ -561,10 +580,6 @@ function change_stream_message_retention(sub) {
 function change_stream_permissions(e, data) {
     const stream_id = $(e.target).closest("#stream_privacy_modal").data("stream-id");
     $(".stream_change_property_info").hide();
-
-    if (Object.keys(data).length === 0) {
-        return;
-    }
 
     const save_button = $(e.currentTarget);
     settings_ui.save_subsection_settings("/json/streams/" + stream_id, data, save_button);
@@ -723,14 +738,7 @@ exports.initialize = function () {
                 .attr("id")
                 .replace("org-submit-", "");
 
-            let data;
-            if (subsection_name === "privacy") {
-                data = change_stream_privacy(sub);
-            } else if (subsection_name === "stream-post-policy") {
-                data = change_stream_post_policy(sub);
-            } else if (subsection_name === "stream-message-retention") {
-                data = change_stream_message_retention(sub);
-            }
+            const data = get_changed_property_data(subsection_name, sub);
             change_stream_permissions(e, data);
         },
     );
@@ -776,7 +784,7 @@ exports.initialize = function () {
             }
         }
 
-        exports.save_discard_widget_status_handler($(e.target).attr("name"));
+        exports.save_discard_widget_status_handler(e);
     });
 
     $("#subscriptions_table").on("click", ".close-privacy-modal", (e) => {
