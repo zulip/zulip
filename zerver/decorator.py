@@ -12,6 +12,7 @@ from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth import login as django_login
 from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.views import redirect_to_login
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, QueryDict
 from django.http.multipartparser import MultiPartParser
 from django.shortcuts import resolve_url
@@ -313,24 +314,6 @@ def webhook_view(
         return _wrapped_func_arguments
     return _wrapped_view_func
 
-# From Django 1.8, modified to leave off ?next=/
-def redirect_to_login(next: str, login_url: Optional[str]=None,
-                      redirect_field_name: str=REDIRECT_FIELD_NAME) -> HttpResponseRedirect:
-    """
-    Redirects the user to the login page, passing the given 'next' page
-    """
-    resolved_url = resolve_url(login_url or settings.LOGIN_URL)
-
-    login_url_parts = list(urllib.parse.urlparse(resolved_url))
-    if redirect_field_name:
-        querystring = QueryDict(login_url_parts[4], mutable=True)
-        querystring[redirect_field_name] = next
-        # Don't add ?next=/, to keep our URLs clean
-        if next != '/':
-            login_url_parts[4] = querystring.urlencode(safe='/')
-
-    return HttpResponseRedirect(urllib.parse.urlunparse(login_url_parts))
-
 # From Django 2.2, modified to pass the request rather than just the
 # user into test_func; this is useful so that we can revalidate the
 # subdomain matches the user's realm.  It is likely that we could make
@@ -357,6 +340,10 @@ def user_passes_test(test_func: Callable[[HttpResponse], bool], login_url: Optio
             if ((not login_scheme or login_scheme == current_scheme) and
                     (not login_netloc or login_netloc == current_netloc)):
                 path = request.get_full_path()
+
+            if path == "/":
+                # Don't add ?next=/, to keep our URLs clean
+                return HttpResponseRedirect(resolved_login_url)
             return redirect_to_login(
                 path, resolved_login_url, redirect_field_name)
         return cast(ViewFuncT, _wrapped_view)  # https://github.com/python/mypy/issues/1927
