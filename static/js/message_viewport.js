@@ -306,7 +306,7 @@ exports.is_narrow = function () {
     // This basically returns true when we hide the right sidebar for
     // the left_side_userlist skinny mode.  It would be nice to have a less brittle
     // test for this.  See the "@media (max-width: 1165px)" section in
-    // media.scss.
+    // media.css.
     return window.innerWidth <= 1165;
 };
 

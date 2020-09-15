@@ -63,7 +63,7 @@
     display: table;
 
     td.definition {
-        // keeps dividing line at same width for all tables in model.
+        /* keeps dividing line at same width for all tables in model. */
         width: calc(50% - 11px);
         text-align: right;
     }
@@ -104,7 +104,7 @@
     th {
         width: 245px;
         text-align: center;
-        // aligns table name with dividing line
+        /* aligns table name with dividing line */
     }
 
     td:not(.definition) {

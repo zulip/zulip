@@ -168,7 +168,7 @@
 
 #compose-container {
     width: 100%;
-    // This should match the value for .app-main
+    /* This should match the value for .app-main */
     max-width: 1400px;
     margin: auto;
 }
