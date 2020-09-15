@@ -85,7 +85,7 @@ exports.initialize_kitchen_sink_stuff = function () {
 
     message_viewport.message_pane.on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
-        if (!overlays.is_active()) {
+        if (!overlays.is_active() && !recent_topics.is_visible()) {
             // In the message view, we use a throttled mousewheel handler.
             throttled_mousewheelhandler(e, delta);
         }
