@@ -82,6 +82,7 @@ export default (env?: string): webpack.Configuration[] => {
                 // regular css files
                 {
                     test: /\.css$/,
+                    exclude: resolve(__dirname, "static/styles"),
                     use: [
                         {
                             loader: MiniCssExtractPlugin.loader,
@@ -98,9 +99,9 @@ export default (env?: string): webpack.Configuration[] => {
                         },
                     ],
                 },
-                // scss loader
+                // PostCSS loader
                 {
-                    test: /\.scss$/,
+                    test: /\.css$/,
                     include: resolve(__dirname, "static/styles"),
                     use: [
                         {

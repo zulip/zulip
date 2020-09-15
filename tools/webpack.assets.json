@@ -3,7 +3,7 @@
         "./static/js/bundles/common",
         "sorttable",
         "./static/js/analytics/activity",
-        "./static/styles/portico/activity.scss"
+        "./static/styles/portico/activity.css"
     ],
     "archive": [
         "./static/js/bundles/portico",
@@ -15,35 +15,35 @@
         "./static/js/stream_color",
         "./static/js/scroll_bar",
         "katex/dist/katex.css",
-        "./static/styles/rendered_markdown.scss",
-        "./static/styles/zulip.scss",
-        "./static/styles/portico/archive.scss",
+        "./static/styles/rendered_markdown.css",
+        "./static/styles/zulip.css",
+        "./static/styles/portico/archive.css",
         "./static/generated/emoji-styles/google-sprite.css"
     ],
     "billing": [
         "./static/js/bundles/portico",
         "./static/js/portico/landing-page",
-        "./static/styles/portico/landing-page.scss",
+        "./static/styles/portico/landing-page.css",
         "./static/js/billing/helpers",
         "./static/js/billing/billing",
         "./static/js/templates",
         "./static/js/loading",
-        "./static/styles/portico/billing.scss"
+        "./static/styles/portico/billing.css"
     ],
     "upgrade": [
         "./static/js/bundles/portico",
         "./static/js/portico/landing-page",
-        "./static/styles/portico/landing-page.scss",
+        "./static/styles/portico/landing-page.css",
         "./static/js/billing/helpers",
         "./static/js/billing/upgrade",
         "./static/js/templates",
         "./static/js/loading",
-        "./static/styles/portico/billing.scss"
+        "./static/styles/portico/billing.css"
     ],
     "portico": ["./static/js/bundles/portico"],
     "error-styles": [
         "./static/third/bootstrap/css/bootstrap.css",
-        "./static/styles/portico/portico-styles.scss"
+        "./static/styles/portico/portico-styles.css"
     ],
     "common": ["./static/js/bundles/common"],
     "help": [
@@ -56,13 +56,13 @@
     "landing-page": [
         "./static/js/bundles/portico",
         "./static/js/portico/landing-page",
-        "./static/styles/portico/landing-page.scss"
+        "./static/styles/portico/landing-page.css"
     ],
     "integrations": [
         "./static/js/bundles/portico",
         "./static/js/portico/integrations",
-        "./static/styles/portico/landing-page.scss",
-        "./static/styles/portico/integrations.scss"
+        "./static/styles/portico/landing-page.css",
+        "./static/styles/portico/integrations.css"
     ],
     "signup": [
         "./static/js/bundles/portico",
@@ -83,9 +83,9 @@
         "./static/js/bundles/common",
         "sorttable",
         "./static/js/analytics/activity",
-        "./static/styles/portico/activity.scss",
+        "./static/styles/portico/activity.css",
         "./static/js/analytics/support",
-        "./static/styles/app_components.scss"
+        "./static/styles/app_components.css"
     ],
     "dev-login": ["./static/js/bundles/portico", "./static/js/portico/dev-login"],
     "desktop-login": ["./static/js/bundles/portico", "./static/js/portico/desktop-login"],
@@ -105,7 +105,7 @@
     ],
     "stats": [
         "./static/js/bundles/portico",
-        "./static/styles/portico/stats.scss",
+        "./static/styles/portico/stats.css",
         "./static/js/stats/stats"
     ],
     "app": ["./static/js/bundles/app"],

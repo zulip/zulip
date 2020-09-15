@@ -419,7 +419,7 @@ bash_rules = RuleList(
 )
 
 css_rules = RuleList(
-    langs=['css', 'scss'],
+    langs=['css'],
     rules=[
         *whitespace_rules,
     ],

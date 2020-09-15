@@ -45,10 +45,10 @@ def run() -> None:
 
     by_lang = linter_config.list_files(groups={
         'backend': ['py', 'sh', 'pp', 'json', 'md', 'txt', 'text', 'yaml', 'rst', 'yml'],
-        'frontend': ['js', 'ts', 'css', 'scss', 'hbs', 'html', 'lock'],
+        'frontend': ['js', 'ts', 'css', 'hbs', 'html', 'lock'],
     }, exclude=EXCLUDED_FILES)
 
-    linter_config.external_linter('css', ['node', 'node_modules/.bin/stylelint'], ['css', 'scss'],
+    linter_config.external_linter('css', ['node', 'node_modules/.bin/stylelint'], ['css'],
                                   fix_arg='--fix',
                                   description="Standard CSS style and formatting linter "
                                   "(config: stylelint.config.js)")
@@ -92,7 +92,7 @@ def run() -> None:
                                   description="Sorts Python import statements",
                                   check_arg=['--check-only', '--diff'])
     linter_config.external_linter('prettier', ['node_modules/.bin/prettier', '--check', '--loglevel=warn'],
-                                  ['css', 'js', 'json', 'scss', 'ts', 'yaml', 'yml'],
+                                  ['css', 'js', 'json', 'ts', 'yaml', 'yml'],
                                   fix_arg=['--write'],
                                   description="Formats CSS, JavaScript, YAML")
 

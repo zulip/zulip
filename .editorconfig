@@ -7,7 +7,7 @@ indent_style = space
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-[*.{sh,py,pyi,xml,css,scss,hbs,html}]
+[*.{sh,py,pyi,xml,css,hbs,html}]
 indent_size = 4
 
 [{*.{js,json,ts},check-openapi}]

@@ -48,7 +48,7 @@
  *   returns a string containing the header text, or false.
  *
  *   Our custom changes include all mentions of this.header, some CSS changes
- *   in compose.scss and splitting $container out of $menu so we can insert
+ *   in compose.css and splitting $container out of $menu so we can insert
  *   additional HTML before $menu.
  *
  * 4. Escape hooks:

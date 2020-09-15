@@ -112,7 +112,7 @@
     }
 }
 
-/* SCSS related to settings page user avatar upload widget only */
+/* CSS related to settings page user avatar upload widget only */
 #user-avatar-upload-widget {
     .image_upload_button {
         border-radius: 5px;
@@ -159,7 +159,7 @@
     }
 }
 
-/* SCSS related to settings page realm icon upload widget only */
+/* CSS related to settings page realm icon upload widget only */
 #realm-icon-upload-widget {
     width: 100px;
     height: 100px;
@@ -190,7 +190,7 @@
     display: inline-block;
 }
 
-/* SCSS related to settings page realm day/night logo upload widget only */
+/* CSS related to settings page realm day/night logo upload widget only */
 #realm-day-logo-upload-widget,
 #realm-night-logo-upload-widget {
     width: 220px;

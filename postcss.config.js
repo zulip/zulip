@@ -1,7 +1,6 @@
 "use strict";
 
-module.exports = ({file}) => ({
-    parser: file.extname === ".scss" ? "postcss-scss" : false,
+module.exports = {
     plugins: {
         // Warning: despite appearances, order is significant
         "postcss-nested": {},
@@ -10,4 +9,4 @@ module.exports = ({file}) => ({
         "postcss-calc": {},
         autoprefixer: {},
     },
-});
+};
