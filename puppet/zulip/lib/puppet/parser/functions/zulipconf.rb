@@ -11,6 +11,16 @@ module Puppet::Parser::Functions
     end
   end
 
+  newfunction(:zulipconf_keys, :type => :rvalue, :arity => 1) do |args|
+    zulip_conf_path = lookupvar('zulip_conf_path')
+    output = `/usr/bin/crudini --get #{zulip_conf_path} #{args[0]} 2>&1`; result=$?.success?
+    if result
+      return output.lines.map { |l| l.strip }
+    else
+      return []
+    end
+  end
+
   newfunction(:zulipconf_nagios_hosts, :type => :rvalue, :arity => 0) do |args|
     section = "nagios"
     prefix = "hosts_"

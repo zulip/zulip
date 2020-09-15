@@ -30,6 +30,7 @@ from scripts.lib.zulip_tools import (
     assert_running_as_root,
     get_config,
     get_config_file,
+    get_tornado_ports,
     parse_os_release,
     set_config,
     su_to_zulip,
@@ -89,7 +90,7 @@ deploy_path = args.deploy_path
 os.chdir(deploy_path)
 
 config_file = get_config_file()
-tornado_processes = int(get_config(config_file, 'application_server', 'tornado_processes', '1'))
+tornado_processes = len(get_tornado_ports(config_file))
 
 IS_SERVER_UP = True
 

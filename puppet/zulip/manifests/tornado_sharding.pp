@@ -38,16 +38,9 @@ class zulip::tornado_sharding {
     loglevel  => 'warning',
   }
 
-  # The number of Tornado processes to run on the server; this
-  # defaults to 1, since Tornado sharding is currently only at the
-  # Realm level.
-  $tornado_processes = Integer(zulipconf('application_server', 'tornado_processes', 1))
-  if $tornado_processes > 1 {
-    $tornado_ports = range(9800, 9800 + $tornado_processes - 1)
-    $tornado_multiprocess = true
-  } else {
-    $tornado_multiprocess = false
-  }
+  # The ports of Tornado processes to run on the server; defaults to
+  # 9800.
+  $tornado_ports = zulipconf_keys('tornado_sharding')
 
   file { '/etc/nginx/zulip-include/tornado-upstreams':
     require => Package[$zulip::common::nginx],

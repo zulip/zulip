@@ -13,7 +13,7 @@ from scripts.lib.setup_path import setup_path
 
 setup_path()
 
-from scripts.lib.zulip_tools import get_config_file
+from scripts.lib.zulip_tools import get_config_file, get_tornado_ports
 
 
 def write_realm_nginx_config_line(f: Any, host: str, port: str) -> None:
@@ -61,7 +61,13 @@ with open('/etc/zulip/nginx_sharding.conf.tmp', 'w') as nginx_sharding_conf_f, \
     nginx_sharding_conf_f.write(f"# Configuration hash: {new_hash}\n")
 
     config_file = get_config_file()
-    if not config_file.has_section("tornado_sharding"):
+    ports = get_tornado_ports(config_file)
+
+    expected_ports = list(range(9800, max(ports)+1))
+    assert sorted(ports) == expected_ports, \
+        f"ports ({sorted(ports)}) must be contiguous, starting with 9800"
+
+    if len(ports) == 1:
         nginx_sharding_conf_f.write("set $tornado_server http://tornado;\n")
         sharding_json_f.write('{}\n')
         sys.exit(0)
@@ -72,16 +78,17 @@ with open('/etc/zulip/nginx_sharding.conf.tmp', 'w') as nginx_sharding_conf_f, \
                                              'EXTERNAL_HOST'],
                                             universal_newlines=True).strip()
     for port in config_file["tornado_sharding"]:
-        shards = config_file["tornado_sharding"][port].strip().split(' ')
+        shards = config_file["tornado_sharding"][port].strip()
 
-        for shard in shards:
-            if '.' in shard:
-                host = shard
-            else:
-                host = f"{shard}.{external_host}"
-            assert host not in shard_map, f"host {host} duplicated"
-            shard_map[host] = int(port)
-            write_realm_nginx_config_line(nginx_sharding_conf_f, host, port)
+        if shards:
+            for shard in shards.split(' '):
+                if '.' in shard:
+                    host = shard
+                else:
+                    host = f"{shard}.{external_host}"
+                assert host not in shard_map, f"host {host} duplicated"
+                shard_map[host] = int(port)
+                write_realm_nginx_config_line(nginx_sharding_conf_f, host, port)
         nginx_sharding_conf_f.write('\n')
 
     sharding_json_f.write(json.dumps(shard_map) + '\n')

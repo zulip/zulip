@@ -8,12 +8,14 @@ from urllib.parse import urljoin
 from django.template.loaders import app_directories
 
 import zerver.lib.logging_util
+from scripts.lib.zulip_tools import get_tornado_ports
 from zerver.lib.db import TimeTrackingConnection
 
 from .config import (
     DEPLOY_ROOT,
     DEVELOPMENT,
     PRODUCTION,
+    config_file,
     get_config,
     get_from_file_if_exists,
     get_secret,
@@ -231,7 +233,9 @@ INSTALLED_APPS += EXTRA_INSTALLED_APPS
 ZILENCER_ENABLED = 'zilencer' in INSTALLED_APPS
 CORPORATE_ENABLED = 'corporate' in INSTALLED_APPS
 
-TORNADO_PROCESSES = int(get_config('application_server', 'tornado_processes', '1'))
+TORNADO_PORTS = get_tornado_ports(config_file)
+TORNADO_PROCESSES = len(TORNADO_PORTS)
+
 RUNNING_INSIDE_TORNADO = False
 AUTORELOAD = DEBUG
 

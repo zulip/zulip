@@ -72,6 +72,7 @@ class zulip::app_frontend_base {
   } else {
     $uwsgi_default_processes = 4
   }
+  $tornado_ports = $zulip::tornado_sharding::tornado_ports
   file { "${zulip::common::supervisor_conf_dir}/zulip.conf":
     ensure  => file,
     require => Package[supervisor],
