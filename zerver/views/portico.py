@@ -2,12 +2,13 @@ from typing import Optional
 
 import orjson
 from django.conf import settings
+from django.contrib.auth.views import redirect_to_login
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 
 from version import LATEST_DESKTOP_VERSION
 from zerver.context_processors import get_realm_from_request, latest_info_context
-from zerver.decorator import add_google_analytics, redirect_to_login
+from zerver.decorator import add_google_analytics
 from zerver.models import Realm
 
 
