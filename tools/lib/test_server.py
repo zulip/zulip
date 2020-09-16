@@ -51,7 +51,7 @@ def server_is_up(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> 
 
 @contextmanager
 def test_server_running(force: bool=False, external_host: str='testserver',
-                        log_file: Optional[str]=None, dots: bool=False, use_db: bool=True,
+                        log_file: Optional[str]=None, dots: bool=False,
                         ) -> Iterator[None]:
     log = sys.stdout
     if log_file:
@@ -63,8 +63,7 @@ def test_server_running(force: bool=False, external_host: str='testserver',
 
     set_up_django(external_host)
 
-    if use_db:
-        update_test_databases_if_required(rebuild_test_database=True)
+    update_test_databases_if_required(rebuild_test_database=True)
 
     # Run this not through the shell, so that we have the actual PID.
     run_dev_server_command = ['tools/run-dev.py', '--test', '--streamlined']

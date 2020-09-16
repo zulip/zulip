@@ -54,7 +54,7 @@ def vnu_servlet() -> Iterator[None]:
 
 with vnu_servlet(), \
     test_server_running(options.force, external_host, log_file=LOG_FILE,
-                        dots=True, use_db=True):
+                        dots=True):
     ret_help_doc = subprocess.call(['scrapy', 'crawl_with_status', *extra_args,
                                     'help_documentation_crawler'],
                                    cwd='tools/documentation_crawler')
