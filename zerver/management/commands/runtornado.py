@@ -96,7 +96,7 @@ class Command(BaseCommand):
 
             try:
                 # Application is an instance of Django's standard wsgi handler.
-                application = create_tornado_application(port)
+                application = create_tornado_application()
                 if settings.AUTORELOAD:
                     zulip_autoreload_start()
 
