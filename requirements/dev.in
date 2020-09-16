@@ -72,3 +72,6 @@ python-debian
 
 # Pattern-based lint tool
 semgrep
+
+# Contains Pysa, a security-focused static analyzer
+pyre-check
