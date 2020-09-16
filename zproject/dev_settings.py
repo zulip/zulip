@@ -69,7 +69,7 @@ EXTRA_INSTALLED_APPS = ["zilencer", "analytics", "corporate"]
 # Disable Camo in development
 CAMO_URI = ''
 
-TORNADO_SERVER = "http://127.0.0.1:9993"
+TORNADO_PORTS = [9993]
 
 OPEN_REALM_CREATION = True
 INVITES_MIN_USER_AGE_DAYS = 0

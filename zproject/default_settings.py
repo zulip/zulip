@@ -149,10 +149,8 @@ THUMBOR_SERVES_CAMO = False
 THUMBNAIL_IMAGES = False
 SENDFILE_BACKEND: Optional[str] = None
 
-# Base URL of the Tornado server
-# We set it to None when running backend tests or populate_db.
-# We override the port number when running frontend tests.
-TORNADO_SERVER: Optional[str] = 'http://127.0.0.1:9800'
+TORNADO_PORTS: List[int] = []
+USING_TORNADO = True
 
 # ToS/Privacy templates
 PRIVACY_POLICY: Optional[str] = None
