@@ -108,9 +108,9 @@ $(() => {
             /* We append the location.hash to the formaction so that URL can be
             preserved after user is logged in. See this:
             https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
-            const email_formaction = $("#login_form").attr("action");
-            $("#login_form").attr("action", email_formaction + "/" + window.location.hash);
-            $(".social_login_form input[name='next']").attr("value", "/" + window.location.hash);
+            $(".next-url").each(function () {
+                $(this).val($(this).val() + window.location.hash);
+            });
         }
     }
 
