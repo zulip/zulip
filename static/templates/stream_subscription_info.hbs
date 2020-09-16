@@ -1,0 +1,16 @@
+{{#if subscribed_users.length}}
+Successfully subscribed users:
+{{/if}}
+{{#each subscribed_users}}
+    {{#unless (eq @index 0)}},{{/unless}}
+    <a data-id="{{user_id}}" class="view_user_profile">{{full_name}}</a>
+{{/each}}
+{{#if subscribed_users.length}}.<br>{{/if}}
+{{#if already_subscribed_users.length}}
+Already subscribed users:
+{{/if}}
+{{#each already_subscribed_users}}
+    {{#unless (eq @index 0)}},{{/unless}}
+    <a data-id="{{user_id}}" class="view_user_profile">{{full_name}}</a>
+{{/each}}
+{{#if already_subscribed_users.length}}.{{/if}}
