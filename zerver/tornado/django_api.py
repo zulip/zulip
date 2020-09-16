@@ -62,7 +62,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
                         narrow: Iterable[Sequence[str]]=[],
                         bulk_message_deletion: bool=False) -> Optional[str]:
 
-    if not settings.TORNADO_SERVER:
+    if not settings.USING_TORNADO:
         return None
 
     tornado_uri = get_tornado_uri(user_profile.realm)
@@ -89,7 +89,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
     return resp.json()['queue_id']
 
 def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int) -> List[Dict[str, Any]]:
-    if not settings.TORNADO_SERVER:
+    if not settings.USING_TORNADO:
         return []
 
     tornado_uri = get_tornado_uri(user_profile.realm)
@@ -108,7 +108,7 @@ def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int
     return resp.json()['events']
 
 def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
-    if not settings.TORNADO_SERVER or settings.RUNNING_INSIDE_TORNADO:
+    if not settings.USING_TORNADO or settings.RUNNING_INSIDE_TORNADO:
         process_notification(data)
     else:
         tornado_uri = get_tornado_uri(realm)

@@ -62,7 +62,7 @@ from zerver.models import (
     get_user_profile_by_id,
 )
 
-settings.TORNADO_SERVER = None
+settings.USING_TORNADO = False
 # Disable using memcached caches to avoid 'unsupported pickle
 # protocol' errors if `populate_db` is run with a different Python
 # from `run-dev.py`.
