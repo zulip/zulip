@@ -3,6 +3,8 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.http import HttpRequest
+from django.utils.html import escape
+from django.utils.safestring import SafeString
 
 from version import (
     LATEST_MAJOR_VERSION,
@@ -112,6 +114,9 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         settings_path = "/etc/zulip/settings.py"
         settings_comments_path = "/etc/zulip/settings.py"
 
+    support_email = FromAddress.SUPPORT
+    support_email_html_tag = SafeString(f'<a href="mailto:{escape(support_email)}">{escape(support_email)}</a>')
+
     # We can't use request.client here because we might not be using
     # an auth decorator that sets it, but we can call its helper to
     # get the same result.
@@ -136,7 +141,8 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'apps_page_web': apps_page_web,
         'open_realm_creation': settings.OPEN_REALM_CREATION,
         'development_environment': settings.DEVELOPMENT,
-        'support_email': FromAddress.SUPPORT,
+        'support_email': support_email,
+        'support_email_html_tag': support_email_html_tag,
         'find_team_link_disabled': find_team_link_disabled,
         'password_min_length': settings.PASSWORD_MIN_LENGTH,
         'password_min_guesses': settings.PASSWORD_MIN_GUESSES,
