@@ -295,7 +295,6 @@ nav {
             color: hsl(0, 0%, 100%);
 
             opacity: 0.7;
-            transition: all 0.2s ease;
 
             &.active,
             &:hover {
