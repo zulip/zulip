@@ -15,7 +15,7 @@ def setup_tornado_rabbitmq() -> None:  # nocoverage
         atexit.register(lambda: queue_client.close())
         autoreload.add_reload_hook(lambda: queue_client.close())
 
-def create_tornado_application(port: int) -> tornado.web.Application:
+def create_tornado_application() -> tornado.web.Application:
     urls = (
         r"/notify_tornado",
         r"/json/events",
