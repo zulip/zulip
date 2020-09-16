@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import ldap
 from django_auth_ldap.config import LDAPSearch
@@ -16,6 +16,10 @@ from .settings import (
     LOGGING,
     WEBPACK_LOADER,
 )
+
+FULL_STACK_ZULIP_TEST = "FULL_STACK_ZULIP_TEST" in os.environ
+PUPPETEER_TESTS = "PUPPETEER_TESTS" in os.environ
+
 
 FAKE_EMAIL_DOMAIN = "zulip.testserver"
 
@@ -36,16 +40,15 @@ DATABASES["default"] = {
     "OPTIONS": {"connection_factory": TimeTrackingConnection},
 }
 
-TORNADO_SERVER = os.environ.get("TORNADO_SERVER")
-if TORNADO_SERVER is not None:
-    # This covers the Casper test suite case
-    pass
+# Tests don't use Tornado by default
+TORNADO_SERVER: Optional[str] = None
+
+if FULL_STACK_ZULIP_TEST:
+    TORNADO_SERVER = "http://127.0.0.1:9983"
 else:
-    # This covers the backend test suite case
     CAMO_URI = 'https://external-content.zulipcdn.net/external_content/'
     CAMO_KEY = 'dummy'
 
-PUPPETEER_TESTS = "PUPPETEER_TESTS" in os.environ
 if PUPPETEER_TESTS:
     # Disable search pills prototype for production use
     SEARCH_PILLS_ENABLED = False
