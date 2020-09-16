@@ -5,55 +5,66 @@ preparing a new release.
 
 ### A week before the release
 
-* Upgrade all Python dependencies in `requirements` to latest
-  upstream versions so they can burn in (use `pip list --outdated`).
-* Update all the strings on Transifex and notify translators that they
-  should translate the new strings to get them in for the next
-  release.
-* Update `changelog.md` with major changes going into the release.
-* Create a burndown list of bugs that need to be fixed before we can
+* _Except minor releases:_ Upgrade all Python dependencies in
+  `requirements` to latest upstream versions so they can burn in (use
+  `pip list --outdated`).
+* _Except minor releases:_ Update all the strings on Transifex and
+  notify translators that they should translate the new strings to get
+  them in for the next release.
+* Create a burn-down list of bugs that need to be fixed before we can
   release, and make sure all of them are being worked on.
-* Draft the release blog post (aka the release notes.)
+* Draft the release blog post (a.k.a. the release notes) in Paper.  In
+  it, list the important changes in the release, from most to least
+  notable.
 
 ### Final release preparation
 
-* Update `changelog.md` with any changes since the last update, and
-  with revisions from the draft blog post.
-* Download updated translation strings from Transifex and commit them.
+* Update the Paper blog post draft with any new commits.
+* _Except minor releases:_ Download updated translation strings from
+  Transifex and commit them.
 * Use `build-release-tarball` to generate a release tarball.
 * Test the new tarball extensively, both new install and upgrade from last
   release, on both Bionic and Focal.
 * Repeat until release is ready.
-* When near finished: move the blog post draft to Ghost.  (For a draft
-  in Dropbox Paper, use "··· > Download > Markdown" to get a pretty
-  good markup conversion.)  Proofread the post, especially for
-  formatting.
+* Send around the Paper blog post draft for review.
+* Move the blog post draft to Ghost.  (For a draft in Dropbox Paper,
+  use "··· > Export > Markdown" to get a pretty good markup
+  conversion.)  Proofread the post, especially for formatting.  Tag
+  the post with "Release announcements" in Ghost.
 
 ### Executing the release
 
-* Do final updates to `changelog.md`, for any final changes and with
-  any revisions from the draft blog post.  (And the date!)
-* Update `ZULIP_VERSION` and `LATEST_RELEASE_VERSION` in `version.py`.
-* For major releases, update `API_FEATURE_LEVEL` to a feature level
-  for the final release, and document a reserved range.
+* Create the release commit, on master (for major releases) or on the
+  release branch (for minor releases):
+  * Copy the Markdown release notes for the release into
+    `docs/overview/changelog.md`.
+  * Update `ZULIP_VERSION` and `LATEST_RELEASE_VERSION` in `version.py`.
+  * _Except minor releases:_ Update `API_FEATURE_LEVEL` to a feature
+    level for the final release, and document a reserved range.
+* Tag that commit with an unsigned Git tag named the release number.
 * Use `build-release-tarball` to generate a final release tarball.
-* Post the release tarball on https://www.zulip.org/dist/releases/ :
-  add the file, update the `zulip-server-latest.tar.gz` symlink, and
-  add to SHA256SUMS.txt, using `ship-release.sh`.
-* Create a Git tag and push the tag.
-* Post the release on GitHub, using the text from `changelog.md`.
-* Update the [Docker image](https://github.com/zulip/docker-zulip) and do a release of that.
-* Update the image of DigitalOcean one click app using [Fabric](https://github.com/zulip/marketplace-partners)
-  and publish it to DO marketplace.
-* Publish the blog post.
-* Email zulip-announce, post to #announce, and send a tweet.
+* Push the tag and release commit.
+* Copy the tarball to `zulip.org`, and run
+  `/etc/zulip/ship-release.sh` on it; this will put it in place,
+  update the latest symlink, and update the SHA256 sums.
+* Post the release by [editing the latest tag on
+  GitHub](https://github.com/zulip/zulip/tags); use the text from
+  `changelog.md` for the release notes.
+* Update the [Docker image](https://github.com/zulip/docker-zulip) and
+  do a release of that.
+* Update the image of DigitalOcean one click app using
+  [Fabric](https://github.com/zulip/marketplace-partners) and publish
+  it to DO marketplace.
+* Publish the blog post; check the box to "send by email."
+* Email [zulip-announce](https://groups.google.com/g/zulip-announce),
+  post to [#announce](https://chat.zulip.org/#narrow/stream/1-announce),
+  and [send a tweet](https://twitter.com/zulip).
 
 ### Post-release
 
-* Push the release commit to master, if applicable (typically for a
-  major release); otherwise, make sure any last changes make it back
-  to master.
-* Update `ZULIP_VERSION` in `version.py` to e.g. `2.2.0+git` following
-  a 2.1.0 release, and make a Git tag named e.g. `2.2-dev` pointing to
-  this update.
-* Consider removing a few old releases from ReadTheDocs.
+* Update `ZULIP_VERSION` in `version.py` to e.g. `3.2+git` following
+  a 3.2 release.  Push this commit.
+* _Except minor releases:_ Create and push a release branch for the
+  minor releases.
+* Consider removing a few old releases from ReadTheDocs; we keep about
+  two years of back-versions.
