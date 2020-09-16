@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import ldap
 from django_auth_ldap.config import LDAPSearch
@@ -40,12 +40,12 @@ DATABASES["default"] = {
     "OPTIONS": {"connection_factory": TimeTrackingConnection},
 }
 
-# Tests don't use Tornado by default
-TORNADO_SERVER: Optional[str] = None
 
 if FULL_STACK_ZULIP_TEST:
-    TORNADO_SERVER = "http://127.0.0.1:9983"
+    TORNADO_PORTS = [9983]
 else:
+    # Backend tests don't use tornado
+    USING_TORNADO = False
     CAMO_URI = 'https://external-content.zulipcdn.net/external_content/'
     CAMO_KEY = 'dummy'
 
