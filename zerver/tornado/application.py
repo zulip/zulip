@@ -23,9 +23,10 @@ def create_tornado_application() -> tornado.web.Application:
         r"/api/v1/events/internal",
     )
 
-    # Application is an instance of Django's standard wsgi handler.
-    return tornado.web.Application([(url, AsyncDjangoHandler) for url in urls],
-                                   debug=settings.DEBUG,
-                                   autoreload=False,
-                                   # Disable Tornado's own request logging, since we have our own
-                                   log_function=lambda x: None)
+    return tornado.web.Application(
+        [(url, AsyncDjangoHandler) for url in urls],
+        debug=settings.DEBUG,
+        autoreload=False,
+        # Disable Tornado's own request logging, since we have our own
+        log_function=lambda x: None
+    )
