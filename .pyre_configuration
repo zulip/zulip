@@ -8,6 +8,7 @@
       "stubs/",
       "zulip-py3-venv/lib/pyre_check/stubs/"
   ],
+  "typeshed": "zulip-py3-venv/lib/pyre_check/typeshed/",
   "exclude": [
       "/srv/zulip/zulip-py3-venv/.*"
   ]
