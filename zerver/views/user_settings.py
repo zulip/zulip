@@ -5,6 +5,8 @@ from django.contrib.auth import authenticate, update_session_auth_hash
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
+from django.utils.html import escape
+from django.utils.safestring import SafeString
 from django.utils.translation import ugettext as _
 
 from confirmation.models import (
@@ -69,8 +71,9 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
                realm=user_profile.realm)
 
     ctx = {
-        'new_email': new_email,
-        'old_email': old_email,
+        'new_email_html_tag': SafeString(f'<a href="mailto:{escape(new_email)}">{escape(new_email)}</a>'),
+        'old_email_html_tag': SafeString(f'<a href="mailto:{escape(old_email)}">{escape(old_email)}</a>'),
+
     }
     return render(request, 'confirmation/confirm_email_change.html', context=ctx)
 
