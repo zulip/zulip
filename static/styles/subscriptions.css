@@ -315,6 +315,12 @@ form#add_new_subscription {
 .subscriber_list_add {
     width: 100%;
     margin: 10px auto;
+
+    .stream_subscription_info {
+        a {
+            color: inherit;
+        }
+    }
 }
 
 .subscriber-search {

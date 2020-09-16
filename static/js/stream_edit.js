@@ -2,6 +2,7 @@
 
 const render_settings_deactivation_stream_modal = require("../templates/settings/deactivation_stream_modal.hbs");
 const render_stream_member_list_entry = require("../templates/stream_member_list_entry.hbs");
+const render_stream_subscription_info = require("../templates/stream_subscription_info.hbs");
 const render_subscription_settings = require("../templates/subscription_settings.hbs");
 const render_subscription_stream_privacy_modal = require("../templates/subscription_stream_privacy_modal.hbs");
 
@@ -226,18 +227,13 @@ function submit_add_subscriber_form(e) {
 
     function invite_success(data) {
         exports.pill_widget.clear();
-        if (!Object.entries(data.already_subscribed).length) {
-            stream_subscription_info_elem.text(i18n.t("Subscribed successfully!"));
-            // The rest of the work is done via the subscription -> add event we will get
-        } else {
-            stream_subscription_info_elem.text(i18n.t("User already subscribed."));
-            const already_subscribed_users = Object.keys(data.already_subscribed).join(", ");
-            stream_subscription_info_elem.text(
-                i18n.t(" __already_subscribed_users__ are already subscribed.", {
-                    already_subscribed_users,
-                }),
-            );
-        }
+        const subscribed_users = Object.keys(data.subscribed).map(people.get_by_email);
+        const already_subscribed_users = Object.keys(data.already_subscribed).map(
+            people.get_by_email,
+        );
+
+        const html = render_stream_subscription_info({subscribed_users, already_subscribed_users});
+        ui.get_content_element(stream_subscription_info_elem).html(html);
         stream_subscription_info_elem.addClass("text-success").removeClass("text-error");
     }
 
@@ -782,6 +778,14 @@ exports.initialize = function () {
         }
 
         exports.remove_user_from_stream(target_user_id, sub, removal_success, removal_failure);
+    });
+
+    $("#subscriptions_table").on("click", ".stream_subscription_info .view_user_profile", (e) => {
+        const user_id = parseInt($(e.target).attr("data-id"), 10);
+        const user = people.get_by_user_id(user_id);
+        popovers.show_user_profile(user);
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     // This handler isn't part of the normal edit interface; it's the convenient
