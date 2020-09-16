@@ -63,7 +63,7 @@ if "BAN_CONSOLE_OUTPUT" in os.environ:
     BAN_CONSOLE_OUTPUT = True
 
 # Decrease the get_updates timeout to 1 second.
-# This allows CasperJS to proceed quickly to the next test step.
+# This allows frontend tests to proceed quickly to the next test step.
 POLL_TIMEOUT = 1000
 
 # Stores the messages in `django.core.mail.outbox` rather than sending them.
@@ -154,7 +154,7 @@ ENABLE_FILE_LINKS = True
 # These settings are set dynamically in `zerver/lib/test_runner.py`:
 TEST_WORKER_DIR = ''
 # Allow setting LOCAL_UPLOADS_DIR in the environment so that the
-# Casper/API tests in test_server.py can control this.
+# frontend/API tests in test_server.py can control this.
 if "LOCAL_UPLOADS_DIR" in os.environ:
     LOCAL_UPLOADS_DIR = os.getenv("LOCAL_UPLOADS_DIR")
 # Otherwise, we use the default value from dev_settings.py

@@ -264,9 +264,10 @@ def update_test_databases_if_required(rebuild_test_database: bool=False) -> None
     case, where the test runner code will clone directly from the
     template database.
 
-    The `rebuild_test_database` option (used by our Casper tests) asks
-    us to drop and re-cloning the zulip_test database from the
-    template so those test suites can run with a fresh copy.
+    The `rebuild_test_database` option (used by our frontend and API
+    tests) asks us to drop and re-cloning the zulip_test database from
+    the template so those test suites can run with a fresh copy.
+
     """
     test_template_db_status = TEST_DATABASE.template_status()
 
