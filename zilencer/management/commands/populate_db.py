@@ -270,6 +270,12 @@ class Command(BaseCommand):
                     string_id="lear", name="Lear & Co.", emails_restricted_to_domains=False,
                     invite_required=False, org_type=Realm.CORPORATE)
 
+                # Default to allowing all members to send mentions in
+                # large streams for the test suite to keep
+                # mention-related tests simple.
+                zulip_realm.wildcard_mention_policy = Realm.WILDCARD_MENTION_POLICY_MEMBERS
+                zulip_realm.save(update_fields=['wildcard_mention_policy'])
+
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
             names = [
