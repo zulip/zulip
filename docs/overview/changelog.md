@@ -7,6 +7,48 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 3.2 -- September 15, 2020
+
+- Switched from `libmemcached` to `python-binary-memcached`, a
+  pure-Python implementation; this should eliminate memcached
+  connection problems affecting some installations.
+- Removed unnecessary `django-cookies-samesite` dependency, which had
+  its latest release removed from PyPI (breaking installation of Zulip
+  3.1).
+- Limited which local email addresses Postfix accepts when the
+  incoming email integration is enabled; this prevents the enumeration
+  of local users via the email system.
+- Fixed incorrectly case-sensitive email validation in `REMOTE_USER`
+  authentication.
+- Fixed search results for `has:image`.
+- Fixed ability to adjust "Who can post on the stream" configuration.
+- Fixed display of "Permission [to post] will be granted in n days"
+  for n > 365.
+- Support providing `nginx_listen_port` setting in conjunction with
+  `http_only` in `zulip.conf`.
+- Improved upgrade documentation.
+- Removed internal ID lists which could leak into the events API.
+
+### 3.1 -- July 30, 2020
+
+- Removed unused `short_name` field from the User model.  This field
+  had no purpose and could leak the local part of email addresses
+  when email address visiblity was restricted.
+- Fixed a bug where loading spinners would sometimes not be displayed.
+- Fixed incoming email gateway exception with unstructured headers.
+- Fixed AlertWords not being included in data import/export.
+- Fixed Twitter previews not including a clear link to the tweet.
+- Fixed compose box incorrectly opening after uploading a file in a
+  message edit widget.
+- Fixed exception in SAML integration with encrypted assertions.
+- Fixed an analytics migration bug that could cause upgrading from 2.x
+  releases to fail.
+- Added a Thinkst Canary integration (and renamed the old one, which
+  was actually an integration for canarytokens.org).
+- Reformatted the frontend codebase using prettier.  This change was
+  included in this maintenance release to ensure backporting patches
+  from master remains easy.
+
 ### 3.0 -- July 16, 2020
 
 #### Highlights
