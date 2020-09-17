@@ -62,9 +62,15 @@ preparing a new release.
 
 ### Post-release
 
-* Update `ZULIP_VERSION` in `version.py` to e.g. `3.2+git` following
-  a 3.2 release.  Push this commit.
-* _Except minor releases:_ Create and push a release branch for the
-  minor releases.
+* Following a major release (e.g. 4.0):
+  * Create a release branch (e.g. `4.x`).
+  * On the release branch, update `ZULIP_VERSION` in `version.py` to
+    the present release with a `+git` suffix, e.g. `4.0+git`.
+  * On master, update `ZULIP_VERSION` to the future major release with
+    a `-dev+git` suffix, e.g. `5.0-dev+git`.  Make a Git tag for this
+    update commit with a `-dev` suffix, e.g. `5.0-dev`.
+* Following a minor release (e.g. 3.2):
+  * On the release branch, update `ZULIP_VERSION` to the present
+    release with a `+git` suffix, e.g. `3.2+git`.
 * Consider removing a few old releases from ReadTheDocs; we keep about
   two years of back-versions.
