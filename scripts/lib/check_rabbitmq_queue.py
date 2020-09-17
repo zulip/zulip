@@ -42,11 +42,13 @@ MAX_SECONDS_TO_CLEAR: DefaultDict[str, int] = defaultdict(
     lambda: 30,
     digest_emails=1200,
     missedmessage_mobile_notifications=120,
+    embed_links=60,
 )
 CRITICAL_SECONDS_TO_CLEAR: DefaultDict[str, int] = defaultdict(
     lambda: 60,
     missedmessage_mobile_notifications=180,
     digest_emails=1800,
+    embed_links=90,
 )
 
 def analyze_queue_stats(queue_name: str, stats: Dict[str, Any],
