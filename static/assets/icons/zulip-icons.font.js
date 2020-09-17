@@ -7,4 +7,5 @@ module.exports = {
     baseSelector: ".zulip-icon",
     cssTemplate: "./template.hbs",
     ligature: false,
+    writeFiles: false,
 };
