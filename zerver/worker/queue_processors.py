@@ -164,6 +164,7 @@ def retry_send_email_failures(
 class QueueProcessingWorker(ABC):
     queue_name: str
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 50
+    MAX_SECONDS_BEFORE_UPDATE_STATS = 30
 
     def __init__(self) -> None:
         self.q: Optional[SimpleQueueClient] = None
@@ -178,6 +179,7 @@ class QueueProcessingWorker(ABC):
         self.recent_consume_times: MutableSequence[Tuple[int, float]] = deque(maxlen=50)
         self.consume_iteration_counter = 0
         self.idle = True
+        self.last_statistics_update_time = time.time()
 
         self.update_statistics(0)
 
@@ -207,6 +209,7 @@ class QueueProcessingWorker(ABC):
                     orjson.dumps(stats_dict, option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2)
                 )
             os.rename(tmp_fn, fn)
+        self.last_statistics_update_time = time.time()
 
     def get_remaining_queue_size(self) -> int:
         if self.q is not None:
@@ -259,8 +262,8 @@ class QueueProcessingWorker(ABC):
                 return
 
             self.consume_iteration_counter += 1
-            if self.consume_iteration_counter >= self.CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM:
-
+            if (self.consume_iteration_counter >= self.CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM
+                    or time.time() - self.last_statistics_update_time >= self.MAX_SECONDS_BEFORE_UPDATE_STATS):
                 self.consume_iteration_counter = 0
                 self.update_statistics(remaining_queue_size)
 
