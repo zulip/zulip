@@ -110,10 +110,10 @@ def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
 def auth_enabled_helper(backends_to_check: List[str], realm: Optional[Realm]) -> bool:
     if realm is not None:
         enabled_method_dict = realm.authentication_methods_dict()
-        pad_method_dict(enabled_method_dict)
     else:
         enabled_method_dict = {method: True for method in Realm.AUTHENTICATION_FLAGS}
-        pad_method_dict(enabled_method_dict)
+
+    pad_method_dict(enabled_method_dict)
     for supported_backend in supported_auth_backends():
         for backend_name in backends_to_check:
             backend = AUTH_BACKEND_NAME_MAP[backend_name]
