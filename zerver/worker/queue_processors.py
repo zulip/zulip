@@ -176,7 +176,7 @@ class QueueProcessingWorker(ABC):
         self.queue_last_emptied_timestamp = time.time()
         self.consumed_since_last_emptied = 0
         self.recent_consume_times: MutableSequence[Tuple[int, float]] = deque(maxlen=50)
-        self.consume_interation_counter = 0
+        self.consume_iteration_counter = 0
         self.idle = True
 
         self.update_statistics(0)
@@ -258,10 +258,10 @@ class QueueProcessingWorker(ABC):
                 self.idle = True
                 return
 
-            self.consume_interation_counter += 1
-            if self.consume_interation_counter >= self.CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM:
+            self.consume_iteration_counter += 1
+            if self.consume_iteration_counter >= self.CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM:
 
-                self.consume_interation_counter = 0
+                self.consume_iteration_counter = 0
                 self.update_statistics(remaining_queue_size)
 
     def consume_wrapper(self, data: Dict[str, Any]) -> None:
