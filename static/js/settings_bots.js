@@ -516,7 +516,7 @@ exports.set_up = function () {
                         avatar_widget.clear();
                         typeahead_helper.clear_rendered_person(bot_id);
                         if (data.avatar_url) {
-                            // Note that the avatar_url won't actually change on the back end
+                            // Note that the avatar_url won't actually change on the backend
                             // when the user had a previous uploaded avatar.  Only the content
                             // changes, so we version it to get an uncached copy.
                             image_version += 1;

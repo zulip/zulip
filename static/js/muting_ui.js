@@ -11,8 +11,8 @@ let last_topic_update = 0;
 
 exports.rerender = function () {
     // Note: We tend to optimistically rerender muting preferences before
-    // the back end actually acknowledges the mute.  This gives a more
-    // immediate feel to the user, and if the back end fails temporarily,
+    // the backend actually acknowledges the mute.  This gives a more
+    // immediate feel to the user, and if the backend fails temporarily,
     // re-doing a mute or unmute is a pretty recoverable thing.
 
     stream_list.update_streams_sidebar();
