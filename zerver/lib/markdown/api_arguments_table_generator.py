@@ -80,7 +80,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 line_split = REGEXP.split(line, maxsplit=0)
                 preceding = line_split[0]
                 following = line_split[-1]
-                text = [preceding, *text, following]
+                text = [preceding] + text + [following]
                 lines = lines[:loc] + text + lines[loc+1:]
                 break
             else:
@@ -92,8 +92,8 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         table = []
         argument_template = """
 
-<div class="api-argument" id="{argument}">
-    <p class="api-argument-name"><strong>{argument}</strong> {required} {deprecated}<a href="#{argument}" class="api-argument-hover-link"><i class="fa fa-chain"></i></a></p>
+<div class="api-argument" id="parameter-{argument}">
+    <p class="api-argument-name"><strong>{argument}</strong> {required} {deprecated}<a href="#parameter-{argument}" class="api-argument-hover-link"><i class="fa fa-chain"></i></a></p>
     <div class="api-example">
         <span class="api-argument-example-label">Example</span>: <code>{example}</code>
     </div>
