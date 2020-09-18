@@ -39,6 +39,7 @@ from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
+from sentry_sdk import add_breadcrumb, configure_scope
 from zulip_bots.lib import ExternalBotHandler, extract_query_without_mention
 
 from zerver.context_processors import common_context
@@ -223,6 +224,14 @@ class QueueProcessingWorker(ABC):
     def do_consume(self, consume_func: Callable[[List[Dict[str, Any]]], None],
                    events: List[Dict[str, Any]]) -> None:
         consume_time_seconds: Optional[float] = None
+        with configure_scope() as scope:
+            scope.clear_breadcrumbs()
+            add_breadcrumb(
+                type='debug',
+                category='queue_processor',
+                message=f"Consuming {self.queue_name}",
+                data={"events": events, "queue_size": self.get_remaining_queue_size()},
+            )
         try:
             time_start = time.time()
             consume_func(events)
@@ -253,7 +262,12 @@ class QueueProcessingWorker(ABC):
         self.do_consume(consume_func, [data])
 
     def _handle_consume_exception(self, events: List[Dict[str, Any]]) -> None:
-        self._log_problem()
+        with configure_scope() as scope:
+            scope.set_context("events", {
+                "data": events,
+                "queue_name": self.queue_name,
+            })
+            logging.exception("Problem handling data on queue %s", self.queue_name, stack_info=True)
         if not os.path.exists(settings.QUEUE_ERROR_DIR):
             os.mkdir(settings.QUEUE_ERROR_DIR)  # nocoverage
         # Use 'mark_sanitized' to prevent Pysa from detecting this false positive
@@ -266,9 +280,6 @@ class QueueProcessingWorker(ABC):
             with open(fn, 'ab') as f:
                 f.write(line.encode('utf-8'))
         check_and_send_restart_signal()
-
-    def _log_problem(self) -> None:
-        logging.exception("Problem handling data on queue %s", self.queue_name, stack_info=True)
 
     def setup(self) -> None:
         self.q = SimpleQueueClient()
