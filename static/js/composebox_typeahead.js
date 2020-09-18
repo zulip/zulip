@@ -356,10 +356,6 @@ function should_show_custom_query(query, items) {
 // Prioritize top 5 shown in typeahead, keeping each group sorted manually.
 exports.slash_commands = [
     {
-        text: i18n.t("/dark (Switch to night mode)"),
-        name: "dark",
-    },
-    {
         text: i18n.t("/me is excited (Display action text)"),
         name: "me",
     },
@@ -372,8 +368,16 @@ exports.slash_commands = [
         name: "settings",
     },
     {
+        text: i18n.t("/theme color_mode (Switch to new color mode: dark, night, light, day)"),
+        name: "theme",
+    },
+    {
         text: i18n.t("/todo (Create a todo list)"),
         name: "todo",
+    },
+    {
+        text: i18n.t("/dark (Switch to night mode)"),
+        name: "dark",
     },
     {
         text: i18n.t("/day (Switch to day mode)"),

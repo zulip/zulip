@@ -179,6 +179,36 @@ exports.process = function (message_content) {
         return true;
     }
 
+    const theme_command = "/theme";
+    if (command === theme_command) {
+        const direct_theme_command = "/" + args[0];
+        if (night_commands.includes(direct_theme_command)) {
+            exports.enter_night_mode();
+            return true;
+        }
+        if (day_commands.includes(direct_theme_command)) {
+            exports.enter_day_mode();
+            return true;
+        }
+        // Not a valid use of command, so inform user why
+        const issue = (() => {
+            if (args.length === 0) {
+                return "No theme specified";
+            }
+            return "Theme '" + direct_theme_command.slice(1) + "' does not exist";
+        })();
+        const valid_theme_slash_commands = day_commands.concat(night_commands);
+        const valid_themes = valid_theme_slash_commands.map((theme) => theme.slice(1));
+        const msg = issue + " (valid themes: " + valid_themes.join(", ") + ")";
+        exports.send({
+            command: "/ping", // FIXME: Fake ping to use tell_user
+            on_success() {
+                exports.tell_user(msg);
+            },
+        });
+        return true;
+    }
+
     if (command === "/fluid-width") {
         exports.enter_fluid_mode();
         return true;
