@@ -72,5 +72,6 @@ preparing a new release.
 * Following a minor release (e.g. 3.2):
   * On the release branch, update `ZULIP_VERSION` to the present
     release with a `+git` suffix, e.g. `3.2+git`.
+  * Cherry-pick the changelog changes back to `master`.
 * Consider removing a few old releases from ReadTheDocs; we keep about
   two years of back-versions.
