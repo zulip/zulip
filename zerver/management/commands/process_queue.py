@@ -9,6 +9,7 @@ from typing import Any, List
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import autoreload
+from sentry_sdk import configure_scope
 
 from zerver.worker.queue_processors import get_active_worker_queues, get_worker
 
@@ -70,19 +71,22 @@ class Command(BaseCommand):
             queue_name = options['queue_name']
             worker_num = options['worker_num']
 
-            logger.info("Worker %d connecting to queue %s", worker_num, queue_name)
-            worker = get_worker(queue_name)
-            worker.setup()
-
             def signal_handler(signal: int, frame: FrameType) -> None:
                 logger.info("Worker %d disconnecting from queue %s", worker_num, queue_name)
                 worker.stop()
                 sys.exit(0)
-            signal.signal(signal.SIGTERM, signal_handler)
-            signal.signal(signal.SIGINT, signal_handler)
-            signal.signal(signal.SIGUSR1, signal_handler)
 
-            worker.start()
+            logger.info("Worker %d connecting to queue %s", worker_num, queue_name)
+            worker = get_worker(queue_name)
+            with configure_scope() as scope:
+                scope.set_tag("queue_worker", queue_name)
+                scope.set_tag("worker_num", worker_num)
+
+                worker.setup()
+                signal.signal(signal.SIGTERM, signal_handler)
+                signal.signal(signal.SIGINT, signal_handler)
+                signal.signal(signal.SIGUSR1, signal_handler)
+                worker.start()
 
 class Threaded_worker(threading.Thread):
     def __init__(self, queue_name: str) -> None:
@@ -90,6 +94,8 @@ class Threaded_worker(threading.Thread):
         self.worker = get_worker(queue_name)
 
     def run(self) -> None:
-        self.worker.setup()
-        logging.debug('starting consuming ' + self.worker.queue_name)
-        self.worker.start()
+        with configure_scope() as scope:
+            scope.set_tag("queue_worker", self.worker.queue_name)
+            self.worker.setup()
+            logging.debug('starting consuming ' + self.worker.queue_name)
+            self.worker.start()
