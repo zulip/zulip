@@ -138,6 +138,11 @@ const my_slash = {
     text: "translated: /my (Test)",
 };
 
+const settings_slash = {
+    name: "settings",
+    text: "translated: /settings (Load settings menu)",
+};
+
 const sweden_stream = {
     name: "Sweden",
     description: "Cold, mountains and home decor.",
@@ -1490,6 +1495,7 @@ run_test("typeahead_results", () => {
 
     // Autocomplete by slash commands.
     assert_slash_matches("me", [me_slash]);
+    assert_slash_matches("settings", [settings_slash]);
 
     // Autocomplete stream by stream name or stream description.
     assert_stream_matches("den", [denmark_stream, sweden_stream]);
