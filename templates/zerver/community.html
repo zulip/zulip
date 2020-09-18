@@ -1,0 +1,102 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="community portico-landing hello show">
+    <div class="community-hero hero d-lg-flex position-relative">
+        <div class="container display-lg-flex">
+            <div class="w-100">
+                <div class="row">
+                    <div class="hero-content col-12 col-lg-7">
+                        <h1>Join the Zulip community</h1>
+                        <p>
+                            Connect with over 600 code contributors and get support
+                            from open source-ers around the world.
+                        </p>
+                        <div class="mt-5">
+                            <a href="" class="btn btn-secondary text-uppercase big-try-now">Join Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ways-to-contribute">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12 col-lg-6">
+                    <div class="row align-items-center">
+                        <div class="col-sm-5 col-md-4 col-xxl-3">
+                            <img src="/static/images/landing-page/CommunityPage_book.svg">
+                        </div>
+                        <div class="col-sm-7 col-md-8 col-xxl-9">
+                            <h1>Write Documentation</h1>
+                            <p>
+                                Help us create new and updated
+                                articles and tutorials. Your work
+                                could be downloaded by thousands.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <div class="row align-items-center">
+                        <div class="col-sm-5 col-md-4 col-xxl-3">
+                            <img src="/static/images/landing-page/CommunityPage_doc.svg">
+                        </div>
+                        <div class="col-sm-7 col-md-8 col-xxl-9">
+                            <h1>Write Blog Post</h1>
+                            <p>
+                                Write or suggest a post about
+                                your Zulip experience. Did it
+                                save you time and hassle?
+                                That's worth sharing.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row align-items-center">
+                <div class="col-12 col-lg-6">
+                    <div class="row align-items-center">
+                        <div class="col-sm-5 col-md-4 col-xxl-3">
+                            <img src="/static/images/landing-page/CommunityPage_bug.svg">
+                        </div>
+                        <div class="col-sm-7 col-md-8 col-xxl-9">
+                            <h1>Terminate Bugs</h1>
+                            <p>
+                                You hate 'em. We hate 'em. Let's
+                                squash 'em. Help us manage or eliminate
+                                vital issue on our various platforms.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <div class="row align-items-center">
+                        <div class="col-sm-5 col-md-4 col-xxl-3">
+                            <img src="/static/images/landing-page/CommunityPage_chat.svg">
+                        </div>
+                        <div class="col-sm-7 col-md-8 col-xxl-9">
+                            <h1>Talk on the forums</h1>
+                            <p>
+                                Join our vocal supportive
+                                community to chat and share
+                                ideas with developers and Zulip
+                                staff.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

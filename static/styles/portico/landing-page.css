@@ -811,6 +811,20 @@ nav.navbar {
             margin-left: 0;
         }
     }
+
+    .portico-landing.hello .community-hero.hero {
+        .big-try-now {
+            width: 50%;
+        }
+    }
+}
+
+@media (max-width: 992px) {
+    .portico-landing.hello .community-hero.hero {
+        .big-try-now {
+            width: 100%;
+        }
+    }
 }
 
 .introduction-video-section {
@@ -2085,6 +2099,63 @@ nav.navbar {
 
 .footer.hello li a:hover {
     color: hsl(0, 0%, 100%);
+}
+
+
+/* -- community page -- */
+
+.community {
+
+    h1 {
+        font-weight: 400;
+        font-size: 30px;
+    }
+
+    .row {
+        margin: auto;
+    }
+
+    .community-hero .container {
+        background-image: url("/static/images/landing-page/CommunityPage_hero.svg");
+        background-repeat: no-repeat;
+        background-position: center;
+        height: 1100px;
+        margin-bottom: -400px;
+    }
+
+    .ways-to-contribute {
+        color: hsl(0, 0%, 100%);
+        background-color: $purple;
+        padding: 70px 0;
+
+        .align-items-center {
+            padding: 10px;
+        }
+    }
+
+}
+
+@media (max-width: 992px) {
+    .community {
+        .community-hero .container {
+            background-position: bottom;
+            height: 800px;
+            margin-bottom: 0px;
+        }
+    }    
+}
+
+@media (max-width: 576px) {
+    .community {
+        .ways-to-contribute {
+            img {
+                width: 100px;
+            }
+            .row .row {
+                text-align: center;
+            }
+        }
+    }
 }
 
 /* -- apps page -- */
