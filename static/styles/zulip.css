@@ -66,6 +66,11 @@ a {
     }
 }
 
+code,
+pre {
+    font-family: Menlo, Consolas, "Courier New", monospace;
+}
+
 .no-select {
     user-select: none;
 }
