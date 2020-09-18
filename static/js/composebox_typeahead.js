@@ -386,6 +386,10 @@ exports.slash_commands = [
         text: i18n.t("/poll Where should we go to lunch today? (Create a poll)"),
         name: "poll",
     },
+    {
+        text: i18n.t("/settings (Load settings menu)"),
+        name: "settings",
+    },
 ];
 
 exports.filter_and_sort_mentions = function (is_silent, query, opts) {
