@@ -5,12 +5,15 @@ from unittest.mock import MagicMock, patch
 from django.test import TestCase
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.bulk_create import _add_random_reactions_to_message, bulk_create_reactions
+from zerver.lib.bulk_create import (
+    DEFAULT_EMOJIS,
+    _add_random_reactions_to_message,
+    bulk_create_reactions,
+)
 from zerver.models import (
     Client,
     Huddle,
     Message,
-    Reaction,
     Realm,
     Recipient,
     Stream,
@@ -22,6 +25,7 @@ from zerver.models import (
 class TestBulkCreateReactions(TestCase):
     def setUp(self) -> None:
         super().setUp()
+        random.seed(42)
         self.realm = Realm.objects.create(
             name="test_realm",
             string_id="test_realm"
@@ -47,6 +51,7 @@ class TestBulkCreateReactions(TestCase):
             realm=self.realm,
             full_name='Charlie'
         )
+
         self.users = [self.alice, self.bob, self.charlie]
         type_ids = Recipient \
             .objects.filter(type=Recipient.PERSONAL).values_list('type_id')
@@ -114,117 +119,169 @@ class TestBulkCreateReactions(TestCase):
             date_sent=timezone_now()
         )
 
-    def tearDown(self) -> None:
-        for reaction in Reaction.objects.filter(message=self.personal_message):
-            reaction.delete()
-        self.personal_message.delete()
-        self.realm.delete()
-        self.message_client.delete()
-        for recipient in self.recipients:
-            recipient.delete()
-        super().tearDown()
+    def test_invalid_probabilities(self) -> None:
+        message = self.personal_message
+        emojis = DEFAULT_EMOJIS
+        users = self.users
+        prob_keys = ['prob_reaction', 'prob_upvote', 'prob_repeat']
+        for probs in [
+            (1, .5, .5),
+            (.5, 1, .5),
+            (.5, .5, 1),
+            (-0.01, .5, .5),
+            (.5, -.01, .5),
+            (.5, .5, -.01),
+        ]:
+            kwargs = dict(zip(prob_keys, probs))
+            with self.assertRaises(ValueError):
+                _add_random_reactions_to_message(message, emojis, users, **kwargs)
 
     @patch('zerver.lib.bulk_create.random')
-    def test_reactions_to_personal_messages(self, mock_random: MagicMock) -> None:
-        assert Reaction.objects.filter(message=self.personal_message).count() == 0
-        mock_random.random.side_effect = [0, 1, 1]  # first reaction, no upvote, no second reaction
-        bulk_create_reactions(messages=[self.personal_message], users=[self.bob], emojis=[('+1', '1f44d')])
-        assert Reaction.objects.filter(message=self.personal_message).count() == 1
-
-    @patch('zerver.lib.bulk_create.random')
-    def test_reactions_default_users(self, mock_random: MagicMock) -> None:
-        assert Reaction.objects.filter(message=self.personal_message).count() == 0
-        mock_random.random.side_effect = [0, 1, 1]  # first reaction, no upvote, no second reaction
-        bulk_create_reactions(messages=[self.personal_message], emojis=[('+1', '1f44d')])
-        assert Reaction.objects.filter(message=self.personal_message).count() == 1
-
-    @patch('zerver.lib.bulk_create.random')
-    def test_upvoted_reaction_to_personal_message(self, mock_random: MagicMock) -> None:
-        assert Reaction.objects.filter(message=self.personal_message).count() == 0
-        mock_random.random.side_effect = [0, 0, 1, 1]  # first reaction, one upvote, no second reaction
-        bulk_create_reactions(messages=[self.personal_message], users=[self.bob, self.alice], emojis=[('+1', '1f44d'), ('smiley', '1f603')])
-        reactions = Reaction.objects.filter(message=self.personal_message)
-        assert reactions.count() == 2
-        r1, r2 = reactions
-        assert r1.emoji_name == r2.emoji_name
-        assert r1.emoji_code == r2.emoji_code
-        assert r1.user_profile != r2.user_profile
-
-    @patch('zerver.lib.bulk_create.random')
-    def test_reactions_to_stream_messages(self, mock_random: MagicMock) -> None:
-        assert Reaction.objects.filter(message=self.stream_message).count() == 0
-        mock_random.random.side_effect = [0, 0, 0, 1, 0, 0, 1, 1]  # first reaction, two upvotes, second reaction, one upvote
-        bulk_create_reactions(messages=[self.stream_message], emojis=[('+1', '1f44d'), ('smiley', '1f603')])
-        reactions = Reaction.objects.filter(message=self.stream_message)
-        assert reactions.count() == 5
-        plus_one_reactions = reactions.filter(emoji_name='+1')
-        assert plus_one_reactions.count() == 3
-        smiley_reactions = reactions.filter(emoji_name='smiley')
-        assert smiley_reactions.count() == 2
-
-    @patch('zerver.lib.bulk_create.random')
-    def test_reactions_to_huddle_messages(self, mock_random: MagicMock) -> None:
-        assert Reaction.objects.filter(message=self.huddle_message).count() == 0
-        mock_random.random.side_effect = [0, 0, 1, 0, 0, 0, 1, 1]  # first reaction, one upvote, second reaction, two upvotes
-        bulk_create_reactions(messages=[self.huddle_message], emojis=[('+1', '1f44d'), ('smiley', '1f603')])
-        reactions = Reaction.objects.filter(message=self.huddle_message)
-        assert reactions.count() == 5
-        plus_one_reactions = reactions.filter(emoji_name='+1')
-        assert plus_one_reactions.count() == 2
-        smiley_reactions = reactions.filter(emoji_name='smiley')
-        assert smiley_reactions.count() == 3
-
-    @patch('zerver.lib.bulk_create.random')
-    def test_duplicate_reactions_removed(self, mock_random: MagicMock) -> None:
-        assert Reaction.objects.filter(message=self.stream_message).count() == 0
-        # a bunch of duplicated reactions from the second set of loops
-        mock_random.random.side_effect = [0] * 20 + [1] + [0] * 20 + [1, 1]
-        bulk_create_reactions(messages=[self.stream_message], emojis=[('+1', '1f44d')])
-        reactions = Reaction.objects.filter(message=self.stream_message)
-        assert reactions.count() == 3
-
-    @patch('zerver.lib.bulk_create.random')
-    def test_reactions_default_emojis(self, mock_random: MagicMock) -> None:
-        assert Reaction.objects.filter(message=self.stream_message).count() == 0
-        mock_random.random.side_effect = itertools.chain([0], (random.random() for _ in itertools.count(1)))
-        bulk_create_reactions(messages=[self.stream_message])
-        assert Reaction.objects.filter(message=self.stream_message).count() > 0
-
+    @patch('zerver.lib.bulk_create.UserProfile')
     @patch('zerver.lib.bulk_create.Subscription')
-    def test_no_subscription_users(self, MockSubscription: MagicMock) -> None:
-        assert Reaction.objects.filter(message=self.stream_message).count() == 0
-        MockSubscription.objects.filter.return_value = []
-        bulk_create_reactions(messages=[self.stream_message])
-        assert Reaction.objects.filter(message = self.stream_message).count() == 0
+    def test_early_exit_if_no_reactions(
+            self,
+            MockSubscription: MagicMock,
+            MockUserProfile: MagicMock,
+            mock_random: MagicMock) -> None:
+        message = self.personal_message
+        emojis = DEFAULT_EMOJIS
+        users = None
+        mock_random.random.return_value = 1
+        reactions = _add_random_reactions_to_message(message, emojis, users)
+        self.assertEqual(reactions, [])
+        self.assertFalse(MockUserProfile.objects.get.called)
+        self.assertFalse(MockSubscription.objects.filter.called)
 
-    def test_probabilities_between_zero_and_one(self) -> None:
-        with self.assertRaises(ValueError):
-            _add_random_reactions_to_message(
-                self.personal_message, [('+1', '1f44d')], self.users,
-                prob_reaction=-1
-            )
-        with self.assertRaises(ValueError):
-            _add_random_reactions_to_message(
-                self.personal_message, [('+1', '1f44d')], self.users,
-                prob_reaction=2
-            )
-        with self.assertRaises(ValueError):
-            _add_random_reactions_to_message(
-                self.personal_message, [('+1', '1f44d')], self.users,
-                prob_upvote=-1
-            )
-        with self.assertRaises(ValueError):
-            _add_random_reactions_to_message(
-                self.personal_message, [('+1', '1f44d')], self.users,
-                prob_upvote=2
-            )
-        with self.assertRaises(ValueError):
-            _add_random_reactions_to_message(
-                self.personal_message, [('+1', '1f44d')], self.users,
-                prob_repeat=-1
-            )
-        with self.assertRaises(ValueError):
-            _add_random_reactions_to_message(
-                self.personal_message, [('+1', '1f44d')], self.users,
-                prob_repeat=2
-            )
+    @patch('zerver.lib.bulk_create.random')
+    @patch('zerver.lib.bulk_create.UserProfile')
+    def test_query_for_personal_message_users(
+            self,
+            MockUserProfile: MagicMock,
+            mock_random: MagicMock) -> None:
+        message = self.personal_message
+        emojis = DEFAULT_EMOJIS
+        users = None
+        mock_random.choice = random.choice
+        mock_random.random.side_effect = [0, 1, 1, 1, 1, 1]
+        _add_random_reactions_to_message(message, emojis, users)
+        self.assertTrue(MockUserProfile.objects.get.called)
+
+    @patch('zerver.lib.bulk_create.random')
+    @patch('zerver.lib.bulk_create.Subscription')
+    def test_query_for_stream_message_users(
+            self,
+            MockSubscription: MagicMock,
+            mock_random: MagicMock) -> None:
+        message = self.stream_message
+        emojis = DEFAULT_EMOJIS
+        users = None
+        mock_random.choice = random.choice
+        mock_random.random.side_effect = [0, 1, 1, 1, 1, 1]
+        _add_random_reactions_to_message(message, emojis, users)
+        self.assertTrue(MockSubscription.objects.filter.called)
+
+    @patch('zerver.lib.bulk_create.random')
+    @patch('zerver.lib.bulk_create.Subscription')
+    def test_query_for_huddle_message_users(
+            self,
+            MockSubscription: MagicMock,
+            mock_random: MagicMock) -> None:
+        message = self.huddle_message
+        emojis = DEFAULT_EMOJIS
+        users = None
+        mock_random.choice = random.choice
+        mock_random.random.side_effect = [0, 1, 1, 1, 1, 1]
+        _add_random_reactions_to_message(message, emojis, users)
+        self.assertTrue(MockSubscription.objects.filter.called)
+
+    @patch('zerver.lib.bulk_create.random')
+    @patch('zerver.lib.bulk_create.Subscription')
+    def test_early_exit_if_no_users(
+            self,
+            MockSubscription: MagicMock,
+            mock_random: MagicMock) -> None:
+        message = self.stream_message
+        emojis = DEFAULT_EMOJIS
+        users = None
+        mock_random.choice = random.choice
+        mock_random.random.side_effect = [0, 1, 1, 1, 1, 1]
+        MockSubscription.objects.filter.return_value = []
+        reactions = _add_random_reactions_to_message(message, emojis, users)
+        self.assertTrue(MockSubscription.objects.filter.called)
+        self.assertEqual(reactions, [])
+
+    @patch('zerver.lib.bulk_create.random')
+    def test_single_reaction(
+            self,
+            mock_random: MagicMock) -> None:
+        message = self.stream_message
+        emojis = DEFAULT_EMOJIS
+        users = self.users
+        mock_random.choice = random.choice
+        mock_random.random.side_effect = [0, 1, 1]
+        reactions = _add_random_reactions_to_message(message, emojis, users)
+        self.assertEqual(len(reactions), 1)
+
+    @patch('zerver.lib.bulk_create.random')
+    def test_single_reaction_with_upvote(
+            self,
+            mock_random: MagicMock) -> None:
+        message = self.stream_message
+        emojis = DEFAULT_EMOJIS
+        users = self.users
+        mock_random.choice = random.choice
+        mock_random.random.side_effect = [0, 0, 1, 1]
+        reactions = _add_random_reactions_to_message(message, emojis, users)
+        self.assertEqual(len(reactions), 2)
+        assert reactions[0].emoji_name == reactions[1].emoji_name
+        assert reactions[0].user_profile_id != reactions[1].user_profile_id
+
+    @patch('zerver.lib.bulk_create.random')
+    def test_two_reactions_with_different_emojis(
+            self, mock_random: MagicMock) -> None:
+        message = self.stream_message
+        emojis = DEFAULT_EMOJIS
+        users = self.users
+        mock_random.choice.side_effect = [emojis[0], users[0].id, emojis[1], users[1].id]
+        mock_random.random.side_effect = [0, 1, 0, 1, 1]
+        reactions = _add_random_reactions_to_message(message, emojis, users)
+        self.assertEqual(len(reactions), 2)
+        assert reactions[0].emoji_name != reactions[1].emoji_name
+        assert reactions[0].user_profile_id != reactions[1].user_profile_id
+
+    @patch('zerver.lib.bulk_create.random')
+    def test_deduplicated_reactions(
+            self, mock_random: MagicMock) -> None:
+        message = self.stream_message
+        emojis = DEFAULT_EMOJIS[:1]
+        users = self.users[:1]
+        mock_random.choice = random.choice
+        mock_random.random.side_effect = [0, 1, 0, 1, 1]
+        reactions = _add_random_reactions_to_message(message, emojis, users)
+        self.assertEqual(len(reactions), 1)
+
+    @patch('zerver.lib.bulk_create.random')
+    def test_no_available_users(
+            self, mock_random: MagicMock) -> None:
+        message = self.stream_message
+        emojis = DEFAULT_EMOJIS
+        users = self.users[:1]
+        mock_random.choice = random.choice
+        mock_random.random.side_effect = [0, 0, 1, 1]
+        reactions = _add_random_reactions_to_message(message, emojis, users)
+        self.assertEqual(len(reactions), 1)
+
+    @patch('zerver.lib.bulk_create.Reaction')
+    @patch('zerver.lib.bulk_create._add_random_reactions_to_message')
+    def test_default_emojis(
+            self,
+            mock_add_random_reactions_to_message: MagicMock,
+            MockReaction: MagicMock) -> None:
+        messages = [self.personal_message]
+        users = [self.users[0]]
+        emojis = None
+        bulk_create_reactions(messages, users, emojis)
+        self.assertTrue(mock_add_random_reactions_to_message.called)
+        mock_add_random_reactions_to_message.assert_called_with(
+            messages[0], DEFAULT_EMOJIS, users)

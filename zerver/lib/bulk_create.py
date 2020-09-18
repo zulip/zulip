@@ -157,7 +157,7 @@ def bulk_create_streams(realm: Realm,
 
     bulk_set_users_or_streams_recipient_fields(Stream, streams_to_create, recipients_to_create)
 
-_DEFAULT_EMOJIS = [
+DEFAULT_EMOJIS = [
     ('+1', '1f44d'),
     ('smiley', '1f603'),
     ('eyes', '1f440'),
@@ -174,7 +174,7 @@ def bulk_create_reactions(
 ) -> None:
     messages = list(messages)
     if not emojis:
-        emojis = _DEFAULT_EMOJIS
+        emojis = DEFAULT_EMOJIS
     emojis = list(emojis)
 
     reactions: List[Reaction] = []
@@ -210,6 +210,11 @@ def _add_random_reactions_to_message(
         if p >= 1 or p < 0:
             raise ValueError('Probability argument must be between 0 and 1.')
 
+    # Avoid performing database queries if there will be no reactions.
+    compute_next_reaction: bool = random.random() < prob_reaction
+    if not compute_next_reaction:
+        return []
+
     if not users:
         if message.recipient.type == Recipient.PERSONAL:
             users = [
@@ -227,7 +232,7 @@ def _add_random_reactions_to_message(
     emojis = list(emojis)
 
     reactions = []
-    while random.random() < prob_reaction:
+    while compute_next_reaction:
         # We do this O(users) operation only if we've decided to do a
         # reaction, to avoid performance issues with large numbers of
         # users.
@@ -255,8 +260,7 @@ def _add_random_reactions_to_message(
 
         # Repeat with a possibly different random emoji with the
         # defined probability.
-        if not random.random() < prob_repeat:
-            break
+        compute_next_reaction = random.random() < prob_repeat
 
     # Avoid returning duplicate reactions by deduplicating on
     # (user_profile_id, emoji_code).
