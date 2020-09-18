@@ -1,3 +1,5 @@
+# See https://zulip.readthedocs.io/en/latest/translating/internationalization.html
+
 import logging
 import operator
 import os
