@@ -21,12 +21,9 @@ from zerver.lib.webhooks.git import (
     get_remove_branch_event_message,
 )
 from zerver.models import UserProfile
-from zerver.webhooks.bitbucket2.view import (
-    BITBUCKET_FORK_BODY,
-    BITBUCKET_REPO_UPDATED_CHANGED,
-    BITBUCKET_TOPIC_TEMPLATE,
-)
+from zerver.webhooks.bitbucket2.view import BITBUCKET_REPO_UPDATED_CHANGED, BITBUCKET_TOPIC_TEMPLATE
 
+BITBUCKET_FORK_BODY = "User {display_name}(login: {username}) forked the repository into [{fork_name}]({fork_url})."
 BRANCH_UPDATED_MESSAGE_TEMPLATE = "{user_name} pushed to branch {branch_name}. Head is now {head}."
 PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE = "{user_name} marked [PR #{number}]({url}) as \"needs work\"."
 PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE_WITH_TITLE = """
