@@ -10,6 +10,13 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 33**
+
+* Markdown code blocks now have a `data-code-language` attribute
+  attached to the outer `div` element, recording the programming
+  language that was selecting for syntax highlighting.  This field
+  supports the upcoming "view in playground" feature for code blocks.
+
 **Feature level 32**
 
 * [`GET /events`](/api/get-events): Added `op` field to
