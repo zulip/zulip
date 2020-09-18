@@ -416,7 +416,12 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 # still tag it with the user's data-code-language
                 # value, since this allows hooking up a "playground"
                 # for custom "languages" that aren't known to Pygments.
-                code_language = lang
+                #
+                # The escaping isn't strictly necessary, in that the
+                # characters allowed for language values should all be
+                # safe, but doing escaping here makes it easy to
+                # reason about.
+                code_language = self._escape(lang)
 
             div_tag.attrib['data-code-language'] = code_language
             # lxml implicitly converts tags like <span></span> into <span/>.
