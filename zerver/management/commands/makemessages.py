@@ -1,4 +1,7 @@
 """
+See https://zulip.readthedocs.io/en/latest/translating/internationalization.html
+for background.
+
 The contents of this file are taken from
 https://github.com/niwinz/django-jinja/blob/master/django_jinja/management/commands/makemessages.py
 

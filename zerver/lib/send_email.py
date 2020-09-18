@@ -99,6 +99,16 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
             html_message = loader.render_to_string(compiled_template_prefix + '.html', context)
         return (html_message, message, email_subject)
 
+    # The i18n story for emails is a bit complicated.  For emails
+    # going to a single user, we want to use the language that user
+    # has configured for their Zulip account.  For emails going to
+    # multiple users or to email addresses without a known Zulip
+    # account (E.g. invitations), we want to use the default language
+    # configured for the Zulip organization.
+    #
+    # See our i18n documentation for some high-level details:
+    # https://zulip.readthedocs.io/en/latest/translating/internationalization.html
+
     if not language and to_user_ids is not None:
         language = to_users[0].default_language
     if language:

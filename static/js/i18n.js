@@ -1,3 +1,6 @@
+// For documentation on i18n in Zulip, see:
+// https://zulip.readthedocs.io/en/latest/translating/internationalization.html
+
 import i18next from "i18next";
 
 i18next.init({
