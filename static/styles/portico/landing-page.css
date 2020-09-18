@@ -3978,3 +3978,35 @@ nav.navbar {
         }
     }
 }
+
+/*** Features page ***/
+.features {
+    .feature-section {
+        padding-top: 50px;
+        padding-bottom: 50px;
+    }
+
+    .purple-bg-feature {
+        background-color: $purple;
+
+        .transparent-more-btn {
+            color: $dark-blue !important;
+            border-color: $dark-blue !important;
+            border-width: 2px;
+        }
+    }
+
+    .customization {
+        background-color: $light-green;
+
+        * {
+            color: $dark-blue !important;
+        }
+
+        .transparent-more-btn {
+            border-color: $dark-blue !important;
+            border-width: 2px;
+        }
+    }
+
+}
