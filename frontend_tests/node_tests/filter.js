@@ -104,7 +104,7 @@ run_test("basics", () => {
     assert(!filter.is_personal_filter());
 
     // Negated searches are just like positive searches for our purposes, since
-    // the search logic happens on the back end and we need to have can_apply_locally()
+    // the search logic happens on the backend and we need to have can_apply_locally()
     // be false, and we want "Search results" in the tab bar.
     operators = [{operator: "search", operand: "stop_word", negated: true}];
     filter = new Filter(operators);
