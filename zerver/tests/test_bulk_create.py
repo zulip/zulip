@@ -18,6 +18,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserMessage,
     UserProfile,
 )
 
@@ -154,7 +155,7 @@ class TestBulkCreateReactions(TestCase):
         self.assertFalse(MockSubscription.objects.filter.called)
 
     @patch('zerver.lib.bulk_create.random')
-    @patch('zerver.lib.bulk_create.UserProfile')
+    @patch('zerver.lib.bulk_create.UserMessage')
     def test_query_for_personal_message_users(
             self,
             MockUserProfile: MagicMock,
@@ -165,13 +166,13 @@ class TestBulkCreateReactions(TestCase):
         mock_random.choice = random.choice
         mock_random.random.side_effect = [0, 1, 1, 1, 1, 1]
         _add_random_reactions_to_message(message, emojis, users)
-        self.assertTrue(MockUserProfile.objects.get.called)
+        self.assertTrue(MockUserProfile.objects.filter.called)
 
     @patch('zerver.lib.bulk_create.random')
-    @patch('zerver.lib.bulk_create.Subscription')
+    @patch('zerver.lib.bulk_create.UserMessage')
     def test_query_for_stream_message_users(
             self,
-            MockSubscription: MagicMock,
+            MockUserMessage: MagicMock,
             mock_random: MagicMock) -> None:
         message = self.stream_message
         emojis = DEFAULT_EMOJIS
@@ -179,13 +180,13 @@ class TestBulkCreateReactions(TestCase):
         mock_random.choice = random.choice
         mock_random.random.side_effect = [0, 1, 1, 1, 1, 1]
         _add_random_reactions_to_message(message, emojis, users)
-        self.assertTrue(MockSubscription.objects.filter.called)
+        self.assertTrue(MockUserMessage.objects.filter.called)
 
     @patch('zerver.lib.bulk_create.random')
-    @patch('zerver.lib.bulk_create.Subscription')
+    @patch('zerver.lib.bulk_create.UserMessage')
     def test_query_for_huddle_message_users(
             self,
-            MockSubscription: MagicMock,
+            MockUserMessage: MagicMock,
             mock_random: MagicMock) -> None:
         message = self.huddle_message
         emojis = DEFAULT_EMOJIS
@@ -193,22 +194,22 @@ class TestBulkCreateReactions(TestCase):
         mock_random.choice = random.choice
         mock_random.random.side_effect = [0, 1, 1, 1, 1, 1]
         _add_random_reactions_to_message(message, emojis, users)
-        self.assertTrue(MockSubscription.objects.filter.called)
+        self.assertTrue(MockUserMessage.objects.filter.called)
 
     @patch('zerver.lib.bulk_create.random')
-    @patch('zerver.lib.bulk_create.Subscription')
+    @patch('zerver.lib.bulk_create.UserMessage')
     def test_early_exit_if_no_users(
             self,
-            MockSubscription: MagicMock,
+            MockUserMessage: MagicMock,
             mock_random: MagicMock) -> None:
         message = self.stream_message
         emojis = DEFAULT_EMOJIS
         users = None
         mock_random.choice = random.choice
         mock_random.random.side_effect = [0, 1, 1, 1, 1, 1]
-        MockSubscription.objects.filter.return_value = []
+        MockUserMessage.objects.filter.return_value = UserMessage.objects.none()
         reactions = _add_random_reactions_to_message(message, emojis, users)
-        self.assertTrue(MockSubscription.objects.filter.called)
+        self.assertTrue(MockUserMessage.objects.filter.called)
         self.assertEqual(reactions, [])
 
     @patch('zerver.lib.bulk_create.random')

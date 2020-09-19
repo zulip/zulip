@@ -1,6 +1,6 @@
 import random
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple, Union
 
 from django.db.models import Model
 
@@ -15,6 +15,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserMessage,
     UserProfile,
 )
 
@@ -215,18 +216,13 @@ def _add_random_reactions_to_message(
     if not compute_next_reaction:
         return []
 
-    if not users:
-        if message.recipient.type == Recipient.PERSONAL:
-            users = [
-                UserProfile.objects.get(recipient__id=message.recipient.id),
-                message.sender]
-        else:
-            # Streams and huddles
-            users = [
-                subscription.user_profile
-                for subscription in Subscription.objects.filter(
-                    recipient=message.recipient)]
-        if not users:
+    if users is None:
+        users = []
+    user_ids: Sequence[int] = [user.id for user in users]
+    if not user_ids:
+        user_ids = UserMessage.objects.filter(message=message) \
+            .values_list("user_profile_id", flat=True)
+        if not user_ids:
             return []
 
     emojis = list(emojis)
@@ -236,12 +232,12 @@ def _add_random_reactions_to_message(
         # We do this O(users) operation only if we've decided to do a
         # reaction, to avoid performance issues with large numbers of
         # users.
-        users_available = set([user.id for user in users])
+        users_available = set(user_ids)
 
         (emoji_name, emoji_code) = random.choice(emojis)
         while True:
             # Handle corner case where all the users have reacted.
-            if len(users_available) == 0:
+            if not users_available:
                 break
 
             user_id = random.choice(list(users_available))
