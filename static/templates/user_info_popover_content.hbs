@@ -35,7 +35,7 @@
         {{#if is_bot}}
             {{#if bot_owner}}
                 <li>{{#tr this}}Owner{{/tr}}:
-                    <span class="bot-owner-name" data-user-id='{{ bot_owner.user_id }}'>
+                    <span class="bot-owner-name view_user_profile" data-user-id='{{ bot_owner.user_id }}'>
                         {{bot_owner.full_name}}
                     </span>
                 </li>
@@ -92,7 +92,7 @@
     <hr>
     {{#if show_user_profile}}
     <li>
-        <a tabindex="0" class="view_user_profile">
+        <a tabindex="0" class="view_full_user_profile">
             {{#if is_me}}
                 <i class="fa fa-user" aria-hidden="true"></i> {{#tr this}}View your profile{{/tr}}
             {{else}}
