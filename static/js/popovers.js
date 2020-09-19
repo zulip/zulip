@@ -349,7 +349,7 @@ exports.show_user_profile = function (user) {
     );
 };
 
-function get_user_info_popover_items() {
+function get_user_info_popover_for_message_items() {
     if (!current_message_info_popover_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return;
@@ -687,7 +687,7 @@ exports.hide_user_sidebar_popover = function () {
 function focus_user_info_popover_item() {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
-    const items = get_user_info_popover_items();
+    const items = get_user_info_popover_for_message_items();
     exports.focus_first_popover_item(items);
 }
 
@@ -705,8 +705,8 @@ exports.user_sidebar_popover_handle_keyboard = function (key) {
     exports.popover_items_handle_keyboard(key, items);
 };
 
-exports.user_info_popover_handle_keyboard = function (key) {
-    const items = get_user_info_popover_items();
+exports.user_info_popover_for_message_handle_keyboard = function (key) {
+    const items = get_user_info_popover_for_message_items();
     exports.popover_items_handle_keyboard(key, items);
 };
 
