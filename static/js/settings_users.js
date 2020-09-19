@@ -583,16 +583,6 @@ function handle_reactivation(tbody, status_field) {
     });
 }
 
-function handle_bot_owner_profile(tbody) {
-    tbody.on("click", ".user_row .view_user_profile", (e) => {
-        const owner_id = parseInt($(e.target).attr("data-user-id"), 10);
-        const owner = people.get_by_user_id(owner_id);
-        popovers.show_user_info_popover(e.target, owner);
-        e.stopPropagation();
-        e.preventDefault();
-    });
-}
-
 function handle_human_form(tbody, status_field) {
     tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
@@ -686,7 +676,6 @@ section.bots.handle_events = () => {
     const tbody = $("#admin_bots_table").expectOne();
     const status_field = $("#bot-field-status").expectOne();
 
-    handle_bot_owner_profile(tbody);
     handle_bot_deactivation(tbody, status_field);
     handle_reactivation(tbody, status_field);
     handle_bot_form(tbody, status_field);
