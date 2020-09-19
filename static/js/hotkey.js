@@ -575,7 +575,7 @@ exports.process_hotkey = function (e, hotkey) {
         }
 
         if (popovers.message_info_popped()) {
-            popovers.user_info_popover_handle_keyboard(event_name);
+            popovers.user_info_popover_for_message_handle_keyboard(event_name);
             return true;
         }
 
