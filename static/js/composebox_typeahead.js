@@ -383,12 +383,20 @@ exports.slash_commands = [
         name: "night",
     },
     {
+        text: i18n.t("/ping (Test server round-trip time)"),
+        name: "ping",
+    },
+    {
         text: i18n.t("/poll Where should we go to lunch today? (Create a poll)"),
         name: "poll",
     },
     {
         text: i18n.t("/settings (Load settings menu)"),
         name: "settings",
+    },
+    {
+        text: i18n.t("/todo (Create a todo list)"),
+        name: "todo",
     },
 ];
 
