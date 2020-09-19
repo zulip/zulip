@@ -893,7 +893,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $("body").on("click", ".info_popover_actions .view_user_profile", (e) => {
+    $("body").on("click", ".info_popover_actions .view_full_user_profile", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const user = people.get_by_user_id(user_id);
         exports.show_user_profile(user);
@@ -913,10 +913,12 @@ exports.register_click_handlers = function () {
         });
     });
 
-    $("body").on("click", ".bot-owner-name", (e) => {
+    $("body").on("click", ".view_user_profile", (e) => {
         const user_id = parseInt($(e.target).attr("data-user-id"), 10);
         const user = people.get_by_user_id(user_id);
         exports.show_user_info_popover(e.target, user);
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     $("body").on("click", "#user-profile-modal #name #edit-button", () => {
