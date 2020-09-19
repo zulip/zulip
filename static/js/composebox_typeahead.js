@@ -355,23 +355,23 @@ function should_show_custom_query(query, items) {
 
 exports.slash_commands = [
     {
-        text: i18n.t("/dark (Toggle night mode)"),
+        text: i18n.t("/dark (Switch to night mode)"),
         name: "dark",
     },
     {
-        text: i18n.t("/day (Toggle day mode)"),
+        text: i18n.t("/day (Switch to day mode)"),
         name: "day",
     },
     {
-        text: i18n.t("/fixed-width (Toggle fixed width mode)"),
+        text: i18n.t("/fixed-width (Switch to fixed width mode)"),
         name: "fixed-width",
     },
     {
-        text: i18n.t("/fluid-width (Toggle fluid width mode)"),
+        text: i18n.t("/fluid-width (Switch to fluid width mode)"),
         name: "fluid-width",
     },
     {
-        text: i18n.t("/light (Toggle day mode)"),
+        text: i18n.t("/light (Switch to day mode)"),
         name: "light",
     },
     {
@@ -379,7 +379,7 @@ exports.slash_commands = [
         name: "me",
     },
     {
-        text: i18n.t("/night (Toggle night mode)"),
+        text: i18n.t("/night (Switch to night mode)"),
         name: "night",
     },
     {
