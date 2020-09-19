@@ -353,10 +353,27 @@ function should_show_custom_query(query, items) {
     return !matched;
 }
 
+// Prioritize top 5 shown in typeahead, keeping each group sorted manually.
 exports.slash_commands = [
     {
         text: i18n.t("/dark (Switch to night mode)"),
         name: "dark",
+    },
+    {
+        text: i18n.t("/me is excited (Display action text)"),
+        name: "me",
+    },
+    {
+        text: i18n.t("/poll Where should we go to lunch today? (Create a poll)"),
+        name: "poll",
+    },
+    {
+        text: i18n.t("/settings (Load settings menu)"),
+        name: "settings",
+    },
+    {
+        text: i18n.t("/todo (Create a todo list)"),
+        name: "todo",
     },
     {
         text: i18n.t("/day (Switch to day mode)"),
@@ -375,28 +392,12 @@ exports.slash_commands = [
         name: "light",
     },
     {
-        text: i18n.t("/me is excited (Display action text)"),
-        name: "me",
-    },
-    {
         text: i18n.t("/night (Switch to night mode)"),
         name: "night",
     },
     {
         text: i18n.t("/ping (Test server round-trip time)"),
         name: "ping",
-    },
-    {
-        text: i18n.t("/poll Where should we go to lunch today? (Create a poll)"),
-        name: "poll",
-    },
-    {
-        text: i18n.t("/settings (Load settings menu)"),
-        name: "settings",
-    },
-    {
-        text: i18n.t("/todo (Create a todo list)"),
-        name: "todo",
     },
 ];
 
