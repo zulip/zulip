@@ -142,7 +142,14 @@ exports.enter_fixed_mode = function () {
 
 exports.process = function (message_content) {
     const content = message_content.trim();
-    const [command] = content.split(" ");
+    const [command, ...raw_args] = content.split(" ");
+    const args = raw_args.filter((x) => x !== "");
+
+    // This is handled in rendering logic, but can be validated here
+    if (command === "/me") {
+        // Avoid sending '/me' as content (TODO: inform user why nothing happened)
+        return args.length === 0;
+    }
 
     if (command === "/ping") {
         const start_time = new Date();
