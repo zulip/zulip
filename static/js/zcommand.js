@@ -142,12 +142,13 @@ exports.enter_fixed_mode = function () {
 
 exports.process = function (message_content) {
     const content = message_content.trim();
+    const [command] = content.split(" ");
 
-    if (content === "/ping") {
+    if (command === "/ping") {
         const start_time = new Date();
 
         exports.send({
-            command: content,
+            command: command,
             on_success() {
                 const end_time = new Date();
                 let diff = end_time - start_time;
@@ -160,28 +161,28 @@ exports.process = function (message_content) {
     }
 
     const day_commands = ["/day", "/light"];
-    if (day_commands.includes(content)) {
+    if (day_commands.includes(command)) {
         exports.enter_day_mode();
         return true;
     }
 
     const night_commands = ["/night", "/dark"];
-    if (night_commands.includes(content)) {
+    if (night_commands.includes(command)) {
         exports.enter_night_mode();
         return true;
     }
 
-    if (content === "/fluid-width") {
+    if (command === "/fluid-width") {
         exports.enter_fluid_mode();
         return true;
     }
 
-    if (content === "/fixed-width") {
+    if (command === "/fixed-width") {
         exports.enter_fixed_mode();
         return true;
     }
 
-    if (content === "/settings") {
+    if (command === "/settings") {
         hashchange.go_to_location("settings/your-account");
         return true;
     }
