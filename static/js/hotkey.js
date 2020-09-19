@@ -192,6 +192,11 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
+    if (popovers.any_active()) {
+        popovers.hide_all();
+        return true;
+    }
+
     if (overlays.is_modal_open()) {
         overlays.close_active_modal();
         return true;
@@ -250,11 +255,6 @@ exports.process_escape_key = function (e) {
         // We pressed Esc and something was focused, and the composebox
         // wasn't open. In that case, we should blur the input.
         $("input:focus,textarea:focus").trigger("blur");
-        return true;
-    }
-
-    if (popovers.any_active()) {
-        popovers.hide_all();
         return true;
     }
 
