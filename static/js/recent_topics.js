@@ -4,6 +4,7 @@ const render_recent_topic_row = require("../templates/recent_topic_row.hbs");
 const render_recent_topics_filters = require("../templates/recent_topics_filters.hbs");
 const render_recent_topics_body = require("../templates/recent_topics_table.hbs");
 
+const {localstorage} = require("./localstorage");
 const people = require("./people");
 
 const topics = new Map(); // Key is stream-id:topic.
@@ -11,7 +12,6 @@ let topics_widget;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
-let filters = new Set();
 
 // Use this to set the focused element.
 //
@@ -34,6 +34,19 @@ let col_focus = 1;
 // increased when we add new actions, or rethought if we add optional
 // actions that only appear in some rows.
 const MAX_SELECTABLE_COLS = 4;
+
+// we use localstorage to persist the recent topic filters
+const ls_key = "recent_topic_filters";
+const ls = localstorage();
+
+let filters = new Set();
+exports.save_filters = function () {
+    ls.set(ls_key, Array.from(filters));
+};
+
+exports.load_filters = function () {
+    filters = new Set(ls.get(ls_key));
+};
 
 function set_default_focus() {
     // If at any point we are confused about the currently
@@ -338,11 +351,14 @@ exports.set_filter = function (filter) {
     } else {
         filters.add(filter);
     }
+
+    exports.save_filters();
 };
 
 function show_selected_filters() {
     // Add `btn-selected-filter` to the buttons to show
     // which filters are applied.
+    exports.load_filters();
     if (filters.size === 0) {
         $("#recent_topics_filter_buttons")
             .find('[data-filter="all"]')

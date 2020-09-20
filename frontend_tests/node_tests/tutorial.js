@@ -113,9 +113,10 @@ const messages = {
 // This is an example of a deep unit test, where our dependencies
 // are easy to test.  Start by requiring the dependencies:
 zrequire("recent_senders");
+zrequire("localstorage");
 const unread = zrequire("unread");
 const stream_topic_history = zrequire("stream_topic_history");
-zrequire("recent_topics");
+const recent_topics = zrequire("recent_topics");
 
 // And finally require the module that we will test directly:
 const message_store = zrequire("message_store");
