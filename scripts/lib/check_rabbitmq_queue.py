@@ -38,23 +38,15 @@ states = {
     3: "UNKNOWN",
 }
 
-MAX_SECONDS_TO_CLEAR_FOR_BURSTS: DefaultDict[str, int] = defaultdict(
-    lambda: 120,
-    digest_emails=600,
-)
-MAX_SECONDS_TO_CLEAR_NORMAL: DefaultDict[str, int] = defaultdict(
+MAX_SECONDS_TO_CLEAR: DefaultDict[str, int] = defaultdict(
     lambda: 30,
     digest_emails=1200,
     missedmessage_mobile_notifications=120,
 )
-CRITICAL_SECONDS_TO_CLEAR_FOR_BURSTS: DefaultDict[str, int] = defaultdict(
-    lambda: 240,
-    digest_emails=1200,
-)
-CRITICAL_SECONDS_TO_CLEAR_NORMAL: DefaultDict[str, int] = defaultdict(
+CRITICAL_SECONDS_TO_CLEAR: DefaultDict[str, int] = defaultdict(
     lambda: 60,
     missedmessage_mobile_notifications=180,
-    digest_emails=600,
+    digest_emails=1800,
 )
 
 def analyze_queue_stats(queue_name: str, stats: Dict[str, Any],
@@ -96,34 +88,15 @@ def analyze_queue_stats(queue_name: str, stats: Dict[str, Any],
                     message='')
 
     expected_time_to_clear_backlog = current_size * average_consume_time
-    time_since_emptied = now - stats['queue_last_emptied_timestamp']
-    if time_since_emptied > max(300, CRITICAL_SECONDS_TO_CLEAR_FOR_BURSTS[queue_name]):
-        # We need the max() expression in case the rules for the queue
-        # permit longer processing times than 300s - to prevent
-        # incorrectly throwing an error by changing the classification
-        # of the the backlog from "burst" to "not burst" after 300s,
-        # while the worker is still processing it and staying below
-        # the CRITICAL threshold.
-        if expected_time_to_clear_backlog > MAX_SECONDS_TO_CLEAR_NORMAL[queue_name]:
-            if expected_time_to_clear_backlog > CRITICAL_SECONDS_TO_CLEAR_NORMAL[queue_name]:
-                status = CRITICAL
-            else:
-                status = WARNING
+    if expected_time_to_clear_backlog > MAX_SECONDS_TO_CLEAR[queue_name]:
+        if expected_time_to_clear_backlog > CRITICAL_SECONDS_TO_CLEAR[queue_name]:
+            status = CRITICAL
+        else:
+            status = WARNING
 
-            return dict(status=status,
-                        name=queue_name,
-                        message=f'clearing the backlog will take too long: {expected_time_to_clear_backlog}s, size: {current_size}')
-    else:
-        # We slept recently, so treat this as a burst.
-        if expected_time_to_clear_backlog > MAX_SECONDS_TO_CLEAR_FOR_BURSTS[queue_name]:
-            if expected_time_to_clear_backlog > CRITICAL_SECONDS_TO_CLEAR_FOR_BURSTS[queue_name]:
-                status = CRITICAL
-            else:
-                status = WARNING
-
-            return dict(status=status,
-                        name=queue_name,
-                        message=f'clearing the burst will take too long: {expected_time_to_clear_backlog}s, size: {current_size}')
+        return dict(status=status,
+                    name=queue_name,
+                    message=f'clearing the backlog will take too long: {expected_time_to_clear_backlog}s, size: {current_size}')
 
     return dict(status=OK,
                 name=queue_name,
