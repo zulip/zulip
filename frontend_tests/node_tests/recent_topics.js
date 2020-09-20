@@ -2,6 +2,7 @@
 
 zrequire("message_util");
 zrequire("narrow_state");
+zrequire("localstorage");
 
 const noop = () => {};
 set_global(
@@ -95,6 +96,22 @@ set_global("list_render", {
 });
 set_global("drafts", {
     update_draft: noop,
+});
+
+const ls_container = new Map();
+set_global("localStorage", {
+    getItem(key) {
+        return ls_container.get(key);
+    },
+    setItem(key, val) {
+        ls_container.set(key, val);
+    },
+    removeItem(key) {
+        ls_container.delete(key);
+    },
+    clear() {
+        ls_container.clear();
+    },
 });
 
 // Custom Data
