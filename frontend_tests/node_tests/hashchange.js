@@ -19,6 +19,7 @@ const hashchange = zrequire("hashchange");
 const stream_data = zrequire("stream_data");
 zrequire("navigate");
 zrequire("recent_topics");
+recent_topics.show = () => {};
 
 set_global("search", {
     update_button_visibility: () => {},
@@ -38,6 +39,9 @@ const overlays = set_global("overlays", {});
 const settings = set_global("settings", {});
 const subs = set_global("subs", {});
 const ui_util = set_global("ui_util", {});
+set_global("top_left_corner", {
+    handle_narrow_deactivated: () => {},
+});
 
 run_test("operators_round_trip", () => {
     let operators;
@@ -161,7 +165,7 @@ function test_helper() {
 run_test("hash_interactions", () => {
     const helper = test_helper();
 
-    window.location.hash = "#";
+    window.location.hash = "#all_messages";
 
     helper.clear_events();
     hashchange.initialize();

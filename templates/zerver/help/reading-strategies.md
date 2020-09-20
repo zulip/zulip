@@ -45,10 +45,10 @@ magnifying glass next to `STREAMS`, or by using the autocomplete in
 If you're all caught up, it can be useful to have a single place to keep
 track of all messages coming in.
 
-* Click on **All messages** in the upper left, or hit `Esc`.
+* Click on **All messages** in the upper left, or hit `a`.
 
 * You can use `s` (narrow to stream) or `S` (narrow to topic) to zoom in,
-  and `Esc` to get back to All messages.
+  and `a` to get back to All messages.
 
 ## Starring messages for later
 

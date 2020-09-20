@@ -78,6 +78,8 @@ async function test_edit_private_message(page: Page): Promise<void> {
 
 async function edit_tests(page: Page): Promise<void> {
     await common.log_in(page);
+    await page.click(".top_left_all_messages");
+    await page.waitForSelector("#zhome .message_row", {visible: true});
 
     await test_stream_message_edit(page);
     await test_edit_message_with_slash_me(page);

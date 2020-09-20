@@ -98,6 +98,7 @@ const keypress_mappings = {
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
     83: {name: "narrow_by_topic", message_view_only: true}, //'S'
     86: {name: "view_selected_stream", message_view_only: false}, //'V'
+    97: {name: "all_messages", message_view_only: true}, // 'a'
     99: {name: "compose", message_view_only: true}, // 'c'
     100: {name: "open_drafts", message_view_only: true}, // 'd'
     101: {name: "edit_message", message_view_only: true}, // 'e'
@@ -477,7 +478,7 @@ exports.process_hotkey = function (e, hotkey) {
         case "tab":
         case "shift_tab":
             if (
-                window.location.hash === "#recent_topics" &&
+                ["#recent_topics", "#", ""].includes(window.location.hash) &&
                 !popovers.any_active() &&
                 !overlays.is_active()
             ) {
@@ -734,6 +735,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case "open_recent_topics":
             hashchange.go_to_location("#");
+            return true;
+        case "all_messages":
+            hashchange.go_to_location("#all_messages");
             return true;
     }
 

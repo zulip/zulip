@@ -76,7 +76,7 @@ below, and add more to your repertoire as needed.
 
 * **Cycle between stream narrows**: `A` (previous) and `D` (next)
 
-* **Narrow to all messages**: `Esc` or `Ctrl` + `[` — Shows all unmuted messages.
+* **Narrow to all messages**: `a` — Shows all unmuted messages.
 
 * **Narrow to current compose box recipient**: `Ctrl` + `.`
 
@@ -139,8 +139,7 @@ title="thumbs up"/>**: `+`
 
 ## Recent topics
 
-* **View recent topics**: `t`
-* **Hide recent topics**: `Esc`
+* **View recent topics**: `t` or `Esc` or `Ctrl` + `[`
 
 Keyboard navigation (e.g. arrow keys) works as expected.
 Use `Enter` to engage with elements.

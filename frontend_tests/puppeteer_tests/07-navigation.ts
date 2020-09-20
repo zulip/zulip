@@ -5,7 +5,7 @@ import type {Page} from "puppeteer";
 import common from "../puppeteer_lib/common";
 
 async function wait_for_tab(page: Page, tab: string): Promise<void> {
-    const tab_slector = `#${CSS.escape(tab)}.tab-pane.active`;
+    const tab_slector = `#${CSS.escape(tab)}.tab-pane`;
     await page.waitForSelector(tab_slector, {visible: true});
 }
 
@@ -89,7 +89,7 @@ async function navigation_tests(page: Page): Promise<void> {
     await wait_for_tab(page, "message_feed_container");
 
     await navigate_to_subscriptions(page);
-    await navigate_to(page, "", "message_feed_container");
+    await navigate_to(page, "all_messages", "message_feed_container");
     await navigate_to_settings(page);
     await navigate_to(page, "narrow/is/private", "message_feed_container");
     await navigate_to_subscriptions(page);

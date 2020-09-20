@@ -65,6 +65,7 @@ function activate_home_tab() {
     const coming_from_recent_topics = maybe_hide_recent_topics();
     ui_util.change_tab_to("#message_feed_container");
     narrow.deactivate(coming_from_recent_topics);
+    top_left_corner.handle_narrow_deactivated();
     floating_recipient_bar.update();
     search.update_button_visibility();
     // We need to maybe scroll to the selected message
@@ -111,7 +112,7 @@ function do_hashchange_normal(from_reload) {
             if (operators === undefined) {
                 // If the narrow URL didn't parse, clear
                 // window.location.hash and send them to the home tab
-                set_hash("");
+                set_hash("#all_messages");
                 activate_home_tab();
                 return false;
             }
@@ -133,10 +134,11 @@ function do_hashchange_normal(from_reload) {
         }
         case "":
         case "#":
-            activate_home_tab();
-            break;
         case "#recent_topics":
             recent_topics.show();
+            break;
+        case "#all_messages":
+            activate_home_tab();
             break;
         case "#keyboard-shortcuts":
         case "#message-formatting":

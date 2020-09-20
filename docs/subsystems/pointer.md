@@ -53,7 +53,7 @@ streams.)
 
 ### Unnarrow: previous sequence
 
-When you unnarrow using e.g. the escape key, you will automatically be
+When you unnarrow using e.g. the `a`  key, you will automatically be
 taken to the same message that was selected in the All messages view before
 you narrowed, unless in the narrow you read new messages, in which
 case you will be jumped forward to the first unread and non-muted

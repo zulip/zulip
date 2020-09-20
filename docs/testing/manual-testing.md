@@ -51,7 +51,7 @@ Try using all the navigation hotkeys:
 
 Try narrowing from the message view:
 - Hotkeys
-    - use Esc to go to All messages
+    - use a to go to All messages
     - use s to narrow to a stream (select message first
       and verify in sidebar)
     - use S to narrow to the topic (and verify in sidebar)
@@ -63,7 +63,7 @@ Try narrowing from the message view:
     - narrow to a group PM
 - Click on the Zulip logo
     - narrow to a topic
-    - click on the Zulip logo (and verify you're in the All messages view)
+    - click on the Zulip logo (and verify you're in the Recent topics view)
 
 ### Messagebox ###
 
