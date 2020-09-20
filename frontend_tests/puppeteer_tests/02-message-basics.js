@@ -76,7 +76,7 @@ async function un_narrow(page) {
     if (await page.evaluate(() => $(".message_comp").is(":visible"))) {
         await page.keyboard.press("Escape");
     }
-    await page.keyboard.press("Escape");
+    await page.click(".top_left_all_messages");
     await page.waitForSelector("#zhome .message_row", {visible: true});
     assert.strictEqual(await page.title(), "home - Zulip Dev - Zulip");
 }
@@ -405,6 +405,8 @@ async function test_users_search(page) {
 
 async function message_basic_tests(page) {
     await common.log_in(page);
+    await page.click(".top_left_all_messages");
+    await page.waitForSelector("#zhome .message_row", {visible: true});
 
     console.log("Sending messages");
     await common.send_multiple_messages(page, [

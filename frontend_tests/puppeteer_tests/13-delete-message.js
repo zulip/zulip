@@ -13,6 +13,8 @@ async function click_delete_and_return_last_msg_id(page) {
 
 async function delete_message_test(page) {
     await common.log_in(page);
+    await page.click(".top_left_all_messages");
+    await page.waitForSelector("#zhome .message_row", {visible: true});
     const messages_quantitiy = await page.evaluate(() => $("#zhome .message_row").length);
     const last_message_id = await click_delete_and_return_last_msg_id(page);
 

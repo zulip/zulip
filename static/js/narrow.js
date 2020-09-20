@@ -767,7 +767,7 @@ function handle_post_narrow_deactivate_processes() {
 
 exports.deactivate = function (coming_from_recent_topics) {
     // NOTE: Never call this function independently,
-    // always use hashchange.go_to_location("") to
+    // always use hashchange.go_to_location("#all_messages") to
     // activate All message narrow.
     /*
       Switches current_msg_list from narrowed_msg_list to

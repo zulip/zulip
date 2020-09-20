@@ -503,13 +503,6 @@ exports.change_focused_element = function (e, input_key) {
     // handle the key.
     const $elem = $(e.target);
 
-    if ($("#recent_topics_table").find(":focus").length === 0) {
-        // This is a failsafe to return focus back to recent topics overlay,
-        // in case it loses focus due to some unknown reason.
-        set_default_focus();
-        return false;
-    }
-
     if (e.target.id === "recent_topics_search") {
         // Since the search box a text area, we want the browser to handle
         // Left/Right and selection within the widget; but if the user

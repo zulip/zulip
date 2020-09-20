@@ -2,8 +2,8 @@
     <div class="narrows_panel">
         <ul id="global_filters" class="filters">
             {# Special-case this link so we don't actually go to page top. #}
-            <li class="top_left_all_messages top_left_row active-filter" title="{{ _('All messages') }} (Esc)">
-                <a href="#" class="home-link">
+            <li class="top_left_all_messages top_left_row" title="{{ _('All messages') }} (a)">
+                <a href="#all_messages" class="home-link">
                     <span class="filter-icon">
                         <i class="fa fa-home" aria-hidden="true"></i>
                     </span>
@@ -57,7 +57,7 @@
                 <span class="arrow starred-messages-sidebar-menu-icon"><i class="zulip-icon ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
             <li class="top_left_recent_topics top_left_row">
-                <a href="#recent_topics">
+                <a href="#">
                     <span class="filter-icon">
                         <i class="fa fa-clock-o" aria-hidden="true"></i>
                     </span>

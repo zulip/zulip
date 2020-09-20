@@ -119,6 +119,8 @@ async function test_copying_messages_from_several_topics(page) {
 
 async function copy_paste_test(page) {
     await common.log_in(page);
+    await page.click(".top_left_all_messages");
+    await page.waitForSelector("#zhome .message_row", {visible: true});
 
     await common.send_multiple_messages(page, [
         {stream: "Verona", topic: "copy-paste-topic #1", content: "copy paste test A"},

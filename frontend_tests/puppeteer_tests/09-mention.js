@@ -6,6 +6,8 @@ const common = require("../puppeteer_lib/common");
 
 async function test_mention(page) {
     await common.log_in(page);
+    await page.click(".top_left_all_messages");
+    await page.waitForSelector("#zhome .message_row", {visible: true});
     await page.keyboard.press("KeyC");
     await page.waitForSelector("#compose", {visible: true});
 

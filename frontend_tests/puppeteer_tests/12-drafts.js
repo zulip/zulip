@@ -247,6 +247,8 @@ async function test_delete_draft_on_sending(page) {
 
 async function drafts_test(page) {
     await common.log_in(page);
+    await page.click(".top_left_all_messages");
+    await page.waitForSelector("#zhome .message_row", {visible: true});
 
     await test_empty_drafts(page);
 
