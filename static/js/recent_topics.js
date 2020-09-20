@@ -13,7 +13,6 @@ let topics_widget;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
-let filters = new Set();
 
 // Use this to set the focused element.
 //
@@ -36,6 +35,19 @@ let col_focus = 1;
 // increased when we add new actions, or rethought if we add optional
 // actions that only appear in some rows.
 const MAX_SELECTABLE_COLS = 4;
+
+// we use localstorage to persist the recent topic filters
+const ls_key = "recent_topic_filters";
+const ls = localstorage();
+
+let filters = new Set();
+exports.save_filters = function () {
+    ls.set(ls_key, Array.from(filters));
+};
+
+exports.load_filters = function () {
+    filters = new Set(ls.get(ls_key));
+};
 
 function set_default_focus() {
     // If at any point we are confused about the currently
@@ -338,6 +350,8 @@ exports.set_filter = function (filter) {
     } else {
         filters.add(filter);
     }
+
+    exports.save_filters();
 };
 
 function show_selected_filters() {
@@ -434,6 +448,8 @@ exports.complete_rerender = function () {
 };
 
 exports.launch = function () {
+    exports.load_filters();
+
     overlays.open_overlay({
         name: "recent_topics",
         overlay: $("#recent_topics_overlay"),

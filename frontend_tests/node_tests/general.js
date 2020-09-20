@@ -101,6 +101,7 @@ alert_words.process_message = noop;
 zrequire("recent_senders");
 zrequire("unread");
 zrequire("stream_topic_history");
+zrequire("localstorage");
 zrequire("recent_topics");
 zrequire("overlays");
 

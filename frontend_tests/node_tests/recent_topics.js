@@ -1,6 +1,7 @@
 "use strict";
 
 zrequire("message_util");
+zrequire("localstorage");
 
 const noop = () => {};
 set_global(
@@ -71,6 +72,22 @@ set_global("list_render", {
     },
     hard_redraw: noop,
     render_item: (item) => list_render.modifier(item),
+});
+
+const ls_container = new Map();
+set_global("localStorage", {
+    getItem(key) {
+        return ls_container.get(key);
+    },
+    setItem(key, val) {
+        ls_container.set(key, val);
+    },
+    removeItem(key) {
+        ls_container.delete(key);
+    },
+    clear() {
+        ls_container.clear();
+    },
 });
 
 // Custom Data
