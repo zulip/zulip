@@ -91,6 +91,7 @@ set -x
 
 case " $os_id $os_id_like " in
     *' debian '*)
+        apt-get update
         apt-get install -y certbot
         ;;
     *' rhel '*)
