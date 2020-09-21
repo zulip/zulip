@@ -461,7 +461,6 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         request.host = "zulip.testserver"
 
         request.body = '{}'
-        request.POST['payload'] = '{}'
         request.content_type = 'text/plain'
 
         with mock.patch('zerver.decorator.webhook_logger.exception') as mock_exception:
@@ -483,7 +482,6 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         request.host = "zulip.testserver"
 
         request.body = '{}'
-        request.POST['payload'] = '{}'
         request.content_type = 'text/plain'
 
         with mock.patch('zerver.decorator.webhook_unsupported_events_logger.exception') as mock_exception:

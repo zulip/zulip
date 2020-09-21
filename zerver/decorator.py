@@ -553,12 +553,10 @@ def authenticated_rest_api_view(
                 if webhook_client_name is not None:
                     if isinstance(err, UnsupportedWebhookEventType):
                         err.webhook_name = webhook_client_name
-                    request_body = request.POST.get('payload')
-                    if request_body is not None:
-                        log_exception_to_webhook_logger(
-                            summary=str(err),
-                            unsupported_event=isinstance(err, UnsupportedWebhookEventType),
-                        )
+                    log_exception_to_webhook_logger(
+                        summary=str(err),
+                        unsupported_event=isinstance(err, UnsupportedWebhookEventType),
+                    )
 
                 raise err
         return _wrapped_func_arguments
