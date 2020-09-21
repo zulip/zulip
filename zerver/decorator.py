@@ -188,7 +188,7 @@ class InvalidZulipServerKeyError(InvalidZulipServerError):
         return "Zulip server auth failure: key does not match role {role}"
 
 def validate_api_key(request: HttpRequest, role: Optional[str],
-                     api_key: str, is_webhook: bool=False,
+                     api_key: str, allow_webhook_access: bool=False,
                      client_name: Optional[str]=None) -> Union[UserProfile, "RemoteZulipServer"]:
     # Remove whitespace to protect users from trivial errors.
     api_key = api_key.strip()
@@ -213,7 +213,7 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
         return remote_server
 
     user_profile = access_user_by_api_key(request, api_key, email=role)
-    if user_profile.is_incoming_webhook and not is_webhook:
+    if user_profile.is_incoming_webhook and not allow_webhook_access:
         raise JsonableError(_("This API is not available to incoming webhook bots."))
 
     request.user = user_profile
@@ -285,7 +285,7 @@ def webhook_view(
         @wraps(view_func)
         def _wrapped_func_arguments(request: HttpRequest, api_key: str=REQ(),
                                     *args: object, **kwargs: object) -> HttpResponse:
-            user_profile = validate_api_key(request, None, api_key, is_webhook=True,
+            user_profile = validate_api_key(request, None, api_key, allow_webhook_access=True,
                                             client_name=full_webhook_client_name(webhook_client_name))
 
             if settings.RATE_LIMITING:
@@ -510,7 +510,7 @@ def authenticated_uploads_api_view(
 def authenticated_rest_api_view(
     *,
     webhook_client_name: Optional[str] = None,
-    is_webhook: bool = False,
+    allow_webhook_access: bool = False,
     skip_rate_limiting: bool = False,
 ) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
     def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
@@ -535,7 +535,7 @@ def authenticated_rest_api_view(
             try:
                 # profile is a Union[UserProfile, RemoteZulipServer]
                 profile = validate_api_key(request, role, api_key,
-                                           is_webhook=is_webhook or webhook_client_name is not None,
+                                           allow_webhook_access=allow_webhook_access or webhook_client_name is not None,
                                            client_name=full_webhook_client_name(webhook_client_name))
             except JsonableError as e:
                 return json_unauthorized(e.msg)
@@ -547,7 +547,7 @@ def authenticated_rest_api_view(
                     target_view_func = view_func
                 return target_view_func(request, profile, *args, **kwargs)
             except Exception as err:
-                if is_webhook or webhook_client_name is not None:
+                if allow_webhook_access or webhook_client_name is not None:
                     if isinstance(err, UnsupportedWebhookEventType) and webhook_client_name is not None:
                         err.webhook_name = webhook_client_name
                     request_body = request.POST.get('payload')
