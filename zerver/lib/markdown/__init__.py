@@ -276,8 +276,8 @@ def image_preview_enabled(message: Optional[Message]=None,
     return realm.inline_image_preview
 
 def list_of_tlds() -> List[str]:
-    # HACK we manually blacklist a few domains
-    blacklist = ['PY\n', "MD\n"]
+    # We manually blacklist a few domains that are common as file extensions.
+    blacklist = ['PY\n', "MD\n", "MOV\n", "ZIP\n"]
 
     # tlds-alpha-by-domain.txt comes from https://data.iana.org/TLD/tlds-alpha-by-domain.txt
     tlds_file = os.path.join(os.path.dirname(__file__), 'tlds-alpha-by-domain.txt')
