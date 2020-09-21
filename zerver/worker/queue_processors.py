@@ -180,7 +180,7 @@ class QueueProcessingWorker(ABC):
         self.recent_consume_times: MutableSequence[Tuple[int, float]] = deque(maxlen=50)
         self.consume_iteration_counter = 0
         self.idle = True
-        self.last_statistics_update_time = 0
+        self.last_statistics_update_time = 0.0
 
         self.update_statistics(0)
 
