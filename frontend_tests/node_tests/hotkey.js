@@ -299,7 +299,7 @@ run_test("basic_chars", () => {
     overlays.drafts_open = return_false;
     test_normal_typing();
     overlays.is_active = return_false;
-    assert_mapping("d", "drafts.launch");
+    assert_mapping("d", "hashchange.go_to_location");
 
     // Test opening and closing of recent topics
     overlays.is_active = return_true;
