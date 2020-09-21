@@ -1314,7 +1314,7 @@ class TestValidateApiKey(ZulipTestCase):
         api_key = get_api_key(self.webhook_bot)
         profile = validate_api_key(HostRequestMock(host="zulip.testserver"),
                                    self.webhook_bot.email, api_key,
-                                   is_webhook=True)
+                                   allow_webhook_access=True)
         self.assertEqual(profile.id, self.webhook_bot.id)
 
     def test_validate_api_key_if_email_is_case_insensitive(self) -> None:

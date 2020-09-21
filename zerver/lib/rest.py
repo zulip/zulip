@@ -138,7 +138,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             # Wrap function with decorator to authenticate the user before
             # proceeding
             target_function = authenticated_rest_api_view(
-                is_webhook='allow_incoming_webhooks' in view_flags,
+                allow_webhook_access='allow_incoming_webhooks' in view_flags,
             )(target_function)
         elif request.path.startswith("/json") and 'allow_anonymous_user_web' in view_flags:
             # For endpoints that support anonymous web access, we do that.
