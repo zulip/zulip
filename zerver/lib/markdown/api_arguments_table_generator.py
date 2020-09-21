@@ -91,8 +91,8 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         # TODO: Fix naming now that this no longer renders a table.
         table = []
         argument_template = """
-<div class="api-argument" id="parameter-{argument}">
-    <p class="api-argument-name"><strong>{argument}</strong> {required} {deprecated}<a href="#parameter-{argument}" class="api-argument-hover-link"><i class="fa fa-chain"></i></a></p>
+<div class="api-argument" id="{argument}">
+    <p class="api-argument-name"><strong>{argument}</strong> {required} {deprecated}<a href="#{argument}" class="api-argument-hover-link"><i class="fa fa-chain"></i></a></p>
     <div class="api-example">
         <span class="api-argument-example-label">Example</span>: <code>{example}</code>
     </div>
