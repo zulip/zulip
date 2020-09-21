@@ -513,6 +513,9 @@ def authenticated_rest_api_view(
     allow_webhook_access: bool = False,
     skip_rate_limiting: bool = False,
 ) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
+    if webhook_client_name is not None:
+        allow_webhook_access = True
+
     def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         @csrf_exempt
         @wraps(view_func)
@@ -535,7 +538,7 @@ def authenticated_rest_api_view(
             try:
                 # profile is a Union[UserProfile, RemoteZulipServer]
                 profile = validate_api_key(request, role, api_key,
-                                           allow_webhook_access=allow_webhook_access or webhook_client_name is not None,
+                                           allow_webhook_access=allow_webhook_access,
                                            client_name=full_webhook_client_name(webhook_client_name))
             except JsonableError as e:
                 return json_unauthorized(e.msg)
@@ -547,7 +550,7 @@ def authenticated_rest_api_view(
                     target_view_func = view_func
                 return target_view_func(request, profile, *args, **kwargs)
             except Exception as err:
-                if allow_webhook_access or webhook_client_name is not None:
+                if allow_webhook_access:
                     if isinstance(err, UnsupportedWebhookEventType) and webhook_client_name is not None:
                         err.webhook_name = webhook_client_name
                     request_body = request.POST.get('payload')
