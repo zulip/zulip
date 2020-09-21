@@ -739,7 +739,7 @@ exports.process_hotkey = function (e, hotkey) {
             narrow.narrow_to_next_pm_string();
             return true;
         case "open_drafts":
-            drafts.launch();
+            hashchange.go_to_location("drafts");
             return true;
         case "reply_message": // 'r': respond to message
             // Note that you can "Enter" to respond to messages as well,
