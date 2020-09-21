@@ -61,7 +61,7 @@ class RealmFilterTest(ZulipTestCase):
         self.assertIsNotNone(re.match(data['pattern'], '_code=123abcdZ'))
 
         data['pattern'] = r'PR (?P<id>[0-9]+)'
-        data['url_format_string'] = 'https://example.com/web#view_type=type&model=model&action=12345&id=%(id)s'
+        data['url_format_string'] = 'https://example.com/~user/web#view_type=type&model=model&action=12345&id=%(id)s'
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data['pattern'], 'PR 123'))
