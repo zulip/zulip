@@ -550,8 +550,8 @@ def authenticated_rest_api_view(
                     target_view_func = view_func
                 return target_view_func(request, profile, *args, **kwargs)
             except Exception as err:
-                if allow_webhook_access:
-                    if isinstance(err, UnsupportedWebhookEventType) and webhook_client_name is not None:
+                if webhook_client_name is not None:
+                    if isinstance(err, UnsupportedWebhookEventType):
                         err.webhook_name = webhook_client_name
                     request_body = request.POST.get('payload')
                     if request_body is not None:
