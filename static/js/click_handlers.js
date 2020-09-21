@@ -430,6 +430,11 @@ exports.initialize = function () {
         recent_topics.update_filters_view();
     });
 
+    $("body").on("click", "td.recent_topic_name", (e) => {
+        e.stopPropagation();
+        window.location.href = $(e.currentTarget).find("a").attr("href");
+    });
+
     // Search for all table rows (this combines stream & topic names)
     $("body").on(
         "keyup",
