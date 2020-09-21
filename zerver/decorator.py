@@ -299,6 +299,8 @@ def webhook_view(
                     # notify_bot_owner_about_invalid_json to a smaller file.
                     from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
                     notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
+                elif isinstance(err, JsonableError) and not isinstance(err, UnsupportedWebhookEventType):
+                    pass
                 else:
                     if isinstance(err, UnsupportedWebhookEventType):
                         err.webhook_name = webhook_client_name
@@ -550,14 +552,17 @@ def authenticated_rest_api_view(
                     target_view_func = view_func
                 return target_view_func(request, profile, *args, **kwargs)
             except Exception as err:
-                if webhook_client_name is not None:
-                    if isinstance(err, UnsupportedWebhookEventType):
-                        err.webhook_name = webhook_client_name
-                    log_exception_to_webhook_logger(
-                        summary=str(err),
-                        unsupported_event=isinstance(err, UnsupportedWebhookEventType),
-                    )
+                if not webhook_client_name:
+                    raise err
+                if isinstance(err, JsonableError) and not isinstance(err, UnsupportedWebhookEventType):  # nocoverage
+                    raise err
 
+                if isinstance(err, UnsupportedWebhookEventType):
+                    err.webhook_name = webhook_client_name
+                log_exception_to_webhook_logger(
+                    summary=str(err),
+                    unsupported_event=isinstance(err, UnsupportedWebhookEventType),
+                )
                 raise err
         return _wrapped_func_arguments
     return _wrapped_view_func
