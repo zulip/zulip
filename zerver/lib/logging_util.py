@@ -259,7 +259,7 @@ class ZulipWebhookFormatter(ZulipFormatter):
 
         header_message = header_text if header_text else None
 
-        setattr(record, 'user', f"{request.user.delivery_email} (request.user.realm.string_id)")
+        setattr(record, 'user', f"{request.user.delivery_email} ({request.user.realm.string_id})")
         setattr(record, 'client', request.client.name)
         setattr(record, 'url', request.META.get('PATH_INFO', None))
         setattr(record, 'content_type', request.content_type)
