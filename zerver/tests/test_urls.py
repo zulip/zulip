@@ -108,17 +108,6 @@ class URLResolutionTest(ZulipTestCase):
         module = importlib.import_module(module_name)
         self.assertTrue(hasattr(module, view), f"View {module_name}.{view} does not exist")
 
-    # Tests that all views in urls.v1_api_and_json_patterns exist
-    def test_rest_api_url_resolution(self) -> None:
-        for pattern in urls.v1_api_and_json_patterns:
-            callback_str = self.get_callback_string(pattern)
-            if callback_str and hasattr(pattern, "default_args"):
-                for func_string in pattern.default_args.values():
-                    if isinstance(func_string, tuple):
-                        func_string = func_string[0]
-                    module_name, view = func_string.rsplit('.', 1)
-                    self.check_function_exists(module_name, view)
-
     # Tests function-based views declared in urls.urlpatterns for
     # whether the function exists.  We at present do not test the
     # class-based views.

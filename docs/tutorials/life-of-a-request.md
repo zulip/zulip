@@ -140,9 +140,9 @@ yields a response with this HTTP header:
 
 We can see this reflected in [zproject/urls.py](https://github.com/zulip/zulip/blob/master/zproject/urls.py):
 
-    path('users', 'zerver.lib.rest.rest_dispatch',
-        {'GET': 'zerver.views.users.get_members_backend',
-         'PUT': 'zerver.views.users.create_user_backend'}),
+    path('users', zerver.lib.rest.rest_dispatch,
+        {'GET': zerver.views.users.get_members_backend,
+         'PUT': zerver.views.users.create_user_backend}),
 
 In this way, the API is partially self-documenting.
 
@@ -176,8 +176,8 @@ the request, and then figure out which view to show from that.
 In our example,
 
 ```
-{'GET': 'zerver.views.users.get_members_backend',
- 'PUT': 'zerver.views.users.create_user_backend'}
+{'GET': zerver.views.users.get_members_backend,
+ 'PUT': zerver.views.users.create_user_backend}
 ```
 
 is supplied as an argument to `rest_dispatch`, along with the

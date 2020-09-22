@@ -23,6 +23,7 @@ from django.http import HttpResponse
 from jsonschema.exceptions import ValidationError
 
 from zerver.lib.request import _REQ, arguments_map
+from zerver.lib.rest import rest_dispatch
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.openapi.markdown_extension import (
     generate_curl_example,
@@ -43,6 +44,7 @@ from zerver.openapi.openapi import (
     validate_request,
     validate_schema,
 )
+from zerver.tornado.views import get_events, get_events_backend
 
 TEST_ENDPOINT = '/messages/{message_id}'
 TEST_METHOD = 'patch'
@@ -544,10 +546,10 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         # for those using the rest_dispatch decorator; we then parse
         # its mapping of (HTTP_METHOD -> FUNCTION).
         for p in urlconf.v1_api_and_json_patterns + urlconf.v1_api_mobile_patterns:
-            if p.lookup_str != 'zerver.lib.rest.rest_dispatch':
+            if p.callback is not rest_dispatch:
                 # Endpoints not using rest_dispatch don't have extra data.
                 methods_endpoints = dict(
-                    GET=p.lookup_str,
+                    GET=p.callback,
                 )
             else:
                 methods_endpoints = p.default_args
@@ -555,13 +557,13 @@ do not match the types declared in the implementation of {function.__name__}.\n"
             # since the module was already imported and is now residing in
             # memory, we won't actually face any performance penalties here.
             for method, value in methods_endpoints.items():
-                if isinstance(value, str):
-                    function_name = value
+                if callable(value):
+                    function: Callable[..., HttpResponse] = value
                     tags: Set[str] = set()
                 else:
-                    function_name, tags = value
+                    function, tags = value
 
-                if function_name == 'zerver.tornado.views.get_events':
+                if function is get_events:
                     # Work around the fact that the registered
                     # get_events view function isn't where we do
                     # @has_request_variables.
@@ -569,11 +571,9 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                     # TODO: Make this configurable via an optional argument
                     # to has_request_variables, e.g.
                     # @has_request_variables(view_func_name="zerver.tornado.views.get_events")
-                    function_name = 'zerver.tornado.views.get_events_backend'
+                    function = get_events_backend
 
-                lookup_parts = function_name.split('.')
-                module = __import__('.'.join(lookup_parts[:-1]), {}, {}, [''])
-                function = getattr(module, lookup_parts[-1])
+                function_name = f"{function.__module__}.{function.__name__}"
 
                 # Our accounting logic in the `has_request_variables()`
                 # code means we have the list of all arguments

@@ -3,7 +3,6 @@ from typing import Any, Dict, cast
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.cache import add_never_cache_headers
-from django.utils.module_loading import import_string
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from zerver.decorator import (
@@ -90,9 +89,8 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         entry = supported_methods[method_to_use]
         if isinstance(entry, tuple):
             target_function, view_flags = entry
-            target_function = import_string(target_function)
         else:
-            target_function = import_string(supported_methods[method_to_use])
+            target_function = supported_methods[method_to_use]
             view_flags = set()
 
         # Set request._query for update_activity_user(), which is called

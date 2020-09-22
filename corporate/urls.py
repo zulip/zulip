@@ -21,13 +21,13 @@ i18n_urlpatterns: Any = [
 
 v1_api_and_json_patterns = [
     path('billing/upgrade', rest_dispatch,
-         {'POST': 'corporate.views.upgrade'}),
+         {'POST': corporate.views.upgrade}),
     path('billing/sponsorship', rest_dispatch,
-         {'POST': 'corporate.views.sponsorship'}),
+         {'POST': corporate.views.sponsorship}),
     path('billing/plan/change', rest_dispatch,
-         {'POST': 'corporate.views.change_plan_status'}),
+         {'POST': corporate.views.change_plan_status}),
     path('billing/sources/change', rest_dispatch,
-         {'POST': 'corporate.views.replace_payment_source'}),
+         {'POST': corporate.views.replace_payment_source}),
 ]
 
 # Make a copy of i18n_urlpatterns so that they appear without prefix for English
