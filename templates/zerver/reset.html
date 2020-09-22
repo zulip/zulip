@@ -11,7 +11,7 @@
 
             <p>Forgot your password? No problem, we'll send a link to reset your password to the email you signed up with.</p>
 
-            <form method="post" class="form-horizontal" action="{{ url('zerver.views.auth.password_reset') }}">
+            <form method="post" class="form-horizontal" action="{{ url('password_reset') }}">
                 {{ csrf_input }}
                 <div class="new-style">
                     <div class="input-box horizontal moving-label">

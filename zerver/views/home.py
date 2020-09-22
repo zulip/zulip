@@ -232,4 +232,4 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
 @zulip_login_required
 def desktop_home(request: HttpRequest) -> HttpResponse:
-    return HttpResponseRedirect(reverse('zerver.views.home.home'))
+    return HttpResponseRedirect(reverse(home))

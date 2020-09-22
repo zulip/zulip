@@ -1089,7 +1089,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
 def redirect_deactivated_user_to_login() -> HttpResponseRedirect:
     # Specifying the template name makes sure that the user is not redirected to dev_login in case of
     # a deactivated account on a test server.
-    login_url = reverse('zerver.views.auth.login_page', kwargs = {'template_name': 'zerver/login.html'})
+    login_url = reverse('login_page', kwargs = {'template_name': 'zerver/login.html'})
     redirect_url = login_url + '?is_deactivated=true'
     return HttpResponseRedirect(redirect_url)
 
@@ -1276,7 +1276,7 @@ def social_auth_finish(backend: Any,
         # unless the user manually edits the param. In any case, it's most appropriate to just take
         # them to find_account, as there isn't even an appropriate subdomain to take them to the login
         # form on.
-        return HttpResponseRedirect(reverse('zerver.views.registration.find_account'))
+        return HttpResponseRedirect(reverse('find_account'))
 
     if inactive_user:
         backend.logger.info("Failed login attempt for deactivated account: %s@%s",
@@ -1736,7 +1736,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             # If the above raise KeyError, it means invalid or no idp was specified,
             # we should log that and redirect to the login page.
             self.logger.info("/login/saml/ : Bad idp param: KeyError: %s.", str(e))
-            return reverse('zerver.views.auth.login_page',
+            return reverse('login_page',
                            kwargs = {'template_name': 'zerver/login.html'})
 
         # This where we change things.  We need to pass some params
@@ -1982,8 +1982,8 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                 name=f'saml:{idp_name}',
                 display_name=idp_dict.get('display_name', cls.auth_backend_name),
                 display_icon=idp_dict.get('display_icon', cls.display_icon),
-                login_url=reverse('login-social-extra-arg', args=('saml', idp_name)),
-                signup_url=reverse('signup-social-extra-arg', args=('saml', idp_name)),
+                login_url=reverse('login-social', args=('saml', idp_name)),
+                signup_url=reverse('signup-social', args=('saml', idp_name)),
             )
             result.append(saml_dict)
 

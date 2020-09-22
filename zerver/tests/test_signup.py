@@ -1643,7 +1643,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         url = "/accounts/register/"
         response = self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('django.contrib.auth.views.login') + '?email=' +
+        self.assertEqual(response.url, reverse('login') + '?email=' +
                          urllib.parse.quote_plus(email))
 
 class InvitationsTestCase(InviteUserBase):

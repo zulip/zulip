@@ -228,7 +228,7 @@ def generate_password_reset_url(user_profile: UserProfile,
                                 token_generator: PasswordResetTokenGenerator) -> str:
     token = token_generator.make_token(user_profile)
     uid = urlsafe_base64_encode(force_bytes(user_profile.id))
-    endpoint = reverse('django.contrib.auth.views.password_reset_confirm',
+    endpoint = reverse('password_reset_confirm',
                        kwargs=dict(uidb64=uid, token=token))
     return f"{user_profile.realm.uri}{endpoint}"
 
