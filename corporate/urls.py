@@ -4,7 +4,14 @@ from django.conf.urls import include
 from django.urls import path
 from django.views.generic import TemplateView
 
-import corporate.views
+from corporate.views import (
+    billing_home,
+    change_plan_status,
+    initial_upgrade,
+    replace_payment_source,
+    sponsorship,
+    upgrade,
+)
 from zerver.lib.rest import rest_dispatch
 
 i18n_urlpatterns: Any = [
@@ -15,19 +22,19 @@ i18n_urlpatterns: Any = [
     path('jobs/', TemplateView.as_view(template_name='corporate/jobs.html')),
 
     # Billing
-    path('billing/', corporate.views.billing_home),
-    path('upgrade/', corporate.views.initial_upgrade, name='initial_upgrade'),
+    path('billing/', billing_home),
+    path('upgrade/', initial_upgrade, name='initial_upgrade'),
 ]
 
 v1_api_and_json_patterns = [
     path('billing/upgrade', rest_dispatch,
-         {'POST': corporate.views.upgrade}),
+         {'POST': upgrade}),
     path('billing/sponsorship', rest_dispatch,
-         {'POST': corporate.views.sponsorship}),
+         {'POST': sponsorship}),
     path('billing/plan/change', rest_dispatch,
-         {'POST': corporate.views.change_plan_status}),
+         {'POST': change_plan_status}),
     path('billing/sources/change', rest_dispatch,
-         {'POST': corporate.views.replace_payment_source}),
+         {'POST': replace_payment_source}),
 ]
 
 # Make a copy of i18n_urlpatterns so that they appear without prefix for English
