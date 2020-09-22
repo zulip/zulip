@@ -154,9 +154,15 @@ def fetch_initial_state_data(user_profile: Optional[UserProfile],
         # these manual entries are for those realm settings that don't
         # fit into that framework.
         state['realm_authentication_methods'] = realm.authentication_methods_dict()
-        state['realm_allow_message_editing'] = realm.allow_message_editing
-        state['realm_allow_community_topic_editing'] = realm.allow_community_topic_editing
-        state['realm_allow_message_deleting'] = realm.allow_message_deleting
+
+        # We pretend these features are disabled because guests can't
+        # access them.  In the future, we may want to move this logic
+        # to the frontends, so that we can correctly display what
+        # these fields are in the settings.
+        state['realm_allow_message_editing'] = False if user_profile is None else realm.allow_message_editing
+        state['realm_allow_community_topic_editing'] = False if user_profile is None else realm.allow_community_topic_editing
+        state['realm_allow_message_deleting'] = False if user_profile is None else realm.allow_message_deleting
+
         state['realm_message_content_edit_limit_seconds'] = realm.message_content_edit_limit_seconds
         state['realm_message_content_delete_limit_seconds'] = realm.message_content_delete_limit_seconds
         state['realm_community_topic_editing_limit_seconds'] = \
