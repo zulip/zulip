@@ -247,6 +247,16 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## False.
 # LDAP_DEACTIVATE_NON_MATCHING_USERS = True
 
+## See: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#restricting-ldap-user-access-to-specific-organizations
+# AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL = {
+#    "zulip":
+#    [ # OR
+#      { # AND
+#          "department": "main",
+#          "employeeType": "staff"
+#      }
+#    ]
+# }
 
 ########
 ## Google OAuth.

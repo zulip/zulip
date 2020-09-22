@@ -1165,6 +1165,15 @@ Output:
 
         self.mock_ldap.directory[dn][attr_name] = [data]
 
+    def remove_ldap_user_attr(self, username: str, attr_name: str) -> None:
+        """
+        Method for removing the value of an attribute of a user entry in the mock
+        directory. This changes the attribute only for the specific test function
+        that calls this method, and is isolated from other tests.
+        """
+        dn = f"uid={username},ou=users,dc=zulip,dc=com"
+        self.mock_ldap.directory[dn].pop(attr_name, None)
+
     def ldap_username(self, username: str) -> str:
         """
         Maps Zulip username to the name of the corresponding LDAP user

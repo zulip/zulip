@@ -3812,6 +3812,86 @@ class FetchAPIKeyTest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
+    @override_settings(
+        AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
+        AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "org_membership": "department"},
+        AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL={
+            "zulip": [{"test1": "test", "test2": "testing"}, {"test1": "test2"}],
+            "anotherRealm": [{"test2": "test2"}],
+        },
+    )
+    def test_ldap_auth_email_auth_advanced_organization_restriction(self) -> None:
+        self.init_default_ldap_database()
+
+        # The first user has no attribute set
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+
+        self.change_ldap_user_attr("hamlet", "test2", "testing")
+        # Check with only one set
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+
+        self.change_ldap_user_attr("hamlet", "test1", "test")
+        # Setting org_membership to not cause django_ldap_auth to warn, when synchronising
+        self.change_ldap_user_attr("hamlet", "department", "wrongDepartment")
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_success(result)
+        self.remove_ldap_user_attr("hamlet", "test2")
+        self.remove_ldap_user_attr("hamlet", "test1")
+
+        # Using the OR value
+        self.change_ldap_user_attr("hamlet", "test1", "test2")
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_success(result)
+
+        # Testing without org_membership
+        with override_settings(AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn"}):
+            result = self.client_post(
+                "/api/v1/fetch_api_key",
+                dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+            )
+            self.assert_json_success(result)
+
+        # Setting test1 to wrong value
+        self.change_ldap_user_attr("hamlet", "test1", "invalid")
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+
+        # Override access with `org_membership`
+        self.change_ldap_user_attr("hamlet", "department", "zulip")
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_success(result)
+        self.remove_ldap_user_attr("hamlet", "department")
+
+        # Test wrong configuration
+        with override_settings(
+            AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL={"not_zulip": [{"department": "zulip"}]}
+        ):
+            result = self.client_post(
+                "/api/v1/fetch_api_key",
+                dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+            )
+            self.assert_json_error(result, "Your username or password is incorrect.", 403)
+
     def test_inactive_user(self) -> None:
         do_deactivate_user(self.user_profile, acting_user=None)
         result = self.client_post(

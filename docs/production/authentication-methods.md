@@ -304,13 +304,26 @@ department: www
 ...
 ```
 
+More complex access control rules are possible via the
+`AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL` setting.  Note that
+`org_membership` takes precedence over
+`AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL`:
+
+1. If `org_membership` is set and allows access, access will be granted
+2. If `org_membership` is not set or does not allow access,
+   `AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL` will control access.
+
+This contains a map keyed by the organization's subdomain.  The
+organization list with multiple maps, that contain a map with an attribute, and a required
+value for that attribute. If for any of the attribute maps, all user's
+LDAP attributes match what is configured, access is granted.
+
 ```eval_rst
 .. warning::
-    Restricting access using this mechanism only affects authentication via LDAP,
+    Restricting access using these mechanisms only affects authentication via LDAP,
     and won't prevent users from accessing the organization using any other
     authentication backends that are enabled for the organization.
 ```
-
 
 ### Troubleshooting
 

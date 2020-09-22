@@ -63,6 +63,7 @@ AUTH_LDAP_ALWAYS_UPDATE_USER = False
 # Detailed docs in zproject/dev_settings.py.
 FAKE_LDAP_MODE: Optional[str] = None
 FAKE_LDAP_NUM_USERS = 8
+AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL = None
 
 # Social auth; we support providing values for some of these
 # settings in zulip-secrets.conf instead of settings.py in development.
