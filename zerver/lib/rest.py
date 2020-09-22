@@ -1,7 +1,9 @@
 from functools import wraps
-from typing import Any, Dict, cast
+from typing import Any, Callable, Dict, Mapping, Set, Tuple, Union, cast
 
 from django.http import HttpRequest, HttpResponse
+from django.urls import path
+from django.urls.resolvers import URLPattern
 from django.utils.cache import add_never_cache_headers
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
@@ -158,3 +160,10 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         return target_function(request, **kwargs)
 
     return json_method_not_allowed(list(supported_methods.keys()))
+
+def rest_path(
+    route: str,
+    kwargs: Mapping[str, object] = {},
+    **handlers: Union[Callable[..., HttpResponse], Tuple[Callable[..., HttpResponse], Set[str]]],
+) -> URLPattern:
+    return path(route, rest_dispatch, {**kwargs, **handlers})

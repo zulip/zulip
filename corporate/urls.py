@@ -12,7 +12,7 @@ from corporate.views import (
     sponsorship,
     upgrade,
 )
-from zerver.lib.rest import rest_dispatch
+from zerver.lib.rest import rest_path
 
 i18n_urlpatterns: Any = [
     # Zephyr/MIT
@@ -27,14 +27,14 @@ i18n_urlpatterns: Any = [
 ]
 
 v1_api_and_json_patterns = [
-    path('billing/upgrade', rest_dispatch,
-         {'POST': upgrade}),
-    path('billing/sponsorship', rest_dispatch,
-         {'POST': sponsorship}),
-    path('billing/plan/change', rest_dispatch,
-         {'POST': change_plan_status}),
-    path('billing/sources/change', rest_dispatch,
-         {'POST': replace_payment_source}),
+    rest_path('billing/upgrade',
+              POST=upgrade),
+    rest_path('billing/sponsorship',
+              POST=sponsorship),
+    rest_path('billing/plan/change',
+              POST=change_plan_status),
+    rest_path('billing/sources/change',
+              POST=replace_payment_source),
 ]
 
 # Make a copy of i18n_urlpatterns so that they appear without prefix for English

@@ -17,7 +17,7 @@ from analytics.views import (
     stats_for_remote_realm,
     support,
 )
-from zerver.lib.rest import rest_dispatch
+from zerver.lib.rest import rest_path
 
 i18n_urlpatterns = [
     # Server admin (user_profile.is_staff) visible stats pages
@@ -49,17 +49,16 @@ i18n_urlpatterns = [
 # All of these paths are accessed by either a /json or /api prefix
 v1_api_and_json_patterns = [
     # get data for the graphs at /stats
-    path('analytics/chart_data', rest_dispatch,
-         {'GET': get_chart_data}),
-    path('analytics/chart_data/realm/<realm_str>', rest_dispatch,
-         {'GET': get_chart_data_for_realm}),
-    path('analytics/chart_data/installation', rest_dispatch,
-         {'GET': get_chart_data_for_installation}),
-    path('analytics/chart_data/remote/<int:remote_server_id>/installation', rest_dispatch,
-         {'GET': get_chart_data_for_remote_installation}),
-    path('analytics/chart_data/remote/<int:remote_server_id>/realm/<int:remote_realm_id>',
-         rest_dispatch,
-         {'GET': get_chart_data_for_remote_realm}),
+    rest_path('analytics/chart_data',
+              GET=get_chart_data),
+    rest_path('analytics/chart_data/realm/<realm_str>',
+              GET=get_chart_data_for_realm),
+    rest_path('analytics/chart_data/installation',
+              GET=get_chart_data_for_installation),
+    rest_path('analytics/chart_data/remote/<int:remote_server_id>/installation',
+              GET=get_chart_data_for_remote_installation),
+    rest_path('analytics/chart_data/remote/<int:remote_server_id>/realm/<int:remote_realm_id>',
+              GET=get_chart_data_for_remote_realm),
 ]
 
 i18n_urlpatterns += [
