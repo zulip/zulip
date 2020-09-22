@@ -476,7 +476,10 @@ exports.process_hotkey = function (e, hotkey) {
             if (
                 ["#recent_topics", "#", ""].includes(window.location.hash) &&
                 !popovers.any_active() &&
-                !overlays.is_active()
+                !overlays.is_active() &&
+                !$("#searchbox_form #search_query").is(":focus") &&
+                !$(".user-list-filter").is(":focus") &&
+                !$(".stream-list-filter").is(":focus")
             ) {
                 return recent_topics.change_focused_element(e, event_name);
             }
