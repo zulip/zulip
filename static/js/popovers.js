@@ -388,6 +388,21 @@ function get_user_info_popover_for_message_items() {
     return $("li:not(.divider):visible a", popover_data.$tip);
 }
 
+function get_user_info_popover_items() {
+    const popover_elt = $("div.user-info-popover");
+    if (!current_user_info_popover_elem || !popover_elt.length) {
+        blueslip.error("Trying to get menu items when action popover is closed.");
+        return;
+    }
+
+    if (popover_elt.length >= 2) {
+        blueslip.error("More than one user info popovers cannot be opened at same time.");
+        return;
+    }
+
+    return $("li:not(.divider):visible a", popover_elt);
+}
+
 function fetch_group_members(member_ids) {
     return member_ids
         .map((m) => people.get_by_user_id(m))
@@ -742,6 +757,11 @@ exports.user_sidebar_popover_handle_keyboard = function (key) {
 
 exports.user_info_popover_for_message_handle_keyboard = function (key) {
     const items = get_user_info_popover_for_message_items();
+    exports.popover_items_handle_keyboard(key, items);
+};
+
+exports.user_info_popover_handle_keyboard = function (key) {
+    const items = get_user_info_popover_items();
     exports.popover_items_handle_keyboard(key, items);
 };
 
