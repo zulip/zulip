@@ -5,12 +5,13 @@ preparing a new release.
 
 ### A week before the release
 
-* _Except minor releases:_ Upgrade all Python dependencies in
-  `requirements` to latest upstream versions so they can burn in (use
-  `pip list --outdated`).
-* _Except minor releases:_ Update all the strings on Transifex and
-  notify translators that they should translate the new strings to get
-  them in for the next release.
+* For a major release (e.g. 4.0):
+  * Upgrade all Python dependencies in
+    `requirements` to latest upstream versions so they can burn in (use
+    `pip list --outdated`).
+  * Update all the strings on Transifex and
+    notify translators that they should translate the new strings to get
+    them in for the next release.
 * Create a burn-down list of bugs that need to be fixed before we can
   release, and make sure all of them are being worked on.
 * Draft the release blog post (a.k.a. the release notes) in Paper.  In
