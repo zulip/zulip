@@ -775,6 +775,10 @@ stripe==2.51.0 \
 https://github.com/zulip/talon/archive/7d8bdc4dbcfcc5a73298747293b99fe53da55315.zip#egg=talon==1.2.10.zulip1 \
     --hash=sha256:21d87c437379287d09df7a2d2af7bd818d4fa00be619dff446dacbdb4338d921 \
     # via -r requirements/common.in
+tlds==2020092000 \
+    --hash=sha256:18ee63f6376a9d15d1d9f893ecbab06713e863e3a3364832ba843ab8b1003aea \
+    --hash=sha256:842a02a5c69d645149bf57e3f8620f033aa3d0cf37aab3f1ab6e9b70ffdb9c41 \
+    # via -r requirements/common.in
 tornado==4.5.3 \
     --hash=sha256:5ef073ac6180038ccf99411fe05ae9aafb675952a2c8db60592d5daf8401f803 \
     --hash=sha256:6d14e47eab0e15799cf3cdcc86b0b98279da68522caace2bd7ce644287685f0a \
