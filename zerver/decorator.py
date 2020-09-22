@@ -168,7 +168,7 @@ def process_client(request: HttpRequest, user_profile: UserProfile,
         client_name = "website"
 
     request.client = get_client(client_name)
-    if not skip_update_user_activity:
+    if not skip_update_user_activity and user_profile.is_authenticated:
         update_user_activity(request, user_profile, query)
 
 class InvalidZulipServerError(JsonableError):
