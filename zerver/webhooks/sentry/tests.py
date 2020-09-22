@@ -118,6 +118,17 @@ Traceback:
             "webhook_event_for_exception_javascript", expected_topic, expected_message
         )
 
+    def test_event_for_exception_js(self) -> None:
+        expected_topic = "Error: Something external broke."
+        expected_message = """
+**New exception:** [Error: Something external broke.](https://sentry.io/organizations/hypro999-personal-organization/issues/1731239773/events/355c3b2a142046629dd410db2fdda003/)
+```quote
+**level:** error
+**timestamp:** 2020-06-17 14:42:54
+**filename:** /mnt/data/Documents/Stuff%20for%20Zulip/Repos/sentry/js/external.js
+```"""
+        self.check_webhook("event_for_exception_js", expected_topic, expected_message)
+
     def test_event_for_message_golang(self) -> None:
         expected_topic = "A test message event from golang."
         expected_message = """
