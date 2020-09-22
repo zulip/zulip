@@ -837,7 +837,7 @@ function populate_messages_read_over_time(data) {
             buttons: [
                 {stepmode: "backward", ...button1},
                 {stepmode: "backward", ...button2},
-                {step: "all", label: "All time"},
+                {step: "all", label: i18n.t("All time")},
             ],
         };
     }
