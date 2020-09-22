@@ -1632,7 +1632,7 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
         db_data = self.md.zulip_db_data
         return url_to_a(db_data,
                         self.format_string % m.groupdict(),
-                        m.group(OUTER_CAPTURE_GROUP))
+                        markdown.util.AtomicString(m.group(OUTER_CAPTURE_GROUP)))
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
