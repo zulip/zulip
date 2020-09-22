@@ -35,16 +35,16 @@ i18n_urlpatterns = [
 v1_api_and_json_patterns = [
     # get data for the graphs at /stats
     path('analytics/chart_data', rest_dispatch,
-         {'GET': 'analytics.views.get_chart_data'}),
+         {'GET': analytics.views.get_chart_data}),
     path('analytics/chart_data/realm/<realm_str>', rest_dispatch,
-         {'GET': 'analytics.views.get_chart_data_for_realm'}),
+         {'GET': analytics.views.get_chart_data_for_realm}),
     path('analytics/chart_data/installation', rest_dispatch,
-         {'GET': 'analytics.views.get_chart_data_for_installation'}),
+         {'GET': analytics.views.get_chart_data_for_installation}),
     path('analytics/chart_data/remote/<int:remote_server_id>/installation', rest_dispatch,
-         {'GET': 'analytics.views.get_chart_data_for_remote_installation'}),
+         {'GET': analytics.views.get_chart_data_for_remote_installation}),
     path('analytics/chart_data/remote/<int:remote_server_id>/realm/<int:remote_realm_id>',
          rest_dispatch,
-         {'GET': 'analytics.views.get_chart_data_for_remote_realm'}),
+         {'GET': analytics.views.get_chart_data_for_remote_realm}),
 ]
 
 i18n_urlpatterns += [

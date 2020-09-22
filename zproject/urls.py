@@ -15,25 +15,45 @@ from django.views.generic import RedirectView, TemplateView
 
 import zerver.forms
 import zerver.tornado.views
-import zerver.views
+import zerver.views.alert_words
 import zerver.views.archive
+import zerver.views.attachments
 import zerver.views.auth
 import zerver.views.camo
 import zerver.views.compatibility
+import zerver.views.custom_profile_fields
 import zerver.views.digest
 import zerver.views.documentation
+import zerver.views.drafts
 import zerver.views.email_mirror
+import zerver.views.events_register
 import zerver.views.home
+import zerver.views.hotspots
+import zerver.views.invite
 import zerver.views.message_edit
 import zerver.views.message_fetch
 import zerver.views.message_flags
 import zerver.views.message_send
 import zerver.views.muting
 import zerver.views.portico
+import zerver.views.presence
+import zerver.views.push_notifications
+import zerver.views.reactions
 import zerver.views.realm
+import zerver.views.realm_domains
+import zerver.views.realm_emoji
 import zerver.views.realm_export
+import zerver.views.realm_filters
+import zerver.views.realm_icon
+import zerver.views.realm_logo
 import zerver.views.registration
+import zerver.views.report
+import zerver.views.storage
 import zerver.views.streams
+import zerver.views.submessage
+import zerver.views.thumbnail
+import zerver.views.tutorial
+import zerver.views.typing
 import zerver.views.unsubscribe
 import zerver.views.upload
 import zerver.views.user_groups
@@ -77,7 +97,7 @@ if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
 v1_api_and_json_patterns = [
     # realm-level calls
     path('realm', rest_dispatch,
-         {'PATCH': 'zerver.views.realm.update_realm'}),
+         {'PATCH': zerver.views.realm.update_realm}),
 
     # Returns a 204, used by desktop app to verify connectivity status
     path('generate_204', zerver.views.registration.generate_204),
@@ -86,144 +106,144 @@ v1_api_and_json_patterns = [
 
     # realm/domains -> zerver.views.realm_domains
     path('realm/domains', rest_dispatch,
-         {'GET': 'zerver.views.realm_domains.list_realm_domains',
-          'POST': 'zerver.views.realm_domains.create_realm_domain'}),
+         {'GET': zerver.views.realm_domains.list_realm_domains,
+          'POST': zerver.views.realm_domains.create_realm_domain}),
     path('realm/domains/<domain>', rest_dispatch,
-         {'PATCH': 'zerver.views.realm_domains.patch_realm_domain',
-          'DELETE': 'zerver.views.realm_domains.delete_realm_domain'}),
+         {'PATCH': zerver.views.realm_domains.patch_realm_domain,
+          'DELETE': zerver.views.realm_domains.delete_realm_domain}),
 
     # realm/emoji -> zerver.views.realm_emoji
     path('realm/emoji', rest_dispatch,
-         {'GET': 'zerver.views.realm_emoji.list_emoji'}),
+         {'GET': zerver.views.realm_emoji.list_emoji}),
     path('realm/emoji/<emoji_name>', rest_dispatch,
-         {'POST': 'zerver.views.realm_emoji.upload_emoji',
-          'DELETE': ('zerver.views.realm_emoji.delete_emoji', {"intentionally_undocumented"})}),
+         {'POST': zerver.views.realm_emoji.upload_emoji,
+          'DELETE': (zerver.views.realm_emoji.delete_emoji, {"intentionally_undocumented"})}),
     # this endpoint throws a status code 400 JsonableError when it should be a 404.
 
     # realm/icon -> zerver.views.realm_icon
     path('realm/icon', rest_dispatch,
-         {'POST': 'zerver.views.realm_icon.upload_icon',
-          'DELETE': 'zerver.views.realm_icon.delete_icon_backend',
-          'GET': 'zerver.views.realm_icon.get_icon_backend'}),
+         {'POST': zerver.views.realm_icon.upload_icon,
+          'DELETE': zerver.views.realm_icon.delete_icon_backend,
+          'GET': zerver.views.realm_icon.get_icon_backend}),
 
     # realm/logo -> zerver.views.realm_logo
     path('realm/logo', rest_dispatch,
-         {'POST': 'zerver.views.realm_logo.upload_logo',
-          'DELETE': 'zerver.views.realm_logo.delete_logo_backend',
-          'GET': 'zerver.views.realm_logo.get_logo_backend'}),
+         {'POST': zerver.views.realm_logo.upload_logo,
+          'DELETE': zerver.views.realm_logo.delete_logo_backend,
+          'GET': zerver.views.realm_logo.get_logo_backend}),
 
     # realm/filters -> zerver.views.realm_filters
     path('realm/filters', rest_dispatch,
-         {'GET': 'zerver.views.realm_filters.list_filters',
-          'POST': 'zerver.views.realm_filters.create_filter'}),
+         {'GET': zerver.views.realm_filters.list_filters,
+          'POST': zerver.views.realm_filters.create_filter}),
     path('realm/filters/<int:filter_id>', rest_dispatch,
-         {'DELETE': 'zerver.views.realm_filters.delete_filter'}),
+         {'DELETE': zerver.views.realm_filters.delete_filter}),
 
     # realm/profile_fields -> zerver.views.custom_profile_fields
     path('realm/profile_fields', rest_dispatch,
-         {'GET': 'zerver.views.custom_profile_fields.list_realm_custom_profile_fields',
-          'PATCH': 'zerver.views.custom_profile_fields.reorder_realm_custom_profile_fields',
-          'POST': 'zerver.views.custom_profile_fields.create_realm_custom_profile_field'}),
+         {'GET': zerver.views.custom_profile_fields.list_realm_custom_profile_fields,
+          'PATCH': zerver.views.custom_profile_fields.reorder_realm_custom_profile_fields,
+          'POST': zerver.views.custom_profile_fields.create_realm_custom_profile_field}),
     path('realm/profile_fields/<int:field_id>', rest_dispatch,
-         {'PATCH': 'zerver.views.custom_profile_fields.update_realm_custom_profile_field',
-          'DELETE': 'zerver.views.custom_profile_fields.delete_realm_custom_profile_field'}),
+         {'PATCH': zerver.views.custom_profile_fields.update_realm_custom_profile_field,
+          'DELETE': zerver.views.custom_profile_fields.delete_realm_custom_profile_field}),
 
     # realm/deactivate -> zerver.views.deactivate_realm
     path('realm/deactivate', rest_dispatch,
-         {'POST': 'zerver.views.realm.deactivate_realm'}),
+         {'POST': zerver.views.realm.deactivate_realm}),
 
     # users -> zerver.views.users
     path('users', rest_dispatch,
-         {'GET': 'zerver.views.users.get_members_backend',
-          'POST': 'zerver.views.users.create_user_backend'}),
+         {'GET': zerver.views.users.get_members_backend,
+          'POST': zerver.views.users.create_user_backend}),
     path('users/me', rest_dispatch,
-         {'GET': 'zerver.views.users.get_profile_backend',
-          'DELETE': 'zerver.views.users.deactivate_user_own_backend'}),
+         {'GET': zerver.views.users.get_profile_backend,
+          'DELETE': zerver.views.users.deactivate_user_own_backend}),
     path('users/<int:user_id>/reactivate', rest_dispatch,
-         {'POST': 'zerver.views.users.reactivate_user_backend'}),
+         {'POST': zerver.views.users.reactivate_user_backend}),
     path('users/<int:user_id>', rest_dispatch,
-         {'GET': 'zerver.views.users.get_members_backend',
-          'PATCH': 'zerver.views.users.update_user_backend',
-          'DELETE': 'zerver.views.users.deactivate_user_backend'}),
+         {'GET': zerver.views.users.get_members_backend,
+          'PATCH': zerver.views.users.update_user_backend,
+          'DELETE': zerver.views.users.deactivate_user_backend}),
     path('users/<int:user_id>/subscriptions/<int:stream_id>', rest_dispatch,
-         {'GET': 'zerver.views.users.get_subscription_backend'}),
+         {'GET': zerver.views.users.get_subscription_backend}),
     path('bots', rest_dispatch,
-         {'GET': 'zerver.views.users.get_bots_backend',
-          'POST': 'zerver.views.users.add_bot_backend'}),
+         {'GET': zerver.views.users.get_bots_backend,
+          'POST': zerver.views.users.add_bot_backend}),
     path('bots/<int:bot_id>/api_key/regenerate', rest_dispatch,
-         {'POST': 'zerver.views.users.regenerate_bot_api_key'}),
+         {'POST': zerver.views.users.regenerate_bot_api_key}),
     path('bots/<int:bot_id>', rest_dispatch,
-         {'PATCH': 'zerver.views.users.patch_bot_backend',
-          'DELETE': 'zerver.views.users.deactivate_bot_backend'}),
+         {'PATCH': zerver.views.users.patch_bot_backend,
+          'DELETE': zerver.views.users.deactivate_bot_backend}),
 
     # invites -> zerver.views.invite
     path('invites', rest_dispatch,
-         {'GET': 'zerver.views.invite.get_user_invites',
-          'POST': 'zerver.views.invite.invite_users_backend'}),
+         {'GET': zerver.views.invite.get_user_invites,
+          'POST': zerver.views.invite.invite_users_backend}),
     path('invites/<int:prereg_id>', rest_dispatch,
-         {'DELETE': 'zerver.views.invite.revoke_user_invite'}),
+         {'DELETE': zerver.views.invite.revoke_user_invite}),
     path('invites/<int:prereg_id>/resend', rest_dispatch,
-         {'POST': 'zerver.views.invite.resend_user_invite_email'}),
+         {'POST': zerver.views.invite.resend_user_invite_email}),
 
     # invites/multiuse -> zerver.views.invite
     path('invites/multiuse', rest_dispatch,
-         {'POST': 'zerver.views.invite.generate_multiuse_invite_backend'}),
+         {'POST': zerver.views.invite.generate_multiuse_invite_backend}),
     # invites/multiuse -> zerver.views.invite
     path('invites/multiuse/<int:invite_id>', rest_dispatch,
-         {'DELETE': 'zerver.views.invite.revoke_multiuse_invite'}),
+         {'DELETE': zerver.views.invite.revoke_multiuse_invite}),
 
     # mark messages as read (in bulk)
     path('mark_all_as_read', rest_dispatch,
-         {'POST': 'zerver.views.message_flags.mark_all_as_read'}),
+         {'POST': zerver.views.message_flags.mark_all_as_read}),
     path('mark_stream_as_read', rest_dispatch,
-         {'POST': 'zerver.views.message_flags.mark_stream_as_read'}),
+         {'POST': zerver.views.message_flags.mark_stream_as_read}),
     path('mark_topic_as_read', rest_dispatch,
-         {'POST': 'zerver.views.message_flags.mark_topic_as_read'}),
+         {'POST': zerver.views.message_flags.mark_topic_as_read}),
 
     path('zcommand', rest_dispatch,
-         {'POST': 'zerver.views.message_send.zcommand_backend'}),
+         {'POST': zerver.views.message_send.zcommand_backend}),
 
     # Endpoints for syncing drafts.
     path('drafts', rest_dispatch,
-         {'GET': ('zerver.views.drafts.fetch_drafts',
+         {'GET': (zerver.views.drafts.fetch_drafts,
                   {'intentionally_undocumented'}),
-          'POST': ('zerver.views.drafts.create_drafts',
+          'POST': (zerver.views.drafts.create_drafts,
                    {'intentionally_undocumented'})}),
     path('drafts/<int:draft_id>', rest_dispatch,
-         {'PATCH': ('zerver.views.drafts.edit_draft',
+         {'PATCH': (zerver.views.drafts.edit_draft,
                     {'intentionally_undocumented'}),
-          'DELETE': ('zerver.views.drafts.delete_draft',
+          'DELETE': (zerver.views.drafts.delete_draft,
                      {'intentionally_undocumented'})}),
 
     # messages -> zerver.views.message*
     # GET returns messages, possibly filtered, POST sends a message
     path('messages', rest_dispatch,
-         {'GET': ('zerver.views.message_fetch.get_messages_backend',
+         {'GET': (zerver.views.message_fetch.get_messages_backend,
                   {'allow_anonymous_user_web'}),
-          'POST': ('zerver.views.message_send.send_message_backend',
+          'POST': (zerver.views.message_send.send_message_backend,
                    {'allow_incoming_webhooks'})}),
     path('messages/<int:message_id>', rest_dispatch,
-         {'GET': 'zerver.views.message_edit.json_fetch_raw_message',
-          'PATCH': 'zerver.views.message_edit.update_message_backend',
-          'DELETE': 'zerver.views.message_edit.delete_message_backend'}),
+         {'GET': zerver.views.message_edit.json_fetch_raw_message,
+          'PATCH': zerver.views.message_edit.update_message_backend,
+          'DELETE': zerver.views.message_edit.delete_message_backend}),
     path('messages/render', rest_dispatch,
-         {'POST': 'zerver.views.message_send.render_message_backend'}),
+         {'POST': zerver.views.message_send.render_message_backend}),
     path('messages/flags', rest_dispatch,
-         {'POST': 'zerver.views.message_flags.update_message_flags'}),
+         {'POST': zerver.views.message_flags.update_message_flags}),
     path('messages/<int:message_id>/history', rest_dispatch,
-         {'GET': 'zerver.views.message_edit.get_message_edit_history'}),
+         {'GET': zerver.views.message_edit.get_message_edit_history}),
     path('messages/matches_narrow', rest_dispatch,
-         {'GET': 'zerver.views.message_fetch.messages_in_narrow_backend'}),
+         {'GET': zerver.views.message_fetch.messages_in_narrow_backend}),
 
     path('users/me/subscriptions/properties', rest_dispatch,
-         {'POST': 'zerver.views.streams.update_subscription_properties_backend'}),
+         {'POST': zerver.views.streams.update_subscription_properties_backend}),
 
     path('users/me/subscriptions/<int:stream_id>', rest_dispatch,
-         {'PATCH': 'zerver.views.streams.update_subscriptions_property'}),
+         {'PATCH': zerver.views.streams.update_subscriptions_property}),
 
     path('submessage',
          rest_dispatch,
-         {'POST': 'zerver.views.submessage.process_submessage'}),
+         {'POST': zerver.views.submessage.process_submessage}),
 
     # New endpoint for handling reactions.
     # reactions -> zerver.view.reactions
@@ -231,164 +251,164 @@ v1_api_and_json_patterns = [
     # DELETE removes a reaction from a message
     path('messages/<int:message_id>/reactions',
          rest_dispatch,
-         {'POST': 'zerver.views.reactions.add_reaction',
-          'DELETE': 'zerver.views.reactions.remove_reaction'}),
+         {'POST': zerver.views.reactions.add_reaction,
+          'DELETE': zerver.views.reactions.remove_reaction}),
 
     # attachments -> zerver.views.attachments
     path('attachments', rest_dispatch,
-         {'GET': 'zerver.views.attachments.list_by_user'}),
+         {'GET': zerver.views.attachments.list_by_user}),
     path('attachments/<int:attachment_id>', rest_dispatch,
-         {'DELETE': 'zerver.views.attachments.remove'}),
+         {'DELETE': zerver.views.attachments.remove}),
 
     # typing -> zerver.views.typing
     # POST sends a typing notification event to recipients
     path('typing', rest_dispatch,
-         {'POST': 'zerver.views.typing.send_notification_backend'}),
+         {'POST': zerver.views.typing.send_notification_backend}),
 
     # user_uploads -> zerver.views.upload
     path('user_uploads', rest_dispatch,
-         {'POST': 'zerver.views.upload.upload_file_backend'}),
+         {'POST': zerver.views.upload.upload_file_backend}),
     path('user_uploads/<realm_id_str>/<path:filename>',
          rest_dispatch,
-         {'GET': ('zerver.views.upload.serve_file_url_backend',
+         {'GET': (zerver.views.upload.serve_file_url_backend,
                   {'override_api_url_scheme'})}),
 
     # bot_storage -> zerver.views.storage
     path('bot_storage', rest_dispatch,
-         {'PUT': 'zerver.views.storage.update_storage',
-          'GET': 'zerver.views.storage.get_storage',
-          'DELETE': 'zerver.views.storage.remove_storage'}),
+         {'PUT': zerver.views.storage.update_storage,
+          'GET': zerver.views.storage.get_storage,
+          'DELETE': zerver.views.storage.remove_storage}),
 
     # Endpoint used by mobile devices to register their push
     # notification credentials
     path('users/me/apns_device_token', rest_dispatch,
-         {'POST': 'zerver.views.push_notifications.add_apns_device_token',
-          'DELETE': 'zerver.views.push_notifications.remove_apns_device_token'}),
+         {'POST': zerver.views.push_notifications.add_apns_device_token,
+          'DELETE': zerver.views.push_notifications.remove_apns_device_token}),
     path('users/me/android_gcm_reg_id', rest_dispatch,
-         {'POST': 'zerver.views.push_notifications.add_android_reg_id',
-          'DELETE': 'zerver.views.push_notifications.remove_android_reg_id'}),
+         {'POST': zerver.views.push_notifications.add_android_reg_id,
+          'DELETE': zerver.views.push_notifications.remove_android_reg_id}),
 
     # users/*/presnece => zerver.views.presence.
     path('users/me/presence', rest_dispatch,
-         {'POST': 'zerver.views.presence.update_active_status_backend'}),
+         {'POST': zerver.views.presence.update_active_status_backend}),
     # It's important that this sit after users/me/presence so that
     # Django's URL resolution order doesn't break the
     # /users/me/presence endpoint.
     path(r'users/<email>/presence', rest_dispatch,
-         {'GET': 'zerver.views.presence.get_presence_backend'}),
+         {'GET': zerver.views.presence.get_presence_backend}),
     path('realm/presence', rest_dispatch,
-         {'GET': 'zerver.views.presence.get_statuses_for_realm'}),
+         {'GET': zerver.views.presence.get_statuses_for_realm}),
     path('users/me/status', rest_dispatch,
-         {'POST': 'zerver.views.presence.update_user_status_backend'}),
+         {'POST': zerver.views.presence.update_user_status_backend}),
 
     # user_groups -> zerver.views.user_groups
     path('user_groups', rest_dispatch,
-         {'GET': 'zerver.views.user_groups.get_user_group'}),
+         {'GET': zerver.views.user_groups.get_user_group}),
     path('user_groups/create', rest_dispatch,
-         {'POST': 'zerver.views.user_groups.add_user_group'}),
+         {'POST': zerver.views.user_groups.add_user_group}),
     path('user_groups/<int:user_group_id>', rest_dispatch,
-         {'PATCH': 'zerver.views.user_groups.edit_user_group',
-          'DELETE': 'zerver.views.user_groups.delete_user_group'}),
+         {'PATCH': zerver.views.user_groups.edit_user_group,
+          'DELETE': zerver.views.user_groups.delete_user_group}),
     path('user_groups/<int:user_group_id>/members', rest_dispatch,
-         {'POST': 'zerver.views.user_groups.update_user_group_backend'}),
+         {'POST': zerver.views.user_groups.update_user_group_backend}),
 
     # users/me -> zerver.views.user_settings
     path('users/me/api_key/regenerate', rest_dispatch,
-         {'POST': 'zerver.views.user_settings.regenerate_api_key'}),
+         {'POST': zerver.views.user_settings.regenerate_api_key}),
     path('users/me/enter-sends', rest_dispatch,
-         {'POST': ('zerver.views.user_settings.change_enter_sends',
+         {'POST': (zerver.views.user_settings.change_enter_sends,
                    # This endpoint should be folded into user settings
                    {'intentionally_undocumented'})}),
     path('users/me/avatar', rest_dispatch,
-         {'POST': 'zerver.views.user_settings.set_avatar_backend',
-          'DELETE': 'zerver.views.user_settings.delete_avatar_backend'}),
+         {'POST': zerver.views.user_settings.set_avatar_backend,
+          'DELETE': zerver.views.user_settings.delete_avatar_backend}),
 
     # users/me/hotspots -> zerver.views.hotspots
     path('users/me/hotspots', rest_dispatch,
-         {'POST': ('zerver.views.hotspots.mark_hotspot_as_read',
+         {'POST': (zerver.views.hotspots.mark_hotspot_as_read,
                    # This endpoint is low priority for documentation as
                    # it is part of the webapp-specific tutorial.
                    {'intentionally_undocumented'})}),
 
     # users/me/tutorial_status -> zerver.views.tutorial
     path('users/me/tutorial_status', rest_dispatch,
-         {'POST': ('zerver.views.tutorial.set_tutorial_status',
+         {'POST': (zerver.views.tutorial.set_tutorial_status,
                    # This is a relic of an old Zulip tutorial model and
                    # should be deleted.
                    {'intentionally_undocumented'})}),
 
     # settings -> zerver.views.user_settings
     path('settings', rest_dispatch,
-         {'PATCH': 'zerver.views.user_settings.json_change_settings'}),
+         {'PATCH': zerver.views.user_settings.json_change_settings}),
     path('settings/display', rest_dispatch,
-         {'PATCH': 'zerver.views.user_settings.update_display_settings_backend'}),
+         {'PATCH': zerver.views.user_settings.update_display_settings_backend}),
     path('settings/notifications', rest_dispatch,
-         {'PATCH': 'zerver.views.user_settings.json_change_notify_settings'}),
+         {'PATCH': zerver.views.user_settings.json_change_notify_settings}),
 
     # users/me/alert_words -> zerver.views.alert_words
     path('users/me/alert_words', rest_dispatch,
-         {'GET': 'zerver.views.alert_words.list_alert_words',
-          'POST': 'zerver.views.alert_words.add_alert_words',
-          'DELETE': 'zerver.views.alert_words.remove_alert_words'}),
+         {'GET': zerver.views.alert_words.list_alert_words,
+          'POST': zerver.views.alert_words.add_alert_words,
+          'DELETE': zerver.views.alert_words.remove_alert_words}),
 
     # users/me/custom_profile_data -> zerver.views.custom_profile_data
     path('users/me/profile_data', rest_dispatch,
-         {'PATCH': 'zerver.views.custom_profile_fields.update_user_custom_profile_data',
-          'DELETE': 'zerver.views.custom_profile_fields.remove_user_custom_profile_data'}),
+         {'PATCH': zerver.views.custom_profile_fields.update_user_custom_profile_data,
+          'DELETE': zerver.views.custom_profile_fields.remove_user_custom_profile_data}),
 
     path('users/me/<int:stream_id>/topics', rest_dispatch,
-         {'GET': ('zerver.views.streams.get_topics_backend',
+         {'GET': (zerver.views.streams.get_topics_backend,
                   {'allow_anonymous_user_web'})}),
 
 
     # streams -> zerver.views.streams
     # (this API is only used externally)
     path('streams', rest_dispatch,
-         {'GET': 'zerver.views.streams.get_streams_backend'}),
+         {'GET': zerver.views.streams.get_streams_backend}),
 
     # GET returns `stream_id`, stream name should be encoded in the url query (in `stream` param)
     path('get_stream_id', rest_dispatch,
-         {'GET': 'zerver.views.streams.json_get_stream_id'}),
+         {'GET': zerver.views.streams.json_get_stream_id}),
 
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
     path('streams/<int:stream_id>/members', rest_dispatch,
-         {'GET': 'zerver.views.streams.get_subscribers_backend'}),
+         {'GET': zerver.views.streams.get_subscribers_backend}),
     path('streams/<int:stream_id>', rest_dispatch,
-         {'PATCH': 'zerver.views.streams.update_stream_backend',
-          'DELETE': 'zerver.views.streams.deactivate_stream_backend'}),
+         {'PATCH': zerver.views.streams.update_stream_backend,
+          'DELETE': zerver.views.streams.deactivate_stream_backend}),
 
     # Delete topic in stream
     path('streams/<int:stream_id>/delete_topic', rest_dispatch,
-         {'POST': 'zerver.views.streams.delete_in_topic'}),
+         {'POST': zerver.views.streams.delete_in_topic}),
 
     path('default_streams', rest_dispatch,
-         {'POST': 'zerver.views.streams.add_default_stream',
-          'DELETE': 'zerver.views.streams.remove_default_stream'}),
+         {'POST': zerver.views.streams.add_default_stream,
+          'DELETE': zerver.views.streams.remove_default_stream}),
     path('default_stream_groups/create', rest_dispatch,
-         {'POST': 'zerver.views.streams.create_default_stream_group'}),
+         {'POST': zerver.views.streams.create_default_stream_group}),
     path('default_stream_groups/<int:group_id>', rest_dispatch,
-         {'PATCH': 'zerver.views.streams.update_default_stream_group_info',
-          'DELETE': 'zerver.views.streams.remove_default_stream_group'}),
+         {'PATCH': zerver.views.streams.update_default_stream_group_info,
+          'DELETE': zerver.views.streams.remove_default_stream_group}),
     path('default_stream_groups/<int:group_id>/streams', rest_dispatch,
-         {'PATCH': 'zerver.views.streams.update_default_stream_group_streams'}),
+         {'PATCH': zerver.views.streams.update_default_stream_group_streams}),
     # GET lists your streams, POST bulk adds, PATCH bulk modifies/removes
     path('users/me/subscriptions', rest_dispatch,
-         {'GET': 'zerver.views.streams.list_subscriptions_backend',
-          'POST': 'zerver.views.streams.add_subscriptions_backend',
-          'PATCH': 'zerver.views.streams.update_subscriptions_backend',
-          'DELETE': 'zerver.views.streams.remove_subscriptions_backend'}),
+         {'GET': zerver.views.streams.list_subscriptions_backend,
+          'POST': zerver.views.streams.add_subscriptions_backend,
+          'PATCH': zerver.views.streams.update_subscriptions_backend,
+          'DELETE': zerver.views.streams.remove_subscriptions_backend}),
     # muting -> zerver.views.muting
     path('users/me/subscriptions/muted_topics', rest_dispatch,
-         {'PATCH': 'zerver.views.muting.update_muted_topic'}),
+         {'PATCH': zerver.views.muting.update_muted_topic}),
 
     # used to register for an event queue in tornado
     path('register', rest_dispatch,
-         {'POST': 'zerver.views.events_register.events_register_backend'}),
+         {'POST': zerver.views.events_register.events_register_backend}),
 
     # events -> zerver.tornado.views
     path('events', rest_dispatch,
-         {'GET': 'zerver.tornado.views.get_events',
-          'DELETE': 'zerver.tornado.views.cleanup_event_queue'}),
+         {'GET': zerver.tornado.views.get_events,
+          'DELETE': zerver.tornado.views.cleanup_event_queue}),
 
     # report -> zerver.views.report
     #
@@ -397,30 +417,30 @@ v1_api_and_json_patterns = [
     # include in our API documentation.
     path('report/error', rest_dispatch,
          # Logged-out browsers can hit this endpoint, for portico page JS exceptions.
-         {'POST': ('zerver.views.report.report_error', {'allow_anonymous_user_web',
-                                                        'intentionally_undocumented'})}),
+         {'POST': (zerver.views.report.report_error, {'allow_anonymous_user_web',
+                                                      'intentionally_undocumented'})}),
     path('report/send_times', rest_dispatch,
-         {'POST': ('zerver.views.report.report_send_times', {'intentionally_undocumented'})}),
+         {'POST': (zerver.views.report.report_send_times, {'intentionally_undocumented'})}),
     path('report/narrow_times', rest_dispatch,
-         {'POST': ('zerver.views.report.report_narrow_times', {'allow_anonymous_user_web',
-                                                               'intentionally_undocumented'})}),
+         {'POST': (zerver.views.report.report_narrow_times, {'allow_anonymous_user_web',
+                                                             'intentionally_undocumented'})}),
     path('report/unnarrow_times', rest_dispatch,
-         {'POST': ('zerver.views.report.report_unnarrow_times', {'allow_anonymous_user_web',
-                                                                 'intentionally_undocumented'})}),
+         {'POST': (zerver.views.report.report_unnarrow_times, {'allow_anonymous_user_web',
+                                                               'intentionally_undocumented'})}),
 
     # Used to generate a Zoom video call URL
     path('calls/zoom/create', rest_dispatch,
-         {'POST': 'zerver.views.video_calls.make_zoom_video_call'}),
+         {'POST': zerver.views.video_calls.make_zoom_video_call}),
     # Used to generate a Big Blue Button video call URL
     path('calls/bigbluebutton/create', rest_dispatch,
-         {'GET': 'zerver.views.video_calls.get_bigbluebutton_url'}),
+         {'GET': zerver.views.video_calls.get_bigbluebutton_url}),
 
     # export/realm -> zerver.views.realm_export
     path('export/realm', rest_dispatch,
-         {'POST': 'zerver.views.realm_export.export_realm',
-          'GET': 'zerver.views.realm_export.get_realm_exports'}),
+         {'POST': zerver.views.realm_export.export_realm,
+          'GET': zerver.views.realm_export.get_realm_exports}),
     path('export/realm/<int:export_id>', rest_dispatch,
-         {'DELETE': 'zerver.views.realm_export.delete_realm_export'}),
+         {'DELETE': zerver.views.realm_export.delete_realm_export}),
 ]
 
 integrations_view = IntegrationView.as_view()
@@ -610,22 +630,22 @@ urls += [
          name='local_file_unauthed'),
     path('user_uploads/<realm_id_str>/<path:filename>',
          rest_dispatch,
-         {'GET': ('zerver.views.upload.serve_file_backend',
+         {'GET': (zerver.views.upload.serve_file_backend,
                   {'override_api_url_scheme'})}),
     # This endpoint serves thumbnailed versions of images using thumbor;
     # it requires an exception for the same reason.
     path('thumbnail', rest_dispatch,
-         {'GET': ('zerver.views.thumbnail.backend_serve_thumbnail',
+         {'GET': (zerver.views.thumbnail.backend_serve_thumbnail,
                   {'override_api_url_scheme'})}),
     # Avatars have the same constraint because their URLs are included
     # in API data structures used by both the mobile and web clients.
     path('avatar/<email_or_id>',
          rest_dispatch,
-         {'GET': ('zerver.views.users.avatar',
+         {'GET': (zerver.views.users.avatar,
                   {'override_api_url_scheme'})}),
     path('avatar/<email_or_id>/medium',
          rest_dispatch,
-         {'GET': ('zerver.views.users.avatar',
+         {'GET': (zerver.views.users.avatar,
                   {'override_api_url_scheme'}),
           'medium': True}),
 ]
@@ -655,7 +675,7 @@ for incoming_webhook in WEBHOOK_INTEGRATIONS:
 # Desktop-specific authentication URLs
 urls += [
     path('json/fetch_api_key', rest_dispatch,
-         {'POST': 'zerver.views.auth.json_fetch_api_key'}),
+         {'POST': zerver.views.auth.json_fetch_api_key}),
 ]
 
 # Mobile-specific authentication URLs
