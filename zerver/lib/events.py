@@ -14,6 +14,8 @@ from zerver.lib.actions import (
     get_available_notification_sounds,
     get_default_streams_for_realm,
     get_owned_bot_dicts,
+    get_web_public_streams,
+    get_web_public_subs,
     streams_to_dicts_sorted,
 )
 from zerver.lib.alert_words import user_alert_words
@@ -78,17 +80,24 @@ def always_want(msg_type: str) -> bool:
     '''
     return True
 
-# Fetch initial data.  When event_types is not specified, clients want
-# all event types.  Whenever you add new code to this function, you
-# should also add corresponding events for changes in the data
-# structures and new code to apply_events (and add a test in test_events.py).
-def fetch_initial_state_data(user_profile: UserProfile,
+def fetch_initial_state_data(user_profile: Optional[UserProfile],
                              event_types: Optional[Iterable[str]],
-                             queue_id: str, client_gravatar: bool,
+                             queue_id: Optional[str], client_gravatar: bool,
                              user_avatar_url_field_optional: bool,
                              realm: Realm,
                              slim_presence: bool = False,
                              include_subscribers: bool = True) -> Dict[str, Any]:
+    """When `event_types` is None, fetches the core data powering the
+    webapp's `page_params` and `/api/v1/register` (for mobile/terminal
+    apps).  Can also fetch a subset as determined by `event_types`.
+
+    The user_profile=None code path is used for logged-out public
+    access to streams with is_web_public=True.
+
+    Whenever you add new code to this function, you should also add
+    corresponding events for changes in the data structures and new
+    code to apply_events (and add a test in test_events.py).
+    """
     state: Dict[str, Any] = {'queue_id': queue_id}
 
     if event_types is None:
@@ -102,7 +111,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
     state['zulip_feature_level'] = API_FEATURE_LEVEL
 
     if want('alert_words'):
-        state['alert_words'] = user_alert_words(user_profile)
+        state['alert_words'] = [] if user_profile is None else user_alert_words(user_profile)
 
     if want('custom_profile_fields'):
         fields = custom_profile_fields_for_realm(realm.id)
@@ -110,23 +119,29 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['custom_profile_field_types'] = CustomProfileField.FIELD_TYPE_CHOICES_DICT
 
     if want('hotspots'):
-        state['hotspots'] = get_next_hotspots(user_profile)
+        # Even if we offered special hotspots for guests without an
+        # account, we'd maybe need to store their state using cookies
+        # or local storage, rather than in the database.
+        state['hotspots'] = [] if user_profile is None else get_next_hotspots(user_profile)
 
     if want('message'):
-        # The client should use get_messages() to fetch messages
-        # starting with the max_message_id.  They will get messages
-        # newer than that ID via get_events()
-        user_messages = UserMessage.objects \
-            .filter(user_profile=user_profile) \
-            .order_by('-message_id') \
-            .values('message_id')[:1]
+        # Since the introduction of `anchor="latest"` in the API,
+        # `max_message_id` is primarily used for generating `local_id`
+        # values that are higher than this.  We likely can eventually
+        # remove this parameter from the API.
+        user_messages = []
+        if user_profile is not None:
+            user_messages = UserMessage.objects \
+                .filter(user_profile=user_profile) \
+                .order_by('-message_id') \
+                .values('message_id')[:1]
         if user_messages:
             state['max_message_id'] = user_messages[0]['message_id']
         else:
             state['max_message_id'] = -1
 
     if want('muted_topics'):
-        state['muted_topics'] = get_topic_mutes(user_profile)
+        state['muted_topics'] = [] if user_profile is None else get_topic_mutes(user_profile)
 
     if want('presence'):
         state['presences'] = get_presences_for_realm(realm, slim_presence)
@@ -201,41 +216,58 @@ def fetch_initial_state_data(user_profile: UserProfile,
     if want('realm_user_groups'):
         state['realm_user_groups'] = user_groups_in_realm_serialized(realm)
 
+    # When UserProfile=None, we want to serve the values for various
+    # settings as the defaults.  Instead of copying the default values
+    # from models.py here, we access these default values from a
+    # temporary UserProfile object.
+    fake_user = UserProfile()
     if want('realm_user'):
         state['raw_users'] = get_raw_user_data(realm, user_profile,
                                                client_gravatar=client_gravatar,
                                                user_avatar_url_field_optional=user_avatar_url_field_optional)
-
-        # For the user's own avatar URL, we force
-        # client_gravatar=False, since that saves some unnecessary
-        # client-side code for handing medium-size avatars.  See #8253
-        # for details.
-        state['avatar_source'] = user_profile.avatar_source
-        state['avatar_url_medium'] = avatar_url(
-            user_profile,
-            medium=True,
-            client_gravatar=False,
-        )
-        state['avatar_url'] = avatar_url(
-            user_profile,
-            medium=False,
-            client_gravatar=False,
-        )
-
-        state['can_create_streams'] = user_profile.can_create_streams()
-        state['can_subscribe_other_users'] = user_profile.can_subscribe_other_users()
         state['cross_realm_bots'] = list(get_cross_realm_dicts())
-        state['is_admin'] = user_profile.is_realm_admin
-        state['is_owner'] = user_profile.is_realm_owner
-        state['is_guest'] = user_profile.is_guest
-        state['user_id'] = user_profile.id
-        state['enter_sends'] = user_profile.enter_sends
-        state['email'] = user_profile.email
-        state['delivery_email'] = user_profile.delivery_email
-        state['full_name'] = user_profile.full_name
+
+        if user_profile is not None:
+            # For the user's own avatar URL, we force
+            # client_gravatar=False, since that saves some unnecessary
+            # client-side code for handing medium-size avatars.  See #8253
+            # for details.
+            state['avatar_source'] = user_profile.avatar_source
+            state['avatar_url_medium'] = avatar_url(
+                user_profile,
+                medium=True,
+                client_gravatar=False,
+            )
+            state['avatar_url'] = avatar_url(
+                user_profile,
+                medium=False,
+                client_gravatar=False,
+            )
+
+            state['can_create_streams'] = user_profile.can_create_streams()
+            state['can_subscribe_other_users'] = user_profile.can_subscribe_other_users()
+            state['is_admin'] = user_profile.is_realm_admin
+            state['is_owner'] = user_profile.is_realm_owner
+            state['is_guest'] = user_profile.is_guest
+            state['user_id'] = user_profile.id
+            state['enter_sends'] = user_profile.enter_sends
+            state['email'] = user_profile.email
+            state['delivery_email'] = user_profile.delivery_email
+            state['full_name'] = user_profile.full_name
+        else:
+            state['can_create_streams'] = False
+            state['can_subscribe_other_users'] = False
+            state['is_admin'] = False
+            state['is_owner'] = False
+            state['is_guest'] = False
+            state['enter_sends'] = fake_user.enter_sends
+            # In this code path, we don't set various identity
+            # parameters.  It's likely that we should be instead
+            # creating `fake_user` with values for these and
+            # deduplicating this code.
 
     if want('realm_bot'):
-        state['realm_bots'] = get_owned_bot_dicts(user_profile)
+        state['realm_bots'] = [] if user_profile is None else get_owned_bot_dicts(user_profile)
 
     # This does not yet have an apply_event counterpart, since currently,
     # new entries for EMBEDDED_BOTS can only be added directly in the codebase.
@@ -270,11 +302,14 @@ def fetch_initial_state_data(user_profile: UserProfile,
         # intermediate form as a dictionary keyed by recipient_id,
         # which is more efficient to update, and is rewritten to the
         # final format in post_process_state.
-        state['raw_recent_private_conversations'] = get_recent_private_conversations(user_profile)
+        state['raw_recent_private_conversations'] = {} if user_profile is None else get_recent_private_conversations(user_profile)
 
     if want('subscription'):
-        subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
-            user_profile, include_subscribers=include_subscribers)
+        if user_profile is not None:
+            subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
+                user_profile, include_subscribers=include_subscribers)
+        else:
+            subscriptions, unsubscribed, never_subscribed = get_web_public_subs(realm)
         state['subscriptions'] = subscriptions
         state['unsubscribed'] = unsubscribed
         state['never_subscribed'] = never_subscribed
@@ -284,23 +319,42 @@ def fetch_initial_state_data(user_profile: UserProfile,
         # message updates. This is due to the fact that new messages will not
         # generate a flag update so we need to use the flags field in the
         # message event.
-        state['raw_unread_msgs'] = get_raw_unread_data(user_profile)
+        if user_profile is None:
+            # TODO: We should deduplicate this logic by extracting the
+            # row-processing part of get_raw_unread_data as a helper
+            # function, and calling that with an empty list.
+            state['raw_unread_msgs'] = {
+                'pm_dict': {},
+                'stream_dict': {},
+                'muted_stream_ids': [],
+                'unmuted_stream_msgs': set(),
+                'huddle_dict': {},
+                'mentions': set()
+            }
+        else:
+            state['raw_unread_msgs'] = get_raw_unread_data(user_profile)
 
     if want('starred_messages'):
-        state['starred_messages'] = get_starred_message_ids(user_profile)
+        state['starred_messages'] = [] if user_profile is None else get_starred_message_ids(user_profile)
 
     if want('stream'):
-        state['streams'] = do_get_streams(user_profile)
+        if user_profile is not None:
+            state['streams'] = do_get_streams(user_profile)
+        else:
+            state['streams'] = get_web_public_streams(realm)
         state['stream_name_max_length'] = Stream.MAX_NAME_LENGTH
         state['stream_description_max_length'] = Stream.MAX_DESCRIPTION_LENGTH
     if want('default_streams'):
-        if user_profile.is_guest:
+        if user_profile is None or user_profile.is_guest:
+            # Guest users and logged-out users don't have access to
+            # all default streams, so we pretend the organization
+            # doesn't have any.
             state['realm_default_streams'] = []
         else:
             state['realm_default_streams'] = streams_to_dicts_sorted(
                 get_default_streams_for_realm(realm.id))
     if want('default_stream_groups'):
-        if user_profile.is_guest:
+        if user_profile is None or user_profile.is_guest:
             state['realm_default_stream_groups'] = []
         else:
             state['realm_default_stream_groups'] = default_stream_groups_to_dicts_sorted(
@@ -311,19 +365,26 @@ def fetch_initial_state_data(user_profile: UserProfile,
 
     if want('update_display_settings'):
         for prop in UserProfile.property_types:
-            state[prop] = getattr(user_profile, prop)
-        state['emojiset_choices'] = user_profile.emojiset_choices()
+            if user_profile is not None:
+                state[prop] = getattr(user_profile, prop)
+            else:
+                state[prop] = getattr(fake_user, prop)
+            state['emojiset_choices'] = UserProfile.emojiset_choices()
 
     if want('update_global_notifications'):
         for notification in UserProfile.notification_setting_types:
-            state[notification] = getattr(user_profile, notification)
+            if user_profile is not None:
+                state[notification] = getattr(user_profile, notification)
+            else:
+                state[notification] = getattr(fake_user, notification)
         state['available_notification_sounds'] = get_available_notification_sounds()
 
     if want('user_status'):
-        state['user_status'] = get_user_info_dict(realm_id=realm.id)
+        # We require creating an account to access statuses.
+        state['user_status'] = {} if user_profile is None else get_user_info_dict(realm_id=realm.id)
 
     if want('video_calls'):
-        state['has_zoom_token'] = user_profile.zoom_token is not None
+        state['has_zoom_token'] = False if user_profile is None else user_profile.zoom_token is not None
 
     return state
 
