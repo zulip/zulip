@@ -144,7 +144,7 @@ def fetch_initial_state_data(user_profile: Optional[UserProfile],
         state['muted_topics'] = [] if user_profile is None else get_topic_mutes(user_profile)
 
     if want('presence'):
-        state['presences'] = get_presences_for_realm(realm, slim_presence)
+        state['presences'] = {} if user_profile is None else get_presences_for_realm(realm, slim_presence)
 
     if want('realm'):
         for property_name in Realm.property_types:
@@ -167,6 +167,13 @@ def fetch_initial_state_data(user_profile: Optional[UserProfile],
         state['realm_message_content_delete_limit_seconds'] = realm.message_content_delete_limit_seconds
         state['realm_community_topic_editing_limit_seconds'] = \
             Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS
+
+        # This setting determines whether to send presence and also
+        # whether to display of users list in the right sidebar; we
+        # want both behaviors for logged-out users.  We may in the
+        # future choose to move this logic to the frontend.
+        state['realm_presence_disabled'] = True if user_profile is None else realm.presence_disabled
+
         state['realm_icon_url'] = realm_icon_url(realm)
         state['realm_icon_source'] = realm.icon_source
         state['max_icon_file_size'] = settings.MAX_ICON_FILE_SIZE
@@ -174,7 +181,6 @@ def fetch_initial_state_data(user_profile: Optional[UserProfile],
         state['realm_bot_domain'] = realm.get_bot_domain()
         state['realm_uri'] = realm.uri
         state['realm_available_video_chat_providers'] = realm.VIDEO_CHAT_PROVIDERS
-        state['realm_presence_disabled'] = realm.presence_disabled
         state['settings_send_digest_emails'] = settings.SEND_DIGEST_EMAILS
         state['realm_digest_emails_enabled'] = realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
         state['realm_is_zephyr_mirror_realm'] = realm.is_zephyr_mirror_realm
