@@ -9,10 +9,19 @@ from django.urls import path
 from django.views.generic import TemplateView
 from django.views.static import serve
 
-import zerver.views.auth
-import zerver.views.development.email_log
-import zerver.views.development.integrations
-import zerver.views.development.registration
+from zerver.views.auth import login_page
+from zerver.views.development.email_log import clear_emails, email_page, generate_all_emails
+from zerver.views.development.integrations import (
+    check_send_webhook_fixture_message,
+    dev_panel,
+    get_fixtures,
+    send_all_webhook_fixture_messages,
+)
+from zerver.views.development.registration import (
+    confirmation_key,
+    register_development_realm,
+    register_development_user,
+)
 
 # These URLs are available only in the development environment
 
@@ -33,22 +42,22 @@ urls = [
                  os.path.join(settings.DEPLOY_ROOT, 'docs/_build/html')}),
 
     # The special no-password login endpoint for development
-    path('devlogin/', zerver.views.auth.login_page,
+    path('devlogin/', login_page,
          {'template_name': 'zerver/dev_login.html'}, name='login_page'),
 
     # Page for testing email templates
-    path('emails/', zerver.views.development.email_log.email_page),
-    path('emails/generate/', zerver.views.development.email_log.generate_all_emails),
-    path('emails/clear/', zerver.views.development.email_log.clear_emails),
+    path('emails/', email_page),
+    path('emails/generate/', generate_all_emails),
+    path('emails/clear/', clear_emails),
 
     # Listing of useful URLs and various tools for development
     path('devtools/', TemplateView.as_view(template_name='zerver/dev_tools.html')),
     # Register New User and Realm
     path('devtools/register_user/',
-         zerver.views.development.registration.register_development_user,
+         register_development_user,
          name='register_dev_user'),
     path('devtools/register_realm/',
-         zerver.views.development.registration.register_development_realm,
+         register_development_realm,
          name='register_dev_realm'),
 
     # Have easy access for error pages
@@ -56,13 +65,13 @@ urls = [
     path('errors/5xx/', TemplateView.as_view(template_name='500.html')),
 
     # Add a convenient way to generate webhook messages from fixtures.
-    path('devtools/integrations/', zerver.views.development.integrations.dev_panel),
+    path('devtools/integrations/', dev_panel),
     path('devtools/integrations/check_send_webhook_fixture_message',
-         zerver.views.development.integrations.check_send_webhook_fixture_message),
+         check_send_webhook_fixture_message),
     path('devtools/integrations/send_all_webhook_fixture_messages',
-         zerver.views.development.integrations.send_all_webhook_fixture_messages),
+         send_all_webhook_fixture_messages),
     path('devtools/integrations/<integration_name>/fixtures',
-         zerver.views.development.integrations.get_fixtures),
+         get_fixtures),
 ]
 
 # Serve static assets via the Django server
@@ -79,7 +88,7 @@ else:
     urls += static(urlsplit(settings.STATIC_URL).path, view=serve_static)
 
 i18n_urls = [
-    path('confirmation_key/', zerver.views.development.registration.confirmation_key),
+    path('confirmation_key/', confirmation_key),
 ]
 urls += i18n_urls
 
