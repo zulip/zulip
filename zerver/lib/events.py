@@ -86,10 +86,10 @@ def fetch_initial_state_data(user_profile: UserProfile,
                              event_types: Optional[Iterable[str]],
                              queue_id: str, client_gravatar: bool,
                              user_avatar_url_field_optional: bool,
+                             realm: Realm,
                              slim_presence: bool = False,
                              include_subscribers: bool = True) -> Dict[str, Any]:
     state: Dict[str, Any] = {'queue_id': queue_id}
-    realm = user_profile.realm
 
     if event_types is None:
         # return True always
@@ -882,6 +882,7 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
     ret = fetch_initial_state_data(user_profile, event_types_set, queue_id,
                                    client_gravatar=client_gravatar,
                                    user_avatar_url_field_optional=user_avatar_url_field_optional,
+                                   realm=user_profile.realm,
                                    slim_presence=slim_presence,
                                    include_subscribers=include_subscribers)
 
