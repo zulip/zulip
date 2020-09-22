@@ -140,9 +140,9 @@ yields a response with this HTTP header:
 
 We can see this reflected in [zproject/urls.py](https://github.com/zulip/zulip/blob/master/zproject/urls.py):
 
-    path('users', rest_dispatch,
-        {'GET': get_members_backend,
-         'PUT': create_user_backend}),
+    rest_path('users',
+              GET=get_members_backend,
+              PUT=create_user_backend),
 
 In this way, the API is partially self-documenting.
 
@@ -176,11 +176,11 @@ the request, and then figure out which view to show from that.
 In our example,
 
 ```
-{'GET': get_members_backend,
- 'PUT': create_user_backend}
+GET=get_members_backend,
+PUT=create_user_backend
 ```
 
-is supplied as an argument to `rest_dispatch`, along with the
+are supplied as arguments to `rest_path`, along with the
 [HTTPRequest](https://docs.djangoproject.com/en/1.8/ref/request-response/).
 The request has the HTTP verb `PUT`, which `rest_dispatch` can use to
 find the correct view to show:
