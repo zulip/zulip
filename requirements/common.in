@@ -186,3 +186,6 @@ openapi-core
 
 # For reporting errors to sentry.io
 sentry-sdk
+
+# For detecting URLs to link
+tlds
