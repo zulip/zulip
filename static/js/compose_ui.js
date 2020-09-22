@@ -8,7 +8,18 @@ exports.autosize_textarea = function (textarea) {
     // Since this supports both compose and file upload, one must pass
     // in the text area to autosize.
     autosize.update(textarea);
-};
+    $("#compose-textarea").css(
+        "max-height",
+        parseInt($("#bottom_whitespace").outerHeight(), 10) -
+            (parseInt($("#below-compose-content").outerHeight(), 10) +
+                parseInt($("#right_part").outerHeight(), 10) +
+                parseInt($("#compose-textarea").css("padding-top"), 10) +
+                parseInt($("#compose-textarea").css("padding-bottom"), 10) +
+                parseInt($("#compose-textarea").css("margin-top"), 10) +
+                parseInt($(".message_comp.compose-content").css("padding-top"), 10) +
+                parseInt($(".message_comp.compose-content").css("padding-bottom"), 10)),
+    );
+}
 
 exports.smart_insert = function (textarea, syntax) {
     function is_space(c) {

@@ -645,10 +645,12 @@ exports.initialize = function () {
     $(".compose_stream_button").on("click", () => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("stream", {trigger: "new topic button"});
+        compose_ui.autosize_textarea();
     });
     $(".compose_private_button").on("click", () => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("private");
+        compose_ui.autosize_textarea();
     });
 
     $("body").on("click", ".compose_mobile_stream_button", () => {

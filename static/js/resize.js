@@ -157,6 +157,7 @@ exports.watch_manual_resize = function (element) {
 
 exports.resize_bottom_whitespace = function (h) {
     $("#bottom_whitespace").height(h.bottom_whitespace_height);
+    compose_ui.autosize_textarea();
 };
 
 exports.resize_stream_filters_container = function (h) {
