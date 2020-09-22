@@ -440,7 +440,7 @@ v1_api_and_json_patterns = [
     # It's important that this sit after users/me/presence so that
     # Django's URL resolution order doesn't break the
     # /users/me/presence endpoint.
-    rest_path(r'users/<email>/presence',
+    rest_path('users/<email>/presence',
               GET=get_presence_backend),
     rest_path('realm/presence',
               GET=get_statuses_for_realm),
