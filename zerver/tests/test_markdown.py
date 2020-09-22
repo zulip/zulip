@@ -1066,6 +1066,43 @@ class MarkdownTest(ZulipTestCase):
         converted_topic = topic_links(realm.id, 'hello#123 #234')
         self.assertEqual(converted_topic, ['https://trac.example.com/ticket/234', 'https://trac.example.com/hello/123'])
 
+    def test_multiple_matching_realm_patterns(self) -> None:
+        realm = get_realm('zulip')
+        url_format_string = r"https://trac.example.com/ticket/%(id)s"
+        realm_filter_1 = RealmFilter(realm=realm,
+                                     pattern=r"(?P<id>ABC\-[0-9]+)(?![A-Z0-9-])",
+                                     url_format_string=url_format_string)
+        realm_filter_1.save()
+        self.assertEqual(
+            realm_filter_1.__str__(),
+            r'<RealmFilter(zulip): (?P<id>ABC\-[0-9]+)(?![A-Z0-9-])'
+            ' https://trac.example.com/ticket/%(id)s>')
+
+        url_format_string = r"https://other-trac.example.com/ticket/%(id)s"
+        realm_filter_2 = RealmFilter(realm=realm,
+                                     pattern=r"(?P<id>[A-Z][A-Z0-9]*\-[0-9]+)(?![A-Z0-9-])",
+                                     url_format_string=url_format_string)
+        realm_filter_2.save()
+        self.assertEqual(
+            realm_filter_2.__str__(),
+            r'<RealmFilter(zulip): (?P<id>[A-Z][A-Z0-9]*\-[0-9]+)(?![A-Z0-9-])'
+            ' https://other-trac.example.com/ticket/%(id)s>')
+
+        msg = Message(sender=self.example_user('othello'))
+        msg.set_topic_name("ABC-123")
+
+        flush_per_request_caches()
+
+        content = "We should fix ABC-123 or [trac ABC-123](https://trac.example.com/ticket/16) today."
+        converted = markdown_convert(content, message_realm=realm, message=msg)
+        converted_topic = topic_links(realm.id, msg.topic_name())
+
+        # The second filter (which was saved later) was ignored as the content was marked AtomicString after first conversion.
+        # There was no easy way to support parsing both filters and not run into an infinite loop, hence the sencond filter is ignored.
+        self.assertEqual(converted, '<p>We should fix <a href="https://trac.example.com/ticket/ABC-123">ABC-123</a> or <a href="https://trac.example.com/ticket/16">trac ABC-123</a> today.</p>')
+        # Both the links should be genered in topics.
+        self.assertEqual(converted_topic, ['https://trac.example.com/ticket/ABC-123', 'https://other-trac.example.com/ticket/ABC-123'])
+
     def test_maybe_update_markdown_engines(self) -> None:
         realm = get_realm('zulip')
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
