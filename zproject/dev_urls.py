@@ -34,7 +34,7 @@ urls = [
 
     # The special no-password login endpoint for development
     path('devlogin/', zerver.views.auth.login_page,
-         {'template_name': 'zerver/dev_login.html'}, name='zerver.views.auth.login_page'),
+         {'template_name': 'zerver/dev_login.html'}, name='login_page'),
 
     # Page for testing email templates
     path('emails/', zerver.views.development.email_log.email_page),
@@ -46,10 +46,10 @@ urls = [
     # Register New User and Realm
     path('devtools/register_user/',
          zerver.views.development.registration.register_development_user,
-         name='zerver.views.development.registration.register_development_user'),
+         name='register_dev_user'),
     path('devtools/register_realm/',
          zerver.views.development.registration.register_development_realm,
-         name='zerver.views.development.registration.register_development_realm'),
+         name='register_dev_realm'),
 
     # Have easy access for error pages
     path('errors/404/', TemplateView.as_view(template_name='404.html')),

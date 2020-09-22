@@ -6,25 +6,18 @@ from zerver.lib.rest import rest_dispatch
 
 i18n_urlpatterns = [
     # Server admin (user_profile.is_staff) visible stats pages
-    path('activity', analytics.views.get_activity,
-         name='analytics.views.get_activity'),
+    path('activity', analytics.views.get_activity),
     path('activity/support', analytics.views.support,
-         name='analytics.views.support'),
-    path('realm_activity/<realm_str>/', analytics.views.get_realm_activity,
-         name='analytics.views.get_realm_activity'),
-    path('user_activity/<email>/', analytics.views.get_user_activity,
-         name='analytics.views.get_user_activity'),
+         name='support'),
+    path('realm_activity/<realm_str>/', analytics.views.get_realm_activity),
+    path('user_activity/<email>/', analytics.views.get_user_activity),
 
-    path('stats/realm/<realm_str>/', analytics.views.stats_for_realm,
-         name='analytics.views.stats_for_realm'),
-    path('stats/installation', analytics.views.stats_for_installation,
-         name='analytics.views.stats_for_installation'),
+    path('stats/realm/<realm_str>/', analytics.views.stats_for_realm),
+    path('stats/installation', analytics.views.stats_for_installation),
     path('stats/remote/<int:remote_server_id>/installation',
-         analytics.views.stats_for_remote_installation,
-         name='analytics.views.stats_for_remote_installation'),
+         analytics.views.stats_for_remote_installation),
     path('stats/remote/<int:remote_server_id>/realm/<int:remote_realm_id>/',
-         analytics.views.stats_for_remote_realm,
-         name='analytics.views.stats_for_remote_realm'),
+         analytics.views.stats_for_remote_realm),
 
     # User-visible stats page
     path('stats', analytics.views.stats,

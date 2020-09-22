@@ -122,16 +122,16 @@ _properties = {
     Confirmation.USER_REGISTRATION: ConfirmationType('check_prereg_key_and_redirect'),
     Confirmation.INVITATION: ConfirmationType('check_prereg_key_and_redirect',
                                               validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS),
-    Confirmation.EMAIL_CHANGE: ConfirmationType('zerver.views.user_settings.confirm_email_change'),
+    Confirmation.EMAIL_CHANGE: ConfirmationType('confirm_email_change'),
     Confirmation.UNSUBSCRIBE: ConfirmationType(
-        'zerver.views.unsubscribe.email_unsubscribe',
+        'unsubscribe',
         validity_in_days=1000000,  # should never expire
     ),
     Confirmation.MULTIUSE_INVITE: ConfirmationType(
-        'zerver.views.registration.accounts_home_from_multiuse_invite',
+        'join',
         validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS),
     Confirmation.REALM_CREATION: ConfirmationType('check_prereg_key_and_redirect'),
-    Confirmation.REALM_REACTIVATION: ConfirmationType('zerver.views.realm.realm_reactivation'),
+    Confirmation.REALM_REACTIVATION: ConfirmationType('realm_reactivation'),
 }
 
 def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> str:
@@ -171,7 +171,7 @@ def generate_realm_creation_url(by_admin: bool=False) -> str:
                                     presume_email_valid=by_admin)
     return urljoin(
         settings.ROOT_DOMAIN_URI,
-        reverse('zerver.views.create_realm', kwargs={'creation_key': key}),
+        reverse('create_realm', kwargs={'creation_key': key}),
     )
 
 class RealmCreationKey(models.Model):

@@ -271,7 +271,7 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
 
     redirect_to = result.data_dict.get('redirect_to', '')
     if is_realm_creation is not None and settings.FREE_TRIAL_DAYS not in [None, 0]:
-        redirect_to = "{}?onboarding=true".format(reverse('corporate.views.initial_upgrade'))
+        redirect_to = "{}?onboarding=true".format(reverse('initial_upgrade'))
 
     redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)
@@ -292,7 +292,7 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
     iv = secrets.token_bytes(12)
     desktop_data = (iv + AESGCM(key).encrypt(iv, token.encode(), b"")).hex()
     context = {'desktop_data': desktop_data,
-               'browser_url': reverse('zerver.views.auth.login_page',
+               'browser_url': reverse('login_page',
                                       kwargs = {'template_name': 'zerver/login.html'}),
                'realm_icon_url': realm_icon_url(user_profile.realm)}
     return render(request, 'zerver/desktop_redirect.html', context=context)
@@ -497,7 +497,7 @@ def start_remote_user_sso(request: HttpRequest) -> HttpResponse:
     to do authentication, so we need this additional endpoint.
     """
     query = request.META['QUERY_STRING']
-    return redirect(add_query_to_redirect_url(reverse('login-sso'), query))
+    return redirect(add_query_to_redirect_url(reverse(remote_user_sso), query))
 
 @handle_desktop_flow
 def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[str]=None,
@@ -579,7 +579,7 @@ def redirect_and_log_into_subdomain(result: ExternalAuthResult) -> HttpResponse:
     token = result.store_data()
     realm = get_realm(result.data_dict["subdomain"])
     subdomain_login_uri = (realm.uri
-                           + reverse('zerver.views.auth.log_into_subdomain', args=[token]))
+                           + reverse(log_into_subdomain, args=[token]))
     return redirect(subdomain_login_uri)
 
 def get_dev_users(realm: Optional[Realm]=None, extra_users_count: int=10) -> List[UserProfile]:
@@ -610,10 +610,10 @@ def show_deactivation_notice(request: HttpRequest) -> HttpResponse:
         return render(request, "zerver/deactivated.html",
                       context={"deactivated_domain_name": realm.name})
 
-    return HttpResponseRedirect(reverse('zerver.views.auth.login_page'))
+    return HttpResponseRedirect(reverse('login_page'))
 
 def redirect_to_deactivation_notice() -> HttpResponse:
-    return HttpResponseRedirect(reverse('zerver.views.auth.show_deactivation_notice'))
+    return HttpResponseRedirect(reverse(show_deactivation_notice))
 
 def add_dev_login_context(realm: Optional[Realm], context: Dict[str, Any]) -> None:
     users = get_dev_users(realm)
@@ -695,7 +695,7 @@ def login_page(
     elif request.user.is_authenticated and not is_preview:
         return HttpResponseRedirect(request.user.realm.uri)
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
-        redirect_url = reverse('zerver.views.registration.realm_redirect')
+        redirect_url = reverse('realm_redirect')
         if request.GET:
             redirect_url = add_query_to_redirect_url(redirect_url, request.GET.urlencode())
         return HttpResponseRedirect(redirect_url)

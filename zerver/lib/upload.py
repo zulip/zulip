@@ -651,7 +651,7 @@ def generate_unauthed_file_access_url(path_id: str) -> str:
     token = base64.b16encode(signed_data.encode('utf-8')).decode('utf-8')
 
     filename = path_id.split('/')[-1]
-    return reverse('zerver.views.upload.serve_local_file_unauthed', args=[token, filename])
+    return reverse('local_file_unauthed', args=[token, filename])
 
 def get_local_file_path_id_from_token(token: str) -> Optional[str]:
     signer = TimestampSigner(salt=LOCAL_FILE_ACCESS_TOKEN_SALT)
