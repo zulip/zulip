@@ -1352,26 +1352,22 @@ def format_date_for_activity_reports(date: Optional[datetime]) -> str:
         return ''
 
 def user_activity_link(email: str) -> mark_safe:
-    url_name = 'analytics.views.get_user_activity'
-    url = reverse(url_name, kwargs=dict(email=email))
+    url = reverse(get_user_activity, kwargs=dict(email=email))
     email_link = f'<a href="{url}">{email}</a>'
     return mark_safe(email_link)
 
 def realm_activity_link(realm_str: str) -> mark_safe:
-    url_name = 'analytics.views.get_realm_activity'
-    url = reverse(url_name, kwargs=dict(realm_str=realm_str))
+    url = reverse(get_realm_activity, kwargs=dict(realm_str=realm_str))
     realm_link = f'<a href="{url}">{realm_str}</a>'
     return mark_safe(realm_link)
 
 def realm_stats_link(realm_str: str) -> mark_safe:
-    url_name = 'analytics.views.stats_for_realm'
-    url = reverse(url_name, kwargs=dict(realm_str=realm_str))
+    url = reverse(stats_for_realm, kwargs=dict(realm_str=realm_str))
     stats_link = f'<a href="{url}"><i class="fa fa-pie-chart"></i>{realm_str}</a>'
     return mark_safe(stats_link)
 
 def remote_installation_stats_link(server_id: int, hostname: str) -> mark_safe:
-    url_name = 'analytics.views.stats_for_remote_installation'
-    url = reverse(url_name, kwargs=dict(remote_server_id=server_id))
+    url = reverse(stats_for_remote_installation, kwargs=dict(remote_server_id=server_id))
     stats_link = f'<a href="{url}"><i class="fa fa-pie-chart"></i>{hostname}</a>'
     return mark_safe(stats_link)
 

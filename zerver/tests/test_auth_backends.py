@@ -93,7 +93,7 @@ from zerver.models import (
     get_user_by_delivery_email,
 )
 from zerver.signals import JUST_CREATED_THRESHOLD
-from zerver.views.auth import maybe_send_to_registration
+from zerver.views.auth import log_into_subdomain, maybe_send_to_registration
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
     AppleAuthBackend,
@@ -2940,7 +2940,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
             token = ExternalAuthResult(data_dict=data).store_data()
         else:
             token = force_token
-        url_path = reverse('zerver.views.auth.log_into_subdomain', args=[token])
+        url_path = reverse(log_into_subdomain, args=[token])
         return self.client_get(url_path, subdomain=subdomain)
 
     def test_redirect_to_next_url_for_log_into_subdomain(self) -> None:

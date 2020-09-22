@@ -154,7 +154,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     if not settings.BILLING_ENABLED or user.is_guest:
         return render(request, "404.html", status=404)
 
-    billing_page_url = reverse('corporate.views.billing_home')
+    billing_page_url = reverse(billing_home)
 
     customer = get_customer_by_realm(user.realm)
     if customer is not None and (get_current_plan_by_customer(customer) is not None or customer.sponsorship_pending):
@@ -205,7 +205,7 @@ def sponsorship(request: HttpRequest, user: UserProfile,
     user_role = user.get_role_name()
 
     support_realm_uri = get_realm(settings.STAFF_SUBDOMAIN).uri
-    support_url = urljoin(support_realm_uri, urlunsplit(("", "", reverse('analytics.views.support'),
+    support_url = urljoin(support_realm_uri, urlunsplit(("", "", reverse("support"),
                           urlencode({"q": realm.string_id}), "")))
 
     context = {
@@ -246,14 +246,14 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         return render(request, 'corporate/billing.html', context=context)
 
     if customer is None:
-        return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
+        return HttpResponseRedirect(reverse(initial_upgrade))
 
     if customer.sponsorship_pending:
         context["sponsorship_pending"] = True
         return render(request, 'corporate/billing.html', context=context)
 
     if not CustomerPlan.objects.filter(customer=customer).exists():
-        return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
+        return HttpResponseRedirect(reverse(initial_upgrade))
 
     if not user.has_billing_access:
         return render(request, 'corporate/billing.html', context=context)

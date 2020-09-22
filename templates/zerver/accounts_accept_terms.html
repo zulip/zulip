@@ -18,7 +18,7 @@ the registration flow has its own (nearly identical) copy of the fields below in
         {% endif %}
 
         <div class="form-horizontal white-box">
-            <form method="post" class="form-horizontal" id="registration" action="{{ url('zerver.views.home.accounts_accept_terms') }}">
+            <form method="post" class="form-horizontal" id="registration" action="{{ url('accept_terms') }}">
                 {{ csrf_input }}
                 <div class="control-group">
                     <label for="id_email" class="control-label">{{ _("Email") }}</label>

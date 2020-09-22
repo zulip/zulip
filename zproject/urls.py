@@ -80,11 +80,9 @@ v1_api_and_json_patterns = [
          {'PATCH': 'zerver.views.realm.update_realm'}),
 
     # Returns a 204, used by desktop app to verify connectivity status
-    path('generate_204', zerver.views.registration.generate_204,
-         name='zerver.views.registration.generate_204'),
+    path('generate_204', zerver.views.registration.generate_204),
 
-    path('realm/subdomain/<subdomain>', zerver.views.realm.check_subdomain_available,
-         name='zerver.views.realm.check_subdomain_available'),
+    path('realm/subdomain/<subdomain>', zerver.views.realm.check_subdomain_available),
 
     # realm/domains -> zerver.views.realm_domains
     path('realm/domains', rest_dispatch,
@@ -433,12 +431,11 @@ integrations_view = IntegrationView.as_view()
 # If you're adding a new page to the website (as opposed to a new
 # endpoint for use by code), you should add it here.
 i18n_urls = [
-    path('', zerver.views.home.home, name='zerver.views.home.home'),
+    path('', zerver.views.home.home, name='home'),
     # We have a desktop-specific landing page in case we change our /
     # to not log in in the future. We don't want to require a new
     # desktop app build for everyone in that case
-    path('desktop_home/', zerver.views.home.desktop_home,
-         name='zerver.views.home.desktop_home'),
+    path('desktop_home/', zerver.views.home.desktop_home),
 
     # Backwards-compatibility (legacy) Google auth URL for the mobile
     # apps; see https://github.com/zulip/zulip/issues/13081 for
@@ -448,57 +445,50 @@ i18n_urls = [
 
     path('accounts/login/start/sso/', zerver.views.auth.start_remote_user_sso, name='start-login-sso'),
     path('accounts/login/sso/', zerver.views.auth.remote_user_sso, name='login-sso'),
-    path('accounts/login/jwt/', zerver.views.auth.remote_user_jwt, name='login-jwt'),
+    path('accounts/login/jwt/', zerver.views.auth.remote_user_jwt),
     path('accounts/login/social/<backend>', zerver.views.auth.start_social_login,
          name='login-social'),
     path('accounts/login/social/<backend>/<extra_arg>', zerver.views.auth.start_social_login,
-         name='login-social-extra-arg'),
+         name='login-social'),
     path('accounts/register/social/<backend>',
          zerver.views.auth.start_social_signup,
          name='signup-social'),
     path('accounts/register/social/<backend>/<extra_arg>',
          zerver.views.auth.start_social_signup,
-         name='signup-social-extra-arg'),
-    path('accounts/login/subdomain/<token>', zerver.views.auth.log_into_subdomain,
-         name='zerver.views.auth.log_into_subdomain'),
-    path('accounts/login/local/', zerver.views.auth.dev_direct_login,
-         name='zerver.views.auth.dev_direct_login'),
+         name='signup-social'),
+    path('accounts/login/subdomain/<token>', zerver.views.auth.log_into_subdomain),
+    path('accounts/login/local/', zerver.views.auth.dev_direct_login, name='login-local'),
     # We have two entries for accounts/login; only the first one is
     # used for URL resolution.  The second here is to allow
-    # reverse("django.contrib.auth.views.login") in templates to
+    # reverse("login") in templates to
     # return `/accounts/login/`.
     path('accounts/login/', zerver.views.auth.login_page,
-         {'template_name': 'zerver/login.html'}, name='zerver.views.auth.login_page'),
+         {'template_name': 'zerver/login.html'}, name='login_page'),
     path('accounts/login/', LoginView.as_view(template_name='zerver/login.html'),
-         name='django.contrib.auth.views.login'),
-    path('accounts/logout/', zerver.views.auth.logout_then_login,
-         name='zerver.views.auth.logout_then_login'),
+         name='login'),
+    path('accounts/logout/', zerver.views.auth.logout_then_login),
 
     path('accounts/webathena_kerberos_login/',
-         zerver.views.zephyr.webathena_kerberos_login,
-         name='zerver.views.zephyr.webathena_kerberos_login'),
+         zerver.views.zephyr.webathena_kerberos_login),
 
-    path('accounts/password/reset/', zerver.views.auth.password_reset,
-         name='zerver.views.auth.password_reset'),
+    path('accounts/password/reset/', zerver.views.auth.password_reset, name='password_reset'),
     path('accounts/password/reset/done/',
          PasswordResetDoneView.as_view(template_name='zerver/reset_emailed.html')),
     path('accounts/password/reset/<uidb64>/<token>/',
          PasswordResetConfirmView.as_view(success_url='/accounts/password/done/',
                                           template_name='zerver/reset_confirm.html',
                                           form_class=zerver.forms.LoggingSetPasswordForm),
-         name='django.contrib.auth.views.password_reset_confirm'),
+         name='password_reset_confirm'),
     path('accounts/password/done/',
          PasswordResetCompleteView.as_view(template_name='zerver/reset_done.html')),
     path('accounts/deactivated/',
-         zerver.views.auth.show_deactivation_notice,
-         name='zerver.views.auth.show_deactivation_notice'),
+         zerver.views.auth.show_deactivation_notice),
 
     # Displays digest email content in browser.
     path('digest/', zerver.views.digest.digest_page),
 
     # Registration views, require a confirmation ID.
-    path('accounts/home/', zerver.views.registration.accounts_home,
-         name='zerver.views.registration.accounts_home'),
+    path('accounts/home/', zerver.views.registration.accounts_home),
     path('accounts/send_confirm/<email>',
          TemplateView.as_view(
              template_name='zerver/accounts_send_confirm.html'),
@@ -507,60 +497,51 @@ i18n_urls = [
          TemplateView.as_view(
              template_name='zerver/accounts_send_confirm.html'),
          {'realm_creation': True}, name='new_realm_send_confirm'),
-    path('accounts/register/', zerver.views.registration.accounts_register,
-         name='zerver.views.registration.accounts_register'),
+    path('accounts/register/', zerver.views.registration.accounts_register, name='accounts_register'),
     path('accounts/do_confirm/<confirmation_key>',
          zerver.views.registration.check_prereg_key_and_redirect,
          name='check_prereg_key_and_redirect'),
 
     path('accounts/confirm_new_email/<confirmation_key>',
          zerver.views.user_settings.confirm_email_change,
-         name='zerver.views.user_settings.confirm_email_change'),
+         name='confirm_email_change'),
 
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
     # including the welcome emails (day 1 & 2), missed PMs, etc.
     path('accounts/unsubscribe/<email_type>/<confirmation_key>',
-         zerver.views.unsubscribe.email_unsubscribe,
-         name='zerver.views.unsubscribe.email_unsubscribe'),
+         zerver.views.unsubscribe.email_unsubscribe, name='unsubscribe'),
 
     # Portico-styled page used to provide email confirmation of terms acceptance.
-    path('accounts/accept_terms/', zerver.views.home.accounts_accept_terms,
-         name='zerver.views.home.accounts_accept_terms'),
+    path('accounts/accept_terms/', zerver.views.home.accounts_accept_terms, name='accept_terms'),
 
     # Find your account
-    path('accounts/find/', zerver.views.registration.find_account,
-         name='zerver.views.registration.find_account'),
+    path('accounts/find/', zerver.views.registration.find_account, name='find_account'),
 
     # Go to organization subdomain
-    path('accounts/go/', zerver.views.registration.realm_redirect,
-         name='zerver.views.registration.realm_redirect'),
+    path('accounts/go/', zerver.views.registration.realm_redirect, name='realm_redirect'),
 
     # Realm Creation
-    path('new/', zerver.views.registration.create_realm,
-         name='zerver.views.create_realm'),
+    path('new/', zerver.views.registration.create_realm),
     path('new/<creation_key>',
-         zerver.views.registration.create_realm, name='zerver.views.create_realm'),
+         zerver.views.registration.create_realm, name='create_realm'),
 
     # Realm Reactivation
     path('reactivate/<confirmation_key>', zerver.views.realm.realm_reactivation,
-         name='zerver.views.realm.realm_reactivation'),
+         name='realm_reactivation'),
 
     # Global public streams (Zulip's way of doing archives)
     path('archive/streams/<int:stream_id>/topics/<topic_name>',
-         zerver.views.archive.archive,
-         name='zerver.views.archive.archive'),
+         zerver.views.archive.archive),
     path('archive/streams/<int:stream_id>/topics',
-         zerver.views.archive.get_web_public_topics_backend,
-         name='zerver.views.archive.get_web_public_topics_backend'),
+         zerver.views.archive.get_web_public_topics_backend),
 
     # Login/registration
     path('register/', zerver.views.registration.accounts_home, name='register'),
     path('login/', zerver.views.auth.login_page, {'template_name': 'zerver/login.html'},
-         name='zerver.views.auth.login_page'),
+         name='login_page'),
 
     path('join/<confirmation_key>/',
-         zerver.views.registration.accounts_home_from_multiuse_invite,
-         name='zerver.views.registration.accounts_home_from_multiuse_invite'),
+         zerver.views.registration.accounts_home_from_multiuse_invite, name='join'),
 
     # Used to generate a Zoom video call URL
     path('calls/zoom/register', zerver.views.video_calls.register_zoom_user),
@@ -572,18 +553,17 @@ i18n_urls = [
 
     # API and integrations documentation
     path('integrations/doc-html/<integration_name>',
-         zerver.views.documentation.integration_doc,
-         name="zerver.views.documentation.integration_doc"),
+         zerver.views.documentation.integration_doc),
     path('integrations/', integrations_view),
     path('integrations/<path:path>', integrations_view),
 
     # Landing page, features pages, signup form, etc.
-    path('hello/', zerver.views.portico.hello_view, name='landing-page'),
+    path('hello/', zerver.views.portico.hello_view),
     path('new-user/', RedirectView.as_view(url='/hello', permanent=True)),
     path('features/', zerver.views.portico.landing_view, {'template_name': 'zerver/features.html'}),
     path('plans/', zerver.views.portico.plans_view, name='plans'),
-    path('apps/', zerver.views.portico.apps_view, name='zerver.views.home.apps_view'),
-    path('apps/<platform>', zerver.views.portico.apps_view, name='zerver.views.home.apps_view'),
+    path('apps/', zerver.views.portico.apps_view),
+    path('apps/<platform>', zerver.views.portico.apps_view),
     path('team/', zerver.views.portico.team_view),
     path('history/', zerver.views.portico.landing_view, {'template_name': 'zerver/history.html'}),
     path('why-zulip/', zerver.views.portico.landing_view, {'template_name': 'zerver/why-zulip.html'}),
@@ -599,8 +579,8 @@ i18n_urls = [
     path('atlassian/', zerver.views.portico.landing_view, {'template_name': 'zerver/atlassian.html'}),
 
     # Terms of Service and privacy pages.
-    path('terms/', zerver.views.portico.terms_view, name='terms'),
-    path('privacy/', zerver.views.portico.privacy_view, name='privacy'),
+    path('terms/', zerver.views.portico.terms_view),
+    path('privacy/', zerver.views.portico.privacy_view),
     path('config-error/<error_category_name>', zerver.views.auth.config_error_view,
          name='config_error'),
     path('config-error/remoteuser/<error_category_name>',
@@ -627,7 +607,7 @@ urls += [
 urls += [
     path('user_uploads/temporary/<token>/<filename>',
          zerver.views.upload.serve_local_file_unauthed,
-         name='zerver.views.upload.serve_local_file_unauthed'),
+         name='local_file_unauthed'),
     path('user_uploads/<realm_id_str>/<path:filename>',
          rest_dispatch,
          {'GET': ('zerver.views.upload.serve_file_backend',
@@ -653,8 +633,7 @@ urls += [
 # This url serves as a way to receive CSP violation reports from the users.
 # We use this endpoint to just log these reports.
 urls += [
-    path('report/csp_violations', zerver.views.report.report_csp_violations,
-         name='zerver.views.report.report_csp_violations'),
+    path('report/csp_violations', zerver.views.report.report_csp_violations),
 ]
 
 # This url serves as a way to provide backward compatibility to messages
@@ -663,8 +642,7 @@ urls += [
 # images.
 urls += [
     path('external_content/<digest>/<received_url>',
-         zerver.views.camo.handle_camo_url,
-         name='zerver.views.camo.handle_camo_url'),
+         zerver.views.camo.handle_camo_url),
 ]
 
 # Incoming webhook URLs
@@ -697,20 +675,16 @@ v1_api_mobile_patterns = [
 
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
-    path('fetch_api_key', zerver.views.auth.api_fetch_api_key,
-         name='zerver.views.auth.api_fetch_api_key'),
+    path('fetch_api_key', zerver.views.auth.api_fetch_api_key),
 
     # This is for the signing in through the devAuthBackEnd on mobile apps.
-    path('dev_fetch_api_key', zerver.views.auth.api_dev_fetch_api_key,
-         name='zerver.views.auth.api_dev_fetch_api_key'),
+    path('dev_fetch_api_key', zerver.views.auth.api_dev_fetch_api_key),
     # This is for fetching the emails of the admins and the users.
-    path('dev_list_users', zerver.views.auth.api_dev_list_users,
-         name='zerver.views.auth.api_dev_list_users'),
+    path('dev_list_users', zerver.views.auth.api_dev_list_users),
 
     # Used to present the GOOGLE_CLIENT_ID to mobile apps
     path('fetch_google_client_id',
-         zerver.views.auth.api_fetch_google_client_id,
-         name='zerver.views.auth.api_fetch_google_client_id'),
+         zerver.views.auth.api_fetch_google_client_id),
 ]
 urls += [
     path('api/v1/', include(v1_api_mobile_patterns)),
@@ -718,8 +692,7 @@ urls += [
 
 # View for uploading messages from email mirror
 urls += [
-    path('email_mirror_message', zerver.views.email_mirror.email_mirror_message,
-         name='zerver.views.email_mirror.email_mirror_message'),
+    path('email_mirror_message', zerver.views.email_mirror.email_mirror_message),
 ]
 
 # Include URL configuration files for site-specified extra installed
@@ -736,8 +709,7 @@ urls += [
     #
     # Since these views don't use rest_dispatch, they cannot have
     # asynchronous Tornado behavior.
-    path('notify_tornado', zerver.tornado.views.notify,
-         name='zerver.tornado.views.notify'),
+    path('notify_tornado', zerver.tornado.views.notify),
     path('api/v1/events/internal', zerver.tornado.views.get_events_internal),
 ]
 
