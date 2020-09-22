@@ -306,6 +306,11 @@ exports.process_enter_key = function (e) {
         return true;
     }
 
+    if (popovers.user_info_popped()) {
+        popovers.user_info_popover_handle_keyboard("enter");
+        return true;
+    }
+
     if (stream_popover.stream_popped()) {
         stream_popover.stream_sidebar_menu_handle_keyboard("enter");
         return true;
@@ -524,7 +529,7 @@ exports.process_hotkey = function (e, hotkey) {
         return false;
     }
 
-    if (overlays.settings_open()) {
+    if (overlays.settings_open() && !popovers.user_info_popped()) {
         return false;
     }
 
@@ -576,6 +581,11 @@ exports.process_hotkey = function (e, hotkey) {
 
         if (popovers.message_info_popped()) {
             popovers.user_info_popover_for_message_handle_keyboard(event_name);
+            return true;
+        }
+
+        if (popovers.user_info_popped()) {
+            popovers.user_info_popover_handle_keyboard(event_name);
             return true;
         }
 
