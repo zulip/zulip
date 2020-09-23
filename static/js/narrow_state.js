@@ -225,7 +225,7 @@ exports._possible_unread_message_ids = function () {
 
     let stream_id;
     let topic_name;
-    let pm_string;
+    let current_filter_pm_string;
 
     if (current_filter.can_bucket_by("stream", "topic")) {
         stream_id = exports.stream_id();
@@ -245,11 +245,11 @@ exports._possible_unread_message_ids = function () {
     }
 
     if (current_filter.can_bucket_by("pm-with")) {
-        pm_string = exports.pm_string();
-        if (pm_string === undefined) {
+        current_filter_pm_string = exports.pm_string();
+        if (current_filter_pm_string === undefined) {
             return [];
         }
-        return unread.get_msg_ids_for_person(pm_string);
+        return unread.get_msg_ids_for_person(current_filter_pm_string);
     }
 
     if (current_filter.can_bucket_by("is-private")) {
