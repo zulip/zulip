@@ -365,7 +365,7 @@ class StripeTest(StripeTestCase):
         with self.assertRaises(BillingError) as context:
             raise_invalid_request_error()
         self.assertEqual('other stripe error', context.exception.description)
-        mock_billing_logger_error.assert_called()
+        mock_billing_logger_error.assert_called_once()
         mock_billing_logger_info.assert_not_called()
         mock_billing_logger_error.reset_mock()
         mock_billing_logger_info.reset_mock()
@@ -380,7 +380,7 @@ class StripeTest(StripeTestCase):
             raise_card_error()
         self.assertIn('not a valid credit card', context.exception.message)
         self.assertEqual('card error', context.exception.description)
-        mock_billing_logger_info.assert_called()
+        mock_billing_logger_info.assert_called_once()
         mock_billing_logger_error.assert_not_called()
 
     def test_billing_not_enabled(self) -> None:
@@ -899,7 +899,7 @@ class StripeTest(StripeTestCase):
         # a Customer object succeeds, but attempts to charge the customer fail.
         with patch("corporate.lib.stripe.billing_logger.info") as mock_billing_logger:
             self.upgrade(stripe_token=stripe_create_token('4000000000000341').id)
-        mock_billing_logger.assert_called()
+        mock_billing_logger.assert_called_once()
         # Check that we created a Customer object but no CustomerPlan
         stripe_customer_id = Customer.objects.get(realm=get_realm('zulip')).stripe_customer_id
         self.assertFalse(CustomerPlan.objects.exists())
@@ -973,7 +973,7 @@ class StripeTest(StripeTestCase):
             with self.assertRaises(BillingError) as context:
                 self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
         self.assertEqual('subscribing with existing subscription', context.exception.description)
-        mock_billing_logger.assert_called()
+        mock_billing_logger.assert_called_once()
 
     def test_check_upgrade_parameters(self) -> None:
         # Tests all the error paths except 'not enough licenses'
@@ -1286,7 +1286,7 @@ class StripeTest(StripeTestCase):
             with patch("stripe.Invoice.list") as mock_invoice_list:
                 response = self.client_post("/json/billing/sources/change",
                                             {'stripe_token': orjson.dumps(stripe_token).decode()})
-        mock_billing_logger.assert_called()
+        mock_billing_logger.assert_called_once()
         mock_invoice_list.assert_not_called()
         self.assertEqual(orjson.loads(response.content)['error_description'], 'card error')
         self.assert_json_error_contains(response, 'Your card was declined')
@@ -1300,7 +1300,7 @@ class StripeTest(StripeTestCase):
         with patch("corporate.lib.stripe.billing_logger.info") as mock_billing_logger:
             response = self.client_post("/json/billing/sources/change",
                                         {'stripe_token': orjson.dumps(stripe_token).decode()})
-        mock_billing_logger.assert_called()
+        mock_billing_logger.assert_called_once()
         self.assertEqual(orjson.loads(response.content)['error_description'], 'card error')
         self.assert_json_error_contains(response, 'Your card was declined')
         for stripe_source in stripe_get_customer(stripe_customer_id).sources:
@@ -1834,7 +1834,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
             response = self.client_post("/json/billing/sources/change",
                                         {'stripe_token': orjson.dumps('token').decode()})
         self.assert_json_success(response)
-        mocked1.assert_called()
+        mocked1.assert_called_once()
 
         # Realm owners have access, even if they are not billing admins
         self.login_user(self.example_user('desdemona'))
@@ -1842,7 +1842,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
             response = self.client_post("/json/billing/sources/change",
                                         {'stripe_token': orjson.dumps('token').decode()})
         self.assert_json_success(response)
-        mocked2.assert_called()
+        mocked2.assert_called_once()
 
     def test_who_cant_access_json_endpoints(self) -> None:
         def verify_user_cant_access_endpoint(username: str, endpoint: str, request_data: Dict[str, str], error_message: str) -> None:
@@ -1943,14 +1943,14 @@ class BillingHelpersTest(ZulipTestCase):
         # No existing Customer object
         with patch('corporate.lib.stripe.do_create_stripe_customer', return_value='returned') as mocked1:
             returned = update_or_create_stripe_customer(user, stripe_token='token')
-        mocked1.assert_called()
+        mocked1.assert_called_once()
         self.assertEqual(returned, 'returned')
 
         customer = Customer.objects.create(realm=get_realm('zulip'))
         # Customer exists but stripe_customer_id is None
         with patch('corporate.lib.stripe.do_create_stripe_customer', return_value='returned') as mocked2:
             returned = update_or_create_stripe_customer(user, stripe_token='token')
-        mocked2.assert_called()
+        mocked2.assert_called_once()
         self.assertEqual(returned, 'returned')
 
         customer.stripe_customer_id = 'cus_12345'
@@ -1958,7 +1958,7 @@ class BillingHelpersTest(ZulipTestCase):
         # Customer exists, replace payment source
         with patch('corporate.lib.stripe.do_replace_payment_source') as mocked3:
             returned_customer = update_or_create_stripe_customer(self.example_user('hamlet'), 'token')
-        mocked3.assert_called()
+        mocked3.assert_called_once()
         self.assertEqual(returned_customer, customer)
 
         # Customer exists, do nothing
