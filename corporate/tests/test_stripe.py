@@ -355,8 +355,9 @@ class StripeTestCase(ZulipTestCase):
         upgrade_func(*args)
 
 class StripeTest(StripeTestCase):
+    @patch("corporate.lib.stripe.billing_logger.info")
     @patch("corporate.lib.stripe.billing_logger.error")
-    def test_catch_stripe_errors(self, mock_billing_logger_error: Mock) -> None:
+    def test_catch_stripe_errors(self, mock_billing_logger_error: Mock, mock_billing_logger_info: Mock) -> None:
         @catch_stripe_errors
         def raise_invalid_request_error() -> None:
             raise stripe.error.InvalidRequestError(
@@ -365,6 +366,9 @@ class StripeTest(StripeTestCase):
             raise_invalid_request_error()
         self.assertEqual('other stripe error', context.exception.description)
         mock_billing_logger_error.assert_called()
+        mock_billing_logger_info.assert_not_called()
+        mock_billing_logger_error.reset_mock()
+        mock_billing_logger_info.reset_mock()
 
         @catch_stripe_errors
         def raise_card_error() -> None:
@@ -376,7 +380,8 @@ class StripeTest(StripeTestCase):
             raise_card_error()
         self.assertIn('not a valid credit card', context.exception.message)
         self.assertEqual('card error', context.exception.description)
-        mock_billing_logger_error.assert_called()
+        mock_billing_logger_info.assert_called()
+        mock_billing_logger_error.assert_not_called()
 
     def test_billing_not_enabled(self) -> None:
         iago = self.example_user('iago')
@@ -892,7 +897,7 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
         # From https://stripe.com/docs/testing#cards: Attaching this card to
         # a Customer object succeeds, but attempts to charge the customer fail.
-        with patch("corporate.lib.stripe.billing_logger.error") as mock_billing_logger:
+        with patch("corporate.lib.stripe.billing_logger.info") as mock_billing_logger:
             self.upgrade(stripe_token=stripe_create_token('4000000000000341').id)
         mock_billing_logger.assert_called()
         # Check that we created a Customer object but no CustomerPlan
@@ -1277,7 +1282,7 @@ class StripeTest(StripeTestCase):
 
         # Replace with an invalid card
         stripe_token = stripe_create_token(card_number='4000000000009987').id
-        with patch("corporate.lib.stripe.billing_logger.error") as mock_billing_logger:
+        with patch("corporate.lib.stripe.billing_logger.info") as mock_billing_logger:
             with patch("stripe.Invoice.list") as mock_invoice_list:
                 response = self.client_post("/json/billing/sources/change",
                                             {'stripe_token': orjson.dumps(stripe_token).decode()})
@@ -1292,7 +1297,7 @@ class StripeTest(StripeTestCase):
 
         # Replace with a card that's valid, but charging the card fails
         stripe_token = stripe_create_token(card_number='4000000000000341').id
-        with patch("corporate.lib.stripe.billing_logger.error") as mock_billing_logger:
+        with patch("corporate.lib.stripe.billing_logger.info") as mock_billing_logger:
             response = self.client_post("/json/billing/sources/change",
                                         {'stripe_token': orjson.dumps(stripe_token).decode()})
         mock_billing_logger.assert_called()
