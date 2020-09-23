@@ -173,13 +173,17 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
         # https://stripe.com/docs/error-codes gives a more detailed set of error codes
         except stripe.error.StripeError as e:
             err = e.json_body.get('error', {})
+            if isinstance(e, stripe.error.CardError):
+                billing_logger.info(
+                    "Stripe card error: %s %s %s %s",
+                    e.http_status, err.get('type'), err.get('code'), err.get('param'),
+                )
+                # TODO: Look into i18n for this
+                raise StripeCardError('card error', err.get('message'))
             billing_logger.error(
                 "Stripe error: %s %s %s %s",
                 e.http_status, err.get('type'), err.get('code'), err.get('param'),
             )
-            if isinstance(e, stripe.error.CardError):
-                # TODO: Look into i18n for this
-                raise StripeCardError('card error', err.get('message'))
             if isinstance(e, (stripe.error.RateLimitError, stripe.error.APIConnectionError)):  # nocoverage TODO
                 raise StripeConnectionError(
                     'stripe connection error',
