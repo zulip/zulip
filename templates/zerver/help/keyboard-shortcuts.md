@@ -140,6 +140,7 @@ title="thumbs up"/>**: `+`
 ## Recent topics
 
 * **View recent topics**: `t` or `Esc` or `Ctrl` + `[`
+* **Search recent topics**: `t`
 
 Keyboard navigation (e.g. arrow keys) works as expected.
 Use `Enter` to engage with elements.
