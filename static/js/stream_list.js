@@ -488,6 +488,7 @@ exports.set_event_handlers = function () {
         const sub = stream_data.get_sub_by_id(stream_id);
         popovers.hide_all();
         narrow.by("stream", sub.name, {trigger: "sidebar"});
+        gear_menu.close_if_needed();
 
         exports.clear_and_hide_search();
 
@@ -496,7 +497,6 @@ exports.set_event_handlers = function () {
     });
 
     $("#clear_search_stream_button").on("click", exports.clear_search);
-
     $("#streams_header")
         .expectOne()
         .on("click", (e) => {

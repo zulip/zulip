@@ -536,6 +536,7 @@ exports.initialize = function () {
         ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block",
         (e) => {
             e.stopPropagation();
+            gear_menu.close_if_needed();
             const elem = $(e.currentTarget)
                 .closest(".user_sidebar_entry")
                 .find(".user-presence-link");
@@ -644,10 +645,12 @@ exports.initialize = function () {
 
     $(".compose_stream_button").on("click", () => {
         popovers.hide_mobile_message_buttons_popover();
+        gear_menu.close_if_needed();
         compose_actions.start("stream", {trigger: "new topic button"});
     });
     $(".compose_private_button").on("click", () => {
         popovers.hide_mobile_message_buttons_popover();
+        gear_menu.close_if_needed();
         compose_actions.start("private");
     });
 
@@ -659,9 +662,9 @@ exports.initialize = function () {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("private");
     });
-
     $(".compose_reply_button").on("click", () => {
         compose_actions.respond_to_message({trigger: "reply button"});
+        gear_menu.close_if_needed();
     });
 
     $(".empty_feed_compose_stream").on("click", (e) => {

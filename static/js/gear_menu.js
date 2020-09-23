@@ -85,6 +85,13 @@ exports.update_org_settings_menu_item = function () {
     }
 };
 
+exports.close_if_needed = function () {
+    const gear_menu = $("#gear-menu");
+    if (gear_menu.hasClass("open")) {
+        gear_menu.removeClass("open");
+    }
+};
+
 exports.initialize = function () {
     exports.update_org_settings_menu_item();
 
