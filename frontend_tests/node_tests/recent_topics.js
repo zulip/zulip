@@ -313,6 +313,7 @@ function verify_topic_data(all_topics, stream, topic, last_msg_id, participated)
 }
 
 let rt = reset_module("recent_topics");
+rt.set_default_focus();
 
 function stub_out_filter_buttons() {
     // TODO: We probably want more direct tests that make sure
@@ -401,6 +402,7 @@ run_test("test_filter_all", () => {
     expected.search_val = "topic-1";
     row_data = generate_topic_data([[1, "topic-1", 0, false, true]]);
     i = row_data.length;
+    rt.set_default_focus();
     assert.equal(rt.inplace_rerender("1:topic-1"), true);
 });
 
@@ -428,6 +430,7 @@ run_test("test_filter_unread", () => {
 
     rt = reset_module("recent_topics");
     rt.is_visible = () => true;
+    rt.set_default_focus();
 
     stub_templates(() => "<recent_topics table stub>");
     stub_out_filter_buttons();
@@ -494,6 +497,7 @@ run_test("test_filter_participated", () => {
 
     rt = reset_module("recent_topics");
     rt.is_visible = () => true;
+    rt.set_default_focus();
     stub_templates(() => "<recent_topics table stub>");
     stub_out_filter_buttons();
     rt.process_messages(messages);
@@ -552,6 +556,7 @@ run_test("basic assertions", () => {
     rt = reset_module("recent_topics");
     stub_out_filter_buttons();
     rt.is_visible = () => true;
+    rt.set_default_focus();
     rt.set_filter("all");
     rt.process_messages(messages);
     let all_topics = rt.get();
