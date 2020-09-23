@@ -32,7 +32,7 @@ run_test("stream", () => {
     assert(narrow_state.active());
 
     assert.equal(narrow_state.stream(), "Test");
-    assert.equal(narrow_state.stream_id(), test_stream.stream_id);
+    assert.equal(narrow_state.stream_sub().stream_id, test_stream.stream_id);
     assert.equal(narrow_state.topic(), "Bar");
     assert(narrow_state.is_for_stream_id(test_stream.stream_id));
 
@@ -56,7 +56,7 @@ run_test("narrowed", () => {
     assert(!narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
-    assert.equal(narrow_state.stream_id(), undefined);
+    assert.equal(narrow_state.stream_sub(), undefined);
     assert(!narrow_state.narrowed_to_starred());
 
     set_filter([["stream", "Foo"]]);
@@ -246,7 +246,7 @@ run_test("topic", () => {
 run_test("stream", () => {
     set_filter([]);
     assert.equal(narrow_state.stream(), undefined);
-    assert.equal(narrow_state.stream_id(), undefined);
+    assert.equal(narrow_state.stream_sub(), undefined);
 
     set_filter([
         ["stream", "Foo"],
@@ -254,11 +254,9 @@ run_test("stream", () => {
     ]);
     assert.equal(narrow_state.stream(), "Foo");
     assert.equal(narrow_state.stream_sub(), undefined);
-    assert.equal(narrow_state.stream_id(), undefined);
 
     const sub = {name: "Foo", stream_id: 55};
     stream_data.add_sub(sub);
-    assert.equal(narrow_state.stream_id(), 55);
     assert.deepEqual(narrow_state.stream_sub(), sub);
 
     set_filter([
