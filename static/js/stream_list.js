@@ -591,7 +591,11 @@ exports.initiate_search = function () {
 
     const filter = $(".stream-list-filter").expectOne();
 
-    if (!$(".app-main .column-left").hasClass("expanded")) {
+    if (
+        // Check if left column is a popover and is not visible.
+        $("#streamlist-toggle").is(":visible") &&
+        !$(".app-main .column-left").hasClass("expanded")
+    ) {
         popovers.hide_all();
         stream_popover.show_streamlist_sidebar();
     }
