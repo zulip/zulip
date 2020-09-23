@@ -77,7 +77,7 @@ class MessagePOSTTest(ZulipTestCase):
             with self.assertRaisesRegex(JsonableError, error_msg):
                 self.send_stream_message(user, stream_name)
 
-    def test_message_to_self(self) -> None:
+    def test_message_to_stream_by_name(self) -> None:
         """
         Sending a message to a stream to which you are subscribed is
         successful.
@@ -90,7 +90,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "topic": "Test topic"})
         self.assert_json_success(result)
 
-    def test_api_message_to_self(self) -> None:
+    def test_api_message_to_stream_by_name(self) -> None:
         """
         Same as above, but for the API view
         """
