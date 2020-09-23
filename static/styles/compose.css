@@ -21,7 +21,7 @@
             }
         }
 
-        .drafts-link {
+        .message-control-link {
             float: left;
         }
 
@@ -126,10 +126,9 @@
         box-shadow: none !important;
     }
 
-    .drafts-link {
+    .message-control-link {
         position: relative;
-        margin-right: 1em;
-        margin-left: 5px;
+        margin-right: 5px;
         top: 2px;
     }
 }
