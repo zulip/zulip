@@ -307,7 +307,7 @@ def compute_show_invites_and_add_streams(user_profile: Optional[UserProfile]) ->
 
     return True, True
 
-def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
+def format_user_row(realm: Realm, acting_user: Optional[UserProfile], row: Dict[str, Any],
                     client_gravatar: bool, user_avatar_url_field_optional: bool,
                     custom_profile_field_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Formats a user row returned by a database fetch using
@@ -362,8 +362,8 @@ def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
                                                 medium=False,
                                                 client_gravatar=client_gravatar)
 
-    if (realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS and
-            acting_user.is_realm_admin):
+    if acting_user is not None and (realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS and
+                                    acting_user.is_realm_admin):
         result['delivery_email'] = row['delivery_email']
 
     if is_bot:
