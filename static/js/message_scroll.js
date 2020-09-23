@@ -110,7 +110,7 @@ exports.hide_top_of_narrow_notices = function () {
     exports.hide_history_limit_notice();
 };
 
-exports.actively_scrolling = function () {
+exports.is_actively_scrolling = function () {
     return actively_scrolling;
 };
 
