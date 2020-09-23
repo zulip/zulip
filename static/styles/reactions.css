@@ -169,6 +169,7 @@
                 margin: auto;
                 padding-left: 22px;
                 width: calc(100% - 22px - 8px);
+                font-size: 90%;
             }
         }
 
