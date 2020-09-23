@@ -456,15 +456,10 @@ a.message-control-button {
     min-height: 42px;
 }
 
-a#markdown_preview {
-    margin-left: 2px;
-}
-
 a#undo_markdown_preview {
     text-decoration: none;
     position: relative;
     font-size: 15px;
-    margin-left: 2px;
 }
 
 #markdown_preview_spinner {
