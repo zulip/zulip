@@ -101,8 +101,6 @@ js_rules = RuleList(
          'description': 'avoid subject in JS code',
          'good_lines': ['topic_name'],
          'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN']},
-        {'pattern': r'[^_]function\(',
-         'description': 'The keyword "function" should be followed by a space'},
         {'pattern': 'msgid|MSGID',
          'description': 'Avoid using "msgid" as a variable name; use "message_id" instead.'},
         {'pattern': r'.*blueslip.warning\(.*',
