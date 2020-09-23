@@ -237,13 +237,18 @@ run_test("no filtering", () => {
     const scroll_container = make_scroll_container();
     container.html = () => {};
 
+    let callback_called = false;
     // Opts does not require a filter key.
     const opts = {
         modifier: (item) => div(item),
         simplebar_container: scroll_container,
+        callback_after_render: () => {
+            callback_called = true;
+        },
     };
     const widget = ListWidget.create(container, ["apple", "banana"], opts);
     widget.render();
+    assert.deepEqual(callback_called, true);
 
     const expected_html = "<div>apple</div><div>banana</div>";
     assert.deepEqual(container.appended_data.html(), expected_html);

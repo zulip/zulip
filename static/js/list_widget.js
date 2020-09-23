@@ -203,6 +203,10 @@ exports.create = function ($container, list, opts) {
 
         $container.append($(html));
         meta.offset += load_count;
+
+        if (opts.callback_after_render) {
+            opts.callback_after_render();
+        }
     };
 
     widget.render_item = (item) => {
