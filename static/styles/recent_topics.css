@@ -252,6 +252,14 @@
             white-space: nowrap;
         }
 
+        thead .last_msg_time_header {
+            /* The responsive table of bootstrap
+               somehow ignores the width of ::after
+               element. This ensures it is always visible.
+            */
+            min-width: 93px;
+        }
+
         @media (max-width: 750px) {
             /* Hide participants and last message time
                on smaller screens. This ensures user always
