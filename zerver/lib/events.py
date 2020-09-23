@@ -228,55 +228,61 @@ def fetch_initial_state_data(user_profile: Optional[UserProfile],
     if want('realm_user_groups'):
         state['realm_user_groups'] = user_groups_in_realm_serialized(realm)
 
-    # When UserProfile=None, we want to serve the values for various
-    # settings as the defaults.  Instead of copying the default values
-    # from models.py here, we access these default values from a
-    # temporary UserProfile object.
-    fake_user = UserProfile()
+    if user_profile is not None:
+        settings_user = user_profile
+    else:
+        # When UserProfile=None, we want to serve the values for various
+        # settings as the defaults.  Instead of copying the default values
+        # from models.py here, we access these default values from a
+        # temporary UserProfile object that will not be saved to the database.
+        #
+        # We also can set various fields to avoid duplicating code
+        # unnecessarily.
+        settings_user = UserProfile(
+            full_name="Anonymous User",
+            email="username@example.com",
+            delivery_email="username@example.com",
+            realm=realm,
+            # We tag logged-out users as guests because most guest
+            # restrictions apply to these users as well, and it lets
+            # us avoid unnecessary conditionals.
+            role=UserProfile.ROLE_GUEST,
+            avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
+            # ID=0 is not used in real Zulip databases, ensuring this is unique.
+            id=0,
+        )
     if want('realm_user'):
         state['raw_users'] = get_raw_user_data(realm, user_profile,
                                                client_gravatar=client_gravatar,
                                                user_avatar_url_field_optional=user_avatar_url_field_optional)
         state['cross_realm_bots'] = list(get_cross_realm_dicts())
 
-        if user_profile is not None:
-            # For the user's own avatar URL, we force
-            # client_gravatar=False, since that saves some unnecessary
-            # client-side code for handing medium-size avatars.  See #8253
-            # for details.
-            state['avatar_source'] = user_profile.avatar_source
-            state['avatar_url_medium'] = avatar_url(
-                user_profile,
-                medium=True,
-                client_gravatar=False,
-            )
-            state['avatar_url'] = avatar_url(
-                user_profile,
-                medium=False,
-                client_gravatar=False,
-            )
+        # For the user's own avatar URL, we force
+        # client_gravatar=False, since that saves some unnecessary
+        # client-side code for handing medium-size avatars.  See #8253
+        # for details.
+        state['avatar_source'] = settings_user.avatar_source
+        state['avatar_url_medium'] = avatar_url(
+            settings_user,
+            medium=True,
+            client_gravatar=False,
+        )
+        state['avatar_url'] = avatar_url(
+            settings_user,
+            medium=False,
+            client_gravatar=False,
+        )
 
-            state['can_create_streams'] = user_profile.can_create_streams()
-            state['can_subscribe_other_users'] = user_profile.can_subscribe_other_users()
-            state['is_admin'] = user_profile.is_realm_admin
-            state['is_owner'] = user_profile.is_realm_owner
-            state['is_guest'] = user_profile.is_guest
-            state['user_id'] = user_profile.id
-            state['enter_sends'] = user_profile.enter_sends
-            state['email'] = user_profile.email
-            state['delivery_email'] = user_profile.delivery_email
-            state['full_name'] = user_profile.full_name
-        else:
-            state['can_create_streams'] = False
-            state['can_subscribe_other_users'] = False
-            state['is_admin'] = False
-            state['is_owner'] = False
-            state['is_guest'] = False
-            state['enter_sends'] = fake_user.enter_sends
-            # In this code path, we don't set various identity
-            # parameters.  It's likely that we should be instead
-            # creating `fake_user` with values for these and
-            # deduplicating this code.
+        state['can_create_streams'] = settings_user.can_create_streams()
+        state['can_subscribe_other_users'] = settings_user.can_subscribe_other_users()
+        state['is_admin'] = settings_user.is_realm_admin
+        state['is_owner'] = settings_user.is_realm_owner
+        state['is_guest'] = settings_user.is_guest
+        state['user_id'] = settings_user.id
+        state['enter_sends'] = settings_user.enter_sends
+        state['email'] = settings_user.email
+        state['delivery_email'] = settings_user.delivery_email
+        state['full_name'] = settings_user.full_name
 
     if want('realm_bot'):
         state['realm_bots'] = [] if user_profile is None else get_owned_bot_dicts(user_profile)
@@ -357,7 +363,7 @@ def fetch_initial_state_data(user_profile: Optional[UserProfile],
         state['stream_name_max_length'] = Stream.MAX_NAME_LENGTH
         state['stream_description_max_length'] = Stream.MAX_DESCRIPTION_LENGTH
     if want('default_streams'):
-        if user_profile is None or user_profile.is_guest:
+        if settings_user.is_guest:
             # Guest users and logged-out users don't have access to
             # all default streams, so we pretend the organization
             # doesn't have any.
@@ -366,7 +372,7 @@ def fetch_initial_state_data(user_profile: Optional[UserProfile],
             state['realm_default_streams'] = streams_to_dicts_sorted(
                 get_default_streams_for_realm(realm.id))
     if want('default_stream_groups'):
-        if user_profile is None or user_profile.is_guest:
+        if settings_user.is_guest:
             state['realm_default_stream_groups'] = []
         else:
             state['realm_default_stream_groups'] = default_stream_groups_to_dicts_sorted(
@@ -377,18 +383,12 @@ def fetch_initial_state_data(user_profile: Optional[UserProfile],
 
     if want('update_display_settings'):
         for prop in UserProfile.property_types:
-            if user_profile is not None:
-                state[prop] = getattr(user_profile, prop)
-            else:
-                state[prop] = getattr(fake_user, prop)
+            state[prop] = getattr(settings_user, prop)
             state['emojiset_choices'] = UserProfile.emojiset_choices()
 
     if want('update_global_notifications'):
         for notification in UserProfile.notification_setting_types:
-            if user_profile is not None:
-                state[notification] = getattr(user_profile, notification)
-            else:
-                state[notification] = getattr(fake_user, notification)
+            state[notification] = getattr(settings_user, notification)
         state['available_notification_sounds'] = get_available_notification_sounds()
 
     if want('user_status'):
@@ -396,7 +396,7 @@ def fetch_initial_state_data(user_profile: Optional[UserProfile],
         state['user_status'] = {} if user_profile is None else get_user_info_dict(realm_id=realm.id)
 
     if want('video_calls'):
-        state['has_zoom_token'] = False if user_profile is None else user_profile.zoom_token is not None
+        state['has_zoom_token'] = settings_user.zoom_token is not None
 
     return state
 
