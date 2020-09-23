@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import webhook_view
+from zerver.decorator import log_exception_to_webhook_logger, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -29,9 +29,8 @@ from zerver.lib.webhooks.git import (
 from zerver.models import UserProfile
 
 BITBUCKET_TOPIC_TEMPLATE = '{repository_name}'
-USER_PART = 'User {display_name}(login: {username})'
 
-BITBUCKET_FORK_BODY = USER_PART + ' forked the repository into [{fork_name}]({fork_url}).'
+BITBUCKET_FORK_BODY = "{actor} forked the repository into [{fork_name}]({fork_url})."
 BITBUCKET_COMMIT_STATUS_CHANGED_BODY = ('[System {key}]({system_url}) changed status of'
                                         ' {commit_info} to {status}.')
 BITBUCKET_REPO_UPDATED_CHANGED = ('{actor} changed the {change} of the **{repo_name}**'
@@ -219,8 +218,7 @@ def get_normal_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str
 
 def get_fork_body(payload: Dict[str, Any]) -> str:
     return BITBUCKET_FORK_BODY.format(
-        display_name=get_user_display_name(payload),
-        username=get_user_username(payload),
+        actor=get_user_info(payload["actor"]),
         fork_name=get_repository_full_name(payload['fork']),
         fork_url=get_repository_url(payload['fork']),
     )
@@ -400,8 +398,33 @@ def get_repository_name(repository_payload: Dict[str, Any]) -> str:
 def get_repository_full_name(repository_payload: Dict[str, Any]) -> str:
     return repository_payload['full_name']
 
-def get_user_display_name(payload: Dict[str, Any]) -> str:
-    return payload['actor']['display_name']
+def get_user_info(dct: Dict[str, Any]) -> str:
+    # See https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-changes-gdpr/
+    # Since GDPR, we don't get username; instead, we either get display_name
+    # or nickname.
+    if "display_name" in dct:
+        return dct["display_name"]
+
+    if "nickname" in dct:
+        return dct["nickname"]
+
+    log_exception_to_webhook_logger(
+        summary="Could not find display_name/nickname field",
+        # We call this an unsupported_event, even though we
+        # are technically still sending a message.
+        unsupported_event=True,
+    )
+
+    if "username" in dct:
+        # We don't expect this to happen after April 2019; this is
+        # just defensive code, plus it allows us to avoid changing
+        # a bunch of test fixtures.  We will want to delete this code
+        # as soon as we have confidence that we don't get errors
+        # related to display_name/nickname being missing. (see above
+        # code)
+        return dct["username"]
+
+    return "Unknown user"
 
 def get_user_username(payload: Dict[str, Any]) -> str:
     actor = payload['actor']
