@@ -381,7 +381,6 @@ exports.update_filters_view = function () {
     show_selected_filters();
 
     topics_widget.hard_redraw();
-    revive_current_focus();
 };
 
 function stream_sort(a, b) {
@@ -444,8 +443,8 @@ exports.complete_rerender = function () {
         },
         html_selector: get_topic_row,
         simplebar_container: $("#recent_topics_table .table_fix_head"),
+        callback_after_render: revive_current_focus,
     });
-    revive_current_focus();
 };
 
 exports.is_visible = function () {
