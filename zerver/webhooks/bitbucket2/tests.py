@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.webhooks.bitbucket2.view import get_user_info
 
 TOPIC = "Repository name"
 TOPIC_PR_EVENTS = "Repository name / PR #1 new commit"
@@ -75,7 +76,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.check_webhook("remove_branch", TOPIC_BRANCH_EVENTS, expected_message)
 
     def test_bitbucket2_on_fork_event(self) -> None:
-        expected_message = "User Tomasz(login: kolaszek) forked the repository into [kolaszek/repository-name2](https://bitbucket.org/kolaszek/repository-name2)."
+        expected_message = "Tomasz forked the repository into [kolaszek/repository-name2](https://bitbucket.org/kolaszek/repository-name2)."
         self.check_webhook("fork", TOPIC, expected_message)
 
     def test_bitbucket2_on_commit_comment_created_event(self) -> None:
@@ -425,3 +426,24 @@ class Bitbucket2HookTests(WebhookTestCase):
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
+
+    def test_get_user_info(self) -> None:
+        self.assertEqual(get_user_info({}), "Unknown user")
+
+        dct = dict(
+            username="asmith",
+            nickname= "alice",
+            noisy_field="whatever",
+            display_name="Alice Smith",
+        )
+
+        self.assertEqual(get_user_info(dct), "Alice Smith")
+        del dct["display_name"]
+
+        self.assertEqual(get_user_info(dct), "alice")
+        del dct["nickname"]
+
+        self.assertEqual(get_user_info(dct), "asmith")
+        del dct["username"]
+
+        self.assertEqual(get_user_info(dct), "Unknown user")
