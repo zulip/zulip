@@ -521,7 +521,7 @@ run_test("unread_ops", () => {
         unread.process_loaded_messages(test_messages);
 
         // Make our window appear visible.
-        notifications.window_has_focus = () => true;
+        notifications.is_window_focused = () => true;
 
         // Make our "test" message appear visible.
         message_viewport.bottom_message_visible = () => true;

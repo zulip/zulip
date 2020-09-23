@@ -10,9 +10,9 @@ const settings_config = require("./settings_config");
 
 const notice_memory = new Map();
 
-// When you start Zulip, window_has_focus should be true, but it might not be the
+// When you start Zulip, window_focused should be true, but it might not be the
 // case after a server-initiated reload.
-let window_has_focus = document.hasFocus && document.hasFocus();
+let window_focused = document.hasFocus && document.hasFocus();
 
 let supports_sound;
 
@@ -71,7 +71,7 @@ function get_audio_file_path(audio_element, audio_file_without_extension) {
 exports.initialize = function () {
     $(window)
         .on("focus", () => {
-            window_has_focus = true;
+            window_focused = true;
 
             for (const notice_mem_entry of notice_memory.values()) {
                 notice_mem_entry.obj.close();
@@ -83,7 +83,7 @@ exports.initialize = function () {
             unread_ops.process_visible();
         })
         .on("blur", () => {
-            window_has_focus = false;
+            window_focused = false;
         });
 
     const audio = $("<audio>");
@@ -212,8 +212,8 @@ exports.update_pm_count = function () {
     }
 };
 
-exports.window_has_focus = function () {
-    return window_has_focus;
+exports.is_window_focused = function () {
+    return window_focused;
 };
 
 function in_browser_notify(message, title, content, raw_operators, opts) {
