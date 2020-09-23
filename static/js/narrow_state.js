@@ -124,16 +124,6 @@ exports.stream_sub = function () {
     return sub;
 };
 
-exports.stream_id = function () {
-    const sub = exports.stream_sub();
-
-    if (!sub) {
-        return;
-    }
-
-    return sub.stream_id;
-};
-
 exports.topic = function () {
     if (current_filter === undefined) {
         return;
@@ -223,25 +213,25 @@ exports._possible_unread_message_ids = function () {
         return;
     }
 
-    let stream_id;
+    let sub;
     let topic_name;
     let current_filter_pm_string;
 
     if (current_filter.can_bucket_by("stream", "topic")) {
-        stream_id = exports.stream_id();
-        if (stream_id === undefined) {
+        sub = exports.stream_sub();
+        if (sub === undefined) {
             return [];
         }
         topic_name = exports.topic();
-        return unread.get_msg_ids_for_topic(stream_id, topic_name);
+        return unread.get_msg_ids_for_topic(sub.stream_id, topic_name);
     }
 
     if (current_filter.can_bucket_by("stream")) {
-        stream_id = exports.stream_id();
-        if (stream_id === undefined) {
+        sub = exports.stream_sub();
+        if (sub === undefined) {
             return [];
         }
-        return unread.get_msg_ids_for_stream(stream_id);
+        return unread.get_msg_ids_for_stream(sub.stream_id);
     }
 
     if (current_filter.can_bucket_by("pm-with")) {
@@ -349,13 +339,13 @@ exports.is_for_stream_id = function (stream_id) {
     // This is not perfect, since we still track narrows by
     // name, not id, but at least the interface is good going
     // forward.
-    const narrow_stream_id = exports.stream_id();
+    const narrow_sub = exports.stream_sub();
 
-    if (narrow_stream_id === undefined) {
+    if (narrow_sub === undefined) {
         return false;
     }
 
-    return stream_id === narrow_stream_id;
+    return stream_id === narrow_sub.stream_id;
 };
 
 window.narrow_state = exports;
