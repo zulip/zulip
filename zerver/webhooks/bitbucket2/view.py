@@ -183,13 +183,13 @@ def get_push_bodies(payload: Dict[str, Any]) -> List[str]:
 
 def get_remove_branch_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
     return get_remove_branch_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         change['old']['name'],
     )
 
 def get_force_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
     return get_force_push_commits_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         change['links']['html']['href'],
         change['new']['name'],
         change['new']['target']['hash'],
@@ -197,7 +197,7 @@ def get_force_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
 
 def get_commit_author_name(commit: Dict[str, Any]) -> str:
     if commit['author'].get('user'):
-        return commit['author']['user'].get('username')
+        return get_user_info(commit['author']['user'])
     return commit['author']['raw'].split()[0]
 
 def get_normal_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
@@ -209,7 +209,7 @@ def get_normal_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str
     } for commit in change['commits']]
 
     return get_push_commits_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         change['links']['html']['href'],
         change['new']['name'],
         commits_data,
@@ -227,7 +227,7 @@ def get_commit_comment_body(payload: Dict[str, Any]) -> str:
     comment = payload['comment']
     action = '[commented]({})'.format(comment['links']['html']['href'])
     return get_commits_comment_action_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         action,
         comment['commit']['links']['html']['href'],
         comment['commit']['hash'],
@@ -263,11 +263,11 @@ def get_issue_action_body(payload: Dict[str, Any], action: str,
     message = None
     if action == 'created':
         if issue['assignee']:
-            assignee = issue['assignee'].get('username')
+            assignee = get_user_info(issue['assignee'])
         message = issue['content']['raw']
 
     return get_issue_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         action,
         issue['links']['html']['href'],
         issue['id'],
@@ -280,7 +280,7 @@ def get_pull_request_action_body(payload: Dict[str, Any], action: str,
                                  include_title: bool=False) -> str:
     pull_request = payload['pullrequest']
     return get_pull_request_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         action,
         get_pull_request_url(pull_request),
         pull_request.get('id'),
@@ -292,14 +292,10 @@ def get_pull_request_created_or_updated_body(payload: Dict[str, Any], action: st
     pull_request = payload['pullrequest']
     assignee = None
     if pull_request.get('reviewers'):
-        assignee = pull_request.get('reviewers')[0]
-        # Certain payloads may not contain a username, so we
-        # return the user's display name or nickname instead.
-        assignee = (assignee.get('username') or assignee.get('display_name') or
-                    assignee.get('nickname'))
+        assignee = get_user_info(pull_request.get('reviewers')[0])
 
     return get_pull_request_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         action,
         get_pull_request_url(pull_request),
         pull_request.get('id'),
@@ -330,7 +326,7 @@ def get_pull_request_comment_action_body(
 ) -> str:
     action += ' on'
     return get_pull_request_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         action,
         payload['pullrequest']['links']['html']['href'],
         payload['pullrequest']['id'],
@@ -347,7 +343,7 @@ def get_push_tag_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
         action = 'removed'
 
     return get_push_tag_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         tag.get('name'),
         tag_url=tag['links']['html'].get('href'),
         action=action,
@@ -363,7 +359,7 @@ def get_repo_updated_body(payload: Dict[str, Any]) -> str:
     changes = ['website', 'name', 'links', 'language', 'full_name', 'description']
     body = ""
     repo_name = payload['repository']['name']
-    actor = payload['actor']['username']
+    actor = get_actor_info(payload)
 
     for change in changes:
         new = payload['changes'][change]['new']
@@ -426,11 +422,9 @@ def get_user_info(dct: Dict[str, Any]) -> str:
 
     return "Unknown user"
 
-def get_user_username(payload: Dict[str, Any]) -> str:
+def get_actor_info(payload: Dict[str, Any]) -> str:
     actor = payload['actor']
-    # Certain payloads may not contain a username, so we can
-    # return the user's display name or nickname instead.
-    return actor.get('username') or actor.get('display_name') or actor.get('nickname')
+    return get_user_info(actor)
 
 def get_branch_name_for_push_event(payload: Dict[str, Any]) -> Optional[str]:
     change = payload['push']['changes'][-1]
