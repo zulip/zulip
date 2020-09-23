@@ -441,7 +441,7 @@ def get_custom_profile_field_values(custom_profile_field_values:
             }
     return profiles_by_user_id
 
-def get_raw_user_data(realm: Realm, acting_user: UserProfile, *, target_user: Optional[UserProfile]=None,
+def get_raw_user_data(realm: Realm, acting_user: Optional[UserProfile], *, target_user: Optional[UserProfile]=None,
                       client_gravatar: bool, user_avatar_url_field_optional: bool,
                       include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
     """Fetches data about the target user(s) appropriate for sending to
