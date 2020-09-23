@@ -25,7 +25,7 @@ const MAX_AVATAR = 4;
 // So, we use table as a grid system and
 // track the coordinates of the focus element via
 // `row_focus` and `col_focus`.
-let current_focus_elem;
+let current_focus_elem = "table";
 let row_focus = 0;
 // Start focus on the topic column, so Down+Enter works to visit a topic.
 let col_focus = 1;
@@ -55,6 +55,8 @@ function set_default_focus() {
     current_focus_elem = $("#recent_topics_search");
     current_focus_elem.trigger("focus");
 }
+
+exports.set_default_focus = set_default_focus;
 
 function set_table_focus(row, col) {
     const topic_rows = $("#recent_topics_table table tbody tr");
