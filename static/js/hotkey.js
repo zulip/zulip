@@ -473,6 +473,7 @@ exports.process_hotkey = function (e, hotkey) {
         case "vim_right":
         case "tab":
         case "shift_tab":
+        case "open_recent_topics":
             if (
                 ["#recent_topics", "#", ""].includes(window.location.hash) &&
                 !popovers.any_active() &&

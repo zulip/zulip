@@ -599,6 +599,9 @@ exports.change_focused_element = function (e, input_key) {
         // wraparound.  Going off the top or the bottom takes one
         // to the navigation at the top (see set_table_focus).
         switch (input_key) {
+            case "open_recent_topics":
+                set_default_focus();
+                return true;
             case "shift_tab":
             case "vim_left":
             case "left_arrow":
