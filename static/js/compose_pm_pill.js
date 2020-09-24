@@ -10,8 +10,6 @@ exports.initialize_pill = function () {
         container,
         create_item_from_text: user_pill.create_item_from_email,
         get_text_from_item: user_pill.get_email_from_item,
-        onPillCreate: input_pill.onPillCreate,
-        onPillRemove: input_pill.onPillRemove,
     });
 
     return pill;
