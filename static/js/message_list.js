@@ -152,7 +152,7 @@ class MessageList {
         const convert_id = (str_id) => {
             const id = parseFloat(str_id);
             if (isNaN(id)) {
-                blueslip.fatal("Bad message id " + str_id);
+                throw new Error("Bad message id " + str_id);
             }
             return id;
         };
@@ -184,7 +184,7 @@ class MessageList {
                 id,
                 items_length: this.data.num_items(),
             };
-            blueslip.fatal("Cannot select id -1", error_data);
+            throw new Error("Cannot select id -1", error_data);
         }
 
         id = closest_id;

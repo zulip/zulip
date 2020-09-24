@@ -130,7 +130,7 @@ function get_status_field() {
         case "bot-list-admin":
             return $("#bot-field-status").expectOne();
         default:
-            blueslip.fatal("Invalid admin settings page");
+            throw new Error("Invalid admin settings page");
     }
 }
 

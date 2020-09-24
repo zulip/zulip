@@ -246,11 +246,9 @@ exports.error = function blueslip_error(msg, more_info, stack) {
     if (page_params.debug_mode) {
         throw new BlueslipError(msg, more_info);
     }
-};
 
-exports.fatal = function blueslip_fatal(msg, more_info) {
-    report_error(msg, Error().stack, {more_info});
-    throw new BlueslipError(msg, more_info);
+    // This function returns to its caller in production!  To raise a
+    // fatal error even in production, use throw new Error(…) instead.
 };
 
 exports.timings = new Map();

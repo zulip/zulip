@@ -442,7 +442,7 @@ class MessageListData {
         messages.forEach((elem) => {
             const id = parseFloat(elem.id);
             if (isNaN(id)) {
-                blueslip.fatal("Bad message id");
+                throw new Error("Bad message id");
             }
             if (this._is_localonly_id(id)) {
                 this._local_only.add(id);
