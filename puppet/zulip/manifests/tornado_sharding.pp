@@ -41,7 +41,7 @@ class zulip::tornado_sharding {
   $tornado_ports = zulipconf_keys('tornado_sharding')
 
   file { '/etc/nginx/zulip-include/tornado-upstreams':
-    require => Package[$zulip::common::nginx],
+    require => [Package[$zulip::common::nginx], Exec['stage_updated_sharding']],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',

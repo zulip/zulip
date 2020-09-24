@@ -75,7 +75,7 @@ class zulip::app_frontend_base {
   $tornado_ports = $zulip::tornado_sharding::tornado_ports
   file { "${zulip::common::supervisor_conf_dir}/zulip.conf":
     ensure  => file,
-    require => Package[supervisor],
+    require => [Package[supervisor], Exec['stage_updated_sharding']],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
