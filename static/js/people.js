@@ -1,7 +1,6 @@
 import md5 from "blueimp-md5";
 import _ from "lodash";
 import moment from "moment-timezone";
-import "unorm"; // String.prototype.normalize polyfill for IE11
 
 import * as typeahead from "../shared/js/typeahead";
 
