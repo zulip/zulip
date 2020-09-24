@@ -140,7 +140,7 @@ function get_num_unread(user_id) {
     return unread.num_unread_for_person(user_id.toString());
 }
 
-exports.my_user_status = function (user_id) {
+exports.get_my_user_status = function (user_id) {
     if (!people.is_my_user_id(user_id)) {
         return;
     }
@@ -179,7 +179,7 @@ exports.user_last_seen_time_status = function (user_id) {
 exports.info_for = function (user_id) {
     const user_circle_class = exports.get_user_circle_class(user_id);
     const person = people.get_by_user_id(user_id);
-    const my_user_status = exports.my_user_status(user_id);
+    const my_user_status = exports.get_my_user_status(user_id);
     const user_circle_status = exports.status_description(user_id);
 
     return {
