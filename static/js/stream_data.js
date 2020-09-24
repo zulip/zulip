@@ -761,8 +761,8 @@ exports.create_streams = function (streams) {
 
 exports.create_sub_from_server_data = function (attrs) {
     if (!attrs.stream_id) {
-        // fail fast (blueslip.fatal will throw an error on our behalf)
-        blueslip.fatal("We cannot create a sub without a stream_id");
+        // fail fast
+        throw new Error("We cannot create a sub without a stream_id");
     }
 
     let sub = exports.get_sub_by_id(attrs.stream_id);

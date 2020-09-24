@@ -130,10 +130,9 @@ new feature hard to miss.
   this log from the browser console using `blueslip.get_log()`.
 
 Blueslip supports several error levels:
-* `blueslip.fatal`: For fatal errors that cannot be easily recovered
-  from.  We try to avoid using it, since it kills the current JS
-  thread, rather than returning execution to the caller.  Unhandled
-  exceptions in our JS code are treated like `blueslip.fatal`.
+* `throw new Error(…)`: For fatal errors that cannot be easily
+  recovered from.  We try to avoid using it, since it kills the
+  current JS thread, rather than returning execution to the caller.
 * `blueslip.error`: For logging of events that are definitely caused
   by a bug and thus sufficiently important to be reported, but where
   we can handle the error without creating major user-facing problems
