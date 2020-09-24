@@ -1405,7 +1405,6 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
     # For consistency, changes to the default values for these gets should also be applied
     # to the default args in do_send_message
     for message in messages:
-        message['rendered_content'] = message.get('rendered_content', None)
         message['stream'] = message.get('stream', None)
         message['local_id'] = message.get('local_id', None)
         message['sender_queue_id'] = message.get('sender_queue_id', None)
