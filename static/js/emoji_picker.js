@@ -583,7 +583,7 @@ function register_popover_events(popover) {
     });
 }
 
-exports.render_emoji_popover = function (elt, id) {
+exports.build_emoji_popover = function (elt, id) {
     const template_args = {
         class: "emoji-info-popover",
     };
@@ -649,7 +649,7 @@ exports.toggle_emoji_popover = function (element, id) {
     if (elt.data("popover") === undefined) {
         // Keep the element over which the popover is based off visible.
         elt.addClass("reaction_button_visible");
-        exports.render_emoji_popover(elt, id);
+        exports.build_emoji_popover(elt, id);
     }
     reset_emoji_showcase();
 };
