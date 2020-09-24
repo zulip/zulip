@@ -18,6 +18,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.shortcuts import render
 from django.template import loader
 from django.urls import reverse
+from django.utils import translation
 from django.utils.timesince import timesince
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
@@ -51,6 +52,7 @@ from zerver.lib.actions import (
     do_send_realm_reactivation_email,
 )
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.i18n import get_language_translation_data
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
@@ -98,6 +100,14 @@ def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
         remote=remote,
         debug_mode=False,
     )
+
+    request_language = translation.get_language_from_path(request.path_info)
+    if request_language is None:
+        request_language = request.user.default_language
+    translation.activate(request_language)
+
+    page_params["translation_data"] = get_language_translation_data(request_language)
+
     return render(request,
                   'analytics/stats.html',
                   context=dict(target_name=target_name,

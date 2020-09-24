@@ -210,10 +210,6 @@ def build_page_params_for_home_page_load(
         page_params["max_message_id"] = max_message_id
         page_params["enable_desktop_notifications"] = False
 
-    page_params["translation_data"] = {}
-    if request_language != "en":
-        page_params["translation_data"] = get_language_translation_data(
-            request_language
-        )
+    page_params["translation_data"] = get_language_translation_data(request_language)
 
     return register_ret["queue_id"], page_params
