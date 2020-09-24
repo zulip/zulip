@@ -82,6 +82,7 @@ exports.toggle = function (opts) {
             }
             i += 1;
         }
+        return false;
     }
 
     function maybe_go_right() {
@@ -93,6 +94,7 @@ exports.toggle = function (opts) {
             }
             i += 1;
         }
+        return false;
     }
 
     (function () {
@@ -138,6 +140,8 @@ exports.toggle = function (opts) {
             if (meta.idx >= 0) {
                 return opts.values[meta.idx].label;
             }
+            /* istanbul ignore next */
+            return undefined;
         },
 
         get() {

@@ -320,6 +320,7 @@ run_test("content_typeahead_selected", () => {
         // .caret() used in setTimeout
         assert.equal(arg1, arg2);
         caret_called2 = true;
+        return this;
     };
     let autosize_called = false;
     set_global("compose_ui", {

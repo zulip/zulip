@@ -74,7 +74,7 @@ function get_events_success(events) {
                 break;
 
             default:
-                return server_events_dispatch.dispatch_normal_event(event);
+                server_events_dispatch.dispatch_normal_event(event);
         }
     };
 

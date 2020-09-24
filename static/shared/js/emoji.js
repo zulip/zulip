@@ -77,6 +77,7 @@ export function get_emoji_name(codepoint) {
     if (Object.prototype.hasOwnProperty.call(emoji_codes.codepoint_to_name, codepoint)) {
         return emoji_codes.codepoint_to_name[codepoint];
     }
+    return undefined;
 }
 
 export function get_emoji_codepoint(emoji_name) {
@@ -84,6 +85,7 @@ export function get_emoji_codepoint(emoji_name) {
     if (Object.prototype.hasOwnProperty.call(emoji_codes.name_to_codepoint, emoji_name)) {
         return emoji_codes.name_to_codepoint[emoji_name];
     }
+    return undefined;
 }
 
 export function get_realm_emoji_url(emoji_name) {
@@ -100,7 +102,7 @@ export function get_realm_emoji_url(emoji_name) {
         // and then try alternate ways of parsing the
         // emoji (in the case of Markdown) or just do
         // whatever makes sense for the caller.
-        return;
+        return undefined;
     }
 
     return data.emoji_url;
@@ -196,7 +198,7 @@ export function get_canonical_name(emoji_name) {
     const codepoint = get_emoji_codepoint(emoji_name);
     if (codepoint === undefined) {
         // Our caller needs to handle this possibility.
-        return;
+        return undefined;
     }
 
     return get_emoji_name(codepoint);

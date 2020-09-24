@@ -196,7 +196,7 @@ exports.parse_image_data = function (image) {
 
     if (asset_map.has($preview_src)) {
         // check if image's data is already present in asset_map.
-        return;
+        return asset_map.get($preview_src);
     }
 
     // if wrapped in the .youtube-video class, it will be length = 1, and therefore

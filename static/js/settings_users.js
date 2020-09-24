@@ -161,12 +161,12 @@ function reset_scrollbar($sel) {
 
 function bot_owner_full_name(owner_id) {
     if (!owner_id) {
-        return;
+        return undefined;
     }
 
     const bot_owner = people.get_by_user_id(owner_id);
     if (!bot_owner) {
-        return;
+        return undefined;
     }
 
     return bot_owner.full_name;
@@ -176,7 +176,7 @@ function bot_info(bot_user_id) {
     const bot_user = bot_data.get(bot_user_id);
 
     if (!bot_user) {
-        return;
+        return undefined;
     }
 
     const owner_id = bot_user.owner_id;

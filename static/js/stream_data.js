@@ -256,7 +256,7 @@ exports.get_sub_by_name = function (name) {
     const stream_id = stream_ids_by_name.get(name);
 
     if (!stream_id) {
-        return;
+        return undefined;
     }
 
     return subs_by_stream_id.get(stream_id);
@@ -474,7 +474,7 @@ exports.get_subscriber_count = function (stream_id) {
     const sub = exports.get_sub_by_id(stream_id);
     if (sub === undefined) {
         blueslip.warn("We got a get_subscriber_count count call for a non-existent stream.");
-        return;
+        return undefined;
     }
     if (!sub.subscribers) {
         return 0;
@@ -681,12 +681,12 @@ exports.get_name = function (stream_name) {
 
 exports.maybe_get_stream_name = function (stream_id) {
     if (!stream_id) {
-        return;
+        return undefined;
     }
     const stream = exports.get_sub_by_id(stream_id);
 
     if (!stream) {
-        return;
+        return undefined;
     }
 
     return stream.name;
@@ -736,11 +736,11 @@ exports.is_user_subscribed = function (stream_id, user_id) {
         blueslip.warn(
             "We got a is_user_subscribed call for a non-existent or inaccessible stream.",
         );
-        return;
+        return undefined;
     }
     if (typeof user_id === "undefined") {
         blueslip.warn("Undefined user_id passed to function is_user_subscribed");
-        return;
+        return undefined;
     }
 
     return sub.subscribers.has(user_id);

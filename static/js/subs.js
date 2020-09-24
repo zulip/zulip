@@ -48,6 +48,7 @@ function get_row_data(row) {
             object: row_object,
         };
     }
+    return undefined;
 }
 
 exports.get_active_data = function () {
@@ -103,6 +104,8 @@ exports.active_stream = function () {
             name: hash_components[2],
         };
     }
+
+    return undefined;
 };
 
 exports.set_muted = function (sub, is_muted, status_element) {

@@ -10,7 +10,7 @@ exports.sub_list_generator = function (lst, lower, upper) {
     return {
         next() {
             if (i >= upper) {
-                return;
+                return undefined;
             }
             const res = lst[i];
             i += 1;
@@ -27,7 +27,7 @@ exports.reverse_sub_list_generator = function (lst, lower, upper) {
     return {
         next() {
             if (i < lower) {
-                return;
+                return undefined;
             }
             const res = lst[i];
             i -= 1;
@@ -55,7 +55,7 @@ exports.fchain = function (outer_gen, get_inner_gen) {
                     inner_gen = get_inner_gen(outer_val);
                     if (!inner_gen || !inner_gen.next) {
                         blueslip.error("Invalid generator returned.");
-                        return;
+                        return undefined;
                     }
                 }
                 const inner = inner_gen.next();
@@ -65,6 +65,7 @@ exports.fchain = function (outer_gen, get_inner_gen) {
                 outer_val = outer_gen.next();
                 inner_gen = undefined;
             }
+            return undefined;
         },
     };
 };
@@ -139,7 +140,7 @@ exports.filter = function (gen, filter_func) {
             while (true) {
                 const val = gen.next();
                 if (val === undefined) {
-                    return;
+                    return undefined;
                 }
                 if (filter_func(val)) {
                     return val;
@@ -154,7 +155,7 @@ exports.map = function (gen, map_func) {
         next() {
             const val = gen.next();
             if (val === undefined) {
-                return;
+                return undefined;
             }
             return map_func(val);
         },

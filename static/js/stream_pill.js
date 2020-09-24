@@ -7,18 +7,18 @@ function display_pill(sub) {
 exports.create_item_from_stream_name = function (stream_name, current_items) {
     stream_name = stream_name.trim();
     if (!stream_name.startsWith("#")) {
-        return;
+        return undefined;
     }
     stream_name = stream_name.substring(1);
 
     const sub = stream_data.get_sub(stream_name);
     if (!sub) {
-        return;
+        return undefined;
     }
 
     const existing_ids = current_items.map((item) => item.stream_id);
     if (existing_ids.includes(sub.stream_id)) {
-        return;
+        return undefined;
     }
 
     const item = {

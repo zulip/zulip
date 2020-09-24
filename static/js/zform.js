@@ -48,7 +48,7 @@ exports.activate = function (opts) {
 
     if (!exports.validate_extra_data(data)) {
         // callee will log reason we fail
-        return;
+        return undefined;
     }
 
     function make_choices(data) {

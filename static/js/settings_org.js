@@ -514,7 +514,7 @@ exports.get_input_element_value = function (input_elem, input_type) {
             return parseInt(input_elem.val().trim(), 10);
         }
     }
-    return;
+    return undefined;
 };
 
 exports.set_input_element_value = function (input_elem, value) {
@@ -528,6 +528,7 @@ exports.set_input_element_value = function (input_elem, value) {
         }
     }
     blueslip.error(`Failed to set value of property ${exports.extract_property_name(input_elem)}`);
+    return undefined;
 };
 
 exports.set_up = function () {
@@ -681,6 +682,7 @@ exports.build_page = function () {
 
         const subsection = $(e.target).closest(".org-subsection-parent");
         exports.save_discard_widget_status_handler(subsection);
+        return undefined;
     });
 
     $(".organization").on(

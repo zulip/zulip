@@ -117,6 +117,8 @@ function calculate_info_popover_placement(size, elt) {
             return "top";
         }
     }
+
+    return undefined;
 }
 
 function get_custom_profile_field_data(user, field, field_types, dateFormat) {
@@ -376,13 +378,13 @@ exports.show_user_info_popover = function (element, user) {
 function get_user_info_popover_for_message_items() {
     if (!current_message_info_popover_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
-        return;
+        return undefined;
     }
 
     const popover_data = current_message_info_popover_elem.data("popover");
     if (!popover_data) {
         blueslip.error("Cannot find popover data for actions menu.");
-        return;
+        return undefined;
     }
 
     return $("li:not(.divider):visible a", popover_data.$tip);
@@ -392,12 +394,12 @@ function get_user_info_popover_items() {
     const popover_elt = $("div.user-info-popover");
     if (!current_user_info_popover_elem || !popover_elt.length) {
         blueslip.error("Trying to get menu items when action popover is closed.");
-        return;
+        return undefined;
     }
 
     if (popover_elt.length >= 2) {
         blueslip.error("More than one user info popovers cannot be opened at same time.");
-        return;
+        return undefined;
     }
 
     return $("li:not(.divider):visible a", popover_elt);
@@ -591,13 +593,13 @@ exports.render_actions_remind_popover = function (element, id) {
 function get_action_menu_menu_items() {
     if (!current_actions_popover_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
-        return;
+        return undefined;
     }
 
     const popover_data = current_actions_popover_elem.data("popover");
     if (!popover_data) {
         blueslip.error("Cannot find popover data for actions menu.");
-        return;
+        return undefined;
     }
 
     return $("li:not(.divider):visible a", popover_data.$tip);
@@ -619,7 +621,8 @@ exports.popover_items_handle_keyboard = (key, items) => {
     let index = items.index(items.filter(":focus"));
 
     if (key === "enter" && index >= 0 && index < items.length) {
-        return items[index].click();
+        items[index].click();
+        return;
     }
     if (index === -1) {
         index = 0;
@@ -744,7 +747,7 @@ function focus_user_info_popover_item() {
 function get_user_sidebar_popover_items() {
     if (!current_user_sidebar_popover) {
         blueslip.error("Trying to get menu items when user sidebar popover is closed.");
-        return;
+        return undefined;
     }
 
     return $("li:not(.divider):visible > a", current_user_sidebar_popover.$tip);

@@ -305,7 +305,7 @@ run_test("get_next_unread_pm_string", () => {
 
     unread.num_unread_for_person = function (user_ids_string) {
         if (user_ids_string === "unk") {
-            return;
+            return undefined;
         }
 
         if (user_ids_string === "read") {

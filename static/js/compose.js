@@ -403,7 +403,7 @@ exports.finish = function () {
     if (zcommand.process(message_content)) {
         exports.do_post_send_tasks();
         clear_compose_box();
-        return;
+        return undefined;
     }
 
     if (!exports.validate()) {

@@ -732,6 +732,7 @@ exports.content_highlighter = function (item) {
     } else if (this.completing === "time_jump") {
         return typeahead_helper.render_typeahead_item({primary: item});
     }
+    return undefined;
 };
 
 const show_flatpickr = (element, callback, default_timestamp) => {
@@ -916,6 +917,8 @@ exports.compose_content_matcher = function (completing, token) {
             case "time_jump":
                 // these don't actually have a typeahead popover, so we return quickly here.
                 return true;
+            default:
+                return undefined;
         }
     };
 };
@@ -936,6 +939,8 @@ exports.sort_results = function (completing, matches, token) {
             return matches;
         case "topic_list":
             return typeahead_helper.sorter(token, matches, (x) => x);
+        default:
+            return undefined;
     }
 };
 

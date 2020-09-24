@@ -38,9 +38,8 @@ function get_user_id_for_mention_button(elem) {
         if (user) {
             return user.user_id;
         }
-        return;
     }
-    return;
+    return undefined;
 }
 
 function get_user_group_id_for_mention_button(elem) {
@@ -50,7 +49,7 @@ function get_user_group_id_for_mention_button(elem) {
         return parseInt(user_group_id, 10);
     }
 
-    return;
+    return undefined;
 }
 
 // Helper function to update a mentioned user's name.

@@ -352,6 +352,8 @@ function slash_command_comparator(slash_command_a, slash_command_b) {
     } else if (slash_command_a.name > slash_command_b.name) {
         return 1;
     }
+    /* istanbul ignore next */
+    return 0;
 }
 exports.sort_slash_commands = function (matches, query) {
     // We will likely want to in the future make this sort the

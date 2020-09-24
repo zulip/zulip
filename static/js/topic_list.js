@@ -178,7 +178,7 @@ exports.active_stream_id = function () {
     const stream_ids = Array.from(active_widgets.keys());
 
     if (stream_ids.length !== 1) {
-        return;
+        return undefined;
     }
 
     return stream_ids[0];
@@ -188,7 +188,7 @@ exports.get_stream_li = function () {
     const widgets = Array.from(active_widgets.values());
 
     if (widgets.length !== 1) {
-        return;
+        return undefined;
     }
 
     const stream_li = widgets[0].get_parent();

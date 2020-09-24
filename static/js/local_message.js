@@ -35,19 +35,19 @@ exports.get_next_id_float = (function () {
             // If our id is already used, it is probably an edge case like we had
             // to abort a very recent message.
             blueslip.warn("We don't reuse ids for local echo.");
-            return;
+            return undefined;
         }
 
         if (local_id_float % 1 > local_id_increment * 5) {
             blueslip.warn("Turning off local echo for this message to let host catch up");
-            return;
+            return undefined;
         }
 
         if (local_id_float % 1 === 0) {
             // The logic to stop at 0.05 should prevent us from ever wrapping around
             // to the next integer.
             blueslip.error("Programming error");
-            return;
+            return undefined;
         }
 
         already_used.add(local_id_float);

@@ -693,6 +693,8 @@ run_test("topic_suggestions", () => {
                 return office_id;
             case "devel":
                 return devel_id;
+            default:
+                return undefined;
         }
     };
 

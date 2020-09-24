@@ -246,7 +246,7 @@ exports.last_active_date = function (user_id) {
     const info = exports.presence_info.get(user_id);
 
     if (!info || !info.last_active) {
-        return;
+        return undefined;
     }
 
     const date = new XDate(info.last_active * 1000);

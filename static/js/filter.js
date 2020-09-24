@@ -584,6 +584,8 @@ class Filter {
                 return "at";
             case "pm-with":
                 return "envelope";
+            default:
+                return undefined;
         }
     }
 
@@ -634,6 +636,8 @@ class Filter {
                 }
             }
         }
+        /* istanbul ignore next */
+        return undefined;
     }
 
     allow_use_first_unread_when_narrowing() {
