@@ -28,7 +28,7 @@ exports.remove = function (ids) {
     exports.rerender_ui();
 };
 
-exports.count = function () {
+exports.get_count = function () {
     return exports.starred_ids.size;
 };
 
@@ -37,7 +37,7 @@ exports.get_starred_msg_ids = function () {
 };
 
 exports.rerender_ui = function () {
-    let count = exports.count();
+    let count = exports.get_count();
 
     if (!page_params.starred_message_counts) {
         // This essentially hides the count
