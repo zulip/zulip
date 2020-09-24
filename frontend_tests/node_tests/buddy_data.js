@@ -284,11 +284,11 @@ run_test("bulk_data_hacks", () => {
 });
 
 run_test("level", () => {
-    assert.equal(buddy_data.my_user_status(me.user_id), "translated: (you)");
+    assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (you)");
     user_status.set_away(me.user_id);
-    assert.equal(buddy_data.my_user_status(me.user_id), "translated: (unavailable)");
+    assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (unavailable)");
     user_status.revoke_away(me.user_id);
-    assert.equal(buddy_data.my_user_status(me.user_id), "translated: (you)");
+    assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (you)");
 });
 
 run_test("level", () => {
