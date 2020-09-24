@@ -65,7 +65,7 @@
     "terser-webpack-plugin": "^4.1.0",
     "turndown": "^6.0.0",
     "unorm": "^1.6.0",
-    "webfonts-loader": "^6.0.2",
+    "webfonts-loader": "^7.0.1",
     "webpack": "^4.33.0",
     "webpack-cli": "^3.3.2",
     "webpack4-bundle-tracker": "^0.0.1-beta",
