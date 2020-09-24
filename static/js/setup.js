@@ -4,6 +4,11 @@ const util = require("./util");
 
 // Miscellaneous early setup.
 exports.password_change_in_progress = false;
+
+exports.set_password_change_in_progress = function (value) {
+    exports.password_change_in_progress = value;
+};
+
 $(() => {
     if (util.is_mobile()) {
         // Disable the tutorial; it's ugly on mobile.
