@@ -448,14 +448,14 @@ exports.set_up = function () {
             }
         }
 
-        setup.password_change_in_progress = true;
+        setup.set_password_change_in_progress(true);
         const opts = {
             success_continuation() {
-                setup.password_change_in_progress = false;
+                setup.set_password_change_in_progress(false);
                 overlays.close_modal("#change_password_modal");
             },
             error_continuation() {
-                setup.password_change_in_progress = false;
+                setup.set_password_change_in_progress(false);
             },
             error_msg_element: change_password_error,
         };
