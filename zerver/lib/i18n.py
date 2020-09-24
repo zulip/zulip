@@ -69,7 +69,9 @@ def get_available_language_codes() -> List[str]:
     return codes
 
 def get_language_translation_data(language: str) -> Dict[str, str]:
-    if language == 'zh-hans':
+    if language == 'en':
+        return {}
+    elif language == 'zh-hans':
         language = 'zh_Hans'
     elif language == 'zh-hant':
         language = 'zh_Hant'
