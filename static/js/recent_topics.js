@@ -67,7 +67,10 @@ function set_table_focus(row, col) {
         return true;
     }
 
-    topic_rows.eq(row).find(".recent_topics_focusable").eq(col).children().trigger("focus");
+    // Setting focus after the render is complete doesn't partially hide the row from view.
+    setTimeout(() => {
+        topic_rows.eq(row).find(".recent_topics_focusable").eq(col).children().trigger("focus");
+    }, 0);
     current_focus_elem = "table";
     return true;
 }
