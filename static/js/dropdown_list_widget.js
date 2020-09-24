@@ -1,5 +1,7 @@
 "use strict";
 
+const render_dropdown_list = require("../templates/settings/dropdown_list.hbs");
+
 const DropdownListWidget = function (opts) {
     const init = () => {
         // Run basic sanity checks on opts, and set up sane defaults.
@@ -19,8 +21,6 @@ const DropdownListWidget = function (opts) {
         }
     };
     init();
-
-    const render_dropdown_list = require("../templates/settings/dropdown_list.hbs");
 
     const render = (value) => {
         $(`#${opts.container_id} #${opts.value_id}`).data("value", value);
