@@ -124,7 +124,7 @@ set_global("stream_data", {
     get_sub_by_id: (stream) => {
         if (stream === stream5) {
             // No data is available for deactivated streams
-            return;
+            return undefined;
         }
 
         return {

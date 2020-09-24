@@ -8,7 +8,7 @@ exports.do_unread_count_updates = function do_unread_count_updates(messages) {
 
 function add_messages(messages, msg_list, opts) {
     if (!messages) {
-        return;
+        return undefined;
     }
 
     loading.destroy_indicator($("#page_loading_indicator"));
@@ -50,7 +50,7 @@ exports.add_new_messages = function (messages, msg_list) {
         // narrow. Otherwise the new message would be rendered just after
         // the previously fetched messages when that's inaccurate.
         msg_list.data.fetch_status.update_expected_max_message_id(messages);
-        return;
+        return undefined;
     }
     return add_messages(messages, msg_list, {messages_are_new: true});
 };

@@ -81,19 +81,19 @@ exports.get_date = function (elem) {
     const message_row = exports.first_visible_message(elem);
 
     if (!message_row || !message_row.length) {
-        return;
+        return undefined;
     }
 
     const msg_id = rows.id(message_row);
 
     if (msg_id === undefined) {
-        return;
+        return undefined;
     }
 
     const message = message_store.get(msg_id);
 
     if (!message) {
-        return;
+        return undefined;
     }
 
     const time = new XDate(message.timestamp * 1000);
@@ -236,12 +236,12 @@ exports.candidate_recipient_bar = function () {
     const selected_row = current_msg_list.selected_row();
 
     if (selected_row === undefined || selected_row.length === 0) {
-        return;
+        return undefined;
     }
 
     let candidate = rows.get_message_recipient_row(selected_row);
     if (candidate === undefined) {
-        return;
+        return undefined;
     }
 
     while (candidate.length) {
@@ -253,6 +253,8 @@ exports.candidate_recipient_bar = function () {
         // row, rather than finding the first recipient_row.
         candidate = candidate.prev();
     }
+
+    return undefined;
 };
 
 function show_floating_recipient_bar() {

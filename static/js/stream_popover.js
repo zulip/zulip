@@ -18,13 +18,13 @@ let starred_messages_sidebar_elem;
 function get_popover_menu_items(sidebar_elem) {
     if (!sidebar_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
-        return;
+        return undefined;
     }
 
     const popover_data = $(sidebar_elem).data("popover");
     if (!popover_data) {
         blueslip.error("Cannot find popover data for stream sidebar menu.");
-        return;
+        return undefined;
     }
     return $("li:not(.divider):visible > a", popover_data.$tip);
 }
@@ -125,7 +125,7 @@ function stream_popover_sub(e) {
     const sub = stream_data.get_sub_by_id(stream_id);
     if (!sub) {
         blueslip.error("Unknown stream: " + stream_id);
-        return;
+        return undefined;
     }
     return sub;
 }
@@ -477,13 +477,13 @@ function topic_popover_sub(e) {
     const stream_id = topic_popover_stream_id(e);
     if (!stream_id) {
         blueslip.error("cannot find stream id");
-        return;
+        return undefined;
     }
 
     const sub = stream_data.get_sub_by_id(stream_id);
     if (!sub) {
         blueslip.error("Unknown stream: " + stream_id);
-        return;
+        return undefined;
     }
     return sub;
 }
@@ -587,6 +587,8 @@ exports.register_topic_handlers = function () {
     });
 
     $("body").on("click", "#do_move_topic_button", (e) => {
+        e.preventDefault();
+
         function show_error_msg(msg) {
             $("#topic_stream_edit_form_error .error-msg").text(msg);
             $("#topic_stream_edit_form_error").show();
@@ -616,7 +618,7 @@ exports.register_topic_handlers = function () {
             new_topic_name.toLowerCase() === old_topic_name.toLowerCase()
         ) {
             show_error_msg("Please select a different stream or change topic name.");
-            return false;
+            return;
         }
 
         // The API endpoint for editing messages to change their
@@ -672,7 +674,6 @@ exports.register_topic_handlers = function () {
                 show_error_msg(xhr.responseJSON.msg);
             },
         });
-        e.preventDefault();
     });
 };
 

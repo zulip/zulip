@@ -344,29 +344,29 @@ function integration_events() {
     });
 
     $(".integration-instruction-block").on("click", "a .integration-category", (e) => {
+        e.preventDefault();
         const category = $(e.target).data("category");
         dispatch("SHOW_CATEGORY", {category});
-        return false;
     });
 
     $(".integrations a .integration-category").on("click", (e) => {
+        e.preventDefault();
         const category = $(e.target).data("category");
         dispatch("CHANGE_CATEGORY", {category});
         toggle_categories_dropdown();
-        return false;
     });
 
     $(".integrations a .integration-lozenge").on("click", (e) => {
         if (!$(e.target).closest(".integration-lozenge").hasClass("integration-create-your-own")) {
+            e.preventDefault();
             const integration = $(e.target).closest(".integration-lozenge").data("name");
             dispatch("SHOW_INTEGRATION", {integration});
-            return false;
         }
     });
 
-    $("a#integration-list-link span, a#integration-list-link i").on("click", () => {
+    $("a#integration-list-link span, a#integration-list-link i").on("click", (e) => {
+        e.preventDefault();
         dispatch("HIDE_INTEGRATION");
-        return false;
     });
 
     // combine selector use for both focusing the integrations searchbar and adding

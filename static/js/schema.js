@@ -13,6 +13,7 @@ exports.check_string = function (var_name, val) {
     if (typeof val !== "string") {
         return var_name + " is not a string";
     }
+    return undefined;
 };
 
 exports.check_record = function (var_name, val, fields) {
@@ -32,6 +33,8 @@ exports.check_record = function (var_name, val, fields) {
     if (msg) {
         return "in " + var_name + " " + msg;
     }
+
+    return undefined;
 };
 
 exports.check_array = function (var_name, val, checker) {
@@ -46,6 +49,8 @@ exports.check_array = function (var_name, val, checker) {
             return "in " + var_name + " we found an item where " + msg;
         }
     }
+
+    return undefined;
 };
 
 window.schema = exports;

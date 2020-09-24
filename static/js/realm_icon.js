@@ -6,7 +6,7 @@ exports.build_realm_icon_widget = function (upload_function) {
     };
 
     if (!page_params.is_admin) {
-        return;
+        return undefined;
     }
     if (page_params.realm_icon_source === "G") {
         $("#realm-icon-upload-widget .image-delete-button").hide();

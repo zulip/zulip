@@ -78,6 +78,8 @@ exports.build_user_avatar_widget = function (upload_function) {
             page_params.max_avatar_file_size_mib,
         );
     }
+
+    return undefined;
 };
 
 window.avatar = exports;

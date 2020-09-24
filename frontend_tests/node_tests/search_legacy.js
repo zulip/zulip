@@ -172,19 +172,26 @@ run_test("initialize", () => {
     assert(search.is_using_input_method);
 
     const keydown = searchbox_form.get_on_handler("keydown");
+    let default_prevented = false;
     let ev = {
         type: "keydown",
         which: 15,
+        preventDefault() {
+            default_prevented = true;
+        },
     };
     search_query_box.is = return_false;
     assert.equal(keydown(ev), undefined);
+    assert(!default_prevented);
 
     ev.which = 13;
     assert.equal(keydown(ev), undefined);
+    assert(!default_prevented);
 
     ev.which = 13;
     search_query_box.is = return_true;
-    assert.equal(keydown(ev), false);
+    assert.equal(keydown(ev), undefined);
+    assert(default_prevented);
 
     ev = {
         type: "keyup",

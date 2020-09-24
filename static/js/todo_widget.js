@@ -63,7 +63,7 @@ class TaskData {
                 if (!this.name_in_use(task)) {
                     return event;
                 }
-                return;
+                return undefined;
             },
 
             inbound: (sender_id, data) => {

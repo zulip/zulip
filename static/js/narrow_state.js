@@ -36,7 +36,7 @@ exports.update_email = function (user_id, new_email) {
 /* Operators we should send to the server. */
 exports.public_operators = function () {
     if (current_filter === undefined) {
-        return;
+        return undefined;
     }
     return current_filter.public_operators();
 };
@@ -96,7 +96,7 @@ exports.set_compose_defaults = function () {
 
 exports.stream = function () {
     if (current_filter === undefined) {
-        return;
+        return undefined;
     }
     const stream_operands = current_filter.operands("stream");
     if (stream_operands.length === 1) {
@@ -106,16 +106,16 @@ exports.stream = function () {
         // name (considering renames and capitalization).
         return stream_data.get_name(name);
     }
-    return;
+    return undefined;
 };
 
 exports.stream_sub = function () {
     if (current_filter === undefined) {
-        return;
+        return undefined;
     }
     const stream_operands = current_filter.operands("stream");
     if (stream_operands.length !== 1) {
-        return;
+        return undefined;
     }
 
     const name = stream_operands[0];
@@ -128,7 +128,7 @@ exports.stream_id = function () {
     const sub = exports.stream_sub();
 
     if (!sub) {
-        return;
+        return undefined;
     }
 
     return sub.stream_id;
@@ -136,13 +136,13 @@ exports.stream_id = function () {
 
 exports.topic = function () {
     if (current_filter === undefined) {
-        return;
+        return undefined;
     }
     const operands = current_filter.operands("topic");
     if (operands.length === 1) {
         return operands[0];
     }
-    return;
+    return undefined;
 };
 
 exports.pm_string = function () {
@@ -150,18 +150,18 @@ exports.pm_string = function () {
     // with users 4, 5, and 99, this will return "4,5,99"
 
     if (current_filter === undefined) {
-        return;
+        return undefined;
     }
 
     const operands = current_filter.operands("pm-with");
     if (operands.length !== 1) {
-        return;
+        return undefined;
     }
 
     const emails_string = operands[0];
 
     if (!emails_string) {
-        return;
+        return undefined;
     }
 
     const user_ids_string = people.reply_to_to_user_ids_string(emails_string);
@@ -220,7 +220,7 @@ exports._possible_unread_message_ids = function () {
     // message ids but possibly a superset of unread message ids
     // that match our filter.
     if (current_filter === undefined) {
-        return;
+        return undefined;
     }
 
     let stream_id;
@@ -273,7 +273,7 @@ exports._possible_unread_message_ids = function () {
         return unread.get_all_msg_ids();
     }
 
-    return;
+    return undefined;
 };
 
 // Are we narrowed to PMs: all PMs or PMs with particular people.

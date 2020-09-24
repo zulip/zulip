@@ -102,7 +102,7 @@ exports.searching = function () {
 
 exports.build_user_sidebar = function () {
     if (page_params.realm_presence_disabled) {
-        return;
+        return undefined;
     }
 
     const filter_text = exports.get_filter_text();
@@ -174,7 +174,7 @@ exports.send_presence_to_server = function (want_redraw) {
     // reload if the device was offline for more than
     // DEFAULT_EVENT_QUEUE_TIMEOUT_SECS).
     if (page_params.is_web_public_guest) {
-        return false;
+        return;
     }
 
     server_events.check_for_unsuspend();

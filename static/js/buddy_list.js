@@ -109,7 +109,7 @@ class BuddyList extends BuddyListConf {
         const i = this.keys.indexOf(key);
 
         if (i <= 0) {
-            return;
+            return undefined;
         }
 
         return this.keys[i - 1];
@@ -119,7 +119,7 @@ class BuddyList extends BuddyListConf {
         const i = this.keys.indexOf(key);
 
         if (i < 0) {
-            return;
+            return undefined;
         }
 
         return this.keys[i + 1];

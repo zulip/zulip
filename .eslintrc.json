@@ -9,14 +9,13 @@
         "warnOnUnsupportedTypeScriptVersion": false,
         "sourceType": "unambiguous"
     },
-    "plugins": ["eslint-plugin-empty-returns"],
     "rules": {
         "array-callback-return": "error",
         "arrow-body-style": "error",
         "block-scoped-var": "error",
+        "consistent-return": "error",
         "curly": "error",
         "dot-notation": "error",
-        "empty-returns/main": "error",
         "eqeqeq": "error",
         "guard-for-in": "error",
         "import/extensions": "error",
@@ -306,7 +305,6 @@
             },
             "rules": {
                 // Disable base rule to avoid conflict
-                "empty-returns/main": "off",
                 "no-unused-vars": "off",
                 "no-useless-constructor": "off",
 

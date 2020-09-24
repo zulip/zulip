@@ -57,6 +57,7 @@ function get_max_index(section) {
     } else if (section >= 0 && section < get_total_sections()) {
         return exports.complete_emoji_catalog[section].emojis.length;
     }
+    return undefined;
 }
 
 function get_emoji_id(section, index) {
@@ -197,6 +198,7 @@ function get_rendered_emoji(section, index) {
     if (emoji.length > 0) {
         return emoji;
     }
+    return undefined;
 }
 
 function filter_emojis() {

@@ -170,11 +170,7 @@ exports.make_new_elem = function (selector, opts) {
         },
         data(name, val) {
             if (val === undefined) {
-                const data_val = attrs.get("data-" + name);
-                if (data_val === undefined) {
-                    return;
-                }
-                return data_val;
+                return attrs.get("data-" + name);
             }
             attrs.set("data-" + name, val);
             return self;
@@ -417,17 +413,10 @@ exports.make_zjquery = function (opts) {
 
                 const val = target[key];
 
-                if (val === undefined) {
+                if (val === undefined && typeof key !== "symbol" && key !== "inspect") {
                     // For undefined values, we'll throw errors to devs saying
                     // they need to create stubs.  We ignore certain keys that
                     // are used for simply printing out the object.
-                    if (typeof key === "symbol") {
-                        return;
-                    }
-                    if (key === "inspect") {
-                        return;
-                    }
-
                     throw Error('You must create a stub for $("' + selector + '").' + key);
                 }
 
@@ -447,7 +436,7 @@ exports.make_zjquery = function (opts) {
             // page load time.  But there are no pages to load,
             // so we just call it right away.
             arg();
-            return;
+            return undefined;
         }
 
         // If somebody is passing us an element, we return

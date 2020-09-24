@@ -47,9 +47,9 @@ exports.message_content = get_or_set("compose-textarea", true);
 exports.private_message_recipient = function (value) {
     if (typeof value === "string") {
         compose_pm_pill.set_from_emails(value);
-    } else {
-        return compose_pm_pill.get_emails();
+        return undefined;
     }
+    return compose_pm_pill.get_emails();
 };
 
 exports.has_message_content = function () {

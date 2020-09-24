@@ -119,7 +119,7 @@ exports.watch_manual_resize = function (element) {
 
         if (!box) {
             blueslip.error("Bad selector in watch_manual_resize: " + element);
-            return;
+            return undefined;
         }
 
         const meta = {

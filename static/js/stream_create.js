@@ -150,7 +150,7 @@ function create_stream() {
             $(".stream_create_info"),
             "alert-error",
         );
-        return;
+        return undefined;
     }
     data.subscriptions = JSON.stringify([{name: stream_name, description}]);
 

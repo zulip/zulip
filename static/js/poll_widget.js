@@ -118,7 +118,7 @@ class PollData {
                 if (this.is_my_poll) {
                     return event;
                 }
-                return;
+                return undefined;
             },
 
             inbound: (sender_id, data) => {

@@ -28,7 +28,7 @@ exports.user_ids = function () {
 exports.get = function get(message_id) {
     if (message_id === undefined || message_id === null) {
         blueslip.error("message_store.get got bad value: " + message_id);
-        return;
+        return undefined;
     }
 
     if (typeof message_id !== "number") {

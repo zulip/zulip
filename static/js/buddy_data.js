@@ -142,7 +142,7 @@ function get_num_unread(user_id) {
 
 exports.my_user_status = function (user_id) {
     if (!people.is_my_user_id(user_id)) {
-        return;
+        return undefined;
     }
 
     if (user_status.is_away(user_id)) {
@@ -348,7 +348,7 @@ exports.huddle_fraction_present = function (huddle) {
     } else if (num_present !== 0) {
         return 0.5;
     }
-    return;
+    return undefined;
 };
 
 window.buddy_data = exports;

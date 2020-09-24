@@ -68,7 +68,7 @@ exports.get_retention_policy_text_for_subscription_type = function (sub) {
         (sub.message_retention_days === null ||
             sub.message_retention_days === settings_config.retain_message_forever)
     ) {
-        return;
+        return undefined;
     }
 
     // Forever for this stream, overriding the organization default
@@ -127,13 +127,13 @@ function get_sub_for_target(target) {
     const stream_id = get_stream_id(target);
     if (!stream_id) {
         blueslip.error("Cannot find stream id for target");
-        return;
+        return undefined;
     }
 
     const sub = stream_data.get_sub_by_id(stream_id);
     if (!sub) {
         blueslip.error("get_sub_for_target() failed id lookup: " + stream_id);
-        return;
+        return undefined;
     }
     return sub;
 }
@@ -354,6 +354,8 @@ function show_subscription_settings(sub) {
                     }
                     return person.full_name.toLowerCase().includes(value);
                 }
+
+                return false;
             },
         },
         simplebar_container: $(".subscriber_list_container"),
@@ -469,6 +471,7 @@ exports.bulk_set_stream_property = function (sub_data, status_element) {
     }
 
     settings_ui.do_settings_change(channel.post, url, data, status_element);
+    return undefined;
 };
 
 exports.set_stream_property = function (sub, property, value, status_element) {

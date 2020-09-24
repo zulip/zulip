@@ -146,7 +146,7 @@ exports.apply_markdown = function (message) {
                 // This is nothing to be concerned about--the users
                 // are allowed to hand-type mentions and they may
                 // have had a typo in the name.
-                return;
+                return undefined;
             }
 
             // HAPPY PATH! Note that we not only need to return the
@@ -185,7 +185,7 @@ exports.apply_markdown = function (message) {
                     "</span>"
                 );
             }
-            return;
+            return undefined;
         },
         silencedMentionHandler(quote) {
             // Silence quoted mentions.
@@ -347,7 +347,7 @@ function handleTimestamp(time) {
 function handleStream(stream_name) {
     const stream = helpers.get_stream_by_name(stream_name);
     if (stream === undefined) {
-        return;
+        return undefined;
     }
     const href = helpers.stream_hash(stream.stream_id);
     return (
@@ -367,7 +367,7 @@ function handleStream(stream_name) {
 function handleStreamTopic(stream_name, topic) {
     const stream = helpers.get_stream_by_name(stream_name);
     if (stream === undefined || !topic) {
-        return;
+        return undefined;
     }
     const href = helpers.stream_topic_hash(stream.stream_id, topic);
     const text = "#" + _.escape(stream.name) + " > " + _.escape(topic);
@@ -407,6 +407,7 @@ function handleTex(tex, fullmatch) {
             return '<span class="tex-error">' + _.escape(fullmatch) + "</span>";
         }
         blueslip.error(ex);
+        return undefined;
     }
 }
 

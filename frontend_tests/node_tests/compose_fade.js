@@ -52,6 +52,8 @@ run_test("set_focused_recipient", () => {
                         return "lunch";
                     },
                 };
+            default:
+                throw new Error(`Unknown selector ${selector}`);
         }
     };
 

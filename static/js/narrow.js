@@ -157,7 +157,8 @@ exports.activate = function (raw_operators, opts) {
     $(".tooltip").hide();
 
     if (raw_operators.length === 0) {
-        return exports.deactivate();
+        exports.deactivate();
+        return;
     }
     const filter = new Filter(raw_operators);
     const operators = filter.operators();

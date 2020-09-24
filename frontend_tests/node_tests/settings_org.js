@@ -42,6 +42,7 @@ global.stub_templates((name, data) => {
         assert(data.realm_domain.domain);
         return "stub-domains-list";
     }
+    throw new Error(`Unknown template ${name}`);
 });
 
 const _overlays = {};
