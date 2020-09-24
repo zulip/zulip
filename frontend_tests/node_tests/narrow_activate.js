@@ -48,6 +48,10 @@ set_global("search_pill_widget", {
         },
     },
 });
+set_global("recent_topics", {
+    hide: () => {},
+    is_visible: () => {},
+});
 
 //
 // We have strange hacks in narrow.activate to sleep 0

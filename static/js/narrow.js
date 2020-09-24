@@ -146,6 +146,10 @@ exports.activate = function (raw_operators, opts) {
          or rerendering due to server-side changes.
     */
 
+    if (recent_topics.is_visible()) {
+        recent_topics.hide();
+    }
+
     const start_time = new Date();
     const was_narrowed_already = narrow_state.active();
     // most users aren't going to send a bunch of a out-of-narrow messages
