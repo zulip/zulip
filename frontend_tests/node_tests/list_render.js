@@ -671,7 +671,7 @@ run_test("render item", () => {
         const regex = new RegExp(`\\<tr data-item=${item}\\>.*?<\\/tr\\>`);
         assert(expected_queries.includes(query));
         if (query.includes(`data-item='${INITIAL_RENDER_COUNT}'`)) {
-            return; // This item is not rendered, so we find nothing
+            return undefined; // This item is not rendered, so we find nothing
         }
         return {
             // Return a JQuery stub for the original HTML.

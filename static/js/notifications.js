@@ -567,7 +567,7 @@ exports.granted_desktop_notifications_permission = function () {
 
 exports.request_desktop_notifications_permission = function () {
     if (NotificationAPI) {
-        return NotificationAPI.requestPermission();
+        NotificationAPI.requestPermission();
     }
 };
 
@@ -629,7 +629,7 @@ exports.get_local_notify_mix_reason = function (message) {
     if (row.length > 0) {
         // If our message is in the current message list, we do
         // not have a mix, so we are happy.
-        return;
+        return undefined;
     }
 
     if (message.type === "stream" && muting.is_topic_muted(message.stream_id, message.topic)) {
@@ -651,6 +651,8 @@ exports.get_local_notify_mix_reason = function (message) {
     ) {
         return i18n.t("Sent! Your message is outside your current narrow.");
     }
+
+    return undefined;
 };
 
 exports.notify_local_mixes = function (messages, need_user_to_scroll) {

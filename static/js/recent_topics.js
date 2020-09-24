@@ -393,7 +393,7 @@ function topic_sort(a, b) {
 
 exports.complete_rerender = function () {
     if (!overlays.recent_topics_open()) {
-        return false;
+        return;
     }
     // Prepare header
     const rendered_body = render_recent_topics_body({

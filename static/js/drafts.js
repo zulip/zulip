@@ -80,7 +80,7 @@ exports.snapshot_message = function () {
     if (!compose_state.composing() || compose_state.message_content().length <= 2) {
         // If you aren't in the middle of composing the body of a
         // message or the message is shorter than 2 characters long, don't try to snapshot.
-        return;
+        return undefined;
     }
 
     // Save what we can.
@@ -286,7 +286,7 @@ exports.format_draft = function (draft) {
             },
             error.stack,
         );
-        return;
+        return undefined;
     }
 
     return formatted;

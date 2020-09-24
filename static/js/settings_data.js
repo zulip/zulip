@@ -25,11 +25,12 @@ exports.show_email = function () {
     ) {
         return page_params.is_admin;
     }
+    return undefined;
 };
 
 exports.email_for_user_settings = function (person) {
     if (!exports.show_email()) {
-        return;
+        return undefined;
     }
 
     if (

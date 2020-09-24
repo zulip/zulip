@@ -48,7 +48,7 @@ exports.render_tag = (tag) => {
 
     if (opts.keyed_nodes === undefined) {
         blueslip.error("We need keyed_nodes to render innards.");
-        return;
+        return undefined;
     }
 
     const innards = opts.keyed_nodes.map((node) => node.render()).join("\n");

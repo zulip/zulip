@@ -44,13 +44,13 @@ exports.get_active_user_ids_string = function () {
     const filter = narrow_state.filter();
 
     if (!filter) {
-        return;
+        return undefined;
     }
 
     const emails = filter.operands("pm-with")[0];
 
     if (!emails) {
-        return;
+        return undefined;
     }
 
     return people.emails_strings_to_user_ids_string(emails);

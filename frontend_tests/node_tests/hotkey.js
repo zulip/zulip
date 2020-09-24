@@ -180,6 +180,7 @@ run_test("basic_chars", () => {
             // provide a useful error message.
             // add a newline to separate from other console output.
             console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
+            throw err;
         }
     }
 
@@ -389,6 +390,7 @@ run_test("motion_keys", () => {
             // provide a useful error message.
             // add a newline to separate from other console output.
             console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
+            throw err;
         }
     }
 

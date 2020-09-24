@@ -46,13 +46,13 @@ class MessageListData {
 
     select_idx() {
         if (this._selected_id === -1) {
-            return;
+            return undefined;
         }
         const ids = this._items.map((message) => message.id);
 
         const i = ids.indexOf(this._selected_id);
         if (i === -1) {
-            return;
+            return undefined;
         }
         return i;
     }
@@ -61,11 +61,11 @@ class MessageListData {
         const i = this.select_idx();
 
         if (i === undefined) {
-            return;
+            return undefined;
         }
 
         if (i === 0) {
-            return;
+            return undefined;
         }
 
         return this._items[i - 1].id;
@@ -75,11 +75,11 @@ class MessageListData {
         const i = this.select_idx();
 
         if (i === undefined) {
-            return;
+            return undefined;
         }
 
         if (i + 1 >= this._items.length) {
-            return;
+            return undefined;
         }
 
         return this._items[i + 1].id;
@@ -121,7 +121,7 @@ class MessageListData {
     get(id) {
         id = parseFloat(id);
         if (isNaN(id)) {
-            return;
+            return undefined;
         }
         return this._hash.get(id);
     }
@@ -531,7 +531,7 @@ class MessageListData {
     get_last_message_sent_by_me() {
         const msg_index = _.findLastIndex(this._items, {sender_id: page_params.user_id});
         if (msg_index === -1) {
-            return;
+            return undefined;
         }
         const msg = this._items[msg_index];
         return msg;

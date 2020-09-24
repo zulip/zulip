@@ -34,7 +34,7 @@ function get_message(message_id) {
     const message = message_store.get(message_id);
     if (!message) {
         blueslip.error("reactions: Bad message id: " + message_id);
-        return;
+        return undefined;
     }
 
     exports.set_clean_reactions(message);

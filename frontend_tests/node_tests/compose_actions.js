@@ -49,6 +49,7 @@ compose_state.private_message_recipient = (function () {
         }
 
         recipient = arg;
+        return undefined;
     };
 })();
 

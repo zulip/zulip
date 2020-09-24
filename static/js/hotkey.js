@@ -117,7 +117,7 @@ const keypress_mappings = {
 
 exports.get_keydown_hotkey = function (e) {
     if (e.altKey) {
-        return;
+        return undefined;
     }
 
     let hotkey;
@@ -135,9 +135,9 @@ exports.get_keydown_hotkey = function (e) {
         if (hotkey) {
             return hotkey;
         }
-        return;
+        return undefined;
     } else if (e.metaKey || e.ctrlKey) {
-        return;
+        return undefined;
     }
 
     if (e.shiftKey) {
@@ -159,7 +159,7 @@ exports.get_keydown_hotkey = function (e) {
 
 exports.get_keypress_hotkey = function (e) {
     if (e.metaKey || e.ctrlKey || e.altKey) {
-        return;
+        return undefined;
     }
 
     return keypress_mappings[e.which];

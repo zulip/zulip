@@ -190,6 +190,7 @@ class MessageListView {
                 timerender.stringify_time(last_edit_time)
             );
         }
+        return undefined;
     }
 
     _add_msg_edited_vars(message_container) {
@@ -571,7 +572,7 @@ class MessageListView {
         // and templates them to be inserted as table rows into the DOM.
 
         if (messages.length === 0 || this.table_name === undefined) {
-            return;
+            return undefined;
         }
 
         const list = this.list; // for convenience
@@ -616,7 +617,7 @@ class MessageListView {
         // and templates them to be inserted as table rows into the DOM.
 
         if (message_containers.length === 0 || this.table_name === undefined) {
-            return;
+            return undefined;
         }
 
         const new_message_groups = this.build_message_groups(message_containers, this.table_name);
@@ -821,6 +822,8 @@ class MessageListView {
                 };
             }
         }
+
+        return undefined;
     }
 
     _new_messages_height(rendered_elems) {

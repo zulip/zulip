@@ -86,7 +86,7 @@ function get_custom_http_headers() {
             custom_headers = JSON.stringify(JSON.parse(custom_headers));
         } catch (err) {
             set_results_notice("Custom HTTP headers are not in a valid JSON format.", "warning");
-            return;
+            return undefined;
         }
     }
     return custom_headers;

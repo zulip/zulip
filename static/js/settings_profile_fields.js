@@ -35,6 +35,7 @@ exports.field_type_id_to_string = function (type_id) {
             return field_type.name;
         }
     }
+    return undefined;
 };
 
 function update_profile_fields_table_element() {
@@ -156,6 +157,7 @@ function read_field_data_from_form(field_type_id, field_elem) {
     } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
         return read_external_account_field_data(field_elem);
     }
+    return undefined;
 }
 
 function create_profile_field(e) {

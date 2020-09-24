@@ -259,6 +259,7 @@ run_test("num_unread_for_topic", () => {
         if (arg === stream_id) {
             return {name: "Some Stream"};
         }
+        throw new Error(`Unknown stream ${arg}`);
     };
 
     let count = unread.num_unread_for_topic(stream_id, "lunch");

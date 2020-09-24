@@ -6,7 +6,7 @@ const ls = {
         try {
             return JSON.parse(str);
         } catch (err) {
-            return;
+            return undefined;
         }
     },
 
@@ -44,6 +44,8 @@ const ls = {
                 }
             }
         }
+
+        return undefined;
     },
 
     // set the wrapped version of the data into localStorage.
@@ -83,6 +85,8 @@ const ls = {
 
             return data;
         }
+
+        return undefined;
     },
 };
 
@@ -111,6 +115,8 @@ const localstorage = function () {
             if (data) {
                 return data.data;
             }
+
+            return undefined;
         },
 
         set(name, data) {

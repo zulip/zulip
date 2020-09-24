@@ -63,6 +63,7 @@ run_test("settings", () => {
             data_called += 1;
             return "js";
         }
+        throw new Error(`Unknown attribute ${opts}`);
     };
 
     let unmute_called = false;

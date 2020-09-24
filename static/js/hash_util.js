@@ -192,7 +192,7 @@ exports.parse_narrow = function (hash) {
         const raw_operand = hash[i + 1];
 
         if (!raw_operand) {
-            return;
+            return undefined;
         }
 
         let negated = false;

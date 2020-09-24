@@ -2,15 +2,15 @@
 
 exports.get_message_events = function (message) {
     if (message.locally_echoed) {
-        return;
+        return undefined;
     }
 
     if (!message.submessages) {
-        return;
+        return undefined;
     }
 
     if (message.submessages.length === 0) {
-        return;
+        return undefined;
     }
 
     message.submessages.sort((m1, m2) => parseInt(m1.id, 10) - parseInt(m2.id, 10));
@@ -30,6 +30,7 @@ exports.process_submessages = function (in_opts) {
         return exports.do_process_submessages(in_opts);
     } catch (err) {
         blueslip.error("in process_submessages: " + err.message);
+        return undefined;
     }
 };
 

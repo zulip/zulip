@@ -38,7 +38,7 @@ function make_textbox(s) {
     widget.caret = function (arg) {
         if (typeof arg === "number") {
             widget.pos = arg;
-            return;
+            return this;
         }
 
         if (arg) {
@@ -48,7 +48,7 @@ function make_textbox(s) {
             const after = widget.s.slice(widget.pos);
             widget.s = before + arg + after;
             widget.pos += arg.length;
-            return;
+            return this;
         }
 
         return widget.pos;
@@ -57,9 +57,9 @@ function make_textbox(s) {
     widget.val = function (new_val) {
         if (new_val) {
             widget.s = new_val;
-        } else {
-            return widget.s;
+            return this;
         }
+        return widget.s;
     };
 
     widget.trigger = function (type) {
@@ -68,6 +68,7 @@ function make_textbox(s) {
         } else if (type === "blur") {
             widget.focused = false;
         }
+        return this;
     };
 
     return widget;
@@ -99,9 +100,9 @@ run_test("insert_syntax_and_focus", () => {
     $("#compose-textarea").caret = function (syntax) {
         if (syntax !== undefined) {
             $("#compose-textarea").val($("#compose-textarea").val() + syntax);
-        } else {
-            return 4;
+            return this;
         }
+        return 4;
     };
     compose_ui.insert_syntax_and_focus(":octopus:");
     assert.equal($("#compose-textarea").caret(), 4);

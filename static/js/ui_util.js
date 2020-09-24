@@ -49,7 +49,7 @@ function update_lock_icon_for_stream(stream_name) {
 //  have that color be reflected here too.)
 exports.decorate_stream_bar = function (stream_name, element, is_compose) {
     if (stream_name === undefined) {
-        return false;
+        return;
     }
     const color = stream_data.get_color(stream_name);
     if (is_compose) {

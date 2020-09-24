@@ -31,6 +31,7 @@ run_test("filter_table", () => {
             return 10;
         }
         assert.equal(set, 10);
+        return this;
     };
 
     // set-up sub rows stubs

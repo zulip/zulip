@@ -43,7 +43,7 @@ class ListCursor {
         //       It would also give the caller more flexibility on
         //       the actual styling.
         if (key === undefined) {
-            return;
+            return undefined;
         }
 
         const li = this.list.find_li({
@@ -52,7 +52,7 @@ class ListCursor {
         });
 
         if (!li || li.length === 0) {
-            return;
+            return undefined;
         }
 
         return {

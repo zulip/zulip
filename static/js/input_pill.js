@@ -20,17 +20,17 @@ exports.create = function (opts) {
 
     if (!opts.container) {
         blueslip.error("Pill needs container.");
-        return;
+        return undefined;
     }
 
     if (!opts.create_item_from_text) {
         blueslip.error("Pill needs create_item_from_text");
-        return;
+        return undefined;
     }
 
     if (!opts.get_text_from_item) {
         blueslip.error("Pill needs get_text_from_item");
-        return;
+        return undefined;
     }
 
     // a stateful object of this `pill_container` instance.
@@ -75,7 +75,7 @@ exports.create = function (opts) {
 
             if (!item || !item.display_value) {
                 store.$input.addClass("shake");
-                return;
+                return undefined;
             }
 
             return item;
@@ -123,7 +123,7 @@ exports.create = function (opts) {
         // input block.
         appendPill(value) {
             if (value.length === 0) {
-                return;
+                return true;
             }
             if (value.match(",")) {
                 funcs.insertManyPills(value);
@@ -138,6 +138,7 @@ exports.create = function (opts) {
             }
 
             this.appendValidatedData(payload);
+            return true;
         },
 
         // this searches given a particlar pill ID for it, removes the node
@@ -161,6 +162,9 @@ exports.create = function (opts) {
 
                 return pill;
             }
+
+            /* istanbul ignore next */
+            return undefined;
         },
 
         // this will remove the last pill in the container -- by default tied
@@ -210,12 +214,10 @@ exports.create = function (opts) {
             // the end.
             ui_util.place_caret_at_end(store.$input[0]);
 
-            // this sends a flag that the operation wasn't completely successful,
+            // this sends a flag if the operation wasn't completely successful,
             // which in this case is defined as some of the pills not autofilling
             // correctly.
-            if (drafts.length > 0) {
-                return false;
-            }
+            return drafts.length === 0;
         },
 
         getByID(id) {

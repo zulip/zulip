@@ -81,6 +81,7 @@ run_test("pills", () => {
         if (user_email === othello.email) {
             return othello;
         }
+        throw new Error(`Unknown user email ${user_email}`);
     };
 
     let get_by_user_id_called = false;
@@ -89,8 +90,10 @@ run_test("pills", () => {
         if (id === othello.user_id) {
             return othello;
         }
-        assert.equal(id, 3);
-        return hamlet;
+        if (id === hamlet.user_id) {
+            return hamlet;
+        }
+        throw new Error(`Unknown user ID ${id}`);
     };
 
     function test_create_item(handler) {

@@ -1239,6 +1239,7 @@ run_test("warn_if_mentioning_unsubscribed_user", () => {
         if (field === "stream-id") {
             return "111";
         }
+        throw new Error(`Unknown field ${field}`);
     };
 
     const previous_users = $("#compose_invite_users .compose_invite_user");
@@ -1344,6 +1345,7 @@ run_test("on_events", () => {
             if (field === "stream-id") {
                 return "102";
             }
+            throw new Error(`Unknown field ${field}`);
         };
         helper.target.prop("disabled", false);
 

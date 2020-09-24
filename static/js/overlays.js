@@ -63,7 +63,7 @@ exports.enable_background_mouse_events = function () {
 exports.active_modal = function () {
     if (!exports.is_modal_open()) {
         blueslip.error("Programming error — Called active_modal when there is no modal open");
-        return;
+        return undefined;
     }
     return "#" + $(".modal.in").attr("id");
 };
