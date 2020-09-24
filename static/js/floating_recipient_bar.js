@@ -16,7 +16,7 @@ exports.first_visible_message = function (bar) {
     // overlaps the floating recipient bar's space (since you ).
 
     const messages = bar.children(".message_row");
-    const frb_bottom = exports.frb_bottom();
+    const frb_bottom = exports.get_frb_bottom();
     const frb_top = frb_bottom - 25;
     let result;
 
@@ -103,7 +103,7 @@ exports.get_date = function (elem) {
     return rendered_date;
 };
 
-exports.frb_bottom = function () {
+exports.get_frb_bottom = function () {
     const bar = $("#floating_recipient_bar");
     const bar_top = top_offset(bar);
     const bar_bottom = bar_top + bar.safeOuterHeight();
