@@ -633,7 +633,7 @@ exports.change_focused_element = function (e, input_key) {
         current_focus_elem.trigger("focus");
     }
 
-    return true;
+    return false;
 };
 
 window.recent_topics = exports;
