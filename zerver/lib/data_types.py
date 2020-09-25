@@ -1,8 +1,12 @@
-"""
-This module sets up type classes like DictType and
-ListType that define types for arbitrary objects, but
-our first use case is to specify the types of Zulip
-events that come from send_event calls.
+"""This module sets up type classes like DictType and ListType that
+define types for arbitrary objects.  The main use case is to specify
+the types of Zulip events that come from send_event calls for
+verification in test_events.py; in most other code paths we'll want to
+use a TypedDict.
+
+This module consists of workarounds for cases where we cannot express
+the level of detail we desire or do comparison with OpenAPI types
+easily with the native Python type system.
 """
 
 from dataclasses import dataclass
@@ -20,6 +24,10 @@ def indent(s: str) -> str:
 
 @dataclass
 class DictType:
+    """Dictionary is validated as having all required keys, all keys
+    accounted for in required_keys and optional_keys, and recursive
+    validation of types of fields.
+    """
     def __init__(
         self,
         required_keys: Sequence[Tuple[str, Any]],
@@ -65,6 +73,7 @@ class DictType:
 
 @dataclass
 class EnumType:
+    """An enum with the set of valid values declared."""
     valid_vals: Sequence[Any]
 
     def check_data(self, var_name: str, val: Dict[str, Any]) -> None:
@@ -76,6 +85,7 @@ class EnumType:
 
 
 class Equals:
+    """Type requiring a specific value."""
     def __init__(self, expected_value: Any) -> None:
         self.expected_value = expected_value
 
@@ -94,6 +104,8 @@ class Equals:
 
 
 class NumberType:
+    """A Union[float, int]; needed to align with the `number` type in
+    OpenAPI, because isinstance(4, float) == False"""
     def check_data(self, var_name: str, val: Optional[Any]) -> None:
         if isinstance(val, int) or isinstance(val, float):
             return
@@ -104,6 +116,7 @@ class NumberType:
 
 
 class ListType:
+    """List with every object having the declared sub_type."""
     def __init__(self, sub_type: Any, length: Optional[int] = None) -> None:
         self.sub_type = sub_type
         self.length = length
@@ -123,6 +136,7 @@ class ListType:
 
 @dataclass
 class StringDictType:
+    """Type that validates an object is a Dict[str, str]"""
     value_type: Any
 
     def check_data(self, var_name: str, val: Dict[Any, Any]) -> None:
@@ -157,6 +171,8 @@ class OptionalType:
 
 @dataclass
 class TupleType:
+    """Deprecated; we'd like to avoid using tuples in our API.  Validates
+    the tuple has the sequence of sub_types."""
     sub_types: Sequence[Any]
 
     def check_data(self, var_name: str, val: Any) -> None:
@@ -223,6 +239,7 @@ def event_dict_type(
     required_keys: Sequence[Tuple[str, Any]],
     optional_keys: Sequence[Tuple[str, Any]] = [],
 ) -> DictType:
+
     """
     This is just a tiny wrapper on DictType, but it provides
     some minor benefits:
@@ -252,14 +269,16 @@ def make_checker(data_type: DictType,) -> Callable[[str, Dict[str, object]], Non
 
 
 def schema(
-    # return a YAML-like string for our data type
     var_name: str,
     data_type: Any,
 ) -> str:
-    """
-    schema is a glorified repr of a data type, but it
-    also includes a var_name you pass in, plus we dumb
-    things down a bit to match our current openapi spec
+    """Returns a YAML-like string for our data type; these are used for
+    pretty-printing and comparison between the OpenAPI type
+    definitions and these Python data types, as part of
+
+    schema is a glorified repr of a data type, but it also includes a
+    var_name you pass in, plus we dumb things down a bit to match our
+    current openapi spec.
     """
     if hasattr(data_type, "schema"):
         return data_type.schema(var_name)
@@ -269,11 +288,11 @@ def schema(
 
 
 def check_data(
-    # Check that data conforms to our data_type
     data_type: Any,
     var_name: str,
     val: Any,
 ) -> None:
+    """Check that val conforms to our data_type"""
     if hasattr(data_type, "check_data"):
         data_type.check_data(var_name, val)
         return

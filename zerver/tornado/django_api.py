@@ -117,6 +117,16 @@ def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
             data=dict(data=orjson.dumps(data), secret=settings.SHARED_SECRET),
         )
 
+# The core function for sending an event from Django to Tornado (which
+# will then push it to web and mobile clients for the target users).
+# By convention, send_event should only be called from
+# zerver/lib/actions.py, which helps make it easy to find event
+# generation code.
+#
+# Every call point should be covered by a test in `test_events.py`,
+# with the schema verified in `zerver/lib/event_schema.py`.
+#
+# See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 def send_event(realm: Realm, event: Mapping[str, Any],
                users: Union[Iterable[int], Iterable[Mapping[str, Any]]]) -> None:
     """`users` is a list of user IDs, or in the case of `message` type
