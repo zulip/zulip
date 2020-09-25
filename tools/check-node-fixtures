@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+#
+# Validates that 3 data sources agree about the structure of Zulip's events API:
+#
+# * Node fixtures for the server_events_dispatch.js tests.
+# * OpenAPI definitions in zerver/openapi/zulip.yaml
+# * The schemas defined in zerver/lib/events_schema.py used for the
+#   Zulip server's test suite.
+#
+# We compare the Python and OpenAPI schemas by converting the OpenAPI data
+# into the event_schema style of types and the diffing the schemas.
 import argparse
 import difflib
 import os
@@ -61,7 +71,8 @@ SKIP_LIST = [
     "user_status__set_status_text",
 ]
 
-
+# This list of exemptions represents details we should fix in Zulip's
+# API structure and/or validators.
 EXEMPT_OPENAPI_NAMES = [
     # users field missing
     "update_display_settings_event",
@@ -132,6 +143,9 @@ def verify_fixtures_are_sorted(names: List[str]) -> None:
 
 
 def from_openapi(node: Dict[str, Any]) -> Any:
+    """Converts the OpenAPI data into event_schema.py style type
+    definitions for convenient comparison with the types used for backend
+    tests declared there."""
     if "oneOf" in node:
         return UnionType([from_openapi(n) for n in node["oneOf"]])
 
@@ -172,7 +186,7 @@ def from_openapi(node: Dict[str, Any]) -> Any:
     raise AssertionError("cannot handle node")
 
 
-def validate_openapi() -> None:
+def validate_openapi_against_event_schema() -> None:
     node = openapi_spec.openapi()["paths"]["/events"]["get"]["responses"]["200"][
         "content"
     ]["application/json"]["schema"]["properties"]["events"]["items"]["oneOf"]
@@ -222,7 +236,7 @@ def run() -> None:
             print(f"skip {name}")
             continue
         check_event(name, event)
-    validate_openapi()
+    validate_openapi_against_event_schema()
 
 
 if __name__ == "__main__":

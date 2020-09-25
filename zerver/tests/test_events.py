@@ -1,5 +1,9 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
+#
+# This module is closely integrated with zerver/lib/event_schema.py
+# and zerver/lib/data_types.py systems for validating the schemas of
+# events; it also uses the OpenAPI tools to validate our documentation.
 import copy
 import sys
 import time
