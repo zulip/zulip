@@ -191,7 +191,19 @@ def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
 
 
 def check_stream_access_based_on_stream_post_policy(sender: UserProfile, stream: Stream) -> None:
+    try:
+        sub = Subscription.objects.get(
+            user_profile=sender,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=stream.id,
+            active=True,
+        )
+    except Subscription.DoesNotExist:
+        sub = None
+
     if sender.is_realm_admin or is_cross_realm_bot_email(sender.delivery_email):
+        pass
+    elif sub is not None and sub.is_stream_admin:
         pass
     elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS:
         raise JsonableError(_("Only organization administrators can send to this stream."))

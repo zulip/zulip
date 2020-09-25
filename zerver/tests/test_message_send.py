@@ -18,6 +18,7 @@ from zerver.lib.actions import (
     do_add_realm_domain,
     do_change_can_forge_sender,
     do_change_stream_post_policy,
+    do_change_subscription_role,
     do_create_realm,
     do_create_user,
     do_deactivate_user,
@@ -38,6 +39,7 @@ from zerver.lib.cache import cache_delete, get_stream_cache_key
 from zerver.lib.message import MessageDict, get_raw_unread_data, get_recent_private_conversations
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
+    get_subscription,
     get_user_messages,
     make_client,
     message_stream_count,
@@ -187,6 +189,19 @@ class MessagePOSTTest(ZulipTestCase):
 
         non_admin_profile = self.example_user("hamlet")
         self.login_user(non_admin_profile)
+
+        cordelia = self.example_user("cordelia")
+        self.subscribe(cordelia, stream_name)
+        sub = get_subscription(stream_name, cordelia)
+        do_change_subscription_role(cordelia, sub, stream, Subscription.ROLE_STREAM_ADMINISTRATOR)
+        # Stream admins and their owned bots can send to STREAM_POST_POLICY_ADMINS streams
+        self._send_and_verify_message(cordelia, stream_name)
+        stream_admin_owned_bot = self.create_test_bot(
+            short_name="whatever4",
+            full_name="whatever4",
+            user_profile=cordelia,
+        )
+        self._send_and_verify_message(stream_admin_owned_bot, stream_name)
 
         # Non admins and their owned bots cannot send to STREAM_POST_POLICY_ADMINS streams
         self._send_and_verify_message(
@@ -1599,7 +1614,7 @@ class StreamMessagesTest(ZulipTestCase):
                 body=content,
             )
 
-        self.assert_length(queries, 13)
+        self.assert_length(queries, 14)
 
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user("iago")

@@ -37,6 +37,7 @@ import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as stream_settings_data from "./stream_settings_data";
 import * as sub_store from "./sub_store";
 import * as subs from "./subs";
 import * as transmit from "./transmit";
@@ -580,7 +581,7 @@ function validate_stream_message_announce(sub) {
 }
 
 function validate_stream_message_post_policy(sub) {
-    if (page_params.is_admin) {
+    if (page_params.is_admin || sub.is_stream_admin) {
         return true;
     }
 
@@ -702,11 +703,11 @@ function validate_stream_message() {
         }
     }
 
-    const sub = stream_data.get_sub(stream_name);
-    if (!sub) {
+    const slim_sub = stream_data.get_sub(stream_name);
+    if (!slim_sub) {
         return validation_error("does-not-exist", stream_name);
     }
-
+    const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     if (!validate_stream_message_post_policy(sub)) {
         return false;
     }

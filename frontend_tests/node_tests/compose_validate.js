@@ -11,7 +11,12 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 mock_cjs("jquery", $);
 
+const noop = () => {};
+
 set_global("document", {location: {}});
+set_global("hash_util", {
+    by_stream_uri: noop,
+});
 
 const channel = mock_esm("../../static/js/channel");
 const compose_actions = mock_esm("../../static/js/compose_actions");
@@ -325,7 +330,9 @@ test_ui("test_validate_stream_message_post_policy_admin_only", (override) => {
         name: "stream102",
         subscribed: true,
         stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+        role: stream_data.sub_role_values.member.code,
     };
+    peer_data.get_subscriber_count = noop;
 
     compose_state.topic("subject102");
     compose_state.stream_name("stream102");
@@ -349,6 +356,17 @@ test_ui("test_validate_stream_message_post_policy_admin_only", (override) => {
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "Only organization admins are allowed to post to this stream."}),
     );
+
+    compose_state.topic("subject102");
+    compose_state.stream_name("stream102");
+
+    page_params.is_admin = true;
+    page_params.is_guest = false;
+    assert(compose.validate());
+
+    page_params.is_admin = false;
+    sub.role = stream_data.sub_role_values.stream_admin.code;
+    assert(compose.validate());
 });
 
 test_ui("test_validate_stream_message_post_policy_moderators_only", (override) => {

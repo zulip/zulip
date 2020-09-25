@@ -371,7 +371,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 6)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])
@@ -407,7 +407,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 6)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])
