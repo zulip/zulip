@@ -260,18 +260,15 @@ export default (env?: string): webpack.Configuration[] => {
                 chunks: ["error-styles"],
             }),
         ],
-    };
-
-    if (!production) {
-        config.devServer = {
+        devServer: {
             clientLogLevel: "error",
             headers: {
                 "Access-Control-Allow-Origin": "*",
             },
             publicPath: "/webpack/",
             stats: "errors-only",
-        };
-    }
+        },
+    };
 
     const serverConfig: webpack.Configuration = {
         mode: production ? "production" : "development",
