@@ -1,9 +1,6 @@
 import katex from "katex";
 import _ from "lodash";
 
-// eslint-disable-next-line
-const pygments_data = require("../../generated/pygments_data.json");
-
 // Parsing routine that can be dropped in to message parsing
 // and formats code blocks
 //
@@ -33,16 +30,23 @@ let stash_func = function (text) {
     return text;
 };
 
+// We fill up the actual values when initializing.
+let pygments_data = {};
+
+export function initialize(generated_pygments_data) {
+    pygments_data = generated_pygments_data.langs;
+}
+
 export function wrap_code(code, lang) {
     let header = '<div class="codehilite"><pre><span></span><code>';
     // Mimics the backend logic of adding a data-attribute (data-code-language)
     // to know what Pygments language was used to highlight this code block.
-    if (lang !== undefined && lang !== "") {
-        const pygments_language_info = pygments_data.langs[lang];
-        let code_language = _.escape(lang);
-        if (pygments_language_info !== undefined) {
-            code_language = pygments_language_info.pretty_name;
-        }
+    //
+    // NOTE: Clients like zulip-mobile wouldn't receive the pygments data since that comes from outside
+    // the `/shared` folder. To handle such a case we check if pygments data is empty and fallback to
+    // using the default header if it is.
+    if (lang !== undefined && lang !== "" && Object.keys(pygments_data).length > 0) {
+        const code_language = _.get(pygments_data, [lang, "pretty_name"], _.escape(lang));
         header = `<div class="codehilite" data-code-language="${code_language}"><pre><span></span><code>`;
     }
     // Trim trailing \n until there's just one left
