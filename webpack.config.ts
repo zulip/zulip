@@ -26,7 +26,14 @@ export default (env?: string): webpack.Configuration[] => {
         name: "frontend",
         mode: production ? "production" : "development",
         context: __dirname,
-        entry: assets,
+        entry: production
+            ? assets
+            : Object.fromEntries(
+                  Object.entries(assets).map(([name, paths]) => [
+                      name,
+                      [...paths, "./static/js/debug"],
+                  ]),
+              ),
         module: {
             rules: [
                 {
@@ -256,10 +263,6 @@ export default (env?: string): webpack.Configuration[] => {
     };
 
     if (!production) {
-        // Out JS debugging tools
-        for (const paths of Object.values(assets)) {
-            paths.push("./static/js/debug");
-        }
         config.devServer = {
             clientLogLevel: "error",
             headers: {
