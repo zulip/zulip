@@ -240,7 +240,7 @@ class CommonUtils {
     }
 
     async wait_for_fully_processed_message(page, content) {
-        await page.waitFor(
+        await page.waitForFunction(
             (content) => {
                 /*
                 The tricky part about making sure that
