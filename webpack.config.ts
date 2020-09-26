@@ -184,11 +184,9 @@ export default (env?: string): webpack.Configuration[] => {
         resolve: {
             extensions: [".ts", ".js"],
         },
-        // We prefer cheap-module-source-map over any eval-** options
-        // because the eval-options currently don't support being
-        // source mapped in error stack traces
-        // We prefer it over eval since eval has trouble setting
-        // breakpoints in chrome.
+        // We prefer cheap-module-source-map over any eval-* options
+        // because stacktrace-gps doesn't currently support extracting
+        // the source snippets with the eval-* options.
         devtool: production ? "source-map" : "cheap-module-source-map",
         optimization: {
             minimizer: [
