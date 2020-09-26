@@ -1402,8 +1402,6 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
     messages = new_messages
 
     links_for_embed: Set[str] = set()
-    # For consistency, changes to the default values for these gets should also be applied
-    # to the default args in do_send_message
     for message in messages:
         message['stream'] = message.get('stream', None)
         message['local_id'] = message.get('local_id', None)
