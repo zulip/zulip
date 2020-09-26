@@ -271,6 +271,7 @@ export default (env?: string): webpack.Configuration[] => {
     };
 
     const serverConfig: webpack.Configuration = {
+        name: "server",
         mode: production ? "production" : "development",
         target: "node",
         context: __dirname,
