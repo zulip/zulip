@@ -3,7 +3,9 @@
 const _ = require("lodash");
 
 const generated_emoji_codes = require("../generated/emoji/emoji_codes.json");
+const generated_pygments_data = require("../generated/pygments_data.json");
 const emoji = require("../shared/js/emoji");
+const fenced_code = require("../shared/js/fenced_code");
 const render_edit_content_button = require("../templates/edit_content_button.hbs");
 
 const emojisets = require("./emojisets");
@@ -477,6 +479,7 @@ exports.initialize_everything = function () {
     typing.initialize();
     starred_messages.initialize();
     user_status_ui.initialize();
+    fenced_code.initialize(generated_pygments_data);
 };
 
 $(() => {
