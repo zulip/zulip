@@ -20,8 +20,9 @@ const cacheLoader: webpack.RuleSetUseItem = {
     },
 };
 
-export default (env?: string): webpack.Configuration[] => {
-    const production: boolean = env === "production";
+export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] => {
+    const production: boolean = argv.mode === "production";
+
     const config: webpack.Configuration = {
         name: "frontend",
         mode: production ? "production" : "development",
