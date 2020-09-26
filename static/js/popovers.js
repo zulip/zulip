@@ -8,6 +8,7 @@ const render_actions_popover_content = require("../templates/actions_popover_con
 const render_mobile_message_buttons_popover = require("../templates/mobile_message_buttons_popover.hbs");
 const render_mobile_message_buttons_popover_content = require("../templates/mobile_message_buttons_popover_content.hbs");
 const render_no_arrow_popover = require("../templates/no_arrow_popover.hbs");
+const render_playground_links_popover_content = require("../templates/playground_links_popover_content.hbs");
 const render_remind_me_popover_content = require("../templates/remind_me_popover_content.hbs");
 const render_user_group_info_popover = require("../templates/user_group_info_popover.hbs");
 const render_user_group_info_popover_content = require("../templates/user_group_info_popover_content.hbs");
@@ -16,6 +17,7 @@ const render_user_info_popover_title = require("../templates/user_info_popover_t
 const render_user_profile_modal = require("../templates/user_profile_modal.hbs");
 
 const people = require("./people");
+const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
 const util = require("./util");
 
@@ -24,6 +26,7 @@ let current_flatpickr_instance;
 let current_message_info_popover_elem;
 let current_mobile_message_buttons_popover_elem;
 let current_user_info_popover_elem;
+let current_playground_links_popover_elem;
 let userlist_placement = "right";
 
 let list_of_popovers = [];
@@ -791,6 +794,41 @@ exports.set_suppress_scroll_hide = function () {
     suppress_scroll_hide = true;
 };
 
+// Playground_info contains all the data we need to generate a popover of
+// playground links for each code block. The element is the target element
+// to pop off of.
+exports.toggle_playground_link_popover = (element, playground_info) => {
+    const last_popover_elem = current_playground_links_popover_elem;
+    exports.hide_all();
+    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
+    }
+    const elt = $(element);
+    if (elt.data("popover") === undefined) {
+        const ypos = elt.offset().top;
+        elt.popover({
+            // Most likely we would not have more than 3-4 playground links for one language,
+            // so it should be OK to keep this at 120.
+            placement: message_viewport.height() - ypos < 120 ? "top" : "bottom",
+            title: "",
+            content: render_playground_links_popover_content({playground_info}),
+            html: true,
+            trigger: "manual",
+        });
+        elt.popover("show");
+        current_playground_links_popover_elem = elt;
+    }
+};
+
+exports.hide_playground_links_popover = () => {
+    if (current_playground_links_popover_elem !== undefined) {
+        current_playground_links_popover_elem.popover("destroy");
+        current_playground_links_popover_elem = undefined;
+    }
+};
+
 exports.register_click_handlers = function () {
     $("#main_div").on("click", ".actions_hover", function (e) {
         const row = $(this).closest(".message_row");
@@ -843,6 +881,34 @@ exports.register_click_handlers = function () {
         } else {
             show_user_group_info_popover(this, group, message);
         }
+    });
+
+    $("#main_div, #preview_content").on("click", ".code_external_link", function (e) {
+        const view_in_playground_button = $(this);
+        const codehilite_div = $(this).closest(".codehilite");
+        e.stopPropagation();
+        const playground_info = settings_config.get_playground_info_for_languages(
+            codehilite_div.data("code-language"),
+        );
+        // We do the code extraction here and set the target href combining the url_prefix
+        // and the extracted code. Depending on whether the language has multiple playground
+        // links configured, a popover is show.
+        const extracted_code = codehilite_div.find("code").text();
+        if (playground_info.length === 1) {
+            const url_prefix = playground_info[0].url_prefix;
+            view_in_playground_button.attr("href", url_prefix + encodeURIComponent(extracted_code));
+        } else {
+            playground_info.forEach(($playground) => {
+                $playground.playground_url =
+                    $playground.url_prefix + encodeURIComponent(extracted_code);
+            });
+            exports.toggle_playground_link_popover(this, playground_info);
+        }
+    });
+
+    $("body").on("click", ".popover_playground_link", (e) => {
+        exports.hide_playground_links_popover();
+        e.stopPropagation();
     });
 
     $("body").on("click", ".info_popover_actions .narrow_to_private_messages", (e) => {
@@ -1241,6 +1307,7 @@ exports.hide_all_except_sidebars = function () {
     exports.hide_mobile_message_buttons_popover();
     exports.hide_user_profile();
     exports.hide_user_info_popover();
+    exports.hide_playground_links_popover();
 
     // look through all the popovers that have been added and removed.
     list_of_popovers.forEach(($o) => {
