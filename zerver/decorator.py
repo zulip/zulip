@@ -341,7 +341,9 @@ def user_passes_test(test_func: Callable[[HttpResponse], bool], login_url: Optio
                     (not login_netloc or login_netloc == current_netloc)):
                 path = request.get_full_path()
 
-            if path == "/":
+            # TODO: Restore testing for this case; it was removed when
+            # we enabled web-public stream testing on /.
+            if path == "/":  # nocoverage
                 # Don't add ?next=/, to keep our URLs clean
                 return HttpResponseRedirect(resolved_login_url)
             return redirect_to_login(
@@ -416,6 +418,28 @@ def zulip_login_required(
     if function:
         return actual_decorator(function)
     return actual_decorator  # nocoverage # We don't use this without a function
+
+def web_public_view(
+        view_func: ViewFuncT,
+        redirect_field_name: str=REDIRECT_FIELD_NAME,
+        login_url: str=settings.HOME_NOT_LOGGED_IN,
+) -> Union[Callable[[ViewFuncT], ViewFuncT], ViewFuncT]:
+    """
+    This wrapper adds client info for unauthenticated users but
+    forces authenticated users to go through 2fa.
+
+    NOTE: This function == zulip_login_required in a production environment as
+          web_public_view path has only been enabled for development purposes
+          currently.
+    """
+    if not settings.DEVELOPMENT:
+        # Coverage disabled because DEVELOPMENT is always true in development.
+        return zulip_login_required(view_func, redirect_field_name, login_url)  # nocoverage
+
+    actual_decorator = lambda view_func: zulip_otp_required(
+        redirect_field_name=redirect_field_name, login_url=login_url)(add_logging_data(view_func))
+
+    return actual_decorator(view_func)
 
 def require_server_admin(view_func: ViewFuncT) -> ViewFuncT:
     @zulip_login_required
@@ -779,6 +803,8 @@ def zulip_otp_required(
 
         # This request is unauthenticated (logged-out) access; 2FA is
         # not required or possible.
+        #
+        # TODO: Add a test for 2FA-enabled with web-public views.
         if not user.is_authenticated:  # nocoverage
             return True
 

@@ -48,7 +48,7 @@ def get_furthest_read_time(user_profile: Optional[UserProfile]) -> Optional[floa
 
 def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]]:
     bot_types: List[Dict[str, object]] = []
-    if user_profile is None:  # nocoverage
+    if user_profile is None:
         return bot_types
 
     for type_id, name in UserProfile.BOT_TYPES.items():
@@ -91,7 +91,7 @@ def get_user_permission_info(user_profile: Optional[UserProfile]) -> UserPermiss
             is_realm_admin=user_profile.is_realm_admin,
             show_webathena=user_profile.realm.webathena_enabled,
         )
-    else:  # nocoverage
+    else:
         return UserPermissionInfo(
             color_scheme=UserProfile.COLOR_SCHEME_AUTOMATIC,
             is_guest=False,
@@ -103,7 +103,7 @@ def get_user_permission_info(user_profile: Optional[UserProfile]) -> UserPermiss
 
 def build_page_params_for_home_page_load(
     request: HttpRequest,
-    user_profile: UserProfile,
+    user_profile: Optional[UserProfile],
     realm: Realm,
     insecure_desktop_app: bool,
     has_mobile_devices: bool,
@@ -125,16 +125,33 @@ def build_page_params_for_home_page_load(
         "user_avatar_url_field_optional": True,
     }
 
-    register_ret = do_events_register(
-        user_profile,
-        request.client,
-        apply_markdown=True,
-        client_gravatar=True,
-        slim_presence=True,
-        client_capabilities=client_capabilities,
-        narrow=narrow,
-        include_streams=False,
-    )
+    if user_profile is not None:
+        register_ret = do_events_register(
+            user_profile,
+            request.client,
+            apply_markdown=True,
+            client_gravatar=True,
+            slim_presence=True,
+            client_capabilities=client_capabilities,
+            narrow=narrow,
+            include_streams=False,
+        )
+    else:
+        # Since events for web_public_visitor is not implemented, we only fetch the data
+        # at the time of request and don't register for any events.
+        # TODO: Implement events for web_public_visitor.
+        from zerver.lib.events import fetch_initial_state_data, post_process_state
+        register_ret = fetch_initial_state_data(user_profile,
+                                                event_types=None,
+                                                queue_id=None,
+                                                client_gravatar=False,
+                                                user_avatar_url_field_optional=client_capabilities['user_avatar_url_field_optional'],
+                                                realm=realm,
+                                                slim_presence=False,
+                                                include_subscribers=False,
+                                                include_streams=False)
+
+        post_process_state(user_profile, register_ret, False)
 
     furthest_read_time = get_furthest_read_time(user_profile)
 
@@ -179,6 +196,9 @@ def build_page_params_for_home_page_load(
         # 2FA is not enabled.
         two_fa_enabled_user=two_fa_enabled and bool(default_device(user_profile)),
         is_web_public_visitor=user_profile is None,
+        # There is no event queue for web_public_visitors since
+        # events support for web_public_visitors is not implemented yet.
+        no_event_queue=user_profile is None,
     )
 
     for field_name in register_ret.keys():

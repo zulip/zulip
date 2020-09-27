@@ -464,6 +464,15 @@ Output:
         # not as a web-public visitor.
         self.assertEqual(page_params['is_web_public_visitor'], False)
 
+    def check_rendered_web_public_visitor(self, result: HttpResponse) -> None:
+        """Verifies that a visit of / was a 200 that rendered page_params
+           for a logged-out web-public visitor."""
+        self.assertEqual(result.status_code, 200)
+        page_params = self._get_page_params(result)
+        # It is important to check `is_web_public_visitor` to verify
+        # that we treated this request to render for a `web_public_visitor`
+        self.assertEqual(page_params['is_web_public_visitor'], True)
+
     def login_with_return(self, email: str, password: Optional[str]=None,
                           **kwargs: Any) -> HttpResponse:
         if password is None:

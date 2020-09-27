@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.utils.cache import patch_cache_control
 
 from zerver.context_processors import get_valid_realm_from_request
-from zerver.decorator import zulip_login_required
+from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
 from zerver.lib.actions import do_change_tos_version, realm_user_count
 from zerver.lib.home import (
@@ -28,7 +28,7 @@ from zerver.views.portico import hello_view
 
 
 def need_accept_tos(user_profile: Optional[UserProfile]) -> bool:
-    if user_profile is None:  # nocoverage
+    if user_profile is None:
         return False
 
     if settings.TERMS_OF_SERVICE is None:  # nocoverage
@@ -67,7 +67,7 @@ def detect_narrowed_window(request: HttpRequest,
                                                                          Optional[str]]:
     """This function implements Zulip's support for a mini Zulip window
     that just handles messages from a single narrow"""
-    if user_profile is None:  # nocoverage
+    if user_profile is None:
         return [], None, None
 
     narrow: List[List[str]] = []
@@ -91,7 +91,7 @@ def update_last_reminder(user_profile: Optional[UserProfile]) -> None:
     """Reset our don't-spam-users-with-email counter since the
     user has since logged in
     """
-    if user_profile is None:  # nocoverage
+    if user_profile is None:
         return
 
     if user_profile.last_reminder is not None:  # nocoverage
@@ -120,7 +120,7 @@ def home(request: HttpRequest) -> HttpResponse:
 
     return hello_view(request)
 
-@zulip_login_required
+@web_public_view
 def home_real(request: HttpRequest) -> HttpResponse:
     # Before we do any real work, check if the app is banned.
     client_user_agent = request.META.get("HTTP_USER_AGENT", "")
@@ -152,7 +152,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if request.user.is_authenticated:
         user_profile = request.user
         realm = user_profile.realm
-    else:  # nocoverage
+    else:
         # user_profile=None corresponds to the logged-out "web_public" visitor case.
         user_profile = None
         realm = get_valid_realm_from_request(request)
@@ -177,7 +177,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         )
         needs_tutorial = user_profile.tutorial_status == UserProfile.TUTORIAL_WAITING
 
-    else:  # nocoverage
+    else:
         first_in_realm = False
         prompt_for_invites = False
         # The current tutorial doesn't super make sense for logged-out users.

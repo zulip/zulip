@@ -103,6 +103,7 @@ class HomeTest(ZulipTestCase):
         "narrow_stream",
         "needs_tutorial",
         "never_subscribed",
+        "no_event_queue",
         "notification_sound",
         "password_min_guesses",
         "password_min_length",
@@ -233,10 +234,6 @@ class HomeTest(ZulipTestCase):
             'data-params',
         ]
 
-        # Verify fails if logged-out
-        result = self.client_get('/')
-        self.assertEqual(result.status_code, 302)
-
         self.login('hamlet')
 
         # Create bot for realm_bots testing. Must be done before fetching home_page.
@@ -289,6 +286,20 @@ class HomeTest(ZulipTestCase):
 
         realm_bots_actual_keys = sorted(str(key) for key in page_params['realm_bots'][0].keys())
         self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
+
+    def test_logged_out_home(self) -> None:
+        result = self.client_get('/')
+        self.assertEqual(result.status_code, 200)
+
+        page_params = self._get_page_params(result)
+        actual_keys = sorted(str(k) for k in page_params.keys())
+        removed_keys = [
+            'last_event_id',
+            'narrow',
+            'narrow_stream',
+        ]
+        expected_keys = [i for i in self.expected_page_params_keys if i not in removed_keys]
+        self.assertEqual(actual_keys, expected_keys)
 
     def test_home_under_2fa_without_otp_device(self) -> None:
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):

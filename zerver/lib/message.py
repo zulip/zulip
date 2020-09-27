@@ -888,7 +888,7 @@ def extract_unread_data_from_um_rows(
     )
 
     if user_profile is None:
-        return raw_unread_messages  # nocoverage
+        return raw_unread_messages
 
     muted_stream_ids = get_muted_stream_ids(user_profile)
     raw_unread_messages['muted_stream_ids'] = muted_stream_ids

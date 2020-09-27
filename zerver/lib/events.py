@@ -364,7 +364,11 @@ def fetch_initial_state_data(
             if user_profile is not None:
                 state['streams'] = do_get_streams(user_profile)
             else:
-                state['streams'] = get_web_public_streams(realm)
+                # TODO: This line isn't used by the webapp because it
+                # gets these data via the `subscriptions` key; it will
+                # be used when the mobile apps support logged-out
+                # access.
+                state['streams'] = get_web_public_streams(realm)  # nocoverage
         state['stream_name_max_length'] = Stream.MAX_NAME_LENGTH
         state['stream_description_max_length'] = Stream.MAX_DESCRIPTION_LENGTH
     if want('default_streams'):
