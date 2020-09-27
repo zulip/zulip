@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.db.models.query import QuerySet
 
@@ -74,7 +74,7 @@ def num_subscribers_for_stream_id(stream_id: int) -> int:
     ).count()
 
 
-def handle_stream_notifications_compatibility(user_profile: UserProfile,
+def handle_stream_notifications_compatibility(user_profile: Optional[UserProfile],
                                               stream_dict: Dict[str, Any],
                                               notification_settings_null: bool) -> None:
     # Old versions of the mobile apps don't support `None` as a
@@ -96,4 +96,4 @@ def handle_stream_notifications_compatibility(user_profile: UserProfile,
         if stream_dict[notification_type] is not None:
             continue
         target_attr = "enable_stream_" + notification_type
-        stream_dict[notification_type] = getattr(user_profile, target_attr)
+        stream_dict[notification_type] = False if user_profile is None else getattr(user_profile, target_attr)
