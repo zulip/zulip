@@ -27,6 +27,7 @@ from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
 from zerver.lib.message import (
     aggregate_unread_data,
     apply_unread_message_event,
+    extract_unread_data_from_um_rows,
     get_raw_unread_data,
     get_recent_conversations_recipient_id,
     get_recent_private_conversations,
@@ -337,20 +338,14 @@ def fetch_initial_state_data(user_profile: Optional[UserProfile],
         # message updates. This is due to the fact that new messages will not
         # generate a flag update so we need to use the flags field in the
         # message event.
-        if user_profile is None:
-            # TODO: We should deduplicate this logic by extracting the
-            # row-processing part of get_raw_unread_data as a helper
-            # function, and calling that with an empty list.
-            state['raw_unread_msgs'] = {
-                'pm_dict': {},
-                'stream_dict': {},
-                'muted_stream_ids': [],
-                'unmuted_stream_msgs': set(),
-                'huddle_dict': {},
-                'mentions': set()
-            }
-        else:
+
+        if user_profile is not None:
             state['raw_unread_msgs'] = get_raw_unread_data(user_profile)
+        else:
+            # For logged-out visitors, we treat all messages as read;
+            # calling this helper lets us return empty objects in the
+            # appropriate format.
+            state['raw_unread_msgs'] = extract_unread_data_from_um_rows([], user_profile)
 
     if want('starred_messages'):
         state['starred_messages'] = [] if user_profile is None else get_starred_message_ids(user_profile)

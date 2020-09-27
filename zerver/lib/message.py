@@ -840,7 +840,6 @@ def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
     ).values_list('message_id', flat=True)[0:10000])
 
 def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
-
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
 
     user_msgs = UserMessage.objects.filter(
@@ -867,10 +866,29 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
 
 def extract_unread_data_from_um_rows(
     rows: List[Dict[str, Any]],
-    user_profile: UserProfile
+    user_profile: Optional[UserProfile]
 ) -> RawUnreadMessagesResult:
 
+    pm_dict: Dict[int, Any] = {}
+    stream_dict: Dict[int, Any] = {}
+    unmuted_stream_msgs: Set[int] = set()
+    huddle_dict: Dict[int, Any] = {}
+    mentions: Set[int] = set()
+
+    raw_unread_messages: RawUnreadMessagesResult = dict(
+        pm_dict=pm_dict,
+        stream_dict=stream_dict,
+        muted_stream_ids=[],
+        unmuted_stream_msgs=unmuted_stream_msgs,
+        huddle_dict=huddle_dict,
+        mentions=mentions,
+    )
+
+    if user_profile is None:
+        return raw_unread_messages  # nocoverage
+
     muted_stream_ids = get_muted_stream_ids(user_profile)
+    raw_unread_messages['muted_stream_ids'] = muted_stream_ids
 
     topic_mute_checker = build_topic_mute_checker(user_profile)
 
@@ -892,12 +910,6 @@ def extract_unread_data_from_um_rows(
         user_ids_string = huddle_users(recipient_id)
         huddle_cache[recipient_id] = user_ids_string
         return user_ids_string
-
-    pm_dict = {}
-    stream_dict = {}
-    unmuted_stream_msgs = set()
-    huddle_dict = {}
-    mentions = set()
 
     for row in rows:
         message_id = row['message_id']
@@ -952,14 +964,7 @@ def extract_unread_data_from_um_rows(
             else:  # nocoverage # TODO: Test wildcard mentions in PMs.
                 mentions.add(message_id)
 
-    return dict(
-        pm_dict=pm_dict,
-        stream_dict=stream_dict,
-        muted_stream_ids=muted_stream_ids,
-        unmuted_stream_msgs=unmuted_stream_msgs,
-        huddle_dict=huddle_dict,
-        mentions=mentions,
-    )
+    return raw_unread_messages
 
 def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesResult:
 
