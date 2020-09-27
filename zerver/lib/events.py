@@ -973,7 +973,7 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
         ret['last_event_id'] = -1
     return ret
 
-def post_process_state(user_profile: UserProfile, ret: Dict[str, Any],
+def post_process_state(user_profile: Optional[UserProfile], ret: Dict[str, Any],
                        notification_settings_null: bool) -> None:
     '''
     NOTE:
