@@ -41,6 +41,7 @@ async function test_change_full_name(page) {
     await page.$eval(full_name_input_selector, (el) => {
         el.value = "";
     });
+    await page.waitForFunction(() => $(":focus").attr("id") === "change_full_name_modal");
     await page.type(full_name_input_selector, "New name");
     await page.click(change_full_name_button_selector);
     await page.waitForFunction(() => $("#change_full_name").text().trim() === "New name");
@@ -52,6 +53,7 @@ async function test_change_password(page) {
     const change_password_button_selector = "#change_password_button";
     await page.waitForSelector(change_password_button_selector, {visible: true});
 
+    await page.waitForFunction(() => $(":focus").attr("id") === "change_password_modal");
     await page.type("#old_password", test_credentials.default_user.password);
     await page.type("#new_password", "new_password");
     await page.click(change_password_button_selector);
@@ -66,6 +68,7 @@ async function test_get_api_key(page) {
 
     const get_api_key_button_selector = "#get_api_key_button";
     await page.waitForSelector(get_api_key_button_selector, {visible: true});
+    await page.waitForFunction(() => $(":focus").attr("id") === "api_key_modal");
     await common.fill_form(page, "#api_key_form", {
         password: test_credentials.default_user.password,
     });
