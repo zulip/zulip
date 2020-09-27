@@ -317,7 +317,7 @@ exports.initialize = function () {
 
 exports.cleanup_event_queue = function cleanup_event_queue() {
     // Submit a request to the server to cleanup our event queue
-    if (page_params.event_queue_expired === true) {
+    if (page_params.event_queue_expired === true || page_params.no_event_queue === true) {
         return;
     }
     blueslip.log("Cleaning up our event queue");

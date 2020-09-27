@@ -362,7 +362,7 @@ def fetch_initial_state_data(
             if user_profile is not None:
                 state['streams'] = do_get_streams(user_profile)
             else:
-                state['streams'] = get_web_public_streams(realm)
+                state['streams'] = get_web_public_streams(realm)  # nocoverage
         state['stream_name_max_length'] = Stream.MAX_NAME_LENGTH
         state['stream_description_max_length'] = Stream.MAX_DESCRIPTION_LENGTH
     if want('default_streams'):

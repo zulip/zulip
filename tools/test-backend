@@ -65,8 +65,6 @@ not_yet_fully_covered = [
     'zerver/lib/markdown/__init__.py',
     'zerver/lib/cache.py',
     'zerver/lib/cache_helpers.py',
-    # events.py temporarily removed due to logged-out user unfinished code path.
-    'zerver/lib/events.py',
     'zerver/lib/i18n.py',
     'zerver/lib/email_notifications.py',
     'zerver/lib/send_email.py',
