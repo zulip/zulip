@@ -863,6 +863,12 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
     user_msgs = list(user_msgs[:MAX_UNREAD_MESSAGES])
 
     rows = list(reversed(user_msgs))
+    return extract_unread_data_from_um_rows(rows, user_profile)
+
+def extract_unread_data_from_um_rows(
+    rows: List[Dict[str, Any]],
+    user_profile: UserProfile
+) -> RawUnreadMessagesResult:
 
     muted_stream_ids = get_muted_stream_ids(user_profile)
 
