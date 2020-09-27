@@ -402,6 +402,20 @@ def add_logging_data(view_func: ViewFuncT) -> ViewFuncT:
         return rate_limit()(view_func)(request, *args, **kwargs)
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
 
+def web_public_view(
+        view_func: ViewFuncT,
+        redirect_field_name: str=REDIRECT_FIELD_NAME,
+        login_url: str=settings.HOME_NOT_LOGGED_IN,
+) -> ViewFuncT:
+    """
+    This wrapper adds client info for unauthenticated users but
+    forces authenticated users to go through 2fa.
+    """
+    actual_decorator = lambda view_func: zulip_otp_required(
+        redirect_field_name=redirect_field_name, login_url=login_url)(add_logging_data(view_func))
+
+    return actual_decorator(view_func)
+
 def human_users_only(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:

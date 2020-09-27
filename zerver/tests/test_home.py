@@ -34,7 +34,6 @@ from zerver.worker.queue_processors import UserActivityWorker
 logger_string = "zulip.soft_deactivation"
 
 class HomeTest(ZulipTestCase):
-
     # Keep this list sorted!!!
     expected_page_params_keys = [
         "alert_words",
@@ -72,6 +71,7 @@ class HomeTest(ZulipTestCase):
         "enable_stream_email_notifications",
         "enable_stream_push_notifications",
         "enter_sends",
+        "event_queue_expired",
         "first_in_realm",
         "fluid_layout_width",
         "full_name",
@@ -233,10 +233,6 @@ class HomeTest(ZulipTestCase):
             'data-params',
         ]
 
-        # Verify fails if logged-out
-        result = self.client_get('/')
-        self.assertEqual(result.status_code, 302)
-
         self.login('hamlet')
 
         # Create bot for realm_bots testing. Must be done before fetching home_page.
@@ -289,6 +285,20 @@ class HomeTest(ZulipTestCase):
 
         realm_bots_actual_keys = sorted(str(key) for key in page_params['realm_bots'][0].keys())
         self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
+
+    def test_logged_out_home(self) -> None:
+        result = self.client_get('/')
+        self.assertEqual(result.status_code, 200)
+
+        page_params = self._get_page_params(result)
+        actual_keys = sorted(str(k) for k in page_params.keys())
+        removed_keys = [
+            'last_event_id',
+            'narrow',
+            'narrow_stream',
+        ]
+        expected_keys = [i for i in self.expected_page_params_keys if i not in removed_keys]
+        self.assertEqual(actual_keys, expected_keys)
 
     def test_home_under_2fa_without_otp_device(self) -> None:
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):

@@ -102,7 +102,7 @@ def get_user_permission_info(user_profile: Optional[UserProfile]) -> UserPermiss
 
 def build_page_params_for_home_page_load(
     request: HttpRequest,
-    user_profile: UserProfile,
+    user_profile: Optional[UserProfile],
     realm: Realm,
     insecure_desktop_app: bool,
     has_mobile_devices: bool,
@@ -124,15 +124,29 @@ def build_page_params_for_home_page_load(
         "user_avatar_url_field_optional": True,
     }
 
-    register_ret = do_events_register(
-        user_profile,
-        request.client,
-        apply_markdown=True,
-        client_gravatar=True,
-        slim_presence=True,
-        client_capabilities=client_capabilities,
-        narrow=narrow,
-    )
+    if user_profile is not None:
+
+        register_ret = do_events_register(
+            user_profile,
+            request.client,
+            apply_markdown=True,
+            client_gravatar=True,
+            slim_presence=True,
+            client_capabilities=client_capabilities,
+            narrow=narrow,
+        )
+    else:
+        from zerver.lib.events import fetch_initial_state_data, post_process_state
+        register_ret = fetch_initial_state_data(user_profile,
+                                                event_types=None,
+                                                queue_id=None,
+                                                client_gravatar=False,
+                                                user_avatar_url_field_optional=client_capabilities['user_avatar_url_field_optional'],
+                                                realm=realm,
+                                                slim_presence=False,
+                                                include_subscribers=False)
+
+        post_process_state(user_profile, register_ret, False)
 
     furthest_read_time = get_furthest_read_time(user_profile)
 
@@ -183,6 +197,8 @@ def build_page_params_for_home_page_load(
         # 2FA is not enabled.
         two_fa_enabled_user=two_fa_enabled and bool(default_device(user_profile)),
         is_web_public_guest=user_profile is None,
+        # Disable events for web-public guests by tagging the queue as expired.
+        event_queue_expired=user_profile is None,
     )
 
     undesired_register_ret_fields = [
