@@ -742,30 +742,6 @@ def login_page(
 def start_two_factor_auth(request: HttpRequest,
                           extra_context: ExtraContext=None,
                           **kwargs: Any) -> HttpResponse:
-    two_fa_form_field = 'two_factor_login_view-current_step'
-    if two_fa_form_field not in request.POST:
-        # Here we inject the 2FA step in the request context if it's missing to
-        # force the user to go to the first step of 2FA authentication process.
-        # This seems a bit hackish but simplifies things from testing point of
-        # view. I don't think this can result in anything bad because all the
-        # authentication logic runs after the auth step.
-        #
-        # If we don't do this, we will have to modify a lot of auth tests to
-        # insert this variable in the request.
-        request.POST = request.POST.copy()
-        request.POST.update({two_fa_form_field: 'auth'})
-
-    """
-    This is how Django implements as_view(), so extra_context will be passed
-    to the __init__ method of TwoFactorLoginView.
-
-    def as_view(cls, **initkwargs):
-        def view(request, *args, **kwargs):
-            self = cls(**initkwargs)
-            ...
-
-        return view
-    """
     two_fa_view = TwoFactorLoginView.as_view(extra_context=extra_context,
                                              **kwargs)
     return two_fa_view(request, **kwargs)
