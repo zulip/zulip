@@ -187,6 +187,12 @@ from zerver.tornado.event_queue import (
 
 
 class BaseAction(ZulipTestCase):
+    """Core class for verifying the apply_event race handling logic as
+    well as the event formatting logic of any function using send_event.
+
+    See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html#testing
+    for extensive design details for this testing system.
+    """
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user('hamlet')
