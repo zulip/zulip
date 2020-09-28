@@ -12,6 +12,9 @@ set_global("document", null);
 set_global("current_msg_list", {});
 set_global("narrow_state", {});
 set_global("stream_data", {});
+set_global("recent_topics", {
+    is_visible: () => false,
+});
 
 zrequire("FetchStatus", "js/fetch_status");
 zrequire("muting");

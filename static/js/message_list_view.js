@@ -607,7 +607,11 @@ class MessageListView {
         };
 
         const restore_scroll_position = () => {
-            if (list === current_msg_list && orig_scrolltop_offset !== undefined) {
+            if (
+                !recent_topics.is_visible() &&
+                list === current_msg_list &&
+                orig_scrolltop_offset !== undefined
+            ) {
                 list.view.set_message_offset(orig_scrolltop_offset);
                 list.reselect_selected_id();
             }
