@@ -146,8 +146,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       events:
                         type: array
                         description: |
@@ -1192,8 +1195,14 @@ paths:
                                 Event sent when a reaction is added to a message.
                                 Sent to all users who were recipients of the message.
                               allOf:
-                                - $ref: "#/components/schemas/EmojiReaction"
-                                - properties:
+                                - $ref: "#/components/schemas/EmojiReactionBase"
+                                - additionalProperties: false
+                                  properties:
+                                    emoji_code: {}
+                                    emoji_name: {}
+                                    reaction_type: {}
+                                    user_id: {}
+                                    user: {}
                                     id:
                                       type: integer
                                     type:
@@ -1230,8 +1239,14 @@ paths:
                                 Event sent when a reaction is removed from a message.
                                 Sent to all users who were recipients of the message.
                               allOf:
-                                - $ref: "#/components/schemas/EmojiReaction"
-                                - properties:
+                                - $ref: "#/components/schemas/EmojiReactionBase"
+                                - additionalProperties: false
+                                  properties:
+                                    emoji_code: {}
+                                    emoji_name: {}
+                                    reaction_type: {}
+                                    user_id: {}
+                                    user: {}
                                     id:
                                       type: integer
                                     type:
@@ -2989,8 +3004,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       stream_id:
                         type: integer
                         description: |
@@ -3091,8 +3109,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       attachments:
                         type: array
                         description: |
@@ -3252,8 +3273,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       anchor:
                         type: integer
                         description: |
@@ -3436,8 +3460,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       id:
                         type: integer
                         description: |
@@ -3487,8 +3514,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       message_history:
                         type: array
                         items:
@@ -3621,8 +3651,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       messages:
                         type: array
                         items:
@@ -3648,8 +3681,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       rendered:
                         type: string
                         description: |
@@ -3797,8 +3833,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       messages:
                         type: object
                         description: |
@@ -3858,8 +3897,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       raw_content:
                         type: string
                         description: |
@@ -4030,8 +4072,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       uri:
                         type: string
                         description: |
@@ -4072,8 +4117,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       url:
                         type: string
                         description: |
@@ -4105,8 +4153,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       members:
                         type: array
                         description: |
@@ -4230,8 +4281,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       user_id:
                         type: integer
                         description: |
@@ -4310,8 +4364,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       presence:
                         type: object
                         description: |
@@ -4372,8 +4429,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       avatar_url:
                         type: string
                         description: |
@@ -4561,8 +4621,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       topics:
                         type: array
                         description: |
@@ -4623,11 +4686,14 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/JsonSuccessBase"
                   # TODO: Is this the best way to declare required elements in 200 responses?
                   - required:
                       - subscriptions
-                  - properties:
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       subscriptions:
                         type: array
                         description: |
@@ -4846,12 +4912,15 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/JsonSuccessBase"
                   - required:
                       - subscribed
                       - already_subscribed
                       - removed
-                  - properties:
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       subscribed:
                         type: object
                         description: |
@@ -4933,8 +5002,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       not_removed:
                         type: array
                         items:
@@ -5051,8 +5123,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       is_subscribed:
                         type: boolean
                         description: |
@@ -5110,8 +5185,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       emoji:
                         type: object
                         description: |
@@ -5151,8 +5229,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       custom_fields:
                         type: array
                         description: |
@@ -5340,8 +5421,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       id:
                         type: integer
                         description: |
@@ -5384,8 +5468,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       subscription_data:
                         type: array
                         items:
@@ -5492,8 +5579,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       user:
                         $ref: "#/components/schemas/User"
                   - example:
@@ -5669,8 +5759,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       filters:
                         type: array
                         items:
@@ -5737,8 +5830,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       id:
                         type: integer
                         description: |
@@ -5871,9 +5967,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
-                  - properties:
+                    properties:
+                      result: {}
+                      msg: {}
                       queue_id:
                         type: string
                         description: |
@@ -6162,8 +6260,21 @@ paths:
                         type: array
                         items:
                           allOf:
-                            - $ref: "#/components/schemas/BasicStream"
-                            - properties:
+                            - $ref: "#/components/schemas/BasicStreamBase"
+                            - additionalProperties: false
+                              properties:
+                                stream_id: {}
+                                name: {}
+                                description: {}
+                                date_created: {}
+                                invite_only: {}
+                                rendered_description: {}
+                                is_web_public: {}
+                                stream_post_policy: {}
+                                message_retention_days: {}
+                                history_public_to_subscribers: {}
+                                first_message_id: {}
+                                is_announcement_only: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -7390,8 +7501,25 @@ paths:
                           contexts.
                         items:
                           allOf:
-                            - $ref: "#/components/schemas/User"
-                            - properties:
+                            - $ref: "#/components/schemas/UserBase"
+                            - additionalProperties: false
+                              properties:
+                                email: {}
+                                is_bot: {}
+                                avatar_url: {}
+                                avatar_version: {}
+                                full_name: {}
+                                is_admin: {}
+                                is_owner: {}
+                                bot_type: {}
+                                user_id: {}
+                                bot_owner_id: {}
+                                is_active: {}
+                                is_guest: {}
+                                timezone: {}
+                                date_joined: {}
+                                delivery_email: {}
+                                profile_data: {}
                                 is_cross_realm_bot:
                                   type: boolean
                                   description: |
@@ -7439,8 +7567,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       authentication_methods:
                         type: object
                         additionalProperties: false
@@ -7810,8 +7941,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       enable_desktop_notifications:
                         type: boolean
                         description: |
@@ -7934,16 +8068,32 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       streams:
                         description: |
                           A list of `stream` objects with details on the requested streams.
                         type: array
                         items:
                           allOf:
-                            - $ref: "#/components/schemas/BasicStream"
-                            - properties:
+                            - $ref: "#/components/schemas/BasicStreamBase"
+                            - additionalProperties: false
+                              properties:
+                                stream_id: {}
+                                name: {}
+                                description: {}
+                                date_created: {}
+                                invite_only: {}
+                                rendered_description: {}
+                                is_web_public: {}
+                                stream_post_policy: {}
+                                message_retention_days: {}
+                                history_public_to_subscribers: {}
+                                first_message_id: {}
+                                is_announcement_only: {}
                                 is_default:
                                   type: boolean
                                   description: |
@@ -8033,9 +8183,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonError"
-                  - properties:
-                      msg:
-                        type: string
                   - example:
                       {
                         "code": "BAD_REQUEST",
@@ -8383,8 +8530,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       user_groups:
                         type: array
                         items:
@@ -8506,8 +8656,28 @@ paths:
                       - description: |
                           A dict containing details on the message that triggered the
                           outgoing webhook, in the format used by [`GET /messages`](/api/get-messages).
-                      - $ref: "#/components/schemas/Messages"
-                      - properties:
+                      - $ref: "#/components/schemas/MessagesBase"
+                      - additionalProperties: false
+                        properties:
+                          avatar_url: {}
+                          client: {}
+                          content: {}
+                          content_type: {}
+                          display_recipient: {}
+                          id: {}
+                          is_me_message: {}
+                          reactions: {}
+                          recipient_id: {}
+                          sender_email: {}
+                          sender_full_name: {}
+                          sender_id: {}
+                          sender_realm_str: {}
+                          stream_id: {}
+                          subject: {}
+                          topic_links: {}
+                          submessages: {}
+                          timestamp: {}
+                          type: {}
                           rendered_content:
                             type: string
                             description: |
@@ -8556,8 +8726,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       url:
                         description: |
                           The url for the Big Blue Button video call.
@@ -8644,10 +8817,26 @@ components:
                   The unique message ID.  Messages should always be
                   displayed sorted by ID.
     BasicStream:
+      allOf:
+        - $ref: "#/components/schemas/BasicStreamBase"
+        - additionalProperties: false
+          properties:
+            stream_id: {}
+            name: {}
+            description: {}
+            date_created: {}
+            invite_only: {}
+            rendered_description: {}
+            is_web_public: {}
+            stream_post_policy: {}
+            message_retention_days: {}
+            history_public_to_subscribers: {}
+            first_message_id: {}
+            is_announcement_only: {}
+    BasicStreamBase:
       type: object
       description: |
         Object containing basic details about the stream.
-      additionalProperties: false
       properties:
         stream_id:
           type: integer
@@ -8742,8 +8931,21 @@ components:
             **Changes**: Deprecated in Zulip 3.0 (feature level 1), use
             `stream_post_policy` instead.
     BasicBot:
+      allOf:
+        - $ref: "#/components/schemas/BasicBotBase"
+        - additionalProperties: false
+          properties:
+            user_id: {}
+            full_name: {}
+            api_key: {}
+            default_sending_stream: {}
+            default_events_register_stream: {}
+            default_all_public_streams: {}
+            avatar_url: {}
+            owner_id: {}
+            services: {}
+    BasicBotBase:
       type: object
-      additionalProperties: false
       properties:
         user_id:
           type: integer
@@ -8832,10 +9034,20 @@ components:
                     $ref: "#/components/schemas/Config"
     Bot:
       allOf:
-        - $ref: "#/components/schemas/BasicBot"
+        - $ref: "#/components/schemas/BasicBotBase"
         - description: |
             Object containing details of a bot.
-        - properties:
+        - additionalProperties: false
+          properties:
+            user_id: {}
+            full_name: {}
+            api_key: {}
+            default_sending_stream: {}
+            default_events_register_stream: {}
+            default_all_public_streams: {}
+            avatar_url: {}
+            owner_id: {}
+            services: {}
             email:
               type: string
               description: |
@@ -9291,8 +9503,17 @@ components:
           items:
             $ref: "#/components/schemas/BasicStream"
     EmojiReaction:
+      allOf:
+        - $ref: "#/components/schemas/EmojiReactionBase"
+        - additionalProperties: false
+          properties:
+            emoji_code: {}
+            emoji_name: {}
+            reaction_type: {}
+            user_id: {}
+            user: {}
+    EmojiReactionBase:
       type: object
-      additionalProperties: false
       properties:
         emoji_code:
           type: string
@@ -9354,10 +9575,33 @@ components:
               description: |
                 Whether the user is a mirror dummy.
     Messages:
+      allOf:
+        - $ref: "#/components/schemas/MessagesBase"
+        - additionalProperties: false
+          properties:
+            avatar_url: {}
+            client: {}
+            content: {}
+            content_type: {}
+            display_recipient: {}
+            id: {}
+            is_me_message: {}
+            reactions: {}
+            recipient_id: {}
+            sender_email: {}
+            sender_full_name: {}
+            sender_id: {}
+            sender_realm_str: {}
+            stream_id: {}
+            subject: {}
+            topic_links: {}
+            submessages: {}
+            timestamp: {}
+            type: {}
+    MessagesBase:
       type: object
       description: |
         Object containing details of the message.
-      additionalProperties: false
       properties:
         avatar_url:
           type: string
@@ -9492,8 +9736,28 @@ components:
             The type of the message: `stream` or `private`.
     GetMessages:
       allOf:
-        - $ref: "#/components/schemas/Messages"
-        - properties:
+        - $ref: "#/components/schemas/MessagesBase"
+        - additionalProperties: false
+          properties:
+            avatar_url: {}
+            client: {}
+            content: {}
+            content_type: {}
+            display_recipient: {}
+            id: {}
+            is_me_message: {}
+            reactions: {}
+            recipient_id: {}
+            sender_email: {}
+            sender_full_name: {}
+            sender_id: {}
+            sender_realm_str: {}
+            stream_id: {}
+            subject: {}
+            topic_links: {}
+            submessages: {}
+            timestamp: {}
+            type: {}
             flags:
               type: array
               description: |
@@ -9550,8 +9814,28 @@ components:
             Whether the client is capable of showing mobile/push notifications
             to the user.
     User:
+      allOf:
+        - $ref: "#/components/schemas/UserBase"
+        - additionalProperties: false
+          properties:
+            email: {}
+            is_bot: {}
+            avatar_url: {}
+            avatar_version: {}
+            full_name: {}
+            is_admin: {}
+            is_owner: {}
+            bot_type: {}
+            user_id: {}
+            bot_owner_id: {}
+            is_active: {}
+            is_guest: {}
+            timezone: {}
+            date_joined: {}
+            delivery_email: {}
+            profile_data: {}
+    UserBase:
       type: object
-      additionalProperties: false
       description: |
         A dictionary containing basic data on a given Zulip user.
       properties:
@@ -9674,15 +9958,21 @@ components:
               This user-generated HTML content should be rendered
               using the same CSS and client-side security protections
               as are used for message content.
-    JsonResponse:
+    JsonResponseBase:
       type: object
-      additionalProperties: false
       properties:
         result:
           type: string
     JsonSuccess:
       allOf:
-        - $ref: "#/components/schemas/JsonResponse"
+        - $ref: "#/components/schemas/JsonSuccessBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+    JsonSuccessBase:
+      allOf:
+        - $ref: "#/components/schemas/JsonResponseBase"
         - required:
             - result
             - msg
@@ -9695,7 +9985,14 @@ components:
         - example: {"msg": "", "result": "success"}
     JsonError:
       allOf:
-        - $ref: "#/components/schemas/JsonResponse"
+        - $ref: "#/components/schemas/JsonErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+    JsonErrorBase:
+      allOf:
+        - $ref: "#/components/schemas/JsonResponseBase"
         - required:
             - result
             - msg
@@ -9707,11 +10004,14 @@ components:
               type: string
     ApiKeyResponse:
       allOf:
-        - $ref: "#/components/schemas/JsonSuccess"
+        - $ref: "#/components/schemas/JsonSuccessBase"
         - required:
             - api_key
             - email
-        - properties:
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
             api_key:
               type: string
               description: |
@@ -9729,16 +10029,30 @@ components:
             }
     CodedError:
       allOf:
-        - $ref: "#/components/schemas/JsonError"
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+    CodedErrorBase:
+      allOf:
+        - $ref: "#/components/schemas/JsonErrorBase"
         - properties:
+            result: {}
+            msg: {}
             code:
               type: string
               description: |
                 A string that identifies the error.
     BadEventQueueIdError:
       allOf:
-        - $ref: "#/components/schemas/CodedError"
-        - properties:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
             queue_id:
               type: string
               description: |
@@ -9752,8 +10066,11 @@ components:
             }
     InvalidMessageError:
       allOf:
-        - $ref: "#/components/schemas/JsonSuccess"
-        - properties:
+        - $ref: "#/components/schemas/JsonSuccessBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
             raw_content:
               type: string
               description: |
@@ -9766,8 +10083,12 @@ components:
             }
     NonExistingStreamError:
       allOf:
-        - $ref: "#/components/schemas/CodedError"
-        - properties:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
             stream:
               type: string
               description: |
@@ -9781,8 +10102,11 @@ components:
             }
     AddSubscriptionsResponse:
       allOf:
-        - $ref: "#/components/schemas/JsonSuccess"
-        - properties:
+        - $ref: "#/components/schemas/JsonSuccessBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
             subscribed:
               type: object
               description: |
@@ -9822,8 +10146,12 @@ components:
         - example: {"msg": "Invalid API key", "result": "error"}
     MissingArgumentError:
       allOf:
-        - $ref: "#/components/schemas/CodedError"
-        - properties:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
             var_name:
               type: string
               description: |
