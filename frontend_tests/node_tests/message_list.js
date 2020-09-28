@@ -24,6 +24,9 @@ set_global("document", {
 
 const narrow_state = set_global("narrow_state", {});
 const stream_data = set_global("stream_data", {});
+set_global("recent_topics", {
+    is_visible: () => false,
+});
 
 const muting = zrequire("muting");
 zrequire("MessageListView", "js/message_list_view");
