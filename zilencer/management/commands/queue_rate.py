@@ -46,6 +46,7 @@ class Command(BaseCommand):
         worker: QueueProcessingWorker = NoopWorker(count, options["slow"])
         if options["batch"]:
             worker = BatchNoopWorker(count, options["slow"])
+        worker.ENABLE_TIMEOUTS = True
         worker.setup()
         assert worker.q is not None
         assert worker.q.channel is not None
