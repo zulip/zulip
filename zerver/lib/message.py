@@ -220,40 +220,28 @@ class MessageDict:
               shallow copies.  It might be safer to
               make shallow copies here, but performance
               is somewhat important here, as we are
-              often fetching several messages.
+              often fetching hundreds of messages.
         '''
         MessageDict.bulk_hydrate_sender_info(objs)
         MessageDict.bulk_hydrate_recipient_info(objs)
 
         for obj in objs:
-            MessageDict._finalize_payload(obj, apply_markdown, client_gravatar)
+            MessageDict.finalize_payload(obj, apply_markdown, client_gravatar, skip_copy=True)
 
     @staticmethod
     def finalize_payload(obj: Dict[str, Any],
                          apply_markdown: bool,
                          client_gravatar: bool,
-                         keep_rendered_content: bool=False) -> Dict[str, Any]:
+                         keep_rendered_content: bool=False,
+                         skip_copy: bool=False) -> Dict[str, Any]:
         '''
-        Make a shallow copy of the incoming dict to avoid
-        mutation-related bugs.  This function is often
-        called when we're sending out message events to
-        multiple clients, who often want the final dictionary
-        to have different shapes here based on the parameters.
+        By default, we make a shallow copy of the incoming dict to avoid
+        mutation-related bugs.  Code paths that are passing a unique object
+        can pass skip_copy=True to avoid this extra work.
         '''
-        new_obj = copy.copy(obj)
+        if not skip_copy:
+            obj = copy.copy(obj)
 
-        # Next call our worker, which mutates the record in place.
-        MessageDict._finalize_payload(
-            new_obj,
-            apply_markdown=apply_markdown,
-            client_gravatar=client_gravatar,
-            keep_rendered_content=keep_rendered_content,
-        )
-        return new_obj
-
-    @staticmethod
-    def _finalize_payload(obj: Dict[str, Any], apply_markdown: bool, client_gravatar: bool,
-                          keep_rendered_content: bool=False) -> None:
         MessageDict.set_sender_avatar(obj, client_gravatar)
         if apply_markdown:
             obj['content_type'] = 'text/html'
@@ -271,6 +259,7 @@ class MessageDict:
         del obj['recipient_type']
         del obj['recipient_type_id']
         del obj['sender_is_mirror_dummy']
+        return obj
 
     @staticmethod
     def sew_submessages_and_reactions_to_msgs(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
