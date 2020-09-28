@@ -26,6 +26,7 @@ from zerver.worker.queue_processors import (
     LoopQueueProcessingWorker,
     MissedMessageWorker,
     QueueProcessingWorker,
+    WorkerTimeoutException,
     get_active_worker_queues,
 )
 
@@ -620,6 +621,47 @@ class WorkerTest(ZulipTestCase):
 
         self.assertEqual([event["type"] for event in events],
                          ['good', 'fine', 'unexpected behaviour', 'back to normal'])
+
+    def test_timeouts(self) -> None:
+        processed = []
+
+        @queue_processors.assign_queue('timeout_worker')
+        class TimeoutWorker(queue_processors.QueueProcessingWorker):
+            MAX_CONSUME_SECONDS = 1
+
+            def consume(self, data: Mapping[str, Any]) -> None:
+                if data["type"] == 'timeout':
+                    time.sleep(5)
+                processed.append(data["type"])
+
+        fake_client = self.FakeClient()
+        for msg in ['good', 'fine', 'timeout', 'back to normal']:
+            fake_client.queue.append(('timeout_worker', {'type': msg}))
+
+        fn = os.path.join(settings.QUEUE_ERROR_DIR, 'timeout_worker.errors')
+        try:
+            os.remove(fn)
+        except OSError:  # nocoverage # error handling for the directory not existing
+            pass
+
+        with simulated_queue_client(lambda: fake_client):
+            worker = TimeoutWorker()
+            worker.setup()
+            worker.ENABLE_TIMEOUTS = True
+            with patch('logging.exception') as logging_exception_mock:
+                worker.start()
+                logging_exception_mock.assert_called_once_with(
+                    "%s in queue %s", str(WorkerTimeoutException(1, 1)), "timeout_worker",
+                    stack_info=True,
+                )
+
+        self.assertEqual(processed, ['good', 'fine', 'back to normal'])
+        with open(fn) as f:
+            line = f.readline().strip()
+        events = orjson.loads(line.split('\t')[1])
+        self.assert_length(events, 1)
+        event = events[0]
+        self.assertEqual(event["type"], 'timeout')
 
     def test_worker_noname(self) -> None:
         class TestWorker(queue_processors.QueueProcessingWorker):

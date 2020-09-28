@@ -86,6 +86,7 @@ class Command(BaseCommand):
                 signal.signal(signal.SIGTERM, signal_handler)
                 signal.signal(signal.SIGINT, signal_handler)
                 signal.signal(signal.SIGUSR1, signal_handler)
+                worker.ENABLE_TIMEOUTS = True
                 worker.start()
 
 class Threaded_worker(threading.Thread):

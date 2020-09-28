@@ -4,6 +4,7 @@ import copy
 import datetime
 import email
 import email.policy
+import functools
 import logging
 import os
 import signal
@@ -17,6 +18,7 @@ from collections import defaultdict, deque
 from email.message import EmailMessage
 from functools import wraps
 from threading import Lock, Timer
+from types import FrameType
 from typing import (
     Any,
     Callable,
@@ -104,6 +106,14 @@ from zerver.models import (
 
 logger = logging.getLogger(__name__)
 
+class WorkerTimeoutException(Exception):
+    def __init__(self, limit: int, event_count: int) -> None:
+        self.limit = limit
+        self.event_count = event_count
+
+    def __str__(self) -> str:
+        return f"Timed out after {self.limit * self.event_count} seconds processing {self.event_count} events"
+
 class WorkerDeclarationException(Exception):
     pass
 
@@ -163,8 +173,13 @@ def retry_send_email_failures(
 
     return wrapper
 
+def timer_expired(limit: int, event_count: int, signal: int, frame: FrameType) -> None:
+    raise WorkerTimeoutException(limit, event_count)
+
 class QueueProcessingWorker(ABC):
     queue_name: str
+    MAX_CONSUME_SECONDS: Optional[int] = 10
+    ENABLE_TIMEOUTS = False
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 50
     MAX_SECONDS_BEFORE_UPDATE_STATS = 30
 
@@ -247,11 +262,17 @@ class QueueProcessingWorker(ABC):
                 self.update_statistics(self.get_remaining_queue_size())
 
             time_start = time.time()
-            consume_func(events)
+            if self.MAX_CONSUME_SECONDS and self.ENABLE_TIMEOUTS:
+                signal.signal(signal.SIGALRM, functools.partial(timer_expired, self.MAX_CONSUME_SECONDS, len(events)))
+                signal.alarm(self.MAX_CONSUME_SECONDS * len(events))
+                consume_func(events)
+                signal.alarm(0)
+            else:
+                consume_func(events)
             consume_time_seconds = time.time() - time_start
             self.consumed_since_last_emptied += len(events)
-        except Exception:
-            self._handle_consume_exception(events)
+        except Exception as e:
+            self._handle_consume_exception(events, e)
         finally:
             flush_per_request_caches()
             reset_queries()
@@ -281,13 +302,17 @@ class QueueProcessingWorker(ABC):
         consume_func = lambda events: self.consume(events[0])
         self.do_consume(consume_func, [data])
 
-    def _handle_consume_exception(self, events: List[Dict[str, Any]]) -> None:
+    def _handle_consume_exception(self, events: List[Dict[str, Any]], exception: Exception) -> None:
         with configure_scope() as scope:
             scope.set_context("events", {
                 "data": events,
                 "queue_name": self.queue_name,
             })
-            logging.exception("Problem handling data on queue %s", self.queue_name, stack_info=True)
+            if isinstance(exception, WorkerTimeoutException):
+                logging.exception("%s in queue %s",
+                                  str(exception), self.queue_name, stack_info=True)
+            else:
+                logging.exception("Problem handling data on queue %s", self.queue_name, stack_info=True)
         if not os.path.exists(settings.QUEUE_ERROR_DIR):
             os.mkdir(settings.QUEUE_ERROR_DIR)  # nocoverage
         # Use 'mark_sanitized' to prevent Pysa from detecting this false positive
@@ -738,6 +763,10 @@ class DeferredWorker(QueueProcessingWorker):
     can provide a low-latency HTTP response or avoid risk of request
     timeouts for an operation that could in rare cases take minutes).
     """
+    # Because these operations have no SLO, and can take minutes,
+    # remove any processing timeouts
+    MAX_CONSUME_SECONDS = None
+
     def consume(self, event: Dict[str, Any]) -> None:
         if event['type'] == 'mark_stream_messages_as_read':
             user_profile = get_user_profile_by_id(event['user_profile_id'])
