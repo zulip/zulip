@@ -5097,8 +5097,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
+                $ref: "#/components/schemas/JsonSuccess"
 
   /realm/emoji:
     get:
@@ -8467,12 +8466,9 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/InvalidApiKeyError"
-                  - allOf:
-                      - $ref: "#/components/schemas/MissingArgumentError"
-                  - allOf:
-                      - $ref: "#/components/schemas/UserNotAuthorizedError"
+                  - $ref: "#/components/schemas/InvalidApiKeyError"
+                  - $ref: "#/components/schemas/MissingArgumentError"
+                  - $ref: "#/components/schemas/UserNotAuthorizedError"
   /zulip-outgoing-webhook:
     post:
       operationId: zulip_outgoing_webhooks
