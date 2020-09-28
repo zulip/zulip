@@ -1402,72 +1402,72 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
     messages = new_messages
 
     links_for_embed: Set[str] = set()
-    for message in messages:
-        message['stream'] = message.get('stream', None)
-        message['local_id'] = message.get('local_id', None)
-        message['sender_queue_id'] = message.get('sender_queue_id', None)
-        message['realm'] = message.get('realm', message['message'].sender.realm)
+    for message_dict in messages:
+        message_dict['stream'] = message_dict.get('stream', None)
+        message_dict['local_id'] = message_dict.get('local_id', None)
+        message_dict['sender_queue_id'] = message_dict.get('sender_queue_id', None)
+        message_dict['realm'] = message_dict.get('realm', message_dict['message'].sender.realm)
 
         mention_data = MentionData(
-            realm_id=message['realm'].id,
-            content=message['message'].content,
+            realm_id=message_dict['realm'].id,
+            content=message_dict['message'].content,
         )
-        message['mention_data'] = mention_data
+        message_dict['mention_data'] = mention_data
 
-        if message['message'].is_stream_message():
-            stream_id = message['message'].recipient.type_id
+        if message_dict['message'].is_stream_message():
+            stream_id = message_dict['message'].recipient.type_id
             stream_topic: Optional[StreamTopicTarget] = StreamTopicTarget(
                 stream_id=stream_id,
-                topic_name=message['message'].topic_name(),
+                topic_name=message_dict['message'].topic_name(),
             )
         else:
             stream_topic = None
 
         info = get_recipient_info(
-            recipient=message['message'].recipient,
-            sender_id=message['message'].sender_id,
+            recipient=message_dict['message'].recipient,
+            sender_id=message_dict['message'].sender_id,
             stream_topic=stream_topic,
             possibly_mentioned_user_ids=mention_data.get_user_ids(),
             possible_wildcard_mention=mention_data.message_has_wildcards(),
         )
 
-        message['active_user_ids'] = info['active_user_ids']
-        message['push_notify_user_ids'] = info['push_notify_user_ids']
-        message['stream_push_user_ids'] = info['stream_push_user_ids']
-        message['stream_email_user_ids'] = info['stream_email_user_ids']
-        message['um_eligible_user_ids'] = info['um_eligible_user_ids']
-        message['long_term_idle_user_ids'] = info['long_term_idle_user_ids']
-        message['default_bot_user_ids'] = info['default_bot_user_ids']
-        message['service_bot_tuples'] = info['service_bot_tuples']
+        message_dict['active_user_ids'] = info['active_user_ids']
+        message_dict['push_notify_user_ids'] = info['push_notify_user_ids']
+        message_dict['stream_push_user_ids'] = info['stream_push_user_ids']
+        message_dict['stream_email_user_ids'] = info['stream_email_user_ids']
+        message_dict['um_eligible_user_ids'] = info['um_eligible_user_ids']
+        message_dict['long_term_idle_user_ids'] = info['long_term_idle_user_ids']
+        message_dict['default_bot_user_ids'] = info['default_bot_user_ids']
+        message_dict['service_bot_tuples'] = info['service_bot_tuples']
 
-        # Render our messages.
-        assert message['message'].rendered_content is None
+        # Render our message_dicts.
+        assert message_dict['message'].rendered_content is None
 
         rendered_content = render_incoming_message(
-            message['message'],
-            message['message'].content,
-            message['active_user_ids'],
-            message['realm'],
-            mention_data=message['mention_data'],
+            message_dict['message'],
+            message_dict['message'].content,
+            message_dict['active_user_ids'],
+            message_dict['realm'],
+            mention_data=message_dict['mention_data'],
             email_gateway=email_gateway,
         )
-        message['message'].rendered_content = rendered_content
-        message['message'].rendered_content_version = markdown_version
-        links_for_embed |= message['message'].links_for_preview
+        message_dict['message'].rendered_content = rendered_content
+        message_dict['message'].rendered_content_version = markdown_version
+        links_for_embed |= message_dict['message'].links_for_preview
 
         # Add members of the mentioned user groups into `mentions_user_ids`.
-        for group_id in message['message'].mentions_user_group_ids:
-            members = message['mention_data'].get_group_members(group_id)
-            message['message'].mentions_user_ids.update(members)
+        for group_id in message_dict['message'].mentions_user_group_ids:
+            members = message_dict['mention_data'].get_group_members(group_id)
+            message_dict['message'].mentions_user_ids.update(members)
 
         # Only send data to Tornado about wildcard mentions if message
         # rendering determined the message had an actual wildcard
         # mention in it (and not e.g. wildcard mention syntax inside a
         # code block).
-        if message['message'].mentions_wildcard:
-            message['wildcard_mention_user_ids'] = info['wildcard_mention_user_ids']
+        if message_dict['message'].mentions_wildcard:
+            message_dict['wildcard_mention_user_ids'] = info['wildcard_mention_user_ids']
         else:
-            message['wildcard_mention_user_ids'] = []
+            message_dict['wildcard_mention_user_ids'] = []
 
         '''
         Once we have the actual list of mentioned ids from message
@@ -1475,10 +1475,10 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         who were directly mentioned in this message as eligible to
         get UserMessage rows.
         '''
-        mentioned_user_ids = message['message'].mentions_user_ids
-        default_bot_user_ids = message['default_bot_user_ids']
+        mentioned_user_ids = message_dict['message'].mentions_user_ids
+        default_bot_user_ids = message_dict['default_bot_user_ids']
         mentioned_bot_user_ids = default_bot_user_ids & mentioned_user_ids
-        message['um_eligible_user_ids'] |= mentioned_bot_user_ids
+        message_dict['um_eligible_user_ids'] |= mentioned_bot_user_ids
 
     # Save the message receipts in the database
     user_message_flags: Dict[int, Dict[int, List[str]]] = defaultdict(dict)
