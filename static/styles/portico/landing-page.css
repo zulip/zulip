@@ -3945,9 +3945,9 @@ nav.navbar {
     }
 
     h3 {
-        font-weight: 700;
-        font-size: 30px;
-        padding-bottom: 20px;
+        font-weight: 600;
+        font-size: 20px;
+        padding-bottom: 10px;
     }
 
     ul, li, h3 {
