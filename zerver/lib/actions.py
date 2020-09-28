@@ -1525,6 +1525,13 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         for message in messages:
             do_widget_post_save_actions(message)
 
+    # This next loop is responsible for notifying other parts of the
+    # Zulip system about the messages we just committed to the database:
+    # * Notifying clients via send_event
+    # * Triggering outgoing webhooks via the service event queue.
+    # * Updating the `first_message_id` field for streams without any message history.
+    # * Implementing the Welcome Bot reply hack
+    # * Adding links to the embed_links queue for open graph processing.
     for message in messages:
         realm_id: Optional[int] = None
         if message['message'].is_stream_message():
