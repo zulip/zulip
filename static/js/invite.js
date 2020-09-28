@@ -98,7 +98,8 @@ function submit_invitation_form() {
             }
         },
         complete() {
-            $("#submit-invitation").button("reset");
+            $("#submit-invitation").text(i18n.t("Invite"));
+            $("#submit-invitation").prop("disabled", false);
             $("#invitee_emails").focus();
             ui.get_scroll_element($("#invite_user_form .modal-body"))[0].scrollTop = 0;
         },
@@ -124,7 +125,8 @@ function generate_multiuse_invite() {
             ui_report.error("", xhr, invite_status);
         },
         complete() {
-            $("#submit-invitation").button("reset");
+            $("#submit-invitation").text(i18n.t("Generate invite link"));
+            $("#submit-invitation").prop("disabled", false);
         },
     });
 }
