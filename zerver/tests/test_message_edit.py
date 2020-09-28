@@ -1072,7 +1072,7 @@ class EditMessageTest(ZulipTestCase):
         self,
         from_invite_only: bool,
         history_public_to_subscribers: bool,
-        create_user_message: bool,
+        user_messages_created: bool,
         to_invite_only: bool=True,
     ) -> None:
         admin_user = self.example_user("iago")
@@ -1126,41 +1126,41 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(UserMessage.objects.filter(
             user_profile_id=user_gaining_access.id,
             message_id=msg_id,
-        ).count(), 1 if create_user_message else 0)
+        ).count(), 1 if user_messages_created else 0)
 
     def test_move_message_from_public_to_private_stream_not_shared_history(self) -> None:
         self.parameterized_test_move_message_involving_private_stream(
             from_invite_only=False,
             history_public_to_subscribers=False,
-            create_user_message=True,
+            user_messages_created=True,
         )
 
     def test_move_message_from_public_to_private_stream_shared_history(self) -> None:
         self.parameterized_test_move_message_involving_private_stream(
             from_invite_only=False,
             history_public_to_subscribers=True,
-            create_user_message=False,
+            user_messages_created=False,
         )
 
     def test_move_message_from_private_to_private_stream_not_shared_history(self) -> None:
         self.parameterized_test_move_message_involving_private_stream(
             from_invite_only=True,
             history_public_to_subscribers=False,
-            create_user_message=True,
+            user_messages_created=True,
         )
 
     def test_move_message_from_private_to_private_stream_shared_history(self) -> None:
         self.parameterized_test_move_message_involving_private_stream(
             from_invite_only=True,
             history_public_to_subscribers=True,
-            create_user_message=False,
+            user_messages_created=False,
         )
 
     def test_move_message_from_private_to_public(self) -> None:
         self.parameterized_test_move_message_involving_private_stream(
             from_invite_only=True,
             history_public_to_subscribers=True,
-            create_user_message=False,
+            user_messages_created=False,
             to_invite_only=False,
         )
 
