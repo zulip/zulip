@@ -8,6 +8,24 @@
 # frontend).
 #
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
+#
+# The general paradigm here is that if you have an event with type foo_bar
+# then you declare foo_bar_event to be an instance of event_dict_type.  And
+# then you make a checker function by saying:
+#
+#   check_foo_bar = make_checker(foo_bar_event)
+#
+# And then the caller can use the checker as follows:
+#
+#   check_foo_bar(var_name, event)
+#
+# For more complicated events, you may write custom checkers that check
+# aspects of the data that go beyond simply validating that the data
+# matches an event_dict_type based schema.  This typically happens with
+# events where you either have a Union type or optional_keys.
+#
+# See check_delete_message and check_presence for examples of this
+# paradigm.
 
 from typing import Dict, List, Sequence, Tuple, Union
 
