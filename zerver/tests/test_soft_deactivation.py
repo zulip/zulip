@@ -276,7 +276,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
         with self.settings(AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS=False):
             with self.assertLogs(logger_string, level="INFO") as m:
                 users_deactivated = do_auto_soft_deactivate_users(-1, realm)
-        self.assertEqual(m.output, [f"INFO:{logger_string}:Not catching up users since AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS if off"])
+        self.assertEqual(m.output, [f"INFO:{logger_string}:Not catching up users since AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS is off"])
 
         self.assert_length(users_deactivated, 0)   # all users are already deactivated
         received_count = UserMessage.objects.filter(user_profile__in=users,
