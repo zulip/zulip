@@ -317,11 +317,13 @@ class QueueProcessingWorker(ABC):
 class LoopQueueProcessingWorker(QueueProcessingWorker):
     sleep_delay = 0
     sleep_only_if_empty = True
+    is_consuming = False
 
     def start(self) -> None:  # nocoverage
         assert self.q is not None
         self.initialize_statistics()
-        while True:
+        self.is_consuming = True
+        while self.is_consuming:
             events = self.q.json_drain_queue(self.queue_name)
             self.do_consume(self.consume_batch, events)
             # To avoid spinning the CPU, we go to sleep if there's
@@ -329,6 +331,9 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
             # sleep_only_if_empty=False, unconditionally.
             if not self.sleep_only_if_empty or len(events) == 0:
                 time.sleep(self.sleep_delay)
+
+    def stop(self) -> None:
+        self.is_consuming = False
 
     @abstractmethod
     def consume_batch(self, events: List[Dict[str, Any]]) -> None:
