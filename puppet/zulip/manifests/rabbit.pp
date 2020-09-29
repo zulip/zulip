@@ -9,21 +9,10 @@ class zulip::rabbit {
                       ]
   package { $rabbit_packages: ensure => 'installed' }
 
-  file { '/etc/cron.d/rabbitmq-queuesize':
-    ensure  => file,
-    require => Package[rabbitmq-server],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    source  => 'puppet:///modules/zulip/cron.d/rabbitmq-queuesize',
-  }
-  file { '/etc/cron.d/rabbitmq-numconsumers':
-    ensure  => file,
-    require => Package[rabbitmq-server],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    source  => 'puppet:///modules/zulip/cron.d/rabbitmq-numconsumers',
+  # Removed 2020-09 in version 4.0; these lines can be removed in
+  # Zulip version 5.0 and later.
+  file { ['/etc/cron.d/rabbitmq-queuesize', '/etc/cron.d/rabbitmq-numconsumers']:
+    ensure => absent,
   }
 
   file { '/etc/default/rabbitmq-server':
