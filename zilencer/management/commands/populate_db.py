@@ -17,6 +17,7 @@ from django.utils.timezone import timedelta as timezone_timedelta
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 from zerver.lib.actions import (
     STREAM_ASSIGNMENT_COLORS,
+    build_message_send_dict,
     check_add_realm_emoji,
     do_change_user_role,
     do_send_messages,
@@ -792,7 +793,11 @@ def send_messages(messages: List[Message]) -> None:
     # up with queued events that reference objects from a previous
     # life of the database, which naturally throws exceptions.
     settings.USING_RABBITMQ = False
-    do_send_messages([{'message': message} for message in messages])
+    message_dict_list = []
+    for message in messages:
+        message_dict = build_message_send_dict({'message': message})
+        message_dict_list.append(message_dict)
+    do_send_messages(message_dict_list)
     bulk_create_reactions(messages)
     settings.USING_RABBITMQ = True
 
