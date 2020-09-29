@@ -53,6 +53,7 @@ from zerver.lib.stream_subscription import (
     num_subscribers_for_stream_id,
 )
 from zerver.lib.streams import (
+    StreamDict,
     access_stream_by_id,
     access_stream_by_name,
     can_access_stream_history,
@@ -198,7 +199,7 @@ class TestCreateStreams(ZulipTestCase):
 
     def test_history_public_to_subscribers_on_stream_creation(self) -> None:
         realm = get_realm('zulip')
-        stream_dicts: List[Mapping[str, Any]] = [
+        stream_dicts: List[StreamDict] = [
             {
                 "name": "publicstream",
                 "description": "Public stream with public history",
@@ -1132,7 +1133,7 @@ class StreamAdminTest(ZulipTestCase):
         """
         admin = self.example_user('iago')
 
-        streams_raw = [{
+        streams_raw: List[StreamDict] = [{
             'name': 'new_stream',
             'message_retention_days': 10,
         }]
@@ -3076,7 +3077,7 @@ class SubscriptionAPITest(ZulipTestCase):
                          ([], [stream]))
 
         # Test UserProfile.can_create_streams for guest users.
-        streams_raw = [{
+        streams_raw: List[StreamDict] = [{
             'invite_only': False,
             'history_public_to_subscribers': None,
             'name': 'new_stream',
