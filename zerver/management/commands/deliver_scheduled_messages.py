@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_send_messages
+from zerver.lib.actions import build_message_send_dict, do_send_messages
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import sleep_forever
 from zerver.models import Message, ScheduledMessage, get_user_by_delivery_email
@@ -44,8 +44,9 @@ Usage: ./manage.py deliver_scheduled_messages
         elif delivery_type == ScheduledMessage.REMIND:
             message.sender = get_user_by_delivery_email(settings.NOTIFICATION_BOT, original_sender.realm)
 
-        return {'message': message, 'stream': scheduled_message.stream,
-                'realm': scheduled_message.realm}
+        message_dict = {'message': message, 'stream': scheduled_message.stream,
+                        'realm': scheduled_message.realm}
+        return build_message_send_dict(message_dict)
 
     def handle(self, *args: Any, **options: Any) -> None:
 

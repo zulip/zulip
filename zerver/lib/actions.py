@@ -1386,8 +1386,8 @@ def do_schedule_messages(messages: Sequence[Mapping[str, Any]]) -> List[int]:
     return [scheduled_message.id for scheduled_message in scheduled_messages]
 
 
-def build_message_send_dict(message_dict: MutableMapping[str, Any],
-                            email_gateway: bool=False) -> MutableMapping[str, Any]:
+def build_message_send_dict(message_dict: Dict[str, Any],
+                            email_gateway: bool=False) -> Dict[str, Any]:
     message_dict['stream'] = message_dict.get('stream', None)
     message_dict['local_id'] = message_dict.get('local_id', None)
     message_dict['sender_queue_id'] = message_dict.get('sender_queue_id', None)
@@ -1487,9 +1487,6 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         else:
             new_messages.append(message)
     messages = new_messages
-
-    for message_dict in messages:
-        message_dict = build_message_send_dict(message_dict, email_gateway)
 
     # Save the message receipts in the database
     user_message_flags: Dict[int, Dict[int, List[str]]] = defaultdict(dict)
@@ -2296,7 +2293,8 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
                   forwarder_user_profile: Optional[UserProfile]=None,
                   local_id: Optional[str]=None,
                   sender_queue_id: Optional[str]=None,
-                  widget_content: Optional[str]=None) -> Dict[str, Any]:
+                  widget_content: Optional[str]=None,
+                  email_gateway: bool=False) -> Dict[str, Any]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
     for high-level documentation on this subsystem.
@@ -2396,14 +2394,16 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
                 error_msg=error.message,
             ))
 
-    return {'message': message, 'stream': stream, 'local_id': local_id,
-            'sender_queue_id': sender_queue_id, 'realm': realm,
-            'widget_content': widget_content}
+    message_dict = {'message': message, 'stream': stream, 'local_id': local_id,
+                    'sender_queue_id': sender_queue_id, 'realm': realm,
+                    'widget_content': widget_content}
+    return build_message_send_dict(message_dict, email_gateway)
 
 def _internal_prep_message(realm: Realm,
                            sender: UserProfile,
                            addressee: Addressee,
-                           content: str) -> Optional[Dict[str, Any]]:
+                           content: str,
+                           email_gateway: bool=False) -> Optional[Dict[str, Any]]:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
     The internal function that calls this can therefore batch send a bunch of created
@@ -2426,7 +2426,7 @@ def _internal_prep_message(realm: Realm,
 
     try:
         return check_message(sender, get_client("Internal"), addressee,
-                             content, realm=realm)
+                             content, realm=realm, email_gateway=email_gateway)
     except JsonableError as e:
         logging.exception("Error queueing internal message by %s: %s", sender.delivery_email, e.msg, stack_info=True)
 
@@ -2435,6 +2435,7 @@ def _internal_prep_message(realm: Realm,
 def internal_prep_stream_message(
         realm: Realm, sender: UserProfile,
         stream: Stream, topic: str, content: str,
+        email_gateway: bool=False,
 ) -> Optional[Dict[str, Any]]:
     """
     See _internal_prep_message for details of how this works.
@@ -2446,6 +2447,7 @@ def internal_prep_stream_message(
         sender=sender,
         addressee=addressee,
         content=content,
+        email_gateway=email_gateway,
     )
 
 def internal_prep_stream_message_by_name(
@@ -2500,12 +2502,12 @@ def internal_send_stream_message(
 
     message = internal_prep_stream_message(
         realm, sender, stream,
-        topic, content,
+        topic, content, email_gateway
     )
 
     if message is None:
         return None
-    message_ids = do_send_messages([message], email_gateway=email_gateway)
+    message_ids = do_send_messages([message])
     return message_ids[0]
 
 def internal_send_stream_message_by_name(
