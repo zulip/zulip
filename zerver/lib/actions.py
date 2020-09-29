@@ -5834,7 +5834,7 @@ def check_add_user_group(realm: Realm, name: str, initial_members: List[UserProf
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '{}' already exists.").format(name))
 
-def do_send_user_group_update_event(user_group: UserGroup, data: Dict[str, Any]) -> None:
+def do_send_user_group_update_event(user_group: UserGroup, data: Dict[str, str]) -> None:
     event = dict(type="user_group", op='update', group_id=user_group.id, data=data)
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
 
