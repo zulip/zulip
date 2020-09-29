@@ -126,32 +126,25 @@ def check_other_queues(queue_counts_dict: Dict[str, int]) -> List[Dict[str, Any]
     return results
 
 def check_rabbitmq_queues() -> None:
-    pattern = re.compile(r'(\w+)\t(\d+)')
+    pattern = re.compile(r'(\w+)\t(\d+)\t(\d+)')
     if 'USER' in os.environ and not os.environ['USER'] in ['root', 'rabbitmq']:
         print("This script must be run as the root or rabbitmq user")
 
-    list_queues_output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_queues'],
+    list_queues_output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_queues',
+                                                  'name', 'messages', 'consumers'],
                                                  universal_newlines=True)
-    list_consumers_output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
-                                                    universal_newlines=True)
-
     queue_counts_rabbitmqctl = {}
+    queues_with_consumers = []
     for line in list_queues_output.split("\n"):
         line = line.strip()
         m = pattern.match(line)
         if m:
             queue = m.group(1)
             count = int(m.group(2))
+            consumers = int(m.group(3))
             queue_counts_rabbitmqctl[queue] = count
-
-    queues_with_consumers = []
-    for line in list_consumers_output.split('\n'):
-        parts = line.split('\t')
-        if len(parts) >= 2:
-            queue_name = parts[0]
-            if queue_name.startswith("notify_tornado"):
-                continue
-            queues_with_consumers.append(queue_name)
+            if consumers > 0 and not queue.startswith("notify_tornado"):
+                queues_with_consumers.append(queue)
 
     queue_stats_dir = subprocess.check_output([os.path.join(ZULIP_PATH, 'scripts/get-django-setting'),
                                                'QUEUE_STATS_DIR'],
