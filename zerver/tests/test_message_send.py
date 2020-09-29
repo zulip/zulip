@@ -11,6 +11,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.decorator import JsonableError
 from zerver.lib.actions import (
+    build_message_send_dict,
     check_message,
     check_send_stream_message,
     do_change_is_api_super_user,
@@ -1142,7 +1143,8 @@ class StreamMessagesTest(ZulipTestCase):
                 sending_client=sending_client,
             )
             message.set_topic_name(topic_name)
-            do_send_messages([dict(message=message)])
+            message_dict = build_message_send_dict({'message': message})
+            do_send_messages([message_dict])
 
         before_um_count = UserMessage.objects.count()
 
