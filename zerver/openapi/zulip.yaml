@@ -1188,9 +1188,7 @@ paths:
                                   "name": "test_stream",
                                   "id": 0,
                                 }
-                            - type: object
-                              additionalProperties: false
-                              description: |
+                            - description: |
                                 Event sent when a reaction is added to a message.
                                 Sent to all users who were recipients of the message.
                               allOf:
@@ -1228,9 +1226,7 @@ paths:
                                       "reaction_type": "unicode_emoji",
                                       "id": 0,
                                     }
-                            - type: object
-                              additionalProperties: false
-                              description: |
+                            - description: |
                                 Event sent when a reaction is removed from a message.
                                 Sent to all users who were recipients of the message.
                               allOf:
