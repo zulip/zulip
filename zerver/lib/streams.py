@@ -1,9 +1,10 @@
-from typing import Any, Iterable, List, Mapping, Optional, Set, Tuple, Union
+from typing import Iterable, List, Optional, Set, Tuple, Union
 
 from django.conf import settings
 from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
+from typing_extensions import TypedDict
 
 from zerver.lib.exceptions import StreamAdministratorRequired
 from zerver.lib.markdown import markdown_convert
@@ -25,6 +26,28 @@ from zerver.models import (
 )
 from zerver.tornado.django_api import send_event
 
+
+class StreamDict(TypedDict, total=False):
+    """
+    This type ultimately gets used in two places:
+
+        - we use it to create a stream
+        - we use it to specify a stream
+
+    It's possible we want a smaller type to use
+    for removing streams, but it would complicate
+    how we write the types for list_to_stream.
+
+    Note that these fields are just a subset of
+    the fields in the Stream model.
+    """
+    name: str
+    description: str
+    invite_only: bool
+    is_web_public: bool
+    stream_post_policy: int
+    history_public_to_subscribers: Optional[bool]
+    message_retention_days: Optional[int]
 
 def get_default_value_for_history_public_to_subscribers(
         realm: Realm,
@@ -103,9 +126,11 @@ def create_stream_if_needed(realm: Realm,
                                      event_time=event_time)
     return stream, created
 
-def create_streams_if_needed(realm: Realm,
-                             stream_dicts: List[Mapping[str, Any]],
-                             acting_user: Optional[UserProfile]=None) -> Tuple[List[Stream], List[Stream]]:
+def create_streams_if_needed(
+    realm: Realm,
+    stream_dicts: List[StreamDict],
+    acting_user: Optional[UserProfile]=None
+) -> Tuple[List[Stream], List[Stream]]:
     """Note that stream_dict["name"] is assumed to already be stripped of
     whitespace"""
     added_streams: List[Stream] = []
@@ -458,7 +483,7 @@ def filter_stream_authorization(user_profile: UserProfile,
                           stream.id not in {stream.id for stream in unauthorized_streams}]
     return authorized_streams, unauthorized_streams
 
-def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
+def list_to_streams(streams_raw: Iterable[StreamDict],
                     user_profile: UserProfile,
                     autocreate: bool=False,
                     admin_access_required: bool=False) -> Tuple[List[Stream], List[Stream]]:
@@ -486,7 +511,7 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
         check_stream_name(stream_name)
 
     existing_streams: List[Stream] = []
-    missing_stream_dicts: List[Mapping[str, Any]] = []
+    missing_stream_dicts: List[StreamDict] = []
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
     if admin_access_required:
