@@ -77,7 +77,7 @@ class zulip::base {
   $total_memory_mb = Integer($::memorysize_mb);
 
   group { 'zulip':
-    ensure     => present,
+    ensure => present,
   }
 
   user { 'zulip':
