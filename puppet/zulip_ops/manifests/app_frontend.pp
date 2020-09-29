@@ -80,4 +80,13 @@ class zulip_ops::app_frontend {
     'zulip_send_receive_timing',
   ]
   zulip_ops::munin_plugin { $munin_plugins: }
+
+  file { '/etc/cron.d/rabbitmq-monitoring':
+    ensure  => file,
+    require => Package[rabbitmq-server],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    source  => 'puppet:///modules/zulip/cron.d/rabbitmq-monitoring',
+  }
 }

@@ -23,3 +23,4 @@
 SHELL=/bin/bash
 
 * * * * * root /home/zulip/deployments/current/scripts/nagios/check-rabbitmq-queue &> /var/lib/nagios_state/check-rabbitmq-results-tmp; mv /var/lib/nagios_state/check-rabbitmq-results-tmp /var/lib/nagios_state/check-rabbitmq-results
+* * * * * root /home/zulip/deployments/current/scripts/nagios/check-rabbitmq-consumers
