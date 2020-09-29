@@ -1,7 +1,5 @@
 "use strict";
 
-const moment = require("moment-timezone");
-
 $(() => {
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
@@ -82,7 +80,7 @@ $(() => {
             $(".team_subdomain_error_server").css("display", "none");
         }
 
-        $("#timezone").val(moment.tz.guess());
+        $("#timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
     }
 
     // Code in this block will be executed when the /accounts/send_confirm

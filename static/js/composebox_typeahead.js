@@ -1,9 +1,9 @@
 "use strict";
 
 const autosize = require("autosize");
+const {formatISO} = require("date-fns");
 const ConfirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
 const _ = require("lodash");
-const moment = require("moment");
 
 const pygments_data = require("../generated/pygments_data.json");
 const emoji = require("../shared/js/emoji");
@@ -754,10 +754,7 @@ const show_flatpickr = (element, callback, default_timestamp) => {
         plugins: [new ConfirmDatePlugin({})],
         positionElement: element,
         dateFormat: "Z",
-        formatDate: (date) => {
-            const dt = moment(date);
-            return dt.local().format();
-        },
+        formatDate: (date) => formatISO(date),
     });
     const container = $($(instance.innerContainer).parent());
     container.on("click", ".flatpickr-calendar", (e) => {

@@ -54,7 +54,7 @@ exports.get_time_preferences = function (user_timezone) {
     }
     return {
         timezone: user_timezone,
-        format: "h:mm A",
+        format: "h:mm a",
     };
 };
 

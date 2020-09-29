@@ -10,6 +10,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 from pygments import __version__ as pygments_version
+from pytz import VERSION as timezones_version
 
 from scripts.lib.zulip_tools import (
     ENDC,
@@ -44,6 +45,12 @@ def build_pygments_data_paths() -> List[str]:
     paths = [
         "tools/setup/build_pygments_data",
         "tools/setup/lang.json",
+    ]
+    return paths
+
+def build_timezones_data_paths() -> List[str]:
+    paths = [
+        "tools/setup/build_timezone_values",
     ]
     return paths
 
@@ -135,6 +142,16 @@ def need_to_run_build_pygments_data() -> bool:
         [pygments_version],
     )
 
+def need_to_run_build_timezone_data() -> bool:
+    if not os.path.exists("static/generated/timezones.json"):
+        return True
+
+    return is_digest_obsolete(
+        "build_timezones_data_hash",
+        build_timezones_data_paths(),
+        [timezones_version],
+    )
+
 def need_to_run_compilemessages() -> bool:
     if not os.path.exists('locale/language_name_map.json'):
         # User may have cleaned their git checkout.
@@ -212,6 +229,16 @@ def main(options: argparse.Namespace) -> int:
         )
     else:
         print("No need to run `tools/setup/build_pygments_data`.")
+
+    if options.is_force or need_to_run_build_timezone_data():
+        run(["tools/setup/build_timezone_values"])
+        write_new_digest(
+            "build_timezones_data_hash",
+            build_timezones_data_paths(),
+            [timezones_version],
+        )
+    else:
+        print("No need to run `tools/setup/build_timezone_values`.")
 
     if options.is_force or need_to_run_inline_email_css():
         run(["scripts/setup/inline_email_css.py"])

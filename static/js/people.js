@@ -1,6 +1,6 @@
 import md5 from "blueimp-md5";
+import {format, utcToZonedTime} from "date-fns-tz";
 import _ from "lodash";
-import moment from "moment-timezone";
 
 import * as typeahead from "../shared/js/typeahead";
 
@@ -252,7 +252,8 @@ export function get_user_time_preferences(user_id) {
 export function get_user_time(user_id) {
     const user_pref = get_user_time_preferences(user_id);
     if (user_pref) {
-        return moment().tz(user_pref.timezone).format(user_pref.format);
+        const current_date = utcToZonedTime(new Date(), user_pref.timezone);
+        return format(current_date, user_pref.format, {timeZone: user_pref.timezone});
     }
     return undefined;
 }

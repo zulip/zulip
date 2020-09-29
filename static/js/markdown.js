@@ -1,8 +1,8 @@
 "use strict";
 
+const {isValid} = require("date-fns");
 const katex = require("katex");
 const _ = require("lodash");
-const moment = require("moment");
 
 const emoji = require("../shared/js/emoji");
 const fenced_code = require("../shared/js/fenced_code");
@@ -294,18 +294,14 @@ function handleEmoji(emoji_name) {
 function handleTimestamp(time) {
     let timeobject;
     if (Number.isNaN(Number(time))) {
-        // Moment throws a large deprecation warning when it has to fallback
-        // to the Date() constructor. We needn't worry here and can let backend
-        // Markdown handle any dates that moment misses.
-        moment.suppressDeprecationWarnings = true;
-        timeobject = moment(time); // not a Unix timestamp
+        timeobject = new Date(time); // not a Unix timestamp
     } else {
         // JavaScript dates are in milliseconds, Unix timestamps are in seconds
-        timeobject = moment(time * 1000);
+        timeobject = new Date(time * 1000);
     }
 
     const escaped_time = _.escape(time);
-    if (timeobject === null || !timeobject.isValid()) {
+    if (timeobject === null || !isValid(timeobject)) {
         // Unsupported time format: rerender accordingly.
 
         // We do not show an error on these formats in local echo because

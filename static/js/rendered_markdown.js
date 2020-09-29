@@ -1,7 +1,7 @@
 "use strict";
 
 const ClipboardJS = require("clipboard");
-const moment = require("moment");
+const {parseISO, isValid} = require("date-fns");
 
 const copy_code_button = require("../templates/copy_code_button.hbs");
 const view_code_in_playground = require("../templates/view_code_in_playground.hbs");
@@ -155,20 +155,15 @@ exports.update_elements = (content) => {
             return;
         }
 
-        // Moment throws a large deprecation warning when it has to
-        // fallback to the Date() constructor.  This isn't really a
-        // problem for us except in local echo, as the backend always
-        // uses a format that ensures that is unnecessary.
-        moment.suppressDeprecationWarnings = true;
-        const timestamp = moment(time_str);
-        if (timestamp.isValid()) {
+        const timestamp = parseISO(time_str);
+        if (isValid(timestamp)) {
             const text = $(this).text();
             const rendered_time = timerender.render_markdown_timestamp(timestamp, text);
             $(this).text(rendered_time.text);
             $(this).attr("title", rendered_time.title);
         } else {
             // This shouldn't happen. If it does, we're very interested in debugging it.
-            blueslip.error(`Moment could not parse datetime supplied by backend: ${time_str}`);
+            blueslip.error(`Could not parse datetime supplied by backend: ${time_str}`);
         }
     });
 

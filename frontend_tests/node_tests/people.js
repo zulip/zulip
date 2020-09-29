@@ -2,21 +2,18 @@
 
 const {strict: assert} = require("assert");
 
+const {parseISO} = require("date-fns");
 const _ = require("lodash");
-const moment = require("moment-timezone");
-const rewiremock = require("rewiremock/node");
+const MockDate = require("mockdate");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-
-const people = rewiremock.proxy(() => zrequire("people"), {
-    "moment-timezone": () => moment("20130208T080910"),
-});
 
 set_global("message_store", {});
 set_global("page_params", {});
 set_global("settings_data", {});
 
+const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 const visibility = settings_config.email_address_visibility_values;
 const admins_only = visibility.admins_only.code;
@@ -27,6 +24,8 @@ function set_email_visibility(code) {
 }
 
 set_email_visibility(admins_only);
+
+MockDate.set(parseISO("20130208T080910").getTime());
 
 const welcome_bot = {
     email: "welcome-bot@example.com",
@@ -399,7 +398,7 @@ run_test("user_timezone", () => {
     page_params.twenty_four_hour_time = true;
     assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
 
-    expected_pref.format = "h:mm A";
+    expected_pref.format = "h:mm a";
     page_params.twenty_four_hour_time = false;
     assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
 
@@ -1111,3 +1110,6 @@ run_test("get_active_message_people", () => {
     active_message_people = people.get_active_message_people();
     assert.deepEqual(active_message_people, [steven, maria]);
 });
+
+// reset to native Date()
+MockDate.reset();

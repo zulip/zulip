@@ -10,5 +10,7 @@
 /generated/emoji-styles
 # From passing pygments data to the frontend
 /generated/pygments_data.json
+# From passing timezones data to the frontend
+/generated/timezones.json
 # Legacy emoji data directory
 /third/emoji-data

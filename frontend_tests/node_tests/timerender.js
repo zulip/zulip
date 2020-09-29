@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const moment = require("moment");
+const {getTime} = require("date-fns");
 const XDate = require("xdate");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
@@ -150,10 +150,10 @@ run_test("get_timestamp_for_flatpickr", () => {
     Date.now = () => new Date("2020-07-07T10:00:00Z").getTime();
 
     // Invalid timestamps should show current time.
-    assert.equal(func("random str").valueOf(), moment().valueOf());
+    assert.equal(func("random str").valueOf(), getTime(new Date()));
 
     // Valid ISO timestamps should return Date objects.
-    assert.equal(func(iso_timestamp).valueOf(), moment(unix_timestamp).valueOf());
+    assert.equal(func(iso_timestamp).valueOf(), getTime(new Date(unix_timestamp)));
 
     // Restore the Date object.
     Date.now = date_now;

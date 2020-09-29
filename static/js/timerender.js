@@ -1,6 +1,6 @@
 "use strict";
 
-const moment = require("moment");
+const {format, parseISO, isValid} = require("date-fns");
 const XDate = require("xdate");
 
 let next_timerender_id = 0;
@@ -174,8 +174,8 @@ exports.render_date = function (time, time_above, today) {
 
 // Renders the timestamp returned by the <time:> Markdown syntax.
 exports.render_markdown_timestamp = function (time, text) {
-    const hourformat = page_params.twenty_four_hour_time ? "HH:mm" : "h:mm A";
-    const timestring = time.format("ddd, MMM D YYYY, " + hourformat);
+    const hourformat = page_params.twenty_four_hour_time ? "HH:mm" : "h:mm a";
+    const timestring = format(time, "E, MMM d yyyy, " + hourformat);
     const titlestring = "This time is in your timezone. Original text was '" + text + "'.";
     return {
         text: timestring,
@@ -232,19 +232,17 @@ exports.get_full_time = function (timestamp) {
 
 exports.get_timestamp_for_flatpickr = (timestring) => {
     let timestamp;
-    moment.suppressDeprecationWarnings = true;
     try {
         // If there's already a valid time in the compose box,
         // we use it to initialize the flatpickr instance.
-        timestamp = moment(timestring);
+        timestamp = parseISO(timestring);
     } finally {
         // Otherwise, default to showing the current time.
-        if (!timestamp || !timestamp.isValid()) {
-            timestamp = moment();
+        if (!timestamp || !isValid(timestamp)) {
+            timestamp = new Date();
         }
     }
-    moment.suppressDeprecationWarnings = false;
-    return timestamp.toDate();
+    return timestamp;
 };
 
 exports.stringify_time = function (time) {
