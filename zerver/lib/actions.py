@@ -1407,7 +1407,6 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             new_messages.append(message)
     messages = new_messages
 
-    links_for_embed: Set[str] = set()
     for message_dict in messages:
         message_dict['stream'] = message_dict.get('stream', None)
         message_dict['local_id'] = message_dict.get('local_id', None)
@@ -1459,7 +1458,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         )
         message_dict['message'].rendered_content = rendered_content
         message_dict['message'].rendered_content_version = markdown_version
-        links_for_embed |= message_dict['message'].links_for_preview
+        message_dict['links_for_embed'] = message_dict['message'].links_for_preview
 
         # Add members of the mentioned user groups into `mentions_user_ids`.
         for group_id in message_dict['message'].mentions_user_group_ids:
@@ -1620,12 +1619,12 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             event['sender_queue_id'] = message['sender_queue_id']
         send_event(message['realm'], event, users)
 
-        if links_for_embed:
+        if message['links_for_embed']:
             event_data = {
                 'message_id': message['message'].id,
                 'message_content': message['message'].content,
                 'message_realm_id': message['realm'].id,
-                'urls': list(links_for_embed)}
+                'urls': list(message['links_for_embed'])}
             queue_json_publish('embed_links', event_data)
 
         if message['message'].recipient.type == Recipient.PERSONAL:
