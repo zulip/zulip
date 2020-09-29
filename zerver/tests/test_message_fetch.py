@@ -1,6 +1,6 @@
 import datetime
 import os
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 from unittest import mock
 
 import orjson
@@ -31,7 +31,7 @@ from zerver.lib.message import (
 from zerver.lib.narrow import build_narrow_filter, is_web_public_compatible
 from zerver.lib.request import JsonableError
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.streams import create_streams_if_needed, get_public_streams_queryset
+from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import POSTRequestMock, get_user_messages, queries_captured
 from zerver.lib.topic import MATCH_TOPIC, TOPIC_NAME
@@ -131,7 +131,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, 'WHERE recipient_id IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s)')
 
         # Add new streams
-        stream_dicts: List[Mapping[str, Any]] = [
+        stream_dicts: List[StreamDict] = [
             {
                 "name": "publicstream",
                 "description": "Public stream with public history",
@@ -161,7 +161,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, 'WHERE recipient_id NOT IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s)')
 
         # Add new streams
-        stream_dicts: List[Mapping[str, Any]] = [
+        stream_dicts: List[StreamDict] = [
             {
                 "name": "publicstream",
                 "description": "Public stream with public history",

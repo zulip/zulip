@@ -60,6 +60,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import (
+    StreamDict,
     access_default_stream_group_by_id,
     access_stream_by_id,
     access_stream_by_name,
@@ -361,7 +362,7 @@ def remove_subscriptions_backend(
 
     removing_someone_else = check_if_removing_someone_else(user_profile, principals)
 
-    streams_as_dict = []
+    streams_as_dict: List[StreamDict] = []
     for stream_name in streams_raw:
         streams_as_dict.append({"name": stream_name.strip()})
 
@@ -433,20 +434,20 @@ def add_subscriptions_backend(
         # check for its presence in the streams_raw first
         if 'color' in stream_dict:
             color_map[stream_dict['name']] = stream_dict['color']
-        if 'description' in stream_dict:
-            # We don't allow newline characters in stream descriptions.
-            stream_dict['description'] = stream_dict['description'].replace("\n", " ")
 
-        stream_dict_copy: Dict[str, Any] = {}
-        for field in stream_dict:
-            stream_dict_copy[field] = stream_dict[field]
-        # Strip the stream name here.
-        stream_dict_copy['name'] = stream_dict_copy['name'].strip()
+        stream_dict_copy: StreamDict = {}
+        stream_dict_copy["name"] = stream_dict["name"].strip()
+
+        # We don't allow newline characters in stream descriptions.
+        if "description" in stream_dict:
+            stream_dict_copy["description"] = stream_dict["description"].replace("\n", " ")
+
         stream_dict_copy["invite_only"] = invite_only
         stream_dict_copy["stream_post_policy"] = stream_post_policy
         stream_dict_copy["history_public_to_subscribers"] = history_public_to_subscribers
         stream_dict_copy["message_retention_days"] = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP)
+
         stream_dicts.append(stream_dict_copy)
 
     # Validation of the streams arguments, including enforcement of
