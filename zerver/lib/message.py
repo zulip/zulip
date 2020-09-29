@@ -52,6 +52,15 @@ from zerver.models import (
 
 RealmAlertWord = Dict[int, List[str]]
 
+class RawReactionRow(TypedDict):
+    emoji_code: str
+    emoji_name: str
+    message_id: int
+    reaction_type: str
+    user_profile__email: str
+    user_profile__full_name: str
+    user_profile__id: int
+
 class RawUnreadMessagesResult(TypedDict):
     pm_dict: Dict[int, Any]
     stream_dict: Dict[int, Any]
@@ -379,7 +388,7 @@ class MessageDict:
             recipient_id: int,
             recipient_type: int,
             recipient_type_id: int,
-            reactions: List[Dict[str, Any]],
+            reactions: List[RawReactionRow],
             submessages: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
 
@@ -556,7 +565,7 @@ class MessageDict:
 
 class ReactionDict:
     @staticmethod
-    def build_dict_from_raw_db_row(row: Dict[str, Any]) -> Dict[str, Any]:
+    def build_dict_from_raw_db_row(row: RawReactionRow) -> Dict[str, Any]:
         return {'emoji_name': row['emoji_name'],
                 'emoji_code': row['emoji_code'],
                 'reaction_type': row['reaction_type'],
