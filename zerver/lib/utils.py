@@ -11,10 +11,7 @@ from django.conf import settings
 
 T = TypeVar('T')
 
-def statsd_key(val: Any, clean_periods: bool=False) -> str:
-    if not isinstance(val, str):
-        val = str(val)
-
+def statsd_key(val: str, clean_periods: bool=False) -> str:
     if ':' in val:
         val = val.split(':')[0]
     val = val.replace('-', "_")
