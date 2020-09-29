@@ -1600,6 +1600,36 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
         position: relative;
         margin-top: 0;
         display: block;
+
+        /* In bootstrap v2.3.2, we strictly need
+        .dropdown-menu > li > a as the order of the elements
+        for the bootstrap style to be applied.
+        Since we use a combination of dropdown + simplebar here,
+        the structure cannot be possible since simplebar inserts
+        elements of its own, so we copy over that style
+        from bootstrap to here. */
+        li a {
+            display: block;
+            padding: 3px 20px;
+            clear: both;
+            font-weight: normal;
+            line-height: 20px;
+            color: hsl(0, 0%, 20%);
+            white-space: nowrap;
+
+            &:hover {
+                color: hsl(0, 0%, 100%);
+                text-decoration: none;
+                background-color: hsl(200, 100%, 38%);
+                background-image: linear-gradient(
+                    to bottom,
+                    hsl(200, 100%, 40%),
+                    hsl(200, 100%, 35%)
+                );
+                background-repeat: repeat-x;
+                filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
+            }
+        }
     }
 }
 
