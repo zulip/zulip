@@ -10,6 +10,7 @@ import boto3
 import orjson
 from bs4 import BeautifulSoup
 from django.conf import settings
+from django.core.cache import cache
 from django.db import connection
 from django.db.models import Max
 from django.utils.timezone import now as timezone_now
@@ -759,6 +760,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
                 process_avatars(record)
         else:
             connection.close()
+            cache._cache.disconnect_all()
             with multiprocessing.Pool(processes) as p:
                 for out in p.imap_unordered(process_avatars, records):
                     pass
