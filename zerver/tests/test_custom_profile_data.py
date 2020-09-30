@@ -70,6 +70,15 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         field = CustomProfileField.objects.get(name="Phone", realm=realm)
         self.assertEqual(field.id, field.order)
 
+        data["name"] = "Name "
+        data["hint"] = "Some name"
+        data["field_type"] = CustomProfileField.SHORT_TEXT
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
+        field = CustomProfileField.objects.get(name="Name", realm=realm)
+        self.assertEqual(field.id, field.order)
+
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result,
                                'A field with that label already exists.')
@@ -412,6 +421,15 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(field.name, 'New phone number')
         self.assertEqual(field.hint, 'New contact number')
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={'name': 'Name ',
+                  'field_type': CustomProfileField.SHORT_TEXT},
+        )
+        self.assert_json_success(result)
+        field.refresh_from_db()
+        self.assertEqual(field.name, 'Name')
 
         field = CustomProfileField.objects.get(name="Favorite editor", realm=realm)
         result = self.client_patch(
