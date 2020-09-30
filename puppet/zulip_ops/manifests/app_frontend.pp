@@ -33,9 +33,6 @@ class zulip_ops::app_frontend {
     mode   => '0600',
     source => 'puppet:///modules/zulip_ops/log2zulip.zuliprc',
   }
-  file { '/etc/cron.d/check-apns-tokens':
-    ensure => absent,
-  }
 
   file { '/etc/supervisor/conf.d/redis_tunnel.conf':
     ensure  => file,
