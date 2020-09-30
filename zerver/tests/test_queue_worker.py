@@ -2,7 +2,8 @@ import base64
 import os
 import smtplib
 import time
-from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
+from contextlib import contextmanager
+from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Tuple
 from unittest.mock import MagicMock, patch
 
 import orjson
@@ -58,7 +59,8 @@ class WorkerTest(ZulipTestCase):
                 callback(data)
             self.queue = []
 
-        def json_drain_queue(self, queue_name: str) -> List[Event]:
+        @contextmanager
+        def json_drain_queue(self, queue_name: str) -> Iterator[List[Event]]:
             events = [
                 dct
                 for (queue_name, dct)
@@ -70,7 +72,7 @@ class WorkerTest(ZulipTestCase):
             # queues, which was a bug at one point.
             self.queue = []
 
-            return events
+            yield events
 
         def queue_size(self) -> int:
             return len(self.queue)
