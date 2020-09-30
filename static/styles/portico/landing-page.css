@@ -3996,7 +3996,7 @@ nav.navbar {
         }
     }
 
-    .customization {
+    .green-bg-feature {
         background-color: $light-green;
 
         * {
@@ -4008,5 +4008,4 @@ nav.navbar {
             border-width: 2px;
         }
     }
-
 }
