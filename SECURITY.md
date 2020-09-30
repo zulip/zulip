@@ -1,4 +1,4 @@
-# Security Policy
+about policy of security
 
 Security announcements are sent to zulip-announce@googlegroups.com,
 so you should subscribe if you are running Zulip in production.
