@@ -4008,4 +4008,39 @@ nav.navbar {
             border-width: 2px;
         }
     }
+
+    .message-formatting {
+        background-color: #212d3a !important;
+        padding-top: 0px;
+        padding-bottom: 0px;
+
+        .carousel-caption {
+            background-color: $light-green;
+            position: relative;
+            top: 0;
+            left: 0;
+
+            h2 {
+                font-weight: 700;
+            }
+        }
+        .carousel-control-next, .carousel-control-prev {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            top: 50%;
+            margin-top: -35px;
+            line-height: 70px;
+            border-radius: 50%;
+            color: inherit;
+            background: hsl(0, 0%, 0%);
+            opacity: 1 !important;
+            border: 0;
+
+            text-shadow: none;
+            z-index: 5;
+            color: #fff;
+            transition: all 0.2s ease-in-out 0s;
+        }
+    }
 }
