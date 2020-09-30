@@ -42,10 +42,6 @@ class zulip::app_frontend_once {
     source => 'puppet:///modules/zulip/cron.d/archive-messages',
   }
 
-  file { '/etc/cron.d/calculate-first-visible-message-id':
-    ensure => absent,
-  }
-
   file { '/etc/cron.d/clearsessions':
     ensure => file,
     owner  => 'root',
