@@ -3,7 +3,8 @@ import random
 import threading
 import time
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Mapping, Optional, Set
+from contextlib import contextmanager
+from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Set
 
 import orjson
 import pika
@@ -167,25 +168,40 @@ class SimpleQueueClient:
             callback(orjson.loads(body))
         self.register_consumer(queue_name, wrapped_callback)
 
-    def drain_queue(self, queue_name: str) -> List[bytes]:
-        "Returns all messages in the desired queue"
+    @contextmanager
+    def drain_queue(self, queue_name: str) -> Iterator[List[bytes]]:
+        """As a contextmanger, yields all messages in the desired queue.
+
+        NACKs all of the messages if the block throws an exception,
+        ACKs them otherwise.
+        """
         messages = []
+        max_tag: Optional[int] = None
 
         def opened(channel: BlockingChannel) -> None:
+            nonlocal max_tag
             while True:
                 (meta, _, message) = channel.basic_get(queue_name)
-
                 if message is None:
                     break
-
-                channel.basic_ack(meta.delivery_tag)
+                max_tag = meta.delivery_tag
                 messages.append(message)
 
         self.ensure_queue(queue_name, opened)
-        return messages
+        assert self.channel is not None
+        try:
+            yield messages
+            if max_tag:
+                self.channel.basic_ack(max_tag, multiple=True)
+        except Exception:
+            if max_tag:
+                self.channel.basic_nack(max_tag, multiple=True)
+            raise
 
-    def json_drain_queue(self, queue_name: str) -> List[Dict[str, Any]]:
-        return list(map(orjson.loads, self.drain_queue(queue_name)))
+    @contextmanager
+    def json_drain_queue(self, queue_name: str) -> Iterator[List[Dict[str, Any]]]:
+        with self.drain_queue(queue_name) as binary_messages:
+            yield list(map(orjson.loads, binary_messages))
 
     def queue_size(self) -> int:
         assert self.channel is not None
