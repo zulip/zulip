@@ -26,10 +26,6 @@ class zulip_ops::app_frontend {
     source => 'puppet:///modules/zulip_ops/log2zulip.conf',
   }
 
-  file { '/etc/cron.d/log2zulip':
-    ensure => absent,
-  }
-
   file { '/etc/log2zulip.zuliprc':
     ensure => file,
     owner  => 'zulip',
