@@ -7,6 +7,7 @@ from io import BytesIO
 from typing import Callable, Dict, Optional, Tuple, TypeVar, Union, cast
 
 import django_otp
+from oauth2_provider.oauth2_backends import get_oauthlib_core
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth import login as django_login
@@ -187,6 +188,28 @@ class InvalidZulipServerKeyError(InvalidZulipServerError):
     @staticmethod
     def msg_format() -> str:
         return "Zulip server auth failure: key does not match role {role}"
+
+def validate_oauth_key(request: HttpRequest) -> UserProfile:
+    access_token = request.META.get("HTTP_BEARER")
+    request.META["Authorization"] = f"bearer {access_token}"
+
+    (ok, req) = get_oauthlib_core().verify_request(request, [])
+    if not ok:
+        raise JsonableError("oauth failed")
+
+    # convert from AnonymousUser
+    user_profile = UserProfile.objects.get(id=req.user.id)
+    request.user = user_profile
+
+    validate_account_and_subdomain(request, user_profile)
+
+    # Using oauth for webhooks might make sense some day, but we punt for now.
+    if user_profile.is_incoming_webhook:
+        raise JsonableError(_("This API is not available to incoming webhook bots."))
+
+    client_name = "beta oauth"
+    process_client(request, user_profile, client_name=client_name)
+    return user_profile
 
 def validate_api_key(request: HttpRequest, role: Optional[str],
                      api_key: str, allow_webhook_access: bool=False,
@@ -533,28 +556,39 @@ def authenticated_rest_api_view(
         @csrf_exempt
         @wraps(view_func)
         def _wrapped_func_arguments(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
-            # First try block attempts to get the credentials we need to do authentication
-            try:
-                # Grab the base64-encoded authentication string, decode it, and split it into
-                # the email and API key
-                auth_type, credentials = request.META['HTTP_AUTHORIZATION'].split()
-                # case insensitive per RFC 1945
-                if auth_type.lower() != "basic":
-                    return json_error(_("This endpoint requires HTTP basic authentication."))
-                role, api_key = base64.b64decode(credentials).decode('utf-8').split(":")
-            except ValueError:
-                return json_unauthorized(_("Invalid authorization header for basic auth"))
-            except KeyError:
-                return json_unauthorized(_("Missing authorization header for basic auth"))
 
-            # Now we try to do authentication or die
-            try:
-                # profile is a Union[UserProfile, RemoteZulipServer]
-                profile = validate_api_key(request, role, api_key,
-                                           allow_webhook_access=allow_webhook_access,
-                                           client_name=full_webhook_client_name(webhook_client_name))
-            except JsonableError as e:
-                return json_unauthorized(e.msg)
+            if request.META.get("HTTP_AUTHORIZATION"):
+                # First try block attempts to get the credentials we need to do authentication
+                try:
+                    # Grab the base64-encoded authentication string, decode it, and split it into
+                    # the email and API key
+                    auth_type, credentials = request.META['HTTP_AUTHORIZATION'].split()
+                    # case insensitive per RFC 1945
+                    if auth_type.lower() != "basic":
+                        return json_error(_("This endpoint requires HTTP basic authentication."))
+                    role, api_key = base64.b64decode(credentials).decode('utf-8').split(":")
+                except ValueError:
+                    return json_unauthorized(_("Invalid authorization header for basic auth"))
+                except KeyError:
+                    return json_unauthorized(_("Missing authorization header for basic auth"))
+
+                # Now we try to do authentication or die
+                try:
+                    # profile is a Union[UserProfile, RemoteZulipServer]
+                    profile = validate_api_key(request, role, api_key,
+                                               allow_webhook_access=allow_webhook_access,
+                                               client_name=full_webhook_client_name(webhook_client_name))
+                except JsonableError as e:
+                    return json_unauthorized(e.msg)
+            elif request.META.get("HTTP_BEARER"):
+                try:
+                    profile = validate_oauth_key(request)
+                except JsonableError as e:
+                    return json_unauthorized(e.msg)
+            else:
+                # our caller should defend against missing headers, not us
+                raise AssertionError("expected some kind of header")
+
             try:
                 if not skip_rate_limiting:
                     # Apply rate limiting
