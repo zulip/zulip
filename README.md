@@ -1,4 +1,5 @@
 # Zulip overview
+![github small](https://user-images.githubusercontent.com/40575397/94780581-4fbbc800-03e6-11eb-912f-bf53f930a633.png)
 
 Zulip is a powerful, open source group chat application that combines the
 immediacy of real-time chat with the productivity benefits of threaded
