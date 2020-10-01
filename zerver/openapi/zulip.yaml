@@ -1218,7 +1218,7 @@ paths:
                                       description: |
                                         The ID of the message to which a reaction was
                                         added.
-                                - example:
+                                  example:
                                     {
                                       "type": "reaction",
                                       "op": "add",
@@ -1262,7 +1262,7 @@ paths:
                                       description: |
                                         The ID of the message from which the reaction was
                                         removed.
-                                - example:
+                                  example:
                                     {
                                       "type": "reaction",
                                       "op": "remove",
@@ -2892,7 +2892,7 @@ paths:
 
                           **Deprecated**: This will be removed in a future release.
                         deprecated: true
-                  - example:
+                    example:
                       {
                         "queue_id": "1375801870:2942",
                         "events":
@@ -3013,7 +3013,7 @@ paths:
                         type: integer
                         description: |
                           The ID of the given stream.
-                  - example: {"msg": "", "result": "success", "stream_id": 15}
+                    example: {"msg": "", "result": "success", "stream_id": 15}
         "400":
           description: Bad request.
           content:
@@ -3126,7 +3126,7 @@ paths:
                         description: |
                           The total size of all files uploaded by in the organization,
                           in bytes.
-                  - example:
+                    example:
                       {
                         "result": "success",
                         "msg": "",
@@ -3316,7 +3316,7 @@ paths:
                           fields:
                         items:
                           $ref: "#/components/schemas/GetMessages"
-                  - example:
+                    example:
                       {
                         "anchor": 21,
                         "found_newest": true,
@@ -3476,7 +3476,7 @@ paths:
                           be sent.  Note that scheduled messages ("Send later") is a beta API and
                           may change before it's a finished feature.
                         example: "2020-06-24 11:19:54.337533+00:00"
-                  - example: {"msg": "", "id": 42, "result": "success"}
+                    example: {"msg": "", "id": 42, "result": "success"}
         "400":
           description: Bad request.
           content:
@@ -3567,7 +3567,7 @@ paths:
                           A chronologically sorted array of `snapshot`
                           objects, each one with the values of the
                           message after the edit.
-                  - example:
+                    example:
                       {
                         "message_history":
                           [
@@ -3662,7 +3662,7 @@ paths:
                           type: integer
                         description: |
                           An array with the IDs of the modified messages.
-                  - example:
+                    example:
                       {"msg": "", "messages": [4, 18, 15], "result": "success"}
   /messages/render:
     post:
@@ -3690,7 +3690,7 @@ paths:
                         type: string
                         description: |
                           The rendered HTML.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "rendered": "<p><strong>foo</strong></p>",
@@ -3862,7 +3862,7 @@ paths:
                           description: |
                             The ID of the message that matches the narrow.  No record will be returned
                             for queried messages that do not match the narrow.
-                  - example:
+                    example:
                       {
                         "result": "success",
                         "msg": "",
@@ -3906,7 +3906,7 @@ paths:
                         type: string
                         description: |
                           The raw content of the message.
-                  - example:
+                    example:
                       {
                         "raw_content": "**Don't** forget your towel!",
                         "result": "success",
@@ -3997,7 +3997,7 @@ paths:
                           - The time limit for editing this message has past
                           - Nothing to change
                           - Topic can't be empty
-                  - example:
+                    example:
                       {
                         "code": "BAD_REQUEST",
                         "msg": "You don't have permission to edit this message",
@@ -4081,7 +4081,7 @@ paths:
                         type: string
                         description: |
                           The URI of the uploaded file.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -4127,7 +4127,7 @@ paths:
                         description: |
                           A temporary URL that can be used to access the uploaded file
                           without Zulip's normal API authentication.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -4165,7 +4165,7 @@ paths:
                           organization.
                         items:
                           $ref: "#/components/schemas/User"
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -4292,7 +4292,7 @@ paths:
                           The ID assigned to the newly created user.
 
                           **Changes**: New in Zulip 4.0 (feature level 30).
-                  - example: {"msg": "", "result": "success", "user_id": 25}
+                    example: {"msg": "", "result": "success", "user_id": 25}
         "400":
           description: Bad request.
           content:
@@ -4400,7 +4400,7 @@ paths:
                             the contents of the object that has been updated most
                             recently. For most applications, you'll just want to look at the
                             `aggregated` key.
-                  - example:
+                    example:
                       {
                         "presence":
                           {
@@ -4534,7 +4534,7 @@ paths:
                           under the configured policy.
                       profile_data:
                         $ref: "#/components/schemas/profile_data"
-                  - example:
+                    example:
                       {
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
                         "avatar_version": 1,
@@ -4642,7 +4642,7 @@ paths:
                               description: |
                                 The name of the topic.
                               type: string
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -4690,7 +4690,7 @@ paths:
                   # TODO: Is this the best way to declare required elements in 200 responses?
                   - required:
                       - subscriptions
-                  - additionalProperties: false
+                    additionalProperties: false
                     properties:
                       result: {}
                       msg: {}
@@ -4701,7 +4701,7 @@ paths:
                           information about one of the subscribed streams.
                         items:
                           $ref: "#/components/schemas/Subscriptions"
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -4917,7 +4917,7 @@ paths:
                       - subscribed
                       - already_subscribed
                       - removed
-                  - additionalProperties: false
+                    additionalProperties: false
                     properties:
                       result: {}
                       msg: {}
@@ -4964,7 +4964,7 @@ paths:
                         description: |
                           A list of the names of streams which were unsubscribed
                           from as a result of the query.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "subscribed": {},
@@ -5021,7 +5021,7 @@ paths:
                         description: |
                           A list of the names of streams which were unsubscribed from as a result
                           of the query.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "not_removed": [],
@@ -5132,7 +5132,7 @@ paths:
                         type: boolean
                         description: |
                           Whether the user is subscribed to the stream.
-                  - example:
+                    example:
                       {"msg": "", "result": "success", "is_subscribed": false}
   /realm/emoji/{emoji_name}:
     post:
@@ -5197,7 +5197,7 @@ paths:
                           emoji ID as the key.
                         additionalProperties:
                           $ref: "#/components/schemas/RealmEmoji"
-                  - example:
+                    example:
                       {
                         "result": "success",
                         "msg": "",
@@ -5241,7 +5241,7 @@ paths:
                           Zulip organization.
                         items:
                           $ref: "#/components/schemas/CustomProfileField"
-                  - example:
+                    example:
                       {
                         "result": "success",
                         "msg": "",
@@ -5430,7 +5430,7 @@ paths:
                         type: integer
                         description: |
                           The ID for the custom profile field.
-                  - example: {"result": "success", "msg": "", "id": 9}
+                    example: {"result": "success", "msg": "", "id": 9}
   /users/me/subscriptions/properties:
     post:
       operationId: update_subscription_settings
@@ -5538,7 +5538,7 @@ paths:
                               type: integer
                         description: |
                           The same `subscription_data` array sent by the client for the request.
-                  - example:
+                    example:
                       {
                         "subscription_data":
                           [
@@ -5586,7 +5586,7 @@ paths:
                       msg: {}
                       user:
                         $ref: "#/components/schemas/User"
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -5780,7 +5780,7 @@ paths:
                           ID, in that order. See the [Create
                           linkifiers](/api/add-linkifier) article for
                           details on what each field means.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "filters":
@@ -5839,7 +5839,7 @@ paths:
                         type: integer
                         description: |
                           The numeric ID assigned to this filter.
-                  - example: {"id": 42, "result": "success", "msg": ""}
+                    example: {"id": 42, "result": "success", "msg": ""}
   /realm/filters/{filter_id}:
     delete:
       operationId: remove_linkifier
@@ -7524,7 +7524,7 @@ paths:
                                   type: boolean
                                   description: |
                                     Whether the user is a cross realm bot.
-                  - example:
+                    example:
                       {
                         "last_event_id": -1,
                         "msg": "",
@@ -7730,7 +7730,7 @@ paths:
                         description: |
                           HTML description of the organization, as configured by the [organization
                           profile](/help/create-your-organization-profile).
-                  - example:
+                    example:
                       {
                         "authentication_methods":
                           {
@@ -7995,7 +7995,7 @@ paths:
                         description: |
                           The setting for `message_content_in_email_notifications`, if it was
                           changed in this request.
-                  - example:
+                    example:
                       {
                         "enable_offline_push_notifications": true,
                         "enable_online_push_notifications": true,
@@ -8100,7 +8100,7 @@ paths:
                                     Whether the given stream is a
                                     [default stream](/help/set-default-streams-for-new-users).  Only
                                     returned if the `include_default` parameter is `true`.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -8562,7 +8562,7 @@ paths:
                         description: |
                           A list of `user_group` objects, which contain a `description`, a `name`,
                           their `id` and the list of members of the user group.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -8652,10 +8652,10 @@ paths:
                       webhook request (each bot user uses a fixed token). You can get the token used by a given outgoing webhook bot
                       in the `zuliprc` file downloaded when creating the bot.
                   message:
+                    description: |
+                      A dict containing details on the message that triggered the
+                      outgoing webhook, in the format used by [`GET /messages`](/api/get-messages).
                     allOf:
-                      - description: |
-                          A dict containing details on the message that triggered the
-                          outgoing webhook, in the format used by [`GET /messages`](/api/get-messages).
                       - $ref: "#/components/schemas/MessagesBase"
                       - additionalProperties: false
                         properties:
@@ -8736,7 +8736,7 @@ paths:
                           The url for the Big Blue Button video call.
                         type: string
                         example: "/calls/bbb/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22"
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -9037,7 +9037,7 @@ components:
         - $ref: "#/components/schemas/BasicBotBase"
         - description: |
             Object containing details of a bot.
-        - additionalProperties: false
+          additionalProperties: false
           properties:
             user_id: {}
             full_name: {}
@@ -9976,13 +9976,13 @@ components:
         - required:
             - result
             - msg
-        - properties:
+          properties:
             result:
               enum:
                 - success
             msg:
               type: string
-        - example: {"msg": "", "result": "success"}
+          example: {"msg": "", "result": "success"}
     JsonError:
       allOf:
         - $ref: "#/components/schemas/JsonErrorBase"
@@ -9996,7 +9996,7 @@ components:
         - required:
             - result
             - msg
-        - properties:
+          properties:
             result:
               enum:
                 - error
@@ -10008,7 +10008,7 @@ components:
         - required:
             - api_key
             - email
-        - additionalProperties: false
+          additionalProperties: false
           properties:
             result: {}
             msg: {}
@@ -10020,7 +10020,7 @@ components:
               type: string
               description: |
                 The email address of the user who owns the API key
-        - example:
+          example:
             {
               "api_key": "gjA04ZYcqXKalvYMA8OeXSfzUOLrtbZv",
               "email": "iago@zulip.com",
@@ -10057,7 +10057,7 @@ components:
               type: string
               description: |
                 The string that identifies the invalid event queue.
-        - example:
+          example:
             {
               "code": "BAD_EVENT_QUEUE_ID",
               "msg": "Bad event queue id: 1518820930:1",
@@ -10075,7 +10075,7 @@ components:
               type: string
               description: |
                 The raw content of the message.
-        - example:
+          example:
             {
               "msg": "Invalid message(s)",
               "code": "BAD_REQUEST",
@@ -10093,7 +10093,7 @@ components:
               type: string
               description: |
                 The name of the stream that could not be found.
-        - example:
+          example:
             {
               "code": "STREAM_DOES_NOT_EXIST",
               "msg": "Stream 'nonexistent_stream' does not exist",
@@ -10156,7 +10156,7 @@ components:
               type: string
               description: |
                 It contains the information about the missing parameter.
-        - example:
+          example:
             {
               "code": "REQUEST_VARIABLE_MISSING",
               "msg": "Missing 'content' argument",

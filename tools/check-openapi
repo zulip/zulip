@@ -10,6 +10,17 @@ const SwaggerParser = require("swagger-parser");
 function checkRefSiblings(file, path, data) {
     let ok = true;
     if (typeof data === "object" && data !== null) {
+        if (
+            "allOf" in data &&
+            Object.values(data.allOf).filter((subschema) => !("$ref" in subschema)).length !== 1
+        ) {
+            console.error(
+                `${file}: Too many inline allOf subschemas at ${JSON.stringify(
+                    path,
+                )}: ${JSON.stringify(data, undefined, 2)}`,
+            );
+            ok = false;
+        }
         if ("$ref" in data && Object.entries(data).length !== 1) {
             console.error(
                 `${file}: Siblings of $ref have no effect at ${JSON.stringify(
