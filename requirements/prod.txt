@@ -228,6 +228,10 @@ django-formtools==2.2 \
 django-otp==1.0.3 \
     --hash=sha256:381a15e65293b8b06d47b7d6b306e0b7af2e104137ac92f6c566d3b9b90b6244 \
     --hash=sha256:f4ab096b424c33ffe69453620356e1b7517f30dfb9ba13bfeaa1d1f20faddc13
+    # via -r requirements/common.in
+django-oauth-toolkit==1.3.3 \
+    --hash=sha256:48a45d9ec23b50646b14b4b93988bd0d35ad5cf933edfcb833a8527f86329f28 \
+    --hash=sha256:a67ab96089b96540e34dc8d1ee6e6305a80ee01a36f7688108cd94b77406bdd3 \
     # via django-two-factor-auth
 django-phonenumber-field==5.1.0 \
     --hash=sha256:48724ba235ee8248a474204faa0934c5baf9536f429859d05cb131fbd6b1c695 \
@@ -252,6 +256,7 @@ django[argon2]==3.1.8 \
     #   django-auth-ldap
     #   django-bitfield
     #   django-formtools
+    #   django-oauth-toolkit
     #   django-otp
     #   django-phonenumber-field
     #   django-sendfile2
@@ -555,6 +560,7 @@ oauthlib==3.1.0 \
     --hash=sha256:bee41cc35fcca6e988463cacc3bcb8a96224f470ca547e697b604cc697b2f889 \
     --hash=sha256:df884cd6cbe20e32633f1db1072e9356f53638e4361bef4e8b03c9127c9328ea
     # via
+    #   django-oauth-toolkit
     #   requests-oauthlib
     #   social-auth-core
 openapi-core==0.13.7 \
@@ -873,6 +879,7 @@ requests[security]==2.25.1 \
     --hash=sha256:c210084e36a42ae6b9219e00e48287def368a26d03a048ddad7bfee44f75871e
     # via
     #   -r requirements/common.in
+    #   django-oauth-toolkit
     #   matrix-client
     #   premailer
     #   pyoembed

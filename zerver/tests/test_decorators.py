@@ -1,4 +1,5 @@
 import base64
+import json
 import os
 import re
 from collections import defaultdict
@@ -555,10 +556,88 @@ class DecoratorLoggingTestCase(ZulipTestCase):
             result, "Invalid authorization header for basic auth", status_code=401
         )
 
-        result = self.client_post("/api/v1/external/zendesk", {})
-        self.assert_json_error(
-            result, "Missing authorization header for basic auth", status_code=401
+        with self.assertLogs("zerver.middleware.json_error_handler", "ERROR"):
+            with self.assertLogs("django.request", "ERROR") as error_log:
+                result = self.client_post("/api/v1/external/zendesk", {})
+            self.assertTrue(
+                "ERROR:django.request:Internal Server Error: /api/v1/external/zendesk"
+                in error_log.output[0]
+            )
+
+
+class OAuthTest(ZulipTestCase):
+    def test_validate_oauth_key(self) -> Any:
+        iago = self.example_user("iago")
+        self.login_user(iago)
+        # Let iago create a new OAuth application
+        result = self.client_post(
+            "/o/applications/register/",
+            {
+                "name": "zulip",
+                "client_id": "test",
+                "initial-client_id": "test",
+                "client_secret": "test",
+                "initial-client_secret": "test",
+                "client_type": "confidential",
+                "authorization_grant_type": "authorization-code",
+                "redirect_uris": "http://localhost:3000/o/callback",
+            },
         )
+        self.assertEqual(result.url, "/o/applications/1/")
+        # TODO: Assert the values of the application form
+
+        self.logout()
+        hamlet = self.example_user("hamlet")
+
+        result = self.client_get(
+            "/o/authorize/",
+            {
+                "approval_prompt": "auto",
+                "response_type": "code",
+                "client_id": "test",
+                "scope": "write",
+                "redirect_uri": "http://localhost:3000/o/callback",
+            },
+        )
+        self.assertIn("/accounts/login/?next=/o/authorize/%3Fapproval_prompt", result.url)
+        self.login_user(hamlet)
+
+        result = self.client_post(
+            "/o/authorize/",
+            {
+                "redirect_uri": "http://localhost:3000/o/callback",
+                "scope": "write",
+                "client_id": "test",
+                "state": "",
+                "response_type": "code",
+                "code_challenge": "",
+                "code_challenge_method": "",
+                "allow": "Authorize",
+            },
+        )
+        self.assertIn("http://localhost:3000/o/callback?code=", result.url)
+        code = re.search("=[a-zA-z0-9]+", result.url)
+        assert code is not None
+        code = code.group(0)[1:]
+
+        result = self.client_post(
+            "/o/token/",
+            {
+                "code": code,
+                "client_id": "test",
+                "client_secret": "test",
+                "redirect_uri": "http://localhost:3000/o/callback",
+                "grant_type": "authorization_code",
+            },
+        )
+        access_token = json.loads(result.content)["access_token"]
+
+        result = self.client_get("/api/v1/users/me", {}, HTTP_BEARER=access_token)
+        # assert that hamlet has logged in!
+        result = json.loads(result.content.decode("utf-8"))
+        self.assertEqual(hamlet.id, result["user_id"])
+        self.assertEqual(hamlet.email, result["email"])
+        self.assertEqual(result["result"], "success")
 
 
 class RateLimitTestCase(ZulipTestCase):

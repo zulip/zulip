@@ -188,3 +188,7 @@ pyuca
 
 # Handle connection retries with exponential backoff
 backoff
+
+# Needed to make Zulip server act as OAuth2 Provider
+django-oauth-toolkit
+
