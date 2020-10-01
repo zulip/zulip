@@ -235,6 +235,14 @@ $(() => {
         }
     });
 
+    $("#productivity-features-btn").on("click", () => {
+        $("#productivity-features").toggle();
+    });
+
+    $("#collaboration-features-btn").on("click", () => {
+        $("#collaboration-features").toggle();
+    });
+
     // Set up events / categories / search
     events();
 

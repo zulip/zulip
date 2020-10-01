@@ -1030,30 +1030,6 @@ nav.navbar {
     }
 }
 
-.portico-landing.hello .col-3-5,
-.portico-landing.hello .col-2,
-.portico-landing.hello .col-4 {
-    margin-right: -4px;
-    display: inline-block;
-    vertical-align: top;
-}
-
-.portico-landing.hello .col-3-5 {
-    width: 60%;
-}
-
-.portico-landing.hello .col-2 {
-    width: 49.9%;
-}
-
-.portico-landing.hello .col-3 {
-    width: 33.3%;
-}
-
-.portico-landing.hello .col-4 {
-    width: 20%;
-}
-
 /* -- compare css -- */
 .compare {
     background: linear-gradient( 0deg, hsl(238, 86%, 71%), hsl(212, 91%, 69%) );
@@ -4041,6 +4017,77 @@ nav.navbar {
             z-index: 5;
             color: #fff;
             transition: all 0.2s ease-in-out 0s;
+        }
+    }
+    
+    .detailed-feature-list {
+        display: none;
+
+        .feature-item {
+            color: hsl(0, 0%, 100%);
+            border-width: 2px;
+            border-style: solid;
+            border-color: transparent;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 150ms ease;
+            padding: 30px 20px;
+
+            svg {
+                display: inline-block;
+                width: auto;
+                height: 40px;
+                color: $dark-blue;
+                padding-left: 0;
+            }
+
+            p {
+                text-align: justify;
+            }
+
+            h2 {
+                font-weight: 700;
+                font-size: 20px;
+                color: $dark-blue;
+                text-align: left;
+                margin-right: 0;
+            }
+
+            &:hover {
+                border-color: $dark-blue;
+                box-shadow: 0 5px 25px 0 rgba(0,0,0,0.25);
+                transform: translateY(-3px);
+            }
+
+            .row {
+                padding-right: 0;
+                padding-left: 0;
+                margin-left: 0;
+
+                .col-2 {
+                    padding-right: 0;
+                    padding-left: 0;
+                }
+
+                .col-10 {
+                    padding-right: 0;
+                    padding-left: 0;
+                }
+            }
+        }
+    }
+
+    #collaboration-features {
+        background-color: $dark-blue;
+
+        .feature-item {
+            h2, svg {
+                color: $light-green;
+            }
+    
+            &:hover {
+                border-color: $light-green;
+            }
         }
     }
 }
