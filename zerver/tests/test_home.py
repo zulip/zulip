@@ -86,6 +86,7 @@ class HomeTest(ZulipTestCase):
         "is_admin",
         "is_guest",
         "is_owner",
+        "is_web_public_guest",
         "jitsi_server_url",
         "language_list",
         "language_list_dbl_col",
@@ -217,6 +218,14 @@ class HomeTest(ZulipTestCase):
         "zulip_version",
     ]
 
+    def check_rendered_logged_in_app(self, result: HttpResponse) -> None:
+        self.assertEqual(result.status_code, 200)
+        page_params = self._get_page_params(result)
+        # It is important to check `is_web_public_guest` to verify
+        # that we treated this request as a normal logged-in session,
+        # not as a web-public visitor.
+        self.assertEqual(page_params['is_web_public_guest'], False)
+
     def test_home(self) -> None:
         # Keep this list sorted!!!
         html_bits = [
@@ -251,6 +260,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries:
             with patch('zerver.lib.cache.cache_set') as cache_mock:
                 result = self._get_home_page(stream='Denmark')
+                self.check_rendered_logged_in_app(result)
         self.assertEqual(set(result["Cache-Control"].split(", ")),
                          {"must-revalidate", "no-store", "no-cache"})
 
@@ -294,7 +304,7 @@ class HomeTest(ZulipTestCase):
             self.login('iago')
             result = self._get_home_page()
             # Should be successful because otp device is not configured.
-            self.assertEqual(result.status_code, 200)
+            self.check_rendered_logged_in_app(result)
 
     def test_home_under_2fa_with_otp_device(self) -> None:
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
@@ -309,7 +319,7 @@ class HomeTest(ZulipTestCase):
             self.login_2fa(user_profile)
             result = self._get_home_page()
             # Should be successful after calling 2fa login function.
-            self.assertEqual(result.status_code, 200)
+            self.check_rendered_logged_in_app(result)
 
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
@@ -318,7 +328,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries:
             with patch('zerver.lib.cache.cache_set') as cache_mock:
                 result = self._get_home_page()
-                self.assertEqual(result.status_code, 200)
+                self.check_rendered_logged_in_app(result)
                 self.assert_length(cache_mock.call_args_list, 6)
             self.assert_length(queries, 39)
 
@@ -741,7 +751,7 @@ class HomeTest(ZulipTestCase):
         # billing admin, no customer object -> make sure it doesn't crash
         customer.delete()
         result = self._get_home_page()
-        self.assertEqual(result.status_code, 200)
+        self.check_rendered_logged_in_app(result)
 
     def test_show_plans(self) -> None:
         realm = get_realm("zulip")
@@ -995,7 +1005,7 @@ class HomeTest(ZulipTestCase):
         user.save()
         self.login_user(user)
         result = self._get_home_page()
-        self.assertEqual(result.status_code, 200)
+        self.check_rendered_logged_in_app(result)
         with \
                 patch('zerver.lib.events.request_event_queue', return_value=42), \
                 patch('zerver.lib.events.get_user_events', return_value=[]):
@@ -1011,7 +1021,7 @@ class HomeTest(ZulipTestCase):
         user.save()
         self.login_user(user)
         result = self._get_home_page()
-        self.assertEqual(result.status_code, 200)
+        self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
         self.assertEqual(page_params['default_language'], 'es')
