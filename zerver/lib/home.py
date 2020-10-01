@@ -103,6 +103,7 @@ def get_user_permission_info(user_profile: Optional[UserProfile]) -> UserPermiss
 def build_page_params_for_home_page_load(
     request: HttpRequest,
     user_profile: UserProfile,
+    realm: Realm,
     insecure_desktop_app: bool,
     has_mobile_devices: bool,
     narrow: List[List[str]],
