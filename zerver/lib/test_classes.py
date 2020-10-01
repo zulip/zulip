@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple, Union
 from unittest import TestResult, mock
 
+import lxml.html
 import orjson
 from django.apps import apps
 from django.conf import settings
@@ -443,6 +444,24 @@ Output:
         bot_info.update(extras)
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, assert_json_error_msg)
+
+    def _get_page_params(self, result: HttpResponse) -> Dict[str, Any]:
+        """Helper for parsing page_params after fetching the webapp's home view."""
+        doc = lxml.html.document_fromstring(result.content)
+        [div] = doc.xpath("//div[@id='page-params']")
+        page_params_json = div.get("data-params")
+        page_params = orjson.loads(page_params_json)
+        return page_params
+
+    def check_rendered_logged_in_app(self, result: HttpResponse) -> None:
+        """Verifies that a visit of / was a 200 that rendered page_params
+           and not for a logged-out web-public visitor."""
+        self.assertEqual(result.status_code, 200)
+        page_params = self._get_page_params(result)
+        # It is important to check `is_web_public_guest` to verify
+        # that we treated this request as a normal logged-in session,
+        # not as a web-public visitor.
+        self.assertEqual(page_params['is_web_public_guest'], False)
 
     def login_with_return(self, email: str, password: Optional[str]=None,
                           **kwargs: Any) -> HttpResponse:

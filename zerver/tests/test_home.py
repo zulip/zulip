@@ -1,10 +1,9 @@
 import calendar
 import urllib
 from datetime import timedelta
-from typing import Any, Dict
+from typing import Any
 from unittest.mock import patch
 
-import lxml.html
 import orjson
 from django.conf import settings
 from django.http import HttpResponse
@@ -218,14 +217,6 @@ class HomeTest(ZulipTestCase):
         "zulip_version",
     ]
 
-    def check_rendered_logged_in_app(self, result: HttpResponse) -> None:
-        self.assertEqual(result.status_code, 200)
-        page_params = self._get_page_params(result)
-        # It is important to check `is_web_public_guest` to verify
-        # that we treated this request as a normal logged-in session,
-        # not as a web-public visitor.
-        self.assertEqual(page_params['is_web_public_guest'], False)
-
     def test_home(self) -> None:
         # Keep this list sorted!!!
         html_bits = [
@@ -373,13 +364,6 @@ class HomeTest(ZulipTestCase):
                 patch('zerver.lib.events.get_user_events', return_value=[]):
             result = self.client_get('/', dict(**kwargs))
         return result
-
-    def _get_page_params(self, result: HttpResponse) -> Dict[str, Any]:
-        doc = lxml.html.document_fromstring(result.content)
-        [div] = doc.xpath("//div[@id='page-params']")
-        page_params_json = div.get("data-params")
-        page_params = orjson.loads(page_params_json)
-        return page_params
 
     def _sanity_check(self, result: HttpResponse) -> None:
         '''
