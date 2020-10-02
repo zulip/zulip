@@ -1371,9 +1371,10 @@ div.focused_table {
 }
 
 .message-edit-feature-group {
-    display: inline-block;
+    display: inline-flex;
     margin-left: 10px;
     margin-bottom: -5px;
+    align-items: baseline;
 }
 
 .topic_edit {
