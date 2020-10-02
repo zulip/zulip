@@ -5,10 +5,12 @@ import operator
 import os
 from functools import lru_cache
 from itertools import zip_longest
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import orjson
 from django.conf import settings
+from django.http import HttpRequest
+from django.utils import translation
 
 
 @lru_cache()
@@ -84,3 +86,22 @@ def get_language_translation_data(language: str) -> Dict[str, str]:
     except FileNotFoundError:
         print(f'Translation for {language} not found at {path}')
         return {}
+
+def get_and_set_request_language(
+    request: HttpRequest,
+    user_configured_language: str,
+    testing_url_language: Optional[str]=None
+) -> str:
+    # We pick a language for the user as follows:
+    # * First priority is the language in the URL, for debugging.
+    # * If not in the URL, we use the language from the user's settings.
+    request_language = testing_url_language
+    if request_language is None:
+        request_language = user_configured_language
+    translation.activate(request_language)
+
+    # We also save the language to the user's session, so that
+    # something reasonable will happen in logged-in portico pages.
+    request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
+
+    return request_language
