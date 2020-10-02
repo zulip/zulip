@@ -61,7 +61,7 @@ Zulip friendly and usable.
   "भीड़" instead.
 
 ## Others(अन्य)
-* You - **तु**: also "आप" if it's in plural.
+* You - **तुम**: also "आप" if it's in plural.
 * We - **हम**
 * Message table - **संदेश बोर्ड**
 * Enter/Intro - **दर्ज / परिचय**
