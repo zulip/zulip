@@ -25,6 +25,7 @@ from typing import (
     Mapping,
     MutableSequence,
     Optional,
+    Set,
     Tuple,
     Type,
     TypeVar,
@@ -634,19 +635,6 @@ class MirrorWorker(QueueProcessingWorker):
 
         mirror_email(msg, rcpt_to=rcpt_to)
 
-@assign_queue('test', queue_type="test")
-class TestWorker(QueueProcessingWorker):
-    # This worker allows you to test the queue worker infrastructure without
-    # creating significant side effects.  It can be useful in development or
-    # for troubleshooting prod/staging.  It pulls a message off the test queue
-    # and appends it to a file in /tmp.
-    def consume(self, event: Mapping[str, Any]) -> None:  # nocoverage
-        fn = settings.ZULIP_WORKER_TEST_FILE
-        message = orjson.dumps(event)
-        logging.info("TestWorker should append this message to %s: %s", fn, message.decode())
-        with open(fn, 'ab') as f:
-            f.write(message + b'\n')
-
 @assign_queue('embed_links')
 class FetchLinksEmbedData(QueueProcessingWorker):
     # This is a slow queue with network requests, so a disk write is neglible.
@@ -827,3 +815,55 @@ class DeferredWorker(QueueProcessingWorker):
                 "Completed data export for %s in %s",
                 user_profile.realm.string_id, time.time() - start,
             )
+
+@assign_queue('test', queue_type="test")
+class TestWorker(QueueProcessingWorker):
+    # This worker allows you to test the queue worker infrastructure without
+    # creating significant side effects.  It can be useful in development or
+    # for troubleshooting prod/staging.  It pulls a message off the test queue
+    # and appends it to a file in /tmp.
+    def consume(self, event: Mapping[str, Any]) -> None:  # nocoverage
+        fn = settings.ZULIP_WORKER_TEST_FILE
+        message = orjson.dumps(event)
+        logging.info("TestWorker should append this message to %s: %s", fn, message.decode())
+        with open(fn, 'ab') as f:
+            f.write(message + b'\n')
+
+@assign_queue('noop', queue_type="test")
+class NoopWorker(QueueProcessingWorker):
+    """Used to profile the queue procesing framework, in zilencer's queue_rate."""
+
+    def __init__(self, max_consume: int=1000, slow_queries: Optional[List[int]]=None) -> None:
+        self.consumed = 0
+        self.max_consume = max_consume
+        self.slow_queries: Set[int] = set(slow_queries or [])
+
+    def consume(self, event: Mapping[str, Any]) -> None:
+        self.consumed += 1
+        if self.consumed in self.slow_queries:
+            logging.info("Slow request...")
+            time.sleep(60)
+            logging.info("Done!")
+        if self.consumed >= self.max_consume:
+            self.stop()
+
+@assign_queue('noop_batch', queue_type="test")
+class BatchNoopWorker(LoopQueueProcessingWorker):
+    """Used to profile the queue procesing framework, in zilencer's queue_rate."""
+    batch_size = 500
+
+    def __init__(self, max_consume: int=1000, slow_queries: Optional[List[int]]=None) -> None:
+        self.consumed = 0
+        self.max_consume = max_consume
+        self.slow_queries: Set[int] = set(slow_queries or [])
+
+    def consume_batch(self, events: List[Dict[str, Any]]) -> None:
+        event_numbers = set(range(self.consumed + 1, self.consumed + 1 + len(events)))
+        found_slow = self.slow_queries & event_numbers
+        if found_slow:
+            logging.info("%d slow requests...", len(found_slow))
+            time.sleep(60 * len(found_slow))
+            logging.info("Done!")
+        self.consumed += len(events)
+        if self.consumed >= self.max_consume:
+            self.stop()
