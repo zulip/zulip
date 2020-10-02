@@ -153,19 +153,22 @@ def resize_logo(image_data: bytes) -> bytes:
 def resize_gif(im: GifImageFile, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
     frames = []
     duration_info = []
+    disposals = []
     # If 'loop' info is not set then loop for infinite number of times.
     loop = im.info.get("loop", 0)
     for frame_num in range(0, im.n_frames):
         im.seek(frame_num)
-        new_frame = Image.new("RGBA", im.size)
+        new_frame = im.copy()
         new_frame.paste(im, (0, 0), im.convert("RGBA"))
         new_frame = ImageOps.pad(new_frame, (size, size), Image.ANTIALIAS)
         frames.append(new_frame)
         duration_info.append(im.info['duration'])
+        disposals.append(im.disposal_method)
     out = io.BytesIO()
-    frames[0].save(out, save_all=True, optimize=True,
+    frames[0].save(out, save_all=True, optimize=False,
                    format="GIF", append_images=frames[1:],
                    duration=duration_info,
+                   disposal=disposals,
                    loop=loop)
     return out.getvalue()
 
