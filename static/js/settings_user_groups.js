@@ -118,38 +118,36 @@ exports.populate_user_groups = function () {
             }
             return true;
         }
-
+        function show_hide_element(show, fadeout_delay) {
+            const $element = $("#user-groups #" + data.id).find(".save-button-controls");
+            if (show) {
+                $element.removeClass("hide").addClass(".show").fadeIn(300);
+                return;
+            }
+            setTimeout(() => {
+                $element.fadeOut(300);
+            }, fadeout_delay);
+        }
         function update_cancel_button() {
             if (!exports.can_edit(data.id)) {
                 return;
             }
-            const cancel_button = $("#user-groups #" + data.id + " .save-status.btn-danger");
             const saved_button = $("#user-groups #" + data.id + " .save-status.sea-green");
-            const save_instructions = $("#user-groups #" + data.id + " .save-instructions");
-
-            if (is_user_group_changed() && !cancel_button.is(":visible")) {
+            if (is_user_group_changed()) {
                 saved_button.fadeOut(0);
-                cancel_button.css({display: "inline-block", opacity: "0"}).fadeTo(400, 1);
-                save_instructions.css({display: "block", opacity: "0"}).fadeTo(400, 1);
-            } else if (!is_user_group_changed() && cancel_button.is(":visible")) {
-                cancel_button.fadeOut();
-                save_instructions.fadeOut();
+                show_hide_element(true, 0);
+            } else if (!is_user_group_changed()) {
+                show_hide_element(false, 0);
             }
         }
 
         function show_saved_button() {
-            const cancel_button = $("#user-groups #" + data.id + " .save-status.btn-danger");
             const saved_button = $("#user-groups #" + data.id + " .save-status.sea-green");
-            const save_instructions = $("#user-groups #" + data.id + " .save-instructions");
-            if (!saved_button.is(":visible")) {
-                cancel_button.fadeOut(0);
-                save_instructions.fadeOut(0);
-                saved_button
-                    .css({display: "inline-block", opacity: "0"})
-                    .fadeTo(400, 1)
-                    .delay(2000)
-                    .fadeTo(400, 0);
-            }
+            saved_button
+                .css({display: "inline-block", opacity: "0"})
+                .fadeTo(400, 1)
+                .delay(2000)
+                .fadeTo(400, 0);
         }
 
         function save_members() {
@@ -209,56 +207,23 @@ exports.populate_user_groups = function () {
             });
         }
 
-        function do_not_blur(except_class, event) {
-            // Event generated from or inside the typeahead.
-            if ($(event.relatedTarget).closest(".typeahead").length) {
-                return true;
-            }
-
-            const blur_exceptions = _.without(
-                [".pill-container", ".name", ".description", ".input", ".delete"],
-                except_class,
-            );
-            if ($(event.relatedTarget).closest("#user-groups #" + data.id).length) {
-                return blur_exceptions.some(
-                    (class_name) => $(event.relatedTarget).closest(class_name).length,
-                );
-            }
-            return false;
-        }
-
-        function auto_save(class_name, event) {
+        function auto_save() {
             if (!exports.can_edit(data.id)) {
-                return;
-            }
-
-            if (do_not_blur(class_name, event)) {
-                return;
-            }
-            if (
-                $(event.relatedTarget).closest("#user-groups #" + data.id) &&
-                $(event.relatedTarget).closest(".save-status.btn-danger").length
-            ) {
-                exports.reload();
                 return;
             }
             save_name_desc();
             save_members();
         }
 
-        $("#user-groups #" + data.id).on("blur", ".input", (event) => {
-            auto_save(".input", event);
+        $("#user-groups #" + data.id).on("click", ".subsection-changes-discard .button", () => {
+            exports.reload();
         });
-
-        $("#user-groups #" + data.id).on("blur", ".name", (event) => {
-            auto_save(".name", event);
+        $("#user-groups #" + data.id).on("click", ".subsection-changes-save .button", () => {
+            show_hide_element(false, 0);
+            auto_save();
         });
         $("#user-groups #" + data.id).on("input", ".name", () => {
             update_cancel_button();
-        });
-
-        $("#user-groups #" + data.id).on("blur", ".description", (event) => {
-            auto_save(".description", event);
         });
         $("#user-groups #" + data.id).on("input", ".description", () => {
             update_cancel_button();
