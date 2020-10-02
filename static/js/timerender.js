@@ -9,6 +9,15 @@ const set_to_start_of_day = function (time) {
     return time.setMilliseconds(0).setSeconds(0).setMinutes(0).setHours(0);
 };
 
+function calculate_days_old_from_time(time, today) {
+    const start_of_today = set_to_start_of_day(today ? today.clone() : new XDate());
+    const start_of_other_day = set_to_start_of_day(time.clone());
+    const days_old = Math.round(start_of_other_day.diffDays(start_of_today));
+    const is_older_year = start_of_today.getFullYear() - start_of_other_day.getFullYear() > 0;
+
+    return {days_old, is_older_year};
+}
+
 // Given an XDate object 'time', returns an object:
 // {
 //      time_str:        a string for the current human-formatted version
@@ -18,9 +27,6 @@ const set_to_start_of_day = function (time) {
 //                       day changes
 // }
 exports.render_now = function (time, today) {
-    const start_of_today = set_to_start_of_day(today || new XDate());
-    const start_of_other_day = set_to_start_of_day(time.clone());
-
     let time_str = "";
     let needs_update = false;
     // render formal time to be used as title attr tooltip
@@ -34,9 +40,7 @@ exports.render_now = function (time, today) {
     // Presumably the result of diffDays will be an integer in this
     // case, but round it to be sure before comparing to integer
     // constants.
-    const days_old = Math.round(start_of_other_day.diffDays(start_of_today));
-
-    const is_older_year = start_of_today.getFullYear() - start_of_other_day.getFullYear() > 0;
+    const {days_old, is_older_year} = calculate_days_old_from_time(time, today);
 
     if (days_old === 0) {
         time_str = i18n.t("Today");
