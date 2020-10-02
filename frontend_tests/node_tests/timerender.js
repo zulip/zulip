@@ -238,7 +238,7 @@ run_test("set_full_datetime", () => {
 });
 
 run_test("last_seen_status_from_date", () => {
-    // Set base_dateto to March 1 2016 12.30 AM (months are zero based)
+    // Set base_date to March 1 2016 12.30 AM (months are zero based)
     let base_date = new XDate(2016, 2, 1, 0, 30);
 
     function assert_same(modifier, expected_status) {
@@ -256,11 +256,11 @@ run_test("last_seen_status_from_date", () => {
 
     assert_same((d) => d.addMinutes(-30), i18n.t("30 minutes ago"));
 
-    assert_same((d) => d.addHours(-1), i18n.t("An hour ago"));
+    assert_same((d) => d.addHours(-1), i18n.t("Yesterday"));
 
-    assert_same((d) => d.addHours(-2), i18n.t("2 hours ago"));
+    assert_same((d) => d.addHours(-2), i18n.t("Yesterday"));
 
-    assert_same((d) => d.addHours(-20), i18n.t("20 hours ago"));
+    assert_same((d) => d.addHours(-20), i18n.t("Yesterday"));
 
     assert_same((d) => d.addDays(-1), i18n.t("Yesterday"));
 
@@ -274,10 +274,21 @@ run_test("last_seen_status_from_date", () => {
 
     assert_same((d) => d.addYears(-3), i18n.t("Mar 01,\u00A02013"));
 
-    // Set base_dateto to May 1 2016 12.30 AM (months are zero based)
+    // Set base_date to May 1 2016 12.30 AM (months are zero based)
     base_date = new XDate(2016, 4, 1, 0, 30);
 
     assert_same((d) => d.addDays(-91), i18n.t("Jan\u00A031"));
+
+    // Set base_date to May 1 2016 10.30 PM (months are zero based)
+    base_date = new XDate(2016, 4, 2, 23, 30);
+
+    assert_same((d) => d.addHours(-1), i18n.t("An hour ago"));
+
+    assert_same((d) => d.addHours(-2), i18n.t("2 hours ago"));
+
+    assert_same((d) => d.addHours(-12), i18n.t("12 hours ago"));
+
+    assert_same((d) => d.addHours(-24), i18n.t("Yesterday"));
 });
 
 run_test("set_full_datetime", () => {

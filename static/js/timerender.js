@@ -79,24 +79,24 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
     if (minutes < 60) {
         return i18n.t("__minutes__ minutes ago", {minutes});
     }
-
+    const {days_old, is_older_year} = calculate_days_old_from_time(last_active_date, current_date);
     const hours = Math.floor(minutes / 60);
-    if (hours === 1) {
-        return i18n.t("An hour ago");
-    }
-    if (hours < 24) {
+
+    if (days_old === 0) {
+        if (hours === 1) {
+            return i18n.t("An hour ago");
+        }
         return i18n.t("__hours__ hours ago", {hours});
     }
 
-    const days = Math.floor(hours / 24);
-    if (days === 1) {
+    if (days_old === 1) {
         return i18n.t("Yesterday");
     }
 
-    if (days < 90) {
-        return i18n.t("__days__ days ago", {days});
-    } else if (days > 90 && days < 365) {
-        if (current_date.getFullYear() === last_active_date.getFullYear()) {
+    if (days_old < 90) {
+        return i18n.t("__days_old__ days ago", {days_old});
+    } else if (days_old > 90 && !is_older_year) {
+        if (!is_older_year) {
             // Online more than 90 days ago, in the same year
             return i18n.t("__last_active_date__", {
                 last_active_date: last_active_date.toString("MMM\u00A0dd"),
