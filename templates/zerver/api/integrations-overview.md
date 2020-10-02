@@ -42,10 +42,10 @@ Zulip.
 
 ## Write your own integration
 
-We've put a lot of effort into making this as easy as possible, but all of
-the options below do require some comfort writing code. If you need an
-integration and don't have an engineer on staff,
-[react out to us](/help/contact-support) and we'll see what we can do.
+We've put a lot of effort into making this as easy as possible, but
+all of the options below do require some comfort writing code. If you
+need an integration and don't have an engineer on staff, [contact
+us](/help/contact-support) and we'll see what we can do.
 
 ### Sending content into Zulip
 
