@@ -2696,6 +2696,7 @@ def check_update_message(
     propagate_mode: Optional[str] = "change_one",
     send_notification_to_old_thread: bool = True,
     send_notification_to_new_thread: bool = True,
+    add_messages_to_history: bool = False,
     content: Optional[str] = None,
 ) -> int:
     """This will update a message given the message id and user profile.
@@ -2825,6 +2826,7 @@ def check_update_message(
         propagate_mode,
         send_notification_to_old_thread,
         send_notification_to_new_thread,
+        add_messages_to_history,
         content,
         rendered_content,
         prior_mention_user_ids,
@@ -5666,6 +5668,7 @@ def do_update_message(
     propagate_mode: str,
     send_notification_to_old_thread: bool,
     send_notification_to_new_thread: bool,
+    add_messages_to_history: bool,
     content: Optional[str],
     rendered_content: Optional[str],
     prior_mention_user_ids: Set[int],
@@ -5881,7 +5884,7 @@ def do_update_message(
             assert stream_being_edited is not None
             changed_message_ids = [msg.id for msg in changed_messages]
 
-            if not new_stream.is_history_public_to_subscribers():
+            if not new_stream.is_history_public_to_subscribers() and add_messages_to_history:
                 # For private streams, with history not public to subscribers,
                 # we find out users who didn't receive the message (by checking UserMessage rows)
                 # and create new UserMessage for these users so that they can

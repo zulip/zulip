@@ -392,6 +392,7 @@ function edit_message(row, raw_content) {
     const message_edit_topic = row.find("input.message_edit_topic");
     const message_edit_topic_propagate = row.find("select.message_edit_topic_propagate");
     const message_edit_breadcrumb_messages = row.find("div.message_edit_breadcrumb_messages");
+    const message_edit_add_messages_to_history = row.find("select.add_messages_to_history");
     const message_edit_countdown_timer = row.find(".message_edit_countdown_timer");
     const copy_message = row.find(".copy_message");
 
@@ -524,6 +525,15 @@ function edit_message(row, raw_content) {
         const is_stream_edited = new_stream_id !== original_stream_id;
         message_edit_topic_propagate.toggle(is_topic_edited || is_stream_edited);
         message_edit_breadcrumb_messages.toggle(is_stream_edited);
+        if (
+            stream_data.get_stream_privacy_policy(new_stream_id) ===
+                stream_data.stream_privacy_policy_values.private.code &&
+            is_stream_edited
+        ) {
+            message_edit_add_messages_to_history.show();
+        } else {
+            message_edit_add_messages_to_history.hide();
+        }
     }
 
     if (!message.locally_echoed) {
@@ -746,11 +756,12 @@ export function save_message_row_edit(row) {
         const send_notification_to_new_thread = row
             .find(".send_notification_to_new_thread")
             .is(":checked");
+        const add_messages_to_history =
+            row.find(".add_messages_to_history").val() || "not_add_messages_to_history";
         request.propagate_mode = selected_topic_propagation;
         request.send_notification_to_old_thread = send_notification_to_old_thread;
         request.send_notification_to_new_thread = send_notification_to_new_thread;
-        notify_old_thread_default = send_notification_to_old_thread;
-        notify_new_thread_default = send_notification_to_new_thread;
+        request.add_messages_to_history = add_messages_to_history === "add_messages_to_history";
         changed = true;
     }
 
@@ -980,6 +991,7 @@ export function move_topic_containing_message_to_stream(
     new_topic_name,
     send_notification_to_new_thread,
     send_notification_to_old_thread,
+    add_messages_to_history,
 ) {
     function reset_modal_ui() {
         currently_topic_editing_messages = currently_topic_editing_messages.filter(
@@ -1004,6 +1016,7 @@ export function move_topic_containing_message_to_stream(
         topic: new_topic_name,
         send_notification_to_old_thread,
         send_notification_to_new_thread,
+        add_messages_to_history,
     };
     notify_old_thread_default = send_notification_to_old_thread;
     notify_new_thread_default = send_notification_to_new_thread;

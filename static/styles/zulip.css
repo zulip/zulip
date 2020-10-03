@@ -1548,10 +1548,12 @@ div.focused_table {
     outline: none;
 }
 
-.message_edit_topic_propagate {
+.message_edit_topic_propagate,
+.add_messages_to_history {
     display: inline-block;
-    width: 300px;
+    width: 333px;
     margin-bottom: 5px !important;
+    margin-right: 10px !important;
     max-width: 100%;
 }
 

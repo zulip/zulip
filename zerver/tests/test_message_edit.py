@@ -809,6 +809,7 @@ class EditMessageTest(ZulipTestCase):
                 propagate_mode="change_later",
                 send_notification_to_old_thread=False,
                 send_notification_to_new_thread=False,
+                add_messages_to_history=False,
                 content=None,
                 rendered_content=None,
                 prior_mention_user_ids=set(),
@@ -1518,6 +1519,7 @@ class EditMessageTest(ZulipTestCase):
         from_invite_only: bool,
         history_public_to_subscribers: bool,
         user_messages_created: bool,
+        add_messages_to_history: bool = False,
         to_invite_only: bool = True,
     ) -> None:
         admin_user = self.example_user("iago")
@@ -1579,6 +1581,7 @@ class EditMessageTest(ZulipTestCase):
                 "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
+                "add_messages_to_history": orjson.dumps(add_messages_to_history).decode(),
             },
         )
         self.assert_json_success(result)
@@ -1617,11 +1620,24 @@ class EditMessageTest(ZulipTestCase):
             1 if user_messages_created else 0,
         )
 
-    def test_move_message_from_public_to_private_stream_not_shared_history(self) -> None:
+    def test_move_message_from_public_to_private_stream_not_shared_history_not_add_messages_to_history(
+        self,
+    ) -> None:
+        self.parameterized_test_move_message_involving_private_stream(
+            from_invite_only=False,
+            history_public_to_subscribers=False,
+            user_messages_created=False,
+            add_messages_to_history=False,
+        )
+
+    def test_move_message_from_public_to_private_stream_not_shared_history_add_messages_to_history(
+        self,
+    ) -> None:
         self.parameterized_test_move_message_involving_private_stream(
             from_invite_only=False,
             history_public_to_subscribers=False,
             user_messages_created=True,
+            add_messages_to_history=True,
         )
 
     def test_move_message_from_public_to_private_stream_shared_history(self) -> None:
@@ -1635,6 +1651,7 @@ class EditMessageTest(ZulipTestCase):
         self.parameterized_test_move_message_involving_private_stream(
             from_invite_only=True,
             history_public_to_subscribers=False,
+            add_messages_to_history=True,
             user_messages_created=True,
         )
 

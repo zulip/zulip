@@ -103,6 +103,7 @@ def update_message_backend(
     ),
     send_notification_to_old_thread: bool = REQ(default=True, json_validator=check_bool),
     send_notification_to_new_thread: bool = REQ(default=True, json_validator=check_bool),
+    add_messages_to_history: bool = REQ(default=False, json_validator=check_bool),
     content: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
     number_changed = check_update_message(
@@ -113,6 +114,7 @@ def update_message_backend(
         propagate_mode,
         send_notification_to_old_thread,
         send_notification_to_new_thread,
+        add_messages_to_history,
         content,
     )
 

@@ -4830,6 +4830,17 @@ paths:
             type: boolean
             default: true
           example: true
+        - name: add_messages_to_history
+          in: query
+          description: |
+            Used when moving messages to private stream with protected history.
+            When true, this option makes the message visible to all the
+            subscribers to the new stream. This will be done regardless of whether
+            the user received the messages in the old stream.
+          schema:
+            type: boolean
+            default: false
+          example: false
         - $ref: "#/components/parameters/OptionalContent"
         - name: stream_id
           in: query
