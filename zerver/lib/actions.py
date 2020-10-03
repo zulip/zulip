@@ -5874,10 +5874,11 @@ def do_update_message(
 
         if new_stream is not None:
             assert stream_being_edited is not None
+            changed_message_ids = [msg.id for msg in changed_messages]
 
             if subs_gaining_usermessages:
                 ums_to_create = []
-                for msg in changed_messages:
+                for message_id in changed_message_ids:
                     for user_profile_id in subs_gaining_usermessages:
                         # The fact that the user didn't have a UserMessage originally means we can infer that the user
                         # was not mentioned in the original message (even if mention syntax was present, it would not
@@ -5888,24 +5889,23 @@ def do_update_message(
                         # simplicity. As a result, the only flag to consider applying here is read.
                         um = UserMessageLite(
                             user_profile_id=user_profile_id,
-                            message_id=msg.id,
+                            message_id=message_id,
                             flags=UserMessage.flags.read,
                         )
                         ums_to_create.append(um)
                 bulk_insert_ums(ums_to_create)
 
-            message_ids = [msg.id for msg in changed_messages]
             # Delete UserMessage objects for users who will no
             # longer have access to these messages.  Note: This could be
             # very expensive, since it's N guest users x M messages.
             UserMessage.objects.filter(
                 user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages],
-                message_id__in=message_ids,
+                message_id__in=changed_message_ids,
             ).delete()
 
             delete_event: DeleteMessagesEvent = {
                 "type": "delete_message",
-                "message_ids": message_ids,
+                "message_ids": changed_message_ids,
                 "message_type": "stream",
                 "stream_id": stream_being_edited.id,
                 "topic": orig_topic_name,
