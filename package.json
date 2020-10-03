@@ -21,7 +21,7 @@
     "cache-loader": "^4.0.0",
     "clean-css": "^4.2.1",
     "clipboard": "^2.0.4",
-    "core-js": "^3.0.1",
+    "core-js": "^3.6.5",
     "css-loader": "^4.3.0",
     "emoji-datasource-google": "^5.0.1",
     "emoji-datasource-google-blob": "npm:emoji-datasource-google@^3.0.0",
