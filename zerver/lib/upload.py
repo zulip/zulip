@@ -159,7 +159,7 @@ def resize_gif(im: GifImageFile, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
         im.seek(frame_num)
         new_frame = Image.new("RGBA", im.size)
         new_frame.paste(im, (0, 0), im.convert("RGBA"))
-        new_frame = ImageOps.fit(new_frame, (size, size), Image.ANTIALIAS)
+        new_frame = ImageOps.pad(new_frame, (size, size), Image.ANTIALIAS)
         frames.append(new_frame)
         duration_info.append(im.info['duration'])
     out = io.BytesIO()
