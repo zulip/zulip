@@ -5821,7 +5821,6 @@ def do_update_message(
             ).select_related("user_profile")
         )
 
-        old_stream_sub_ids = [user.user_profile_id for user in subs_to_old_stream]
         new_stream_sub_ids = [user.user_profile_id for user in subs_to_new_stream]
 
         # Get users who aren't subscribed to the new_stream.
@@ -5838,16 +5837,6 @@ def do_update_message(
         ums = ums.exclude(
             user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages]
         )
-
-        subs_gaining_usermessages = []
-        if not new_stream.is_history_public_to_subscribers():
-            # For private streams, with history not public to subscribers,
-            # We find out users who are not present in the msgs' old stream
-            # and create new UserMessage for these users so that they can
-            # access this message.
-            subs_gaining_usermessages += [
-                user_id for user_id in new_stream_sub_ids if user_id not in old_stream_sub_ids
-            ]
 
     if topic_name is not None:
         topic_name = truncate_topic(topic_name)
@@ -5892,9 +5881,21 @@ def do_update_message(
             assert stream_being_edited is not None
             changed_message_ids = [msg.id for msg in changed_messages]
 
-            if subs_gaining_usermessages:
+            if not new_stream.is_history_public_to_subscribers():
+                # For private streams, with history not public to subscribers,
+                # we find out users who didn't receive the message (by checking UserMessage rows)
+                # and create new UserMessage for these users so that they can
+                # access this message.
                 ums_to_create = []
+                ums_by_message_id = defaultdict(set)
+                for um in UserMessage.objects.filter(message_id__in=changed_message_ids):
+                    ums_by_message_id[um.message_id].add(um.user_profile_id)
                 for message_id in changed_message_ids:
+                    subs_gaining_usermessages = [
+                        user_id
+                        for user_id in new_stream_sub_ids
+                        if user_id not in ums_by_message_id[message_id]
+                    ]
                     for user_profile_id in subs_gaining_usermessages:
                         # The fact that the user didn't have a UserMessage originally means we can infer that the user
                         # was not mentioned in the original message (even if mention syntax was present, it would not

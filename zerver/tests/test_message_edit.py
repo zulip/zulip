@@ -1522,7 +1522,11 @@ class EditMessageTest(ZulipTestCase):
     ) -> None:
         admin_user = self.example_user("iago")
         user_losing_access = self.example_user("cordelia")
-        user_gaining_access = self.example_user("hamlet")
+
+        # Not subscribed to old stream
+        user_gaining_access_1 = self.example_user("hamlet")
+        # Subscribed to both streams after msg was sent in old stream
+        user_gaining_access_2 = self.example_user("aaron")
 
         self.login("iago")
         old_stream = self.make_stream("test move stream", invite_only=from_invite_only)
@@ -1536,12 +1540,16 @@ class EditMessageTest(ZulipTestCase):
         self.subscribe(user_losing_access, old_stream.name)
 
         self.subscribe(admin_user, new_stream.name)
-        self.subscribe(user_gaining_access, new_stream.name)
+        self.subscribe(user_gaining_access_1, new_stream.name)
 
         msg_id = self.send_stream_message(
             admin_user, old_stream.name, topic_name="test", content="First"
         )
         self.send_stream_message(admin_user, old_stream.name, topic_name="test", content="Second")
+
+        # Subscribe user after sending msg
+        self.subscribe(user_gaining_access_2, old_stream.name)
+        self.subscribe(user_gaining_access_2, new_stream.name)
 
         self.assertEqual(
             UserMessage.objects.filter(
@@ -1552,7 +1560,14 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assertEqual(
             UserMessage.objects.filter(
-                user_profile_id=user_gaining_access.id,
+                user_profile_id=user_gaining_access_1.id,
+                message_id=msg_id,
+            ).count(),
+            0,
+        )
+        self.assertEqual(
+            UserMessage.objects.filter(
+                user_profile_id=user_gaining_access_2.id,
                 message_id=msg_id,
             ).count(),
             0,
@@ -1589,7 +1604,14 @@ class EditMessageTest(ZulipTestCase):
         # can see the message.
         self.assertEqual(
             UserMessage.objects.filter(
-                user_profile_id=user_gaining_access.id,
+                user_profile_id=user_gaining_access_1.id,
+                message_id=msg_id,
+            ).count(),
+            1 if user_messages_created else 0,
+        )
+        self.assertEqual(
+            UserMessage.objects.filter(
+                user_profile_id=user_gaining_access_2.id,
                 message_id=msg_id,
             ).count(),
             1 if user_messages_created else 0,
