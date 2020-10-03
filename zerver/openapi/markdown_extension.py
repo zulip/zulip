@@ -260,7 +260,7 @@ def generate_curl_example(endpoint: str, method: str,
                                                             api_url)]
     lines.append(" ".join(curl_first_line_parts))
 
-    insecure_operations = ['/dev_fetch_api_key:post']
+    insecure_operations = ['/dev_fetch_api_key:post', '/fetch_api_key:post']
     if operation_security is None:
         if global_security == [{'basicAuth': []}]:
             authentication_required = True

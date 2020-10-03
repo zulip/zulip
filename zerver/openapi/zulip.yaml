@@ -44,16 +44,38 @@ paths:
       operationId: fetch_api_key
       tags: ["authentication"]
       description: |
-        Given a username and password, fetch the user's API key.
+        This API endpoint is used by clients such as the Zulip mobile and
+        terminal apps to implement password-based authentication.  Given the
+        user's Zulip login credentials, it returns a Zulip API key that the client
+        can use to make requests requests as the user.
 
-        Used to authenticate the mobile and terminal apps when the server
-        has EmailAuthBackend or LDAPAuthBackend enabled.
+        This endpoint is only useful for Zulip servers/organizations with
+        EmailAuthBackend or LDAPAuthBackend enabled.
+
+        The Zulip mobile apps also support SSO/social authentication (GitHub
+        auth, Google auth, SAML, etc.) that does not use this endpoint.  Instead,
+        the mobile apps reuse the web login flow passing the `mobile_flow_otp` in
+        a webview, and the credentials are returned to the app (encrypted) via a redirect
+        to a `zulip://` URL.
+
+        !!! warn ""
+            **Note:** If you signed up using passwordless authentication and
+            never had a password, you can [reset your password](/help/change-your-password).
+
+            See the [API keys](/api/api-keys) documentation for
+            more details on how to download API key manually.
+
+        In a [Zulip development environment](https://zulip.readthedocs.io/en/latest/development/overview.html),
+        see also [the unauthenticated variant](/api/dev-fetch-api-key).
       parameters:
         - name: username
           in: query
           description: |
             The username to be used for authentication (typically, the email
-            address, but it could be an LDAP username).
+            address, but depending on configuration, it could be an LDAP username).
+
+            See the `require_email_format_usernames` parameter documented in
+            [GET /server_settings](/api/get-server-settings) for details.
           schema:
             type: string
           example: iago@zulip.com
@@ -66,9 +88,10 @@ paths:
           description: |
             The user's Zulip password (or LDAP password, if LDAP authentication is in use).
           required: true
+      security: []
       responses:
         "200":
-          description: The credentials needed to use the Zulip API.
+          description: Valid credentials the client can use to access the Zulip API.
           content:
             application/json:
               schema:
