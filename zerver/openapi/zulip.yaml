@@ -56,11 +56,13 @@ paths:
             address, but it could be an LDAP username).
           schema:
             type: string
+          example: iago@zulip.com
           required: true
         - name: password
           in: query
           schema:
             type: string
+          example: abcd1234
           description: |
             The user's Zulip password (or LDAP password, if LDAP authentication is in use).
           required: true
