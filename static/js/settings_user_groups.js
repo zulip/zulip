@@ -57,6 +57,7 @@ exports.populate_user_groups = function () {
                 },
             }),
         );
+
         const pill_container = $('.pill-container[data-group-pills="' + data.id + '"]');
         const pills = user_pill.create_pills(pill_container);
 
@@ -118,6 +119,7 @@ exports.populate_user_groups = function () {
             }
             return true;
         }
+
         function show_hide_element(show, fadeout_delay) {
             const $element = $("#user-groups #" + data.id).find(".save-button-controls");
             if (show) {
@@ -128,6 +130,7 @@ exports.populate_user_groups = function () {
                 $element.fadeOut(300);
             }, fadeout_delay);
         }
+
         function update_cancel_button() {
             if (!exports.can_edit(data.id)) {
                 return;
@@ -216,15 +219,25 @@ exports.populate_user_groups = function () {
         }
 
         $("#user-groups #" + data.id).on("click", ".subsection-changes-discard .button", () => {
-            exports.reload();
+            show_hide_element(false, 0);
+            $("#user-groups #" + data.id + " .name").text(data.name);
+            $("#user-groups #" + data.id + " .description").text(data.description);
+            $("#user-groups #" + data.id + " .pill-container .pill").remove();
+            data.members.forEach((user_id) => {
+                const user = people.get_by_user_id(user_id);
+                user_pill.append_user(user, pills);
+            });
         });
+
         $("#user-groups #" + data.id).on("click", ".subsection-changes-save .button", () => {
             show_hide_element(false, 0);
             auto_save();
         });
+
         $("#user-groups #" + data.id).on("input", ".name", () => {
             update_cancel_button();
         });
+
         $("#user-groups #" + data.id).on("input", ".description", () => {
             update_cancel_button();
         });
