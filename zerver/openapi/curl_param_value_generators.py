@@ -18,6 +18,7 @@ from zerver.lib.actions import (
     update_user_presence,
 )
 from zerver.lib.events import do_events_register
+from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Client, Message, UserGroup, UserPresence, get_realm
 
@@ -72,6 +73,16 @@ def patch_openapi_example_values(
             if key in realm_example_values:
                 property["example"] = realm_example_values[key]
     return params, request_body
+
+@openapi_param_value_generator(["/fetch_api_key:post"])
+def fetch_api_key() -> Dict[str, object]:
+    email = helpers.example_email("iago")
+    password = initial_password(email)
+
+    return {
+        "username": email,
+        "password": password,
+    }
 
 @openapi_param_value_generator(["/messages/{message_id}:get", "/messages/{message_id}/history:get",
                                 "/messages/{message_id}:patch", "/messages/{message_id}:delete"])
