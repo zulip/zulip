@@ -177,7 +177,7 @@ def build_page_params_for_home_page_load(
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.
         two_fa_enabled_user=two_fa_enabled and bool(default_device(user_profile)),
-        is_web_public_guest=user_profile is None,
+        is_web_public_visitor=user_profile is None,
     )
 
     undesired_register_ret_fields = [

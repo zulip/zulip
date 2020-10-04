@@ -168,9 +168,9 @@ function get_events(options) {
     }
 
     // TODO: In the future, we may implement Tornado support for live
-    // update for web-public guests, but until then, there's nothing
+    // update for web_public_visitor, but until then, there's nothing
     // to do here.
-    if (page_params.is_web_public_guest) {
+    if (page_params.is_web_public_visitor) {
         return;
     }
 
