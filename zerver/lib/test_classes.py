@@ -459,10 +459,10 @@ Output:
            and not for a logged-out web-public visitor."""
         self.assertEqual(result.status_code, 200)
         page_params = self._get_page_params(result)
-        # It is important to check `is_web_public_guest` to verify
+        # It is important to check `is_web_public_visitor` to verify
         # that we treated this request as a normal logged-in session,
         # not as a web-public visitor.
-        self.assertEqual(page_params['is_web_public_guest'], False)
+        self.assertEqual(page_params['is_web_public_visitor'], False)
 
     def login_with_return(self, email: str, password: Optional[str]=None,
                           **kwargs: Any) -> HttpResponse:
