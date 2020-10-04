@@ -865,8 +865,16 @@ function hide_delete_btn_show_spinner(deleting) {
     }
 }
 
+exports.populate_message_details_in_delete_model = function (msg_id) {
+    const msg = message_list.all.get(msg_id);
+    $("#delete-message-model-details-author").text(msg.sender_full_name);
+    $("#delete-message-model-details-stream").text(msg.stream);
+    $("#delete-message-model-details-topic").text(msg.topic);
+};
+
 exports.delete_message = function (msg_id) {
     $("#delete-message-error").html("");
+    this.populate_message_details_in_delete_model(msg_id);
     $("#delete_message_modal").modal("show");
     if (currently_deleting_messages.includes(msg_id)) {
         hide_delete_btn_show_spinner(true);
