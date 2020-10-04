@@ -779,7 +779,7 @@ def zulip_otp_required(
         """
         :if_configured: If ``True``, an authenticated user with no confirmed
         OTP devices will be allowed. Also, non-authenticated users will be
-        allowed as web_public_guest users. Default is ``False``. If ``False``,
+        allowed as web_public_visitor users. Default is ``False``. If ``False``,
         2FA will not do any authentication.
         """
         if_configured = settings.TWO_FACTOR_AUTHENTICATION_ENABLED
