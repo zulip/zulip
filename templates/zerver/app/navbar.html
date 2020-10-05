@@ -158,11 +158,19 @@
                                 </a>
                             </li>
                             {% endif %}
+                            {% if page_params.is_web_public_visitor %}
+                            <li role="presentation">
+                                <a href="/login" class="logout_button" role="menuitem">
+                                    <i class="fa fa-sign-in" aria-hidden="true"></i> {{ _('Log in') }}
+                                </a>
+                            </li>
+                            {% else %}
                             <li role="presentation">
                                 <a href="#logout" class="logout_button" role="menuitem">
                                     <i class="fa fa-power-off" aria-hidden="true"></i> {{ _('Log out') }}
                                 </a>
                             </li>
+                            {% endif %}
                         </ul>
                     </li>
                 </ul>
