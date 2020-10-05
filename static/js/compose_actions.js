@@ -190,6 +190,11 @@ exports.update_placeholder_text = function () {
 };
 
 exports.start = function (msg_type, opts) {
+    if (page_params.is_web_public_visitor) {
+        login_to_access.show();
+        return;
+    }
+
     exports.autosize_message_content();
 
     if (reload_state.is_in_progress()) {
