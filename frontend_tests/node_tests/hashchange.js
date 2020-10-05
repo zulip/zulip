@@ -19,6 +19,7 @@ zrequire("hash_util");
 zrequire("hashchange");
 zrequire("stream_data");
 zrequire("navigate");
+zrequire("narrow");
 
 set_global("search", {
     update_button_visibility: () => {},
@@ -32,11 +33,13 @@ set_global("favicon", {});
 set_global("floating_recipient_bar", {});
 set_global("info_overlay", {});
 set_global("message_viewport", {});
-set_global("narrow", {});
 set_global("overlays", {});
 set_global("settings", {});
 set_global("subs", {});
 set_global("ui_util", {});
+set_global("page_params", {
+    is_web_public_visitor: false,
+});
 
 run_test("operators_round_trip", () => {
     let operators;
