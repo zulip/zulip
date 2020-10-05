@@ -68,6 +68,10 @@ li.show-more-topics {
     }
 }
 
+.streams_filter_icon.web_public {
+    margin-right: 10px;
+}
+
 #streams_inline_cog {
     margin-right: 10px;
 }
