@@ -31,6 +31,8 @@
                 <div id="private-container" class="scrolling_list" data-simplebar>
                 </div>
             </li>
+            {% if page_params.is_web_public_visitor %}
+            {% else %}
             <li class="top_left_mentions top_left_row">
                 <a href="#narrow/is/mentioned">
                     <span class="filter-icon">
@@ -56,6 +58,7 @@
                 </a>
                 <span class="arrow starred-messages-sidebar-menu-icon"><i class="zulip-icon ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
+            {% endif %}
             <li class="top_left_recent_topics top_left_row">
                 <a href="#recent_topics">
                     <span class="filter-icon">
