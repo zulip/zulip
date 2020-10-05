@@ -10,6 +10,9 @@ const {run_test} = require("../zjsunit/test");
 set_global("$", {});
 
 const reload = set_global("reload", {});
+set_global("page_params", {
+    is_web_public_visitor: false,
+});
 zrequire("reload_state");
 const channel = zrequire("channel");
 

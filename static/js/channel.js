@@ -100,6 +100,30 @@ function call(args, idempotent) {
 
 exports.get = function (options) {
     const args = {type: "GET", dataType: "json", ...options};
+
+    if (page_params.is_web_public_visitor) {
+        // for web-public guests, only queries in streams:web-public narrow are allowed.
+        const web_public_narrow = {operator: "streams", operand: "web-public", negated: false};
+        let operators;
+        args.data = args.data || {};
+        if (args.data.narrow === undefined) {
+            // Since the request which doesn't belong to any narrow
+            // cannot be checked in the webapp if it is accessible to the user
+            // or not, we check it with the server.
+            // setup.js handles the 401 returned by the server and shows
+            // login modal.
+            operators = [web_public_narrow];
+        } else {
+            operators = JSON.parse(args.data.narrow);
+            if (!narrow.is_web_public_compatible(operators)) {
+                login_to_access.show();
+                return false;
+            }
+            operators.push(web_public_narrow);
+        }
+        args.data.narrow = JSON.stringify(operators);
+    }
+
     return call(args, options.idempotent);
 };
 
