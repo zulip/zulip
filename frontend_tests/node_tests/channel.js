@@ -8,8 +8,11 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("$", {});
-
+set_global("page_params", {
+    is_web_public_visitor: false,
+});
 set_global("reload", {});
+
 zrequire("reload_state");
 zrequire("channel");
 
