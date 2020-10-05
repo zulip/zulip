@@ -355,3 +355,37 @@ run_test("narrow_to_compose_target", () => {
 
     narrow.activate = activate_backup;
 });
+
+run_test("is_web_public_compatible", () => {
+    // tests same as test_is_web_public_compatible from test_message_fetch.py
+    assert(narrow.is_web_public_compatible([]));
+    assert(narrow.is_web_public_compatible([{operator: "has", operand: "attachment"}]));
+    assert(narrow.is_web_public_compatible([{operator: "has", operand: "image"}]));
+    assert(narrow.is_web_public_compatible([{operator: "search", operand: "magic"}]));
+    assert(narrow.is_web_public_compatible([{operator: "near", operand: "15"}]));
+    assert(
+        narrow.is_web_public_compatible([
+            {operator: "id", operand: "15"},
+            {operator: "has", operand: "attachment"},
+        ]),
+    );
+    assert(narrow.is_web_public_compatible([{operator: "sender", operand: "hamlet@zulip.com"}]));
+    assert(!narrow.is_web_public_compatible([{operator: "pm-with", operand: "hamlet@zulip.com"}]));
+    assert(
+        !narrow.is_web_public_compatible([
+            {operator: "group-pm-with", operand: "hamlet@zulip.com"},
+        ]),
+    );
+    assert(narrow.is_web_public_compatible([{operator: "stream", operand: "Denmark"}]));
+    assert(
+        narrow.is_web_public_compatible([
+            {operator: "stream", operand: "Denmark"},
+            {operator: "topic", operand: "logic"},
+        ]),
+    );
+    assert(!narrow.is_web_public_compatible([{operator: "is", operand: "starred"}]));
+    assert(!narrow.is_web_public_compatible([{operator: "is", operand: "private"}]));
+    assert(narrow.is_web_public_compatible([{operator: "streams", operand: "public"}]));
+    // Malformed input not allowed
+    assert(!narrow.is_web_public_compatible([{operator: "has"}]));
+});

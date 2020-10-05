@@ -30,6 +30,7 @@ def check_supported_events_narrow_filter(narrow: Iterable[Sequence[str]]) -> Non
 
 
 def is_web_public_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
+    # When modifying this function, update similar function in narrow.js too.
     for element in narrow:
         operator = element["operator"]
         if "operand" not in element:
