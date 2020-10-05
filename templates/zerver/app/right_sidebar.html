@@ -1,5 +1,13 @@
 <div class="right-sidebar" id="right-sidebar" role="navigation">
     <div class="right-sidebar-items">
+        {% if page_params.is_web_public_visitor %}
+        <p>{{ page_params.realm_description }}</p>
+        <p><a href="/help/anonymous-users">Checkout help on Anonymous Users</a></p>
+        <div class="login_button color_animated_button">
+            <i class="fa fa-sign-in"></i>
+            <span>Log in</span>
+        </div>
+        {% endif %}
         <div id="user-list">
             <div id="userlist-header">
                 <h4 class='sidebar-title' id='userlist-title' data-toggle="tooltip" title="{{ _('Filter users') }}">{{ _('USERS') }}</h4>

@@ -195,6 +195,12 @@
     color: inherit;
 }
 
+.right-sidebar-items {
+    .login_button {
+        margin-right: 10px;
+    }
+}
+
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (max-width: 1165px) {
     #sidebar-keyboard-shortcuts {
