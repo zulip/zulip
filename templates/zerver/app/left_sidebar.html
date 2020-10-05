@@ -60,10 +60,10 @@
         </ul>
         <div id="streams_list" class="zoom-out">
             <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title tippy-zulip-tooltip" data-tippy-content="{{ _('Filter streams') }} (q)">{{ _('STREAMS') }}</h4>
-                <span class="tippy-zulip-tooltip streams_inline_cog_wrapper" data-tippy-content="{{ _('Add streams') }}" data-tippy-placement="top">
+                <span class="tippy-zulip-tooltip streams_inline_cog_wrapper hidden-for-spectators" data-tippy-content="{{ _('Add streams') }}" data-tippy-placement="top">
                     <i id="streams_inline_cog" class='fa fa-plus' aria-hidden="true" ></i>
                 </span>
-                <i class='streams_filter_icon fa fa-filter tippy-zulip-tooltip' aria-hidden="true" data-tippy-content="{{ _('Filter streams') }} (q)" data-tippy-placement="top"></i>
+                <i class="streams_filter_icon fa fa-filter tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{ _('Filter streams') }} (q)" data-tippy-placement="top"></i>
                 <div class="input-append notdisplayed stream_search_section">
                     <input class="stream-list-filter home-page-input" type="text" autocomplete="off" placeholder="{{ _('Filter streams') }}" />
                     <button type="button" class="btn clear_search_button" id="clear_search_stream_button">
