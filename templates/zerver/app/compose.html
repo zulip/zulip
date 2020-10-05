@@ -8,12 +8,20 @@
                 <span id="compose-reply-error-msg"></span>
             </div>
             <div id="compose_buttons">
+                {% if page_params.is_web_public_visitor %}
+                <span class="new_message_button">
+                    <a class="no-underline button small rounded float-left" href="/login" title="{{ _('Login in') }} (d)">
+                        {{ _('Login in to start conversation') }}
+                    </a>
+                </span>
+                {% else %}
                 <span class="new_message_button">
                     <a class="drafts-link no-underline button small rounded compose_drafts_button" href="#drafts" title="{{ _('Drafts') }} (d)">
                         {{ _('Drafts') }}
                     </a>
                     <span class="alert-draft pull-left">{{ _('Saved as draft') }}</span>
                 </span>
+                {% endif %}
                 <span class="new_message_button">
                     <button type="button" class="button small rounded compose_mobile_button"
                       id="left_bar_compose_mobile_button_big"
