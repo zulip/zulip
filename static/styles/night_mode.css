@@ -1085,6 +1085,17 @@ body.night-mode {
     .animated-purple-button:focus {
         box-shadow: 0 1px 4px 0 hsl(0, 0%, 100%, 0.666);
     }
+
+    .color_animated_button {
+        background-color: hsl(209, 32%, 5%);
+        * {
+            color: hsl(0, 0%, 100%);
+        }
+
+        &:hover {
+            background-color: hsl(228, 96%, 71%);
+        }
+    }
 }
 
 @supports (-moz-appearance: none) {

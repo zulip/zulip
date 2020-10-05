@@ -2988,3 +2988,26 @@ select.inline_select_topic_edit {
         top: 5%;
     }
 }
+
+#login_to_access_modal {
+    .go_back_button .fa {
+        position: fixed;
+        top: 11px;
+        left: 30px;
+    }
+
+    .login_to_access_label {
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+
+    .login_to_access_footer {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+
+        .color_animated_button {
+            width: 48%;
+        }
+    }
+}
