@@ -176,6 +176,7 @@
                 "local_message": false,
                 "localstorage": false,
                 "location": false,
+                "login_to_access": false,
                 "markdown": false,
                 "message_edit": false,
                 "message_edit_history": false,

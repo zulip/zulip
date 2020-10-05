@@ -990,6 +990,17 @@ on a dark background, and don't change the dark labels dark either. */
     a:not(:active):focus {
         outline-color: hsl(0, 0%, 100%);
     }
+
+    .color_animated_button {
+        background-color: hsl(209, 32%, 5%);
+        * {
+            color: hsl(0, 0%, 100%);
+        }
+
+        &:hover {
+            background-color: hsl(228, 96%, 71%);
+        }
+    }
 }
 
 @supports (-moz-appearance: none) {

@@ -20,6 +20,11 @@ function convert_enter_to_click(e) {
 }
 
 exports.initialize = function () {
+    // Login button
+    $("body").on("click", ".login_button", () => {
+        window.location.href = "/login/";
+    });
+
     // MESSAGE CLICKING
 
     function initialize_long_tap() {

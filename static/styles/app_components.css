@@ -481,3 +481,35 @@
 .tip::before {
     content: "\f0a2";
 }
+
+.color_animated_button {
+    display: flex;
+    justify-content: center;
+    background-color: hsl(0, 0%, 90%);
+
+    span {
+        color: hsl(0, 0%, 0%);
+    }
+
+    &:hover {
+        cursor: pointer;
+        background-color: hsl(228, 96%, 71%);
+        color: hsl(0, 0%, 100%);
+
+        span {
+            color: hsl(0, 0%, 100%);
+            transition: all 0.2s ease;
+        }
+
+        transition: all 0.2s ease;
+    }
+
+    * {
+        padding: 6px 3px;
+    }
+
+    .fa {
+        position: relative;
+        top: 3px;
+    }
+}
