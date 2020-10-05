@@ -143,6 +143,7 @@
 ## Users & bots
 * [Invite new users](/help/invite-new-users)
 * [Allow anyone to join](/help/allow-anyone-to-join-without-an-invitation)
+* [Anonymous users](/help/anonymous-users)
 * [Add custom profile fields](/help/add-custom-profile-fields)
 * [User groups](/help/user-groups)
 * [Restrict visibility of email addresses](/help/restrict-visibility-of-email-addresses)
