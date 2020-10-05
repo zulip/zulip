@@ -1,0 +1,22 @@
+<div id="login_to_access_modal" class="modal modal-bg fade new-style" tabindex="-1" role="dialog" aria-labelledby="login_to_access_modal" aria-hidden="true">
+    <div class="modal-header">
+
+        <div class="color_animated_button go_back_button">
+            <i class="fa fa-arrow-left"></i>
+            <span class="login_to_access_label"><b>{{t "Access restricted" }}</b></span>
+        </div>
+    </div>
+    <div class="modal-body">
+        <p>{{t "You are not signed in right now. Hence, you only have read access to messages in" }}
+            <a href="https://zulipchat.com/help/stream-permissions">{{t "Web public streams" }}</a>
+            {{t "and the ability to search among those messages." }}
+        </p>
+        <div class="topic_edit_spinner"></div>
+    </div>
+    <div class="modal-footer">
+        <div class="login_button color_animated_button">
+            <i class="fa fa-sign-in"></i>
+            <span>{{t "Log in to continue" }}</span>
+        </div>
+    </div>
+</div>

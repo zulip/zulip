@@ -76,6 +76,7 @@ EXEMPT_FILES = {
     "static/js/loading.js",
     "static/js/local_message.js",
     "static/js/localstorage.js",
+    "static/js/login_to_access.js",
     "static/js/message_edit.js",
     "static/js/message_edit_history.js",
     "static/js/message_events.js",

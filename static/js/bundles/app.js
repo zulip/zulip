@@ -155,6 +155,7 @@ import "../panels";
 import "../recent_topics";
 import "../search_pill_widget";
 import "../desktop_integration";
+import "../login_to_access";
 
 // Import styles
 
