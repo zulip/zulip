@@ -55,7 +55,7 @@ li.show-more-topics {
 }
 
 #streams_inline_cog,
-#streams_filter_icon {
+.streams_filter_icon {
     float: right;
     opacity: 0.5;
     font-size: 13px;
