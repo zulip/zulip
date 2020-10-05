@@ -27,6 +27,11 @@ exports.initialize = function () {
         window.location.href = "/login/";
     });
 
+    $("body").on("click", ".go_back_button", () => {
+        hashchange.return_to_web_public_hash();
+        $("#login_to_access_modal").modal("hide");
+    });
+
     // MESSAGE CLICKING
 
     function initialize_long_tap() {

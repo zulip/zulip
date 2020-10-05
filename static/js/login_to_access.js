@@ -9,4 +9,8 @@ exports.show = function () {
     $("#login_to_access_modal").modal("show");
 };
 
+$("body").on("hide", "#login_to_access_modal", () => {
+    hashchange.return_to_web_public_hash();
+});
+
 window.login_to_access = exports;
