@@ -29,7 +29,8 @@
                     {{/if}}
                 </a>
                 <!-- The missing whitespace on the next line is a hack; ideally, would be user-select: none. -->
-            </span><span class="recipient_bar_controls no-select">
+            </span>
+            <span class="recipient_bar_controls no-select">
                 {{! exterior links (e.g. to a trac ticket) }}
                 {{#each topic_links}}
                 <a href="{{this}}" target="_blank" rel="noopener noreferrer" class="no-underline">
@@ -37,6 +38,8 @@
                 </a>
                 {{/each}}
 
+                {{#if is_web_public_visitor }}
+                {{else}}
                 {{! edit topic pencil icon }}
                 {{#if always_visible_topic_edit}}
                     <i class="fa fa-pencil always_visible_topic_edit recipient_bar_icon" {{#unless realm_allow_message_editing}}style="display: none"{{/unless}} role="button" tabindex="0" aria-label="{{t 'Edit' }}"></i>
@@ -49,8 +52,8 @@
                 <span class="topic_edit">
                     <span class="topic_edit_form" id="{{id}}"></span>
                 </span>
-
                 <i class="fa fa-bell-slash on_hover_topic_mute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mute topic' }} (M)" role="button" tabindex="0" aria-label="{{t 'Mute topic' }} (M)"></i>
+                {{/if}}
             </span>
             <span class="recipient_row_date {{#if group_date_divider_html}}{{else}}hide-date{{/if}}">{{{date}}}</span>
         </div>

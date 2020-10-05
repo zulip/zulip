@@ -105,6 +105,7 @@ function set_topic_edit_properties(group, message) {
     group.realm_allow_message_editing = page_params.realm_allow_message_editing;
     group.always_visible_topic_edit = false;
     group.on_hover_topic_edit = false;
+    group.is_web_public_visitor = page_params.is_web_public_visitor;
 
     // Messages with no topics should always have an edit icon visible
     // to encourage updating them. Admins can also edit any topic.
