@@ -1,5 +1,5 @@
 # Library code for use in management commands
-import time
+import signal
 from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any, Dict, List, Optional
 
@@ -31,7 +31,7 @@ def check_config() -> None:
 
 def sleep_forever() -> None:
     while True:  # nocoverage
-        time.sleep(10**9)
+        signal.pause()
 
 class ZulipBaseCommand(BaseCommand):
 
