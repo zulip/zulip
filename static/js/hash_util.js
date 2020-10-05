@@ -283,6 +283,8 @@ export const allowed_web_public_narrows = [
 ];
 
 export function is_web_public_compatible(hash) {
+    // Defines which views are supported for spectators.
+    // This implementation should agree with the similar function in zerver/lib/narrow.py.
     const web_public_allowed_hashes = [
         "",
         "narrow", // full #narrow hash handled in narrow.is_web_public_compatible
