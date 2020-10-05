@@ -87,6 +87,13 @@ const state = {
     is_internal_change: false,
     hash_before_overlay: null,
     old_hash: typeof window !== "undefined" ? window.location.hash : "#",
+    // If the web_public_visitor's hash changes to a restricted hash, then we store the old hash
+    // so that we can take user back to the allowed hash.
+    // TODO: Store #narrow old hashes. Currently they are not stored here since, the #narrow
+    // hashes are changed without calling `hashchanged` in many ways.
+    web_public_old_hash: is_web_public_compatible(window.location.hash)
+        ? window.location.hash
+        : "#",
 };
 
 function is_overlay_hash(hash) {
@@ -270,6 +277,9 @@ function hashchanged(from_reload, e) {
     const is_hash_web_public_compatible = is_web_public_compatible(hash);
 
     const old_hash = e && (e.oldURL ? new URL(e.oldURL).hash : state.old_hash);
+    if (is_hash_web_public_compatible) {
+        state.web_public_old_hash = hash;
+    }
     state.old_hash = hash;
 
     if (state.is_internal_change) {
@@ -350,6 +360,10 @@ exports.exit_overlay = function (callback) {
             callback();
         }
     }
+};
+
+exports.return_to_web_public_hash = function () {
+    window.location.hash = state.web_public_old_hash;
 };
 
 window.hashchange = exports;
