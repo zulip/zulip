@@ -19,11 +19,15 @@ const hash_util = zrequire("hash_util");
 const hashchange = zrequire("hashchange");
 const stream_data = zrequire("stream_data");
 zrequire("navigate");
+zrequire("narrow");
 
 set_global("search", {
     update_button_visibility: () => {},
 });
 set_global("document", "document-stub");
+set_global("page_params", {
+    is_web_public_visitor: false,
+});
 const history = set_global("history", {});
 
 const admin = set_global("admin", {});
@@ -32,7 +36,7 @@ set_global("favicon", {});
 const floating_recipient_bar = set_global("floating_recipient_bar", {});
 const info_overlay = set_global("info_overlay", {});
 const message_viewport = set_global("message_viewport", {});
-const narrow = set_global("narrow", {});
+const narrow = zrequire("narrow");
 const overlays = set_global("overlays", {});
 const settings = set_global("settings", {});
 const subs = set_global("subs", {});
