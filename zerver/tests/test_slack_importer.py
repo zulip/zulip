@@ -770,7 +770,7 @@ class SlackImporter(ZulipTestCase):
         mock_requests_get.return_value.raw = get_test_image_file("img.png")
 
         with self.assertLogs(level="INFO"):
-            do_convert_data(test_slack_zip_file, output_dir, token)
+            do_convert_data(test_slack_zip_file, output_dir, token, threads=1)
 
         self.assertTrue(os.path.exists(output_dir))
         self.assertTrue(os.path.exists(output_dir + '/realm.json'))

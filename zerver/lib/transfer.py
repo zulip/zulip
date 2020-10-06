@@ -1,13 +1,11 @@
 import logging
-import multiprocessing
 import os
 from mimetypes import guess_type
 
 from django.conf import settings
-from django.core.cache import cache
-from django.db import connection
 
 from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.parallel import parallel_process_unordered
 from zerver.lib.upload import S3UploadBackend, upload_image_to_s3
 from zerver.models import Attachment, RealmEmoji, UserProfile
 
@@ -31,15 +29,7 @@ def _transfer_avatar_to_s3(user: UserProfile) -> None:
 
 def transfer_avatars_to_s3(processes: int) -> None:
     users = list(UserProfile.objects.all())
-    if processes == 1:
-        for user in users:
-            _transfer_avatar_to_s3(user)
-    else:  # nocoverage
-        connection.close()
-        cache._cache.disconnect_all()
-        with multiprocessing.Pool(processes) as p:
-            for out in p.imap_unordered(_transfer_avatar_to_s3, users):
-                pass
+    parallel_process_unordered(_transfer_avatar_to_s3, users, processes)
 
 def _transfer_message_files_to_s3(attachment: Attachment) -> None:
     file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", attachment.path_id)
@@ -53,15 +43,7 @@ def _transfer_message_files_to_s3(attachment: Attachment) -> None:
 
 def transfer_message_files_to_s3(processes: int) -> None:
     attachments = list(Attachment.objects.all())
-    if processes == 1:
-        for attachment in attachments:
-            _transfer_message_files_to_s3(attachment)
-    else:  # nocoverage
-        connection.close()
-        cache._cache.disconnect_all()
-        with multiprocessing.Pool(processes) as p:
-            for out in p.imap_unordered(_transfer_message_files_to_s3, attachments):
-                pass
+    parallel_process_unordered(_transfer_message_files_to_s3, attachments, processes)
 
 def _transfer_emoji_to_s3(realm_emoji: RealmEmoji) -> None:
     if not realm_emoji.file_name or not realm_emoji.author:
@@ -80,12 +62,4 @@ def _transfer_emoji_to_s3(realm_emoji: RealmEmoji) -> None:
 
 def transfer_emoji_to_s3(processes: int) -> None:
     realm_emojis = list(RealmEmoji.objects.filter())
-    if processes == 1:
-        for realm_emoji in realm_emojis:
-            _transfer_emoji_to_s3(realm_emoji)
-    else:  # nocoverage
-        connection.close()
-        cache._cache.disconnect_all()
-        with multiprocessing.Pool(processes) as p:
-            for out in p.imap_unordered(_transfer_emoji_to_s3, realm_emojis):
-                pass
+    parallel_process_unordered(_transfer_emoji_to_s3, realm_emojis, processes)

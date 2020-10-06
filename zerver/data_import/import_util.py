@@ -1,10 +1,9 @@
 import logging
-import multiprocessing
 import os
 import random
 import shutil
 from functools import partial
-from typing import AbstractSet, Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TypeVar
+from typing import AbstractSet, Any, Callable, Dict, Iterable, List, Optional, Set, Tuple
 
 import orjson
 import requests
@@ -13,6 +12,7 @@ from django.forms.models import model_to_dict
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from zerver.lib.parallel import parallel_process_unordered
 from zerver.models import (
     Attachment,
     Huddle,
@@ -540,7 +540,7 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id:
         avatar_original_list.append(avatar_original)
 
     # Run downloads in parallel
-    run_parallel_wrapper(partial(get_avatar, avatar_dir, size_url_suffix), avatar_upload_list, threads=threads)
+    parallel_process_unordered(partial(get_avatar, avatar_dir, size_url_suffix), avatar_upload_list, threads)
 
     logging.info('######### GETTING AVATARS FINISHED #########\n')
     return avatar_list + avatar_original_list
@@ -578,24 +578,6 @@ def write_avatar_png(avatar_folder: str,
 
     return metadata
 
-ListJobData = TypeVar('ListJobData')
-def wrapping_function(f: Callable[[ListJobData], None], item: ListJobData) -> None:
-    try:
-        f(item)
-    except Exception:
-        logging.exception("Error processing item: %s", item, stack_info=True)
-
-def run_parallel_wrapper(f: Callable[[ListJobData], None], full_items: List[ListJobData],
-                         threads: int=6) -> None:
-    logging.info("Distributing %s items across %s threads", len(full_items), threads)
-
-    with multiprocessing.Pool(threads) as p:
-        count = 0
-        for out in p.imap_unordered(partial(wrapping_function, f), full_items):
-            count += 1
-            if count % 1000 == 0:
-                logging.info("Finished %s items", count)
-
 def get_uploads(upload_dir: str, upload: List[str]) -> None:
     upload_url = upload[0]
     upload_path = upload[1]
@@ -625,7 +607,7 @@ def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
         upload['path'] = upload_s3_path
 
     # Run downloads in parallel
-    run_parallel_wrapper(partial(get_uploads, upload_dir), upload_url_list, threads=threads)
+    parallel_process_unordered(partial(get_uploads, upload_dir), upload_url_list, threads)
 
     logging.info('######### GETTING ATTACHMENTS FINISHED #########\n')
     return upload_list
@@ -684,7 +666,7 @@ def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
         emoji_records.append(emoji_record)
 
     # Run downloads in parallel
-    run_parallel_wrapper(partial(get_emojis, emoji_dir), upload_emoji_list, threads=threads)
+    parallel_process_unordered(partial(get_emojis, emoji_dir), upload_emoji_list, threads)
 
     logging.info('######### GETTING EMOJIS FINISHED #########\n')
     return emoji_records

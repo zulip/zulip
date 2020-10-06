@@ -1,6 +1,5 @@
 import datetime
 import logging
-import multiprocessing
 import os
 import secrets
 import shutil
@@ -10,7 +9,6 @@ import boto3
 import orjson
 from bs4 import BeautifulSoup
 from django.conf import settings
-from django.core.cache import cache
 from django.db import connection
 from django.db.models import Max
 from django.utils.timezone import now as timezone_now
@@ -29,6 +27,7 @@ from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_
 from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
+from zerver.lib.parallel import parallel_process_unordered
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -754,16 +753,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
         # avatar.  TODO: This implementation is hacky, both in that it
         # does get_user_profile_by_id for each user, and in that it
         # might be better to require the export to just have these.
-
-        if processes == 1:
-            for record in records:
-                process_avatars(record)
-        else:
-            connection.close()
-            cache._cache.disconnect_all()
-            with multiprocessing.Pool(processes) as p:
-                for out in p.imap_unordered(process_avatars, records):
-                    pass
+        parallel_process_unordered(process_avatars, records, processes)
 
 # Importing data suffers from a difficult ordering problem because of
 # models that reference each other circularly.  Here is a correct order.
