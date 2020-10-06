@@ -67,7 +67,7 @@ grep -v -x -f /tmp/expected_test_queues.txt /tmp/all_queue_processors.txt > /tmp
 if ! diff /tmp/expected_queue_processors.txt /tmp/running_queue_processors.txt >/dev/null; then
     set +x
     echo "FAILURE: Runnable queue processors declared in zerver/worker/queue_processors.py "
-    echo "do not match those in puppet/manifests/zulip/base.pp"
+    echo "do not match those in puppet/zulip/manifests/base.pp"
     echo "See https://zulip.readthedocs.io/en/latest/subsystems/queuing.html for details."
     echo
     diff -ur /tmp/expected_queue_processors.txt /tmp/running_queue_processors.txt
