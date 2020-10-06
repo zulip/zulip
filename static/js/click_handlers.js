@@ -575,6 +575,29 @@ exports.initialize = function () {
         $(e.currentTarget).tooltip("destroy");
     });
 
+    $("#keyboard-icon").on("mouseenter", (e) => {
+        e.stopPropagation();
+
+        const elem = $(e.currentTarget);
+        const hotkey = "(?)";
+        const title = i18n.t("Keyboard Shortcuts __hotkey__", {hotkey: hotkey});
+
+        elem.tooltip({
+            title: title,
+            trigger: "hover",
+            placement: "top",
+            animation: false,
+        });
+
+        elem.tooltip("show");
+        $(".tooltip-arrow").remove();
+    });
+
+    $("#keyboard-icon").on("mouseleave", (e) => {
+        e.stopPropagation();
+        $(e.currentTarget).tooltip("hide");
+    });
+
     // HOME
 
     $(".brand").on("click", (e) => {
