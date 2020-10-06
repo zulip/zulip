@@ -766,7 +766,7 @@ class MarkdownTest(ZulipTestCase):
         media_tweet_html = ('<a href="http://t.co/xo7pAhK6n3">'
                             'http://twitter.com/NEVNBoston/status/421654515616849920/photo/1</a>')
 
-        emoji_in_tweet_html = """Zulip is <span aria-label=\"100\" class="emoji emoji-1f4af" role=\"img\" title="100">:100:</span>% open-source!"""
+        emoji_in_tweet_html = """Zulip is <span aria-label="100" class="emoji message-emoji emoji-1f4af" role="img" title="100">:100:</span>% open-source!"""
 
         def make_inline_twitter_preview(url: str, tweet_html: str, image_html: str='') -> str:
             ## As of right now, all previews are mocked to be the exact same tweet
@@ -917,7 +917,7 @@ class MarkdownTest(ZulipTestCase):
 
     def test_realm_emoji(self) -> None:
         def emoji_img(name: str, file_name: str, realm_id: int) -> str:
-            return '<img alt="{}" class="emoji" src="{}" title="{}">'.format(
+            return '<img alt="{}" class="emoji message-emoji" src="{}" title="{}">'.format(
                 name, get_emoji_url(file_name, realm_id), name[1:-1].replace("_", " "))
 
         realm = get_realm('zulip')
@@ -947,11 +947,11 @@ class MarkdownTest(ZulipTestCase):
     def test_unicode_emoji(self) -> None:
         msg = '\u2615'  # ☕
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p><span aria-label=\"coffee\" class="emoji emoji-2615" role=\"img\" title="coffee">:coffee:</span></p>')
+        self.assertEqual(converted, '<p><span aria-label="coffee" class="emoji message-emoji emoji-2615" role="img" title="coffee">:coffee:</span></p>')
 
         msg = '\u2615\u2615'  # ☕☕
         converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, '<p><span aria-label=\"coffee\" class="emoji emoji-2615" role=\"img\" title="coffee">:coffee:</span><span aria-label=\"coffee\" class="emoji emoji-2615" role=\"img\" title="coffee">:coffee:</span></p>')
+        self.assertEqual(converted, '<p><span aria-label="coffee" class="emoji message-emoji emoji-2615" role="img" title="coffee">:coffee:</span><span aria-label="coffee" class="emoji message-emoji emoji-2615" role="img" title="coffee">:coffee:</span></p>')
 
     def test_no_translate_emoticons_if_off(self) -> None:
         user_profile = self.example_user('othello')

@@ -255,7 +255,7 @@ function make_emoji_span(codepoint, title, alt_text) {
         '<span aria-label="' +
         title +
         '"' +
-        ' class="emoji emoji-' +
+        ' class="emoji message-emoji emoji-' +
         codepoint +
         '"' +
         ' role="img" title="' +
@@ -297,7 +297,7 @@ function handleEmoji(emoji_name) {
             '<img alt="' +
             alt_text +
             '"' +
-            ' class="emoji" src="' +
+            ' class="emoji message-emoji" src="' +
             emoji_url +
             '"' +
             ' title="' +
