@@ -10,6 +10,12 @@ body.night-mode {
         color: inherit;
     }
 
+    .filter-icon {
+        .globe-web-icon {
+            filter: brightness(0) invert(1) !important;
+        }
+    }
+
     .app-main,
     .header-main,
     #message_view_header_underpadding,
