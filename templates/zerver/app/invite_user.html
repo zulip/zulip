@@ -49,6 +49,7 @@
                     </div>
                 </div>
                 <div>
+                    <!--<button id="pr">Copy text</button>-->
                     <label>{{ _('Streams they should join') }}</label>
                     <div id="streams_to_add"></div>
                 </div>
@@ -57,6 +58,7 @@
                 <button class="button exit small rounded" data-dismiss="modal">{{ _('Cancel') }}</button>
                 <button id="submit-invitation" class="button small rounded sea-green" type="button"
                   data-loading-text="{{ _('Inviting...') }}">{{ _('Invite') }}</button>
+                  <input type="hidden" id="copy_link" value="Copy link">
                 <div class="alert" id="multiuse_invite_status"></div>
             </div>
         </form>
