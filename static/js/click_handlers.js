@@ -580,10 +580,10 @@ exports.initialize = function () {
 
         const elem = $(e.currentTarget);
         const hotkey = "(?)";
-        const title = i18n.t("Keyboard Shortcuts __hotkey__", {hotkey: hotkey});
+        const title = i18n.t("Keyboard Shortcuts __hotkey__", {hotkey});
 
         elem.tooltip({
-            title: title,
+            title,
             trigger: "hover",
             placement: "top",
             animation: false,
