@@ -295,7 +295,12 @@ exports.view.insert_new_reaction = function (opts) {
 
     if (opts.reaction_type !== "unicode_emoji") {
         context.is_realm_emoji = true;
-        context.url = emoji.all_realm_emojis.get(emoji_code).emoji_url;
+        const emoji_info = emoji.all_realm_emojis.get(emoji_code);
+        if (!emoji_info) {
+            blueslip.error(`Cannot find/insert realm emoji for code '${emoji_code}'.`);
+            return;
+        }
+        context.url = emoji_info.emoji_url;
     }
 
     context.count = 1;
@@ -499,7 +504,12 @@ exports.add_clean_reaction = function (opts) {
 
     if (r.reaction_type !== "unicode_emoji") {
         r.is_realm_emoji = true;
-        r.url = emoji.all_realm_emojis.get(r.emoji_code).emoji_url;
+        const emoji_info = emoji.all_realm_emojis.get(r.emoji_code);
+        if (!emoji_info) {
+            blueslip.error(`Cannot find/add realm emoji for code '${r.emoji_code}'.`);
+            return;
+        }
+        r.url = emoji_info.emoji_url;
     }
 
     opts.message.clean_reactions.set(opts.local_id, r);
