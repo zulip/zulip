@@ -109,6 +109,13 @@ exports.show_license_section = function (license) {
     $(input_id).prop("disabled", false);
 };
 
+let current_page;
+
+function handle_hashchange() {
+    $("#" + current_page + '-tabs.nav a[href="' + location.hash + '"]').tab("show");
+    $("html").scrollTop(0);
+}
+
 exports.set_tab = function (page) {
     const hash = location.hash;
     if (hash) {
@@ -120,10 +127,8 @@ exports.set_tab = function (page) {
         location.hash = this.hash;
     });
 
-    window.onhashchange = function () {
-        $("#" + page + '-tabs.nav a[href="' + location.hash + '"]').tab("show");
-        $("html").scrollTop(0);
-    };
+    current_page = page;
+    window.addEventListener("hashchange", handle_hashchange);
 };
 
 exports.is_valid_input = function (elem) {
