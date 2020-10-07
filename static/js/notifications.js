@@ -163,7 +163,7 @@ exports.redraw_title = function () {
             // Make sure we're working with a number, as a defensive programming
             // measure.  And we don't have images above 99, so display those as
             // 'infinite'.
-            n = +new_message_count;
+            n = Number(new_message_count);
             if (n > 99) {
                 n = "infinite";
             }

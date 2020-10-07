@@ -145,7 +145,7 @@ run_test("snapshot_message", () => {
             return draft.type;
         };
         global.compose_state.composing = function () {
-            return !!draft.type;
+            return Boolean(draft.type);
         };
         global.compose_state.message_content = function () {
             return draft.content;
