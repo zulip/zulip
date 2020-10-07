@@ -91,7 +91,7 @@ function config_fake_channel(conf) {
 
     channel.get = function (opts) {
         if (called && !conf.can_call_again) {
-            throw "only use this for one call";
+            throw new Error("only use this for one call");
         }
         if (!conf.can_call_again) {
             assert(self.success === undefined);
