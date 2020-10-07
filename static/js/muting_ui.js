@@ -85,7 +85,7 @@ exports.set_up_muted_topics_ui = function () {
         filter: {
             element: $search_input,
             predicate(item, value) {
-                return item.topic.toLocaleLowerCase().indexOf(value) >= 0;
+                return item.topic.toLocaleLowerCase().includes(value);
             },
             onupdate() {
                 ui.reset_scrollbar(muted_topics_table.closest(".progressive-table-wrapper"));

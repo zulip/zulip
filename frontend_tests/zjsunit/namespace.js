@@ -1,5 +1,7 @@
 "use strict";
 
+const path = require("path");
+
 const _ = require("lodash");
 
 const requires = [];
@@ -50,11 +52,10 @@ exports.clear_zulip_refs = function () {
         correctly, but it will fail if we
         run it standalone.
     */
+    const staticPath = path.resolve(__dirname, "../../static") + path.sep;
     _.each(require.cache, (_, fn) => {
-        if (fn.indexOf("static/") >= 0) {
-            if (fn.indexOf("static/templates") < 0) {
-                delete require.cache[fn];
-            }
+        if (fn.startsWith(staticPath) && !fn.startsWith(staticPath + "templates" + path.sep)) {
+            delete require.cache[fn];
         }
     });
 };
