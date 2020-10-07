@@ -749,7 +749,7 @@ run_test("extract_people_from_message", () => {
 
     // Get line coverage
     people.__Rewire__("report_late_add", () => {
-        throw Error("unexpected late add");
+        throw new Error("unexpected late add");
     });
 
     message = {
