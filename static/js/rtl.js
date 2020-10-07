@@ -158,7 +158,7 @@ exports.set_rtl_class_for_textarea = function (textarea) {
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     let text = textarea.val();
     if (text.startsWith("```quote")) {
-        text = text.substr(8);
+        text = text.slice(8);
     }
     if (exports.get_direction(text) === "rtl") {
         textarea.addClass("rtl");

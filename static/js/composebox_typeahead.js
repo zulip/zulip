@@ -289,7 +289,10 @@ exports.tokenize_compose_str = function (s) {
                 // this will reposition the user from.  If | is the cursor, implements:
                 //
                 // `#**stream name** >|` => `#**stream name>|`.
-                if (s.substring(i - 2, i) === "**" || s.substring(i - 3, i) === "** ") {
+                if (
+                    s.slice(Math.max(0, i - 2), i) === "**" ||
+                    s.slice(Math.max(0, i - 3), i) === "** "
+                ) {
                     // return any string as long as its not ''.
                     return ">topic_jump";
                 }
@@ -328,9 +331,9 @@ exports.broadcast_mentions = function () {
 
 function filter_mention_name(current_token) {
     if (current_token.startsWith("**")) {
-        current_token = current_token.substring(2);
+        current_token = current_token.slice(2);
     } else if (current_token.startsWith("*")) {
-        current_token = current_token.substring(1);
+        current_token = current_token.slice(1);
     }
     if (current_token.length < 1 || current_token.lastIndexOf("*") !== -1) {
         return false;
@@ -580,7 +583,7 @@ exports.get_candidates = function (query) {
     }
 
     // Start syntax highlighting autocompleter if the first three characters are ```
-    const syntax_token = current_token.substring(0, 3);
+    const syntax_token = current_token.slice(0, 3);
     if (this.options.completions.syntax && (syntax_token === "```" || syntax_token === "~~~")) {
         // Only autocomplete if user starts typing a language after ```
         if (current_token.length === 3) {
@@ -588,14 +591,14 @@ exports.get_candidates = function (query) {
         }
 
         // If the only input is a space, don't autocomplete
-        current_token = current_token.substring(3);
+        current_token = current_token.slice(3);
         if (current_token === " ") {
             return false;
         }
 
         // Trim the first whitespace if it is there
         if (current_token[0] === " ") {
-            current_token = current_token.substring(1);
+            current_token = current_token.slice(1);
         }
         this.completing = "syntax";
         this.token = current_token;
@@ -617,19 +620,19 @@ exports.get_candidates = function (query) {
             return false;
         }
         this.completing = "emoji";
-        this.token = current_token.substring(1);
+        this.token = current_token.slice(1);
         return exports.emoji_collection;
     }
 
     if (this.options.completions.mention && current_token[0] === "@") {
-        current_token = current_token.substring(1);
+        current_token = current_token.slice(1);
         this.completing = "mention";
         // Silent mentions
         let is_silent = false;
         if (current_token.startsWith("_")) {
             this.completing = "silent_mention";
             is_silent = true;
-            current_token = current_token.substring(1);
+            current_token = current_token.slice(1);
         }
         current_token = filter_mention_name(current_token);
         if (!current_token) {
@@ -646,7 +649,7 @@ exports.get_candidates = function (query) {
     }
 
     if (this.options.completions.slash && current_token[0] === "/") {
-        current_token = current_token.substring(1);
+        current_token = current_token.slice(1);
 
         this.completing = "slash";
         this.token = current_token;
@@ -658,9 +661,9 @@ exports.get_candidates = function (query) {
             return false;
         }
 
-        current_token = current_token.substring(1);
+        current_token = current_token.slice(1);
         if (current_token.startsWith("**")) {
-            current_token = current_token.substring(2);
+            current_token = current_token.slice(2);
         }
 
         // Don't autocomplete if there is a space following a '#'
@@ -780,27 +783,19 @@ exports.content_typeahead_selected = function (item, event) {
             beginning.charAt(beginning.lastIndexOf(":") - 1) === " " ||
             beginning.charAt(beginning.lastIndexOf(":") - 1) === "\n"
         ) {
-            beginning =
-                beginning.substring(0, beginning.length - this.token.length - 1) +
-                ":" +
-                item.emoji_name +
-                ": ";
+            beginning = beginning.slice(0, -this.token.length - 1) + ":" + item.emoji_name + ": ";
         } else {
-            beginning =
-                beginning.substring(0, beginning.length - this.token.length - 1) +
-                " :" +
-                item.emoji_name +
-                ": ";
+            beginning = beginning.slice(0, -this.token.length - 1) + " :" + item.emoji_name + ": ";
         }
     } else if (this.completing === "mention" || this.completing === "silent_mention") {
         const is_silent = this.completing === "silent_mention";
-        beginning = beginning.substring(0, beginning.length - this.token.length - 1);
+        beginning = beginning.slice(0, -this.token.length - 1);
         if (beginning.endsWith("@_*")) {
-            beginning = beginning.substring(0, beginning.length - 3);
+            beginning = beginning.slice(0, -3);
         } else if (beginning.endsWith("@*") || beginning.endsWith("@_")) {
-            beginning = beginning.substring(0, beginning.length - 2);
+            beginning = beginning.slice(0, -2);
         } else if (beginning.endsWith("@")) {
-            beginning = beginning.substring(0, beginning.length - 1);
+            beginning = beginning.slice(0, -1);
         }
         if (user_groups.is_user_group(item)) {
             beginning += "@*" + item.name + "* ";
@@ -817,15 +812,11 @@ exports.content_typeahead_selected = function (item, event) {
             }
         }
     } else if (this.completing === "slash") {
-        beginning =
-            beginning.substring(0, beginning.length - this.token.length - 1) +
-            "/" +
-            item.name +
-            " ";
+        beginning = beginning.slice(0, -this.token.length - 1) + "/" + item.name + " ";
     } else if (this.completing === "stream") {
-        beginning = beginning.substring(0, beginning.length - this.token.length - 1);
+        beginning = beginning.slice(0, -this.token.length - 1);
         if (beginning.endsWith("#*")) {
-            beginning = beginning.substring(0, beginning.length - 2);
+            beginning = beginning.slice(0, -2);
         }
         beginning += "#**" + item.name;
         if (event && event.key === ">") {
@@ -845,12 +836,12 @@ exports.content_typeahead_selected = function (item, event) {
             // If cursor is at end of input ("rest" is empty), then
             // complete the token before the cursor, and add a closing fence
             // after the cursor
-            beginning = beginning.substring(0, backticks) + item + "\n";
-            rest = "\n" + beginning.substring(backticks - 4, backticks).trim() + rest;
+            beginning = beginning.slice(0, backticks) + item + "\n";
+            rest = "\n" + beginning.slice(Math.max(0, backticks - 4), backticks).trim() + rest;
         } else {
             // If more text after the input, then complete the token, but don't touch
             // "rest" (i.e. do not add a closing fence)
-            beginning = beginning.substring(0, backticks) + item;
+            beginning = beginning.slice(0, backticks) + item;
         }
     } else if (this.completing === "topic_jump") {
         // Put the cursor at the end of immediately preceding stream mention syntax,
@@ -858,24 +849,25 @@ exports.content_typeahead_selected = function (item, event) {
         // final ** and set things up for the topic_list typeahead.
         const index = beginning.lastIndexOf("**");
         if (index !== -1) {
-            beginning = beginning.substring(0, index) + ">";
+            beginning = beginning.slice(0, index) + ">";
         }
     } else if (this.completing === "topic_list") {
         // Stream + topic mention typeahead; close the stream+topic mention syntax
         // with the topic and the final **.
-        const start = beginning.length - this.token.length;
-        beginning = beginning.substring(0, start) + item + "** ";
+        const start = -this.token.length;
+        beginning = beginning.slice(0, start) + item + "** ";
     } else if (this.completing === "time_jump") {
-        let timestring = beginning.substring(beginning.lastIndexOf("<time:"));
+        let timestring = beginning.slice(Math.max(0, beginning.lastIndexOf("<time:")));
         if (timestring.startsWith("<time:") && timestring.endsWith(">")) {
-            timestring = timestring.substring(6, timestring.length - 1);
+            timestring = timestring.slice(6, -1);
         }
         const timestamp = timerender.get_timestamp_for_flatpickr(timestring);
 
         const on_timestamp_selection = (val) => {
             const datestr = val;
             beginning =
-                beginning.substring(0, beginning.lastIndexOf("<time")) + `<time:${datestr}> `;
+                beginning.slice(0, Math.max(0, beginning.lastIndexOf("<time"))) +
+                `<time:${datestr}> `;
             if (rest.startsWith(">")) {
                 rest = rest.slice(1);
             }

@@ -406,7 +406,7 @@ function get_special_filter_suggestions(last, operators, suggestions) {
         }
 
         // returns the substring after the ":" symbol.
-        const suggestion_operand = s.search_string.substring(s.search_string.indexOf(":") + 1);
+        const suggestion_operand = s.search_string.slice(s.search_string.indexOf(":") + 1);
         // e.g for `att` search query, `has:attachment` should be suggested.
         const show_operator_suggestions =
             last.operator === "search" && suggestion_operand.toLowerCase().startsWith(last_string);

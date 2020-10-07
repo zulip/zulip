@@ -453,9 +453,9 @@ run_test("markdown_shortcuts", () => {
         const compose_textarea = $("#compose-textarea");
         const value = compose_textarea.val();
         $("#compose-textarea").val(
-            value.substring(0, compose_textarea.range().start) +
+            value.slice(0, compose_textarea.range().start) +
                 markdown +
-                value.substring(compose_textarea.range().end, value.length),
+                value.slice(compose_textarea.range().end),
         );
     };
 
@@ -467,7 +467,7 @@ run_test("markdown_shortcuts", () => {
             range: noop,
             text: $("#compose-textarea")
                 .val()
-                .substring(range_start, range_length + range_start),
+                .slice(range_start, range_length + range_start),
         };
     };
     $("#compose-textarea").caret = noop;
