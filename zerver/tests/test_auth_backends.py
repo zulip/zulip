@@ -3523,6 +3523,14 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assert_logged_in_user_id(user_profile.id)
 
+    def test_web_public_visitor(self) -> None:
+        data = {
+            'prefers_web_public_view': 'Anonymous login'
+        }
+        result = self.client_post('/accounts/login/local/', data)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, 'http://zulip.testserver/')
+
     def test_login_success_with_2fa(self) -> None:
         user_profile = self.example_user('hamlet')
         self.create_default_device(user_profile)

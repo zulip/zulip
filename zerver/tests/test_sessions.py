@@ -29,7 +29,8 @@ class TestSessions(ZulipTestCase):
         action()
         if expected_result:
             result = self.client_get('/', subdomain=realm.subdomain)
-            self.check_rendered_web_public_visitor(result)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/accounts/login/?next=/')
         else:
             self.assertIn('_auth_user_id', self.client.session)
 
@@ -40,7 +41,8 @@ class TestSessions(ZulipTestCase):
         for session in user_sessions(user_profile):
             delete_session(session)
         result = self.client_get("/")
-        self.check_rendered_web_public_visitor(result)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/accounts/login/?next=/')
 
     def test_delete_user_sessions(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -75,7 +77,8 @@ class TestSessions(ZulipTestCase):
         self.client_post('/accounts/logout/')
         delete_all_deactivated_user_sessions()
         result = self.client_get("/")
-        self.check_rendered_web_public_visitor(result)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/accounts/login/?next=/')
 
         # Test nothing happens to an active user's session
         self.login('othello')
@@ -95,7 +98,8 @@ class TestSessions(ZulipTestCase):
             'INFO:root:Deactivating session for deactivated user 8'
         ])
         result = self.client_get("/")
-        self.check_rendered_web_public_visitor(result)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/accounts/login/?next=/')
 
 class TestExpirableSessionVars(ZulipTestCase):
     def setUp(self) -> None:
