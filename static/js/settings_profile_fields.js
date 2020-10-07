@@ -130,7 +130,7 @@ function set_up_create_field_form() {
     const field_elem = $("#profile_field_external_accounts");
     const field_url_pattern_elem = $("#custom_external_account_url_pattern");
 
-    if (parseInt($("#profile_field_type").val(), 10) === field_types.EXTERNAL_ACCOUNT.id) {
+    if (Number.parseInt($("#profile_field_type").val(), 10) === field_types.EXTERNAL_ACCOUNT.id) {
         field_elem.show();
         if ($("#profile_field_external_accounts_type").val() === "custom") {
             field_url_pattern_elem.show();
@@ -169,7 +169,10 @@ function create_profile_field(e) {
     const opts = {
         success_continuation: clear_form_data,
     };
-    field_data = read_field_data_from_form(parseInt(field_type, 10), $(".new-profile-field-form"));
+    field_data = read_field_data_from_form(
+        Number.parseInt(field_type, 10),
+        $(".new-profile-field-form"),
+    );
 
     const form_data = {
         name: $("#profile_field_name").val(),
@@ -274,7 +277,7 @@ function set_up_choices_field_edit_form(profile_field, field_data) {
 }
 
 function open_edit_form(e) {
-    const field_id = parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
+    const field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
     const profile_field = get_profile_field_info(field_id);
 
     profile_field.row.hide();
@@ -288,11 +291,11 @@ function open_edit_form(e) {
         field_data = JSON.parse(field.field_data);
     }
 
-    if (parseInt(field.type, 10) === field_types.CHOICE.id) {
+    if (Number.parseInt(field.type, 10) === field_types.CHOICE.id) {
         set_up_choices_field_edit_form(profile_field, field_data);
     }
 
-    if (parseInt(field.type, 10) === field_types.EXTERNAL_ACCOUNT.id) {
+    if (Number.parseInt(field.type, 10) === field_types.EXTERNAL_ACCOUNT.id) {
         profile_field.form.find("select[name=external_acc_field_type]").val(field_data.subtype);
         set_up_external_account_field_edit_form(profile_field, field_data.url_pattern);
     }
@@ -315,7 +318,7 @@ function open_edit_form(e) {
         data.name = profile_field.form.find("input[name=name]").val();
         data.hint = profile_field.form.find("input[name=hint]").val();
         data.field_data = JSON.stringify(
-            read_field_data_from_form(parseInt(field.type, 10), profile_field.form),
+            read_field_data_from_form(Number.parseInt(field.type, 10), profile_field.form),
         );
 
         settings_ui.do_settings_change(
@@ -333,7 +336,7 @@ function open_edit_form(e) {
         .find(".edit_profile_field_choices_container")
         .on("click", "button.delete-choice", delete_choice_row);
     $(".profile_field_external_accounts_edit select").on("change", (e) => {
-        const field_id = parseInt(
+        const field_id = Number.parseInt(
             $(e.target).closest(".profile-field-form").attr("data-profile-field-id"),
             10,
         );
@@ -349,7 +352,7 @@ exports.reset = function () {
 function update_field_order() {
     order = [];
     $(".profile-field-row").each(function () {
-        order.push(parseInt($(this).attr("data-profile-field-id"), 10));
+        order.push(Number.parseInt($(this).attr("data-profile-field-id"), 10));
     });
     settings_ui.do_settings_change(
         channel.patch,
@@ -429,13 +432,13 @@ function set_up_choices_field() {
 
     const field_type = $("#profile_field_type").val();
 
-    if (parseInt(field_type, 10) !== field_types.CHOICE.id) {
+    if (Number.parseInt(field_type, 10) !== field_types.CHOICE.id) {
         // If 'Choice' type is already selected, show choice row.
         $("#profile_field_choices_row").hide();
     }
 
     $("#profile_field_type").on("change", (e) => {
-        const selected_field_id = parseInt($(e.target).val(), 10);
+        const selected_field_id = Number.parseInt($(e.target).val(), 10);
         if (selected_field_id === field_types.CHOICE.id) {
             $("#profile_field_choices_row").show();
         } else {

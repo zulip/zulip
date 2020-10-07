@@ -150,8 +150,8 @@ class MessageList {
         };
 
         const convert_id = (str_id) => {
-            const id = parseFloat(str_id);
-            if (isNaN(id)) {
+            const id = Number.parseFloat(str_id);
+            if (Number.isNaN(id)) {
                 throw new Error("Bad message id " + str_id);
             }
             return id;

@@ -133,7 +133,7 @@ exports.build_page = function () {
 
     $("body").on("click", ".default_stream_row .remove-default-stream", function (e) {
         const row = $(this).closest(".default_stream_row");
-        const stream_id = parseInt(row.attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt(row.attr("data-stream-id"), 10);
         exports.delete_default_stream(stream_id, row, $(e.target));
     });
 };

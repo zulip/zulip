@@ -119,8 +119,8 @@ class MessageListData {
     }
 
     get(id) {
-        id = parseFloat(id);
-        if (isNaN(id)) {
+        id = Number.parseFloat(id);
+        if (Number.isNaN(id)) {
             return undefined;
         }
         return this._hash.get(id);
@@ -342,7 +342,7 @@ class MessageListData {
                 const effective = this._next_nonlocal_message(this._items, a_idx, (idx) => idx - 1);
                 if (effective) {
                     // Turn the 10.02 in [11, 10.02, 12] into 11.02
-                    const decimal = parseFloat((msg.id % 1).toFixed(0.02));
+                    const decimal = Number.parseFloat((msg.id % 1).toFixed(0.02));
                     const effective_id = effective.id + decimal;
                     return effective_id < ref_id;
                 }
@@ -440,8 +440,8 @@ class MessageListData {
 
     _add_to_hash(messages) {
         messages.forEach((elem) => {
-            const id = parseFloat(elem.id);
-            if (isNaN(id)) {
+            const id = Number.parseFloat(elem.id);
+            if (Number.isNaN(id)) {
                 throw new Error("Bad message id");
             }
             if (this._is_localonly_id(id)) {

@@ -126,7 +126,7 @@ exports.initialize = function () {
     }
 
     if (vars.msg !== undefined) {
-        const send_now = parseInt(vars.send_after_reload, 10);
+        const send_now = Number.parseInt(vars.send_after_reload, 10);
 
         try {
             // TODO: preserve focus
@@ -148,21 +148,21 @@ exports.initialize = function () {
         }
     }
 
-    const pointer = parseInt(vars.pointer, 10);
+    const pointer = Number.parseInt(vars.pointer, 10);
 
     if (pointer) {
         page_params.initial_pointer = pointer;
     }
-    const offset = parseInt(vars.offset, 10);
+    const offset = Number.parseInt(vars.offset, 10);
     if (offset) {
         page_params.initial_offset = offset;
     }
 
-    const narrow_pointer = parseInt(vars.narrow_pointer, 10);
+    const narrow_pointer = Number.parseInt(vars.narrow_pointer, 10);
     if (narrow_pointer) {
         page_params.initial_narrow_pointer = narrow_pointer;
     }
-    const narrow_offset = parseInt(vars.narrow_offset, 10);
+    const narrow_offset = Number.parseInt(vars.narrow_offset, 10);
     if (narrow_offset) {
         page_params.initial_narrow_offset = narrow_offset;
     }

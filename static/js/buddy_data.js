@@ -214,7 +214,7 @@ exports.get_title_data = function (user_ids_string, is_group) {
     }
 
     // Since it's not a group, user_ids_string is a single user ID.
-    const user_id = parseInt(user_ids_string, 10);
+    const user_id = Number.parseInt(user_ids_string, 10);
     const person = people.get_by_user_id(user_id);
 
     if (person.is_bot) {
@@ -333,7 +333,7 @@ exports.get_items_for_users = function (user_ids) {
 };
 
 exports.huddle_fraction_present = function (huddle) {
-    const user_ids = huddle.split(",").map((s) => parseInt(s, 10));
+    const user_ids = huddle.split(",").map((s) => Number.parseInt(s, 10));
 
     let num_present = 0;
 

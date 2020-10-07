@@ -13,7 +13,7 @@ function should_separate_into_groups(current_msg_time, next_msg_time) {
 
 function all_message_timestamps_to_human_readable() {
     $(".message_time").each(function () {
-        const time = new XDate(parseInt($(this).text(), 10) * 1000);
+        const time = new XDate(Number.parseInt($(this).text(), 10) * 1000);
         $(this).text(time.toString("h:mm TT"));
     });
 }
@@ -54,8 +54,11 @@ exports.initialize = function () {
 
     $(".message_row").each(function () {
         const current_message_row = $(this);
-        const cur_msg_time = parseInt(current_message_row.find(".message_time").first().html(), 10);
-        const next_msg_time = parseInt(
+        const cur_msg_time = Number.parseInt(
+            current_message_row.find(".message_time").first().html(),
+            10,
+        );
+        const next_msg_time = Number.parseInt(
             current_message_row.next().find(".message_time").first().html(),
             10,
         );
@@ -117,7 +120,7 @@ exports.rows = {
         return $("div.message_row", message_group).first();
     },
     id(message_row) {
-        return parseFloat(message_row.attr("zid"));
+        return Number.parseFloat(message_row.attr("zid"));
     },
 };
 
