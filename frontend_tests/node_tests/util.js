@@ -107,12 +107,12 @@ run_test("robust_uri_decode", () => {
     assert.equal(util.robust_uri_decode("xxx%3"), "xxx");
 
     set_global("decodeURIComponent", () => {
-        throw "foo";
+        throw new Error("foo");
     });
     try {
         util.robust_uri_decode("%E0%A4%A");
     } catch (error) {
-        assert.equal(error, "foo");
+        assert.equal(error.message, "foo");
     }
 });
 
