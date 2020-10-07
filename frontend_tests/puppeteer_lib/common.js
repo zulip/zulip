@@ -386,7 +386,7 @@ class CommonUtils {
 
                 const messages = [];
                 $.map($el.find(".message_row .message_content"), (message_row) => {
-                    messages.push(message_row.innerText.trim());
+                    messages.push(message_row.textContent.trim());
                 });
 
                 data.push([key, messages]);

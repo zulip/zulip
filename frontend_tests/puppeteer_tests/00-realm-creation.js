@@ -27,7 +27,7 @@ async function realm_creation_tests(page) {
     await page.goto("http://" + host + "/confirmation_key/");
 
     // Open the confirmation URL
-    const page_content = await page.evaluate(() => document.querySelector("body").innerText);
+    const page_content = await page.evaluate(() => document.querySelector("body").textContent);
     const confirmation_key = await JSON.parse(page_content).confirmation_key;
     const confirmation_url = "http://" + host + "/accounts/do_confirm/" + confirmation_key;
     await page.goto(confirmation_url);
@@ -43,7 +43,7 @@ async function realm_creation_tests(page) {
     // Make sure the realm creation page is loaded correctly by
     // checking the text in <p> tag under pitch class is as expected.
     await page.waitForSelector(".pitch");
-    const text_in_pitch = await page.evaluate(() => document.querySelector(".pitch p").innerText);
+    const text_in_pitch = await page.evaluate(() => document.querySelector(".pitch p").textContent);
     assert(text_in_pitch === "You’re almost there! We just need you to do one last thing.");
 
     // fill the form.
