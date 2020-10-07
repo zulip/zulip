@@ -215,15 +215,7 @@ function get_profile_field_info(id) {
 }
 
 function get_profile_field(id) {
-    const all_custom_fields = page_params.custom_profile_fields;
-    let field;
-    for (let i = 0; i < all_custom_fields.length; i += 1) {
-        if (all_custom_fields[i].id === id) {
-            field = all_custom_fields[i];
-            break;
-        }
-    }
-    return field;
+    return page_params.custom_profile_fields.find((field) => field.id === id);
 }
 
 exports.parse_field_choices_from_field_data = function (field_data) {
