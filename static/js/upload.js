@@ -164,7 +164,7 @@ exports.upload_files = function (uppy, config, files) {
                 type: file.type,
                 data: file,
             });
-        } catch (error) {
+        } catch {
             // Errors are handled by info-visible and upload-error event callbacks.
             break;
         }

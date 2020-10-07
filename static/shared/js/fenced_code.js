@@ -78,7 +78,7 @@ function wrap_tex(tex) {
         return katex.renderToString(tex, {
             displayMode: true,
         });
-    } catch (ex) {
+    } catch {
         return '<span class="tex-error">' + _.escape(tex) + "</span>";
     }
 }

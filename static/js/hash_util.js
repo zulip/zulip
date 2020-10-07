@@ -66,7 +66,7 @@ exports.decodeHashComponent = function (str) {
         // that the url is invalid.
         // TODO: Show possible valid urls to the user.
         return decodeURIComponent(str.replace(/\./g, "%"));
-    } catch (e) {
+    } catch {
         ui_report.error(i18n.t("Invalid URL"), undefined, $("#home-error"), 2000);
         return "";
     }
