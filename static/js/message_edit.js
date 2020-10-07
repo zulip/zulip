@@ -216,7 +216,7 @@ function handle_message_row_edit_keydown(e) {
             if ($(e.target).hasClass("message_edit_content")) {
                 // Pressing Enter to save edits is coupled with Enter to send
                 if (composebox_typeahead.should_enter_send(e)) {
-                    const row = $(".message_edit_content").filter(":focus").closest(".message_row");
+                    const row = $(".message_edit_content:focus").closest(".message_row");
                     const message_edit_save_button = row.find(".message_edit_save");
                     if (message_edit_save_button.prop("disabled")) {
                         // In cases when the save button is disabled

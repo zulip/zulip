@@ -396,7 +396,7 @@ exports.process_tab_key = function () {
 
     let message_edit_form;
 
-    const focused_message_edit_content = $(".message_edit_content").filter(":focus");
+    const focused_message_edit_content = $(".message_edit_content:focus");
     if (focused_message_edit_content.length > 0) {
         message_edit_form = focused_message_edit_content.closest(".message_edit_form");
         // Open message edit forms either have a save button or a close button, but not both.
@@ -404,7 +404,7 @@ exports.process_tab_key = function () {
         return true;
     }
 
-    const focused_message_edit_save = $(".message_edit_save").filter(":focus");
+    const focused_message_edit_save = $(".message_edit_save:focus");
     if (focused_message_edit_save.length > 0) {
         message_edit_form = focused_message_edit_save.closest(".message_edit_form");
         message_edit_form.find(".message_edit_cancel").trigger("focus");
@@ -431,13 +431,13 @@ exports.process_shift_tab_key = function () {
     }
 
     // Shift-Tabbing from the edit message cancel button takes you to save.
-    if ($(".message_edit_cancel").filter(":focus").length > 0) {
+    if ($(".message_edit_cancel:focus").length > 0) {
         $(".message_edit_save").trigger("focus");
         return true;
     }
 
     // Shift-Tabbing from the edit message save button takes you to the content.
-    const focused_message_edit_save = $(".message_edit_save").filter(":focus");
+    const focused_message_edit_save = $(".message_edit_save:focus");
     if (focused_message_edit_save.length > 0) {
         focused_message_edit_save
             .closest(".message_edit_form")
