@@ -13,7 +13,7 @@ function get_formatted_sub_count(current_stream) {
     let sub_count = get_sub_count(current_stream);
     if (sub_count >= 1000) {
         // parseInt() is used to floor the value of division to an integer
-        sub_count = parseInt(sub_count / 1000, 10) + "k";
+        sub_count = Number.parseInt(sub_count / 1000, 10) + "k";
     }
     return sub_count;
 }

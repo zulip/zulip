@@ -128,7 +128,7 @@ exports.apply_markdown = function (message) {
                     misfeature).
                 */
                 full_name = match[1];
-                user_id = parseInt(match[2], 10);
+                user_id = Number.parseInt(match[2], 10);
 
                 if (!helpers.is_valid_full_name_and_user_id(full_name, user_id)) {
                     user_id = undefined;
@@ -316,7 +316,7 @@ function handleEmoji(emoji_name) {
 
 function handleTimestamp(time) {
     let timeobject;
-    if (isNaN(time)) {
+    if (Number.isNaN(Number(time))) {
         // Moment throws a large deprecation warning when it has to fallback
         // to the Date() constructor. We needn't worry here and can let backend
         // Markdown handle any dates that moment misses.

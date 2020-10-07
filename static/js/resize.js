@@ -42,9 +42,9 @@ function get_new_heights() {
 
     res.stream_filters_max_height =
         viewport_height -
-        parseInt($("#left-sidebar").css("marginTop"), 10) -
-        parseInt($(".narrows_panel").css("marginTop"), 10) -
-        parseInt($(".narrows_panel").css("marginBottom"), 10) -
+        Number.parseInt($("#left-sidebar").css("marginTop"), 10) -
+        Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
+        Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
         $("#global_filters").safeOuterHeight(true) -
         $("#streams_header").safeOuterHeight(true);
 
@@ -55,7 +55,7 @@ function get_new_heights() {
 
     const usable_height =
         viewport_height -
-        parseInt($("#right-sidebar").css("marginTop"), 10) -
+        Number.parseInt($("#right-sidebar").css("marginTop"), 10) -
         $("#userlist-header").safeOuterHeight(true) -
         $("#user_search_section").safeOuterHeight(true) -
         invite_user_link_height -
@@ -87,14 +87,14 @@ function left_userlist_get_new_heights() {
 
     res.total_leftlist_height =
         viewport_height -
-        parseInt($("#left-sidebar").css("marginTop"), 10) -
-        parseInt($(".narrows_panel").css("marginTop"), 10) -
-        parseInt($(".narrows_panel").css("marginBottom"), 10) -
+        Number.parseInt($("#left-sidebar").css("marginTop"), 10) -
+        Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
+        Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
         $("#global_filters").safeOuterHeight(true) -
         $("#streams_header").safeOuterHeight(true) -
         $("#userlist-header").safeOuterHeight(true) -
         $("#user_search_section").safeOuterHeight(true) -
-        parseInt(stream_filters.css("marginBottom"), 10);
+        Number.parseInt(stream_filters.css("marginBottom"), 10);
 
     const blocks = [
         {

@@ -131,7 +131,7 @@ function update_announce_stream_state() {
 function get_principals() {
     return Array.from($("#stream_creation_form input:checkbox[name=user]:checked"), (elem) => {
         const label = $(elem).closest(".add-user-label");
-        return parseInt(label.attr("data-user-id"), 10);
+        return Number.parseInt(label.attr("data-user-id"), 10);
     });
 }
 
@@ -171,7 +171,7 @@ function create_stream() {
     data.invite_only = JSON.stringify(invite_only);
     data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
 
-    const stream_post_policy = parseInt(
+    const stream_post_policy = Number.parseInt(
         $("#stream_creation_form input[name=stream-post-policy]:checked").val(),
         10,
     );
@@ -182,7 +182,7 @@ function create_stream() {
         "#stream_creation_form select[name=stream_message_retention_setting]",
     ).val();
     if (message_retention_selection === "retain_for_period") {
-        message_retention_selection = parseInt(
+        message_retention_selection = Number.parseInt(
             $("#stream_creation_form input[name=stream-message-retention-days]").val(),
             10,
         );
@@ -297,13 +297,13 @@ exports.show_new_stream_modal = function () {
 
     $("#stream-checkboxes label.checkbox").on("change", function (e) {
         const elem = $(this);
-        const stream_id = parseInt(elem.attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt(elem.attr("data-stream-id"), 10);
         const checked = elem.find("input").prop("checked");
         const subscriber_ids = stream_data.get_sub_by_id(stream_id).subscribers;
 
         $("#user-checkboxes label.checkbox").each(function () {
             const user_elem = $(this);
-            const user_id = parseInt(user_elem.attr("data-user-id"), 10);
+            const user_id = Number.parseInt(user_elem.attr("data-user-id"), 10);
 
             if (subscriber_ids.has(user_id)) {
                 user_elem.find("input").prop("checked", checked);
@@ -379,7 +379,7 @@ exports.create_handlers_for_users = function (container) {
             // implementation is merely sluggish.
             user_labels.each(function () {
                 const elem = $(this);
-                const user_id = parseInt(elem.attr("data-user-id"), 10);
+                const user_id = Number.parseInt(elem.attr("data-user-id"), 10);
                 const user_checked = filtered_users.has(user_id);
                 const display = user_checked ? "block" : "none";
                 elem.css({display});

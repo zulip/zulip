@@ -28,7 +28,7 @@ class BuddyListConf {
     }
 
     get_key_from_li(opts) {
-        return parseInt(opts.li.expectOne().attr("data-user-id"), 10);
+        return Number.parseInt(opts.li.expectOne().attr("data-user-id"), 10);
     }
 
     get_data_from_keys(opts) {

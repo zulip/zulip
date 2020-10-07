@@ -31,7 +31,7 @@ function get_user_id_for_mention_button(elem) {
     }
 
     if (user_id_string) {
-        return parseInt(user_id_string, 10);
+        return Number.parseInt(user_id_string, 10);
     }
 
     if (email) {
@@ -48,7 +48,7 @@ function get_user_group_id_for_mention_button(elem) {
     const user_group_id = $(elem).attr("data-user-group-id");
 
     if (user_group_id) {
-        return parseInt(user_group_id, 10);
+        return Number.parseInt(user_group_id, 10);
     }
 
     return undefined;
@@ -116,7 +116,7 @@ exports.update_elements = (content) => {
     });
 
     content.find("a.stream").each(function () {
-        const stream_id = parseInt($(this).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id && !$(this).find(".highlight").length) {
             // Display the current name for stream if it is not
             // being displayed in search highlight.
@@ -131,7 +131,7 @@ exports.update_elements = (content) => {
     });
 
     content.find("a.stream-topic").each(function () {
-        const stream_id = parseInt($(this).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id && !$(this).find(".highlight").length) {
             // Display the current name for stream if it is not
             // being displayed in search highlight.

@@ -36,7 +36,7 @@ exports.get = function get(message_id) {
 
         // Try to soldier on, assuming the caller treats message
         // ids as strings.
-        message_id = parseFloat(message_id);
+        message_id = Number.parseFloat(message_id);
     }
 
     return stored_messages.get(message_id);

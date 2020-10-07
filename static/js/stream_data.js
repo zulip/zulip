@@ -317,7 +317,7 @@ exports.slug_to_name = function (slug) {
     */
     const m = /^([\d]+)(-.*)?/.exec(slug);
     if (m) {
-        const stream_id = parseInt(m[1], 10);
+        const stream_id = Number.parseInt(m[1], 10);
         const sub = subs_by_stream_id.get(stream_id);
         if (sub) {
             return sub.name;

@@ -13,7 +13,7 @@ exports.get_message_events = function (message) {
         return undefined;
     }
 
-    message.submessages.sort((m1, m2) => parseInt(m1.id, 10) - parseInt(m2.id, 10));
+    message.submessages.sort((m1, m2) => Number.parseInt(m1.id, 10) - Number.parseInt(m2.id, 10));
 
     const events = message.submessages.map((obj) => ({
         sender_id: obj.sender_id,

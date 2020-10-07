@@ -190,10 +190,10 @@ exports.activate = function (raw_operators, opts) {
     // These two narrowing operators specify what message should be
     // selected and should be the center of the narrow.
     if (filter.has_operator("near")) {
-        id_info.target_id = parseInt(filter.operands("near")[0], 10);
+        id_info.target_id = Number.parseInt(filter.operands("near")[0], 10);
     }
     if (filter.has_operator("id")) {
-        id_info.target_id = parseInt(filter.operands("id")[0], 10);
+        id_info.target_id = Number.parseInt(filter.operands("id")[0], 10);
     }
 
     if (opts.then_select_id > 0) {
