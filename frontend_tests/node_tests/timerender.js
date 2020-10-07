@@ -268,16 +268,16 @@ run_test("last_seen_status_from_date", () => {
 
     assert_same((d) => d.addDays(-61), i18n.t("61 days ago"));
 
-    assert_same((d) => d.addDays(-300), i18n.t("May 06,\xa02015"));
+    assert_same((d) => d.addDays(-300), i18n.t("May 06,\u00A02015"));
 
-    assert_same((d) => d.addDays(-366), i18n.t("Mar 01,\xa02015"));
+    assert_same((d) => d.addDays(-366), i18n.t("Mar 01,\u00A02015"));
 
-    assert_same((d) => d.addYears(-3), i18n.t("Mar 01,\xa02013"));
+    assert_same((d) => d.addYears(-3), i18n.t("Mar 01,\u00A02013"));
 
     // Set base_dateto to May 1 2016 12.30 AM (months are zero based)
     base_date = new XDate(2016, 4, 1, 0, 30);
 
-    assert_same((d) => d.addDays(-91), i18n.t("Jan\xa031"));
+    assert_same((d) => d.addDays(-91), i18n.t("Jan\u00A031"));
 });
 
 run_test("set_full_datetime", () => {

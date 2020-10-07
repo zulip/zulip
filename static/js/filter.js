@@ -243,7 +243,7 @@ class Filter {
                 operand = operand
                     .toString()
                     .toLowerCase()
-                    .replace(/[\u201c\u201d]/g, '"');
+                    .replace(/[\u201C\u201D]/g, '"');
                 break;
             default:
                 operand = operand.toString().toLowerCase();

@@ -21,9 +21,9 @@ function apply_color(input_string, changes) {
     input_string = input_string.slice(2);
 
     const formatter = new Map([
-        ["delete", (string) => "\u001b[31m" + string + "\u001b[0m"],
-        ["insert", (string) => "\u001b[32m" + string + "\u001b[0m"],
-        ["replace", (string) => "\u001b[33m" + string + "\u001b[0m"],
+        ["delete", (string) => "\u001B[31m" + string + "\u001B[0m"],
+        ["insert", (string) => "\u001B[32m" + string + "\u001B[0m"],
+        ["replace", (string) => "\u001B[33m" + string + "\u001B[0m"],
     ]);
     changes.forEach((change) => {
         if (formatter.has(change.tag)) {
@@ -119,7 +119,7 @@ function diff_strings(string_0, string_1) {
     });
 
     const emphasize_codes = (string) =>
-        "\u001b[34m" + string.slice(0, 1) + "\u001b[0m" + string.slice(1);
+        "\u001B[34m" + string.slice(0, 1) + "\u001B[0m" + string.slice(1);
     output_lines = output_lines.map(emphasize_codes);
 
     return output_lines.join("\n");
