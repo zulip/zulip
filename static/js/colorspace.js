@@ -35,9 +35,9 @@ exports.luminance_to_lightness = function (luminance) {
 
 exports.getDecimalColor = function (hexcolor) {
     return {
-        r: Number.parseInt(hexcolor.substr(1, 2), 16),
-        g: Number.parseInt(hexcolor.substr(3, 2), 16),
-        b: Number.parseInt(hexcolor.substr(5, 2), 16),
+        r: Number.parseInt(hexcolor.slice(1, 3), 16),
+        g: Number.parseInt(hexcolor.slice(3, 5), 16),
+        b: Number.parseInt(hexcolor.slice(5, 7), 16),
     };
 };
 

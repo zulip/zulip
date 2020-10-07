@@ -358,7 +358,7 @@ function process_notification(notification) {
                 break;
             }
         }
-        content = content.substring(0, i);
+        content = content.slice(0, i);
         content += " [...]";
     }
 

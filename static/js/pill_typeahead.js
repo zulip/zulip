@@ -33,7 +33,7 @@ exports.set_up = function (input, pills, opts) {
             query = query.replace(/\u00A0/g, String.fromCharCode(32));
 
             if (include_streams(query)) {
-                query = query.trim().substring(1);
+                query = query.trim().slice(1);
                 return item.name.toLowerCase().indexOf(query) !== -1;
             }
 
@@ -47,7 +47,7 @@ exports.set_up = function (input, pills, opts) {
         },
         sorter(matches) {
             if (include_streams(this.query)) {
-                return typeahead_helper.sort_streams(matches, this.query.trim().substring(1));
+                return typeahead_helper.sort_streams(matches, this.query.trim().slice(1));
             }
 
             return typeahead_helper.sort_recipientbox_typeahead(this.query, matches, "");

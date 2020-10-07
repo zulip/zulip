@@ -64,7 +64,7 @@ exports.get_active_data = function () {
 
 function get_hash_safe() {
     if (typeof window !== "undefined" && typeof window.location.hash === "string") {
-        return window.location.hash.substr(1);
+        return window.location.hash.slice(1);
     }
 
     return "";
@@ -94,7 +94,7 @@ function should_list_all_streams() {
 // this finds the stream that is actively open in the settings and focused in
 // the left side.
 exports.active_stream = function () {
-    const hash_components = window.location.hash.substr(1).split(/\//);
+    const hash_components = window.location.hash.slice(1).split(/\//);
 
     // if the string casted to a number is valid, and another component
     // after exists then it's a stream name/id pair.
