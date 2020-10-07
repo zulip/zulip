@@ -178,7 +178,7 @@ export function process_fenced_code(content) {
                     if (line === fence) {
                         this.done();
                     } else {
-                        lines.push(line.trimRight());
+                        lines.push(line.trimEnd());
                     }
                 },
 

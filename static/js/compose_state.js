@@ -34,7 +34,7 @@ function get_or_set(fieldname, keep_leading_whitespace) {
         if (newval !== undefined) {
             elem.val(newval);
         }
-        return keep_leading_whitespace ? oldval.trimRight() : oldval.trim();
+        return keep_leading_whitespace ? oldval.trimEnd() : oldval.trim();
     };
 }
 
