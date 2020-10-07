@@ -26,7 +26,7 @@ const show_step = function ($process, step) {
 };
 
 const get_step = function ($process) {
-    return $process.find("[data-step]").filter(":visible").data("step");
+    return $process.find("[data-step]:visible").data("step");
 };
 
 function should_show_notifications(ls) {

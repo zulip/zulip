@@ -189,7 +189,7 @@ exports.hide_emoji_popover = function () {
 };
 
 function get_selected_emoji() {
-    return $(".emoji-popover-emoji").filter(":focus")[0];
+    return $(".emoji-popover-emoji:focus")[0];
 }
 
 function get_rendered_emoji(section, index) {
