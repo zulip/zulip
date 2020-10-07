@@ -11,7 +11,7 @@ function reset_state() {
 }
 
 exports.is_active = function () {
-    return !!open_overlay_name;
+    return Boolean(open_overlay_name);
 };
 
 exports.is_modal_open = function () {

@@ -54,6 +54,7 @@
         "no-else-return": "error",
         "no-eq-null": "error",
         "no-eval": "error",
+        "no-implicit-coercion": "error",
         "no-implied-eval": "error",
         "no-inner-declarations": "off",
         "no-iterator": "error",
