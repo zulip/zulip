@@ -22,9 +22,6 @@ const _navigator = {
 };
 
 const _document = {
-    getElementById() {
-        return $("#compose-textarea");
-    },
     execCommand() {
         return false;
     },
@@ -459,6 +456,7 @@ run_test("markdown_shortcuts", () => {
         );
     };
 
+    $("#compose-textarea")[0] = {};
     $("#compose-textarea").range = function () {
         return {
             start: range_start,

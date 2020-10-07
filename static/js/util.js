@@ -283,7 +283,7 @@ exports.convert_message_topic = function (message) {
 
 exports.clean_user_content_links = function (html) {
     const content = new DOMParser().parseFromString(html, "text/html").body;
-    for (const elt of content.getElementsByTagName("a")) {
+    for (const elt of content.querySelectorAll("a")) {
         // Ensure that all external links have target="_blank"
         // rel="opener noreferrer".  This ensures that external links
         // never replace the Zulip webapp while also protecting

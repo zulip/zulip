@@ -765,7 +765,7 @@ exports.handle_keydown = function (event, textarea) {
             // Ctrl + L: Insert a link to selected text
             wrap_text_with_markdown("[", "](url)");
             const position = textarea.caret();
-            const txt = document.getElementById(textarea[0].id);
+            const txt = textarea[0];
 
             // Include selected text in between [] parentheses and insert '(url)'
             // where "url" should be automatically selected.
