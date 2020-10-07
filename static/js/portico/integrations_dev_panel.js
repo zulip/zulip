@@ -84,7 +84,7 @@ function get_custom_http_headers() {
         try {
             // Let JavaScript validate the JSON for us.
             custom_headers = JSON.stringify(JSON.parse(custom_headers));
-        } catch (err) {
+        } catch {
             set_results_notice("Custom HTTP headers are not in a valid JSON format.", "warning");
             return undefined;
         }
@@ -189,7 +189,7 @@ function handle_unsuccessful_response(response) {
         const status_code = response.statusCode().status;
         response = JSON.parse(response.responseText);
         set_results_notice("Result: " + "(" + status_code + ") " + response.msg, "warning");
-    } catch (err) {
+    } catch {
         // If the response is not a JSON response, then it is probably
         // Django returning an HTML response containing a stack trace
         // with useful debugging information regarding the backend
@@ -262,7 +262,7 @@ function send_webhook_fixture_message() {
             // Let JavaScript validate the JSON for us.
             body = JSON.stringify(JSON.parse(body));
             is_json = true;
-        } catch (err) {
+        } catch {
             set_results_notice("Invalid JSON in fixture body.", "warning");
             return;
         }
