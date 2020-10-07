@@ -27,6 +27,7 @@
     "emoji-datasource-google-blob": "npm:emoji-datasource-google@^3.0.0",
     "emoji-datasource-twitter": "^5.0.1",
     "error-stack-parser": "^2.0.2",
+    "eslint-plugin-unicorn": "^22.0.0",
     "expose-loader": "^1.0.0",
     "file-loader": "^6.0.0",
     "flatpickr": "^4.5.7",
