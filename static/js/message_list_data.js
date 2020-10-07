@@ -442,7 +442,7 @@ class MessageListData {
         messages.forEach((elem) => {
             const id = Number.parseFloat(elem.id);
             if (Number.isNaN(id)) {
-                throw new Error("Bad message id");
+                throw new TypeError("Bad message id");
             }
             if (this._is_localonly_id(id)) {
                 this._local_only.add(id);
