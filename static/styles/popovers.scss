@@ -66,6 +66,10 @@
         display: none;
         margin-right: 10px;
 
+        @media (max-width: 485px) {
+            display: flex;
+        }
+
         .sp-container {
             background-color: hsl(0, 0%, 100%);
             cursor: pointer;
