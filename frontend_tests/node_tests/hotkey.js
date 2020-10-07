@@ -174,13 +174,13 @@ run_test("basic_chars", () => {
         };
         try {
             return hotkey.process_keypress(e);
-        } catch (err) {
+        } catch (error) {
             // An exception will be thrown here if a different
             // function is called than the one declared.  Try to
             // provide a useful error message.
             // add a newline to separate from other console output.
             console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
-            throw err;
+            throw error;
         }
     }
 
@@ -384,13 +384,13 @@ run_test("motion_keys", () => {
 
         try {
             return hotkey.process_keydown(e);
-        } catch (err) {
+        } catch (error) {
             // An exception will be thrown here if a different
             // function is called than the one declared.  Try to
             // provide a useful error message.
             // add a newline to separate from other console output.
             console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
-            throw err;
+            throw error;
         }
     }
 

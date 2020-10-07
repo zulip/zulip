@@ -28,8 +28,8 @@ exports.process_submessages = function (in_opts) {
     // damage that may be triggered by one rogue message.
     try {
         return exports.do_process_submessages(in_opts);
-    } catch (err) {
-        blueslip.error("in process_submessages: " + err.message);
+    } catch (error) {
+        blueslip.error("in process_submessages: " + error.message);
         return undefined;
     }
 };
