@@ -188,11 +188,11 @@ function populate_messages_sent_over_time(data) {
             });
             const hover_text_ids = ["#hover_me", "#hover_human", "#hover_bot"];
             const hover_value_ids = ["#hover_me_value", "#hover_human_value", "#hover_bot_value"];
-            for (let i = 0; i < values.length; i += 1) {
-                if (values[i] !== null) {
+            for (const [i, value] of values.entries()) {
+                if (value !== null) {
                     document.querySelector(hover_text_ids[i]).style.display = "inline";
                     document.querySelector(hover_value_ids[i]).style.display = "inline";
-                    document.querySelector(hover_value_ids[i]).textContent = values[i];
+                    document.querySelector(hover_value_ids[i]).textContent = value;
                 } else {
                     document.querySelector(hover_text_ids[i]).style.display = "none";
                     document.querySelector(hover_value_ids[i]).style.display = "none";
@@ -737,10 +737,10 @@ function populate_number_of_users(data) {
                 "#users_hover_15day_value",
                 "#users_hover_all_time_value",
             ];
-            for (let i = 0; i < values.length; i += 1) {
-                if (values[i] !== null) {
+            for (const [i, value] of values.entries()) {
+                if (value !== null) {
                     document.querySelector(hover_value_ids[i]).style.display = "inline";
-                    document.querySelector(hover_value_ids[i]).textContent = values[i];
+                    document.querySelector(hover_value_ids[i]).textContent = value;
                 } else {
                     document.querySelector(hover_value_ids[i]).style.display = "none";
                 }
@@ -867,11 +867,11 @@ function populate_messages_read_over_time(data) {
             });
             const read_hover_text_ids = ["#read_hover_me", "#read_hover_everyone"];
             const read_hover_value_ids = ["#read_hover_me_value", "#read_hover_everyone_value"];
-            for (let i = 0; i < values.length; i += 1) {
-                if (values[i] !== null) {
+            for (const [i, value] of values.entries()) {
+                if (value !== null) {
                     document.querySelector(read_hover_text_ids[i]).style.display = "inline";
                     document.querySelector(read_hover_value_ids[i]).style.display = "inline";
-                    document.querySelector(read_hover_value_ids[i]).textContent = values[i];
+                    document.querySelector(read_hover_value_ids[i]).textContent = value;
                 } else {
                     document.querySelector(read_hover_text_ids[i]).style.display = "none";
                     document.querySelector(read_hover_value_ids[i]).style.display = "none";

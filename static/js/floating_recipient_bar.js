@@ -20,7 +20,7 @@ exports.first_visible_message = function (bar) {
     const frb_top = frb_bottom - 25;
     let result;
 
-    for (let i = 0; i < messages.length; i += 1) {
+    for (const message_element of messages) {
         // The details of this comparison function are sensitive, since we're
         // balancing between three possible bugs:
         //
@@ -47,7 +47,7 @@ exports.first_visible_message = function (bar) {
         // message_viewport.scrollTop() to set precise scrolling
         // positions determines the value for date_bar_height_offset.
 
-        let message = $(messages[i]);
+        let message = $(message_element);
         const message_bottom = top_offset(message) + message.safeOuterHeight();
         const date_bar_height_offset = 10;
 
