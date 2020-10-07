@@ -111,8 +111,8 @@ run_test("robust_uri_decode", () => {
     });
     try {
         util.robust_uri_decode("%E0%A4%A");
-    } catch (e) {
-        assert.equal(e, "foo");
+    } catch (error) {
+        assert.equal(error, "foo");
     }
 });
 

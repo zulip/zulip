@@ -31,8 +31,12 @@ function get_events_success(events) {
     for (const event of events) {
         try {
             get_events_params.last_event_id = Math.max(get_events_params.last_event_id, event.id);
-        } catch (ex) {
-            blueslip.error("Failed to update last_event_id", {event: clean_event(event)}, ex.stack);
+        } catch (error) {
+            blueslip.error(
+                "Failed to update last_event_id",
+                {event: clean_event(event)},
+                error.stack,
+            );
         }
     }
 
@@ -81,11 +85,11 @@ function get_events_success(events) {
     for (const event of events) {
         try {
             dispatch_event(event);
-        } catch (ex1) {
+        } catch (error) {
             blueslip.error(
-                "Failed to process an event\n" + blueslip.exception_msg(ex1),
+                "Failed to process an event\n" + blueslip.exception_msg(error),
                 {event: clean_event(event)},
-                ex1.stack,
+                error.stack,
             );
         }
     }
@@ -113,11 +117,11 @@ function get_events_success(events) {
 
                 message_events.insert_new_messages(messages, sent_by_this_client);
             }
-        } catch (ex2) {
+        } catch (error) {
             blueslip.error(
-                "Failed to insert new messages\n" + blueslip.exception_msg(ex2),
+                "Failed to insert new messages\n" + blueslip.exception_msg(error),
                 undefined,
-                ex2.stack,
+                error.stack,
             );
         }
     }
@@ -129,11 +133,11 @@ function get_events_success(events) {
     if (update_message_events.length !== 0) {
         try {
             message_events.update_messages(update_message_events);
-        } catch (ex3) {
+        } catch (error) {
             blueslip.error(
-                "Failed to update messages\n" + blueslip.exception_msg(ex3),
+                "Failed to update messages\n" + blueslip.exception_msg(error),
                 undefined,
-                ex3.stack,
+                error.stack,
             );
         }
     }
@@ -208,11 +212,11 @@ function get_events(options) {
                 hide_ui_connection_error();
 
                 get_events_success(data.events);
-            } catch (ex) {
+            } catch (error) {
                 blueslip.error(
-                    "Failed to handle get_events success\n" + blueslip.exception_msg(ex),
+                    "Failed to handle get_events success\n" + blueslip.exception_msg(error),
                     undefined,
-                    ex.stack,
+                    error.stack,
                 );
             }
             get_events_timeout = setTimeout(get_events, 0);
@@ -251,11 +255,11 @@ function get_events(options) {
                 } else {
                     hide_ui_connection_error();
                 }
-            } catch (ex) {
+            } catch (error) {
                 blueslip.error(
-                    "Failed to handle get_events error\n" + blueslip.exception_msg(ex),
+                    "Failed to handle get_events error\n" + blueslip.exception_msg(error),
                     undefined,
-                    ex.stack,
+                    error.stack,
                 );
             }
             const retry_sec = Math.min(90, Math.exp(get_events_failures / 2));
