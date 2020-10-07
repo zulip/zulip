@@ -1,6 +1,6 @@
 /// <reference types="webpack-dev-server" />
 
-import {basename, resolve} from "path";
+import path from "path";
 
 import CleanCss from "clean-css";
 import HtmlWebpackPlugin from "html-webpack-plugin";
@@ -16,7 +16,7 @@ import assets from "./tools/webpack.assets.json";
 const cacheLoader: webpack.RuleSetUseItem = {
     loader: "cache-loader",
     options: {
-        cacheDirectory: resolve(__dirname, "var/webpack-cache"),
+        cacheDirectory: path.resolve(__dirname, "var/webpack-cache"),
     },
 };
 
@@ -73,8 +73,8 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
                 {
                     test: /\.(js|ts)$/,
                     include: [
-                        resolve(__dirname, "static/shared/js"),
-                        resolve(__dirname, "static/js"),
+                        path.resolve(__dirname, "static/shared/js"),
+                        path.resolve(__dirname, "static/js"),
                     ],
                     use: [cacheLoader, "babel-loader"],
                 },
@@ -90,7 +90,7 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
                 // regular css files
                 {
                     test: /\.css$/,
-                    exclude: resolve(__dirname, "static/styles"),
+                    exclude: path.resolve(__dirname, "static/styles"),
                     use: [
                         {
                             loader: MiniCssExtractPlugin.loader,
@@ -110,7 +110,7 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
                 // PostCSS loader
                 {
                     test: /\.css$/,
-                    include: resolve(__dirname, "static/styles"),
+                    include: path.resolve(__dirname, "static/styles"),
                     use: [
                         {
                             loader: MiniCssExtractPlugin.loader,
@@ -178,7 +178,7 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
             ],
         },
         output: {
-            path: resolve(__dirname, "static/webpack-bundles"),
+            path: path.resolve(__dirname, "static/webpack-bundles"),
             filename: production ? "[name].[contenthash].js" : "[name].js",
             chunkFilename: production ? "[contenthash].js" : "[id].js",
         },
@@ -197,7 +197,7 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
                 new OptimizeCssAssetsPlugin({
                     cssProcessor: {
                         async process(css, options: any) {
-                            const filename = basename(options.to);
+                            const filename = path.basename(options.to);
                             const result = await new CleanCss(options).minify({
                                 [filename]: {
                                     styles: css,
@@ -278,7 +278,7 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
             "katex-cli": "shebang-loader!katex/cli",
         },
         output: {
-            path: resolve(__dirname, "static/webpack-bundles"),
+            path: path.resolve(__dirname, "static/webpack-bundles"),
             filename: "[name].js",
         },
     };
