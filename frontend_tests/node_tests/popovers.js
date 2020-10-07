@@ -181,7 +181,7 @@ run_test("sender_hover", (override) => {
                 return "content-html";
 
             default:
-                throw Error("unrecognized template: " + fn);
+                throw new Error("unrecognized template: " + fn);
         }
     });
 
@@ -247,7 +247,7 @@ run_test("actions_popover", (override) => {
                 );
                 return "actions-content";
             default:
-                throw Error("unrecognized template: " + fn);
+                throw new Error("unrecognized template: " + fn);
         }
     });
 
