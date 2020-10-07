@@ -99,7 +99,7 @@ exports.with_overrides = function (test_function) {
 
     const override = function (name, f) {
         if (typeof f !== "function") {
-            throw new Error("You can only override with a function.");
+            throw new TypeError("You can only override with a function.");
         }
 
         unused_funcs.set(name, true);
