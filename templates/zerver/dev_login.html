@@ -19,6 +19,9 @@ page can be easily identified in it's respective JavaScript file -->
             <div class="control-group">
                 <div class="controls">
                     <div class="group">
+                        <h2>{{_('Anonymous user') }}</h2>
+                        <p><input type="submit" formaction="{{ current_realm.uri }}{{ url('login-local') }}"
+                            name="prefers_web_public_view" class="btn-direct btn-admin" value="Anonymous login" /></p>
                         <h2>{{_('Owners') }}</h2>
                         {% if direct_owners %}
                             {% for direct_owner in direct_owners %}
