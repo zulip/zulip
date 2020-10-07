@@ -13,7 +13,7 @@ function getScrollbarWidth() {
     outer.style.width = "100px";
     outer.style.msOverflowStyle = "scrollbar"; // needed for WinJS apps
 
-    document.body.appendChild(outer);
+    document.body.append(outer);
 
     const widthNoScroll = outer.offsetWidth;
     // force scrollbars
@@ -22,12 +22,12 @@ function getScrollbarWidth() {
     // add innerdiv
     const inner = document.createElement("div");
     inner.style.width = "100%";
-    outer.appendChild(inner);
+    outer.append(inner);
 
     const widthWithScroll = inner.offsetWidth;
 
     // remove divs
-    outer.parentNode.removeChild(outer);
+    outer.remove();
 
     return widthNoScroll - widthWithScroll;
 }
