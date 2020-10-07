@@ -733,7 +733,7 @@ exports.build_page = function () {
                     $("#id_realm_message_content_edit_limit_minutes"),
                 );
                 // Disable editing if the parsed time limit is 0 seconds
-                data.allow_message_editing = !!data.message_content_edit_limit_seconds;
+                data.allow_message_editing = Boolean(data.message_content_edit_limit_seconds);
             } else {
                 data.allow_message_editing = true;
                 data.message_content_edit_limit_seconds = settings_config.msg_edit_limit_dropdown_values.get(
@@ -748,7 +748,7 @@ exports.build_page = function () {
                     $("#id_realm_message_content_delete_limit_minutes"),
                 );
                 // Disable deleting if the parsed time limit is 0 seconds
-                data.allow_message_deleting = !!data.message_content_delete_limit_seconds;
+                data.allow_message_deleting = Boolean(data.message_content_delete_limit_seconds);
             } else {
                 data.allow_message_deleting = true;
                 data.message_content_delete_limit_seconds = settings_config.msg_delete_limit_dropdown_values.get(
