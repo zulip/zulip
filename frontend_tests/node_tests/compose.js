@@ -1487,7 +1487,7 @@ run_test("on_events", () => {
         handler(ev);
 
         // video link ids consist of 15 random digits
-        let video_link_regex = /\[translated: Click to join video call\]\(https:\/\/meet.jit.si\/\d{15}\)/;
+        let video_link_regex = /\[translated: Click to join video call]\(https:\/\/meet.jit.si\/\d{15}\)/;
         assert.match(syntax_to_insert, video_link_regex);
 
         page_params.jitsi_server_url = null;
@@ -1512,7 +1512,7 @@ run_test("on_events", () => {
         };
 
         handler(ev);
-        video_link_regex = /\[translated: Click to join video call\]\(example\.zoom\.com\)/;
+        video_link_regex = /\[translated: Click to join video call]\(example\.zoom\.com\)/;
         assert.match(syntax_to_insert, video_link_regex);
 
         page_params.realm_video_chat_provider =
@@ -1527,7 +1527,7 @@ run_test("on_events", () => {
         };
 
         handler(ev);
-        video_link_regex = /\[translated: Click to join video call\]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
+        video_link_regex = /\[translated: Click to join video call]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
         assert.match(syntax_to_insert, video_link_regex);
     })();
 

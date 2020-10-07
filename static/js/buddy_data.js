@@ -121,7 +121,7 @@ function filter_user_ids(user_filter_text, user_ids) {
 
     user_ids = user_ids.filter((user_id) => !people.is_my_user_id(user_id));
 
-    let search_terms = user_filter_text.toLowerCase().split(/[|,]+/);
+    let search_terms = user_filter_text.toLowerCase().split(/[,|]+/);
     search_terms = search_terms.map((s) => s.trim());
 
     const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));

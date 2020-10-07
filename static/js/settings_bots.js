@@ -68,7 +68,7 @@ function is_local_part(value, element) {
     // Adapted from Django's EmailValidator
     return (
         this.optional(element) ||
-        /^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*$/i.test(value)
+        /^[\w!#$%&'*+/=?^`{|}~-]+(\.[\w!#$%&'*+/=?^`{|}~-]+)*$/i.test(value)
     );
 }
 

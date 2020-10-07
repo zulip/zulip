@@ -676,19 +676,19 @@ run_test("python_to_js_filter", () => {
     // to update_realm_filter_rules.
     markdown.update_realm_filter_rules([["/a(?im)a/g"], ["/a(?L)a/g"]]);
     let actual_value = marked.InlineLexer.rules.zulip.realm_filters;
-    let expected_value = [/\/aa\/g(?![\w])/gim, /\/aa\/g(?![\w])/g];
+    let expected_value = [/\/aa\/g(?!\w)/gim, /\/aa\/g(?!\w)/g];
     assert.deepEqual(actual_value, expected_value);
     // Test case with multiple replacements.
     markdown.update_realm_filter_rules([
-        ["#cf(?P<contest>[0-9]+)(?P<problem>[A-Z][0-9A-Z]*)", "http://google.com"],
+        ["#cf(?P<contest>\\d+)(?P<problem>[A-Z][\\dA-Z]*)", "http://google.com"],
     ]);
     actual_value = marked.InlineLexer.rules.zulip.realm_filters;
-    expected_value = [/#cf([0-9]+)([A-Z][0-9A-Z]*)(?![\w])/g];
+    expected_value = [/#cf(\d+)([A-Z][\dA-Z]*)(?!\w)/g];
     assert.deepEqual(actual_value, expected_value);
     // Test incorrect syntax.
     blueslip.expect(
         "error",
-        "python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?![\\w])/: Unterminated group",
+        "python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?!\\w)/: Unterminated group",
     );
     markdown.update_realm_filter_rules([["!@#@(!#&((!&(@#(", "http://google.com"]]);
     actual_value = marked.InlineLexer.rules.zulip.realm_filters;

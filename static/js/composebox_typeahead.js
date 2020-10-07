@@ -278,7 +278,7 @@ exports.tokenize_compose_str = function (s) {
             case "_":
                 if (i === 0) {
                     return s;
-                } else if (/[\s(){}[\]]/.test(s[i - 1])) {
+                } else if (/[\s()[\]{}]/.test(s[i - 1])) {
                     return s.slice(i);
                 }
                 break;
@@ -612,7 +612,7 @@ exports.get_candidates = function (query) {
         // as :P or :-p
         // Also, if the user has only typed a colon and nothing after,
         // no need to match yet.
-        if (/^:-.?$/.test(current_token) || /^:[^a-z+]?$/.test(current_token)) {
+        if (/^:-.?$/.test(current_token) || /^:[^+a-z]?$/.test(current_token)) {
             return false;
         }
         // Don't autocomplete if there is a space following a ':'

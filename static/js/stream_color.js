@@ -154,13 +154,13 @@ exports.get_color_class = _.memoize((color) => {
     const channel = [0, 0, 0];
     let mult = 1;
 
-    match = /^#([\da-fA-F]{2})([\da-fA-F]{2})([\da-fA-F]{2})$/.exec(color);
+    match = /^#([\dA-Fa-f]{2})([\dA-Fa-f]{2})([\dA-Fa-f]{2})$/.exec(color);
     if (!match) {
         // 3-digit shorthand; Spectrum gives this e.g. for pure black.
         // Multiply each digit by 16+1.
         mult = 17;
 
-        match = /^#([\da-fA-F])([\da-fA-F])([\da-fA-F])$/.exec(color);
+        match = /^#([\dA-Fa-f])([\dA-Fa-f])([\dA-Fa-f])$/.exec(color);
         if (!match) {
             // Can't understand color.
             return "";

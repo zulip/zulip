@@ -1,17 +1,17 @@
 export function detect_user_os() {
-    if (/Android/i.test(navigator.userAgent)) {
+    if (/android/i.test(navigator.userAgent)) {
         return "android";
     }
-    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
         return "ios";
     }
     if (common.has_mac_keyboard()) {
         return "mac";
     }
-    if (/Win/i.test(navigator.userAgent)) {
+    if (/win/i.test(navigator.userAgent)) {
         return "windows";
     }
-    if (/Linux/i.test(navigator.userAgent)) {
+    if (/linux/i.test(navigator.userAgent)) {
         return "linux";
     }
     return "mac"; // if unable to determine OS return Mac by default
