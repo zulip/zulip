@@ -594,12 +594,11 @@ exports.register_topic_handlers = function () {
             $("#topic_stream_edit_form_error").show();
         }
 
-        const params = $("#move_topic_form")
-            .serializeArray()
-            .reduce((obj, item) => {
-                obj[item.name] = item.value;
-                return obj;
-            }, {});
+        const params = Object.fromEntries(
+            $("#move_topic_form")
+                .serializeArray()
+                .map(({name, value}) => [name, value]),
+        );
 
         const {old_topic_name, select_stream_id} = params;
         let {
