@@ -85,6 +85,7 @@
             }
         ],
         "no-use-before-define": ["error", {"functions": false}],
+        "no-useless-concat": "error",
         "no-useless-constructor": "error",
         "no-var": "error",
         "object-shorthand": "error",

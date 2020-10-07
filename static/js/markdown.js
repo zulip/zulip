@@ -102,7 +102,7 @@ exports.apply_markdown = function (message) {
         userMentionHandler(mention, silently) {
             if (mention === "all" || mention === "everyone" || mention === "stream") {
                 message.mentioned = true;
-                return '<span class="user-mention" data-user-id="*">' + "@" + mention + "</span>";
+                return `<span class="user-mention" data-user-id="*">@${_.escape(mention)}</span>`;
             }
 
             let full_name;
@@ -160,15 +160,15 @@ exports.apply_markdown = function (message) {
             }
             let str = "";
             if (silently) {
-                str += '<span class="user-mention silent" data-user-id="' + user_id + '">';
+                str += `<span class="user-mention silent" data-user-id="${_.escape(user_id)}">`;
             } else {
-                str += '<span class="user-mention" data-user-id="' + user_id + '">@';
+                str += `<span class="user-mention" data-user-id="${_.escape(user_id)}">@`;
             }
 
             // If I mention "@aLiCe sMITH", I still want "Alice Smith" to
             // show in the pill.
             const actual_full_name = helpers.get_actual_name_from_user_id(user_id);
-            return str + _.escape(actual_full_name) + "</span>";
+            return `${str}${_.escape(actual_full_name)}</span>`;
         },
         groupMentionHandler(name) {
             const group = helpers.get_user_group_from_name(name);
@@ -176,14 +176,9 @@ exports.apply_markdown = function (message) {
                 if (helpers.is_member_of_user_group(group.id, helpers.my_user_id())) {
                     message.mentioned = true;
                 }
-                return (
-                    '<span class="user-group-mention" data-user-group-id="' +
-                    group.id +
-                    '">' +
-                    "@" +
-                    _.escape(group.name) +
-                    "</span>"
-                );
+                return `<span class="user-group-mention" data-user-group-id="${_.escape(
+                    group.id,
+                )}">@${_.escape(group.name)}</span>`;
             }
             return undefined;
         },
@@ -251,19 +246,9 @@ exports.is_status_message = function (raw_content) {
 };
 
 function make_emoji_span(codepoint, title, alt_text) {
-    return (
-        '<span aria-label="' +
-        title +
-        '"' +
-        ' class="emoji emoji-' +
-        codepoint +
-        '"' +
-        ' role="img" title="' +
-        title +
-        '">' +
-        alt_text +
-        "</span>"
-    );
+    return `<span aria-label="${_.escape(title)}" class="emoji emoji-${_.escape(
+        codepoint,
+    )}" role="img" title="${_.escape(title)}">${_.escape(alt_text)}</span>`;
 }
 
 function handleUnicodeEmoji(unicode_emoji) {
@@ -293,17 +278,9 @@ function handleEmoji(emoji_name) {
     const emoji_url = emoji.get_realm_emoji_url(emoji_name);
 
     if (emoji_url) {
-        return (
-            '<img alt="' +
-            alt_text +
-            '"' +
-            ' class="emoji" src="' +
-            emoji_url +
-            '"' +
-            ' title="' +
-            title +
-            '">'
-        );
+        return `<img alt="${_.escape(alt_text)}" class="emoji" src="${_.escape(
+            emoji_url,
+        )}" title="${_.escape(title)}">`;
     }
 
     const codepoint = emoji.get_emoji_codepoint(emoji_name);
@@ -350,18 +327,9 @@ function handleStream(stream_name) {
         return undefined;
     }
     const href = helpers.stream_hash(stream.stream_id);
-    return (
-        '<a class="stream" data-stream-id="' +
-        stream.stream_id +
-        '" ' +
-        'href="/' +
-        href +
-        '"' +
-        ">" +
-        "#" +
-        _.escape(stream.name) +
-        "</a>"
-    );
+    return `<a class="stream" data-stream-id="${_.escape(stream.stream_id)}" href="/${_.escape(
+        href,
+    )}">#${_.escape(stream.name)}</a>`;
 }
 
 function handleStreamTopic(stream_name, topic) {
@@ -370,18 +338,10 @@ function handleStreamTopic(stream_name, topic) {
         return undefined;
     }
     const href = helpers.stream_topic_hash(stream.stream_id, topic);
-    const text = "#" + _.escape(stream.name) + " > " + _.escape(topic);
-    return (
-        '<a class="stream-topic" data-stream-id="' +
-        stream.stream_id +
-        '" ' +
-        'href="/' +
-        href +
-        '"' +
-        ">" +
-        text +
-        "</a>"
-    );
+    const text = `#${stream.name} > ${topic}`;
+    return `<a class="stream-topic" data-stream-id="${_.escape(
+        stream.stream_id,
+    )}" href="/${_.escape(href)}">${_.escape(text)}</a>`;
 }
 
 function handleRealmFilter(pattern, matches) {
@@ -404,7 +364,7 @@ function handleTex(tex, fullmatch) {
     } catch (error) {
         if (error.message.startsWith("KaTeX parse error")) {
             // TeX syntax error
-            return '<span class="tex-error">' + _.escape(fullmatch) + "</span>";
+            return `<span class="tex-error">${_.escape(fullmatch)}</span>`;
         }
         blueslip.error(error);
         return undefined;

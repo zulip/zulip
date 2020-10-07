@@ -885,7 +885,7 @@ run_test("updates", () => {
     // old email.
     blueslip.expect(
         "warn",
-        "Obsolete email passed to get_by_email: " + "FOO@example.com new email = bar@example.com",
+        "Obsolete email passed to get_by_email: FOO@example.com new email = bar@example.com",
     );
     person = people.get_by_email(old_email);
     assert.equal(person.user_id, user_id);

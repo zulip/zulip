@@ -188,7 +188,7 @@ function handle_unsuccessful_response(response) {
     try {
         const status_code = response.statusCode().status;
         response = JSON.parse(response.responseText);
-        set_results_notice("Result: " + "(" + status_code + ") " + response.msg, "warning");
+        set_results_notice(`Result: (${status_code}) ${response.msg}`, "warning");
     } catch {
         // If the response is not a JSON response, then it is probably
         // Django returning an HTML response containing a stack trace

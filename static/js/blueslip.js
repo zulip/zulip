@@ -155,7 +155,7 @@ function report_error(msg, stack, opts) {
         error() {
             if (opts.show_ui_msg && ui_report !== undefined) {
                 ui_report.message(
-                    "Oops.  It seems something has gone wrong. " + "Please try reloading the page.",
+                    "Oops.  It seems something has gone wrong. Please try reloading the page.",
                     $("#home-error"),
                     "alert-error",
                 );

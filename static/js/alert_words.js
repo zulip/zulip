@@ -37,10 +37,7 @@ exports.process_message = function (message) {
         const before_punctuation = "\\s|^|>|[\\(\\\".,';\\[]";
         const after_punctuation = "\\s|$|<|[\\)\\\"\\?!:.,';\\]!]";
 
-        const regex = new RegExp(
-            "(" + before_punctuation + ")" + "(" + clean + ")" + "(" + after_punctuation + ")",
-            "ig",
-        );
+        const regex = new RegExp(`(${before_punctuation})(${clean})(${after_punctuation})`, "ig");
         message.content = message.content.replace(
             regex,
             (match, before, word, after, offset, content) => {
