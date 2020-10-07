@@ -58,7 +58,7 @@ run_test("initialize", () => {
             assert.equal(numeric_inputs, undefined);
             assert.equal(redirect_to, "/");
         } else {
-            throw Error("Unhandled case");
+            throw new Error("Unhandled case");
         }
     };
 

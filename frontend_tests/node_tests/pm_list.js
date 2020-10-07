@@ -279,7 +279,7 @@ run_test("ensure coverage", () => {
     // where functions early exit.
     narrow_state.active = () => false;
     pm_list.rebuild_recent = () => {
-        throw Error("we should not call rebuild_recent");
+        throw new Error("we should not call rebuild_recent");
     };
     pm_list.update_private_messages();
 });

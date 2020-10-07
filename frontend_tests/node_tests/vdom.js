@@ -182,7 +182,7 @@ run_test("partial updates", () => {
     );
 
     replace_content = () => {
-        throw Error("should not replace entire html");
+        throw new Error("should not replace entire html");
     };
 
     let patched_html;
@@ -216,7 +216,7 @@ run_test("partial updates", () => {
 
 run_test("eq_array easy cases", () => {
     const bogus_eq = () => {
-        throw Error("we should not be comparing elements");
+        throw new Error("we should not be comparing elements");
     };
 
     assert.equal(vdom.eq_array(undefined, undefined, bogus_eq), true);
