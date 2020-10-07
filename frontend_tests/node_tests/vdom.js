@@ -15,10 +15,7 @@ run_test("basics", () => {
 
     const html = vdom.render_tag(ul);
 
-    assert.equal(
-        html,
-        '<ul class="foo" title="cats &amp; &lt;&quot;dogs&quot;&gt;">\n\n' + "</ul>",
-    );
+    assert.equal(html, '<ul class="foo" title="cats &amp; &lt;&quot;dogs&quot;&gt;">\n\n</ul>');
 });
 
 run_test("attribute escaping", () => {
@@ -59,7 +56,7 @@ run_test("attribute updates", () => {
 
     const html = vdom.render_tag(ul);
 
-    assert.equal(html, '<ul class="same" color="blue" id="101">\n\n' + "</ul>");
+    assert.equal(html, '<ul class="same" color="blue" id="101">\n\n</ul>');
 
     let updated;
     let removed;
@@ -135,10 +132,7 @@ run_test("children", () => {
 
     vdom.update(replace_content, find, ul);
 
-    assert.equal(
-        rendered_html,
-        "<ul>\n" + "<li>foo1</li>\n" + "<li>foo2</li>\n" + "<li>foo3</li>\n" + "</ul>",
-    );
+    assert.equal(rendered_html, "<ul>\n<li>foo1</li>\n<li>foo2</li>\n<li>foo3</li>\n</ul>");
 
     // Force a complete redraw.
     const new_nodes = make_children([4, 5]);
@@ -150,10 +144,7 @@ run_test("children", () => {
     const new_ul = vdom.ul(new_opts);
     vdom.update(replace_content, find, new_ul, ul);
 
-    assert.equal(
-        rendered_html,
-        '<ul class="main">\n' + "<li>foo4</li>\n" + "<li>foo5</li>\n" + "</ul>",
-    );
+    assert.equal(rendered_html, '<ul class="main">\n<li>foo4</li>\n<li>foo5</li>\n</ul>');
 });
 
 run_test("partial updates", () => {
@@ -176,10 +167,7 @@ run_test("partial updates", () => {
 
     vdom.update(replace_content, find, ul);
 
-    assert.equal(
-        rendered_html,
-        "<ul>\n" + "<li>foo1</li>\n" + "<li>foo2</li>\n" + "<li>foo3</li>\n" + "</ul>",
-    );
+    assert.equal(rendered_html, "<ul>\n<li>foo1</li>\n<li>foo2</li>\n<li>foo3</li>\n</ul>");
 
     replace_content = () => {
         throw new Error("should not replace entire html");

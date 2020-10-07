@@ -81,7 +81,7 @@ function make_stream_default(stream_id) {
 
 exports.delete_default_stream = function (stream_id, default_stream_row, alert_element) {
     channel.del({
-        url: "/json/default_streams" + "?" + $.param({stream_id}),
+        url: "/json/default_streams?" + $.param({stream_id}),
         error(xhr) {
             ui_report.generic_row_button_error(xhr, alert_element);
         },
