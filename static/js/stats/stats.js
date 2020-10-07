@@ -405,7 +405,10 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
             values[labels.length - 1] += sum;
         }
     }
-    const total = values.reduce((a, b) => a + b, 0);
+    let total = 0;
+    for (const value of values) {
+        total += value;
+    }
     return {
         values,
         labels,
