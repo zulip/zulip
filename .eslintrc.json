@@ -73,6 +73,7 @@
         "no-script-url": "error",
         "no-self-compare": "error",
         "no-sync": "error",
+        "no-throw-literal": "error",
         "no-undef-init": "error",
         "no-unneeded-ternary": ["error", {"defaultAssignment": false}],
         "no-unused-expressions": "error",
