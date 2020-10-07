@@ -678,13 +678,13 @@ nav.navbar {
 
     .hero-content {
         h1 {
-            font-size: 3.5rem;
+            font-size: calc(3.5rem - 1rem + 1vw);
             font-weight: 600;
             line-height: 1.2;
         }
 
         p {
-            font-size: 2rem;
+            font-size: calc(2rem - 1rem + 1vw);
             font-weight: 300;
             padding-top: 20px;
         }
@@ -843,13 +843,13 @@ nav.navbar {
     align-self: center;
 
     h1 {
-        font-size: 3rem;
+        font-size: calc(3.5rem - 1rem + 1vw);
         font-weight: 600;
         line-height: 1.2;
     }
 
     p {
-        font-size: 1.8rem;
+        font-size: calc(2rem - 1rem + 1vw);
         font-weight: 300;
         padding-top: 20px;
     }
@@ -2115,7 +2115,7 @@ nav.navbar {
     .community {
         .community-hero .container {
             background-position: bottom;
-            height: 800px;
+            height: calc(550px + 20vw);
             margin-bottom: 0px;
         }
     }    
@@ -3873,7 +3873,7 @@ nav.navbar {
 #testimonials {
     background-color: $purple;
     padding: 6.25rem 0;
-    font-size: 30px;
+    font-size: calc(2rem - 1rem + 1vw);
     color: hsl(0, 0%, 100%);
     font-weight: 500;
 
@@ -3883,18 +3883,19 @@ nav.navbar {
 }
 
 .apps-section {
-    padding: 100px;
+    padding-top: 100px;
+    padding-bottom: 100px;
     text-align: center;
 
     h1 {
-        font-weight: 600;
+        font-size: calc(3.5rem - 1rem + 1vw);
         font-size: 45px;
         color: $purple;
     }
 
     h2 {
         font-weight: 400;
-        font-size: 35px;
+        font-size: calc(2.5rem - 1rem + 1vw);
         color: hsl(0, 0%, 100%);
     }
 
