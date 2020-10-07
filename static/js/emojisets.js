@@ -27,8 +27,8 @@ export async function select(name) {
     }
     await new Promise((resolve, reject) => {
         const sheet = new Image();
-        sheet.onload = resolve;
-        sheet.onerror = reject;
+        sheet.addEventListener("load", resolve);
+        sheet.addEventListener("error", reject);
         sheet.src = new_emojiset.sheet;
     });
     if (current_emojiset) {
