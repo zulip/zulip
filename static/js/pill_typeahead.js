@@ -34,7 +34,7 @@ exports.set_up = function (input, pills, opts) {
 
             if (include_streams(query)) {
                 query = query.trim().slice(1);
-                return item.name.toLowerCase().indexOf(query) !== -1;
+                return item.name.toLowerCase().includes(query);
             }
 
             if (!settings_data.show_email()) {
