@@ -143,11 +143,11 @@ try {
         namespace.restore();
         Handlebars.HandlebarsEnvironment();
     });
-} catch (e) {
-    if (e.stack) {
-        console.info(short_tb(e.stack));
+} catch (error) {
+    if (error.stack) {
+        console.info(short_tb(error.stack));
     } else {
-        console.info(e);
+        console.info(error);
     }
     process.exit(1);
 }
