@@ -870,6 +870,10 @@ def get_messages_backend(request: HttpRequest,
         # cases of web-public queries (where we should return the
         # web-public results only) and clients with buggy
         # authentication code (where we should return an auth error).
+        #
+        # GetOldMessagesTest.test_unauthenticated_* tests ensure
+        # that we are not leaking any secure data (private messages and
+        # non web-public-stream messages) via this path.
         if not is_web_public_narrow(narrow):
             raise MissingAuthenticationError()
         assert narrow is not None
