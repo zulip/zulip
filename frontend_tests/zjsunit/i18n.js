@@ -27,9 +27,9 @@ exports.t = function (str, context) {
             prefix_length = 2;
         }
         return {
-            keyword: key.slice(prefix_length, key.length - 2),
+            keyword: key.slice(prefix_length, -2),
             prefix: key.slice(0, prefix_length),
-            suffix: key.slice(key.length - 2, key.length),
+            suffix: key.slice(-2, key.length),
         };
     });
 
