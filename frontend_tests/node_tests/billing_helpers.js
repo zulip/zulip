@@ -264,6 +264,12 @@ run_test("set_tab", () => {
         assert.equal(val, 0);
     };
 
+    let hash_change_handler;
+    window.addEventListener = (event, handler) => {
+        assert.equal(event, "hashchange");
+        hash_change_handler = handler;
+    };
+
     helpers.set_tab("upgrade");
     assert.equal(state.show_tab_billing, 1);
     assert.equal(state.scrollTop, 1);
@@ -272,7 +278,6 @@ run_test("set_tab", () => {
     click_handler.call({hash: "#payment-method"});
     assert.equal(location.hash, "#payment-method");
 
-    const hash_change_handler = window.onhashchange;
     hash_change_handler();
     assert.equal(state.show_tab_payment_method, 1);
     assert.equal(state.scrollTop, 2);
