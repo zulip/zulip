@@ -25,7 +25,7 @@ exports.get_translated_status = function (file) {
 
 exports.get_item = function (key, config) {
     if (!config) {
-        throw Error("Missing config");
+        throw new Error("Missing config");
     }
     if (config.mode === "compose") {
         switch (key) {
@@ -50,11 +50,11 @@ exports.get_item = function (key, config) {
             case "markdown_preview_hide_button":
                 return $("#undo_markdown_preview");
             default:
-                throw Error(`Invalid key name for mode "${config.mode}"`);
+                throw new Error(`Invalid key name for mode "${config.mode}"`);
         }
     } else if (config.mode === "edit") {
         if (!config.row) {
-            throw Error("Missing row in config");
+            throw new Error("Missing row in config");
         }
         switch (key) {
             case "textarea":
@@ -80,10 +80,10 @@ exports.get_item = function (key, config) {
             case "markdown_preview_hide_button":
                 return $("#undo_markdown_preview_" + config.row);
             default:
-                throw Error(`Invalid key name for mode "${config.mode}"`);
+                throw new Error(`Invalid key name for mode "${config.mode}"`);
         }
     } else {
-        throw Error("Invalid upload mode!");
+        throw new Error("Invalid upload mode!");
     }
 };
 

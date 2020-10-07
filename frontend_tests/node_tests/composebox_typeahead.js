@@ -405,7 +405,7 @@ run_test("content_typeahead_selected", () => {
     // silent mention
     fake_this.completing = "silent_mention";
     compose.warn_if_mentioning_unsubscribed_user = () => {
-        throw Error("unexpected call for silent mentions");
+        throw new Error("unexpected call for silent mentions");
     };
 
     fake_this.query = "@_kin";
@@ -434,7 +434,7 @@ run_test("content_typeahead_selected", () => {
 
     // user group mention
     compose.warn_if_mentioning_unsubscribed_user = () => {
-        throw Error("unexpected call for user groups");
+        throw new Error("unexpected call for user groups");
     };
 
     fake_this.query = "@back";

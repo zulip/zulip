@@ -257,7 +257,7 @@ function sort_button(opts) {
             case "sort-prop":
                 return opts.prop_name;
             default:
-                throw Error("unknown selector: " + sel);
+                throw new Error("unknown selector: " + sel);
         }
     }
 
@@ -685,7 +685,7 @@ run_test("render item", () => {
         };
     };
 
-    const list = [...Array(100).keys()];
+    const list = [...new Array(100).keys()];
 
     let text = "initial";
     const get_item = (item) => ({text: `${text}: ${item}`, value: item});
