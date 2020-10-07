@@ -8,7 +8,7 @@ function do_narrow_action(action) {
 }
 
 // For message actions and user profile menu.
-const menu_dropdown_hotkeys = ["down_arrow", "up_arrow", "vim_up", "vim_down", "enter"];
+const menu_dropdown_hotkeys = new Set(["down_arrow", "up_arrow", "vim_up", "vim_down", "enter"]);
 
 // Note that multiple keys can map to the same event_name, which
 // we'll do in cases where they have the exact same semantics.
@@ -573,7 +573,7 @@ exports.process_hotkey = function (e, hotkey) {
         }
     }
 
-    if (menu_dropdown_hotkeys.includes(event_name)) {
+    if (menu_dropdown_hotkeys.has(event_name)) {
         if (popovers.actions_popped()) {
             popovers.actions_menu_handle_keyboard(event_name);
             return true;
