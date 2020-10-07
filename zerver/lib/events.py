@@ -577,6 +577,12 @@ def fetch_initial_state_data(
         # abuse.
         state["giphy_api_key"] = settings.GIPHY_API_KEY if settings.GIPHY_API_KEY else ""
 
+    if user_profile is None:
+        # To ensure we have the correct user state set.
+        assert state["is_admin"] is False
+        assert state["is_owner"] is False
+        assert state["is_guest"] is True
+
     return state
 
 
