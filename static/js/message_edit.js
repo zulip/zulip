@@ -359,7 +359,7 @@ function edit_message(row, raw_content) {
 
     ui_util.decorate_stream_bar(message.stream, stream_header_colorblock, false);
     message_edit_stream.on("change", function () {
-        const stream_name = stream_data.maybe_get_stream_name(parseInt(this.value, 10));
+        const stream_name = stream_data.maybe_get_stream_name(Number.parseInt(this.value, 10));
         ui_util.decorate_stream_bar(stream_name, stream_header_colorblock, false);
     });
 
@@ -483,7 +483,7 @@ function edit_message(row, raw_content) {
     const original_topic = message.topic;
     function set_propagate_selector_display() {
         const new_topic = message_edit_topic.val();
-        const new_stream_id = parseInt(message_edit_stream.val(), 10);
+        const new_stream_id = Number.parseInt(message_edit_stream.val(), 10);
         const is_topic_edited = new_topic !== original_topic && new_topic !== "";
         const is_stream_edited = new_stream_id !== original_stream_id;
         message_edit_topic_propagate.toggle(is_topic_edited || is_stream_edited);
@@ -670,7 +670,7 @@ exports.save_message_row_edit = function (row) {
         new_topic = row.find(".message_edit_topic").val();
         topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
 
-        new_stream_id = parseInt($("#select_stream_id_" + message_id).val(), 10);
+        new_stream_id = Number.parseInt($("#select_stream_id_" + message_id).val(), 10);
         stream_changed = new_stream_id !== old_stream_id;
     }
     // Editing a not-yet-acked message (because the original send attempt failed)

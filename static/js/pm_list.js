@@ -79,7 +79,7 @@ exports._get_convos = function () {
             user_circle_class = "user_circle_fraction";
             fraction_present = buddy_data.huddle_fraction_present(user_ids_string);
         } else {
-            const user_id = parseInt(user_ids_string, 10);
+            const user_id = Number.parseInt(user_ids_string, 10);
             user_circle_class = buddy_data.get_user_circle_class(user_id);
             const recipient_user_obj = people.get_by_user_id(user_id);
 

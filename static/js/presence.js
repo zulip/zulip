@@ -157,7 +157,7 @@ exports.set_info = function (presences, server_timestamp) {
     raw_info.clear();
     exports.presence_info.clear();
     for (const [user_id_str, info] of Object.entries(presences)) {
-        const user_id = parseInt(user_id_str, 10);
+        const user_id = Number.parseInt(user_id_str, 10);
 
         // Note: In contrast with all other state updates received
         // receive from the server, presence data is updated via a

@@ -101,7 +101,7 @@ exports.update_stream_color = function (sub, color, opts) {
 };
 
 function picker_do_change_color(color) {
-    const stream_id = parseInt($(this).attr("stream_id"), 10);
+    const stream_id = Number.parseInt($(this).attr("stream_id"), 10);
     const hex_color = color.toHexString();
     subs.set_color(stream_id, hex_color);
 }
@@ -170,7 +170,7 @@ exports.get_color_class = _.memoize((color) => {
     // CSS colors are specified in the sRGB color space.
     // Convert to linear intensity values.
     for (i = 0; i < 3; i += 1) {
-        channel[i] = colorspace.sRGB_to_linear(mult * parseInt(match[i + 1], 16));
+        channel[i] = colorspace.sRGB_to_linear(mult * Number.parseInt(match[i + 1], 16));
     }
 
     // Compute perceived lightness as CIE L*.
