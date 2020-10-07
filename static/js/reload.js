@@ -93,7 +93,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 // done before the first call to get_events
 exports.initialize = function () {
     const location = window.location.toString();
-    const hash_fragment = location.substring(location.indexOf("#") + 1);
+    const hash_fragment = location.slice(location.indexOf("#") + 1);
 
     // hash_fragment should be e.g. `reload:12345123412312`
     if (hash_fragment.search("reload:") !== 0) {

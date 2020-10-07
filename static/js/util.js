@@ -124,7 +124,7 @@ exports.robust_uri_decode = function (str) {
     let end = str.length;
     while (end > 0) {
         try {
-            return decodeURIComponent(str.substring(0, end));
+            return decodeURIComponent(str.slice(0, end));
         } catch (e) {
             if (!(e instanceof URIError)) {
                 throw e;
