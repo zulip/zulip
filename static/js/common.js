@@ -100,7 +100,7 @@ exports.copy_data_attribute_value = function (elem, key) {
 };
 
 exports.has_mac_keyboard = function () {
-    return /Mac/i.test(navigator.platform);
+    return /mac/i.test(navigator.platform);
 };
 
 exports.adjust_mac_shortcuts = function (key_elem_class, require_cmd_style) {

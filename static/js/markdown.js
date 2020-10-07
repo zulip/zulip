@@ -30,12 +30,12 @@ const backend_only_markdown_re = [
     // Inline image previews, check for contiguous chars ending in image suffix
     // To keep the below regexes simple, split them out for the end-of-message case
 
-    /[^\s]*(?:(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\)?)\s+/m,
-    /[^\s]*(?:(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\)?)$/m,
+    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\)?\s+/m,
+    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\)?$/m,
 
     // Twitter and youtube links are given previews
 
-    /[^\s]*(?:twitter|youtube).com\/[^\s]*/,
+    /\S*(?:twitter|youtube).com\/\S*/,
 ];
 
 exports.translate_emoticons_to_names = (text) => {
@@ -88,7 +88,7 @@ exports.contains_backend_only_syntax = function (content) {
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
     const false_filter_match = realm_filter_list.find((re) => {
-        const pattern = /(?:[^\s'"(,:<])/.source + re[0].source + /(?![\w])/.source;
+        const pattern = /[^\s"'(,:<]/.source + re[0].source + /(?!\w)/.source;
         const regex = new RegExp(pattern);
         return regex.test(content);
     });
@@ -237,7 +237,7 @@ exports.add_topic_links = function (message) {
     }
 
     // Also make raw urls navigable
-    const url_re = /\b(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g; // Slightly modified from third/marked.js
+    const url_re = /\b(https?:\/\/[^\s<]+[^\s"'),.:;<\]])/g; // Slightly modified from third/marked.js
     const match = topic.match(url_re);
     if (match) {
         links = links.concat(match);
@@ -432,7 +432,7 @@ function python_to_js_filter(pattern, url) {
     }
     // Convert any python in-regex flags to RegExp flags
     let js_flags = "g";
-    const inline_flag_re = /\(\?([iLmsux]+)\)/;
+    const inline_flag_re = /\(\?([Limsux]+)\)/;
     match = inline_flag_re.exec(pattern);
 
     // JS regexes only support i (case insensitivity) and m (multiline)
@@ -456,7 +456,7 @@ function python_to_js_filter(pattern, url) {
     // is rendered locally, otherwise, we return false there and
     // message is rendered on the backend which has proper support
     // for negative lookbehind.
-    pattern = pattern + /(?![\w])/.source;
+    pattern = pattern + /(?!\w)/.source;
     let final_regex = null;
     try {
         final_regex = new RegExp(pattern, js_flags);
@@ -537,7 +537,7 @@ exports.initialize = function (realm_filters, helper_config) {
     disable_markdown_regex(marked.Lexer.rules.tables, "lheading");
 
     // Disable __strong__ (keeping **strong**)
-    marked.InlineLexer.rules.zulip.strong = /^\*\*([\s\S]+?)\*\*(?!\*)/;
+    marked.InlineLexer.rules.zulip.strong = /^\*\*([\S\s]+?)\*\*(?!\*)/;
 
     // Make sure <del> syntax matches the backend processor
     marked.InlineLexer.rules.zulip.del = /^(?!<~)~~([^~]+)~~(?!~)/;
@@ -545,7 +545,7 @@ exports.initialize = function (realm_filters, helper_config) {
     // Disable _emphasis_ (keeping *emphasis*)
     // Text inside ** must start and end with a word character
     // to prevent mis-parsing things like "char **x = (char **)y"
-    marked.InlineLexer.rules.zulip.em = /^\*(?!\s+)((?:\*\*|[\s\S])+?)((?:[\S]))\*(?!\*)/;
+    marked.InlineLexer.rules.zulip.em = /^\*(?!\s+)((?:\*\*|[\S\s])+?)(\S)\*(?!\*)/;
 
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
     disable_markdown_regex(marked.InlineLexer.rules.zulip, "autolink");
