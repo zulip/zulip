@@ -42,7 +42,7 @@ function display_image(payload) {
 
     if (lightbox_canvas === true) {
         const canvas = document.createElement("canvas");
-        canvas.setAttribute("data-src", payload.source);
+        canvas.dataset.src = payload.source;
 
         $("#lightbox_overlay .image-preview").html(canvas).show();
         const photo = new LightboxCanvas(canvas);
