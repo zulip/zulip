@@ -386,7 +386,7 @@ run_test("marked", () => {
                 '<p>This is an <span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span> message</p>',
         },
         {
-            input: "\ud83d\udca9",
+            input: "\uD83D\uDCA9",
             expected:
                 '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
         },
@@ -746,7 +746,7 @@ run_test("translate_emoticons_to_names", () => {
 });
 
 run_test("missing unicode emojis", () => {
-    const message = {raw_content: "\u{1f6b2}"};
+    const message = {raw_content: "\u{1F6B2}"};
 
     markdown.apply_markdown(message);
     assert.equal(
@@ -764,5 +764,5 @@ run_test("missing unicode emojis", () => {
         markdown.apply_markdown(message);
     });
 
-    assert.equal(message.content, "<p>\u{1f6b2}</p>");
+    assert.equal(message.content, "<p>\u{1F6B2}</p>");
 });
