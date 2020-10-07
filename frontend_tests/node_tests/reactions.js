@@ -454,7 +454,7 @@ run_test("add_and_remove_reaction", () => {
 
     const result = reactions.get_message_reactions(message);
     assert(reaction_element.hasClass("reacted"));
-    const realm_emoji_data = result.filter((v) => v.emoji_name === "realm_emoji")[0];
+    const realm_emoji_data = result.find((v) => v.emoji_name === "realm_emoji");
 
     assert.equal(realm_emoji_data.count, 2);
     assert.equal(realm_emoji_data.is_realm_emoji, true);
