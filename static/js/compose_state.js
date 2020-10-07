@@ -13,7 +13,7 @@ exports.get_message_type = function () {
 exports.composing = function () {
     // This is very similar to get_message_type(), but it returns
     // a boolean.
-    return !!message_type;
+    return Boolean(message_type);
 };
 
 exports.focus_in_empty_compose = function () {
