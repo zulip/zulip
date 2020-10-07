@@ -328,8 +328,8 @@ function integration_events() {
     $('#integration-search input[type="text"]').on("keypress", (e) => {
         const integrations = $(".integration-lozenges").children().toArray();
         if (e.which === 13 && e.target.value !== "") {
-            for (let i = 0; i < integrations.length; i += 1) {
-                const integration = $(integrations[i]).find(".integration-lozenge");
+            for (const integration_element of integrations) {
+                const integration = $(integration_element).find(".integration-lozenge");
 
                 if ($(integration).css("display") !== "none") {
                     $(integration).closest("a")[0].click();
