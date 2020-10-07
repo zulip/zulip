@@ -444,6 +444,11 @@ def fetch_initial_state_data(
     if want("video_calls"):
         state["has_zoom_token"] = settings_user.zoom_token is not None
 
+    if user_profile is None:
+        assert state["is_admin"] is False
+        assert state["is_owner"] is False
+        assert state["is_guest"] is True
+
     return state
 
 
