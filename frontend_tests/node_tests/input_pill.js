@@ -348,7 +348,7 @@ run_test("Enter key with text", () => {
         preventDefault: noop,
         stopPropagation: noop,
         target: {
-            innerText: " yellow ",
+            textContent: " yellow ",
         },
     });
 
@@ -407,7 +407,7 @@ run_test("insert_remove", () => {
     key_handler({
         keyCode: BACKSPACE,
         target: {
-            innerText: "",
+            textContent: "",
         },
         preventDefault: noop,
     });

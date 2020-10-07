@@ -815,7 +815,7 @@ exports.initialize = function () {
             // wrong.
             for (let x = 0; x < this.childNodes.length; x += 1) {
                 if (this.childNodes[x].nodeType !== 3) {
-                    this.innerText = this.innerText.replace(/\n/, "");
+                    this.textContent = this.textContent.replace(/\n/, "");
                     break;
                 }
             }

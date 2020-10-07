@@ -180,7 +180,7 @@ function populate_messages_sent_over_time(data) {
     function add_hover_handler() {
         document.querySelector("#id_messages_sent_over_time").on("plotly_hover", (data) => {
             $("#hoverinfo").show();
-            document.querySelector("#hover_date").innerText =
+            document.querySelector("#hover_date").textContent =
                 data.points[0].data.text[data.points[0].pointNumber];
             const values = [null, null, null];
             data.points.forEach((trace) => {
@@ -192,7 +192,7 @@ function populate_messages_sent_over_time(data) {
                 if (values[i] !== null) {
                     document.querySelector(hover_text_ids[i]).style.display = "inline";
                     document.querySelector(hover_value_ids[i]).style.display = "inline";
-                    document.querySelector(hover_value_ids[i]).innerText = values[i];
+                    document.querySelector(hover_value_ids[i]).textContent = values[i];
                 } else {
                     document.querySelector(hover_text_ids[i]).style.display = "none";
                     document.querySelector(hover_value_ids[i]).style.display = "none";
@@ -726,7 +726,7 @@ function populate_number_of_users(data) {
     function add_hover_handler() {
         document.querySelector("#id_number_of_users").on("plotly_hover", (data) => {
             $("#users_hover_info").show();
-            document.querySelector("#users_hover_date").innerText =
+            document.querySelector("#users_hover_date").textContent =
                 data.points[0].data.text[data.points[0].pointNumber];
             const values = [null, null, null];
             data.points.forEach((trace) => {
@@ -740,7 +740,7 @@ function populate_number_of_users(data) {
             for (let i = 0; i < values.length; i += 1) {
                 if (values[i] !== null) {
                     document.querySelector(hover_value_ids[i]).style.display = "inline";
-                    document.querySelector(hover_value_ids[i]).innerText = values[i];
+                    document.querySelector(hover_value_ids[i]).textContent = values[i];
                 } else {
                     document.querySelector(hover_value_ids[i]).style.display = "none";
                 }
@@ -859,7 +859,7 @@ function populate_messages_read_over_time(data) {
     function add_hover_handler() {
         document.querySelector("#id_messages_read_over_time").on("plotly_hover", (data) => {
             $("#read_hover_info").show();
-            document.querySelector("#read_hover_date").innerText =
+            document.querySelector("#read_hover_date").textContent =
                 data.points[0].data.text[data.points[0].pointNumber];
             const values = [null, null];
             data.points.forEach((trace) => {
@@ -871,7 +871,7 @@ function populate_messages_read_over_time(data) {
                 if (values[i] !== null) {
                     document.querySelector(read_hover_text_ids[i]).style.display = "inline";
                     document.querySelector(read_hover_value_ids[i]).style.display = "inline";
-                    document.querySelector(read_hover_value_ids[i]).innerText = values[i];
+                    document.querySelector(read_hover_value_ids[i]).textContent = values[i];
                 } else {
                     document.querySelector(read_hover_text_ids[i]).style.display = "none";
                     document.querySelector(read_hover_value_ids[i]).style.display = "none";
