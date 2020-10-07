@@ -878,7 +878,7 @@ run_test("updates", () => {
     const all_people = get_all_persons();
     assert.equal(all_people.length, 2);
 
-    person = all_people.filter((p) => p.email === new_email)[0];
+    person = all_people.find((p) => p.email === new_email);
     assert.equal(person.full_name, "Foo Barson");
 
     // Test shim where we can still retrieve user info using the
