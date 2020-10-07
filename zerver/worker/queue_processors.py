@@ -263,10 +263,18 @@ class QueueProcessingWorker(ABC):
 
             time_start = time.time()
             if self.MAX_CONSUME_SECONDS and self.ENABLE_TIMEOUTS:
-                signal.signal(signal.SIGALRM, functools.partial(timer_expired, self.MAX_CONSUME_SECONDS, len(events)))
-                signal.alarm(self.MAX_CONSUME_SECONDS * len(events))
-                consume_func(events)
-                signal.alarm(0)
+                try:
+                    signal.signal(
+                        signal.SIGALRM,
+                        functools.partial(timer_expired, self.MAX_CONSUME_SECONDS, len(events)),
+                    )
+                    try:
+                        signal.alarm(self.MAX_CONSUME_SECONDS * len(events))
+                        consume_func(events)
+                    finally:
+                        signal.alarm(0)
+                finally:
+                    signal.signal(signal.SIGALRM, signal.SIG_DFL)
             else:
                 consume_func(events)
             consume_time_seconds = time.time() - time_start
