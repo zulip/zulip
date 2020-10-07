@@ -141,10 +141,10 @@ exports.initialize = function () {
             if (send_now) {
                 compose.finish();
             }
-        } catch (err) {
+        } catch (error) {
             // We log an error if we can't open the compose box, but otherwise
             // we continue, since this is not critical.
-            blueslip.warn(err.toString());
+            blueslip.warn(error.toString());
         }
     }
 
@@ -181,8 +181,8 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     if (save_pointer || save_narrow || save_compose) {
         try {
             preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
-        } catch (ex) {
-            blueslip.error("Failed to preserve state", undefined, ex.stack);
+        } catch (error) {
+            blueslip.error("Failed to preserve state", undefined, error.stack);
         }
     }
 
@@ -212,8 +212,8 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
 
     try {
         server_events.cleanup_event_queue();
-    } catch (ex) {
-        blueslip.error("Failed to cleanup before reloading", undefined, ex.stack);
+    } catch (error) {
+        blueslip.error("Failed to cleanup before reloading", undefined, error.stack);
     }
 
     window.location.reload(true);

@@ -401,12 +401,12 @@ function handleRealmFilter(pattern, matches) {
 function handleTex(tex, fullmatch) {
     try {
         return katex.renderToString(tex);
-    } catch (ex) {
-        if (ex.message.startsWith("KaTeX parse error")) {
+    } catch (error) {
+        if (error.message.startsWith("KaTeX parse error")) {
             // TeX syntax error
             return '<span class="tex-error">' + _.escape(fullmatch) + "</span>";
         }
-        blueslip.error(ex);
+        blueslip.error(error);
         return undefined;
     }
 }
@@ -460,11 +460,11 @@ function python_to_js_filter(pattern, url) {
     let final_regex = null;
     try {
         final_regex = new RegExp(pattern, js_flags);
-    } catch (ex) {
+    } catch (error) {
         // We have an error computing the generated regex syntax.
         // We'll ignore this realm filter for now, but log this
         // failure for debugging later.
-        blueslip.error("python_to_js_filter: " + ex.message);
+        blueslip.error("python_to_js_filter: " + error.message);
     }
     return [final_regex, url];
 }
