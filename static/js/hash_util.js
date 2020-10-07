@@ -166,7 +166,7 @@ exports.by_conversation_and_time_uri = function (message) {
 };
 
 exports.stream_edit_uri = function (sub) {
-    const hash = "#streams" + "/" + sub.stream_id + "/" + exports.encodeHashComponent(sub.name);
+    const hash = `#streams/${sub.stream_id}/${exports.encodeHashComponent(sub.name)}`;
     return hash;
 };
 
