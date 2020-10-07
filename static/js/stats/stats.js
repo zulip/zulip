@@ -178,24 +178,24 @@ function populate_messages_sent_over_time(data) {
     );
 
     function add_hover_handler() {
-        document.getElementById("id_messages_sent_over_time").on("plotly_hover", (data) => {
+        document.querySelector("#id_messages_sent_over_time").on("plotly_hover", (data) => {
             $("#hoverinfo").show();
-            document.getElementById("hover_date").innerText =
+            document.querySelector("#hover_date").innerText =
                 data.points[0].data.text[data.points[0].pointNumber];
             const values = [null, null, null];
             data.points.forEach((trace) => {
                 values[trace.curveNumber] = trace.y;
             });
-            const hover_text_ids = ["hover_me", "hover_human", "hover_bot"];
-            const hover_value_ids = ["hover_me_value", "hover_human_value", "hover_bot_value"];
+            const hover_text_ids = ["#hover_me", "#hover_human", "#hover_bot"];
+            const hover_value_ids = ["#hover_me_value", "#hover_human_value", "#hover_bot_value"];
             for (let i = 0; i < values.length; i += 1) {
                 if (values[i] !== null) {
-                    document.getElementById(hover_text_ids[i]).style.display = "inline";
-                    document.getElementById(hover_value_ids[i]).style.display = "inline";
-                    document.getElementById(hover_value_ids[i]).innerText = values[i];
+                    document.querySelector(hover_text_ids[i]).style.display = "inline";
+                    document.querySelector(hover_value_ids[i]).style.display = "inline";
+                    document.querySelector(hover_value_ids[i]).innerText = values[i];
                 } else {
-                    document.getElementById(hover_text_ids[i]).style.display = "none";
-                    document.getElementById(hover_value_ids[i]).style.display = "none";
+                    document.querySelector(hover_text_ids[i]).style.display = "none";
+                    document.querySelector(hover_value_ids[i]).style.display = "none";
                 }
             }
         });
@@ -302,7 +302,7 @@ function populate_messages_sent_over_time(data) {
             traces.bot.visible = "legendonly";
             traces.me.visible = "legendonly";
         } else {
-            const plotDiv = document.getElementById("id_messages_sent_over_time");
+            const plotDiv = document.querySelector("#id_messages_sent_over_time");
             traces.me.visible = plotDiv.data[0].visible;
             traces.human.visible = plotDiv.data[1].visible;
             traces.bot.visible = plotDiv.data[2].visible;
@@ -636,7 +636,7 @@ function populate_messages_sent_by_message_type(data) {
         time_button = "cumulative";
         $("#messages_by_type_cumulative_button").addClass("selected");
     }
-    const totaldiv = document.getElementById("pie_messages_sent_by_type_total");
+    const totaldiv = document.querySelector("#pie_messages_sent_by_type_total");
 
     if (data.end_times.length < 365) {
         $("#pie_messages_sent_by_type button[data-time='year']").remove();
@@ -724,25 +724,25 @@ function populate_number_of_users(data) {
     }
 
     function add_hover_handler() {
-        document.getElementById("id_number_of_users").on("plotly_hover", (data) => {
+        document.querySelector("#id_number_of_users").on("plotly_hover", (data) => {
             $("#users_hover_info").show();
-            document.getElementById("users_hover_date").innerText =
+            document.querySelector("#users_hover_date").innerText =
                 data.points[0].data.text[data.points[0].pointNumber];
             const values = [null, null, null];
             data.points.forEach((trace) => {
                 values[trace.curveNumber] = trace.y;
             });
             const hover_value_ids = [
-                "users_hover_1day_value",
-                "users_hover_15day_value",
-                "users_hover_all_time_value",
+                "#users_hover_1day_value",
+                "#users_hover_15day_value",
+                "#users_hover_all_time_value",
             ];
             for (let i = 0; i < values.length; i += 1) {
                 if (values[i] !== null) {
-                    document.getElementById(hover_value_ids[i]).style.display = "inline";
-                    document.getElementById(hover_value_ids[i]).innerText = values[i];
+                    document.querySelector(hover_value_ids[i]).style.display = "inline";
+                    document.querySelector(hover_value_ids[i]).innerText = values[i];
                 } else {
-                    document.getElementById(hover_value_ids[i]).style.display = "none";
+                    document.querySelector(hover_value_ids[i]).style.display = "none";
                 }
             }
         });
@@ -857,24 +857,24 @@ function populate_messages_read_over_time(data) {
     );
 
     function add_hover_handler() {
-        document.getElementById("id_messages_read_over_time").on("plotly_hover", (data) => {
+        document.querySelector("#id_messages_read_over_time").on("plotly_hover", (data) => {
             $("#read_hover_info").show();
-            document.getElementById("read_hover_date").innerText =
+            document.querySelector("#read_hover_date").innerText =
                 data.points[0].data.text[data.points[0].pointNumber];
             const values = [null, null];
             data.points.forEach((trace) => {
                 values[trace.curveNumber] = trace.y;
             });
-            const read_hover_text_ids = ["read_hover_me", "read_hover_everyone"];
-            const read_hover_value_ids = ["read_hover_me_value", "read_hover_everyone_value"];
+            const read_hover_text_ids = ["#read_hover_me", "#read_hover_everyone"];
+            const read_hover_value_ids = ["#read_hover_me_value", "#read_hover_everyone_value"];
             for (let i = 0; i < values.length; i += 1) {
                 if (values[i] !== null) {
-                    document.getElementById(read_hover_text_ids[i]).style.display = "inline";
-                    document.getElementById(read_hover_value_ids[i]).style.display = "inline";
-                    document.getElementById(read_hover_value_ids[i]).innerText = values[i];
+                    document.querySelector(read_hover_text_ids[i]).style.display = "inline";
+                    document.querySelector(read_hover_value_ids[i]).style.display = "inline";
+                    document.querySelector(read_hover_value_ids[i]).innerText = values[i];
                 } else {
-                    document.getElementById(read_hover_text_ids[i]).style.display = "none";
-                    document.getElementById(read_hover_value_ids[i]).style.display = "none";
+                    document.querySelector(read_hover_text_ids[i]).style.display = "none";
+                    document.querySelector(read_hover_value_ids[i]).style.display = "none";
                 }
             }
         });
@@ -971,7 +971,7 @@ function populate_messages_read_over_time(data) {
             traces.everyone.visible = true;
             traces.me.visible = "legendonly";
         } else {
-            const plotDiv = document.getElementById("id_messages_read_over_time");
+            const plotDiv = document.querySelector("#id_messages_read_over_time");
             traces.me.visible = plotDiv.data[0].visible;
             traces.everyone.visible = plotDiv.data[1].visible;
         }
