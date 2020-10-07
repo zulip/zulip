@@ -143,7 +143,7 @@ exports.make_strcmp = function () {
     try {
         const collator = new Intl.Collator();
         return collator.compare;
-    } catch (e) {
+    } catch {
         // continue regardless of error
     }
 
