@@ -36,9 +36,9 @@ function convert_from_raw(digits, part_length, raw) {
 }
 
 /** Isolate initiator characters. */
-const i_chars = [0x2066, 0x2067, 0x2068];
+const i_chars = new Set([0x2066, 0x2067, 0x2068]);
 /** Pop directional isolate character. */
-const pdi_chars = [0x2069];
+const pdi_chars = new Set([0x2069]);
 /** The digits that are used for base conversions from base 92. */
 const digits =
     '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&()*+,-./:;<=>?@[]^_`{|}~';
@@ -86,10 +86,10 @@ const lr_ranges = convert_from_raw(
  * @returns {'I' | 'PDI' | 'R' | 'L' | 'Other'}
  */
 function get_bidi_class(ch) {
-    if (i_chars.includes(ch)) {
+    if (i_chars.has(ch)) {
         return "I"; // LRI, RLI, FSI
     }
-    if (pdi_chars.includes(ch)) {
+    if (pdi_chars.has(ch)) {
         return "PDI";
     }
     let i = util.lower_bound(rl_ranges, ch);

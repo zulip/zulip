@@ -923,10 +923,10 @@ run_test("initialize", () => {
     initialize();
     assert(!stream_data.is_filtering_inactives());
 
-    const stream_names = stream_data.get_streams_for_admin().map((elem) => elem.name);
-    assert(stream_names.includes("subscriptions"));
-    assert(stream_names.includes("unsubscribed"));
-    assert(stream_names.includes("never_subscribed"));
+    const stream_names = new Set(stream_data.get_streams_for_admin().map((elem) => elem.name));
+    assert(stream_names.has("subscriptions"));
+    assert(stream_names.has("unsubscribed"));
+    assert(stream_names.has("never_subscribed"));
     assert.equal(stream_data.get_notifications_stream(), "");
 
     // Simulate a private stream the user isn't subscribed to
