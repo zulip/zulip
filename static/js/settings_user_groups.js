@@ -327,7 +327,7 @@ exports.set_up = function () {
         });
 
     $("#user-groups").on("click", ".delete", function () {
-        const group_id = parseInt($(this).parents(".user-group").attr("id"), 10);
+        const group_id = Number.parseInt($(this).parents(".user-group").attr("id"), 10);
         if (!exports.can_edit(group_id)) {
             return;
         }

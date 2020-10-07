@@ -276,7 +276,7 @@ exports.reify_message_id = function (local_id, server_id) {
     message.id = server_id;
     message.locally_echoed = false;
 
-    const opts = {old_id: parseFloat(local_id), new_id: server_id};
+    const opts = {old_id: Number.parseFloat(local_id), new_id: server_id};
 
     message_store.reify_message_id(opts);
     notifications.reify_message_id(opts);

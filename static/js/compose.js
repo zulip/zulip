@@ -972,7 +972,7 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
         const existing_invites_area = $("#compose_invite_users .compose_invite_user");
 
         const existing_invites = Array.from($(existing_invites_area), (user_row) =>
-            parseInt($(user_row).data("user-id"), 10),
+            Number.parseInt($(user_row).data("user-id"), 10),
         );
 
         if (!existing_invites.includes(user_id)) {
@@ -1056,8 +1056,8 @@ exports.initialize = function () {
 
         const invite_row = $(event.target).parents(".compose_invite_user");
 
-        const user_id = parseInt($(invite_row).data("user-id"), 10);
-        const stream_id = parseInt($(invite_row).data("stream-id"), 10);
+        const user_id = Number.parseInt($(invite_row).data("user-id"), 10);
+        const stream_id = Number.parseInt($(invite_row).data("stream-id"), 10);
 
         function success() {
             const all_invites = $("#compose_invite_users");

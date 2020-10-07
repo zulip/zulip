@@ -219,7 +219,7 @@ exports.is_mobile = function () {
 };
 
 function to_int(s) {
-    return parseInt(s, 10);
+    return Number.parseInt(s, 10);
 }
 
 exports.sorted_ids = function (ids) {

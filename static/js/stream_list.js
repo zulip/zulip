@@ -159,7 +159,7 @@ exports.get_stream_li = function (stream_id) {
 };
 
 function stream_id_for_elt(elt) {
-    return parseInt(elt.attr("data-stream-id"), 10);
+    return Number.parseInt(elt.attr("data-stream-id"), 10);
 }
 
 exports.zoom_in_topics = function (options) {
