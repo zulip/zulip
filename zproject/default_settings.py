@@ -402,7 +402,7 @@ ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 7
 # are available to all realms.
 BILLING_ENABLED = False
 
-FREE_TRIAL_DAYS = get_secret('free_trial_days', None)
+FREE_TRIAL_DAYS: Optional[int] = int(get_secret('free_trial_days', "0"))
 
 # Custom message (supports HTML) to be shown in the navbar of landing pages. Used mainly for
 # making announcements.
