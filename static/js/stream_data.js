@@ -315,7 +315,7 @@ exports.slug_to_name = function (slug) {
     GitHub conversations.  We migrated to modern slugs in
     early 2018.
     */
-    const m = /^([\d]+)(-.*)?/.exec(slug);
+    const m = /^(\d+)(-.*)?/.exec(slug);
     if (m) {
         const stream_id = Number.parseInt(m[1], 10);
         const sub = subs_by_stream_id.get(stream_id);

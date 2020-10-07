@@ -317,7 +317,7 @@ exports.paste_handler = function (event) {
         const paste_html = clipboardData.getData("text/html");
         if (paste_html && page_params.development_environment) {
             const text = exports.paste_handler_converter(paste_html);
-            const mdImageRegex = /^!\[.*\]\(.*\)$/;
+            const mdImageRegex = /^!\[.*]\(.*\)$/;
             if (text.match(mdImageRegex)) {
                 // This block catches cases where we are pasting an
                 // image into Zulip, which is handled by upload.js.
