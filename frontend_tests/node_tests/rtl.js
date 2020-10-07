@@ -17,8 +17,8 @@ run_test("get_direction", () => {
     assert.equal(rtl.get_direction("۱۲۳"), "ltr");
     assert.equal(rtl.get_direction("1234"), "ltr");
 
-    const supp_plane_ltr_char = "\ud800\udfa0";
-    const supp_plane_rtl_char = "\ud802\udc40";
+    const supp_plane_ltr_char = "\uD800\uDFA0";
+    const supp_plane_rtl_char = "\uD802\uDC40";
 
     assert.equal(rtl.get_direction(supp_plane_ltr_char), "ltr");
     assert.equal(rtl.get_direction(supp_plane_rtl_char), "rtl");
@@ -35,8 +35,8 @@ run_test("get_direction", () => {
     assert.equal(rtl.get_direction("b" + supp_plane_ltr_char + "." + supp_plane_rtl_char), "ltr");
     assert.equal(rtl.get_direction("b" + supp_plane_rtl_char + "." + supp_plane_ltr_char), "ltr");
 
-    const unmatched_surrogate_1 = "\ud800";
-    const unmatched_surrogate_2 = "\udf00";
+    const unmatched_surrogate_1 = "\uD800";
+    const unmatched_surrogate_2 = "\uDF00";
 
     assert.equal(rtl.get_direction(unmatched_surrogate_1 + " "), "ltr");
     assert.equal(rtl.get_direction(unmatched_surrogate_2 + " "), "ltr");
