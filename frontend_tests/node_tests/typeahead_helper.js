@@ -556,7 +556,7 @@ run_test("render_stream", () => {
     global.stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, stream.name);
-        const short_desc = stream.description.substring(0, 35);
+        const short_desc = stream.description.slice(0, 35);
         assert.equal(args.secondary, short_desc + "...");
         rendered = true;
         return "typeahead-item-stub";

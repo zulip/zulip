@@ -45,12 +45,12 @@ exports.process_message = function (message) {
             regex,
             (match, before, word, after, offset, content) => {
                 // Logic for ensuring that we don't muck up rendered HTML.
-                const pre_match = content.substring(0, offset);
+                const pre_match = content.slice(0, offset);
                 // We want to find the position of the `<` and `>` only in the
                 // match and the string before it. So, don't include the last
                 // character of match in `check_string`. This covers the corner
                 // case when there is an alert word just before `<` or `>`.
-                const check_string = pre_match + match.substring(0, match.length - 1);
+                const check_string = pre_match + match.slice(0, -1);
                 const in_tag = check_string.lastIndexOf("<") > check_string.lastIndexOf(">");
                 // Matched word is inside a HTML tag so don't perform any highlighting.
                 if (in_tag === true) {
