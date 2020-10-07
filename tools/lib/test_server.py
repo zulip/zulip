@@ -93,6 +93,7 @@ def test_server_running(force: bool=False, external_host: str='testserver',
     finally:
         assert_server_running(server, log_file)
         server.terminate()
+        server.wait()
 
 if __name__ == '__main__':
     # The code below is for testing this module works
