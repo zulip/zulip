@@ -35,7 +35,7 @@ function immediate(f) {
 // Find the files we need to run.
 const files = process.argv.slice(2);
 if (files.length === 0) {
-    throw "No tests found";
+    throw new Error("No tests found");
 }
 
 // Set up our namespace helpers.
