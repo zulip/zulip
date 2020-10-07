@@ -524,15 +524,6 @@ Output:
         # not as a spectator.
         self.assertEqual(page_params["is_spectator"], False)
 
-    def check_rendered_spectator(self, result: HttpResponse) -> None:
-        """Verifies that a visit of / was a 200 that rendered page_params
-        for a (logged-out) spectator."""
-        self.assertEqual(result.status_code, 200)
-        page_params = self._get_page_params(result)
-        # It is important to check `is_spectator` to verify
-        # that we treated this request to render for a `spectator`
-        self.assertEqual(page_params["is_spectator"], True)
-
     def login_with_return(
         self, email: str, password: Optional[str] = None, **kwargs: Any
     ) -> HttpResponse:

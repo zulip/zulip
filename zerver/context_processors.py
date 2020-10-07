@@ -188,9 +188,13 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
     if realm is None:
         realm_description = None
         realm_invite_required = False
+        realm_web_public_access_enabled = False
     else:
         realm_description = get_realm_rendered_description(realm)
         realm_invite_required = realm.invite_required
+        # We offer web public access only if the realm has actual web
+        # public streams configured, in addition to having it enabled.
+        realm_web_public_access_enabled = realm.has_web_public_streams()
 
     context: Dict[str, Any] = {
         "realm_invite_required": realm_invite_required,
@@ -198,6 +202,7 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
         "require_email_format_usernames": require_email_format_usernames(realm),
         "password_auth_enabled": password_auth_enabled(realm),
         "two_factor_authentication_enabled": settings.TWO_FACTOR_AUTHENTICATION_ENABLED,
+        "realm_web_public_access_enabled": realm_web_public_access_enabled,
     }
 
     if realm is not None and realm.description:

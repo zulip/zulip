@@ -687,6 +687,13 @@ html {
     max-width: 500px;
 }
 
+.anonymous_access_form {
+    button {
+        /* Avoid excessive space at top of login form */
+        margin-top: 0;
+    }
+}
+
 button.login-social-button {
     width: 328px;
     height: auto;

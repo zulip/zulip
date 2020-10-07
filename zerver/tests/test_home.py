@@ -306,6 +306,18 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(set(actual_keys), set(expected_keys))
 
     def test_logged_out_home(self) -> None:
+        # Redirect to login on first request.
+        result = self.client_get("/")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "/login/")
+
+        # Tell server that user wants to login anonymously
+        # Redirects to load webapp.
+        result = self.client_post("/", {"prefers_web_public_view": "true"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "http://zulip.testserver")
+
+        # Always load the web app from then on directly
         result = self.client_get("/")
         self.assertEqual(result.status_code, 200)
 

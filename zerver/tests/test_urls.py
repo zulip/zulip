@@ -43,6 +43,9 @@ class PublicURLTest(ZulipTestCase):
                 "/en/accounts/login/",
                 "/ru/accounts/login/",
                 "/help/",
+            ],
+            302: [
+                # These 302 because they redirect to the spectator experience.
                 "/",
                 "/en/",
                 "/ru/",
