@@ -5,7 +5,7 @@
 //
 // https://en.wikipedia.org/wiki/SRGB#The_reverse_transformation
 exports.sRGB_to_linear = function (v) {
-    v = v / 255.0;
+    v = v / 255;
     if (v <= 0.04045) {
         return v / 12.92;
     }
