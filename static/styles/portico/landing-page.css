@@ -666,6 +666,10 @@ nav.navbar {
 .portico-landing.hello {
     background-color: hsl(209, 80%, 17%);
     color: hsl(219, 23%, 33%);
+
+    .feature-section {
+        margin-bottom: 20px;
+    }
 }
 
 .portico-landing.hello .hero {
@@ -868,10 +872,21 @@ nav.navbar {
         padding-right: 20px;
     }
 }
+.feature-section {
+    padding-left: 8.33%;
+}
+@media (max-width: 768px) {
+    .detailed-feature-list {
+        padding-left: 0 !important;
+
+        h2 {
+            padding-left: 8.33%;
+        }
+    }
+}
 
 @media (max-width: 992px) {
     .feature-section {
-        padding-left: 0;
         .row {
             text-align: center;
 
@@ -3955,6 +3970,10 @@ nav.navbar {
 
 @media (max-width: 576px) {
     .landing-footer {
+        .row {
+            margin-left: 0;
+        }
+
         h3 {
             font-size: 1rem;
         }
@@ -3971,6 +3990,7 @@ nav.navbar {
     .feature-section {
         padding-top: 50px;
         padding-bottom: 50px;
+        margin-bottom: 0 !important;
     }
 
     .purple-bg-feature {
@@ -4033,7 +4053,6 @@ nav.navbar {
     
     .detailed-feature-list {
         display: none;
-        padding-left: 0;
 
         .feature-item {
             color: hsl(0, 0%, 100%);
