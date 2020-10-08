@@ -8,8 +8,9 @@ import orjson
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 
-from corporate.models import Customer
+from corporate.models import Customer, CustomerPlan
 from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
@@ -456,6 +457,13 @@ class PlansPageTest(ZulipTestCase):
         self.assert_in_success_response([current_plan, buy_standard], result)
         self.assert_not_in_success_response([sign_up_now, sponsorship_pending], result)
 
+        with self.settings(FREE_TRIAL_DAYS=60):
+            result = self.client_get("/plans/", subdomain="zulip")
+            self.assert_in_success_response([current_plan, "Start 60 day free trial"], result)
+            self.assert_not_in_success_response(
+                [sign_up_now, sponsorship_pending, buy_standard], result
+            )
+
         realm.plan_type = Realm.STANDARD_FREE
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
@@ -472,11 +480,25 @@ class PlansPageTest(ZulipTestCase):
             [sign_up_now, buy_standard, sponsorship_pending], result
         )
 
+        customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            tier=CustomerPlan.STANDARD,
+            status=CustomerPlan.FREE_TRIAL,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.MONTHLY,
+        )
+        result = self.client_get("/plans/", subdomain="zulip")
+        self.assert_in_success_response(["Current plan (free trial)"], result)
+        self.assert_not_in_success_response(
+            [sign_up_now, buy_standard, sponsorship_pending], result
+        )
+
         realm.plan_type = Realm.LIMITED
         realm.save()
-        Customer.objects.create(
-            realm=get_realm("zulip"), stripe_customer_id="cus_id", sponsorship_pending=True
-        )
+        customer.sponsorship_pending = True
+        customer.save()
+        plan.delete()
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan], result)
         self.assert_in_success_response([current_plan, sponsorship_pending], result)
