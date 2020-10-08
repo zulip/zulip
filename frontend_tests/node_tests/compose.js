@@ -362,7 +362,7 @@ run_test("validate_stream_message", () => {
     assert($("#compose-all-everyone").visible());
 });
 
-run_test("test_validate_stream_message_post_policy", () => {
+run_test("test_validate_stream_message_post_policy_admin_only", () => {
     // This test is in continuation with test_validate but it has been separated out
     // for better readability. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
@@ -384,9 +384,45 @@ run_test("test_validate_stream_message_post_policy", () => {
         i18n.t("Only organization admins are allowed to post to this stream."),
     );
 
-    // reset compose_state.stream_name to 'social' again so that any tests occurung after this
+    // Reset error message.
+    compose_state.stream_name("social");
+
+    page_params.is_admin = false;
+    page_params.is_guest = true;
+
+    compose_state.topic("subject102");
+    compose_state.stream_name("stream102");
+    assert(!compose.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        i18n.t("Only organization admins are allowed to post to this stream."),
+    );
+});
+
+run_test("test_validate_stream_message_post_policy_full_members_only", () => {
+    page_params.is_admin = false;
+    page_params.is_guest = true;
+    const sub = {
+        stream_id: 103,
+        name: "stream103",
+        subscribed: true,
+        stream_post_policy: stream_data.stream_post_policy_values.non_new_members.code,
+    };
+
+    compose_state.topic("subject103");
+    compose_state.stream_name("stream103");
+    stream_data.add_sub(sub);
+    assert(!compose.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        i18n.t("Guests are not allowed to post to this stream."),
+    );
+
+    // reset compose_state.stream_name to 'social' again so that any tests occurring after this
     // do not reproduce this error.
     compose_state.stream_name("social");
+    // Reset page_params
+    page_params.is_guest = false;
 });
 
 run_test("markdown_rtl", () => {

@@ -544,6 +544,11 @@ function validate_stream_message_post_policy(sub) {
         return false;
     }
 
+    if (page_params.is_guest && stream_post_policy !== stream_post_permission_type.everyone.code) {
+        compose_error(i18n.t("Guests are not allowed to post to this stream."));
+        return false;
+    }
+
     const person = people.get_by_user_id(page_params.user_id);
     const current_datetime = new Date(Date.now());
     const person_date_joined = new Date(person.date_joined);
