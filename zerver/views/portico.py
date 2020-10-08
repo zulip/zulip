@@ -35,7 +35,6 @@ def app_download_link_redirect(request: HttpRequest, platform: str) -> HttpRespo
 @add_google_analytics
 def plans_view(request: HttpRequest) -> HttpResponse:
     realm = get_realm_from_request(request)
-    realm_plan_type = 0
     free_trial_days = settings.FREE_TRIAL_DAYS
     sponsorship_pending = False
     sponsorship_url = "/upgrade#sponsorship"
@@ -44,7 +43,6 @@ def plans_view(request: HttpRequest) -> HttpResponse:
         sponsorship_url = f"/accounts/go/?next={urllib.parse.quote(sponsorship_url)}"
 
     if realm is not None:
-        realm_plan_type = realm.plan_type
         if realm.plan_type == Realm.SELF_HOSTED and settings.PRODUCTION:
             return HttpResponseRedirect("https://zulip.com/plans")
         if not request.user.is_authenticated:
@@ -62,7 +60,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
         request,
         "zerver/plans.html",
         context={
-            "realm_plan_type": realm_plan_type,
+            "realm": realm,
             "free_trial_days": free_trial_days,
             "sponsorship_pending": sponsorship_pending,
             "sponsorship_url": sponsorship_url,
