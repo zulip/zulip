@@ -194,6 +194,10 @@ class MessagePOSTTest(ZulipTestCase):
                                      'Test topic', 'Test message by notification bot')
         self.assertEqual(self.get_last_message().content, 'Test message by notification bot')
 
+        guest_profile = self.example_user("polonius")
+        # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
+        self._send_and_verify_message(guest_profile, stream_name, "Only organization administrators can send to this stream.")
+
     def test_sending_message_as_stream_post_policy_restrict_new_members(self) -> None:
         """
         Sending messages to streams which new members cannot create and post to.
@@ -257,6 +261,10 @@ class MessagePOSTTest(ZulipTestCase):
         internal_send_stream_message(stream.realm, notification_bot, stream,
                                      'Test topic', 'Test message by notification bot')
         self.assertEqual(self.get_last_message().content, 'Test message by notification bot')
+
+        guest_profile = self.example_user("polonius")
+        # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
+        self._send_and_verify_message(guest_profile, stream_name, "Guests cannot send to this stream.")
 
     def test_api_message_with_default_to(self) -> None:
         """
