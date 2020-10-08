@@ -48,11 +48,11 @@ h3 {
 }
 
 h1 {
-    font-size: 2em;
+    font-size: calc(2rem - 1rem + 1vw);;
 }
 
 h2 {
-    font-size: 1.8em;
+    font-size: calc(1.8rem - 0.9rem + 1vw);
 }
 
 p {
@@ -670,7 +670,7 @@ nav.navbar {
 
 .portico-landing.hello .hero {
     position: relative;
-    padding: 120px 50px 200px 50px;
+    padding: 100px 50px 200px 50px;
 
     color: hsl(0, 0%, 100%);
 
@@ -869,8 +869,18 @@ nav.navbar {
     }
 }
 
-.feature-section {
-    padding-left: 5%;
+@media (max-width: 992px) {
+    .feature-section {
+        padding-left: 0;
+        .row {
+            text-align: center;
+
+            img {
+                margin: auto;
+                max-width: 600px;
+            }
+        }
+    }
 }
 
 .watch-video-btn {
@@ -902,7 +912,6 @@ nav.navbar {
     font-size: 25px;
     border-radius: 15px;
     padding: 10px 35px;
-    margin-bottom: 50px;
 
     &:hover {
         color: $light-green;
@@ -943,8 +952,8 @@ nav.navbar {
 
 @media (max-width: 992px) {
     .integrations-section {
-        height: 700px;
-        padding-top: 15%;
+        padding-top: 50px;
+        padding-bottom: 50px;
         justify-content: center;
         text-align: left;
         margin: auto;
@@ -1769,7 +1778,7 @@ nav.navbar {
 }
 
 .company-logos {
-    padding: 6.25rem 0;
+    padding-top: 100px;
     min-width: 100%;
     background-color: $dark-blue;
 
@@ -3958,6 +3967,7 @@ nav.navbar {
 
 /*** Features page ***/
 .features {
+
     .feature-section {
         padding-top: 50px;
         padding-bottom: 50px;
@@ -4023,6 +4033,7 @@ nav.navbar {
     
     .detailed-feature-list {
         display: none;
+        padding-left: 0;
 
         .feature-item {
             color: hsl(0, 0%, 100%);
@@ -4032,12 +4043,12 @@ nav.navbar {
             border-radius: 5px;
             cursor: pointer;
             transition: all 150ms ease;
-            padding: 30px 20px;
+            padding: calc(2.5rem - 1rem + 1vw) calc(1.5rem - 1rem + 1vw);
 
             svg {
                 display: inline-block;
                 width: auto;
-                height: 40px;
+                height: calc(2.5rem - 1rem + 1vw);
                 color: $dark-blue;
                 padding-left: 0;
             }
@@ -4088,6 +4099,23 @@ nav.navbar {
     
             &:hover {
                 border-color: $light-green;
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .detailed-feature-list {
+        padding-top: 0 !important;
+
+        .feature-item {
+
+            h2 {
+                text-align: center !important;
+            }
+
+            svg {
+                margin-top: 13px;
             }
         }
     }

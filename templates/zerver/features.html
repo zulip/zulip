@@ -38,7 +38,7 @@
             </div>
         </div>
     </div>
-    <div class="message-formatting green-bg-feature purple-bg-feature feature-section d-lg-flex position-relative">
+    <div class="message-formatting green-bg-feature purple-bg-feature feature-section d-none d-lg-flex position-relative">
         <div class="row">
             <div id="carouselExampleCaptions" class="carousel slide" data-ride="carousel">
                 <div class="carousel-inner">
@@ -98,226 +98,331 @@
             <div class="row">
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-md-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-graph-up" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5z"/>
                             </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-md-10">
                             <h2>
                                 ANALYTICS
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Find out how your organization communicates using Zulip's powerful analytics sets.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-md-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-graph-up" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5z"/>
+                            </svg>
+                        </div>
+                        <div class="col-10 col-md-12">
+                            <p>
+                                Find out how your organization communicates using Zulip's powerful analytics sets.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-md-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
                                 <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-md-10">
                             <h2>
                                 FULL-TEXT FULL-HISTORY SEARCH
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Search is both snappy and smart, helping you look for text, people, and threads of conversation, with advanced search operators for fine-grained control.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-md-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
+                                <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-md-12">
+                            <p>
+                                Search is both snappy and smart, helping you look for text, people, and threads of conversation, with advanced search operators for fine-grained control.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
             </div>
             <div class="row">
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-md-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-markdown-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm11.5 1a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L11 9.293V5.5a.5.5 0 0 1 .5-.5zM3.56 7.01V11H2.5V5.001h1.208l1.71 3.894h.04l1.709-3.894h1.2V11H7.294V7.01h-.057l-1.42 3.239h-.773l-1.428-3.24H3.56z"/>
-                              </svg>
+                            </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-md-10">
                             <h2>
                                 MARKDOWN OPTIMIZED FOR CHAT
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Express your ideas clearly with bulleted lists,
-                        bold, italics,
-                        and much more.  Zulip even supports discussing math
-                        with LaTeX.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-md-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-markdown-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm11.5 1a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L11 9.293V5.5a.5.5 0 0 1 .5-.5zM3.56 7.01V11H2.5V5.001h1.208l1.71 3.894h.04l1.709-3.894h1.2V11H7.294V7.01h-.057l-1.42 3.239h-.773l-1.428-3.24H3.56z"/>
+                            </svg>
+                        </div>
+                        <div class="col-10 col-md-12">
+                            <p>
+                                Express your ideas clearly with bulleted lists,
+                                bold, italics,
+                                and much more.  Zulip even supports discussing math
+                                with LaTeX.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-md-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-link-45deg" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M4.715 6.542L3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.001 1.001 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z"/>
                                 <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 0 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 0 0-4.243-4.243L6.586 4.672z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-md-10">
                             <h2>
                                 CUSTOMIZABLE AUTOMATIC LINKIFICATION
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Customize Zulip’s markup to automatically link back
-                        to your issue tracker or GitHub when you type
-                        “#1235” or a commit ID.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-md-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-link-45deg" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.715 6.542L3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.001 1.001 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z"/>
+                                <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 0 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 0 0-4.243-4.243L6.586 4.672z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-md-12">
+                            <p>
+                                Customize Zulip’s markup to automatically link back
+                                to your issue tracker or GitHub when you type
+                                “#1235” or a commit ID.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
             </div>
             <div class="row">
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-md-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-clock-history" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 0 0-.439-.27l.493-.87a8.025 8.025 0 0 1 .979.654l-.615.789a6.996 6.996 0 0 0-.418-.302zm1.834 1.79a6.99 6.99 0 0 0-.653-.796l.724-.69c.27.285.52.59.747.91l-.818.576zm.744 1.352a7.08 7.08 0 0 0-.214-.468l.893-.45a7.976 7.976 0 0 1 .45 1.088l-.95.313a7.023 7.023 0 0 0-.179-.483zm.53 2.507a6.991 6.991 0 0 0-.1-1.025l.985-.17c.067.386.106.778.116 1.17l-1 .025zm-.131 1.538c.033-.17.06-.339.081-.51l.993.123a7.957 7.957 0 0 1-.23 1.155l-.964-.267c.046-.165.086-.332.12-.501zm-.952 2.379c.184-.29.346-.594.486-.908l.914.405c-.16.36-.345.706-.555 1.038l-.845-.535zm-.964 1.205c.122-.122.239-.248.35-.378l.758.653a8.073 8.073 0 0 1-.401.432l-.707-.707z"/>
                                 <path fill-rule="evenodd" d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0v1z"/>
                                 <path fill-rule="evenodd" d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-md-10">
                             <h2>
                                 HISTORY
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Join a stream and see its history, so even new team
-                        members are never out of the loop.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-md-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-clock-history" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 0 0-.439-.27l.493-.87a8.025 8.025 0 0 1 .979.654l-.615.789a6.996 6.996 0 0 0-.418-.302zm1.834 1.79a6.99 6.99 0 0 0-.653-.796l.724-.69c.27.285.52.59.747.91l-.818.576zm.744 1.352a7.08 7.08 0 0 0-.214-.468l.893-.45a7.976 7.976 0 0 1 .45 1.088l-.95.313a7.023 7.023 0 0 0-.179-.483zm.53 2.507a6.991 6.991 0 0 0-.1-1.025l.985-.17c.067.386.106.778.116 1.17l-1 .025zm-.131 1.538c.033-.17.06-.339.081-.51l.993.123a7.957 7.957 0 0 1-.23 1.155l-.964-.267c.046-.165.086-.332.12-.501zm-.952 2.379c.184-.29.346-.594.486-.908l.914.405c-.16.36-.345.706-.555 1.038l-.845-.535zm-.964 1.205c.122-.122.239-.248.35-.378l.758.653a8.073 8.073 0 0 1-.401.432l-.707-.707z"/>
+                                <path fill-rule="evenodd" d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0v1z"/>
+                                <path fill-rule="evenodd" d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-md-12">
+                            <p>
+                                Join a stream and see its history, so even new team
+                                members are never out of the loop.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-md-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-keyboard-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M0 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6zm13 .25a.25.25 0 0 1 .25-.25h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5a.25.25 0 0 1-.25-.25v-.5zM2.25 8a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5A.25.25 0 0 0 3 8.75v-.5A.25.25 0 0 0 2.75 8h-.5zM4 8.25A.25.25 0 0 1 4.25 8h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5A.25.25 0 0 1 4 8.75v-.5zM6.25 8a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5A.25.25 0 0 0 7 8.75v-.5A.25.25 0 0 0 6.75 8h-.5zM8 8.25A.25.25 0 0 1 8.25 8h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5A.25.25 0 0 1 8 8.75v-.5zM13.25 8a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-.5zm0 2a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-.5zm-3-2a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h1.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-1.5zm.75 2.25a.25.25 0 0 1 .25-.25h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5a.25.25 0 0 1-.25-.25v-.5zM11.25 6a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-.5zM9 6.25A.25.25 0 0 1 9.25 6h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5A.25.25 0 0 1 9 6.75v-.5zM7.25 6a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5A.25.25 0 0 0 8 6.75v-.5A.25.25 0 0 0 7.75 6h-.5zM5 6.25A.25.25 0 0 1 5.25 6h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5A.25.25 0 0 1 5 6.75v-.5zM2.25 6a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h1.5A.25.25 0 0 0 4 6.75v-.5A.25.25 0 0 0 3.75 6h-1.5zM2 10.25a.25.25 0 0 1 .25-.25h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5a.25.25 0 0 1-.25-.25v-.5zM4.25 10a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h5.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-5.5z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-md-10">
                             <h2>
                                 KEYBOARD SHORTCUTS
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Communicate as efficiently as you use your favorite
-                        text editor.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-md-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-keyboard-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M0 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6zm13 .25a.25.25 0 0 1 .25-.25h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5a.25.25 0 0 1-.25-.25v-.5zM2.25 8a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5A.25.25 0 0 0 3 8.75v-.5A.25.25 0 0 0 2.75 8h-.5zM4 8.25A.25.25 0 0 1 4.25 8h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5A.25.25 0 0 1 4 8.75v-.5zM6.25 8a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5A.25.25 0 0 0 7 8.75v-.5A.25.25 0 0 0 6.75 8h-.5zM8 8.25A.25.25 0 0 1 8.25 8h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5A.25.25 0 0 1 8 8.75v-.5zM13.25 8a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-.5zm0 2a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-.5zm-3-2a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h1.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-1.5zm.75 2.25a.25.25 0 0 1 .25-.25h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5a.25.25 0 0 1-.25-.25v-.5zM11.25 6a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-.5zM9 6.25A.25.25 0 0 1 9.25 6h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5A.25.25 0 0 1 9 6.75v-.5zM7.25 6a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5A.25.25 0 0 0 8 6.75v-.5A.25.25 0 0 0 7.75 6h-.5zM5 6.25A.25.25 0 0 1 5.25 6h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5A.25.25 0 0 1 5 6.75v-.5zM2.25 6a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h1.5A.25.25 0 0 0 4 6.75v-.5A.25.25 0 0 0 3.75 6h-1.5zM2 10.25a.25.25 0 0 1 .25-.25h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5a.25.25 0 0 1-.25-.25v-.5zM4.25 10a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h5.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-5.5z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-md-12">
+                            <p>
+                                Communicate as efficiently as you use your favorite
+                                text editor.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
             </div>
             <div class="row">
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-md-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-bookmark-star-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M4 0a2 2 0 0 0-2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4zm4.16 4.1a.178.178 0 0 0-.32 0l-.634 1.285a.178.178 0 0 1-.134.098l-1.42.206a.178.178 0 0 0-.098.303L6.58 6.993c.042.041.061.1.051.158L6.39 8.565a.178.178 0 0 0 .258.187l1.27-.668a.178.178 0 0 1 .165 0l1.27.668a.178.178 0 0 0 .257-.187L9.368 7.15a.178.178 0 0 1 .05-.158l1.028-1.001a.178.178 0 0 0-.098-.303l-1.42-.206a.178.178 0 0 1-.134-.098L8.16 4.1z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-md-10">
                             <h2>
                                 STARRED MESSAGES
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Keep a todo list of messages to come back to, or keep
-                        track of interesting conversations.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-md-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-bookmark-star-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M4 0a2 2 0 0 0-2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4zm4.16 4.1a.178.178 0 0 0-.32 0l-.634 1.285a.178.178 0 0 1-.134.098l-1.42.206a.178.178 0 0 0-.098.303L6.58 6.993c.042.041.061.1.051.158L6.39 8.565a.178.178 0 0 0 .258.187l1.27-.668a.178.178 0 0 1 .165 0l1.27.668a.178.178 0 0 0 .257-.187L9.368 7.15a.178.178 0 0 1 .05-.158l1.028-1.001a.178.178 0 0 0-.098-.303l-1.42-.206a.178.178 0 0 1-.134-.098L8.16 4.1z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-md-12">
+                            <p>
+                                Keep a todo list of messages to come back to, or keep
+                                track of interesting conversations.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-md-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-repeat" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
                                 <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-md-10">
                             <h2>
                                 PERSISTENCE
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        We’re always receiving messages for you, even when
-                        you’re logged out or away from your computer.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-md-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-repeat" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+                                <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-md-12">
+                            <p>
+                                We’re always receiving messages for you, even when
+                                you’re logged out or away from your computer.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
             </div>
             <div class="row">
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-md-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-card-checklist" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M14.5 3h-13a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
                                 <path fill-rule="evenodd" d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0zM7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-md-10">
                             <h2>
                                 RECENT TOPICS
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        A clutter free overview of all the recent conversations to help you navigate through conversation swiftly. 
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-md-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-card-checklist" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M14.5 3h-13a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+                                <path fill-rule="evenodd" d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0zM7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-md-12">
+                            <p>
+                                A clutter free overview of all the recent conversations to help you navigate through conversation swiftly. 
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-md-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-list-nested" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M4.5 11.5A.5.5 0 0 1 5 11h10a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm-2-4A.5.5 0 0 1 3 7h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm-2-4A.5.5 0 0 1 1 3h10a.5.5 0 0 1 0 1H1a.5.5 0 0 1-.5-.5z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-md-10">
                             <h2>
                                 CONVERSATIONS THREADED BY TOPIC
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Participate in several conversations with the same
-                        group at once, without getting lost or overwhelmed.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-md-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-list-nested" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M4.5 11.5A.5.5 0 0 1 5 11h10a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm-2-4A.5.5 0 0 1 3 7h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm-2-4A.5.5 0 0 1 1 3h10a.5.5 0 0 1 0 1H1a.5.5 0 0 1-.5-.5z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-md-12">
+                            <p>
+                                Participate in several conversations with the same
+                                group at once, without getting lost or overwhelmed.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
             </div>
             <div class="row">
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-md-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-archive-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M12.643 15C13.979 15 15 13.845 15 12.5V5H1v7.5C1 13.845 2.021 15 3.357 15h9.286zM5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zM.8 1a.8.8 0 0 0-.8.8V3a.8.8 0 0 0 .8.8h14.4A.8.8 0 0 0 16 3V1.8a.8.8 0 0 0-.8-.8H.8z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-md-10">
                             <h2>
                                 SAVED DRAFTS
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Zulip’s drafts make it easy to write longer messages without worrying about losing your work. 
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-md-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-archive-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M12.643 15C13.979 15 15 13.845 15 12.5V5H1v7.5C1 13.845 2.021 15 3.357 15h9.286zM5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zM.8 1a.8.8 0 0 0-.8.8V3a.8.8 0 0 0 .8.8h14.4A.8.8 0 0 0 16 3V1.8a.8.8 0 0 0-.8-.8H.8z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-md-12">
+                            <p>
+                                Zulip’s drafts make it easy to write longer messages without worrying about losing your work. 
+                            </p>
+                        </div>
+                    </div>
                 </a>
             </div>
         </div>
@@ -342,203 +447,299 @@
             <div class="row">
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-lg-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-people-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-lg-10">
                             <h2>
                                 TEAM AVAILABILITY
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Find out who's online at a glance.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-lg-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-people-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-lg-12">
+                            <p>
+                                Find out who's online at a glance.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-lg-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-phone-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M3 2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V2zm6 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-lg-10">
                             <h2>
                                 MOBILE APPS
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Keep up while on the go with our native quality iOS and Android apps.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-lg-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-phone-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M3 2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V2zm6 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-lg-12">
+                            <p>
+                                Keep up while on the go with our native quality iOS and Android apps.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
             </div>
             <div class="row">
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-lg-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-file-arrow-up" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M4 0h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z"/>
                                 <path fill-rule="evenodd" d="M8 11a.5.5 0 0 0 .5-.5V6.707l1.146 1.147a.5.5 0 0 0 .708-.708l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 .5.5z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-lg-10">
                             <h2>
                                 DRAG-AND-DROP FILE UPLOADS
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Drag a file into the compose box and we’ll upload
-                        and preview it for you. Sharing and discussing
-                        work with team mates has never been easier.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-lg-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-file-arrow-up" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M4 0h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z"/>
+                                <path fill-rule="evenodd" d="M8 11a.5.5 0 0 0 .5-.5V6.707l1.146 1.147a.5.5 0 0 0 .708-.708l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 .5.5z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-lg-12">
+                            <p>
+                                Drag a file into the compose box and we’ll upload
+                                and preview it for you. Sharing and discussing
+                                work with team mates has never been easier.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-lg-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-camera-video-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-lg-10">
                             <h2>
                                 VIDEO CALLS
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Create and join video calls with a single click. Powered
-                        by your choice of Zoom, Jitsi Meet or Big Blue Button.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-lg-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-camera-video-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-lg-12">
+                            <p>
+                                Create and join video calls with a single click. Powered
+                                by your choice of Zoom, Jitsi Meet or Big Blue Button.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
             </div>
             <div class="row">
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-lg-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-emoji-sunglasses" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                                 <path fill-rule="evenodd" d="M4.285 9.567a.5.5 0 0 1 .683.183A3.498 3.498 0 0 0 8 11.5a3.498 3.498 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.498 4.498 0 0 1 8 12.5a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683zM6.5 6.497V6.5h-1c0-.568.447-.947.862-1.154C6.807 5.123 7.387 5 8 5s1.193.123 1.638.346c.415.207.862.586.862 1.154h-1v-.003l-.003-.01a.213.213 0 0 0-.036-.053.86.86 0 0 0-.27-.194C8.91 6.1 8.49 6 8 6c-.491 0-.912.1-1.19.24a.86.86 0 0 0-.271.194.213.213 0 0 0-.036.054l-.003.01z"/>
                                 <path d="M2.31 5.243A1 1 0 0 1 3.28 4H6a1 1 0 0 1 1 1v1a2 2 0 0 1-2 2h-.438a2 2 0 0 1-1.94-1.515L2.31 5.243zM9 5a1 1 0 0 1 1-1h2.72a1 1 0 0 1 .97 1.243l-.311 1.242A2 2 0 0 1 11.439 8H11a2 2 0 0 1-2-2V5z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-lg-10">
                             <h2>
                                 EMOJI AND EMOJI REACTIONS
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Have fun expressing yourself with emoji!
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-lg-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-emoji-sunglasses" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path fill-rule="evenodd" d="M4.285 9.567a.5.5 0 0 1 .683.183A3.498 3.498 0 0 0 8 11.5a3.498 3.498 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.498 4.498 0 0 1 8 12.5a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683zM6.5 6.497V6.5h-1c0-.568.447-.947.862-1.154C6.807 5.123 7.387 5 8 5s1.193.123 1.638.346c.415.207.862.586.862 1.154h-1v-.003l-.003-.01a.213.213 0 0 0-.036-.053.86.86 0 0 0-.27-.194C8.91 6.1 8.49 6 8 6c-.491 0-.912.1-1.19.24a.86.86 0 0 0-.271.194.213.213 0 0 0-.036.054l-.003.01z"/>
+                                <path d="M2.31 5.243A1 1 0 0 1 3.28 4H6a1 1 0 0 1 1 1v1a2 2 0 0 1-2 2h-.438a2 2 0 0 1-1.94-1.515L2.31 5.243zM9 5a1 1 0 0 1 1-1h2.72a1 1 0 0 1 .97 1.243l-.311 1.242A2 2 0 0 1 11.439 8H11a2 2 0 0 1-2-2V5z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-lg-12">
+                            <p>
+                                Have fun expressing yourself with emoji!
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-lg-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-code-slash" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M4.854 4.146a.5.5 0 0 1 0 .708L1.707 8l3.147 3.146a.5.5 0 0 1-.708.708l-3.5-3.5a.5.5 0 0 1 0-.708l3.5-3.5a.5.5 0 0 1 .708 0zm6.292 0a.5.5 0 0 0 0 .708L14.293 8l-3.147 3.146a.5.5 0 0 0 .708.708l3.5-3.5a.5.5 0 0 0 0-.708l-3.5-3.5a.5.5 0 0 0-.708 0zm-.999-3.124a.5.5 0 0 1 .33.625l-4 13a.5.5 0 0 1-.955-.294l4-13a.5.5 0 0 1 .625-.33z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-lg-10">
                             <h2>
                                 CODE AND QUOTE BLOCKS
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Discuss code with ease using Markdown code blocks
-                    (and syntax highlighting).  And discuss blocks of
-                    text with ease with block quotes.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-lg-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-code-slash" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M4.854 4.146a.5.5 0 0 1 0 .708L1.707 8l3.147 3.146a.5.5 0 0 1-.708.708l-3.5-3.5a.5.5 0 0 1 0-.708l3.5-3.5a.5.5 0 0 1 .708 0zm6.292 0a.5.5 0 0 0 0 .708L14.293 8l-3.147 3.146a.5.5 0 0 0 .708.708l3.5-3.5a.5.5 0 0 0 0-.708l-3.5-3.5a.5.5 0 0 0-.708 0zm-.999-3.124a.5.5 0 0 1 .33.625l-4 13a.5.5 0 0 1-.955-.294l4-13a.5.5 0 0 1 .625-.33z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-lg-12">
+                            <p>
+                                Discuss code with ease using Markdown code blocks
+                            (and syntax highlighting).  And discuss blocks of
+                            text with ease with block quotes.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
             </div>
             <div class="row">
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-lg-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chat-dots-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M16 8c0 3.866-3.582 7-8 7a9.06 9.06 0 0 1-2.347-.306c-.584.296-1.925.864-4.181 1.234-.2.032-.352-.176-.273-.362.354-.836.674-1.95.77-2.966C.744 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7zM5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-lg-10">
                             <h2>
                                 ONE-ON-ONE AND GROUP PRIVATE CONVERSATIONS
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Lightweight private conversations with one or as many people as you need.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-lg-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chat-dots-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M16 8c0 3.866-3.582 7-8 7a9.06 9.06 0 0 1-2.347-.306c-.584.296-1.925.864-4.181 1.234-.2.032-.352-.176-.273-.362.354-.836.674-1.95.77-2.966C.744 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7zM5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-lg-12">
+                            <p>
+                                Lightweight private conversations with one or as many people as you need.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-lg-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-card-image" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M14.5 3h-13a.5.5 0 0 0-.5.5v9c0 .013 0 .027.002.04V12l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.773 3.71-3.71a.5.5 0 0 1 .577-.094L15 9.499V3.5a.5.5 0 0 0-.5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm4.502 3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-lg-10">
                             <h2>
                                 INLINE IMAGE, VIDEO, AND TWEET PREVIEWS
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Send a link and we’ll automatically generate a
-                preview; click the preview to see it at full scale.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-lg-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-card-image" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M14.5 3h-13a.5.5 0 0 0-.5.5v9c0 .013 0 .027.002.04V12l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.773 3.71-3.71a.5.5 0 0 1 .577-.094L15 9.499V3.5a.5.5 0 0 0-.5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm4.502 3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-lg-12">
+                            <p>
+                                Send a link and we’ll automatically generate a
+                                preview; click the preview to see it at full scale.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
             </div>
             <div class="row">
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-lg-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-pencil-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456l-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
                                 <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-lg-10">
                             <h2>
                                 MESSAGE EDITING
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Don’t worry, you can always fix that typo, either in
-            the body of message or its topic.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-lg-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-pencil-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456l-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-lg-12">
+                            <p>
+                                Don’t worry, you can always fix that typo, either in
+                                the body of message or its topic.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
                 <a class="feature-item col-md-5" href="/help/analytics">
                     <div class="row">
-                        <div class="col-2">
+                        <div class="col-2 d-none d-lg-flex">
                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-person-circle" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M13.468 12.37C12.758 11.226 11.195 10 8 10s-4.757 1.225-5.468 2.37A6.987 6.987 0 0 0 8 15a6.987 6.987 0 0 0 5.468-2.63z"/>
                                 <path fill-rule="evenodd" d="M8 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
                                 <path fill-rule="evenodd" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"/>
                               </svg>
                         </div>
-                        <div class="col-10">
+                        <div class="col-12 col-lg-10">
                             <h2>
                                 @-mentions
                             </h2>
                         </div>
                     </div>
-                    <p>
-                        Get a specific person's attention, even in a group conversation.
-                    </p>
+                    <div class="row">
+                        <div class="col-2 d-lg-none">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-person-circle" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M13.468 12.37C12.758 11.226 11.195 10 8 10s-4.757 1.225-5.468 2.37A6.987 6.987 0 0 0 8 15a6.987 6.987 0 0 0 5.468-2.63z"/>
+                                <path fill-rule="evenodd" d="M8 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                                <path fill-rule="evenodd" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"/>
+                              </svg>
+                        </div>
+                        <div class="col-10 col-lg-12">
+                            <p>
+                                Get a specific person's attention, even in a group conversation.
+                            </p>
+                        </div>
+                    </div>
                 </a>
                 <div class="col-md-1"></div>
             </div>
