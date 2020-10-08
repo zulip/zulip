@@ -738,7 +738,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     content = loader.render_to_string(
         'analytics/realm_summary_table.html',
         dict(rows=rows, num_active_sites=num_active_sites,
-             now=now.strftime('%Y-%m-%dT%H:%M:%SZ')),
+             utctime=now.strftime('%Y-%m-%d %H:%MZ')),
     )
     return content
 
