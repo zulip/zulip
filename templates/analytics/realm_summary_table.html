@@ -1,12 +1,6 @@
 <h2 style="text-align: center;">{{ num_active_sites }} active sites</h2>
 
-<p id="utctime" style="text-align: center;"></p>
-<p id="localtime" style="text-align: center;"></p>
-<script>
-    var now = moment('{{ now }}');
-    $('#utctime')[0].innerHTML = moment.utc(now).format('YYYY-MM-DD HH:mm') + 'Z';
-    $('#localtime')[0].innerHTML = '(' + now.format('YYYY-MM-DD HH:mm ZZ') + ')';
-</script>
+<p style="text-align: center;">{{ utctime }}</p>
 
 <ul>
     <li><strong>active (site)</strong> - has ≥5 DAUs</li>
