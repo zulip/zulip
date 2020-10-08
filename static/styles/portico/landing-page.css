@@ -280,16 +280,16 @@ nav.navbar {
 }
 
 .dropdown-menu {
-    margin-top: 0px;
+    margin-top: 0;
 }
 
 /* navbar animations */
 @media (min-width: 992px) {
     .animate {
       animation-duration: 0.3s;
-      -webkit-animation-duration: 0.3s;
+      animation-duration: 0.3s;
       animation-fill-mode: both;
-      -webkit-animation-fill-mode: both;
+      animation-fill-mode: both;
     }
 
     .dropdown-toggle::after {
@@ -307,7 +307,7 @@ nav.navbar {
         opacity: 0;
     }
     100% {
-        transform:translateY(0rem);
+        transform:translateY(0);
         opacity: 1;
     }
     0% {
@@ -316,23 +316,23 @@ nav.navbar {
     }
 }
 
-@-webkit-keyframes slideIn {
+@keyframes slideIn {
     0% {
-        -webkit-transform: transform;
+        transform: transform;
         -webkit-opacity: 0;
     }
     100% {
-        -webkit-transform: translateY(0);
+        transform: translateY(0);
         -webkit-opacity: 1;
     }
     0% {
-        -webkit-transform: translateY(1rem);
+        transform: translateY(1rem);
         -webkit-opacity: 0;
     }
 }
 
 .slideIn {
-    -webkit-animation-name: slideIn;
+    animation-name: slideIn;
     animation-name: slideIn;
 }
 /* navbar animations */
@@ -1796,7 +1796,7 @@ nav.navbar {
             background-size: contain;
             background-position: center;
             background-repeat: no-repeat;
-            margin: 10px 0!important;
+            margin: 10px 0 !important;
         }
     }
 }
@@ -2116,7 +2116,7 @@ nav.navbar {
         .community-hero .container {
             background-position: bottom;
             height: calc(550px + 20vw);
-            margin-bottom: 0px;
+            margin-bottom: 0;
         }
     }    
 }
@@ -3988,8 +3988,8 @@ nav.navbar {
 
     .message-formatting {
         background-color: #212d3a !important;
-        padding-top: 0px;
-        padding-bottom: 0px;
+        padding-top: 0;
+        padding-bottom: 0;
 
         .carousel-caption {
             background-color: $light-green;

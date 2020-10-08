@@ -232,7 +232,7 @@ a {
 
         ul {
             margin: 5px 0 10px 12px;
-            padding-left: 0px;
+            padding-left: 0;
             box-sizing: content-box;
         }
 
@@ -413,7 +413,7 @@ img.screenshot {
     .bar {
       width: 0%;
       height: 100%;
-      color: #ffffff;
+      color: #fff;
       float: left;
       font-size: 12px;
       text-align: center;
