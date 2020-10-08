@@ -39,9 +39,10 @@ just set `JITSI_SERVER_URL` in `/etc/zulip/settings.py`.
 
 {tab|bigbluebutton}
 
-In order to use Big Blue Button as the video call provider, you need
-to first configure the `BIG_BLUE_BUTTON_URL` setting in
-`/etc/zulip/settings.py`.
+Using Big Blue Button as a video chat provider is currently only possible on
+self-hosted Zulip installations.
+
+For specifics on configuring Big Blue Button on a self hosted installation see [here][big-blue-button-configuration].
 
 {tab|zoom}
 
