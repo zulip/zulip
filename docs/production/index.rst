@@ -22,3 +22,4 @@ Zulip in production
    deployment
    email-gateway
    zoom-configuration
+   big-blue-button-configuration
