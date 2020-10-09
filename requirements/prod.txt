@@ -710,7 +710,7 @@ sentry-sdk==0.17.4 \
 six==1.15.0 \
     --hash=sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259 \
     --hash=sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced \
-    # via argon2-cffi, cryptography, django-bitfield, hypchat, isodate, jsonschema, libthumbor, openapi-core, openapi-schema-validator, openapi-spec-validator, pyopenssl, python-binary-memcached, python-dateutil, qrcode, social-auth-app-django, social-auth-core, talon, traitlets, twilio, zulip
+    # via argon2-cffi, cryptography, django-bitfield, hypchat, isodate, jsonschema, libthumbor, openapi-core, openapi-schema-validator, openapi-spec-validator, pyopenssl, python-binary-memcached, python-dateutil, qrcode, social-auth-app-django, social-auth-core, talon, traitlets, twilio
 social-auth-app-django==4.0.0 \
     --hash=sha256:2c69e57df0b30c9c1823519c5f1992cbe4f3f98fdc7d95c840e091a752708840 \
     --hash=sha256:567ad0e028311541d7dfed51d3bf2c60440a6fd236d5d4d06c5a618b3d6c57c5 \
@@ -841,11 +841,11 @@ zipp==3.1.0 \
     --hash=sha256:aa36550ff0c0b7ef7fa639055d797116ee891440eac1a56f378e2d3179e0320b \
     --hash=sha256:c599e4d75c98f6798c509911d08a22e6c021d074469042177c8c86fb92eefd96 \
     # via importlib-metadata
-https://github.com/zulip/python-zulip-api/archive/0.7.0.zip/#egg=zulip==0.7.0_git&subdirectory=zulip \
-    --hash=sha256:161e3f38a9d27bf76a30da3d3d81f5f1b71a8c2c8144e0c4a33cd15018606d9f \
+https://github.com/zulip/python-zulip-api/archive/0.7.1.zip/#egg=zulip==0.7.1_git&subdirectory=zulip \
+    --hash=sha256:94af78b67d5a543aa8c4e86a666ac759a42956539d4abe0305ddb7179a26122c \
     # via -r requirements/common.in, zulip-bots
-https://github.com/zulip/python-zulip-api/archive/0.7.0.zip/#egg=zulip_bots==0.7.0+git&subdirectory=zulip_bots \
-    --hash=sha256:161e3f38a9d27bf76a30da3d3d81f5f1b71a8c2c8144e0c4a33cd15018606d9f \
+https://github.com/zulip/python-zulip-api/archive/0.7.1.zip/#egg=zulip_bots==0.7.1+git&subdirectory=zulip_bots \
+    --hash=sha256:94af78b67d5a543aa8c4e86a666ac759a42956539d4abe0305ddb7179a26122c \
     # via -r requirements/common.in
 zxcvbn==4.4.28 \
     --hash=sha256:151bd816817e645e9064c354b13544f85137ea3320ca3be1fb6873ea75ef7dc1 \

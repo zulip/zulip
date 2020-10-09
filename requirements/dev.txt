@@ -1048,7 +1048,7 @@ sh==1.12.14 \
 six==1.15.0 \
     --hash=sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259 \
     --hash=sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced \
-    # via argon2-cffi, automat, aws-sam-translator, cfn-lint, cryptography, django-bitfield, docker, ecdsa, hypchat, isodate, jsonschema, junit-xml, libthumbor, moto, openapi-core, openapi-schema-validator, openapi-spec-validator, packaging, parsel, pip-tools, protego, pyopenssl, pyrsistent, python-binary-memcached, python-dateutil, python-debian, python-jose, qrcode, responses, social-auth-app-django, social-auth-core, talon, traitlets, twilio, w3lib, websocket-client, zulip
+    # via argon2-cffi, automat, aws-sam-translator, cfn-lint, cryptography, django-bitfield, docker, ecdsa, hypchat, isodate, jsonschema, junit-xml, libthumbor, moto, openapi-core, openapi-schema-validator, openapi-spec-validator, packaging, parsel, pip-tools, protego, pyopenssl, pyrsistent, python-binary-memcached, python-dateutil, python-debian, python-jose, qrcode, responses, social-auth-app-django, social-auth-core, talon, traitlets, twilio, w3lib, websocket-client
 snakeviz==2.1.0 \
     --hash=sha256:8ce375b18ae4a749516d7e6c6fbbf8be6177c53974f53534d8eadb646cd279b1 \
     --hash=sha256:92ad876fb6a201a7e23a6b85ea96d9643a51e285667c253a8653643804f7cb68 \
@@ -1356,11 +1356,11 @@ zope.interface==5.1.0 \
 https://github.com/zulip/zulint/archive/639c0d34c23ac559ef0f7b9510cf95f73f6d0eb9.zip#egg=zulint==0.0.1 \
     --hash=sha256:ae9e0f2403e5f2e3e46094de9f421d4732da11c7fd8edf1bd725ffef9354b3f8 \
     # via -r requirements/dev.in
-https://github.com/zulip/python-zulip-api/archive/0.7.0.zip/#egg=zulip==0.7.0_git&subdirectory=zulip \
-    --hash=sha256:161e3f38a9d27bf76a30da3d3d81f5f1b71a8c2c8144e0c4a33cd15018606d9f \
+https://github.com/zulip/python-zulip-api/archive/0.7.1.zip/#egg=zulip==0.7.1_git&subdirectory=zulip \
+    --hash=sha256:94af78b67d5a543aa8c4e86a666ac759a42956539d4abe0305ddb7179a26122c \
     # via -r requirements/common.in, zulip-bots
-https://github.com/zulip/python-zulip-api/archive/0.7.0.zip/#egg=zulip_bots==0.7.0+git&subdirectory=zulip_bots \
-    --hash=sha256:161e3f38a9d27bf76a30da3d3d81f5f1b71a8c2c8144e0c4a33cd15018606d9f \
+https://github.com/zulip/python-zulip-api/archive/0.7.1.zip/#egg=zulip_bots==0.7.1+git&subdirectory=zulip_bots \
+    --hash=sha256:94af78b67d5a543aa8c4e86a666ac759a42956539d4abe0305ddb7179a26122c \
     # via -r requirements/common.in
 zxcvbn==4.4.28 \
     --hash=sha256:151bd816817e645e9064c354b13544f85137ea3320ca3be1fb6873ea75ef7dc1 \
