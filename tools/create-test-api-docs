@@ -72,10 +72,7 @@ def create_single_page(pattern: str, out_dir: str, href: str, calls: List[Call])
             f.write('<hr>')
             f.write('\n{}'.format(fix_test_name(call['test_name'])))
             f.write('<div class="test">')
-            try:
-                f.write(call['url'])
-            except Exception:
-                f.write(call['url'].encode('utf8'))
+            f.write(call['url'])
             f.write('<br>\n')
             f.write(call['method'] + '<br>\n')
             f.write('status code: {}<br>\n'.format(call['status_code']))
