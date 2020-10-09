@@ -122,7 +122,7 @@ function generate_multiuse_invite() {
                 invite_status,
             );
             $("#copy_link").click(() => {
-                const tempInput = document.createElement("input");
+                const tempInput = document.createElement("input"); //The text needs to be inside an input box to copy, the url is visible inside the widget, it is not present inside an input box.
                 tempInput.value = data.invite_link;
                 document.body.append(tempInput);
                 tempInput.select();
