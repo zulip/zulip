@@ -20,6 +20,21 @@ server {
 }
 
 server {
+    listen www.zulipstaging.com:443 http2;
+    server_name www.zulipstaging.com;
+
+    ssl on;
+    ssl_certificate /etc/letsencrypt/live/zulipchat.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/zulipchat.com/privkey.pem;
+
+    location / {
+        return 301 https://zulipstaging.com$request_uri;
+    }
+
+    include /etc/nginx/zulip-include/certbot;
+}
+
+server {
     # The listen needs to be `www.zulipstaging.com` since bare zulipstaging.com
     # is not a CNAME and thus has the public IP inside EC2
     listen www.zulipstaging.com:443 http2;
@@ -51,36 +66,32 @@ server {
 server {
     # The listen needs to be `www.zulipchat.com` since bare zulipchat.com
     # is not a CNAME and thus has the public IP inside EC2
-    listen www.zulipchat.com:443 default_server http2;
-    server_name zulipchat.com *.zulipchat.com;
+    listen www.zulipchat.com:443 http2;
+    server_name www.zulipchat.com zulipchat.com www.zulip.com;
 
     ssl on;
     ssl_certificate /etc/letsencrypt/live/zulipchat.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/zulipchat.com/privkey.pem;
 
     location / {
+        return 301 https://zulip.com$request_uri;
+    }
+
+    location /static {
+        # The app loads static files from https://zulipchat.com/static,
+        # so skip the redirect for those.
         proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy;
-    }
-
-    location /json/events {
-        proxy_pass https://prod;
-        include /etc/nginx/zulip-include/proxy_longpolling;
-    }
-
-    location /api/v1/events {
-        proxy_pass https://prod;
-        include /etc/nginx/zulip-include/proxy_longpolling;
     }
 
     include /etc/nginx/zulip-include/certbot;
 }
 
 server {
-    # The listen needs to be `www.zulip.com` since bare zulip.com
+    # The listen needs to be `www.zulipchat.com` since bare zulipchat.com
     # is not a CNAME and thus has the public IP inside EC2
-    listen www.zulip.com:443 http2;
-    server_name zulip.com *.zulip.com;
+    listen www.zulipchat.com:443 default_server http2;
+    server_name *.zulipchat.com zulip.com *.zulip.com;
 
     ssl on;
     ssl_certificate /etc/letsencrypt/live/zulipchat.com/fullchain.pem;
