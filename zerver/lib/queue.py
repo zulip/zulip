@@ -381,7 +381,7 @@ def queue_json_publish(
         elif processor:
             processor(event)
         else:
-            # Must be imported here: A top section import leads to obscure not-defined-ish errors.
+            # Must be imported here: A top section import leads to circular imports
             from zerver.worker.queue_processors import get_worker
             get_worker(queue_name).consume_wrapper(event)
 
