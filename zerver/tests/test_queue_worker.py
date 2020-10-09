@@ -33,17 +33,6 @@ from zerver.worker.queue_processors import (
 
 Event = Dict[str, Any]
 
-# This is used for testing LoopQueueProcessingWorker, which
-# would run forever if we don't mock time.sleep to abort the
-# loop.
-class AbortLoop(Exception):
-    pass
-
-loopworker_sleep_mock = patch(
-    'zerver.worker.queue_processors.time.sleep',
-    side_effect=AbortLoop,
-)
-
 class WorkerTest(ZulipTestCase):
     class FakeClient:
         def __init__(self) -> None:
@@ -70,6 +59,19 @@ class WorkerTest(ZulipTestCase):
             events = self.queues[queue_name]
             self.queues[queue_name] = []
             yield events
+
+        def start_json_consumer(self,
+                                queue_name: str,
+                                callback: Callable[[List[Dict[str, Any]]], None],
+                                batch_size: int=1,
+                                timeout: Optional[int]=None) -> None:
+            chunk: List[Dict[str, Any]] = []
+            queue = self.queues[queue_name]
+            while queue:
+                chunk.append(queue.pop(0))
+                if len(chunk) >= batch_size or not len(queue):
+                    callback(chunk)
+                    chunk = []
 
         def local_queue_size(self) -> int:
             return sum([len(q) for q in self.queues.values()])
@@ -103,39 +105,31 @@ class WorkerTest(ZulipTestCase):
         )
         fake_client.enqueue('user_activity', data_old_format)
 
-        with loopworker_sleep_mock:
-            with simulated_queue_client(lambda: fake_client):
-                worker = queue_processors.UserActivityWorker()
-                worker.setup()
-                try:
-                    worker.start()
-                except AbortLoop:
-                    pass
-                activity_records = UserActivity.objects.filter(
-                    user_profile = user.id,
-                    client = get_client('ios'),
-                )
-                self.assertEqual(len(activity_records), 1)
-                self.assertEqual(activity_records[0].count, 2)
+        with simulated_queue_client(lambda: fake_client):
+            worker = queue_processors.UserActivityWorker()
+            worker.setup()
+            worker.start()
+            activity_records = UserActivity.objects.filter(
+                user_profile = user.id,
+                client = get_client('ios'),
+            )
+            self.assertEqual(len(activity_records), 1)
+            self.assertEqual(activity_records[0].count, 2)
 
         # Now process the event a second time and confirm count goes
         # up. Ideally, we'd use an event with a slightly newer
         # time, but it's not really important.
         fake_client.enqueue('user_activity', data)
-        with loopworker_sleep_mock:
-            with simulated_queue_client(lambda: fake_client):
-                worker = queue_processors.UserActivityWorker()
-                worker.setup()
-                try:
-                    worker.start()
-                except AbortLoop:
-                    pass
-                activity_records = UserActivity.objects.filter(
-                    user_profile = user.id,
-                    client = get_client('ios'),
-                )
-                self.assertEqual(len(activity_records), 1)
-                self.assertEqual(activity_records[0].count, 3)
+        with simulated_queue_client(lambda: fake_client):
+            worker = queue_processors.UserActivityWorker()
+            worker.setup()
+            worker.start()
+            activity_records = UserActivity.objects.filter(
+                user_profile = user.id,
+                client = get_client('ios'),
+            )
+            self.assertEqual(len(activity_records), 1)
+            self.assertEqual(activity_records[0].count, 3)
 
     def test_missed_message_worker(self) -> None:
         cordelia = self.example_user('cordelia')
@@ -596,14 +590,11 @@ class WorkerTest(ZulipTestCase):
         except OSError:  # nocoverage # error handling for the directory not existing
             pass
 
-        with loopworker_sleep_mock, simulated_queue_client(lambda: fake_client):
+        with simulated_queue_client(lambda: fake_client):
             loopworker = UnreliableLoopWorker()
             loopworker.setup()
             with patch('logging.exception') as logging_exception_mock:
-                try:
-                    loopworker.start()
-                except AbortLoop:
-                    pass
+                loopworker.start()
                 logging_exception_mock.assert_called_once_with(
                     "Problem handling data on queue %s", "unreliable_loopworker",
                     stack_info=True,
