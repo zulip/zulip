@@ -36,12 +36,9 @@ exports.get_stream_name_from_item = function (item) {
 
 function get_user_ids_from_subs(items) {
     let user_ids = [];
-    const stream_ids = items.map((item) => item.stream_id);
+    const stream_ids = items.map((item) => item.stream_id).filter(Boolean);
     for (const stream_id of stream_ids) {
         const sub = stream_data.get_sub_by_id(stream_id);
-        if (!sub) {
-            continue;
-        }
         user_ids = user_ids.concat(sub.subscribers.map());
     }
     return user_ids;

@@ -235,6 +235,8 @@ run_test("basics", () => {
     const email = "isaac@example.com";
 
     assert(!people.is_known_user_id(32));
+    assert(!people.is_known_user(isaac));
+    assert(!people.is_known_user(undefined));
     assert(!people.is_valid_full_name_and_user_id(full_name, 32));
     assert.equal(people.get_user_id_from_name(full_name), undefined);
 
@@ -244,6 +246,7 @@ run_test("basics", () => {
 
     assert(people.is_valid_full_name_and_user_id(full_name, 32));
     assert(people.is_known_user_id(32));
+    assert(people.is_known_user(isaac));
     assert.equal(people.get_active_human_count(), 2);
 
     assert.equal(people.get_user_id_from_name(full_name), 32);

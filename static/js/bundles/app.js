@@ -33,6 +33,7 @@ import "../drafts";
 import "../input_pill";
 import "../user_pill";
 import "../stream_pill";
+import "../user_group_pill";
 import "../compose_pm_pill";
 import "../channel";
 import "../setup";

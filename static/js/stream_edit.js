@@ -208,6 +208,7 @@ function submit_add_subscriber_form(e) {
     const stream_subscription_info_elem = $(".stream_subscription_info").expectOne();
     let user_ids = user_pill.get_user_ids(exports.pill_widget);
     user_ids = user_ids.concat(stream_pill.get_user_ids(exports.pill_widget));
+    user_ids = user_ids.concat(user_group_pill.get_user_ids(exports.pill_widget));
     user_ids = new Set(user_ids);
 
     if (user_ids.has(page_params.user_id) && sub.subscribed) {
@@ -361,7 +362,7 @@ function show_subscription_settings(sub) {
         simplebar_container: $(".subscriber_list_container"),
     });
 
-    const opts = {source: get_users_for_subscriber_typeahead, stream: true};
+    const opts = {source: get_users_for_subscriber_typeahead, stream: true, user_group: true};
     pill_typeahead.set_up(sub_settings.find(".input"), exports.pill_widget, opts);
 }
 

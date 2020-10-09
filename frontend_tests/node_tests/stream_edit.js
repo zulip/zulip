@@ -32,12 +32,15 @@ set_global("$", global.make_zjquery());
 
 zrequire("input_pill");
 const people = zrequire("people");
+zrequire("composebox_typeahead");
 zrequire("pill_typeahead");
 zrequire("subs");
 zrequire("stream_edit");
 zrequire("stream_data");
 zrequire("stream_pill");
 zrequire("user_pill");
+zrequire("user_groups");
+zrequire("user_group_pill");
 
 stream_edit.sort_but_pin_current_user_on_top = noop;
 
@@ -66,6 +69,24 @@ page_params.user_id = me.user_id;
 const persons = [jill, mark, fred, me];
 for (const person of persons) {
     people.add_active_user(person);
+}
+
+const admins = {
+    name: "Admins",
+    description: "foo",
+    id: 1,
+    members: [jill.user_id, mark.user_id],
+};
+const testers = {
+    name: "Testers",
+    description: "bar",
+    id: 2,
+    members: [mark.user_id, fred.user_id, me.user_id],
+};
+
+const groups = [admins, testers];
+for (const group of groups) {
+    user_groups.add(group);
 }
 
 const denmark = {
@@ -143,23 +164,44 @@ run_test("subscriber_pills", () => {
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
 
-        const fake_this = {
+        const fake_stream_this = {
             query: "#Denmark",
+        };
+        const fake_person_this = {
+            query: "me",
+        };
+        const fake_group_this = {
+            query: "test",
         };
 
         (function test_highlighter() {
-            const fake_stream = $.create("fake-stream");
+            const fake_html = $.create("fake-html");
             typeahead_helper.render_stream = function () {
-                return fake_stream;
+                return fake_html;
             };
-            assert.equal(config.highlighter.call(fake_this, denmark), fake_stream);
+            assert.equal(config.highlighter.call(fake_stream_this, denmark), fake_html);
+
+            typeahead_helper.render_person_or_user_group = function () {
+                return fake_html;
+            };
+            assert.equal(config.highlighter.call(fake_group_this, testers), fake_html);
+            assert.equal(config.highlighter.call(fake_person_this, me), fake_html);
         })();
 
         (function test_matcher() {
-            let result = config.matcher.call(fake_this, denmark);
+            let result = config.matcher.call(fake_stream_this, denmark);
             assert(result);
+            result = config.matcher.call(fake_stream_this, sweden);
+            assert(!result);
 
-            result = config.matcher.call(fake_this, sweden);
+            result = config.matcher.call(fake_group_this, testers);
+            assert(result);
+            result = config.matcher.call(fake_group_this, admins);
+            assert(!result);
+
+            result = config.matcher.call(fake_person_this, me);
+            assert(result);
+            result = config.matcher.call(fake_person_this, jill);
             assert(!result);
         })();
 
@@ -168,8 +210,19 @@ run_test("subscriber_pills", () => {
             typeahead_helper.sort_streams = function () {
                 sort_streams_called = true;
             };
-            config.sorter.call(fake_this);
+            config.sorter.call(fake_stream_this);
             assert(sort_streams_called);
+
+            let sort_recipients_called = false;
+            typeahead_helper.sort_recipients = function () {
+                sort_recipients_called = true;
+            };
+            config.sorter.call(fake_group_this, []);
+            assert(sort_recipients_called);
+
+            sort_recipients_called = false;
+            config.sorter.call(fake_person_this, []);
+            assert(sort_recipients_called);
         })();
 
         (function test_updater() {
@@ -179,21 +232,29 @@ run_test("subscriber_pills", () => {
             }
 
             assert.equal(number_of_pills(), 0);
-            config.updater.call(fake_this, denmark);
+            config.updater.call(fake_stream_this, denmark);
             assert.equal(number_of_pills(), 1);
-            fake_this.query = me.email;
-            config.updater.call(fake_this, me);
+            config.updater.call(fake_person_this, me);
             assert.equal(number_of_pills(), 2);
-            fake_this.query = "#Denmark";
+            config.updater.call(fake_group_this, testers);
+            assert.equal(number_of_pills(), 3);
         })();
 
         (function test_source() {
-            const result = config.source.call(fake_this);
-            const taken_ids = stream_pill.get_stream_ids(stream_edit.pill_widget);
-            const stream_ids = result.map((stream) => stream.stream_id).sort();
-            let expected_ids = subs.map((stream) => stream.stream_id).sort();
-            expected_ids = expected_ids.filter((id) => !taken_ids.includes(id));
-            assert.deepEqual(stream_ids, expected_ids);
+            let result = config.source.call(fake_stream_this);
+            const stream_ids = result.map((stream) => stream.stream_id);
+            const expected_stream_ids = [sweden.stream_id];
+            assert.deepEqual(stream_ids, expected_stream_ids);
+
+            result = config.source.call(fake_group_this);
+            const group_ids = result.map((group) => group.id).filter(Boolean);
+            const expected_group_ids = [admins.id];
+            assert.deepEqual(group_ids, expected_group_ids);
+
+            result = config.source.call(fake_person_this);
+            const user_ids = result.map((user) => user.user_id).filter(Boolean);
+            const expected_user_ids = [jill.user_id, fred.user_id];
+            assert.deepEqual(user_ids, expected_user_ids);
         })();
 
         input_typeahead_called = true;
@@ -229,9 +290,10 @@ run_test("subscriber_pills", () => {
         .map()
         .filter((id) => id !== me.user_id);
 
-    // denmark.stream_id is stubbed. Thus request is
-    // sent to add all subscribers of stream Denmark.
-    expected_user_ids = potential_denmark_stream_subscribers;
+    // `denmark` stream pill, `me` user pill and
+    // `testers` user group pill are stubbed.
+    // Thus request is sent to add all the users.
+    expected_user_ids = [mark.user_id, fred.user_id];
     add_subscribers_handler(event);
 
     add_subscribers_handler = $(subscriptions_table_selector).get_on_handler(
@@ -243,6 +305,7 @@ run_test("subscriber_pills", () => {
     // Only Denmark stream pill is created and a
     // request is sent to add all it's subscribers.
     user_pill.get_user_ids = () => [];
+    user_group_pill.get_user_ids = () => [];
     expected_user_ids = potential_denmark_stream_subscribers;
     add_subscribers_handler(event);
 

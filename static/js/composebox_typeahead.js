@@ -75,21 +75,21 @@ exports.query_matches_person = function (query, person) {
     return typeahead.query_matches_source_attrs(query, person, ["full_name", email_attr], " ");
 };
 
-function query_matches_name_description(query, user_group_or_stream) {
+exports.query_matches_name_description = function (query, user_group_or_stream) {
     return typeahead.query_matches_source_attrs(
         query,
         user_group_or_stream,
         ["name", "description"],
         " ",
     );
-}
+};
 
 function get_stream_or_user_group_matcher(query) {
     // Case-insensitive.
     query = typeahead.clean_query_lowercase(query);
 
     return function (user_group_or_stream) {
-        return query_matches_name_description(query, user_group_or_stream);
+        return exports.query_matches_name_description(query, user_group_or_stream);
     };
 }
 
@@ -419,7 +419,7 @@ exports.get_person_suggestions = function (query, opts) {
 
     const person_matcher = (item) => exports.query_matches_person(query, item);
 
-    const group_matcher = (item) => query_matches_name_description(query, item);
+    const group_matcher = (item) => exports.query_matches_name_description(query, item);
 
     function filter_persons(all_persons) {
         let persons;

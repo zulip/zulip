@@ -140,6 +140,10 @@ export function is_known_user_id(user_id) {
     return people_by_user_id_dict.has(user_id);
 }
 
+export function is_known_user(user) {
+    return user && is_known_user_id(user.user_id);
+}
+
 function sort_numerically(user_ids) {
     user_ids.sort((a, b) => a - b);
 

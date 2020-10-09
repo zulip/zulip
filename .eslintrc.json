@@ -301,6 +301,7 @@
                 "upload": false,
                 "upload_widget": false,
                 "user_events": false,
+                "user_group_pill": false,
                 "user_groups": false,
                 "user_pill": false,
                 "user_status": false,

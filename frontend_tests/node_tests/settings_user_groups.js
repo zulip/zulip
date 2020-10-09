@@ -4,6 +4,7 @@ const _ = require("lodash");
 
 zrequire("user_pill");
 zrequire("pill_typeahead");
+zrequire("composebox_typeahead");
 zrequire("settings_user_groups");
 
 set_global("$", global.make_zjquery());
@@ -147,6 +148,9 @@ run_test("populate_user_groups", () => {
         if (user_id === iago.user_id) {
             return iago;
         }
+        if (user_id === alice.user_id) {
+            return alice;
+        }
         if (user_id === undefined) {
             return noop;
         }
@@ -154,6 +158,9 @@ run_test("populate_user_groups", () => {
         blueslip.expect("warn", "Undefined user in function append_user");
         get_by_user_id_called = true;
         return undefined;
+    };
+    people.is_known_user = function () {
+        return people.get_by_user_id !== undefined && people.get_by_user_id !== noop;
     };
 
     settings_user_groups.can_edit = function () {
@@ -241,7 +248,7 @@ run_test("populate_user_groups", () => {
             typeahead_helper.sort_recipients = function () {
                 sort_recipients_typeahead_called = true;
             };
-            config.sorter.call(fake_context);
+            config.sorter.call(fake_context, []);
             assert(sort_recipients_typeahead_called);
         })();
 
