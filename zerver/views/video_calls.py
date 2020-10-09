@@ -190,16 +190,16 @@ def join_bigbluebutton(request: HttpRequest, meeting_id: str = REQ(validator=che
     if settings.BIG_BLUE_BUTTON_URL is None or settings.BIG_BLUE_BUTTON_SECRET is None:
         return json_error(_("Big Blue Button is not configured."))
     else:
-        response = requests.get(
-            add_query_to_redirect_url(settings.BIG_BLUE_BUTTON_URL + "api/create", urlencode({
-                "meetingID": meeting_id,
-                "moderatorPW": password,
-                "attendeePW": password + "a",
-                "checksum": checksum
-            })))
         try:
+            response = requests.get(
+                add_query_to_redirect_url(settings.BIG_BLUE_BUTTON_URL + "api/create", urlencode({
+                    "meetingID": meeting_id,
+                    "moderatorPW": password,
+                    "attendeePW": password + "a",
+                    "checksum": checksum
+                })))
             response.raise_for_status()
-        except Exception:
+        except requests.RequestException:
             return json_error(_("Error connecting to the Big Blue Button server."))
 
         payload = ElementTree.fromstring(response.text)
