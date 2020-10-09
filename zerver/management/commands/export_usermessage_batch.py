@@ -1,7 +1,6 @@
 import glob
 import logging
 import os
-import shutil
 from argparse import ArgumentParser
 from typing import Any
 
@@ -29,8 +28,8 @@ class Command(BaseCommand):
             locked_path = partial_path.replace(".json.partial", ".json.locked")
             output_path = partial_path.replace(".json.partial", ".json")
             try:
-                shutil.move(partial_path, locked_path)
-            except Exception:
+                os.rename(partial_path, locked_path)
+            except FileNotFoundError:
                 # Already claimed by another process
                 continue
             logging.info("Thread %s processing %s", options['thread'], output_path)
@@ -38,5 +37,5 @@ class Command(BaseCommand):
                 export_usermessages_batch(locked_path, output_path, options["consent_message_id"])
             except Exception:
                 # Put the item back in the free pool when we fail
-                shutil.move(locked_path, partial_path)
+                os.rename(locked_path, partial_path)
                 raise
