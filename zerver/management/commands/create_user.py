@@ -71,7 +71,7 @@ parameters, or specify no parameters for interactive user creation.""")
         try:
             if options['password_file'] is not None:
                 with open(options['password_file']) as f:
-                    pw = f.read()
+                    pw = f.read().strip()
             elif options['password'] is not None:
                 pw = options['password']
             else:
