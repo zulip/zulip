@@ -35,7 +35,7 @@ class Command(BaseCommand):
             logging.info("Thread %s processing %s", options['thread'], output_path)
             try:
                 export_usermessages_batch(locked_path, output_path, options["consent_message_id"])
-            except Exception:
+            except BaseException:
                 # Put the item back in the free pool when we fail
                 os.rename(locked_path, partial_path)
                 raise
