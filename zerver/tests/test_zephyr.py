@@ -66,10 +66,7 @@ class ZephyrTest(ZulipTestCase):
             'ssh',
             'server',
             '--',
-            '/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache',
-            'starnine',
-            api_key,
-            'MTIzNA=='])
+            f'/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache starnine {api_key} MTIzNA=='])
 
         # Accounts whose Kerberos usernames are known not to match their
         # zephyr accounts are hardcoded, and should be handled properly.
@@ -92,7 +89,4 @@ class ZephyrTest(ZulipTestCase):
             'ssh',
             'server',
             '--',
-            '/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache',
-            'starnine',
-            api_key,
-            'MTIzNA=='])
+            f'/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache starnine {api_key} MTIzNA=='])

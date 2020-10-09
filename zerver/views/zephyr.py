@@ -1,6 +1,7 @@
 import base64
 import logging
 import re
+import shlex
 import subprocess
 from typing import Optional
 
@@ -57,11 +58,14 @@ def webathena_kerberos_login(request: HttpRequest, user_profile: UserProfile,
     # TODO: Send these data via (say) rabbitmq
     try:
         api_key = get_api_key(user_profile)
+        command = [
+            "/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache",
+            user,
+            api_key,
+            base64.b64encode(ccache).decode("utf-8"),
+        ]
         subprocess.check_call(["ssh", settings.PERSONAL_ZMIRROR_SERVER, "--",
-                               "/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache",
-                               user,
-                               api_key,
-                               base64.b64encode(ccache).decode("utf-8")])
+                               " ".join(map(shlex.quote, command))])
     except Exception:
         logging.exception("Error updating the user's ccache", stack_info=True)
         return json_error(_("We were unable to setup mirroring for you"))
