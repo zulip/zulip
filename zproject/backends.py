@@ -14,6 +14,7 @@
 # matching the args/kwargs passed in the authenticate() call.
 import binascii
 import copy
+import json
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union, cast
@@ -1429,7 +1430,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         access_token = kwargs["response"]["access_token"]
         try:
             emails = self._user_data(access_token, '/emails')
-        except (HTTPError, ValueError, TypeError):  # nocoverage
+        except (HTTPError, json.JSONDecodeError):  # nocoverage
             # We don't really need an explicit test for this code
             # path, since the outcome will be the same as any other
             # case without any verified emails
@@ -1812,7 +1813,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                 # IdP-initiated sign in. Right now we only support transporting subdomain through json in
                 # RelayState, but this format is nice in that it allows easy extensibility here.
                 return {'subdomain': data.get('subdomain')}
-        except (ValueError, TypeError):
+        except orjson.JSONDecodeError:
             return {}
 
     def choose_subdomain(self, relayed_params: Dict[str, Any]) -> Optional[str]:
