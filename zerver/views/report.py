@@ -105,7 +105,7 @@ def report_error(request: HttpRequest, user_profile: UserProfile, message: str=R
 
     try:
         version: Optional[str] = subprocess.check_output(
-            ["git", "log", "HEAD^..HEAD", "--oneline"],
+            ["git", "show", "-s", "--oneline"],
             universal_newlines=True,
         )
     except Exception:
