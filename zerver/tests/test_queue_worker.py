@@ -75,7 +75,7 @@ class WorkerTest(ZulipTestCase):
 
             yield events
 
-        def queue_size(self) -> int:
+        def local_queue_size(self) -> int:
             return len(self.queue)
 
     def test_UserActivityWorker(self) -> None:
