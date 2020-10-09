@@ -63,17 +63,11 @@ class Command(compilemessages.Command):
         return f"{locale_path}/{locale}/translations.json"
 
     def get_name_from_po_file(self, po_filename: str, locale: str) -> str:
-        lang_name_re = re.compile(r'"Language-Team: (.*?) \(')
-        with open(po_filename) as reader:
-            result = lang_name_re.search(reader.read())
-            if result:
-                try:
-                    return result.group(1)
-                except Exception:
-                    print(f"Problem in parsing {po_filename}")
-                    raise
-            else:
-                raise Exception(f"Unknown language {locale}")
+        try:
+            team = polib.pofile(po_filename).metadata["Language-Team"]
+            return team[:team.rindex(" (")]
+        except (KeyError, ValueError):
+            raise Exception(f"Unknown language {locale}")
 
     def get_locales(self) -> List[str]:
         output = check_output(['git', 'ls-files', 'locale'])
