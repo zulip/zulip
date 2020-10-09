@@ -348,25 +348,18 @@ class QueueProcessingWorker(ABC):
         self.q.stop_consuming()
 
 class LoopQueueProcessingWorker(QueueProcessingWorker):
-    sleep_delay = 0
-    sleep_only_if_empty = True
-    is_consuming = False
+    sleep_delay = 1
+    batch_size = 100
 
     def start(self) -> None:  # nocoverage
         assert self.q is not None
         self.initialize_statistics()
-        self.is_consuming = True
-        while self.is_consuming:
-            with self.q.json_drain_queue(self.queue_name) as events:
-                self.do_consume(self.consume_batch, events)
-            # To avoid spinning the CPU, we go to sleep if there's
-            # nothing in the queue, or for certain queues with
-            # sleep_only_if_empty=False, unconditionally.
-            if not self.sleep_only_if_empty or len(events) == 0:
-                time.sleep(self.sleep_delay)
-
-    def stop(self) -> None:
-        self.is_consuming = False
+        self.q.start_json_consumer(
+            self.queue_name,
+            lambda events: self.do_consume(self.consume_batch, events),
+            batch_size=self.batch_size,
+            timeout=self.sleep_delay,
+        )
 
     @abstractmethod
     def consume_batch(self, events: List[Dict[str, Any]]) -> None:
@@ -460,8 +453,6 @@ class UserActivityWorker(LoopQueueProcessingWorker):
       common events from doing an action multiple times.
 
     """
-    sleep_delay = 10
-    sleep_only_if_empty = True
     client_id_map: Dict[str, int] = {}
 
     def start(self) -> None:
