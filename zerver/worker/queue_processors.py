@@ -340,8 +340,10 @@ class QueueProcessingWorker(ABC):
     def start(self) -> None:
         assert self.q is not None
         self.initialize_statistics()
-        self.q.register_json_consumer(self.queue_name, self.consume_single_event)
-        self.q.start_consuming()
+        self.q.start_json_consumer(
+            self.queue_name,
+            lambda events: self.consume_single_event(events[0]),
+        )
 
     def stop(self) -> None:  # nocoverage
         assert self.q is not None
