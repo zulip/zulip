@@ -167,7 +167,7 @@ class SimpleQueueClient:
                         try:
                             callback(events)
                             channel.basic_ack(max_processed, multiple=True)
-                        except Exception:
+                        except BaseException:
                             channel.basic_nack(max_processed, multiple=True)
                             raise
                         events = []
