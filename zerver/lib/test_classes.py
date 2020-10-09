@@ -745,7 +745,7 @@ Output:
         """
         try:
             json = orjson.loads(result.content)
-        except Exception:  # nocoverage
+        except orjson.JSONDecodeError:  # nocoverage
             json = {'msg': "Error parsing JSON in response!"}
         self.assertEqual(result.status_code, 200, json['msg'])
         self.assertEqual(json.get("result"), "success")
@@ -758,7 +758,7 @@ Output:
     def get_json_error(self, result: HttpResponse, status_code: int=400) -> Dict[str, Any]:
         try:
             json = orjson.loads(result.content)
-        except Exception:  # nocoverage
+        except orjson.JSONDecodeError:  # nocoverage
             json = {'msg': "Error parsing JSON in response!"}
         self.assertEqual(result.status_code, status_code, msg=json.get('msg'))
         self.assertEqual(json.get("result"), "error")

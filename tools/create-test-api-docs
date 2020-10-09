@@ -41,7 +41,7 @@ def encode_info(info: Any) -> str:
         try:
             info = orjson.loads(info)
             result = '(stringified)\n'
-        except Exception:
+        except orjson.JSONDecodeError:
             pass
         result += html.escape(pprint.pformat(info, indent=4))
         return '<pre>' + result + '</pre>'
