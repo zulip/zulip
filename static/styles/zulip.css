@@ -1178,13 +1178,18 @@ td.pointer {
 }
 
 .message_sender {
-    height: 0;
     vertical-align: top;
     position: relative;
 
     i.zulip-icon.bot {
         font-size: 12px;
     }
+
+    @media (max-width: 500px) {
+        min-height: 20px;
+        display: inline-block;
+    }
+
 }
 
 .sender_name {
