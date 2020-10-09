@@ -107,6 +107,7 @@ function submit_invitation_form() {
 }
 
 function generate_multiuse_invite() {
+    document.querySelector("#copy_link").type = "button";
     const invite_status = $("#multiuse_invite_status");
     const data = get_common_invitation_data();
     channel.post({
@@ -120,6 +121,14 @@ function generate_multiuse_invite() {
                 }),
                 invite_status,
             );
+            $("#copy_link").click(() => {
+                const tempInput = document.createElement("input");
+                tempInput.value = data.invite_link;
+                document.body.append(tempInput);
+                tempInput.select();
+                document.execCommand("copy");
+                tempInput.remove();
+            });
         },
         error(xhr) {
             ui_report.error("", xhr, invite_status);
