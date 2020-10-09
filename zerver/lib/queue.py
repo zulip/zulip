@@ -33,6 +33,7 @@ class SimpleQueueClient:
         self.channel: Optional[BlockingChannel] = None
         self.consumers: Dict[str, Set[Consumer]] = defaultdict(set)
         self.rabbitmq_heartbeat = rabbitmq_heartbeat
+        self.is_consuming = False
         self._connect()
 
     def _connect(self) -> None:
@@ -203,16 +204,59 @@ class SimpleQueueClient:
         with self.drain_queue(queue_name) as binary_messages:
             yield list(map(orjson.loads, binary_messages))
 
+    def start_json_consumer(self,
+                            queue_name: str,
+                            callback: Callable[[List[Dict[str, Any]]], None],
+                            batch_size: int=1,
+                            timeout: Optional[int]=None) -> None:
+        if batch_size == 1:
+            timeout = None
+
+        def do_consume(channel: BlockingChannel) -> None:
+            events: List[Dict[str, Any]] = []
+            last_process = time.time()
+            max_processed: Optional[int] = None
+            self.is_consuming = True
+
+            # This iterator technique will iteratively collect up to
+            # batch_size events from the RabbitMQ queue (if present)
+            # before calling the callback with the batch.  If not
+            # enough events are present, it will sleep for at most
+            # timeout seconds before calling the callback with the
+            # batch of events it has.
+            for method, properties, body in channel.consume(queue_name, inactivity_timeout=timeout):
+                if body is not None:
+                    events.append(orjson.loads(body))
+                    max_processed = method.delivery_tag
+                now = time.time()
+                if len(events) >= batch_size or (timeout and now >= last_process + timeout):
+                    if events:
+                        try:
+                            callback(events)
+                            channel.basic_ack(max_processed, multiple=True)
+                        except Exception:
+                            channel.basic_nack(max_processed, multiple=True)
+                            raise
+                        events = []
+                    last_process = now
+                if not self.is_consuming:
+                    break
+        self.ensure_queue(queue_name, do_consume)
+
     def local_queue_size(self) -> int:
         assert self.channel is not None
         return self.channel.get_waiting_message_count() + len(self.channel._pending_events)
 
     def start_consuming(self) -> None:
         assert self.channel is not None
+        assert not self.is_consuming
+        self.is_consuming = True
         self.channel.start_consuming()
 
     def stop_consuming(self) -> None:
         assert self.channel is not None
+        assert self.is_consuming
+        self.is_consuming = False
         self.channel.stop_consuming()
 
 # Patch pika.adapters.tornado_connection.TornadoConnection so that a socket error doesn't
