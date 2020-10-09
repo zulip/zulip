@@ -200,7 +200,7 @@ class QueueProcessingWorker(ABC):
 
         self.update_statistics(0)
 
-    def update_statistics(self, remaining_queue_size: int) -> None:
+    def update_statistics(self, remaining_local_queue_size: int) -> None:
         total_seconds = sum(seconds for _, seconds in self.recent_consume_times)
         total_events = sum(events_number for events_number, _ in self.recent_consume_times)
         if total_events == 0:
@@ -210,7 +210,7 @@ class QueueProcessingWorker(ABC):
         stats_dict = dict(
             update_time=time.time(),
             recent_average_consume_time=recent_average_consume_time,
-            current_queue_size=remaining_queue_size,
+            current_queue_size=remaining_local_queue_size,
             queue_last_emptied_timestamp=self.queue_last_emptied_timestamp,
             consumed_since_last_emptied=self.consumed_since_last_emptied,
         )
@@ -228,9 +228,9 @@ class QueueProcessingWorker(ABC):
             os.rename(tmp_fn, fn)
         self.last_statistics_update_time = time.time()
 
-    def get_remaining_queue_size(self) -> int:
+    def get_remaining_local_queue_size(self) -> int:
         if self.q is not None:
-            return self.q.queue_size()
+            return self.q.local_queue_size()
         else:
             # This is a special case that will happen if we're operating without
             # using RabbitMQ (e.g. in tests). In that case there's no queuing to speak of
@@ -250,7 +250,7 @@ class QueueProcessingWorker(ABC):
                 type='debug',
                 category='queue_processor',
                 message=f"Consuming {self.queue_name}",
-                data={"events": events, "queue_size": self.get_remaining_queue_size()},
+                data={"events": events, "local_queue_size": self.get_remaining_local_queue_size()},
             )
         try:
             if self.idle:
@@ -259,7 +259,7 @@ class QueueProcessingWorker(ABC):
                 # that the queue started processing, in case the event we're about to process
                 # makes us freeze.
                 self.idle = False
-                self.update_statistics(self.get_remaining_queue_size())
+                self.update_statistics(self.get_remaining_local_queue_size())
 
             time_start = time.time()
             if self.MAX_CONSUME_SECONDS and self.ENABLE_TIMEOUTS:
@@ -288,8 +288,8 @@ class QueueProcessingWorker(ABC):
             if consume_time_seconds is not None:
                 self.recent_consume_times.append((len(events), consume_time_seconds))
 
-            remaining_queue_size = self.get_remaining_queue_size()
-            if remaining_queue_size == 0:
+            remaining_local_queue_size = self.get_remaining_local_queue_size()
+            if remaining_local_queue_size == 0:
                 self.queue_last_emptied_timestamp = time.time()
                 self.consumed_since_last_emptied = 0
                 # We've cleared all the events from the queue, so we don't
@@ -304,7 +304,7 @@ class QueueProcessingWorker(ABC):
             if (self.consume_iteration_counter >= self.CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM
                     or time.time() - self.last_statistics_update_time >= self.MAX_SECONDS_BEFORE_UPDATE_STATS):
                 self.consume_iteration_counter = 0
-                self.update_statistics(remaining_queue_size)
+                self.update_statistics(remaining_local_queue_size)
 
     def consume_wrapper(self, data: Dict[str, Any]) -> None:
         consume_func = lambda events: self.consume(events[0])

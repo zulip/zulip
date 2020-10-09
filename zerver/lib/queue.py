@@ -203,9 +203,9 @@ class SimpleQueueClient:
         with self.drain_queue(queue_name) as binary_messages:
             yield list(map(orjson.loads, binary_messages))
 
-    def queue_size(self) -> int:
+    def local_queue_size(self) -> int:
         assert self.channel is not None
-        return len(self.channel._pending_events)
+        return self.channel.get_waiting_message_count() + len(self.channel._pending_events)
 
     def start_consuming(self) -> None:
         assert self.channel is not None
