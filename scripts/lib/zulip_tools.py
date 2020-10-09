@@ -53,7 +53,7 @@ def overwrite_symlink(src: str, dst: str) -> None:
         break
     try:
         os.rename(tmp, dst)
-    except Exception:
+    except BaseException:
         os.remove(tmp)
         raise
 

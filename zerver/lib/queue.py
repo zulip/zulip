@@ -145,9 +145,9 @@ class SimpleQueueClient:
             try:
                 consumer(ch, method, properties, body)
                 ch.basic_ack(delivery_tag=method.delivery_tag)
-            except Exception as e:
+            except BaseException:
                 ch.basic_nack(delivery_tag=method.delivery_tag)
-                raise e
+                raise
 
         self.consumers[queue_name].add(wrapped_consumer)
         self.ensure_queue(
@@ -193,7 +193,7 @@ class SimpleQueueClient:
             yield messages
             if max_tag:
                 self.channel.basic_ack(max_tag, multiple=True)
-        except Exception:
+        except BaseException:
             if max_tag:
                 self.channel.basic_nack(max_tag, multiple=True)
             raise
