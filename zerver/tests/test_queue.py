@@ -131,6 +131,6 @@ class TestQueueImplementation(ZulipTestCase):
     @override_settings(USING_RABBITMQ=True)
     def tearDown(self) -> None:
         queue_client = get_queue_client()
-        with queue_client.drain_queue("test_suite"):
-            pass
+        assert queue_client.channel
+        queue_client.channel.queue_purge("test_suite")
         super().tearDown()
