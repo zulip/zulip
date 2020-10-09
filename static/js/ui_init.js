@@ -219,7 +219,7 @@ exports.initialize_kitchen_sink_stuff = function () {
         }
         const row = event.msg_list.get_row(event.id);
         $(".selected_message").removeClass("selected_message");
-        if($(window).width() > 775) {
+        if ($(window).width() > 775) {
             row.addClass("selected_message");
         }
 
