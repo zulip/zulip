@@ -2039,7 +2039,7 @@ def extract_stream_indicator(s: str) -> Union[str, int]:
 
     try:
         data = orjson.loads(s)
-    except (ValueError, TypeError):
+    except orjson.JSONDecodeError:
         # If there was no JSON encoding, then we just
         # have a raw stream name.
         return s
@@ -2067,7 +2067,7 @@ def extract_private_recipients(s: str) -> Union[List[str], List[int]]:
 
     try:
         data = orjson.loads(s)
-    except (ValueError, TypeError):
+    except orjson.JSONDecodeError:
         data = s
 
     if isinstance(data, str):
@@ -2388,7 +2388,7 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
     if widget_content is not None:
         try:
             widget_content = orjson.loads(widget_content)
-        except Exception:
+        except orjson.JSONDecodeError:
             raise JsonableError(_('Widgets: API programmer sent invalid JSON content'))
 
         try:

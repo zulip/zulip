@@ -21,7 +21,7 @@ def process_submessage(request: HttpRequest,
 
     try:
         orjson.loads(content)
-    except Exception:
+    except orjson.JSONDecodeError:
         return json_error(_("Invalid json for submessage"))
 
     do_add_submessage(
