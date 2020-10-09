@@ -558,13 +558,6 @@ def handle_missedmessage_emails(user_profile_id: int,
             message_count_by_bucket[bucket_tup],
         )
 
-def log_digest_event(msg: str) -> None:
-    import logging
-    import time
-    logging.Formatter.converter = time.gmtime
-    logging.basicConfig(filename=settings.DIGEST_LOG_PATH, level=logging.INFO)
-    logging.info(msg)
-
 def followup_day2_email_delay(user: UserProfile) -> timedelta:
     days_to_delay = 2
     user_tz = user.timezone
