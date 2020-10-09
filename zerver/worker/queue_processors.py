@@ -306,9 +306,9 @@ class QueueProcessingWorker(ABC):
                 self.consume_iteration_counter = 0
                 self.update_statistics(remaining_local_queue_size)
 
-    def consume_wrapper(self, data: Dict[str, Any]) -> None:
+    def consume_single_event(self, event: Dict[str, Any]) -> None:
         consume_func = lambda events: self.consume(events[0])
-        self.do_consume(consume_func, [data])
+        self.do_consume(consume_func, [event])
 
     def _handle_consume_exception(self, events: List[Dict[str, Any]], exception: Exception) -> None:
         with configure_scope() as scope:
@@ -340,7 +340,7 @@ class QueueProcessingWorker(ABC):
     def start(self) -> None:
         assert self.q is not None
         self.initialize_statistics()
-        self.q.register_json_consumer(self.queue_name, self.consume_wrapper)
+        self.q.register_json_consumer(self.queue_name, self.consume_single_event)
         self.q.start_consuming()
 
     def stop(self) -> None:  # nocoverage

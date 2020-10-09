@@ -383,7 +383,7 @@ def queue_json_publish(
         else:
             # Must be imported here: A top section import leads to circular imports
             from zerver.worker.queue_processors import get_worker
-            get_worker(queue_name).consume_wrapper(event)
+            get_worker(queue_name).consume_single_event(event)
 
 def retry_event(queue_name: str,
                 event: Dict[str, Any],
