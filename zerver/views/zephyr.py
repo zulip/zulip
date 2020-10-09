@@ -66,7 +66,7 @@ def webathena_kerberos_login(request: HttpRequest, user_profile: UserProfile,
         ]
         subprocess.check_call(["ssh", settings.PERSONAL_ZMIRROR_SERVER, "--",
                                " ".join(map(shlex.quote, command))])
-    except Exception:
+    except subprocess.CalledProcessError:
         logging.exception("Error updating the user's ccache", stack_info=True)
         return json_error(_("We were unable to setup mirroring for you"))
 

@@ -1,3 +1,4 @@
+import subprocess
 from typing import Any
 from unittest.mock import patch
 
@@ -51,7 +52,7 @@ class ZephyrTest(ZulipTestCase):
 
         with \
                 ccache_mock(return_value=b'1234'), \
-                ssh_mock(side_effect=KeyError('foo')), \
+                ssh_mock(side_effect=subprocess.CalledProcessError(1, [])), \
                 logging_mock() as log:
             result = post("zephyr", cred=cred)
 

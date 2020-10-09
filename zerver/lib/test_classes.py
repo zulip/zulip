@@ -2,6 +2,7 @@ import base64
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 import urllib
 from contextlib import contextmanager
@@ -970,7 +971,7 @@ Output:
         '''
         with \
                 self.settings(ERROR_BOT=None), \
-                mock.patch('zerver.lib.markdown.timeout', side_effect=KeyError('foo')), \
+                mock.patch('zerver.lib.markdown.timeout', side_effect=subprocess.CalledProcessError(1, [])), \
                 mock.patch('zerver.lib.markdown.markdown_logger'):
             yield
 

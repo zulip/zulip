@@ -108,7 +108,7 @@ def report_error(request: HttpRequest, user_profile: UserProfile, message: str=R
             ["git", "show", "-s", "--oneline"],
             universal_newlines=True,
         )
-    except Exception:
+    except (FileNotFoundError, subprocess.CalledProcessError):
         version = None
 
     # Get the IP address of the request
