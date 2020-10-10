@@ -380,10 +380,3 @@ export function sort_streams(matches, query) {
 
     return name_results.matches.concat(desc_results.matches.concat(desc_results.rest));
 }
-
-export function sort_recipientbox_typeahead(query, matches, current_stream) {
-    // input_text may be one or more pm recipients
-    const cleaned = get_cleaned_pm_recipients(query);
-    query = cleaned[cleaned.length - 1];
-    return sort_recipients(matches, query, current_stream);
-}
