@@ -298,18 +298,32 @@ function show_subscription_settings(sub) {
     );
 
     function create_item_from_text(text, current_items) {
-        const item = stream_pill.create_item_from_stream_name(text, current_items);
-        if (item) {
-            return item;
+        const funcs = [
+            stream_pill.create_item_from_stream_name,
+            user_group_pill.create_item_from_group_name,
+            user_pill.create_item_from_email,
+        ];
+        for (const func of funcs) {
+            const item = func(text, current_items);
+            if (item) {
+                return item;
+            }
         }
-        return user_pill.create_item_from_email(text, current_items);
+        return undefined;
     }
     function get_text_from_item(item) {
-        const text = stream_pill.get_stream_name_from_item(item);
-        if (text) {
-            return text;
+        const funcs = [
+            stream_pill.get_stream_name_from_item,
+            user_group_pill.get_group_name_from_item,
+            user_pill.get_email_from_item,
+        ];
+        for (const func of funcs) {
+            const text = func(item);
+            if (text) {
+                return text;
+            }
         }
-        return user_pill.get_email_from_item(item);
+        return undefined;
     }
 
     exports.pill_widget = input_pill.create({
