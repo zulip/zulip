@@ -3,8 +3,7 @@ import os
 import smtplib
 import time
 from collections import defaultdict
-from contextlib import contextmanager
-from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
+from typing import Any, Callable, Dict, List, Mapping, Optional
 from unittest.mock import MagicMock, patch
 
 import orjson
@@ -36,29 +35,10 @@ Event = Dict[str, Any]
 class WorkerTest(ZulipTestCase):
     class FakeClient:
         def __init__(self) -> None:
-            self.consumers: Dict[str, Callable[[Dict[str, Any]], None]] = {}
             self.queues: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
 
         def enqueue(self, queue_name: str, data: Dict[str, Any]) -> None:
             self.queues[queue_name].append(data)
-
-        def register_json_consumer(self,
-                                   queue_name: str,
-                                   callback: Callable[[Dict[str, Any]], None]) -> None:
-            self.consumers[queue_name] = callback
-
-        def start_consuming(self) -> None:
-            for queue_name in self.queues.keys():
-                callback = self.consumers[queue_name]
-                for data in self.queues[queue_name]:
-                    callback(data)
-                self.queues[queue_name] = []
-
-        @contextmanager
-        def json_drain_queue(self, queue_name: str) -> Iterator[List[Event]]:
-            events = self.queues[queue_name]
-            self.queues[queue_name] = []
-            yield events
 
         def start_json_consumer(self,
                                 queue_name: str,

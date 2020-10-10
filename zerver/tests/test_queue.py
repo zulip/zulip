@@ -21,43 +21,6 @@ class TestTornadoQueueClient(ZulipTestCase):
 
 class TestQueueImplementation(ZulipTestCase):
     @override_settings(USING_RABBITMQ=True)
-    def test_queue_basics(self) -> None:
-        queue_client = get_queue_client()
-        queue_client.publish("test_suite", b"test_event\x00\xff")
-
-        with queue_client.drain_queue("test_suite") as result:
-            self.assertEqual(result, [b"test_event\x00\xff"])
-
-    @override_settings(USING_RABBITMQ=True)
-    def test_queue_basics_json(self) -> None:
-        queue_json_publish("test_suite", {"event": "my_event"})
-
-        queue_client = get_queue_client()
-        with queue_client.json_drain_queue("test_suite") as result:
-            self.assertEqual(len(result), 1)
-            self.assertEqual(result[0]['event'], 'my_event')
-
-    @override_settings(USING_RABBITMQ=True)
-    def test_queue_basics_json_error(self) -> None:
-        queue_json_publish("test_suite", {"event": "my_event"})
-
-        queue_client = get_queue_client()
-        raised = False
-        try:
-            with queue_client.json_drain_queue("test_suite") as result:
-                self.assertEqual(len(result), 1)
-                self.assertEqual(result[0]['event'], 'my_event')
-                raise ValueError()
-        except ValueError:
-            raised = True
-        assert raised
-
-        # Still in the queue to be fetched
-        with queue_client.json_drain_queue("test_suite") as result:
-            self.assertEqual(len(result), 1)
-            self.assertEqual(result[0]['event'], 'my_event')
-
-    @override_settings(USING_RABBITMQ=True)
     def test_register_consumer(self) -> None:
         output = []
 
