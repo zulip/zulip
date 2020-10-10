@@ -3,8 +3,7 @@ import random
 import threading
 import time
 from collections import defaultdict
-from contextlib import contextmanager
-from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Set
+from typing import Any, Callable, Dict, List, Mapping, Optional, Set
 
 import orjson
 import pika
@@ -138,72 +137,6 @@ class SimpleQueueClient:
         self._reconnect()
         self.publish(queue_name, data)
 
-    def register_consumer(self, queue_name: str, consumer: Consumer) -> None:
-        def wrapped_consumer(ch: BlockingChannel,
-                             method: Basic.Deliver,
-                             properties: pika.BasicProperties,
-                             body: bytes) -> None:
-            try:
-                consumer(ch, method, properties, body)
-                ch.basic_ack(delivery_tag=method.delivery_tag)
-            except Exception as e:
-                ch.basic_nack(delivery_tag=method.delivery_tag)
-                raise e
-
-        self.consumers[queue_name].add(wrapped_consumer)
-        self.ensure_queue(
-            queue_name,
-            lambda channel: channel.basic_consume(
-                queue_name,
-                wrapped_consumer,
-                consumer_tag=self._generate_ctag(queue_name),
-            ),
-        )
-
-    def register_json_consumer(self, queue_name: str,
-                               callback: Callable[[Dict[str, Any]], None]) -> None:
-        def wrapped_callback(ch: BlockingChannel,
-                             method: Basic.Deliver,
-                             properties: pika.BasicProperties,
-                             body: bytes) -> None:
-            callback(orjson.loads(body))
-        self.register_consumer(queue_name, wrapped_callback)
-
-    @contextmanager
-    def drain_queue(self, queue_name: str) -> Iterator[List[bytes]]:
-        """As a contextmanger, yields all messages in the desired queue.
-
-        NACKs all of the messages if the block throws an exception,
-        ACKs them otherwise.
-        """
-        messages = []
-        max_tag: Optional[int] = None
-
-        def opened(channel: BlockingChannel) -> None:
-            nonlocal max_tag
-            while True:
-                (meta, _, message) = channel.basic_get(queue_name)
-                if message is None:
-                    break
-                max_tag = meta.delivery_tag
-                messages.append(message)
-
-        self.ensure_queue(queue_name, opened)
-        assert self.channel is not None
-        try:
-            yield messages
-            if max_tag:
-                self.channel.basic_ack(max_tag, multiple=True)
-        except Exception:
-            if max_tag:
-                self.channel.basic_nack(max_tag, multiple=True)
-            raise
-
-    @contextmanager
-    def json_drain_queue(self, queue_name: str) -> Iterator[List[Dict[str, Any]]]:
-        with self.drain_queue(queue_name) as binary_messages:
-            yield list(map(orjson.loads, binary_messages))
-
     def start_json_consumer(self,
                             queue_name: str,
                             callback: Callable[[List[Dict[str, Any]]], None],
@@ -246,12 +179,6 @@ class SimpleQueueClient:
     def local_queue_size(self) -> int:
         assert self.channel is not None
         return self.channel.get_waiting_message_count() + len(self.channel._pending_events)
-
-    def start_consuming(self) -> None:
-        assert self.channel is not None
-        assert not self.is_consuming
-        self.is_consuming = True
-        self.channel.start_consuming()
 
     def stop_consuming(self) -> None:
         assert self.channel is not None
