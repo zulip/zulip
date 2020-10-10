@@ -1502,6 +1502,18 @@ input[type="checkbox"] {
         color: hsl(0, 0%, 67%);
     }
 
+    #subscribe-to-default-streams {
+        width: 220px;
+    }
+
+    #subscribe-user-spinner {
+        margin-top: 0;
+
+        .loading_indicator_text {
+            line-height: 20px;
+        }
+    }
+
     #show_my_user_profile_modal {
         width: 150px;
         margin-top: 20px;

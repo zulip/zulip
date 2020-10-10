@@ -18,6 +18,7 @@ import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_ui from "./settings_ui";
+import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
@@ -615,6 +616,42 @@ function handle_human_form(tbody, status_field) {
         const ret = open_human_form(person);
         const modal = ret.modal;
         const fields_user_pills = ret.fields_user_pills;
+
+        modal.find("#subscribe-to-default-streams").on("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const stream_ids = stream_data.get_default_stream_ids();
+            const default_streams = [];
+
+            for (const stream_id of stream_ids) {
+                const stream_name = stream_data.maybe_get_stream_name(stream_id);
+                default_streams.push({name: stream_name});
+            }
+
+            const url = "/json/users/me/subscriptions";
+            const data = {
+                subscriptions: JSON.stringify(default_streams),
+                principals: JSON.stringify([user_id]),
+            };
+
+            const spinner = $("#subscribe-user-spinner").expectOne();
+            spinner.fadeTo(0, 1);
+            loading.make_indicator(spinner, {text: i18n.t("Subscribing user")});
+            const remove_after = 1000;
+
+            channel.post({
+                url,
+                data,
+                success() {
+                    ui_report.success(i18n.t("Subscribed"), spinner, remove_after);
+                    settings_ui.display_checkmark(spinner);
+                },
+                error(xhr) {
+                    ui_report.error(i18n.t("Subscribe failed"), xhr, spinner);
+                },
+            });
+        });
 
         modal.find(".submit_human_change").on("click", (e) => {
             e.preventDefault();

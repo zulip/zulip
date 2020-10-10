@@ -23,6 +23,12 @@
                         {{> settings/dropdown_options_widget option_values=user_role_values}}
                     </select>
                 </div>
+                <div class="input-group">
+                    <button id="subscribe-to-default-streams" class="button rounded sea-green">
+                        {{t "Subscribe to default streams" }}
+                    </button>
+                    <div class="alert-notification" id="subscribe-user-spinner"></div>
+                </div>
                 <div class="custom-profile-field-form"></div>
             </form>
         </div>
