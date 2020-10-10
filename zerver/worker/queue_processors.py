@@ -434,7 +434,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 context=context,
                 delay=datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS - 2))
 
-@assign_queue('user_activity', queue_type="loop")
+@assign_queue('user_activity')
 class UserActivityWorker(LoopQueueProcessingWorker):
     """The UserActivity queue is perhaps our highest-traffic queue, and
     requires some care to ensure it performs adequately.
@@ -515,7 +515,7 @@ class UserPresenceWorker(QueueProcessingWorker):
         status = event["status"]
         do_update_user_presence(user_profile, client, log_time, status)
 
-@assign_queue('missedmessage_emails', queue_type="loop")
+@assign_queue('missedmessage_emails')
 class MissedMessageWorker(QueueProcessingWorker):
     # Aggregate all messages received over the last BATCH_DURATION
     # seconds to let someone finish sending a batch of messages and/or
