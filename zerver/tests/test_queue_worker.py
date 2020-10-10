@@ -188,7 +188,7 @@ class WorkerTest(ZulipTestCase):
                 self.is_running = True
 
         timer = MockTimer()
-        loopworker_sleep_mock = patch(
+        timer_mock = patch(
             'zerver.worker.queue_processors.Timer',
             return_value=timer,
         )
@@ -200,7 +200,7 @@ class WorkerTest(ZulipTestCase):
 
         bonus_event = dict(user_profile_id=hamlet.id, message_id=hamlet3_msg_id)
 
-        with send_mock as sm, loopworker_sleep_mock as tm:
+        with send_mock as sm, timer_mock as tm:
             with simulated_queue_client(lambda: fake_client):
                 self.assertFalse(timer.is_alive())
                 mmw.setup()
