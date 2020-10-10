@@ -411,11 +411,4 @@ exports.sort_streams = function (matches, query) {
     return name_results.matches.concat(desc_results.matches.concat(desc_results.rest));
 };
 
-exports.sort_recipientbox_typeahead = function (query, matches, current_stream) {
-    // input_text may be one or more pm recipients
-    const cleaned = exports.get_cleaned_pm_recipients(query);
-    query = cleaned[cleaned.length - 1];
-    return exports.sort_recipients(matches, query, current_stream);
-};
-
 window.typeahead_helper = exports;

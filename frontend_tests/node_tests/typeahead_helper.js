@@ -661,29 +661,3 @@ run_test("sort_slash_commands", () => {
         {name: "test"},
     ]);
 });
-
-run_test("sort_recipientbox_typeahead", () => {
-    let recipients = th.sort_recipientbox_typeahead("b, a", matches, ""); // search "a"
-    let recipients_email = recipients.map((person) => person.email);
-    assert.deepEqual(recipients_email, [
-        "a_user@zulip.org", // matches "a"
-        "a_bot@zulip.com", // matches "a"
-        "b_bot@example.com",
-        "b_user_3@zulip.net",
-        "zman@test.net",
-        "b_user_2@zulip.net",
-        "b_user_1@zulip.net",
-    ]);
-
-    recipients = th.sort_recipientbox_typeahead("b, a, b", matches, ""); // search "b"
-    recipients_email = recipients.map((person) => person.email);
-    assert.deepEqual(recipients_email, [
-        "b_bot@example.com",
-        "b_user_3@zulip.net",
-        "b_user_2@zulip.net",
-        "b_user_1@zulip.net",
-        "a_user@zulip.org",
-        "zman@test.net",
-        "a_bot@zulip.com",
-    ]);
-});

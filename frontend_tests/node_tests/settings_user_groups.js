@@ -237,12 +237,12 @@ run_test("populate_user_groups", () => {
         })();
 
         (function test_sorter() {
-            let sort_recipientbox_typeahead_called = false;
-            typeahead_helper.sort_recipientbox_typeahead = function () {
-                sort_recipientbox_typeahead_called = true;
+            let sort_recipients_typeahead_called = false;
+            typeahead_helper.sort_recipients = function () {
+                sort_recipients_typeahead_called = true;
             };
             config.sorter.call(fake_context);
-            assert(sort_recipientbox_typeahead_called);
+            assert(sort_recipients_typeahead_called);
         })();
 
         (function test_updater() {

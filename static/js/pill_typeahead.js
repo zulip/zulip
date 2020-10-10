@@ -50,7 +50,7 @@ exports.set_up = function (input, pills, opts) {
                 return typeahead_helper.sort_streams(matches, this.query.trim().slice(1));
             }
 
-            return typeahead_helper.sort_recipientbox_typeahead(this.query, matches, "");
+            return typeahead_helper.sort_recipients(matches, this.query, "");
         },
         updater(item) {
             if (include_streams(this.query)) {
