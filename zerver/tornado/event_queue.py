@@ -1081,16 +1081,17 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         event['type'], len(users), int(1000 * (time.time() - start_time)),
     )
 
-def get_wrapped_process_notification(queue_name: str) -> Callable[[Dict[str, Any]], None]:
+def get_wrapped_process_notification(queue_name: str) -> Callable[[List[Dict[str, Any]]], None]:
     def failure_processor(notice: Dict[str, Any]) -> None:
         logging.error(
             "Maximum retries exceeded for Tornado notice:%s\nStack trace:\n%s\n",
             notice, traceback.format_exc())
 
-    def wrapped_process_notification(notice: Dict[str, Any]) -> None:
-        try:
-            process_notification(notice)
-        except Exception:
-            retry_event(queue_name, notice, failure_processor)
+    def wrapped_process_notification(notices: List[Dict[str, Any]]) -> None:
+        for notice in notices:
+            try:
+                process_notification(notice)
+            except Exception:
+                retry_event(queue_name, notice, failure_processor)
 
     return wrapped_process_notification
