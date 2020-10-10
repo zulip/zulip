@@ -233,6 +233,25 @@ on a dark background, and don't change the dark labels dark either. */
         border-color: hsla(0, 0%, 0%, 0.9);
     }
 
+    /* custom scrollbar for new and preview message_textarea */
+    textarea.new_message_textarea::-webkit-scrollbar,
+    .preview_message_area::-webkit-scrollbar {
+        height: 8px;
+        width: 10px;
+        background-color: hsla(0, 0%, 0%, 0.05);
+    }
+    /* custom scrollbar draggable handle for new and preview message_textarea */
+    textarea.new_message_textarea::-webkit-scrollbar-thumb,
+    .preview_message_area::-webkit-scrollbar-thumb {
+        background-color: hsla(0, 0%, 0%, 0.3);
+        border-radius: 20px;
+        transition: all 0.2s ease;
+    }
+    textarea.new_message_textarea::-webkit-scrollbar-thumb:hover,
+    .preview_message_area::-webkit-scrollbar-thumb:hover {
+        background-color: hsla(0, 0%, 0%, 0.6);
+    }
+
     .message-header-contents,
     .message_header_private_message .message-header-contents {
         background-color: hsla(0, 0%, 0%, 0.2);
