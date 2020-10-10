@@ -783,14 +783,6 @@ exports.initialize = function () {
         exports.remove_user_from_stream(target_user_id, sub, removal_success, removal_failure);
     });
 
-    $("#subscriptions_table").on("click", ".stream_subscription_info .view_user_profile", (e) => {
-        const user_id = Number.parseInt($(e.target).attr("data-id"), 10);
-        const user = people.get_by_user_id(user_id);
-        popovers.show_user_profile(user);
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
     // This handler isn't part of the normal edit interface; it's the convenient
     // checkmark in the subscriber list.
     $("#subscriptions_table").on("click", ".sub_unsub_button", (e) => {
