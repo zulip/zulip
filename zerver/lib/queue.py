@@ -372,19 +372,25 @@ class TornadoQueueClient(SimpleQueueClient):
             assert self.channel is not None
             callback(self.channel)
 
-    def register_consumer(self, queue_name: str, consumer: Consumer) -> None:
+    def start_json_consumer(self,
+                            queue_name: str,
+                            callback: Callable[[List[Dict[str, Any]]], None],
+                            batch_size: int=1,
+                            timeout: Optional[int]=None) -> None:
         def wrapped_consumer(ch: BlockingChannel,
                              method: Basic.Deliver,
                              properties: pika.BasicProperties,
                              body: bytes) -> None:
-            consumer(ch, method, properties, body)
+            callback([orjson.loads(body)])
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
+        assert batch_size == 1
+        assert timeout is None
+        self.consumers[queue_name].add(wrapped_consumer)
+
         if not self.ready():
-            self.consumers[queue_name].add(wrapped_consumer)
             return
 
-        self.consumers[queue_name].add(wrapped_consumer)
         self.ensure_queue(
             queue_name,
             lambda channel: channel.basic_consume(
