@@ -72,7 +72,7 @@ const denmark = {
     stream_id: 1,
     name: "Denmark",
     subscribed: true,
-    subscribers: new LazySet([jill.user_id, mark.user_id]),
+    subscribers: new LazySet([me.user_id, mark.user_id]),
     render_subscribers: true,
     should_display_subscription_button: true,
 };
@@ -80,7 +80,7 @@ const sweden = {
     stream_id: 2,
     name: "Sweden",
     subscribed: false,
-    subscribers: new LazySet([mark.user_id, me.user_id]),
+    subscribers: new LazySet([mark.user_id, jill.user_id]),
 };
 
 const subs = [denmark, sweden];
@@ -223,9 +223,15 @@ run_test("subscriber_pills", () => {
         preventDefault: () => {},
     };
 
+    // We cannot subscribe ourselves (`me`) as
+    // we are already subscribed to denmark stream.
+    const potential_denmark_stream_subscribers = denmark.subscribers
+        .map()
+        .filter((id) => id !== me.user_id);
+
     // denmark.stream_id is stubbed. Thus request is
     // sent to add all subscribers of stream Denmark.
-    expected_user_ids = denmark.subscribers.map();
+    expected_user_ids = potential_denmark_stream_subscribers;
     add_subscribers_handler(event);
 
     add_subscribers_handler = $(subscriptions_table_selector).get_on_handler(
@@ -237,7 +243,7 @@ run_test("subscriber_pills", () => {
     // Only Denmark stream pill is created and a
     // request is sent to add all it's subscribers.
     user_pill.get_user_ids = () => [];
-    expected_user_ids = denmark.subscribers.map();
+    expected_user_ids = potential_denmark_stream_subscribers;
     add_subscribers_handler(event);
 
     // No request is sent when there are no users to subscribe.
@@ -257,6 +263,6 @@ run_test("subscriber_pills", () => {
     // pill is created and mark is also a subscriber of Denmark stream.
     user_pill.get_user_ids = () => [mark.user_id, fred.user_id];
     stream_pill.get_user_ids = () => denmark.subscribers.map();
-    expected_user_ids = denmark.subscribers.map().concat(fred.user_id);
+    expected_user_ids = potential_denmark_stream_subscribers.concat(fred.user_id);
     add_subscribers_handler(event);
 });
