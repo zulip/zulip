@@ -2827,7 +2827,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
 
     already_subscribed: List[Tuple[UserProfile, Stream]] = []
     subs_to_activate: List[Tuple[Subscription, Stream]] = []
-    new_subs: List[Tuple[UserProfile, int, Stream]] = []
+    subs_to_add: List[Tuple[Subscription, Stream]] = []
     for user_profile in users:
         needs_new_sub: Set[int] = set(recipient_ids)
         for sub in subs_by_user[user_profile.id]:
@@ -2841,21 +2841,19 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                     # pick_color will consider this to be an active
                     # subscription when picking colors
                     sub.active = True
+
         for recipient_id in needs_new_sub:
             stream = stream_map[recipient_id]
-            new_subs.append((user_profile, recipient_id, stream))
 
-    subs_to_add: List[Tuple[Subscription, Stream]] = []
-    for (user_profile, recipient_id, stream) in new_subs:
-        if stream.name in color_map:
-            color = color_map[stream.name]
-        else:
-            color = pick_color(user_profile, subs_by_user[user_profile.id])
+            if stream.name in color_map:
+                color = color_map[stream.name]
+            else:
+                color = pick_color(user_profile, subs_by_user[user_profile.id])
 
-        sub_to_add = Subscription(user_profile=user_profile, active=True,
-                                  color=color, recipient_id=recipient_id)
-        subs_by_user[user_profile.id].append(sub_to_add)
-        subs_to_add.append((sub_to_add, stream))
+            sub_to_add = Subscription(user_profile=user_profile, active=True,
+                                      color=color, recipient_id=recipient_id)
+            subs_by_user[user_profile.id].append(sub_to_add)
+            subs_to_add.append((sub_to_add, stream))
 
     new_occupied_streams = bulk_add_subs_to_db_with_logging(
         realm=realm,
