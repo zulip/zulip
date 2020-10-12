@@ -2946,6 +2946,25 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
         notify_subscriptions_added(user_profile, sub_pairs, fetch_stream_subscriber_user_ids,
                                    recent_traffic)
 
+    send_peer_add_events(
+        realm=realm,
+        users=users,
+        new_streams=new_streams,
+        streams=streams,
+        all_subscribers_by_stream=all_subscribers_by_stream,
+    )
+
+    return ([(user_profile, stream) for (user_profile, recipient_id, stream) in new_subs] +
+            [(sub.user_profile, stream) for (sub, stream) in subs_to_activate],
+            already_subscribed)
+
+def send_peer_add_events(
+    realm: Realm,
+    users: List[UserProfile],
+    streams: Iterable[Stream],
+    new_streams: Set[Tuple[int, int]],
+    all_subscribers_by_stream: Dict[int, List[int]],
+) -> None:
     # The second batch is events for other users who are tracking the
     # subscribers lists of streams in their browser; everyone for
     # public streams and only existing subscribers for private streams.
@@ -2968,10 +2987,6 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                              stream_id=stream.id,
                              user_id=new_user_id)
                 send_event(realm, event, peer_user_ids)
-
-    return ([(user_profile, stream) for (user_profile, recipient_id, stream) in new_subs] +
-            [(sub.user_profile, stream) for (sub, stream) in subs_to_activate],
-            already_subscribed)
 
 def get_available_notification_sounds() -> List[str]:
     notification_sounds_path = static_path('audio/notification_sounds')
