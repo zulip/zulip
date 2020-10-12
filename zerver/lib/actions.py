@@ -2842,7 +2842,8 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                     # subscription when picking colors
                     sub.active = True
         for recipient_id in needs_new_sub:
-            new_subs.append((user_profile, recipient_id, stream_map[recipient_id]))
+            stream = stream_map[recipient_id]
+            new_subs.append((user_profile, recipient_id, stream))
 
     subs_to_add: List[Tuple[Subscription, Stream]] = []
     for (user_profile, recipient_id, stream) in new_subs:
