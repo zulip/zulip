@@ -2891,18 +2891,12 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     # We now send several types of events to notify browsers.  The
     # first batch is notifications to users on invite-only streams
     # that the stream exists.
-    for stream in streams:
-        if not stream.is_public():
-            # Users newly added to invite-only streams
-            # need a `create` notification.  The former, because
-            # they need the stream to exist before
-            # they get the "subscribe" notification, and the latter so
-            # they can manage the new stream.
-            # Realm admins already have all created private streams.
-            realm_admin_ids = [user.id for user in realm.get_admin_users_and_bots()]
-            new_users_ids = [user.id for user in users if (user.id, stream.id) in new_streams and
-                             user.id not in realm_admin_ids]
-            send_stream_creation_event(stream, new_users_ids)
+    send_stream_creation_events_for_private_streams(
+        realm=realm,
+        streams=streams,
+        new_streams=new_streams,
+        users=users,
+    )
 
     stream_ids = {stream.id for stream in streams}
     recent_traffic = get_streams_traffic(stream_ids=stream_ids)
@@ -2971,6 +2965,25 @@ def bulk_add_subs_to_db_with_logging(
                             set(occupied_streams_after) - set(occupied_streams_before)
                             if not stream.invite_only]
     return new_occupied_streams
+
+def send_stream_creation_events_for_private_streams(
+    realm: Realm,
+    streams: Iterable[Stream],
+    new_streams: Set[Tuple[int, int]],
+    users: List[UserProfile],
+) -> None:
+    for stream in streams:
+        if not stream.is_public():
+            # Users newly added to invite-only streams
+            # need a `create` notification.  The former, because
+            # they need the stream to exist before
+            # they get the "subscribe" notification, and the latter so
+            # they can manage the new stream.
+            # Realm admins already have all created private streams.
+            realm_admin_ids = [user.id for user in realm.get_admin_users_and_bots()]
+            new_users_ids = [user.id for user in users if (user.id, stream.id) in new_streams and
+                             user.id not in realm_admin_ids]
+            send_stream_creation_event(stream, new_users_ids)
 
 def send_peer_add_events(
     realm: Realm,
