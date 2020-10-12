@@ -152,12 +152,12 @@ garbage collected after (by default) 10 minutes of inactivity from a
 client, under the theory that the client has likely gone off the
 Internet (or no longer exists) access; this happens constantly.  If
 the client returns, it will receive a "queue not found" error when
-requesting events; it's handler for this case should just restart the
+requesting events; its handler for this case should just restart the
 client / reload the browser so that it refetches initial data the same
 way it would on startup.  Since clients have to implement their
 startup process anyway, this approach adds minimal technical
 complexity to clients.  A nice side effect is that if the Event Queue
-Server server (which stores queues in memory) were to crash and lose
+Server (which stores queues in memory) were to crash and lose
 its data, clients would recover, just as if they had lost Internet
 access briefly (there is some DoS risk to manage, though).
 
