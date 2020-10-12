@@ -126,7 +126,7 @@ function generate_multiuse_invite() {
                 // though the url is visible inside the widget, it is not present inside an input box.
                 const tempInput = document.createElement("input"); // this creates an input field where the url is stored and is hidden
                 tempInput.value = data.invite_link; // the text gets appended to the value field inside the input field
-                document.body.append(tempInput); 
+                document.body.append(tempInput);
                 tempInput.select(); // selects the url
                 document.execCommand("copy"); // copies the url
                 tempInput.remove();
