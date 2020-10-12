@@ -2542,9 +2542,8 @@ def internal_send_huddle_message(realm: Realm, sender: UserProfile, emails: List
     message_ids = do_send_messages([message])
     return message_ids[0]
 
-def pick_color(user_profile: UserProfile, subs: Iterable[Subscription]) -> str:
+def pick_color(user_profile: UserProfile, used_colors: Set[str]) -> str:
     # These colors are shared with the palette in subs.js.
-    used_colors = [sub.color for sub in subs if sub.active]
     available_colors = [s for s in STREAM_ASSIGNMENT_COLORS if s not in used_colors]
 
     if available_colors:
@@ -2830,17 +2829,17 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     subs_to_add: List[Tuple[Subscription, Stream]] = []
     for user_profile in users:
         needs_new_sub: Set[int] = set(recipient_ids)
+        used_colors: Set[str] = set()
+
         for sub in subs_by_user[user_profile.id]:
+            used_colors.add(sub.color)
+
             if sub.recipient_id in needs_new_sub:
                 needs_new_sub.remove(sub.recipient_id)
                 if sub.active:
                     already_subscribed.append((user_profile, stream_map[sub.recipient_id]))
                 else:
                     subs_to_activate.append((sub, stream_map[sub.recipient_id]))
-                    # Mark the sub as active, without saving, so that
-                    # pick_color will consider this to be an active
-                    # subscription when picking colors
-                    sub.active = True
 
         for recipient_id in needs_new_sub:
             stream = stream_map[recipient_id]
@@ -2848,11 +2847,11 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
             if stream.name in color_map:
                 color = color_map[stream.name]
             else:
-                color = pick_color(user_profile, subs_by_user[user_profile.id])
+                color = pick_color(user_profile, used_colors)
+            used_colors.add(color)
 
             sub_to_add = Subscription(user_profile=user_profile, active=True,
                                       color=color, recipient_id=recipient_id)
-            subs_by_user[user_profile.id].append(sub_to_add)
             subs_to_add.append((sub_to_add, stream))
 
     new_occupied_streams = bulk_add_subs_to_db_with_logging(
