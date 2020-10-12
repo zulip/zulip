@@ -6,6 +6,7 @@ EXCLUDED_FILES = [
     "puppet/zulip/files/nagios_plugins/zulip_nagios_server/check_website_response.sh",
     "scripts/lib/third",
     "static/third",
+    "zilencer/management/commands/rundjangoserver.py",
     # Transifex syncs translation.json files without trailing
     # newlines; there's nothing other than trailing newlines we'd be
     # checking for in these anyway.
