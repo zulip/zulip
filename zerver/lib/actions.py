@@ -2926,7 +2926,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
         all_subscribers_by_stream=all_subscribers_by_stream,
     )
 
-    return ([(user_profile, stream) for (user_profile, recipient_id, stream) in new_subs] +
+    return ([(sub.user_profile, stream) for (sub, stream) in subs_to_add] +
             [(sub.user_profile, stream) for (sub, stream) in subs_to_activate],
             already_subscribed)
 
