@@ -1,7 +1,7 @@
 "use strict";
 
-const ClipboardJS = require("clipboard");
 const autosize = require("autosize");
+const ClipboardJS = require("clipboard");
 
 const render_invitation_failed_error = require("../templates/invitation_failed_error.hbs");
 const render_invite_subscription = require("../templates/invite_subscription.hbs");
