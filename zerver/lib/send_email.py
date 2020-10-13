@@ -245,7 +245,7 @@ def clear_scheduled_emails(user_ids: List[int], email_type: Optional[int]=None) 
     for item in deduplicated_items.values():
         # Now we want a FOR UPDATE lock on the item.users rows
         # to prevent a concurrent transaction from mutating them
-        # simultanously.
+        # simultaneously.
         item.users.all().select_for_update()
         item.users.remove(*user_ids)
         if item.users.all().count() == 0:

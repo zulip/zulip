@@ -82,7 +82,7 @@ in bursts.
 
 - Removed unused `short_name` field from the User model.  This field
   had no purpose and could leak the local part of email addresses
-  when email address visiblity was restricted.
+  when email address visibility was restricted.
 - Fixed a bug where loading spinners would sometimes not be displayed.
 - Fixed incoming email gateway exception with unstructured headers.
 - Fixed AlertWords not being included in data import/export.
