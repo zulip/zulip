@@ -185,7 +185,7 @@ will be stored in that directory and you'll want to back it up.
 
 * Your Zulip configuration including secrets from `/etc/zulip/`.
 E.g. if you lose the value of `secret_key`, all users will need to
-login again when you set up a replacement server since you won't be
+log in again when you set up a replacement server since you won't be
 able to verify their cookies. If you lose `avatar_salt`, any
 user-uploaded avatars will need to be re-uploaded (since avatar
 filenames are computed using a hash of `avatar_salt` and user's
@@ -266,7 +266,7 @@ preventing all accounts from logging in or accessing the API.  This is
 preferred for environments like Zulip Cloud where you might want to
 export a single organization without disrupting any other users, and
 the intent is to move hosting of the organization (and forcing users
-to re-login would be required as part of the hosting migration
+to re-log in would be required as part of the hosting migration
 anyway).
 
 We include both options in the instructions below, commented out so
