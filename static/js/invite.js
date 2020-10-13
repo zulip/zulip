@@ -122,7 +122,7 @@ function generate_multiuse_invite() {
                 invite_status,
             );
             // function called here for copying
-            new ClipboardJS('.btn');
+            new ClipboardJS(".btn");
         },
         error(xhr) {
             ui_report.error("", xhr, invite_status);
