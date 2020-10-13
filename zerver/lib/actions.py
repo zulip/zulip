@@ -2826,9 +2826,7 @@ def bulk_add_subscriptions(
     for user in users:
         assert user.realm_id == realm.id
 
-    recipients_map: Dict[int, int] = {stream.id: stream.recipient_id for stream in streams}
-    recipient_ids = list(recipients_map.values())
-    stream_map = {recipients_map[stream.id]: stream for stream in streams}
+    stream_map = {stream.recipient_id: stream for stream in streams}
 
     subs_by_user: Dict[int, List[Subscription]] = defaultdict(list)
     all_subs_query = get_stream_subscriptions_for_users(users).select_related('user_profile')
@@ -2839,20 +2837,23 @@ def bulk_add_subscriptions(
     subs_to_activate: List[Tuple[Subscription, Stream]] = []
     subs_to_add: List[Tuple[Subscription, Stream]] = []
     for user_profile in users:
-        needs_new_sub: Set[int] = set(recipient_ids)
-        used_colors: Set[str] = set()
+        my_subs = subs_by_user[user_profile.id]
+        used_colors = {sub.color for sub in my_subs}
 
-        for sub in subs_by_user[user_profile.id]:
-            used_colors.add(sub.color)
+        # Make a fresh set of all new recipient ids, and then we will
+        # remove any for which our user already has a subscription
+        # (and we'll re-activate any subscriptions as needed).
+        new_recipient_ids = {stream.recipient_id for stream in streams}
 
-            if sub.recipient_id in needs_new_sub:
-                needs_new_sub.remove(sub.recipient_id)
+        for sub in my_subs:
+            if sub.recipient_id in new_recipient_ids:
+                new_recipient_ids.remove(sub.recipient_id)
                 if sub.active:
                     already_subscribed.append((user_profile, stream_map[sub.recipient_id]))
                 else:
                     subs_to_activate.append((sub, stream_map[sub.recipient_id]))
 
-        for recipient_id in needs_new_sub:
+        for recipient_id in new_recipient_ids:
             stream = stream_map[recipient_id]
 
             if stream.name in color_map:
