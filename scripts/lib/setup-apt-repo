@@ -4,6 +4,22 @@ set -e
 set -u
 set -o pipefail
 
+verify=false
+args="$(getopt -o '' --long verify -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --verify)
+            verify=true
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
 # Ensure the directory for LAST_DEPENDENCIES_HASH exists
 mkdir -p /var/lib/zulip
 
@@ -21,6 +37,8 @@ LAST_DEPENDENCIES_HASH="$(cat "$DEPENDENCIES_HASH_FILE")"
 # (apt keys, code, etc.)  changed.
 if [ "$DEPENDENCIES_HASH" = "$LAST_DEPENDENCIES_HASH" ]; then
     exit 0
+elif [ "$verify" == true ]; then
+    exit 1
 fi
 
 # Ensure that the sources file exists
