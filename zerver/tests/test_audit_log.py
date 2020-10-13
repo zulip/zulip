@@ -205,10 +205,11 @@ class TestRealmAuditLog(ZulipTestCase):
 
     def test_subscriptions(self) -> None:
         now = timezone_now()
+
         user = [self.example_user('hamlet')]
         stream = [self.make_stream('test_stream')]
         acting_user = self.example_user('iago')
-        bulk_add_subscriptions(stream, user, acting_user=acting_user)
+        bulk_add_subscriptions(user[0].realm, stream, user, acting_user=acting_user)
         subscription_creation_logs = RealmAuditLog.objects.filter(event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
                                                                   event_time__gte=now, acting_user=acting_user, modified_user=user[0],
                                                                   modified_stream=stream[0])
