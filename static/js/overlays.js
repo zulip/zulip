@@ -163,7 +163,7 @@ exports.close_overlay = function (name) {
     $(".header").attr("aria-hidden", "false");
 
     if (!close_handler) {
-        blueslip.error("Overlay close handler for " + name + " not properly setup.");
+        blueslip.error("Overlay close handler for " + name + " not properly set up.");
         return;
     }
 

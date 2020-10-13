@@ -57,7 +57,7 @@ configured in the step above:
 $ git fetch upstream
 ```
 
-Next, checkout your `master` branch and [rebase][gitbook-git-rebase] it on top
+Next, check out your `master` branch and [rebase][gitbook-git-rebase] it on top
 of `upstream/master`:
 
 ```
