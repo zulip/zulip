@@ -1,6 +1,6 @@
 # Screenshot and GIF software
 
-The following list documents different screenshoting & GIF-making techniques and
+The following list documents different screenshotting & GIF-making techniques and
 free software. We encourage you to make use of these when making front-end pull
 requests, as other contributors can see the changes you have made without having
 to check out your branch.
@@ -9,7 +9,7 @@ to check out your branch.
 ### Browser
 - Firefox can take screenshots without any plugins (stable feature starting from v57)
     - You can find it under `page actions / Take a screenshot`
-    - It is capable of screenshoting the entire page, visible area and individual DOM elements
+    - It is capable of screenshotting the entire page, visible area and individual DOM elements
 - [LightShot Screenshot](https://app.prntscr.com/en/index.html) (Chrome, Firefox, IE & Opera)
 
 ### macOS
