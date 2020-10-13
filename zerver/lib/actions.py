@@ -415,7 +415,9 @@ def process_new_human_user(user_profile: UserProfile,
                            newsletter_data: Optional[Mapping[str, str]]=None,
                            default_stream_groups: Sequence[DefaultStreamGroup]=[],
                            realm_creation: bool=False) -> None:
-    mit_beta_user = user_profile.realm.is_zephyr_mirror_realm
+    realm = user_profile.realm
+
+    mit_beta_user = realm.is_zephyr_mirror_realm
     if prereg_user is not None:
         prereg_user.status = confirmation_settings.STATUS_ACTIVE
         prereg_user.save(update_fields=['status'])
@@ -445,7 +447,7 @@ def process_new_human_user(user_profile: UserProfile,
         # This is a cross-realm private message.
         with override_language(prereg_user.referred_by.default_language):
             internal_send_private_message(
-                user_profile.realm,
+                realm,
                 get_system_bot(settings.NOTIFICATION_BOT),
                 prereg_user.referred_by,
                 _("{user} accepted your invitation to join Zulip!").format(user=f"{user_profile.full_name} <`{user_profile.email}`>")
@@ -468,7 +470,7 @@ def process_new_human_user(user_profile: UserProfile,
     # Clear any scheduled invitation emails to prevent them
     # from being sent after the user is created.
     clear_scheduled_invitation_emails(user_profile.delivery_email)
-    if user_profile.realm.send_welcome_emails:
+    if realm.send_welcome_emails:
         enqueue_welcome_emails(user_profile, realm_creation)
 
     # We have an import loop here; it's intentional, because we want
