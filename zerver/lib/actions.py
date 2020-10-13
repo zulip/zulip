@@ -122,8 +122,9 @@ from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.storage import static_path
 from zerver.lib.stream_recipient import StreamRecipientMap
 from zerver.lib.stream_subscription import (
+    bulk_get_peers,
+    bulk_get_subscriber_peer_info,
     get_active_subscriptions_for_stream_id,
-    get_active_subscriptions_for_stream_ids,
     get_bulk_stream_subscriber_info,
     get_stream_subscriptions_for_user,
     get_stream_subscriptions_for_users,
@@ -2769,53 +2770,6 @@ def send_subscription_add_events(
                      subscriptions=sub_dicts)
         send_event(realm, event, [user_id])
 
-def get_peer_user_ids_for_stream_change(stream: Stream,
-                                        altered_user_ids: Iterable[int],
-                                        subscribed_user_ids: Iterable[int]) -> Set[int]:
-    '''
-    altered_user_ids is the user_ids that we are adding/removing
-    subscribed_user_ids is the already-subscribed user_ids
-
-    Based on stream policy, we notify the correct bystanders, while
-    not notifying altered_users (who get subscribers via another event)
-    '''
-
-    if stream.invite_only:
-        # PRIVATE STREAMS
-        # Realm admins can access all private stream subscribers. Send them an
-        # event even if they aren't subscribed to stream.
-        realm_admin_ids = [user.id for user in stream.realm.get_admin_users_and_bots()]
-        user_ids_to_notify = []
-        user_ids_to_notify.extend(realm_admin_ids)
-        user_ids_to_notify.extend(subscribed_user_ids)
-        return set(user_ids_to_notify) - set(altered_user_ids)
-
-    else:
-        # PUBLIC STREAMS
-        # We now do "peer_add" or "peer_remove" events even for streams
-        # users were never subscribed to, in order for the neversubscribed
-        # structure to stay up-to-date.
-        return set(active_non_guest_user_ids(stream.realm_id)) - set(altered_user_ids)
-
-def get_user_ids_for_streams(stream_ids: Set[int]) -> Dict[int, Set[int]]:
-    all_subs = get_active_subscriptions_for_stream_ids(stream_ids).filter(
-        user_profile__is_active=True,
-    ).values(
-        'recipient__type_id',
-        'user_profile_id',
-    ).order_by(
-        'recipient__type_id',
-    )
-
-    get_stream_id = itemgetter('recipient__type_id')
-
-    result: Dict[int, Set[int]] = defaultdict(set)
-    for stream_id, rows in itertools.groupby(all_subs, get_stream_id):
-        user_ids = {row['user_profile_id'] for row in rows}
-        result[stream_id] = user_ids
-
-    return result
-
 SubT = Tuple[List[SubInfo], List[SubInfo]]
 def bulk_add_subscriptions(
     realm: Realm,
@@ -2891,16 +2845,17 @@ def bulk_add_subscriptions(
     for sub_info in subs_to_add + subs_to_activate:
         new_stream_user_ids[sub_info.stream.id].add(sub_info.user.id)
 
-    # Notify all existing users on streams that users have joined
-
-    # First, get all users subscribed to the streams that we care about
-    # We fetch all subscription information upfront, as it's used throughout
-    # the following code and we want to minize DB queries
-    all_subscribers_by_stream = get_user_ids_for_streams(
-        stream_ids=set(new_stream_user_ids.keys())
-    )
-
     stream_dict = {stream.id: stream for stream in streams}
+
+    new_streams = [
+        stream_dict[stream_id]
+        for stream_id in new_stream_user_ids
+    ]
+
+    subscriber_peer_info = bulk_get_subscriber_peer_info(
+        realm=realm,
+        streams=new_streams,
+    )
 
     # We now send several types of events to notify browsers.  The
     # first batch is notifications to users on invite-only streams
@@ -2914,14 +2869,14 @@ def bulk_add_subscriptions(
     send_subscription_add_events(
         realm=realm,
         sub_info_list=subs_to_add + subs_to_activate,
-        subscriber_dict=all_subscribers_by_stream,
+        subscriber_dict=subscriber_peer_info.subscribed_ids,
     )
 
     send_peer_add_events(
         realm=realm,
         new_stream_user_ids=new_stream_user_ids,
         stream_dict=stream_dict,
-        all_subscribers_by_stream=all_subscribers_by_stream,
+        peer_id_dict=subscriber_peer_info.peer_ids,
     )
 
     return (
@@ -2994,9 +2949,9 @@ def send_peer_add_events(
     realm: Realm,
     stream_dict: Dict[int, Stream],
     new_stream_user_ids: Dict[int, Set[int]],
-    all_subscribers_by_stream: Dict[int, Set[int]],
+    peer_id_dict: Dict[int, Set[int]],
 ) -> None:
-    # The second batch is events for other users who are tracking the
+    # Send peer_add events to other users who are tracking the
     # subscribers lists of streams in their browser; everyone for
     # public streams and only existing subscribers for private streams.
     for stream_id, altered_user_ids in new_stream_user_ids.items():
@@ -3005,13 +2960,7 @@ def send_peer_add_events(
         if stream.is_in_zephyr_realm and not stream.invite_only:
             continue
 
-        subscribed_user_ids = all_subscribers_by_stream[stream.id]
-
-        peer_user_ids = get_peer_user_ids_for_stream_change(
-            stream=stream,
-            altered_user_ids=altered_user_ids,
-            subscribed_user_ids=subscribed_user_ids,
-        )
+        peer_user_ids = peer_id_dict[stream_id] - altered_user_ids
 
         if peer_user_ids:
             for new_user_id in altered_user_ids:
@@ -3024,21 +2973,17 @@ def send_peer_remove_events(
     realm: Realm,
     streams: List[Stream],
     altered_user_dict: Dict[int, Set[int]],
-    all_subscribers_by_stream: Dict[int, Set[int]],
 ) -> None:
+    peer_dict = bulk_get_peers(
+        realm=realm,
+        streams=streams,
+    )
     for stream in streams:
         if stream.is_in_zephyr_realm and not stream.invite_only:
             continue
 
         altered_user_ids = altered_user_dict[stream.id]
-
-        subscribed_user_ids = all_subscribers_by_stream[stream.id]
-
-        peer_user_ids = get_peer_user_ids_for_stream_change(
-            stream=stream,
-            altered_user_ids=altered_user_ids,
-            subscribed_user_ids=subscribed_user_ids,
-        )
+        peer_user_ids = list(peer_dict[stream.id] - altered_user_ids)
 
         if peer_user_ids:
             for removed_user_id in altered_user_ids:
@@ -3160,14 +3105,10 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
                  'stream_ids': [stream.id for stream in streams]}
         queue_json_publish("deferred_work", event)
 
-    stream_ids = {stream.id for stream in streams}
-    all_subscribers_by_stream = get_user_ids_for_streams(stream_ids=stream_ids)
-
     send_peer_remove_events(
         realm=our_realm,
         streams=streams,
         altered_user_dict=altered_user_dict,
-        all_subscribers_by_stream=all_subscribers_by_stream,
     )
 
     new_vacant_streams = set(occupied_streams_before) - set(occupied_streams_after)
