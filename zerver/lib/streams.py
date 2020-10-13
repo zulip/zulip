@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, Set, Tuple, Union
+from typing import Iterable, List, Optional, Tuple, Union
 
 from django.conf import settings
 from django.db.models.query import QuerySet
@@ -457,19 +457,16 @@ def can_access_stream_history_by_id(user_profile: UserProfile, stream_id: int) -
 
 def filter_stream_authorization(user_profile: UserProfile,
                                 streams: Iterable[Stream]) -> Tuple[List[Stream], List[Stream]]:
-    streams_subscribed: Set[int] = set()
     recipient_ids = [stream.recipient_id for stream in streams]
-    subs = Subscription.objects.filter(user_profile=user_profile,
-                                       recipient_id__in=recipient_ids,
-                                       active=True)
-
-    for sub in subs:
-        streams_subscribed.add(sub.recipient.type_id)
+    subscribed_recipient_ids = set(Subscription.objects.filter(
+        user_profile=user_profile,
+        recipient_id__in=recipient_ids,
+        active=True).values_list('recipient_id', flat=True))
 
     unauthorized_streams: List[Stream] = []
     for stream in streams:
         # The user is authorized for their own streams
-        if stream.id in streams_subscribed:
+        if stream.recipient_id in subscribed_recipient_ids:
             continue
 
         # Web public streams are accessible even to guests
