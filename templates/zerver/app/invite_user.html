@@ -57,7 +57,7 @@
                 <button class="button exit small rounded" data-dismiss="modal">{{ _('Cancel') }}</button>
                 <button id="submit-invitation" class="button small rounded sea-green" type="button"
                   data-loading-text="{{ _('Inviting...') }}">{{ _('Invite') }}</button>
-                <input type="hidden" id="copy_link" value="Copy link">
+                <button type="hidden" class="btn" id="copy_link" value="Copy link" data-clipboard-target="#link">Copy link</button>
                 <div class="alert" id="multiuse_invite_status"></div>
             </div>
         </form>
