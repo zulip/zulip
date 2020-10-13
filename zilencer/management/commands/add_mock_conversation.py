@@ -53,7 +53,7 @@ From image editing program:
                                      bot_type=UserProfile.DEFAULT_BOT, acting_user=None)
         self.set_avatar(twitter_bot, 'static/images/features/twitter.png')
 
-        bulk_add_subscriptions([stream], list(UserProfile.objects.filter(realm=realm)))
+        bulk_add_subscriptions(realm, [stream], list(UserProfile.objects.filter(realm=realm)))
 
         staged_messages: List[Dict[str, Any]] = [
             {'sender': starr,

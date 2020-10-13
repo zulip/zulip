@@ -413,7 +413,8 @@ EMPTY_PRINCIPALS: Union[Sequence[str], Sequence[int]] = []
 @require_non_guest_user
 @has_request_variables
 def add_subscriptions_backend(
-        request: HttpRequest, user_profile: UserProfile,
+        request: HttpRequest,
+        user_profile: UserProfile,
         streams_raw: Iterable[Dict[str, str]]=REQ("subscriptions", validator=add_subscriptions_schema),
         invite_only: bool=REQ(validator=check_bool, default=False),
         stream_post_policy: int=REQ(validator=check_int_in(
@@ -427,6 +428,7 @@ def add_subscriptions_backend(
         ),
         authorization_errors_fatal: bool=REQ(validator=check_bool, default=True),
 ) -> HttpResponse:
+    realm = user_profile.realm
     stream_dicts = []
     color_map = {}
     for stream_dict in streams_raw:
@@ -465,7 +467,7 @@ def add_subscriptions_backend(
     streams = authorized_streams + created_streams
 
     if len(principals) > 0:
-        if user_profile.realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
+        if realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
             return json_error(_("You can only invite other Zephyr mirroring users to private streams."))
         if not user_profile.can_subscribe_other_users():
             if user_profile.realm.invite_to_stream_policy == Realm.POLICY_ADMINS_ONLY:
@@ -479,7 +481,7 @@ def add_subscriptions_backend(
     else:
         subscribers = {user_profile}
 
-    (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers,
+    (subscribed, already_subscribed) = bulk_add_subscriptions(realm, streams, subscribers,
                                                               acting_user=user_profile, color_map=color_map)
 
     # We can assume unique emails here for now, but we should eventually
@@ -686,7 +688,7 @@ def json_stream_exists(request: HttpRequest, user_profile: UserProfile, stream_n
     # So if we're not yet subscribed and autosubscribe is enabled, we
     # should join.
     if sub is None and autosubscribe:
-        bulk_add_subscriptions([stream], [user_profile], acting_user=user_profile)
+        bulk_add_subscriptions(user_profile.realm, [stream], [user_profile], acting_user=user_profile)
         result["subscribed"] = True
 
     return json_success(result)  # results are ignored for HEAD requests
