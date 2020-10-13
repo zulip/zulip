@@ -3269,11 +3269,12 @@ class SubscriptionAPITest(ZulipTestCase):
             self.subscribe(self.test_user, stream_name)
 
         with queries_captured() as queries:
-            self.common_subscribe_to_streams(
-                self.test_user,
-                streams,
-                dict(principals=orjson.dumps([self.test_user.id]).decode()),
-            )
+            with mock.patch('zerver.views.streams.send_messages_for_new_subscribers'):
+                self.common_subscribe_to_streams(
+                    self.test_user,
+                    streams,
+                    dict(principals=orjson.dumps([self.test_user.id]).decode()),
+                )
         # Make sure we don't make O(streams) queries
         self.assert_length(queries, 16)
 
