@@ -18,22 +18,6 @@ class zulip_ops::app_frontend {
     source => 'puppet:///modules/zulip/logrotate/zulip',
   }
 
-  file { '/etc/log2zulip.conf':
-    ensure => file,
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip_ops/log2zulip.conf',
-  }
-
-  file { '/etc/log2zulip.zuliprc':
-    ensure => file,
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0600',
-    source => 'puppet:///modules/zulip_ops/log2zulip.zuliprc',
-  }
-
   file { '/etc/supervisor/conf.d/redis_tunnel.conf':
     ensure  => file,
     require => Package['supervisor', 'autossh'],
