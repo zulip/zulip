@@ -34,9 +34,9 @@ from zerver.lib.actions import (
     do_set_realm_message_editing,
     do_set_realm_notifications_stream,
     do_set_realm_signup_notifications_stream,
-    get_last_message_id,
     get_streams_traffic,
 )
+from zerver.lib.message import get_last_message_id
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
