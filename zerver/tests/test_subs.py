@@ -3016,11 +3016,10 @@ class SubscriptionAPITest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             bulk_add_subscriptions(realm, [new_stream], [self.example_user("iago")])
 
-        self.assert_length(events, 3)
-        create_event, add_event, add_peer_event = events
-        self.assertEqual(create_event['event']['type'], 'stream')
-        self.assertEqual(create_event['event']['op'], 'create')
-        self.assertEqual(create_event['users'], [])
+        # Note that since iago is an admin, he won't get a stream/create
+        # event here.
+        self.assert_length(events, 2)
+        add_event, add_peer_event = events
 
         self.assertEqual(add_event['event']['type'], 'subscription')
         self.assertEqual(add_event['event']['op'], 'add')
