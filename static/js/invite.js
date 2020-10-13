@@ -115,13 +115,14 @@ function generate_multiuse_invite() {
         beforeSend,
         success(data) {
             ui_report.success(
+                // id=link was added to the a tag
                 i18n.t('Invitation link: <a href="__link__" id="link">__link__</a>', {
                     link: data.invite_link,
                 }),
                 invite_status,
             );
-            new ClipboardJS('.btn'); //function called here for copying
-            };
+            // function called here for copying
+            new ClipboardJS('.btn');
         },
         error(xhr) {
             ui_report.error("", xhr, invite_status);
