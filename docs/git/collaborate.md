@@ -11,7 +11,7 @@ $ git remote add <username> https://github.com/<username>/zulip.git
 $ git fetch <username>
 ```
 
-Now you can checkout their branch just like you would any other. You can name
+Now you can check out their branch just like you would any other. You can name
 the branch anything you want, but using both the username and branch name will
 help you keep things organized.
 
@@ -24,9 +24,9 @@ You can choose to rename the branch if you prefer:
 git checkout -b <custombranchname> <username>/<branchname>
 ```
 
-## Checkout a pull request locally
+## Check out a pull request locally
 
-Just as you can checkout any user's branch locally, you can also checkout any
+Just as you can check out any user's branch locally, you can also check out any
 pull request locally. GitHub provides a special syntax
 ([details][github-help-co-pr-locally]) for this since pull requests are
 specific to GitHub rather than Git.

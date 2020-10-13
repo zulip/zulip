@@ -3,7 +3,7 @@
 The following list documents different screenshoting & GIF-making techniques and
 free software. We encourage you to make use of these when making front-end pull
 requests, as other contributors can see the changes you have made without having
-to checkout your branch.
+to check out your branch.
 
 ## Screenshot tools by platform
 ### Browser

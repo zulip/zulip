@@ -795,7 +795,7 @@ def zulip_otp_required(
         if not user.is_authenticated:  # nocoverage
             return True
 
-        # If the user doesn't have 2FA setup, we can't enforce 2FA.
+        # If the user doesn't have 2FA set up, we can't enforce 2FA.
         if not user_has_device(user):
             return True
 

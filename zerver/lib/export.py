@@ -181,7 +181,7 @@ NON_EXPORTED_TABLES = {
     # expire after a few days.
     'zerver_missedmessageemailaddress',
 
-    # When switching servers, clients will need to re-login and
+    # When switching servers, clients will need to re-log in and
     # reregister for push notifications anyway.
     'zerver_pushdevicetoken',
 
