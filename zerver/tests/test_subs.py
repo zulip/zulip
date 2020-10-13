@@ -3263,20 +3263,36 @@ class SubscriptionAPITest(ZulipTestCase):
         for stream_name in streams:
             self.make_stream(stream_name)
 
-        # Subscribe out test user to some streams, including
+        desdemona = self.example_user('desdemona')
+
+        test_users = [
+            desdemona,
+            self.example_user('cordelia'),
+            self.example_user('hamlet'),
+            self.example_user('othello'),
+            self.example_user('iago'),
+            self.example_user('prospero'),
+        ]
+
+        # Subscribe out test users to some streams, including
         # some that we may soon subscribe them to.
         for stream_name in ["Verona", "Denmark", *streams[:10]]:
-            self.subscribe(self.test_user, stream_name)
+            for user in test_users:
+                self.subscribe(user, stream_name)
+
+        test_user_ids = [user.id for user in test_users]
 
         with queries_captured() as queries:
             with mock.patch('zerver.views.streams.send_messages_for_new_subscribers'):
                 self.common_subscribe_to_streams(
-                    self.test_user,
+                    desdemona,
                     streams,
-                    dict(principals=orjson.dumps([self.test_user.id]).decode()),
+                    dict(principals=orjson.dumps(test_user_ids).decode()),
                 )
-        # Make sure we don't make O(streams) queries
-        self.assert_length(queries, 16)
+
+        # The only known O(N) behavior here is that we call
+        # principal_to_user_profile for each of our users.
+        self.assert_length(queries, 21)
 
     def test_subscriptions_add_for_principal(self) -> None:
         """
