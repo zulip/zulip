@@ -1910,7 +1910,7 @@ class SubscribeActionTest(BaseAction):
         stream.save()
 
         user_profile = self.example_user('hamlet')
-        action = lambda: bulk_add_subscriptions([stream], [user_profile])
+        action = lambda: bulk_add_subscriptions(user_profile.realm, [stream], [user_profile])
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers,

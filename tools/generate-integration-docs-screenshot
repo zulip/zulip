@@ -85,8 +85,9 @@ def create_integration_bot(integration: WebhookIntegration, bot_name: Optional[s
 
 def create_integration_stream(integration: WebhookIntegration, bot: UserProfile) -> None:
     assert isinstance(bot.bot_owner, UserProfile)
-    stream, created = create_stream_if_needed(bot.bot_owner.realm, integration.stream_name)
-    bulk_add_subscriptions([stream], [bot, bot.bot_owner], from_stream_creation=created)
+    realm = bot.bot_owner.realm
+    stream, created = create_stream_if_needed(realm, integration.stream_name)
+    bulk_add_subscriptions(realm, [stream], [bot, bot.bot_owner], from_stream_creation=created)
 
 def get_integration(integration_name: str) -> WebhookIntegration:
     integration = INTEGRATIONS[integration_name]

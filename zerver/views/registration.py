@@ -385,7 +385,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                           acting_user=None)
 
         if realm_creation:
-            bulk_add_subscriptions([realm.signup_notifications_stream], [user_profile])
+            bulk_add_subscriptions(realm, [realm.signup_notifications_stream], [user_profile])
             send_initial_realm_messages(realm)
 
             # Because for realm creation, registration happens on the

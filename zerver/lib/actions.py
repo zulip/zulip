@@ -438,7 +438,7 @@ def process_new_human_user(user_profile: UserProfile,
             if stream not in streams:
                 streams.append(stream)
 
-    bulk_add_subscriptions(streams, [user_profile], acting_user=acting_user)
+    bulk_add_subscriptions(realm, streams, [user_profile], acting_user=acting_user)
 
     add_new_user_history(user_profile, streams)
 
@@ -2820,12 +2820,22 @@ def get_last_message_id() -> int:
     return last_id
 
 SubT = Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
-def bulk_add_subscriptions(streams: Iterable[Stream],
-                           users: Iterable[UserProfile],
-                           color_map: Mapping[str, str]={},
-                           from_stream_creation: bool=False,
-                           acting_user: Optional[UserProfile]=None) -> SubT:
+def bulk_add_subscriptions(
+    realm: Realm,
+    streams: Iterable[Stream],
+    users: Iterable[UserProfile],
+    color_map: Mapping[str, str]={},
+    from_stream_creation: bool=False,
+    acting_user: Optional[UserProfile]=None
+) -> SubT:
     users = list(users)
+
+    # Sanity check out callers
+    for stream in streams:
+        assert stream.realm_id == realm.id
+
+    for user in users:
+        assert user.realm_id == realm.id
 
     recipients_map: Dict[int, int] = {stream.id: stream.recipient_id for stream in streams}
     recipient_ids = list(recipients_map.values())
@@ -2835,8 +2845,6 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     all_subs_query = get_stream_subscriptions_for_users(users).select_related('user_profile')
     for sub in all_subs_query:
         subs_by_user[sub.user_profile_id].append(sub)
-
-    realm = users[0].realm
 
     already_subscribed: List[Tuple[UserProfile, Stream]] = []
     subs_to_activate: List[Tuple[Subscription, Stream]] = []
