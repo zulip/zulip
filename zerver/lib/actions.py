@@ -2258,6 +2258,35 @@ def send_pm_if_empty_stream(stream: Optional[Stream],
 
         send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
 
+def send_pm_if_not_authorized_to_stream(realm: Realm,
+                                        sender: UserProfile,
+                                        stream_name: Optional[str]=None,
+                                        stream_id: Optional[int]=None) -> None:
+    """If a bot tries to send message to a stream and is not authorized to
+    that stream, it sends a notification to the bot owner (if not a
+    cross-realm bot) so that the owner can correct the issue."""
+
+    if not sender.is_bot or sender.bot_owner is None:
+        return
+
+    arg_dict = {
+        "bot_identity": f"`{sender.delivery_email}`",
+        "stream_id": stream_id,
+        "stream_name": f"#**{stream_name}**",
+    }
+
+    if sender.bot_owner is not None:
+        with override_language(sender.bot_owner.default_language):
+            if stream_name is not None:
+                content = _("Your bot {bot_identity} tried to send a message to stream "
+                            "{stream_name}, but the bot is not authorized to that stream.").format(**arg_dict)
+            else:
+                assert(stream_id is not None)
+                content = _("Your bot {bot_identity} tried to send a message to stream ID "
+                            "{stream_id}, but the bot is not authorized to that stream.").format(**arg_dict)
+
+            send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
+
 def validate_stream_name_with_pm_notification(stream_name: str, realm: Realm,
                                               sender: UserProfile) -> Stream:
     stream_name = stream_name.strip()
@@ -2341,10 +2370,22 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         # This will raise JsonableError if there are problems.
 
         if sender.bot_type != sender.OUTGOING_WEBHOOK_BOT:
-            access_stream_for_send_message(
-                sender=sender,
-                stream=stream,
-                forwarder_user_profile=forwarder_user_profile)
+            try:
+                access_stream_for_send_message(
+                    sender=sender,
+                    stream=stream,
+                    forwarder_user_profile=forwarder_user_profile)
+            except Exception as e:
+                if stream_name is not None:
+                    stream_name = stream_name.strip()
+                    check_stream_name(stream_name)
+
+                send_pm_if_not_authorized_to_stream(
+                    realm=realm,
+                    sender=sender,
+                    stream_name=stream_name,
+                    stream_id=stream_id)
+                raise e
 
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()
