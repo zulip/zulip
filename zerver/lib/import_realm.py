@@ -12,7 +12,6 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
-from django.db.models import Max
 from django.utils.timezone import now as timezone_now
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
@@ -29,6 +28,7 @@ from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_
 from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
+from zerver.lib.message import get_last_message_id
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -171,10 +171,7 @@ def create_subscription_events(data: TableData, realm_id: int) -> None:
     """
     all_subscription_logs = []
 
-    # from bulk_add_subscriptions in lib/actions
-    event_last_message_id = Message.objects.aggregate(Max('id'))['id__max']
-    if event_last_message_id is None:
-        event_last_message_id = -1
+    event_last_message_id = get_last_message_id()
     event_time = timezone_now()
 
     recipient_id_to_stream_id = {
