@@ -25,6 +25,6 @@ class Command(ZulipBaseCommand):
             acting_user=None,
         )
         assert realm.signup_notifications_stream is not None
-        bulk_add_subscriptions([realm.signup_notifications_stream], [user])
+        bulk_add_subscriptions(realm, [realm.signup_notifications_stream], [user])
 
         send_initial_realm_messages(realm)
