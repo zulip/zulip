@@ -151,7 +151,7 @@ if not os.path.exists(os.path.join(deploy_path, "zproject/prod_settings.py")):
 subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "create-production-venv"),
                        deploy_path])
 
-# Setup the thumbor venv
+# Set up the thumbor venv
 subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "create-thumbor-venv"),
                        deploy_path])
 

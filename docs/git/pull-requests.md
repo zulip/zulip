@@ -115,7 +115,7 @@ your pull request title with [WIP] if it is a [work-in-progress][wip-prs].
 If your pull request has an effect on the visuals of a component, you might want
 to include a screenshot of this change or a GIF of the interaction in your first
 comment. This will allow reviewers to comment on your changes without having to
-checkout your branch; you can find a list of tools you can use for this over
+check out your branch; you can find a list of tools you can use for this over
 [here][screenshots-gifs].
 
 When ready, click the green **Create pull request** to submit the pull request.

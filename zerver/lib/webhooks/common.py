@@ -25,7 +25,7 @@ Contact {support_email} if you need help debugging!
 """
 
 INVALID_JSON_MESSAGE = """
-Hi there! It looks like you tried to setup the Zulip {webhook_name} integration,
+Hi there! It looks like you tried to set up the Zulip {webhook_name} integration,
 but didn't correctly configure the webhook to send data in the JSON format
 that this integration expects!
 """
