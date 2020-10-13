@@ -28,7 +28,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.db import IntegrityError, connection, transaction
-from django.db.models import Count, Exists, F, Max, OuterRef, Q, Sum
+from django.db.models import Count, Exists, F, OuterRef, Q, Sum
 from django.db.models.query import QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
@@ -98,6 +98,7 @@ from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import (
     MessageDict,
     access_message,
+    get_last_message_id,
     render_markdown,
     truncate_body,
     truncate_topic,
@@ -2806,18 +2807,6 @@ def get_user_ids_for_streams(streams: Iterable[Stream]) -> Dict[int, List[int]]:
         all_subscribers_by_stream[stream_id] = user_ids
 
     return all_subscribers_by_stream
-
-def get_last_message_id() -> int:
-    # We generally use this function to populate RealmAuditLog, and
-    # the max id here is actually systemwide, not per-realm.  I
-    # assume there's some advantage in not filtering by realm.
-    last_id = Message.objects.aggregate(Max('id'))['id__max']
-    if last_id is None:
-        # During initial realm creation, there might be 0 messages in
-        # the database; in that case, the `aggregate` query returns
-        # None.  Since we want an int for "beginning of time", use -1.
-        last_id = -1
-    return last_id
 
 SubT = Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
 def bulk_add_subscriptions(
