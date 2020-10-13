@@ -2889,9 +2889,9 @@ def bulk_add_subscriptions(
     # the following code and we want to minize DB queries
     all_subscribers_by_stream = get_user_ids_for_streams(streams=streams)
 
-    new_streams: Set[Tuple[int, int]] = set()
+    new_stream_user_ids: Dict[int, Set[int]] = defaultdict(set)
     for (sub, stream) in subs_to_add + subs_to_activate:
-        new_streams.add((sub.user_profile.id, stream.id))
+        new_stream_user_ids[stream.id].add(sub.user_profile_id)
 
     # We now send several types of events to notify browsers.  The
     # first batch is notifications to users on invite-only streams
@@ -2899,8 +2899,7 @@ def bulk_add_subscriptions(
     send_stream_creation_events_for_private_streams(
         realm=realm,
         streams=streams,
-        new_streams=new_streams,
-        users=users,
+        new_stream_user_ids=new_stream_user_ids,
     )
 
     send_subscription_add_events(
@@ -2911,8 +2910,7 @@ def bulk_add_subscriptions(
 
     send_peer_add_events(
         realm=realm,
-        users=users,
-        new_streams=new_streams,
+        new_stream_user_ids=new_stream_user_ids,
         streams=streams,
         all_subscribers_by_stream=all_subscribers_by_stream,
     )
@@ -2969,8 +2967,7 @@ def bulk_add_subs_to_db_with_logging(
 def send_stream_creation_events_for_private_streams(
     realm: Realm,
     streams: Iterable[Stream],
-    new_streams: Set[Tuple[int, int]],
-    users: List[UserProfile],
+    new_stream_user_ids: Dict[int, Set[int]],
 ) -> None:
     for stream in streams:
         if not stream.is_public():
@@ -2980,16 +2977,15 @@ def send_stream_creation_events_for_private_streams(
             # they get the "subscribe" notification, and the latter so
             # they can manage the new stream.
             # Realm admins already have all created private streams.
-            realm_admin_ids = [user.id for user in realm.get_admin_users_and_bots()]
-            new_users_ids = [user.id for user in users if (user.id, stream.id) in new_streams and
-                             user.id not in realm_admin_ids]
-            send_stream_creation_event(stream, new_users_ids)
+            stream_users_ids = new_stream_user_ids[stream.id]
+            realm_admin_ids = {user.id for user in realm.get_admin_users_and_bots()}
+            notify_user_ids = list(stream_users_ids - realm_admin_ids)
+            send_stream_creation_event(stream, notify_user_ids)
 
 def send_peer_add_events(
     realm: Realm,
-    users: List[UserProfile],
     streams: Iterable[Stream],
-    new_streams: Set[Tuple[int, int]],
+    new_stream_user_ids: Dict[int, Set[int]],
     all_subscribers_by_stream: Dict[int, List[int]],
 ) -> None:
     # The second batch is events for other users who are tracking the
@@ -2999,17 +2995,17 @@ def send_peer_add_events(
         if stream.is_in_zephyr_realm and not stream.invite_only:
             continue
 
-        new_user_ids = [user.id for user in users if (user.id, stream.id) in new_streams]
+        altered_user_ids = new_stream_user_ids[stream.id]
         subscribed_user_ids = all_subscribers_by_stream[stream.id]
 
         peer_user_ids = get_peer_user_ids_for_stream_change(
             stream=stream,
-            altered_user_ids=new_user_ids,
+            altered_user_ids=altered_user_ids,
             subscribed_user_ids=subscribed_user_ids,
         )
 
         if peer_user_ids:
-            for new_user_id in new_user_ids:
+            for new_user_id in altered_user_ids:
                 event = dict(type="subscription", op="peer_add",
                              stream_id=stream.id,
                              user_id=new_user_id)
