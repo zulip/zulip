@@ -13,14 +13,6 @@ class zulip_ops::loadbalancer {
     notify  => Service['nginx'],
   }
 
-  file { '/etc/motd':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip_ops/motd.lb0',
-  }
-
   file { '/etc/nginx/sites-enabled/loadbalancer':
     ensure  => 'link',
     require => Package['nginx-full'],
