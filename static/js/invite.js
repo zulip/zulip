@@ -107,7 +107,6 @@ function submit_invitation_form() {
 }
 
 function generate_multiuse_invite() {
-    document.querySelector("#copy_link").type = "button";
     const invite_status = $("#multiuse_invite_status");
     const data = get_common_invitation_data();
     channel.post({
@@ -116,21 +115,13 @@ function generate_multiuse_invite() {
         beforeSend,
         success(data) {
             ui_report.success(
-                i18n.t('Invitation link: <a href="__link__">__link__</a>', {
+                i18n.t('Invitation link: <a href="__link__" id="link">__link__</a>', {
                     link: data.invite_link,
                 }),
                 invite_status,
             );
-            $("#copy_link").click(() => {
-                // The text needs to be inside an input box to copy
-                // though the url is visible inside the widget, it is not present inside an input box.
-                const tempInput = document.createElement("input"); // this creates an input field where the url is stored and is hidden
-                tempInput.value = data.invite_link; // the text gets appended to the value field inside the input field
-                document.body.append(tempInput);
-                tempInput.select(); // selects the url
-                document.execCommand("copy"); // copies the url
-                tempInput.remove();
-            });
+            new ClipboardJS('.btn'); //function called here for copying
+            };
         },
         error(xhr) {
             ui_report.error("", xhr, invite_status);
