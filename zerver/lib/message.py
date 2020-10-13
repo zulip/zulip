@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 import ahocorasick
 import orjson
 from django.db import connection
-from django.db.models import Sum
+from django.db.models import Max, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from psycopg2.sql import SQL
@@ -1110,6 +1110,17 @@ def update_first_visible_message_id(realm: Realm) -> None:
         realm.first_visible_message_id = first_visible_message_id
     realm.save(update_fields=["first_visible_message_id"])
 
+def get_last_message_id() -> int:
+    # We generally use this function to populate RealmAuditLog, and
+    # the max id here is actually systemwide, not per-realm.  I
+    # assume there's some advantage in not filtering by realm.
+    last_id = Message.objects.aggregate(Max('id'))['id__max']
+    if last_id is None:
+        # During initial realm creation, there might be 0 messages in
+        # the database; in that case, the `aggregate` query returns
+        # None.  Since we want an int for "beginning of time", use -1.
+        last_id = -1
+    return last_id
 
 def get_recent_conversations_recipient_id(user_profile: UserProfile,
                                           recipient_id: int,
