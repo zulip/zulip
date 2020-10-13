@@ -2719,35 +2719,42 @@ def get_subscriber_emails(stream: Stream,
     return [subscription['user_profile__email'] for subscription in subscriptions]
 
 
-def notify_subscriptions_added(
-    user_profile: UserProfile,
-    sub_pairs: Iterable[Tuple[Subscription, Stream]],
+def send_subscription_add_events(
+    realm: Realm,
+    sub_streams: List[Tuple[Subscription, Stream]],
     subscriber_dict: Dict[int, List[int]],
-    recent_traffic: Dict[int, int],
 ) -> None:
-    sub_dicts = []
-    for (subscription, stream) in sub_pairs:
-        sub_dict = stream.to_dict()
-        for field_name in Subscription.API_FIELDS:
-            if field_name == "active":
-                # Skip the "active" field, it's implied by context
-                continue
-            sub_dict[field_name] = getattr(subscription, field_name)
+    sub_tuples_by_user: Dict[int, List[Tuple[Subscription, Stream]]] = defaultdict(list)
+    for (sub, stream) in sub_streams:
+        sub_tuples_by_user[sub.user_profile.id].append((sub, stream))
 
-        sub_dict['in_home_view'] = not subscription.is_muted
-        sub_dict['email_address'] = encode_email_address(stream, show_sender=True)
-        sub_dict['stream_weekly_traffic'] = get_average_weekly_stream_traffic(
-            stream.id, stream.date_created, recent_traffic)
-        if stream.is_in_zephyr_realm and not stream.invite_only:
-            sub_dict['subscribers'] = []
-        else:
-            sub_dict['subscribers'] = subscriber_dict[stream.id]
-        sub_dicts.append(sub_dict)
+    stream_ids = {stream.id for (sub, stream) in sub_streams}
+    recent_traffic = get_streams_traffic(stream_ids=stream_ids)
 
-    # Send a notification to the user who subscribed.
-    event = dict(type="subscription", op="add",
-                 subscriptions=sub_dicts)
-    send_event(user_profile.realm, event, [user_profile.id])
+    for user_id, sub_streams in sub_tuples_by_user.items():
+        sub_dicts = []
+        for (subscription, stream) in sub_streams:
+            sub_dict = stream.to_dict()
+            for field_name in Subscription.API_FIELDS:
+                if field_name == "active":
+                    # Skip the "active" field, it's implied by context
+                    continue
+                sub_dict[field_name] = getattr(subscription, field_name)
+
+            sub_dict['in_home_view'] = not subscription.is_muted
+            sub_dict['email_address'] = encode_email_address(stream, show_sender=True)
+            sub_dict['stream_weekly_traffic'] = get_average_weekly_stream_traffic(
+                stream.id, stream.date_created, recent_traffic)
+            if stream.is_in_zephyr_realm and not stream.invite_only:
+                sub_dict['subscribers'] = []
+            else:
+                sub_dict['subscribers'] = subscriber_dict[stream.id]
+            sub_dicts.append(sub_dict)
+
+        # Send a notification to the user who subscribed.
+        event = dict(type="subscription", op="add",
+                     subscriptions=sub_dicts)
+        send_event(realm, event, [user_id])
 
 def get_peer_user_ids_for_stream_change(stream: Stream,
                                         altered_user_ids: Iterable[int],
@@ -2895,24 +2902,11 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
         users=users,
     )
 
-    sub_tuples_by_user: Dict[int, List[Tuple[Subscription, Stream]]] = defaultdict(list)
-    for (sub, stream) in subs_to_add + subs_to_activate:
-        sub_tuples_by_user[sub.user_profile.id].append((sub, stream))
-
-    stream_ids = {stream.id for stream in streams}
-    recent_traffic = get_streams_traffic(stream_ids=stream_ids)
-    # The second batch is events for the users themselves that they
-    # were subscribed to the new streams.
-    for user_profile in users:
-        if len(sub_tuples_by_user[user_profile.id]) == 0:
-            continue
-        sub_pairs = sub_tuples_by_user[user_profile.id]
-        notify_subscriptions_added(
-            user_profile,
-            sub_pairs,
-            all_subscribers_by_stream,
-            recent_traffic,
-        )
+    send_subscription_add_events(
+        realm=realm,
+        sub_streams=subs_to_add + subs_to_activate,
+        subscriber_dict=all_subscribers_by_stream,
+    )
 
     send_peer_add_events(
         realm=realm,
