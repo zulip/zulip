@@ -272,10 +272,10 @@ For `nginx` configuration, there's two things you need to set up:
 
 ```
 server {
-        listen                  443 ssl;
+        listen                  443 ssl http2;
+        listen                  [::]:443 ssl http2;
         server_name             zulip.example.net;
 
-        ssl                     on;
         ssl_certificate         /path/to/fullchain-cert.pem;
         ssl_certificate_key     /path/to/private-key.pem;
 

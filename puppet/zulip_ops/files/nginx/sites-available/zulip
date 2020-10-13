@@ -1,7 +1,8 @@
 include /etc/nginx/zulip-include/upstreams;
 
 server {
-    listen 443;
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
 
     # This server is behind an ALB, which does not check the
     # certificate validity:
@@ -9,7 +10,6 @@ server {
     #
     # Snakeoil verts are good for 10 years after initial creation, but
     # the ALBs don't even check expiration. ¯\_(ツ)_/¯
-    ssl on;
     ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
     ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
 
