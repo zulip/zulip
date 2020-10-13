@@ -7,7 +7,6 @@ from io import BytesIO
 from typing import Callable, Dict, Optional, Tuple, TypeVar, Union, cast
 
 import django_otp
-from oauth2_provider.oauth2_backends import get_oauthlib_core
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth import login as django_login
@@ -22,6 +21,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django_otp import user_has_device
+from oauth2_provider.oauth2_backends import get_oauthlib_core
 from two_factor.utils import default_device
 
 from zerver.lib.exceptions import (
@@ -195,7 +195,7 @@ def validate_oauth_key(request: HttpRequest) -> UserProfile:
 
     (ok, req) = get_oauthlib_core().verify_request(request, [])
     if not ok:
-        raise JsonableError("oauth failed")
+        raise JsonableError(_("oauth failed"))
 
     # convert from AnonymousUser
     user_profile = UserProfile.objects.get(id=req.user.id)
