@@ -3259,9 +3259,14 @@ class SubscriptionAPITest(ZulipTestCase):
     def test_bulk_subscribe_many(self) -> None:
 
         # Create a whole bunch of streams
-        streams = [f"stream_{i}" for i in range(20)]
+        streams = [f"stream_{i}" for i in range(30)]
         for stream_name in streams:
             self.make_stream(stream_name)
+
+        # Subscribe out test user to some streams, including
+        # some that we may soon subscribe them to.
+        for stream_name in ["Verona", "Denmark", *streams[:10]]:
+            self.subscribe(self.test_user, stream_name)
 
         with queries_captured() as queries:
             self.common_subscribe_to_streams(
