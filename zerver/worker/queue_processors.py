@@ -668,7 +668,7 @@ class MirrorWorker(QueueProcessingWorker):
 
 @assign_queue('embed_links')
 class FetchLinksEmbedData(QueueProcessingWorker):
-    # This is a slow queue with network requests, so a disk write is neglible.
+    # This is a slow queue with network requests, so a disk write is negligible.
     # Update stats file after every consume call.
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 1
 
@@ -866,7 +866,7 @@ class TestWorker(QueueProcessingWorker):
 
 @assign_queue('noop', queue_type="test")
 class NoopWorker(QueueProcessingWorker):
-    """Used to profile the queue procesing framework, in zilencer's queue_rate."""
+    """Used to profile the queue processing framework, in zilencer's queue_rate."""
 
     def __init__(self, max_consume: int=1000, slow_queries: Optional[List[int]]=None) -> None:
         self.consumed = 0
@@ -884,7 +884,7 @@ class NoopWorker(QueueProcessingWorker):
 
 @assign_queue('noop_batch', queue_type="test")
 class BatchNoopWorker(LoopQueueProcessingWorker):
-    """Used to profile the queue procesing framework, in zilencer's queue_rate."""
+    """Used to profile the queue processing framework, in zilencer's queue_rate."""
     batch_size = 500
 
     def __init__(self, max_consume: int=1000, slow_queries: Optional[List[int]]=None) -> None:
