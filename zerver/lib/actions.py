@@ -2719,10 +2719,12 @@ def get_subscriber_emails(stream: Stream,
     return [subscription['user_profile__email'] for subscription in subscriptions]
 
 
-def notify_subscriptions_added(user_profile: UserProfile,
-                               sub_pairs: Iterable[Tuple[Subscription, Stream]],
-                               stream_user_ids: Callable[[Stream], List[int]],
-                               recent_traffic: Dict[int, int]) -> None:
+def notify_subscriptions_added(
+    user_profile: UserProfile,
+    sub_pairs: Iterable[Tuple[Subscription, Stream]],
+    subscriber_dict: Dict[int, List[int]],
+    recent_traffic: Dict[int, int],
+) -> None:
     sub_dicts = []
     for (subscription, stream) in sub_pairs:
         sub_dict = stream.to_dict()
@@ -2736,7 +2738,10 @@ def notify_subscriptions_added(user_profile: UserProfile,
         sub_dict['email_address'] = encode_email_address(stream, show_sender=True)
         sub_dict['stream_weekly_traffic'] = get_average_weekly_stream_traffic(
             stream.id, stream.date_created, recent_traffic)
-        sub_dict['subscribers'] = stream_user_ids(stream)
+        if stream.is_in_zephyr_realm and not stream.invite_only:
+            sub_dict['subscribers'] = []
+        else:
+            sub_dict['subscribers'] = subscriber_dict[stream.id]
         sub_dicts.append(sub_dict)
 
     # Send a notification to the user who subscribed.
@@ -2876,16 +2881,8 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     # the following code and we want to minize DB queries
     all_subscribers_by_stream = get_user_ids_for_streams(streams=streams)
 
-    def fetch_stream_subscriber_user_ids(stream: Stream) -> List[int]:
-        if stream.is_in_zephyr_realm and not stream.invite_only:
-            return []
-        user_ids = all_subscribers_by_stream[stream.id]
-        return user_ids
-
-    sub_tuples_by_user: Dict[int, List[Tuple[Subscription, Stream]]] = defaultdict(list)
     new_streams: Set[Tuple[int, int]] = set()
     for (sub, stream) in subs_to_add + subs_to_activate:
-        sub_tuples_by_user[sub.user_profile.id].append((sub, stream))
         new_streams.add((sub.user_profile.id, stream.id))
 
     # We now send several types of events to notify browsers.  The
@@ -2898,6 +2895,10 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
         users=users,
     )
 
+    sub_tuples_by_user: Dict[int, List[Tuple[Subscription, Stream]]] = defaultdict(list)
+    for (sub, stream) in subs_to_add + subs_to_activate:
+        sub_tuples_by_user[sub.user_profile.id].append((sub, stream))
+
     stream_ids = {stream.id for stream in streams}
     recent_traffic = get_streams_traffic(stream_ids=stream_ids)
     # The second batch is events for the users themselves that they
@@ -2906,8 +2907,12 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
         if len(sub_tuples_by_user[user_profile.id]) == 0:
             continue
         sub_pairs = sub_tuples_by_user[user_profile.id]
-        notify_subscriptions_added(user_profile, sub_pairs, fetch_stream_subscriber_user_ids,
-                                   recent_traffic)
+        notify_subscriptions_added(
+            user_profile,
+            sub_pairs,
+            all_subscribers_by_stream,
+            recent_traffic,
+        )
 
     send_peer_add_events(
         realm=realm,
