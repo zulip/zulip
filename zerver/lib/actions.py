@@ -2826,7 +2826,7 @@ def bulk_add_subscriptions(
     for user in users:
         assert user.realm_id == realm.id
 
-    stream_map = {stream.recipient_id: stream for stream in streams}
+    recipient_id_to_stream = {stream.recipient_id: stream for stream in streams}
 
     subs_by_user: Dict[int, List[Subscription]] = defaultdict(list)
     all_subs_query = get_stream_subscriptions_for_users(users).select_related('user_profile')
@@ -2848,13 +2848,14 @@ def bulk_add_subscriptions(
         for sub in my_subs:
             if sub.recipient_id in new_recipient_ids:
                 new_recipient_ids.remove(sub.recipient_id)
+                stream = recipient_id_to_stream[sub.recipient_id]
                 if sub.active:
-                    already_subscribed.append((user_profile, stream_map[sub.recipient_id]))
+                    already_subscribed.append((user_profile, stream))
                 else:
-                    subs_to_activate.append((sub, stream_map[sub.recipient_id]))
+                    subs_to_activate.append((sub, stream))
 
         for recipient_id in new_recipient_ids:
-            stream = stream_map[recipient_id]
+            stream = recipient_id_to_stream[recipient_id]
 
             if stream.name in color_map:
                 color = color_map[stream.name]
