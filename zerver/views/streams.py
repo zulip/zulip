@@ -495,6 +495,40 @@ def add_subscriptions_backend(
     for (subscriber, stream) in already_subscribed:
         result["already_subscribed"][subscriber.email].append(stream.name)
 
+    result["subscribed"] = dict(result["subscribed"])
+    result["already_subscribed"] = dict(result["already_subscribed"])
+
+    send_messages_for_new_subscribers(
+        user_profile=user_profile,
+        subscribers=subscribers,
+        new_subscriptions=result["subscribed"],
+        email_to_user_profile=email_to_user_profile,
+        created_streams=created_streams,
+        announce=announce,
+    )
+
+    result["subscribed"] = dict(result["subscribed"])
+    result["already_subscribed"] = dict(result["already_subscribed"])
+    if not authorization_errors_fatal:
+        result["unauthorized"] = [s.name for s in unauthorized_streams]
+    return json_success(result)
+
+def send_messages_for_new_subscribers(
+    user_profile: UserProfile,
+    subscribers: Set[UserProfile],
+    new_subscriptions: Dict[str, List[str]],
+    email_to_user_profile: Dict[str, UserProfile],
+    created_streams: List[Stream],
+    announce: bool,
+) -> None:
+    """
+    If you are subscribing lots of new users to new streams,
+    this function can be pretty expensive in terms of generating
+    lots of queries and sending lots of messages.  We isolate
+    the code partly to make it easier to test things like
+    excessive query counts by mocking this function so that it
+    doesn't drown out query counts from other code.
+    """
     bots = {subscriber.email: subscriber.is_bot for subscriber in subscribers}
 
     newly_created_stream_names = {s.name for s in created_streams}
@@ -502,8 +536,8 @@ def add_subscriptions_backend(
     # Inform the user if someone else subscribed them to stuff,
     # or if a new stream was created with the "announce" option.
     notifications = []
-    if len(principals) > 0 and result["subscribed"]:
-        for email, subscribed_stream_names in result["subscribed"].items():
+    if new_subscriptions:
+        for email, subscribed_stream_names in new_subscriptions.items():
             if email == user_profile.email:
                 # Don't send a Zulip if you invited yourself.
                 continue
@@ -579,12 +613,6 @@ def add_subscriptions_backend(
 
     if len(notifications) > 0:
         do_send_messages(notifications, mark_as_read=[user_profile.id])
-
-    result["subscribed"] = dict(result["subscribed"])
-    result["already_subscribed"] = dict(result["already_subscribed"])
-    if not authorization_errors_fatal:
-        result["unauthorized"] = [s.name for s in unauthorized_streams]
-    return json_success(result)
 
 @has_request_variables
 def get_subscribers_backend(request: HttpRequest, user_profile: UserProfile,
