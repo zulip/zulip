@@ -458,6 +458,12 @@ li,
     margin-top: -24px;
 }
 
+#copy_generated_invite_link {
+    position: relative;
+    margin-right: -32px;
+    margin-top: -1px;
+}
+
 #clipboard_image {
     margin-top: -5px;
     margin-left: -8px;
