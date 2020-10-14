@@ -2838,7 +2838,7 @@ def bulk_add_subscriptions(
     recipient_id_to_stream = {stream.recipient_id: stream for stream in streams}
 
     subs_by_user: Dict[int, List[Subscription]] = defaultdict(list)
-    all_subs_query = get_stream_subscriptions_for_users(users).select_related('user_profile')
+    all_subs_query = get_stream_subscriptions_for_users(users)
     for sub in all_subs_query:
         subs_by_user[sub.user_profile_id].append(sub)
 
