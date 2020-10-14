@@ -501,6 +501,10 @@ def decimal_to_float(obj: object) -> object:
     raise TypeError  # nocoverage
 
 
+def is_free_trial_offer_enabled() -> bool:
+    return settings.FREE_TRIAL_DAYS not in (None, 0)
+
+
 # Only used for cloud signups
 @catch_stripe_errors
 def process_initial_upgrade(
@@ -513,7 +517,7 @@ def process_initial_upgrade(
     realm = user.realm
     customer = update_or_create_stripe_customer(user, stripe_token=stripe_token)
     charge_automatically = stripe_token is not None
-    free_trial = settings.FREE_TRIAL_DAYS not in (None, 0)
+    free_trial = is_free_trial_offer_enabled()
 
     if get_current_plan_by_customer(customer) is not None:
         # Unlikely race condition from two people upgrading (clicking "Make payment")

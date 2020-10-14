@@ -294,8 +294,11 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
     do_login(request, user_profile)
 
     redirect_to = result.data_dict.get("redirect_to", "")
-    if is_realm_creation is not None and settings.FREE_TRIAL_DAYS not in [None, 0]:
-        redirect_to = "{}?onboarding=true".format(reverse("initial_upgrade"))
+    if is_realm_creation is not None and settings.BILLING_ENABLED:
+        from corporate.lib.stripe import is_free_trial_offer_enabled
+
+        if is_free_trial_offer_enabled():
+            redirect_to = "{}?onboarding=true".format(reverse("initial_upgrade"))
 
     redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)
