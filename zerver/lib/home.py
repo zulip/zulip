@@ -133,6 +133,7 @@ def build_page_params_for_home_page_load(
         slim_presence=True,
         client_capabilities=client_capabilities,
         narrow=narrow,
+        include_streams=False,
     )
 
     furthest_read_time = get_furthest_read_time(user_profile)
@@ -180,10 +181,7 @@ def build_page_params_for_home_page_load(
         is_web_public_visitor=user_profile is None,
     )
 
-    undesired_register_ret_fields = [
-        "streams",
-    ]
-    for field_name in set(register_ret.keys()) - set(undesired_register_ret_fields):
+    for field_name in register_ret.keys():
         page_params[field_name] = register_ret[field_name]
 
     if narrow_stream is not None:
