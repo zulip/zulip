@@ -2814,7 +2814,6 @@ def bulk_add_subscriptions(
     streams: Iterable[Stream],
     users: Iterable[UserProfile],
     color_map: Mapping[str, str]={},
-    from_stream_creation: bool=False,
     acting_user: Optional[UserProfile]=None
 ) -> SubT:
     users = list(users)
@@ -2867,20 +2866,12 @@ def bulk_add_subscriptions(
                                       color=color, recipient_id=recipient_id)
             subs_to_add.append((sub_to_add, stream))
 
-    new_occupied_streams = bulk_add_subs_to_db_with_logging(
+    bulk_add_subs_to_db_with_logging(
         realm=realm,
         acting_user=acting_user,
         subs_to_add=subs_to_add,
         subs_to_activate=subs_to_activate,
     )
-
-    if new_occupied_streams and not from_stream_creation:
-        event: Dict[str, object] = dict(
-            type="stream",
-            op="occupy",
-            streams=[stream.to_dict() for stream in new_occupied_streams],
-        )
-        send_event(realm, event, active_user_ids(realm.id))
 
     # Notify all existing users on streams that users have joined
 
@@ -2926,16 +2917,11 @@ def bulk_add_subs_to_db_with_logging(
     acting_user: Optional[UserProfile],
     subs_to_add: List[Tuple[Subscription, Stream]],
     subs_to_activate: List[Tuple[Subscription, Stream]],
-) -> List[Stream]:
+) -> None:
 
-    # TODO: XXX: This transaction really needs to be done at the serializeable
-    # transaction isolation level.
-    with transaction.atomic():
-        occupied_streams_before = list(get_occupied_streams(realm))
-        Subscription.objects.bulk_create(sub for (sub, stream) in subs_to_add)
-        sub_ids = [sub.id for (sub, stream) in subs_to_activate]
-        Subscription.objects.filter(id__in=sub_ids).update(active=True)
-        occupied_streams_after = list(get_occupied_streams(realm))
+    Subscription.objects.bulk_create(sub for (sub, stream) in subs_to_add)
+    sub_ids = [sub.id for (sub, stream) in subs_to_activate]
+    Subscription.objects.filter(id__in=sub_ids).update(active=True)
 
     # Log Subscription Activities in RealmAuditLog
     event_time = timezone_now()
@@ -2960,11 +2946,6 @@ def bulk_add_subs_to_db_with_logging(
                                                    event_time=event_time))
     # Now since we have all log objects generated we can do a bulk insert
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
-
-    new_occupied_streams = [stream for stream in
-                            set(occupied_streams_after) - set(occupied_streams_before)
-                            if not stream.invite_only]
-    return new_occupied_streams
 
 def send_stream_creation_events_for_private_streams(
     realm: Realm,
@@ -3158,13 +3139,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
     new_vacant_streams = set(occupied_streams_before) - set(occupied_streams_after)
     new_vacant_private_streams = [stream for stream in new_vacant_streams
                                   if stream.invite_only]
-    new_vacant_public_streams = [stream for stream in new_vacant_streams
-                                 if not stream.invite_only]
-    if new_vacant_public_streams:
-        event = dict(type="stream", op="vacate",
-                     streams=[stream.to_dict()
-                              for stream in new_vacant_public_streams])
-        send_event(our_realm, event, active_user_ids(our_realm.id))
+
     if new_vacant_private_streams:
         # Deactivate any newly-vacant private streams
         for stream in new_vacant_private_streams:
