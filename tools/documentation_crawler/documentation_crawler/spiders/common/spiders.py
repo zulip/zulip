@@ -107,6 +107,13 @@ class BaseDocumentationSpider(scrapy.Spider):
         return callback
 
     def _make_requests(self, url: str) -> Iterator[Request]:
+        # These URLs are for Zulip's webapp, which with recent changes
+        # can be accessible without login an account.  While we do
+        # crawl documentation served by the webapp (E.g. /help/), we
+        # don't want to crawl the webapp itself, so we exclude these.
+        if url in ['http://localhost:9981/', 'http://localhost:9981'] or url.startswith('http://localhost:9981/#') or url.startswith('http://localhost:9981#'):
+            return
+
         callback: Callable[[Response], Optional[Iterator[Request]]] = self.parse
         dont_filter = False
         method = 'GET'
