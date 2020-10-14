@@ -872,10 +872,9 @@ Output:
         realm = user_profile.realm
         try:
             stream = get_stream(stream_name, user_profile.realm)
-            from_stream_creation = False
         except Stream.DoesNotExist:
             stream, from_stream_creation = create_stream_if_needed(realm, stream_name)
-        bulk_add_subscriptions(realm, [stream], [user_profile], from_stream_creation=from_stream_creation)
+        bulk_add_subscriptions(realm, [stream], [user_profile])
         return stream
 
     def unsubscribe(self, user_profile: UserProfile, stream_name: str) -> None:

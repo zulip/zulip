@@ -206,6 +206,7 @@ class BaseAction(ZulipTestCase):
                       client_gravatar: bool=True,
                       user_avatar_url_field_optional: bool=False,
                       slim_presence: bool=False,
+                      include_streams: bool=True,
                       num_events: int=1,
                       bulk_message_deletion: bool=True) -> List[Dict[str, Any]]:
         '''
@@ -241,6 +242,7 @@ class BaseAction(ZulipTestCase):
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
+            include_streams=include_streams,
             realm=self.user_profile.realm,
         )
         action()
@@ -282,6 +284,7 @@ class BaseAction(ZulipTestCase):
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
+            include_streams=include_streams,
             realm=self.user_profile.realm,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
@@ -1862,7 +1865,8 @@ class SubscribeActionTest(BaseAction):
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers,
-            num_events=3)
+            include_streams=False,
+            num_events=2)
         check_subscription_remove('events[0]', events[0])
         self.assertEqual(len(events[0]['subscriptions']), 1)
         self.assertEqual(
@@ -1875,8 +1879,9 @@ class SubscribeActionTest(BaseAction):
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers,
-            num_events=2)
-        check_subscription_add('events[1]', events[1], include_subscribers)
+            include_streams=False,
+            num_events=1)
+        check_subscription_add('events[0]', events[0], include_subscribers)
 
         action = lambda: do_change_stream_description(stream, 'new description')
         events = self.verify_action(
