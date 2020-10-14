@@ -489,10 +489,14 @@ def add_subscriptions_backend(
     email_to_user_profile: Dict[str, UserProfile] = {}
 
     result: Dict[str, Any] = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))
-    for (subscriber, stream) in subscribed:
+    for sub_info in subscribed:
+        subscriber = sub_info.user
+        stream = sub_info.stream
         result["subscribed"][subscriber.email].append(stream.name)
         email_to_user_profile[subscriber.email] = subscriber
-    for (subscriber, stream) in already_subscribed:
+    for sub_info in already_subscribed:
+        subscriber = sub_info.user
+        stream = sub_info.stream
         result["already_subscribed"][subscriber.email].append(stream.name)
 
     result["subscribed"] = dict(result["subscribed"])
