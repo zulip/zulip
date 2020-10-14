@@ -29,6 +29,8 @@ from corporate.lib.stripe import (
     attach_discount_to_realm,
     catch_stripe_errors,
     compute_plan_parameters,
+    customer_has_credit_card_as_default_source,
+    do_create_stripe_customer,
     get_discount_for_realm,
     get_latest_seat_count,
     get_price_per_license,
@@ -40,6 +42,7 @@ from corporate.lib.stripe import (
     next_month,
     process_initial_upgrade,
     sign_string,
+    stripe_customer_has_credit_card_as_default_source,
     stripe_get_customer,
     unsign_string,
     update_billing_method_of_current_plan,
@@ -502,6 +505,7 @@ class StripeTest(StripeTestCase):
             Customer.objects.get(realm=user.realm).stripe_customer_id
         )
         self.assertEqual(stripe_customer.default_source.id[:5], "card_")
+        self.assertTrue(stripe_customer_has_credit_card_as_default_source(stripe_customer))
         self.assertEqual(stripe_customer.description, "zulip (Zulip Dev)")
         self.assertEqual(stripe_customer.discount, None)
         self.assertEqual(stripe_customer.email, user.email)
@@ -662,6 +666,7 @@ class StripeTest(StripeTestCase):
         stripe_customer = stripe_get_customer(
             Customer.objects.get(realm=user.realm).stripe_customer_id
         )
+        self.assertFalse(stripe_customer_has_credit_card_as_default_source(stripe_customer))
         # It can take a second for Stripe to attach the source to the customer, and in
         # particular it may not be attached at the time stripe_get_customer is called above,
         # causing test flakes.
@@ -2683,6 +2688,18 @@ class StripeTest(StripeTestCase):
         expected_extra_data = {"charge_automatically": plan.charge_automatically}
         self.assertEqual(realm_audit_log.acting_user, iago)
         self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
+
+    @mock_stripe()
+    def test_customer_has_credit_card_as_default_source(self, *mocks: Mock) -> None:
+        iago = self.example_user("iago")
+        customer = Customer.objects.create(realm=iago.realm)
+        self.assertFalse(customer_has_credit_card_as_default_source(customer))
+
+        customer = do_create_stripe_customer(iago)
+        self.assertFalse(customer_has_credit_card_as_default_source(customer))
+
+        customer = do_create_stripe_customer(iago, stripe_token=stripe_create_token().id)
+        self.assertTrue(customer_has_credit_card_as_default_source(customer))
 
 
 class RequiresBillingAccessTest(ZulipTestCase):

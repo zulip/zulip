@@ -338,6 +338,19 @@ def do_replace_payment_source(
     return updated_stripe_customer
 
 
+def stripe_customer_has_credit_card_as_default_source(stripe_customer: stripe.Customer) -> bool:
+    if not stripe_customer.default_source:
+        return False
+    return stripe_customer.default_source.object == "card"
+
+
+def customer_has_credit_card_as_default_source(customer: Customer) -> bool:
+    if not customer.stripe_customer_id:
+        return False
+    stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+    return stripe_customer_has_credit_card_as_default_source(stripe_customer)
+
+
 # event_time should roughly be timezone_now(). Not designed to handle
 # event_times in the past or future
 @transaction.atomic
