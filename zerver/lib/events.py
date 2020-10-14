@@ -89,7 +89,8 @@ def fetch_initial_state_data(
     user_avatar_url_field_optional: bool,
     realm: Realm,
     slim_presence: bool = False,
-    include_subscribers: bool = True
+    include_subscribers: bool = True,
+    include_streams: bool = True,
 ) -> Dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     webapp's `page_params` and `/api/v1/register` (for mobile/terminal
@@ -354,10 +355,14 @@ def fetch_initial_state_data(
         state['starred_messages'] = [] if user_profile is None else get_starred_message_ids(user_profile)
 
     if want('stream'):
-        if user_profile is not None:
-            state['streams'] = do_get_streams(user_profile)
-        else:
-            state['streams'] = get_web_public_streams(realm)
+        if include_streams:
+            # The webapp doesn't use the data from here; instead,
+            # it uses data from state["subscriptions"] and other
+            # places.
+            if user_profile is not None:
+                state['streams'] = do_get_streams(user_profile)
+            else:
+                state['streams'] = get_web_public_streams(realm)
         state['stream_name_max_length'] = Stream.MAX_NAME_LENGTH
         state['stream_description_max_length'] = Stream.MAX_DESCRIPTION_LENGTH
     if want('default_streams'):
@@ -914,6 +919,7 @@ def do_events_register(
     queue_lifespan_secs: int = 0,
     all_public_streams: bool = False,
     include_subscribers: bool = True,
+    include_streams: bool = True,
     client_capabilities: Dict[str, bool] = {},
     narrow: Iterable[Sequence[str]] = [],
     fetch_event_types: Optional[Iterable[str]] = None
@@ -961,7 +967,8 @@ def do_events_register(
         user_avatar_url_field_optional=user_avatar_url_field_optional,
         realm=user_profile.realm,
         slim_presence=slim_presence,
-        include_subscribers=include_subscribers
+        include_subscribers=include_subscribers,
+        include_streams=include_streams,
     )
 
     # Apply events that came in while we were fetching initial data
