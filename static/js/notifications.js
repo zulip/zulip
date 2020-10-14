@@ -156,24 +156,21 @@ exports.redraw_title = function () {
 
     document.title = new_title;
 
-    // IE doesn't support PNG favicons, *shrug*
-    if (!/msie/i.test(navigator.userAgent)) {
-        // Indicate the message count in the favicon
-        if (new_message_count) {
-            // Make sure we're working with a number, as a defensive programming
-            // measure.  And we don't have images above 99, so display those as
-            // 'infinite'.
-            n = Number(new_message_count);
-            if (n > 99) {
-                n = "infinite";
-            }
-
-            current_favicon = previous_favicon = "/static/images/favicon/favicon-" + n + ".png?v=4";
-        } else {
-            current_favicon = previous_favicon = "/static/images/favicon.svg?v=4";
+    // Indicate the message count in the favicon
+    if (new_message_count) {
+        // Make sure we're working with a number, as a defensive programming
+        // measure.  And we don't have images above 99, so display those as
+        // 'infinite'.
+        n = Number(new_message_count);
+        if (n > 99) {
+            n = "infinite";
         }
-        favicon.set(current_favicon);
+
+        current_favicon = previous_favicon = "/static/images/favicon/favicon-" + n + ".png?v=4";
+    } else {
+        current_favicon = previous_favicon = "/static/images/favicon.svg?v=4";
     }
+    favicon.set(current_favicon);
 
     // Notify the current desktop app's UI about the new unread count.
     if (window.electron_bridge !== undefined) {
