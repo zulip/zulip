@@ -159,6 +159,6 @@ class BaseDocumentationSpider(scrapy.Spider):
             if response.status == 405 and response.request.method == 'HEAD':
                 # Method 'HEAD' not allowed, repeat request with 'GET'
                 return self.retry_request_with_get(response.request)
-            self.logger.error("Please check link: %s", response)
+            self.logger.error("Please check link: %s", response.request.url)
 
         return failure
