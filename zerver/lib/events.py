@@ -81,13 +81,16 @@ def always_want(msg_type: str) -> bool:
     '''
     return True
 
-def fetch_initial_state_data(user_profile: Optional[UserProfile],
-                             event_types: Optional[Iterable[str]],
-                             queue_id: Optional[str], client_gravatar: bool,
-                             user_avatar_url_field_optional: bool,
-                             realm: Realm,
-                             slim_presence: bool = False,
-                             include_subscribers: bool = True) -> Dict[str, Any]:
+def fetch_initial_state_data(
+    user_profile: Optional[UserProfile],
+    event_types: Optional[Iterable[str]],
+    queue_id: Optional[str],
+    client_gravatar: bool,
+    user_avatar_url_field_optional: bool,
+    realm: Realm,
+    slim_presence: bool = False,
+    include_subscribers: bool = True
+) -> Dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     webapp's `page_params` and `/api/v1/register` (for mobile/terminal
     apps).  Can also fetch a subset as determined by `event_types`.
@@ -901,17 +904,20 @@ def apply_event(state: Dict[str, Any],
     else:
         raise AssertionError("Unexpected event type {}".format(event['type']))
 
-def do_events_register(user_profile: UserProfile, user_client: Client,
-                       apply_markdown: bool = True,
-                       client_gravatar: bool = False,
-                       slim_presence: bool = False,
-                       event_types: Optional[Iterable[str]] = None,
-                       queue_lifespan_secs: int = 0,
-                       all_public_streams: bool = False,
-                       include_subscribers: bool = True,
-                       client_capabilities: Dict[str, bool] = {},
-                       narrow: Iterable[Sequence[str]] = [],
-                       fetch_event_types: Optional[Iterable[str]] = None) -> Dict[str, Any]:
+def do_events_register(
+    user_profile: UserProfile,
+    user_client: Client,
+    apply_markdown: bool = True,
+    client_gravatar: bool = False,
+    slim_presence: bool = False,
+    event_types: Optional[Iterable[str]] = None,
+    queue_lifespan_secs: int = 0,
+    all_public_streams: bool = False,
+    include_subscribers: bool = True,
+    client_capabilities: Dict[str, bool] = {},
+    narrow: Iterable[Sequence[str]] = [],
+    fetch_event_types: Optional[Iterable[str]] = None
+) -> Dict[str, Any]:
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
@@ -947,12 +953,16 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
     # Fill up the UserMessage rows if a soft-deactivated user has returned
     reactivate_user_if_soft_deactivated(user_profile)
 
-    ret = fetch_initial_state_data(user_profile, event_types_set, queue_id,
-                                   client_gravatar=client_gravatar,
-                                   user_avatar_url_field_optional=user_avatar_url_field_optional,
-                                   realm=user_profile.realm,
-                                   slim_presence=slim_presence,
-                                   include_subscribers=include_subscribers)
+    ret = fetch_initial_state_data(
+        user_profile,
+        event_types_set,
+        queue_id,
+        client_gravatar=client_gravatar,
+        user_avatar_url_field_optional=user_avatar_url_field_optional,
+        realm=user_profile.realm,
+        slim_presence=slim_presence,
+        include_subscribers=include_subscribers
+    )
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
