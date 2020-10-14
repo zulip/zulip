@@ -84,6 +84,7 @@ class SettingsPanelMenu {
     }
 
     activate_section_or_default(section) {
+        popovers.hide_all();
         if (!section) {
             // No section is given so we display the default.
 

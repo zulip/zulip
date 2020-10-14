@@ -23,27 +23,24 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--time', '-t',
-                            type=str,
                             help='Update stat tables from current state to'
                                  '--time. Defaults to the current time.',
                             default=timezone_now().isoformat())
         parser.add_argument('--utc',
                             action='store_true',
-                            help="Interpret --time in UTC.",
-                            default=False)
+                            help="Interpret --time in UTC.")
         parser.add_argument('--stat', '-s',
-                            type=str,
                             help="CountStat to process. If omitted, all stats are processed.")
         parser.add_argument('--verbose',
                             action='store_true',
-                            help="Print timing information to stdout.",
-                            default=False)
+                            help="Print timing information to stdout.")
 
     def handle(self, *args: Any, **options: Any) -> None:
         try:
             os.mkdir(settings.ANALYTICS_LOCK_DIR)
         except OSError:
-            print(WARNING + "Analytics lock %s is unavailable; exiting... " + ENDC)
+            print(f"{WARNING}Analytics lock {settings.ANALYTICS_LOCK_DIR} is unavailable;"
+                  f" exiting.{ENDC}")
             return
 
         try:

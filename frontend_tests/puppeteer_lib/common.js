@@ -1,11 +1,14 @@
 "use strict";
 
-const assert = require("assert").strict;
+const {strict: assert} = require("assert");
 const path = require("path");
 
 const puppeteer = require("puppeteer");
 
-const test_credentials = require("../../var/casper/test_credentials.js").test_credentials;
+const {test_credentials} = require("../../var/puppeteer/test_credentials");
+
+const root_dir = path.resolve(__dirname, "../../");
+const puppeteer_dir = path.join(root_dir, "var/puppeteer");
 
 class CommonUtils {
     constructor() {
@@ -41,31 +44,37 @@ class CommonUtils {
                 assert.equal(actual_recipients, expected);
             },
         };
+
         this.fullname = {
             cordelia: "Cordelia Lear",
             othello: "Othello, the Moor of Venice",
             hamlet: "King Hamlet",
         };
+
+        this.window_size = {
+            width: 1400,
+            height: 1024,
+        };
     }
 
     async ensure_browser() {
         if (this.browser === null) {
+            const {window_size} = this;
             this.browser = await puppeteer.launch({
-                args: ["--window-size=1400,1024", "--no-sandbox", "--disable-setuid-sandbox"],
+                args: [
+                    `--window-size=${window_size.width},${window_size.height}`,
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                ],
                 defaultViewport: {width: 1280, height: 1024},
                 headless: true,
             });
         }
     }
 
-    async get_page(url = null) {
+    async get_page() {
         await this.ensure_browser();
-
         const page = await this.browser.newPage();
-        if (url !== null) {
-            await page.goto(url);
-        }
-
         return page;
     }
 
@@ -75,8 +84,7 @@ class CommonUtils {
             this.screenshot_id += 1;
         }
 
-        const root_dir = path.resolve(__dirname, "../../");
-        const screenshot_path = path.join(root_dir, "var/puppeteer", `${name}.png`);
+        const screenshot_path = path.join(puppeteer_dir, `${name}.png`);
         await page.screenshot({
             path: screenshot_path,
         });
@@ -172,7 +180,10 @@ class CommonUtils {
         if (this.fullname[name] !== undefined) {
             name = this.fullname[name];
         }
-        return await page.evaluate((name) => people.get_user_id_from_name(name), name);
+        return await page.evaluate((name) => {
+            const people = require("./static/js/people");
+            return people.get_user_id_from_name(name);
+        }, name);
     }
 
     async get_internal_email_from_name(page, name) {
@@ -180,6 +191,7 @@ class CommonUtils {
             name = this.fullname[name];
         }
         return await page.evaluate((fullname) => {
+            const people = require("./static/js/people");
             const user_id = people.get_user_id_from_name(fullname);
             return people.get_by_user_id(user_id).email;
         }, name);
@@ -228,7 +240,7 @@ class CommonUtils {
     }
 
     async wait_for_fully_processed_message(page, content) {
-        await page.waitFor(
+        await page.waitForFunction(
             (content) => {
                 /*
                 The tricky part about making sure that
@@ -238,7 +250,7 @@ class CommonUtils {
                 actually acks the message, the message will
                 have a temporary id and will not have all
                 the normal message controls.
-                For the Casper tests, we want to avoid all
+                For the Puppeteer tests, we want to avoid all
                 the edge cases with locally echoed messages.
                 In order to make sure a message is processed,
                 we use internals to determine the following:
@@ -297,8 +309,8 @@ class CommonUtils {
         } else if (type === "private") {
             await page.keyboard.press("KeyX");
             const recipients = params.recipient.split(", ");
-            for (let i = 0; i < recipients.length; i += 1) {
-                await this.pm_recipient.set(page, recipients[i]);
+            for (const recipient of recipients) {
+                await this.pm_recipient.set(page, recipient);
             }
             delete params.recipient;
         } else {
@@ -341,8 +353,7 @@ class CommonUtils {
     }
 
     async send_multiple_messages(page, msgs) {
-        for (let msg_index = 0; msg_index < msgs.length; msg_index += 1) {
-            const msg = msgs[msg_index];
+        for (const msg of msgs) {
             await this.send_message(page, msg.stream !== undefined ? "stream" : "private", msg);
         }
     }
@@ -374,7 +385,7 @@ class CommonUtils {
 
                 const messages = [];
                 $.map($el.find(".message_row .message_content"), (message_row) => {
-                    messages.push(message_row.innerText.trim());
+                    messages.push(message_row.textContent.trim());
                 });
 
                 data.push([key, messages]);
@@ -390,7 +401,7 @@ class CommonUtils {
     // The method will only check that all the messages in the
     // messages array passed exist in the order they are passed.
     async check_messages_sent(page, table, messages) {
-        await page.waitForSelector("#" + table);
+        await page.waitForSelector("#" + table, {visible: true});
         const rendered_messages = await this.get_rendered_messages(page, table);
 
         // We only check the last n messages because if we run
@@ -448,8 +459,8 @@ class CommonUtils {
         const page = await this.get_page();
         try {
             await test_function(page);
-        } catch (e) {
-            console.log(e);
+        } catch (error) {
+            console.log(error);
 
             // Take a screenshot, and increment the screenshot_id.
             await this.screenshot(page, `failure-${this.screenshot_id}`);

@@ -242,8 +242,7 @@ def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
                 users_soft_deactivated.append(user)
             RealmAuditLog.objects.bulk_create(realm_logs)
 
-        logging.info("Soft-deactivated batch of %s users; %s remain to process",
-                     len(user_batch), len(users))
+        logger.info("Soft-deactivated batch of %s users; %s remain to process", len(user_batch), len(users))
 
     return users_soft_deactivated
 
@@ -255,7 +254,7 @@ def do_auto_soft_deactivate_users(inactive_for_days: int, realm: Optional[Realm]
     users_deactivated = do_soft_deactivate_users(users_to_deactivate)
 
     if not settings.AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS:
-        logging.info('Not catching up users since AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS if off')
+        logger.info('Not catching up users since AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS is off')
         return users_deactivated
 
     if realm is not None:

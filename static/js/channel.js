@@ -24,7 +24,7 @@ function call(args, idempotent) {
         // If we're in the process of reloading, most HTTP requests
         // are useless, with exceptions like cleaning up our event
         // queue and blueslip (Which doesn't use channel.js).
-        return;
+        return undefined;
     }
 
     // Wrap the error handlers to reload the page if we get a CSRF error
@@ -55,15 +55,15 @@ function call(args, idempotent) {
                         save_compose: true,
                     });
                 }
-            } catch (ex) {
+            } catch (error) {
                 blueslip.error(
                     "Unexpected 403 response from server",
                     {xhr: xhr.responseText, args},
-                    ex.stack,
+                    error.stack,
                 );
             }
         }
-        return orig_error(xhr, error_type, xhn);
+        orig_error(xhr, error_type, xhn);
     };
     let orig_success = args.success;
     if (orig_success === undefined) {
@@ -90,7 +90,7 @@ function call(args, idempotent) {
             }, 0);
             return;
         }
-        return orig_success(data, textStatus, jqXHR);
+        orig_success(data, textStatus, jqXHR);
     };
 
     const jqXHR = $.ajax(args);

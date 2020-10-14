@@ -16,11 +16,11 @@ exports.first_visible_message = function (bar) {
     // overlaps the floating recipient bar's space (since you ).
 
     const messages = bar.children(".message_row");
-    const frb_bottom = exports.frb_bottom();
+    const frb_bottom = exports.get_frb_bottom();
     const frb_top = frb_bottom - 25;
     let result;
 
-    for (let i = 0; i < messages.length; i += 1) {
+    for (const message_element of messages) {
         // The details of this comparison function are sensitive, since we're
         // balancing between three possible bugs:
         //
@@ -47,7 +47,7 @@ exports.first_visible_message = function (bar) {
         // message_viewport.scrollTop() to set precise scrolling
         // positions determines the value for date_bar_height_offset.
 
-        let message = $(messages[i]);
+        let message = $(message_element);
         const message_bottom = top_offset(message) + message.safeOuterHeight();
         const date_bar_height_offset = 10;
 
@@ -81,19 +81,19 @@ exports.get_date = function (elem) {
     const message_row = exports.first_visible_message(elem);
 
     if (!message_row || !message_row.length) {
-        return;
+        return undefined;
     }
 
     const msg_id = rows.id(message_row);
 
     if (msg_id === undefined) {
-        return;
+        return undefined;
     }
 
     const message = message_store.get(msg_id);
 
     if (!message) {
-        return;
+        return undefined;
     }
 
     const time = new XDate(message.timestamp * 1000);
@@ -103,7 +103,7 @@ exports.get_date = function (elem) {
     return rendered_date;
 };
 
-exports.frb_bottom = function () {
+exports.get_frb_bottom = function () {
     const bar = $("#floating_recipient_bar");
     const bar_top = top_offset(bar);
     const bar_bottom = bar_top + bar.safeOuterHeight();
@@ -236,12 +236,12 @@ exports.candidate_recipient_bar = function () {
     const selected_row = current_msg_list.selected_row();
 
     if (selected_row === undefined || selected_row.length === 0) {
-        return;
+        return undefined;
     }
 
     let candidate = rows.get_message_recipient_row(selected_row);
     if (candidate === undefined) {
-        return;
+        return undefined;
     }
 
     while (candidate.length) {
@@ -253,6 +253,8 @@ exports.candidate_recipient_bar = function () {
         // row, rather than finding the first recipient_row.
         candidate = candidate.prev();
     }
+
+    return undefined;
 };
 
 function show_floating_recipient_bar() {

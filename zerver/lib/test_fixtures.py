@@ -94,18 +94,19 @@ class Database:
         # what the database is as runtime.
         # Also we export ZULIP_DB_NAME which is ignored by dev platform but
         # recognised by test platform and used to migrate correct db.
-        env_prelude = [
+        manage_py = [
             'env',
             'DJANGO_SETTINGS_MODULE=' + self.settings,
             'ZULIP_DB_NAME=' + self.database_name,
+            './manage.py',
         ]
 
-        run(env_prelude + [
-            './manage.py', 'migrate', '--no-input',
+        run([
+            *manage_py, 'migrate', '--no-input'
         ])
 
-        run(env_prelude + [
-            './manage.py', 'get_migration_status', '--output='+self.migration_status_file,
+        run([
+            *manage_py, 'get_migration_status', '--output='+self.migration_status_file
         ])
 
     def what_to_do_with_migrations(self) -> str:
@@ -263,9 +264,10 @@ def update_test_databases_if_required(rebuild_test_database: bool=False) -> None
     case, where the test runner code will clone directly from the
     template database.
 
-    The `rebuild_test_database` option (used by our Casper tests) asks
-    us to drop and re-cloning the zulip_test database from the
-    template so those test suites can run with a fresh copy.
+    The `rebuild_test_database` option (used by our frontend and API
+    tests) asks us to drop and re-cloning the zulip_test database from
+    the template so those test suites can run with a fresh copy.
+
     """
     test_template_db_status = TEST_DATABASE.template_status()
 
@@ -360,12 +362,9 @@ def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
         return 0
 
     commands = "\n".join(f"DROP DATABASE IF EXISTS {db};" for db in databases_to_drop)
-    p = subprocess.Popen(["psql", "-q", "-v", "ON_ERROR_STOP=1", "-h", "localhost",
-                          "postgres", "zulip_test"],
-                         stdin=subprocess.PIPE)
-    p.communicate(input=commands.encode())
-    if p.returncode != 0:
-        raise RuntimeError("Error cleaning up test databases!")
+    subprocess.run(["psql", "-q", "-v", "ON_ERROR_STOP=1", "-h", "localhost",
+                    "postgres", "zulip_test"],
+                   input=commands, check=True, universal_newlines=True)
     return len(databases_to_drop)
 
 def remove_test_run_directories(expiry_time: int = 60 * 60) -> int:

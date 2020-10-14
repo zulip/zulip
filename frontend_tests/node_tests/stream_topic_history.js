@@ -318,7 +318,7 @@ run_test("server_history_end_to_end", () => {
     // Try getting server history for a second time.
 
     channel.get = () => {
-        throw Error("We should not get more data.");
+        throw new Error("We should not get more data.");
     };
 
     on_success_called = false;

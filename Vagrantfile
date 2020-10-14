@@ -120,6 +120,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     vb.cpus = vm_num_cpus
   end
 
+  config.vm.provider "parallels" do |prl, override|
+	override.vm.box = "bento/ubuntu-18.04"
+	override.vm.box_version = "202005.21.0"
+	prl.memory = vm_memory
+	prl.cpus = vm_num_cpus
+  end
+
 $provision_script = <<SCRIPT
 set -x
 set -e

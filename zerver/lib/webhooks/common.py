@@ -10,12 +10,7 @@ from zerver.lib.actions import (
     check_send_stream_message,
     send_rate_limited_pm_notification_to_bot_owner,
 )
-from zerver.lib.exceptions import (
-    ErrorCode,
-    JsonableError,
-    StreamDoesNotExistError,
-    UnexpectedWebhookEventType,
-)
+from zerver.lib.exceptions import ErrorCode, JsonableError, StreamDoesNotExistError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import FromAddress
 from zerver.models import UserProfile
@@ -30,7 +25,7 @@ Contact {support_email} if you need help debugging!
 """
 
 INVALID_JSON_MESSAGE = """
-Hi there! It looks like you tried to setup the Zulip {webhook_name} integration,
+Hi there! It looks like you tried to set up the Zulip {webhook_name} integration,
 but didn't correctly configure the webhook to send data in the JSON format
 that this integration expects!
 """

@@ -198,8 +198,7 @@ number without any explicit conversion.
 ### JavaScript `const` and `let`
 
 Always declare JavaScript variables using `const` or `let` rather than
-`var`, except in the Casper tests (since Casper does not support
-`const` and `let`).
+`var`.
 
 ### JavaScript and TypeScript `for (i in myArray)`
 
@@ -218,8 +217,8 @@ messages).
 ### Paths to state or log files
 
 When writing out state or log files, always pass an absolute path
-through `zulip_path` (found in `zproject/settings.py`), which will do
-the right thing in both development and production.
+through `zulip_path` (found in `zproject/computed_settings.py`), which
+will do the right thing in both development and production.
 
 ## JS array/object manipulation
 

@@ -7,7 +7,7 @@ set_global("$", global.make_zjquery());
 zrequire("hash_util");
 zrequire("narrow");
 zrequire("narrow_state");
-zrequire("people");
+const people = zrequire("people");
 zrequire("presence");
 zrequire("buddy_data");
 zrequire("user_status");
@@ -43,9 +43,7 @@ set_global("stream_popover", {
 
 set_global("stream_data", {});
 
-function ClipboardJS(sel) {
-    assert.equal(sel, ".copy_link");
-}
+const ClipboardJS = noop;
 
 rewiremock.proxy(() => zrequire("popovers"), {
     clipboard: ClipboardJS,
@@ -176,12 +174,14 @@ run_test("sender_hover", (override) => {
                     is_active: true,
                     is_bot: undefined,
                     is_sender_popover: true,
+                    has_message_context: true,
                     status_text: "on the beach",
+                    user_mention_syntax: "@**Alice Smith**",
                 });
                 return "content-html";
 
             default:
-                throw Error("unrecognized template: " + fn);
+                throw new Error("unrecognized template: " + fn);
         }
     });
 
@@ -247,7 +247,7 @@ run_test("actions_popover", (override) => {
                 );
                 return "actions-content";
             default:
-                throw Error("unrecognized template: " + fn);
+                throw new Error("unrecognized template: " + fn);
         }
     });
 

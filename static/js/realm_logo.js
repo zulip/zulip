@@ -21,7 +21,7 @@ exports.build_realm_logo_widget = function (upload_function, is_night) {
     };
 
     if (!page_params.is_admin) {
-        return;
+        return undefined;
     }
 
     if (logo_source === "D") {

@@ -256,7 +256,8 @@ class EventQueue:
 
         self.queue: Deque[Dict[str, Any]] = deque()
         self.next_event_id: int = 0
-        self.newest_pruned_id: Optional[int] = -1  # will only be None for migration from old versions
+        # will only be None for migration from old versions
+        self.newest_pruned_id: Optional[int] = -1
         self.id: str = id
         self.virtual_events: Dict[str, Dict[str, Any]] = {}
 
@@ -332,7 +333,7 @@ class EventQueue:
         virtual_id_map: Dict[str, Dict[str, Any]] = {}
         for event_type in self.virtual_events:
             virtual_id_map[self.virtual_events[event_type]["id"]] = self.virtual_events[event_type]
-        virtual_ids = sorted(list(virtual_id_map.keys()))
+        virtual_ids = sorted(virtual_id_map.keys())
 
         # Merge the virtual events into their final place in the queue
         index = 0
@@ -482,7 +483,7 @@ def load_event_queues(port: int) -> None:
             data = orjson.loads(stored_queues.read())
     except FileNotFoundError:
         pass
-    except ValueError:
+    except orjson.JSONDecodeError:
         logging.exception("Tornado %d could not deserialize event queues", port, stack_info=True)
     else:
         try:
@@ -687,7 +688,7 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
     """This function has a complete unit test suite in
     `test_enqueue_notifications` that should be expanded as we add
     more features here."""
-    notified: Dict[str, bool] = dict()
+    notified: Dict[str, bool] = {}
 
     if (idle or always_push_notify) and (private_message or mentioned or
                                          wildcard_mention_notify or stream_push_notify):
@@ -1080,16 +1081,17 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         event['type'], len(users), int(1000 * (time.time() - start_time)),
     )
 
-def get_wrapped_process_notification(queue_name: str) -> Callable[[Dict[str, Any]], None]:
+def get_wrapped_process_notification(queue_name: str) -> Callable[[List[Dict[str, Any]]], None]:
     def failure_processor(notice: Dict[str, Any]) -> None:
         logging.error(
             "Maximum retries exceeded for Tornado notice:%s\nStack trace:\n%s\n",
             notice, traceback.format_exc())
 
-    def wrapped_process_notification(notice: Dict[str, Any]) -> None:
-        try:
-            process_notification(notice)
-        except Exception:
-            retry_event(queue_name, notice, failure_processor)
+    def wrapped_process_notification(notices: List[Dict[str, Any]]) -> None:
+        for notice in notices:
+            try:
+                process_notification(notice)
+            except Exception:
+                retry_event(queue_name, notice, failure_processor)
 
     return wrapped_process_notification

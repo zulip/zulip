@@ -26,12 +26,9 @@ set_global("user_groups", {
     add: noop,
 });
 set_global("ui_report", {});
-set_global("people", {
-    my_current_user_id: noop,
-    small_avatar_url_for_person() {
-        return "http://example.com/example.png";
-    },
-});
+
+const people = zrequire("people");
+
 set_global("page_params", {});
 
 function reset_test_setup(pill_container_stub) {
@@ -156,6 +153,7 @@ run_test("populate_user_groups", () => {
         assert.equal(user_id, 4);
         blueslip.expect("warn", "Undefined user in function append_user");
         get_by_user_id_called = true;
+        return undefined;
     };
 
     settings_user_groups.can_edit = function () {
@@ -304,7 +302,7 @@ run_test("populate_user_groups", () => {
         if (user_email === bob.email) {
             return bob;
         }
-        assert.equal(user_email, "Expected user email to be of Alice or Iago here.");
+        throw new Error("Expected user email to be of Alice or Iago here.");
     };
     pills.onPillCreate = function (handler) {
         assert.equal(typeof handler, "function");
@@ -405,6 +403,7 @@ run_test("with_external_user", () => {
             user_group_find_called += 1;
             return description_field_stub;
         }
+        throw new Error(`Unknown element ${elem}`);
     };
 
     const pill_container_stub = $('.pill-container[data-group-pills="1"]');
@@ -419,6 +418,7 @@ run_test("with_external_user", () => {
             pill_container_find_called += 1;
             return pill_stub;
         }
+        throw new Error(`Unknown element ${elem}`);
     };
 
     input_stub.css = function (property, val) {

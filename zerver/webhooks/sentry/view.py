@@ -3,10 +3,11 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE = """
@@ -91,12 +92,12 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
 
     # We shouldn't support the officially deprecated Raven series of SDKs.
     if int(event["version"]) < 7:
-        raise UnexpectedWebhookEventType("Sentry", "Raven SDK")
+        raise UnsupportedWebhookEventType("Raven SDK")
 
     platform_name = event["platform"]
     syntax_highlight_as = syntax_highlight_as_map.get(platform_name, "")
     if syntax_highlight_as == "":  # nocoverage
-        logging.info(f"Unknown Sentry platform: {platform_name}")
+        logging.info("Unknown Sentry platform: %s", platform_name)
 
     context = {
         "title": subject,
@@ -109,22 +110,22 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
         # The event was triggered by a sentry.capture_exception() call
         # (in the Python Sentry SDK) or something similar.
 
-        filename = event["metadata"]["filename"]
+        filename = event["metadata"].get("filename", None)
 
         stacktrace = None
-        for value in event["exception"]["values"]:
+        for value in reversed(event["exception"]["values"]):
             if "stacktrace" in value:
                 stacktrace = value["stacktrace"]
                 break
 
-        if stacktrace:
+        if stacktrace and filename:
             exception_frame = None
-            for frame in stacktrace["frames"]:
-                if frame["filename"] == filename:
+            for frame in reversed(stacktrace["frames"]):
+                if frame.get("filename", None) == filename:
                     exception_frame = frame
                     break
 
-            if exception_frame:
+            if exception_frame and exception_frame["context_line"]:
                 pre_context = convert_lines_to_traceback_string(exception_frame["pre_context"])
 
                 context_line = exception_frame["context_line"] + "\n"
@@ -133,18 +134,18 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
 
                 post_context = convert_lines_to_traceback_string(exception_frame["post_context"])
 
-                context.update({
-                    "syntax_highlight_as": syntax_highlight_as,
-                    "filename": filename,
-                    "pre_context": pre_context,
-                    "context_line": context_line,
-                    "post_context": post_context,
-                })
+                context.update(
+                    syntax_highlight_as=syntax_highlight_as,
+                    filename=filename,
+                    pre_context=pre_context,
+                    context_line=context_line,
+                    post_context=post_context,
+                )
 
                 body = EXCEPTION_EVENT_TEMPLATE_WITH_TRACEBACK.format(**context)
                 return (subject, body)
 
-        context.update({"filename": filename})  # nocoverage
+        context.update(filename=filename)  # nocoverage
         body = EXCEPTION_EVENT_TEMPLATE.format(**context)  # nocoverage
         return (subject, body)  # nocoverage
 
@@ -154,7 +155,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
         body = MESSAGE_EVENT_TEMPLATE.format(**context)
 
     else:
-        raise UnexpectedWebhookEventType("Sentry", "unknown-event type")
+        raise UnsupportedWebhookEventType("unknown-event type")
 
     return (subject, body)
 
@@ -204,7 +205,7 @@ def handle_issue_payload(action: str, issue: Dict[str, Any], actor: Dict[str, An
         body = ISSUE_IGNORED_MESSAGE_TEMPLATE.format(**context)
 
     else:
-        raise UnexpectedWebhookEventType("Sentry", "unknown-issue-action type")
+        raise UnsupportedWebhookEventType("unknown-issue-action type")
 
     return (subject, body)
 
@@ -219,7 +220,7 @@ def handle_deprecated_payload(payload: Dict[str, Any]) -> Tuple[str, str]:
     return (subject, body)
 
 
-@api_key_only_webhook_view('Sentry')
+@webhook_view('Sentry')
 @has_request_variables
 def api_sentry_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any] = REQ(argument_type="body")) -> HttpResponse:
@@ -232,7 +233,7 @@ def api_sentry_webhook(request: HttpRequest, user_profile: UserProfile,
         elif "issue" in data:
             subject, body = handle_issue_payload(payload["action"], data["issue"], payload["actor"])
         else:
-            raise UnexpectedWebhookEventType("Sentry", str(list(data.keys())))
+            raise UnsupportedWebhookEventType(str(list(data.keys())))
     else:
         subject, body = handle_deprecated_payload(payload)
 

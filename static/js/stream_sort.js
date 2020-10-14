@@ -48,7 +48,7 @@ function filter_streams_by_search(streams, search_term) {
 
 exports.sort_groups = function (streams, search_term) {
     if (streams.length === 0) {
-        return;
+        return undefined;
     }
 
     streams = filter_streams_by_search(streams, search_term);
@@ -101,7 +101,7 @@ exports.sort_groups = function (streams, search_term) {
 
 function maybe_get_stream_id(i) {
     if (i < 0 || i >= all_streams.length) {
-        return;
+        return undefined;
     }
 
     return all_streams[i];
@@ -115,7 +115,7 @@ exports.prev_stream_id = function (stream_id) {
     const i = all_streams.indexOf(stream_id);
 
     if (i < 0) {
-        return;
+        return undefined;
     }
 
     return maybe_get_stream_id(i - 1);
@@ -125,7 +125,7 @@ exports.next_stream_id = function (stream_id) {
     const i = all_streams.indexOf(stream_id);
 
     if (i < 0) {
-        return;
+        return undefined;
     }
 
     return maybe_get_stream_id(i + 1);

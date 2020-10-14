@@ -8,7 +8,7 @@ set_global("local_message", {
 set_global("page_params", {});
 
 zrequire("echo");
-zrequire("people");
+const people = zrequire("people");
 
 let disparities = [];
 let messages_to_rerender = [];

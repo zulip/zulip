@@ -2,6 +2,7 @@
 
 const emoji = require("../shared/js/emoji");
 
+const people = require("./people");
 const settings_config = require("./settings_config");
 
 exports.dispatch_normal_event = function dispatch_normal_event(event) {
@@ -292,6 +293,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             } else if (event.op === "delete") {
                 for (const stream of event.streams) {
                     const was_subscribed = stream_data.get_sub_by_id(stream.stream_id).subscribed;
+                    const is_narrowed_to_stream = narrow_state.is_for_stream_id(stream.stream_id);
                     subs.remove_stream(stream.stream_id);
                     stream_data.delete_sub(stream.stream_id);
                     if (was_subscribed) {
@@ -299,6 +301,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     }
                     settings_streams.update_default_streams_table();
                     stream_data.remove_default_stream(stream.stream_id);
+                    if (is_narrowed_to_stream) {
+                        current_msg_list.update_trailing_bookend();
+                    }
                     if (page_params.realm_notifications_stream_id === stream.stream_id) {
                         page_params.realm_notifications_stream_id = -1;
                         settings_org.sync_realm_settings("notifications_stream_id");
@@ -496,14 +501,14 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             break;
 
         case "update_message_flags": {
-            const new_value = event.operation === "add";
+            const new_value = event.op === "add";
             switch (event.flag) {
                 case "starred":
                     for (const message_id of event.messages) {
                         message_flags.update_starred_flag(message_id, new_value);
                     }
 
-                    if (event.operation === "add") {
+                    if (event.op === "add") {
                         starred_messages.add(event.messages);
                     } else {
                         starred_messages.remove(event.messages);

@@ -1,11 +1,10 @@
 import re
+import secrets
 from typing import Any, Dict, Mapping, Optional
 
 import orjson
 import redis
 from django.conf import settings
-
-from zerver.lib.utils import generate_random_token
 
 # Redis accepts keys up to 512MB in size, but there's no reason for us to use such size,
 # so we want to stay limited to 1024 characters.
@@ -34,7 +33,7 @@ def put_dict_in_redis(redis_client: redis.StrictRedis, key_format: str,
         error_msg = "Requested key too long in put_dict_in_redis. Key format: %s, token length: %s"
         raise ZulipRedisKeyTooLongError(error_msg % (key_format, token_length))
     if token is None:
-        token = generate_random_token(token_length)
+        token = secrets.token_hex(token_length // 2)
     key = key_format.format(token=token)
     with redis_client.pipeline() as pipeline:
         pipeline.set(key, orjson.dumps(data_to_store))

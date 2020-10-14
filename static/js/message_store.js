@@ -1,5 +1,7 @@
 "use strict";
 
+const people = require("./people");
+const pm_conversations = require("./pm_conversations");
 const util = require("./util");
 
 const stored_messages = new Map();
@@ -26,7 +28,7 @@ exports.user_ids = function () {
 exports.get = function get(message_id) {
     if (message_id === undefined || message_id === null) {
         blueslip.error("message_store.get got bad value: " + message_id);
-        return;
+        return undefined;
     }
 
     if (typeof message_id !== "number") {
@@ -34,7 +36,7 @@ exports.get = function get(message_id) {
 
         // Try to soldier on, assuming the caller treats message
         // ids as strings.
-        message_id = parseFloat(message_id);
+        message_id = Number.parseFloat(message_id);
     }
 
     return stored_messages.get(message_id);

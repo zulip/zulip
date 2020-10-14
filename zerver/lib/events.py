@@ -14,6 +14,8 @@ from zerver.lib.actions import (
     get_available_notification_sounds,
     get_default_streams_for_realm,
     get_owned_bot_dicts,
+    get_web_public_streams,
+    get_web_public_subs,
     streams_to_dicts_sorted,
 )
 from zerver.lib.alert_words import user_alert_words
@@ -25,6 +27,7 @@ from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
 from zerver.lib.message import (
     aggregate_unread_data,
     apply_unread_message_event,
+    extract_unread_data_from_um_rows,
     get_raw_unread_data,
     get_recent_conversations_recipient_id,
     get_recent_private_conversations,
@@ -78,18 +81,25 @@ def always_want(msg_type: str) -> bool:
     '''
     return True
 
-# Fetch initial data.  When event_types is not specified, clients want
-# all event types.  Whenever you add new code to this function, you
-# should also add corresponding events for changes in the data
-# structures and new code to apply_events (and add a test in test_events.py).
-def fetch_initial_state_data(user_profile: UserProfile,
+def fetch_initial_state_data(user_profile: Optional[UserProfile],
                              event_types: Optional[Iterable[str]],
-                             queue_id: str, client_gravatar: bool,
+                             queue_id: Optional[str], client_gravatar: bool,
                              user_avatar_url_field_optional: bool,
+                             realm: Realm,
                              slim_presence: bool = False,
                              include_subscribers: bool = True) -> Dict[str, Any]:
+    """When `event_types` is None, fetches the core data powering the
+    webapp's `page_params` and `/api/v1/register` (for mobile/terminal
+    apps).  Can also fetch a subset as determined by `event_types`.
+
+    The user_profile=None code path is used for logged-out public
+    access to streams with is_web_public=True.
+
+    Whenever you add new code to this function, you should also add
+    corresponding events for changes in the data structures and new
+    code to apply_events (and add a test in test_events.py).
+    """
     state: Dict[str, Any] = {'queue_id': queue_id}
-    realm = user_profile.realm
 
     if event_types is None:
         # return True always
@@ -102,7 +112,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
     state['zulip_feature_level'] = API_FEATURE_LEVEL
 
     if want('alert_words'):
-        state['alert_words'] = user_alert_words(user_profile)
+        state['alert_words'] = [] if user_profile is None else user_alert_words(user_profile)
 
     if want('custom_profile_fields'):
         fields = custom_profile_fields_for_realm(realm.id)
@@ -110,26 +120,32 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['custom_profile_field_types'] = CustomProfileField.FIELD_TYPE_CHOICES_DICT
 
     if want('hotspots'):
-        state['hotspots'] = get_next_hotspots(user_profile)
+        # Even if we offered special hotspots for guests without an
+        # account, we'd maybe need to store their state using cookies
+        # or local storage, rather than in the database.
+        state['hotspots'] = [] if user_profile is None else get_next_hotspots(user_profile)
 
     if want('message'):
-        # The client should use get_messages() to fetch messages
-        # starting with the max_message_id.  They will get messages
-        # newer than that ID via get_events()
-        user_messages = UserMessage.objects \
-            .filter(user_profile=user_profile) \
-            .order_by('-message_id') \
-            .values('message_id')[:1]
+        # Since the introduction of `anchor="latest"` in the API,
+        # `max_message_id` is primarily used for generating `local_id`
+        # values that are higher than this.  We likely can eventually
+        # remove this parameter from the API.
+        user_messages = []
+        if user_profile is not None:
+            user_messages = UserMessage.objects \
+                .filter(user_profile=user_profile) \
+                .order_by('-message_id') \
+                .values('message_id')[:1]
         if user_messages:
             state['max_message_id'] = user_messages[0]['message_id']
         else:
             state['max_message_id'] = -1
 
     if want('muted_topics'):
-        state['muted_topics'] = get_topic_mutes(user_profile)
+        state['muted_topics'] = [] if user_profile is None else get_topic_mutes(user_profile)
 
     if want('presence'):
-        state['presences'] = get_presences_for_realm(realm, slim_presence)
+        state['presences'] = {} if user_profile is None else get_presences_for_realm(realm, slim_presence)
 
     if want('realm'):
         for property_name in Realm.property_types:
@@ -139,13 +155,26 @@ def fetch_initial_state_data(user_profile: UserProfile,
         # these manual entries are for those realm settings that don't
         # fit into that framework.
         state['realm_authentication_methods'] = realm.authentication_methods_dict()
-        state['realm_allow_message_editing'] = realm.allow_message_editing
-        state['realm_allow_community_topic_editing'] = realm.allow_community_topic_editing
-        state['realm_allow_message_deleting'] = realm.allow_message_deleting
+
+        # We pretend these features are disabled because guests can't
+        # access them.  In the future, we may want to move this logic
+        # to the frontends, so that we can correctly display what
+        # these fields are in the settings.
+        state['realm_allow_message_editing'] = False if user_profile is None else realm.allow_message_editing
+        state['realm_allow_community_topic_editing'] = False if user_profile is None else realm.allow_community_topic_editing
+        state['realm_allow_message_deleting'] = False if user_profile is None else realm.allow_message_deleting
+
         state['realm_message_content_edit_limit_seconds'] = realm.message_content_edit_limit_seconds
         state['realm_message_content_delete_limit_seconds'] = realm.message_content_delete_limit_seconds
         state['realm_community_topic_editing_limit_seconds'] = \
             Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS
+
+        # This setting determines whether to send presence and also
+        # whether to display of users list in the right sidebar; we
+        # want both behaviors for logged-out users.  We may in the
+        # future choose to move this logic to the frontend.
+        state['realm_presence_disabled'] = True if user_profile is None else realm.presence_disabled
+
         state['realm_icon_url'] = realm_icon_url(realm)
         state['realm_icon_source'] = realm.icon_source
         state['max_icon_file_size'] = settings.MAX_ICON_FILE_SIZE
@@ -153,7 +182,6 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_bot_domain'] = realm.get_bot_domain()
         state['realm_uri'] = realm.uri
         state['realm_available_video_chat_providers'] = realm.VIDEO_CHAT_PROVIDERS
-        state['realm_presence_disabled'] = realm.presence_disabled
         state['settings_send_digest_emails'] = settings.SEND_DIGEST_EMAILS
         state['realm_digest_emails_enabled'] = realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
         state['realm_is_zephyr_mirror_realm'] = realm.is_zephyr_mirror_realm
@@ -165,7 +193,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['zulip_plan_is_not_limited'] = realm.plan_type != Realm.LIMITED
         state['upgrade_text_for_wide_organization_logo'] = str(Realm.UPGRADE_TEXT_STANDARD)
         state['realm_default_external_accounts'] = DEFAULT_EXTERNAL_ACCOUNTS
-        state['jitsi_server_url']                = settings.JITSI_SERVER_URL
+        state['jitsi_server_url']                = settings.JITSI_SERVER_URL.rstrip('/')
         state['development_environment']         = settings.DEVELOPMENT
         state['server_generation']               = settings.SERVER_GENERATION
         state['password_min_length']             = settings.PASSWORD_MIN_LENGTH
@@ -201,41 +229,64 @@ def fetch_initial_state_data(user_profile: UserProfile,
     if want('realm_user_groups'):
         state['realm_user_groups'] = user_groups_in_realm_serialized(realm)
 
+    if user_profile is not None:
+        settings_user = user_profile
+    else:
+        # When UserProfile=None, we want to serve the values for various
+        # settings as the defaults.  Instead of copying the default values
+        # from models.py here, we access these default values from a
+        # temporary UserProfile object that will not be saved to the database.
+        #
+        # We also can set various fields to avoid duplicating code
+        # unnecessarily.
+        settings_user = UserProfile(
+            full_name="Anonymous User",
+            email="username@example.com",
+            delivery_email="username@example.com",
+            realm=realm,
+            # We tag logged-out users as guests because most guest
+            # restrictions apply to these users as well, and it lets
+            # us avoid unnecessary conditionals.
+            role=UserProfile.ROLE_GUEST,
+            avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
+            # ID=0 is not used in real Zulip databases, ensuring this is unique.
+            id=0,
+        )
     if want('realm_user'):
         state['raw_users'] = get_raw_user_data(realm, user_profile,
                                                client_gravatar=client_gravatar,
                                                user_avatar_url_field_optional=user_avatar_url_field_optional)
+        state['cross_realm_bots'] = list(get_cross_realm_dicts())
 
         # For the user's own avatar URL, we force
         # client_gravatar=False, since that saves some unnecessary
         # client-side code for handing medium-size avatars.  See #8253
         # for details.
-        state['avatar_source'] = user_profile.avatar_source
+        state['avatar_source'] = settings_user.avatar_source
         state['avatar_url_medium'] = avatar_url(
-            user_profile,
+            settings_user,
             medium=True,
             client_gravatar=False,
         )
         state['avatar_url'] = avatar_url(
-            user_profile,
+            settings_user,
             medium=False,
             client_gravatar=False,
         )
 
-        state['can_create_streams'] = user_profile.can_create_streams()
-        state['can_subscribe_other_users'] = user_profile.can_subscribe_other_users()
-        state['cross_realm_bots'] = list(get_cross_realm_dicts())
-        state['is_admin'] = user_profile.is_realm_admin
-        state['is_owner'] = user_profile.is_realm_owner
-        state['is_guest'] = user_profile.is_guest
-        state['user_id'] = user_profile.id
-        state['enter_sends'] = user_profile.enter_sends
-        state['email'] = user_profile.email
-        state['delivery_email'] = user_profile.delivery_email
-        state['full_name'] = user_profile.full_name
+        state['can_create_streams'] = settings_user.can_create_streams()
+        state['can_subscribe_other_users'] = settings_user.can_subscribe_other_users()
+        state['is_admin'] = settings_user.is_realm_admin
+        state['is_owner'] = settings_user.is_realm_owner
+        state['is_guest'] = settings_user.is_guest
+        state['user_id'] = settings_user.id
+        state['enter_sends'] = settings_user.enter_sends
+        state['email'] = settings_user.email
+        state['delivery_email'] = settings_user.delivery_email
+        state['full_name'] = settings_user.full_name
 
     if want('realm_bot'):
-        state['realm_bots'] = get_owned_bot_dicts(user_profile)
+        state['realm_bots'] = [] if user_profile is None else get_owned_bot_dicts(user_profile)
 
     # This does not yet have an apply_event counterpart, since currently,
     # new entries for EMBEDDED_BOTS can only be added directly in the codebase.
@@ -270,11 +321,14 @@ def fetch_initial_state_data(user_profile: UserProfile,
         # intermediate form as a dictionary keyed by recipient_id,
         # which is more efficient to update, and is rewritten to the
         # final format in post_process_state.
-        state['raw_recent_private_conversations'] = get_recent_private_conversations(user_profile)
+        state['raw_recent_private_conversations'] = {} if user_profile is None else get_recent_private_conversations(user_profile)
 
     if want('subscription'):
-        subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
-            user_profile, include_subscribers=include_subscribers)
+        if user_profile is not None:
+            subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
+                user_profile, include_subscribers=include_subscribers)
+        else:
+            subscriptions, unsubscribed, never_subscribed = get_web_public_subs(realm)
         state['subscriptions'] = subscriptions
         state['unsubscribed'] = unsubscribed
         state['never_subscribed'] = never_subscribed
@@ -284,23 +338,36 @@ def fetch_initial_state_data(user_profile: UserProfile,
         # message updates. This is due to the fact that new messages will not
         # generate a flag update so we need to use the flags field in the
         # message event.
-        state['raw_unread_msgs'] = get_raw_unread_data(user_profile)
+
+        if user_profile is not None:
+            state['raw_unread_msgs'] = get_raw_unread_data(user_profile)
+        else:
+            # For logged-out visitors, we treat all messages as read;
+            # calling this helper lets us return empty objects in the
+            # appropriate format.
+            state['raw_unread_msgs'] = extract_unread_data_from_um_rows([], user_profile)
 
     if want('starred_messages'):
-        state['starred_messages'] = get_starred_message_ids(user_profile)
+        state['starred_messages'] = [] if user_profile is None else get_starred_message_ids(user_profile)
 
     if want('stream'):
-        state['streams'] = do_get_streams(user_profile)
+        if user_profile is not None:
+            state['streams'] = do_get_streams(user_profile)
+        else:
+            state['streams'] = get_web_public_streams(realm)
         state['stream_name_max_length'] = Stream.MAX_NAME_LENGTH
         state['stream_description_max_length'] = Stream.MAX_DESCRIPTION_LENGTH
     if want('default_streams'):
-        if user_profile.is_guest:
+        if settings_user.is_guest:
+            # Guest users and logged-out users don't have access to
+            # all default streams, so we pretend the organization
+            # doesn't have any.
             state['realm_default_streams'] = []
         else:
             state['realm_default_streams'] = streams_to_dicts_sorted(
                 get_default_streams_for_realm(realm.id))
     if want('default_stream_groups'):
-        if user_profile.is_guest:
+        if settings_user.is_guest:
             state['realm_default_stream_groups'] = []
         else:
             state['realm_default_stream_groups'] = default_stream_groups_to_dicts_sorted(
@@ -311,19 +378,20 @@ def fetch_initial_state_data(user_profile: UserProfile,
 
     if want('update_display_settings'):
         for prop in UserProfile.property_types:
-            state[prop] = getattr(user_profile, prop)
-        state['emojiset_choices'] = user_profile.emojiset_choices()
+            state[prop] = getattr(settings_user, prop)
+            state['emojiset_choices'] = UserProfile.emojiset_choices()
 
     if want('update_global_notifications'):
         for notification in UserProfile.notification_setting_types:
-            state[notification] = getattr(user_profile, notification)
+            state[notification] = getattr(settings_user, notification)
         state['available_notification_sounds'] = get_available_notification_sounds()
 
     if want('user_status'):
-        state['user_status'] = get_user_info_dict(realm_id=realm.id)
+        # We require creating an account to access statuses.
+        state['user_status'] = {} if user_profile is None else get_user_info_dict(realm_id=realm.id)
 
     if want('video_calls'):
-        state['has_zoom_token'] = user_profile.zoom_token is not None
+        state['has_zoom_token'] = settings_user.zoom_token is not None
 
     return state
 
@@ -371,9 +439,9 @@ def apply_event(state: Dict[str, Any],
 
                 if recipient_id not in conversations:
                     conversations[recipient_id] = dict(
-                        user_ids=sorted([user_dict['id'] for user_dict in
-                                         event['message']['display_recipient'] if
-                                         user_dict['id'] != user_profile.id]),
+                        user_ids=sorted(user_dict['id'] for user_dict in
+                                        event['message']['display_recipient'] if
+                                        user_dict['id'] != user_profile.id),
                     )
                 conversations[recipient_id]['max_message_id'] = event['message']['id']
             return
@@ -742,13 +810,13 @@ def apply_event(state: Dict[str, Any],
         # We don't return messages in `/register`, so most flags we
         # can ignore, but we do need to update the unread_msgs data if
         # unread state is changed.
-        if 'raw_unread_msgs' in state and event['flag'] == 'read' and event['operation'] == 'add':
+        if 'raw_unread_msgs' in state and event['flag'] == 'read' and event['op'] == 'add':
             for remove_id in event['messages']:
                 remove_message_id_from_unread_mgs(state['raw_unread_msgs'], remove_id)
         if event['flag'] == 'starred' and 'starred_messages' in state:
-            if event['operation'] == 'add':
+            if event['op'] == 'add':
                 state['starred_messages'] += event['messages']
-            if event['operation'] == 'remove':
+            if event['op'] == 'remove':
                 state['starred_messages'] = [message for message in state['starred_messages']
                                              if not (message in event['messages'])]
     elif event['type'] == "realm_domains":
@@ -810,7 +878,7 @@ def apply_event(state: Dict[str, Any],
         status_text = event.get('status_text')
 
         if user_id_str not in user_status:
-            user_status[user_id_str] = dict()
+            user_status[user_id_str] = {}
 
         if away is not None:
             if away:
@@ -882,6 +950,7 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
     ret = fetch_initial_state_data(user_profile, event_types_set, queue_id,
                                    client_gravatar=client_gravatar,
                                    user_avatar_url_field_optional=user_avatar_url_field_optional,
+                                   realm=user_profile.realm,
                                    slim_presence=slim_presence,
                                    include_subscribers=include_subscribers)
 
@@ -899,7 +968,7 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
         ret['last_event_id'] = -1
     return ret
 
-def post_process_state(user_profile: UserProfile, ret: Dict[str, Any],
+def post_process_state(user_profile: Optional[UserProfile], ret: Dict[str, Any],
                        notification_settings_null: bool) -> None:
     '''
     NOTE:
@@ -943,11 +1012,11 @@ def post_process_state(user_profile: UserProfile, ret: Dict[str, Any],
 
     if 'raw_recent_private_conversations' in ret:
         # Reformat recent_private_conversations to be a list of dictionaries, rather than a dict.
-        ret['recent_private_conversations'] = sorted([
+        ret['recent_private_conversations'] = sorted((
             dict(
                 **value,
             ) for (recipient_id, value) in ret['raw_recent_private_conversations'].items()
-        ], key = lambda x: -x["max_message_id"])
+        ), key = lambda x: -x["max_message_id"])
         del ret['raw_recent_private_conversations']
 
     if not notification_settings_null and 'subscriptions' in ret:

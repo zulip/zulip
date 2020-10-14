@@ -56,7 +56,7 @@ organization in Zulip). The following files are involved in the process:
   zerver/lib/events.py implementation.
 
 **Frontend testing**
-- `frontend_tests/casper_tests/10-admin.js`: end-to-end tests for the organization
+- `frontend_tests/puppeteer_tests/08-admin.js`: end-to-end tests for the organization
   admin settings pages.
 - `frontend_tests/node_tests/dispatch.js`
 
@@ -134,8 +134,8 @@ or JavaScript/TypeScript code that generates user-facing strings, be sure to
 
 **Testing:** There are two types of frontend tests: node-based unit
 tests and blackbox end-to-end tests. The blackbox tests are run in a
-headless browser using CasperJS and are located in
-`frontend_tests/casper_tests/`. The unit tests use Node's `assert`
+headless Chromium browser using Puppeteer and are located in
+`frontend_tests/puppeteer_tests/`. The unit tests use Node's `assert`
 module are located in `frontend_tests/node_tests/`. For more
 information on writing and running tests, see the
 [testing documentation](../testing/testing.md).
@@ -482,10 +482,10 @@ the setting enabled).
 Visit Zulip's [Django testing](../testing/testing-with-django.md)
 documentation to learn more about the backend testing framework.
 
-### Update the front end
+### Update the frontend
 
-After completing the process of adding a new feature on the back end,
-you should make the required front end changes: in this case, a checkbox needs
+After completing the process of adding a new feature on the backend,
+you should make the required frontend changes: in this case, a checkbox needs
 to be added to the admin page (and its value added to the data sent back
 to server when a realm is updated) and the change event needs to be
 handled on the client.
@@ -494,6 +494,10 @@ To add the checkbox to the admin page, modify the relevant template in
 `static/templates/settings/`, which can be
 `organization_permissions_admin.hbs` or `organization_settings_admin.hbs`
 (omitted here since it is relatively straightforward).
+
+If you're adding a non-checkbox field, you'll need to specify the type
+of the field via the `data-setting-widget-type` attribute in the HTML
+template.
 
 Then add the new form control in `static/js/admin.js`.
 
@@ -534,31 +538,11 @@ In frontend, we have split the `property_types` into three objects:
 Once you've determined whether the new setting belongs, the next step
 is to find the right subsection of that page to put the setting
 in. For example in this case of `mandatory_topics` it will lie in
-"Message feed" (`msg_feed`) subsection.
+"Other settings" (`other_settings`) subsection.
 
 *If you're not sure in which section your feature belongs, it's is
 better to discuss it in the [community](https://chat.zulip.org/)
 before implementing it.*
-
-When defining the property, you'll also need to specify the property
-field type (i.e. whether it's a `bool`, `integer` or `text`).
-
-``` diff
-
-// static/js/settings_org.js
-var org_settings = {
-    msg_editing: {
-        // ...
-    },
-    msg_feed: {
-        // ...
-+       mandatory_topics: {
-+           type: 'bool',
-+       },
-    },
-};
-
-```
 
 Note that some settings, like `realm_msg_edit_limit_setting`,
 require special treatment, because they don't match the common
@@ -574,7 +558,7 @@ manually handle such situations in a couple key functions:
 - `settings_org.update_dependent_subsettings`: This handles settings
     whose value and state depend on other elements.  For example,
     `realm_waiting_period_threshold` is only shown for with the right
-    state of `realm_create_stream_policy`.
+    state of `realm_waiting_period_setting`.
 
 Finally, update `server_events_dispatch.js` to handle related events coming from
 the server. There is an object, `realm_settings`, in the function
@@ -625,7 +609,7 @@ Here are few important cases you should consider when testing your changes:
   that both are properly synchronized.  For example, the input element
   for `realm_waiting_period_threshold` is shown only when we have
   selected the custom time limit option in the
-  `realm_create_stream_policy` dropdown.
+  `realm_waiting_period_setting` dropdown.
 
 - Do some manual testing for the real-time synchronization of input
   elements across the browsers and just like "Discard changes" button,
@@ -637,11 +621,11 @@ Here are few important cases you should consider when testing your changes:
   buttons, so changes and saving in one subsection shouldn't affect
   the others.
 
-### Front end tests
+### Frontend tests
 
-A great next step is to write front end tests. There are two types of
+A great next step is to write frontend tests. There are two types of
 frontend tests: [node-based unit tests](../testing/testing-with-node.md) and
-[Casper end-to-end tests](../testing/testing-with-casper.md).
+[Puppeteer end-to-end tests](../testing/testing-with-puppeteer.md).
 
 At the minimum, if you created a new function to update UI in
 `settings_org.js`, you will need to mock that function in

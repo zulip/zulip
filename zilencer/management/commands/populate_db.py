@@ -17,6 +17,7 @@ from django.utils.timezone import timedelta as timezone_timedelta
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 from zerver.lib.actions import (
     STREAM_ASSIGNMENT_COLORS,
+    build_message_send_dict,
     check_add_realm_emoji,
     do_change_user_role,
     do_send_messages,
@@ -24,7 +25,7 @@ from zerver.lib.actions import (
     try_add_realm_custom_profile_field,
     try_add_realm_default_custom_profile_field,
 )
-from zerver.lib.bulk_create import bulk_create_streams
+from zerver.lib.bulk_create import bulk_create_reactions, bulk_create_streams
 from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data, generate_topics
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
@@ -62,7 +63,7 @@ from zerver.models import (
     get_user_profile_by_id,
 )
 
-settings.TORNADO_SERVER = None
+settings.USING_TORNADO = False
 # Disable using memcached caches to avoid 'unsupported pickle
 # protocol' errors if `populate_db` is run with a different Python
 # from `run-dev.py`.
@@ -160,39 +161,32 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('-n', '--num-messages',
-                            dest='num_messages',
                             type=int,
                             default=500,
                             help='The number of messages to create.')
 
         parser.add_argument('-b', '--batch-size',
-                            dest='batch_size',
                             type=int,
                             default=1000,
                             help='How many messages to process in a single batch')
 
         parser.add_argument('--extra-users',
-                            dest='extra_users',
                             type=int,
                             default=0,
                             help='The number of extra users to create')
 
         parser.add_argument('--extra-bots',
-                            dest='extra_bots',
                             type=int,
                             default=0,
                             help='The number of extra bots to create')
 
         parser.add_argument('--extra-streams',
-                            dest='extra_streams',
                             type=int,
                             default=0,
                             help='The number of extra streams to create')
 
         parser.add_argument('--max-topics',
-                            dest='max_topics',
                             type=int,
-                            default=None,
                             help='The number of maximum topics to create')
 
         parser.add_argument('--huddles',
@@ -208,37 +202,31 @@ class Command(BaseCommand):
                             help='The number of personal pairs to create.')
 
         parser.add_argument('--threads',
-                            dest='threads',
                             type=int,
                             default=1,
                             help='The number of threads to use.')
 
         parser.add_argument('--percent-huddles',
-                            dest='percent_huddles',
                             type=float,
                             default=15,
                             help='The percent of messages to be huddles.')
 
         parser.add_argument('--percent-personals',
-                            dest='percent_personals',
                             type=float,
                             default=15,
                             help='The percent of messages to be personals.')
 
         parser.add_argument('--stickyness',
-                            dest='stickyness',
                             type=float,
                             default=20,
                             help='The percent of messages to repeat recent folks.')
 
         parser.add_argument('--nodelete',
                             action="store_false",
-                            default=True,
                             dest='delete',
                             help='Whether to delete all the existing messages.')
 
         parser.add_argument('--test-suite',
-                            default=False,
                             action="store_true",
                             help='Configures populate_db to create a deterministic '
                             'data set for the backend tests.')
@@ -281,6 +269,12 @@ class Command(BaseCommand):
                 lear_realm = Realm.objects.create(
                     string_id="lear", name="Lear & Co.", emails_restricted_to_domains=False,
                     invite_required=False, org_type=Realm.CORPORATE)
+
+                # Default to allowing all members to send mentions in
+                # large streams for the test suite to keep
+                # mention-related tests simple.
+                zulip_realm.wildcard_mention_policy = Realm.WILDCARD_MENTION_POLICY_MEMBERS
+                zulip_realm.save(update_fields=['wildcard_mention_policy'])
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
@@ -725,7 +719,7 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
                              Subscription.objects.filter(recipient_id=h)]
 
     # Generate different topics for each stream
-    possible_topics = dict()
+    possible_topics = {}
     for stream_id in recipient_streams:
         possible_topics[stream_id] = generate_topics(options["max_topics"])
 
@@ -733,7 +727,7 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
     num_messages = 0
     random_max = 1000000
     recipients: Dict[int, Tuple[int, int, Dict[str, Any]]] = {}
-    messages = []
+    messages: List[Message] = []
     while num_messages < tot_messages:
         saved_data: Dict[str, Any] = {}
         message = Message()
@@ -805,7 +799,12 @@ def send_messages(messages: List[Message]) -> None:
     # up with queued events that reference objects from a previous
     # life of the database, which naturally throws exceptions.
     settings.USING_RABBITMQ = False
-    do_send_messages([{'message': message} for message in messages])
+    message_dict_list = []
+    for message in messages:
+        message_dict = build_message_send_dict({'message': message})
+        message_dict_list.append(message_dict)
+    do_send_messages(message_dict_list)
+    bulk_create_reactions(messages)
     settings.USING_RABBITMQ = True
 
 def choose_date_sent(num_messages: int, tot_messages: int, threads: int) -> datetime:

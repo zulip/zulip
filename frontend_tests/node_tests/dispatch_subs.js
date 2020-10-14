@@ -1,6 +1,6 @@
 "use strict";
 
-const events = require("./lib/events.js");
+const events = require("./lib/events");
 
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
@@ -9,7 +9,7 @@ set_global("compose_fade", {});
 set_global("stream_events", {});
 set_global("subs", {});
 
-zrequire("people");
+const people = zrequire("people");
 zrequire("stream_data");
 zrequire("server_events_dispatch");
 

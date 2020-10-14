@@ -15,7 +15,7 @@ def setup_tornado_rabbitmq() -> None:  # nocoverage
         atexit.register(lambda: queue_client.close())
         autoreload.add_reload_hook(lambda: queue_client.close())
 
-def create_tornado_application(port: int) -> tornado.web.Application:
+def create_tornado_application() -> tornado.web.Application:
     urls = (
         r"/notify_tornado",
         r"/json/events",
@@ -23,9 +23,10 @@ def create_tornado_application(port: int) -> tornado.web.Application:
         r"/api/v1/events/internal",
     )
 
-    # Application is an instance of Django's standard wsgi handler.
-    return tornado.web.Application([(url, AsyncDjangoHandler) for url in urls],
-                                   debug=settings.DEBUG,
-                                   autoreload=False,
-                                   # Disable Tornado's own request logging, since we have our own
-                                   log_function=lambda x: None)
+    return tornado.web.Application(
+        [(url, AsyncDjangoHandler) for url in urls],
+        debug=settings.DEBUG,
+        autoreload=False,
+        # Disable Tornado's own request logging, since we have our own
+        log_function=lambda x: None
+    )

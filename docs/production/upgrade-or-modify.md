@@ -249,9 +249,9 @@ instructions for other supported platforms.
         /home/zulip/deployments/current/ --ignore-static-assets --audit-fts-indexes
     ```
 
-That last command will finish by restarting your Zulip server; you
-should now be able to navigate to its URL and confirm everything is
-working correctly.
+   This will finish by restarting your Zulip server; you should now be
+   able to navigate to its URL and confirm everything is working
+   correctly.
 
 ### Upgrading from Ubuntu 16.04 Xenial to 18.04 Bionic
 
@@ -278,11 +278,28 @@ working correctly.
     systemctl restart memcached
     ```
 
-5. Same as for Bionic to Focal.
+5. Finally, we need to reinstall the current version of Zulip, which
+   among other things will recompile Zulip's Python module
+   dependencies for your new version of Python:
 
-That last command will finish by restarting your Zulip server; you
-should now be able to navigate to its URL and confirm everything is
-working correctly.
+    ```
+    rm -rf /srv/zulip-venv-cache/*
+    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
+        /home/zulip/deployments/current/ --ignore-static-assets
+    ```
+
+   This will finish by restarting your Zulip server; you should now
+   be able to navigate to its URL and confirm everything is working
+   correctly.
+
+6. [Upgrade to the latest Zulip release](#upgrading-to-a-release), now
+   that your server is running a supported operating system.
+
+7. As root, finish by verifying the contents of the full-text indexes:
+
+    ```
+    /home/zulip/deployments/current/manage.py audit_fts_indexes
+    ```
 
 ### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
 
@@ -295,7 +312,7 @@ working correctly.
 3. Same as for Bionic to Focal.
 
 4. As root, upgrade the database installation and OS configuration to
-match the new OS version:
+   match the new OS version:
 
     ```
     apt remove upstart -y
@@ -309,11 +326,23 @@ match the new OS version:
     service memcached restart
     ```
 
-5. Same as for Bionic to Focal.
+5. Finally, we need to reinstall the current version of Zulip, which
+   among other things will recompile Zulip's Python module
+   dependencies for your new version of Python:
 
-That last command will finish by restarting your Zulip server; you
-should now be able to navigate to its URL and confirm everything is
-working correctly.
+    ```
+    rm -rf /srv/zulip-venv-cache/*
+    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
+        /home/zulip/deployments/current/ --ignore-static-assets
+    ```
+
+   This will finish by restarting your Zulip server; you should now be
+   able to navigate to its URL and confirm everything is working
+   correctly.
+
+6. [Upgrade from Xenial to
+   Bionic](#upgrading-from-ubuntu-16-04-xenial-to-18-04-bionic), so
+   that you are running a supported operating system.
 
 ### Upgrading from Debian Stretch to Debian Buster
 
@@ -348,11 +377,28 @@ working correctly.
     service memcached restart
     ```
 
-5. Same as for Bionic to Focal.
+5. Finally, we need to reinstall the current version of Zulip, which
+   among other things will recompile Zulip's Python module
+   dependencies for your new version of Python:
 
-That last command will finish by restarting your Zulip server; you
-should now be able to navigate to its URL and confirm everything is
-working correctly.
+    ```
+    rm -rf /srv/zulip-venv-cache/*
+    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
+        /home/zulip/deployments/current/ --ignore-static-assets
+    ```
+
+   This will finish by restarting your Zulip server; you should now
+   be able to navigate to its URL and confirm everything is working
+   correctly.
+
+6. [Upgrade to the latest Zulip release](#upgrading-to-a-release), now
+   that your server is running a supported operating system.
+
+7. As root, finish by verifying the contents of the full-text indexes:
+
+    ```
+    /home/zulip/deployments/current/manage.py audit_fts_indexes
+    ```
 
 ## Upgrading PostgreSQL
 

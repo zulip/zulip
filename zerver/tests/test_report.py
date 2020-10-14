@@ -1,3 +1,4 @@
+import subprocess
 from typing import Any, Callable, Dict, Iterable, List, Tuple
 from unittest import mock
 
@@ -5,6 +6,7 @@ import orjson
 from django.test import override_settings
 
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.utils import statsd
 
 
@@ -74,9 +76,45 @@ class TestReport(ZulipTestCase):
         ]
         self.assertEqual(stats_mock.func_calls, expected_calls)
 
+    def test_anonymous_user_narrow_time(self) -> None:
+        params = dict(
+            initial_core=5,
+            initial_free=6,
+            network=7,
+        )
+
+        stats_mock = StatsMock(self.settings)
+        with mock.patch('zerver.views.report.statsd', wraps=stats_mock):
+            result = self.client_post("/json/report/narrow_times", params)
+        self.assert_json_success(result)
+
+        expected_calls = [
+            ('timing', ('narrow.initial_core.zulip', 5)),
+            ('timing', ('narrow.initial_free.zulip', 6)),
+            ('timing', ('narrow.network.zulip', 7)),
+        ]
+        self.assertEqual(stats_mock.func_calls, expected_calls)
+
     def test_unnarrow_time(self) -> None:
         self.login('hamlet')
 
+        params = dict(
+            initial_core=5,
+            initial_free=6,
+        )
+
+        stats_mock = StatsMock(self.settings)
+        with mock.patch('zerver.views.report.statsd', wraps=stats_mock):
+            result = self.client_post("/json/report/unnarrow_times", params)
+        self.assert_json_success(result)
+
+        expected_calls = [
+            ('timing', ('unnarrow.initial_core.zulip', 5)),
+            ('timing', ('unnarrow.initial_free.zulip', 6)),
+        ]
+        self.assertEqual(stats_mock.func_calls, expected_calls)
+
+    def test_anonymous_user_unnarrow_time(self) -> None:
         params = dict(
             initial_core=5,
             initial_free=6,
@@ -109,12 +147,11 @@ class TestReport(ZulipTestCase):
             more_info=dict(foo='bar', draft_content="**draft**"),
         ))
 
-        publish_mock = mock.patch('zerver.views.report.queue_json_publish')
         subprocess_mock = mock.patch(
             'zerver.views.report.subprocess.check_output',
-            side_effect=KeyError('foo'),
+            side_effect=subprocess.CalledProcessError(1, []),
         )
-        with publish_mock as m, subprocess_mock:
+        with mock_queue_publish('zerver.views.report.queue_json_publish') as m, subprocess_mock:
             result = self.client_post("/json/report/error", params)
         self.assert_json_success(result)
 
@@ -127,7 +164,7 @@ class TestReport(ZulipTestCase):
 
         # Teset with no more_info
         del params['more_info']
-        with publish_mock as m, subprocess_mock:
+        with mock_queue_publish('zerver.views.report.queue_json_publish') as m, subprocess_mock:
             result = self.client_post("/json/report/error", params)
         self.assert_json_success(result)
 

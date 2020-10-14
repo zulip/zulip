@@ -11,8 +11,6 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('--processes',
-                            dest='processes',
-                            action="store",
                             default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
                             help='Processes to use for exporting uploads in parallel')
 

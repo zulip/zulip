@@ -3,7 +3,7 @@
 const _ = require("lodash");
 
 zrequire("muting");
-zrequire("people");
+const people = zrequire("people");
 zrequire("stream_data");
 zrequire("unread");
 
@@ -12,7 +12,7 @@ set_global("page_params", {
 });
 zrequire("settings_notifications");
 
-const FoldDict = zrequire("fold_dict").FoldDict;
+const {FoldDict} = zrequire("fold_dict");
 
 set_global("narrow_state", {});
 set_global("current_msg_list", {});
@@ -259,6 +259,7 @@ run_test("num_unread_for_topic", () => {
         if (arg === stream_id) {
             return {name: "Some Stream"};
         }
+        throw new Error(`Unknown stream ${arg}`);
     };
 
     let count = unread.num_unread_for_topic(stream_id, "lunch");

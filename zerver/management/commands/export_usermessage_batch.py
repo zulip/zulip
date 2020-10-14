@@ -1,7 +1,6 @@
 import glob
 import logging
 import os
-import shutil
 from argparse import ArgumentParser
 from typing import Any
 
@@ -15,19 +14,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--path',
-                            dest='path',
-                            action="store",
-                            default=None,
                             help='Path to find messages.json archives')
         parser.add_argument('--thread',
-                            dest='thread',
-                            action="store",
-                            default=None,
                             help='Thread ID')
         parser.add_argument('--consent-message-id',
-                            dest="consent_message_id",
-                            action="store",
-                            default=None,
                             type=int,
                             help='ID of the message advertising users to react with thumbs up')
 
@@ -38,14 +28,14 @@ class Command(BaseCommand):
             locked_path = partial_path.replace(".json.partial", ".json.locked")
             output_path = partial_path.replace(".json.partial", ".json")
             try:
-                shutil.move(partial_path, locked_path)
-            except Exception:
+                os.rename(partial_path, locked_path)
+            except FileNotFoundError:
                 # Already claimed by another process
                 continue
             logging.info("Thread %s processing %s", options['thread'], output_path)
             try:
                 export_usermessages_batch(locked_path, output_path, options["consent_message_id"])
-            except Exception:
+            except BaseException:
                 # Put the item back in the free pool when we fail
-                shutil.move(locked_path, partial_path)
+                os.rename(locked_path, partial_path)
                 raise

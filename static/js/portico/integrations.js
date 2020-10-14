@@ -1,7 +1,8 @@
 import _ from "lodash";
 
-import blueslip from "./../blueslip";
-import * as google_analytics from "./google-analytics.js";
+import * as blueslip from "../blueslip";
+
+import * as google_analytics from "./google-analytics";
 import {path_parts} from "./landing-page";
 
 // these constants are populated immediately with data from the DOM on page load
@@ -327,8 +328,8 @@ function integration_events() {
     $('#integration-search input[type="text"]').on("keypress", (e) => {
         const integrations = $(".integration-lozenges").children().toArray();
         if (e.which === 13 && e.target.value !== "") {
-            for (let i = 0; i < integrations.length; i += 1) {
-                const integration = $(integrations[i]).find(".integration-lozenge");
+            for (const integration_element of integrations) {
+                const integration = $(integration_element).find(".integration-lozenge");
 
                 if ($(integration).css("display") !== "none") {
                     $(integration).closest("a")[0].click();
@@ -343,29 +344,29 @@ function integration_events() {
     });
 
     $(".integration-instruction-block").on("click", "a .integration-category", (e) => {
+        e.preventDefault();
         const category = $(e.target).data("category");
         dispatch("SHOW_CATEGORY", {category});
-        return false;
     });
 
     $(".integrations a .integration-category").on("click", (e) => {
+        e.preventDefault();
         const category = $(e.target).data("category");
         dispatch("CHANGE_CATEGORY", {category});
         toggle_categories_dropdown();
-        return false;
     });
 
     $(".integrations a .integration-lozenge").on("click", (e) => {
         if (!$(e.target).closest(".integration-lozenge").hasClass("integration-create-your-own")) {
+            e.preventDefault();
             const integration = $(e.target).closest(".integration-lozenge").data("name");
             dispatch("SHOW_INTEGRATION", {integration});
-            return false;
         }
     });
 
-    $("a#integration-list-link span, a#integration-list-link i").on("click", () => {
+    $("a#integration-list-link span, a#integration-list-link i").on("click", (e) => {
+        e.preventDefault();
         dispatch("HIDE_INTEGRATION");
-        return false;
     });
 
     // combine selector use for both focusing the integrations searchbar and adding

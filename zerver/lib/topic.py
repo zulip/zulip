@@ -158,50 +158,7 @@ def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dic
         )
     return sorted(history, key=lambda x: -x['max_id'])
 
-def get_topic_history_for_stream(user_profile: UserProfile,
-                                 recipient: Recipient,
-                                 public_history: bool) -> List[Dict[str, Any]]:
-    cursor = connection.cursor()
-    if public_history:
-        query = '''
-        SELECT
-            "zerver_message"."subject" as topic,
-            max("zerver_message".id) as max_message_id
-        FROM "zerver_message"
-        WHERE (
-            "zerver_message"."recipient_id" = %s
-        )
-        GROUP BY (
-            "zerver_message"."subject"
-        )
-        ORDER BY max("zerver_message".id) DESC
-        '''
-        cursor.execute(query, [recipient.id])
-    else:
-        query = '''
-        SELECT
-            "zerver_message"."subject" as topic,
-            max("zerver_message".id) as max_message_id
-        FROM "zerver_message"
-        INNER JOIN "zerver_usermessage" ON (
-            "zerver_usermessage"."message_id" = "zerver_message"."id"
-        )
-        WHERE (
-            "zerver_usermessage"."user_profile_id" = %s AND
-            "zerver_message"."recipient_id" = %s
-        )
-        GROUP BY (
-            "zerver_message"."subject"
-        )
-        ORDER BY max("zerver_message".id) DESC
-        '''
-        cursor.execute(query, [user_profile.id, recipient.id])
-    rows = cursor.fetchall()
-    cursor.close()
-
-    return generate_topic_history_from_db_rows(rows)
-
-def get_topic_history_for_web_public_stream(recipient: Recipient) -> List[Dict[str, Any]]:
+def get_topic_history_for_public_stream(recipient: Recipient) -> List[Dict[str, Any]]:
     cursor = connection.cursor()
     query = '''
     SELECT
@@ -217,6 +174,36 @@ def get_topic_history_for_web_public_stream(recipient: Recipient) -> List[Dict[s
     ORDER BY max("zerver_message".id) DESC
     '''
     cursor.execute(query, [recipient.id])
+    rows = cursor.fetchall()
+    cursor.close()
+
+    return generate_topic_history_from_db_rows(rows)
+
+def get_topic_history_for_stream(user_profile: UserProfile,
+                                 recipient: Recipient,
+                                 public_history: bool) -> List[Dict[str, Any]]:
+    if public_history:
+        return get_topic_history_for_public_stream(recipient)
+
+    cursor = connection.cursor()
+    query = '''
+    SELECT
+        "zerver_message"."subject" as topic,
+        max("zerver_message".id) as max_message_id
+    FROM "zerver_message"
+    INNER JOIN "zerver_usermessage" ON (
+        "zerver_usermessage"."message_id" = "zerver_message"."id"
+    )
+    WHERE (
+        "zerver_usermessage"."user_profile_id" = %s AND
+        "zerver_message"."recipient_id" = %s
+    )
+    GROUP BY (
+        "zerver_message"."subject"
+    )
+    ORDER BY max("zerver_message".id) DESC
+    '''
+    cursor.execute(query, [user_profile.id, recipient.id])
     rows = cursor.fetchall()
     cursor.close()
 

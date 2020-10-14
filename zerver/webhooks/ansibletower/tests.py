@@ -14,7 +14,7 @@ class AnsibletowerHookTests(WebhookTestCase):
         expected_message = ("Project Update: [#2677 AWX - Project Update]"
                             "(http://awx.example.co.uk/#/jobs/project/2677) was successful.")
 
-        self.send_and_test_stream_message('project_update_successful', expected_topic, expected_message)
+        self.check_webhook("project_update_successful", expected_topic, expected_message)
 
     def test_ansibletower_project_update_failed_message(self) -> None:
         """
@@ -24,7 +24,7 @@ class AnsibletowerHookTests(WebhookTestCase):
         expected_message = ("Project Update: [#2678 AWX - Project Update]"
                             "(http://awx.example.co.uk/#/jobs/project/2678) failed.")
 
-        self.send_and_test_stream_message('project_update_failed', expected_topic, expected_message)
+        self.check_webhook("project_update_failed", expected_topic, expected_message)
 
     def test_ansibletower_job_successful_multiple_hosts_message(self) -> None:
         """
@@ -40,7 +40,7 @@ Job: [#2674 System - Deploy - Zabbix Agent](http://awx.example.co.uk/#/jobs/play
 * mail.example.co.uk: Success
 """.strip()
 
-        self.send_and_test_stream_message('job_successful_multiple_hosts', expected_topic, expected_message)
+        self.check_webhook("job_successful_multiple_hosts", expected_topic, expected_message)
 
     def test_ansibletower_job_successful_message(self) -> None:
         """
@@ -52,7 +52,7 @@ Job: [#2674 System - Deploy - Zabbix Agent](http://awx.example.co.uk/#/jobs/play
 * chat.example.co.uk: Success
 """.strip()
 
-        self.send_and_test_stream_message('job_successful', expected_topic, expected_message)
+        self.check_webhook("job_successful", expected_topic, expected_message)
 
     def test_ansibletower_nine_job_successful_message(self) -> None:
         """
@@ -65,7 +65,7 @@ Job: [#1 Demo Job Template](https://towerhost/#/jobs/playbook/1) was successful:
 * localhost: Success
 """.strip()
 
-        self.send_and_test_stream_message('job_complete_successful_awx_9.1.1', expected_topic, expected_message)
+        self.check_webhook("job_complete_successful_awx_9.1.1", expected_topic, expected_message)
 
     def test_ansibletower_job_failed_message(self) -> None:
         """
@@ -77,7 +77,7 @@ Job: [#2722 System - Updates - Ubuntu](http://awx.example.co.uk/#/jobs/playbook/
 * chat.example.co.uk: Failed
 """.strip()
 
-        self.send_and_test_stream_message('job_failed', expected_topic, expected_message)
+        self.check_webhook("job_failed", expected_topic, expected_message)
 
     def test_ansibletower_job_failed_multiple_hosts_message(self) -> None:
         """
@@ -93,7 +93,7 @@ Job: [#2722 System - Updates - Ubuntu](http://awx.example.co.uk/#/jobs/playbook/
 * mail.example.co.uk: Failed
 """.strip()
 
-        self.send_and_test_stream_message('job_failed_multiple_hosts', expected_topic, expected_message)
+        self.check_webhook("job_failed_multiple_hosts", expected_topic, expected_message)
 
     def test_ansibletower_inventory_update_successful_message(self) -> None:
         """
@@ -103,7 +103,7 @@ Job: [#2722 System - Updates - Ubuntu](http://awx.example.co.uk/#/jobs/playbook/
         expected_message = ("Inventory Update: [#2724 AWX - Inventory Update]"
                             "(http://awx.example.co.uk/#/jobs/inventory/2724) was successful.")
 
-        self.send_and_test_stream_message('inventory_update_successful', expected_topic, expected_message)
+        self.check_webhook("inventory_update_successful", expected_topic, expected_message)
 
     def test_ansibletower_inventory_update_failed_message(self) -> None:
         """
@@ -113,7 +113,7 @@ Job: [#2722 System - Updates - Ubuntu](http://awx.example.co.uk/#/jobs/playbook/
         expected_message = ("Inventory Update: [#2724 AWX - Inventory Update]"
                             "(http://awx.example.co.uk/#/jobs/inventory/2724) failed.")
 
-        self.send_and_test_stream_message('inventory_update_failed', expected_topic, expected_message)
+        self.check_webhook("inventory_update_failed", expected_topic, expected_message)
 
     def test_ansibletower_adhoc_command_successful_message(self) -> None:
         """
@@ -123,7 +123,7 @@ Job: [#2722 System - Updates - Ubuntu](http://awx.example.co.uk/#/jobs/playbook/
         expected_message = ("AdHoc Command: [#2726 shell: uname -r]"
                             "(http://awx.example.co.uk/#/jobs/command/2726) was successful.")
 
-        self.send_and_test_stream_message('adhoc_command_successful', expected_topic, expected_message)
+        self.check_webhook("adhoc_command_successful", expected_topic, expected_message)
 
     def test_ansibletower_adhoc_command_failed_message(self) -> None:
         """
@@ -133,7 +133,7 @@ Job: [#2722 System - Updates - Ubuntu](http://awx.example.co.uk/#/jobs/playbook/
         expected_message = ("AdHoc Command: [#2726 shell: uname -r]"
                             "(http://awx.example.co.uk/#/jobs/command/2726) failed.")
 
-        self.send_and_test_stream_message('adhoc_command_failed', expected_topic, expected_message)
+        self.check_webhook("adhoc_command_failed", expected_topic, expected_message)
 
     def test_ansibletower_system_job_successful_message(self) -> None:
         """
@@ -143,7 +143,7 @@ Job: [#2722 System - Updates - Ubuntu](http://awx.example.co.uk/#/jobs/playbook/
         expected_message = ("System Job: [#2721 Cleanup Job Details]"
                             "(http://awx.example.co.uk/#/jobs/system/2721) was successful.")
 
-        self.send_and_test_stream_message('system_job_successful', expected_topic, expected_message)
+        self.check_webhook("system_job_successful", expected_topic, expected_message)
 
     def test_ansibletower_system_job_failed_message(self) -> None:
         """
@@ -153,7 +153,4 @@ Job: [#2722 System - Updates - Ubuntu](http://awx.example.co.uk/#/jobs/playbook/
         expected_message = ("System Job: [#2721 Cleanup Job Details]"
                             "(http://awx.example.co.uk/#/jobs/system/2721) failed.")
 
-        self.send_and_test_stream_message('system_job_failed', expected_topic, expected_message)
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("ansibletower", fixture_name, file_type="json")
+        self.check_webhook("system_job_failed", expected_topic, expected_message)

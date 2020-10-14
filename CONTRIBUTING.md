@@ -13,11 +13,12 @@ user, or anything else. Make sure to read the
 before posting. The Zulip community is also governed by a
 [code of conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
 
-You can subscribe to zulip-devel-announce@googlegroups.com or our
-[Twitter](https://twitter.com/zulip) account for a lower traffic (~1
-email/month) way to hear about things like mentorship opportunities with Google
-Code-in, in-person sprints at conferences, and other opportunities to
-contribute.
+You can subscribe to
+[zulip-devel-announce@googlegroups.com](https://groups.google.com/g/zulip-devel-announce)
+or our [Twitter](https://twitter.com/zulip) account for a very low
+traffic (<1 email/month) way to hear about things like mentorship
+opportunities with Google Summer of Code, in-person sprints at
+conferences, and other opportunities to contribute.
 
 ## Ways to contribute
 

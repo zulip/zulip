@@ -14,7 +14,9 @@ Build [#5](https://circleci.com/bb/Hypro999/circleci-test/5) of `build`/`workflo
 - **Pull Request:** https://bitbucket.org/Hypro999/circleci-test/pull-requests/1
 - **Author:** Hemanth V. Alluri
 """.strip()
-        self.send_and_test_stream_message("bitbucket_private_repo_pull_request_failure", expected_topic, expected_message)
+        self.check_webhook(
+            "bitbucket_private_repo_pull_request_failure", expected_topic, expected_message
+        )
 
     def test_for_failed_build_off_github(self) -> None:
         expected_topic = "zulip"
@@ -25,7 +27,9 @@ Build [#1429](https://circleci.com/gh/Hypro999/zulip/1429) of `bionic-backend-fr
 - **Author:** Hemanth V. Alluri (Hypro999)
 - **Committer:** Hemanth V. Alluri (Hypro999)
 """.strip()
-        self.send_and_test_stream_message("github_bionic_backend_frontend_failure", expected_topic, expected_message)
+        self.check_webhook(
+            "github_bionic_backend_frontend_failure", expected_topic, expected_message
+        )
 
     def test_for_success_build_off_github_with_multiple_parties(self) -> None:
         expected_topic = "zulip"
@@ -36,7 +40,11 @@ Build [#1431](https://circleci.com/gh/Hypro999/zulip/1431) of `bionic-production
 - **Authors:** Gintoki Sakata (ShiroYasha999), Hemanth V. Alluri (Hypro999)
 - **Committers:** Hemanth V. Alluri (Hypro999), Sadaharu
 """.strip()
-        self.send_and_test_stream_message("github_bionic_production_build_success_multiple_parties", expected_topic, expected_message)
+        self.check_webhook(
+            "github_bionic_production_build_success_multiple_parties",
+            expected_topic,
+            expected_message,
+        )
 
     def test_for_cancelled_build_off_github(self) -> None:
         expected_topic = "zulip"
@@ -47,9 +55,11 @@ Build [#1420](https://circleci.com/gh/Hypro999/zulip/1420) of `bionic-production
 - **Author:** Hemanth V. Alluri (Hypro999)
 - **Committer:** Hemanth V. Alluri (Hypro999)
 """.strip()
-        self.send_and_test_stream_message("github_bionic_production_install_cancelled", expected_topic, expected_message)
+        self.check_webhook(
+            "github_bionic_production_install_cancelled", expected_topic, expected_message
+        )
 
     def test_super_minimal_payload(self) -> None:
         expected_topic = "zulip"
         expected_message = "[Build](https://circleci.com/gh/zulip/zulip/48056) triggered by timabbott on branch `master` has failed."
-        self.send_and_test_stream_message("super_minimal_payload", expected_topic, expected_message)
+        self.check_webhook("super_minimal_payload", expected_topic, expected_message)

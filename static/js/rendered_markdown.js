@@ -1,6 +1,13 @@
 "use strict";
 
+const ClipboardJS = require("clipboard");
 const moment = require("moment");
+
+const copy_code_button = require("../templates/copy_code_button.hbs");
+const view_code_in_playground = require("../templates/view_code_in_playground.hbs");
+
+const people = require("./people");
+const settings_config = require("./settings_config");
 
 /*
     rendered_markdown
@@ -24,7 +31,7 @@ function get_user_id_for_mention_button(elem) {
     }
 
     if (user_id_string) {
-        return parseInt(user_id_string, 10);
+        return Number.parseInt(user_id_string, 10);
     }
 
     if (email) {
@@ -33,19 +40,18 @@ function get_user_id_for_mention_button(elem) {
         if (user) {
             return user.user_id;
         }
-        return;
     }
-    return;
+    return undefined;
 }
 
 function get_user_group_id_for_mention_button(elem) {
     const user_group_id = $(elem).attr("data-user-group-id");
 
     if (user_group_id) {
-        return parseInt(user_group_id, 10);
+        return Number.parseInt(user_group_id, 10);
     }
 
-    return;
+    return undefined;
 }
 
 // Helper function to update a mentioned user's name.
@@ -110,7 +116,7 @@ exports.update_elements = (content) => {
     });
 
     content.find("a.stream").each(function () {
-        const stream_id = parseInt($(this).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id && !$(this).find(".highlight").length) {
             // Display the current name for stream if it is not
             // being displayed in search highlight.
@@ -125,7 +131,7 @@ exports.update_elements = (content) => {
     });
 
     content.find("a.stream-topic").each(function () {
-        const stream_id = parseInt($(this).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id && !$(this).find(".highlight").length) {
             // Display the current name for stream if it is not
             // being displayed in search highlight.
@@ -183,6 +189,41 @@ exports.update_elements = (content) => {
         const toggle_button_html =
             '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
         $(this).prepend(toggle_button_html);
+    });
+
+    // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehilite element.
+    content.find("div.codehilite").each(function () {
+        const $codehilite = $(this);
+        const $pre = $codehilite.find("pre");
+        const fenced_code_lang = $codehilite.data("code-language");
+        if (fenced_code_lang !== undefined) {
+            const playground_info = settings_config.get_playground_info_for_languages(
+                fenced_code_lang,
+            );
+            if (playground_info !== undefined) {
+                // If a playground is configured for this language,
+                // offer to view the code in that playground.  When
+                // there are multiple playgrounds, we display a
+                // popover listing the options.
+                let title = i18n.t("View in playground");
+                const view_in_playground_button = $(view_code_in_playground());
+                $pre.prepend(view_in_playground_button);
+                if (playground_info.length === 1) {
+                    title = i18n.t(`View in ${playground_info[0].name}`);
+                } else {
+                    view_in_playground_button.attr("aria-haspopup", "true");
+                }
+                view_in_playground_button.attr("title", title);
+                view_in_playground_button.attr("aria-label", title);
+            }
+        }
+        const copy_button = $(copy_code_button());
+        $pre.prepend(copy_button);
+        new ClipboardJS(copy_button[0], {
+            text(copy_element) {
+                return $(copy_element).siblings("code").text();
+            },
+        });
     });
 
     // Display emoji (including realm emoji) as text if

@@ -3,15 +3,16 @@ import os
 import re
 from collections import defaultdict
 from typing import Any, Dict, Iterable, List, Tuple
-from unittest import mock
+from unittest import mock, skipUnless
 
 import orjson
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
+from django.utils.timezone import now as timezone_now
 
 from zerver.decorator import (
-    api_key_only_webhook_view,
     authenticate_notify,
     authenticated_json_view,
     authenticated_rest_api_view,
@@ -23,6 +24,7 @@ from zerver.decorator import (
     rate_limit,
     return_success_on_head_request,
     validate_api_key,
+    webhook_view,
     zulip_login_required,
 )
 from zerver.forms import OurAuthenticationForm
@@ -34,7 +36,12 @@ from zerver.lib.actions import (
     do_set_realm_property,
 )
 from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, items_tuple_to_dict
-from zerver.lib.exceptions import InvalidAPIKeyError, InvalidAPIKeyFormatError, JsonableError
+from zerver.lib.exceptions import (
+    InvalidAPIKeyError,
+    InvalidAPIKeyFormatError,
+    JsonableError,
+    UnsupportedWebhookEventType,
+)
 from zerver.lib.initial_password import initial_password
 from zerver.lib.request import (
     REQ,
@@ -74,8 +81,10 @@ from zerver.lib.validator import (
     to_non_negative_int,
     to_positive_or_allowed_int,
 )
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType
 from zerver.models import Realm, UserProfile, get_realm, get_user
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import RemoteZulipServer
 
 
 class DecoratorTestCase(ZulipTestCase):
@@ -250,25 +259,24 @@ class DecoratorTestCase(ZulipTestCase):
         request.body = '{"a": "b"}'
         self.assertEqual(get_payload(request), {'a': 'b'})
 
-    def test_api_key_only_webhook_view(self) -> None:
-        @api_key_only_webhook_view('ClientName')
+    def test_webhook_view(self) -> None:
+        @webhook_view('ClientName')
         def my_webhook(request: HttpRequest, user_profile: UserProfile) -> str:
             return user_profile.email
 
-        @api_key_only_webhook_view('ClientName')
+        @webhook_view('ClientName')
         def my_webhook_raises_exception(request: HttpRequest, user_profile: UserProfile) -> None:
             raise Exception("raised by webhook function")
 
-        @api_key_only_webhook_view('ClientName')
-        def my_webhook_raises_exception_unexpected_event(
+        @webhook_view('ClientName')
+        def my_webhook_raises_exception_unsupported_event(
                 request: HttpRequest, user_profile: UserProfile) -> None:
-            raise UnexpectedWebhookEventType("helloworld", "test_event")
+            raise UnsupportedWebhookEventType("test_event")
 
         webhook_bot_email = 'webhook-bot@zulip.com'
         webhook_bot_realm = get_realm('zulip')
         webhook_bot = get_user(webhook_bot_email, webhook_bot_realm)
         webhook_bot_api_key = get_api_key(webhook_bot)
-        webhook_client_name = "ZulipClientNameWebhook"
 
         request = HostRequestMock()
         request.POST['api_key'] = 'X'*32
@@ -279,26 +287,24 @@ class DecoratorTestCase(ZulipTestCase):
         # Start a valid request here
         request.POST['api_key'] = webhook_bot_api_key
 
-        with mock.patch('logging.warning') as mock_warning:
+        with self.assertLogs(level="WARNING") as m:
             with self.assertRaisesRegex(JsonableError,
                                         "Account is not associated with this subdomain"):
                 api_result = my_webhook(request)
+        self.assertEqual(
+            m.output,
+            ["WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(webhook_bot_email, "zulip", "")]
+        )
 
-            mock_warning.assert_called_with(
-                "User %s (%s) attempted to access API on wrong subdomain (%s)",
-                webhook_bot_email, 'zulip', '',
-            )
-
-        with mock.patch('logging.warning') as mock_warning:
+        with self.assertLogs(level="WARNING") as m:
             with self.assertRaisesRegex(JsonableError,
                                         "Account is not associated with this subdomain"):
                 request.host = "acme." + settings.EXTERNAL_HOST
                 api_result = my_webhook(request)
-
-            mock_warning.assert_called_with(
-                "User %s (%s) attempted to access API on wrong subdomain (%s)",
-                webhook_bot_email, 'zulip', 'acme',
-            )
+        self.assertEqual(
+            m.output,
+            ["WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(webhook_bot_email, "zulip", "acme")]
+        )
 
         request.host = "zulip.testserver"
         # Test when content_type is application/json and request.body
@@ -328,58 +334,18 @@ class DecoratorTestCase(ZulipTestCase):
                 request.META['HTTP_X_CUSTOM_HEADER'] = 'custom_value'
                 my_webhook_raises_exception(request)
 
-            message = """
-user: {email} ({realm})
-client: {client_name}
-URL: {path_info}
-content_type: {content_type}
-custom_http_headers:
-{custom_headers}
-body:
+        mock_exception.assert_called_with("raised by webhook function", stack_info=True)
 
-{body}
-                """
-            message = message.strip(' ')
-            mock_exception.assert_called_with(message.format(
-                email=webhook_bot_email,
-                realm=webhook_bot_realm.string_id,
-                client_name=webhook_client_name,
-                path_info=request.META.get('PATH_INFO'),
-                content_type=request.content_type,
-                custom_headers="HTTP_X_CUSTOM_HEADER: custom_value\n",
-                body=request.body,
-            ), stack_info=True)
-
-        # Test when an unexpected webhook event occurs
-        with mock.patch('zerver.decorator.webhook_unexpected_events_logger.exception') as mock_exception:
-            exception_msg = "The 'test_event' event isn't currently supported by the helloworld webhook"
-            with self.assertRaisesRegex(UnexpectedWebhookEventType, exception_msg):
+        # Test when an unsupported webhook event occurs
+        with mock.patch('zerver.decorator.webhook_unsupported_events_logger.exception') as mock_exception:
+            exception_msg = "The 'test_event' event isn't currently supported by the ClientName webhook"
+            with self.assertRaisesRegex(UnsupportedWebhookEventType, exception_msg):
                 request.body = "invalidjson"
                 request.content_type = 'application/json'
                 request.META['HTTP_X_CUSTOM_HEADER'] = 'custom_value'
-                my_webhook_raises_exception_unexpected_event(request)
+                my_webhook_raises_exception_unsupported_event(request)
 
-            message = """
-user: {email} ({realm})
-client: {client_name}
-URL: {path_info}
-content_type: {content_type}
-custom_http_headers:
-{custom_headers}
-body:
-
-{body}
-                """
-            message = message.strip(' ')
-            mock_exception.assert_called_with(message.format(
-                email=webhook_bot_email,
-                realm=webhook_bot_realm.string_id,
-                client_name=webhook_client_name,
-                path_info=request.META.get('PATH_INFO'),
-                content_type=request.content_type,
-                custom_headers="HTTP_X_CUSTOM_HEADER: custom_value\n",
-                body=request.body,
-            ), stack_info=True)
+        mock_exception.assert_called_with(exception_msg, stack_info=True)
 
         with self.settings(RATE_LIMITING=True):
             with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
@@ -423,13 +389,15 @@ class SkipRateLimitingTest(ZulipTestCase):
 
         with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
             result = my_unlimited_view(request)
-            self.assert_json_success(result)
-            self.assertFalse(rate_limit_mock.called)
+
+        self.assert_json_success(result)
+        self.assertFalse(rate_limit_mock.called)
 
         with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
             result = my_rate_limited_view(request)
-            # Don't assert json_success, since it'll be the rate_limit mock object
-            self.assertTrue(rate_limit_mock.called)
+
+        # Don't assert json_success, since it'll be the rate_limit mock object
+        self.assertTrue(rate_limit_mock.called)
 
     def test_authenticated_uploads_api_view(self) -> None:
         @authenticated_uploads_api_view(skip_rate_limiting=False)
@@ -446,13 +414,15 @@ class SkipRateLimitingTest(ZulipTestCase):
 
         with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
             result = my_unlimited_view(request)
-            self.assert_json_success(result)
-            self.assertFalse(rate_limit_mock.called)
+
+        self.assert_json_success(result)
+        self.assertFalse(rate_limit_mock.called)
 
         with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
             result = my_rate_limited_view(request)
-            # Don't assert json_success, since it'll be the rate_limit mock object
-            self.assertTrue(rate_limit_mock.called)
+
+        # Don't assert json_success, since it'll be the rate_limit mock object
+        self.assertTrue(rate_limit_mock.called)
 
     def test_authenticated_json_view(self) -> None:
         def my_view(request: HttpRequest, user_profile: UserProfile) -> str:
@@ -467,13 +437,15 @@ class SkipRateLimitingTest(ZulipTestCase):
 
         with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
             result = my_unlimited_view(request)
-            self.assert_json_success(result)
-            self.assertFalse(rate_limit_mock.called)
+
+        self.assert_json_success(result)
+        self.assertFalse(rate_limit_mock.called)
 
         with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
             result = my_rate_limited_view(request)
-            # Don't assert json_success, since it'll be the rate_limit mock object
-            self.assertTrue(rate_limit_mock.called)
+
+        # Don't assert json_success, since it'll be the rate_limit mock object
+        self.assertTrue(rate_limit_mock.called)
 
 class DecoratorLoggingTestCase(ZulipTestCase):
     def test_authenticated_rest_api_view_logging(self) -> None:
@@ -482,7 +454,6 @@ class DecoratorLoggingTestCase(ZulipTestCase):
             raise Exception("raised by webhook function")
 
         webhook_bot_email = 'webhook-bot@zulip.com'
-        webhook_bot_realm = get_realm('zulip')
 
         request = HostRequestMock()
         request.META['HTTP_AUTHORIZATION'] = self.encode_email(webhook_bot_email)
@@ -490,42 +461,20 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         request.host = "zulip.testserver"
 
         request.body = '{}'
-        request.POST['payload'] = '{}'
         request.content_type = 'text/plain'
 
         with mock.patch('zerver.decorator.webhook_logger.exception') as mock_exception:
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
                 my_webhook_raises_exception(request)
 
-            message = """
-user: {email} ({realm})
-client: {client_name}
-URL: {path_info}
-content_type: {content_type}
-custom_http_headers:
-{custom_headers}
-body:
+        mock_exception.assert_called_with("raised by webhook function", stack_info=True)
 
-{body}
-                """
-            message = message.strip(' ')
-            mock_exception.assert_called_with(message.format(
-                email=webhook_bot_email,
-                realm=webhook_bot_realm.string_id,
-                client_name='ZulipClientNameWebhook',
-                path_info=request.META.get('PATH_INFO'),
-                content_type=request.content_type,
-                custom_headers=None,
-                body=request.body,
-            ), stack_info=True)
-
-    def test_authenticated_rest_api_view_logging_unexpected_event(self) -> None:
+    def test_authenticated_rest_api_view_logging_unsupported_event(self) -> None:
         @authenticated_rest_api_view(webhook_client_name="ClientName")
         def my_webhook_raises_exception(request: HttpRequest, user_profile: UserProfile) -> None:
-            raise UnexpectedWebhookEventType("helloworld", "test_event")
+            raise UnsupportedWebhookEventType("test_event")
 
         webhook_bot_email = 'webhook-bot@zulip.com'
-        webhook_bot_realm = get_realm('zulip')
 
         request = HostRequestMock()
         request.META['HTTP_AUTHORIZATION'] = self.encode_email(webhook_bot_email)
@@ -533,35 +482,14 @@ body:
         request.host = "zulip.testserver"
 
         request.body = '{}'
-        request.POST['payload'] = '{}'
         request.content_type = 'text/plain'
 
-        with mock.patch('zerver.decorator.webhook_unexpected_events_logger.exception') as mock_exception:
-            exception_msg = "The 'test_event' event isn't currently supported by the helloworld webhook"
-            with self.assertRaisesRegex(UnexpectedWebhookEventType, exception_msg):
+        with mock.patch('zerver.decorator.webhook_unsupported_events_logger.exception') as mock_exception:
+            exception_msg = "The 'test_event' event isn't currently supported by the ClientName webhook"
+            with self.assertRaisesRegex(UnsupportedWebhookEventType, exception_msg):
                 my_webhook_raises_exception(request)
 
-            message = """
-user: {email} ({realm})
-client: {client_name}
-URL: {path_info}
-content_type: {content_type}
-custom_http_headers:
-{custom_headers}
-body:
-
-{body}
-                """
-            message = message.strip(' ')
-            mock_exception.assert_called_with(message.format(
-                email=webhook_bot_email,
-                realm=webhook_bot_realm.string_id,
-                client_name='ZulipClientNameWebhook',
-                path_info=request.META.get('PATH_INFO'),
-                content_type=request.content_type,
-                custom_headers=None,
-                body=request.body,
-            ), stack_info=True)
+        mock_exception.assert_called_with(exception_msg, stack_info=True)
 
     def test_authenticated_rest_api_view_with_non_webhook_view(self) -> None:
         @authenticated_rest_api_view()
@@ -580,7 +508,7 @@ body:
             with self.assertRaisesRegex(Exception, "raised by a non-webhook view"):
                 non_webhook_view_raises_exception(request)
 
-            self.assertFalse(mock_exception.called)
+        self.assertFalse(mock_exception.called)
 
     def test_authenticated_rest_api_view_errors(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -619,6 +547,7 @@ class RateLimitTestCase(ZulipTestCase):
         class Request:
             client = Client()
             META = {'REMOTE_ADDR': '127.0.0.1'}
+            user = AnonymousUser()
 
         req = Request()
 
@@ -641,6 +570,7 @@ class RateLimitTestCase(ZulipTestCase):
         class Request:
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
+            user = AnonymousUser()
 
         req = Request()
 
@@ -664,7 +594,7 @@ class RateLimitTestCase(ZulipTestCase):
         class Request:
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
-            user = 'stub'  # any non-None value here exercises the correct code path
+            user = self.example_user("hamlet")
 
         req = Request()
 
@@ -687,7 +617,7 @@ class RateLimitTestCase(ZulipTestCase):
         class Request:
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
-            user = 'stub'  # any non-None value here exercises the correct code path
+            user = self.example_user("hamlet")
 
         req = Request()
 
@@ -702,6 +632,36 @@ class RateLimitTestCase(ZulipTestCase):
                     self.assertEqual(f(req), 'some value')
 
         self.assertTrue(rate_limit_mock.called)
+
+    @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
+    def test_rate_limiting_skipped_if_remote_server(self) -> None:
+        server_uuid = "1234-abcd"
+        server = RemoteZulipServer(uuid=server_uuid,
+                                   api_key="magic_secret_api_key",
+                                   hostname="demo.example.com",
+                                   last_updated=timezone_now())
+
+        class Client:
+            name = 'external'
+
+        class Request:
+            client = Client()
+            META = {'REMOTE_ADDR': '3.3.3.3'}
+            user = server
+
+        req = Request()
+
+        def f(req: Any) -> str:
+            return 'some value'
+
+        f = rate_limit()(f)
+
+        with self.settings(RATE_LIMITING=True):
+            with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
+                with self.errors_disallowed():
+                    self.assertEqual(f(req), 'some value')
+
+        self.assertFalse(rate_limit_mock.called)
 
 class ValidatorTestCase(ZulipTestCase):
     def test_check_string(self) -> None:
@@ -1352,7 +1312,7 @@ class TestValidateApiKey(ZulipTestCase):
         api_key = get_api_key(self.webhook_bot)
         profile = validate_api_key(HostRequestMock(host="zulip.testserver"),
                                    self.webhook_bot.email, api_key,
-                                   is_webhook=True)
+                                   allow_webhook_access=True)
         self.assertEqual(profile.id, self.webhook_bot.id)
 
     def test_validate_api_key_if_email_is_case_insensitive(self) -> None:
@@ -1363,27 +1323,25 @@ class TestValidateApiKey(ZulipTestCase):
     def test_valid_api_key_if_user_is_on_wrong_subdomain(self) -> None:
         with self.settings(RUNNING_INSIDE_TORNADO=False):
             api_key = get_api_key(self.default_bot)
-            with mock.patch('logging.warning') as mock_warning:
+            with self.assertLogs(level="WARNING") as m:
                 with self.assertRaisesRegex(JsonableError,
                                             "Account is not associated with this subdomain"):
                     validate_api_key(HostRequestMock(host=settings.EXTERNAL_HOST),
                                      self.default_bot.email, api_key)
+            self.assertEqual(
+                m.output,
+                ["WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(self.default_bot.email, "zulip", "")]
+            )
 
-                mock_warning.assert_called_with(
-                    "User %s (%s) attempted to access API on wrong subdomain (%s)",
-                    self.default_bot.email, 'zulip', '',
-                )
-
-            with mock.patch('logging.warning') as mock_warning:
+            with self.assertLogs(level="WARNING") as m:
                 with self.assertRaisesRegex(JsonableError,
                                             "Account is not associated with this subdomain"):
                     validate_api_key(HostRequestMock(host='acme.' + settings.EXTERNAL_HOST),
                                      self.default_bot.email, api_key)
-
-                mock_warning.assert_called_with(
-                    "User %s (%s) attempted to access API on wrong subdomain (%s)",
-                    self.default_bot.email, 'zulip', 'acme',
-                )
+            self.assertEqual(
+                m.output,
+                ["WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(self.default_bot.email, "zulip", "acme")]
+            )
 
     def _change_is_active_field(self, profile: UserProfile, value: bool) -> None:
         profile.is_active = value
@@ -1465,8 +1423,6 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/users/me/presence",
             "/api/v1/users/me/tutorial_status",
             "/api/v1/report/send_times",
-            "/api/v1/report/narrow_times",
-            "/api/v1/report/unnarrow_times",
         ]
         for endpoint in post_endpoints:
             result = self.api_post(default_bot, endpoint)
@@ -1490,6 +1446,39 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             result = self.api_delete(default_bot, endpoint)
             self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
+class TestAuthenticatedRequirePostDecorator(ZulipTestCase):
+    def test_authenticated_html_post_view_with_get_request(self) -> None:
+        self.login('hamlet')
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.client_get(r'/accounts/register/', {'stream': 'Verona'})
+            self.assertEqual(result.status_code, 405)
+            mock_warning.assert_called_once()  # Check we logged the Mock Not Allowed
+            self.assertEqual(mock_warning.call_args_list[0][0],
+                             ('Method Not Allowed (%s): %s', 'GET', '/accounts/register/'))
+
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.client_get(r'/accounts/logout/', {'stream': 'Verona'})
+            self.assertEqual(result.status_code, 405)
+            mock_warning.assert_called_once()  # Check we logged the Mock Not Allowed
+            self.assertEqual(mock_warning.call_args_list[0][0],
+                             ('Method Not Allowed (%s): %s', 'GET', '/accounts/logout/'))
+
+    def test_authenticated_json_post_view_with_get_request(self) -> None:
+        self.login('hamlet')
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.client_get(r'/api/v1/dev_fetch_api_key', {'stream': 'Verona'})
+            self.assertEqual(result.status_code, 405)
+            mock_warning.assert_called_once()  # Check we logged the Mock Not Allowed
+            self.assertEqual(mock_warning.call_args_list[0][0],
+                             ('Method Not Allowed (%s): %s', 'GET', '/api/v1/dev_fetch_api_key'))
+
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.client_get(r'/json/remotes/server/register', {'stream': 'Verona'})
+            self.assertEqual(result.status_code, 405)
+            mock_warning.assert_called_once()  # Check we logged the Mock Not Allowed
+            self.assertEqual(mock_warning.call_args_list[0][0],
+                             ('Method Not Allowed (%s): %s', 'GET', '/json/remotes/server/register'))
+
 class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
     def test_authenticated_json_post_view_if_everything_is_correct(self) -> None:
         user = self.example_user('hamlet')
@@ -1499,36 +1488,36 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
 
     def test_authenticated_json_post_view_with_get_request(self) -> None:
         self.login('hamlet')
-        with mock.patch('logging.warning') as mock_warning:
+        with self.assertLogs(level="WARNING") as m:
             result = self.client_get(r'/json/subscriptions/exists', {'stream': 'Verona'})
             self.assertEqual(result.status_code, 405)
-            mock_warning.assert_called_once()  # Check we logged the Mock Not Allowed
-            self.assertEqual(mock_warning.call_args_list[0][0],
-                             ('Method Not Allowed (%s): %s', 'GET', '/json/subscriptions/exists'))
+        self.assertEqual(m.output, ["WARNING:root:Method Not Allowed ({}): {}".format("GET", "/json/subscriptions/exists")])
 
     def test_authenticated_json_post_view_if_subdomain_is_invalid(self) -> None:
         user = self.example_user('hamlet')
         email = user.delivery_email
         self.login_user(user)
-        with mock.patch('logging.warning') as mock_warning, \
+        with self.assertLogs(level="WARNING") as m, \
                 mock.patch('zerver.decorator.get_subdomain', return_value=''):
             self.assert_json_error_contains(self._do_test(user),
                                             "Account is not associated with this "
                                             "subdomain")
-            mock_warning.assert_called_with(
-                "User %s (%s) attempted to access API on wrong subdomain (%s)",
-                email, 'zulip', '',
-            )
+        self.assertEqual(
+            m.output,
+            ["WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(email, 'zulip', ''),
+                "WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(email, 'zulip', '')]
+        )
 
-        with mock.patch('logging.warning') as mock_warning, \
+        with self.assertLogs(level="WARNING") as m, \
                 mock.patch('zerver.decorator.get_subdomain', return_value='acme'):
             self.assert_json_error_contains(self._do_test(user),
                                             "Account is not associated with this "
                                             "subdomain")
-            mock_warning.assert_called_with(
-                "User %s (%s) attempted to access API on wrong subdomain (%s)",
-                email, 'zulip', 'acme',
-            )
+        self.assertEqual(
+            m.output,
+            ["WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(email, 'zulip', 'acme'),
+                "WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(email, 'zulip', 'acme')]
+        )
 
     def test_authenticated_json_post_view_if_user_is_incoming_webhook(self) -> None:
         bot = self.example_user('webhook_bot')
@@ -1567,25 +1556,25 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
         email = user.delivery_email
         self.login_user(user)
 
-        with mock.patch('logging.warning') as mock_warning, \
+        with self.assertLogs(level="WARNING") as m, \
                 mock.patch('zerver.decorator.get_subdomain', return_value=''):
             self.assert_json_error_contains(self._do_test(email),
                                             "Account is not associated with this "
                                             "subdomain")
-            mock_warning.assert_called_with(
-                "User %s (%s) attempted to access API on wrong subdomain (%s)",
-                email, 'zulip', '',
-            )
+        self.assertEqual(
+            m.output,
+            ["WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(email, "zulip", "")]
+        )
 
-        with mock.patch('logging.warning') as mock_warning, \
+        with self.assertLogs(level="WARNING") as m, \
                 mock.patch('zerver.decorator.get_subdomain', return_value='acme'):
             self.assert_json_error_contains(self._do_test(email),
                                             "Account is not associated with this "
                                             "subdomain")
-            mock_warning.assert_called_with(
-                "User %s (%s) attempted to access API on wrong subdomain (%s)",
-                email, 'zulip', 'acme',
-            )
+        self.assertEqual(
+            m.output,
+            ["WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(email, "zulip", "acme")]
+        )
 
     def _do_test(self, user_email: str) -> HttpResponse:
         data = {"password": initial_password(user_email)}

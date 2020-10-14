@@ -17,16 +17,24 @@ The content of the body goes here.
 ```
 """.strip()
 
-        self.send_and_test_stream_message('ticket_started', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "ticket_started",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     # This simulates the condition when a ticket
     # is assigned to an agent.
     def test_groove_ticket_assigned_agent_only(self) -> None:
         expected_topic = "notifications"
         expected_message = "[#9: Test Subject](https://testteam.groovehq.com/groove_client/tickets/68659446) (open) assigned to agent@example.com."
-        self.send_and_test_stream_message('ticket_assigned__agent_only', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "ticket_assigned__agent_only",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     # This simulates the condition when a ticket
     # is assigned to an agent in a group.
@@ -34,16 +42,24 @@ The content of the body goes here.
         expected_topic = "notifications"
         expected_message = "[#9: Test Subject](https://testteam.groovehq.com/groove_client/tickets/68659446) (open) assigned to agent@example.com from group2."
 
-        self.send_and_test_stream_message('ticket_assigned__agent_and_group', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "ticket_assigned__agent_and_group",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     # This simulates the condition when a ticket
     # is assigned to a group.
     def test_groove_ticket_assigned_group_only(self) -> None:
         expected_topic = "notifications"
         expected_message = "[#9: Test Subject](https://testteam.groovehq.com/groove_client/tickets/68659446) (pending) assigned to group2."
-        self.send_and_test_stream_message('ticket_assigned__group_only', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "ticket_assigned__group_only",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     # This simulates the condition when a ticket
     # is assigned to no one.
@@ -65,8 +81,12 @@ Hello , This is a reply from an agent to a ticket
 ```
 """.strip()
 
-        self.send_and_test_stream_message('agent_replied', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "agent_replied",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     # This simulates the condition when a customer replied to a ticket.
     def test_groove_customer_replied(self) -> None:
@@ -79,8 +99,12 @@ Hello agent, thanks for getting back. This is how a reply from customer looks li
 ```
 """.strip()
 
-        self.send_and_test_stream_message('customer_replied', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "customer_replied",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     # This simulates the condition when an agent left a note.
     def test_groove_note_added(self) -> None:
@@ -93,8 +117,9 @@ This is a note added to  a ticket
 ```
 """.strip()
 
-        self.send_and_test_stream_message('note_added', expected_topic, expected_message,
-                                          content_type="application/x-ww-form-urlencoded")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("groove", fixture_name, file_type="json")
+        self.check_webhook(
+            "note_added",
+            expected_topic,
+            expected_message,
+            content_type="application/x-ww-form-urlencoded",
+        )

@@ -265,9 +265,9 @@ class MarkdownMiscTest(ZulipTestCase):
 
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):
-            with mock.patch('logging.error') as mock_logger:
+            with self.assertLogs(level="ERROR") as m:
                 render_tex("random text")
-                mock_logger.assert_called_with("Cannot find KaTeX for latex rendering!")
+            self.assertEqual(m.output, ["ERROR:root:Cannot find KaTeX for latex rendering!"])
 
 class MarkdownListPreprocessorTest(ZulipTestCase):
     # We test that the preprocessor inserts blank lines at correct places.
@@ -1066,6 +1066,43 @@ class MarkdownTest(ZulipTestCase):
         converted_topic = topic_links(realm.id, 'hello#123 #234')
         self.assertEqual(converted_topic, ['https://trac.example.com/ticket/234', 'https://trac.example.com/hello/123'])
 
+    def test_multiple_matching_realm_patterns(self) -> None:
+        realm = get_realm('zulip')
+        url_format_string = r"https://trac.example.com/ticket/%(id)s"
+        realm_filter_1 = RealmFilter(realm=realm,
+                                     pattern=r"(?P<id>ABC\-[0-9]+)(?![A-Z0-9-])",
+                                     url_format_string=url_format_string)
+        realm_filter_1.save()
+        self.assertEqual(
+            realm_filter_1.__str__(),
+            r'<RealmFilter(zulip): (?P<id>ABC\-[0-9]+)(?![A-Z0-9-])'
+            ' https://trac.example.com/ticket/%(id)s>')
+
+        url_format_string = r"https://other-trac.example.com/ticket/%(id)s"
+        realm_filter_2 = RealmFilter(realm=realm,
+                                     pattern=r"(?P<id>[A-Z][A-Z0-9]*\-[0-9]+)(?![A-Z0-9-])",
+                                     url_format_string=url_format_string)
+        realm_filter_2.save()
+        self.assertEqual(
+            realm_filter_2.__str__(),
+            r'<RealmFilter(zulip): (?P<id>[A-Z][A-Z0-9]*\-[0-9]+)(?![A-Z0-9-])'
+            ' https://other-trac.example.com/ticket/%(id)s>')
+
+        msg = Message(sender=self.example_user('othello'))
+        msg.set_topic_name("ABC-123")
+
+        flush_per_request_caches()
+
+        content = "We should fix ABC-123 or [trac ABC-123](https://trac.example.com/ticket/16) today."
+        converted = markdown_convert(content, message_realm=realm, message=msg)
+        converted_topic = topic_links(realm.id, msg.topic_name())
+
+        # The second filter (which was saved later) was ignored as the content was marked AtomicString after first conversion.
+        # There was no easy way to support parsing both filters and not run into an infinite loop, hence the second filter is ignored.
+        self.assertEqual(converted, '<p>We should fix <a href="https://trac.example.com/ticket/ABC-123">ABC-123</a> or <a href="https://trac.example.com/ticket/16">trac ABC-123</a> today.</p>')
+        # Both the links should be generated in topics.
+        self.assertEqual(converted_topic, ['https://trac.example.com/ticket/ABC-123', 'https://other-trac.example.com/ticket/ABC-123'])
+
     def test_maybe_update_markdown_engines(self) -> None:
         realm = get_realm('zulip')
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
@@ -1376,6 +1413,7 @@ class MarkdownTest(ZulipTestCase):
         msg_without_language = markdown_convert_wrapper(text.format(''))
         msg_with_quote = markdown_convert_wrapper(text.format('quote'))
         msg_with_math = markdown_convert_wrapper(text.format('math'))
+        msg_with_none = markdown_convert_wrapper(text.format('none'))
 
         # Render with default=javascript
         do_set_realm_property(realm, 'default_code_block_language', 'javascript')
@@ -1403,7 +1441,8 @@ class MarkdownTest(ZulipTestCase):
         self.assertTrue(msg_with_python == msg_with_python_default_js == msg_without_language_default_py)
         self.assertTrue(msg_with_quote == msg_without_language_default_quote)
         self.assertTrue(msg_with_math == msg_without_language_default_math)
-        self.assertTrue(msg_without_language == msg_with_none_default_py == msg_without_language_final)
+        self.assertTrue(msg_without_language == msg_without_language_final)
+        self.assertTrue(msg_with_none == msg_with_none_default_py)
 
         # Test checking inside nested quotes
         nested_text = "````quote\n\n{}\n\n{}````".format(text.format('js'), text.format(''))

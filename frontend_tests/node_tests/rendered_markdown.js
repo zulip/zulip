@@ -1,7 +1,7 @@
 "use strict";
 
 const rm = zrequire("rendered_markdown");
-zrequire("people");
+const people = zrequire("people");
 zrequire("user_groups");
 zrequire("stream_data");
 zrequire("timerender");
@@ -73,6 +73,7 @@ const get_content_element = () => {
     $content.set_find_results("span.timestamp-error", $array([]));
     $content.set_find_results(".emoji", $array([]));
     $content.set_find_results("div.spoiler-header", $array([]));
+    $content.set_find_results("div.codehilite", $array([]));
     return $content;
 };
 

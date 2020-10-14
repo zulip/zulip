@@ -82,9 +82,9 @@ exports.alphabetic_sort = (prop) =>
 
 exports.numeric_sort = (prop) =>
     function (a, b) {
-        if (parseFloat(a[prop]) > parseFloat(b[prop])) {
+        if (Number.parseFloat(a[prop]) > Number.parseFloat(b[prop])) {
             return 1;
-        } else if (parseFloat(a[prop]) === parseFloat(b[prop])) {
+        } else if (Number.parseFloat(a[prop]) === Number.parseFloat(b[prop])) {
             return 0;
         }
 
@@ -121,11 +121,11 @@ exports.valid_filter_opts = (opts) => {
 exports.create = function ($container, list, opts) {
     if (!opts) {
         blueslip.error("Need opts to create widget.");
-        return;
+        return undefined;
     }
 
     if (!exports.validate_opts(opts)) {
-        return;
+        return undefined;
     }
 
     if (opts.name && DEFAULTS.instances.get(opts.name)) {
@@ -149,12 +149,12 @@ exports.create = function ($container, list, opts) {
     };
 
     if (!exports.valid_filter_opts(opts)) {
-        return;
+        return undefined;
     }
 
     if (opts.get_item && typeof opts.get_item !== "function") {
         blueslip.error("get_item should be a function");
-        return;
+        return undefined;
     }
 
     const widget = {};

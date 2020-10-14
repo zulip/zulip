@@ -40,9 +40,9 @@ def random_token() -> str:
     # of importing cryptography modules when necessary.
     #
     # This helps optimize noop provision performance.
-    from zerver.lib.utils import generate_random_token
+    import secrets
 
-    return generate_random_token(64)
+    return secrets.token_hex(32)
 
 def generate_django_secretkey() -> str:
     """Secret key generation taken from Django's startproject.py"""
@@ -183,7 +183,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--development', action='store_true', dest='development',
+    group.add_argument('--development', action='store_true',
                        help='For setting up the developer env for zulip')
     group.add_argument('--production', action='store_false', dest='development',
                        help='For setting up the production env for zulip')

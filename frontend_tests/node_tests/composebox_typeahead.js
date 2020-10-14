@@ -6,7 +6,7 @@ zrequire("compose_state");
 zrequire("pm_conversations");
 zrequire("templates");
 zrequire("typeahead_helper");
-zrequire("people");
+const people = zrequire("people");
 zrequire("user_groups");
 zrequire("stream_data");
 zrequire("user_pill");
@@ -138,6 +138,11 @@ const my_slash = {
     text: "translated: /my (Test)",
 };
 
+const settings_slash = {
+    name: "settings",
+    text: "translated: /settings (Load settings menu)",
+};
+
 const sweden_stream = {
     name: "Sweden",
     description: "Cold, mountains and home decor.",
@@ -251,6 +256,7 @@ people.add_active_user(hal);
 people.add_active_user(harry);
 people.add_active_user(deactivated_user);
 people.deactivate(deactivated_user);
+people.initialize_current_user(hamlet.user_id);
 
 const hamletcharacters = {
     name: "hamletcharacters",
@@ -314,6 +320,7 @@ run_test("content_typeahead_selected", () => {
         // .caret() used in setTimeout
         assert.equal(arg1, arg2);
         caret_called2 = true;
+        return this;
     };
     let autosize_called = false;
     set_global("compose_ui", {
@@ -398,7 +405,7 @@ run_test("content_typeahead_selected", () => {
     // silent mention
     fake_this.completing = "silent_mention";
     compose.warn_if_mentioning_unsubscribed_user = () => {
-        throw Error("unexpected call for silent mentions");
+        throw new Error("unexpected call for silent mentions");
     };
 
     fake_this.query = "@_kin";
@@ -427,7 +434,7 @@ run_test("content_typeahead_selected", () => {
 
     // user group mention
     compose.warn_if_mentioning_unsubscribed_user = () => {
-        throw Error("unexpected call for user groups");
+        throw new Error("unexpected call for user groups");
     };
 
     fake_this.query = "@back";
@@ -783,13 +790,7 @@ run_test("initialize", () => {
         assert.equal(appended_name, "Othello, the Moor of Venice");
 
         let appended_names = [];
-        people.get_by_user_id = function (user_id) {
-            const users = {100: hamlet, 104: lear};
-            return users[user_id];
-        };
-        people.my_current_email = function () {
-            return "hamlet@zulip.com";
-        };
+
         compose_pm_pill.set_from_typeahead = function (item) {
             appended_names.push(item.full_name);
         };
@@ -1495,6 +1496,7 @@ run_test("typeahead_results", () => {
 
     // Autocomplete by slash commands.
     assert_slash_matches("me", [me_slash]);
+    assert_slash_matches("settings", [settings_slash]);
 
     // Autocomplete stream by stream name or stream description.
     assert_stream_matches("den", [denmark_stream, sweden_stream]);

@@ -6,20 +6,24 @@ There are several possible roles in a Zulip organization.
   organization settings, and billing.
 
 * **Organization Administrator**: Can manage users, public streams,
-  and organization settings. Can upgrade the organization to a paid
-  plan and become a billing admin. Cannot create or demote
-  organization owners.
+  and organization settings.  Cannot create or demote organization
+  owners.
 
-* **Member**: Has access to all public streams. Can upgrade
-  the organization to a paid plan and become a billing administrator.
-  Member is the default role for most users.
-
-* **Billing Administrator**: Member or organization administrator who
-  upgrades the organization to a paid plan becomes a billing administrator.
-  Can manage billing in addition to the existing privileges.
+* **Member**: Has access to all public streams.  Member is the default
+  role for most users.  [Some organization
+  settings](/help/restrict-permissions-of-new-members) allow an
+  organization to restrict the permissions of **New Members**; Members
+  who do not have those restrictions are called **Full Members**.
 
 * **Guest**: Can only access streams they've been added to. Cannot create
   new streams or invite other users.
+
+* **Billing Administrator**: The user who upgrades the organization to
+  a paid plan is, in addition to their normal role, a Billing
+  Administrator.  Can manage billing in addition to the existing
+  privileges.  This allows someone from the billing department to
+  manage billing without needing organization administrator
+  permissions.
 
 For details of the access control model, see [Stream
 permissions](/help/stream-permissions).  You can decide what role to

@@ -17,8 +17,6 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('-t', '--trim',
-                            dest='trim',
-                            default=False,
                             action='store_true',
                             help="Actually trim excess")
 

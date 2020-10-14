@@ -15,8 +15,42 @@ let current_topic_sidebar_elem;
 let all_messages_sidebar_elem;
 let starred_messages_sidebar_elem;
 
+function get_popover_menu_items(sidebar_elem) {
+    if (!sidebar_elem) {
+        blueslip.error("Trying to get menu items when action popover is closed.");
+        return undefined;
+    }
+
+    const popover_data = $(sidebar_elem).data("popover");
+    if (!popover_data) {
+        blueslip.error("Cannot find popover data for stream sidebar menu.");
+        return undefined;
+    }
+    return $("li:not(.divider):visible > a", popover_data.$tip);
+}
+
+exports.stream_sidebar_menu_handle_keyboard = (key) => {
+    const items = get_popover_menu_items(current_stream_sidebar_elem);
+    popovers.popover_items_handle_keyboard(key, items);
+};
+
+exports.topic_sidebar_menu_handle_keyboard = (key) => {
+    const items = get_popover_menu_items(current_topic_sidebar_elem);
+    popovers.popover_items_handle_keyboard(key, items);
+};
+
+exports.all_messages_sidebar_menu_handle_keyboard = (key) => {
+    const items = get_popover_menu_items(all_messages_sidebar_elem);
+    popovers.popover_items_handle_keyboard(key, items);
+};
+
+exports.starred_messages_sidebar_menu_handle_keyboard = (key) => {
+    const items = get_popover_menu_items(starred_messages_sidebar_elem);
+    popovers.popover_items_handle_keyboard(key, items);
+};
+
 function elem_to_stream_id(elem) {
-    const stream_id = parseInt(elem.attr("data-stream-id"), 10);
+    const stream_id = Number.parseInt(elem.attr("data-stream-id"), 10);
 
     if (stream_id === undefined) {
         blueslip.error("could not find stream id");
@@ -91,7 +125,7 @@ function stream_popover_sub(e) {
     const sub = stream_data.get_sub_by_id(stream_id);
     if (!sub) {
         blueslip.error("Unknown stream: " + stream_id);
-        return;
+        return undefined;
     }
     return sub;
 }
@@ -108,7 +142,7 @@ function update_spectrum(popover, update_func) {
     const after_height = popover[0].offsetHeight;
 
     const popover_root = popover.closest(".popover");
-    const current_top_px = parseFloat(popover_root.css("top").replace("px", ""));
+    const current_top_px = Number.parseFloat(popover_root.css("top").replace("px", ""));
     const height_delta = after_height - initial_height;
     let top = current_top_px - height_delta / 2;
 
@@ -191,7 +225,7 @@ function build_topic_popover(opts) {
         topic_name,
         can_mute_topic,
         can_unmute_topic,
-        is_admin: sub.is_admin,
+        is_realm_admin: sub.is_realm_admin,
         color: sub.color,
     });
 
@@ -289,12 +323,11 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     );
     ui_util.decorate_stream_bar(current_stream_name, stream_header_colorblock, false);
     $("#select_stream_id").on("change", function () {
-        const stream_name = stream_data.maybe_get_stream_name(parseInt(this.value, 10));
+        const stream_name = stream_data.maybe_get_stream_name(Number.parseInt(this.value, 10));
         ui_util.decorate_stream_bar(stream_name, stream_header_colorblock, false);
     });
 
     $("#move_topic_modal").modal("show");
-    e.stopPropagation();
 }
 
 exports.register_click_handlers = function () {
@@ -444,13 +477,13 @@ function topic_popover_sub(e) {
     const stream_id = topic_popover_stream_id(e);
     if (!stream_id) {
         blueslip.error("cannot find stream id");
-        return;
+        return undefined;
     }
 
     const sub = stream_data.get_sub_by_id(stream_id);
     if (!sub) {
         blueslip.error("Unknown stream: " + stream_id);
-        return;
+        return undefined;
     }
     return sub;
 }
@@ -542,7 +575,7 @@ exports.register_topic_handlers = function () {
 
     $("body").on("click", ".sidebar-popover-move-topic-messages", (e) => {
         const topic_row = $(e.currentTarget);
-        const stream_id = parseInt(topic_row.attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt(topic_row.attr("data-stream-id"), 10);
         const topic_name = topic_row.attr("data-topic-name");
         build_move_topic_to_stream_popover(e, stream_id, topic_name);
         e.stopPropagation();
@@ -554,17 +587,18 @@ exports.register_topic_handlers = function () {
     });
 
     $("body").on("click", "#do_move_topic_button", (e) => {
+        e.preventDefault();
+
         function show_error_msg(msg) {
             $("#topic_stream_edit_form_error .error-msg").text(msg);
             $("#topic_stream_edit_form_error").show();
         }
 
-        const params = $("#move_topic_form")
-            .serializeArray()
-            .reduce((obj, item) => {
-                obj[item.name] = item.value;
-                return obj;
-            }, {});
+        const params = Object.fromEntries(
+            $("#move_topic_form")
+                .serializeArray()
+                .map(({name, value}) => [name, value]),
+        );
 
         const {old_topic_name, select_stream_id} = params;
         let {
@@ -576,14 +610,14 @@ exports.register_topic_handlers = function () {
         new_topic_name = new_topic_name.trim();
         send_notification_to_new_thread = send_notification_to_new_thread === "on";
         send_notification_to_old_thread = send_notification_to_old_thread === "on";
-        current_stream_id = parseInt(current_stream_id, 10);
+        current_stream_id = Number.parseInt(current_stream_id, 10);
 
         if (
-            current_stream_id === parseInt(select_stream_id, 10) &&
+            current_stream_id === Number.parseInt(select_stream_id, 10) &&
             new_topic_name.toLowerCase() === old_topic_name.toLowerCase()
         ) {
             show_error_msg("Please select a different stream or change topic name.");
-            return false;
+            return;
         }
 
         // The API endpoint for editing messages to change their
@@ -610,6 +644,7 @@ exports.register_topic_handlers = function () {
             ]),
         };
 
+        message_edit.show_topic_move_spinner();
         channel.get({
             url: "/json/messages",
             data,
@@ -631,14 +666,13 @@ exports.register_topic_handlers = function () {
                         send_notification_to_new_thread,
                         send_notification_to_old_thread,
                     );
-                    $("#move_topic_modal").modal("hide");
                 }
             },
             error(xhr) {
+                message_edit.hide_topic_move_spinner();
                 show_error_msg(xhr.responseJSON.msg);
             },
         });
-        e.preventDefault();
     });
 };
 

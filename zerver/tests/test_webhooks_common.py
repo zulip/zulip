@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from django.http import HttpRequest
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import WebhookTestCase, ZulipTestCase
@@ -58,11 +58,11 @@ class WebhooksCommonTestCase(ZulipTestCase):
         self.assertEqual(msg.content, expected_message)
 
     def test_notify_bot_owner_on_invalid_json(self) -> None:
-        @api_key_only_webhook_view('ClientName', notify_bot_owner_on_invalid_json=False)
+        @webhook_view('ClientName', notify_bot_owner_on_invalid_json=False)
         def my_webhook_no_notify(request: HttpRequest, user_profile: UserProfile) -> None:
             raise InvalidJSONError("Malformed JSON")
 
-        @api_key_only_webhook_view('ClientName', notify_bot_owner_on_invalid_json=True)
+        @webhook_view('ClientName', notify_bot_owner_on_invalid_json=True)
         def my_webhook_notify(request: HttpRequest, user_profile: UserProfile) -> None:
             raise InvalidJSONError("Malformed JSON")
 

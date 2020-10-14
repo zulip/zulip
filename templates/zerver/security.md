@@ -130,7 +130,7 @@ the industry:
   including 100% of Zulip’s API layer (responsible for parsing user input).
   It is difficult to find any full-stack web application with as complete a
   set of automated tests as Zulip.
-- Zulip’s python codebase is written entirely in
+- Zulip’s Python codebase is written entirely in
   [statically typed Python 3](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/),
   which automatically prevents a wide range of possible bugs.
 - All access to user data (messages, streams, uploaded files, etc.) in the

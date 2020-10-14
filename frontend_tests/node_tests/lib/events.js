@@ -1,21 +1,22 @@
 "use strict";
 
-// TODO: These events are not guaranteed to be perfectly
-//       representative of what the server sends.  For
-//       now we just want very basic test coverage.  We
-//       have more mature tests for events on the backend
-//       side in test_events.py, and we may be able to
-//       re-work both sides (js/python) so that we work off
-//       a shared fixture.
+//  These events are not guaranteed to be perfectly
+//  representative of what the server sends.  We
+//  have a tool called check-node-fixtures that tries
+//  to validate this data against server side schemas,
+//  but there are certain edge cases that the tool now
+//  skips.  And even when the data matches the schema,
+//  it may not be completely representative.
 
-exports.test_user = {
+const test_user = {
     email: "test@example.com",
     user_id: 101,
     full_name: "Test User",
 };
+exports.test_user = test_user;
 
 exports.test_message = {
-    sender_id: exports.test_user.user_id,
+    sender_id: test_user.user_id,
     id: 99,
 };
 
@@ -74,6 +75,7 @@ exports.test_realm_emojis = {
         name: "spain",
         source_url: "/some/path/to/spain.png",
         deactivated: false,
+        author_id: test_user.user_id,
     },
     102: {
         id: "102",
@@ -131,6 +133,11 @@ exports.fixtures = {
         topic: "topic1",
     },
 
+    has_zoom_token: {
+        type: "has_zoom_token",
+        value: true,
+    },
+
     hotspots: {
         type: "hotspots",
         hotspots: [
@@ -166,9 +173,12 @@ exports.fixtures = {
         email: "alice@example.com",
         user_id: 42,
         presence: {
-            client_name: "electron",
-            is_mirror_dummy: false,
-            // etc.
+            electron: {
+                status: "active",
+                timestamp: fake_now,
+                client: "electron",
+                pushable: false,
+            },
         },
         server_timestamp: fake_now,
     },
@@ -177,10 +187,14 @@ exports.fixtures = {
         type: "reaction",
         op: "add",
         message_id: 128,
-        emoji_name: "anguished_pig",
-        user_id: "1",
+        reaction_type: "unicode_emoji",
+        emoji_name: "airplane",
+        emoji_code: "2708",
+        user_id: test_user.user_id,
         user: {
-            id: "1",
+            email: test_user.email,
+            full_name: test_user.full_name,
+            user_id: test_user.user_id,
         },
     },
 
@@ -188,10 +202,14 @@ exports.fixtures = {
         type: "reaction",
         op: "remove",
         message_id: 256,
-        emoji_name: "angery",
-        user_id: "1",
+        reaction_type: "unicode_emoji",
+        emoji_name: "8ball",
+        emoji_code: "1f3b1",
+        user_id: test_user.user_id,
         user: {
-            id: "1",
+            email: test_user.email,
+            full_name: test_user.full_name,
+            user_id: test_user.user_id,
         },
     },
 
@@ -341,7 +359,7 @@ exports.fixtures = {
             default_events_register_stream: "whatever",
             default_sending_stream: "whatever",
             is_active: true,
-            owner_id: exports.test_user.user_id,
+            owner_id: test_user.user_id,
             services: [],
         },
     },
@@ -408,7 +426,7 @@ exports.fixtures = {
             {
                 id: 55,
                 export_time: fake_now,
-                acting_user_id: exports.test_user.user_id,
+                acting_user_id: test_user.user_id,
                 export_url: "/some/path/to/export",
                 deleted_timestamp: null,
                 failed_timestamp: null,
@@ -425,15 +443,27 @@ exports.fixtures = {
     realm_user__add: {
         type: "realm_user",
         op: "add",
-        person: exports.test_user,
+        person: {
+            ...test_user,
+            avatar_url: "/some/path/to/avatar",
+            avatar_version: 1,
+            is_admin: false,
+            is_active: true,
+            is_owner: false,
+            is_bot: false,
+            is_guest: false,
+            profile_data: {},
+            timezone: "US/Eastern",
+            date_joined: "2020-01-01",
+        },
     },
 
     realm_user__remove: {
         type: "realm_user",
         op: "remove",
         person: {
-            email: exports.test_user.email,
-            user_id: exports.test_user.user_id,
+            full_name: test_user.full_name,
+            user_id: test_user.user_id,
         },
     },
 
@@ -441,7 +471,7 @@ exports.fixtures = {
         type: "realm_user",
         op: "update",
         person: {
-            user_id: exports.test_user.user_id,
+            user_id: test_user.user_id,
             full_name: "Bob NewName",
         },
     },
@@ -498,6 +528,7 @@ exports.fixtures = {
                 push_notifications: false,
                 stream_weekly_traffic: 40,
                 wildcard_mentions_notify: false,
+                role: 20,
                 subscribers: [5, 8, 13, 21],
             },
         ],
@@ -506,14 +537,14 @@ exports.fixtures = {
     subscription__peer_add: {
         type: "subscription",
         op: "peer_add",
-        user_id: exports.test_user.user_id,
+        user_id: test_user.user_id,
         stream_id: 42,
     },
 
     subscription__peer_remove: {
         type: "subscription",
         op: "peer_remove",
-        user_id: exports.test_user.user_id,
+        user_id: test_user.user_id,
         stream_id: 42,
     },
 
@@ -531,10 +562,11 @@ exports.fixtures = {
     subscription__update: {
         type: "subscription",
         op: "update",
-        name: "devel",
-        stream_id: 43,
-        property: "color",
-        value: "black",
+        email: test_user.email,
+        name: streams.devel.name,
+        stream_id: streams.devel.stream_id,
+        property: "pin_to_top",
+        value: true,
     },
 
     typing__start: {
@@ -555,21 +587,21 @@ exports.fixtures = {
         type: "update_display_settings",
         setting_name: "color_scheme",
         setting: 1,
-        user: exports.test_user.email,
+        user: test_user.email,
     },
 
     update_display_settings__color_scheme_dark: {
         type: "update_display_settings",
         setting_name: "color_scheme",
         setting: 2,
-        user: exports.test_user.email,
+        user: test_user.email,
     },
 
     update_display_settings__color_scheme_light: {
         type: "update_display_settings",
         setting_name: "color_scheme",
         setting: 3,
-        user: exports.test_user.email,
+        user: test_user.email,
     },
 
     update_display_settings__default_language: {
@@ -577,81 +609,82 @@ exports.fixtures = {
         setting_name: "default_language",
         setting: "fr",
         language_name: "French",
-        user: exports.test_user.email,
+        user: test_user.email,
     },
 
     update_display_settings__demote_inactive_streams: {
         type: "update_display_settings",
         setting_name: "demote_inactive_streams",
         setting: 2,
-        user: exports.test_user.email,
+        user: test_user.email,
     },
 
     update_display_settings__dense_mode: {
         type: "update_display_settings",
         setting_name: "dense_mode",
         setting: true,
-        user: exports.test_user.email,
+        user: test_user.email,
     },
 
     update_display_settings__emojiset: {
         type: "update_display_settings",
         setting_name: "emojiset",
         setting: "google",
-        user: exports.test_user.email,
+        user: test_user.email,
     },
 
     update_display_settings__fluid_layout_width: {
         type: "update_display_settings",
         setting_name: "fluid_layout_width",
         setting: true,
-        user: exports.test_user.email,
+        user: test_user.email,
     },
 
     update_display_settings__high_contrast_mode: {
         type: "update_display_settings",
         setting_name: "high_contrast_mode",
         setting: true,
-        user: exports.test_user.email,
+        user: test_user.email,
     },
 
     update_display_settings__left_side_userlist: {
         type: "update_display_settings",
         setting_name: "left_side_userlist",
         setting: true,
-        user: exports.test_user.email,
+        user: test_user.email,
     },
 
     update_display_settings__starred_message_counts: {
         type: "update_display_settings",
         setting_name: "starred_message_counts",
         setting: true,
-        user: exports.test_user.email,
+        user: test_user.email,
     },
 
     update_display_settings__translate_emoticons: {
         type: "update_display_settings",
         setting_name: "translate_emoticons",
         setting: true,
-        user: exports.test_user.email,
+        user: test_user.email,
     },
 
     update_display_settings__twenty_four_hour_time: {
         type: "update_display_settings",
         setting_name: "twenty_four_hour_time",
         setting: true,
-        user: exports.test_user.email,
+        user: test_user.email,
     },
 
     update_global_notifications: {
         type: "update_global_notifications",
         notification_name: "enable_stream_audible_notifications",
         setting: true,
-        user: exports.test_user.email,
+        user: test_user.email,
     },
 
     update_message_flags__read: {
         type: "update_message_flags",
+        op: "add",
         operation: "add",
         flag: "read",
         messages: [999],
@@ -660,6 +693,7 @@ exports.fixtures = {
 
     update_message_flags__starred_add: {
         type: "update_message_flags",
+        op: "add",
         operation: "add",
         flag: "starred",
         messages: [exports.test_message.id],
@@ -668,6 +702,7 @@ exports.fixtures = {
 
     update_message_flags__starred_remove: {
         type: "update_message_flags",
+        op: "remove",
         operation: "remove",
         flag: "starred",
         messages: [exports.test_message.id],
@@ -723,7 +758,7 @@ exports.fixtures = {
 
     user_status__set_status_text: {
         type: "user_status",
-        user_id: exports.test_user.user_id,
+        user_id: test_user.user_id,
         status_text: "out to lunch",
     },
 };

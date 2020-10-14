@@ -11,11 +11,12 @@ class DropboxHookTests(WebhookTestCase):
         expected_topic = "Dropbox"
         expected_message = "File has been updated on Dropbox!"
 
-        self.send_and_test_stream_message('file_updated', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("dropbox", fixture_name, file_type="json")
+        self.check_webhook(
+            "file_updated",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_verification_request(self) -> None:
         self.subscribe(self.test_user, self.STREAM_NAME)

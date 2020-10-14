@@ -7,6 +7,8 @@ const render_edit_bot = require("../templates/edit_bot.hbs");
 const render_settings_edit_embedded_bot_service = require("../templates/settings/edit_embedded_bot_service.hbs");
 const render_settings_edit_outgoing_webhook_service = require("../templates/settings/edit_outgoing_webhook_service.hbs");
 
+const people = require("./people");
+
 exports.hide_errors = function () {
     $("#bot_table_error").hide();
     $(".bot_error").hide();
@@ -66,7 +68,7 @@ function is_local_part(value, element) {
     // Adapted from Django's EmailValidator
     return (
         this.optional(element) ||
-        /^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*$/i.test(value)
+        /^[\w!#$%&'*+/=?^`{|}~-]+(\.[\w!#$%&'*+/=?^`{|}~-]+)*$/i.test(value)
     );
 }
 
@@ -366,7 +368,7 @@ exports.set_up = function () {
     });
 
     $("#active_bots_list").on("click", "button.delete_bot", (e) => {
-        const bot_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
 
         channel.del({
             url: "/json/bots/" + encodeURIComponent(bot_id),
@@ -383,7 +385,7 @@ exports.set_up = function () {
     });
 
     $("#inactive_bots_list").on("click", "button.reactivate_bot", (e) => {
-        const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
 
         channel.post({
             url: "/json/users/" + encodeURIComponent(user_id) + "/reactivate",
@@ -394,7 +396,7 @@ exports.set_up = function () {
     });
 
     $("#active_bots_list").on("click", "button.regenerate_bot_api_key", (e) => {
-        const bot_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         channel.post({
             url: "/json/bots/" + encodeURIComponent(bot_id) + "/api_key/regenerate",
             idempotent: true,
@@ -417,7 +419,7 @@ exports.set_up = function () {
         e.stopPropagation();
         overlays.open_modal("#edit_bot_modal");
         const li = $(e.currentTarget).closest("li");
-        const bot_id = parseInt(li.find(".bot_info").attr("data-user-id"), 10);
+        const bot_id = Number.parseInt(li.find(".bot_info").attr("data-user-id"), 10);
         const bot = bot_data.get(bot_id);
         const user_ids = people.get_active_human_ids();
         const users_list = user_ids.map((user_id) => ({
@@ -470,7 +472,7 @@ exports.set_up = function () {
                 errors.hide();
             },
             submitHandler() {
-                const bot_id = parseInt(form.attr("data-user-id"), 10);
+                const bot_id = Number.parseInt(form.attr("data-user-id"), 10);
                 const type = form.attr("data-type");
 
                 const full_name = form.find(".edit_bot_name").val();
@@ -514,7 +516,7 @@ exports.set_up = function () {
                         avatar_widget.clear();
                         typeahead_helper.clear_rendered_person(bot_id);
                         if (data.avatar_url) {
-                            // Note that the avatar_url won't actually change on the back end
+                            // Note that the avatar_url won't actually change on the backend
                             // when the user had a previous uploaded avatar.  Only the content
                             // changes, so we version it to get an uncached copy.
                             image_version += 1;
@@ -537,14 +539,14 @@ exports.set_up = function () {
 
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
         const bot_info = $(this).closest(".bot-information-box").find(".bot_info");
-        const bot_id = parseInt(bot_info.attr("data-user-id"), 10);
+        const bot_id = Number.parseInt(bot_info.attr("data-user-id"), 10);
         $(this).attr("href", exports.generate_zuliprc_uri(bot_id));
     });
 
     new ClipboardJS("#copy_zuliprc", {
         text(trigger) {
             const bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
-            const bot_id = parseInt(bot_info.attr("data-user-id"), 10);
+            const bot_id = Number.parseInt(bot_info.attr("data-user-id"), 10);
             const bot = bot_data.get(bot_id);
             const data = exports.generate_zuliprc_content(bot);
             return data;

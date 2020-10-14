@@ -5,13 +5,14 @@ const _ = require("lodash");
 const render_compose_notification = require("../templates/compose_notification.hbs");
 const render_notification = require("../templates/notification.hbs");
 
+const people = require("./people");
 const settings_config = require("./settings_config");
 
 const notice_memory = new Map();
 
-// When you start Zulip, window_has_focus should be true, but it might not be the
+// When you start Zulip, window_focused should be true, but it might not be the
 // case after a server-initiated reload.
-let window_has_focus = document.hasFocus && document.hasFocus();
+let window_focused = document.hasFocus && document.hasFocus();
 
 let supports_sound;
 
@@ -70,7 +71,7 @@ function get_audio_file_path(audio_element, audio_file_without_extension) {
 exports.initialize = function () {
     $(window)
         .on("focus", () => {
-            window_has_focus = true;
+            window_focused = true;
 
             for (const notice_mem_entry of notice_memory.values()) {
                 notice_mem_entry.obj.close();
@@ -82,7 +83,7 @@ exports.initialize = function () {
             unread_ops.process_visible();
         })
         .on("blur", () => {
-            window_has_focus = false;
+            window_focused = false;
         });
 
     const audio = $("<audio>");
@@ -166,7 +167,7 @@ exports.redraw_title = function () {
             // Make sure we're working with a number, as a defensive programming
             // measure.  And we don't have images above 99, so display those as
             // 'infinite'.
-            n = +new_message_count;
+            n = Number(new_message_count);
             if (n > 99) {
                 n = "infinite";
             }
@@ -215,8 +216,8 @@ exports.update_pm_count = function () {
     }
 };
 
-exports.window_has_focus = function () {
-    return window_has_focus;
+exports.is_window_focused = function () {
+    return window_focused;
 };
 
 function in_browser_notify(message, title, content, raw_operators, opts) {
@@ -361,7 +362,7 @@ function process_notification(notification) {
                 break;
             }
         }
-        content = content.substring(0, i);
+        content = content.slice(0, i);
         content += " [...]";
     }
 
@@ -570,7 +571,7 @@ exports.granted_desktop_notifications_permission = function () {
 
 exports.request_desktop_notifications_permission = function () {
     if (NotificationAPI) {
-        return NotificationAPI.requestPermission();
+        NotificationAPI.requestPermission();
     }
 };
 
@@ -632,7 +633,7 @@ exports.get_local_notify_mix_reason = function (message) {
     if (row.length > 0) {
         // If our message is in the current message list, we do
         // not have a mix, so we are happy.
-        return;
+        return undefined;
     }
 
     if (message.type === "stream" && muting.is_topic_muted(message.stream_id, message.topic)) {
@@ -654,6 +655,8 @@ exports.get_local_notify_mix_reason = function (message) {
     ) {
         return i18n.t("Sent! Your message is outside your current narrow.");
     }
+
+    return undefined;
 };
 
 exports.notify_local_mixes = function (messages, need_user_to_scroll) {

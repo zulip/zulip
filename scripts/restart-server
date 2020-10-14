@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-import configparser
 import logging
 import os
 import pwd
@@ -10,14 +9,22 @@ import sys
 import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, ENDC, OKGREEN, WARNING, overwrite_symlink
+from scripts.lib.zulip_tools import (
+    DEPLOYMENTS_DIR,
+    ENDC,
+    OKGREEN,
+    WARNING,
+    get_config_file,
+    get_tornado_ports,
+    overwrite_symlink,
+)
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s restart-server: %(message)s",
                     level=logging.INFO)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--fill-cache', action='store_true', dest='fill_cache', default=False,
+parser.add_argument('--fill-cache', action='store_true',
                     help='Fill the memcached caches')
 args = parser.parse_args()
 
@@ -46,27 +53,22 @@ if change_symlink:
     overwrite_symlink(os.readlink(current_symlink), last_symlink)
     overwrite_symlink(deploy_path, current_symlink)
 
-config_file = configparser.RawConfigParser()
-config_file.read("/etc/zulip/zulip.conf")
-
-try:
-    tornado_processes = int(config_file.get('application_server', 'tornado_processes'))
-except (configparser.NoSectionError, configparser.NoOptionError):
-    tornado_processes = 1
+config_file = get_config_file()
+tornado_ports = get_tornado_ports(config_file)
 
 # We restart just the zulip-tornado service early, in order to
 # minimize downtime of the tornado service caused by too many Python
 # processes restarting at the same time resulting in it receiving
 # insufficient priority.  This is important, because Tornado is the
 # main source of user-visible downtime when we restart a Zulip server.
-if tornado_processes > 1:
-    for p in range(9800, 9800+tornado_processes):
+if len(tornado_ports) > 1:
+    for p in tornado_ports:
         # Restart Tornado processes individually for a better rate of
         # restarts.  This also avoids behavior with restarting a whole
         # supervisord group where if any individual process is slow to
         # stop, the whole bundle stays stopped for an extended time.
         logging.info("Restarting Tornado process on port %s", p)
-        subprocess.check_call(["supervisorctl", "restart", f"zulip-tornado:port-{p}"])
+        subprocess.check_call(["supervisorctl", "restart", f"zulip-tornado:zulip-tornado-port-{p}"])
 else:
     logging.info("Restarting Tornado process")
     subprocess.check_call(["supervisorctl", "restart", "zulip-tornado", "zulip-tornado:*"])
@@ -75,10 +77,10 @@ else:
 logging.info("Stopping workers")
 subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*"])
 logging.info("Stopping server core")
-subprocess.check_call(["supervisorctl", "stop"] + core_server_services)
+subprocess.check_call(["supervisorctl", "stop", *core_server_services])
 
 logging.info("Starting server core")
-subprocess.check_call(["supervisorctl", "start"] + core_server_services)
+subprocess.check_call(["supervisorctl", "start", *reversed(core_server_services)])
 logging.info("Starting workers")
 subprocess.check_call(["supervisorctl", "start", "zulip-workers:*"])
 

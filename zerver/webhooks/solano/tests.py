@@ -18,8 +18,12 @@ Build update (see [build log](https://ci.solanolabs.com:443/reports/3316175)):
 * **Status**: failed :thumbs_down:
 """.strip()
 
-        self.send_and_test_stream_message('build_001', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "build_001",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_solano_message_002(self) -> None:
         """
@@ -33,8 +37,12 @@ Build update (see [build log](https://ci.solanolabs.com:443/reports/3316723)):
 * **Status**: failed :thumbs_down:
 """.strip()
 
-        self.send_and_test_stream_message('build_002', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "build_002",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_solano_message_received(self) -> None:
         """
@@ -48,15 +56,20 @@ Build update (see [build log](https://ci.solanolabs.com:443/reports/3317799)):
 * **Status**: running :arrows_counterclockwise:
 """.strip()
 
-        self.send_and_test_stream_message('received', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "received",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_solano_test_message(self) -> None:
         expected_topic = 'build update'
         expected_message = "Solano webhook set up correctly."
 
-        self.send_and_test_stream_message('test', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name, file_type="json")
+        self.check_webhook(
+            "test",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )

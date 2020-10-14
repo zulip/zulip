@@ -18,15 +18,12 @@ class Command(BaseCommand):
                             help="Zipped slack data")
 
         parser.add_argument('--token', metavar='<slack_token>',
-                            type=str, help='Slack legacy token of the organsation')
+                            help='Slack legacy token of the organsation')
 
         parser.add_argument('--output', dest='output_dir',
-                            action="store", default=None,
                             help='Directory to write exported data to.')
 
         parser.add_argument('--threads',
-                            dest='threads',
-                            action="store",
                             default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
                             help='Threads to use in exporting UserMessage objects in parallel')
 

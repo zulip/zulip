@@ -25,7 +25,7 @@ exports.get_translated_status = function (file) {
 
 exports.get_item = function (key, config) {
     if (!config) {
-        throw Error("Missing config");
+        throw new Error("Missing config");
     }
     if (config.mode === "compose") {
         switch (key) {
@@ -47,12 +47,14 @@ exports.get_item = function (key, config) {
                 return "compose-file-input";
             case "drag_drop_container":
                 return $("#compose");
+            case "markdown_preview_hide_button":
+                return $("#undo_markdown_preview");
             default:
-                throw Error(`Invalid key name for mode "${config.mode}"`);
+                throw new Error(`Invalid key name for mode "${config.mode}"`);
         }
     } else if (config.mode === "edit") {
         if (!config.row) {
-            throw Error("Missing row in config");
+            throw new Error("Missing row in config");
         }
         switch (key) {
             case "textarea":
@@ -75,11 +77,13 @@ exports.get_item = function (key, config) {
                 return "message-edit-file-input";
             case "drag_drop_container":
                 return $("#message_edit_form");
+            case "markdown_preview_hide_button":
+                return $("#undo_markdown_preview_" + config.row);
             default:
-                throw Error(`Invalid key name for mode "${config.mode}"`);
+                throw new Error(`Invalid key name for mode "${config.mode}"`);
         }
     } else {
-        throw Error("Invalid upload mode!");
+        throw new Error("Invalid upload mode!");
     }
 };
 
@@ -112,6 +116,18 @@ exports.upload_files = function (uppy, config, files) {
         );
         return;
     }
+
+    // If we're looking at a markdown preview, switch back to the edit
+    // UI.  This is important for all the later logic around focus
+    // (etc.) to work correctly.
+    //
+    // We implement this transition through triggering a click on the
+    // toggle button to take advantage of the existing plumbing for
+    // handling the compose and edit UIs.
+    if (exports.get_item("markdown_preview_hide_button", config).is(":visible")) {
+        exports.get_item("markdown_preview_hide_button", config).trigger("click");
+    }
+
     exports.get_item("send_button", config).prop("disabled", true);
     exports
         .get_item("send_status", config)
@@ -127,7 +143,7 @@ exports.upload_files = function (uppy, config, files) {
                 exports.get_item("textarea", config),
             );
         });
-        compose_ui.autosize_textarea();
+        compose_ui.autosize_textarea(exports.get_item("textarea", config));
         uppy.cancelAll();
         exports.get_item("textarea", config).trigger("focus");
         setTimeout(() => {
@@ -141,14 +157,14 @@ exports.upload_files = function (uppy, config, files) {
                 exports.get_translated_status(file),
                 exports.get_item("textarea", config),
             );
-            compose_ui.autosize_textarea();
+            compose_ui.autosize_textarea(exports.get_item("textarea", config));
             uppy.addFile({
                 source: exports.get_item("source", config),
                 name: file.name,
                 type: file.type,
                 data: file,
             });
-        } catch (error) {
+        } catch {
             // Errors are handled by info-visible and upload-error event callbacks.
             break;
         }
@@ -240,7 +256,7 @@ exports.setup_upload = function (config) {
             filename_uri,
             exports.get_item("textarea", config),
         );
-        compose_ui.autosize_textarea();
+        compose_ui.autosize_textarea(exports.get_item("textarea", config));
     });
 
     uppy.on("complete", () => {
@@ -297,7 +313,7 @@ exports.setup_upload = function (config) {
             "",
             exports.get_item("textarea", config),
         );
-        compose_ui.autosize_textarea();
+        compose_ui.autosize_textarea(exports.get_item("textarea", config));
     });
 
     uppy.on("restriction-failed", (file) => {
@@ -306,7 +322,7 @@ exports.setup_upload = function (config) {
             "",
             exports.get_item("textarea", config),
         );
-        compose_ui.autosize_textarea();
+        compose_ui.autosize_textarea(exports.get_item("textarea", config));
     });
 
     return uppy;

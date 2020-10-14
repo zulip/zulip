@@ -1,7 +1,9 @@
 "use strict";
 
+const autosize = require("autosize");
+
 zrequire("compose_ui");
-zrequire("people");
+const people = zrequire("people");
 zrequire("user_status");
 
 set_global("document", {
@@ -36,7 +38,7 @@ function make_textbox(s) {
     widget.caret = function (arg) {
         if (typeof arg === "number") {
             widget.pos = arg;
-            return;
+            return this;
         }
 
         if (arg) {
@@ -46,7 +48,7 @@ function make_textbox(s) {
             const after = widget.s.slice(widget.pos);
             widget.s = before + arg + after;
             widget.pos += arg.length;
-            return;
+            return this;
         }
 
         return widget.pos;
@@ -55,9 +57,9 @@ function make_textbox(s) {
     widget.val = function (new_val) {
         if (new_val) {
             widget.s = new_val;
-        } else {
-            return widget.s;
+            return this;
         }
+        return widget.s;
     };
 
     widget.trigger = function (type) {
@@ -66,19 +68,41 @@ function make_textbox(s) {
         } else if (type === "blur") {
             widget.focused = false;
         }
+        return this;
     };
 
     return widget;
 }
+
+run_test("autosize_textarea", () => {
+    const textarea_autosized = {};
+
+    function fake_autosize_update(textarea) {
+        textarea_autosized.textarea = textarea;
+        textarea_autosized.autosized = true;
+    }
+
+    with_field(autosize, "update", fake_autosize_update, () => {
+        // Call autosize_textarea for the compose box
+        compose_ui.autosize_textarea($("#compose-textarea"));
+        assert.equal(textarea_autosized.textarea, $("#compose-textarea"));
+        assert(textarea_autosized.autosized);
+
+        // Call autosize_textarea with an argument
+        compose_ui.autosize_textarea($("#message_edit_content_65"));
+        assert.equal(textarea_autosized.textarea, $("#message_edit_content_65"));
+        assert(textarea_autosized.autosized);
+    });
+});
 
 run_test("insert_syntax_and_focus", () => {
     $("#compose-textarea").val("xyz ");
     $("#compose-textarea").caret = function (syntax) {
         if (syntax !== undefined) {
             $("#compose-textarea").val($("#compose-textarea").val() + syntax);
-        } else {
-            return 4;
+            return this;
         }
+        return 4;
     };
     compose_ui.insert_syntax_and_focus(":octopus:");
     assert.equal($("#compose-textarea").caret(), 4);

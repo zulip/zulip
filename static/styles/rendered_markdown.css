@@ -1,0 +1,608 @@
+.rendered_markdown {
+    /* The default top/bottom margins for paragraphs are small, to make sure
+       they look nice next to blockquotes, lists, etc. */
+    p {
+        margin: 3px 0 3px 0;
+    }
+
+    /* The spacing between two paragraphs is significantly larger.  We
+       arrange things so that this spacing matches the spacing between
+       paragraphs in two consecutive 1-line messages. */
+    p + p {
+        margin-top: 10px;
+    }
+
+    /* Ensure bulleted lists are nicely centered in 1-line messages */
+    ul {
+        margin: 2px 0 5px 20px;
+    }
+
+    /* Swap the left and right margins of bullets for Right-To-Left languages */
+    &.rtl ul {
+        margin-right: 20px;
+        margin-left: 0;
+    }
+
+    /* Ensure ordered lists are nicely centered in 1-line messages */
+    ol {
+        margin: 2px 0 5px 20px;
+    }
+
+    /* Swap the left and right margins of ordered list for Right-To-Left languages */
+    &.rtl ol {
+        margin-right: 8px;
+        margin-left: 0;
+    }
+
+    /* Reduce top-margin when a paragraph is followed by an ordered or bulleted list */
+    p + ul,
+    p + ol {
+        margin-top: -3px;
+    }
+
+    /* Headings: We need to make sure our headings are less prominent than our sender names styling. */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.4;
+        margin-top: 0;
+        margin-bottom: 5px;
+        text-decoration: underline;
+    }
+
+    /* Formatting for blockquotes */
+    blockquote {
+        padding-left: 5px;
+        margin-left: 10px;
+        margin-top: 5px;
+        margin-bottom: 6px;
+        border-left-color: hsl(0, 0%, 87%);
+
+        p {
+            line-height: inherit;
+            font-size: inherit;
+        }
+    }
+
+    &.rtl blockquote {
+        padding-left: unset;
+        padding-right: 5px;
+        margin-left: unset;
+        margin-right: 10px;
+        border-left: unset;
+        border-right: 5px solid hsl(0, 0%, 87%);
+    }
+
+    /* Formatting for Markdown tables */
+    table {
+        padding-right: 10px;
+        margin: 5px 5px 5px 5px;
+        width: 99%;
+        display: block;
+        max-width: fit-content;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    thead {
+        background-color: hsl(0, 0%, 93%);
+    }
+
+    tr {
+        display: table-row;
+        vertical-align: inherit;
+    }
+
+    tr th {
+        border: 1px solid hsl(0, 0%, 80%);
+        padding: 4px;
+        text-align: left;
+    }
+
+    tr td {
+        border: 1px solid hsl(0, 0%, 80%);
+        padding: 4px;
+    }
+
+    /* Emoji; sized to be easily understood while not overwhelming text. */
+    .emoji {
+        height: 20px;
+        width: 20px;
+    }
+
+    /* Mentions and alert words */
+    .user-mention-me :not(.silent) {
+        background-color: hsl(112, 88%, 87%);
+    }
+
+    .user-group-mention,
+    .user-mention {
+        border-radius: 3px;
+        padding: 0 0.2em;
+        box-shadow: 0 0 0 1px hsl(0, 0%, 80%);
+        margin-right: 2px;
+        margin-left: 2px;
+        white-space: nowrap;
+        background: linear-gradient(
+            to bottom,
+            hsla(0, 0%, 0%, 0.1) 0%,
+            hsla(0, 0%, 0%, 0) 100%
+        );
+        display: inline-block;
+        margin-bottom: 1px;
+    }
+
+    .alert-word {
+        background-color: hsla(102, 85%, 57%, 0.5);
+    }
+
+    /* Timestamps */
+    time {
+        background: hsl(0, 0%, 93%);
+        border-radius: 3px;
+        padding: 0 0.2em;
+        box-shadow: 0 0 0 1px hsl(0, 0%, 80%);
+        white-space: nowrap;
+        margin-left: 2px;
+        margin-right: 2px;
+        display: inline-block;
+        margin-bottom: 1px;
+    }
+
+    /* LaTeX styling */
+    .katex-display {
+        margin: 0 0;
+    }
+
+    .tex-error {
+        color: hsl(0, 0%, 50%);
+    }
+
+    /* Spoiler styling */
+    .spoiler-block {
+        border: hsl(0, 0%, 50%) 1px solid;
+        padding: 2px 8px 2px 10px;
+        border-radius: 10px;
+        position: relative;
+        top: 1px;
+        display: block;
+        margin: 5px 0 15px 0;
+
+        .spoiler-header {
+            padding: 5px;
+            font-weight: bold;
+        }
+
+        .spoiler-content {
+            overflow: hidden;
+            border-top: hsl(0, 0%, 50%) 0 solid;
+            transition: height 0.4s ease-in-out, border-top 0.4s step-end,
+                padding 0.4s step-end;
+            padding: 0;
+            height: 0;
+
+            &.spoiler-content-open {
+                border-top: hsl(0, 0%, 50%) 1px solid;
+                transition: height 0.4s ease-in-out, border-top 0.4s step-start,
+                    padding 0.4s step-start;
+                padding: 5px;
+                height: auto;
+            }
+        }
+
+        .spoiler-button {
+            float: right;
+            width: 25px;
+            height: 25px;
+            &:hover .spoiler-arrow {
+                &::before,
+                &::after {
+                    background-color: hsl(0, 0%, 50%);
+                }
+            }
+        }
+
+        .spoiler-arrow {
+            float: right;
+            width: 13px;
+            height: 13px;
+            position: relative;
+            bottom: -5px;
+            left: -10px;
+            cursor: pointer;
+            transition: 0.4s ease;
+            margin-top: 2px;
+            text-align: left;
+            transform: rotate(45deg);
+            &::before,
+            &::after {
+                position: absolute;
+                content: "";
+                display: inline-block;
+                width: 12px;
+                height: 3px;
+                background-color: hsl(0, 0%, 83%);
+                transition: 0.4s ease;
+            }
+            &::after {
+                position: absolute;
+                transform: rotate(90deg);
+                top: -5px;
+                left: 5px;
+            }
+            &.spoiler-button-open {
+                transform: rotate(45deg) translate(-5px, -5px);
+                &::before {
+                    transform: translate(10px, 0);
+                }
+                &::after {
+                    transform: rotate(90deg) translate(10px, 0);
+                }
+            }
+        }
+    }
+
+    /* CSS for message content widgets */
+    table.tictactoe {
+        width: 80px;
+        margin-left: 0;
+    }
+
+    td.tictactoe {
+        width: 15px;
+        border: none;
+        padding: 2px;
+    }
+
+    button.tictactoe-square {
+        background-color: hsl(156, 30%, 62%);
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 3px;
+        font-size: 25px;
+        color: hsl(0, 0%, 100%);
+    }
+
+    button.tictactoe-square:hover {
+        background-color: hsl(155, 5%, 53%);
+    }
+
+    button.tictactoe-square:disabled {
+        background-color: hsl(156, 33%, 81%);
+    }
+
+    /* embedded link previews */
+    .message_inline_image_title {
+        font-weight: bold;
+    }
+
+    .twitter-image,
+    .message_inline_image {
+        position: relative;
+        margin-bottom: 5px;
+        margin-left: 5px;
+        height: 100px;
+        display: block !important;
+        border: none !important;
+    }
+
+    &.rtl .twitter-image,
+    &.rtl .message_inline_image {
+        margin-left: unset;
+        margin-right: 5px;
+    }
+
+    .twitter-tweet {
+        border: 1px solid hsl(0, 0%, 87%);
+        padding: 0.5em 0.75em;
+        margin-bottom: 0.25em;
+        word-break: break-word;
+        min-height: 48px;
+    }
+
+    .twitter-avatar {
+        float: left;
+        width: 48px;
+        height: 48px;
+        margin-right: 0.75em;
+    }
+
+    .message_inline_ref {
+        margin-bottom: 5px;
+        margin-left: 5px;
+        height: 50px;
+        display: block !important;
+        border: none !important;
+    }
+
+    &.rtl .message_inline_ref {
+        margin-left: unset;
+        margin-right: 5px;
+    }
+
+    .twitter-image img,
+    .message_inline_image img,
+    .message_inline_ref img {
+        height: auto;
+        max-height: 100%;
+        float: left;
+        margin-right: 10px;
+    }
+
+    .message_inline_image img {
+        cursor: zoom-in;
+    }
+
+    .youtube-video img,
+    .vimeo-video img,
+    .embed-video img {
+        cursor: pointer;
+    }
+
+    &.rtl .twitter-image img,
+    &.rtl .message_inline_image img,
+    &.rtl .message_inline_ref img {
+        float: right;
+        margin-right: unset;
+        margin-left: 10px;
+    }
+
+    li .message_inline_image img {
+        float: none;
+    }
+
+    .youtube-video .fa-play::before,
+    .embed-video .fa-play::before {
+        position: absolute;
+        margin: var(--margin-top, 32px) 0 0 var(--margin-left, 45px);
+        padding: 5px 8px 5px 10px;
+        font-size: 12px;
+        border-radius: 4px;
+        background-color: hsl(0, 0%, 0%);
+        color: hsl(0, 0%, 100%);
+        opacity: 0.7;
+        top: 0;
+        left: 0;
+    }
+
+    .message_embed {
+        display: block;
+        position: relative;
+        margin: 5px 0;
+        border: none;
+        border-left: 3px solid hsl(0, 0%, 93%);
+        height: 80px;
+        padding: 5px;
+        z-index: 1;
+        text-shadow: hsla(0, 0%, 0%, 0.01) 0 0 1px;
+
+        .message_embed_title {
+            padding-top: 0;
+            /* to remove the spacing that the font has from the top of the container. */
+            margin-top: -5px;
+
+            font-size: 1.2em;
+            line-height: normal;
+        }
+
+        .message_embed_description {
+            position: relative;
+            max-width: 500px;
+            margin-top: 3px;
+
+            /* to put it below the container gradient. */
+            z-index: -1;
+        }
+
+        .message_embed_image {
+            display: inline-block;
+            width: 70px;
+            height: 70px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .data-container {
+            position: relative;
+            padding: 0 5px;
+            display: inline-block;
+            vertical-align: top;
+            max-width: calc(100% - 115px);
+            max-height: 80px;
+            overflow: hidden;
+        }
+
+        .data-container div {
+            display: block;
+            border: none;
+        }
+
+        .data-container::after {
+            content: " ";
+            position: absolute;
+            width: 100%;
+            height: 10%;
+            bottom: 0;
+
+            background: linear-gradient(
+                0deg,
+                hsl(0, 0%, 100%),
+                transparent 100%
+            );
+        }
+    }
+
+    &.rtl .message_embed {
+        border-left: unset;
+        border-right: 3px solid hsl(0, 0%, 93%);
+    }
+
+    .message_embed > * {
+        display: inherit;
+        padding: 5px;
+        border: none;
+    }
+
+    pre {
+        &:hover .copy_codeblock,
+        &:hover .code_external_link {
+            visibility: visible;
+        }
+    }
+
+    /* Style copy-to-clipboard button inside codeblocks */
+    .copy_codeblock {
+        visibility: hidden;
+        /* Having absolute positioning here ensures that the element
+        doesn't scroll along with the code div in narrow windows */
+        position: absolute;
+        right: 2px;
+        margin-top: -6px;
+    }
+
+    .code_external_link {
+        visibility: hidden;
+        position: absolute;
+        right: 23px;
+        margin-top: -2px;
+        font-size: 1.4em;
+        /* The default icon and on-hover colors are inherited from <a> tag.
+        so we set our own to match the copy-to-clipbord icon */
+        color: hsl(0, 0%, 47%);
+
+        &:hover {
+            color: hsl(200, 100%, 40%);
+        }
+    }
+}
+
+.preview_content .copy_codeblock {
+    /* We avoid displaying copy_codeblock button in previews, because it
+       feels odd given that you can just copy-paste the code out of
+       the "edit" state.  We may change this decision when we add
+       menu options for viewing the code in a coding playground. */
+    display: none;
+}
+
+.preview_content .code_external_link {
+    right: 12px;
+}
+
+@media (max-width: 600px) {
+    .rendered_markdown .message_embed {
+        height: auto;
+
+        .message_embed_image {
+            width: 100%;
+            height: 100px;
+        }
+
+        .data-container {
+            display: block;
+            max-width: 100%;
+            margin-top: 10px;
+        }
+    }
+}
+
+/* Inline and block code.
+
+TODO: It is likely that this CSS can and should be moved into the
+rendered_markdown block; we just need to do further analysis to
+confirm doing so won't break anything. */
+
+code {
+    /* 12/14 em, so bootstrap's default 12 px,
+       when body is the default 14 px */
+    font-size: 0.857em;
+    unicode-bidi: embed;
+    direction: ltr;
+    color: hsl(0, 0%, 0%);
+    white-space: pre;
+}
+
+.rendered_markdown code {
+    white-space: pre-wrap;
+    padding: 0 4px;
+    background-color: hsl(0, 0%, 100%);
+}
+
+.codehilite {
+    display: block !important;
+    border: none !important;
+    background: none !important;
+}
+
+pre {
+    direction: ltr;
+    /* code block text is a bit smaller than normal text */
+    font-size: 0.8em;
+    line-height: 1.4;
+    white-space: pre;
+    overflow-x: auto;
+    word-wrap: normal;
+    /* Bootstrap's default here is top: 0px, bottom: 10px */
+    margin-top: 5px;
+    margin-bottom: 5px;
+    /* Bootstrap's default here is 9.5 on all sides */
+    padding-top: 5px;
+    padding-bottom: 3px;
+    padding-left: 7px;
+    padding-right: 7px;
+}
+
+.rendered_markdown pre code {
+    font-size: inherit;
+    padding: 0;
+    white-space: inherit;
+}
+
+/* Both the horizontal scrollbar in <pre/> as well as
+   vertical scrollbar in the <textarea/> is styled similarly. */
+#message_edit_form textarea,
+pre {
+    /* Ensure the horizontal scrollbar is visible on Mac */
+    &::-webkit-scrollbar {
+        height: 8px;
+        width: 10px;
+        background-color: hsla(0, 0%, 0%, 0.05);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: hsla(0, 0%, 0%, 0.3);
+        border-radius: 20px;
+        transition: all 0.2s ease;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: hsla(0, 0%, 0%, 0.6);
+    }
+}
+
+pre code {
+    overflow-x: scroll;
+    white-space: pre;
+}
+
+/* Style inline code inside a link
+   to look more like a normal link */
+a code {
+    color: hsl(200, 100%, 40%);
+    border-color: hsl(200, 100%, 40%);
+}
+
+a:hover code {
+    color: hsl(200, 100%, 25%);
+    border-color: hsl(200, 100%, 25%);
+}
+
+/* Search highlight used in both topics and rendered_markdown */
+.highlight {
+    background-color: hsl(51, 94%, 74%);
+}

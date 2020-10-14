@@ -7,9 +7,10 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import CommandError
 
+from zerver.lib.actions import do_deactivate_realm
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import Message, Reaction
+from zerver.models import Message, Reaction, UserProfile
 
 
 class Command(ZulipBaseCommand):
@@ -53,12 +54,8 @@ class Command(ZulipBaseCommand):
 
     The proper procedure for using this to export a realm is as follows:
 
-    * Use `./manage.py deactivate_realm` to deactivate the realm, so
-      nothing happens in the realm being exported during the export
-      process.
-
-    * Use `./manage.py export` to export the realm, producing a data
-      tarball.
+    * Use `./manage.py export --deactivate` to deactivate and export
+      the realm, producing a data tarball.
 
     * Transfer the tarball to the new server and unpack it.
 
@@ -69,9 +66,8 @@ class Command(ZulipBaseCommand):
 
     * Inform the users about the things broken above.
 
-    We recommend testing by exporting without having deactivated the
-    realm first, to make sure you have the procedure right and
-    minimize downtime.
+    We recommend testing by exporting without `--deactivate` first, to
+    make sure you have the procedure right and minimize downtime.
 
     Performance: In one test, the tool exported a realm with hundreds
     of users and ~1M messages of history with --threads=1 in about 3
@@ -83,21 +79,17 @@ class Command(ZulipBaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--output',
                             dest='output_dir',
-                            action="store",
-                            default=None,
                             help='Directory to write exported data to.')
         parser.add_argument('--threads',
-                            dest='threads',
-                            action="store",
                             default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
                             help='Threads to use in exporting UserMessage objects in parallel')
         parser.add_argument('--public-only',
                             action="store_true",
                             help='Export only public stream messages and associated attachments')
+        parser.add_argument('--deactivate-realm',
+                            action="store_true",
+                            help='Deactivate the realm immediately before exporting')
         parser.add_argument('--consent-message-id',
-                            dest="consent_message_id",
-                            action="store",
-                            default=None,
                             type=int,
                             help='ID of the message advertising users to react with thumbs up')
         parser.add_argument('--upload',
@@ -116,24 +108,6 @@ class Command(ZulipBaseCommand):
         public_only = options["public_only"]
         consent_message_id = options["consent_message_id"]
 
-        if output_dir is None:
-            output_dir = tempfile.mkdtemp(prefix="zulip-export-")
-        else:
-            output_dir = os.path.realpath(os.path.expanduser(output_dir))
-            if os.path.exists(output_dir):
-                if os.listdir(output_dir):
-                    raise CommandError(
-                        f"Refusing to overwrite nonempty directory: {output_dir}. Aborting...",
-                    )
-            else:
-                os.makedirs(output_dir)
-
-        tarball_path = output_dir.rstrip("/") + ".tar.gz"
-        try:
-            os.close(os.open(tarball_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o666))
-        except FileExistsError:
-            raise CommandError(f"Refusing to overwrite existing tarball: {tarball_path}. Aborting...")
-
         print(f"\033[94mExporting realm\033[0m: {realm.string_id}")
 
         num_threads = int(options['threads'])
@@ -142,6 +116,9 @@ class Command(ZulipBaseCommand):
 
         if public_only and consent_message_id is not None:
             raise CommandError('Please pass either --public-only or --consent-message-id')
+
+        if options["deactivate_realm"] and realm.deactivated:
+            raise CommandError(f"The realm {realm.string_id} is already deactivated.  Aborting...")
 
         if consent_message_id is not None:
             try:
@@ -167,7 +144,34 @@ class Command(ZulipBaseCommand):
 
             print(f"\n\033[94mMessage content:\033[0m\n{message.content}\n")
 
-            print(f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)}\n")
+            user_count = UserProfile.objects.filter(realm_id=realm.id).count()
+            print(f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)} / {user_count} total users\n")
+
+            proceed = input("Continue? [y/N] ")
+            if proceed.lower() not in ('y', 'yes'):
+                raise CommandError("Aborting!")
+
+        if output_dir is None:
+            output_dir = tempfile.mkdtemp(prefix="zulip-export-")
+        else:
+            output_dir = os.path.realpath(os.path.expanduser(output_dir))
+            if os.path.exists(output_dir):
+                if os.listdir(output_dir):
+                    raise CommandError(
+                        f"Refusing to overwrite nonempty directory: {output_dir}. Aborting...",
+                    )
+            else:
+                os.makedirs(output_dir)
+
+        tarball_path = output_dir.rstrip("/") + ".tar.gz"
+        try:
+            os.close(os.open(tarball_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o666))
+        except FileExistsError:
+            raise CommandError(f"Refusing to overwrite existing tarball: {tarball_path}. Aborting...")
+
+        if options["deactivate_realm"]:
+            print(f"\033[94mDeactivating realm\033[0m: {realm.string_id}")
+            do_deactivate_realm(realm)
 
         def percent_callback(bytes_transferred: Any) -> None:
             sys.stdout.write('.')

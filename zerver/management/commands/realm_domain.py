@@ -15,16 +15,12 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--op',
-                            dest='op',
-                            type=str,
                             default="show",
                             help='What operation to do (add, show, remove).')
         parser.add_argument('--allow-subdomains',
-                            dest='allow_subdomains',
                             action="store_true",
-                            default=False,
                             help='Whether subdomains are allowed or not.')
-        parser.add_argument('domain', metavar='<domain>', type=str, nargs='?',
+        parser.add_argument('domain', metavar='<domain>', nargs='?',
                             help="domain to add or remove")
         self.add_realm_args(parser, True)
 

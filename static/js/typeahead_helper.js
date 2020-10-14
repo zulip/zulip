@@ -8,6 +8,8 @@ const emoji = require("../shared/js/emoji");
 const typeahead = require("../shared/js/typeahead");
 const render_typeahead_list_item = require("../templates/typeahead_list_item.hbs");
 
+const people = require("./people");
+const pm_conversations = require("./pm_conversations");
 const settings_data = require("./settings_data");
 const util = require("./util");
 
@@ -129,7 +131,7 @@ exports.clear_rendered_stream = function (stream_id) {
 
 exports.render_stream = function (stream) {
     let desc = stream.description;
-    const short_desc = desc.substring(0, 35);
+    const short_desc = desc.slice(0, 35);
 
     if (desc !== short_desc) {
         desc = short_desc + "...";
@@ -266,7 +268,7 @@ exports.sort_people_for_relevance = function (objs, current_stream_name, current
 };
 
 exports.compare_by_popularity = function (lang_a, lang_b) {
-    const diff = pygments_data.langs[lang_b] - pygments_data.langs[lang_a];
+    const diff = pygments_data.langs[lang_b].priority - pygments_data.langs[lang_a].priority;
     if (diff !== 0) {
         return diff;
     }
@@ -350,6 +352,8 @@ function slash_command_comparator(slash_command_a, slash_command_b) {
     } else if (slash_command_a.name > slash_command_b.name) {
         return 1;
     }
+    /* istanbul ignore next */
+    return 0;
 }
 exports.sort_slash_commands = function (matches, query) {
     // We will likely want to in the future make this sort the

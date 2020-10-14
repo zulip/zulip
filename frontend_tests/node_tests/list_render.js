@@ -223,7 +223,7 @@ run_test("filtering", () => {
     const new_data = ["greta", "faye", "gary", "frank", "giraffe", "fox"];
 
     widget.replace_list_data(new_data);
-    expected_html = "<div>greta</div>" + "<div>gary</div>" + "<div>giraffe</div>";
+    expected_html = "<div>greta</div><div>gary</div><div>giraffe</div>";
     assert.deepEqual(container.appended_data.html(), expected_html);
 });
 
@@ -240,7 +240,7 @@ run_test("no filtering", () => {
     const widget = list_render.create(container, ["apple", "banana"], opts);
     widget.render();
 
-    const expected_html = "<div>apple</div>" + "<div>banana</div>";
+    const expected_html = "<div>apple</div><div>banana</div>";
     assert.deepEqual(container.appended_data.html(), expected_html);
 });
 
@@ -257,7 +257,7 @@ function sort_button(opts) {
             case "sort-prop":
                 return opts.prop_name;
             default:
-                throw Error("unknown selector: " + sel);
+                throw new Error("unknown selector: " + sel);
         }
     }
 
@@ -447,7 +447,7 @@ run_test("custom sort", () => {
             product: sort_by_product,
             x_value: sort_by_x,
         },
-        init_sort: sort_by_product,
+        init_sort: [sort_by_product],
         simplebar_container: scroll_container,
     });
 
@@ -503,7 +503,7 @@ run_test("clear_event_handlers", () => {
 
 run_test("errors", () => {
     // We don't care about actual data for this test.
-    const list = "stub";
+    const list = ["stub"];
     const container = make_container();
     const scroll_container = make_scroll_container();
 
@@ -671,7 +671,7 @@ run_test("render item", () => {
         const regex = new RegExp(`\\<tr data-item=${item}\\>.*?<\\/tr\\>`);
         assert(expected_queries.includes(query));
         if (query.includes(`data-item='${INITIAL_RENDER_COUNT}'`)) {
-            return; // This item is not rendered, so we find nothing
+            return undefined; // This item is not rendered, so we find nothing
         }
         return {
             // Return a JQuery stub for the original HTML.
@@ -685,7 +685,7 @@ run_test("render item", () => {
         };
     };
 
-    const list = [...Array(100).keys()];
+    const list = [...new Array(100).keys()];
 
     let text = "initial";
     const get_item = (item) => ({text: `${text}: ${item}`, value: item});

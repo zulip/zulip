@@ -1,0 +1,536 @@
+#compose_buttons {
+    text-align: right;
+
+    .new_message_button {
+        padding-top: 1.1em;
+
+        .button.small {
+            font-size: 1em;
+            padding: 3px 10px;
+        }
+
+        .compose_mobile_button {
+            span {
+                font-size: 1.2em !important;
+                font-weight: 400;
+                line-height: 1em;
+            }
+
+            @media (min-width: 551px) {
+                display: none;
+            }
+        }
+
+        .message-control-link {
+            float: left;
+        }
+
+        .alert-draft {
+            font-size: 14px;
+            color: hsl(170, 48%, 54%);
+            padding: 3px 12px;
+            font-weight: 400;
+            display: none;
+        }
+
+        @media (max-width: 550px) {
+            .compose_stream_button,
+            .compose_private_button {
+                display: none;
+            }
+        }
+    }
+}
+
+.compose-content {
+    border-top: 1px solid hsla(0, 0%, 0%, 0.07);
+    transition: background-color 200ms linear;
+
+    padding: 8px 10px 8px 10px;
+    margin-left: 250px;
+    margin-right: 250px;
+    position: relative;
+
+    border-left: 1px solid hsl(0, 0%, 93%);
+    border-right: 1px solid hsl(0, 0%, 93%);
+}
+
+.ztable_comp_col1 {
+    width: 10px;
+}
+
+.message_comp {
+    display: none;
+    padding: 10px 10px 8px 5px;
+}
+
+.autocomplete_secondary {
+    opacity: 0.8;
+}
+
+.active .autocomplete_secondary {
+    opacity: 1;
+}
+
+.compose_table {
+    .stream-selection-header-colorblock {
+        &.message_header_private_message {
+            border-radius: 3px 0 0 3px;
+            border-bottom: 0;
+            background-color: hsl(0, 0%, 27%);
+        }
+    }
+
+    .right_part {
+        padding: 0;
+        display: flex;
+        align-items: center;
+        width: 100%;
+
+        .fa-angle-right {
+            font-size: 0.9em;
+            -webkit-text-stroke: 0.05em;
+            position: relative;
+            margin: 0 5px;
+        }
+    }
+
+    .pm_recipient {
+        margin-left: 5px;
+        margin-right: 20px;
+        display: flex;
+        width: 100%;
+    }
+
+    #private-message .to_text {
+        vertical-align: middle;
+
+        font-weight: 600;
+    }
+
+    #compose-lock-icon {
+        position: relative;
+        left: 5px;
+        width: 0;
+    }
+
+    .message_header {
+        background: none;
+        background-color: hsl(0, 0%, 92%);
+        border: none;
+        border-radius: 0;
+        box-shadow: none !important;
+    }
+
+    .messagebox {
+        box-shadow: none !important;
+    }
+
+    .message-control-link {
+        position: relative;
+        margin-right: 5px;
+        top: 2px;
+    }
+}
+
+#send_message_form {
+    margin: 0;
+
+    .messagebox {
+        /* normally 5px 14px; pull in the right and bottom a bit */
+        cursor: default;
+        padding: 0;
+        background: none;
+        box-shadow: none;
+        border: none;
+    }
+
+    .message_content {
+        margin-right: 0;
+    }
+}
+
+#below-compose-content {
+    width: 100%;
+    margin-top: 6px;
+}
+
+#compose {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    width: 100%;
+
+    background-color: hsl(0, 0%, 100%);
+}
+
+#compose-container {
+    width: 100%;
+    /* This should match the value for .app-main */
+    max-width: 1400px;
+    margin: auto;
+}
+
+#compose_close {
+    display: none;
+    position: absolute;
+    right: 0;
+}
+
+#compose_invite_users,
+#compose_private_stream_alert {
+    /* Don't overlap into the compose_close × */
+    margin-right: 10px;
+}
+
+.compose_invite_user,
+.compose_private_stream_alert,
+.compose-all-everyone,
+.compose-announce,
+.compose_not_subscribed {
+    padding: 4px 0 4px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#compose_not_subscribed_close {
+    top: 1px;
+    right: 10px;
+}
+
+.compose_invite_close,
+.compose_private_stream_alert_close {
+    display: inline-block;
+    margin-top: 4px;
+
+    width: 10px;
+}
+
+.compose-all-everyone-controls,
+.compose-announce-controls,
+.compose_invite_user_controls,
+.compose_private_stream_alert_controls {
+    float: right;
+    position: relative;
+}
+
+.compose_invite_user p,
+.compose_not_subscribed p {
+    margin: 0;
+    display: inline-block;
+    max-width: calc(100% - 100px);
+}
+
+#error-message-sub-button {
+    margin-right: 30px;
+}
+
+/* Like .nav-tabs > li > a */
+div[id^="message-edit-send-status"],
+#compose-send-status {
+    padding: 8px 14px 8px 14px;
+    margin-bottom: 8px;
+    line-height: 20px;
+    display: none;
+}
+
+#compose-send-status .progress {
+    height: 10px;
+    margin-bottom: 10px;
+}
+
+#nonexistent_stream_reply_error {
+    padding: 8px 14px 8px 14px;
+    margin-bottom: 8px;
+    line-height: 20px;
+    display: none;
+}
+
+/* Like .alert .close */
+.send-status-close,
+.compose-send-status-close {
+    font-size: 17px;
+    font-weight: bold;
+    color: hsl(0, 0%, 0%);
+    text-shadow: 0 1px 0 hsl(0, 0%, 100%);
+    opacity: 0.2;
+    float: right;
+}
+
+.send-status-close:hover,
+.compose-send-status-close:hover {
+    cursor: pointer;
+    opacity: 0.4;
+}
+
+#out-of-view-notification {
+    position: relative;
+    margin-bottom: 6px;
+
+    background-color: hsla(152, 51%, 63%, 0.25);
+    border: 1px solid hsla(0, 0%, 0%, 0.1);
+    border-radius: 4px;
+
+    .close {
+        position: absolute;
+        right: 8px;
+        top: 4px;
+        font-size: 17px;
+        font-weight: bold;
+        color: hsl(0, 0%, 0%);
+        text-shadow: 0 1px 0 hsl(0, 0%, 100%);
+        opacity: 0.2;
+    }
+}
+
+.compose-notifications-content {
+    padding: 4px 22px 4px 22px;
+    text-align: center;
+}
+
+.composition-area {
+    position: relative;
+}
+
+textarea.new_message_textarea {
+    display: table-cell;
+    width: calc(100% - 12px);
+    padding: 5px;
+    height: 1.5em;
+    max-height: 22em;
+    margin-bottom: 0;
+    resize: vertical !important;
+    margin-top: 5px;
+}
+
+textarea.new_message_textarea,
+.compose_table .recipient_box {
+    border: 1px solid hsla(0, 0%, 0%, 0.2);
+    box-shadow: none;
+    transition: border 0.2s ease;
+
+    &:focus {
+        border: 1px solid hsl(0, 0%, 67%);
+        box-shadow: none;
+    }
+}
+
+input.recipient_box {
+    margin: 0;
+    height: 1.1em;
+    border-radius: 3px;
+}
+
+#stream_message_recipient_stream.recipient_box {
+    width: 20%;
+    border-radius: 0 3px 3px 0;
+    border-left: 0;
+    min-width: 120px;
+
+    &:focus {
+        border-left: none;
+    }
+
+    &.lock-padding {
+        padding-left: 18px;
+    }
+}
+
+#stream_message_recipient_topic.recipient_box {
+    width: calc(20% + 14px);
+    min-width: 140px;
+    max-width: 165px;
+}
+
+#private_message_recipient.recipient_box {
+    width: 100%;
+}
+
+#compose-send-button {
+    /* To arrange the right tab order for the compose box keyboard UI,
+       this element appears before its proper position in the DOM and is configured
+       to float right, so that tabbing from the compose box goes here and then
+       to the message controls to its left, to ensure "Tab then Enter" sends messages. */
+    border-radius: 4px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    margin-bottom: 0;
+    font-weight: 600;
+    border: 1px solid hsl(170, 68%, 41%);
+    background-color: hsl(170, 48%, 54%);
+    color: hsl(0, 0%, 100%);
+    float: right;
+    font-size: 0.9em;
+
+    &:focus {
+        box-shadow: 0 0 10px hsl(170, 48%, 54%), 0 0 5px hsl(170, 48%, 54%);
+    }
+}
+
+#send_controls {
+    float: right;
+    position: relative;
+    font-size: 0.8em;
+    height: 2.2em;
+
+    .compose_checkbox_label {
+        color: hsl(0, 0%, 67%);
+        margin: 4px;
+    }
+}
+
+#stream-message,
+#private-message {
+    display: flex;
+}
+
+#private-message {
+    align-items: center;
+}
+
+#sending-indicator {
+    top: 2px;
+    position: relative;
+    font-weight: bold;
+    display: inline-block;
+}
+
+a.message-control-button {
+    display: block;
+    opacity: 0.4;
+    color: inherit;
+    text-decoration: none;
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+    padding-top: 5px;
+    text-align: center;
+    float: left;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.drag {
+    display: none;
+    height: 18px;
+    width: 100%;
+    top: 23px;
+    position: relative;
+    cursor: ns-resize;
+}
+
+#enter_sends {
+    vertical-align: middle;
+    margin-top: -2px;
+    margin-right: 4px;
+}
+
+.inline-subscribe-error {
+    margin-left: 5px;
+}
+
+.preview_message_area {
+    /* minus 5px padding. */
+    width: calc(100% - 12px);
+    padding: 5px;
+    /* the maximum height the textarea gets to. */
+    max-height: 308px;
+    /* the minimum height the textarea collapses to. */
+    min-height: 36px;
+    overflow: auto;
+
+    border: 1px solid hsl(0, 0%, 67%);
+    border-radius: 4px;
+    background-color: hsla(0, 0%, 0%, 0.02);
+    cursor: not-allowed;
+}
+
+#preview_message_area {
+    margin-top: 5px;
+    min-height: 42px;
+}
+
+a#undo_markdown_preview {
+    text-decoration: none;
+    position: relative;
+    font-size: 15px;
+}
+
+#markdown_preview_spinner {
+    margin: auto;
+}
+
+.dropdown-menu {
+    ul {
+        list-style: none;
+        margin: 0;
+        background: hsl(0, 0%, 100%);
+    }
+
+    .typeahead-header {
+        margin: 0;
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-top: 4px;
+        border-top: 1px solid hsla(0, 0%, 0%, 0.2);
+        display: flex;
+        align-items: center;
+    }
+
+    #typeahead-header-text {
+        font-size: 12px;
+    }
+
+    &.typeahead {
+        background: hsl(0, 0%, 100%);
+    }
+}
+
+.compose_mobile_stream_button i,
+.compose_mobile_private_button i {
+    margin-right: 4px;
+}
+
+/* This max-width must be synced with message_viewport.is_narrow */
+@media (max-width: 1165px) {
+    .compose-content {
+        margin-right: 7px;
+    }
+}
+
+@media (max-width: 775px) {
+    .compose-content {
+        margin-right: 7px;
+        margin-left: 7px;
+    }
+}
+
+@media (max-width: 500px) {
+    .compose_stream_button,
+    .compose_private_button,
+    .compose_reply_button {
+        padding: 5px 10px 5px 10px;
+    }
+
+    textarea.new_message_textarea {
+        height: 30px !important;
+        min-height: 30px !important;
+    }
+}
+
+@media (max-width: 370px) {
+    #stream_message_recipient_topic.recipient_box {
+        width: calc(100% - 175px);
+        min-width: 95px;
+    }
+
+    .compose-content {
+        margin-right: 5px;
+        margin-left: 5px;
+    }
+}

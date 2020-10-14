@@ -11,7 +11,7 @@ function reset_state() {
 }
 
 exports.is_active = function () {
-    return !!open_overlay_name;
+    return Boolean(open_overlay_name);
 };
 
 exports.is_modal_open = function () {
@@ -45,7 +45,7 @@ exports.recent_topics_open = function () {
 // To address bugs where mouse might apply to the streams/settings
 // overlays underneath an open modal within those settings UI, we add
 // this inline style to '.overlay.show', overriding the
-// "pointer-events: all" style in app_components.scss.
+// "pointer-events: all" style in app_components.css.
 //
 // This is kinda hacky; it only works for modals within overlays, and
 // we need to make sure it gets re-enabled when the modal closes.
@@ -63,7 +63,7 @@ exports.enable_background_mouse_events = function () {
 exports.active_modal = function () {
     if (!exports.is_modal_open()) {
         blueslip.error("Programming error — Called active_modal when there is no modal open");
-        return;
+        return undefined;
     }
     return "#" + $(".modal.in").attr("id");
 };
@@ -163,7 +163,7 @@ exports.close_overlay = function (name) {
     $(".header").attr("aria-hidden", "false");
 
     if (!close_handler) {
-        blueslip.error("Overlay close handler for " + name + " not properly setup.");
+        blueslip.error("Overlay close handler for " + name + " not properly set up.");
         return;
     }
 

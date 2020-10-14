@@ -1,0 +1,113 @@
+/* Reusable, object-oriented CSS base components for all Zulip pages
+   (both webapp and portico). */
+
+.new-style {
+    label.checkbox {
+        padding: 0;
+        display: inline-block;
+        position: relative;
+        vertical-align: top;
+
+        input[type="checkbox"] {
+            position: absolute;
+            clip: rect(0, 0, 0, 0);
+
+            ~ span {
+                display: inline-block;
+                vertical-align: middle;
+                position: relative;
+                top: -2px;
+
+                padding: 2px;
+                margin: 0 5px 0 0;
+                height: 10px;
+                width: 10px;
+
+                font-weight: 300;
+                line-height: 0.8;
+                font-size: 1.3rem;
+                text-align: center;
+                border: 1px solid hsla(0, 0%, 0%, 0.6);
+
+                border-radius: 4px;
+                filter: brightness(0.8);
+
+                cursor: pointer;
+            }
+
+            &:checked ~ span {
+                background-image: url(../images/checkbox.svg);
+                background-size: 85%;
+                background-position: 50% 50%;
+                background-repeat: no-repeat;
+            }
+
+            &:focus ~ span {
+                outline: 1px dotted;
+                outline: -webkit-focus-ring-color auto 5px;
+            }
+
+            &:disabled ~ span {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+        }
+    }
+
+    a.no-style {
+        color: inherit;
+    }
+}
+
+a.no-underline,
+a.no-underline:hover {
+    text-decoration: none;
+}
+
+.half-opacity {
+    opacity: 0.5;
+}
+
+.italic {
+    font-style: italic;
+}
+
+.simplebar-track {
+    .simplebar-scrollbar::before {
+        background-color: hsl(0, 0%, 0%);
+        box-shadow: 0 0 0 1px hsla(0, 0%, 100%, 0.33);
+    }
+
+    &.simplebar-vertical {
+        transition: width 0.2s ease 1s;
+
+        &.simplebar-hover {
+            width: 15px;
+            transition: width 0.2s ease;
+        }
+    }
+
+    &.simplebar-horizontal {
+        transition: height 0.2s ease 1s;
+
+        &.simplebar-hover {
+            height: 15px;
+            transition: height 0.2s ease;
+        }
+
+        .simplebar-scrollbar {
+            transition: height 0.2s ease 1s;
+
+            &.simplebar-hover {
+                height: 11px;
+                transition: height 0.2s ease;
+            }
+        }
+    }
+}
+
+i.zulip-icon.bot {
+    color: hsl(180, 5%, 74%);
+    vertical-align: top;
+    padding: 0 2px;
+}

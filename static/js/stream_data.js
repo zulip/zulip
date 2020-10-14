@@ -1,7 +1,8 @@
 "use strict";
 
-const FoldDict = require("./fold_dict").FoldDict;
-const LazySet = require("./lazy_set").LazySet;
+const {FoldDict} = require("./fold_dict");
+const {LazySet} = require("./lazy_set");
+const people = require("./people");
 const settings_config = require("./settings_config");
 const util = require("./util");
 
@@ -255,7 +256,7 @@ exports.get_sub_by_name = function (name) {
     const stream_id = stream_ids_by_name.get(name);
 
     if (!stream_id) {
-        return;
+        return undefined;
     }
 
     return subs_by_stream_id.get(stream_id);
@@ -314,9 +315,9 @@ exports.slug_to_name = function (slug) {
     GitHub conversations.  We migrated to modern slugs in
     early 2018.
     */
-    const m = /^([\d]+)(-.*)?/.exec(slug);
+    const m = /^(\d+)(-.*)?/.exec(slug);
     if (m) {
-        const stream_id = parseInt(m[1], 10);
+        const stream_id = Number.parseInt(m[1], 10);
         const sub = subs_by_stream_id.get(stream_id);
         if (sub) {
             return sub.name;
@@ -473,7 +474,7 @@ exports.get_subscriber_count = function (stream_id) {
     const sub = exports.get_sub_by_id(stream_id);
     if (sub === undefined) {
         blueslip.warn("We got a get_subscriber_count count call for a non-existent stream.");
-        return;
+        return undefined;
     }
     if (!sub.subscribers) {
         return 0;
@@ -509,7 +510,7 @@ exports.receives_notifications = function (stream_id, notification_name) {
 };
 
 exports.update_calculated_fields = function (sub) {
-    sub.is_admin = page_params.is_admin;
+    sub.is_realm_admin = page_params.is_admin;
     // Admin can change any stream's name & description either stream is public or
     // private, subscribed or unsubscribed.
     sub.can_change_name_description = page_params.is_admin;
@@ -680,12 +681,12 @@ exports.get_name = function (stream_name) {
 
 exports.maybe_get_stream_name = function (stream_id) {
     if (!stream_id) {
-        return;
+        return undefined;
     }
     const stream = exports.get_sub_by_id(stream_id);
 
     if (!stream) {
-        return;
+        return undefined;
     }
 
     return stream.name;
@@ -735,11 +736,11 @@ exports.is_user_subscribed = function (stream_id, user_id) {
         blueslip.warn(
             "We got a is_user_subscribed call for a non-existent or inaccessible stream.",
         );
-        return;
+        return undefined;
     }
     if (typeof user_id === "undefined") {
         blueslip.warn("Undefined user_id passed to function is_user_subscribed");
-        return;
+        return undefined;
     }
 
     return sub.subscribers.has(user_id);
@@ -760,8 +761,8 @@ exports.create_streams = function (streams) {
 
 exports.create_sub_from_server_data = function (attrs) {
     if (!attrs.stream_id) {
-        // fail fast (blueslip.fatal will throw an error on our behalf)
-        blueslip.fatal("We cannot create a sub without a stream_id");
+        // fail fast
+        throw new Error("We cannot create a sub without a stream_id");
     }
 
     let sub = exports.get_sub_by_id(attrs.stream_id);

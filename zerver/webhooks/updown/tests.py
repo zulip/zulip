@@ -9,30 +9,46 @@ class UpdownHookTests(WebhookTestCase):
     def test_updown_check_down_event(self) -> None:
         expected_topic = "https://updown.io"
         expected_message = "Service is `down`. It returned a 500 error at 2016-02-07 13:11:43 UTC."
-        self.send_and_test_stream_message('check_down_one_event', expected_topic, expected_message)
+        self.check_webhook("check_down_one_event", expected_topic, expected_message)
 
     def test_updown_check_up_again_event(self) -> None:
         expected_topic = "https://updown.io"
         expected_message = "Service is `up` again after 4 minutes 25 seconds."
-        self.send_and_test_stream_message('check_up_again_one_event', expected_topic, expected_message)
+        self.check_webhook("check_up_again_one_event", expected_topic, expected_message)
 
     def test_updown_check_up_event(self) -> None:
         expected_topic = "https://updown.io"
         expected_message = "Service is `up`."
-        self.send_and_test_stream_message('check_up_first_time', expected_topic, expected_message)
+        self.check_webhook("check_up_first_time", expected_topic, expected_message)
 
     def test_updown_check_up_multiple_events(self) -> None:
-        first_message_expected_topic = "https://updown.io"
-        first_message_expected_message = "Service is `up` again after 1 second."
+        topic_name = "https://updown.io"
 
-        second_message_expected_topic = "https://updown.io"
-        second_message_expected_message = "Service is `down`. It returned a 500 error at 2016-02-07 13:11:43 UTC."
+        down_content = "Service is `down`. It returned a 500 error at 2016-02-07 13:11:43 UTC."
+        up_content = "Service is `up` again after 1 second."
 
-        self.send_and_test_stream_message('check_multiple_events')
-        last_message = self.get_last_message()
-        self.do_test_topic(last_message, first_message_expected_topic)
-        self.do_test_message(last_message, first_message_expected_message)
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        payload = self.get_body("check_multiple_events")
 
-        second_to_last_message = self.get_second_to_last_message()
-        self.do_test_topic(second_to_last_message, second_message_expected_topic)
-        self.do_test_message(second_to_last_message, second_message_expected_message)
+        msg = self.send_webhook_payload(
+            self.test_user,
+            self.url,
+            payload,
+            content_type="application/json",
+        )
+
+        msg = self.get_second_to_last_message()
+        self.assert_stream_message(
+            message=msg,
+            stream_name=self.STREAM_NAME,
+            topic_name=topic_name,
+            content=down_content,
+        )
+
+        msg = self.get_last_message()
+        self.assert_stream_message(
+            message=msg,
+            stream_name=self.STREAM_NAME,
+            topic_name=topic_name,
+            content=up_content,
+        )

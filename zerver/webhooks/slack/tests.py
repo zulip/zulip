@@ -10,8 +10,12 @@ class SlackWebhookTests(WebhookTestCase):
 
         expected_topic = "channel: general"
         expected_message = "**slack_user**: `test\n`"
-        self.send_and_test_stream_message('message_info', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "message_info",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_slack_channel_to_stream(self) -> None:
 
@@ -19,8 +23,12 @@ class SlackWebhookTests(WebhookTestCase):
         self.url = "{}{}".format(self.url, "&channels_map_to_topics=0")
         expected_topic = "Message from Slack"
         expected_message = "**slack_user**: `test\n`"
-        self.send_and_test_stream_message('message_info', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "message_info",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_missing_data_user_name(self) -> None:
 

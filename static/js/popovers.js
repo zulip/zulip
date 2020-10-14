@@ -1,13 +1,14 @@
 "use strict";
 
 const ClipboardJS = require("clipboard");
-const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
+const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
 const moment = require("moment");
 
 const render_actions_popover_content = require("../templates/actions_popover_content.hbs");
 const render_mobile_message_buttons_popover = require("../templates/mobile_message_buttons_popover.hbs");
 const render_mobile_message_buttons_popover_content = require("../templates/mobile_message_buttons_popover_content.hbs");
 const render_no_arrow_popover = require("../templates/no_arrow_popover.hbs");
+const render_playground_links_popover_content = require("../templates/playground_links_popover_content.hbs");
 const render_remind_me_popover_content = require("../templates/remind_me_popover_content.hbs");
 const render_user_group_info_popover = require("../templates/user_group_info_popover.hbs");
 const render_user_group_info_popover_content = require("../templates/user_group_info_popover_content.hbs");
@@ -15,6 +16,8 @@ const render_user_info_popover_content = require("../templates/user_info_popover
 const render_user_info_popover_title = require("../templates/user_info_popover_title.hbs");
 const render_user_profile_modal = require("../templates/user_profile_modal.hbs");
 
+const people = require("./people");
+const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
 const util = require("./util");
 
@@ -22,12 +25,14 @@ let current_actions_popover_elem;
 let current_flatpickr_instance;
 let current_message_info_popover_elem;
 let current_mobile_message_buttons_popover_elem;
+let current_user_info_popover_elem;
+let current_playground_links_popover_elem;
 let userlist_placement = "right";
 
 let list_of_popovers = [];
 
 function elem_to_user_id(elem) {
-    return parseInt(elem.attr("data-user-id"), 10);
+    return Number.parseInt(elem.attr("data-user-id"), 10);
 }
 
 // this utilizes the proxy pattern to intercept all calls to $.fn.popover
@@ -115,6 +120,8 @@ function calculate_info_popover_placement(size, elt) {
             return "top";
         }
     }
+
+    return undefined;
 }
 
 function get_custom_profile_field_data(user, field, field_types, dateFormat) {
@@ -168,6 +175,7 @@ function render_user_info_popover(
     user,
     popover_element,
     is_sender_popover,
+    has_message_context,
     private_msg_class,
     template_class,
     popover_placement,
@@ -188,6 +196,7 @@ function render_user_info_popover(
     const args = {
         can_revoke_away,
         can_set_away,
+        has_message_context,
         is_active: people.is_active_user_for_popover(user.user_id),
         is_bot: user.is_bot,
         is_me,
@@ -205,6 +214,7 @@ function render_user_info_popover(
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         status_text: user_status.get_status_text(user.user_id),
+        user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
     };
 
     if (user.is_bot) {
@@ -232,7 +242,7 @@ function render_user_info_popover(
         }),
         html: true,
         trigger: "manual",
-        top_offset: 100,
+        top_offset: $("#userlist-title").offset().top + 15,
         fix_positions: true,
     });
     popover_element.popover("show");
@@ -270,6 +280,7 @@ function show_user_info_popover_for_message(element, user, message) {
             user,
             elt,
             is_sender_popover,
+            true,
             "respond_personal_button",
             "message-info-popover",
             "right",
@@ -348,19 +359,53 @@ exports.show_user_profile = function (user) {
     );
 };
 
-function get_user_info_popover_items() {
+exports.show_user_info_popover = function (element, user) {
+    const last_popover_elem = current_user_info_popover_elem;
+    exports.hide_all();
+    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+        return;
+    }
+    const elt = $(element);
+    render_user_info_popover(
+        user,
+        elt,
+        false,
+        false,
+        "compose_private_message",
+        "user-info-popover",
+        "right",
+    );
+    current_user_info_popover_elem = elt;
+};
+
+function get_user_info_popover_for_message_items() {
     if (!current_message_info_popover_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
-        return;
+        return undefined;
     }
 
     const popover_data = current_message_info_popover_elem.data("popover");
     if (!popover_data) {
         blueslip.error("Cannot find popover data for actions menu.");
-        return;
+        return undefined;
     }
 
     return $("li:not(.divider):visible a", popover_data.$tip);
+}
+
+function get_user_info_popover_items() {
+    const popover_elt = $("div.user-info-popover");
+    if (!current_user_info_popover_elem || !popover_elt.length) {
+        blueslip.error("Trying to get menu items when action popover is closed.");
+        return undefined;
+    }
+
+    if (popover_elt.length >= 2) {
+        blueslip.error("More than one user info popovers cannot be opened at same time.");
+        return undefined;
+    }
+
+    return $("li:not(.divider):visible a", popover_elt);
 }
 
 function fetch_group_members(member_ids) {
@@ -551,13 +596,13 @@ exports.render_actions_remind_popover = function (element, id) {
 function get_action_menu_menu_items() {
     if (!current_actions_popover_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
-        return;
+        return undefined;
     }
 
     const popover_data = current_actions_popover_elem.data("popover");
     if (!popover_data) {
         blueslip.error("Cannot find popover data for actions menu.");
-        return;
+        return undefined;
     }
 
     return $("li:not(.divider):visible a", popover_data.$tip);
@@ -579,7 +624,8 @@ exports.popover_items_handle_keyboard = (key, items) => {
     let index = items.index(items.filter(":focus"));
 
     if (key === "enter" && index >= 0 && index < items.length) {
-        return items[index].click();
+        items[index].click();
+        return;
     }
     if (index === -1) {
         index = 0;
@@ -646,6 +692,17 @@ exports.hide_message_info_popover = function () {
     }
 };
 
+exports.user_info_popped = function () {
+    return current_user_info_popover_elem !== undefined;
+};
+
+exports.hide_user_info_popover = function () {
+    if (exports.user_info_popped()) {
+        current_user_info_popover_elem.popover("destroy");
+        current_user_info_popover_elem = undefined;
+    }
+};
+
 exports.hide_userlist_sidebar = function () {
     $(".app-main .column-right").removeClass("expanded");
 };
@@ -686,9 +743,28 @@ exports.hide_user_sidebar_popover = function () {
 function focus_user_info_popover_item() {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
-    const items = get_user_info_popover_items();
+    const items = get_user_info_popover_for_message_items();
     exports.focus_first_popover_item(items);
 }
+
+function get_user_sidebar_popover_items() {
+    if (!current_user_sidebar_popover) {
+        blueslip.error("Trying to get menu items when user sidebar popover is closed.");
+        return undefined;
+    }
+
+    return $("li:not(.divider):visible > a", current_user_sidebar_popover.$tip);
+}
+
+exports.user_sidebar_popover_handle_keyboard = function (key) {
+    const items = get_user_sidebar_popover_items();
+    exports.popover_items_handle_keyboard(key, items);
+};
+
+exports.user_info_popover_for_message_handle_keyboard = function (key) {
+    const items = get_user_info_popover_for_message_items();
+    exports.popover_items_handle_keyboard(key, items);
+};
 
 exports.user_info_popover_handle_keyboard = function (key) {
     const items = get_user_info_popover_items();
@@ -716,6 +792,41 @@ let suppress_scroll_hide = false;
 
 exports.set_suppress_scroll_hide = function () {
     suppress_scroll_hide = true;
+};
+
+// Playground_info contains all the data we need to generate a popover of
+// playground links for each code block. The element is the target element
+// to pop off of.
+exports.toggle_playground_link_popover = (element, playground_info) => {
+    const last_popover_elem = current_playground_links_popover_elem;
+    exports.hide_all();
+    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
+    }
+    const elt = $(element);
+    if (elt.data("popover") === undefined) {
+        const ypos = elt.offset().top;
+        elt.popover({
+            // It's unlikely we'll have more than 3-4 playground links
+            // for one language, so it should be OK to hardcode 120 here.
+            placement: message_viewport.height() - ypos < 120 ? "top" : "bottom",
+            title: "",
+            content: render_playground_links_popover_content({playground_info}),
+            html: true,
+            trigger: "manual",
+        });
+        elt.popover("show");
+        current_playground_links_popover_elem = elt;
+    }
+};
+
+exports.hide_playground_links_popover = () => {
+    if (current_playground_links_popover_elem !== undefined) {
+        current_playground_links_popover_elem.popover("destroy");
+        current_playground_links_popover_elem = undefined;
+    }
 };
 
 exports.register_click_handlers = function () {
@@ -750,7 +861,7 @@ exports.register_click_handlers = function () {
         const message = current_msg_list.get(rows.id(row));
         let user;
         if (id_string) {
-            const user_id = parseInt(id_string, 10);
+            const user_id = Number.parseInt(id_string, 10);
             user = people.get_by_user_id(user_id);
         } else {
             user = people.get_by_email(email);
@@ -759,7 +870,7 @@ exports.register_click_handlers = function () {
     });
 
     $("#main_div").on("click", ".user-group-mention", function (e) {
-        const user_group_id = parseInt($(this).attr("data-user-group-id"), 10);
+        const user_group_id = Number.parseInt($(this).attr("data-user-group-id"), 10);
         const row = $(this).closest(".message_row");
         e.stopPropagation();
         const message = current_msg_list.get(rows.id(row));
@@ -772,10 +883,41 @@ exports.register_click_handlers = function () {
         }
     });
 
+    $("#main_div, #preview_content").on("click", ".code_external_link", function (e) {
+        const view_in_playground_button = $(this);
+        const codehilite_div = $(this).closest(".codehilite");
+        e.stopPropagation();
+        const playground_info = settings_config.get_playground_info_for_languages(
+            codehilite_div.data("code-language"),
+        );
+        // We do the code extraction here and set the target href combining the url_prefix
+        // and the extracted code. Depending on whether the language has multiple playground
+        // links configured, a popover is show.
+        const extracted_code = codehilite_div.find("code").text();
+        if (playground_info.length === 1) {
+            const url_prefix = playground_info[0].url_prefix;
+            view_in_playground_button.attr("href", url_prefix + encodeURIComponent(extracted_code));
+        } else {
+            playground_info.forEach(($playground) => {
+                $playground.playground_url =
+                    $playground.url_prefix + encodeURIComponent(extracted_code);
+            });
+            exports.toggle_playground_link_popover(this, playground_info);
+        }
+    });
+
+    $("body").on("click", ".popover_playground_link", (e) => {
+        exports.hide_playground_links_popover();
+        e.stopPropagation();
+    });
+
     $("body").on("click", ".info_popover_actions .narrow_to_private_messages", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
-        exports.hide_message_info_popover();
+        exports.hide_all();
+        if (overlays.settings_open()) {
+            overlays.close_overlay("settings");
+        }
         narrow.by("pm-with", email, {trigger: "user sidebar popover"});
         e.stopPropagation();
         e.preventDefault();
@@ -784,7 +926,10 @@ exports.register_click_handlers = function () {
     $("body").on("click", ".info_popover_actions .narrow_to_messages_sent", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
-        exports.hide_message_info_popover();
+        exports.hide_all();
+        if (overlays.settings_open()) {
+            overlays.close_overlay("settings");
+        }
         narrow.by("sender", email, {trigger: "user sidebar popover"});
         e.stopPropagation();
         e.preventDefault();
@@ -817,7 +962,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $("body").on("click", ".info_popover_actions .view_user_profile", (e) => {
+    $("body").on("click", ".info_popover_actions .view_full_user_profile", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const user = people.get_by_user_id(user_id);
         exports.show_user_profile(user);
@@ -837,10 +982,12 @@ exports.register_click_handlers = function () {
         });
     });
 
-    $("body").on("click", ".bot-owner-name", (e) => {
-        const user_id = parseInt($(e.target).attr("data-bot-owner-id"), 10);
+    $("body").on("click", ".view_user_profile", (e) => {
+        const user_id = Number.parseInt($(e.target).attr("data-user-id"), 10);
         const user = people.get_by_user_id(user_id);
-        exports.show_user_profile(user);
+        exports.show_user_info_popover(e.target, user);
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     $("body").on("click", "#user-profile-modal #name #edit-button", () => {
@@ -905,6 +1052,7 @@ exports.register_click_handlers = function () {
         render_user_info_popover(
             user,
             target,
+            false,
             false,
             "compose_private_message",
             "user_popover",
@@ -1001,6 +1149,9 @@ exports.register_click_handlers = function () {
             private_message_recipient: email,
         });
         exports.hide_all();
+        if (overlays.settings_open()) {
+            overlays.close_overlay("settings");
+        }
         e.stopPropagation();
         e.preventDefault();
     });
@@ -1044,7 +1195,7 @@ exports.register_click_handlers = function () {
     });
 
     $("body").on("click", ".popover_mute_topic", (e) => {
-        const stream_id = parseInt($(e.currentTarget).attr("data-msg-stream-id"), 10);
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-msg-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-msg-topic");
 
         exports.hide_actions_popover();
@@ -1054,7 +1205,7 @@ exports.register_click_handlers = function () {
     });
 
     $("body").on("click", ".popover_unmute_topic", (e) => {
-        const stream_id = parseInt($(e.currentTarget).attr("data-msg-stream-id"), 10);
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-msg-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-msg-topic");
 
         exports.hide_actions_popover();
@@ -1093,6 +1244,14 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+    new ClipboardJS(".copy_mention_syntax");
+
+    $("body").on("click", ".copy_mention_syntax", (e) => {
+        exports.hide_all();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     (function () {
         let last_scroll = 0;
 
@@ -1126,6 +1285,7 @@ exports.any_active = function () {
         stream_popover.stream_popped() ||
         stream_popover.topic_popped() ||
         exports.message_info_popped() ||
+        exports.user_info_popped() ||
         emoji_picker.reactions_popped() ||
         $("[class^='column-'].expanded").length
     );
@@ -1146,6 +1306,8 @@ exports.hide_all_except_sidebars = function () {
     exports.hide_user_sidebar_popover();
     exports.hide_mobile_message_buttons_popover();
     exports.hide_user_profile();
+    exports.hide_user_info_popover();
+    exports.hide_playground_links_popover();
 
     // look through all the popovers that have been added and removed.
     list_of_popovers.forEach(($o) => {

@@ -24,7 +24,7 @@ exports.autofocus = function (selector) {
 exports.password_quality = function (password, bar, password_field) {
     // We load zxcvbn.js asynchronously, so the variable might not be set.
     if (typeof zxcvbn === "undefined") {
-        return;
+        return undefined;
     }
 
     const min_length = password_field.data("minLength");
@@ -55,7 +55,7 @@ exports.password_quality = function (password, bar, password_field) {
 
 exports.password_warning = function (password, password_field) {
     if (typeof zxcvbn === "undefined") {
-        return;
+        return undefined;
     }
 
     const min_length = password_field.data("minLength");
@@ -100,7 +100,7 @@ exports.copy_data_attribute_value = function (elem, key) {
 };
 
 exports.has_mac_keyboard = function () {
-    return /Mac/i.test(navigator.platform);
+    return /mac/i.test(navigator.platform);
 };
 
 exports.adjust_mac_shortcuts = function (key_elem_class, require_cmd_style) {

@@ -1,14 +1,27 @@
+# Zulip's OpenAPI-based API documentation system is documented at
+#   https://zulip.readthedocs.io/en/latest/documentation/api.html
+#
+# This file contains helper functions for generating cURL examples
+# based on Zulip's OpenAPI definitions, as well as test setup and
+# fetching of appropriate parameter values to use when running the
+# cURL examples as part of the tools/test-api test suite.
+
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_add_reaction, do_add_realm_filter, update_user_presence
+from zerver.lib.actions import (
+    do_add_reaction,
+    do_add_realm_filter,
+    do_create_user,
+    update_user_presence,
+)
 from zerver.lib.events import do_events_register
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Client, Message, UserGroup, UserPresence, get_realm
 
-GENERATOR_FUNCTIONS: Dict[str, Callable[[], Dict[str, object]]] = dict()
+GENERATOR_FUNCTIONS: Dict[str, Callable[[], Dict[str, object]]] = {}
 REGISTERED_GENERATOR_FUNCTIONS: Set[str] = set()
 CALLED_GENERATOR_FUNCTIONS: Set[str] = set()
 
@@ -190,11 +203,11 @@ def create_user_group_data() -> Dict[str, object]:
         "members": [helpers.example_user("hamlet").id, helpers.example_user("othello").id],
     }
 
-@openapi_param_value_generator(["/user_groups/{group_id}:patch", "/user_groups/{group_id}:delete"])
+@openapi_param_value_generator(["/user_groups/{user_group_id}:patch", "/user_groups/{user_group_id}:delete"])
 def get_temp_user_group_id() -> Dict[str, object]:
     user_group, _ = UserGroup.objects.get_or_create(name="temp", realm=get_realm("zulip"))
     return {
-        "group_id": user_group.id,
+        "user_group_id": user_group.id,
     }
 
 @openapi_param_value_generator(["/realm/filters/{filter_id}:delete"])
@@ -208,4 +221,14 @@ def remove_realm_filters() -> Dict[str, object]:
 def upload_custom_emoji() -> Dict[str, object]:
     return {
         "filename": "zerver/tests/images/animated_img.gif",
+    }
+
+@openapi_param_value_generator(["/users/{user_id}:delete"])
+def deactivate_user() -> Dict[str, object]:
+    user_profile = do_create_user(
+        email='testuser@zulip.com', password=None,
+        full_name='test_user', realm=get_realm('zulip')
+    )
+    return {
+        "user_id": user_profile.id
     }

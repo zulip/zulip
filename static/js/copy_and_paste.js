@@ -1,6 +1,6 @@
 "use strict";
 
-const TurndownService = require("turndown/lib/turndown.cjs.js");
+const TurndownService = require("turndown/lib/turndown.cjs");
 
 function find_boundary_tr(initial_tr, iterate_row) {
     let j;
@@ -11,7 +11,7 @@ function find_boundary_tr(initial_tr, iterate_row) {
     // parent tr, we should let the browser handle the copy-paste
     // entirely on its own
     if (tr.length === 0) {
-        return;
+        return undefined;
     }
 
     // If the selection boundary is on a table row that does not have an
@@ -24,7 +24,7 @@ function find_boundary_tr(initial_tr, iterate_row) {
         tr = iterate_row(tr);
     }
     if (j === 10) {
-        return;
+        return undefined;
     } else if (j !== 0) {
         // If we updated tr, then we are not dealing with a selection
         // that is entirely within one td, and we can skip the same td
@@ -317,7 +317,7 @@ exports.paste_handler = function (event) {
         const paste_html = clipboardData.getData("text/html");
         if (paste_html && page_params.development_environment) {
             const text = exports.paste_handler_converter(paste_html);
-            const mdImageRegex = /^!\[.*\]\(.*\)$/;
+            const mdImageRegex = /^!\[.*]\(.*\)$/;
             if (text.match(mdImageRegex)) {
                 // This block catches cases where we are pasting an
                 // image into Zulip, which is handled by upload.js.

@@ -2,8 +2,12 @@
 
 const autosize = require("autosize");
 
-exports.autosize_textarea = function () {
-    autosize.update($("#compose-textarea"));
+const people = require("./people");
+
+exports.autosize_textarea = function (textarea) {
+    // Since this supports both compose and file upload, one must pass
+    // in the text area to autosize.
+    autosize.update(textarea);
 };
 
 exports.smart_insert = function (textarea, syntax) {

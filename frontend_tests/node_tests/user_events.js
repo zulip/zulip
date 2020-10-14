@@ -2,7 +2,7 @@
 
 set_global("$", global.make_zjquery());
 
-zrequire("people");
+const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 zrequire("user_events");
 

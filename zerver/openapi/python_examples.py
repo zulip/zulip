@@ -1,3 +1,17 @@
+# Zulip's OpenAPI-based API documentation system is documented at
+#   https://zulip.readthedocs.io/en/latest/documentation/api.html
+#
+# This file defines the Python code examples that appears in Zulip's
+# REST API documentation, and also contains a system for running the
+# example code as part of the `tools/test-api` test suite.
+#
+# The actual documentation appears within these blocks:
+#   # {code_example|start}
+#   Code here
+#   # {code_example|end}
+#
+# Whereas the surrounding code is test setup logic.
+
 import json
 import os
 import sys
@@ -12,7 +26,7 @@ from zerver.openapi.openapi import validate_against_openapi_schema
 
 ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-TEST_FUNCTIONS: Dict[str, Callable[..., object]] = dict()
+TEST_FUNCTIONS: Dict[str, Callable[..., object]] = {}
 REGISTERED_TEST_FUNCTIONS: Set[str] = set()
 CALLED_TEST_FUNCTIONS: Set[str] = set()
 
@@ -274,6 +288,53 @@ def get_realm_filters(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/realm/filters', 'get', '200')
+
+@openapi_test_function("/realm/profile_fields:get")
+def get_realm_profile_fields(client: Client) -> None:
+    # {code_example|start}
+    # Fetch all the custom profile fields in the user's organization.
+    result = client.call_endpoint(
+        url='/realm/profile_fields',
+        method='GET',
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/realm/profile_fields', 'get', '200')
+
+@openapi_test_function("/realm/profile_fields:patch")
+def reorder_realm_profile_fields(client: Client) -> None:
+    # {code_example|start}
+    # Reorder the custom profile fields in the user's organization.
+    order = [8, 7, 6, 5, 4, 3, 2, 1]
+    request = {
+        'order': json.dumps(order)
+    }
+
+    result = client.call_endpoint(
+        url='/realm/profile_fields',
+        method='PATCH',
+        request=request
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/realm/profile_fields', 'patch', '200')
+
+@openapi_test_function("/realm/profile_fields:post")
+def create_realm_profile_field(client: Client) -> None:
+    # {code_example|start}
+    # Create a custom profile field in the user's organization.
+    request = {
+        'name': 'Phone',
+        'hint': 'Contact No.',
+        'field_type': 1
+    }
+
+    result = client.call_endpoint(
+        url='/realm/profile_fields',
+        method='POST',
+        request=request
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/realm/profile_fields', 'post', '200')
 
 @openapi_test_function("/realm/filters:post")
 def add_realm_filter(client: Client) -> None:
@@ -1055,11 +1116,11 @@ def create_user_group(client: Client) -> None:
 
     assert result['result'] == 'success'
 
-@openapi_test_function("/user_groups/{group_id}:patch")
-def update_user_group(client: Client, group_id: int) -> None:
+@openapi_test_function("/user_groups/{user_group_id}:patch")
+def update_user_group(client: Client, user_group_id: int) -> None:
     # {code_example|start}
     request = {
-        'group_id': group_id,
+        'group_id': user_group_id,
         'name': 'marketing',
         'description': 'The marketing team.',
     }
@@ -1068,28 +1129,28 @@ def update_user_group(client: Client, group_id: int) -> None:
     # {code_example|end}
     assert result['result'] == 'success'
 
-@openapi_test_function("/user_groups/{group_id}:delete")
-def remove_user_group(client: Client, group_id: int) -> None:
+@openapi_test_function("/user_groups/{user_group_id}:delete")
+def remove_user_group(client: Client, user_group_id: int) -> None:
     # {code_example|start}
-    result = client.remove_user_group(group_id)
+    result = client.remove_user_group(user_group_id)
     # {code_example|end}
 
-    validate_against_openapi_schema(result, '/user_groups/{group_id}', 'delete', '200')
+    validate_against_openapi_schema(result, '/user_groups/{user_group_id}', 'delete', '200')
     assert result['result'] == 'success'
 
-@openapi_test_function("/user_groups/{group_id}/members:post")
-def update_user_group_members(client: Client, group_id: int) -> None:
+@openapi_test_function("/user_groups/{user_group_id}/members:post")
+def update_user_group_members(client: Client, user_group_id: int) -> None:
     ensure_users([8, 10, 11], ['cordelia', 'hamlet', 'iago'])
-
+    # {code_example|start}
     request = {
-        'group_id': group_id,
+        'group_id': user_group_id,
         'delete': [8, 10],
         'add': [11],
     }
 
     result = client.update_user_group_members(request)
-
-    assert result['result'] == 'success'
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/user_groups/{group_id}/members', 'post', '200')
 
 def test_invalid_api_key(client_with_invalid_key: Client) -> None:
     result = client_with_invalid_key.list_subscriptions()
@@ -1188,10 +1249,10 @@ def test_users(client: Client) -> None:
     update_presence(client)
     get_user_presence(client)
     create_user_group(client)
-    group_id = get_user_groups(client)
-    update_user_group(client, group_id)
-    update_user_group_members(client, group_id)
-    remove_user_group(client, group_id)
+    user_group_id = get_user_groups(client)
+    update_user_group(client, user_group_id)
+    update_user_group_members(client, user_group_id)
+    remove_user_group(client, user_group_id)
     get_alert_words(client)
     add_alert_words(client)
     remove_alert_words(client)
@@ -1234,6 +1295,9 @@ def test_server_organizations(client: Client) -> None:
     remove_realm_filter(client)
     get_realm_emoji(client)
     upload_custom_emoji(client)
+    get_realm_profile_fields(client)
+    reorder_realm_profile_fields(client)
+    create_realm_profile_field(client)
 
 def test_errors(client: Client) -> None:
     test_missing_request_argument(client)

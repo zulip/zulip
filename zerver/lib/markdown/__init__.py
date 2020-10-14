@@ -4,7 +4,6 @@ import datetime
 import functools
 import html
 import logging
-import os
 import re
 import time
 import urllib
@@ -26,6 +25,7 @@ from typing import (
     Union,
 )
 from typing.re import Match, Pattern
+from urllib.parse import urlsplit
 from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
 
@@ -36,8 +36,8 @@ import markdown
 import requests
 from django.conf import settings
 from django.db.models import Q
-from hyperlink import parse
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
+from tlds import tld_set
 from typing_extensions import TypedDict
 
 from zerver.lib import mention as mention
@@ -190,7 +190,7 @@ def get_web_link_regex() -> str:
                 https?://[\w.:@-]+?   # If it has a protocol, anything goes.
                |(?:                   # Or, if not, be more strict to avoid false-positives
                     (?:[\w-]+\.)+     # One or more domain components, separated by dots
-                    (?:{tlds})            # TLDs (filled in via format from tlds-alpha-by-domain.txt)
+                    (?:{tlds})        # TLDs
                 )
             )
             (?:/             # A path, beginning with /
@@ -276,13 +276,10 @@ def image_preview_enabled(message: Optional[Message]=None,
     return realm.inline_image_preview
 
 def list_of_tlds() -> List[str]:
-    # HACK we manually blacklist a few domains
-    blacklist = ['PY\n', "MD\n"]
+    # Skip a few overly-common false-positives from file extensions
+    common_false_positives = set(['java', 'md', 'mov', 'py', 'zip'])
+    tlds = list(tld_set - common_false_positives)
 
-    # tlds-alpha-by-domain.txt comes from https://data.iana.org/TLD/tlds-alpha-by-domain.txt
-    tlds_file = os.path.join(os.path.dirname(__file__), 'tlds-alpha-by-domain.txt')
-    tlds = [tld.lower().strip() for tld in open(tlds_file)
-            if tld not in blacklist and not tld[0].startswith('#')]
     tlds.sort(key=len, reverse=True)
     return tlds
 
@@ -419,11 +416,16 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
                     # that the message doesn't exist; return None so
                     # that we will cache the error.
                     return None
-                elif code in [88, 130]:
-                    # Code 88 means that we were rate-limited and 130
-                    # means Twitter is having capacity issues; either way
-                    # just raise the error so we don't cache None and will
-                    # try again later.
+                elif code in [63, 179]:
+                    # 63 is that the account is suspended, 179 is that
+                    # it is now locked; cache the None.
+                    return None
+                elif code in [88, 130, 131]:
+                    # Code 88 means that we were rate-limited, 130
+                    # means Twitter is having capacity issues, and 131
+                    # is other 400-equivalent; in these cases, raise
+                    # the error so we don't cache None and will try
+                    # again later.
                     raise
             # It's not clear what to do in cases of other errors,
             # but for now it seems reasonable to log at error
@@ -447,7 +449,7 @@ def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
     # TODO: What if response content is huge? Should we get headers first?
     try:
         content = requests.get(url, timeout=1).text
-    except Exception:
+    except requests.RequestException:
         return None
     # Extract the head and meta tags
     # All meta tags are self closing, have no children or are closed
@@ -749,7 +751,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # and gifs do not work.
             # TODO: What if image is huge? Should we get headers first?
             if image_info is None:
-                image_info = dict()
+                image_info = {}
             image_info['is_image'] = True
             parsed_url_list = list(parsed_url)
             parsed_url_list[4] = "dl=1"  # Replaces query
@@ -1589,7 +1591,7 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
                 else:
                     open_fences.append(Fence(fence_str, is_code))
 
-                in_code_fence = any([fence.is_code for fence in open_fences])
+                in_code_fence = any(fence.is_code for fence in open_fences)
 
             # If we're not in a fenced block and we detect an upcoming list
             # hanging off any block (including a list of another type), add
@@ -1630,7 +1632,7 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
         db_data = self.md.zulip_db_data
         return url_to_a(db_data,
                         self.format_string % m.groupdict(),
-                        m.group(OUTER_CAPTURE_GROUP))
+                        markdown.util.AtomicString(m.group(OUTER_CAPTURE_GROUP)))
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
@@ -2072,9 +2074,12 @@ def topic_links(realm_filters_key: int, topic_name: str) -> List[str]:
         link_match = re.match(get_web_link_regex(), sub_string)
         if link_match:
             url = link_match.group('url')
-            url_object = parse(url)
-            if not url_object.scheme:
-                url = url_object.replace(scheme='https').to_text()
+            result = urlsplit(url)
+            if not result.scheme:
+                if not result.netloc:
+                    i = (result.path + "/").index("/")
+                    result = result._replace(netloc=result.path[:i], path=result.path[i:])
+                url = result._replace(scheme="https").geturl()
             matches.append(url)
 
     return matches
@@ -2119,7 +2124,7 @@ def privacy_clean_markdown(content: str) -> str:
 
 def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[FullNameInfo]:
     if not mention_texts:
-        return list()
+        return []
 
     # Remove the trailing part of the `name|id` mention syntax,
     # thus storing only full names in full_names.
@@ -2212,7 +2217,7 @@ class MentionData:
 
 def get_user_group_name_info(realm_id: int, user_group_names: Set[str]) -> Dict[str, UserGroup]:
     if not user_group_names:
-        return dict()
+        return {}
 
     rows = UserGroup.objects.filter(realm_id=realm_id,
                                     name__in=user_group_names)
@@ -2221,7 +2226,7 @@ def get_user_group_name_info(realm_id: int, user_group_names: Set[str]) -> Dict[
 
 def get_stream_name_info(realm: Realm, stream_names: Set[str]) -> Dict[str, FullNameInfo]:
     if not stream_names:
-        return dict()
+        return {}
 
     q_list = {
         Q(name=name)
@@ -2318,7 +2323,7 @@ def do_convert(content: str,
         if content_has_emoji_syntax(content):
             active_realm_emoji = message_realm.get_active_emoji()
         else:
-            active_realm_emoji = dict()
+            active_realm_emoji = {}
 
         _md_engine.zulip_db_data = {
             'realm_alert_words_automaton': realm_alert_words_automaton,

@@ -24,9 +24,9 @@ class Command(ZulipBaseCommand):
     help = """Merge two streams."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('stream_to_keep', type=str,
+        parser.add_argument('stream_to_keep',
                             help='name of stream to keep')
-        parser.add_argument('stream_to_destroy', type=str,
+        parser.add_argument('stream_to_destroy',
                             help='name of stream to merge into the stream being kept')
         self.add_realm_args(parser, True)
 
@@ -72,4 +72,4 @@ class Command(ZulipBaseCommand):
         do_deactivate_stream(stream_to_destroy, acting_user=None)
         if len(users_to_activate) > 0:
             print(f"Adding {len(users_to_activate)} subscriptions")
-            bulk_add_subscriptions([stream_to_keep], users_to_activate)
+            bulk_add_subscriptions(realm, [stream_to_keep], users_to_activate)

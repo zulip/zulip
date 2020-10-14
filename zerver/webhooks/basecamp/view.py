@@ -4,10 +4,11 @@ from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 from .support_event import SUPPORT_EVENTS
@@ -22,14 +23,14 @@ MESSAGE_TEMPLATE = "{user_name} {verb} the message [{title}]({url})"
 TODO_LIST_TEMPLATE = "{user_name} {verb} the todo list [{title}]({url})"
 TODO_TEMPLATE = "{user_name} {verb} the todo task [{title}]({url})"
 
-@api_key_only_webhook_view('Basecamp')
+@webhook_view('Basecamp')
 @has_request_variables
 def api_basecamp_webhook(request: HttpRequest, user_profile: UserProfile,
                          payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
     event = get_event_type(payload)
 
     if event not in SUPPORT_EVENTS:
-        raise UnexpectedWebhookEventType('Basecamp', event)
+        raise UnsupportedWebhookEventType(event)
 
     subject = get_project_name(payload)
     if event.startswith('document_'):
@@ -47,7 +48,7 @@ def api_basecamp_webhook(request: HttpRequest, user_profile: UserProfile,
     elif event.startswith('comment_'):
         body = get_comment_body(event, payload)
     else:
-        raise UnexpectedWebhookEventType('Basecamp', event)
+        raise UnsupportedWebhookEventType(event)
 
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()

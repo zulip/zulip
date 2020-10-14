@@ -53,23 +53,12 @@ class zulip::app_frontend_base {
     }
   }
 
-  # The number of Tornado processes to run on the server; this
-  # defaults to 1, since Tornado sharding is currently only at the
-  # Realm level.
-  $tornado_processes = Integer(zulipconf('application_server', 'tornado_processes', 1))
-  if $tornado_processes > 1 {
-    $tornado_ports = range(9800, 9800 + $tornado_processes - 1)
-    $tornado_multiprocess = true
-  } else {
-    $tornado_multiprocess = false
-  }
-
   file { '/etc/nginx/zulip-include/upstreams':
     require => Package[$zulip::common::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    content => template('zulip/nginx/upstreams.conf.template.erb'),
+    source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/upstreams',
     notify  => Service['nginx'],
   }
 
@@ -83,9 +72,10 @@ class zulip::app_frontend_base {
   } else {
     $uwsgi_default_processes = 4
   }
+  $tornado_ports = $zulip::tornado_sharding::tornado_ports
   file { "${zulip::common::supervisor_conf_dir}/zulip.conf":
     ensure  => file,
-    require => Package[supervisor],
+    require => [Package[supervisor], Exec['stage_updated_sharding']],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -96,7 +86,7 @@ class zulip::app_frontend_base {
   $uwsgi_listen_backlog_limit = zulipconf('application_server', 'uwsgi_listen_backlog_limit', 128)
   $uwsgi_buffer_size = zulipconf('application_server', 'uwsgi_buffer_size', 8192)
   $uwsgi_processes = zulipconf('application_server', 'uwsgi_processes', $uwsgi_default_processes)
-  $somaxconn = 2 * $uwsgi_listen_backlog_limit
+  $somaxconn = 2 * Integer($uwsgi_listen_backlog_limit)
   file { '/etc/zulip/uwsgi.ini':
     ensure  => file,
     require => Package[supervisor],
@@ -154,9 +144,6 @@ class zulip::app_frontend_base {
     owner  => 'zulip',
     group  => 'zulip',
     mode   => '0755',
-  }
-  file { '/etc/cron.d/email-mirror':
-    ensure => absent,
   }
   file { "${zulip::common::nagios_plugins_dir}/zulip_app_frontend":
     require => Package[$zulip::common::nagios_plugins],

@@ -15,8 +15,12 @@ class OpsGenieHookTests(WebhookTestCase):
 * **Tags**: `tag1`, `tag2`
 """.strip()
 
-        self.send_and_test_stream_message('acknowledge', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "acknowledge",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_addnote_alert(self) -> None:
         expected_topic = "Integration1"
@@ -28,8 +32,12 @@ class OpsGenieHookTests(WebhookTestCase):
 * **Tags**: `tag1`, `tag2`
 """.strip()
 
-        self.send_and_test_stream_message('addnote', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "addnote",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_addrecipient_alert(self) -> None:
         expected_topic = "Integration1"
@@ -41,8 +49,12 @@ class OpsGenieHookTests(WebhookTestCase):
 * **Tags**: `tag1`, `tag2`
 """.strip()
 
-        self.send_and_test_stream_message('addrecipient', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "addrecipient",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_addtags_alert(self) -> None:
         expected_topic = "Integration1"
@@ -54,8 +66,12 @@ class OpsGenieHookTests(WebhookTestCase):
 * **Tags**: `tag1`, `tag2`, `tag3`
 """.strip()
 
-        self.send_and_test_stream_message('addtags', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "addtags",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_addteam_alert(self) -> None:
         expected_topic = "Integration1"
@@ -67,8 +83,12 @@ class OpsGenieHookTests(WebhookTestCase):
 * **Tags**: `tag1`, `tag2`
 """.strip()
 
-        self.send_and_test_stream_message('addteam', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "addteam",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_assignownership_alert(self) -> None:
         expected_topic = "Integration1"
@@ -80,8 +100,12 @@ class OpsGenieHookTests(WebhookTestCase):
 * **Tags**: `tag1`, `tag2`
 """.strip()
 
-        self.send_and_test_stream_message('assignownership', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "assignownership",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_close_alert(self) -> None:
         expected_topic = "Integration1"
@@ -91,8 +115,12 @@ class OpsGenieHookTests(WebhookTestCase):
 * **Message**: test alert
 """.strip()
 
-        self.send_and_test_stream_message('close', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "close",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_create_alert(self) -> None:
         expected_topic = "Webhook"
@@ -103,8 +131,12 @@ class OpsGenieHookTests(WebhookTestCase):
 * **Tags**: `vip`
 """.strip()
 
-        self.send_and_test_stream_message('create', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "create",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_customaction_alert(self) -> None:
         expected_topic = "Integration1"
@@ -115,8 +147,12 @@ class OpsGenieHookTests(WebhookTestCase):
 * **Tags**: `tag1`, `tag2`
 """.strip()
 
-        self.send_and_test_stream_message('customaction', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "customaction",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_delete_alert(self) -> None:
         expected_topic = "Integration1"
@@ -126,8 +162,12 @@ class OpsGenieHookTests(WebhookTestCase):
 * **Message**: test alert
 """.strip()
 
-        self.send_and_test_stream_message('delete', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "delete",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_escalate_alert(self) -> None:
         expected_topic = "Webhook_Test"
@@ -137,8 +177,12 @@ class OpsGenieHookTests(WebhookTestCase):
 * **Escalation**: test_esc
 """.strip()
 
-        self.send_and_test_stream_message('escalate', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "escalate",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_removetags_alert(self) -> None:
         expected_topic = "Integration1"
@@ -150,8 +194,12 @@ class OpsGenieHookTests(WebhookTestCase):
 * **Tags**: `tag1`, `tag2`
 """.strip()
 
-        self.send_and_test_stream_message('removetags', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "removetags",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_takeownership_alert(self) -> None:
         expected_topic = "Webhook"
@@ -162,8 +210,12 @@ class OpsGenieHookTests(WebhookTestCase):
 * **Tags**: `tag1`, `tag2`
 """.strip()
 
-        self.send_and_test_stream_message('takeownership', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "takeownership",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_unacknowledge_alert(self) -> None:
         expected_topic = "Integration1"
@@ -174,8 +226,9 @@ class OpsGenieHookTests(WebhookTestCase):
 * **Tags**: `tag1`, `tag2`
 """.strip()
 
-        self.send_and_test_stream_message('unacknowledge', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("opsgenie", fixture_name, file_type="json")
+        self.check_webhook(
+            "unacknowledge",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )

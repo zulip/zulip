@@ -85,8 +85,9 @@ def create_integration_bot(integration: WebhookIntegration, bot_name: Optional[s
 
 def create_integration_stream(integration: WebhookIntegration, bot: UserProfile) -> None:
     assert isinstance(bot.bot_owner, UserProfile)
-    stream, created = create_stream_if_needed(bot.bot_owner.realm, integration.stream_name)
-    bulk_add_subscriptions([stream], [bot, bot.bot_owner], from_stream_creation=created)
+    realm = bot.bot_owner.realm
+    stream, created = create_stream_if_needed(realm, integration.stream_name)
+    bulk_add_subscriptions(realm, [stream], [bot, bot.bot_owner], from_stream_creation=created)
 
 def get_integration(integration_name: str) -> WebhookIntegration:
     integration = INTEGRATIONS[integration_name]
@@ -107,7 +108,7 @@ def custom_headers(headers_json: str) -> Dict[str, str]:
         return {}
     try:
         return orjson.loads(headers_json)
-    except ValueError as ve:
+    except orjson.JSONDecodeError as ve:
         raise argparse.ArgumentTypeError(
             'Encountered an error while attempting to parse custom headers: {}\n'
             'Note: all strings must be enclosed within "" instead of \'\''.format(ve))
@@ -193,17 +194,17 @@ def generate_screenshot_from_config(integration_name: str, screenshot_config: Sc
 
 parser = argparse.ArgumentParser()
 group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument('--all', default=False, action='store_true')
-group.add_argument('--integration', type=str, help='Name of the integration')
-parser.add_argument('--fixture', type=str, help='Name of the fixture file to use')
-parser.add_argument('--image-name', type=str, help='Name for the screenshot image')
-parser.add_argument('--image-dir', type=str, help='Directory name where to save the screenshot image')
-parser.add_argument('--bot-name', type=str, help='Name to use for the bot')
+group.add_argument('--all', action='store_true')
+group.add_argument('--integration', help='Name of the integration')
+parser.add_argument('--fixture', help='Name of the fixture file to use')
+parser.add_argument('--image-name', help='Name for the screenshot image')
+parser.add_argument('--image-dir', help='Directory name where to save the screenshot image')
+parser.add_argument('--bot-name', help='Name to use for the bot')
 parser.add_argument('-A', '--use-basic-auth', action='store_true',
                     help='Add basic auth headers to the request')
 parser.add_argument('-Q', '--payload-as-query-param', action='store_true',
                     help='Send payload as query param instead of body')
-parser.add_argument('-P', '--payload-param-name', type=str,
+parser.add_argument('-P', '--payload-param-name',
                     help='Param name to use for the payload')
 parser.add_argument('-H', '--custom-headers',
                     type=custom_headers,

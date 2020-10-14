@@ -8,6 +8,7 @@ const render_topic_edit_form = require("../templates/topic_edit_form.hbs");
 
 const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
+let currently_topic_editing_messages = [];
 const currently_echoing_messages = new Map();
 
 // These variables are designed to preserve the user's most recent
@@ -156,12 +157,38 @@ exports.update_message_topic_editing_pencil = function () {
     }
 };
 
+exports.hide_message_edit_spinner = function (row) {
+    const spinner = row.find(".message_edit_spinner");
+    loading.destroy_indicator(spinner);
+    $("#message_edit_form .message_edit_save").show();
+    $("#message_edit_form .message_edit_cancel").show();
+};
+
+exports.show_message_edit_spinner = function (row) {
+    const spinner = row.find(".message_edit_spinner");
+    loading.make_indicator(spinner);
+    $("#message_edit_form .message_edit_save").hide();
+    $("#message_edit_form .message_edit_cancel").hide();
+};
+
 exports.show_topic_edit_spinner = function (row) {
     const spinner = row.find(".topic_edit_spinner");
     loading.make_indicator(spinner);
     spinner.css({height: ""});
     $(".topic_edit_save").hide();
     $(".topic_edit_cancel").hide();
+};
+
+exports.hide_topic_move_spinner = function () {
+    const spinner = $("#move_topic_modal .topic_move_spinner");
+    loading.destroy_indicator(spinner);
+    $("#move_topic_modal .modal-footer").show();
+};
+
+exports.show_topic_move_spinner = function () {
+    const spinner = $("#move_topic_modal .topic_move_spinner");
+    loading.make_indicator(spinner);
+    $("#move_topic_modal .modal-footer").hide();
 };
 
 exports.end_if_focused_on_inline_topic_edit = function () {
@@ -189,7 +216,7 @@ function handle_message_row_edit_keydown(e) {
             if ($(e.target).hasClass("message_edit_content")) {
                 // Pressing Enter to save edits is coupled with Enter to send
                 if (composebox_typeahead.should_enter_send(e)) {
-                    const row = $(".message_edit_content").filter(":focus").closest(".message_row");
+                    const row = $(".message_edit_content:focus").closest(".message_row");
                     const message_edit_save_button = row.find(".message_edit_save");
                     if (message_edit_save_button.prop("disabled")) {
                         // In cases when the save button is disabled
@@ -332,7 +359,7 @@ function edit_message(row, raw_content) {
 
     ui_util.decorate_stream_bar(message.stream, stream_header_colorblock, false);
     message_edit_stream.on("change", function () {
-        const stream_name = stream_data.maybe_get_stream_name(parseInt(this.value, 10));
+        const stream_name = stream_data.maybe_get_stream_name(Number.parseInt(this.value, 10));
         ui_util.decorate_stream_bar(stream_name, stream_header_colorblock, false);
     });
 
@@ -456,7 +483,7 @@ function edit_message(row, raw_content) {
     const original_topic = message.topic;
     function set_propagate_selector_display() {
         const new_topic = message_edit_topic.val();
-        const new_stream_id = parseInt(message_edit_stream.val(), 10);
+        const new_stream_id = Number.parseInt(message_edit_stream.val(), 10);
         const is_topic_edited = new_topic !== original_topic && new_topic !== "";
         const is_stream_edited = new_stream_id !== original_stream_id;
         message_edit_topic_propagate.toggle(is_topic_edited || is_stream_edited);
@@ -637,11 +664,13 @@ exports.save_message_row_edit = function (row) {
     let new_stream_id;
     const old_stream_id = message.stream_id;
 
+    exports.show_message_edit_spinner(row);
+
     if (message.type === "stream") {
         new_topic = row.find(".message_edit_topic").val();
         topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
 
-        new_stream_id = parseInt($("#select_stream_id_" + message_id).val(), 10);
+        new_stream_id = Number.parseInt($("#select_stream_id_" + message_id).val(), 10);
         stream_changed = new_stream_id !== old_stream_id;
     }
     // Editing a not-yet-acked message (because the original send attempt failed)
@@ -745,6 +774,7 @@ exports.save_message_row_edit = function (row) {
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
             }
+            exports.hide_message_edit_spinner(row);
         },
         error(xhr) {
             if (msg_list === current_msg_list) {
@@ -773,6 +803,7 @@ exports.save_message_row_edit = function (row) {
                     }
                 }
 
+                exports.hide_message_edit_spinner(row);
                 const message = channel.xhr_error_message(i18n.t("Error saving edit"), xhr);
                 row.find(".edit_error").text(message).show();
             }
@@ -901,6 +932,23 @@ exports.move_topic_containing_message_to_stream = function (
     send_notification_to_new_thread,
     send_notification_to_old_thread,
 ) {
+    function reset_modal_ui() {
+        currently_topic_editing_messages = currently_topic_editing_messages.filter(
+            (id) => id !== message_id,
+        );
+        exports.hide_topic_move_spinner();
+        $("#move_topic_modal").modal("hide");
+    }
+    if (currently_topic_editing_messages.includes(message_id)) {
+        exports.hide_topic_move_spinner();
+        $("#topic_stream_edit_form_error .error-msg").text(
+            i18n.t("A Topic Move already in progress."),
+        );
+        $("#topic_stream_edit_form_error").show();
+        return;
+    }
+    currently_topic_editing_messages.push(message_id);
+
     const request = {
         stream_id: new_stream_id,
         propagate_mode: "change_all",
@@ -916,10 +964,10 @@ exports.move_topic_containing_message_to_stream = function (
         success() {
             // The main UI will update via receiving the event
             // from server_events.js.
-            // TODO: This should probably remove a spinner and
-            // close the modal.
+            reset_modal_ui();
         },
         error(xhr) {
+            reset_modal_ui();
             ui_report.error(i18n.t("Error moving the topic"), xhr, $("#home-error"), 4000);
         },
     });

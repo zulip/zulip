@@ -53,9 +53,7 @@ def sync_ldap_user_data(user_profiles: List[UserProfile], deactivation_protectio
 class Command(ZulipBaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('-f', '--force',
-                            dest='force',
                             action="store_true",
-                            default=False,
                             help='Disable the protection against deactivating all users.')
 
         self.add_realm_args(parser)

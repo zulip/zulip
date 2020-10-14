@@ -1,0 +1,149 @@
+.informational-overlays {
+    .overlay-content {
+        /* because zoom breaks at 525px perhaps due to rounding errors, so add a
+           trivial amount of width so it doesn't break. */
+        width: 550px;
+        margin: 0 auto;
+        position: relative;
+        top: calc((30vh - 50px) / 2);
+        border-radius: 4px;
+        overflow: hidden;
+
+        background-color: hsl(0, 0%, 100%);
+    }
+
+    .overlay-tabs {
+        padding: 10px 0;
+        border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+
+        .tab-switcher {
+            margin-left: 15px;
+        }
+
+        .exit {
+            float: right;
+            font-size: 1.5rem;
+            color: hsl(0, 0%, 67%);
+            font-weight: 600;
+            margin: 1px 15px;
+        }
+    }
+
+    .overlay-modal {
+        padding-bottom: 10px;
+
+        .modal-header h3 {
+            font-weight: 300;
+        }
+
+        .modal-body {
+            height: 70vh;
+            text-align: center;
+            outline: none;
+
+            .help-table {
+                table-layout: fixed;
+            }
+
+            th {
+                font-weight: 400;
+            }
+        }
+    }
+
+    td.operator {
+        font-size: 0.9em;
+    }
+}
+
+.hotkeys_table {
+    table-layout: fixed;
+    width: 100%;
+    vertical-align: middle;
+    display: table;
+
+    td.definition {
+        /* keeps dividing line at same width for all tables in model. */
+        width: calc(50% - 11px);
+        text-align: right;
+    }
+
+    .hotkey {
+        font-weight: normal;
+    }
+
+    .small_hotkey {
+        font-size: 0.9em !important;
+        line-height: 12px;
+
+        kbd {
+            font-size: 0.9em;
+        }
+    }
+
+    kbd {
+        display: inline-block;
+        border: 1px solid hsl(0, 0%, 80%);
+        border-radius: 4px;
+        font-weight: 600;
+        white-space: nowrap;
+        background-color: hsl(0, 0%, 98%);
+        color: hsl(0, 0%, 20%);
+        margin: 0 0.1em;
+        padding: 0.1em 0.4em;
+        text-shadow: 0 1px 0 hsl(0, 0%, 100%);
+        /* Prevent selection */
+        user-select: none;
+    }
+
+    .arrow-key {
+        font-size: 1.5em;
+        padding: 0.1em 0.2em;
+    }
+
+    th {
+        width: 245px;
+        text-align: center;
+        /* aligns table name with dividing line */
+    }
+
+    td:not(.definition) {
+        text-align: left;
+        white-space: nowrap;
+        font-weight: bold;
+
+        :not(kbd) {
+            font-size: 14px;
+        }
+    }
+}
+
+#keyboard-shortcuts table {
+    margin-bottom: 10px !important;
+}
+
+@media only screen and (max-width: 768px) {
+    .informational-overlays {
+        .overlay-content {
+            width: calc(100% - 20px);
+        }
+
+        .tab-switcher {
+            display: flex;
+
+            &.large .ind-tab {
+                width: 100%;
+            }
+        }
+
+        .table.table-condensed.table-striped {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hotkeys_table {
+            width: 100%;
+            display: table;
+        }
+    }
+}

@@ -5,6 +5,8 @@ const _ = require("lodash");
 const emoji = require("../shared/js/emoji");
 const render_message_reaction = require("../templates/message_reaction.hbs");
 
+const people = require("./people");
+
 exports.view = {}; // function namespace
 
 exports.get_local_reaction_id = function (reaction_info) {
@@ -32,7 +34,7 @@ function get_message(message_id) {
     const message = message_store.get(message_id);
     if (!message) {
         blueslip.error("reactions: Bad message id: " + message_id);
-        return;
+        return undefined;
     }
 
     exports.set_clean_reactions(message);
@@ -293,7 +295,12 @@ exports.view.insert_new_reaction = function (opts) {
 
     if (opts.reaction_type !== "unicode_emoji") {
         context.is_realm_emoji = true;
-        context.url = emoji.all_realm_emojis.get(emoji_code).emoji_url;
+        const emoji_info = emoji.all_realm_emojis.get(emoji_code);
+        if (!emoji_info) {
+            blueslip.error(`Cannot find/insert realm emoji for code '${emoji_code}'.`);
+            return;
+        }
+        context.url = emoji_info.emoji_url;
     }
 
     context.count = 1;
@@ -497,7 +504,12 @@ exports.add_clean_reaction = function (opts) {
 
     if (r.reaction_type !== "unicode_emoji") {
         r.is_realm_emoji = true;
-        r.url = emoji.all_realm_emojis.get(r.emoji_code).emoji_url;
+        const emoji_info = emoji.all_realm_emojis.get(r.emoji_code);
+        if (!emoji_info) {
+            blueslip.error(`Cannot find/add realm emoji for code '${r.emoji_code}'.`);
+            return;
+        }
+        r.url = emoji_info.emoji_url;
     }
 
     opts.message.clean_reactions.set(opts.local_id, r);

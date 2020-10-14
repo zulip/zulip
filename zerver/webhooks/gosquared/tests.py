@@ -12,8 +12,12 @@ class GoSquaredHookTests(WebhookTestCase):
         expected_topic = "GoSquared - requestb.in"
         expected_message = "[requestb.in](https://www.gosquared.com/now/GSN-595854-T) has 33 visitors online."
 
-        self.send_and_test_stream_message('traffic_spike', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "traffic_spike",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_chat_message(self) -> None:
         expected_topic = "Live Chat Session - Zulip Chat"
@@ -23,8 +27,9 @@ class GoSquaredHookTests(WebhookTestCase):
             content='Zulip is awesome!',
         )
 
-        self.send_and_test_stream_message('chat_message', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("gosquared", fixture_name, file_type="json")
+        self.check_webhook(
+            "chat_message",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )

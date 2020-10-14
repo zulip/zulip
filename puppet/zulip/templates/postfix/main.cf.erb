@@ -16,6 +16,7 @@ smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
 smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 
 smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated reject_unauth_destination
+smtpd_recipient_restrictions = permit_mynetworks, check_recipient_access regexp:/etc/postfix/access, reject
 myhostname = <%= @fqdn %>
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases

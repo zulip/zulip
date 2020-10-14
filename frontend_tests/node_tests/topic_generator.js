@@ -1,8 +1,7 @@
 "use strict";
 
-set_global("pm_conversations", {
-    recent: {},
-});
+const pm_conversations = zrequire("pm_conversations");
+pm_conversations.recent = {};
 
 zrequire("muting");
 zrequire("unread");
@@ -306,7 +305,7 @@ run_test("get_next_unread_pm_string", () => {
 
     unread.num_unread_for_person = function (user_ids_string) {
         if (user_ids_string === "unk") {
-            return;
+            return undefined;
         }
 
         if (user_ids_string === "read") {

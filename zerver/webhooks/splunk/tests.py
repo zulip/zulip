@@ -21,10 +21,12 @@ Splunk alert from saved search:
 """.strip()
 
         # using fixture named splunk_search_one_result, execute this test
-        self.send_and_test_stream_message('search_one_result',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "search_one_result",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_splunk_short_search_name(self) -> None:
 
@@ -38,10 +40,12 @@ Splunk alert from saved search:
 * **Raw**: `Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root`
 """.strip()
 
-        self.send_and_test_stream_message('short_search_name',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "short_search_name",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_splunk_long_search_name(self) -> None:
 
@@ -55,10 +59,12 @@ Splunk alert from saved search:
 * **Raw**: `Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root`
 """.strip()
 
-        self.send_and_test_stream_message('long_search_name',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "long_search_name",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_splunk_missing_results_link(self) -> None:
 
@@ -73,10 +79,12 @@ Splunk alert from saved search:
 * **Raw**: `Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root`
 """.strip()
 
-        self.send_and_test_stream_message('missing_results_link',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "missing_results_link",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_splunk_missing_search_name(self) -> None:
 
@@ -91,10 +99,12 @@ Splunk alert from saved search:
 * **Raw**: `Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root`
 """.strip()
 
-        self.send_and_test_stream_message('missing_search_name',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "missing_search_name",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_splunk_missing_host(self) -> None:
 
@@ -109,10 +119,12 @@ Splunk alert from saved search:
 * **Raw**: `Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root`
 """.strip()
 
-        self.send_and_test_stream_message('missing_host',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "missing_host",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_splunk_missing_source(self) -> None:
 
@@ -127,10 +139,12 @@ Splunk alert from saved search:
 * **Raw**: `Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root`
 """.strip()
 
-        self.send_and_test_stream_message('missing_source',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "missing_source",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_splunk_missing_raw(self) -> None:
 
@@ -145,10 +159,9 @@ Splunk alert from saved search:
 * **Raw**: `Missing _raw`
 """.strip()
 
-        self.send_and_test_stream_message('missing_raw',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("splunk", fixture_name, file_type="json")
+        self.check_webhook(
+            "missing_raw",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )

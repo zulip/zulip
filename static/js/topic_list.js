@@ -178,7 +178,7 @@ exports.active_stream_id = function () {
     const stream_ids = Array.from(active_widgets.keys());
 
     if (stream_ids.length !== 1) {
-        return;
+        return undefined;
     }
 
     return stream_ids[0];
@@ -188,7 +188,7 @@ exports.get_stream_li = function () {
     const widgets = Array.from(active_widgets.values());
 
     if (widgets.length !== 1) {
-        return;
+        return undefined;
     }
 
     const stream_li = widgets[0].get_parent();
@@ -262,7 +262,7 @@ exports.initialize = function () {
         // of this stuff back up to our parents.
 
         const stream_row = $(e.target).parents(".narrow-filter");
-        const stream_id = parseInt(stream_row.attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt(stream_row.attr("data-stream-id"), 10);
         const sub = stream_data.get_sub_by_id(stream_id);
         const topic = $(e.target).parents("li").attr("data-topic-name");
 

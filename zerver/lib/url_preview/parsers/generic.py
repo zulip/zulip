@@ -41,7 +41,7 @@ class GenericParser(BaseParser):
         soup = self._soup
         first_h1 = soup.find('h1')
         if first_h1:
-            first_image = first_h1.find_next_sibling('img')
+            first_image = first_h1.find_next_sibling('img', src=True)
             if first_image and first_image['src'] != '':
                 return first_image['src']
         return None

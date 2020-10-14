@@ -3,11 +3,15 @@
 const _ = require("lodash");
 
 const generated_emoji_codes = require("../generated/emoji/emoji_codes.json");
+const generated_pygments_data = require("../generated/pygments_data.json");
 const emoji = require("../shared/js/emoji");
+const fenced_code = require("../shared/js/fenced_code");
 const render_edit_content_button = require("../templates/edit_content_button.hbs");
 
 const emojisets = require("./emojisets");
 const markdown_config = require("./markdown_config");
+const people = require("./people");
+const pm_conversations = require("./pm_conversations");
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -222,7 +226,7 @@ exports.initialize_kitchen_sink_stuff = function () {
                 const row_from_dom = current_msg_list.get_row(event.id);
                 const messages = event.msg_list.all_messages();
                 blueslip.debug("message_selected missing selected row", {
-                    previously_selected: event.previously_selected,
+                    previously_selected_id: event.previously_selected_id,
                     selected_id: event.id,
                     selected_idx: event.msg_list.selected_idx(),
                     selected_idx_exact: messages.indexOf(event.msg_list.get(event.id)),
@@ -244,7 +248,7 @@ exports.initialize_kitchen_sink_stuff = function () {
                 // just place it in the very center
                 message_viewport.recenter_view(row, {
                     from_scroll: event.from_scroll,
-                    force_center: event.previously_selected === -1,
+                    force_center: event.previously_selected_id === -1,
                 });
             }
         }
@@ -475,6 +479,7 @@ exports.initialize_everything = function () {
     typing.initialize();
     starred_messages.initialize();
     user_status_ui.initialize();
+    fenced_code.initialize(generated_pygments_data);
 };
 
 $(() => {

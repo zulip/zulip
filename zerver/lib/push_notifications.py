@@ -40,11 +40,8 @@ logger = logging.getLogger(__name__)
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemotePushDeviceToken
-else:  # nocoverage  -- Not convenient to add test for this.
-    from unittest.mock import Mock
-    RemotePushDeviceToken = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
 
-DeviceToken = Union[PushDeviceToken, RemotePushDeviceToken]
+DeviceToken = Union[PushDeviceToken, "RemotePushDeviceToken"]
 
 # We store the token as b64, but apns-client wants hex strings
 def b64_to_hex(data: str) -> str:
@@ -109,6 +106,8 @@ APNS_MAX_RETRIES = 3
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
                                  payload_data: Dict[str, Any], remote: bool=False) -> None:
+    if not devices:
+        return
     # We lazily do the APNS imports as part of optimizing Zulip's base
     # import time; since these are only needed in the push
     # notification queue worker, it's best to only import them in the
@@ -123,6 +122,7 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
         return
 
     if remote:
+        assert settings.ZILENCER_ENABLED
         DeviceTokenClass = RemotePushDeviceToken
     else:
         DeviceTokenClass = PushDeviceToken
@@ -267,6 +267,8 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
     options: Additional options to control the GCM message sent.
         For details, see `parse_gcm_options`.
     """
+    if not devices:
+        return
     if not gcm_client:
         logger.debug("Skipping sending a GCM push notification since "
                      "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset")
@@ -291,6 +293,7 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
             logger.info("GCM: Sent %s as %s", reg_id, msg_id)
 
     if remote:
+        assert settings.ZILENCER_ENABLED
         DeviceTokenClass = RemotePushDeviceToken
     else:
         DeviceTokenClass = PushDeviceToken
@@ -368,7 +371,7 @@ def num_push_devices_for_user(user_profile: UserProfile, kind: Optional[int]=Non
 def add_push_device_token(user_profile: UserProfile,
                           token_str: str,
                           kind: int,
-                          ios_app_id: Optional[str]=None) -> None:
+                          ios_app_id: Optional[str]=None) -> PushDeviceToken:
     logger.info("Registering push device: %d %r %d %r",
                 user_profile.id, token_str, kind, ios_app_id)
 
@@ -379,7 +382,7 @@ def add_push_device_token(user_profile: UserProfile,
     # keys for mobile push notifications.
     try:
         with transaction.atomic():
-            PushDeviceToken.objects.create(
+            token = PushDeviceToken.objects.create(
                 user_id=user_profile.id,
                 kind=kind,
                 token=token_str,
@@ -387,7 +390,11 @@ def add_push_device_token(user_profile: UserProfile,
                 # last_updated is to be renamed to date_created.
                 last_updated=timezone_now())
     except IntegrityError:
-        pass
+        token = PushDeviceToken.objects.get(
+            user_id=user_profile.id,
+            kind=kind,
+            token=token_str,
+        )
 
     # If we're sending things to the push notification bouncer
     # register this user with them here
@@ -405,6 +412,8 @@ def add_push_device_token(user_profile: UserProfile,
         logger.info("Sending new push device to bouncer: %r", post_data)
         # Calls zilencer.views.register_remote_push_device
         send_to_push_bouncer('POST', 'push/register', post_data)
+
+    return token
 
 def remove_push_device_token(user_profile: UserProfile, token_str: str, kind: int) -> None:
     try:
@@ -652,9 +661,9 @@ def get_apns_badge_count_future(user_profile: UserProfile, read_messages_ids: Op
 def get_message_payload_apns(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
     '''A `message` payload for iOS, via APNs.'''
     zulip_data = get_message_payload(user_profile, message)
-    zulip_data.update({
-        'message_ids': [message.id],
-    })
+    zulip_data.update(
+        message_ids=[message.id],
+    )
 
     assert message.rendered_content is not None
     content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
@@ -677,16 +686,16 @@ def get_message_payload_gcm(
     data = get_message_payload(user_profile, message)
     assert message.rendered_content is not None
     content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
-    data.update({
-        'event': 'message',
-        'alert': get_gcm_alert(message),
-        'zulip_message_id': message.id,  # message_id is reserved for CCS
-        'time': datetime_to_timestamp(message.date_sent),
-        'content': content,
-        'content_truncated': truncated,
-        'sender_full_name': message.sender.full_name,
-        'sender_avatar_url': absolute_avatar_url(message.sender),
-    })
+    data.update(
+        event='message',
+        alert=get_gcm_alert(message),
+        zulip_message_id=message.id,  # message_id is reserved for CCS
+        time=datetime_to_timestamp(message.date_sent),
+        content=content,
+        content_truncated=truncated,
+        sender_full_name=message.sender.full_name,
+        sender_avatar_url=absolute_avatar_url(message.sender),
+    )
     gcm_options = {'priority': 'high'}
     return data, gcm_options
 
@@ -695,22 +704,22 @@ def get_remove_payload_gcm(
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     '''A `remove` payload + options, for Android via GCM/FCM.'''
     gcm_payload = get_base_payload(user_profile)
-    gcm_payload.update({
-        'event': 'remove',
-        'zulip_message_ids': ','.join(str(id) for id in message_ids),
+    gcm_payload.update(
+        event='remove',
+        zulip_message_ids=','.join(str(id) for id in message_ids),
         # Older clients (all clients older than 2019-02-13) look only at
         # `zulip_message_id` and ignore `zulip_message_ids`.  Do our best.
-        'zulip_message_id': message_ids[0],
-    })
+        zulip_message_id=message_ids[0],
+    )
     gcm_options = {'priority': 'normal'}
     return gcm_payload, gcm_options
 
 def get_remove_payload_apns(user_profile: UserProfile, message_ids: List[int]) -> Dict[str, Any]:
     zulip_data = get_base_payload(user_profile)
-    zulip_data.update({
-        'event': 'remove',
-        'zulip_message_ids': ','.join(str(id) for id in message_ids),
-    })
+    zulip_data.update(
+        event='remove',
+        zulip_message_ids=','.join(str(id) for id in message_ids),
+    )
     apns_data = {
         'badge': get_apns_badge_count(user_profile, message_ids),
         'custom': {'zulip': zulip_data},
@@ -820,9 +829,6 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
                                                         kind=PushDeviceToken.APNS))
 
-    if apple_devices:
-        send_apple_push_notification(user_profile.id, apple_devices,
-                                     apns_payload)
+    send_apple_push_notification(user_profile.id, apple_devices, apns_payload)
 
-    if android_devices:
-        send_android_push_notification(android_devices, gcm_payload, gcm_options)
+    send_android_push_notification(android_devices, gcm_payload, gcm_options)

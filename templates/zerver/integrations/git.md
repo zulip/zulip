@@ -28,4 +28,4 @@ Get Zulip notifications for your Git repositories!
 
 {!congrats.md!}
 
-![](/static/images/integrations/git/001.png)
+![Git bot message](/static/images/integrations/git/001.png)

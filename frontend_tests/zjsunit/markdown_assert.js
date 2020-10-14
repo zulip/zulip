@@ -25,7 +25,7 @@
 const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
-const mdiff = require("./mdiff.js");
+const mdiff = require("./mdiff");
 
 // Module-level global instance of MarkdownComparer, initialized when needed
 let _markdownComparerInstance = null;

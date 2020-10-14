@@ -33,23 +33,18 @@ usage = """Usage: send-receive.py [options] [config]
 
 parser = argparse.ArgumentParser(usage=usage)
 parser.add_argument('--site',
-                    dest='site',
-                    default="https://api.zulip.com",
-                    action='store')
+                    default="https://api.zulip.com")
 
 parser.add_argument('--nagios',
-                    dest='nagios',
                     action='store_true')
 
 parser.add_argument('--insecure',
-                    dest='insecure',
                     action='store_true')
 
 parser.add_argument('--munin',
-                    dest='munin',
                     action='store_true')
 
-parser.add_argument('config', nargs='?', default=None)
+parser.add_argument('config', nargs='?')
 
 options = parser.parse_args()
 
@@ -109,7 +104,7 @@ def get_zulips() -> List[Dict[str, Any]]:
         last_event_id = max(last_event_id, int(event['id']))
     # If we get a heartbeat event, that means we've been hanging for
     # 40s, and we should bail.
-    if 'heartbeat' in {event['type'] for event in res['events']}:
+    if 'heartbeat' in (event['type'] for event in res['events']):
         report("CRITICAL", msg="Got heartbeat waiting for Zulip, which means get_events is hanging")
     return [event['message'] for event in res['events']]
 

@@ -36,7 +36,7 @@ class ErrorCode(AbstractEnum):
     MISSING_HTTP_EVENT_HEADER = ()
     STREAM_DOES_NOT_EXIST = ()
     UNAUTHORIZED_PRINCIPAL = ()
-    UNEXPECTED_WEBHOOK_EVENT_TYPE = ()
+    UNSUPPORTED_WEBHOOK_EVENT_TYPE = ()
     BAD_EVENT_QUEUE_ID = ()
     CSRF_FAILED = ()
     INVITATION_FAILED = ()
@@ -45,6 +45,8 @@ class ErrorCode(AbstractEnum):
     REQUEST_CONFUSING_VAR = ()
     INVALID_API_KEY = ()
     INVALID_ZOOM_TOKEN = ()
+    UNAUTHENTICATED_USER = ()
+    NONEXISTENT_SUBDOMAIN = ()
 
 class JsonableError(Exception):
     '''A standardized error format we can turn into a nice JSON HTTP response.
@@ -224,6 +226,18 @@ class OrganizationOwnerRequired(JsonableError):
     def msg_format() -> str:
         return OrganizationOwnerRequired.OWNER_REQUIRED_MESSAGE
 
+class StreamAdministratorRequired(JsonableError):
+    code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
+
+    ADMIN_REQUIRED_MESSAGE = _("Must be an organization or stream administrator")
+
+    def __init__(self) -> None:
+        super().__init__(self.ADMIN_REQUIRED_MESSAGE)
+
+    @staticmethod
+    def msg_format() -> str:
+        return StreamAdministratorRequired.ADMIN_REQUIRED_MESSAGE
+
 class MarkdownRenderingException(Exception):
     pass
 
@@ -243,14 +257,35 @@ class InvalidAPIKeyFormatError(InvalidAPIKeyError):
     def msg_format() -> str:
         return _("Malformed API key")
 
-class UnexpectedWebhookEventType(JsonableError):
-    code = ErrorCode.UNEXPECTED_WEBHOOK_EVENT_TYPE
+class UnsupportedWebhookEventType(JsonableError):
+    code = ErrorCode.UNSUPPORTED_WEBHOOK_EVENT_TYPE
     data_fields = ['webhook_name', 'event_type']
 
-    def __init__(self, webhook_name: str, event_type: Optional[str]) -> None:
-        self.webhook_name = webhook_name
+    def __init__(self, event_type: Optional[str]) -> None:
+        self.webhook_name = "(unknown)"
         self.event_type = event_type
 
     @staticmethod
     def msg_format() -> str:
         return _("The '{event_type}' event isn't currently supported by the {webhook_name} webhook")
+
+class MissingAuthenticationError(JsonableError):
+    code = ErrorCode.UNAUTHENTICATED_USER
+    http_status_code = 401
+
+    def __init__(self) -> None:
+        pass
+
+    # No msg_format is defined since this exception is caught and
+    # converted into json_unauthorized in Zulip's middleware.
+
+class InvalidSubdomainError(JsonableError):
+    code = ErrorCode.NONEXISTENT_SUBDOMAIN
+    http_status_code = 404
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Invalid subdomain")

@@ -44,7 +44,7 @@ def get_next_page_url(link_header: str) -> Optional[str]:
 
 def check_issue_labels() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--force', action="store_true", dest="force", default=False)
+    parser.add_argument('--force', action="store_true")
     args = parser.parse_args()
 
     if not args.force:

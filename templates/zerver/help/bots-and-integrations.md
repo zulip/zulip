@@ -40,7 +40,7 @@ The **bot type** determines what the bot can do.
 Bot type | Permissions | Common uses
 ---|---|---
 Incoming webhook | Send messages into Zulip | Third party integrations
-Outgoing webhook | Send messages into Zulip, read messages where the bot is addressed | Third party integrations, most custom bots <!-- # ignorelongline -->
+Outgoing webhook | Send messages into Zulip, read messages where the bot is addressed | Third party integrations, most custom bots
 Generic | Anything the bot creator can do | Automating tasks, bots that listen to all messages on a stream
 API super bot (self-hosted only) | Anything any user can do | Mirroring
 

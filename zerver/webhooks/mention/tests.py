@@ -18,8 +18,9 @@ Children up and down the country are \u2026
 """.strip()
 
         # use fixture named mention_webfeeds
-        self.send_and_test_stream_message('webfeeds', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("mention", fixture_name, file_type="json")
+        self.check_webhook(
+            "webfeeds",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )

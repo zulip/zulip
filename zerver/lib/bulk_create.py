@@ -1,11 +1,23 @@
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
+import random
+from collections import defaultdict
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple, Union
 
 from django.db.models import Model
 
 from zerver.lib.create_user import create_user_profile, get_display_email_address
 from zerver.lib.initial_password import initial_password
 from zerver.lib.streams import render_stream_description
-from zerver.models import Realm, RealmAuditLog, Recipient, Stream, Subscription, UserProfile
+from zerver.models import (
+    Message,
+    Reaction,
+    Realm,
+    RealmAuditLog,
+    Recipient,
+    Stream,
+    Subscription,
+    UserMessage,
+    UserProfile,
+)
 
 
 def bulk_create_users(realm: Realm,
@@ -20,7 +32,7 @@ def bulk_create_users(realm: Realm,
     """
     existing_users = frozenset(UserProfile.objects.filter(
         realm=realm).values_list('email', flat=True))
-    users = sorted([user_raw for user_raw in users_raw if user_raw[0] not in existing_users])
+    users = sorted(user_raw for user_raw in users_raw if user_raw[0] not in existing_users)
 
     # Now create user_profiles
     profiles_to_create: List[UserProfile] = []
@@ -47,9 +59,9 @@ def bulk_create_users(realm: Realm,
     user_ids = {user.id for user in profiles_to_create}
 
     RealmAuditLog.objects.bulk_create(
-        [RealmAuditLog(realm=realm, modified_user=profile_,
-                       event_type=RealmAuditLog.USER_CREATED, event_time=profile_.date_joined)
-         for profile_ in profiles_to_create])
+        RealmAuditLog(realm=realm, modified_user=profile_,
+                      event_type=RealmAuditLog.USER_CREATED, event_time=profile_.date_joined)
+        for profile_ in profiles_to_create)
 
     recipients_to_create: List[Recipient] = []
     for user_id in user_ids:
@@ -102,9 +114,10 @@ def bulk_set_users_or_streams_recipient_fields(model: Model,
 # This is only sed in populate_db, so doesn't really need tests
 def bulk_create_streams(realm: Realm,
                         stream_dict: Dict[str, Dict[str, Any]]) -> None:  # nocoverage
-    existing_streams = frozenset([name.lower() for name in
-                                  Stream.objects.filter(realm=realm)
-                                  .values_list('name', flat=True)])
+    existing_streams = {
+        name.lower()
+        for name in Stream.objects.filter(realm=realm).values_list('name', flat=True)
+    }
     streams_to_create: List[Stream] = []
     for name, options in stream_dict.items():
         if 'history_public_to_subscribers' not in options:
@@ -144,3 +157,111 @@ def bulk_create_streams(realm: Realm,
     Recipient.objects.bulk_create(recipients_to_create)
 
     bulk_set_users_or_streams_recipient_fields(Stream, streams_to_create, recipients_to_create)
+
+DEFAULT_EMOJIS = [
+    ('+1', '1f44d'),
+    ('smiley', '1f603'),
+    ('eyes', '1f440'),
+    ('crying_cat_face', '1f63f'),
+    ('arrow_up', '2b06'),
+    ('confetti_ball', '1f38a'),
+    ('hundred_points', '1f4af'),
+]
+
+def bulk_create_reactions(
+        messages: Iterable[Message],
+        users: Optional[List[UserProfile]] = None,
+        emojis: Optional[List[Tuple[str, str]]] = None
+) -> None:
+    messages = list(messages)
+    if not emojis:
+        emojis = DEFAULT_EMOJIS
+    emojis = list(emojis)
+
+    reactions: List[Reaction] = []
+    for message in messages:
+        reactions.extend(_add_random_reactions_to_message(
+            message, emojis, users))
+    Reaction.objects.bulk_create(reactions)
+
+def _add_random_reactions_to_message(
+        message: Message,
+        emojis: List[Tuple[str, str]],
+        users: Optional[List[UserProfile]] = None,
+        prob_reaction: float = 0.075,
+        prob_upvote: float = 0.5,
+        prob_repeat: float = 0.5) -> List[Reaction]:
+    '''Randomly add emoji reactions to each message from a list.
+
+    Algorithm:
+
+    Give the message at least one reaction with probability `prob_reaction`.
+    Once the first reaction is added, have another user upvote it with probability
+    `prob_upvote`, provided there is another recipient of the message left to upvote.
+    Repeat the process for a different emoji with probability `prob_repeat`.
+
+    If the number of emojis or users is small, there is a chance the above process
+    will produce multiple reactions with the same user and emoji, so group the
+    reactions by emoji code and user profile and then return one reaction from
+    each group.
+    '''
+    for p in (prob_reaction, prob_repeat, prob_upvote):
+        # Prevent p=1 since for prob_repeat and prob_upvote, this will
+        # lead to an infinite loop.
+        if p >= 1 or p < 0:
+            raise ValueError('Probability argument must be between 0 and 1.')
+
+    # Avoid performing database queries if there will be no reactions.
+    compute_next_reaction: bool = random.random() < prob_reaction
+    if not compute_next_reaction:
+        return []
+
+    if users is None:
+        users = []
+    user_ids: Sequence[int] = [user.id for user in users]
+    if not user_ids:
+        user_ids = UserMessage.objects.filter(message=message) \
+            .values_list("user_profile_id", flat=True)
+        if not user_ids:
+            return []
+
+    emojis = list(emojis)
+
+    reactions = []
+    while compute_next_reaction:
+        # We do this O(users) operation only if we've decided to do a
+        # reaction, to avoid performance issues with large numbers of
+        # users.
+        users_available = set(user_ids)
+
+        (emoji_name, emoji_code) = random.choice(emojis)
+        while True:
+            # Handle corner case where all the users have reacted.
+            if not users_available:
+                break
+
+            user_id = random.choice(list(users_available))
+            reactions.append(Reaction(
+                user_profile_id=user_id,
+                message=message,
+                emoji_name=emoji_name,
+                emoji_code=emoji_code,
+                reaction_type=Reaction.UNICODE_EMOJI
+            ))
+            users_available.remove(user_id)
+
+            # Add an upvote with the defined probability.
+            if not random.random() < prob_upvote:
+                break
+
+        # Repeat with a possibly different random emoji with the
+        # defined probability.
+        compute_next_reaction = random.random() < prob_repeat
+
+    # Avoid returning duplicate reactions by deduplicating on
+    # (user_profile_id, emoji_code).
+    grouped_reactions = defaultdict(list)
+    for reaction in reactions:
+        k = (str(reaction.user_profile_id), str(reaction.emoji_code))
+        grouped_reactions[k].append(reaction)
+    return [reactions[0] for reactions in grouped_reactions.values()]

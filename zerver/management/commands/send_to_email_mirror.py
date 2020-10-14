@@ -37,15 +37,11 @@ Example:
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('-f', '--fixture',
-                            dest='fixture',
-                            type=str,
                             help='The path to the email message you\'d like to send '
                                  'to the email mirror.\n'
                                  'Accepted formats: json or raw email file. '
                                  'See zerver/tests/fixtures/email/ for examples')
         parser.add_argument('-s', '--stream',
-                            dest='stream',
-                            type=str,
                             help='The name of the stream to which you\'d like to send '
                             'the message. Default: Denmark')
 
@@ -98,7 +94,8 @@ Example:
         else:
             with open(fixture_path, "rb") as fp:
                 message = email.message_from_binary_file(fp, policy=email.policy.default)
-                assert isinstance(message, EmailMessage)  # https://github.com/python/typeshed/issues/2417
+                # https://github.com/python/typeshed/issues/2417
+                assert isinstance(message, EmailMessage)
                 return message
 
     def _prepare_message(self, message: EmailMessage, realm: Realm, stream_name: str) -> None:

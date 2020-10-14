@@ -38,13 +38,8 @@ def check_our_files(modified_only: bool, all_dups: bool, fix: bool, targets: Lis
 def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) -> None:
     # Our files with .html extensions are usually for Django, but we also
     # have a few static .html files.
-    #
-    # We also have .html files that we vendored from Casper.
-    # The casperjs files use HTML5 (whereas Zulip prefers XHTML), and
-    # there are also cases where Casper deliberately uses invalid HTML,
-    # so we exclude them from our linter.
     logging.basicConfig(format='%(levelname)s:%(message)s')
-    templates = sorted(fn for fn in templates if 'casperjs' not in fn)
+    templates = sorted(fn for fn in templates)
     # Use of lodash templates <%= %>.
     if 'templates/zerver/team.html' in templates:
         templates.remove('templates/zerver/team.html')
@@ -161,13 +156,13 @@ def check_handlebar_templates(templates: Iterable[str], fix: bool) -> None:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--modified',
-                        action='store_true', default=False,
+                        action='store_true',
                         help='only check modified files')
     parser.add_argument('--all-dups',
-                        action="store_true", default=False,
+                        action="store_true",
                         help='Run lint tool to detect duplicate ids on ignored files as well')
     parser.add_argument('--fix',
-                        action='store_true', default=False,
+                        action='store_true',
                         help='Automatically fix indentation problems.')
     parser.add_argument('targets', nargs=argparse.REMAINDER)
     args = parser.parse_args()

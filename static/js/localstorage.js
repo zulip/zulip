@@ -5,8 +5,8 @@ const ls = {
     parseJSON(str) {
         try {
             return JSON.parse(str);
-        } catch (err) {
-            return;
+        } catch {
+            return undefined;
         }
     },
 
@@ -44,6 +44,8 @@ const ls = {
                 }
             }
         }
+
+        return undefined;
     },
 
     // set the wrapped version of the data into localStorage.
@@ -83,6 +85,8 @@ const ls = {
 
             return data;
         }
+
+        return undefined;
     },
 };
 
@@ -111,6 +115,8 @@ const localstorage = function () {
             if (data) {
                 return data.data;
             }
+
+            return undefined;
         },
 
         set(name, data) {
@@ -163,7 +169,7 @@ let warned_of_localstorage = false;
 localstorage.supported = function supports_localstorage() {
     try {
         return window.localStorage !== undefined && window.localStorage !== null;
-    } catch (e) {
+    } catch {
         if (!warned_of_localstorage) {
             blueslip.error(
                 "Client browser does not support local storage, will lose socket message on reload",

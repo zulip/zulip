@@ -1,5 +1,9 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
+#
+# This module is closely integrated with zerver/lib/event_schema.py
+# and zerver/lib/data_types.py systems for validating the schemas of
+# events; it also uses the OpenAPI tools to validate our documentation.
 import copy
 import sys
 import time
@@ -90,20 +94,36 @@ from zerver.lib.actions import (
     try_update_realm_custom_profile_field,
 )
 from zerver.lib.event_schema import (
-    avatar_fields,
     check_alert_words,
+    check_attachment_add,
+    check_attachment_remove,
+    check_attachment_update,
     check_custom_profile_fields,
     check_default_stream_groups,
     check_default_streams,
-    check_events_dict,
+    check_delete_message,
+    check_has_zoom_token,
+    check_hotspots,
     check_invites_changed,
     check_message,
-    check_reaction,
+    check_muted_topics,
+    check_presence,
+    check_reaction_add,
+    check_reaction_remove,
     check_realm_bot_add,
     check_realm_bot_delete,
     check_realm_bot_remove,
     check_realm_bot_update,
+    check_realm_domains_add,
+    check_realm_domains_change,
+    check_realm_domains_remove,
+    check_realm_emoji_update,
+    check_realm_export,
+    check_realm_filters,
     check_realm_update,
+    check_realm_update_dict,
+    check_realm_user_add,
+    check_realm_user_remove,
     check_realm_user_update,
     check_stream_create,
     check_stream_delete,
@@ -113,13 +133,20 @@ from zerver.lib.event_schema import (
     check_subscription_peer_add,
     check_subscription_peer_remove,
     check_subscription_remove,
+    check_subscription_update,
     check_typing_start,
+    check_typing_stop,
     check_update_display_settings,
     check_update_global_notifications,
     check_update_message,
     check_update_message_embedded,
-    check_update_message_flags,
+    check_update_message_flags_add,
+    check_update_message_flags_remove,
     check_user_group_add,
+    check_user_group_add_members,
+    check_user_group_remove,
+    check_user_group_remove_members,
+    check_user_group_update,
     check_user_status,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
@@ -134,17 +161,6 @@ from zerver.lib.test_helpers import (
     stdout_suppressed,
 )
 from zerver.lib.topic import TOPIC_NAME
-from zerver.lib.validator import (
-    check_bool,
-    check_dict_only,
-    check_float,
-    check_int,
-    check_list,
-    check_none_or,
-    check_string,
-    check_tuple,
-    equals,
-)
 from zerver.models import (
     Attachment,
     Message,
@@ -171,6 +187,12 @@ from zerver.tornado.event_queue import (
 
 
 class BaseAction(ZulipTestCase):
+    """Core class for verifying the apply_event race handling logic as
+    well as the event formatting logic of any function using send_event.
+
+    See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html#testing
+    for extensive design details for this testing system.
+    """
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user('hamlet')
@@ -219,6 +241,7 @@ class BaseAction(ZulipTestCase):
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
+            realm=self.user_profile.realm,
         )
         action()
         events = client.event_queue.contents()
@@ -259,6 +282,7 @@ class BaseAction(ZulipTestCase):
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
+            realm=self.user_profile.realm,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
         self.match_states(hybrid_state, normal_state, events)
@@ -473,13 +497,13 @@ class NormalActionsTest(BaseAction):
             lambda: do_update_message_flags(user_profile, get_client("website"), 'add', 'starred', [message]),
             state_change_expected=True,
         )
-        check_update_message_flags('events[0]', events[0], 'add')
+        check_update_message_flags_add("events[0]", events[0])
 
         events = self.verify_action(
             lambda: do_update_message_flags(user_profile, get_client("website"), 'remove', 'starred', [message]),
             state_change_expected=True,
         )
-        check_update_message_flags('events[0]', events[0], 'remove')
+        check_update_message_flags_remove("events[0]", events[0])
 
     def test_update_read_flag_removes_unread_msg_ids(self) -> None:
 
@@ -518,7 +542,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile, message, "tada", "1f389", "unicode_emoji"),
             state_change_expected=False,
         )
-        check_reaction('events[0]', events[0], 'add')
+        check_reaction_add("events[0]", events[0])
 
     def test_add_submessage(self) -> None:
         cordelia = self.example_user('cordelia')
@@ -548,7 +572,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile, message, "1f389", "unicode_emoji"),
             state_change_expected=False,
         )
-        check_reaction('events[0]', events[0], 'remove')
+        check_reaction_remove("events[0]", events[0])
 
     def test_invite_user_event(self) -> None:
         self.user_profile = self.example_user('iago')
@@ -632,6 +656,12 @@ class NormalActionsTest(BaseAction):
             state_change_expected=False,
         )
         check_typing_start('events[0]', events[0])
+        events = self.verify_action(
+            lambda: check_send_typing_notification(
+                self.user_profile, [self.example_user("cordelia").id], "stop"),
+            state_change_expected=False,
+        )
+        check_typing_stop('events[0]', events[0])
 
     def test_custom_profile_fields_events(self) -> None:
         events = self.verify_action(
@@ -665,7 +695,7 @@ class NormalActionsTest(BaseAction):
             lambda: do_update_user_custom_profile_data_if_changed(
                 self.user_profile,
                 [field]))
-        check_realm_user_update('events[0]', events[0], {"custom_profile_field"})
+        check_realm_user_update('events[0]', events[0], "custom_profile_field")
         self.assertEqual(
             events[0]['person']['custom_profile_field'].keys(),
             {"id", "value", "rendered_value"}
@@ -682,29 +712,13 @@ class NormalActionsTest(BaseAction):
             lambda: do_update_user_custom_profile_data_if_changed(
                 self.user_profile,
                 [field]))
-        check_realm_user_update('events[0]', events[0], {"custom_profile_field"})
+        check_realm_user_update('events[0]', events[0], "custom_profile_field")
         self.assertEqual(
             events[0]['person']['custom_profile_field'].keys(),
             {"id", "value"}
         )
 
     def test_presence_events(self) -> None:
-        fields = [
-            ('type', equals('presence')),
-            ('user_id', check_int),
-            ('server_timestamp', check_float),
-            ('presence', check_dict_only([
-                ('website', check_dict_only([
-                    ('status', equals('active')),
-                    ('timestamp', check_int),
-                    ('client', check_string),
-                    ('pushable', check_bool),
-                ])),
-            ])),
-        ]
-
-        email_field = ('email', check_string)
-
         events = self.verify_action(
             lambda: do_update_user_presence(
                 self.user_profile,
@@ -712,8 +726,14 @@ class NormalActionsTest(BaseAction):
                 timezone_now(),
                 UserPresence.ACTIVE),
             slim_presence=False)
-        schema_checker = check_events_dict(fields + [email_field])
-        schema_checker('events[0]', events[0])
+
+        check_presence(
+            "events[0]",
+            events[0],
+            has_email=True,
+            presence_key="website",
+            status="active",
+        )
 
         events = self.verify_action(
             lambda: do_update_user_presence(
@@ -722,25 +742,16 @@ class NormalActionsTest(BaseAction):
                 timezone_now(),
                 UserPresence.ACTIVE),
             slim_presence=True)
-        schema_checker = check_events_dict(fields)
-        schema_checker('events[0]', events[0])
+
+        check_presence(
+            "events[0]",
+            events[0],
+            has_email=False,
+            presence_key="website",
+            status="active",
+        )
 
     def test_presence_events_multiple_clients(self) -> None:
-        schema_checker_android = check_events_dict([
-            ('type', equals('presence')),
-            ('email', check_string),
-            ('user_id', check_int),
-            ('server_timestamp', check_float),
-            ('presence', check_dict_only([
-                ('ZulipAndroid/1.0', check_dict_only([
-                    ('status', equals('idle')),
-                    ('timestamp', check_int),
-                    ('client', check_string),
-                    ('pushable', check_bool),
-                ])),
-            ])),
-        ])
-
         self.api_post(self.user_profile, "/api/v1/users/me/presence", {'status': 'idle'},
                       HTTP_USER_AGENT="ZulipAndroid/1.0")
         self.verify_action(
@@ -755,64 +766,31 @@ class NormalActionsTest(BaseAction):
                 get_client("ZulipAndroid/1.0"),
                 timezone_now(),
                 UserPresence.IDLE))
-        schema_checker_android('events[0]', events[0])
+
+        check_presence(
+            "events[0]",
+            events[0],
+            has_email=True,
+            presence_key="ZulipAndroid/1.0",
+            status="idle",
+        )
 
     def test_register_events(self) -> None:
-        realm_user_add_checker = check_events_dict([
-            ('type', equals('realm_user')),
-            ('op', equals('add')),
-            ('person', check_dict_only([
-                ('user_id', check_int),
-                ('email', check_string),
-                ('avatar_url', check_none_or(check_string)),
-                ('avatar_version', check_int),
-                ('full_name', check_string),
-                ('is_admin', check_bool),
-                ('is_owner', check_bool),
-                ('is_bot', check_bool),
-                ('is_guest', check_bool),
-                ('is_active', check_bool),
-                ('profile_data', check_dict_only([])),
-                ('timezone', check_string),
-                ('date_joined', check_string),
-            ])),
-        ])
-
         events = self.verify_action(
             lambda: self.register("test1@zulip.com", "test1"))
         self.assert_length(events, 1)
-        realm_user_add_checker('events[0]', events[0])
+        check_realm_user_add('events[0]', events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.delivery_email, "test1@zulip.com")
 
     def test_register_events_email_address_visibility(self) -> None:
-        realm_user_add_checker = check_events_dict([
-            ('type', equals('realm_user')),
-            ('op', equals('add')),
-            ('person', check_dict_only([
-                ('user_id', check_int),
-                ('email', check_string),
-                ('avatar_url', check_none_or(check_string)),
-                ('avatar_version', check_int),
-                ('full_name', check_string),
-                ('is_active', check_bool),
-                ('is_admin', check_bool),
-                ('is_owner', check_bool),
-                ('is_bot', check_bool),
-                ('is_guest', check_bool),
-                ('profile_data', check_dict_only([])),
-                ('timezone', check_string),
-                ('date_joined', check_string),
-            ])),
-        ])
-
         do_set_realm_property(self.user_profile.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
 
         events = self.verify_action(
             lambda: self.register("test1@zulip.com", "test1"))
         self.assert_length(events, 1)
-        realm_user_add_checker('events[0]', events[0])
+        check_realm_user_add('events[0]', events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.email, f"user{new_user_profile.id}@zulip.testserver")
 
@@ -856,66 +834,33 @@ class NormalActionsTest(BaseAction):
         check_user_group_add('events[0]', events[0])
 
         # Test name update
-        user_group_update_checker = check_events_dict([
-            ('type', equals('user_group')),
-            ('op', equals('update')),
-            ('group_id', check_int),
-            ('data', check_dict_only([
-                ('name', check_string),
-            ])),
-        ])
         backend = UserGroup.objects.get(name='backend')
         events = self.verify_action(
             lambda: do_update_user_group_name(backend, 'backendteam'))
-        user_group_update_checker('events[0]', events[0])
+        check_user_group_update('events[0]', events[0], 'name')
 
         # Test description update
-        user_group_update_checker = check_events_dict([
-            ('type', equals('user_group')),
-            ('op', equals('update')),
-            ('group_id', check_int),
-            ('data', check_dict_only([
-                ('description', check_string),
-            ])),
-        ])
         description = "Backend team to deal with backend code."
         events = self.verify_action(
             lambda: do_update_user_group_description(backend, description))
-        user_group_update_checker('events[0]', events[0])
+        check_user_group_update('events[0]', events[0], 'description')
 
         # Test add members
-        user_group_add_member_checker = check_events_dict([
-            ('type', equals('user_group')),
-            ('op', equals('add_members')),
-            ('group_id', check_int),
-            ('user_ids', check_list(check_int)),
-        ])
         hamlet = self.example_user('hamlet')
         events = self.verify_action(
             lambda: bulk_add_members_to_user_group(backend, [hamlet]))
-        user_group_add_member_checker('events[0]', events[0])
+        check_user_group_add_members('events[0]', events[0])
 
         # Test remove members
-        user_group_remove_member_checker = check_events_dict([
-            ('type', equals('user_group')),
-            ('op', equals('remove_members')),
-            ('group_id', check_int),
-            ('user_ids', check_list(check_int)),
-        ])
         hamlet = self.example_user('hamlet')
         events = self.verify_action(
             lambda: remove_members_from_user_group(backend, [hamlet]))
-        user_group_remove_member_checker('events[0]', events[0])
+        check_user_group_remove_members('events[0]', events[0])
 
-        # Test delete event
-        user_group_remove_checker = check_events_dict([
-            ('type', equals('user_group')),
-            ('op', equals('remove')),
-            ('group_id', check_int),
-        ])
+        # Test remove event
         events = self.verify_action(
             lambda: check_delete_user_group(backend.id, othello))
-        user_group_remove_checker('events[0]', events[0])
+        check_user_group_remove('events[0]', events[0])
 
     def test_default_stream_groups_events(self) -> None:
         streams = []
@@ -1005,14 +950,6 @@ class NormalActionsTest(BaseAction):
             num_events=0)
 
     def test_muted_topics_events(self) -> None:
-        muted_topics_checker = check_events_dict([
-            ('type', equals('muted_topics')),
-            ('muted_topics', check_list(check_tuple([
-                check_string,  # stream name
-                check_string,  # topic name
-                check_int,  # timestamp
-            ]))),
-        ])
         stream = get_stream('Denmark', self.user_profile.realm)
         recipient = stream.recipient
         events = self.verify_action(
@@ -1021,27 +958,27 @@ class NormalActionsTest(BaseAction):
                 stream,
                 recipient,
                 "topic"))
-        muted_topics_checker('events[0]', events[0])
+        check_muted_topics('events[0]', events[0])
 
         events = self.verify_action(
             lambda: do_unmute_topic(
                 self.user_profile,
                 stream,
                 "topic"))
-        muted_topics_checker('events[0]', events[0])
+        check_muted_topics('events[0]', events[0])
 
     def test_change_avatar_fields(self) -> None:
         events = self.verify_action(
             lambda: do_change_avatar_fields(self.user_profile, UserProfile.AVATAR_FROM_USER, acting_user=self.user_profile),
         )
-        check_realm_user_update('events[0]', events[0], avatar_fields)
+        check_realm_user_update('events[0]', events[0], "avatar_fields")
         assert isinstance(events[0]['person']['avatar_url'], str)
         assert isinstance(events[0]['person']['avatar_url_medium'], str)
 
         events = self.verify_action(
             lambda: do_change_avatar_fields(self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=self.user_profile),
         )
-        check_realm_user_update('events[0]', events[0], avatar_fields)
+        check_realm_user_update('events[0]', events[0], "avatar_fields")
         self.assertEqual(events[0]['person']['avatar_url'], None)
         self.assertEqual(events[0]['person']['avatar_url_medium'], None)
 
@@ -1051,7 +988,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 'Sir Hamlet',
                 self.user_profile))
-        check_realm_user_update('events[0]', events[0], {'full_name'})
+        check_realm_user_update('events[0]', events[0], 'full_name')
 
     def test_change_user_delivery_email_email_address_visibilty_admins(self) -> None:
         do_set_realm_property(self.user_profile.realm, "email_address_visibility",
@@ -1066,27 +1003,12 @@ class NormalActionsTest(BaseAction):
             num_events=2,
             client_gravatar=False)
 
-        check_realm_user_update('events[0]', events[0], {"delivery_email"})
-        check_realm_user_update('events[1]', events[1], avatar_fields)
+        check_realm_user_update('events[0]', events[0], "delivery_email")
+        check_realm_user_update('events[1]', events[1], "avatar_fields")
         assert isinstance(events[1]['person']['avatar_url'], str)
         assert isinstance(events[1]['person']['avatar_url_medium'], str)
 
     def test_change_realm_authentication_methods(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update_dict')),
-            ('property', equals('default')),
-            ('data', check_dict_only([
-                ('authentication_methods', check_dict_only([
-                    ('Google', check_bool),
-                    ('Dev', check_bool),
-                    ('LDAP', check_bool),
-                    ('GitHub', check_bool),
-                    ('Email', check_bool),
-                ])),
-            ])),
-        ])
-
         def fake_backends() -> Any:
             backends = (
                 'zproject.backends.DevAuthBackend',
@@ -1112,18 +1034,9 @@ class NormalActionsTest(BaseAction):
                         self.user_profile.realm,
                         auth_method_dict))
 
-            schema_checker('events[0]', events[0])
+            check_realm_update_dict('events[0]', events[0])
 
     def test_change_pin_stream(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('subscription')),
-            ('op', equals('update')),
-            ('property', equals('pin_to_top')),
-            ('stream_id', check_int),
-            ('value', check_bool),
-            ('name', check_string),
-            ('email', check_string),
-        ])
         stream = get_stream("Denmark", self.user_profile.realm)
         sub = get_subscription(stream.name, self.user_profile)
         do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", False)
@@ -1135,54 +1048,50 @@ class NormalActionsTest(BaseAction):
                     stream,
                     "pin_to_top",
                     pinned))
-            schema_checker('events[0]', events[0])
+            check_subscription_update(
+                "events[0]",
+                events[0],
+                property="pin_to_top",
+                value=pinned,
+            )
 
     def test_change_stream_notification_settings(self) -> None:
         for setting_name in ['email_notifications']:
-            schema_checker = check_events_dict([
-                ('type', equals('subscription')),
-                ('op', equals('update')),
-                ('property', equals(setting_name)),
-                ('stream_id', check_int),
-                ('value', check_bool),
-                ('name', check_string),
-                ('email', check_string),
-            ])
-        stream = get_stream("Denmark", self.user_profile.realm)
-        sub = get_subscription(stream.name, self.user_profile)
+            stream = get_stream("Denmark", self.user_profile.realm)
+            sub = get_subscription(stream.name, self.user_profile)
 
-        # First test with notification_settings_null enabled
-        for value in (True, False):
-            events = self.verify_action(
-                lambda: do_change_subscription_property(
-                    self.user_profile,
-                    sub,
-                    stream,
-                    setting_name, value),
-                notification_settings_null=True)
-            schema_checker('events[0]', events[0])
+            # First test with notification_settings_null enabled
+            for value in (True, False):
+                events = self.verify_action(
+                    lambda: do_change_subscription_property(
+                        self.user_profile,
+                        sub,
+                        stream,
+                        setting_name, value),
+                    notification_settings_null=True)
+                check_subscription_update(
+                    "events[0]",
+                    events[0],
+                    property=setting_name,
+                    value=value,
+                )
 
-        for value in (True, False):
-            events = self.verify_action(
-                lambda: do_change_subscription_property(
-                    self.user_profile,
-                    sub,
-                    stream,
-                    setting_name,
-                    value))
-            schema_checker('events[0]', events[0])
+            for value in (True, False):
+                events = self.verify_action(
+                    lambda: do_change_subscription_property(
+                        self.user_profile,
+                        sub,
+                        stream,
+                        setting_name,
+                        value))
+                check_subscription_update(
+                    "events[0]",
+                    events[0],
+                    property=setting_name,
+                    value=value,
+                )
 
     def test_change_realm_message_edit_settings(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update_dict')),
-            ('property', equals('default')),
-            ('data', check_dict_only([
-                ('allow_message_editing', check_bool),
-                ('message_content_edit_limit_seconds', check_int),
-                ('allow_community_topic_editing', check_bool),
-            ])),
-        ])
         # Test every transition among the four possibilities {T,F} x {0, non-0}
         for (allow_message_editing, message_content_edit_limit_seconds) in \
             ((True, 0), (False, 0), (False, 1234),
@@ -1192,7 +1101,7 @@ class NormalActionsTest(BaseAction):
                                                      allow_message_editing,
                                                      message_content_edit_limit_seconds,
                                                      False))
-            schema_checker('events[0]', events[0])
+            check_realm_update_dict('events[0]', events[0])
 
     def test_change_realm_notifications_stream(self) -> None:
 
@@ -1227,7 +1136,7 @@ class NormalActionsTest(BaseAction):
         for role in [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_MEMBER]:
             events = self.verify_action(
                 lambda: do_change_user_role(self.user_profile, role))
-            check_realm_user_update('events[0]', events[0], {'role'})
+            check_realm_user_update('events[0]', events[0], 'role')
             self.assertEqual(events[0]['person']['role'], role)
 
     def test_change_is_owner(self) -> None:
@@ -1242,7 +1151,7 @@ class NormalActionsTest(BaseAction):
         for role in [UserProfile.ROLE_REALM_OWNER, UserProfile.ROLE_MEMBER]:
             events = self.verify_action(
                 lambda: do_change_user_role(self.user_profile, role))
-            check_realm_user_update('events[0]', events[0], {'role'})
+            check_realm_user_update('events[0]', events[0], 'role')
             self.assertEqual(events[0]['person']['role'], role)
 
     def test_change_is_guest(self) -> None:
@@ -1257,7 +1166,7 @@ class NormalActionsTest(BaseAction):
         for role in [UserProfile.ROLE_GUEST, UserProfile.ROLE_MEMBER]:
             events = self.verify_action(
                 lambda: do_change_user_role(self.user_profile, role))
-            check_realm_user_update('events[0]', events[0], {'role'})
+            check_realm_user_update('events[0]', events[0], 'role')
             self.assertEqual(events[0]['person']['role'], role)
 
     def test_change_notification_settings(self) -> None:
@@ -1319,7 +1228,7 @@ class NormalActionsTest(BaseAction):
     def test_realm_update_plan_type(self) -> None:
         realm = self.user_profile.realm
 
-        state_data = fetch_initial_state_data(self.user_profile, None, "", False, False)
+        state_data = fetch_initial_state_data(self.user_profile, None, "", False, False, self.user_profile.realm)
         self.assertEqual(state_data['realm_plan_type'], Realm.SELF_HOSTED)
         self.assertEqual(state_data['zulip_plan_is_not_limited'], True)
 
@@ -1327,38 +1236,11 @@ class NormalActionsTest(BaseAction):
             lambda: do_change_plan_type(realm, Realm.LIMITED))
         check_realm_update('events[0]', events[0], 'plan_type')
 
-        state_data = fetch_initial_state_data(self.user_profile, None, "", False, False)
+        state_data = fetch_initial_state_data(self.user_profile, None, "", False, False, self.user_profile.realm)
         self.assertEqual(state_data['realm_plan_type'], Realm.LIMITED)
         self.assertEqual(state_data['zulip_plan_is_not_limited'], False)
 
     def test_realm_emoji_events(self) -> None:
-        check_realm_emoji_fields = check_dict_only([
-            ('id', check_string),
-            ('name', check_string),
-            ('source_url', check_string),
-            ('deactivated', check_bool),
-            ('author_id', check_int),
-        ])
-
-        def realm_emoji_checker(var_name: str, val: object) -> None:
-            '''
-            The way we send realm emojis is kinda clumsy--we
-            send a dict mapping the emoji id to a sub_dict with
-            the fields (including the id).  Ideally we can streamline
-            this and just send a list of dicts.  The clients can make
-            a Map as needed.
-            '''
-            assert isinstance(val, dict)
-            for k, v in val.items():
-                assert isinstance(k, str)
-                assert v['id'] == k
-                check_realm_emoji_fields(f'{var_name}[{k}]', v)
-
-        schema_checker = check_events_dict([
-            ('type', equals('realm_emoji')),
-            ('op', equals('update')),
-            ('realm_emoji', realm_emoji_checker),
-        ])
         author = self.example_user('iago')
         with get_test_image_file('img.png') as img_file:
             events = self.verify_action(
@@ -1368,67 +1250,46 @@ class NormalActionsTest(BaseAction):
                     author,
                     img_file))
 
-        schema_checker('events[0]', events[0])
+        check_realm_emoji_update('events[0]', events[0])
 
         events = self.verify_action(
             lambda: do_remove_realm_emoji(self.user_profile.realm, "my_emoji"))
-        schema_checker('events[0]', events[0])
+        check_realm_emoji_update('events[0]', events[0])
 
     def test_realm_filter_events(self) -> None:
         regex = "#(?P<id>[123])"
         url = "https://realm.com/my_realm_filter/%(id)s"
 
-        schema_checker = check_events_dict([
-            ('type', equals('realm_filters')),
-            ('realm_filters', check_list(check_tuple([
-                check_string,
-                check_string,
-                check_int,
-            ]))),
-        ])
         events = self.verify_action(
             lambda: do_add_realm_filter(self.user_profile.realm, regex, url))
-        schema_checker('events[0]', events[0])
+        check_realm_filters('events[0]', events[0])
 
         events = self.verify_action(
             lambda: do_remove_realm_filter(self.user_profile.realm, "#(?P<id>[123])"))
-        schema_checker('events[0]', events[0])
+        check_realm_filters('events[0]', events[0])
 
     def test_realm_domain_events(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('realm_domains')),
-            ('op', equals('add')),
-            ('realm_domain', check_dict_only([
-                ('domain', check_string),
-                ('allow_subdomains', check_bool),
-            ])),
-        ])
         events = self.verify_action(
             lambda: do_add_realm_domain(self.user_profile.realm, 'zulip.org', False))
-        schema_checker('events[0]', events[0])
 
-        schema_checker = check_events_dict([
-            ('type', equals('realm_domains')),
-            ('op', equals('change')),
-            ('realm_domain', check_dict_only([
-                ('domain', equals('zulip.org')),
-                ('allow_subdomains', equals(True)),
-            ])),
-        ])
+        check_realm_domains_add('events[0]', events[0])
+        self.assertEqual(events[0]["realm_domain"]["domain"], "zulip.org")
+        self.assertEqual(events[0]["realm_domain"]["allow_subdomains"], False)
+
         test_domain = RealmDomain.objects.get(realm=self.user_profile.realm,
                                               domain='zulip.org')
         events = self.verify_action(
             lambda: do_change_realm_domain(test_domain, True))
-        schema_checker('events[0]', events[0])
 
-        schema_checker = check_events_dict([
-            ('type', equals('realm_domains')),
-            ('op', equals('remove')),
-            ('domain', equals('zulip.org')),
-        ])
+        check_realm_domains_change("events[0]", events[0])
+        self.assertEqual(events[0]["realm_domain"]["domain"], "zulip.org")
+        self.assertEqual(events[0]["realm_domain"]["allow_subdomains"], True)
+
         events = self.verify_action(
             lambda: do_remove_realm_domain(test_domain))
-        schema_checker('events[0]', events[0])
+
+        check_realm_domains_remove("events[0]", events[0])
+        self.assertEqual(events[0]["domain"], "zulip.org")
 
     def test_create_bot(self) -> None:
         action = lambda: self.create_bot('test')
@@ -1475,44 +1336,17 @@ class NormalActionsTest(BaseAction):
     def test_change_realm_icon_source(self) -> None:
         action = lambda: do_change_icon_source(self.user_profile.realm, Realm.ICON_UPLOADED)
         events = self.verify_action(action, state_change_expected=True)
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update_dict')),
-            ('property', equals('icon')),
-            ('data', check_dict_only([
-                ('icon_url', check_string),
-                ('icon_source', check_string),
-            ])),
-        ])
-        schema_checker('events[0]', events[0])
+        check_realm_update_dict('events[0]', events[0])
 
     def test_change_realm_day_mode_logo_source(self) -> None:
         action = lambda: do_change_logo_source(self.user_profile.realm, Realm.LOGO_UPLOADED, False, acting_user=self.user_profile)
         events = self.verify_action(action, state_change_expected=True)
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update_dict')),
-            ('property', equals('logo')),
-            ('data', check_dict_only([
-                ('logo_url', check_string),
-                ('logo_source', check_string),
-            ])),
-        ])
-        schema_checker('events[0]', events[0])
+        check_realm_update_dict('events[0]', events[0])
 
     def test_change_realm_night_mode_logo_source(self) -> None:
         action = lambda: do_change_logo_source(self.user_profile.realm, Realm.LOGO_UPLOADED, True, acting_user=self.user_profile)
         events = self.verify_action(action, state_change_expected=True)
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update_dict')),
-            ('property', equals('night_logo')),
-            ('data', check_dict_only([
-                ('night_logo_url', check_string),
-                ('night_logo_source', check_string),
-            ])),
-        ])
-        schema_checker('events[0]', events[0])
+        check_realm_update_dict('events[0]', events[0])
 
     def test_change_bot_default_all_public_streams(self) -> None:
         bot = self.create_bot('test')
@@ -1551,7 +1385,7 @@ class NormalActionsTest(BaseAction):
         action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_update('events[0]', events[0], 'owner_id')
-        check_realm_user_update('events[1]', events[1], {"bot_owner_id"})
+        check_realm_user_update('events[1]', events[1], "bot_owner_id")
 
         self.user_profile = self.example_user('aaron')
         owner = self.example_user('hamlet')
@@ -1559,7 +1393,7 @@ class NormalActionsTest(BaseAction):
         action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_delete('events[0]', events[0])
-        check_realm_user_update('events[1]', events[1], {"bot_owner_id"})
+        check_realm_user_update('events[1]', events[1], "bot_owner_id")
 
         previous_owner = self.example_user('aaron')
         self.user_profile = self.example_user('hamlet')
@@ -1567,7 +1401,7 @@ class NormalActionsTest(BaseAction):
         action = lambda: do_change_bot_owner(bot, self.user_profile, previous_owner)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_add('events[0]', events[0])
-        check_realm_user_update('events[1]', events[1], {"bot_owner_id"})
+        check_realm_user_update('events[1]', events[1], "bot_owner_id")
 
     def test_do_update_outgoing_webhook_service(self) -> None:
         self.user_profile = self.example_user('iago')
@@ -1585,6 +1419,7 @@ class NormalActionsTest(BaseAction):
         bot = self.create_bot('test')
         action = lambda: do_deactivate_user(bot)
         events = self.verify_action(action, num_events=2)
+        check_realm_user_remove("events[0]", events[0])
         check_realm_bot_remove('events[1]', events[1])
 
     def test_do_reactivate_user(self) -> None:
@@ -1598,18 +1433,9 @@ class NormalActionsTest(BaseAction):
         self.user_profile.tutorial_status = UserProfile.TUTORIAL_WAITING
         self.user_profile.save(update_fields=['tutorial_status'])
 
-        schema_checker = check_events_dict([
-            ('type', equals('hotspots')),
-            ('hotspots', check_list(check_dict_only([
-                ('name', check_string),
-                ('title', check_string),
-                ('description', check_string),
-                ('delay', check_float),
-            ]))),
-        ])
         events = self.verify_action(
             lambda: do_mark_hotspot_as_read(self.user_profile, 'intro_reply'))
-        schema_checker('events[0]', events[0])
+        check_hotspots('events[0]', events[0])
 
     def test_rename_stream(self) -> None:
         stream = self.make_stream('old_name')
@@ -1657,13 +1483,6 @@ class NormalActionsTest(BaseAction):
         check_subscription_peer_add('events[1]', events[1])
 
     def test_do_delete_message_stream(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('delete_message')),
-            ('message_ids', check_list(check_int, 2)),
-            ('message_type', equals("stream")),
-            ('stream_id', check_int),
-            ('topic', check_string),
-        ])
         hamlet = self.example_user('hamlet')
         msg_id = self.send_stream_message(hamlet, "Verona")
         msg_id_2 = self.send_stream_message(hamlet, "Verona")
@@ -1675,20 +1494,19 @@ class NormalActionsTest(BaseAction):
             lambda: do_delete_messages(self.user_profile.realm, messages),
             state_change_expected=True,
         )
-        schema_checker('events[0]', events[0])
+        check_delete_message(
+            "events[0]",
+            events[0],
+            message_type="stream",
+            num_message_ids=2,
+            is_legacy=False,
+        )
 
     def test_do_delete_message_stream_legacy(self) -> None:
         """
         Test for legacy method of deleting messages which
         sends an event per message to delete to the client.
         """
-        schema_checker = check_events_dict([
-            ('type', equals('delete_message')),
-            ('message_id', check_int),
-            ('message_type', equals("stream")),
-            ('stream_id', check_int),
-            ('topic', check_string),
-        ])
         hamlet = self.example_user('hamlet')
         msg_id = self.send_stream_message(hamlet, "Verona")
         msg_id_2 = self.send_stream_message(hamlet, "Verona")
@@ -1701,16 +1519,15 @@ class NormalActionsTest(BaseAction):
             state_change_expected=True, bulk_message_deletion=False,
             num_events=2
         )
-        schema_checker('events[0]', events[0])
+        check_delete_message(
+            "events[0]",
+            events[0],
+            message_type="stream",
+            num_message_ids=1,
+            is_legacy=True,
+        )
 
     def test_do_delete_message_personal(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('delete_message')),
-            ('message_ids', check_list(check_int, 1)),
-            ('sender_id', check_int),
-            ('message_type', equals("private")),
-            ('recipient_id', check_int),
-        ])
         msg_id = self.send_personal_message(
             self.example_user("cordelia"),
             self.user_profile,
@@ -1721,16 +1538,15 @@ class NormalActionsTest(BaseAction):
             lambda: do_delete_messages(self.user_profile.realm, [message]),
             state_change_expected=True,
         )
-        schema_checker('events[0]', events[0])
+        check_delete_message(
+            "events[0]",
+            events[0],
+            message_type="private",
+            num_message_ids=1,
+            is_legacy=False,
+        )
 
     def test_do_delete_message_personal_legacy(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('delete_message')),
-            ('message_id', check_int),
-            ('sender_id', check_int),
-            ('message_type', equals("private")),
-            ('recipient_id', check_int),
-        ])
         msg_id = self.send_personal_message(
             self.example_user("cordelia"),
             self.user_profile,
@@ -1741,7 +1557,13 @@ class NormalActionsTest(BaseAction):
             lambda: do_delete_messages(self.user_profile.realm, [message]),
             state_change_expected=True, bulk_message_deletion=False
         )
-        schema_checker('events[0]', events[0])
+        check_delete_message(
+            "events[0]",
+            events[0],
+            message_type="private",
+            num_message_ids=1,
+            is_legacy=True,
+        )
 
     def test_do_delete_message_no_max_id(self) -> None:
         user_profile = self.example_user('aaron')
@@ -1754,27 +1576,10 @@ class NormalActionsTest(BaseAction):
             lambda: do_delete_messages(self.user_profile.realm, [message]),
             state_change_expected=True,
         )
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False)
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False, realm=self.user_profile.realm)
         self.assertEqual(result['max_message_id'], -1)
 
     def test_add_attachment(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('attachment')),
-            ('op', equals('add')),
-            ('attachment', check_dict_only([
-                ('id', check_int),
-                ('name', check_string),
-                ('size', check_int),
-                ('path_id', check_string),
-                ('create_time', check_int),
-                ('messages', check_list(check_dict_only([
-                    ('id', check_int),
-                    ('date_sent', check_int),
-                ]))),
-            ])),
-            ('upload_space_used', equals(6)),
-        ])
-
         self.login('hamlet')
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
@@ -1793,29 +1598,13 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(
             lambda: do_upload(),
             num_events=1, state_change_expected=False)
-        schema_checker('events[0]', events[0])
+
+        check_attachment_add("events[0]", events[0])
+        self.assertEqual(events[0]["upload_space_used"], 6)
 
         # Verify that the DB has the attachment marked as unclaimed
         entry = Attachment.objects.get(file_name='zulip.txt')
         self.assertEqual(entry.is_claimed(), False)
-
-        # Now we send an actual message using this attachment.
-        schema_checker = check_events_dict([
-            ('type', equals('attachment')),
-            ('op', equals('update')),
-            ('attachment', check_dict_only([
-                ('id', check_int),
-                ('name', check_string),
-                ('size', check_int),
-                ('path_id', check_string),
-                ('create_time', check_int),
-                ('messages', check_list(check_dict_only([
-                    ('id', check_int),
-                    ('date_sent', check_int),
-                ]))),
-            ])),
-            ('upload_space_used', equals(6)),
-        ])
 
         hamlet = self.example_user("hamlet")
         self.subscribe(hamlet, "Denmark")
@@ -1824,50 +1613,19 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(
             lambda: self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test"),
             num_events=2)
-        schema_checker('events[0]', events[0])
+
+        check_attachment_update("events[0]", events[0])
+        self.assertEqual(events[0]["upload_space_used"], 6)
 
         # Now remove the attachment
-        schema_checker = check_events_dict([
-            ('type', equals('attachment')),
-            ('op', equals('remove')),
-            ('attachment', check_dict_only([
-                ('id', check_int),
-            ])),
-            ('upload_space_used', equals(0)),
-        ])
-
         events = self.verify_action(
             lambda: self.client_delete(f"/json/attachments/{entry.id}"),
             num_events=1, state_change_expected=False)
-        schema_checker('events[0]', events[0])
+
+        check_attachment_remove("events[0]", events[0])
+        self.assertEqual(events[0]["upload_space_used"], 0)
 
     def test_notify_realm_export(self) -> None:
-        pending_schema_checker = check_events_dict([
-            ('type', equals('realm_export')),
-            ('exports', check_list(check_dict_only([
-                ('id', check_int),
-                ('export_time', check_float),
-                ('acting_user_id', check_int),
-                ('export_url', equals(None)),
-                ('deleted_timestamp', equals(None)),
-                ('failed_timestamp', equals(None)),
-                ('pending', check_bool),
-            ]))),
-        ])
-
-        schema_checker = check_events_dict([
-            ('type', equals('realm_export')),
-            ('exports', check_list(check_dict_only([
-                ('id', check_int),
-                ('export_time', check_float),
-                ('acting_user_id', check_int),
-                ('export_url', check_string),
-                ('deleted_timestamp', equals(None)),
-                ('failed_timestamp', equals(None)),
-                ('pending', check_bool),
-            ]))),
-        ])
-
         do_change_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.login_user(self.user_profile)
 
@@ -1881,60 +1639,40 @@ class NormalActionsTest(BaseAction):
                 'INFO:root:Completed data export for zulip in' in info_logs.output[0]
             )
 
-        # We first notify when an export is initiated,
-        pending_schema_checker('events[0]', events[0])
+        # We get two realm_export events for this action, where the first
+        # is missing the export_url (because it's pending).
+        check_realm_export(
+            "events[0]",
+            events[0],
+            has_export_url=False,
+            has_deleted_timestamp=False,
+            has_failed_timestamp=False,
+        )
 
-        # The second event is then a message from notification-bot.
-        schema_checker('events[2]', events[2])
+        check_realm_export(
+            "events[2]",
+            events[2],
+            has_export_url=True,
+            has_deleted_timestamp=False,
+            has_failed_timestamp=False,
+        )
 
         # Now we check the deletion of the export.
-        deletion_schema_checker = check_events_dict([
-            ('type', equals('realm_export')),
-            ('exports', check_list(check_dict_only([
-                ('id', check_int),
-                ('export_time', check_float),
-                ('acting_user_id', check_int),
-                ('export_url', equals(None)),
-                ('deleted_timestamp', check_float),
-                ('failed_timestamp', equals(None)),
-                ('pending', check_bool),
-            ]))),
-        ])
-
         audit_log_entry = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_EXPORTED).first()
         events = self.verify_action(
             lambda: self.client_delete(f'/json/export/realm/{audit_log_entry.id}'),
             state_change_expected=False, num_events=1)
-        deletion_schema_checker('events[0]', events[0])
+
+        check_realm_export(
+            "events[0]",
+            events[0],
+            has_export_url=False,
+            has_deleted_timestamp=True,
+            has_failed_timestamp=False,
+        )
 
     def test_notify_realm_export_on_failure(self) -> None:
-        pending_schema_checker = check_events_dict([
-            ('type', equals('realm_export')),
-            ('exports', check_list(check_dict_only([
-                ('id', check_int),
-                ('export_time', check_float),
-                ('acting_user_id', check_int),
-                ('export_url', equals(None)),
-                ('deleted_timestamp', equals(None)),
-                ('failed_timestamp', equals(None)),
-                ('pending', check_bool),
-            ]))),
-        ])
-
-        failed_schema_checker = check_events_dict([
-            ('type', equals('realm_export')),
-            ('exports', check_list(check_dict_only([
-                ('id', check_int),
-                ('export_time', check_float),
-                ('acting_user_id', check_int),
-                ('export_url', equals(None)),
-                ('deleted_timestamp', equals(None)),
-                ('failed_timestamp', check_float),
-                ('pending', check_bool),
-            ]))),
-        ])
-
         do_change_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.login_user(self.user_profile)
 
@@ -1951,27 +1689,31 @@ class NormalActionsTest(BaseAction):
             # independent of time bit by not matching exact log but only part of it.
             self.assertTrue("ERROR:root:Data export for zulip failed after" in error_log.output[0])
 
-        pending_schema_checker('events[0]', events[0])
-
-        failed_schema_checker('events[1]', events[1])
+        # We get two events for the export.
+        check_realm_export(
+            "events[0]",
+            events[0],
+            has_export_url=False,
+            has_deleted_timestamp=False,
+            has_failed_timestamp=False,
+        )
+        check_realm_export(
+            "events[1]",
+            events[1],
+            has_export_url=False,
+            has_deleted_timestamp=False,
+            has_failed_timestamp=True,
+        )
 
     def test_has_zoom_token(self) -> None:
-        schema_checker = check_events_dict([
-            ('type', equals('has_zoom_token')),
-            ('value', equals(True)),
-        ])
         events = self.verify_action(
             lambda: do_set_zoom_token(self.user_profile, {'access_token': 'token'}),
         )
-        schema_checker('events[0]', events[0])
+        check_has_zoom_token('events[0]', events[0], value=True)
 
-        schema_checker = check_events_dict([
-            ('type', equals('has_zoom_token')),
-            ('value', equals(False)),
-        ])
         events = self.verify_action(
             lambda: do_set_zoom_token(self.user_profile, None))
-        schema_checker('events[0]', events[0])
+        check_has_zoom_token('events[0]', events[0], value=False)
 
 class RealmPropertyActionTest(BaseAction):
     def do_set_realm_property_test(self, name: str) -> None:
@@ -1987,6 +1729,7 @@ class RealmPropertyActionTest(BaseAction):
             invite_to_stream_policy=[3, 2, 1],
             private_message_policy=[2, 1],
             user_group_edit_policy=[1, 2],
+            wildcard_mention_policy=[3, 2, 1],
             email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
             bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
             video_chat_provider=[
@@ -2068,7 +1811,7 @@ class UserDisplayActionTest(BaseAction):
             check_update_display_settings('events[0]', events[0])
 
             if setting_name == "timezone":
-                check_realm_user_update('events[1]', events[1], {"email", "timezone"})
+                check_realm_user_update('events[1]', events[1], "timezone")
 
     def test_set_user_display_settings(self) -> None:
         for prop in UserProfile.property_types:
@@ -2163,11 +1906,19 @@ class SubscribeActionTest(BaseAction):
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
         stream = self.make_stream("private", self.user_profile.realm, invite_only=True)
+        stream.message_retention_days = 10
+        stream.save()
+
         user_profile = self.example_user('hamlet')
-        action = lambda: bulk_add_subscriptions([stream], [user_profile])
+        action = lambda: bulk_add_subscriptions(user_profile.realm, [stream], [user_profile])
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers,
             num_events=2)
         check_stream_create('events[0]', events[0])
         check_subscription_add('events[1]', events[1], include_subscribers)
+
+        self.assertEqual(
+            events[0]['streams'][0]['message_retention_days'],
+            10,
+        )

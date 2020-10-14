@@ -83,7 +83,7 @@ def do_yarn_install(
         shutil.copytree("node_modules/", cached_node_modules, symlinks=True)
     if os.environ.get('CUSTOM_CA_CERTIFICATES'):
         run([YARN_BIN, "config", "set", "cafile", os.environ['CUSTOM_CA_CERTIFICATES']])
-    run([YARN_BIN, "install", "--non-interactive", "--frozen-lockfile"] + yarn_args,
+    run([YARN_BIN, "install", "--non-interactive", "--frozen-lockfile", *yarn_args],
         cwd=target_path)
     with open(success_stamp, 'w'):
         pass

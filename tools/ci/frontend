@@ -18,18 +18,6 @@ set -x
 PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
 PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
 
-# Disabled because of the frequently flaky
-# behaviour of it.
-# General pattern of the flaky failure is
-#
-# FAIL "#zhome" never appeared in 5000ms
-#    type: uncaughtError
-#    file: /home/circleci/zulip/frontend_tests/casper_tests/04-compose.js
-#    error: "#zhome" never appeared in 5000ms
-#    stack: not provided
-#
-# ./tools/test-js-with-casper --xunit-export
-
 ./tools/test-js-with-puppeteer
 
 # NB: Everything here should be in `tools/test-all`.  If there's a

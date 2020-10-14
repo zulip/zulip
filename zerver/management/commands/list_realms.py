@@ -16,9 +16,7 @@ Usage examples:
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--all",
-                            dest="all",
                             action="store_true",
-                            default=False,
                             help="Print all the configuration settings of the realms.")
 
     def handle(self, *args: Any, **options: Any) -> None:

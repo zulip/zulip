@@ -8,7 +8,7 @@ function do_narrow_action(action) {
 }
 
 // For message actions and user profile menu.
-const menu_dropdown_hotkeys = ["down_arrow", "up_arrow", "vim_up", "vim_down", "enter"];
+const menu_dropdown_hotkeys = new Set(["down_arrow", "up_arrow", "vim_up", "vim_down", "enter"]);
 
 // Note that multiple keys can map to the same event_name, which
 // we'll do in cases where they have the exact same semantics.
@@ -117,7 +117,7 @@ const keypress_mappings = {
 
 exports.get_keydown_hotkey = function (e) {
     if (e.altKey) {
-        return;
+        return undefined;
     }
 
     let hotkey;
@@ -135,9 +135,9 @@ exports.get_keydown_hotkey = function (e) {
         if (hotkey) {
             return hotkey;
         }
-        return;
+        return undefined;
     } else if (e.metaKey || e.ctrlKey) {
-        return;
+        return undefined;
     }
 
     if (e.shiftKey) {
@@ -159,7 +159,7 @@ exports.get_keydown_hotkey = function (e) {
 
 exports.get_keypress_hotkey = function (e) {
     if (e.metaKey || e.ctrlKey || e.altKey) {
-        return;
+        return undefined;
     }
 
     return keypress_mappings[e.which];
@@ -189,6 +189,11 @@ exports.process_escape_key = function (e) {
 
     if (feedback_widget.is_open()) {
         feedback_widget.dismiss();
+        return true;
+    }
+
+    if (popovers.any_active()) {
+        popovers.hide_all();
         return true;
     }
 
@@ -253,11 +258,6 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
-    if (popovers.any_active()) {
-        popovers.hide_all();
-        return true;
-    }
-
     if (compose_state.composing()) {
         compose_actions.cancel();
         return true;
@@ -298,6 +298,36 @@ exports.process_enter_key = function (e) {
 
     if (popovers.actions_popped()) {
         popovers.actions_menu_handle_keyboard("enter");
+        return true;
+    }
+
+    if (popovers.user_sidebar_popped()) {
+        popovers.user_sidebar_popover_handle_keyboard("enter");
+        return true;
+    }
+
+    if (popovers.user_info_popped()) {
+        popovers.user_info_popover_handle_keyboard("enter");
+        return true;
+    }
+
+    if (stream_popover.stream_popped()) {
+        stream_popover.stream_sidebar_menu_handle_keyboard("enter");
+        return true;
+    }
+
+    if (stream_popover.topic_popped()) {
+        stream_popover.topic_sidebar_menu_handle_keyboard("enter");
+        return true;
+    }
+
+    if (stream_popover.all_messages_popped()) {
+        stream_popover.all_messages_sidebar_menu_handle_keyboard("enter");
+        return true;
+    }
+
+    if (stream_popover.starred_messages_popped()) {
+        stream_popover.starred_messages_sidebar_menu_handle_keyboard("enter");
         return true;
     }
 
@@ -366,7 +396,7 @@ exports.process_tab_key = function () {
 
     let message_edit_form;
 
-    const focused_message_edit_content = $(".message_edit_content").filter(":focus");
+    const focused_message_edit_content = $(".message_edit_content:focus");
     if (focused_message_edit_content.length > 0) {
         message_edit_form = focused_message_edit_content.closest(".message_edit_form");
         // Open message edit forms either have a save button or a close button, but not both.
@@ -374,7 +404,7 @@ exports.process_tab_key = function () {
         return true;
     }
 
-    const focused_message_edit_save = $(".message_edit_save").filter(":focus");
+    const focused_message_edit_save = $(".message_edit_save:focus");
     if (focused_message_edit_save.length > 0) {
         message_edit_form = focused_message_edit_save.closest(".message_edit_form");
         message_edit_form.find(".message_edit_cancel").trigger("focus");
@@ -401,13 +431,13 @@ exports.process_shift_tab_key = function () {
     }
 
     // Shift-Tabbing from the edit message cancel button takes you to save.
-    if ($(".message_edit_cancel").filter(":focus").length > 0) {
+    if ($(".message_edit_cancel:focus").length > 0) {
         $(".message_edit_save").trigger("focus");
         return true;
     }
 
     // Shift-Tabbing from the edit message save button takes you to the content.
-    const focused_message_edit_save = $(".message_edit_save").filter(":focus");
+    const focused_message_edit_save = $(".message_edit_save:focus");
     if (focused_message_edit_save.length > 0) {
         focused_message_edit_save
             .closest(".message_edit_form")
@@ -499,7 +529,7 @@ exports.process_hotkey = function (e, hotkey) {
         return false;
     }
 
-    if (overlays.settings_open()) {
+    if (overlays.settings_open() && !popovers.user_info_popped()) {
         return false;
     }
 
@@ -543,14 +573,44 @@ exports.process_hotkey = function (e, hotkey) {
         }
     }
 
-    if (menu_dropdown_hotkeys.includes(event_name)) {
+    if (menu_dropdown_hotkeys.has(event_name)) {
         if (popovers.actions_popped()) {
             popovers.actions_menu_handle_keyboard(event_name);
             return true;
         }
 
         if (popovers.message_info_popped()) {
+            popovers.user_info_popover_for_message_handle_keyboard(event_name);
+            return true;
+        }
+
+        if (popovers.user_info_popped()) {
             popovers.user_info_popover_handle_keyboard(event_name);
+            return true;
+        }
+
+        if (popovers.user_sidebar_popped()) {
+            popovers.user_sidebar_popover_handle_keyboard(event_name);
+            return true;
+        }
+
+        if (stream_popover.stream_popped()) {
+            stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
+            return true;
+        }
+
+        if (stream_popover.topic_popped()) {
+            stream_popover.topic_sidebar_menu_handle_keyboard(event_name);
+            return true;
+        }
+
+        if (stream_popover.all_messages_popped()) {
+            stream_popover.all_messages_sidebar_menu_handle_keyboard(event_name);
+            return true;
+        }
+
+        if (stream_popover.starred_messages_popped()) {
+            stream_popover.starred_messages_sidebar_menu_handle_keyboard(event_name);
             return true;
         }
     }
@@ -800,7 +860,7 @@ exports.process_hotkey = function (e, hotkey) {
    instead just let keypress go for it. */
 
 exports.process_keydown = function (e) {
-    activity.new_user_input = true;
+    activity.set_new_user_input(true);
     const hotkey = exports.get_keydown_hotkey(e);
     if (!hotkey) {
         return false;

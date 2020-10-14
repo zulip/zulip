@@ -1,5 +1,7 @@
 "use strict";
 
+const people = require("./people");
+
 let current_filter;
 
 exports.reset_current_filter = function () {
@@ -34,7 +36,7 @@ exports.update_email = function (user_id, new_email) {
 /* Operators we should send to the server. */
 exports.public_operators = function () {
     if (current_filter === undefined) {
-        return;
+        return undefined;
     }
     return current_filter.public_operators();
 };
@@ -94,7 +96,7 @@ exports.set_compose_defaults = function () {
 
 exports.stream = function () {
     if (current_filter === undefined) {
-        return;
+        return undefined;
     }
     const stream_operands = current_filter.operands("stream");
     if (stream_operands.length === 1) {
@@ -104,16 +106,16 @@ exports.stream = function () {
         // name (considering renames and capitalization).
         return stream_data.get_name(name);
     }
-    return;
+    return undefined;
 };
 
 exports.stream_sub = function () {
     if (current_filter === undefined) {
-        return;
+        return undefined;
     }
     const stream_operands = current_filter.operands("stream");
     if (stream_operands.length !== 1) {
-        return;
+        return undefined;
     }
 
     const name = stream_operands[0];
@@ -122,25 +124,15 @@ exports.stream_sub = function () {
     return sub;
 };
 
-exports.stream_id = function () {
-    const sub = exports.stream_sub();
-
-    if (!sub) {
-        return;
-    }
-
-    return sub.stream_id;
-};
-
 exports.topic = function () {
     if (current_filter === undefined) {
-        return;
+        return undefined;
     }
     const operands = current_filter.operands("topic");
     if (operands.length === 1) {
         return operands[0];
     }
-    return;
+    return undefined;
 };
 
 exports.pm_string = function () {
@@ -148,18 +140,18 @@ exports.pm_string = function () {
     // with users 4, 5, and 99, this will return "4,5,99"
 
     if (current_filter === undefined) {
-        return;
+        return undefined;
     }
 
     const operands = current_filter.operands("pm-with");
     if (operands.length !== 1) {
-        return;
+        return undefined;
     }
 
     const emails_string = operands[0];
 
     if (!emails_string) {
-        return;
+        return undefined;
     }
 
     const user_ids_string = people.reply_to_to_user_ids_string(emails_string);
@@ -218,36 +210,36 @@ exports._possible_unread_message_ids = function () {
     // message ids but possibly a superset of unread message ids
     // that match our filter.
     if (current_filter === undefined) {
-        return;
+        return undefined;
     }
 
-    let stream_id;
+    let sub;
     let topic_name;
-    let pm_string;
+    let current_filter_pm_string;
 
     if (current_filter.can_bucket_by("stream", "topic")) {
-        stream_id = exports.stream_id();
-        if (stream_id === undefined) {
+        sub = exports.stream_sub();
+        if (sub === undefined) {
             return [];
         }
         topic_name = exports.topic();
-        return unread.get_msg_ids_for_topic(stream_id, topic_name);
+        return unread.get_msg_ids_for_topic(sub.stream_id, topic_name);
     }
 
     if (current_filter.can_bucket_by("stream")) {
-        stream_id = exports.stream_id();
-        if (stream_id === undefined) {
+        sub = exports.stream_sub();
+        if (sub === undefined) {
             return [];
         }
-        return unread.get_msg_ids_for_stream(stream_id);
+        return unread.get_msg_ids_for_stream(sub.stream_id);
     }
 
     if (current_filter.can_bucket_by("pm-with")) {
-        pm_string = exports.pm_string();
-        if (pm_string === undefined) {
+        current_filter_pm_string = exports.pm_string();
+        if (current_filter_pm_string === undefined) {
             return [];
         }
-        return unread.get_msg_ids_for_person(pm_string);
+        return unread.get_msg_ids_for_person(current_filter_pm_string);
     }
 
     if (current_filter.can_bucket_by("is-private")) {
@@ -271,7 +263,7 @@ exports._possible_unread_message_ids = function () {
         return unread.get_all_msg_ids();
     }
 
-    return;
+    return undefined;
 };
 
 // Are we narrowed to PMs: all PMs or PMs with particular people.
@@ -347,13 +339,13 @@ exports.is_for_stream_id = function (stream_id) {
     // This is not perfect, since we still track narrows by
     // name, not id, but at least the interface is good going
     // forward.
-    const narrow_stream_id = exports.stream_id();
+    const narrow_sub = exports.stream_sub();
 
-    if (narrow_stream_id === undefined) {
+    if (narrow_sub === undefined) {
         return false;
     }
 
-    return stream_id === narrow_stream_id;
+    return stream_id === narrow_sub.stream_id;
 };
 
 window.narrow_state = exports;

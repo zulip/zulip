@@ -248,12 +248,12 @@ function hashchanged(from_reload, e) {
 
     if (state.is_internal_change) {
         state.is_internal_change = false;
-        return;
+        return undefined;
     }
 
     if (is_overlay_hash(window.location.hash)) {
         do_hashchange_overlay(old_hash);
-        return;
+        return undefined;
     }
 
     // We are changing to a "main screen" view.

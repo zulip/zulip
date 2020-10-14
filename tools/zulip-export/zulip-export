@@ -38,14 +38,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../api'))
 import zulip
 
 parser = zulip.add_default_arguments(argparse.ArgumentParser(usage=usage))
-parser.add_argument('--stream', default='', action="store")
+parser.add_argument('--stream', required=True)
 options = parser.parse_args()
 
 client = zulip.init_from_options(options)
-
-if options.stream == "":
-    print("Usage:", parser.usage, file=sys.stderr)
-    sys.exit(1)
 
 client.add_subscriptions([{"name": options.stream}])
 queue = client.register(event_types=['message'])

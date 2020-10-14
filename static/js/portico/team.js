@@ -44,6 +44,8 @@ function get_profile_url(contributor, tab_name) {
             return `https://github.com/zulip/${repo_name}/commits?author=${email}`;
         }
     }
+
+    return undefined;
 }
 
 function get_display_name(contributor) {

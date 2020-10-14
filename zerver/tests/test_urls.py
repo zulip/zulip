@@ -7,7 +7,7 @@ import orjson
 from django.test import Client
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Stream
+from zerver.models import Realm, Stream
 from zproject import urls
 
 
@@ -37,10 +37,11 @@ class PublicURLTest(ZulipTestCase):
                           "/en/accounts/login/", "/ru/accounts/login/",
                           "/help/"],
                     302: ["/", "/en/", "/ru/"],
+                    400: ["/json/messages",
+                          ],
                     401: [f"/json/streams/{denmark_stream_id}/members",
                           "/api/v1/users/me/subscriptions",
                           "/api/v1/messages",
-                          "/json/messages",
                           "/api/v1/streams",
                           ],
                     404: ["/help/nonexistent", "/help/include/admin",
@@ -97,6 +98,24 @@ class PublicURLTest(ZulipTestCase):
             self.assertEqual('success', data['result'])
             self.assertEqual('ABCD', data['google_client_id'])
 
+    def test_config_error_endpoints_dev_env(self) -> None:
+        '''
+        The content of these pages is tested separately.
+        Here we simply sanity-check that all the URLs load
+        correctly.
+        '''
+        auth_types = [auth.lower() for auth in Realm.AUTHENTICATION_FLAGS]
+        for auth in ['azuread', 'email', 'remoteuser']:  # We do not have configerror pages for AzureAD and Email.
+            auth_types.remove(auth)
+
+        auth_types += ['smtp', 'remoteuser/remote_user_backend_disabled',
+                       'remoteuser/remote_user_header_missing']
+        urls = [f'/config-error/{auth_type}' for auth_type in auth_types]
+        with self.settings(DEVELOPMENT=True):
+            for url in urls:
+                response = self.client_get(url)
+                self.assert_in_success_response(['Configuration error'], response)
+
 class URLResolutionTest(ZulipTestCase):
     def get_callback_string(self, pattern: django.urls.resolvers.URLPattern) -> Optional[str]:
         callback_str = hasattr(pattern, 'lookup_str') and 'lookup_str'
@@ -106,17 +125,6 @@ class URLResolutionTest(ZulipTestCase):
     def check_function_exists(self, module_name: str, view: str) -> None:
         module = importlib.import_module(module_name)
         self.assertTrue(hasattr(module, view), f"View {module_name}.{view} does not exist")
-
-    # Tests that all views in urls.v1_api_and_json_patterns exist
-    def test_rest_api_url_resolution(self) -> None:
-        for pattern in urls.v1_api_and_json_patterns:
-            callback_str = self.get_callback_string(pattern)
-            if callback_str and hasattr(pattern, "default_args"):
-                for func_string in pattern.default_args.values():
-                    if isinstance(func_string, tuple):
-                        func_string = func_string[0]
-                    module_name, view = func_string.rsplit('.', 1)
-                    self.check_function_exists(module_name, view)
 
     # Tests function-based views declared in urls.urlpatterns for
     # whether the function exists.  We at present do not test the

@@ -4,6 +4,13 @@
 /*
   This file makes use of functional comments in a way that makes the
   code confusing with the arrow-body-style lint rule applied.
+
+  Zulip's OpenAPI-based API documentation system is documented at
+  https://zulip.readthedocs.io/en/latest/documentation/api.html
+
+  This file contains example code fenced off by comments, and is
+  designed to be run as part of Zulip's test-api test suite to verify
+  that the documented examples are all correct, runnable code.
 */
 
 const ExamplesHandler = function () {
@@ -302,7 +309,7 @@ add_example("remove_subscriptions", "/users/me/subscriptions:delete", 200, async
 
 add_example("update_message_flags", "/messages/flags:post", 200, async (client) => {
     // Send 3 messages to run this example on
-    const message_ids = [...Array(3)];
+    const message_ids = [...new Array(3)];
     for (let i = 0; i < message_ids.length; i = i + 1) {
         message_ids[i] = await send_test_message(client);
     }

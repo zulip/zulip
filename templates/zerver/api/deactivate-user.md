@@ -28,6 +28,6 @@ A typical successful JSON response may look like:
 {generate_code_example|/users/{user_id}:delete|fixture(200)}
 
 An example JSON error response when attempting to deactivate the only
-organization administrator:
+organization owner in an organization:
 
 {generate_code_example|/users/{user_id}:delete|fixture(400)}

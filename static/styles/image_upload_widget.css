@@ -1,0 +1,237 @@
+/* common CSS for all image upload widget's */
+.image_upload_widget {
+    position: relative;
+    border-radius: 5px;
+    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+
+    transition: all 0.3s ease;
+
+    .image-block {
+        background-size: 100%;
+        height: 100%;
+    }
+
+    .image-upload-background {
+        content: "";
+        background-color: hsl(0, 0%, 0%);
+        height: 100%;
+        width: 100%;
+        opacity: 0.6;
+        z-index: 99;
+        position: absolute;
+        display: none;
+        cursor: pointer;
+    }
+
+    .image-delete-button {
+        cursor: pointer;
+        color: hsl(0, 0%, 75%);
+        opacity: 0;
+        position: absolute;
+        font-size: 2rem;
+        top: 10px;
+        right: 10px;
+        z-index: 99;
+    }
+
+    .image-delete-button:hover {
+        color: hsl(0, 0%, 100%);
+    }
+
+    .image-delete-button:hover ~ .image-upload-text {
+        visibility: hidden;
+    }
+
+    .image-delete-button:hover ~ .image-delete-text {
+        visibility: visible;
+    }
+
+    .image-delete-text {
+        color: hsl(0, 0%, 100%);
+        font-size: 0.85rem;
+        position: absolute;
+        visibility: hidden;
+        z-index: 99;
+    }
+
+    .image-upload-text {
+        cursor: pointer;
+        font-size: 0.85rem;
+        color: hsl(0, 0%, 85%);
+        position: absolute;
+        z-index: 99;
+        visibility: hidden;
+    }
+
+    .image-upload-text:hover {
+        color: hsl(0, 0%, 100%);
+    }
+
+    .upload-spinner-background {
+        background-color: hsl(0, 0%, 10%);
+        font-size: 0.8rem;
+        width: 100%;
+        opacity: 0.8;
+        height: 100%;
+        position: absolute;
+        visibility: hidden;
+        z-index: 99;
+        cursor: pointer;
+    }
+
+    .image_upload_spinner {
+        position: absolute;
+        z-index: 99;
+        display: block;
+    }
+
+    &:hover {
+        .image-delete-button {
+            opacity: 1;
+        }
+
+        .image-upload-text {
+            visibility: visible;
+        }
+
+        .image-upload-background {
+            display: block;
+        }
+    }
+}
+
+.user-avatar-section,
+.realm-logo-section,
+.realm-icon-section {
+    position: relative;
+
+    .inline-block {
+        margin: 5px 20px 0 0;
+        vertical-align: top;
+        border-radius: 4px;
+    }
+}
+
+/* CSS related to settings page user avatar upload widget only */
+#user-avatar-upload-widget {
+    .image_upload_button {
+        border-radius: 5px;
+        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+        z-index: 99;
+    }
+
+    .image-delete-button {
+        font-size: 3rem;
+    }
+
+    .image-delete-text {
+        top: 90px;
+        right: 40px;
+    }
+
+    .image-upload-text {
+        top: 90px;
+        right: 24px;
+    }
+
+    .image_upload_spinner {
+        top: 40%;
+        right: 40%;
+        width: 50px;
+        height: 50px;
+    }
+
+    .image-block {
+        border-radius: 5px;
+        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+        width: 200px;
+        height: 200px;
+        top: 0;
+    }
+}
+
+#user-avatar-source {
+    font-size: 1em;
+    z-index: 99;
+    a {
+        position: relative;
+        top: 10px;
+    }
+}
+
+/* CSS related to settings page realm icon upload widget only */
+#realm-icon-upload-widget {
+    width: 100px;
+    height: 100px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+
+    .image-delete-text {
+        top: 40px;
+        right: 18px;
+    }
+
+    .image-upload-text {
+        top: 40px;
+        right: 18px;
+    }
+
+    .image_upload_spinner {
+        width: 40px;
+        height: 40px;
+        top: 30%;
+        right: 30%;
+    }
+}
+
+.realm-icon-section {
+    float: none;
+    margin-bottom: 20px;
+    display: inline-block;
+}
+
+/* CSS related to settings page realm day/night logo upload widget only */
+#realm-day-logo-upload-widget,
+#realm-night-logo-upload-widget {
+    width: 220px;
+    height: 55px;
+    text-align: center;
+    margin: 0 80px 0 20px;
+
+    .image-upload-text,
+    .image-delete-text {
+        top: 17px;
+        right: 80px;
+    }
+
+    .upload-spinner-background {
+        left: 0;
+    }
+
+    .image_upload_spinner {
+        width: 45px;
+        height: 55px;
+        top: 5%;
+        right: 40%;
+    }
+}
+
+#realm-day-logo-upload-widget {
+    background-color: hsla(0, 100%, 100%, 1);
+}
+
+#realm-night-logo-upload-widget {
+    background-color: hsl(212, 28%, 18%);
+}
+
+.realm-logo-section {
+    margin-bottom: 20px;
+}
+
+.realm-logo-block {
+    display: inline-block;
+}
+
+.realm-logo-title {
+    padding-left: 30%;
+}

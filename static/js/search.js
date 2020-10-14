@@ -105,7 +105,6 @@ exports.initialize = function () {
         on_move() {
             if (page_params.search_pills_enabled) {
                 ui_util.place_caret_at_end(search_query_box[0]);
-                return true;
             }
         },
         // Use our custom typeahead `on_escape` hook to exit
@@ -130,7 +129,7 @@ exports.initialize = function () {
                 // Don't submit the form so that the typeahead can instead
                 // handle our Enter keypress. Any searching that needs
                 // to be done will be handled in the keyup.
-                return false;
+                e.preventDefault();
             }
         })
         .on("keyup", (e) => {

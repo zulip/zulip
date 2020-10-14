@@ -38,20 +38,16 @@ class Command(ZulipBaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser)
         parser.add_argument('-d', '--deactivate',
-                            dest='deactivate',
                             action='store_true',
-                            default=False,
                             help='Used to deactivate user/users.')
         parser.add_argument('-a', '--activate',
-                            dest='activate',
                             action='store_true',
-                            default=False,
                             help='Used to activate user/users.')
         parser.add_argument('--inactive-for',
                             type=int,
                             default=28,
                             help='Number of days of inactivity before soft-deactivation')
-        parser.add_argument('users', metavar='<users>', type=str, nargs='*', default=[],
+        parser.add_argument('users', metavar='<users>', nargs='*',
                             help="A list of user emails to soft activate/deactivate.")
 
     def handle(self, *args: Any, **options: Any) -> None:

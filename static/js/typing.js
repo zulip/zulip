@@ -2,6 +2,8 @@
 
 const typing_status = require("../shared/js/typing_status");
 
+const people = require("./people");
+
 // This module handles the outbound side of typing indicators.
 // We detect changes in the compose box and notify the server
 // when we are typing.  For the inbound side see typing_events.js.

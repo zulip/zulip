@@ -1,5 +1,7 @@
 "use strict";
 
+const people = require("./people");
+
 // This will be used for pills for things like composing PMs
 // or adding users to a stream/group.
 
@@ -12,7 +14,7 @@ exports.create_item_from_email = function (email, current_items) {
             const existing_emails = current_items.map((item) => item.email);
 
             if (existing_emails.includes(email)) {
-                return;
+                return undefined;
             }
 
             // For Zephyr we can't assume any emails are invalid,
@@ -25,13 +27,13 @@ exports.create_item_from_email = function (email, current_items) {
         }
 
         // The email is not allowed, so return.
-        return;
+        return undefined;
     }
 
     const existing_ids = current_items.map((item) => item.user_id);
 
     if (existing_ids.includes(user.user_id)) {
-        return;
+        return undefined;
     }
 
     const avatar_url = people.small_avatar_url_for_person(user);

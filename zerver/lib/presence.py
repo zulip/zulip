@@ -33,7 +33,7 @@ def get_status_dicts_for_rows(all_rows: List[Dict[str, Any]],
         get_user_key = lambda row: row['user_profile__email']
         get_user_info = get_legacy_user_info
 
-    user_statuses: Dict[str, Dict[str, Any]] = dict()
+    user_statuses: Dict[str, Dict[str, Any]] = {}
 
     for user_key, presence_rows in itertools.groupby(all_rows, get_user_key):
         info = get_user_info(
@@ -64,7 +64,7 @@ def get_modern_user_info(presence_rows: List[Dict[str, Any]],
     # Be stingy about bandwidth, and don't even include
     # keys for entities that have None values.  JS
     # code should just do a falsy check here.
-    result = dict()
+    result = {}
 
     if active_timestamp is not None:
         result['active_timestamp'] = active_timestamp
@@ -100,7 +100,7 @@ def get_legacy_user_info(presence_rows: List[Dict[str, Any]],
 
     most_recent_info = info_rows[-1]
 
-    result = dict()
+    result = {}
 
     # The word "aggegrated" here is possibly misleading.
     # It's really just the most recent client's info.
@@ -157,7 +157,7 @@ def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict
     presence_rows = list(query)
 
     mobile_query = PushDeviceToken.objects.distinct(
-        'user_id',
+        'user_id'
     ).values_list(
         'user_id',
         flat=True,

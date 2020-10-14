@@ -1,6 +1,6 @@
 "use strict";
 
-const FoldDict = require("./fold_dict").FoldDict;
+const {FoldDict} = require("./fold_dict");
 
 let user_group_name_dict;
 let user_group_by_id_dict;
@@ -32,7 +32,7 @@ exports.get_user_group_from_id = function (group_id, suppress_errors) {
         if (suppress_errors === undefined) {
             blueslip.error("Unknown group_id in get_user_group_from_id: " + group_id);
         }
-        return;
+        return undefined;
     }
     return user_group_by_id_dict.get(group_id);
 };

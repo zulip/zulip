@@ -19,7 +19,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         recipients: List[str] = []
 
         Request = namedtuple('Request', ['POST'])
-        request = Request(POST=dict())  # no sender
+        request = Request(POST={})  # no sender
 
         with self.assertRaises(InvalidMirrorInput):
             create_mirrored_message_users(request, user, recipients)

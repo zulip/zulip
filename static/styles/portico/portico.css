@@ -1,0 +1,1765 @@
+body {
+    background-color: hsl(0, 0%, 98%);
+    font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
+    line-height: 150%;
+    height: 100%;
+    font-weight: 300;
+    font-size: 17px;
+}
+
+html {
+    height: 100%;
+}
+
+.noscroll {
+    overflow: hidden;
+    position: fixed;
+}
+
+.digest-address-link {
+    margin-top: 10px;
+    color: hsl(0, 0%, 60%);
+    font-size: 12px;
+    text-align: center;
+}
+
+.mac-cmd-key {
+    font-size: 15px;
+    font-family: monospace;
+}
+
+.container-fluid {
+    padding: 0;
+    min-height: 100%;
+
+    /* Hack for IE */
+    height: auto !important;
+    height: 100%;
+
+    margin: 0 auto -56px;
+}
+
+.normal {
+    font-weight: normal;
+}
+
+.navbar {
+    margin-bottom: 0;
+}
+
+.navbar-inner {
+    border-radius: 0;
+}
+
+.header {
+    position: relative;
+
+    padding: 15px 0;
+    height: 29px;
+
+    background-color: hsl(0, 0%, 100%);
+    box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
+
+    z-index: 100;
+}
+
+.navbar.footer .nav {
+    > li {
+        line-height: 56px;
+
+        > a {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+    }
+}
+
+.push {
+    height: 56px;
+}
+
+.breakpoint {
+    display: inline-block;
+}
+
+/* The API tabbed content tends to have a lot of code blocks,
+   which look nicer against a different background */
+.api-center .code-section {
+    .blocks {
+        background-color: hsl(0, 0%, 98%);
+    }
+
+    ul.nav {
+        li.active {
+            background-color: hsl(0, 0%, 98%);
+            border-bottom: 1px solid hsl(0, 0%, 98%);
+        }
+    }
+}
+
+/* The Help Center tabbed content tends to be a lot short sentences.
+   We also want the Help Center tabbed content to pop more. */
+.help-center .code-section .blocks {
+    max-width: 500px;
+}
+
+.digest-container {
+    padding-top: 100px;
+}
+
+.digest-email-container {
+    display: block;
+    margin: 0 auto !important;
+    max-width: 700px;
+    padding-bottom: 30px;
+}
+
+.digest-email-html {
+    padding: 20px;
+    background-color: hsl(0, 0%, 100%);
+    border-radius: 5px;
+}
+
+.app.help {
+    display: inline-flex;
+
+    box-shadow: 0 -20px 50px hsla(0, 0%, 0%, 0.04);
+    overflow: auto;
+
+    color: hsl(0, 0%, 27%);
+
+    .hamburger {
+        display: none;
+    }
+}
+
+.help {
+    .app-main {
+        padding: 0;
+        margin-top: 59px;
+    }
+
+    /* Markdown processor generates lots of spurious <p></p> */
+    p:empty {
+        margin: 0;
+    }
+
+    .sidebar {
+        width: 300px;
+        z-index: 1;
+        /* 100vh - navbar - paddingTop - paddingBottom - bottomNav */
+        height: calc(100vh - 59px);
+
+        border-right: 1px solid hsl(219, 10%, 97%);
+        overflow: auto;
+
+        background-color: hsl(153, 32%, 55%);
+        color: hsl(0, 0%, 100%);
+
+        -webkit-overflow-scrolling: touch;
+
+        .content {
+            padding: 10px 20px;
+        }
+
+        h1 {
+            font-weight: 400;
+            font-size: 1.25em;
+            line-height: 1.5;
+            margin-bottom: 0;
+            border-bottom: 1px solid hsla(0, 0, 100%, 0.6);
+
+            &:not(:first-of-type) {
+                margin-top: 20px;
+            }
+
+            &:first-of-type,
+            &.home-link {
+                border-bottom: none;
+            }
+
+            &.home-link {
+                font-size: 1em;
+                margin-bottom: 17px;
+
+                a::before {
+                    display: inline-block;
+                    font: normal normal normal 14px/1 FontAwesome;
+                    font-size: inherit;
+
+                    content: "\f0d9";
+                    margin-right: 10px;
+                }
+            }
+
+            a {
+                color: inherit;
+                display: block;
+            }
+        }
+
+        h2 {
+            font-weight: 400;
+            font-size: 1.2em;
+            line-height: 1.05;
+            margin-bottom: 5px;
+        }
+
+        &.slide h2 {
+            cursor: pointer;
+
+            &::before {
+                display: block;
+                font: normal normal normal 14px/1 FontAwesome;
+                font-size: inherit;
+
+                content: "\f107";
+                margin-right: 5px;
+                float: right;
+
+                opacity: 0.5;
+            }
+        }
+
+        ul {
+            margin: 5px 0 10px 12px;
+        }
+
+        &.slide ul {
+            margin-left: 19px;
+            display: none;
+        }
+
+        li {
+            list-style-type: none;
+            font-size: 0.95em;
+            font-weight: 400;
+            line-height: 1.7;
+
+            cursor: pointer;
+
+            a {
+                color: inherit;
+                display: block;
+            }
+        }
+
+        a {
+            &.highlighted {
+                background-color: hsl(152, 40%, 42%);
+
+                /* Extend highlight to entire width of sidebar, not just link area */
+                /* This has been changed from "+" to "- -" because of issue #8403.
+                   If the issue has been fixed, please change this back to "+" again. */
+                width: calc(100% + 20px);
+                margin-left: -40px;
+                padding-left: 40px;
+
+                /* Don't show the focus outline for the highlighted page. */
+                outline: 0;
+            }
+        }
+    }
+}
+
+.help .markdown {
+    background-color: hsl(0, 0%, 100%);
+    width: calc(100vw - 300px);
+    height: calc(100vh - 59px);
+}
+
+.help-center ol,
+.portico-landing.integrations ol {
+    margin-left: 0;
+}
+
+.title {
+    font-family: Helvetica;
+    font-size: 100px;
+    font-weight: bold;
+    margin-top: 50px;
+    margin-bottom: 60px;
+}
+
+#digest-page-title {
+    text-align: center;
+}
+
+.lead {
+    font-weight: bold;
+}
+
+.pitch {
+    width: 600px;
+    max-width: 100%;
+}
+
+.help-box {
+    max-width: 500px;
+
+    padding: 10px;
+    margin: 10px 0;
+
+    font-size: 0.9rem;
+    font-weight: 400;
+    line-height: 1.2;
+
+    color: hsl(0, 0%, 27%);
+
+    border: 1px solid hsl(0, 0%, 87%);
+    border-radius: 4px;
+    background-color: hsl(0, 0%, 98%);
+
+    .blob {
+        margin-top: 0;
+    }
+}
+
+.help-inline {
+    font-weight: 400;
+    font-size: 0.9rem;
+
+    &.text-error {
+        color: hsl(1, 54%, 61%);
+    }
+}
+
+a.title {
+    color: hsl(0, 0%, 0%);
+
+    &:hover {
+        color: hsl(0, 0%, 50%);
+        text-decoration: none;
+    }
+}
+
+.fakecontrol {
+    padding-top: 5px;
+    font-weight: bold;
+}
+
+img.screenshot {
+    /* This makes it so screenshots are still shown
+    even if they are larger than their span. */
+    max-width: 100%;
+}
+
+.android-screenshot {
+    margin-top: -30px;
+    width: 221px;
+}
+
+.iphone-screenshot {
+    width: 184px;
+    margin: 0 32px;
+}
+
+.full-width-screenshot {
+    width: 100%;
+}
+
+/* Silly easter egg for /integrations */
+.integral {
+    font-weight: normal;
+    display: none;
+}
+
+.show-integral {
+    position: relative;
+
+    &:hover::after {
+        content: "dx";
+        font-weight: normal;
+        font-style: italic;
+        font-size: 70%;
+    }
+}
+
+.integration {
+    margin-top: 2em;
+    padding-top: 1em;
+    border-top: 1px dashed hsl(0, 0%, 0%);
+
+    p {
+        margin-top: 2em;
+    }
+}
+
+#pw_strength {
+    /* Same width as a Bootstrap default text <input> with padding */
+    width: 220px;
+    height: 8px;
+}
+
+#registration #pw_strength {
+    width: 325px;
+    margin: 7px auto 0;
+}
+
+.def::before {
+    content: " - ";
+}
+
+.api-details {
+    margin-left: 2em;
+
+    ul {
+        list-style-type: none;
+    }
+
+    dd {
+        margin-bottom: 1em;
+    }
+}
+
+.python {
+    display: none;
+}
+
+.commandline {
+    display: none;
+}
+
+@media print {
+    #portico-area {
+        margin-left: 1.5em;
+    }
+}
+
+.landing-page-bottom {
+    padding-bottom: 2em;
+}
+
+.landing-page {
+    padding: 2em 0;
+
+    h2,
+    h4 {
+        font-weight: lighter;
+    }
+
+    p {
+        font-size: 120%;
+    }
+}
+
+.laptop-image {
+    width: 787px;
+    height: 414px;
+    background-image: url(../../images/landing-page/laptop.png);
+    background-size: contain;
+}
+
+.laptop-screen {
+    position: relative;
+    top: 32px;
+    width: 507px;
+}
+
+.platform-icon {
+    width: 33%;
+}
+
+.portico-page h1 {
+    font-weight: 300;
+}
+
+.shaded-background {
+    background-color: hsl(0, 0%, 93%);
+}
+
+.darker-background {
+    background-color: hsl(0, 0%, 28%);
+    color: hsl(0, 0%, 100%);
+}
+
+.alert-hidden {
+    display: none;
+}
+
+label.text-error {
+    display: inline;
+
+    padding-left: 5px;
+}
+
+input.text-error {
+    border-color: hsl(0, 100%, 50%);
+    outline-color: hsl(0, 100%, 50%);
+}
+
+.portico-container {
+    position: relative;
+
+    .if-zulip-electron {
+        display: none;
+    }
+}
+
+/* detect if the platform is `ZulipDesktop` and if so, hide this tag! */
+.portico-container[data-platform="ZulipElectron"] .if-zulip-electron {
+    display: block;
+}
+
+/* -- new footer -- */
+.footer {
+    margin: 20px;
+    z-index: 100;
+    width: calc(100% - 40px);
+    text-align: center;
+    font-size: 0.9em;
+
+    .footer-navigation {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    a {
+        color: inherit !important;
+    }
+
+    section {
+        width: calc(25% - 40px);
+        margin: 0 20px;
+        max-width: 150px;
+        display: inline-block;
+        vertical-align: top;
+        text-align: left;
+
+        h3 {
+            text-transform: uppercase;
+            font-size: 1em;
+            font-weight: 600;
+            line-height: 1.2;
+            margin-bottom: 5px;
+        }
+
+        ul {
+            color: hsl(0, 0%, 67%);
+            list-style-type: none;
+            margin-left: 0;
+            font-weight: 400;
+        }
+    }
+}
+
+/* -- end new footer -- */
+
+.header-main {
+    .logo {
+        display: block;
+        text-decoration: none;
+        position: relative;
+        line-height: 0.8;
+
+        svg {
+            vertical-align: -5px;
+        }
+
+        .light {
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: hsl(0, 0%, 20%);
+            opacity: 0.5;
+        }
+    }
+
+    .portico-logo {
+        height: 28px;
+        width: auto;
+        padding: 6px 0 6px 0;
+    }
+}
+
+.portico-header {
+    .dropdown {
+        position: relative;
+        display: inline-block;
+
+        ul {
+            display: none;
+            position: absolute;
+            right: 0;
+            margin: 10px 0 0 0;
+            list-style-type: none;
+            width: 200px;
+            background-color: hsl(0, 0%, 100%);
+            padding: 5px 0;
+            border-radius: 4px;
+            border: 1px solid hsl(0, 0%, 87%);
+            box-shadow: 0 2px 5px hsla(0, 0%, 0%, 0.1);
+
+            &::before {
+                content: "\25B2";
+                position: absolute;
+                top: -4px;
+                right: 9px;
+                font-size: 0.5em;
+                color: hsl(0, 0%, 87%);
+                line-height: 0;
+                transform: scale(1.8, 1);
+            }
+
+            li {
+                display: list-item;
+                margin: 0;
+                padding: 3px 10px;
+                text-align: left;
+                opacity: 1;
+                cursor: pointer;
+                &:hover {
+                    background-color: hsl(190, 10%, 90%);
+                    transition: none;
+                }
+
+                a {
+                    display: block;
+                    margin: 2px 0;
+                    padding: 0;
+                    transition: none;
+                    font-size: 0.9em;
+                    font-weight: 400;
+                    color: hsl(0, 0%, 27%);
+                }
+
+                &:hover a {
+                    background-color: transparent;
+                }
+
+                a i {
+                    margin-right: 5px;
+                }
+            }
+        }
+
+        &.show ul {
+            display: block;
+        }
+    }
+
+    .dropdown-pill {
+        border: 1px solid hsla(0, 0%, 0%, 0.2);
+        border-radius: 4px;
+        margin-left: 10px;
+        font-weight: 400;
+        cursor: pointer;
+
+        .realm-name {
+            display: inline-block;
+            vertical-align: top;
+            margin: 0 5px 0 -4px;
+            padding: 1px 0 1px 5px;
+            font-size: 0.9em;
+            font-weight: 600;
+            line-height: 1.6;
+        }
+
+        .realm-name i.fa {
+            position: relative;
+            top: -2px;
+            font-size: 0.6em;
+            margin-left: 5px;
+            opacity: 0.5;
+            transition: all 0.2s ease;
+        }
+
+        &:hover .realm-name i.fa {
+            opacity: 1;
+        }
+
+        .header-realm-icon {
+            width: 26px;
+            height: 26px;
+            vertical-align: top;
+            border-radius: 4px;
+        }
+    }
+}
+
+.portico-page-container .portico-header .dropdown-pill .realm-name {
+    margin-left: -3px;
+}
+
+.app {
+    width: 100%;
+    z-index: 99;
+}
+
+.main-headline {
+    background: url(../../images/landing-page/gg.jpg);
+    background-position: center;
+    background-size: cover;
+}
+
+a.bottom-signup-button {
+    color: hsl(0, 0%, 100%) !important;
+    text-decoration: none !important;
+    font-size: 20px;
+    padding: 20px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    font-weight: 300;
+}
+
+.signup-signature {
+    margin-top: 20px;
+    padding-bottom: 50px;
+}
+
+.devlogin_subheader {
+    margin-top: 10px;
+    margin-bottom: 20px;
+    padding-top: 0;
+    text-align: center;
+    font-size: 16px;
+}
+
+.portico-large-text {
+    font-size: 16px;
+    line-height: 20px;
+}
+
+.portico-secondary-header {
+    font-weight: 300;
+    font-size: 25px;
+}
+
+.table.table-striped {
+    background-color: hsl(0, 0%, 100%);
+    box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
+}
+
+.team-profiles {
+    /* Compensate for gutter width */
+    margin: -10px;
+    margin-bottom: 3px;
+}
+
+.team {
+    .profile {
+        .profile-name {
+            font-weight: 600;
+        }
+
+        .profile-role {
+            opacity: 0.5;
+            text-transform: uppercase;
+            font-size: 0.8em;
+            font-weight: 400;
+        }
+    }
+
+    .bdfl {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+
+        .profile-picture {
+            flex: 0 auto;
+            width: 200px;
+            margin: 10px;
+
+            > img {
+                height: auto;
+                border-radius: 5px;
+            }
+        }
+
+        .profile-information {
+            flex: 1;
+            /* Wrap when screen is small to prevent very short line */
+            min-width: 300px;
+            font-size: 1.4em;
+            margin: 10px 10px 0 10px;
+        }
+
+        .profile-description {
+            margin-top: 5px;
+            font-weight: 400;
+            font-size: 0.8em;
+            opacity: 0.8;
+            p {
+                /* Avoid double-applying the 1.2em font-size here */
+                font-size: 1em;
+            }
+        }
+    }
+
+    input {
+        display: none;
+
+        &:checked + label {
+            border: 1px solid hsl(0, 0%, 93%);
+            border-top: 2px solid hsl(80, 61%, 50%);
+            border-bottom-color: hsl(0, 0%, 100%);
+        }
+    }
+
+    label {
+        font-size: initial;
+        display: inline-block;
+        padding: 10px;
+        border: 1px solid transparent;
+        margin: 0 0 -1px 0;
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+}
+
+.contributors-list {
+    margin-left: -40px;
+    width: calc(100% + 80px);
+}
+
+.contributors {
+    display: none;
+
+    .person {
+        box-sizing: border-box;
+        padding: 10px;
+        border: 1px solid hsl(0, 0%, 93%);
+        border-radius: 4px;
+        transition: all 0.3s ease;
+
+        a {
+            color: inherit;
+        }
+
+        &:hover {
+            border: 1px solid hsl(0, 0%, 73%);
+        }
+
+        .avatar {
+            width: 60px;
+            text-align: center;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .info {
+            width: 50%;
+            text-align: left;
+            display: inline-block;
+            vertical-align: top;
+            margin-left: 10px;
+        }
+    }
+}
+
+/* Activated .contributors */
+input#total:checked ~ #tab-total,
+input#server:checked ~ #tab-server,
+input#desktop:checked ~ #tab-desktop,
+input#mobile:checked ~ #tab-mobile,
+input#python-zulip-api:checked ~ #tab-python-zulip-api,
+input#zulip-js:checked ~ #tab-zulip-js,
+input#zulipbot:checked ~ #tab-zulipbot,
+input#terminal:checked ~ #tab-terminal {
+    border-top: 1px solid hsl(0, 0%, 93%);
+    padding-top: 20px;
+    display: grid;
+    grid-gap: 5px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.avatar_img {
+    width: auto;
+    height: auto;
+    max-width: 80%;
+    max-height: 80%;
+    border-radius: 20%;
+}
+
+.tab-loading,
+.last-updated {
+    color: hsl(0, 0%, 67%);
+    font-size: 0.9em !important;
+    padding-top: 30px;
+    text-align: center;
+}
+
+.history .sponsors {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    .sponsor-picture img {
+        height: 170px;
+        margin: 0 20px 0 20px;
+        pointer-events: none;
+    }
+}
+
+.login-page-header {
+    width: 100%;
+}
+
+.login-page-subheader {
+    font-weight: 300;
+    font-size: 24px;
+    display: block;
+    margin: auto;
+    width: 300px;
+    text-align: center;
+    margin-top: -30px;
+    margin-bottom: 50px;
+}
+
+.apps-muted {
+    font-weight: 300;
+    font-size: 20px;
+    display: block;
+    margin: auto;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.apps-instructions-header {
+    font-weight: 300;
+    font-size: 25px;
+}
+
+.btn-app-download {
+    font-size: 25px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.btn-direct {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 8px;
+    font-size: 18px;
+    border-radius: 0;
+    min-width: 300px;
+}
+
+.btn-user {
+    background-color: hsl(0, 0%, 100%);
+    border-color: hsl(169, 44%, 54%);
+    border-style: solid;
+    color: hsl(170, 40%, 41%);
+}
+
+.btn-admin {
+    background-color: hsl(0, 0%, 100%);
+    border-color: hsl(198, 100%, 48%);
+    border-style: solid;
+    color: hsl(207, 89%, 54%);
+}
+
+.login-page {
+    text-align: center;
+
+    .alert {
+        width: 320px;
+        margin: auto;
+        margin-top: -30px;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+}
+
+.register-form {
+    display: inline-block;
+    text-align: center;
+}
+
+.register-button {
+    margin-left: 10px;
+}
+
+.new-organization-button {
+    margin-top: 10px;
+}
+
+input.new-organization-button {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.login-form {
+    margin: auto;
+    /* plus input padding. */
+    width: calc(300px - -28px);
+    margin-bottom: 10px;
+
+    .direct-label {
+        margin-top: 50px;
+        margin-bottom: 6px;
+    }
+}
+
+.login-form,
+.register-form {
+    .control-label {
+        margin-bottom: 2px;
+    }
+
+    .control-group {
+        margin-right: 10px;
+    }
+}
+
+.login-forgot-password {
+    float: right;
+    line-height: 40px;
+    position: relative;
+    right: -15px;
+    font-weight: 300;
+}
+
+.login-social {
+    max-width: 100%;
+    min-width: 300px;
+    margin: auto;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.main-headline-container {
+    position: relative;
+    height: 100%;
+    padding-top: 40px !important;
+}
+
+.main-headline-logo {
+    display: block;
+    width: 200px;
+    height: auto;
+    margin: auto;
+    margin-bottom: 20px;
+}
+
+.main-image {
+    display: block;
+    margin: auto;
+    width: 100%;
+    max-width: 900px;
+    height: auto;
+    position: relative;
+    bottom: -10px;
+}
+
+.main-headline-text {
+    display: block;
+    text-align: center;
+    color: hsl(0, 0%, 0%);
+    font-weight: 300;
+
+    .tagline {
+        font-size: 40px;
+        line-height: 42px;
+    }
+
+    .footnote {
+        display: block;
+        font-size: 18px;
+        color: hsl(0, 0%, 0%);
+        margin-top: 15px;
+    }
+}
+
+.main-signup-button {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    font-size: 22px;
+}
+
+.app-main,
+.header-main,
+.footer-main {
+    min-width: 350px;
+    margin: 0 auto;
+    padding: 0 20px 0 20px;
+    position: relative;
+}
+
+.footer-main {
+    text-align: center;
+}
+
+.hello-main {
+    max-width: none;
+    min-width: 0;
+    padding: 0 !important;
+}
+
+.footer-navigation {
+    list-style: none;
+    padding-top: 16px;
+
+    li,
+    li a {
+        display: inline-block;
+        vertical-align: middle;
+        color: hsl(0, 0%, 47%);
+        font-size: 0.9em;
+        font-weight: 400;
+        cursor: pointer;
+    }
+
+    li:hover a {
+        color: hsl(0, 0%, 27%);
+        text-decoration: none;
+    }
+}
+
+.little-bullet {
+    display: inline-block;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.top-links {
+    text-align: right;
+
+    a {
+        display: inline-block;
+        color: hsl(0, 0%, 100%);
+        padding: 2px 7px 1px 8px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.2s ease-in;
+        border-radius: 4px;
+
+        &:hover {
+            text-decoration: none;
+            background-color: hsla(0, 0%, 100%, 1);
+            color: hsl(170, 50%, 40%);
+        }
+    }
+}
+
+.centered-button {
+    text-align: center;
+}
+
+.button-muted {
+    display: block;
+    font-size: 12px;
+    color: hsl(0, 0%, 87%);
+}
+
+/* -- password reset container -- */
+.password-reset {
+    display: inline-block;
+    text-align: left;
+    width: 328px;
+
+    form {
+        margin: 0;
+    }
+
+    #pw_strength {
+        width: 328px;
+        margin-top: 20px;
+    }
+
+    .control-group .control-label {
+        display: block;
+    }
+
+    .pitch {
+        width: auto;
+    }
+
+    .input-group {
+        margin: 15px 0;
+
+        input[type="text"],
+        input[type="password"] {
+            width: calc(100% - 14px);
+        }
+
+        #pw_strength {
+            width: 100%;
+        }
+
+        &.m-t-30 {
+            margin-top: 30px;
+        }
+    }
+
+    p {
+        margin: 0;
+    }
+
+    .progress {
+        margin: 0;
+    }
+
+    #email-section .fakecontrol {
+        display: inline-block;
+        margin: 0;
+    }
+}
+
+.input-group {
+    &.margin {
+        margin: 10px 0;
+    }
+
+    .progress {
+        margin: 0;
+        margin-top: 5px;
+        display: inline-block;
+    }
+
+    /* --- new settings styling --- */
+    input[type="radio"],
+    input[type="checkbox"] {
+        margin: 0 10px 0 0;
+    }
+
+    input[type="radio"] {
+        position: relative;
+        top: 8px;
+    }
+
+    label {
+        margin: 0;
+        padding: 5px 0;
+
+        &.inline-block {
+            /* eyeballing off-centered aesth. */
+            margin-top: 1px;
+        }
+    }
+
+    &.radio {
+        margin-left: 25px;
+    }
+
+    &.grid {
+        padding: 10px 0;
+        border-bottom: 1px solid hsl(0, 0%, 87%);
+
+        label.inline-block {
+            width: 200px;
+        }
+    }
+}
+
+.center-container {
+    min-height: calc(100vh - 94px);
+    min-height: 700px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.center-block .submit-button-box .controls {
+    margin: 0;
+}
+
+.center-block {
+    text-align: left;
+    display: inline-block;
+
+    .pitch {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .control-group {
+        margin-bottom: 10px;
+
+        label {
+            width: 100%;
+            display: block;
+            margin: 0;
+            text-align: left;
+        }
+
+        .controls {
+            margin: 0;
+            text-align: left;
+        }
+    }
+
+    #send_confirm input[type="text"] {
+        margin-top: 20px;
+    }
+
+    .button {
+        margin-top: 20px;
+        padding: 5px 10px;
+        border-radius: 2px;
+        font-size: 16px;
+        font-weight: 300;
+    }
+}
+
+.error_page {
+    min-height: calc(100vh - 290px);
+    height: 100%;
+    background-color: hsl(163, 42%, 85%);
+    font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
+}
+
+.error_page .container {
+    padding: 20px 0;
+}
+
+.error_page .row-fluid {
+    margin-top: 60px;
+}
+
+.error_page img {
+    display: block;
+    clear: right;
+    margin: 0 auto;
+    max-width: 500px;
+    width: 100%;
+}
+
+.error_page .errorbox {
+    margin: auto;
+    border: 2px solid hsl(163, 43%, 46%);
+    max-width: 500px;
+    background-color: hsl(0, 0%, 100%);
+    box-shadow: 0 0 4px hsl(163, 43%, 46%);
+    font-size: 18px;
+
+    &.config-error {
+        max-width: 750px;
+    }
+}
+
+.error_page p {
+    color: hsl(0, 0%, 20%);
+}
+
+.error_page .errorcontent {
+    text-align: left;
+    padding: 40px 40px 30px 40px;
+}
+
+.error_page .lead {
+    color: hsl(163, 49%, 44%);
+    font-size: 35px;
+    margin-bottom: 20px;
+    line-height: normal;
+}
+
+.hourglass-img {
+    width: initial !important;
+    margin-bottom: 25px !important;
+}
+
+@media (max-width: 800px) {
+    .app.help {
+        .markdown {
+            width: 100vw;
+
+            .content {
+                max-width: none;
+                margin-left: 50px;
+            }
+        }
+
+        .hamburger {
+            display: block;
+            position: fixed;
+            top: 70px;
+            left: 9px;
+            fill: hsl(0, 0%, 100%);
+            z-index: 2;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 59px;
+            right: calc(100vw - 50px);
+            width: 100%;
+            min-width: unset;
+            height: calc(100vh - 59px);
+            pointer-events: none;
+            overflow: hidden;
+            transform: translateX(0);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.show {
+            pointer-events: initial;
+            transform: translateX(calc(100% - 50px));
+            overflow: auto;
+
+            .content {
+                visibility: visible;
+            }
+
+            + .hamburger {
+                transform: translateX(calc(100vw - 50px));
+            }
+
+            ~ .markdown {
+                filter: brightness(0.7);
+            }
+        }
+    }
+
+    .app-main,
+    .header-main {
+        min-width: auto;
+    }
+
+    .app-main {
+        padding: 0;
+    }
+
+    .help .sidebar {
+        .content:not(.show) {
+            visibility: hidden;
+        }
+
+        &:not(.show) a.highlighted {
+            background-color: transparent;
+        }
+    }
+}
+
+@media (max-width: 815px) {
+    .footer {
+        width: 450px;
+        margin-left: auto;
+        margin-right: auto;
+
+        section {
+            width: calc(50% - 40px);
+        }
+    }
+}
+
+@media (max-width: 767px) {
+    body {
+        padding: 0 !important;
+    }
+
+    .input-medium,
+    .input-large {
+        display: block !important;
+        width: 100% !important;
+        min-height: 30px !important;
+        margin: 0 !important;
+        padding: 4px 6px !important;
+        line-height: 20px !important;
+        box-sizing: border-box !important;
+        margin-top: 10px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .postal-envelope {
+        transform: none;
+    }
+
+    .letter-form {
+        text-align: center;
+    }
+
+    .punc {
+        display: none;
+    }
+
+    .signup-section {
+        display: inline-block;
+        margin-top: 10px;
+    }
+
+    .line-break-desktop {
+        display: none;
+    }
+
+    .contributors-list {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+@media (max-height: 600px) {
+    .password-container {
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 558px) {
+    .team {
+        .bdfl {
+            .profile-name,
+            .profile-role {
+                text-align: center;
+            }
+        }
+    }
+}
+
+@media (max-width: 500px) {
+    .app.help {
+        .sidebar {
+            top: 39px;
+            height: calc(100vh - 39px);
+        }
+
+        .hamburger {
+            top: 50px;
+        }
+    }
+
+    .help .app-main {
+        margin-top: 39px;
+    }
+
+    .help .markdown {
+        height: calc(100vh - 39px);
+    }
+
+    .error_page .lead {
+        font-size: 1.5em;
+        margin-bottom: 10px;
+    }
+
+    .brand.logo .light {
+        display: none;
+    }
+
+    .center-container {
+        display: block;
+    }
+
+    .header {
+        padding: 4px 0 6px 0;
+    }
+
+    .header-main {
+        max-width: 100vw;
+        padding: 0 10px;
+    }
+
+    .main-headline-text {
+        .tagline {
+            font-size: 32px;
+            line-height: 34px;
+        }
+    }
+
+    #apps-tabs li a {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+}
+
+@media (max-width: 475px) {
+    .footer {
+        width: auto;
+
+        section {
+            margin: 0 3px;
+            width: calc(50% - 8px);
+        }
+    }
+}
+
+@media (max-width: 400px) {
+    .footer {
+        section {
+            width: calc(100% - 40px);
+            max-width: none;
+            text-align: center;
+        }
+    }
+}
+
+.emoji {
+    height: 25px;
+    width: 25px;
+    vertical-align: text-bottom;
+}
+
+.m-v-20 {
+    margin: 20px 0;
+}
+
+label.label-title {
+    font-weight: 600;
+}
+
+.inline-block {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.button-new {
+    padding: 8px 15px;
+    margin: 0;
+    min-width: 130px;
+
+    font-weight: 400;
+
+    background-color: hsl(207, 55%, 53%);
+    color: hsl(0, 0%, 100%);
+    outline: none;
+    border: none;
+    border-radius: 2px;
+
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* -- button states -- */
+.button-new:hover {
+    filter: brightness(1.1);
+}
+
+.button-new:active {
+    filter: brightness(0.9);
+}
+
+.button-new.sea-green {
+    background-color: hsl(177, 70%, 46%);
+    color: hsl(0, 0%, 100%);
+}
+
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
+}
+
+#find_account .form-control {
+    height: 30px;
+}
+
+#find_account .btn {
+    height: 40px;
+    border-radius: 5px;
+}
+
+.documentation-footer {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+#devtools-wrapper {
+    text-align: right;
+}
+
+#devtools-registration {
+    float: left;
+    form {
+        display: inline;
+    }
+}
+
+#devtools-page {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.portico-page.error {
+    padding-bottom: 0;
+}
+
+.portico-page.error .portico-page-container {
+    padding: 0;
+}
+
+#third-party-apps {
+    margin-top: 20px;
+    padding-right: 10px;
+}
+
+.api-argument {
+    .api-argument-name {
+        font-family: monospace;
+
+        .api-argument-hover-link i.fa {
+            opacity: 0;
+            font-size: 0.9em;
+        }
+
+        &:hover .api-argument-hover-link i.fa {
+            opacity: 1;
+            color: hsl(0, 0%, 0%);
+            cursor: pointer;
+        }
+    }
+
+    .api-argument-example-label {
+        font-style: italic;
+    }
+
+    .api-argument-required {
+        text-transform: uppercase;
+        font-weight: 600;
+        font-size: 12px;
+        color: hsl(14, 75%, 60%);
+    }
+
+    .api-argument-optional {
+        text-transform: uppercase;
+        font-weight: 400;
+        font-size: 12px;
+        color: hsl(0, 0%, 47%);
+    }
+
+    .api-argument-deprecated {
+        text-transform: uppercase;
+        font-weight: 600;
+        font-size: 12px;
+        color: hsl(0, 50%, 60%);
+    }
+}
+
+.desktop-redirect-box {
+    text-align: center;
+
+    .copy-token-info {
+        font-weight: normal;
+    }
+
+    #desktop-data {
+        padding: 13px 12px 12px 12px;
+        font-family: monospace;
+    }
+}
+
+.desktop-redirect-links {
+    margin-top: 20px;
+    text-decoration: underline;
+    color: hsl(0, 0%, 50%);
+}
+
+.desktop-redirect-image {
+    margin-bottom: 20px;
+}
+
+.unsupported_browser_page {
+    padding-bottom: 80px;
+}
+
+#navbar-custom-message {
+    font-size: 1rem;
+    background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
+    color: hsl(0, 0%, 100%);
+    font-weight: 600;
+    text-align: center;
+    position: relative;
+    top: 0;
+    padding: 10px;
+    border-bottom: 1px solid hsl(177, 52%, 55%);
+    z-index: 5;
+
+    a {
+        color: hsl(0, 0%, 100%);
+        text-decoration: underline;
+    }
+}

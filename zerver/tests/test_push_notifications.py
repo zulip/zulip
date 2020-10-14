@@ -5,7 +5,7 @@ import os
 import uuid
 from contextlib import contextmanager
 from typing import Any, Dict, Iterator, List, Optional
-from unittest import mock
+from unittest import mock, skipUnless
 from unittest.mock import call
 
 import orjson
@@ -58,6 +58,7 @@ from zerver.lib.remote_server import (
 from zerver.lib.request import JsonableError
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import mock_queue_publish
 from zerver.models import (
     Message,
     PushDeviceToken,
@@ -74,16 +75,19 @@ from zerver.models import (
     receives_online_notifications,
     receives_stream_notifications,
 )
-from zilencer.models import (
-    RemoteInstallationCount,
-    RemotePushDeviceToken,
-    RemoteRealmAuditLog,
-    RemoteRealmCount,
-    RemoteZulipServer,
-)
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import (
+        RemoteInstallationCount,
+        RemotePushDeviceToken,
+        RemoteRealmAuditLog,
+        RemoteRealmCount,
+        RemoteZulipServer,
+    )
 
 ZERVER_DIR = os.path.dirname(os.path.dirname(__file__))
 
+@skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
 class BouncerTestCase(ZulipTestCase):
     def setUp(self) -> None:
         self.server_uuid = "1234-abcd"
@@ -540,9 +544,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(RealmCount.objects.count(), 1)
 
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
-        with mock.patch('zerver.lib.remote_server.logging.warning') as log_warning:
+        with self.assertLogs(level="WARNING") as m:
             send_analytics_to_remote_server()
-            log_warning.assert_called_once()
+        self.assertEqual(m.output, ["WARNING:root:Invalid property invalid count stat"])
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
 
     # Servers on Zulip 2.0.6 and earlier only send realm_counts and installation_counts data,
@@ -553,7 +557,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         mock_request.side_effect = self.bounce_request
         # Send fixture generated with Zulip 2.0 code
         send_to_push_bouncer('POST', 'server/analytics', {
-            'realm_counts': '[{"id":1,"property":"invites_sent::day","subgroup":null,"end_time":574300800.0,"value":5,"realm":2}]',  # lint:ignore
+            'realm_counts': '[{"id":1,"property":"invites_sent::day","subgroup":null,"end_time":574300800.0,"value":5,"realm":2}]',
             'installation_counts': '[]',
             'version': '"2.0.6+git"'})
         self.assertEqual(mock_request.call_count, 1)
@@ -892,13 +896,13 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         # This should log an error
         with mock.patch('zerver.lib.push_notifications.uses_notification_bouncer') as mock_check, \
-                mock.patch('logging.info') as mock_logging_info, \
+                self.assertLogs(level="INFO") as mock_logging_info, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
             handle_push_notification(user_profile.id, missed_message)
             mock_push_notifications.assert_called_once()
             # Check we didn't proceed through.
             mock_check.assert_not_called()
-            mock_logging_info.assert_called_once()
+            self.assertEqual(mock_logging_info.output, [f"INFO:root:Unexpected message access failure handling push notifications: {user_profile.id} {missed_message['message_id']}"])
 
     def test_send_notifications_to_bouncer(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -1084,10 +1088,12 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.setup_gcm_tokens()
         self.make_stream('public_stream')
         self.subscribe(self.user_profile, 'public_stream')
-        with self.assertLogs(level='INFO') as info_logs:
+        logger_string = "zulip.soft_deactivation"
+        with self.assertLogs(logger_string, level='INFO') as info_logs:
             do_soft_deactivate_users([self.user_profile])
         self.assertEqual(info_logs.output, [
-            'INFO:root:Soft-deactivated batch of 1 users; 0 remain to process'
+            f"INFO:{logger_string}:Soft Deactivated user {self.user_profile.id}",
+            f"INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process"
         ])
         sender = self.example_user('iago')
         message_id = self.send_stream_message(sender, "public_stream", "test")
@@ -1173,6 +1179,7 @@ class TestAPNs(PushNotificationTest):
             zerver.lib.push_notifications._apns_client = None
 
     def test_not_configured(self) -> None:
+        self.setup_apns_tokens()
         with mock.patch('zerver.lib.push_notifications.get_apns_client') as mock_get, \
                 mock.patch('zerver.lib.push_notifications.logger') as mock_logging:
             mock_get.return_value = None
@@ -1990,7 +1997,7 @@ class TestClearOnRead(ZulipTestCase):
             flags=F('flags').bitor(
                 UserMessage.flags.active_mobile_push_notification))
 
-        with mock.patch("zerver.lib.actions.queue_json_publish") as mock_publish:
+        with mock_queue_publish("zerver.lib.actions.queue_json_publish") as mock_publish:
             do_mark_stream_messages_as_read(hamlet, self.client, stream)
             queue_items = [c[0][1] for c in mock_publish.call_args_list]
             groups = [item['message_ids'] for item in queue_items]
@@ -2123,6 +2130,7 @@ class TestPushNotificationsContent(ZulipTestCase):
             actual_output = get_mobile_push_content(test["rendered_content"])
             self.assertEqual(actual_output, test["expected_output"])
 
+@skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
 class PushBouncerSignupTest(ZulipTestCase):
     def test_push_signup_invalid_host(self) -> None:
         zulip_org_id = str(uuid.uuid4())

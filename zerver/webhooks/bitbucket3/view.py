@@ -5,10 +5,11 @@ from typing import Any, Callable, Dict, List, Optional
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import (
     CONTENT_MESSAGE_TEMPLATE,
     TOPIC_WITH_BRANCH_TEMPLATE,
@@ -20,12 +21,9 @@ from zerver.lib.webhooks.git import (
     get_remove_branch_event_message,
 )
 from zerver.models import UserProfile
-from zerver.webhooks.bitbucket2.view import (
-    BITBUCKET_FORK_BODY,
-    BITBUCKET_REPO_UPDATED_CHANGED,
-    BITBUCKET_TOPIC_TEMPLATE,
-)
+from zerver.webhooks.bitbucket2.view import BITBUCKET_REPO_UPDATED_CHANGED, BITBUCKET_TOPIC_TEMPLATE
 
+BITBUCKET_FORK_BODY = "User {display_name}(login: {username}) forked the repository into [{fork_name}]({fork_url})."
 BRANCH_UPDATED_MESSAGE_TEMPLATE = "{user_name} pushed to branch {branch_name}. Head is now {head}."
 PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE = "{user_name} marked [PR #{number}]({url}) as \"needs work\"."
 PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE_WITH_TITLE = """
@@ -51,7 +49,7 @@ PULL_REQUEST_OPENED_OR_MODIFIED_TEMPLATE_WITH_REVIEWERS_WITH_TITLE = """
 def fixture_to_headers(fixture_name: str) -> Dict[str, str]:
     if fixture_name == "diagnostics_ping":
         return {"HTTP_X_EVENT_KEY": "diagnostics:ping"}
-    return dict()
+    return {}
 
 def get_user_name(payload: Dict[str, Any]) -> str:
     user_name = "[{name}]({url})".format(name=payload["actor"]["name"],
@@ -71,7 +69,7 @@ def repo_comment_handler(payload: Dict[str, Any], action: str) -> List[Dict[str,
     repo_name = payload["repository"]["name"]
     subject = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     sha = payload["commit"]
-    commit_url = payload["repository"]["links"]["self"][0]["href"][:-6]  # remove the "browse" at the end
+    commit_url = payload["repository"]["links"]["self"][0]["href"][: -len("browse")]
     commit_url += f"commits/{sha}"
     message = payload["comment"]["text"]
     if action == "deleted their comment":
@@ -133,7 +131,7 @@ def repo_push_branch_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Di
         body = get_remove_branch_event_message(user_name, branch_name)
     else:
         message = "{}.{}".format(payload["eventKey"], event_type)  # nocoverage
-        raise UnexpectedWebhookEventType("BitBucket Server", message)
+        raise UnsupportedWebhookEventType(message)
 
     subject = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=repo_name, branch=branch_name)
     return {"subject": subject, "body": body}
@@ -149,7 +147,7 @@ def repo_push_tag_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Dict[
         action = "removed"
     else:
         message = "{}.{}".format(payload["eventKey"], event_type)  # nocoverage
-        raise UnexpectedWebhookEventType("BitBucket Server", message)
+        raise UnsupportedWebhookEventType(message)
 
     subject = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     body = get_push_tag_event_message(get_user_name(payload), tag_name, action=action)
@@ -170,7 +168,7 @@ def repo_push_handler(payload: Dict[str, Any], branches: Optional[str]=None,
             data.append(repo_push_tag_data(payload, change))
         else:
             message = "{}.{}".format(payload["eventKey"], event_target_type)  # nocoverage
-            raise UnexpectedWebhookEventType("BitBucket Server", message)
+            raise UnsupportedWebhookEventType(message)
     return data
 
 def get_assignees_string(pr: Dict[str, Any]) -> Optional[str]:
@@ -350,10 +348,10 @@ def get_event_handler(eventkey: str) -> Callable[..., List[Dict[str, str]]]:
     # The main reason for this function existence is because of mypy
     handler: Any = EVENT_HANDLER_MAP.get(eventkey)
     if handler is None:
-        raise UnexpectedWebhookEventType("BitBucket Server", eventkey)
+        raise UnsupportedWebhookEventType(eventkey)
     return handler
 
-@api_key_only_webhook_view("Bitbucket3")
+@webhook_view("Bitbucket3")
 @has_request_variables
 def api_bitbucket3_webhook(request: HttpRequest, user_profile: UserProfile,
                            payload: Dict[str, Any]=REQ(argument_type="body"),

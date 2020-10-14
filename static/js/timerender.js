@@ -9,6 +9,15 @@ const set_to_start_of_day = function (time) {
     return time.setMilliseconds(0).setSeconds(0).setMinutes(0).setHours(0);
 };
 
+function calculate_days_old_from_time(time, today) {
+    const start_of_today = set_to_start_of_day(today ? today.clone() : new XDate());
+    const start_of_other_day = set_to_start_of_day(time.clone());
+    const days_old = Math.round(start_of_other_day.diffDays(start_of_today));
+    const is_older_year = start_of_today.getFullYear() - start_of_other_day.getFullYear() > 0;
+
+    return {days_old, is_older_year};
+}
+
 // Given an XDate object 'time', returns an object:
 // {
 //      time_str:        a string for the current human-formatted version
@@ -18,15 +27,12 @@ const set_to_start_of_day = function (time) {
 //                       day changes
 // }
 exports.render_now = function (time, today) {
-    const start_of_today = set_to_start_of_day(today || new XDate());
-    const start_of_other_day = set_to_start_of_day(time.clone());
-
     let time_str = "";
     let needs_update = false;
     // render formal time to be used as title attr tooltip
     // "\xa0" is U+00A0 NO-BREAK SPACE.
     // Can't use &nbsp; as that represents the literal string "&nbsp;".
-    const formal_time_str = time.toString("dddd,\xa0MMMM\xa0d,\xa0yyyy");
+    const formal_time_str = time.toString("dddd,\u00A0MMMM\u00A0d,\u00A0yyyy");
 
     // How many days old is 'time'? 0 = today, 1 = yesterday, 7 = a
     // week ago, -1 = tomorrow, etc.
@@ -34,9 +40,7 @@ exports.render_now = function (time, today) {
     // Presumably the result of diffDays will be an integer in this
     // case, but round it to be sure before comparing to integer
     // constants.
-    const days_old = Math.round(start_of_other_day.diffDays(start_of_today));
-
-    const is_older_year = start_of_today.getFullYear() - start_of_other_day.getFullYear() > 0;
+    const {days_old, is_older_year} = calculate_days_old_from_time(time, today);
 
     if (days_old === 0) {
         time_str = i18n.t("Today");
@@ -47,12 +51,12 @@ exports.render_now = function (time, today) {
     } else if (is_older_year) {
         // For long running servers, searching backlog can get ambiguous
         // without a year stamp. Only show year if message is from an older year
-        time_str = time.toString("MMM\xa0dd,\xa0yyyy");
+        time_str = time.toString("MMM\u00A0dd,\u00A0yyyy");
         needs_update = false;
     } else {
         // For now, if we get a message from tomorrow, we don't bother
         // rewriting the timestamp when it gets to be tomorrow.
-        time_str = time.toString("MMM\xa0dd");
+        time_str = time.toString("MMM\u00A0dd");
         needs_update = false;
     }
     return {
@@ -95,12 +99,12 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
         if (current_date.getFullYear() === last_active_date.getFullYear()) {
             // Online more than 90 days ago, in the same year
             return i18n.t("__last_active_date__", {
-                last_active_date: last_active_date.toString("MMM\xa0dd"),
+                last_active_date: last_active_date.toString("MMM\u00A0dd"),
             });
         }
     }
     return i18n.t("__last_active_date__", {
-        last_active_date: last_active_date.toString("MMM\xa0dd,\xa0yyyy"),
+        last_active_date: last_active_date.toString("MMM\u00A0dd,\u00A0yyyy"),
     });
 };
 

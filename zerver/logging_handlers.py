@@ -9,7 +9,9 @@ from urllib.parse import SplitResult
 
 from django.conf import settings
 from django.http import HttpRequest
+from django.utils.translation import override as override_language
 from django.views.debug import get_exception_reporter_filter
+from sentry_sdk import capture_exception
 from typing_extensions import Protocol, runtime_checkable
 
 from version import ZULIP_VERSION
@@ -24,7 +26,7 @@ def try_git_describe() -> Optional[str]:
             stderr=subprocess.PIPE,
             cwd=os.path.join(os.path.dirname(__file__), '..'),
         ).strip().decode('utf-8')
-    except Exception:  # nocoverage
+    except (FileNotFoundError, subprocess.CalledProcessError):  # nocoverage
         return None
 
 def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
@@ -45,7 +47,10 @@ def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
         else:
             user_full_name = user_profile.full_name
             user_email = user_profile.email
-            user_role = user_profile.get_role_name()
+            with override_language(settings.LANGUAGE_CODE):
+                # str() to force the lazy-translation to apply now,
+                # since it won't serialize into the worker queue.
+                user_role = str(user_profile.get_role_name())
     except Exception:
         # Unexpected exceptions here should be handled gracefully
         traceback.print_exc()
@@ -142,6 +147,7 @@ class AdminNotifyHandler(logging.Handler):
             report['message'] = "Exception in preparing exception report!"
             logging.warning(report['message'], exc_info=True)
             report['stack_trace'] = "See /var/log/zulip/errors.log"
+            capture_exception()
 
         if settings.DEBUG_ERROR_REPORTING:  # nocoverage
             logging.warning("Reporting an error to admins...")
@@ -166,3 +172,4 @@ class AdminNotifyHandler(logging.Handler):
             # If this breaks, complain loudly but don't pass the traceback up the stream
             # However, we *don't* want to use logging.exception since that could trigger a loop.
             logging.warning("Reporting an exception triggered an exception!", exc_info=True)
+            capture_exception()

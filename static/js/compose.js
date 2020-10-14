@@ -8,6 +8,7 @@ const render_compose_invite_users = require("../templates/compose_invite_users.h
 const render_compose_not_subscribed = require("../templates/compose_not_subscribed.hbs");
 const render_compose_private_stream_alert = require("../templates/compose_private_stream_alert.hbs");
 
+const people = require("./people");
 const rendered_markdown = require("./rendered_markdown");
 const util = require("./util");
 
@@ -26,7 +27,7 @@ let user_acknowledged_announce;
 let wildcard_mention;
 let uppy;
 
-exports.all_everyone_warn_threshold = 15;
+exports.wildcard_mention_large_stream_threshold = 15;
 exports.announce_warn_threshold = 60;
 
 exports.uploads_domain = document.location.protocol + "//" + document.location.host;
@@ -298,7 +299,7 @@ exports.nonexistent_stream_reply_error = nonexistent_stream_reply_error;
 function clear_compose_box() {
     $("#compose-textarea").val("").trigger("focus");
     drafts.delete_draft_after_send();
-    compose_ui.autosize_textarea();
+    compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
     $("#compose-send-button").prop("disabled", false);
     $("#sending-indicator").hide();
@@ -402,7 +403,7 @@ exports.finish = function () {
     if (zcommand.process(message_content)) {
         exports.do_post_send_tasks();
         clear_compose_box();
-        return;
+        return undefined;
     }
 
     if (!exports.validate()) {
@@ -484,7 +485,10 @@ function validate_stream_message_mentions(stream_id) {
     const stream_count = stream_data.get_subscriber_count(stream_id) || 0;
 
     // check if wildcard_mention has any mention and henceforth execute the warning message.
-    if (wildcard_mention !== null && stream_count > exports.all_everyone_warn_threshold) {
+    if (
+        wildcard_mention !== null &&
+        stream_count > exports.wildcard_mention_large_stream_threshold
+    ) {
         if (
             user_acknowledged_all_everyone === undefined ||
             user_acknowledged_all_everyone === false
@@ -537,6 +541,11 @@ function validate_stream_message_post_policy(sub) {
 
     if (stream_post_policy === stream_post_permission_type.admins.code) {
         compose_error(i18n.t("Only organization admins are allowed to post to this stream."));
+        return false;
+    }
+
+    if (page_params.is_guest && stream_post_policy !== stream_post_permission_type.everyone.code) {
+        compose_error(i18n.t("Guests are not allowed to post to this stream."));
         return false;
     }
 
@@ -761,7 +770,7 @@ exports.handle_keydown = function (event, textarea) {
             // Ctrl + L: Insert a link to selected text
             wrap_text_with_markdown("[", "](url)");
             const position = textarea.caret();
-            const txt = document.getElementById(textarea[0].id);
+            const txt = textarea[0];
 
             // Include selected text in between [] parentheses and insert '(url)'
             // where "url" should be automatically selected.
@@ -780,7 +789,7 @@ exports.handle_keydown = function (event, textarea) {
             }
         }
 
-        compose_ui.autosize_textarea();
+        compose_ui.autosize_textarea(textarea);
         return;
     }
 };
@@ -968,7 +977,7 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
         const existing_invites_area = $("#compose_invite_users .compose_invite_user");
 
         const existing_invites = Array.from($(existing_invites_area), (user_row) =>
-            parseInt($(user_row).data("user-id"), 10),
+            Number.parseInt($(user_row).data("user-id"), 10),
         );
 
         if (!existing_invites.includes(user_id)) {
@@ -1052,8 +1061,8 @@ exports.initialize = function () {
 
         const invite_row = $(event.target).parents(".compose_invite_user");
 
-        const user_id = parseInt($(invite_row).data("user-id"), 10);
-        const stream_id = parseInt($(invite_row).data("stream-id"), 10);
+        const user_id = Number.parseInt($(invite_row).data("user-id"), 10);
+        const stream_id = Number.parseInt($(invite_row).data("stream-id"), 10);
 
         function success() {
             const all_invites = $("#compose_invite_users");
@@ -1222,13 +1231,11 @@ exports.initialize = function () {
     });
 
     $("#compose-textarea").on("focus", () => {
-        const opts = {
-            message_type: compose_state.get_message_type(),
-            stream: $("#stream_message_recipient_stream").val(),
-            topic: $("#stream_message_recipient_topic").val(),
-            private_message_recipient: compose_pm_pill.get_emails(),
-        };
-        compose_actions.update_placeholder_text(opts);
+        compose_actions.update_placeholder_text();
+    });
+
+    $("#stream_message_recipient_topic").on("focus", () => {
+        compose_actions.update_placeholder_text();
     });
 
     if (page_params.narrow !== undefined) {

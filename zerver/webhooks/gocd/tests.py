@@ -14,8 +14,8 @@ class GocdHookTests(WebhookTestCase):
                             "/go/tab/pipeline/history/pipelineName)\n"
                             "Comment: my hola mundo changes")
 
-        self.send_and_test_stream_message(
-            'pipeline',
+        self.check_webhook(
+            "pipeline",
             self.TOPIC,
             expected_message,
             content_type="application/x-www-form-urlencoded",
@@ -28,12 +28,9 @@ class GocdHookTests(WebhookTestCase):
                             "/go/tab/pipeline/history/pipelineName)\n"
                             "Comment: my hola mundo changes")
 
-        self.send_and_test_stream_message(
-            'pipeline_failed',
+        self.check_webhook(
+            "pipeline_failed",
             self.TOPIC,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("gocd", fixture_name, file_type="json")

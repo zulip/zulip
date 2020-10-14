@@ -9,12 +9,12 @@ class IFTTTHookTests(WebhookTestCase):
     def test_ifttt_when_subject_and_body_are_correct(self) -> None:
         expected_topic = "Email sent from email@email.com"
         expected_message = "Email subject: Subject"
-        self.send_and_test_stream_message('correct_subject_and_body', expected_topic, expected_message)
+        self.check_webhook("correct_subject_and_body", expected_topic, expected_message)
 
     def test_ifttt_when_topic_and_body_are_correct(self) -> None:
         expected_topic = "Email sent from email@email.com"
         expected_message = "Email subject: Subject"
-        self.send_and_test_stream_message('correct_topic_and_body', expected_topic, expected_message)
+        self.check_webhook("correct_topic_and_body", expected_topic, expected_message)
 
     def test_ifttt_when_topic_is_missing(self) -> None:
         self.url = self.build_webhook_url()

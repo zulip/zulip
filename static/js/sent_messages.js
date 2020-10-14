@@ -73,7 +73,7 @@ class MessageState {
         }
 
         blueslip.log(
-            "Restarting get_events due to " + "delayed receipt of sent message " + this.local_id,
+            `Restarting get_events due to delayed receipt of sent message ${this.local_id}`,
         );
 
         server_events.restart_get_events();

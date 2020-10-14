@@ -1,0 +1,1205 @@
+#subs_page_loading_indicator {
+    margin: 10px auto;
+}
+
+.subscriber_list_loading_indicator {
+    margin: 10px auto;
+}
+
+.subscriber_list_loading_indicator:empty {
+    margin: 0;
+}
+
+.subscription-email-hint-image {
+    float: right;
+    width: 80px;
+}
+
+.subscription_header.collapsed {
+    background-color: inherit;
+}
+
+.color_swatch {
+    display: inline-block;
+    height: 18px;
+    width: 18px;
+    padding: 0;
+    margin: 0 0 0 10px;
+    vertical-align: middle;
+}
+
+.subscriptions div #response {
+    overflow-wrap: break-word;
+}
+
+#subscriptions_table .subscription_block {
+    padding-left: 0.5em;
+    vertical-align: middle;
+}
+
+.subscription-info-container {
+    display: inline-block;
+    /* subtract out the width of the subscribe button and arrow. */
+    width: calc(100% - 260px);
+    /* to center the container vertically. */
+    margin-top: 13px;
+}
+
+.subscription-setting-icon {
+    vertical-align: top;
+    display: inline-block;
+}
+
+.subscription-info {
+    display: inline-block;
+    /* to provide space for the setting-icon. */
+    max-width: calc(100% - 31px);
+    margin-top: 1px;
+    overflow: hidden;
+    word-wrap: normal;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.subscription-info .light {
+    font-weight: 300;
+}
+
+#add_new_subscription {
+    text-align: left;
+}
+
+.subscription_header {
+    min-height: 47px;
+}
+
+.subscription-name-row {
+    display: inline-block;
+}
+
+.subscription-name-row,
+.subscription-description-row {
+    vertical-align: top;
+}
+
+.subscription_header .subscription_lock {
+    font-size: 23px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 12px;
+    margin-right: 1px;
+}
+
+.subscription_settings .btn {
+    border-radius: 2px;
+}
+
+.subscription_settings ul {
+    list-style-type: none;
+}
+
+.stream-email {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    padding: 5px;
+    font-size: 0.9em;
+    background-color: hsl(0, 0%, 98%);
+    border: 1px solid hsl(0, 0%, 87%);
+    border-radius: 4px;
+}
+
+.subscription-control-label {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 18px;
+    padding: 5px;
+}
+
+.sp-preview {
+    width: 20px;
+    border: none;
+    box-shadow: 0 0 1px hsla(0, 0%, 0%, 1);
+}
+
+.sp-replacer {
+    margin-right: 12px;
+    border: none;
+    box-shadow: 0 0 2px hsla(0, 0%, 0%, 0.8);
+}
+
+.stream-email .email-address {
+    display: block;
+    margin: auto;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
+}
+
+.muted-sub,
+.control-label-disabled {
+    color: hsl(0, 0%, 64%);
+}
+
+.sub_setting_checkbox .checkbox span {
+    margin-top: 7px !important;
+}
+
+.sub_setting_checkbox .muted-sub label,
+.sub_setting_checkbox .control-label-disabled label {
+    cursor: not-allowed;
+}
+
+.mute-note {
+    font-size: 90%;
+    opacity: 0.5;
+}
+
+.hide-mute-note {
+    display: none;
+}
+
+.sub_setting_control {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.preview-stream {
+    display: none;
+    float: right;
+    padding: 3px 10px;
+    border: 1px solid hsl(0, 0%, 80%);
+    margin: 9px 10px 0 0;
+    color: hsl(0, 0%, 20%);
+}
+
+.preview-stream:hover {
+    color: hsl(0, 0%, 20%);
+    text-decoration: none;
+    background-color: hsl(0, 0%, 92%);
+    border: 1px solid hsl(0, 0%, 68%);
+}
+
+form#add_new_subscription {
+    margin: 0;
+}
+
+.create_stream_button {
+    margin: 0 0 0 5px;
+
+    border: none;
+    outline: none;
+    background-color: transparent;
+
+    font-size: 2.2em;
+    font-weight: 300;
+    line-height: 1;
+    color: hsl(0, 0%, 67%);
+
+    display: inline-block;
+    transition: all 0.2s ease;
+    padding-bottom: 0;
+    padding-top: 0;
+
+    &:hover {
+        color: hsl(0, 0%, 27%);
+    }
+}
+
+#create_stream_description {
+    width: calc(100% - 15px);
+}
+
+.stream_creation_error {
+    display: none;
+    margin-left: 2px;
+    color: hsl(0, 100%, 50%);
+}
+
+.sub_settings_title {
+    line-height: 30px;
+    margin: 10px 0 0 0;
+    font-size: 16px;
+}
+
+.new-stream-name,
+.stream-rename-button {
+    margin-top: 10px;
+}
+
+.settings_committed {
+    margin: 10px;
+}
+
+.subscriber-list-box {
+    text-align: center;
+    border: 1px solid hsl(0, 0%, 87%);
+    border-radius: 4px;
+
+    .subscriber_list_container {
+        position: relative;
+        max-height: 300px;
+        overflow: auto;
+        text-align: left;
+        -webkit-overflow-scrolling: touch;
+
+        .form_inline input {
+            vertical-align: top;
+        }
+
+        .subscriber-list {
+            width: 100%;
+            margin: auto;
+            border-radius: 6px;
+
+            tr {
+                border-bottom: 1px solid hsl(0, 0%, 93%);
+
+                &:last-of-type {
+                    border-bottom: none;
+                }
+
+                td {
+                    padding: 4px 0;
+
+                    &:first-of-type {
+                        padding-left: 10px;
+                    }
+
+                    &:last-of-type {
+                        padding-right: 10px;
+                    }
+
+                    &.unsubscribe {
+                        text-align: right;
+                    }
+                }
+            }
+
+            .subscriber_list_remove {
+                display: inline-block;
+            }
+
+            tbody:empty::after,
+            &:empty::after {
+                content: "No subscribers to this stream.";
+                display: block;
+
+                text-align: center;
+                color: hsl(0, 0%, 67%);
+            }
+
+            &:empty {
+                display: block;
+                padding: 5px;
+            }
+        }
+    }
+}
+
+.hide-subscriber-list {
+    display: block;
+    padding: 5px;
+    text-align: center;
+    color: hsl(0, 0%, 67%);
+}
+
+.subscriber-name,
+.subscriber-email {
+    padding: 5px;
+}
+
+.subscriber-email {
+    margin-left: 20px;
+    padding-right: 8px;
+}
+
+.subscriber_list_add {
+    width: 100%;
+    margin: 10px auto;
+
+    .stream_subscription_info {
+        a {
+            color: inherit;
+        }
+    }
+}
+
+.subscriber-search {
+    margin: 10px 0 0 0;
+}
+
+.subscriber_list_add .form-inline {
+    margin-bottom: 0;
+}
+
+.add_subscribers_container {
+    display: inline-flex;
+    width: 100%;
+    align-items: center;
+
+    .add_subscriber_btn_wrapper {
+        padding-left: 5px;
+    }
+}
+
+.remove-subscriber-form {
+    margin: 0 0 0 0;
+}
+
+#subscription-status {
+    width: 200px;
+    position: absolute;
+    left: 50%;
+    margin-left: -100px;
+    bottom: 30px;
+    text-align: center;
+    border-radius: 2px;
+}
+
+#subscriptions h1 {
+    font-size: 25px;
+    font-weight: 300;
+    padding-top: 40px;
+}
+
+#subscriptions .streams-icon {
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+.change-stream-privacy {
+    width: 100%;
+    text-align: center;
+}
+
+.change-stream-privacy-feedback {
+    display: none;
+}
+
+.subscriptions-overlay-bg {
+    font: menu;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: hsla(0, 0%, 8%, 0.7);
+    color: hsl(0, 0%, 27%);
+}
+
+.subscriptions-container .subscriptions-header .fa-chevron-left,
+#settings_overlay_container .settings-header.mobile .fa-chevron-left {
+    position: relative;
+    transform: translate(-50px, 0);
+    opacity: 0;
+    color: hsl(0, 0%, 67%);
+
+    float: left;
+    padding: 2px 10px;
+
+    cursor: pointer;
+
+    transition: all 0.3s ease;
+}
+
+.subscriptions-container .subscriptions-header.slide-left .fa-chevron-left,
+#settings_overlay_container
+    .settings-header.mobile.slide-left
+    .fa-chevron-left {
+    transform: translate(0, 0);
+    opacity: 1;
+}
+
+.subscriptions-container {
+    position: relative;
+    height: 95%;
+    border-radius: 4px;
+    padding: 0;
+    width: 97%;
+    overflow: hidden;
+    max-width: 1200px;
+    max-height: 1000px;
+
+    .search-container .tab-switcher .ind-tab {
+        width: auto;
+    }
+
+    .subscriptions-header {
+        padding: 12px;
+        text-align: center;
+        text-transform: uppercase;
+        font-weight: 700;
+        border-bottom: 1px solid hsl(0, 0%, 87%);
+
+        .fa-chevron-left {
+            display: none;
+        }
+
+        .subscriptions-title {
+            display: inline-block;
+            transition: all 0.3s ease;
+            transform: translate(-13px, 0);
+        }
+
+        .exit {
+            font-weight: 600;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: hsl(0, 0%, 67%);
+            cursor: pointer;
+        }
+    }
+
+    .exit-sign {
+        position: relative;
+        top: 3px;
+        margin-left: 3px;
+        font-size: 1.5rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .left,
+    .right {
+        position: relative;
+        display: inline-block;
+        vertical-align: top;
+        width: 50%;
+        height: calc(100% - 45px);
+        margin: 0 -2px;
+    }
+
+    .left {
+        border-right: 1px solid hsl(0, 0%, 87%);
+
+        .search-container {
+            padding: 6px 8px;
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+            display: flex;
+            justify-content: space-between;
+        }
+    }
+
+    .right {
+        width: calc(50% + 1px);
+
+        .nothing-selected {
+            display: block;
+            margin-top: calc(45vh - 75px);
+            text-align: center;
+            font-size: 1em;
+
+            span {
+                color: hsl(0, 0%, 67%);
+            }
+
+            button {
+                padding: 6px 10px 8px 10px;
+                display: block;
+                margin: 0 auto 10px auto;
+            }
+        }
+
+        .display-type {
+            padding: 6px;
+            text-align: center;
+            font-weight: 600;
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+
+            &.preview::after {
+                content: "Preview";
+            }
+
+            &.preferences::after {
+                content: "Preferences";
+            }
+
+            .stream-info-title {
+                display: none;
+                font-size: 1em;
+                line-height: 1;
+                margin: 9px 0;
+                font-weight: 600;
+            }
+        }
+
+        #preview_iframe {
+            width: 100%;
+            height: calc(100% - 45px);
+            border: none;
+            background-color: hsl(0, 0%, 98%);
+            box-shadow: inset 0 0 50px hsla(0, 0%, 0%, 0.5);
+            background-image: url(../images/preview-loading.png);
+            background-size: 150px auto;
+            background-position: center center;
+            background-repeat: no-repeat;
+        }
+    }
+
+    input[type="text"].small {
+        border: 1px solid hsl(0, 0%, 80%);
+        border-radius: 4px;
+        padding: 3px;
+        outline: none;
+        color: hsl(0, 0%, 27%);
+        text-align: center;
+
+        &:focus {
+            text-align: left;
+        }
+
+        &:valid {
+            text-align: left;
+        }
+    }
+}
+
+#search_stream_name {
+    width: 100%;
+    padding: 3px 5px;
+    margin: 8px 0;
+    margin-left: 10px;
+    margin-right: -15px !important;
+    display: inline-block;
+    border-radius: 5px;
+    box-shadow: none;
+}
+
+.stream_name_search_section {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 0;
+    height: auto;
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+}
+
+.streams-list {
+    position: relative;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    height: calc(100% - 85px);
+    width: 100%;
+}
+
+#clear_search_stream_name {
+    right: 5px !important;
+}
+
+.stream-title {
+    font-size: 1.3em;
+    font-weight: 400;
+}
+
+.stream-creation-info {
+    font-style: italic;
+    margin-bottom: 10px;
+}
+
+.stream-creation-body {
+    section.block {
+        margin-bottom: 20px;
+    }
+
+    #make-invite-only {
+        .radio {
+            margin: 5px;
+        }
+
+        .grey-box .checkbox {
+            margin: 5px;
+        }
+    }
+
+    #announce-new-stream {
+        margin-top: 10px;
+
+        div[class^="fa"] {
+            margin-left: 3px;
+            margin-right: 8px;
+        }
+    }
+}
+
+.stream-row {
+    padding: 15px 10px 11px 10px;
+    border-bottom: 1px solid hsl(0, 0%, 93%);
+    cursor: pointer;
+
+    .check {
+        width: 25px;
+        height: 25px;
+        position: relative;
+        margin-right: 8px;
+        margin-top: 9px;
+        background-size: 60% auto;
+        background-repeat: no-repeat;
+        background-position: center center;
+
+        svg {
+            fill: transparent;
+            width: 70%;
+            margin: 0% 15%;
+        }
+
+        &.checked:hover svg {
+            opacity: 0.5;
+        }
+
+        &.disabled {
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        .sub_unsub_status {
+            display: inline-block !important;
+            height: auto !important;
+            width: auto !important;
+
+            .loading_indicator_spinner {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+            }
+
+            .loading_indicator_spinner svg path {
+                fill: hsl(178, 100%, 40%);
+            }
+        }
+    }
+
+    .checked svg {
+        fill: hsl(170, 48%, 54%);
+    }
+
+    .icon {
+        width: 35px;
+        height: 35px;
+        margin-right: 8px;
+        margin-top: 4px;
+        background-color: hsl(300, 100%, 25%);
+        border-radius: 4px;
+        color: hsl(0, 0%, 100%);
+
+        .symbol {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .fa-lock {
+            font-size: 1.4em;
+        }
+
+        .hashtag {
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+    }
+
+    .sub-info-box {
+        width: calc(100% - 90px);
+
+        .top-bar,
+        .bottom-bar {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .top-bar .stream-name,
+        .bottom-bar .description {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .top-bar .subscriber-count,
+        .bottom-bar .stream-message-count {
+            white-space: nowrap;
+            color: hsl(0, 0%, 67%);
+        }
+
+        .top-bar .subscriber-count-text,
+        .top-bar .subscriber-count-lock,
+        .bottom-bar .stream-message-count-text {
+            margin-right: 5px;
+        }
+
+        .top-bar > div {
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .top-bar .stream-name {
+            font-weight: 600;
+        }
+
+        .bottom-bar {
+            margin-top: 2px;
+            line-height: 1.5;
+        }
+
+        .bottom-bar > div {
+            display: inline-block;
+            vertical-align: bottom;
+        }
+    }
+
+    &.active {
+        background-color: hsl(0, 0%, 93%);
+    }
+
+    > div {
+        display: inline-block;
+        vertical-align: top;
+    }
+
+    .settings-dropdown-trigger {
+        float: right;
+        margin-left: 10px;
+        color: hsl(0, 0%, 67%);
+    }
+
+    &:hover .preview-stream {
+        display: inline-block;
+    }
+
+    &:hover .check:not(.checked) svg,
+    &.active:hover .check:not(.checked) svg {
+        fill: hsl(0, 0%, 87%);
+    }
+
+    .check:not(.checked):hover svg,
+    &.active .check:not(.checked):hover svg {
+        fill: hsl(0, 0%, 72%);
+    }
+
+    &::selection,
+    .icon .hashtag::selection {
+        background-color: transparent;
+    }
+}
+
+#subscription_overlay
+    .stream-description
+    .stream-description-editable:empty::after,
+.stream-row .sub-info-box .description:empty::after {
+    content: attr(data-no-description);
+    font-style: italic;
+    color: hsl(0, 0%, 67%);
+}
+
+#subscription_overlay {
+    #stream-creation {
+        max-height: calc(100% - 102px);
+        overflow: auto;
+        outline: none;
+        -webkit-overflow-scrolling: touch;
+
+        .modal-footer {
+            position: absolute;
+            bottom: 0;
+            width: calc(100% - 27px);
+        }
+
+        .stream-creation-body {
+            padding: 15px;
+        }
+
+        .add-user-label {
+            margin: 8px 0;
+        }
+
+        .add-user-list-filter {
+            width: calc(100% - 10px);
+        }
+
+        #stream_creation_form {
+            margin: 0;
+
+            #stream_creating_indicator {
+                &:not(:empty) {
+                    position: absolute;
+                    width: 100% !important;
+                    height: calc(100% - 105px) !important;
+                    display: flex !important;
+                    justify-content: center;
+                    align-items: center;
+                    background-color: hsla(0, 0%, 100%, 0.9);
+                    z-index: 1;
+                }
+
+                .loading_indicator_text {
+                    font-weight: 400;
+                }
+            }
+        }
+    }
+
+    .inner-box {
+        margin: 20px;
+    }
+
+    .stream-header {
+        margin-bottom: 20px;
+        white-space: nowrap;
+
+        .stream-name {
+            display: inline-block;
+            position: relative;
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-left: -3px;
+            padding-bottom: 5px;
+            white-space: nowrap;
+            max-width: 260px;
+
+            .stream-name-editable {
+                display: block;
+                max-width: 20ch;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                float: left;
+            }
+
+            .stream-name-edit-box {
+                text-overflow: clip;
+                border-style: groove;
+            }
+        }
+
+        .deactivate,
+        .subscribe-button {
+            float: right;
+            margin-top: -5px;
+            margin-right: 5px;
+        }
+
+        .button-group {
+            float: right;
+        }
+
+        .subscribe-button.unsubscribed {
+            color: hsl(156, 39%, 54%);
+            border-color: hsl(156, 39%, 77%);
+
+            &:active {
+                background-color: hsla(156, 39%, 54%, 0.2);
+            }
+        }
+
+        .large-icon {
+            display: inline-block;
+            vertical-align: top;
+            margin-right: 5px;
+            font-size: 1.5em;
+
+            &.hash::after {
+                top: 1px;
+            }
+        }
+    }
+
+    .stream-description {
+        font-size: 0.9em;
+        margin-bottom: 5px;
+    }
+
+    #preview-stream-button {
+        float: right;
+        margin-top: -5px;
+        margin-right: 5px;
+        text-decoration: none;
+    }
+
+    .editable-section {
+        position: relative;
+        display: inline;
+        min-width: 10px;
+        max-width: 100%;
+
+        &[contenteditable="true"] {
+            display: inline-block;
+            vertical-align: top;
+            color: hsl(170, 48%, 54%);
+
+            &:focus {
+                outline: none;
+            }
+        }
+    }
+
+    .editable {
+        position: relative;
+        top: -1px;
+        margin-left: 5px;
+        color: hsl(0, 0%, 67%);
+        cursor: pointer;
+        font-size: 1.4rem;
+        font-weight: 300;
+
+        transition: all 0.3s ease;
+
+        &:empty::before {
+            content: "\f040";
+            font-family: FontAwesome;
+            font-size: 0.8rem;
+            font-weight: normal;
+        }
+
+        &:not(:empty) {
+            position: relative;
+            top: 2px;
+        }
+
+        &:hover {
+            color: hsl(0, 0%, 27%);
+        }
+    }
+
+    .checkmark {
+        display: none;
+        margin-left: 5px;
+        font-size: 0.9rem;
+        color: hsl(0, 0%, 67%);
+
+        cursor: pointer;
+
+        &.show {
+            display: block;
+        }
+    }
+
+    .subscription-type {
+        margin-bottom: 10px;
+        font-size: 0.9em;
+        opacity: 0.5;
+
+        .subscription-type-text {
+            display: inline;
+        }
+
+        b {
+            font-weight: 600;
+        }
+    }
+
+    .hash::after {
+        position: relative;
+        content: "#";
+        font-size: 1.09em;
+        font-weight: 800;
+    }
+
+    .settings {
+        position: relative;
+        height: calc(100% - 45px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .subscription_settings {
+        display: none;
+        position: relative;
+        width: 100%;
+        margin: 0 auto;
+        border-radius: 4px;
+        top: -1px;
+
+        &.show {
+            display: block;
+        }
+    }
+
+    #personal_settings_label_container {
+        margin-bottom: 5px;
+    }
+
+    .alert-notification:not(:empty) {
+        vertical-align: unset;
+        margin-top: 10px;
+    }
+
+    .loading_indicator_text {
+        font-weight: 400;
+        line-height: 20px;
+    }
+}
+
+ul.grey-box {
+    #stream_privacy_modal & {
+        border-style: none;
+    }
+
+    li {
+        #stream_privacy_modal &,
+        #subscription_overlay & {
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+            padding: 5px 0;
+        }
+
+        input[type="checkbox"] {
+            #stream_privacy_modal & {
+                margin-top: 4px;
+            }
+
+            #subscription_overlay & {
+                margin-top: 0;
+            }
+        }
+
+        &:last-of-type {
+            #stream_privacy_modal &,
+            #subscription_overlay & {
+                border-bottom: none;
+            }
+        }
+
+        .sp-replacer {
+            #stream_privacy_modal &,
+            #subscription_overlay & {
+                box-shadow: none;
+            }
+        }
+
+        input[type="radio"] {
+            #stream_privacy_modal &,
+            #subscription_overlay & {
+                margin-right: 5px;
+            }
+        }
+
+        input[type="text"] {
+            width: 5ch;
+            text-align: right;
+        }
+
+        label.dropdown-title {
+            display: block;
+        }
+
+        select {
+            width: auto;
+            margin-bottom: 0;
+        }
+    }
+}
+
+@media (max-width: 1130px) {
+    .subscriptions-container {
+        max-width: 95%;
+    }
+
+    #subscription_overlay {
+        .left {
+            width: 40%;
+        }
+
+        .right {
+            width: calc(60% - 1px);
+        }
+    }
+}
+
+@media (max-width: 1033px) {
+    .subscriptions-container .left .search-container {
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+    }
+
+    .search-container {
+        text-align: center;
+    }
+
+    .subscriber_list_settings input {
+        float: left;
+        margin: 0 5px 0 0;
+        width: calc(50% - 45px);
+    }
+}
+
+/* Note that this block has settings_page CSS as well, and thus needs
+   to match the media queries in settings.css.
+
+   Longer-term we should extract this logic two-column-overlay class
+   to read more naturally. */
+@media (max-width: 750px) {
+    .subscriptions-container {
+        position: relative;
+        overflow: hidden;
+
+        .search-container {
+            text-align: left;
+        }
+
+        .subscriptions-header .fa-chevron-left {
+            display: block;
+        }
+    }
+
+    #subscription_overlay .left,
+    #subscription_overlay .right,
+    #settings_page .left,
+    #settings_page .content-wrapper.right {
+        position: absolute;
+        display: block;
+        margin: 0;
+        width: 100%;
+        height: calc(100% - 45px);
+
+        border: none;
+    }
+
+    #subscription_overlay .right,
+    #settings_page .content-wrapper.right {
+        position: absolute;
+        left: 101%;
+
+        top: 45px;
+        background-color: hsl(0, 0%, 100%);
+        border-top: none;
+
+        transition: all 0.3s ease;
+        z-index: 10;
+
+        &.show {
+            left: 0%;
+        }
+    }
+
+    #subscription_overlay {
+        .display-type {
+            display: none;
+        }
+
+        .subscriptions-container {
+            height: 95%;
+        }
+
+        .settings {
+            overflow: auto;
+            height: calc(100% - 20px);
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+}
+
+@media (max-width: 367px) {
+    #subscription_overlay .subscription_settings .button-group {
+        margin-top: 10px;
+        float: none;
+        display: inline-block;
+        vertical-align: top;
+    }
+}
+
+#stream-creation #invites-warning-modal .modal-footer {
+    position: static;
+}
+
+@media (max-width: 350px) {
+    .stream_row .description {
+        display: none;
+    }
+}

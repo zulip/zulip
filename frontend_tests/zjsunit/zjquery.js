@@ -34,7 +34,7 @@ exports.make_event_store = (selector) => {
             if (child_selector === undefined) {
                 handler = on_functions.get(name);
                 if (!handler) {
-                    throw Error("no " + name + " handler for " + selector);
+                    throw new Error("no " + name + " handler for " + selector);
                 }
                 return handler;
             }
@@ -45,7 +45,7 @@ exports.make_event_store = (selector) => {
             }
 
             if (!handler) {
-                throw Error("no " + name + " handler for " + selector + " " + child_selector);
+                throw new Error("no " + name + " handler for " + selector + " " + child_selector);
             }
 
             return handler;
@@ -61,7 +61,7 @@ exports.make_event_store = (selector) => {
             // .off in code that we test: $(...).off('click', child_sel);
             //
             // So we don't support this for now.
-            throw Error("zjquery does not support this call sequence");
+            throw new Error("zjquery does not support this call sequence");
         },
 
         on(event_name, ...args) {
@@ -73,7 +73,7 @@ exports.make_event_store = (selector) => {
                 if (on_functions.has(event_name)) {
                     console.info("\nEither the app or the test can be at fault here..");
                     console.info("(sometimes you just want to call $.clear_all_elements();)\n");
-                    throw Error("dup " + event_name + " handler for " + selector);
+                    throw new Error("dup " + event_name + " handler for " + selector);
                 }
 
                 on_functions.set(event_name, handler);
@@ -81,7 +81,7 @@ exports.make_event_store = (selector) => {
             }
 
             if (args.length !== 2) {
-                throw Error("wrong number of arguments passed in");
+                throw new Error("wrong number of arguments passed in");
             }
 
             const [sel, handler] = args;
@@ -95,7 +95,7 @@ exports.make_event_store = (selector) => {
             const child_on = child_on_functions.get(sel);
 
             if (child_on.has(event_name)) {
-                throw Error("dup " + event_name + " handler for " + selector + " " + sel);
+                throw new Error("dup " + event_name + " handler for " + selector + " " + sel);
             }
 
             child_on.set(event_name, handler);
@@ -170,11 +170,7 @@ exports.make_new_elem = function (selector, opts) {
         },
         data(name, val) {
             if (val === undefined) {
-                const data_val = attrs.get("data-" + name);
-                if (data_val === undefined) {
-                    return;
-                }
-                return data_val;
+                return attrs.get("data-" + name);
             }
             attrs.set("data-" + name, val);
             return self;
@@ -217,7 +213,7 @@ exports.make_new_elem = function (selector, opts) {
             if (opts.silent) {
                 return self;
             }
-            throw Error("Cannot find " + child_selector + " in " + selector);
+            throw new Error("Cannot find " + child_selector + " in " + selector);
         },
         get(idx) {
             // We have some legacy code that does $('foo').get(0).
@@ -363,6 +359,12 @@ exports.make_new_elem = function (selector, opts) {
         slice() {
             return self;
         },
+        offset() {
+            return {
+                top: 0,
+                left: 0,
+            };
+        },
     };
 
     if (selector[0] === "<") {
@@ -406,23 +408,16 @@ exports.make_zjquery = function (opts) {
                     const error =
                         "\nInstead of doing equality checks on a full object, " +
                         'do `assert_equal(foo.selector, ".some_class")\n';
-                    throw Error(error);
+                    throw new Error(error);
                 }
 
                 const val = target[key];
 
-                if (val === undefined) {
+                if (val === undefined && typeof key !== "symbol" && key !== "inspect") {
                     // For undefined values, we'll throw errors to devs saying
                     // they need to create stubs.  We ignore certain keys that
                     // are used for simply printing out the object.
-                    if (typeof key === "symbol") {
-                        return;
-                    }
-                    if (key === "inspect") {
-                        return;
-                    }
-
-                    throw Error('You must create a stub for $("' + selector + '").' + key);
+                    throw new Error('You must create a stub for $("' + selector + '").' + key);
                 }
 
                 return val;
@@ -441,7 +436,7 @@ exports.make_zjquery = function (opts) {
             // page load time.  But there are no pages to load,
             // so we just call it right away.
             arg();
-            return;
+            return undefined;
         }
 
         // If somebody is passing us an element, we return
@@ -462,14 +457,14 @@ exports.make_zjquery = function (opts) {
         }
 
         if (arg2 !== undefined) {
-            throw Error("We only use one-argument variations of $(...) in Zulip code.");
+            throw new Error("We only use one-argument variations of $(...) in Zulip code.");
         }
 
         const selector = arg;
 
         if (typeof selector !== "string") {
             console.info(arg);
-            throw Error("zjquery does not know how to wrap this object yet");
+            throw new Error("zjquery does not know how to wrap this object yet");
         }
 
         const valid_selector =

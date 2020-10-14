@@ -141,25 +141,25 @@ exports.get_stream_li = function (stream_id) {
         // Not all streams are in the sidebar, so we don't report
         // an error here, and it's up for the caller to error if
         // they expected otherwise.
-        return;
+        return undefined;
     }
 
     const li = row.get_li();
     if (!li) {
         blueslip.error("Cannot find li for id " + stream_id);
-        return;
+        return undefined;
     }
 
     if (li.length > 1) {
         blueslip.error("stream_li has too many elements for " + stream_id);
-        return;
+        return undefined;
     }
 
     return li;
 };
 
 function stream_id_for_elt(elt) {
-    return parseInt(elt.attr("data-stream-id"), 10);
+    return Number.parseInt(elt.attr("data-stream-id"), 10);
 }
 
 exports.zoom_in_topics = function (options) {
@@ -397,7 +397,7 @@ exports.update_stream_sidebar_for_narrow = function (filter) {
 
     if (!stream_id) {
         topic_zoom.clear_topics();
-        return;
+        return undefined;
     }
 
     const stream_li = exports.get_stream_li(stream_id);
@@ -410,7 +410,7 @@ exports.update_stream_sidebar_for_narrow = function (filter) {
         // April 2020, so if it appears again, something regressed.
         blueslip.error("No stream_li for subscribed stream " + stream_id);
         topic_zoom.clear_topics();
-        return;
+        return undefined;
     }
 
     if (!info.topic_selected) {
@@ -649,7 +649,7 @@ exports.get_current_stream_li = function () {
 
     if (!stream_id) {
         // stream_id is undefined in non-stream narrows
-        return;
+        return undefined;
     }
 
     const stream_li = exports.get_stream_li(stream_id);
@@ -657,7 +657,7 @@ exports.get_current_stream_li = function () {
     if (!stream_li) {
         // This code path shouldn't ever be reached.
         blueslip.warn("No active stream_li found for defined id " + stream_id);
-        return;
+        return undefined;
     }
 
     return stream_li;

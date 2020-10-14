@@ -7,7 +7,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.lib.actions import do_change_subscription_property, do_mute_topic
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import POSTRequestMock
+from zerver.lib.test_helpers import POSTRequestMock, mock_queue_publish
 from zerver.models import Recipient, Stream, Subscription, UserProfile, get_stream
 from zerver.tornado.event_queue import (
     ClientDescriptor,
@@ -27,9 +27,9 @@ class MissedMessageNotificationsTest(ZulipTestCase):
     def check_will_notify(self, *args: Any, **kwargs: Any) -> Tuple[str, str]:
         email_notice = None
         mobile_notice = None
-        with mock.patch("zerver.tornado.event_queue.queue_json_publish") as mock_queue_publish:
+        with mock_queue_publish("zerver.tornado.event_queue.queue_json_publish") as mock_queue_json_publish:
             notified = maybe_enqueue_notifications(*args, **kwargs)
-            for entry in mock_queue_publish.call_args_list:
+            for entry in mock_queue_json_publish.call_args_list:
                 args = entry[0]
                 if args[0] == "missedmessage_mobile_notifications":
                     mobile_notice = args[1]
@@ -483,16 +483,16 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 class FileReloadLogicTest(ZulipTestCase):
     def test_persistent_queue_filename(self) -> None:
         with self.settings(JSON_PERSISTENT_QUEUE_FILENAME_PATTERN="/home/zulip/tornado/event_queues%s.json"):
-            self.assertEqual(persistent_queue_filename(9993),
+            self.assertEqual(persistent_queue_filename(9800),
                              "/home/zulip/tornado/event_queues.json")
-            self.assertEqual(persistent_queue_filename(9993, last=True),
+            self.assertEqual(persistent_queue_filename(9800, last=True),
                              "/home/zulip/tornado/event_queues.json.last")
         with self.settings(JSON_PERSISTENT_QUEUE_FILENAME_PATTERN="/home/zulip/tornado/event_queues%s.json",
                            TORNADO_PROCESSES=4):
-            self.assertEqual(persistent_queue_filename(9993),
-                             "/home/zulip/tornado/event_queues.9993.json")
-            self.assertEqual(persistent_queue_filename(9993, last=True),
-                             "/home/zulip/tornado/event_queues.9993.last.json")
+            self.assertEqual(persistent_queue_filename(9800),
+                             "/home/zulip/tornado/event_queues.9800.json")
+            self.assertEqual(persistent_queue_filename(9800, last=True),
+                             "/home/zulip/tornado/event_queues.9800.last.json")
 
 class EventQueueTest(ZulipTestCase):
     def get_client_descriptor(self) -> ClientDescriptor:

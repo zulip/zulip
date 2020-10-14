@@ -1,6 +1,7 @@
 import ast
 import datetime
 import re
+import secrets
 import time
 from collections import defaultdict
 from datetime import timedelta
@@ -78,7 +79,7 @@ from zerver.lib.types import (
     UserFieldElement,
     Validator,
 )
-from zerver.lib.utils import generate_random_token, make_safe_digest
+from zerver.lib.utils import make_safe_digest
 from zerver.lib.validator import (
     check_date,
     check_int,
@@ -255,6 +256,27 @@ class Realm(models.Model):
         PRIVATE_MESSAGE_POLICY_DISABLED,
     ]
 
+    # Global policy for who is allowed to use wildcard mentions in
+    # streams with a large number of subscribers.  Anyone can use
+    # wildcard mentions in small streams regardless of this setting.
+    WILDCARD_MENTION_POLICY_EVERYONE = 1
+    WILDCARD_MENTION_POLICY_MEMBERS = 2
+    WILDCARD_MENTION_POLICY_FULL_MEMBERS = 3
+    WILDCARD_MENTION_POLICY_STREAM_ADMINS = 4
+    WILDCARD_MENTION_POLICY_ADMINS = 5
+    WILDCARD_MENTION_POLICY_NOBODY = 6
+    wildcard_mention_policy: int = models.PositiveSmallIntegerField(
+        default=WILDCARD_MENTION_POLICY_STREAM_ADMINS,
+    )
+    WILDCARD_MENTION_POLICY_TYPES = [
+        WILDCARD_MENTION_POLICY_EVERYONE,
+        WILDCARD_MENTION_POLICY_MEMBERS,
+        WILDCARD_MENTION_POLICY_FULL_MEMBERS,
+        WILDCARD_MENTION_POLICY_STREAM_ADMINS,
+        WILDCARD_MENTION_POLICY_ADMINS,
+        WILDCARD_MENTION_POLICY_NOBODY,
+    ]
+
     # Who in the organization has access to users' actual email
     # addresses.  Controls whether the UserProfile.email field is the
     # same as UserProfile.delivery_email, or is instead garbage.
@@ -365,6 +387,7 @@ class Realm(models.Model):
         },
         # ID 2 was used for the now-deleted Google Hangouts.
         # ID 3 reserved for optional Zoom, see below.
+        # ID 4 reserved for optional Big Blue Button, see below.
     }
 
     if settings.VIDEO_ZOOM_CLIENT_ID is not None and settings.VIDEO_ZOOM_CLIENT_SECRET is not None:
@@ -417,6 +440,7 @@ class Realm(models.Model):
         user_group_edit_policy=int,
         default_code_block_language=(str, type(None)),
         message_content_delete_limit_seconds=int,
+        wildcard_mention_policy=int,
     )
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
@@ -732,7 +756,7 @@ def filter_pattern_validator(value: str) -> None:
         raise ValidationError(error_msg)
 
 def filter_format_validator(value: str) -> None:
-    regex = re.compile(r'^([\.\/:a-zA-Z0-9#_?=&;-]+%\(([a-zA-Z0-9_-]+)\)s)+[/a-zA-Z0-9#_?=&;-]*$')
+    regex = re.compile(r'^([\.\/:a-zA-Z0-9#_?=&;~-]+%\(([a-zA-Z0-9_-]+)\)s)+[/a-zA-Z0-9#_?=&;~-]*$')
 
     if not regex.match(value):
         raise ValidationError(_('Invalid URL format string.'))
@@ -1408,7 +1432,7 @@ def filter_to_valid_prereg_users(query: QuerySet) -> QuerySet:
 
 class MultiuseInvite(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name='ID')
-    referred_by: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # Optional[UserProfile]
+    referred_by: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     streams: Manager = models.ManyToManyField('Stream')
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     invited_as: int = models.PositiveSmallIntegerField(default=PreregistrationUser.INVITE_AS['MEMBER'])
@@ -1463,7 +1487,7 @@ class PushDeviceToken(AbstractPushDeviceToken):
         unique_together = ("user", "kind", "token")
 
 def generate_email_token_for_stream() -> str:
-    return generate_random_token(32)
+    return secrets.token_hex(16)
 
 class Stream(models.Model):
     MAX_NAME_LENGTH = 60
@@ -1543,9 +1567,6 @@ class Stream(models.Model):
 
     def is_history_public_to_subscribers(self) -> bool:
         return self.history_public_to_subscribers
-
-    class Meta:
-        unique_together = ("name", "realm")
 
     # Stream fields included whenever a Stream object is provided to
     # Zulip clients via the API.  A few details worth noting:
@@ -2141,12 +2162,18 @@ class AbstractAttachment(models.Model):
     # Size of the uploaded file, in bytes
     size: int = models.IntegerField()
 
+    # The two fields below lets us avoid looking up the corresponding
+    # messages/streams to check permissions before serving these files.
+
     # Whether this attachment has been posted to a public stream, and
     # thus should be available to all non-guest users in the
     # organization (even if they weren't a recipient of a message
-    # linking to it).  This lets us avoid looking up the corresponding
-    # messages/streams to check permissions before serving these files.
+    # linking to it).
     is_realm_public: bool = models.BooleanField(default=False)
+    # Whether this attachment has been posted to a web-public stream,
+    # and thus should be available to everyone on the internet, even
+    # if the person isn't logged in.
+    is_web_public: bool = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
@@ -2243,6 +2270,16 @@ class Subscription(models.Model):
     # resubscribes.
     active: bool = models.BooleanField(default=True)
 
+    ROLE_STREAM_ADMINISTRATOR = 20
+    ROLE_MEMBER = 50
+
+    ROLE_TYPES = [
+        ROLE_STREAM_ADMINISTRATOR,
+        ROLE_MEMBER,
+    ]
+
+    role: int = models.PositiveSmallIntegerField(default=ROLE_MEMBER, db_index=True)
+
     # Whether this user had muted this stream.
     is_muted: Optional[bool] = models.BooleanField(null=True, default=False)
 
@@ -2264,6 +2301,10 @@ class Subscription(models.Model):
 
     def __str__(self) -> str:
         return f"<Subscription: {self.user_profile} -> {self.recipient}>"
+
+    @property
+    def is_stream_admin(self) -> bool:
+        return self.role == Subscription.ROLE_STREAM_ADMINISTRATOR
 
     # Subscription fields included whenever a Subscription object is provided to
     # Zulip clients via the API.  A few details worth noting:
@@ -2289,6 +2330,7 @@ class Subscription(models.Model):
         "email_notifications",
         "push_notifications",
         "wildcard_mentions_notify",
+        "role",
     ]
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600*24*7)
@@ -2577,7 +2619,8 @@ class UserPresence(models.Model):
     @staticmethod
     def status_from_string(status: str) -> Optional[int]:
         if status == 'active':
-            status_val: Optional[int] = UserPresence.ACTIVE  # See https://github.com/python/mypy/issues/2611
+            # See https://github.com/python/mypy/issues/2611
+            status_val: Optional[int] = UserPresence.ACTIVE
         elif status == 'idle':
             status_val = UserPresence.IDLE
         else:

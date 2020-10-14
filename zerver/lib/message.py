@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 import ahocorasick
 import orjson
 from django.db import connection
-from django.db.models import Sum
+from django.db.models import Max, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from psycopg2.sql import SQL
@@ -51,6 +51,15 @@ from zerver.models import (
 )
 
 RealmAlertWord = Dict[int, List[str]]
+
+class RawReactionRow(TypedDict):
+    emoji_code: str
+    emoji_name: str
+    message_id: int
+    reaction_type: str
+    user_profile__email: str
+    user_profile__full_name: str
+    user_profile__id: int
 
 class RawUnreadMessagesResult(TypedDict):
     pm_dict: Dict[int, Any]
@@ -107,7 +116,7 @@ def messages_for_ids(message_ids: List[int],
 
     for message_id in message_ids:
         msg_dict = message_dicts[message_id]
-        msg_dict.update({"flags": user_message_flags[message_id]})
+        msg_dict.update(flags=user_message_flags[message_id])
         if message_id in search_fields:
             msg_dict.update(search_fields[message_id])
         # Make sure that we never send message edit history to clients
@@ -171,6 +180,26 @@ def save_message_rendered_content(message: Message, content: str) -> str:
     return rendered_content
 
 class MessageDict:
+    """MessageDict is the core class responsible for marshalling Message
+    objects obtained from the database into a format that can be sent
+    to clients via the Zulip API, whether via `GET /messages`,
+    outgoing webhooks, or other code paths.  There are two core flows through
+    which this class is used:
+
+    * For just-sent messages, we construct a single `wide_dict` object
+      containing all the data for the message and the related
+      UserProfile models (sender_info and recipient_info); this object
+      can be stored in queues, caches, etc., and then later turned
+      into an API-format JSONable dictionary via finalize_payload.
+
+    * When fetching messages from the database, we fetch their data in
+      bulk using messages_for_ids, which makes use of caching, bulk
+      fetches that skip the Django ORM, etc., to provide an optimized
+      interface for fetching hundreds of thousands of messages from
+      the database and then turning them into API-format JSON
+      dictionaries.
+
+    """
     @staticmethod
     def wide_dict(message: Message, realm_id: Optional[int]=None) -> Dict[str, Any]:
         '''
@@ -200,40 +229,28 @@ class MessageDict:
               shallow copies.  It might be safer to
               make shallow copies here, but performance
               is somewhat important here, as we are
-              often fetching several messages.
+              often fetching hundreds of messages.
         '''
         MessageDict.bulk_hydrate_sender_info(objs)
         MessageDict.bulk_hydrate_recipient_info(objs)
 
         for obj in objs:
-            MessageDict._finalize_payload(obj, apply_markdown, client_gravatar)
+            MessageDict.finalize_payload(obj, apply_markdown, client_gravatar, skip_copy=True)
 
     @staticmethod
     def finalize_payload(obj: Dict[str, Any],
                          apply_markdown: bool,
                          client_gravatar: bool,
-                         keep_rendered_content: bool=False) -> Dict[str, Any]:
+                         keep_rendered_content: bool=False,
+                         skip_copy: bool=False) -> Dict[str, Any]:
         '''
-        Make a shallow copy of the incoming dict to avoid
-        mutation-related bugs.  This function is often
-        called when we're sending out message events to
-        multiple clients, who often want the final dictionary
-        to have different shapes here based on the parameters.
+        By default, we make a shallow copy of the incoming dict to avoid
+        mutation-related bugs.  Code paths that are passing a unique object
+        can pass skip_copy=True to avoid this extra work.
         '''
-        new_obj = copy.copy(obj)
+        if not skip_copy:
+            obj = copy.copy(obj)
 
-        # Next call our worker, which mutates the record in place.
-        MessageDict._finalize_payload(
-            new_obj,
-            apply_markdown=apply_markdown,
-            client_gravatar=client_gravatar,
-            keep_rendered_content=keep_rendered_content,
-        )
-        return new_obj
-
-    @staticmethod
-    def _finalize_payload(obj: Dict[str, Any], apply_markdown: bool, client_gravatar: bool,
-                          keep_rendered_content: bool=False) -> None:
         MessageDict.set_sender_avatar(obj, client_gravatar)
         if apply_markdown:
             obj['content_type'] = 'text/html'
@@ -251,6 +268,7 @@ class MessageDict:
         del obj['recipient_type']
         del obj['recipient_type_id']
         del obj['sender_is_mirror_dummy']
+        return obj
 
     @staticmethod
     def sew_submessages_and_reactions_to_msgs(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -370,7 +388,7 @@ class MessageDict:
             recipient_id: int,
             recipient_type: int,
             recipient_type_id: int,
-            reactions: List[Dict[str, Any]],
+            reactions: List[RawReactionRow],
             submessages: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
 
@@ -547,7 +565,7 @@ class MessageDict:
 
 class ReactionDict:
     @staticmethod
-    def build_dict_from_raw_db_row(row: Dict[str, Any]) -> Dict[str, Any]:
+    def build_dict_from_raw_db_row(row: RawReactionRow) -> Dict[str, Any]:
         return {'emoji_name': row['emoji_name'],
                 'emoji_code': row['emoji_code'],
                 'reaction_type': row['reaction_type'],
@@ -730,7 +748,7 @@ def huddle_users(recipient_id: int) -> str:
 def aggregate_message_dict(input_dict: Dict[int, Dict[str, Any]],
                            lookup_fields: List[str],
                            collect_senders: bool) -> List[Dict[str, Any]]:
-    lookup_dict: Dict[Tuple[Any, ...], Dict[str, Any]] = dict()
+    lookup_dict: Dict[Tuple[Any, ...], Dict[str, Any]] = {}
 
     '''
     A concrete example might help explain the inputs here:
@@ -765,7 +783,7 @@ def aggregate_message_dict(input_dict: Dict[int, Dict[str, Any]],
     '''
 
     for message_id, attribute_dict in input_dict.items():
-        lookup_key = tuple([attribute_dict[f] for f in lookup_fields])
+        lookup_key = tuple(attribute_dict[f] for f in lookup_fields)
         if lookup_key not in lookup_dict:
             obj = {}
             for f in lookup_fields:
@@ -783,7 +801,7 @@ def aggregate_message_dict(input_dict: Dict[int, Dict[str, Any]],
     for dct in lookup_dict.values():
         dct['unread_message_ids'].sort()
         if collect_senders:
-            dct['sender_ids'] = sorted(list(dct['sender_ids']))
+            dct['sender_ids'] = sorted(dct['sender_ids'])
 
     sorted_keys = sorted(lookup_dict.keys())
 
@@ -822,7 +840,6 @@ def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
     ).values_list('message_id', flat=True)[0:10000])
 
 def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
-
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
 
     user_msgs = UserMessage.objects.filter(
@@ -845,8 +862,33 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
     user_msgs = list(user_msgs[:MAX_UNREAD_MESSAGES])
 
     rows = list(reversed(user_msgs))
+    return extract_unread_data_from_um_rows(rows, user_profile)
+
+def extract_unread_data_from_um_rows(
+    rows: List[Dict[str, Any]],
+    user_profile: Optional[UserProfile]
+) -> RawUnreadMessagesResult:
+
+    pm_dict: Dict[int, Any] = {}
+    stream_dict: Dict[int, Any] = {}
+    unmuted_stream_msgs: Set[int] = set()
+    huddle_dict: Dict[int, Any] = {}
+    mentions: Set[int] = set()
+
+    raw_unread_messages: RawUnreadMessagesResult = dict(
+        pm_dict=pm_dict,
+        stream_dict=stream_dict,
+        muted_stream_ids=[],
+        unmuted_stream_msgs=unmuted_stream_msgs,
+        huddle_dict=huddle_dict,
+        mentions=mentions,
+    )
+
+    if user_profile is None:
+        return raw_unread_messages  # nocoverage
 
     muted_stream_ids = get_muted_stream_ids(user_profile)
+    raw_unread_messages['muted_stream_ids'] = muted_stream_ids
 
     topic_mute_checker = build_topic_mute_checker(user_profile)
 
@@ -868,12 +910,6 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
         user_ids_string = huddle_users(recipient_id)
         huddle_cache[recipient_id] = user_ids_string
         return user_ids_string
-
-    pm_dict = {}
-    stream_dict = {}
-    unmuted_stream_msgs = set()
-    huddle_dict = {}
-    mentions = set()
 
     for row in rows:
         message_id = row['message_id']
@@ -928,14 +964,7 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
             else:  # nocoverage # TODO: Test wildcard mentions in PMs.
                 mentions.add(message_id)
 
-    return dict(
-        pm_dict=pm_dict,
-        stream_dict=stream_dict,
-        muted_stream_ids=muted_stream_ids,
-        unmuted_stream_msgs=unmuted_stream_msgs,
-        huddle_dict=huddle_dict,
-        mentions=mentions,
-    )
+    return raw_unread_messages
 
 def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesResult:
 
@@ -1081,6 +1110,17 @@ def update_first_visible_message_id(realm: Realm) -> None:
         realm.first_visible_message_id = first_visible_message_id
     realm.save(update_fields=["first_visible_message_id"])
 
+def get_last_message_id() -> int:
+    # We generally use this function to populate RealmAuditLog, and
+    # the max id here is actually systemwide, not per-realm.  I
+    # assume there's some advantage in not filtering by realm.
+    last_id = Message.objects.aggregate(Max('id'))['id__max']
+    if last_id is None:
+        # During initial realm creation, there might be 0 messages in
+        # the database; in that case, the `aggregate` query returns
+        # None.  Since we want an int for "beginning of time", use -1.
+        last_id = -1
+    return last_id
 
 def get_recent_conversations_recipient_id(user_profile: UserProfile,
                                           recipient_id: int,
@@ -1179,7 +1219,7 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
     for recipient_id, max_message_id in rows:
         recipient_map[recipient_id] = dict(
             max_message_id=max_message_id,
-            user_ids=list(),
+            user_ids=[],
         )
 
     # Now we need to map all the recipient_id objects to lists of user IDs

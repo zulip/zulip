@@ -75,7 +75,8 @@ comma_whitespace_rule: List["Rule"] = [
      'good_lines': ['foo(1, 2, 3)', 'foo = bar  # some inline comment'],
      'bad_lines': ['foo(1,  2, 3)', 'foo(1,    2, 3)']},
 ]
-markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != r'\s+$']) + [
+markdown_whitespace_rules: List["Rule"] = [
+    *(rule for rule in whitespace_rules if rule['pattern'] != r'\s+$'),
     # Two spaces trailing a line with other content is okay--it's a Markdown line break.
     # This rule finds one space trailing a non-space, three or more trailing spaces, and
     # spaces on an empty line.
@@ -100,8 +101,6 @@ js_rules = RuleList(
          'description': 'avoid subject in JS code',
          'good_lines': ['topic_name'],
          'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN']},
-        {'pattern': r'[^_]function\(',
-         'description': 'The keyword "function" should be followed by a space'},
         {'pattern': 'msgid|MSGID',
          'description': 'Avoid using "msgid" as a variable name; use "message_id" instead.'},
         {'pattern': r'.*blueslip.warning\(.*',
@@ -195,8 +194,7 @@ python_rules = RuleList(
              'zerver/tests/',
              'zerver/views/'}},
         {'pattern': 'msgid|MSGID',
-         'exclude': {'tools/check-capitalization',
-                     'tools/i18n/tagmessages'},
+         'exclude': {'tools/check-capitalization'},
          'description': 'Avoid using "msgid" as a variable name; use "message_id" instead.'},
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required',
@@ -246,7 +244,7 @@ python_rules = RuleList(
          'exclude': {'scripts/lib/setup_venv.py'},
          'exclude_line': {
              ('scripts/lib/zulip_tools.py', 'sudo_args = kwargs.pop(\'sudo_args\', [])'),
-             ('scripts/lib/zulip_tools.py', 'args = [\'sudo\'] + sudo_args + [\'--\'] + args'),
+             ('scripts/lib/zulip_tools.py', 'args = [\'sudo\', *sudo_args, \'--\', *args]'),
          },
          'description': 'Most scripts are intended to run on systems without sudo.',
          'good_lines': ['subprocess.check_call(["ls"])'],
@@ -390,6 +388,9 @@ python_rules = RuleList(
              'zerver/tests/test_users.py',
          },
          },
+        {'pattern': '\\.(called(_once|_with|_once_with)?|not_called|has_calls|not_called)[(]',
+         'description': 'A mock function is missing a leading "assert_"',
+         },
         *whitespace_rules,
         *comma_whitespace_rule,
     ],
@@ -416,7 +417,7 @@ bash_rules = RuleList(
 )
 
 css_rules = RuleList(
-    langs=['css', 'scss'],
+    langs=['css'],
     rules=[
         *whitespace_rules,
     ],
@@ -439,7 +440,9 @@ prose_style_rules: List["Rule"] = [
      'description': "Use Botserver instead of botserver or bot server."},
     *comma_whitespace_rule,
 ]
-html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
+html_rules: List["Rule"] = [
+    *whitespace_rules,
+    *prose_style_rules,
     {'pattern': 'subject|SUBJECT',
      'exclude': {'templates/zerver/email.html'},
      'exclude_pattern': 'email subject',
@@ -457,6 +460,10 @@ html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
      'description': "Likely missing quoting in HTML attribute",
      'good_lines': ['<a href="{{variable}}">'],
      'bad_lines': ['<a href={{variable}}>']},
+    {'pattern': " '}}",
+     'description': "Likely misplaced quoting in translation tags",
+     'good_lines': ["{{t 'translateable string' }}"],
+     'bad_lines': ["{{t 'translateable string '}}"]},
     {'pattern': "placeholder='[^{]",
      'description': "`placeholder` value should be translatable.",
      'good_lines': ['<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'],
@@ -571,7 +578,8 @@ html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
 
 handlebars_rules = RuleList(
     langs=['hbs'],
-    rules=html_rules + [
+    rules=[
+        *html_rules,
         {'pattern': "[<]script",
          'description': "Do not use inline <script> tags here; put JavaScript in static/js instead."},
         {'pattern': '{{ t ("|\')',
@@ -593,7 +601,8 @@ handlebars_rules = RuleList(
 
 jinja2_rules = RuleList(
     langs=['html'],
-    rules=html_rules + [
+    rules=[
+        *html_rules,
         {'pattern': r"{% endtrans %}[\.\?!]",
          'description': "Period should be part of the translatable string."},
         {'pattern': r"{{ _(.+) }}[\.\?!]",
@@ -646,7 +655,9 @@ markdown_docs_length_exclude = {
 
 markdown_rules = RuleList(
     langs=['md'],
-    rules=markdown_whitespace_rules + prose_style_rules + [
+    rules=[
+        *markdown_whitespace_rules,
+        *prose_style_rules,
         {'pattern': r'\[(?P<url>[^\]]+)\]\((?P=url)\)',
          'description': 'Linkified Markdown URLs should use cleaner <http://example.com> syntax.'},
         {'pattern': 'https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]',

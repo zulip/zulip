@@ -1,0 +1,1004 @@
+body.night-mode {
+    background-color: hsl(212, 28%, 18%);
+    color: hsl(236, 33%, 90%);
+
+    a:hover {
+        color: hsl(200, 79%, 66%);
+    }
+
+    ul.filters a:hover {
+        color: inherit;
+    }
+
+    .app-main,
+    .header-main,
+    #message_view_header_underpadding,
+    .floating_recipient .message-header-wrapper,
+    .column-middle,
+    #compose,
+    .column-left .left-sidebar,
+    .column-right .right-sidebar,
+    #subscription_overlay .right,
+    #settings_page .form-sidebar,
+    #settings_page .right {
+        background-color: hsl(212, 28%, 18%);
+    }
+
+    .compose-send-status-close {
+        color: hsl(0, 0%, 100%);
+        opacity: 1;
+    }
+
+    .compose-send-status-close:hover {
+        opacity: 0.4;
+    }
+
+    .message_embed .data-container::after {
+        background: linear-gradient(0deg, hsl(212, 28%, 18%), transparent 100%);
+    }
+
+    .column-left .left-sidebar,
+    #settings_page .form-sidebar,
+    .stream_name_search_section,
+    .column-right .right-sidebar {
+        border-color: hsla(0, 0%, 0%, 0.2);
+    }
+
+    .dark .message_label_clickable.stream_label,
+    .dark .stream_label,
+    .stream_label {
+        color: hsl(212, 28%, 18%);
+    }
+
+    .new-style label.checkbox input[type="checkbox"] ~ span {
+        border-color: hsla(0, 0%, 100%, 0.4);
+    }
+
+    .modal-bg {
+        background-color: hsl(212, 28%, 18%);
+    }
+
+    .streams_popover .sp-container {
+        background-color: transparent;
+
+        button {
+            background-color: hsl(208, 35%, 11%);
+            border: 1px solid hsl(210, 36%, 4%);
+            color: hsl(236, 31%, 90%);
+        }
+
+        .sp-picker-container {
+            border-left: solid 1px hsl(210, 36%, 4%);
+        }
+    }
+
+    ul.topics_popover {
+        .admin-separator {
+            &::before,
+            &::after {
+                color: hsl(212, 28%, 18%);
+                opacity: 0.2;
+            }
+        }
+    }
+
+    /* this one is because in the app we have blue and in night-mode it should be white. */
+    .popover a {
+        color: inherit;
+    }
+
+    .dark_background a,
+    a.dark_background:hover,
+    .dark_background,
+    .message_reactions .message_reaction_count,
+    .message_reactions .reaction_button i,
+    .message_reactions:hover .message_reaction + .reaction_button {
+        color: inherit !important;
+    }
+
+    /* It's a little annoying that we need to specify the different
+       background colors for these, but this alert feature can't use a
+       transparent background without creating other problems */
+    .alert-msg {
+        background-color: hsl(212, 28%, 18%);
+    }
+
+    .private-message .alert-msg {
+        background-color: hsl(208, 17%, 29%);
+    }
+
+    /* do not turn the .message_header .stream_label text dark on hover because they're
+on a dark background, and don't change the dark labels dark either. */
+    .message_header:not(.dark_background)
+        a.stream_label:not(.dark_background):hover {
+        color: hsl(212, 28%, 18%);
+    }
+
+    /* these are converting grey things to "new grey" */
+    *[disabled="disabled"],
+    *[readonly="readonly"],
+    .sidebar-title,
+    .recipient_row_date {
+        color: inherit;
+        opacity: 0.5;
+    }
+
+    .rendered_markdown button,
+    .new-style .button {
+        background-color: hsla(0, 0%, 0%, 0.2);
+
+        &:not(.sea-green):not(.btn-danger):not(.btn-warning):not(.btn-link) {
+            border-color: hsla(0, 0%, 0%, 0.6);
+            color: inherit;
+        }
+
+        &.btn-link {
+            border-color: hsla(0, 0%, 0%, 0.6);
+            color: hsl(200, 79%, 66%);
+        }
+
+        &:hover,
+        &:focus,
+        &:active {
+            background-color: hsla(0, 0%, 0%, 0.15);
+        }
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="url"],
+    input[type="date"],
+    textarea,
+    .new-style .tab-switcher .ind-tab:not(.selected),
+    select,
+    .pill-container {
+        background-color: hsla(0, 0%, 0%, 0.2);
+        border-color: hsla(0, 0%, 0%, 0.6);
+        color: inherit;
+    }
+
+    select option {
+        background-color: hsl(212, 28%, 18%);
+        color: hsl(236, 33%, 90%);
+    }
+
+    .topic-unread-count,
+    .private_message_count {
+        background-color: hsla(105, 2%, 50%, 0.5);
+    }
+
+    .pill-container {
+        border-style: solid;
+        border-width: 1px;
+    }
+
+    #search_arrows .pill,
+    .pm_recipient .pill-container .pill {
+        color: inherit;
+        border: 1px solid hsla(0, 0%, 0%, 0.5);
+        background-color: hsla(0, 0%, 0%, 0.25);
+        font-weight: 600;
+    }
+
+    #search_arrows .pill:focus,
+    .pm_recipient .pill-container .pill:focus {
+        color: hsl(0, 0%, 100%);
+        border: 1px solid hsla(176, 78%, 28%, 0.6);
+        background-color: hsla(176, 49%, 42%, 0.4);
+    }
+
+    .new-style .button.no-style {
+        background-color: transparent;
+    }
+
+    .emoji-info-popover
+        .emoji-popover
+        .emoji-popover-category-tabs
+        .emoji-popover-tab-item.active {
+        background-color: hsla(0, 0%, 0%, 0.5);
+    }
+
+    .new-style .tab-switcher .ind-tab.selected,
+    div.message_content thead,
+    .table-striped thead th,
+    .emoji-popover .reaction.reacted,
+    .message_reactions .message_reaction.reacted {
+        background-color: hsla(0, 0%, 0%, 0.5);
+        border-color: hsla(0, 0%, 0%, 0.9);
+    }
+
+    .message_reactions:hover .message_reaction + .reaction_button,
+    .message_reactions .message_reaction {
+        background-color: transparent;
+        border-color: hsla(0, 0%, 0%, 0.8);
+        color: inherit;
+
+        &:hover {
+            border-color: hsl(236, 33%, 90%);
+        }
+    }
+
+    .emoji-popover .reaction:focus {
+        box-shadow: 0 0 1px hsl(0, 0%, 98%);
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="number"]:focus,
+    textarea:focus,
+    textarea.new_message_textarea:focus,
+    .compose_table .recipient_box:focus {
+        border-color: hsla(0, 0%, 0%, 0.9);
+    }
+
+    .message-header-contents,
+    .message_header_private_message .message-header-contents {
+        background-color: hsla(0, 0%, 0%, 0.2);
+        border-color: transparent;
+    }
+
+    /* Not that .message_row (below) needs to be more contrast on dark mode */
+    .compose-content,
+    .message_list .recipient_row,
+    .message_row,
+    .draft-row .draft-info-box,
+    .preview_message_area {
+        border-color: hsla(0, 0%, 0%, 0.2);
+    }
+
+    .top-navbar-border {
+        border-color: hsla(0, 0%, 0%, 0.6);
+    }
+
+    #message_view_header .sub_count {
+        &::before,
+        &::after {
+            color: hsla(0, 0%, 100%, 0.5);
+        }
+    }
+
+    #message_view_header span:nth-last-child(2):hover + .search_closed {
+        color: hsl(0, 0%, 100%);
+    }
+
+    #message_view_header .stream {
+        color: hsl(236, 33%, 90%);
+    }
+    #message_view_header .sub_count,
+    #message_view_header .narrow_description {
+        color: hsla(0, 0%, 90%, 1);
+    }
+
+    .overlay,
+    #subscription_overlay
+        #stream-creation
+        #stream_creation_form
+        #stream_creating_indicator:not(:empty),
+    .emoji-info-popover
+        .emoji-popover
+        .emoji-popover-emoji:not(.reacted):focus {
+        background-color: hsla(212, 28%, 8%, 0.75);
+    }
+
+    .overlay .flex.overlay-content > div,
+    .dropdown-menu.typeahead,
+    #settings_page,
+    .informational-overlays .overlay-content {
+        box-shadow: 0 0 30px hsl(212, 32%, 7%);
+    }
+
+    .dropdown-menu ul,
+    .dropdown .dropdown-menu,
+    .popover,
+    .popover-title,
+    .popover-content {
+        background-color: hsl(212, 32%, 14%);
+    }
+
+    .dropdown-menu a {
+        color: inherit;
+    }
+
+    .dropdown .dropdown-menu li.divider,
+    .popover hr,
+    hr {
+        color: hsl(212, 28%, 18%);
+        opacity: 0.2;
+    }
+
+    .nav .dropdown-menu::after,
+    .popover.bottom .arrow {
+        border-bottom-color: hsl(235, 18%, 7%);
+    }
+
+    .popover.left .arrow {
+        border-left-color: hsl(235, 18%, 7%);
+    }
+
+    .popover.top .arrow {
+        border-top-color: hsl(235, 18%, 7%);
+    }
+
+    .popover.right .arrow {
+        border-right-color: hsl(235, 18%, 7%);
+    }
+
+    #message_edit_tooltip,
+    .clear_search_button,
+    .clear_search_button:focus,
+    .clear_search_button:active,
+    .clear_search_button[disabled]:hover,
+    #user-groups .save-instructions,
+    #message_view_header .search_icon,
+    #searchbox_legacy .search_icon,
+    #searchbox_legacy .search_button,
+    #searchbox .search_icon,
+    #searchbox .search_button,
+    .close,
+    #user_presences li:hover .user-list-sidebar-menu-icon,
+    li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
+    li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
+    #stream_filters li:hover .stream-sidebar-menu-icon,
+    li.topic-list-item:hover .topic-sidebar-menu-icon {
+        color: hsl(236, 33%, 80%);
+    }
+
+    #message_edit_tooltip:hover,
+    .clear_search_button:hover,
+    #message_view_header .search_icon:hover,
+    .search_icon_hover_highlight,
+    #searchbox_legacy .search_icon:hover,
+    #searchbox_legacy .search_button:hover,
+    #searchbox .search_icon:hover,
+    #searchbox .search_button:hover,
+    .close:hover {
+        color: hsl(0, 0%, 100%);
+    }
+
+    #user_presences li .user-list-sidebar-menu-icon:hover,
+    .all-messages-sidebar-menu-icon:hover,
+    .starred-messages-sidebar-menu-icon:hover,
+    .stream-sidebar-menu-icon:hover,
+    .topic-sidebar-menu-icon:hover {
+        color: hsl(0, 0%, 100%) !important;
+    }
+
+    #streamlist-toggle,
+    #userlist-toggle {
+        color: inherit;
+        border-color: hsla(0, 0%, 0%, 0.6);
+    }
+
+    #streamlist-toggle-button {
+        color: inherit;
+        background-color: inherit;
+    }
+
+    #userlist-toggle-button {
+        color: hsl(221, 9%, 54%);
+
+        &:hover {
+            color: inherit;
+        }
+    }
+
+    li.active-filter,
+    li.active-sub-filter {
+        background-color: hsla(199, 33%, 46%, 0.2);
+    }
+
+    :not(.active-sub-filter) {
+        &.top_left_row:hover,
+        &.bottom_left_row:hover,
+        &#stream_filters li.highlighted_stream {
+            background-color: hsla(136, 25%, 73%, 0.2);
+        }
+    }
+
+    #user_presences li:hover,
+    #user_presences li.highlighted_user {
+        background-color: hsla(136, 25%, 73%, 0.2);
+    }
+
+    .floating_recipient .recipient_row {
+        border-top: none;
+    }
+
+    .stream-row.active,
+    .emoji-info-popover .emoji-showcase-container,
+    .emoji-info-popover .emoji-popover .emoji-popover-category-tabs,
+    .emoji-info-popover .emoji-popover .emoji-popover-top {
+        background-color: hsla(0, 0%, 0%, 0.2);
+    }
+
+    .recent_topic_unread_count {
+        background-color: hsl(0, 0%, 15%) !important;
+        color: hsl(0, 0%, 100%);
+    }
+
+    .recent_avatars_others {
+        color: hsl(0, 0%, 100%) !important;
+        background-color: hsl(211, 18%, 25%) !important;
+    }
+
+    .btn-recent-filters {
+        background-color: hsl(211, 29%, 14%);
+        border-color: hsl(0, 0%, 0%);
+        color: hsl(0, 0%, 100%);
+
+        &:focus {
+            background-color: hsla(0, 0%, 0%, 0.5) !important;
+            outline: 0;
+        }
+    }
+
+    #recent_topics_table tr {
+        background-color: hsl(212, 28%, 18%);
+
+        &:hover {
+            background-color: hsl(208, 26%, 11%, 0.6);
+        }
+    }
+
+    .btn-recent-selected,
+    .recent_topics_table thead th {
+        background-color: hsl(0, 0%, 0%) !important;
+        &:hover {
+            background-color: hsl(211, 29%, 14%) !important;
+        }
+    }
+
+    .recent_topics_table td a {
+        color: hsl(206, 89%, 74%);
+        text-decoration: none;
+        &:hover {
+            color: hsl(208, 64%, 52%);
+        }
+    }
+
+    thead,
+    .drafts-container .drafts-header,
+    .recent_topics_container .recent_topics_header,
+    .nav > li > a:hover,
+    .subscriptions-container .subscriptions-header,
+    .grey-box,
+    .white-box,
+    .stream-email,
+    #settings_page .settings-header,
+    #settings_page .form-sidebar .title,
+    #settings_page .sidebar li.active,
+    #settings_page .sidebar .tab-container,
+    .table-striped tbody tr:nth-child(even) td,
+    .table-striped tbody tr:nth-child(odd) th,
+    .modal-footer,
+    .modal-bg .modal-header {
+        border-color: hsla(0, 0%, 0%, 0.2);
+        background-color: hsla(0, 0%, 0%, 0.2);
+    }
+
+    .table-hover tbody tr:hover td,
+    .table-hover tbody tr:hover th {
+        background-color: hsla(0, 0%, 0%, 0.5);
+    }
+
+    .table-striped tbody tr:nth-child(odd) td {
+        background-color: hsl(212, 28%, 18%);
+    }
+
+    .modal-footer {
+        box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
+    }
+
+    #invite_user_form .modal-footer {
+        /* no transparency prevents overlap issues */
+        background-color: hsl(211, 28%, 14%);
+    }
+
+    .subscriptions-container .right .display-type,
+    .stream-row,
+    .subscriptions-container .left .search-container,
+    .subscriptions-container .left,
+    .subscriber-list-box,
+    .subscriber-list-box .subscriber_list_container .subscriber-list tr,
+    #subscription_overlay ul.grey-box li,
+    #stream_privacy_modal ul.grey-box li,
+    #settings_page .sidebar,
+    #settings_page .sidebar *,
+    table,
+    table th,
+    table td {
+        border-color: hsla(0, 0%, 0%, 0.2);
+    }
+
+    .draft-row .draft-info-box,
+    .message_header_private_message .message-header-contents {
+        box-shadow: none;
+    }
+
+    .draft-row .message_header_private_message .message_label_clickable {
+        padding: 4px 6px 3px 6px;
+        color: inherit;
+    }
+
+    .nav-list > li > a,
+    .nav-list .nav-header {
+        text-shadow: none;
+    }
+
+    .mention .messagebox {
+        background-color: hsla(8, 78%, 43%, 0.15);
+    }
+
+    .rendered_markdown {
+        .user-mention,
+        .user-group-mention {
+            background: linear-gradient(
+                to bottom,
+                hsla(0, 0%, 0%, 0.2) 0%,
+                hsla(0, 0%, 0%, 0.1) 100%
+            );
+            box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.4);
+        }
+
+        .user-mention-me :not(.silent) {
+            background-color: hsla(355, 37%, 31%, 1);
+            box-shadow: 0 0 0 1px hsla(330, 40%, 20%, 1);
+        }
+
+        .codehilite code,
+        .codehilite pre {
+            color: hsl(212, 100%, 82%);
+            background-color: hsl(212, 25%, 15%);
+        }
+
+        .codehilite .hll {
+            background-color: hsl(0, 0%, 13%);
+        }
+
+        .codehilite .err {
+            color: hsl(1, 67%, 66%);
+            background-color: hsl(0, 7%, 22%);
+        }
+
+        .codehilite .k {
+            color: hsl(31, 85%, 59%);
+        }
+
+        .codehilite .p {
+            color: hsl(179, 27%, 35%);
+        }
+
+        .codehilite .cs {
+            color: hsl(0, 100%, 40%);
+            font-weight: 700;
+        }
+
+        .codehilite .gd {
+            color: hsl(0, 100%, 40%);
+        }
+
+        .codehilite .ge {
+            color: hsl(0, 0%, 80%);
+            font-style: italic;
+        }
+
+        .codehilite .gr {
+            color: hsl(0, 100%, 50%);
+        }
+
+        .codehilite .go {
+            color: hsl(0, 0%, 50%);
+        }
+
+        .codehilite .gs {
+            color: hsl(0, 0%, 80%);
+            font-weight: 700;
+        }
+
+        .codehilite .gu {
+            color: hsl(300, 100%, 25%);
+            font-weight: 700;
+        }
+
+        .codehilite .gt {
+            color: hsl(222, 100%, 41%);
+        }
+
+        .codehilite .kc {
+            color: hsl(0, 45%, 75%);
+        }
+
+        .codehilite .kd {
+            color: hsl(60, 100%, 76%);
+        }
+
+        .codehilite .kn {
+            color: hsl(24, 56%, 72%);
+            font-weight: 700;
+        }
+
+        .codehilite .kp {
+            color: hsl(62, 36%, 71%);
+        }
+
+        .codehilite .kr {
+            color: hsl(359, 58%, 56%);
+        }
+
+        .codehilite .ni {
+            color: hsl(359, 35%, 63%);
+        }
+
+        .codehilite .ne {
+            color: hsl(53, 23%, 69%);
+            font-weight: 700;
+        }
+
+        .codehilite .nn {
+            color: hsl(204, 54%, 72%);
+        }
+
+        .codehilite .vi {
+            color: hsl(60, 100%, 89%);
+        }
+
+        .codehilite .c,
+        .codehilite .g,
+        .codehilite .cm,
+        .codehilite .cp,
+        .codehilite .c1 {
+            color: hsl(209, 15%, 55%);
+        }
+
+        .codehilite .l,
+        .codehilite .x,
+        .codehilite .no,
+        .codehilite .nd,
+        .codehilite .nl,
+        .codehilite .nx,
+        .codehilite .py,
+        .codehilite .w {
+            color: hsl(0, 0%, 80%);
+        }
+
+        .codehilite .n,
+        .codehilite .nv,
+        .codehilite .vg {
+            color: hsl(60, 19%, 83%);
+        }
+
+        .codehilite .o,
+        .codehilite .ow {
+            color: hsl(58, 52%, 88%);
+        }
+
+        .codehilite .gh,
+        .codehilite .gp {
+            color: hsl(60, 19%, 83%);
+            font-weight: 700;
+        }
+
+        .codehilite .gi,
+        .codehilite .kt {
+            color: hsl(120, 100%, 40%);
+        }
+
+        .codehilite .ld,
+        .codehilite .s,
+        .codehilite .sb,
+        .codehilite .sc,
+        .codehilite .sd,
+        .codehilite .s2,
+        .codehilite .se,
+        .codehilite .sh,
+        .codehilite .si,
+        .codehilite .sx,
+        .codehilite .sr,
+        .codehilite .s1,
+        .codehilite .ss {
+            color: hsl(0, 36%, 69%);
+        }
+
+        .codehilite .m,
+        .codehilite .mf,
+        .codehilite .mh,
+        .codehilite .mi,
+        .codehilite .mo,
+        .codehilite .il {
+            color: hsl(183, 45%, 69%);
+        }
+
+        .codehilite .na,
+        .codehilite .nt {
+            color: hsl(127, 25%, 68%);
+        }
+
+        .codehilite .nb,
+        .codehilite .nc,
+        .codehilite .nf,
+        .codehilite .bp,
+        .codehilite .vc {
+            color: hsl(60, 75%, 75%);
+        }
+    }
+
+    #message-edit-history {
+        .message_edit_history_content {
+            .highlight_text_inserted {
+                color: hsl(122, 100%, 81%);
+                background-color: hsla(120, 64%, 95%, 0.3);
+            }
+
+            .highlight_text_deleted {
+                color: hsl(0, 90%, 67%);
+                background-color: hsla(7, 54%, 62%, 0.38);
+            }
+        }
+    }
+
+    time {
+        background: hsla(0, 0%, 0%, 0.2);
+        box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.4);
+    }
+
+    .tip {
+        color: inherit;
+        background-color: hsla(46, 28%, 38%, 0.27);
+        border: 1px solid hsl(49, 38%, 46%);
+    }
+
+    .alert.home-error-bar {
+        color: hsl(236, 33%, 90%);
+        background-color: hsla(35, 84%, 62%, 0.25);
+        border: 1px solid hsl(11, 46%, 54%);
+    }
+
+    .alert {
+        text-shadow: none;
+
+        .close {
+            color: inherit;
+        }
+    }
+
+    .alert.alert-success {
+        color: inherit;
+        background-color: hsla(161, 60%, 46%, 0.2);
+        border-color: hsl(165, 68%, 37%);
+    }
+
+    .alert.alert-error,
+    .alert.alert-danger {
+        background-color: hsl(318, 12%, 21%);
+        color: inherit;
+        border: 1px solid hsl(0, 75%, 65%);
+    }
+
+    .alert-box .alert,
+    .alert-box .stacktrace,
+    .alert.alert-error {
+        background-color: hsl(318, 12%, 21%);
+        color: inherit;
+        border: 1px solid hsl(0, 75%, 65%);
+    }
+
+    .alert-box {
+        .alert.alert-error::before {
+            color: 1px solid hsl(0, 75%, 65%);
+        }
+
+        .stacktrace {
+            color: hsl(314, 22%, 85%);
+
+            .expand {
+                color: hsl(318, 14%, 36%);
+            }
+
+            .subtle {
+                color: hsl(314, 19%, 63%);
+            }
+
+            .code-context {
+                color: hsl(314, 27%, 82%);
+                background-color: hsl(312, 7%, 14%);
+                box-shadow: inset 0 11px 10px -10px hsl(0, 0%, 6%),
+                    inset 0 -11px 10px -10px hsl(0, 0%, 6%);
+
+                .line-number {
+                    color: hsl(318, 14%, 44%);
+                }
+
+                .focus-line {
+                    background-color: hsl(307, 9%, 19%);
+                }
+            }
+        }
+    }
+
+    /* Popover: */
+    .hotspot.overlay .hotspot-popover,
+    #hotspot_intro_reply_icon {
+        border-color: hsla(0, 0%, 0%, 0.2) !important;
+        /* Based on the `.hotspot-popover` shadow in `hotspots.css`, but with a new
+    color. */
+        box-shadow: 0 5px 10px hsla(0, 0%, 0%, 0.4);
+    }
+
+    #user-profile-modal {
+        #default-section {
+            .default-field {
+                .name {
+                    color: hsl(236, 33%, 90%);
+                }
+            }
+        }
+
+        #content {
+            .field-section {
+                .name {
+                    color: hsl(236, 33%, 90%);
+                }
+            }
+        }
+    }
+
+    /* Arrows: */
+    .hotspot.overlay {
+        .hotspot-popover.arrow-right::before {
+            border-left-color: hsla(0, 0%, 0%, 0.2);
+        }
+
+        .hotspot-popover.arrow-right::after {
+            border-left-color: hsl(212, 28%, 18%);
+        }
+
+        .hotspot-popover.arrow-bottom::before {
+            border-top-color: hsla(0, 0%, 0%, 0.2);
+        }
+
+        .hotspot-popover.arrow-bottom::after {
+            border-top-color: hsl(212, 28%, 18%);
+        }
+
+        .hotspot-popover.arrow-left::before {
+            border-right-color: hsla(0, 0%, 0%, 0.2);
+        }
+
+        .hotspot-popover.arrow-left::after {
+            border-right-color: hsl(212, 28%, 18%);
+        }
+
+        .hotspot-popover.arrow-top::before {
+            border-bottom-color: hsla(0, 0%, 0%, 0.2);
+        }
+
+        .hotspot-popover.arrow-top::after {
+            border-bottom-color: hsl(212, 28%, 18%);
+        }
+    }
+
+    /* Content: */
+    .hotspot.overlay .hotspot-popover .hotspot-popover-content,
+    #hotspot_intro_reply_icon,
+    .hotspot.overlay .hotspot-popover .hotspot-popover-bottom {
+        background-color: hsl(212, 28%, 18%);
+    }
+
+    .top-messages-logo,
+    .bottom-messages-logo {
+        svg path {
+            fill: hsl(214, 27%, 18%);
+            stroke: hsl(214, 27%, 18%);
+        }
+
+        svg circle {
+            fill: hsl(0, 0%, 100%);
+            stroke: hsl(0, 0%, 100%);
+        }
+    }
+
+    .history-limited-box,
+    .all-messages-search-caution {
+        background-color: hsla(0, 0%, 0%, 0.2);
+    }
+
+    #feedback_container,
+    code,
+    .typeahead.dropdown-menu {
+        background-color: hsl(212, 25%, 15%);
+        border-color: hsla(0, 0%, 0%, 0.5);
+        color: inherit;
+    }
+
+    /* Search highlight used in both topics and rendered_markdown */
+    .highlight {
+        background-color: hsla(51, 100%, 64%, 0.42);
+    }
+
+    .sub-unsub-message span::before,
+    .sub-unsub-message span::after,
+    .date_row span::before,
+    .date_row span::after {
+        opacity: 0.2;
+    }
+
+    .star:not(.empty-star),
+    .empty-star:hover {
+        color: hsla(126, 66%, 72%, 0.75);
+    }
+
+    #out-of-view-notification {
+        border: 1px solid 1px solid hsl(144, 45%, 62%);
+    }
+
+    .email_tooltip {
+        background-color: hsl(211, 16%, 30%);
+    }
+
+    .email_tooltip::after {
+        border-bottom-color: hsl(211, 16%, 30%) !important;
+    }
+
+    #bots_lists_navbar .active a {
+        color: hsl(0, 0%, 87%);
+        background-color: hsl(212, 28%, 18%);
+        border-color: hsl(0, 0%, 87%);
+        border-bottom-color: transparent;
+    }
+
+    .searching-for-more-topics img {
+        filter: invert(100%);
+    }
+
+    .simplebar-track .simplebar-scrollbar::before {
+        background-color: hsl(0, 0%, 100%);
+        box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.33);
+    }
+
+    .collapse-settings-btn:hover {
+        color: hsl(200, 79%, 66%);
+    }
+
+    #loading_older_messages_indicator path {
+        fill: hsl(0, 0%, 100%);
+    }
+
+    .small_square_button {
+        &.small_square_check {
+            background-color: hsl(166, 35%, 52%);
+            color: hsl(0, 0%, 90%);
+
+            &:hover {
+                background-color: hsl(156, 30%, 45%);
+                color: hsl(0, 0%, 95%);
+            }
+        }
+
+        &.small_square_x {
+            background-color: hsl(0, 0%, 95%);
+            color: hsl(0, 0%, 42%);
+
+            &:hover {
+                color: hsl(0, 0%, 18%);
+            }
+        }
+    }
+
+    a:not(:active):focus {
+        outline-color: hsl(0, 0%, 100%);
+    }
+}
+
+@supports (-moz-appearance: none) {
+    body.night-mode #settings_page select {
+        background-color: hsla(0, 0%, 0%, 0.2);
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    body.color-scheme-automatic {
+        @extend body.night-mode;
+    }
+}

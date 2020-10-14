@@ -2,6 +2,8 @@ import google_blob_sheet from "emoji-datasource-google-blob/img/google/sheets-25
 import google_sheet from "emoji-datasource-google/img/google/sheets-256/64.png";
 import twitter_sheet from "emoji-datasource-twitter/img/twitter/sheets-256/64.png";
 
+import octopus_url from "../generated/emoji/images-google-64/1f419.png";
+
 import google_blob_css from "!style-loader?injectType=lazyStyleTag!css-loader!../generated/emoji-styles/google-blob-sprite.css";
 import google_css from "!style-loader?injectType=lazyStyleTag!css-loader!../generated/emoji-styles/google-sprite.css";
 import twitter_css from "!style-loader?injectType=lazyStyleTag!css-loader!../generated/emoji-styles/twitter-sprite.css";
@@ -25,8 +27,8 @@ export async function select(name) {
     }
     await new Promise((resolve, reject) => {
         const sheet = new Image();
-        sheet.onload = resolve;
-        sheet.onerror = reject;
+        sheet.addEventListener("load", resolve);
+        sheet.addEventListener("error", reject);
         sheet.src = new_emojiset.sheet;
     });
     if (current_emojiset) {
@@ -45,5 +47,5 @@ export function initialize() {
     //
     // TODO: We should probably just make this work just like the Zulip emoji.
     const octopus_image = new Image();
-    octopus_image.src = "/static/generated/emoji/images-google-64/1f419.png";
+    octopus_image.src = octopus_url;
 }

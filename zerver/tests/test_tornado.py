@@ -29,7 +29,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     @override_settings(DEBUG=False)
     def get_app(self) -> Application:
-        return create_tornado_application(9993)
+        return create_tornado_application()
 
     def tornado_client_get(self, path: str, **kwargs: Any) -> HTTPResponse:
         self.add_session_cookie(kwargs)

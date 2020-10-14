@@ -11,6 +11,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.decorator import JsonableError
 from zerver.lib.actions import (
+    build_message_send_dict,
     check_message,
     check_send_stream_message,
     do_change_is_api_super_user,
@@ -77,7 +78,7 @@ class MessagePOSTTest(ZulipTestCase):
             with self.assertRaisesRegex(JsonableError, error_msg):
                 self.send_stream_message(user, stream_name)
 
-    def test_message_to_self(self) -> None:
+    def test_message_to_stream_by_name(self) -> None:
         """
         Sending a message to a stream to which you are subscribed is
         successful.
@@ -90,7 +91,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "topic": "Test topic"})
         self.assert_json_success(result)
 
-    def test_api_message_to_self(self) -> None:
+    def test_api_message_to_stream_by_name(self) -> None:
         """
         Same as above, but for the API view
         """
@@ -193,6 +194,10 @@ class MessagePOSTTest(ZulipTestCase):
                                      'Test topic', 'Test message by notification bot')
         self.assertEqual(self.get_last_message().content, 'Test message by notification bot')
 
+        guest_profile = self.example_user("polonius")
+        # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
+        self._send_and_verify_message(guest_profile, stream_name, "Only organization administrators can send to this stream.")
+
     def test_sending_message_as_stream_post_policy_restrict_new_members(self) -> None:
         """
         Sending messages to streams which new members cannot create and post to.
@@ -256,6 +261,10 @@ class MessagePOSTTest(ZulipTestCase):
         internal_send_stream_message(stream.realm, notification_bot, stream,
                                      'Test topic', 'Test message by notification bot')
         self.assertEqual(self.get_last_message().content, 'Test message by notification bot')
+
+        guest_profile = self.example_user("polonius")
+        # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
+        self._send_and_verify_message(guest_profile, stream_name, "Guests cannot send to this stream.")
 
     def test_api_message_with_default_to(self) -> None:
         """
@@ -1142,7 +1151,8 @@ class StreamMessagesTest(ZulipTestCase):
                 sending_client=sending_client,
             )
             message.set_topic_name(topic_name)
-            do_send_messages([dict(message=message)])
+            message_dict = build_message_send_dict({'message': message})
+            do_send_messages([message_dict])
 
         before_um_count = UserMessage.objects.count()
 
@@ -1608,7 +1618,7 @@ class InternalPrepTest(ZulipTestCase):
         othello = self.example_user('othello')
         stream = get_stream('Verona', realm)
 
-        with mock.patch('logging.exception') as m:
+        with self.assertLogs(level="ERROR") as m:
             internal_send_private_message(
                 realm=realm,
                 sender=cordelia,
@@ -1616,14 +1626,13 @@ class InternalPrepTest(ZulipTestCase):
                 content=bad_content,
             )
 
-        m.assert_called_once_with(
-            "Error queueing internal message by %s: %s",
-            "cordelia@zulip.com",
-            "Message must not be empty",
-            stack_info=True,
-        )
+        self.assertEqual(m.output[0].split('\n')[0],
+                         "ERROR:root:Error queueing internal message by {}: {}".format(
+                             "cordelia@zulip.com",
+                             "Message must not be empty"
+        ))
 
-        with mock.patch('logging.exception') as m:
+        with self.assertLogs(level="ERROR") as m:
             internal_send_huddle_message(
                 realm=realm,
                 sender=cordelia,
@@ -1631,14 +1640,13 @@ class InternalPrepTest(ZulipTestCase):
                 content=bad_content,
             )
 
-        m.assert_called_once_with(
-            "Error queueing internal message by %s: %s",
-            "cordelia@zulip.com",
-            "Message must not be empty",
-            stack_info=True,
-        )
+        self.assertEqual(m.output[0].split('\n')[0],
+                         "ERROR:root:Error queueing internal message by {}: {}".format(
+                             "cordelia@zulip.com",
+                             "Message must not be empty"
+        ))
 
-        with mock.patch('logging.exception') as m:
+        with self.assertLogs(level="ERROR") as m:
             internal_send_stream_message(
                 realm=realm,
                 sender=cordelia,
@@ -1647,14 +1655,13 @@ class InternalPrepTest(ZulipTestCase):
                 stream=stream,
             )
 
-        m.assert_called_once_with(
-            "Error queueing internal message by %s: %s",
-            "cordelia@zulip.com",
-            "Message must not be empty",
-            stack_info=True,
-        )
+        self.assertEqual(m.output[0].split('\n')[0],
+                         "ERROR:root:Error queueing internal message by {}: {}".format(
+                             "cordelia@zulip.com",
+                             "Message must not be empty"
+        ))
 
-        with mock.patch('logging.exception') as m:
+        with self.assertLogs(level="ERROR") as m:
             internal_send_stream_message_by_name(
                 realm=realm,
                 sender=cordelia,
@@ -1663,12 +1670,11 @@ class InternalPrepTest(ZulipTestCase):
                 content=bad_content,
             )
 
-        m.assert_called_once_with(
-            "Error queueing internal message by %s: %s",
-            "cordelia@zulip.com",
-            "Message must not be empty",
-            stack_info=True,
-        )
+        self.assertEqual(m.output[0].split('\n')[0],
+                         "ERROR:root:Error queueing internal message by {}: {}".format(
+                             "cordelia@zulip.com",
+                             "Message must not be empty"
+        ))
 
     def test_error_handling(self) -> None:
         realm = get_realm('zulip')
@@ -1688,18 +1694,18 @@ class InternalPrepTest(ZulipTestCase):
         # Simulate sending a message to somebody not in the
         # realm of the sender.
         recipient_user = self.mit_user('starnine')
-        with mock.patch('logging.exception') as logging_mock:
+        with self.assertLogs(level="ERROR") as m:
             result = internal_prep_private_message(
                 realm=realm,
                 sender=sender,
                 recipient_user=recipient_user,
                 content=content)
-        logging_mock.assert_called_once_with(
-            "Error queueing internal message by %s: %s",
-            "cordelia@zulip.com",
-            "You can't send private messages outside of your organization.",
-            stack_info=True,
-        )
+
+        self.assertEqual(m.output[0].split('\n')[0],
+                         "ERROR:root:Error queueing internal message by {}: {}".format(
+                             "cordelia@zulip.com",
+                             "You can't send private messages outside of your organization."
+        ))
 
     def test_ensure_stream_gets_called(self) -> None:
         realm = get_realm('zulip')

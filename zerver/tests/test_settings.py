@@ -3,7 +3,7 @@ from typing import Any, Dict
 from unittest import mock
 
 import orjson
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.test import override_settings
 
 from zerver.lib.initial_password import initial_password
@@ -82,8 +82,11 @@ class ChangeSettingsTest(ZulipTestCase):
         # This is one of the few places we log in directly
         # with Django's client (to test the password change
         # with as few moving parts as possible).
+        request = HttpRequest()
+        request.session = self.client.session
         self.assertTrue(
             self.client.login(
+                request=request,
                 username=user.delivery_email,
                 password='foobar1',
                 realm=user.realm,

@@ -1,6 +1,7 @@
 "use strict";
 
 const huddle_data = require("./huddle_data");
+const people = require("./people");
 
 const consts = {
     backfill_idle_time: 10 * 1000,
@@ -129,8 +130,8 @@ function get_messages_success(data, opts) {
 // or convert the emails string to user IDs directly into the Filter code
 // because doing so breaks the app in various modules that expect emails string.
 function handle_operators_supporting_id_based_api(data) {
-    const operators_supporting_ids = ["pm-with"];
-    const operators_supporting_id = ["sender", "group-pm-with", "stream"];
+    const operators_supporting_ids = new Set(["pm-with"]);
+    const operators_supporting_id = new Set(["sender", "group-pm-with", "stream"]);
 
     if (data.narrow === undefined) {
         return data;
@@ -138,11 +139,11 @@ function handle_operators_supporting_id_based_api(data) {
 
     data.narrow = JSON.parse(data.narrow);
     data.narrow = data.narrow.map((filter) => {
-        if (operators_supporting_ids.includes(filter.operator)) {
+        if (operators_supporting_ids.has(filter.operator)) {
             filter.operand = people.emails_strings_to_user_ids_array(filter.operand);
         }
 
-        if (operators_supporting_id.includes(filter.operator)) {
+        if (operators_supporting_id.has(filter.operator)) {
             if (filter.operator === "stream") {
                 const stream_id = stream_data.get_stream_id(filter.operand);
                 if (stream_id !== undefined) {
@@ -274,8 +275,7 @@ exports.get_backfill_anchor = function (msg_list) {
 
     // msg_list is empty, which is an impossible
     // case, raise a fatal error.
-    blueslip.fatal("There are no message available to backfill.");
-    return;
+    throw new Error("There are no message available to backfill.");
 };
 
 exports.get_frontfill_anchor = function (msg_list) {
@@ -294,8 +294,7 @@ exports.get_frontfill_anchor = function (msg_list) {
     // and user cannot be scrolling down on an empty message_list to
     // fetch more data, and if user is, then the available data is wrong
     // and we raise a fatal error.
-    blueslip.fatal("There are no message available to frontfill.");
-    return;
+    throw new Error("There are no message available to frontfill.");
 };
 
 exports.maybe_load_older_messages = function (opts) {

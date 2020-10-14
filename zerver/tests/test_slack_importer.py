@@ -463,7 +463,7 @@ class SlackImporter(ZulipTestCase):
         # We can't do an assertDictEqual since during the construction of Personal
         # recipients, slack_user_id_to_zulip_user_id are iterated in different order in Python 3.5 and 3.6.
         self.assertEqual(set(slack_recipient_name_to_zulip_recipient_id.keys()), slack_recipient_names)
-        self.assertEqual(set(slack_recipient_name_to_zulip_recipient_id.values()), {i for i in range(11)})
+        self.assertEqual(set(slack_recipient_name_to_zulip_recipient_id.values()), set(range(11)))
 
         # functioning of zerver subscriptions are already tested in the helper functions
         # This is to check the concatenation of the output lists from the helper functions
@@ -472,7 +472,7 @@ class SlackImporter(ZulipTestCase):
         zerver_recipient = realm["zerver_recipient"]
         zerver_stream = realm["zerver_stream"]
 
-        self.assertEqual(self.get_set(zerver_subscription, "recipient"), {i for i in range(11)})
+        self.assertEqual(self.get_set(zerver_subscription, "recipient"), set(range(11)))
         self.assertEqual(self.get_set(zerver_subscription, "user_profile"), {1, 5, 7, 8})
 
         self.assertEqual(self.get_set(zerver_recipient, "id"), self.get_set(zerver_subscription, "recipient"))
@@ -627,7 +627,7 @@ class SlackImporter(ZulipTestCase):
         dm_members = {'DJ47BL849': ('U066MTL5U', 'U061A5N1G'), 'DHX1UP7EG': ('U061A5N1G', 'U061A1R2R')}
 
         zerver_usermessage: List[Dict[str, Any]] = []
-        subscriber_map: Dict[int, Set[int]] = dict()
+        subscriber_map: Dict[int, Set[int]] = {}
         added_channels: Dict[str, Tuple[str, int]] = {'random': ('c5', 1), 'general': ('c6', 2)}
 
         zerver_message, zerver_usermessage, attachment, uploads, reaction = \

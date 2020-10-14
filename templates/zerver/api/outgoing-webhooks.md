@@ -28,93 +28,39 @@ To register an outgoing webhook:
 ## Triggering
 
 There are currently two ways to trigger an outgoing webhook:
+
 1.  **@-mention** the bot user in a stream.  If the bot replies, its
     reply will be sent to that stream and topic.
 2.  **Send a private message** with the bot as one of the recipients.
     If the bot replies, its reply will be sent to that thread.
 
-## Zulip message format
-
-The Zulip-format webhook messages post the following data, encoded as JSON:
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td><code>bot_email</code></td>
-            <td>Email of the bot user</td>
-        </tr>
-        <tr>
-            <td><code>data</code></td>
-            <td>The content of the message (in Markdown)</td>
-        </tr>
-        <tr>
-            <td><code>message</code></td>
-            <td>A dict containing details on the message which
-            triggered the outgoing webhook</td>
-        </tr>
-        <tr>
-            <td><code>token</code></td>
-            <td>A string of alphanumeric characters you can use to
-            authenticate the webhook request (each bot user uses a fixed token)</td>
-        </tr>
-        <tr>
-            <td><code>trigger</code></td>
-            <td>Trigger method</td>
-        </tr>
-    </tbody>
-</table>
-
-Some of the important fields in the `message` dict include the following:
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td><code>recipient_id</code></td>
-            <td>Unique ID of the stream that will persist even if the stream is renamed</td>
-        </tr>
-        <tr>
-            <td><code>rendered_content</code></td>
-            <td>The content of the message, rendered in HTML</td>
-        </tr>
-    </tbody>
-</table>
-
-A correctly implemented endpoint will do the following:
-
-* It will calculate a response that we call the "content" of
-  the response.
-* It will encode the content in Zulip's flavor of Markdown (or
-  just plain text).
-* It will then make a dictionary with key of "content" and
-  the value being that content.  (Note that "response_string" is
-  a deprecated synonym for "content".)
-* It will encode that dictionary as JSON.
-
-If the bot code wants to opt out of responding, it can explicitly
-encode a JSON dictionary that contains `response_not_required` set
-to `True`, so that no response message is sent to the user.  (This
-is helpful to distinguish deliberate non-responses from bugs.)
-
-### Example incoming payload
+## Outgoing webhook format
 
 This is an example of the JSON payload that the Zulip server will `POST`
 to your server:
 
 {generate_code_example|/zulip-outgoing-webhook:post|fixture(200)}
 
+### Fields documentation
+
+{generate_return_values_table|zulip.yaml|/zulip-outgoing-webhook:post}
+
+## Replying with a message
+
+Many bots implemented using this outgoing webhook API will want to
+send a reply message into Zulip.  Zulip's outgoing webhook API
+provides a convenient way to do that by simply returning an
+appropriate HTTP response to the Zulip server.
+
+A correctly implemented bot will return a JSON object containing one
+of two possible formats, described below.
+
 ### Example response payloads
+
+If the bot code wants to opt out of responding, it can explicitly
+encode a JSON dictionary that contains `response_not_required` set
+to `True`, so that no response message is sent to the user.  (This
+is helpful to distinguish deliberate non-responses from bugs.)
 
 Here's an example of the JSON your server should respond with if
 you would not like to send a response message:
@@ -130,9 +76,15 @@ you would like to send a response message:
 
 ```
 {
-    "content": "Hey, we just received something from Zulip!"
+    "content": "Hey, we just received **something** from Zulip!"
 }
 ```
+
+The `content` field should contain Zulip-format markdown.
+
+Note that an outgoing webhook bot can use the [Zulip REST
+API](/api/rest) with its API key in case your bot needs to do
+something else, like add an emoji reaction or upload a file.
 
 ## Slack-format webhook format
 

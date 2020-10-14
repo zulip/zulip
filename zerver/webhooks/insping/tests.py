@@ -15,9 +15,12 @@ State changed to **Available**:
 * **Timestamp**: Fri Dec 29 17:23:46 2017
 """.strip()
 
-        self.send_and_test_stream_message('website_state_available',
-                                          expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "website_state_available",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_website_state_not_responding_message(self) -> None:
         expected_topic = "insping"
@@ -28,9 +31,9 @@ State changed to **Not Responding**:
 * **Timestamp**: Fri Dec 29 17:13:46 2017
 """.strip()
 
-        self.send_and_test_stream_message('website_state_not_responding',
-                                          expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("insping", fixture_name, file_type="json")
+        self.check_webhook(
+            "website_state_not_responding",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )

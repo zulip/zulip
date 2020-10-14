@@ -33,7 +33,7 @@ from zerver.lib.email_mirror_helpers import (
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
+from zerver.lib.test_helpers import mock_queue_publish, most_recent_message, most_recent_usermessage
 from zerver.models import (
     MissedMessageEmailAddress,
     Recipient,
@@ -45,6 +45,7 @@ from zerver.models import (
 )
 from zerver.worker.queue_processors import MirrorWorker
 
+logger_name = "zerver.lib.email_mirror"
 
 class TestEncodeDecode(ZulipTestCase):
     def _assert_options(self, options: Dict[str, bool], show_sender: bool=False,
@@ -582,12 +583,12 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         incoming_valid_message['To'] = stream_to_address
         incoming_valid_message['Reply-to'] = self.example_email('othello')
 
-        with mock.patch('zerver.lib.email_mirror.logger.warning') as mock_warn:
+        with self.assertLogs(logger_name, level="WARNING") as m:
             process_message(incoming_valid_message)
-            mock_warn.assert_called_with(
-                "Payload is not bytes (invalid attachment %s in message from %s).",
-                'some_attachment', self.example_email('hamlet'),
-            )
+        self.assertEqual(
+            m.output,
+            ["WARNING:{}:Payload is not bytes (invalid attachment {} in message from {}).".format(logger_name, "some_attachment", self.example_email('hamlet'))]
+        )
 
     def test_receive_plaintext_and_html_prefer_text_html_options(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -667,9 +668,9 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         incoming_valid_message['To'] = stream_to_address
         incoming_valid_message['Reply-to'] = self.example_email('othello')
 
-        with mock.patch('zerver.lib.email_mirror.logging.warning') as mock_warn:
+        with self.assertLogs(logger_name, level="WARNING") as m:
             process_message(incoming_valid_message)
-            mock_warn.assert_called_with("Email has no nonempty body sections; ignoring.")
+        self.assertEqual(m.output, [f"WARNING:{logger_name}:Email has no nonempty body sections; ignoring."])
 
     def test_receive_stream_email_messages_no_textual_body(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -691,9 +692,13 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         incoming_valid_message['To'] = stream_to_address
         incoming_valid_message['Reply-to'] = self.example_email('othello')
 
-        with mock.patch('zerver.lib.email_mirror.logging.warning') as mock_warn:
+        with self.assertLogs(logger_name, level="WARNING") as m:
             process_message(incoming_valid_message)
-            mock_warn.assert_called_with("Unable to find plaintext or HTML message body")
+        self.assertEqual(
+            m.output,
+            [f"WARNING:{logger_name}:Content types: ['multipart/mixed', 'image/png']",
+             f"WARNING:{logger_name}:Unable to find plaintext or HTML message body"]
+        )
 
     def test_receive_stream_email_messages_empty_body_after_stripping(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -1174,9 +1179,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         user_message = most_recent_usermessage(user_profile)
         return create_missed_message_address(user_profile, user_message.message)
 
-    @mock.patch('zerver.lib.email_mirror.queue_json_publish')
-    def send_offline_message(self, to_address: str, sender: UserProfile,
-                             mock_queue_json_publish: mock.Mock) -> HttpResponse:
+    def send_offline_message(self, to_address: str, sender: UserProfile) -> HttpResponse:
         mail_template = self.fixture_data('simple.txt', type='email')
         mail = mail_template.format(stream_to_address=to_address, sender=sender.delivery_email)
         msg_base64 = base64.b64encode(mail.encode()).decode()
@@ -1191,13 +1194,15 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
             self.assertEqual(self.get_last_message().content,
                              "This is a plain-text message for testing Zulip.")
 
-        mock_queue_json_publish.side_effect = check_queue_json_publish
         post_data = {
             "rcpt_to": to_address,
             "msg_base64": msg_base64,
             "secret": settings.SHARED_SECRET,
         }
-        return self.client_post('/email_mirror_message', post_data)
+
+        with mock_queue_publish('zerver.lib.email_mirror.queue_json_publish') as m:
+            m.side_effect = check_queue_json_publish
+            return self.client_post('/email_mirror_message', post_data)
 
     def test_success_stream(self) -> None:
         stream = get_stream("Denmark", get_realm("zulip"))
@@ -1290,7 +1295,8 @@ class TestContentTypeUnspecifiedCharset(ZulipTestCase):
         message_as_string = message_as_string.replace("Content-Type: text/plain; charset=\"us-ascii\"",
                                                       "Content-Type: text/plain")
         incoming_message = message_from_string(message_as_string, policy=email.policy.default)
-        assert isinstance(incoming_message, EmailMessage)  # https://github.com/python/typeshed/issues/2417
+        # https://github.com/python/typeshed/issues/2417
+        assert isinstance(incoming_message, EmailMessage)
 
         user_profile = self.example_user('hamlet')
         self.login_user(user_profile)
@@ -1363,18 +1369,20 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
         expected_content = expected_content.format(self.example_email('hamlet'))
         self.assertEqual(msg_content, expected_content)
 
-    @mock.patch('zerver.lib.email_mirror.logger.error')
-    def test_log_and_report_no_errorbot(self, mock_error: mock.MagicMock) -> None:
+    def test_log_and_report_no_errorbot(self) -> None:
         with self.settings(ERROR_BOT=None):
             incoming_valid_message = EmailMessage()
             incoming_valid_message.set_content('Test Body')
             incoming_valid_message['Subject'] = "Test Subject"
             incoming_valid_message['From'] = self.example_email('hamlet')
-            log_and_report(incoming_valid_message, "test error message", None)
-
-            expected_content = "Sender: {}\nTo: No recipient found\ntest error message"
-            expected_content = expected_content.format(self.example_email('hamlet'))
-            mock_error.assert_called_with(expected_content)
+            with self.assertLogs(logger_name, level="ERROR") as m:
+                log_and_report(incoming_valid_message, "test error message", None)
+                expected_content = "Sender: {}\nTo: No recipient found\ntest error message"
+                expected_content = expected_content.format(self.example_email('hamlet'))
+            self.assertEqual(
+                m.output,
+                [f"ERROR:{logger_name}:{expected_content}"]
+            )
 
     def test_redact_email_address(self) -> None:
         user_profile = self.example_user('hamlet')

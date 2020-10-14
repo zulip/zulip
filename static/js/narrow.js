@@ -1,5 +1,6 @@
 "use strict";
 
+const people = require("./people");
 const util = require("./util");
 
 let unnarrow_times;
@@ -156,7 +157,8 @@ exports.activate = function (raw_operators, opts) {
     $(".tooltip").hide();
 
     if (raw_operators.length === 0) {
-        return exports.deactivate();
+        exports.deactivate();
+        return;
     }
     const filter = new Filter(raw_operators);
     const operators = filter.operators();
@@ -188,10 +190,10 @@ exports.activate = function (raw_operators, opts) {
     // These two narrowing operators specify what message should be
     // selected and should be the center of the narrow.
     if (filter.has_operator("near")) {
-        id_info.target_id = parseInt(filter.operands("near")[0], 10);
+        id_info.target_id = Number.parseInt(filter.operands("near")[0], 10);
     }
     if (filter.has_operator("id")) {
-        id_info.target_id = parseInt(filter.operands("id")[0], 10);
+        id_info.target_id = Number.parseInt(filter.operands("id")[0], 10);
     }
 
     if (opts.then_select_id > 0) {
@@ -786,7 +788,7 @@ exports.deactivate = function () {
     unnarrow_times = {start_time: new Date()};
     blueslip.debug("Unnarrowed");
 
-    if (message_scroll.actively_scrolling()) {
+    if (message_scroll.is_actively_scrolling()) {
         // There is no way to intercept in-flight scroll events, and they will
         // cause you to end up in the wrong place if you are actively scrolling
         // on an unnarrow. Wait a bit and try again once the scrolling is over.

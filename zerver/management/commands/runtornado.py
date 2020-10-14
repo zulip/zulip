@@ -30,7 +30,7 @@ from zerver.tornado.event_queue import (
 from zerver.tornado.sharding import notify_tornado_queue_name
 
 if settings.USING_RABBITMQ:
-    from zerver.lib.queue import get_queue_client
+    from zerver.lib.queue import TornadoQueueClient, get_queue_client
 
 
 def handle_callback_exception(callback: Callable[..., Any]) -> None:
@@ -41,16 +41,16 @@ class Command(BaseCommand):
     help = "Starts a Tornado Web server wrapping Django."
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument('addrport', nargs="?", type=str,
+        parser.add_argument('addrport', nargs="?",
                             help='[optional port number or ipaddr:port]\n '
                                  '(use multiple ports to start multiple servers)')
 
         parser.add_argument('--nokeepalive', action='store_true',
-                            dest='no_keep_alive', default=False,
+                            dest='no_keep_alive',
                             help="Tells Tornado to NOT keep alive http connections.")
 
         parser.add_argument('--noxheaders', action='store_false',
-                            dest='xheaders', default=True,
+                            dest='xheaders',
                             help="Tells Tornado to NOT override remote IP with X-Real-IP.")
 
     def handle(self, addrport: str, **options: bool) -> None:
@@ -89,14 +89,15 @@ class Command(BaseCommand):
 
             if settings.USING_RABBITMQ:
                 queue_client = get_queue_client()
+                assert isinstance(queue_client, TornadoQueueClient)
                 # Process notifications received via RabbitMQ
                 queue_name = notify_tornado_queue_name(port)
-                queue_client.register_json_consumer(queue_name,
-                                                    get_wrapped_process_notification(queue_name))
+                queue_client.start_json_consumer(queue_name,
+                                                 get_wrapped_process_notification(queue_name))
 
             try:
                 # Application is an instance of Django's standard wsgi handler.
-                application = create_tornado_application(port)
+                application = create_tornado_application()
                 if settings.AUTORELOAD:
                     zulip_autoreload_start()
 

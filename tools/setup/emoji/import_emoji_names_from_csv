@@ -56,7 +56,7 @@ def check_valid_emoji_name(emoji_name: str) -> None:
 def check_emoji_names(canonical_name: str, aliases: List[str]) -> None:
     if canonical_name == 'X':
         return
-    names_to_check = [canonical_name] + aliases
+    names_to_check = [canonical_name, *aliases]
     for name in names_to_check:
         check_valid_emoji_name(name)
         check_uniqueness(name)
@@ -86,11 +86,11 @@ def main() -> None:
                    "file path.")
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
-        "--input-file", dest="input_file_path", type=str, metavar="<path>",
+        "--input-file", dest="input_file_path", metavar="<path>",
         default=os.path.join(EMOJI_DIR_PATH, "emoji_names.csv"),
         help="Path to the csv file from which data is to be read.")
     parser.add_argument(
-        "--output-file", dest="output_file_path", type=str, metavar="<path>",
+        "--output-file", dest="output_file_path", metavar="<path>",
         default=os.path.join(EMOJI_DIR_PATH, "emoji_names.py"),
         help="Path to the output file.")
 
@@ -120,10 +120,6 @@ def main() -> None:
         else:
             emoji_entry = ACTIVE_ENTRY % dict(**context)
 
-        # If an entry is longer than 120 then append
-        # `    # ignorelongline` to avoid lint errors.
-        if len(emoji_entry.split('\n')[-1]) >= 110:
-            emoji_entry += '    # ignorelongline'
         emoji_entries += emoji_entry
 
     with open(args.output_file_path, 'w') as fp:

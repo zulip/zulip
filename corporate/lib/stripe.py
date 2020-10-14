@@ -1,6 +1,7 @@
 import logging
 import math
 import os
+import secrets
 from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import wraps
@@ -25,7 +26,6 @@ from corporate.models import (
 )
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.utils import generate_random_token
 from zerver.models import Realm, RealmAuditLog, UserProfile, get_system_bot
 from zproject.config import get_secret
 
@@ -54,7 +54,7 @@ def get_latest_seat_count(realm: Realm) -> int:
     return max(non_guests, math.ceil(guests / 5))
 
 def sign_string(string: str) -> Tuple[str, str]:
-    salt = generate_random_token(64)
+    salt = secrets.token_hex(32)
     signer = Signer(salt=salt)
     return signer.sign(string), salt
 
@@ -173,13 +173,17 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
         # https://stripe.com/docs/error-codes gives a more detailed set of error codes
         except stripe.error.StripeError as e:
             err = e.json_body.get('error', {})
+            if isinstance(e, stripe.error.CardError):
+                billing_logger.info(
+                    "Stripe card error: %s %s %s %s",
+                    e.http_status, err.get('type'), err.get('code'), err.get('param'),
+                )
+                # TODO: Look into i18n for this
+                raise StripeCardError('card error', err.get('message'))
             billing_logger.error(
                 "Stripe error: %s %s %s %s",
                 e.http_status, err.get('type'), err.get('code'), err.get('param'),
             )
-            if isinstance(e, stripe.error.CardError):
-                # TODO: Look into i18n for this
-                raise StripeCardError('card error', err.get('message'))
             if isinstance(e, (stripe.error.RateLimitError, stripe.error.APIConnectionError)):  # nocoverage TODO
                 raise StripeConnectionError(
                     'stripe connection error',
@@ -623,7 +627,7 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
 # During realm deactivation we instantly downgrade the plan to Limited.
 # Extra users added in the final month are not charged. Also used
 # for the cancellation of Free Trial.
-def downgrade_now(realm: Realm) -> None:
+def downgrade_now_without_creating_additional_invoices(realm: Realm) -> None:
     plan = get_current_plan_by_realm(realm)
     if plan is None:
         return
@@ -632,3 +636,28 @@ def downgrade_now(realm: Realm) -> None:
     plan.invoiced_through = LicenseLedger.objects.filter(plan=plan).order_by('id').last()
     plan.next_invoice_date = next_invoice_date(plan)
     plan.save(update_fields=["invoiced_through", "next_invoice_date"])
+
+def downgrade_at_the_end_of_billing_cycle(realm: Realm) -> None:
+    plan = get_current_plan_by_realm(realm)
+    assert(plan is not None)
+    do_change_plan_status(plan, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
+
+def void_all_open_invoices(realm: Realm) -> int:
+    customer = get_customer_by_realm(realm)
+    if customer is None:
+        return 0
+    invoices = stripe.Invoice.list(customer=customer.stripe_customer_id)
+    voided_invoices_count = 0
+    for invoice in invoices:
+        if invoice.status == "open":
+            stripe.Invoice.void_invoice(
+                invoice.id
+            )
+            voided_invoices_count += 1
+    return voided_invoices_count
+
+def update_billing_method_of_current_plan(realm: Realm, charge_automatically: bool) -> None:
+    plan = get_current_plan_by_realm(realm)
+    if plan is not None:
+        plan.charge_automatically = charge_automatically
+        plan.save(update_fields=["charge_automatically"])

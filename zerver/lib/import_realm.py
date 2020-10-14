@@ -1,6 +1,8 @@
 import datetime
 import logging
+import multiprocessing
 import os
+import secrets
 import shutil
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -8,8 +10,8 @@ import boto3
 import orjson
 from bs4 import BeautifulSoup
 from django.conf import settings
+from django.core.cache import cache
 from django.db import connection
-from django.db.models import Max
 from django.utils.timezone import now as timezone_now
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
@@ -26,11 +28,11 @@ from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_
 from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
-from zerver.lib.parallel import run_parallel
+from zerver.lib.message import get_last_message_id
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.upload import BadImageError, guess_type, random_name, sanitize_name
+from zerver.lib.upload import BadImageError, guess_type, sanitize_name
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import (
     AlertWord,
@@ -169,10 +171,7 @@ def create_subscription_events(data: TableData, realm_id: int) -> None:
     """
     all_subscription_logs = []
 
-    # from bulk_add_subscriptions in lib/actions
-    event_last_message_id = Message.objects.aggregate(Max('id'))['id__max']
-    if event_last_message_id is None:
-        event_last_message_id = -1
+    event_last_message_id = get_last_message_id()
     event_time = timezone_now()
 
     recipient_id_to_stream_id = {
@@ -507,8 +506,8 @@ def fix_bitfield_keys(data: TableData, table: TableName, field_name: Field) -> N
 def fix_realm_authentication_bitfield(data: TableData, table: TableName, field_name: Field) -> None:
     """Used to fixup the authentication_methods bitfield to be a string"""
     for item in data[table]:
-        values_as_bitstring = ''.join(['1' if field[1] else '0' for field in
-                                       item[field_name]])
+        values_as_bitstring = ''.join('1' if field[1] else '0' for field in
+                                      item[field_name])
         values_as_int = int(values_as_bitstring, 2)
         item[field_name] = values_as_int
 
@@ -600,6 +599,32 @@ def bulk_import_client(data: TableData, model: Any, table: TableName) -> None:
             client = Client.objects.create(name=item['name'])
         update_id_map(table='client', old_id=item['id'], new_id=client.id)
 
+def process_avatars(record: Dict[str, Any]) -> None:
+    from zerver.lib.upload import upload_backend
+    if record['s3_path'].endswith('.original'):
+        user_profile = get_user_profile_by_id(record['user_profile_id'])
+        if settings.LOCAL_UPLOADS_DIR is not None:
+            avatar_path = user_avatar_path_from_ids(user_profile.id, record['realm_id'])
+            medium_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
+                                            avatar_path) + '-medium.png'
+            if os.path.exists(medium_file_path):
+                # We remove the image here primarily to deal with
+                # issues when running the import script multiple
+                # times in development (where one might reuse the
+                # same realm ID from a previous iteration).
+                os.remove(medium_file_path)
+        try:
+            upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
+            if record.get("importer_should_thumbnail"):
+                upload_backend.ensure_basic_avatar_image(user_profile=user_profile)
+        except BadImageError:
+            logging.warning(
+                "Could not thumbnail avatar image for user %s; ignoring",
+                user_profile.id,
+            )
+            # Delete the record of the avatar to avoid 404s.
+            do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+
 def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_avatars: bool=False,
                    processing_emojis: bool=False, processing_realm_icons: bool=False) -> None:
     if processing_avatars and processing_emojis:
@@ -668,7 +693,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
             # function 'upload_message_file'
             relative_path = "/".join([
                 str(record['realm_id']),
-                random_name(18),
+                secrets.token_urlsafe(18),
                 sanitize_name(os.path.basename(record['path'])),
             ])
             path_maps['attachment_path'][record['s3_path']] = relative_path
@@ -722,47 +747,20 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
             shutil.copy(orig_file_path, file_path)
 
     if processing_avatars:
-        from zerver.lib.upload import upload_backend
-
         # Ensure that we have medium-size avatar images for every
         # avatar.  TODO: This implementation is hacky, both in that it
         # does get_user_profile_by_id for each user, and in that it
         # might be better to require the export to just have these.
-
-        def process_avatars(record: Dict[Any, Any]) -> int:
-            if record['s3_path'].endswith('.original'):
-                user_profile = get_user_profile_by_id(record['user_profile_id'])
-                if settings.LOCAL_UPLOADS_DIR is not None:
-                    avatar_path = user_avatar_path_from_ids(user_profile.id, record['realm_id'])
-                    medium_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
-                                                    avatar_path) + '-medium.png'
-                    if os.path.exists(medium_file_path):
-                        # We remove the image here primarily to deal with
-                        # issues when running the import script multiple
-                        # times in development (where one might reuse the
-                        # same realm ID from a previous iteration).
-                        os.remove(medium_file_path)
-                try:
-                    upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
-                    if record.get("importer_should_thumbnail"):
-                        upload_backend.ensure_basic_avatar_image(user_profile=user_profile)
-                except BadImageError:
-                    logging.warning(
-                        "Could not thumbnail avatar image for user %s; ignoring",
-                        user_profile.id,
-                    )
-                    # Delete the record of the avatar to avoid 404s.
-                    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
-            return 0
 
         if processes == 1:
             for record in records:
                 process_avatars(record)
         else:
             connection.close()
-            output = []
-            for (status, job) in run_parallel(process_avatars, records, processes):
-                output.append(job)
+            cache._cache.disconnect_all()
+            with multiprocessing.Pool(processes) as p:
+                for out in p.imap_unordered(process_avatars, records):
+                    pass
 
 # Importing data suffers from a difficult ordering problem because of
 # models that reference each other circularly.  Here is a correct order.
@@ -1139,7 +1137,7 @@ def get_incoming_message_ids(import_dir: Path,
     '''
 
     if sort_by_date:
-        tups: List[Tuple[int, int]] = list()
+        tups: List[Tuple[int, int]] = []
     else:
         message_ids: List[int] = []
 

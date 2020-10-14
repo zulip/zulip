@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# See https://zulip.readthedocs.io/en/latest/translating/internationalization.html
+# for background on this subsystem.
+
 set -e
 set -x
 

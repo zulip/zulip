@@ -185,7 +185,7 @@ will be stored in that directory and you'll want to back it up.
 
 * Your Zulip configuration including secrets from `/etc/zulip/`.
 E.g. if you lose the value of `secret_key`, all users will need to
-login again when you set up a replacement server since you won't be
+log in again when you set up a replacement server since you won't be
 able to verify their cookies. If you lose `avatar_salt`, any
 user-uploaded avatars will need to be re-uploaded (since avatar
 filenames are computed using a hash of `avatar_salt` and user's
@@ -260,13 +260,13 @@ you're exporting data.  There are two ways to do this:
 preferred if you're not hosting multiple organizations, because it has
 no side effects other than disabling the Zulip server for the
 duration.
-1. `manage.py deactivate_realm  -r 'target_org'`, which deactivates the target
-organization, logging out all active login sessions and preventing all
-accounts from logging in or accessing the API.  This is
+1. Pass `--deactivate` to `./manage export`, which first deactivates
+the target organization, logging out all active login sessions and
+preventing all accounts from logging in or accessing the API.  This is
 preferred for environments like Zulip Cloud where you might want to
 export a single organization without disrupting any other users, and
 the intent is to move hosting of the organization (and forcing users
-to re-login would be required as part of the hosting migration
+to re-log in would be required as part of the hosting migration
 anyway).
 
 We include both options in the instructions below, commented out so
@@ -281,9 +281,9 @@ following commands:
 
 ```
 cd /home/zulip/deployments/current
-# supervisorctl stop all # Stops the Zulip server
-# ./manage.py deactivate_realm -r ''  # Deactivates the organization
-./manage.py export -r ''  # Exports the data
+# supervisorctl stop all                  # Stops the Zulip server
+# export DEACTIVATE_FLAG="--deactivate"   # Deactivates the organization
+./manage.py export -r '' $DEACTIVATE_FLAG # Exports the data
 ```
 
 (The `-r` option lets you specify the organization to export; `''` is
@@ -382,7 +382,7 @@ importing.
 The commands above create an imported organization on the root domain
 (`EXTERNAL_HOST`) of the Zulip installation. You can also import into a
 custom subdomain, e.g. if you already have an existing organization on the
-root domain. Replace the last two lines above with the following, after replacing
+root domain. Replace the last three lines above with the following, after replacing
 `<subdomain>` with the desired subdomain.
 
 ```

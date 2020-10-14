@@ -1,5 +1,6 @@
 "use strict";
 
+const people = require("./people");
 const util = require("./util");
 
 exports.initialize_pill = function () {
@@ -16,6 +17,14 @@ exports.initialize_pill = function () {
 
 exports.initialize = function () {
     exports.widget = exports.initialize_pill();
+
+    exports.widget.onPillCreate(() => {
+        compose_actions.update_placeholder_text();
+    });
+
+    exports.widget.onPillRemove(() => {
+        compose_actions.update_placeholder_text();
+    });
 };
 
 exports.clear = function () {

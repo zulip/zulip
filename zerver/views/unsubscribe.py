@@ -19,7 +19,7 @@ def process_unsubscribe(request: HttpRequest, confirmation_key: str, subscriptio
 
     unsubscribe_function(user_profile)
     context = common_context(user_profile)
-    context.update({"subscription_type": subscription_type})
+    context.update(subscription_type=subscription_type)
     return render(request, 'zerver/unsubscribe_success.html', context=context)
 
 # Email unsubscribe functions. All have the function signature

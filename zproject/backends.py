@@ -14,6 +14,7 @@
 # matching the args/kwargs passed in the authenticate() call.
 import binascii
 import copy
+import json
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union, cast
@@ -110,10 +111,10 @@ def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
 def auth_enabled_helper(backends_to_check: List[str], realm: Optional[Realm]) -> bool:
     if realm is not None:
         enabled_method_dict = realm.authentication_methods_dict()
-        pad_method_dict(enabled_method_dict)
     else:
         enabled_method_dict = {method: True for method in Realm.AUTHENTICATION_FLAGS}
-        pad_method_dict(enabled_method_dict)
+
+    pad_method_dict(enabled_method_dict)
     for supported_backend in supported_auth_backends():
         for backend_name in backends_to_check:
             backend = AUTH_BACKEND_NAME_MAP[backend_name]
@@ -154,9 +155,6 @@ def any_social_backend_enabled(realm: Optional[Realm]=None) -> bool:
     social_backend_names = [social_auth_subclass.auth_backend_name
                             for social_auth_subclass in EXTERNAL_AUTH_METHODS]
     return auth_enabled_helper(social_backend_names, realm)
-
-def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
-    return HttpResponseRedirect(f"/config-error/{error_type}")
 
 def require_email_format_usernames(realm: Optional[Realm]=None) -> bool:
     if ldap_auth_enabled(realm):
@@ -203,6 +201,22 @@ def common_get_active_user(email: str, realm: Realm,
         return None
 
     return user_profile
+
+def is_subdomain_in_allowed_subdomains_list(subdomain: str, allowed_subdomains: List[str]) -> bool:
+    if subdomain in allowed_subdomains:
+        return True
+
+    # The root subdomain is a special case, as sending an
+    # empty string in the list of values of the attribute may
+    # not be viable. So, any of the ROOT_SUBDOMAIN_ALIASES can
+    # be used to signify the user is authorized for the root
+    # subdomain.
+    if (subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+            and not settings.ROOT_DOMAIN_LANDING_PAGE
+            and any(alias in allowed_subdomains for alias in settings.ROOT_SUBDOMAIN_ALIASES)):
+        return True
+
+    return False
 
 AuthFuncT = TypeVar('AuthFuncT', bound=Callable[..., Optional[UserProfile]])
 rate_limiting_rules = settings.RATE_LIMITING_RULES['authenticate_by_username']
@@ -449,7 +463,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
     def django_to_ldap_username(self, username: str) -> str:
         """
-        Translates django username (user_profile.email or whatever the user typed in the login
+        Translates django username (user_profile.delivery_email or whatever the user typed in the login
         field when authenticating via the ldap backend) into ldap username.
         Guarantees that the username it returns actually has an entry in the ldap directory.
         Raises ZulipLDAPExceptionNoMatchingLDAPUser if that's not possible.
@@ -1045,7 +1059,8 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
     auth_backend_name = "RemoteUser"
     name = "remoteuser"
     display_icon = None
-    sort_order = 9000  # If configured, this backend should have its button near the top of the list.
+    # If configured, this backend should have its button near the top of the list.
+    sort_order = 9000
 
     create_unknown_user = False
 
@@ -1072,7 +1087,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
 def redirect_deactivated_user_to_login() -> HttpResponseRedirect:
     # Specifying the template name makes sure that the user is not redirected to dev_login in case of
     # a deactivated account on a test server.
-    login_url = reverse('zerver.views.auth.login_page', kwargs = {'template_name': 'zerver/login.html'})
+    login_url = reverse('login_page', kwargs = {'template_name': 'zerver/login.html'})
     redirect_url = login_url + '?is_deactivated=true'
     return HttpResponseRedirect(redirect_url)
 
@@ -1199,7 +1214,8 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
         # Some authentications methods like Apple and SAML send
         # first name and last name as separate attributes. In that case
         # we construct the full name from them.
-        return_data["full_name"] = f"{first_name or ''} {last_name or ''}".strip()  # strip removes the unnecessary ' '
+        # strip removes the unnecessary ' '
+        return_data["full_name"] = f"{first_name or ''} {last_name or ''}".strip()
 
     return user_profile
 
@@ -1258,7 +1274,7 @@ def social_auth_finish(backend: Any,
         # unless the user manually edits the param. In any case, it's most appropriate to just take
         # them to find_account, as there isn't even an appropriate subdomain to take them to the login
         # form on.
-        return HttpResponseRedirect(reverse('zerver.views.registration.find_account'))
+        return HttpResponseRedirect(reverse('find_account'))
 
     if inactive_user:
         backend.logger.info("Failed login attempt for deactivated account: %s@%s",
@@ -1367,7 +1383,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
     # it should be False.
     full_name_validated = False
 
-    standard_relay_params = settings.SOCIAL_AUTH_FIELDS_STORED_IN_SESSION + ['next']
+    standard_relay_params = [*settings.SOCIAL_AUTH_FIELDS_STORED_IN_SESSION, 'next']
 
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """This is a small wrapper around the core `auth_complete` method of
@@ -1414,7 +1430,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         access_token = kwargs["response"]["access_token"]
         try:
             emails = self._user_data(access_token, '/emails')
-        except (HTTPError, ValueError, TypeError):  # nocoverage
+        except (HTTPError, json.JSONDecodeError):  # nocoverage
             # We don't really need an explicit test for this code
             # path, since the outcome will be the same as any other
             # case without any verified emails
@@ -1554,7 +1570,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
     SCOPE_SEPARATOR = "%20"  # https://github.com/python-social-auth/social-core/issues/470
 
     @classmethod
-    def check_config(cls) -> Optional[HttpResponse]:
+    def check_config(cls) -> bool:
         obligatory_apple_settings_list = [
             settings.SOCIAL_AUTH_APPLE_TEAM,
             settings.SOCIAL_AUTH_APPLE_SERVICES_ID,
@@ -1562,9 +1578,9 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
             settings.SOCIAL_AUTH_APPLE_SECRET,
         ]
         if any(not setting for setting in obligatory_apple_settings_list):
-            return redirect_to_config_error("apple")
+            return False
 
-        return None
+        return True
 
     def is_native_flow(self) -> bool:
         return self.strategy.request_data().get('native_flow', False)
@@ -1671,7 +1687,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
             # though AuthFailed would have been more correct.
             #
             # We have an open PR to python-social-auth to clean this up.
-            logging.info("/complete/apple/: %s", str(e))
+            self.logger.info("/complete/apple/: %s", str(e))
             return None
 
 @external_auth_method
@@ -1718,7 +1734,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             # If the above raise KeyError, it means invalid or no idp was specified,
             # we should log that and redirect to the login page.
             self.logger.info("/login/saml/ : Bad idp param: KeyError: %s.", str(e))
-            return reverse('zerver.views.auth.login_page',
+            return reverse('login_page',
                            kwargs = {'template_name': 'zerver/login.html'})
 
         # This where we change things.  We need to pass some params
@@ -1797,7 +1813,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                 # IdP-initiated sign in. Right now we only support transporting subdomain through json in
                 # RelayState, but this format is nice in that it allows easy extensibility here.
                 return {'subdomain': data.get('subdomain')}
-        except (ValueError, TypeError):
+        except orjson.JSONDecodeError:
             return {}
 
     def choose_subdomain(self, relayed_params: Dict[str, Any]) -> Optional[str]:
@@ -1842,17 +1858,13 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         subdomain = self.strategy.session_get('subdomain')
         entitlements: Union[str, List[str]] = attributes.get(org_membership_attribute, [])
-        if subdomain in entitlements:
-            return
+        if isinstance(entitlements, str):  # nocoverage
+            # This shouldn't happen as we'd always expect a list from this attribute even
+            # if it only has one element, but it's safer to have this defensive code.
+            entitlements = [entitlements, ]
+        assert isinstance(entitlements, list)
 
-        # The root subdomain is a special case, as sending an
-        # empty string in the list of values of the attribute may
-        # not be viable. So, any of the ROOT_SUBDOMAIN_ALIASES can
-        # be used to signify the user is authorized for the root
-        # subdomain.
-        if (subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
-                and not settings.ROOT_DOMAIN_LANDING_PAGE
-                and any(alias in entitlements for alias in settings.ROOT_SUBDOMAIN_ALIASES)):
+        if is_subdomain_in_allowed_subdomains_list(subdomain, entitlements):
             return
 
         error_msg = f"SAML user from IdP {idp.name} rejected due to missing entitlement " + \
@@ -1941,7 +1953,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         return True
 
     @classmethod
-    def check_config(cls) -> Optional[HttpResponse]:
+    def check_config(cls) -> bool:
         obligatory_saml_settings_list = [
             settings.SOCIAL_AUTH_SAML_SP_ENTITY_ID,
             settings.SOCIAL_AUTH_SAML_ORG_INFO,
@@ -1950,9 +1962,9 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             settings.SOCIAL_AUTH_SAML_ENABLED_IDPS,
         ]
         if any(not setting for setting in obligatory_saml_settings_list):
-            return redirect_to_config_error("saml")
+            return False
 
-        return None
+        return True
 
     @classmethod
     def dict_representation(cls, realm: Optional[Realm]=None) -> List[ExternalAuthMethodDictT]:
@@ -1968,8 +1980,8 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                 name=f'saml:{idp_name}',
                 display_name=idp_dict.get('display_name', cls.auth_backend_name),
                 display_icon=idp_dict.get('display_icon', cls.display_icon),
-                login_url=reverse('login-social-extra-arg', args=('saml', idp_name)),
-                signup_url=reverse('signup-social-extra-arg', args=('saml', idp_name)),
+                login_url=reverse('login-social', args=('saml', idp_name)),
+                signup_url=reverse('signup-social', args=('saml', idp_name)),
             )
             result.append(saml_dict)
 

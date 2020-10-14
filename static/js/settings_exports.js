@@ -4,6 +4,8 @@ const XDate = require("xdate");
 
 const render_admin_export_list = require("../templates/admin_export_list.hbs");
 
+const people = require("./people");
+
 const meta = {
     loaded: false,
 };

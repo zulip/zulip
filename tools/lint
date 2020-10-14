@@ -16,7 +16,7 @@ from linter_lib.custom_check import non_py_rules, python_rules
 
 def run() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--force', default=False,
+    parser.add_argument('--force',
                         action="store_true",
                         help='Run tests despite possible problems.')
     parser.add_argument('--full',
@@ -45,36 +45,36 @@ def run() -> None:
 
     by_lang = linter_config.list_files(groups={
         'backend': ['py', 'sh', 'pp', 'json', 'md', 'txt', 'text', 'yaml', 'rst', 'yml'],
-        'frontend': ['js', 'ts', 'css', 'scss', 'hbs', 'html', 'lock'],
+        'frontend': ['js', 'ts', 'css', 'hbs', 'html', 'lock'],
     }, exclude=EXCLUDED_FILES)
 
-    linter_config.external_linter('css', ['node', 'node_modules/.bin/stylelint'], ['css', 'scss'],
+    linter_config.external_linter('css', ['node', 'node_modules/.bin/stylelint'], ['css'],
                                   fix_arg='--fix',
                                   description="Standard CSS style and formatting linter "
                                   "(config: stylelint.config.js)")
     linter_config.external_linter('eslint', ['node', 'node_modules/.bin/eslint',
                                              '--quiet', '--cache', '--ext', '.js,.ts'], ['js', 'ts'],
                                   fix_arg='--fix',
-                                  description="Standard JavaScript style and formatting linter"
+                                  description="Standard JavaScript style and formatting linter "
                                   "(config: .eslintrc).")
     linter_config.external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'],
                                   description="Runs the puppet parser validator, "
                                   "checking for syntax errors.")
     linter_config.external_linter('puppet-lint',
-                                  ['puppet-lint', '--fail-on-warnings'] + PUPPET_CHECK_RULES_TO_EXCLUDE,
+                                  ['puppet-lint', '--fail-on-warnings', *PUPPET_CHECK_RULES_TO_EXCLUDE],
                                   ['pp'],
                                   fix_arg='--fix',
-                                  description="Standard puppet linter"
+                                  description="Standard puppet linter "
                                   "(config: tools/linter_lib/exclude.py)")
     linter_config.external_linter('templates', ['tools/check-templates'], ['hbs', 'html'],
-                                  description="Custom linter checks whitespace formatting"
-                                  "of HTML templates.",
+                                  description="Custom linter checks whitespace formatting "
+                                  "of HTML templates",
                                   fix_arg='--fix')
     linter_config.external_linter('openapi', ['node', 'tools/check-openapi'], ['yaml'],
-                                  description="Validates our OpenAPI/Swagger API documentation"
+                                  description="Validates our OpenAPI/Swagger API documentation "
                                   "(zerver/openapi/zulip.yaml) ")
     linter_config.external_linter('shellcheck', ['shellcheck', '-x', '-P', 'SCRIPTDIR'], ['sh'],
-                                  description="Standard shell script linter.")
+                                  description="Standard shell script linter")
     command = ['tools/run-mypy', '--quiet']
     if args.force:
         command.append('--force')
@@ -86,17 +86,15 @@ def run() -> None:
                                   pass_targets=False,
                                   description="Shares duplicate packages in yarn.lock")
     linter_config.external_linter('gitlint', ['tools/commit-message-lint'],
-                                  description="Checks commit messages for common formatting errors."
+                                  description="Checks commit messages for common formatting errors "
                                   "(config: .gitlint)")
     linter_config.external_linter('isort', ['isort'], ['py'],
                                   description="Sorts Python import statements",
                                   check_arg=['--check-only', '--diff'])
-    linter_config.external_linter('prettier', ['node_modules/.bin/prettier', '--check'],
-                                  ['css', 'js', 'json', 'scss', 'ts', 'yaml', 'yml'],
+    linter_config.external_linter('prettier', ['node_modules/.bin/prettier', '--check', '--loglevel=warn'],
+                                  ['css', 'js', 'json', 'ts', 'yaml', 'yml'],
                                   fix_arg=['--write'],
-                                  description="Formats CSS, JavaScript, YAML",
-                                  # https://github.com/prettier/prettier/pull/8703
-                                  suppress_line=lambda line: line in ["Checking formatting...\n", "All matched files use Prettier code style!\n"])
+                                  description="Formats CSS, JavaScript, YAML")
 
     semgrep_command = ["semgrep", "--config=./tools/semgrep.yml", "--error",
                        "--disable-version-check", "--quiet",

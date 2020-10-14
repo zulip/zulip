@@ -1,5 +1,7 @@
 "use strict";
 
+const rewiremock = require("rewiremock/node");
+
 set_global("$", global.make_zjquery());
 
 const noop = () => {};
@@ -40,6 +42,7 @@ global.stub_templates((name, data) => {
         assert(data.realm_domain.domain);
         return "stub-domains-list";
     }
+    throw new Error(`Unknown template ${name}`);
 });
 
 const _overlays = {};
@@ -77,7 +80,11 @@ set_global("list_render", _list_render);
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
 zrequire("stream_data");
-zrequire("settings_account");
+rewiremock.proxy(() => zrequire("settings_account"), {
+    // Setup is only imported to set the
+    // setup.password_change_in_progress flag.
+    "../../static/js/setup": {},
+});
 zrequire("settings_org");
 zrequire("settings_ui");
 zrequire("dropdown_list_widget");
@@ -144,14 +151,14 @@ function createSaveButtons(subsection) {
     const save_button_controls = $(".save-button-controls");
     const stub_save_button = $(`#org-submit-${subsection}`);
     const stub_discard_button = $(`#org-discard-${subsection}`);
-    const stub_save_button_text = $(".icon-button-text");
+    const stub_save_button_text = $(".save-discard-widget-button-text");
     stub_save_button_header.set_find_results(
         ".subsection-failed-status p",
         $("<failed status element>"),
     );
     stub_save_button.closest = () => stub_save_button_header;
     save_button_controls.set_find_results(".save-button", stub_save_button);
-    stub_save_button.set_find_results(".icon-button-text", stub_save_button_text);
+    stub_save_button.set_find_results(".save-discard-widget-button-text", stub_save_button_text);
     stub_save_button_header.set_find_results(".save-button-controls", save_button_controls);
     stub_save_button_header.set_find_results(
         ".subsection-changes-discard .button",

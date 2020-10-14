@@ -1,4 +1,5 @@
 import logging
+import secrets
 from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
@@ -7,6 +8,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.cache import patch_cache_control
 
+from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import zulip_login_required
 from zerver.forms import ToSForm
 from zerver.lib.actions import do_change_tos_version, realm_user_count
@@ -19,7 +21,7 @@ from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import compute_show_invites_and_add_streams
-from zerver.lib.utils import generate_random_token, statsd
+from zerver.lib.utils import statsd
 from zerver.models import PreregistrationUser, Realm, Stream, UserProfile
 from zerver.views.compatibility import is_outdated_desktop_app, is_unsupported_browser
 from zerver.views.portico import hello_view
@@ -149,9 +151,11 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     if request.user.is_authenticated:
         user_profile = request.user
+        realm = user_profile.realm
     else:  # nocoverage
-        # This code path should not be reachable because of zulip_login_required above.
+        # user_profile=None corresponds to the logged-out "web_public" visitor case.
         user_profile = None
+        realm = get_valid_realm_from_request(request)
 
     update_last_reminder(user_profile)
 
@@ -184,6 +188,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     queue_id, page_params = build_page_params_for_home_page_load(
         request=request,
         user_profile=user_profile,
+        realm=realm,
         insecure_desktop_app=insecure_desktop_app,
         has_mobile_devices=has_mobile_devices,
         narrow=narrow,
@@ -200,7 +205,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     request._log_data['extra'] = "[{}]".format(queue_id)
 
-    csp_nonce = generate_random_token(48)
+    csp_nonce = secrets.token_hex(24)
 
     user_permission_info = get_user_permission_info(user_profile)
 
@@ -231,4 +236,4 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
 @zulip_login_required
 def desktop_home(request: HttpRequest) -> HttpResponse:
-    return HttpResponseRedirect(reverse('zerver.views.home.home'))
+    return HttpResponseRedirect(reverse(home))

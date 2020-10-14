@@ -38,6 +38,7 @@ run_test("basics", () => {
             } else if (field === "minGuesses") {
                 return min_guesses;
             }
+            throw new Error(`Unknown field ${field}`);
         };
 
         return self;

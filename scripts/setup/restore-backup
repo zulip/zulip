@@ -34,11 +34,10 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
     subprocess.call(
         [
             "tar",
-            "-C",
-            "/etc/zulip",
+            "--directory=/etc/zulip",
             "--strip-components=2",
             "-xz",
-            "zulip-backup/settings",
+            "zulip-backup/settings"
         ],
         stdin=tarball_file,
     )
@@ -75,7 +74,7 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
 
         os.mkdir(os.path.join(tmp, "zulip-backup"))
         tarball_file.seek(0, 0)
-        run(["tar", "-C", tmp] + transform_args + ["-xPz"], stdin=tarball_file)
+        run(["tar", "-C", tmp, *transform_args, "-xPz"], stdin=tarball_file)
 
         # Now, extract the the database backup, destroy the old
         # database, and create a new, empty database.
@@ -98,14 +97,14 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
         run(
             [
                 os.path.join(
-                    settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions",
+                    settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions"
                 ),
-                db["NAME"],
+                db["NAME"]
             ],
             env=postgres_env,
         )
         run(["dropdb", "--if-exists", "--", db["NAME"]], cwd="/", env=postgres_env)
-        run(["createdb", "-O", "zulip", "-T", "template0", "--", db["NAME"]], cwd="/", env=postgres_env)
+        run(["createdb", "--owner=zulip", "--template=template0", "--", db["NAME"]], cwd="/", env=postgres_env)
         os.setresuid(0, 0, 0)
 
         if settings.PRODUCTION:
@@ -137,15 +136,15 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
             run(
                 [
                     os.path.join(settings.DEPLOY_ROOT, "scripts", "zulip-puppet-apply"),
-                    "-f",
-                ],
+                    "-f"
+                ]
             )
 
         # Now, restore the the database backup using pg_restore.  This
         # needs to run after zulip-puppet-apply to ensure full-text
         # search extensions are available and installed.
         os.setresuid(POSTGRES_PWENT.pw_uid, POSTGRES_PWENT.pw_uid, 0)
-        run(["pg_restore", "-d", db["NAME"], "--", db_dir], cwd="/", env=postgres_env)
+        run(["pg_restore", "--dbname=" + db["NAME"], "--", db_dir], cwd="/", env=postgres_env)
         os.setresuid(0, 0, 0)
         run(["chown", "-R", str(uid), "--", tmp])
         os.setresuid(uid, uid, 0)

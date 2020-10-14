@@ -12,7 +12,7 @@ message is about.
 Messages with the same stream and topic are shown together as a
 conversational thread. Here is what it looks like in Zulip.
 
-![](/static/images/help/streams-and-topics.png)
+![Streams and topics](/static/images/help/streams-and-topics.png)
 
 Streams and topics are one of the most rewarding parts of using Zulip.
 

@@ -46,13 +46,13 @@ class MessageListData {
 
     select_idx() {
         if (this._selected_id === -1) {
-            return;
+            return undefined;
         }
         const ids = this._items.map((message) => message.id);
 
         const i = ids.indexOf(this._selected_id);
         if (i === -1) {
-            return;
+            return undefined;
         }
         return i;
     }
@@ -61,11 +61,11 @@ class MessageListData {
         const i = this.select_idx();
 
         if (i === undefined) {
-            return;
+            return undefined;
         }
 
         if (i === 0) {
-            return;
+            return undefined;
         }
 
         return this._items[i - 1].id;
@@ -75,11 +75,11 @@ class MessageListData {
         const i = this.select_idx();
 
         if (i === undefined) {
-            return;
+            return undefined;
         }
 
         if (i + 1 >= this._items.length) {
-            return;
+            return undefined;
         }
 
         return this._items[i + 1].id;
@@ -119,9 +119,9 @@ class MessageListData {
     }
 
     get(id) {
-        id = parseFloat(id);
-        if (isNaN(id)) {
-            return;
+        id = Number.parseFloat(id);
+        if (Number.isNaN(id)) {
+            return undefined;
         }
         return this._hash.get(id);
     }
@@ -342,7 +342,7 @@ class MessageListData {
                 const effective = this._next_nonlocal_message(this._items, a_idx, (idx) => idx - 1);
                 if (effective) {
                     // Turn the 10.02 in [11, 10.02, 12] into 11.02
-                    const decimal = parseFloat((msg.id % 1).toFixed(0.02));
+                    const decimal = Number.parseFloat((msg.id % 1).toFixed(0.02));
                     const effective_id = effective.id + decimal;
                     return effective_id < ref_id;
                 }
@@ -440,9 +440,9 @@ class MessageListData {
 
     _add_to_hash(messages) {
         messages.forEach((elem) => {
-            const id = parseFloat(elem.id);
-            if (isNaN(id)) {
-                blueslip.fatal("Bad message id");
+            const id = Number.parseFloat(elem.id);
+            if (Number.isNaN(id)) {
+                throw new TypeError("Bad message id");
             }
             if (this._is_localonly_id(id)) {
                 this._local_only.add(id);
@@ -531,7 +531,7 @@ class MessageListData {
     get_last_message_sent_by_me() {
         const msg_index = _.findLastIndex(this._items, {sender_id: page_params.user_id});
         if (msg_index === -1) {
-            return;
+            return undefined;
         }
         const msg = this._items[msg_index];
         return msg;

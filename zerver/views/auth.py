@@ -1,5 +1,5 @@
 import logging
-import os
+import secrets
 import urllib
 from functools import wraps
 from typing import Any, Dict, List, Mapping, Optional, cast
@@ -20,7 +20,6 @@ from django.utils.http import is_safe_url
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
-from django.views.generic import TemplateView
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
@@ -72,7 +71,6 @@ from zproject.backends import (
     dev_auth_enabled,
     ldap_auth_enabled,
     password_auth_enabled,
-    redirect_to_config_error,
     saml_auth_enabled,
     validate_otp_params,
 )
@@ -271,7 +269,7 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
 
     redirect_to = result.data_dict.get('redirect_to', '')
     if is_realm_creation is not None and settings.FREE_TRIAL_DAYS not in [None, 0]:
-        redirect_to = "{}?onboarding=true".format(reverse('corporate.views.initial_upgrade'))
+        redirect_to = "{}?onboarding=true".format(reverse('initial_upgrade'))
 
     redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)
@@ -289,10 +287,10 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
     result = ExternalAuthResult(user_profile=user_profile)
     token = result.store_data()
     key = bytes.fromhex(otp)
-    iv = os.urandom(12)
+    iv = secrets.token_bytes(12)
     desktop_data = (iv + AESGCM(key).encrypt(iv, token.encode(), b"")).hex()
     context = {'desktop_data': desktop_data,
-               'browser_url': reverse('zerver.views.auth.login_page',
+               'browser_url': reverse('login_page',
                                       kwargs = {'template_name': 'zerver/login.html'}),
                'realm_icon_url': realm_icon_url(user_profile.realm)}
     return render(request, 'zerver/desktop_redirect.html', context=context)
@@ -356,12 +354,12 @@ def remote_user_sso(
         realm = None
 
     if not auth_enabled_helper([ZulipRemoteUserBackend.auth_backend_name], realm):
-        return redirect_to_config_error("remoteuser/backend_disabled")
+        return config_error(request, "remote_user_backend_disabled")
 
     try:
         remote_user = request.META["REMOTE_USER"]
     except KeyError:
-        return redirect_to_config_error("remoteuser/remote_user_header_missing")
+        return config_error(request, "remote_user_header_missing")
 
     # Django invokes authenticate methods by matching arguments, and this
     # authentication flow will not invoke LDAP authentication because of
@@ -497,7 +495,7 @@ def start_remote_user_sso(request: HttpRequest) -> HttpResponse:
     to do authentication, so we need this additional endpoint.
     """
     query = request.META['QUERY_STRING']
-    return redirect(add_query_to_redirect_url(reverse('login-sso'), query))
+    return redirect(add_query_to_redirect_url(reverse(remote_user_sso), query))
 
 @handle_desktop_flow
 def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[str]=None,
@@ -505,29 +503,26 @@ def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[s
     backend_url = reverse('social:begin', args=[backend])
     extra_url_params: Dict[str, str] = {}
     if backend == "saml":
-        result = SAMLAuthBackend.check_config()
-        if result is not None:
-            return result
+        if not SAMLAuthBackend.check_config():
+            return config_error(request, 'saml')
 
         # This backend requires the name of the IdP (from the list of configured ones)
         # to be passed as the parameter.
         if not extra_arg or extra_arg not in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS:
             logging.info("Attempted to initiate SAML authentication with wrong idp argument: %s",
                          extra_arg)
-            return redirect_to_config_error("saml")
+            return config_error(request, "saml")
         extra_url_params = {'idp': extra_arg}
 
-    if backend == "apple":
-        result = AppleAuthBackend.check_config()
-        if result is not None:
-            return result
+    if backend == "apple" and not AppleAuthBackend.check_config():
+        return config_error(request, 'apple')
 
     # TODO: Add AzureAD also.
     if backend in ["github", "google", "gitlab"]:
         key_setting = "SOCIAL_AUTH_" + backend.upper() + "_KEY"
         secret_setting = "SOCIAL_AUTH_" + backend.upper() + "_SECRET"
         if not (getattr(settings, key_setting) and getattr(settings, secret_setting)):
-            return redirect_to_config_error(backend)
+            return config_error(request, backend)
 
     return oauth_redirect_to_root(request, backend_url, 'social', extra_url_params=extra_url_params)
 
@@ -537,14 +532,13 @@ def start_social_signup(request: HttpRequest, backend: str, extra_arg: Optional[
     backend_url = reverse('social:begin', args=[backend])
     extra_url_params: Dict[str, str] = {}
     if backend == "saml":
-        result = SAMLAuthBackend.check_config()
-        if result is not None:
-            return result
+        if not SAMLAuthBackend.check_config():
+            return config_error(request, 'saml')
 
         if not extra_arg or extra_arg not in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS:
             logging.info("Attempted to initiate SAML authentication with wrong idp argument: %s",
                          extra_arg)
-            return redirect_to_config_error("saml")
+            return config_error(request, "saml")
         extra_url_params = {'idp': extra_arg}
     return oauth_redirect_to_root(request, backend_url, 'social', is_signup=True,
                                   extra_url_params=extra_url_params)
@@ -558,7 +552,8 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
     call login_or_register_remote_user, passing all the authentication
     result data that has been stored in redis, associated with this token.
     """
-    if not has_api_key_format(token):  # The tokens are intended to have the same format as API keys.
+    # The tokens are intended to have the same format as API keys.
+    if not has_api_key_format(token):
         logging.warning("log_into_subdomain: Malformed token given: %s", token)
         return HttpResponse(status=400)
 
@@ -578,7 +573,7 @@ def redirect_and_log_into_subdomain(result: ExternalAuthResult) -> HttpResponse:
     token = result.store_data()
     realm = get_realm(result.data_dict["subdomain"])
     subdomain_login_uri = (realm.uri
-                           + reverse('zerver.views.auth.log_into_subdomain', args=[token]))
+                           + reverse(log_into_subdomain, args=[token]))
     return redirect(subdomain_login_uri)
 
 def get_dev_users(realm: Optional[Realm]=None, extra_users_count: int=10) -> List[UserProfile]:
@@ -597,9 +592,9 @@ def get_dev_users(realm: Optional[Realm]=None, extra_users_count: int=10) -> Lis
     users = list(shakespearian_users) + list(extra_users)
     return users
 
-def redirect_to_misconfigured_ldap_notice(error_type: int) -> HttpResponse:
+def redirect_to_misconfigured_ldap_notice(request: HttpResponse, error_type: int) -> HttpResponse:
     if error_type == ZulipLDAPAuthBackend.REALM_IS_NONE_ERROR:
-        return redirect_to_config_error('ldap')
+        return config_error(request, 'ldap')
     else:
         raise AssertionError("Invalid error type")
 
@@ -609,10 +604,10 @@ def show_deactivation_notice(request: HttpRequest) -> HttpResponse:
         return render(request, "zerver/deactivated.html",
                       context={"deactivated_domain_name": realm.name})
 
-    return HttpResponseRedirect(reverse('zerver.views.auth.login_page'))
+    return HttpResponseRedirect(reverse('login_page'))
 
 def redirect_to_deactivation_notice() -> HttpResponse:
-    return HttpResponseRedirect(reverse('zerver.views.auth.show_deactivation_notice'))
+    return HttpResponseRedirect(reverse(show_deactivation_notice))
 
 def add_dev_login_context(realm: Optional[Realm], context: Dict[str, Any]) -> None:
     users = get_dev_users(realm)
@@ -694,7 +689,7 @@ def login_page(
     elif request.user.is_authenticated and not is_preview:
         return HttpResponseRedirect(request.user.realm.uri)
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
-        redirect_url = reverse('zerver.views.registration.realm_redirect')
+        redirect_url = reverse('realm_redirect')
         if request.GET:
             redirect_url = add_query_to_redirect_url(redirect_url, request.GET.urlencode())
         return HttpResponseRedirect(redirect_url)
@@ -732,7 +727,7 @@ def login_page(
             extra_context=extra_context, **kwargs)(request)
     except ZulipLDAPConfigurationError as e:
         assert len(e.args) > 1
-        return redirect_to_misconfigured_ldap_notice(e.args[1])
+        return redirect_to_misconfigured_ldap_notice(request, e.args[1])
 
     if isinstance(template_response, SimpleTemplateResponse):
         # Only those responses that are rendered using a template have
@@ -787,13 +782,13 @@ def dev_direct_login(
     if (not dev_auth_enabled()) or settings.PRODUCTION:
         # This check is probably not required, since authenticate would fail without
         # an enabled DevAuthBackend.
-        return redirect_to_config_error('dev')
+        return config_error(request, 'dev')
     email = request.POST['direct_email']
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
     user_profile = authenticate(dev_auth_username=email, realm=realm)
     if user_profile is None:
-        return redirect_to_config_error('dev')
+        return config_error(request, 'dev')
     do_login(request, user_profile)
 
     redirect_to = get_safe_redirect_to(next, user_profile.realm.uri)
@@ -993,7 +988,7 @@ def saml_sp_metadata(request: HttpRequest, **kwargs: Any) -> HttpResponse:  # no
     Taken from https://python-social-auth.readthedocs.io/en/latest/backends/saml.html
     """
     if not saml_auth_enabled():
-        return redirect_to_config_error("saml")
+        return config_error(request, "saml")
 
     complete_url = reverse('social:complete', args=("saml",))
     saml_backend = load_backend(load_strategy(request), "saml",
@@ -1005,7 +1000,7 @@ def saml_sp_metadata(request: HttpRequest, **kwargs: Any) -> HttpResponse:  # no
 
     return HttpResponseServerError(content=', '.join(errors))
 
-def config_error_view(request: HttpRequest, error_category_name: str) -> HttpResponse:
+def config_error(request: HttpRequest, error_category_name: str) -> HttpResponse:
     contexts = {
         'apple': {'social_backend_name': 'apple', 'has_markdown_file': True},
         'google': {'social_backend_name': 'google', 'has_markdown_file': True},
@@ -1015,9 +1010,8 @@ def config_error_view(request: HttpRequest, error_category_name: str) -> HttpRes
         'dev': {'error_name': 'dev_not_supported_error'},
         'saml': {'social_backend_name': 'saml'},
         'smtp': {'error_name': 'smtp_error'},
-        'backend_disabled': {'error_name': 'remoteuser_error_backend_disabled'},
+        'remote_user_backend_disabled': {'error_name': 'remoteuser_error_backend_disabled'},
         'remote_user_header_missing': {'error_name': 'remoteuser_error_remote_user_header_missing'},
     }
 
-    return TemplateView.as_view(template_name='zerver/config_error.html',
-                                extra_context=contexts[error_category_name])(request)
+    return render(request, 'zerver/config_error.html', contexts[error_category_name])

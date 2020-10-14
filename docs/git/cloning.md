@@ -1,14 +1,14 @@
 # Get Zulip code
 
 Zulip uses a **forked-repo** and **[rebase][gitbook-rebase]-oriented
-workflow.**. This means that all contributors create a fork of the [Zulip
+workflow**. This means that all contributors create a fork of the [Zulip
 repository][github-zulip] they want to contribute to and then submit pull
 requests to the upstream repository to have their contributions reviewed and
 accepted. We also recommend you work on feature branches.
 
 ## Step 1a: Create your fork
 
-The following steps you'll only need to do the first time you setup a machine
+The following steps you'll only need to do the first time you set up a machine
 for contributing to a given Zulip project. You'll need to repeat the steps for
 any additional Zulip projects ([list][github-zulip]) that you work on.
 

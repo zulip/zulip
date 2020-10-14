@@ -1,14 +1,14 @@
 "use strict";
 
-const assert = require("assert").strict;
+const {strict: assert} = require("assert");
 
-const test_credentials = require("../../var/casper/test_credentials.js").test_credentials;
+const {test_credentials} = require("../../var/puppeteer/test_credentials");
 const common = require("../puppeteer_lib/common");
 
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const GENERIC_BOT_TYPE = "1";
 
-const zuliprc_regex = /^data:application\/octet-stream;charset=utf-8,\[api\]\nemail=.+\nkey=.+\nsite=.+\n$/;
+const zuliprc_regex = /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\n$/;
 
 async function get_decoded_url_in_selector(page, selector) {
     return await page.evaluate(
@@ -41,6 +41,7 @@ async function test_change_full_name(page) {
     await page.$eval(full_name_input_selector, (el) => {
         el.value = "";
     });
+    await page.waitForFunction(() => $(":focus").attr("id") === "change_full_name_modal");
     await page.type(full_name_input_selector, "New name");
     await page.click(change_full_name_button_selector);
     await page.waitForFunction(() => $("#change_full_name").text().trim() === "New name");
@@ -52,6 +53,7 @@ async function test_change_password(page) {
     const change_password_button_selector = "#change_password_button";
     await page.waitForSelector(change_password_button_selector, {visible: true});
 
+    await page.waitForFunction(() => $(":focus").attr("id") === "change_password_modal");
     await page.type("#old_password", test_credentials.default_user.password);
     await page.type("#new_password", "new_password");
     await page.click(change_password_button_selector);
@@ -66,6 +68,7 @@ async function test_get_api_key(page) {
 
     const get_api_key_button_selector = "#get_api_key_button";
     await page.waitForSelector(get_api_key_button_selector, {visible: true});
+    await page.waitForFunction(() => $(":focus").attr("id") === "api_key_modal");
     await common.fill_form(page, "#api_key_form", {
         password: test_credentials.default_user.password,
     });
@@ -73,7 +76,7 @@ async function test_get_api_key(page) {
 
     await page.waitForSelector("#show_api_key", {visible: true});
     const api_key = await common.get_text_from_selector(page, "#api_key_value");
-    assert(/[a-zA-Z0-9]{32}/.test(api_key), "Incorrect API key format.");
+    assert(/[\dA-Za-z]{32}/.test(api_key), "Incorrect API key format.");
 
     const download_zuliprc_selector = "#download_zuliprc";
     await page.click(download_zuliprc_selector);
@@ -94,7 +97,7 @@ async function test_webhook_bot_creation(page) {
 
     const bot_email = "1-bot@zulip.testserver";
     const download_zuliprc_selector = '.download_bot_zuliprc[data-email="' + bot_email + '"]';
-    const outgoing_webhook_zuliprc_regex = /^data:application\/octet-stream;charset=utf-8,\[api\]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
+    const outgoing_webhook_zuliprc_regex = /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
 
     await page.waitForSelector(download_zuliprc_selector, {visible: true});
     await page.click(download_zuliprc_selector);
@@ -134,7 +137,7 @@ async function test_botserverrc(page) {
         page,
         "#download_botserverrc",
     );
-    const botserverrc_regex = /^data:application\/octet-stream;charset=utf-8,\[\]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
+    const botserverrc_regex = /^data:application\/octet-stream;charset=utf-8,\[]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
     assert(botserverrc_regex.test(botserverrc_decoded_url), "Incorrect botserverrc format.");
 }
 
@@ -270,7 +273,7 @@ async function assert_language_changed_to_chinese(page) {
 async function test_i18n_language_precedence(page) {
     const settings_url_for_german = "http://zulip.zulipdev.com:9981/de/#settings";
     await page.goto(settings_url_for_german);
-    await page.waitForSelector("#settings-change-box");
+    await page.waitForSelector("#settings-change-box", {visible: true});
     const page_language_code = await page.evaluate(() => document.documentElement.lang);
     assert.strictEqual(page_language_code, "de");
 }
@@ -286,6 +289,7 @@ async function test_default_language_setting(page) {
     await page.waitForSelector("#default_language", {visible: true});
     await assert_language_changed_to_chinese(page);
     await test_i18n_language_precedence(page);
+    await page.waitForSelector(display_settings_section, {visible: true});
     await page.click(display_settings_section);
 
     // Change the language back to English so that subsequent tests pass.
@@ -294,7 +298,7 @@ async function test_default_language_setting(page) {
     // As we've opened settings page in German the language status will be german.
     await check_language_setting_status(page, "de");
     await page.goto("http://zulip.zulipdev.com:9981/#settings"); // get back to normal language.
-    await page.waitForSelector(display_settings_section);
+    await page.waitForSelector(display_settings_section, {visible: true});
     await page.click(display_settings_section);
     await page.waitForSelector("#language-settings-status", {visible: true});
     await page.waitForSelector("#default_language", {visible: true});

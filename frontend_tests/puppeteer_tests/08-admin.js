@@ -1,6 +1,6 @@
 "use strict";
 
-const assert = require("assert").strict;
+const {strict: assert} = require("assert");
 
 const common = require("../puppeteer_lib/common");
 
@@ -35,13 +35,19 @@ async function test_change_new_stream_notifications_setting(page) {
         "#realm_notifications_stream_id_widget  .dropdown-search > input[type=text]",
         "verona",
     );
-    await page.click(
-        "#realm_notifications_stream_id_widget .dropdown-list-body > li:nth-of-type(1)",
-    );
+
+    const verona_in_dropdown =
+        "#realm_notifications_stream_id_widget .dropdown-list-body > li:nth-of-type(1)";
+
+    await common.wait_for_text(page, verona_in_dropdown, "Verona");
+    await page.waitForSelector(verona_in_dropdown, {visible: true});
+    await page.evaluate((selector) => $(selector).click(), verona_in_dropdown);
+
     await submit_notifications_stream_settings(page);
 
     const disable_stream_notifications =
         "#realm_notifications_stream_id_widget  .dropdown_list_reset_button";
+    await page.waitForSelector(disable_stream_notifications, {visible: true});
     await page.click(disable_stream_notifications);
     await submit_notifications_stream_settings(page);
 }
@@ -83,12 +89,12 @@ async function test_permissions_change_save_worked(page) {
 
 async function submit_stream_permissions_change(page) {
     const save_button = "#org-submit-stream-permissions";
+    await page.waitForSelector(save_button, {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(page, save_button),
         "Save changes",
         "Save button didn't appear for permissions change.",
     );
-    await page.waitForSelector(save_button, {visible: true});
     await page.click(save_button);
 
     await test_permissions_change_save_worked(page);

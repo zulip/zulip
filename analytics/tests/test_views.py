@@ -52,12 +52,15 @@ class TestStatsEndpoint(ZulipTestCase):
         result = self.client_get('/stats/realm/zulip/')
         self.assertEqual(result.status_code, 302)
 
+        result = self.client_get('/stats/realm/not_existing_realm/')
+        self.assertEqual(result.status_code, 302)
+
         user = self.example_user('hamlet')
         user.is_staff = True
         user.save(update_fields=['is_staff'])
 
         result = self.client_get('/stats/realm/not_existing_realm/')
-        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.status_code, 404)
 
         result = self.client_get('/stats/realm/zulip/')
         self.assertEqual(result.status_code, 200)
@@ -101,14 +104,14 @@ class TestGetChartData(ZulipTestCase):
             insert_time = self.end_times_day[2]
             fill_time = self.end_times_day[-1]
 
-        RealmCount.objects.bulk_create([
+        RealmCount.objects.bulk_create(
             RealmCount(property=stat.property, subgroup=subgroup, end_time=insert_time,
                        value=100+i, realm=self.realm)
-            for i, subgroup in enumerate(realm_subgroups)])
-        UserCount.objects.bulk_create([
+            for i, subgroup in enumerate(realm_subgroups))
+        UserCount.objects.bulk_create(
             UserCount(property=stat.property, subgroup=subgroup, end_time=insert_time,
                       value=200+i, realm=self.realm, user=self.user)
-            for i, subgroup in enumerate(user_subgroups)])
+            for i, subgroup in enumerate(user_subgroups))
         FillState.objects.create(property=stat.property, end_time=fill_time, state=FillState.DONE)
 
     def test_number_of_humans(self) -> None:
@@ -302,7 +305,7 @@ class TestGetChartData(ZulipTestCase):
         data = result.json()
         end_times = [ceiling_to_day(self.realm.date_created) + timedelta(days=i) for i in range(-1, 4)]
         self.assertEqual(data['end_times'], [datetime_to_timestamp(dt) for dt in end_times])
-        self.assertEqual(data['everyone'], {'_1day': [0]+self.data(100), '_15day': [0]+self.data(100), 'all_time': [0]+self.data(100)})
+        self.assertEqual(data['everyone'], {'_1day': [0, *self.data(100)], '_15day': [0, *self.data(100)], 'all_time': [0, *self.data(100)]})
 
     def test_non_existent_chart(self) -> None:
         result = self.client_get('/json/analytics/chart_data',
@@ -458,8 +461,9 @@ class TestSupportEndpoint(ZulipTestCase):
                                              '<b>Billing schedule</b>: Annual',
                                              '<b>Licenses</b>: 2/10 (Manual)',
                                              '<b>Price per license</b>: $80.0',
-                                             '<b>Payment method</b>: Send invoice',
                                              '<b>Next invoice date</b>: 02 January 2017',
+                                             '<option value="send_invoice" selected>',
+                                             '<option value="charge_automatically" >'
                                              ], result)
 
         def check_preregistration_user_query_result(result: HttpResponse, email: str, invite: bool=False) -> None:
@@ -569,6 +573,28 @@ class TestSupportEndpoint(ZulipTestCase):
         check_realm_reactivation_link_query_result(result)
         check_zulip_realm_query_result(result)
 
+    @mock.patch("analytics.views.update_billing_method_of_current_plan")
+    def test_change_billing_method(self, m: mock.Mock) -> None:
+        cordelia = self.example_user('cordelia')
+        self.login_user(cordelia)
+
+        result = self.client_post("/activity/support", {"realm_id": f"{cordelia.realm_id}", "plan_type": "2"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        result = self.client_post("/activity/support", {"realm_id": f"{iago.realm_id}", "billing_method": "charge_automatically"})
+        m.assert_called_once_with(get_realm("zulip"), charge_automatically=True)
+        self.assert_in_success_response(["Billing method of zulip updated to charge automatically"], result)
+
+        m.reset_mock()
+
+        result = self.client_post("/activity/support", {"realm_id": f"{iago.realm_id}", "billing_method": "send_invoice"})
+        m.assert_called_once_with(get_realm("zulip"), charge_automatically=False)
+        self.assert_in_success_response(["Billing method of zulip updated to pay by invoice"], result)
+
     def test_change_plan_type(self) -> None:
         cordelia = self.example_user('cordelia')
         self.login_user(cordelia)
@@ -583,7 +609,7 @@ class TestSupportEndpoint(ZulipTestCase):
         with mock.patch("analytics.views.do_change_plan_type") as m:
             result = self.client_post("/activity/support", {"realm_id": f"{iago.realm_id}", "plan_type": "2"})
             m.assert_called_once_with(get_realm("zulip"), 2)
-            self.assert_in_success_response(["Plan type of Zulip Dev changed from self hosted to limited"], result)
+            self.assert_in_success_response(["Plan type of zulip changed from self hosted to limited"], result)
 
     def test_attach_discount(self) -> None:
         cordelia = self.example_user('cordelia')
@@ -599,7 +625,7 @@ class TestSupportEndpoint(ZulipTestCase):
         with mock.patch("analytics.views.attach_discount_to_realm") as m:
             result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "discount": "25"})
             m.assert_called_once_with(get_realm("lear"), 25)
-            self.assert_in_success_response(["Discount of Lear &amp; Co. changed to 25 from None"], result)
+            self.assert_in_success_response(["Discount of lear changed to 25 from None"], result)
 
     def test_change_sponsorship_status(self) -> None:
         lear_realm = get_realm("lear")
@@ -618,14 +644,14 @@ class TestSupportEndpoint(ZulipTestCase):
 
         result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}",
                                                         "sponsorship_pending": "true"})
-        self.assert_in_success_response(["Lear &amp; Co. marked as pending sponsorship."], result)
+        self.assert_in_success_response(["lear marked as pending sponsorship."], result)
         customer = get_customer_by_realm(lear_realm)
         assert(customer is not None)
         self.assertTrue(customer.sponsorship_pending)
 
         result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}",
                                                         "sponsorship_pending": "false"})
-        self.assert_in_success_response(["Lear &amp; Co. is no longer pending sponsorship."], result)
+        self.assert_in_success_response(["lear is no longer pending sponsorship."], result)
         customer = get_customer_by_realm(lear_realm)
         assert(customer is not None)
         self.assertFalse(customer.sponsorship_pending)
@@ -650,7 +676,7 @@ class TestSupportEndpoint(ZulipTestCase):
 
         result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}",
                                                         "approve_sponsorship": "approve_sponsorship"})
-        self.assert_in_success_response(["Sponsorship approved for Lear &amp; Co."], result)
+        self.assert_in_success_response(["Sponsorship approved for lear"], result)
         lear_realm.refresh_from_db()
         self.assertEqual(lear_realm.plan_type, Realm.STANDARD_FREE)
         customer = get_customer_by_realm(lear_realm)
@@ -674,12 +700,42 @@ class TestSupportEndpoint(ZulipTestCase):
         with mock.patch("analytics.views.do_deactivate_realm") as m:
             result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "status": "deactivated"})
             m.assert_called_once_with(lear_realm, self.example_user("iago"))
-            self.assert_in_success_response(["Lear &amp; Co. deactivated"], result)
+            self.assert_in_success_response(["lear deactivated"], result)
 
         with mock.patch("analytics.views.do_send_realm_reactivation_email") as m:
             result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "status": "active"})
             m.assert_called_once_with(lear_realm)
-            self.assert_in_success_response(["Realm reactivation email sent to admins of Lear"], result)
+            self.assert_in_success_response(["Realm reactivation email sent to admins of lear"], result)
+
+    def test_downgrade_realm(self) -> None:
+        cordelia = self.example_user('cordelia')
+        self.login_user(cordelia)
+        result = self.client_post("/activity/support", {"realm_id": f"{cordelia.realm_id}", "plan_type": "2"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        with mock.patch("analytics.views.downgrade_at_the_end_of_billing_cycle") as m:
+            result = self.client_post("/activity/support", {"realm_id": f"{iago.realm_id}",
+                                      "downgrade_method": "downgrade_at_billing_cycle_end"})
+            m.assert_called_once_with(get_realm("zulip"))
+            self.assert_in_success_response(["zulip marked for downgrade at the end of billing cycle"], result)
+
+        with mock.patch("analytics.views.downgrade_now_without_creating_additional_invoices") as m:
+            result = self.client_post("/activity/support", {"realm_id": f"{iago.realm_id}",
+                                      "downgrade_method": "downgrade_now_without_additional_licenses"})
+            m.assert_called_once_with(get_realm("zulip"))
+            self.assert_in_success_response(["zulip downgraded without creating additional invoices"], result)
+
+        with mock.patch("analytics.views.downgrade_now_without_creating_additional_invoices") as m1:
+            with mock.patch("analytics.views.void_all_open_invoices", return_value=1) as m2:
+                result = self.client_post("/activity/support", {"realm_id": f"{iago.realm_id}",
+                                          "downgrade_method": "downgrade_now_void_open_invoices"})
+                m1.assert_called_once_with(get_realm("zulip"))
+                m2.assert_called_once_with(get_realm("zulip"))
+                self.assert_in_success_response(["zulip downgraded and voided 1 open invoices"], result)
 
     def test_scrub_realm(self) -> None:
         cordelia = self.example_user('cordelia')
@@ -695,7 +751,7 @@ class TestSupportEndpoint(ZulipTestCase):
         with mock.patch("analytics.views.do_scrub_realm") as m:
             result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "scrub_realm": "scrub_realm"})
             m.assert_called_once_with(lear_realm, acting_user=self.example_user("iago"))
-            self.assert_in_success_response(["Lear &amp; Co. scrubbed"], result)
+            self.assert_in_success_response(["lear scrubbed"], result)
 
         with mock.patch("analytics.views.do_scrub_realm") as m:
             result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}"})

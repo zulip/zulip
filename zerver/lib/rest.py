@@ -1,10 +1,10 @@
 from functools import wraps
-from typing import Any, Dict, cast
+from typing import Any, Callable, Dict, Mapping, Set, Tuple, Union, cast
 
-from django.conf import settings
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse
+from django.urls import path
+from django.urls.resolvers import URLPattern
 from django.utils.cache import add_never_cache_headers
-from django.utils.module_loading import import_string
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from zerver.decorator import (
@@ -13,7 +13,8 @@ from zerver.decorator import (
     authenticated_uploads_api_view,
     process_as_post,
 )
-from zerver.lib.response import json_method_not_allowed, json_unauthorized
+from zerver.lib.exceptions import MissingAuthenticationError
+from zerver.lib.response import json_method_not_allowed
 from zerver.lib.types import ViewFuncT
 
 METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
@@ -90,9 +91,8 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         entry = supported_methods[method_to_use]
         if isinstance(entry, tuple):
             target_function, view_flags = entry
-            target_function = import_string(target_function)
         else:
-            target_function = import_string(supported_methods[method_to_use])
+            target_function = supported_methods[method_to_use]
             view_flags = set()
 
         # Set request._query for update_activity_user(), which is called
@@ -138,26 +138,18 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             # Wrap function with decorator to authenticate the user before
             # proceeding
             target_function = authenticated_rest_api_view(
-                is_webhook='allow_incoming_webhooks' in view_flags,
+                allow_webhook_access='allow_incoming_webhooks' in view_flags,
             )(target_function)
-        # Pick a way to tell user they're not authed based on how the request was made
+        elif request.path.startswith("/json") and 'allow_anonymous_user_web' in view_flags:
+            # For endpoints that support anonymous web access, we do that.
+            # TODO: Allow /api calls when this is stable enough.
+            auth_kwargs = dict(allow_unauthenticated=True)
+            target_function = csrf_protect(authenticated_json_view(
+                target_function, **auth_kwargs))
         else:
-            # If this looks like a request from a top-level page in a
-            # browser, send the user to the login page
-            if 'text/html' in request.META.get('HTTP_ACCEPT', ''):
-                # TODO: It seems like the `?next=` part is unlikely to be helpful
-                return HttpResponseRedirect(f'{settings.HOME_NOT_LOGGED_IN}?next={request.path}')
-            # Ask for basic auth (email:apiKey)
-            elif request.path.startswith("/api"):
-                return json_unauthorized()
-            # Logged out user accessing an endpoint with anonymous user access on JSON; proceed.
-            elif request.path.startswith("/json") and 'allow_anonymous_user_web' in view_flags:
-                auth_kwargs = dict(allow_unauthenticated=True)
-                target_function = csrf_protect(authenticated_json_view(
-                    target_function, **auth_kwargs))
-            # Session cookie expired, notify the client
-            else:
-                return json_unauthorized(www_authenticate='session')
+            # Otherwise, throw an authentication error; our middleware
+            # will generate the appropriate HTTP response.
+            raise MissingAuthenticationError()
 
         if request.method not in ["GET", "POST"]:
             # process_as_post needs to be the outer decorator, because
@@ -168,3 +160,10 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         return target_function(request, **kwargs)
 
     return json_method_not_allowed(list(supported_methods.keys()))
+
+def rest_path(
+    route: str,
+    kwargs: Mapping[str, object] = {},
+    **handlers: Union[Callable[..., HttpResponse], Tuple[Callable[..., HttpResponse], Set[str]]],
+) -> URLPattern:
+    return path(route, rest_dispatch, {**kwargs, **handlers})

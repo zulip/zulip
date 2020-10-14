@@ -4,9 +4,10 @@ const _ = require("lodash");
 const moment = require("moment-timezone");
 const rewiremock = require("rewiremock/node");
 
-rewiremock.proxy(() => zrequire("people"), {
+const people = rewiremock.proxy(() => zrequire("people"), {
     "moment-timezone": () => moment("20130208T080910"),
 });
+
 set_global("message_store", {});
 set_global("page_params", {});
 set_global("settings_data", {});
@@ -736,20 +737,20 @@ run_test("extract_people_from_message", () => {
     assert(!people.is_known_user_id(maria.user_id));
 
     let reported;
-    people.report_late_add = function (user_id, email) {
+    people.__Rewire__("report_late_add", (user_id, email) => {
         assert.equal(user_id, maria.user_id);
         assert.equal(email, maria.email);
         reported = true;
-    };
+    });
 
     people.extract_people_from_message(message);
     assert(people.is_known_user_id(maria.user_id));
     assert(reported);
 
     // Get line coverage
-    people.report_late_add = function () {
-        throw Error("unexpected late add");
-    };
+    people.__Rewire__("report_late_add", () => {
+        throw new Error("unexpected late add");
+    });
 
     message = {
         type: "private",
@@ -877,14 +878,14 @@ run_test("updates", () => {
     const all_people = get_all_persons();
     assert.equal(all_people.length, 2);
 
-    person = all_people.filter((p) => p.email === new_email)[0];
+    person = all_people.find((p) => p.email === new_email);
     assert.equal(person.full_name, "Foo Barson");
 
     // Test shim where we can still retrieve user info using the
     // old email.
     blueslip.expect(
         "warn",
-        "Obsolete email passed to get_by_email: " + "FOO@example.com new email = bar@example.com",
+        "Obsolete email passed to get_by_email: FOO@example.com new email = bar@example.com",
     );
     person = people.get_by_email(old_email);
     assert.equal(person.user_id, user_id);

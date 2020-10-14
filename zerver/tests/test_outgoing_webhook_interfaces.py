@@ -11,6 +11,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
 from zerver.models import SLACK_INTERFACE, Message, get_realm, get_stream, get_user
+from zerver.openapi.openapi import validate_against_openapi_schema
 
 
 class TestGenericOutgoingWebhookService(ZulipTestCase):
@@ -107,6 +108,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 
         request_data = self.handler.build_bot_request(event)
         request_data = json.loads(request_data)
+        validate_against_openapi_schema(request_data, '/zulip-outgoing-webhook', 'post', '200')
         self.assertEqual(request_data['data'], "@**test**")
         self.assertEqual(request_data['token'], "abcdef")
         self.assertEqual(request_data['message'], expected_message_data)
@@ -135,7 +137,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         )
         self.assertEqual(success_response, expected_response)
 
-        response = dict()
+        response = {}
         success_response = self.handler.process_success(response)
         self.assertEqual(success_response, None)
 

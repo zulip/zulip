@@ -1,5 +1,7 @@
 "use strict";
 
+const path = require("path");
+
 const _ = require("lodash");
 
 const requires = [];
@@ -17,15 +19,26 @@ exports.set_global = function (name, val) {
     return val;
 };
 
-exports.zrequire = function (name, fn) {
+function require_path(name, fn) {
     if (fn === undefined) {
         fn = "../../static/js/" + name;
     } else if (/^generated\/|^js\/|^shared\/|^third\//.test(fn)) {
         // FIXME: Stealing part of the NPM namespace is confusing.
         fn = "../../static/" + fn;
     }
-    delete require.cache[require.resolve(fn)];
+
+    return fn;
+}
+
+exports.zrequire = function (name, fn) {
+    fn = require_path(name, fn);
     requires.push(fn);
+    return require(fn);
+};
+
+exports.reset_module = function (name, fn) {
+    fn = require_path(name, fn);
+    delete require.cache[require.resolve(fn)];
     return require(fn);
 };
 
@@ -39,11 +52,10 @@ exports.clear_zulip_refs = function () {
         correctly, but it will fail if we
         run it standalone.
     */
+    const staticPath = path.resolve(__dirname, "../../static") + path.sep;
     _.each(require.cache, (_, fn) => {
-        if (fn.indexOf("static/") >= 0) {
-            if (fn.indexOf("static/templates") < 0) {
-                delete require.cache[fn];
-            }
+        if (fn.startsWith(staticPath) && !fn.startsWith(staticPath + "templates" + path.sep)) {
+            delete require.cache[fn];
         }
     });
 };
@@ -87,7 +99,7 @@ exports.with_overrides = function (test_function) {
 
     const override = function (name, f) {
         if (typeof f !== "function") {
-            throw new Error("You can only override with a function.");
+            throw new TypeError("You can only override with a function.");
         }
 
         unused_funcs.set(name, true);

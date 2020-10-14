@@ -307,7 +307,7 @@ def compute_show_invites_and_add_streams(user_profile: Optional[UserProfile]) ->
 
     return True, True
 
-def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
+def format_user_row(realm: Realm, acting_user: Optional[UserProfile], row: Dict[str, Any],
                     client_gravatar: bool, user_avatar_url_field_optional: bool,
                     custom_profile_field_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Formats a user row returned by a database fetch using
@@ -362,8 +362,8 @@ def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
                                                 medium=False,
                                                 client_gravatar=client_gravatar)
 
-    if (realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS and
-            acting_user.is_realm_admin):
+    if acting_user is not None and (realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS and
+                                    acting_user.is_realm_admin):
         result['delivery_email'] = row['delivery_email']
 
     if is_bot:
@@ -394,7 +394,7 @@ def user_profile_to_user_row(user_profile: UserProfile) -> Dict[str, Any]:
     # changing realm_user_dict_fields to name the bot owner with
     # the less readable `bot_owner` (instead of `bot_owner_id`).
     user_row = model_to_dict(user_profile,
-                             fields=realm_user_dict_fields + ['bot_owner'])
+                             fields=[*realm_user_dict_fields, 'bot_owner'])
     user_row['bot_owner_id'] = user_row['bot_owner']
     del user_row['bot_owner']
     return user_row
@@ -441,7 +441,7 @@ def get_custom_profile_field_values(custom_profile_field_values:
             }
     return profiles_by_user_id
 
-def get_raw_user_data(realm: Realm, acting_user: UserProfile, *, target_user: Optional[UserProfile]=None,
+def get_raw_user_data(realm: Realm, acting_user: Optional[UserProfile], *, target_user: Optional[UserProfile]=None,
                       client_gravatar: bool, user_avatar_url_field_optional: bool,
                       include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
     """Fetches data about the target user(s) appropriate for sending to

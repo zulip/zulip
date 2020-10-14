@@ -1,11 +1,11 @@
 from zerver.lib.test_classes import WebhookTestCase
 
+TOPIC = "Zulip HQ"
 
 class BasecampHookTests(WebhookTestCase):
     STREAM_NAME = 'basecamp'
     URL_TEMPLATE = "/api/v1/external/basecamp?stream={stream}&api_key={api_key}"
     FIXTURE_DIR_NAME = 'basecamp'
-    EXPECTED_TOPIC = "Zulip HQ"
 
     def test_basecamp_makes_doc_active(self) -> None:
         expected_message = "Tomasz activated the document [New doc](https://3.basecamp.com/3688623/buckets/2957043/documents/432522214)."
@@ -136,4 +136,4 @@ class BasecampHookTests(WebhookTestCase):
         self._send_and_test_message('comment_created', expected_message)
 
     def _send_and_test_message(self, fixture_name: str, expected_message: str) -> None:
-        self.send_and_test_stream_message(fixture_name, self.EXPECTED_TOPIC, expected_message)
+        self.check_webhook(fixture_name, TOPIC, expected_message)

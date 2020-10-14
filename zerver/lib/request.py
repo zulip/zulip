@@ -1,3 +1,4 @@
+import threading
 from collections import defaultdict
 from functools import wraps
 from types import FunctionType
@@ -297,7 +298,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
             if param.argument_type == 'body':
                 try:
                     val = orjson.loads(request.body)
-                except ValueError:
+                except orjson.JSONDecodeError:
                     raise InvalidJSONError(_("Malformed JSON"))
                 kwargs[func_var_name] = val
                 continue
@@ -346,7 +347,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
             if param.validator is not None and not default_assigned:
                 try:
                     val = orjson.loads(val)
-                except Exception:
+                except orjson.JSONDecodeError:
                     raise JsonableError(_('Argument "{}" is not valid JSON.').format(post_var_name))
 
                 try:
@@ -366,3 +367,22 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
         return view_func(request, *args, **kwargs)
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+
+
+local = threading.local()
+
+def get_current_request() -> Optional[HttpRequest]:
+    """Returns the current HttpRequest object; this should only be used by
+    logging frameworks, which have no other access to the current
+    request.  All other codepaths should pass through the current
+    request object, rather than rely on this thread-local global.
+
+    """
+    return getattr(local, 'request', None)
+
+def set_request(req: HttpRequest) -> None:
+    setattr(local, 'request', req)
+
+def unset_request() -> None:
+    if hasattr(local, 'request'):
+        delattr(local, 'request')

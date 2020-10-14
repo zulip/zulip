@@ -5,6 +5,7 @@ import logging
 import os
 import random
 import re
+import secrets
 import shutil
 import unicodedata
 import urllib
@@ -30,7 +31,6 @@ from PIL.Image import DecompressionBombError
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.utils import generate_random_token
 from zerver.models import Attachment, Message, Realm, RealmEmoji, UserProfile
 
 DEFAULT_AVATAR_SIZE = 100
@@ -94,9 +94,6 @@ def sanitize_name(value: str) -> str:
     assert value not in {'', '.', '..'}
     return mark_safe(value)
 
-def random_name(bytes: int=60) -> str:
-    return base64.urlsafe_b64encode(os.urandom(bytes)).decode('utf-8')
-
 class BadImageError(JsonableError):
     code = ErrorCode.BAD_IMAGE
 
@@ -156,19 +153,22 @@ def resize_logo(image_data: bytes) -> bytes:
 def resize_gif(im: GifImageFile, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
     frames = []
     duration_info = []
+    disposals = []
     # If 'loop' info is not set then loop for infinite number of times.
     loop = im.info.get("loop", 0)
     for frame_num in range(0, im.n_frames):
         im.seek(frame_num)
-        new_frame = Image.new("RGBA", im.size)
+        new_frame = im.copy()
         new_frame.paste(im, (0, 0), im.convert("RGBA"))
-        new_frame = ImageOps.fit(new_frame, (size, size), Image.ANTIALIAS)
+        new_frame = ImageOps.pad(new_frame, (size, size), Image.ANTIALIAS)
         frames.append(new_frame)
         duration_info.append(im.info['duration'])
+        disposals.append(im.disposal_method)
     out = io.BytesIO()
-    frames[0].save(out, save_all=True, optimize=True,
+    frames[0].save(out, save_all=True, optimize=False,
                    format="GIF", append_images=frames[1:],
                    duration=duration_info,
+                   disposal=disposals,
                    loop=loop)
     return out.getvalue()
 
@@ -182,11 +182,11 @@ def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
             # results in resized gifs being broken. To work around this we
             # only resize under certain conditions to minimize the chance of
             # creating ugly gifs.
-            should_resize = any((
-                im.size[0] != im.size[1],                            # not square
-                im.size[0] > MAX_EMOJI_GIF_SIZE,                     # dimensions too large
-                len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES,     # filesize too large
-            ))
+            should_resize = (
+                im.size[0] != im.size[1]                             # not square
+                or im.size[0] > MAX_EMOJI_GIF_SIZE                   # dimensions too large
+                or len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES   # filesize too large
+            )
             return resize_gif(im, size) if should_resize else image_data
         else:
             im = exif_rotate(im)
@@ -256,7 +256,7 @@ class ZulipUploadBackend:
                               percent_callback: Optional[Callable[[Any], None]]=None) -> str:
         raise NotImplementedError()
 
-    def delete_export_tarball(self, path_id: str) -> Optional[str]:
+    def delete_export_tarball(self, export_path: str) -> Optional[str]:
         raise NotImplementedError()
 
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
@@ -362,7 +362,7 @@ class S3UploadBackend(ZulipUploadBackend):
             target_realm = user_profile.realm
         s3_file_name = "/".join([
             str(target_realm.id),
-            random_name(18),
+            secrets.token_urlsafe(18),
             sanitize_name(uploaded_file_name),
         ])
         url = f"/user_uploads/{s3_file_name}"
@@ -591,7 +591,7 @@ class S3UploadBackend(ZulipUploadBackend):
     def upload_export_tarball(self, realm: Optional[Realm], tarball_path: str,
                               percent_callback: Optional[Callable[[Any], None]]=None) -> str:
         # We use the avatar bucket, because it's world-readable.
-        key = self.avatar_bucket.Object(os.path.join("exports", generate_random_token(32),
+        key = self.avatar_bucket.Object(os.path.join("exports", secrets.token_hex(16),
                                                      os.path.basename(tarball_path)))
 
         key.upload_file(tarball_path, Callback=percent_callback)
@@ -609,9 +609,11 @@ class S3UploadBackend(ZulipUploadBackend):
         )
         return public_url
 
-    def delete_export_tarball(self, path_id: str) -> Optional[str]:
+    def delete_export_tarball(self, export_path: str) -> Optional[str]:
+        assert export_path.startswith("/")
+        path_id = export_path[1:]
         if self.delete_file_from_s3(path_id, self.avatar_bucket):
-            return path_id
+            return export_path
         return None
 
 ### Local
@@ -652,7 +654,7 @@ def generate_unauthed_file_access_url(path_id: str) -> str:
     token = base64.b16encode(signed_data.encode('utf-8')).decode('utf-8')
 
     filename = path_id.split('/')[-1]
-    return reverse('zerver.views.upload.serve_local_file_unauthed', args=[token, filename])
+    return reverse('local_file_unauthed', args=[token, filename])
 
 def get_local_file_path_id_from_token(token: str) -> Optional[str]:
     signer = TimestampSigner(salt=LOCAL_FILE_ACCESS_TOKEN_SALT)
@@ -672,7 +674,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         path = "/".join([
             str(user_profile.realm_id),
             format(random.randint(0, 255), 'x'),
-            random_name(18),
+            secrets.token_urlsafe(18),
             sanitize_name(uploaded_file_name),
         ])
 
@@ -819,7 +821,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         path = os.path.join(
             'exports',
             str(realm.id),
-            random_name(18),
+            secrets.token_urlsafe(18),
             os.path.basename(tarball_path),
         )
         abs_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'avatars', path)
@@ -828,11 +830,12 @@ class LocalUploadBackend(ZulipUploadBackend):
         public_url = realm.uri + '/user_avatars/' + path
         return public_url
 
-    def delete_export_tarball(self, path_id: str) -> Optional[str]:
+    def delete_export_tarball(self, export_path: str) -> Optional[str]:
         # Get the last element of a list in the form ['user_avatars', '<file_path>']
-        file_path = path_id.strip('/').split('/', 1)[-1]
+        assert export_path.startswith("/")
+        file_path = export_path[1:].split('/', 1)[-1]
         if delete_local_file('avatars', file_path):
-            return path_id
+            return export_path
         return None
 
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
@@ -879,9 +882,11 @@ def upload_message_file(uploaded_file_name: str, uploaded_file_size: int,
 def claim_attachment(user_profile: UserProfile,
                      path_id: str,
                      message: Message,
-                     is_message_realm_public: bool) -> Attachment:
+                     is_message_realm_public: bool,
+                     is_message_web_public: bool=False) -> Attachment:
     attachment = Attachment.objects.get(path_id=path_id)
     attachment.messages.add(message)
+    attachment.is_web_public = attachment.is_web_public or is_message_web_public
     attachment.is_realm_public = attachment.is_realm_public or is_message_realm_public
     attachment.save()
     return attachment
@@ -905,5 +910,5 @@ def upload_export_tarball(realm: Realm, tarball_path: str,
     return upload_backend.upload_export_tarball(realm, tarball_path,
                                                 percent_callback=percent_callback)
 
-def delete_export_tarball(path_id: str) -> Optional[str]:
-    return upload_backend.delete_export_tarball(path_id)
+def delete_export_tarball(export_path: str) -> Optional[str]:
+    return upload_backend.delete_export_tarball(export_path)

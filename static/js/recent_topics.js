@@ -6,6 +6,8 @@ const render_recent_topic_row = require("../templates/recent_topic_row.hbs");
 const render_recent_topics_filters = require("../templates/recent_topics_filters.hbs");
 const render_recent_topics_body = require("../templates/recent_topics_table.hbs");
 
+const people = require("./people");
+
 const topics = new Map(); // Key is stream-id:topic.
 let topics_widget;
 // Sets the number of avatars to display.
@@ -173,7 +175,7 @@ function format_topic(topic_data) {
     // We only supply the data to the topic rows and let jquery
     // display / hide them according to filters instead of
     // doing complete re-render.
-    const topic_muted = !!muting.is_topic_muted(stream_id, topic);
+    const topic_muted = Boolean(muting.is_topic_muted(stream_id, topic));
     const stream_muted = stream_data.is_muted(stream_id);
     const muted = topic_muted || stream_muted;
     const unread_count = unread.unread_topic_counter.get(stream_id, topic);
@@ -235,19 +237,7 @@ exports.topic_in_search_results = function (keyword, stream, topic) {
 };
 
 exports.update_topics_of_deleted_message_ids = function (message_ids) {
-    const topics_to_rerender = new Map();
-    for (const msg_id of message_ids) {
-        const message = message_store.get(msg_id);
-        if (message === undefined) {
-            // We may not have the deleted message cached locally in
-            // message_store; if so, we can just skip processing it.
-            continue;
-        }
-        if (message.type === "stream") {
-            const topic_key = get_topic_key(message.stream_id, message.topic);
-            topics_to_rerender.set(topic_key, [message.stream_id, message.topic]);
-        }
-    }
+    const topics_to_rerender = message_util.get_topics_for_message_ids(message_ids);
 
     for (const [stream_id, topic] of topics_to_rerender.values()) {
         topics.delete(get_topic_key(stream_id, topic));
@@ -276,7 +266,7 @@ exports.filters_should_hide_topic = function (topic_data) {
     }
 
     if (!filters.has("include_muted")) {
-        const topic_muted = !!muting.is_topic_muted(msg.stream_id, msg.topic);
+        const topic_muted = Boolean(muting.is_topic_muted(msg.stream_id, msg.topic));
         const stream_muted = stream_data.is_muted(msg.stream_id);
         if (topic_muted || stream_muted) {
             return true;
@@ -403,7 +393,7 @@ function topic_sort(a, b) {
 
 exports.complete_rerender = function () {
     if (!overlays.recent_topics_open()) {
-        return false;
+        return;
     }
     // Prepare header
     const rendered_body = render_recent_topics_body({

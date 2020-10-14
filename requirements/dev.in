@@ -54,7 +54,7 @@ python-digitalocean
 pip-tools
 
 # zulip's linting framework - zulint
-https://github.com/zulip/zulint/archive/34e3c78f0f0abe3c7f6745759e3e0472e85fd51d.zip#egg=zulint==0.0.1
+https://github.com/zulip/zulint/archive/639c0d34c23ac559ef0f7b9510cf95f73f6d0eb9.zip#egg=zulint==0.0.1
 
 -r mypy.in
 
@@ -72,3 +72,6 @@ python-debian
 
 # Pattern-based lint tool
 semgrep
+
+# Contains Pysa, a security-focused static analyzer
+pyre-check

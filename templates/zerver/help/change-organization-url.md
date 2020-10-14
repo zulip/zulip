@@ -18,7 +18,7 @@ you can request a change by emailing support@zulip.com.
 
 ## Self-hosting
 
-If you're self-hosting, you can change the root domain if your server
+If you're self-hosting, you can change the root domain of your server
 by changing the `EXTERNAL_HOST` [setting][zulip-settings].  If you're
 [hosting multiple organizations][zulip-multiple-organizations] and
 want to change the subdomain for one of them, you can use

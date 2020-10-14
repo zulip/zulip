@@ -53,7 +53,7 @@ def overwrite_symlink(src: str, dst: str) -> None:
         break
     try:
         os.rename(tmp, dst)
-    except Exception:
+    except BaseException:
         os.remove(tmp)
         raise
 
@@ -63,16 +63,16 @@ def parse_cache_script_args(description: str) -> argparse.Namespace:
 
     parser.add_argument(
         "--threshold", dest="threshold_days", type=int, default=14,
-        nargs="?", metavar="<days>", help="Any cache which is not in "
+        metavar="<days>", help="Any cache which is not in "
         "use by a deployment not older than threshold days(current "
         "installation in dev) and older than threshold days will be "
         "deleted. (defaults to 14)")
     parser.add_argument(
-        "--dry-run", dest="dry_run", action="store_true",
+        "--dry-run", action="store_true",
         help="If specified then script will only print the caches "
         "that it will delete/keep back. It will not delete any cache.")
     parser.add_argument(
-        "--verbose", dest="verbose", action="store_true",
+        "--verbose", action="store_true",
         help="If specified then script will print a detailed report "
         "of what is being will deleted/kept back.")
     parser.add_argument(
@@ -460,7 +460,7 @@ def is_root() -> bool:
 def run_as_root(args: List[str], **kwargs: Any) -> None:
     sudo_args = kwargs.pop('sudo_args', [])
     if not is_root():
-        args = ['sudo'] + sudo_args + ['--'] + args
+        args = ['sudo', *sudo_args, '--', *args]
     run(args, **kwargs)
 
 def assert_not_running_as_root() -> None:
@@ -514,6 +514,14 @@ def get_config_file() -> configparser.RawConfigParser:
 
 def get_deploy_options(config_file: configparser.RawConfigParser) -> List[str]:
     return get_config(config_file, 'deployment', 'deploy_options', "").strip().split()
+
+def get_tornado_ports(config_file: configparser.RawConfigParser) -> List[int]:
+    ports = []
+    if config_file.has_section("tornado_sharding"):
+        ports = [int(port) for port in config_file.options("tornado_sharding")]
+    if not ports:
+        ports = [9800]
+    return ports
 
 def get_or_create_dev_uuid_var_path(path: str) -> str:
     absolute_path = '{}/{}'.format(get_dev_uuid_var_path(), path)

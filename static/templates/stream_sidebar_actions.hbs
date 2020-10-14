@@ -13,14 +13,15 @@
 
     <hr>
 
+    {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
     <li>
-        <a class="open_stream_settings">
+        <a tabindex="0" class="open_stream_settings">
             <i class="fa fa-cog" aria-hidden="true"></i>
             {{t "Stream settings" }}
         </a>
     </li>
     <li>
-        <a class="pin_to_top">
+        <a tabindex="0" class="pin_to_top">
             <i class="fa fa-thumb-tack stream-pin-icon" aria-hidden="true"></i>
             {{#if stream.pin_to_top}}
             {{t "Unpin stream from top"}}
@@ -30,13 +31,13 @@
         </a>
     </li>
     <li>
-        <a class="mark_stream_as_read">
+        <a tabindex="0" class="mark_stream_as_read">
             <i class="fa fa-book" aria-hidden="true"></i>
             {{t "Mark all messages as read"}}
         </a>
     </li>
     <li>
-        <a class="toggle_stream_muted">
+        <a tabindex="0" class="toggle_stream_muted">
             {{#if stream.is_muted}}
             <i class="fa fa-bell" aria-hidden="true"></i>
             {{t "Unmute stream"}}
@@ -47,14 +48,14 @@
         </a>
     </li>
     <li>
-        <a class="popover_sub_unsub_button" data-name="{{stream.name}}">
+        <a tabindex="0" class="popover_sub_unsub_button" data-name="{{stream.name}}">
             <i class='fa fa-envelope' aria-hidden="true"></i>
             {{t "Unsubscribe" }}
         </a>
     </li>
     <li>
         <span class="colorpicker-container"><input stream_id="{{stream.stream_id}}" class="colorpicker" type="text" value="{{stream.color}}" /></span>
-        <a class="choose_stream_color">
+        <a tabindex="0" class="choose_stream_color">
             <i class="fa fa-eyedropper" aria-hidden="true"></i>
             {{t "Change color" }}
         </a>

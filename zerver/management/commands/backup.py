@@ -22,9 +22,7 @@ class Command(ZulipBaseCommand):
         return parser
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument(
-            "--output", default=None, nargs="?", help="Filename of output tarball",
-        )
+        parser.add_argument("--output", help="Filename of output tarball")
         parser.add_argument("--skip-db", action='store_true', help="Skip database backup")
         parser.add_argument("--skip-uploads", action='store_true', help="Skip uploads backup")
 
@@ -70,11 +68,11 @@ class Command(ZulipBaseCommand):
                 pg_dump_command = [
                     "pg_dump",
                     "--format=directory",
-                    "--file", os.path.join(tmp, "zulip-backup", "database"),
-                    "--host", settings.DATABASES["default"]["HOST"],
-                    "--port", settings.DATABASES["default"]["PORT"],
-                    "--username", settings.DATABASES["default"]["USER"],
-                    "--dbname", settings.DATABASES["default"]["NAME"],
+                    "--file=" + os.path.join(tmp, "zulip-backup", "database"),
+                    "--host=" + settings.DATABASES["default"]["HOST"],
+                    "--port=" + settings.DATABASES["default"]["PORT"],
+                    "--username=" + settings.DATABASES["default"]["USER"],
+                    "--dbname=" + settings.DATABASES["default"]["NAME"],
                     "--no-password",
                 ]
                 os.environ["PGPASSWORD"] = settings.DATABASES["default"]["PASSWORD"]
@@ -117,10 +115,10 @@ class Command(ZulipBaseCommand):
                     tarball_path = options["output"]
 
                 run(
-                    ["tar", "-C", tmp, "-cPzf", tarball_path]
-                    + transform_args
-                    + ["--"]
-                    + members,
+                    ["tar", f"--directory={tmp}", "-cPzf", tarball_path,
+                     *transform_args,
+                     "--",
+                     *members]
                 )
                 print(f"Backup tarball written to {tarball_path}")
             except BaseException:

@@ -162,7 +162,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         try:
             validate_email_not_already_in_realm(realm, email)
         except ValidationError:
-            view_url = reverse('django.contrib.auth.views.login')
+            view_url = reverse('login')
             redirect_url = add_query_to_redirect_url(view_url, 'email=' + urllib.parse.quote_plus(email))
             return HttpResponseRedirect(redirect_url)
 
@@ -258,7 +258,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # verified name from you on file, use that. Otherwise, fall
             # back to the full name in the request.
             try:
-                postdata.update({'full_name': request.session['authenticated_full_name']})
+                postdata.update(full_name=request.session['authenticated_full_name'])
                 name_validated = True
             except KeyError:
                 pass
@@ -351,7 +351,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                     # user-friendly error message, but it doesn't
                     # particularly matter, because the registration form
                     # is hidden for most users.
-                    view_url = reverse('django.contrib.auth.views.login')
+                    view_url = reverse('login')
                     query = 'email=' + urllib.parse.quote_plus(email)
                     redirect_url = add_query_to_redirect_url(view_url, query)
                     return HttpResponseRedirect(redirect_url)
@@ -385,7 +385,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                           acting_user=None)
 
         if realm_creation:
-            bulk_add_subscriptions([realm.signup_notifications_stream], [user_profile])
+            bulk_add_subscriptions(realm, [realm.signup_notifications_stream], [user_profile])
             send_initial_realm_messages(realm)
 
             # Because for realm creation, registration happens on the
@@ -448,7 +448,7 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
     do_login(request, user_profile)
     # Using 'mark_sanitized' to work around false positive where Pysa thinks
     # that 'user_profile' is user-controlled
-    return HttpResponseRedirect(mark_sanitized(user_profile.realm.uri) + reverse('zerver.views.home.home'))
+    return HttpResponseRedirect(mark_sanitized(user_profile.realm.uri) + reverse('home'))
 
 def prepare_activation_url(email: str, request: HttpRequest,
                            realm_creation: bool=False,
@@ -484,7 +484,7 @@ def send_confirm_registration_email(email: str, activation_url: str, language: s
                realm=realm)
 
 def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
-    login_url = reverse('django.contrib.auth.views.login')
+    login_url = reverse('login')
     email = urllib.parse.quote_plus(email)
     redirect_url = add_query_to_redirect_url(login_url, 'already_registered=' + email)
     return HttpResponseRedirect(redirect_url)
@@ -537,7 +537,7 @@ def accounts_home(request: HttpRequest, multiuse_object_key: str="",
     try:
         realm = get_realm(get_subdomain(request))
     except Realm.DoesNotExist:
-        return HttpResponseRedirect(reverse('zerver.views.registration.find_account'))
+        return HttpResponseRedirect(reverse(find_account))
     if realm.deactivated:
         return redirect_to_deactivation_notice()
 
@@ -573,9 +573,9 @@ def accounts_home(request: HttpRequest, multiuse_object_key: str="",
     else:
         form = HomepageForm(realm=realm)
     context = login_context(request)
-    context.update({'form': form, 'current_url': request.get_full_path,
-                    'multiuse_object_key': multiuse_object_key,
-                    'from_multiuse_invite': from_multiuse_invite})
+    context.update(form=form, current_url=request.get_full_path,
+                   multiuse_object_key=multiuse_object_key,
+                   from_multiuse_invite=from_multiuse_invite)
     return render(request, 'zerver/accounts_home.html', context=context)
 
 def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: str) -> HttpResponse:
@@ -595,7 +595,7 @@ def generate_204(request: HttpRequest) -> HttpResponse:
 
 def find_account(request: HttpRequest) -> HttpResponse:
     from zerver.context_processors import common_context
-    url = reverse('zerver.views.registration.find_account')
+    url = reverse('find_account')
 
     emails: List[str] = []
     if request.method == 'POST':
@@ -613,9 +613,9 @@ def find_account(request: HttpRequest) -> HttpResponse:
                     emails_q, is_active=True, is_bot=False,
                     realm__deactivated=False):
                 context = common_context(user)
-                context.update({
-                    'email': user.delivery_email,
-                })
+                context.update(
+                    email=user.delivery_email,
+                )
                 send_email('zerver/emails/find_team', to_user_ids=[user.id], context=context,
                            from_address=FromAddress.SUPPORT)
 

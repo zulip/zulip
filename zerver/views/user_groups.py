@@ -46,7 +46,7 @@ def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
 @require_user_group_edit_permission
 @has_request_variables
 def edit_user_group(request: HttpRequest, user_profile: UserProfile,
-                    user_group_id: int=REQ(validator=check_int),
+                    user_group_id: int=REQ(validator=check_int, path_only=True),
                     name: str=REQ(default=""), description: str=REQ(default=""),
                     ) -> HttpResponse:
     if not (name or description):
@@ -65,7 +65,7 @@ def edit_user_group(request: HttpRequest, user_profile: UserProfile,
 @require_user_group_edit_permission
 @has_request_variables
 def delete_user_group(request: HttpRequest, user_profile: UserProfile,
-                      user_group_id: int=REQ(validator=check_int)) -> HttpResponse:
+                      user_group_id: int=REQ(validator=check_int, path_only=True)) -> HttpResponse:
 
     check_delete_user_group(user_group_id, user_profile)
     return json_success()
@@ -73,7 +73,7 @@ def delete_user_group(request: HttpRequest, user_profile: UserProfile,
 @require_user_group_edit_permission
 @has_request_variables
 def update_user_group_backend(request: HttpRequest, user_profile: UserProfile,
-                              user_group_id: int=REQ(validator=check_int),
+                              user_group_id: int=REQ(validator=check_int, path_only=True),
                               delete: Sequence[int]=REQ(validator=check_list(check_int), default=[]),
                               add: Sequence[int]=REQ(validator=check_list(check_int), default=[]),
                               ) -> HttpResponse:

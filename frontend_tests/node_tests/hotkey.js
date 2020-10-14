@@ -15,8 +15,6 @@
 
 const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
 
-set_global("activity", {});
-
 set_global("navigator", {
     platform: "",
 });
@@ -36,6 +34,7 @@ emoji.initialize({
     emoji_codes,
 });
 
+zrequire("activity");
 const hotkey = zrequire("hotkey");
 zrequire("common");
 
@@ -175,12 +174,13 @@ run_test("basic_chars", () => {
         };
         try {
             return hotkey.process_keypress(e);
-        } catch (err) {
+        } catch (error) {
             // An exception will be thrown here if a different
             // function is called than the one declared.  Try to
             // provide a useful error message.
             // add a newline to separate from other console output.
             console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
+            throw error;
         }
     }
 
@@ -209,6 +209,14 @@ run_test("basic_chars", () => {
     set_global("popovers", {
         actions_popped: return_false,
         message_info_popped: return_false,
+        user_sidebar_popped: return_false,
+        user_info_popped: return_false,
+    });
+    set_global("stream_popover", {
+        stream_popped: return_false,
+        topic_popped: return_false,
+        all_messages_popped: return_false,
+        starred_messages_popped: return_false,
     });
     set_global("emoji_picker", {
         reactions_popped: return_false,
@@ -376,12 +384,13 @@ run_test("motion_keys", () => {
 
         try {
             return hotkey.process_keydown(e);
-        } catch (err) {
+        } catch (error) {
             // An exception will be thrown here if a different
             // function is called than the one declared.  Try to
             // provide a useful error message.
             // add a newline to separate from other console output.
             console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
+            throw error;
         }
     }
 

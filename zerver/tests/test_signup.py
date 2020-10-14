@@ -759,7 +759,7 @@ class LoginTest(ZulipTestCase):
         self.assertEqual(response["Location"], "http://zulip.testserver")
 
     def test_start_two_factor_auth(self) -> None:
-        request = MagicMock(POST=dict())
+        request = MagicMock(POST={})
         with patch('zerver.views.auth.TwoFactorLoginView') as mock_view:
             mock_view.as_view.return_value = lambda *a, **k: HttpResponse()
             response = start_two_factor_auth(request)
@@ -1188,7 +1188,7 @@ earl-test@zulip.com""", ["Denmark"]))
         self.login('iago')
         invitee_emails = "1@zulip.com, 2@zulip.com"
         self.invite(invitee_emails, ["Denmark"])
-        invitee_emails = ", ".join([str(i) for i in range(get_realm("zulip").max_invites - 1)])
+        invitee_emails = ", ".join(str(i) for i in range(get_realm("zulip").max_invites - 1))
         self.assert_json_error(self.invite(invitee_emails, ["Denmark"]),
                                "You do not have enough remaining invites. "
                                "Please contact desdemona+admin@zulip.com to have your limit raised. "
@@ -1476,12 +1476,12 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         referrer = self.example_user(referrer_name)
         link = create_confirmation_link(invitee, Confirmation.INVITATION)
         context = common_context(referrer)
-        context.update({
-            'activate_url': link,
-            'referrer_name': referrer.full_name,
-            'referrer_email': referrer.email,
-            'referrer_realm_name': referrer.realm.name,
-        })
+        context.update(
+            activate_url=link,
+            referrer_name=referrer.full_name,
+            referrer_email=referrer.email,
+            referrer_realm_name=referrer.realm.name,
+        )
         with self.settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'):
             email = data["email"]
             send_future_email(
@@ -1643,7 +1643,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         url = "/accounts/register/"
         response = self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('django.contrib.auth.views.login') + '?email=' +
+        self.assertEqual(response.url, reverse('login') + '?email=' +
                          urllib.parse.quote_plus(email))
 
 class InvitationsTestCase(InviteUserBase):
@@ -4204,7 +4204,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(len(outbox), 0)
 
     def test_find_team_more_than_ten_emails(self) -> None:
-        data = {'emails': ','.join([f'hamlet-{i}@zulip.com' for i in range(11)])}
+        data = {'emails': ','.join(f'hamlet-{i}@zulip.com' for i in range(11))}
         result = self.client_post('/accounts/find/', data)
         self.assertEqual(result.status_code, 200)
         self.assertIn("Please enter at most 10", result.content.decode('utf8'))

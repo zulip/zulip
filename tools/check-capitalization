@@ -21,11 +21,11 @@ DJANGO_PO_REGEX = re.compile('msgid "(.*?)"')
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--show-ignored',
-                        action='store_true', dest='show_ignored', default=False,
+                        action='store_true',
                         help='Show strings that passed the check because they '
                              'contained ignored phrases.')
     parser.add_argument('--no-generate',
-                        action='store_true', dest='no_generate', default=False,
+                        action='store_true',
                         help="Don't run makemessages command.")
     args = parser.parse_args()
 

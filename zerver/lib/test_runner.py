@@ -1,9 +1,10 @@
+import multiprocessing
 import os
 import random
 import shutil
 from functools import partial
 from multiprocessing.sharedctypes import Synchronized
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union, cast
 from unittest import TestLoader, TestSuite, runner
 from unittest.result import TestResult
 
@@ -13,7 +14,6 @@ from django.test import TestCase
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
-from django.urls.resolvers import URLPattern
 
 from scripts.lib.zulip_tools import (
     TEMPLATE_DATABASE_DIR,
@@ -79,9 +79,9 @@ class TextTestResult(runner.TextTestResult):
 
     def addSkip(self, test: TestCase, reason: str) -> None:
         TestResult.addSkip(self, test, reason)
-        self.stream.writeln("** Skipping {}: {}".format(  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
-            test.id(),
-            reason))
+        self.stream.writeln(  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
+            "** Skipping {}: {}".format(test.id(), reason)
+        )
         self.stream.flush()
 
 class RemoteTestResult(django_runner.RemoteTestResult):
@@ -122,6 +122,15 @@ def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
     # addInstrumentation does not need it.
     process_instrumented_calls(partial(result.addInstrumentation, None))
     return subsuite_index, result.events
+
+# Monkey-patch django.test.runner to allow using multiprocessing
+# inside tests without a “daemonic processes are not allowed to have
+# children” error.
+class NoDaemonContext(multiprocessing.context.ForkContext):
+    class Process(multiprocessing.context.ForkProcess):
+        daemon = cast(bool, property(lambda self: False, lambda self, value: None))
+
+django_runner.multiprocessing = NoDaemonContext()
 
 def destroy_test_databases(worker_id: Optional[int]=None) -> None:
     for alias in connections:
@@ -196,22 +205,10 @@ def init_worker(counter: Synchronized) -> None:
     create_test_databases(_worker_id)
     initialize_worker_path(_worker_id)
 
-    def is_upload_avatar_url(url: URLPattern) -> bool:
-        if url.pattern.regex.pattern == r'^user_avatars/(?P<path>.*)$':
-            return True
-        return False
-
     # We manually update the upload directory path in the url regex.
-    from zproject import dev_urls
-    found = False
-    for url in dev_urls.urls:
-        if is_upload_avatar_url(url):
-            found = True
-            new_root = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")
-            url.default_args['document_root'] = new_root
-
-    if not found:
-        print("*** Upload directory not found.")
+    from zproject.dev_urls import avatars_url
+    new_root = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")
+    avatars_url.default_args['document_root'] = new_root
 
 class ParallelTestSuite(django_runner.ParallelTestSuite):
     run_subsuite = run_subsuite

@@ -72,15 +72,15 @@ const setup = function () {
     server_events.home_view_loaded();
     set_global("message_events", {
         insert_new_messages() {
-            throw Error("insert error");
+            throw new Error("insert error");
         },
         update_messages() {
-            throw Error("update error");
+            throw new Error("update error");
         },
     });
     set_global("stream_events", {
         update_property() {
-            throw Error("subs update error");
+            throw new Error("subs update error");
         },
     });
 };

@@ -12,7 +12,7 @@ set_global("sent_messages", {
     report_server_ack: noop,
 });
 
-zrequire("people");
+const people = zrequire("people");
 zrequire("transmit");
 
 run_test("transmit_message_ajax", () => {
@@ -56,7 +56,7 @@ run_test("transmit_message_ajax", () => {
 
 run_test("transmit_message_ajax_reload_pending", () => {
     const success = function () {
-        throw "unexpected success";
+        throw new Error("unexpected success");
     };
 
     reload_state.is_pending = function () {

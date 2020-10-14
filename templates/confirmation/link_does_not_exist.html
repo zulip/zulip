@@ -6,8 +6,12 @@
         <img src="/static/images/400art.svg" alt=""/>
         <div class="errorbox">
             <div class="errorcontent">
-                <h1 class="lead">Whoops. We couldn't find your confirmation link in the system.</h1>
-                <p>Anyway, shoot us a line at <a href="mailto:{{ support_email }}">{{ support_email }}</a> and we'll get this resolved shortly.</p>
+                <h1 class="lead">{{ _("Whoops. We couldn't find your confirmation link in the system.") }}</h1>
+                <p>
+                    {% trans %}
+                    Anyway, shoot us a line at {{ support_email_html_tag }} and we'll get this resolved shortly.
+                    {% endtrans %}
+                </p>
             </div>
         </div>
     </div>

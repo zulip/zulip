@@ -1,14 +1,13 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/caching.html for docs
-import base64
 import hashlib
 import logging
 import os
-import random
 import re
+import secrets
 import sys
 import time
 import traceback
-from functools import wraps
+from functools import lru_cache, wraps
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -29,7 +28,6 @@ from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
 from django.db.models import Q
 from django.http import HttpRequest
-from django.utils.lru_cache import lru_cache
 
 from zerver.lib.utils import make_safe_digest, statsd, statsd_key
 
@@ -70,12 +68,12 @@ def remote_cache_stats_finish() -> None:
     remote_cache_total_time += (time.time() - remote_cache_time_start)
 
 def get_or_create_key_prefix() -> str:
-    if settings.CASPER_TESTS:
-        # This sets the prefix for the benefit of the Casper tests.
+    if settings.PUPPETEER_TESTS:
+        # This sets the prefix for the benefit of the Puppeteer tests.
         #
         # Having a fixed key is OK since we don't support running
-        # multiple copies of the casper tests at the same time anyway.
-        return 'casper_tests:'
+        # multiple copies of the puppeteer tests at the same time anyway.
+        return 'puppeteer_tests:'
     elif settings.TEST_SUITE:
         # The Python tests overwrite KEY_PREFIX on each test, but use
         # this codepath as well, just to save running the more complex
@@ -88,8 +86,7 @@ def get_or_create_key_prefix() -> str:
     filename = os.path.join(settings.DEPLOY_ROOT, "var", "remote_cache_prefix")
     try:
         fd = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0o444)
-        random_hash = hashlib.sha256(str(random.getrandbits(256)).encode('utf-8')).digest()
-        prefix = base64.b16encode(random_hash)[:32].decode('utf-8').lower() + ':'
+        prefix = secrets.token_hex(16) + ':'
         # This does close the underlying file
         with os.fdopen(fd, 'w') as f:
             f.write(prefix + "\n")
@@ -669,7 +666,9 @@ def ignore_unhashable_lru_cache(maxsize: int=128, typed: bool=False) -> DECORATO
             # In the development environment, we want every file
             # change to refresh the source files from disk.
             return user_function
-        cache_enabled_user_function = internal_decorator(user_function)
+
+        # Casting to Any since we're about to monkey-patch this.
+        cache_enabled_user_function = cast(Any, internal_decorator(user_function))
 
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             if not hasattr(cache_enabled_user_function, 'key_prefix'):

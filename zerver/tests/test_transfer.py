@@ -63,7 +63,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
         with self.assertLogs(level="INFO"):
             transfer_message_files_to_s3(1)
 
-        attachments = Attachment.objects.all()
+        attachments = Attachment.objects.all().order_by("id")
 
         self.assertEqual(len(list(bucket.objects.all())), 2)
         self.assertEqual(bucket.Object(attachments[0].path_id).get()['Body'].read(), b'zulip1!')

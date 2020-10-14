@@ -7,11 +7,11 @@ from typing import Any, Dict, List, Optional
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import log_exception_to_webhook_logger, webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import (
-    UnexpectedWebhookEventType,
     check_send_webhook_message,
     validate_extract_webhook_http_header,
 )
@@ -29,9 +29,8 @@ from zerver.lib.webhooks.git import (
 from zerver.models import UserProfile
 
 BITBUCKET_TOPIC_TEMPLATE = '{repository_name}'
-USER_PART = 'User {display_name}(login: {username})'
 
-BITBUCKET_FORK_BODY = USER_PART + ' forked the repository into [{fork_name}]({fork_url}).'
+BITBUCKET_FORK_BODY = "{actor} forked the repository into [{fork_name}]({fork_url})."
 BITBUCKET_COMMIT_STATUS_CHANGED_BODY = ('[System {key}]({system_url}) changed status of'
                                         ' {commit_info} to {status}.')
 BITBUCKET_REPO_UPDATED_CHANGED = ('{actor} changed the {change} of the **{repo_name}**'
@@ -50,7 +49,7 @@ PULL_REQUEST_SUPPORTED_ACTIONS = [
     'comment_deleted',
 ]
 
-@api_key_only_webhook_view('Bitbucket2')
+@webhook_view('Bitbucket2')
 @has_request_variables
 def api_bitbucket2_webhook(request: HttpRequest, user_profile: UserProfile,
                            payload: Dict[str, Any]=REQ(argument_type='body'),
@@ -161,7 +160,7 @@ def get_type(request: HttpRequest, payload: Dict[str, Any]) -> str:
         if event_key == 'repo:updated':
             return event_key
 
-    raise UnexpectedWebhookEventType('BitBucket2', event_key)
+    raise UnsupportedWebhookEventType(event_key)
 
 def get_body_based_on_type(type: str) -> Any:
     fn = GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER.get(type)
@@ -184,13 +183,13 @@ def get_push_bodies(payload: Dict[str, Any]) -> List[str]:
 
 def get_remove_branch_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
     return get_remove_branch_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         change['old']['name'],
     )
 
 def get_force_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
     return get_force_push_commits_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         change['links']['html']['href'],
         change['new']['name'],
         change['new']['target']['hash'],
@@ -198,7 +197,7 @@ def get_force_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
 
 def get_commit_author_name(commit: Dict[str, Any]) -> str:
     if commit['author'].get('user'):
-        return commit['author']['user'].get('username')
+        return get_user_info(commit['author']['user'])
     return commit['author']['raw'].split()[0]
 
 def get_normal_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
@@ -210,7 +209,7 @@ def get_normal_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str
     } for commit in change['commits']]
 
     return get_push_commits_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         change['links']['html']['href'],
         change['new']['name'],
         commits_data,
@@ -219,8 +218,7 @@ def get_normal_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str
 
 def get_fork_body(payload: Dict[str, Any]) -> str:
     return BITBUCKET_FORK_BODY.format(
-        display_name=get_user_display_name(payload),
-        username=get_user_username(payload),
+        actor=get_user_info(payload["actor"]),
         fork_name=get_repository_full_name(payload['fork']),
         fork_url=get_repository_url(payload['fork']),
     )
@@ -229,7 +227,7 @@ def get_commit_comment_body(payload: Dict[str, Any]) -> str:
     comment = payload['comment']
     action = '[commented]({})'.format(comment['links']['html']['href'])
     return get_commits_comment_action_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         action,
         comment['commit']['links']['html']['href'],
         comment['commit']['hash'],
@@ -265,11 +263,11 @@ def get_issue_action_body(payload: Dict[str, Any], action: str,
     message = None
     if action == 'created':
         if issue['assignee']:
-            assignee = issue['assignee'].get('username')
+            assignee = get_user_info(issue['assignee'])
         message = issue['content']['raw']
 
     return get_issue_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         action,
         issue['links']['html']['href'],
         issue['id'],
@@ -282,7 +280,7 @@ def get_pull_request_action_body(payload: Dict[str, Any], action: str,
                                  include_title: bool=False) -> str:
     pull_request = payload['pullrequest']
     return get_pull_request_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         action,
         get_pull_request_url(pull_request),
         pull_request.get('id'),
@@ -294,14 +292,10 @@ def get_pull_request_created_or_updated_body(payload: Dict[str, Any], action: st
     pull_request = payload['pullrequest']
     assignee = None
     if pull_request.get('reviewers'):
-        assignee = pull_request.get('reviewers')[0]
-        # Certain payloads may not contain a username, so we
-        # return the user's display name or nickname instead.
-        assignee = (assignee.get('username') or assignee.get('display_name') or
-                    assignee.get('nickname'))
+        assignee = get_user_info(pull_request.get('reviewers')[0])
 
     return get_pull_request_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         action,
         get_pull_request_url(pull_request),
         pull_request.get('id'),
@@ -332,7 +326,7 @@ def get_pull_request_comment_action_body(
 ) -> str:
     action += ' on'
     return get_pull_request_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         action,
         payload['pullrequest']['links']['html']['href'],
         payload['pullrequest']['id'],
@@ -349,7 +343,7 @@ def get_push_tag_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
         action = 'removed'
 
     return get_push_tag_event_message(
-        get_user_username(payload),
+        get_actor_info(payload),
         tag.get('name'),
         tag_url=tag['links']['html'].get('href'),
         action=action,
@@ -365,7 +359,7 @@ def get_repo_updated_body(payload: Dict[str, Any]) -> str:
     changes = ['website', 'name', 'links', 'language', 'full_name', 'description']
     body = ""
     repo_name = payload['repository']['name']
-    actor = payload['actor']['username']
+    actor = get_actor_info(payload)
 
     for change in changes:
         new = payload['changes'][change]['new']
@@ -400,14 +394,37 @@ def get_repository_name(repository_payload: Dict[str, Any]) -> str:
 def get_repository_full_name(repository_payload: Dict[str, Any]) -> str:
     return repository_payload['full_name']
 
-def get_user_display_name(payload: Dict[str, Any]) -> str:
-    return payload['actor']['display_name']
+def get_user_info(dct: Dict[str, Any]) -> str:
+    # See https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-changes-gdpr/
+    # Since GDPR, we don't get username; instead, we either get display_name
+    # or nickname.
+    if "display_name" in dct:
+        return dct["display_name"]
 
-def get_user_username(payload: Dict[str, Any]) -> str:
+    if "nickname" in dct:
+        return dct["nickname"]
+
+    log_exception_to_webhook_logger(
+        summary="Could not find display_name/nickname field",
+        # We call this an unsupported_event, even though we
+        # are technically still sending a message.
+        unsupported_event=True,
+    )
+
+    if "username" in dct:
+        # We don't expect this to happen after April 2019; this is
+        # just defensive code, plus it allows us to avoid changing
+        # a bunch of test fixtures.  We will want to delete this code
+        # as soon as we have confidence that we don't get errors
+        # related to display_name/nickname being missing. (see above
+        # code)
+        return dct["username"]
+
+    return "Unknown user"
+
+def get_actor_info(payload: Dict[str, Any]) -> str:
     actor = payload['actor']
-    # Certain payloads may not contain a username, so we can
-    # return the user's display name or nickname instead.
-    return actor.get('username') or actor.get('display_name') or actor.get('nickname')
+    return get_user_info(actor)
 
 def get_branch_name_for_push_event(payload: Dict[str, Any]) -> Optional[str]:
     change = payload['push']['changes'][-1]

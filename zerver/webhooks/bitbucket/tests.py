@@ -1,22 +1,21 @@
-from typing import Dict, Union
 from unittest.mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 
+TOPIC = "Repository name"
+TOPIC_BRANCH_EVENTS = "Repository name / master"
 
 class BitbucketHookTests(WebhookTestCase):
     STREAM_NAME = 'bitbucket'
     URL_TEMPLATE = "/api/v1/external/bitbucket?stream={stream}"
     FIXTURE_DIR_NAME = 'bitbucket'
-    EXPECTED_TOPIC = "Repository name"
-    EXPECTED_TOPIC_BRANCH_EVENTS = "Repository name / master"
 
     def test_bitbucket_on_push_event(self) -> None:
         fixture_name = 'push'
         self.url = self.build_webhook_url(payload=self.get_body(fixture_name))
         commit_info = '* c ([25f93d2](https://bitbucket.org/kolaszek/repository-name/commits/25f93d22b719e2d678a7ad5ee0ef0d1fcdf39c12))'
         expected_message = f"kolaszek pushed 1 commit to branch master.\n\n{commit_info}"
-        self.api_stream_message(self.test_user, fixture_name, self.EXPECTED_TOPIC_BRANCH_EVENTS,
+        self.api_stream_message(self.test_user, fixture_name, TOPIC_BRANCH_EVENTS,
                                 expected_message)
 
     def test_bitbucket_on_push_event_without_user_info(self) -> None:
@@ -24,7 +23,7 @@ class BitbucketHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(payload=self.get_body(fixture_name))
         commit_info = '* c ([25f93d2](https://bitbucket.org/kolaszek/repository-name/commits/25f93d22b719e2d678a7ad5ee0ef0d1fcdf39c12))'
         expected_message = f"Someone pushed 1 commit to branch master. Commits by eeshangarg (1).\n\n{commit_info}"
-        self.api_stream_message(self.test_user, fixture_name, self.EXPECTED_TOPIC_BRANCH_EVENTS,
+        self.api_stream_message(self.test_user, fixture_name, TOPIC_BRANCH_EVENTS,
                                 expected_message)
 
     def test_bitbucket_on_push_event_filtered_by_branches(self) -> None:
@@ -33,7 +32,7 @@ class BitbucketHookTests(WebhookTestCase):
                                           branches='master,development')
         commit_info = '* c ([25f93d2](https://bitbucket.org/kolaszek/repository-name/commits/25f93d22b719e2d678a7ad5ee0ef0d1fcdf39c12))'
         expected_message = f"kolaszek pushed 1 commit to branch master.\n\n{commit_info}"
-        self.api_stream_message(self.test_user, fixture_name, self.EXPECTED_TOPIC_BRANCH_EVENTS,
+        self.api_stream_message(self.test_user, fixture_name, TOPIC_BRANCH_EVENTS,
                                 expected_message)
 
     def test_bitbucket_on_push_commits_above_limit_event(self) -> None:
@@ -41,7 +40,7 @@ class BitbucketHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(payload=self.get_body(fixture_name))
         commit_info = '* c ([25f93d2](https://bitbucket.org/kolaszek/repository-name/commits/25f93d22b719e2d678a7ad5ee0ef0d1fcdf39c12))\n'
         expected_message = f"kolaszek pushed 50 commits to branch master.\n\n{commit_info * 20}[and 30 more commit(s)]"
-        self.api_stream_message(self.test_user, fixture_name, self.EXPECTED_TOPIC_BRANCH_EVENTS,
+        self.api_stream_message(self.test_user, fixture_name, TOPIC_BRANCH_EVENTS,
                                 expected_message)
 
     def test_bitbucket_on_push_commits_above_limit_event_filtered_by_branches(self) -> None:
@@ -50,21 +49,21 @@ class BitbucketHookTests(WebhookTestCase):
                                           branches='master,development')
         commit_info = '* c ([25f93d2](https://bitbucket.org/kolaszek/repository-name/commits/25f93d22b719e2d678a7ad5ee0ef0d1fcdf39c12))\n'
         expected_message = f"kolaszek pushed 50 commits to branch master.\n\n{commit_info * 20}[and 30 more commit(s)]"
-        self.api_stream_message(self.test_user, fixture_name, self.EXPECTED_TOPIC_BRANCH_EVENTS,
+        self.api_stream_message(self.test_user, fixture_name, TOPIC_BRANCH_EVENTS,
                                 expected_message)
 
     def test_bitbucket_on_force_push_event(self) -> None:
         fixture_name = 'force_push'
         self.url = self.build_webhook_url(payload=self.get_body(fixture_name))
         expected_message = "kolaszek [force pushed](https://bitbucket.org/kolaszek/repository-name)."
-        self.api_stream_message(self.test_user, fixture_name, self.EXPECTED_TOPIC,
+        self.api_stream_message(self.test_user, fixture_name, TOPIC,
                                 expected_message)
 
     def test_bitbucket_on_force_push_event_without_user_info(self) -> None:
         fixture_name = 'force_push_without_user_info'
         self.url = self.build_webhook_url(payload=self.get_body(fixture_name))
         expected_message = "Someone [force pushed](https://bitbucket.org/kolaszek/repository-name/)."
-        self.api_stream_message(self.test_user, fixture_name, self.EXPECTED_TOPIC,
+        self.api_stream_message(self.test_user, fixture_name, TOPIC,
                                 expected_message)
 
     @patch('zerver.webhooks.bitbucket.view.check_send_webhook_message')
@@ -87,6 +86,3 @@ class BitbucketHookTests(WebhookTestCase):
         result = self.api_post(self.test_user, self.url, payload, content_type="application/json,")
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
-
-    def get_body(self, fixture_name: str) -> Union[str, Dict[str, str]]:
-        return self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name)

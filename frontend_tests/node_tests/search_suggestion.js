@@ -19,7 +19,7 @@ zrequire("Filter", "js/filter");
 zrequire("narrow_state");
 zrequire("stream_data");
 zrequire("stream_topic_history");
-zrequire("people");
+const people = zrequire("people");
 zrequire("unread");
 zrequire("common");
 const search = zrequire("search_suggestion");
@@ -693,6 +693,8 @@ run_test("topic_suggestions", () => {
                 return office_id;
             case "devel":
                 return devel_id;
+            default:
+                return undefined;
         }
     };
 

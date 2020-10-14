@@ -17,7 +17,7 @@ class Command(ZulipBaseCommand):
         assert realm is not None  # True because of required=True above
 
         admin_users = realm.get_admin_users_and_bots()
-        owner_user_ids = set(list(realm.get_human_owner_users().values_list("id", flat=True)))
+        owner_user_ids = set(realm.get_human_owner_users().values_list("id", flat=True))
 
         if admin_users:
             print('Administrators:\n')

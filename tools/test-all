@@ -49,7 +49,7 @@ run ./tools/clean-repo
 # ci/backend
 run ./tools/lint --groups=backend $FORCEARG
 run ./tools/test-tools
-run ./tools/test-backend --include-webhooks $FORCEARG
+run ./tools/test-backend --include-webhooks --ban-console-output $FORCEARG
 run ./tools/test-migrations
 # Not running SVG optimizing since it's low-churn
 # run ./tools/setup/optimize-svg
@@ -74,6 +74,5 @@ run ./manage.py makemessages --locale en
 run env PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
 run env PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
 run ./tools/test-js-with-puppeteer $FORCEARG
-run ./tools/test-js-with-casper $FORCEARG
 
 printf '\n\e[32mAll OK!\e[0m\n'

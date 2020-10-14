@@ -126,9 +126,7 @@ eslint, and other home grown tools.
 You can find the source code [here](https://github.com/zulip/zulip/blob/master/tools/lint).
 
 In order for our entire lint suite to run in a timely fashion, the `lint`
-script performs several lint checks in parallel by forking out subprocesses.  This mechanism
-is still evolving, but you can look at the method `run_parallel` to get the
-gist of how it works.
+script performs several lint checks in parallel by forking out subprocesses.
 
 Note that our project does custom regex-based checks on the code, and we
 also customize how we call pyflakes and pycodestyle (pep8).  The code for these

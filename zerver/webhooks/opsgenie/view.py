@@ -2,14 +2,14 @@ from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-@api_key_only_webhook_view('OpsGenie')
+@webhook_view('OpsGenie')
 @has_request_variables
 def api_opsgenie_webhook(request: HttpRequest, user_profile: UserProfile,
                          payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
@@ -20,7 +20,7 @@ def api_opsgenie_webhook(request: HttpRequest, user_profile: UserProfile,
         "alert_type": payload['action'],
         "alert_id": payload['alert']['alertId'],
         "integration_name": payload['integrationName'],
-        "tags": ', '.join(['`' + tag + '`' for tag in payload['alert'].get('tags', [])]),
+        "tags": ', '.join('`' + tag + '`' for tag in payload['alert'].get('tags', [])),
     }
 
     topic = info['integration_name']

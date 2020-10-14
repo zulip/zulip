@@ -1,3 +1,4 @@
+import secrets
 import time
 from typing import Dict, List, Tuple, Type
 from unittest import mock
@@ -12,9 +13,8 @@ from zerver.lib.rate_limiter import (
     remove_ratelimit_rule,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.utils import generate_random_token
 
-RANDOM_KEY_PREFIX = generate_random_token(32)
+RANDOM_KEY_PREFIX = secrets.token_hex(16)
 
 class RateLimitedTestObject(RateLimitedObject):
     def __init__(self, name: str, rules: List[Tuple[int, int]],

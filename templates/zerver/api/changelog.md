@@ -10,6 +10,38 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 34**
+
+* [`POST /register`](/api/register-queue): Added a new `wildcard_mention_policy`
+  setting for controlling who can use wildcard mentions in large streams.
+
+**Feature level 33**
+
+* Markdown code blocks now have a `data-code-language` attribute
+  attached to the outer `div` element, recording the programming
+  language that was selecting for syntax highlighting.  This field
+  supports the upcoming "view in playground" feature for code blocks.
+
+**Feature level 32**
+
+* [`GET /events`](/api/get-events): Added `op` field to
+  `update_message_flags` events, deprecating the `operation` field
+  (which has the same value).  This removes an unintentional anomaly
+  in the format of this event type.
+
+**Feature level 31**
+
+* [`GET users/me/subscriptions`](/api/get-subscriptions): Added a
+  `role` field to Subscription objects representing whether the user
+  is a stream administrator.
+
+* [`GET /events`](/api/get-events): Added `role` field to
+  Subscription objects sent in `subscriptions` events.
+
+Note that as of this feature level, stream administrators are a
+partially completed feature.  In particular, it is impossible for a
+user to be a stream administrator at this feature level.
+
 **Feature Level 30**
 
 * [`GET users/me/subscriptions`](/api/get-subscriptions), [`GET
@@ -137,7 +169,8 @@ No changes; feature level used for Zulip 3.0 release.
 * [`POST /register`](/api/register-queue): Added
   `realm_community_topic_editing_limit_seconds` to the response, the
   time limit before community topic editing is forbidden.  A `null`
-  value means no limit.
+  value means no limit. This was previously hard-coded in the server
+  as 86400 seconds (1 day).
 * [`POST /register`](/api/register-queue): The response now contains a
   `is_owner`, similar to the existing `is_admin` and `is_guest` fields.
 * [`POST /set-typing-status`](/api/set-typing-status): Removed legacy support for sending email

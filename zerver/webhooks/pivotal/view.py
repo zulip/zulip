@@ -7,10 +7,11 @@ from defusedxml.ElementTree import fromstring as xml_fromstring
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
@@ -151,11 +152,11 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> T
         # Known but unsupported Pivotal event types
         pass
     else:
-        raise UnexpectedWebhookEventType('Pivotal Tracker', event_type)
+        raise UnsupportedWebhookEventType(event_type)
 
     return subject, content
 
-@api_key_only_webhook_view("Pivotal")
+@webhook_view("Pivotal")
 @has_request_variables
 def api_pivotal_webhook(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     subject = content = None

@@ -11,6 +11,7 @@ Usage:
 import argparse
 import configparser
 import os
+import shlex
 import subprocess
 import sys
 
@@ -19,7 +20,7 @@ sys.path.insert(0, ZULIP_PATH)
 from scripts.lib.zulip_tools import is_vagrant_env_host
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('path', metavar='FILE', type=str, nargs='+',
+parser.add_argument('path', metavar='FILE', nargs='+',
                     help='config file of dummy users in development server')
 args = parser.parse_args()
 
@@ -50,7 +51,7 @@ for zuliprc_path in zuliprc_paths_list:
 
         if is_vagrant_env_host(ZULIP_PATH):
             arguments = ['vagrant', 'ssh', '--command',
-                         './manage.py print_initial_password ' + email]
+                         './manage.py print_initial_password ' + shlex.quote(email)]
         else:
             # Support users who don't have vagrant based setup
             arguments = ['./manage.py', 'print_initial_password', email]

@@ -107,21 +107,22 @@ run_test("robust_uri_decode", () => {
     assert.equal(util.robust_uri_decode("xxx%3"), "xxx");
 
     set_global("decodeURIComponent", () => {
-        throw "foo";
+        throw new Error("foo");
     });
     try {
         util.robust_uri_decode("%E0%A4%A");
-    } catch (e) {
-        assert.equal(e, "foo");
+    } catch (error) {
+        assert.equal(error.message, "foo");
     }
 });
 
 run_test("dumb_strcmp", () => {
-    Intl.Collator = undefined;
-    const strcmp = util.make_strcmp();
-    assert.equal(strcmp("a", "b"), -1);
-    assert.equal(strcmp("c", "c"), 0);
-    assert.equal(strcmp("z", "y"), 1);
+    with_field(Intl, "Collator", undefined, () => {
+        const strcmp = util.make_strcmp();
+        assert.equal(strcmp("a", "b"), -1);
+        assert.equal(strcmp("c", "c"), 0);
+        assert.equal(strcmp("z", "y"), 1);
+    });
 });
 
 run_test("get_edit_event_orig_topic", () => {

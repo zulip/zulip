@@ -12,9 +12,7 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('-s', '--stream',
-                            dest='stream',
                             required=True,
-                            type=str,
                             help='A stream name.')
 
         self.add_realm_args(parser, True)

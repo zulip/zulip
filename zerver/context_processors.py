@@ -3,6 +3,8 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.http import HttpRequest
+from django.utils.html import escape
+from django.utils.safestring import SafeString
 
 from version import (
     LATEST_MAJOR_VERSION,
@@ -11,6 +13,7 @@ from version import (
     ZULIP_VERSION,
 )
 from zerver.decorator import get_client_name
+from zerver.lib.exceptions import InvalidSubdomainError
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.send_email import FromAddress
@@ -53,6 +56,12 @@ def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
         except Realm.DoesNotExist:
             request.realm = None
     return request.realm
+
+def get_valid_realm_from_request(request: HttpRequest) -> Realm:
+    realm = get_realm_from_request(request)
+    if realm is None:
+        raise InvalidSubdomainError()
+    return realm
 
 def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     """Context available to all Zulip Jinja2 templates that have a request
@@ -105,6 +114,9 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         settings_path = "/etc/zulip/settings.py"
         settings_comments_path = "/etc/zulip/settings.py"
 
+    support_email = FromAddress.SUPPORT
+    support_email_html_tag = SafeString(f'<a href="mailto:{escape(support_email)}">{escape(support_email)}</a>')
+
     # We can't use request.client here because we might not be using
     # an auth decorator that sets it, but we can call its helper to
     # get the same result.
@@ -129,11 +141,11 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'apps_page_web': apps_page_web,
         'open_realm_creation': settings.OPEN_REALM_CREATION,
         'development_environment': settings.DEVELOPMENT,
-        'support_email': FromAddress.SUPPORT,
+        'support_email': support_email,
+        'support_email_html_tag': support_email_html_tag,
         'find_team_link_disabled': find_team_link_disabled,
         'password_min_length': settings.PASSWORD_MIN_LENGTH,
         'password_min_guesses': settings.PASSWORD_MIN_GUESSES,
-        'jitsi_server_url': settings.JITSI_SERVER_URL,
         'zulip_version': ZULIP_VERSION,
         'user_is_authenticated': user_is_authenticated,
         'settings_path': settings_path,

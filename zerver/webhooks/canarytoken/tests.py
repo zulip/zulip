@@ -13,11 +13,11 @@ class CanarytokenHookTests(WebhookTestCase):
             "[Manage this canarytoken](http://example.com/test/url/for/webhook)"
         )
 
-        self.send_and_test_stream_message(
-            'canarytoken_new',
-            'canarytoken alert',
+        self.check_webhook(
+            "canarytoken_new",
+            "canarytoken alert",
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def test_canarytoken_real(self) -> None:
@@ -29,11 +29,11 @@ class CanarytokenHookTests(WebhookTestCase):
             "(https://canarytokens.org/manage?token=foo&auth=bar)"
         )
 
-        self.send_and_test_stream_message(
-            'canarytoken_real',
-            'canarytoken alert',
+        self.check_webhook(
+            "canarytoken_real",
+            "canarytoken alert",
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def test_canarytoken_with_specific_topic(self) -> None:
@@ -46,9 +46,9 @@ class CanarytokenHookTests(WebhookTestCase):
             "(https://canarytokens.org/manage?token=foo&auth=bar)"
         )
 
-        self.send_and_test_stream_message(
-            'canarytoken_real',
-            'foo',
+        self.check_webhook(
+            "canarytoken_real",
+            "foo",
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )

@@ -1,5 +1,7 @@
 "use strict";
 
+const people = require("./people");
+
 let is_open = false;
 // the asset map is a map of all retrieved images and YouTube videos that are
 // memoized instead of being looked up multiple times.
@@ -40,7 +42,7 @@ function display_image(payload) {
 
     if (lightbox_canvas === true) {
         const canvas = document.createElement("canvas");
-        canvas.setAttribute("data-src", payload.source);
+        canvas.dataset.src = payload.source;
 
         $("#lightbox_overlay .image-preview").html(canvas).show();
         const photo = new LightboxCanvas(canvas);
@@ -194,14 +196,14 @@ exports.parse_image_data = function (image) {
 
     if (asset_map.has($preview_src)) {
         // check if image's data is already present in asset_map.
-        return;
+        return asset_map.get($preview_src);
     }
 
     // if wrapped in the .youtube-video class, it will be length = 1, and therefore
     // cast to true.
-    const is_youtube_video = !!$image.closest(".youtube-video").length;
-    const is_vimeo_video = !!$image.closest(".vimeo-video").length;
-    const is_embed_video = !!$image.closest(".embed-video").length;
+    const is_youtube_video = Boolean($image.closest(".youtube-video").length);
+    const is_vimeo_video = Boolean($image.closest(".vimeo-video").length);
+    const is_embed_video = Boolean($image.closest(".embed-video").length);
 
     // check if image is descendent of #preview_content
     const is_compose_preview_image = $image.closest("#preview_content").length === 1;

@@ -6,9 +6,13 @@
         <img src="/static/images/500art.svg" alt=""/>
         <div class="errorbox">
             <div class="errorcontent">
-                <h1 class="lead">Whoops. The confirmation link is malformed.</h1>
-                <p>Make sure you copied the link correctly in to your browser. If you're still encountering this page, it's probably our fault. We're sorry.</p>
-                <p>Anyway, shoot us a line at <a href="mailto:{{ support_email }}">{{ support_email }}</a> and we'll get this resolved shortly.</p>
+                <h1 class="lead">{{ _("Whoops. The confirmation link is malformed.") }}</h1>
+                <p>{{ _("Make sure you copied the link correctly in to your browser. If you're still encountering this page, it's probably our fault. We're sorry.") }}</p>
+                <p>
+                    {% trans %}
+                    Anyway, shoot us a line at {{ support_email_html_tag }} and we'll get this resolved shortly.
+                    {% endtrans %}
+                </p>
             </div>
         </div>
     </div>

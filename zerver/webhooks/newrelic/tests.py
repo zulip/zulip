@@ -9,8 +9,12 @@ class NewRelicHookTests(WebhookTestCase):
         expected_topic = "Apdex score fell below critical level of 0.90"
         expected_message = 'Alert opened on [application name]: Apdex score fell below critical level of 0.90 ([view alert](https://rpm.newrelc.com/accounts/[account_id]/applications/[application_id]/incidents/[incident_id])).'
 
-        self.send_and_test_stream_message('alert', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "alert",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_deployment(self) -> None:
         expected_topic = 'Test App deploy'
@@ -28,8 +32,12 @@ Changelog string
 ```
 """.strip()
 
-        self.send_and_test_stream_message('deployment', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "deployment",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("newrelic", fixture_name, file_type="txt")

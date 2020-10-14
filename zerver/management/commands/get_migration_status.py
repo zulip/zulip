@@ -16,11 +16,11 @@ class Command(BaseCommand):
         parser.add_argument('app_label', nargs='?',
                             help='App label of an application to synchronize the state.')
 
-        parser.add_argument('--database', action='store', dest='database',
+        parser.add_argument('--database',
                             default=DEFAULT_DB_ALIAS, help='Nominates a database to synchronize. '
                             'Defaults to the "default" database.')
 
-        parser.add_argument('--output', action='store',
+        parser.add_argument('--output',
                             help='Path to store the status to (default to stdout).')
 
     def handle(self, *args: Any, **options: Any) -> None:

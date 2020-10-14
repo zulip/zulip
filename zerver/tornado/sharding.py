@@ -1,6 +1,5 @@
 import json
 import os
-from urllib.parse import urlsplit
 
 from django.conf import settings
 
@@ -12,18 +11,9 @@ if os.path.exists("/etc/zulip/sharding.json"):
         shard_map = json.loads(f.read())
 
 def get_tornado_port(realm: Realm) -> int:
-    if settings.TORNADO_SERVER is None:
-        return 9993
-    if settings.TORNADO_PROCESSES == 1:
-        r = urlsplit(settings.TORNADO_SERVER)
-        assert r.port is not None
-        return r.port
-    return shard_map.get(realm.host, 9800)
+    return shard_map.get(realm.host, settings.TORNADO_PORTS[0])
 
 def get_tornado_uri(realm: Realm) -> str:
-    if settings.TORNADO_PROCESSES == 1:
-        return settings.TORNADO_SERVER
-
     port = get_tornado_port(realm)
     return f"http://127.0.0.1:{port}"
 

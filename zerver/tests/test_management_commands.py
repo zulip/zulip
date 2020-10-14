@@ -1,13 +1,13 @@
-import glob
 import os
 import re
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
-from unittest import mock
+from unittest import mock, skipUnless
 from unittest.mock import MagicMock, call, patch
 
+from django.apps import apps
 from django.conf import settings
-from django.core.management import call_command
+from django.core.management import call_command, find_commands
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
@@ -182,10 +182,11 @@ class TestCommandsCanStart(ZulipTestCase):
         super().setUp()
         self.commands = [
             command
-            for filename in glob.iglob('*/management/commands/*.py')
-            for command in [os.path.basename(filename).replace('.py', '')]
-            if command != '__init__'
+            for app_config in apps.get_app_configs()
+            if os.path.dirname(os.path.realpath(app_config.path)) == settings.DEPLOY_ROOT
+            for command in find_commands(os.path.join(app_config.path, "management"))
         ]
+        assert self.commands
 
     def test_management_commands_show_help(self) -> None:
         with stdout_suppressed():
@@ -314,6 +315,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
         result = self.client_get(generated_link)
         self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
 
+@skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
 class TestCalculateFirstVisibleMessageID(ZulipTestCase):
     COMMAND_NAME = 'calculate_first_visible_message_id'
 
@@ -326,7 +328,7 @@ class TestCalculateFirstVisibleMessageID(ZulipTestCase):
         with patch(func_name) as m:
             call_command(self.COMMAND_NAME, "--lookback-hours=35")
         calls = [call(realm, 35) for realm in Realm.objects.all()]
-        m.has_calls(calls, any_order=True)
+        m.assert_has_calls(calls, any_order=True)
 
 class TestPasswordRestEmail(ZulipTestCase):
     COMMAND_NAME = "send_password_reset_email"
@@ -422,6 +424,7 @@ class TestConvertMattermostData(ZulipTestCase):
             call('Converting Data ...')
         ])
 
+@skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
 class TestInvoicePlans(ZulipTestCase):
     COMMAND_NAME = 'invoice_plans'
 
@@ -438,23 +441,25 @@ class TestExport(ZulipTestCase):
         realm = get_realm("zulip")
         self.send_stream_message(self.example_user("othello"), "Verona",
                                  topic_name="Export",
-                                 content="Thumbs up for export")
+                                 content="Outbox emoji for export")
         message = Message.objects.last()
         do_add_reaction(self.example_user("iago"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
         do_add_reaction(self.example_user("hamlet"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
 
         with patch("zerver.management.commands.export.export_realm_wrapper") as m, \
-                patch('builtins.print') as mock_print:
+                patch('builtins.print') as mock_print, \
+                patch('builtins.input', return_value='y') as mock_input:
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
             m.assert_called_once_with(realm=realm, public_only=False, consent_message_id=message.id,
                                       delete_after_upload=False, threads=mock.ANY, output_dir=mock.ANY,
                                       percent_callback=mock.ANY,
                                       upload=False)
+            mock_input.assert_called_once_with('Continue? [y/N] ')
 
         self.assertEqual(mock_print.mock_calls, [
             call('\033[94mExporting realm\033[0m: zulip'),
-            call('\n\033[94mMessage content:\033[0m\nThumbs up for export\n'),
-            call('\033[94mNumber of users that reacted outbox:\033[0m 2\n')
+            call('\n\033[94mMessage content:\033[0m\nOutbox emoji for export\n'),
+            call('\033[94mNumber of users that reacted outbox:\033[0m 2 / 13 total users\n'),
         ])
 
         with self.assertRaisesRegex(CommandError, "Message with given ID does not"), \

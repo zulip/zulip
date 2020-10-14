@@ -181,7 +181,7 @@ NON_EXPORTED_TABLES = {
     # expire after a few days.
     'zerver_missedmessageemailaddress',
 
-    # When switching servers, clients will need to re-login and
+    # When switching servers, clients will need to re-log in and
     # reregister for push notifications anyway.
     'zerver_pushdevicetoken',
 
@@ -279,7 +279,6 @@ ANALYTICS_TABLES = {
 # TODO: This data structure could likely eventually be replaced by
 # inspecting the corresponding Django models
 DATE_FIELDS: Dict[TableName, List[Field]] = {
-    'zerver_analytics': ['date_created'],
     'zerver_attachment': ['create_time'],
     'zerver_message': ['last_edit_time', 'date_sent'],
     'zerver_mutedtopic': ['date_muted'],
@@ -299,7 +298,6 @@ DATE_FIELDS: Dict[TableName, List[Field]] = {
 }
 
 BITHANDLER_FIELDS: Dict[TableName, List[Field]] = {
-    'zerver_analytics': ['authentication_methods'],
     'zerver_realm': ['authentication_methods'],
 }
 
@@ -895,7 +893,7 @@ def fetch_attachment_data(response: TableData, realm_id: int, message_ids: Set[i
     '''
     for row in response['zerver_attachment']:
         filterer_message_ids = set(row['messages']).intersection(message_ids)
-        row['messages'] = sorted(list(filterer_message_ids))
+        row['messages'] = sorted(filterer_message_ids)
 
     '''
     Attachments can be connected to multiple messages, although
@@ -1468,7 +1466,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
     attachment_file = os.path.join(output_dir, 'attachment.json')
     analytics_file = os.path.join(output_dir, 'analytics.json')
     message_files = glob.glob(os.path.join(output_dir, 'messages-*.json'))
-    fns = sorted([analytics_file] + [attachment_file] + message_files + [realm_file])
+    fns = sorted([analytics_file, attachment_file, *message_files, realm_file])
 
     logging.info('Writing stats file: %s\n', stats_file)
     with open(stats_file, 'w') as f:
@@ -1604,11 +1602,11 @@ def launch_user_message_subprocesses(threads: int, output_dir: Path,
         arguments = [
             os.path.join(settings.DEPLOY_ROOT, "manage.py"),
             'export_usermessage_batch',
-            '--path', str(output_dir),
-            '--thread', str(shard_id),
+            f'--path={output_dir}',
+            f'--thread={shard_id}',
         ]
         if consent_message_id is not None:
-            arguments.extend(['--consent-message-id', str(consent_message_id)])
+            arguments.append(f'--consent-message-id={consent_message_id}')
 
         process = subprocess.Popen(arguments)
         pids[process.pid] = shard_id
@@ -1694,7 +1692,7 @@ def export_messages_single_user(user_profile: UserProfile, output_dir: Path,
     while True:
         actual_query = user_message_query.select_related(
             "message", "message__sending_client").filter(id__gt=min_id)[0:chunk_size]
-        user_message_chunk = [um for um in actual_query]
+        user_message_chunk = list(actual_query)
         user_message_ids = {um.id for um in user_message_chunk}
 
         if len(user_message_chunk) == 0:
@@ -1732,6 +1730,13 @@ def export_analytics_tables(realm: Realm, output_dir: Path) -> None:
         config=config,
         seed_object=realm,
     )
+
+    # The seeding logic results in a duplicate zerver_realm object
+    # being included in the analytics data.  We don't want it, as that
+    # data is already in `realm.json`, so we just delete it here
+    # before writing to disk.
+    del response['zerver_realm']
+
     write_data_to_file(output_file=export_file, data=response)
 
 def get_analytics_config() -> Config:
@@ -1739,7 +1744,7 @@ def get_analytics_config() -> Config:
     # analytics.json file in a full-realm export.
 
     analytics_config = Config(
-        table='zerver_analytics',
+        table='zerver_realm',
         is_seeded=True,
     )
 

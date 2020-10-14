@@ -3,10 +3,11 @@ from typing import Any, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 EPIC_NAME_TEMPLATE = "**{name}**"
@@ -367,10 +368,10 @@ def get_story_update_attachment_body(payload: Dict[str, Any]) -> Optional[str]:
     file_id = file_ids_added[0]
     for ref in payload["references"]:
         if ref["id"] == file_id:
-            kwargs.update({
-                "type": ref["entity_type"],
-                "file_name": ref["name"],
-            })
+            kwargs.update(
+                type=ref["entity_type"],
+                file_name=ref["name"],
+            )
 
     return FILE_ATTACHMENT_TEMPLATE.format(**kwargs)
 
@@ -401,7 +402,7 @@ def get_story_label_body(payload: Dict[str, Any]) -> Optional[str]:
             if reference["id"] == label_id:
                 label_name = reference.get('name', '')
 
-    kwargs.update({"label_name": label_name})
+    kwargs.update(label_name=label_name)
 
     return STORY_LABEL_TEMPLATE.format(**kwargs)
 
@@ -418,9 +419,9 @@ def get_story_update_project_body(payload: Dict[str, Any]) -> str:
     old_project_id = action["changes"]["project_id"]["old"]
     for ref in payload["references"]:
         if ref["id"] == new_project_id:
-            kwargs.update({"new": ref["name"]})
+            kwargs.update(new=ref["name"])
         if ref["id"] == old_project_id:
-            kwargs.update({"old": ref["name"]})
+            kwargs.update(old=ref["name"])
 
     return STORY_UPDATE_PROJECT_TEMPLATE.format(**kwargs)
 
@@ -512,7 +513,7 @@ IGNORED_EVENTS = {
     'story-comment_update',
 }
 
-@api_key_only_webhook_view('ClubHouse')
+@webhook_view('ClubHouse')
 @has_request_variables
 def api_clubhouse_webhook(
         request: HttpRequest, user_profile: UserProfile,
@@ -533,7 +534,7 @@ def api_clubhouse_webhook(
     body_func: Any = EVENT_BODY_FUNCTION_MAPPER.get(event)
     topic_func = get_topic_function_based_on_type(payload)
     if body_func is None or topic_func is None:
-        raise UnexpectedWebhookEventType('Clubhouse', event)
+        raise UnsupportedWebhookEventType(event)
     topic = topic_func(payload)
     body = body_func(payload)
 

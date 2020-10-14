@@ -81,7 +81,7 @@ zrequire("unread");
 zrequire("hash_util");
 zrequire("narrow");
 zrequire("presence");
-zrequire("people");
+const people = zrequire("people");
 zrequire("buddy_data");
 zrequire("buddy_list");
 zrequire("user_search");
@@ -760,4 +760,11 @@ run_test("electron_bridge", () => {
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
     activity.client_is_active = true;
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
+});
+
+run_test("test_send_or_receive_no_presence_for_web_public_visitor", () => {
+    set_global("page_params", {
+        is_web_public_visitor: true,
+    });
+    activity.send_presence_to_server();
 });

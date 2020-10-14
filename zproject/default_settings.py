@@ -121,7 +121,7 @@ LOCAL_UPLOADS_DIR: Optional[str] = None
 MAX_FILE_UPLOAD_SIZE = 25
 
 # Jitsi Meet video call integration; set to None to disable integration.
-JITSI_SERVER_URL = 'https://meet.jit.si/'
+JITSI_SERVER_URL = 'https://meet.jit.si'
 
 # Allow setting BigBlueButton settings in zulip-secrets.conf in
 # development; this is useful since there are no public BigBlueButton servers.
@@ -148,6 +148,9 @@ THUMBOR_URL = ''
 THUMBOR_SERVES_CAMO = False
 THUMBNAIL_IMAGES = False
 SENDFILE_BACKEND: Optional[str] = None
+
+TORNADO_PORTS: List[int] = []
+USING_TORNADO = True
 
 # ToS/Privacy templates
 PRIVACY_POLICY: Optional[str] = None
@@ -399,7 +402,7 @@ ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 7
 # are available to all realms.
 BILLING_ENABLED = False
 
-FREE_TRIAL_DAYS = get_secret('free_trial_days', None)
+FREE_TRIAL_DAYS: Optional[int] = int(get_secret('free_trial_days', "0"))
 
 # Custom message (supports HTML) to be shown in the navbar of landing pages. Used mainly for
 # making announcements.

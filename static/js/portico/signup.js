@@ -46,6 +46,9 @@ $(() => {
             element.next(".help-inline.alert.alert-error").remove();
             if (element.next().is('label[for="' + element.attr("id") + '"]')) {
                 error.insertAfter(element.next()).addClass("help-inline alert alert-error");
+            } else if (element.parent().is('label[for="' + element.attr("id") + '"]')) {
+                // For checkboxes and radio-buttons
+                error.insertAfter(element.parent()).addClass("help-inline alert alert-error");
             } else {
                 error.insertAfter(element).addClass("help-inline alert alert-error");
             }
@@ -93,7 +96,7 @@ $(() => {
     // Code in this block will be executed when the user visits /register
     // i.e. accounts_home.html is rendered.
     if ($("[data-page-id='accounts-home']").length > 0) {
-        if (window.location.hash.substring(0, 1) === "#") {
+        if (window.location.hash.slice(0, 1) === "#") {
             document.email_form.action += window.location.hash;
         }
     }
@@ -101,7 +104,7 @@ $(() => {
     // Code in this block will be executed when the user is at login page
     // i.e. login.html is rendered.
     if ($("[data-page-id='login-page']").length > 0) {
-        if (window.location.hash.substring(0, 1) === "#") {
+        if (window.location.hash.slice(0, 1) === "#") {
             /* We append the location.hash to the formaction so that URL can be
             preserved after user is logged in. See this:
             https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */

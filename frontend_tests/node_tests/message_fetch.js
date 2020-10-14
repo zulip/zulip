@@ -18,7 +18,7 @@ zrequire("FetchStatus", "js/fetch_status");
 zrequire("Filter", "js/filter");
 zrequire("MessageListData", "js/message_list_data");
 zrequire("message_list");
-zrequire("people");
+const people = zrequire("people");
 
 set_global("recent_topics", {
     process_messages: noop,
@@ -91,7 +91,7 @@ function config_fake_channel(conf) {
 
     channel.get = function (opts) {
         if (called && !conf.can_call_again) {
-            throw "only use this for one call";
+            throw new Error("only use this for one call");
         }
         if (!conf.can_call_again) {
             assert(self.success === undefined);

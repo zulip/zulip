@@ -85,7 +85,8 @@ Jump to:
 
 (For a non-free option, but better performance, you can also use [VMWare
 Fusion][vmware-fusion-dl] with the [VMWare Fusion Vagrant
-plugin][vagrant-vmware-fusion-dl].)
+plugin][vagrant-vmware-fusion-dl] or [Parallels Desktop][parallels-desktop-dl] as
+a provider for Vagrant.)
 
 Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
 
@@ -1026,6 +1027,7 @@ remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
 [vmware-fusion-dl]: https://www.vmware.com/products/fusion.html
 [vagrant-vmware-fusion-dl]: https://www.vagrantup.com/vmware/
+[parallels-desktop-dl]: https://www.parallels.com/products/desktop/
 [install-advanced]: ../development/setup-advanced.md
 [rtd-git-guide]: ../git/index.md
 [rtd-testing]: ../testing/testing.md

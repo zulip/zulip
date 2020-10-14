@@ -1,5 +1,6 @@
 from functools import lru_cache
 from typing import Any, Container, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from urllib.parse import urlparse
 
 import orjson
 import requests
@@ -16,8 +17,11 @@ from zerver.tornado.sharding import get_tornado_port, get_tornado_uri, notify_to
 
 class TornadoAdapter(HTTPAdapter):
     def __init__(self) -> None:
-        retry = Retry(total=3, backoff_factor=1)
-        super(TornadoAdapter, self).__init__(max_retries=retry)
+        # All of the POST requests we make to Tornado are safe to
+        # retry; allow retries of them, which is not the default.
+        retry_methods = Retry.DEFAULT_METHOD_WHITELIST | set(['POST'])
+        retry = Retry(total=3, backoff_factor=1, method_whitelist=retry_methods)
+        super().__init__(max_retries=retry)
 
     def send(
         self,
@@ -34,9 +38,11 @@ class TornadoAdapter(HTTPAdapter):
         try:
             resp = super().send(request, stream=stream, timeout=timeout, verify=verify, cert=cert, proxies=merged_proxies)
         except ConnectionError:
+            parsed_url = urlparse(request.url)
+            logfile = f"tornado-{parsed_url.port}.log" if settings.TORNADO_PROCESSES > 1 else "tornado.log"
             raise ConnectionError(
                 f"Django cannot connect to Tornado server ({request.url}); "
-                f"check {settings.ERROR_FILE_LOG_PATH} and tornado.log"
+                f"check {settings.ERROR_FILE_LOG_PATH} and {logfile}"
             )
         resp.raise_for_status()
         return resp
@@ -56,7 +62,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
                         narrow: Iterable[Sequence[str]]=[],
                         bulk_message_deletion: bool=False) -> Optional[str]:
 
-    if not settings.TORNADO_SERVER:
+    if not settings.USING_TORNADO:
         return None
 
     tornado_uri = get_tornado_uri(user_profile.realm)
@@ -83,7 +89,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
     return resp.json()['queue_id']
 
 def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int) -> List[Dict[str, Any]]:
-    if not settings.TORNADO_SERVER:
+    if not settings.USING_TORNADO:
         return []
 
     tornado_uri = get_tornado_uri(user_profile.realm)
@@ -102,7 +108,7 @@ def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int
     return resp.json()['events']
 
 def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
-    if not settings.TORNADO_SERVER or settings.RUNNING_INSIDE_TORNADO:
+    if not settings.USING_TORNADO or settings.RUNNING_INSIDE_TORNADO:
         process_notification(data)
     else:
         tornado_uri = get_tornado_uri(realm)
@@ -111,6 +117,16 @@ def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
             data=dict(data=orjson.dumps(data), secret=settings.SHARED_SECRET),
         )
 
+# The core function for sending an event from Django to Tornado (which
+# will then push it to web and mobile clients for the target users).
+# By convention, send_event should only be called from
+# zerver/lib/actions.py, which helps make it easy to find event
+# generation code.
+#
+# Every call point should be covered by a test in `test_events.py`,
+# with the schema verified in `zerver/lib/event_schema.py`.
+#
+# See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 def send_event(realm: Realm, event: Mapping[str, Any],
                users: Union[Iterable[int], Iterable[Mapping[str, Any]]]) -> None:
     """`users` is a list of user IDs, or in the case of `message` type

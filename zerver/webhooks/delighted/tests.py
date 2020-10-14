@@ -16,10 +16,12 @@ Your service is fast and flawless!
 ```
 """.strip()
 
-        self.send_and_test_stream_message('survey_response_updated_promoter',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "survey_response_updated_promoter",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_feedback_message_non_promoter(self) -> None:
         expected_topic = "Survey Response"
@@ -35,10 +37,9 @@ Your service is slow, but nearly flawless! Keep up the good work!
 ```
 """.strip()
 
-        self.send_and_test_stream_message('survey_response_updated_non_promoter',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("delighted", fixture_name, file_type="json")
+        self.check_webhook(
+            "survey_response_updated_non_promoter",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )

@@ -35,6 +35,8 @@ VENV_DEPENDENCIES = [
     # on upgrade of a production server, and it's not worth adding
     # another call to `apt install` for.
     "jq",                   # Used by scripts/lib/install-node to check yarn version
+
+    "libsasl2-dev",         # For building python-ldap from source
 ]
 
 COMMON_YUM_VENV_DEPENDENCIES = [
@@ -45,7 +47,7 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "openldap-devel",
     "libyaml-devel",
     # Needed by python-xmlsec:
-    "gcc"
+    "gcc",
     "python3-devel",
     "libxml2-devel",
     "xmlsec1-devel",
@@ -57,12 +59,14 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "jq",
 ]
 
-REDHAT_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
+REDHAT_VENV_DEPENDENCIES = [
+    *COMMON_YUM_VENV_DEPENDENCIES,
     "python36-devel",
     "python-virtualenv",
 ]
 
-FEDORA_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
+FEDORA_VENV_DEPENDENCIES = [
+    *COMMON_YUM_VENV_DEPENDENCIES,
     "python3-pip",
     "virtualenv",  # see https://unix.stackexchange.com/questions/27877/install-virtualenv-on-fedora-16
 ]
@@ -97,8 +101,8 @@ def get_venv_dependencies(vendor: str, os_version: str) -> List[str]:
 
 def install_venv_deps(pip: str, requirements_file: str) -> None:
     pip_requirements = os.path.join(ZULIP_PATH, "requirements", "pip.txt")
-    run([pip, "install", "--force-reinstall", "--require-hashes", "--requirement", pip_requirements])
-    run([pip, "install", "--no-deps", "--require-hashes", "--requirement", requirements_file])
+    run([pip, "install", "--force-reinstall", "--require-hashes", "-r", pip_requirements])
+    run([pip, "install", "--no-deps", "--require-hashes", "-r", requirements_file])
 
 def get_index_filename(venv_path: str) -> str:
     return os.path.join(venv_path, 'package_index')

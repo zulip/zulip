@@ -11,17 +11,24 @@ class WordPressHookTests(WebhookTestCase):
         expected_topic = "WordPress Post"
         expected_message = "New post published:\n* [New Blog Post](http://example.com\n)"
 
-        self.send_and_test_stream_message('publish_post', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "publish_post",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_publish_post_type_not_provided(self) -> None:
 
         expected_topic = "WordPress Post"
         expected_message = "New post published:\n* [New Blog Post](http://example.com\n)"
 
-        self.send_and_test_stream_message('publish_post_type_not_provided',
-                                          expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "publish_post_type_not_provided",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_publish_post_no_data_provided(self) -> None:
 
@@ -29,38 +36,53 @@ class WordPressHookTests(WebhookTestCase):
         expected_topic = "WordPress Notification"
         expected_message = "New post published:\n* [New WordPress Post](WordPress Post URL)"
 
-        self.send_and_test_stream_message('publish_post_no_data_provided',
-                                          expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "publish_post_no_data_provided",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_publish_page(self) -> None:
 
         expected_topic = "WordPress Page"
         expected_message = "New page published:\n* [New Blog Page](http://example.com\n)"
 
-        self.send_and_test_stream_message('publish_page', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "publish_page",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_user_register(self) -> None:
 
         expected_topic = "New Blog Users"
         expected_message = "New blog user registered:\n* **Name**: test_user\n* **Email**: test_user@example.com"
 
-        self.send_and_test_stream_message('user_register', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "user_register",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_wp_login(self) -> None:
 
         expected_topic = "New Login"
         expected_message = "User testuser logged in."
 
-        self.send_and_test_stream_message('wp_login', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "wp_login",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_unknown_action_no_data(self) -> None:
 
-        # Mimic send_and_test_stream_message() to manually execute a negative test.
-        # Otherwise its call to send_json_payload() would assert on the non-success
+        # Mimic check_webhook() to manually execute a negative test.
+        # Otherwise its call to send_webhook_payload() would assert on the non-success
         # we are testing. The value of result is the error message the webhook should
         # return if no params are sent. The fixture for this test is an empty file.
 

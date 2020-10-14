@@ -20,14 +20,10 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--agree_to_terms_of_service',
-                            dest='agree_to_terms_of_service',
                             action='store_true',
-                            default=False,
                             help="Agree to the Zulipchat Terms of Service: https://zulip.com/terms/.")
         parser.add_argument('--rotate-key',
-                            dest="rotate_key",
                             action='store_true',
-                            default=False,
                             help="Automatically rotate your server's zulip_org_key")
 
     def handle(self, **options: Any) -> None:
@@ -72,14 +68,14 @@ class Command(ZulipBaseCommand):
         registration_url = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/server/register"
         try:
             response = requests.post(registration_url, params=request)
-        except Exception:
+        except requests.RequestException:
             raise CommandError(
                 "Network error connecting to push notifications service "
                 f"({settings.PUSH_NOTIFICATION_BOUNCER_URL})",
             )
         try:
             response.raise_for_status()
-        except Exception:
+        except requests.HTTPError:
             content_dict = json.loads(response.content.decode("utf-8"))
             raise CommandError("Error: " + content_dict['msg'])
 

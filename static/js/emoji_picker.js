@@ -57,6 +57,7 @@ function get_max_index(section) {
     } else if (section >= 0 && section < get_total_sections()) {
         return exports.complete_emoji_catalog[section].emojis.length;
     }
+    return undefined;
 }
 
 function get_emoji_id(section, index) {
@@ -74,8 +75,8 @@ function get_emoji_coordinates(emoji_id) {
     // See `get_emoji_id()`.
     const emoji_info = emoji_id.split(",");
     return {
-        section: parseInt(emoji_info[1], 10),
-        index: parseInt(emoji_info[2], 10),
+        section: Number.parseInt(emoji_info[1], 10),
+        index: Number.parseInt(emoji_info[2], 10),
     };
 }
 
@@ -188,7 +189,7 @@ exports.hide_emoji_popover = function () {
 };
 
 function get_selected_emoji() {
-    return $(".emoji-popover-emoji").filter(":focus")[0];
+    return $(".emoji-popover-emoji:focus")[0];
 }
 
 function get_rendered_emoji(section, index) {
@@ -197,6 +198,7 @@ function get_rendered_emoji(section, index) {
     if (emoji.length > 0) {
         return emoji;
     }
+    return undefined;
 }
 
 function filter_emojis() {
@@ -583,7 +585,7 @@ function register_popover_events(popover) {
     });
 }
 
-exports.render_emoji_popover = function (elt, id) {
+exports.build_emoji_popover = function (elt, id) {
     const template_args = {
         class: "emoji-info-popover",
     };
@@ -649,7 +651,7 @@ exports.toggle_emoji_popover = function (element, id) {
     if (elt.data("popover") === undefined) {
         // Keep the element over which the popover is based off visible.
         elt.addClass("reaction_button_visible");
-        exports.render_emoji_popover(elt, id);
+        exports.build_emoji_popover(elt, id);
     }
     reset_emoji_showcase();
 };

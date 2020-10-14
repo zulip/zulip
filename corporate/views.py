@@ -20,7 +20,8 @@ from corporate.lib.stripe import (
     BillingError,
     do_change_plan_status,
     do_replace_payment_source,
-    downgrade_now,
+    downgrade_at_the_end_of_billing_cycle,
+    downgrade_now_without_creating_additional_invoices,
     get_latest_seat_count,
     make_end_of_cycle_updates_if_needed,
     process_initial_upgrade,
@@ -154,11 +155,15 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     if not settings.BILLING_ENABLED or user.is_guest:
         return render(request, "404.html", status=404)
 
+    billing_page_url = reverse(billing_home)
+
     customer = get_customer_by_realm(user.realm)
     if customer is not None and (get_current_plan_by_customer(customer) is not None or customer.sponsorship_pending):
-        billing_page_url = reverse('corporate.views.billing_home')
         if request.GET.get("onboarding") is not None:
             billing_page_url = f"{billing_page_url}?onboarding=true"
+        return HttpResponseRedirect(billing_page_url)
+
+    if user.realm.plan_type == user.realm.STANDARD_FREE:
         return HttpResponseRedirect(billing_page_url)
 
     percent_off = Decimal(0)
@@ -201,7 +206,7 @@ def sponsorship(request: HttpRequest, user: UserProfile,
     user_role = user.get_role_name()
 
     support_realm_uri = get_realm(settings.STAFF_SUBDOMAIN).uri
-    support_url = urljoin(support_realm_uri, urlunsplit(("", "", reverse('analytics.views.support'),
+    support_url = urljoin(support_realm_uri, urlunsplit(("", "", reverse("support"),
                           urlencode({"q": realm.string_id}), "")))
 
     context = {
@@ -232,29 +237,27 @@ def sponsorship(request: HttpRequest, user: UserProfile,
 def billing_home(request: HttpRequest) -> HttpResponse:
     user = request.user
     customer = get_customer_by_realm(user.realm)
-    context: Dict[str, Any] = {}
+    context: Dict[str, Any] = {
+        "admin_access": user.has_billing_access,
+        'has_active_plan': False,
+    }
+
+    if user.realm.plan_type == user.realm.STANDARD_FREE:
+        context["is_sponsored"] = True
+        return render(request, 'corporate/billing.html', context=context)
 
     if customer is None:
-        return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
+        return HttpResponseRedirect(reverse(initial_upgrade))
 
     if customer.sponsorship_pending:
-        if user.has_billing_access:
-            context = {"admin_access": True, "sponsorship_pending": True}
-        else:
-            context = {"admin_access": False}
+        context["sponsorship_pending"] = True
         return render(request, 'corporate/billing.html', context=context)
 
     if not CustomerPlan.objects.filter(customer=customer).exists():
-        return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
+        return HttpResponseRedirect(reverse(initial_upgrade))
 
     if not user.has_billing_access:
-        context = {'admin_access': False}
         return render(request, 'corporate/billing.html', context=context)
-
-    context = {
-        'admin_access': True,
-        'has_active_plan': False,
-    }
 
     plan = get_current_plan_by_customer(customer)
     if plan is not None:
@@ -279,24 +282,24 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             else:
                 payment_method = 'Billed by invoice'
 
-            context.update({
-                'plan_name': plan.name,
-                'has_active_plan': True,
-                'free_trial': free_trial,
-                'downgrade_at_end_of_cycle': downgrade_at_end_of_cycle,
-                'automanage_licenses': plan.automanage_licenses,
-                'switch_to_annual_at_end_of_cycle': switch_to_annual_at_end_of_cycle,
-                'licenses': licenses,
-                'licenses_used': licenses_used,
-                'renewal_date': renewal_date,
-                'renewal_amount': f'{renewal_cents / 100.:,.2f}',
-                'payment_method': payment_method,
-                'charge_automatically': charge_automatically,
-                'publishable_key': STRIPE_PUBLISHABLE_KEY,
-                'stripe_email': stripe_customer.email,
-                'CustomerPlan': CustomerPlan,
-                'onboarding': request.GET.get("onboarding") is not None,
-            })
+            context.update(
+                plan_name=plan.name,
+                has_active_plan=True,
+                free_trial=free_trial,
+                downgrade_at_end_of_cycle=downgrade_at_end_of_cycle,
+                automanage_licenses=plan.automanage_licenses,
+                switch_to_annual_at_end_of_cycle=switch_to_annual_at_end_of_cycle,
+                licenses=licenses,
+                licenses_used=licenses_used,
+                renewal_date=renewal_date,
+                renewal_amount=f'{renewal_cents / 100.:,.2f}',
+                payment_method=payment_method,
+                charge_automatically=charge_automatically,
+                publishable_key=STRIPE_PUBLISHABLE_KEY,
+                stripe_email=stripe_customer.email,
+                CustomerPlan=CustomerPlan,
+                onboarding=request.GET.get("onboarding") is not None,
+            )
 
     return render(request, 'corporate/billing.html', context=context)
 
@@ -315,7 +318,7 @@ def change_plan_status(request: HttpRequest, user: UserProfile,
         do_change_plan_status(plan, status)
     elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
         assert(plan.status == CustomerPlan.ACTIVE)
-        do_change_plan_status(plan, status)
+        downgrade_at_the_end_of_billing_cycle(user.realm)
     elif status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
         assert(plan.billing_schedule == CustomerPlan.MONTHLY)
         assert(plan.status == CustomerPlan.ACTIVE)
@@ -323,7 +326,7 @@ def change_plan_status(request: HttpRequest, user: UserProfile,
         do_change_plan_status(plan, status)
     elif status == CustomerPlan.ENDED:
         assert(plan.status == CustomerPlan.FREE_TRIAL)
-        downgrade_now(user.realm)
+        downgrade_now_without_creating_additional_invoices(user.realm)
     return json_success()
 
 @require_billing_access

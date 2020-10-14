@@ -74,7 +74,7 @@ exports.is_draft_row = function (row) {
 exports.id = function (message_row) {
     if (exports.is_draft_row(message_row)) {
         blueslip.error("Drafts have no zid");
-        return;
+        return undefined;
     }
 
     /*
@@ -95,7 +95,7 @@ exports.id = function (message_row) {
         blueslip.error("Calling code passed rows.id a row with no zid attr.");
     }
 
-    return parseFloat(zid);
+    return Number.parseFloat(zid);
 };
 
 exports.local_echo_id = function (message_row) {
@@ -103,7 +103,7 @@ exports.local_echo_id = function (message_row) {
 
     if (zid === undefined) {
         blueslip.error("Calling code passed rows.local_id a row with no zid attr.");
-        return;
+        return undefined;
     }
 
     if (!zid.includes(".0")) {

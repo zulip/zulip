@@ -4,12 +4,13 @@ set_global("page_params", {realm_is_zephyr_mirror_realm: false});
 set_global("md5", (s) => "md5-" + s);
 
 const settings_config = zrequire("settings_config");
+const pm_conversations = zrequire("pm_conversations");
+
 page_params.realm_email_address_visibility =
     settings_config.email_address_visibility_values.admins_only.code;
 
 zrequire("recent_senders");
-zrequire("pm_conversations");
-zrequire("people");
+const people = zrequire("people");
 zrequire("stream_data");
 zrequire("narrow");
 zrequire("hash_util");
@@ -19,7 +20,7 @@ const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
 const actual_pygments_data = Object.assign({}, pygments_data);
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
-const LazySet = zrequire("lazy_set.js").LazySet;
+const {LazySet} = zrequire("lazy_set");
 
 let next_id = 0;
 
@@ -98,7 +99,14 @@ run_test("sort_streams", () => {
 
 run_test("sort_languages", () => {
     Object.assign(pygments_data, {
-        langs: {python: 40, javscript: 50, php: 38, pascal: 29, perl: 22, css: 0},
+        langs: {
+            python: {priority: 40},
+            javscript: {priority: 50},
+            php: {priority: 38},
+            pascal: {priority: 29},
+            perl: {priority: 22},
+            css: {priority: 0},
+        },
     });
 
     let test_langs = ["pascal", "perl", "php", "python", "javascript"];
@@ -108,7 +116,7 @@ run_test("sort_languages", () => {
     assert.deepEqual(test_langs, ["python", "php", "pascal", "perl", "javascript"]);
 
     // Test if popularity between two languages are the same
-    pygments_data.langs.php = 40;
+    pygments_data.langs.php = {priority: 40};
     test_langs = ["pascal", "perl", "php", "python", "javascript"];
     test_langs = th.sort_languages(test_langs, "p");
 
@@ -241,10 +249,10 @@ run_test("sort_recipients", () => {
     stream_data.update_calculated_fields(linux_sub);
 
     // For splitting based on whether a PM was sent
-    global.pm_conversations.set_partner(5);
-    global.pm_conversations.set_partner(6);
-    global.pm_conversations.set_partner(2);
-    global.pm_conversations.set_partner(7);
+    pm_conversations.set_partner(5);
+    pm_conversations.set_partner(6);
+    pm_conversations.set_partner(2);
+    pm_conversations.set_partner(7);
 
     // For splitting based on recency
     global.recent_senders.process_message_for_senders({
@@ -548,7 +556,7 @@ run_test("render_stream", () => {
     global.stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, stream.name);
-        const short_desc = stream.description.substring(0, 35);
+        const short_desc = stream.description.slice(0, 35);
         assert.equal(args.secondary, short_desc + "...");
         rendered = true;
         return "typeahead-item-stub";

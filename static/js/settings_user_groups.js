@@ -5,6 +5,8 @@ const _ = require("lodash");
 const render_admin_user_group_list = require("../templates/admin_user_group_list.hbs");
 const render_confirm_delete_user = require("../templates/confirm_delete_user.hbs");
 
+const people = require("./people");
+
 const meta = {
     loaded: false,
 };
@@ -325,7 +327,7 @@ exports.set_up = function () {
         });
 
     $("#user-groups").on("click", ".delete", function () {
-        const group_id = parseInt($(this).parents(".user-group").attr("id"), 10);
+        const group_id = Number.parseInt($(this).parents(".user-group").attr("id"), 10);
         if (!exports.can_edit(group_id)) {
             return;
         }

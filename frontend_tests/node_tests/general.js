@@ -17,7 +17,7 @@ assert(util.find_wildcard_mentions("mention @**everyone**"));
 //  * change the data
 //  * get a true value
 
-zrequire("people");
+const people = zrequire("people");
 const isaac = {
     email: "isaac@example.com",
     user_id: 30,
@@ -365,7 +365,7 @@ run_test("update_user_event", (override) => {
    inside the people object, but it obviously kind of glosses over
    the other interactions.
 
-   We can go a step further and verify the sequence of of operations
+   We can go a step further and verify the sequence of operations
    that happen during an event.  This concept is called "mocking",
    and you can find libraries to help do mocking.  Here we will
    just build our own lightweight mocking system, which is almost
@@ -521,7 +521,7 @@ run_test("unread_ops", () => {
         unread.process_loaded_messages(test_messages);
 
         // Make our window appear visible.
-        notifications.window_has_focus = () => true;
+        notifications.is_window_focused = () => true;
 
         // Make our "test" message appear visible.
         message_viewport.bottom_message_visible = () => true;
@@ -641,7 +641,7 @@ function make_jquery_helper() {
             case "#stream_filters":
                 return stream_filters;
             default:
-                throw Error("unknown selector: " + selector);
+                throw new Error("unknown selector: " + selector);
         }
     }
 

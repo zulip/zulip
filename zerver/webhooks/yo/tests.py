@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Dict
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -22,5 +22,5 @@ class YoHookTests(WebhookTestCase):
         self.send_and_test_private_message('', expected_message=expected_message,
                                            content_type="application/x-www-form-urlencoded")
 
-    def get_body(self, fixture_name: str) -> Dict[str, Any]:
+    def get_payload(self, fixture_name: str) -> Dict[str, str]:
         return {}

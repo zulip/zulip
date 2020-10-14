@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 
 from zerver.lib.name_restrictions import is_disposable_domain
+
 # TODO: Move DisposableEmailError, etc. into here.
 from zerver.models import (
     DisposableEmailError,

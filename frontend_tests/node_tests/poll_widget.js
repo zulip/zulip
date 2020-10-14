@@ -4,7 +4,7 @@ zrequire("poll_widget");
 
 set_global("$", global.make_zjquery());
 
-set_global("people", {});
+const people = zrequire("people");
 
 const return_false = () => false;
 const return_true = () => true;
@@ -143,6 +143,7 @@ run_test("activate another person poll", () => {
         if (template_name === "widgets/poll_widget_results") {
             return "widgets/poll_widget_results";
         }
+        throw new Error(`Unknown template ${template_name}`);
     });
 
     const widget_elem = $("<div>").addClass("widget-content");
@@ -291,6 +292,7 @@ run_test("activate own poll", () => {
         if (template_name === "widgets/poll_widget_results") {
             return "widgets/poll_widget_results";
         }
+        throw new Error(`Unknown template ${template_name}`);
     });
 
     const widget_elem = $("<div>").addClass("widget-content");

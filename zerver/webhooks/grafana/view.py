@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -12,7 +12,7 @@ GRAFANA_TOPIC_TEMPLATE = '{alert_title}'
 
 GRAFANA_MESSAGE_TEMPLATE = '[{rule_name}]({rule_url})\n\n{alert_message}{eval_matches}'
 
-@api_key_only_webhook_view('Grafana')
+@webhook_view('Grafana')
 @has_request_variables
 def api_grafana_webhook(
         request: HttpRequest, user_profile: UserProfile,

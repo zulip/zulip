@@ -16,7 +16,7 @@ global.stub_out_jquery();
 zrequire("color_data");
 zrequire("hash_util");
 zrequire("stream_topic_history");
-zrequire("people");
+const people = zrequire("people");
 zrequire("stream_color");
 zrequire("stream_data");
 zrequire("FetchStatus", "js/fetch_status");
@@ -425,7 +425,7 @@ run_test("admin_options", () => {
     global.page_params.is_admin = false;
     let sub = make_sub();
     stream_data.update_calculated_fields(sub);
-    assert(!sub.is_admin);
+    assert(!sub.is_realm_admin);
     assert(!sub.can_change_stream_permissions);
 
     // just a sanity check that we leave "normal" fields alone
@@ -437,7 +437,7 @@ run_test("admin_options", () => {
     // admins can make public streams become private
     sub = make_sub();
     stream_data.update_calculated_fields(sub);
-    assert(sub.is_admin);
+    assert(sub.is_realm_admin);
     assert(sub.can_change_stream_permissions);
 
     // admins can only make private streams become public
@@ -446,14 +446,14 @@ run_test("admin_options", () => {
     sub.invite_only = true;
     sub.subscribed = false;
     stream_data.update_calculated_fields(sub);
-    assert(sub.is_admin);
+    assert(sub.is_realm_admin);
     assert(!sub.can_change_stream_permissions);
 
     sub = make_sub();
     sub.invite_only = true;
     sub.subscribed = true;
     stream_data.update_calculated_fields(sub);
-    assert(sub.is_admin);
+    assert(sub.is_realm_admin);
     assert(sub.can_change_stream_permissions);
 });
 
@@ -923,10 +923,10 @@ run_test("initialize", () => {
     initialize();
     assert(!stream_data.is_filtering_inactives());
 
-    const stream_names = stream_data.get_streams_for_admin().map((elem) => elem.name);
-    assert(stream_names.includes("subscriptions"));
-    assert(stream_names.includes("unsubscribed"));
-    assert(stream_names.includes("never_subscribed"));
+    const stream_names = new Set(stream_data.get_streams_for_admin().map((elem) => elem.name));
+    assert(stream_names.has("subscriptions"));
+    assert(stream_names.has("unsubscribed"));
+    assert(stream_names.has("never_subscribed"));
     assert.equal(stream_data.get_notifications_stream(), "");
 
     // Simulate a private stream the user isn't subscribed to

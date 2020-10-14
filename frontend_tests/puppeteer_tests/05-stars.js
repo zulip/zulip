@@ -1,6 +1,6 @@
 "use strict";
 
-const assert = require("assert").strict;
+const {strict: assert} = require("assert");
 
 const common = require("../puppeteer_lib/common");
 
@@ -11,26 +11,24 @@ async function stars_count(page) {
 }
 
 async function toggle_test_star_message(page) {
-    const error = await page.evaluate((message) => {
+    await page.evaluate((message) => {
         const msg = $(`.message_content:contains(${message}):visible`).last();
         if (msg.length !== 1) {
-            return "cannot find test star message";
+            throw new Error("cannot find test star message");
         }
 
         const star_icon = msg.closest(".messagebox").find(".star");
         if (star_icon.length !== 1) {
-            return "cannot find star icon";
+            throw new Error("cannot find star icon");
         }
 
         star_icon.trigger("click");
     }, message);
-
-    assert(!error, "\n\nERROR:" + error);
 }
 
 async function test_narrow_to_starred_messages(page) {
     await page.click('a[href^="#narrow/is/starred"]');
-    await common.check_messages_sent(page, "zhome", [["Verona > stars", [message]]]);
+    await common.check_messages_sent(page, "zfilt", [["Verona > stars", [message]]]);
 
     // Go back to all messages narrow.
     await page.keyboard.press("Escape");

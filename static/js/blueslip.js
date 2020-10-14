@@ -155,7 +155,7 @@ function report_error(msg, stack, opts) {
         error() {
             if (opts.show_ui_msg && ui_report !== undefined) {
                 ui_report.message(
-                    "Oops.  It seems something has gone wrong. " + "Please try reloading the page.",
+                    "Oops.  It seems something has gone wrong. Please try reloading the page.",
                     $("#home-error"),
                     "alert-error",
                 );
@@ -237,7 +237,7 @@ exports.warn = function blueslip_warn(msg, more_info) {
 
 exports.error = function blueslip_error(msg, more_info, stack) {
     if (stack === undefined) {
-        stack = Error().stack;
+        stack = new Error().stack;
     }
     const args = build_arg_list(msg, more_info);
     logger.error(...args);
@@ -246,11 +246,9 @@ exports.error = function blueslip_error(msg, more_info, stack) {
     if (page_params.debug_mode) {
         throw new BlueslipError(msg, more_info);
     }
-};
 
-exports.fatal = function blueslip_fatal(msg, more_info) {
-    report_error(msg, Error().stack, {more_info});
-    throw new BlueslipError(msg, more_info);
+    // This function returns to its caller in production!  To raise a
+    // fatal error even in production, use throw new Error(…) instead.
 };
 
 exports.timings = new Map();

@@ -1,5 +1,6 @@
 "use strict";
 
+const people = require("./people");
 const util = require("./util");
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
@@ -148,15 +149,15 @@ exports.is_slash_command = function (content) {
 
 exports.try_deliver_locally = function (message_request) {
     if (markdown.contains_backend_only_syntax(message_request.content)) {
-        return;
+        return undefined;
     }
 
     if (narrow_state.active() && !narrow_state.filter().can_apply_locally(true)) {
-        return;
+        return undefined;
     }
 
     if (exports.is_slash_command(message_request.content)) {
-        return;
+        return undefined;
     }
 
     if (!current_msg_list.data.fetch_status.has_found_newest()) {
@@ -169,14 +170,14 @@ exports.try_deliver_locally = function (message_request) {
         // message we just sent placed appropriately when we get it
         // from either server_events or message_fetch.
         blueslip.info("Skipping local echo until newest messages get loaded.");
-        return;
+        return undefined;
     }
 
     const local_id_float = local_message.get_next_id_float();
 
     if (!local_id_float) {
         // This can happen for legit reasons.
-        return;
+        return undefined;
     }
 
     const message = exports.insert_local_message(message_request, local_id_float);
@@ -275,7 +276,7 @@ exports.reify_message_id = function (local_id, server_id) {
     message.id = server_id;
     message.locally_echoed = false;
 
-    const opts = {old_id: parseFloat(local_id), new_id: server_id};
+    const opts = {old_id: Number.parseFloat(local_id), new_id: server_id};
 
     message_store.reify_message_id(opts);
     notifications.reify_message_id(opts);

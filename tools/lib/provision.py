@@ -41,7 +41,7 @@ CONTINUOUS_INTEGRATION = 'GITHUB_ACTIONS' in os.environ or 'CIRCLECI' in os.envi
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print(FAIL + "Error: No Zulip git repository present!" + ENDC)
-    print("To setup the Zulip development environment, you should clone the code")
+    print("To set up the Zulip development environment, you should clone the code")
     print("from GitHub, rather than using a Zulip production release tarball.")
     sys.exit(1)
 
@@ -104,12 +104,6 @@ elif vendor == "centos" and os_version == "7":
     POSTGRES_VERSION = "10"
 else:
     logging.critical("Unsupported platform: %s %s", vendor, os_version)
-    if vendor == 'ubuntu' and os_version == '14.04':
-        print()
-        print("Ubuntu Trusty reached end-of-life upstream and is no longer a supported platform for Zulip")
-        if os.path.exists('/home/vagrant'):
-            print("To upgrade, run `vagrant destroy`, and then recreate the Vagrant guest.\n")
-            print("See: https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html")
     sys.exit(1)
 
 VENV_DEPENDENCIES = get_venv_dependencies(vendor, os_version)
@@ -124,7 +118,7 @@ COMMON_DEPENDENCIES = [
     "puppet",               # Used by lint (`puppet parser validate`)
     "gettext",              # Used by makemessages i18n
     "transifex-client",     # Needed to sync translations from transifex
-    "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
+    "curl",                 # Used for testing our API documentation
     "moreutils",            # Used for sponge command
     "unzip",                # Needed for Slack import
     "crudini",              # Used for shell tooling w/ zulip.conf
@@ -141,79 +135,77 @@ COMMON_DEPENDENCIES = [
     "fonts-freefont-ttf",
     "libappindicator1",
     "xdg-utils",
+    "xvfb",
     # Puppeteer dependencies end here.
 ]
 
-UBUNTU_COMMON_APT_DEPENDENCIES = COMMON_DEPENDENCIES + [
+UBUNTU_COMMON_APT_DEPENDENCIES = [
+    *COMMON_DEPENDENCIES,
     "redis-server",
     "hunspell-en-us",
     "puppet-lint",
-    "netcat",               # Used for flushing memcached
-    "libfontconfig1",       # Required by phantomjs
     "default-jre-headless",  # Required by vnu-jar
-] + THUMBOR_VENV_DEPENDENCIES
+    *THUMBOR_VENV_DEPENDENCIES,
+]
 
-COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
+COMMON_YUM_DEPENDENCIES = [
+    *COMMON_DEPENDENCIES,
     "redis",
     "hunspell-en-US",
     "rubygem-puppet-lint",
     "nmap-ncat",
-    "fontconfig",  # phantomjs dependencies from here until libstdc++
-    "freetype",
-    "freetype-devel",
-    "fontconfig-devel",
-    "libstdc++",
-] + YUM_THUMBOR_VENV_DEPENDENCIES
+    *YUM_THUMBOR_VENV_DEPENDENCIES,
+]
 
 BUILD_PGROONGA_FROM_SOURCE = False
 if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version in []:
     # For platforms without a pgroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
-    SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
-        pkg.format(POSTGRES_VERSION) for pkg in [
-            "postgresql-{0}",
-            # Dependency for building pgroonga from source
-            "postgresql-server-dev-{0}",
-            "libgroonga-dev",
-            "libmsgpack-dev",
-            "clang-9",
-            "llvm-9-dev",
-        ]
-    ] + VENV_DEPENDENCIES
+    SYSTEM_DEPENDENCIES = [
+        *UBUNTU_COMMON_APT_DEPENDENCIES,
+        f"postgresql-{POSTGRES_VERSION}",
+        # Dependency for building pgroonga from source
+        f"postgresql-server-dev-{POSTGRES_VERSION}",
+        "libgroonga-dev",
+        "libmsgpack-dev",
+        "clang-9",
+        "llvm-9-dev",
+        *VENV_DEPENDENCIES,
+    ]
 elif "debian" in os_families():
-    SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
-        pkg.format(POSTGRES_VERSION) for pkg in [
-            "postgresql-{0}",
-            "postgresql-{0}-pgroonga",
-        ]
-    ] + VENV_DEPENDENCIES
+    SYSTEM_DEPENDENCIES = [
+        *UBUNTU_COMMON_APT_DEPENDENCIES,
+        f"postgresql-{POSTGRES_VERSION}",
+        f"postgresql-{POSTGRES_VERSION}-pgroonga",
+        *VENV_DEPENDENCIES,
+    ]
 elif "rhel" in os_families():
-    SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
-        pkg.format(POSTGRES_VERSION) for pkg in [
-            "postgresql{0}-server",
-            "postgresql{0}",
-            "postgresql{0}-devel",
-            "postgresql{0}-pgroonga",
-        ]
-    ] + VENV_DEPENDENCIES
+    SYSTEM_DEPENDENCIES = [
+        *COMMON_YUM_DEPENDENCIES,
+        f"postgresql{POSTGRES_VERSION}-server",
+        f"postgresql{POSTGRES_VERSION}",
+        f"postgresql{POSTGRES_VERSION}-devel",
+        f"postgresql{POSTGRES_VERSION}-pgroonga",
+        *VENV_DEPENDENCIES,
+    ]
 elif "fedora" in os_families():
-    SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
-        pkg.format(POSTGRES_VERSION) for pkg in [
-            "postgresql{0}-server",
-            "postgresql{0}",
-            "postgresql{0}-devel",
-            # Needed to build pgroonga from source
-            "groonga-devel",
-            "msgpack-devel",
-        ]
-    ] + VENV_DEPENDENCIES
+    SYSTEM_DEPENDENCIES = [
+        *COMMON_YUM_DEPENDENCIES,
+        f"postgresql{POSTGRES_VERSION}-server",
+        f"postgresql{POSTGRES_VERSION}",
+        f"postgresql{POSTGRES_VERSION}-devel",
+        # Needed to build pgroonga from source
+        "groonga-devel",
+        "msgpack-devel",
+        *VENV_DEPENDENCIES,
+    ]
     BUILD_PGROONGA_FROM_SOURCE = True
 
 if "fedora" in os_families():
-    TSEARCH_STOPWORDS_PATH = "/usr/pgsql-{}/share/tsearch_data/".format(POSTGRES_VERSION)
+    TSEARCH_STOPWORDS_PATH = f"/usr/pgsql-{POSTGRES_VERSION}/share/tsearch_data/"
 else:
-    TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/{}/tsearch_data/".format(POSTGRES_VERSION)
+    TSEARCH_STOPWORDS_PATH = f"/usr/share/postgresql/{POSTGRES_VERSION}/tsearch_data/"
 REPO_STOPWORDS_PATH = os.path.join(
     ZULIP_PATH,
     "puppet",
@@ -252,9 +244,8 @@ def install_apt_deps(deps_to_install: List[str]) -> None:
     run_as_root(
         [
             "env", "DEBIAN_FRONTEND=noninteractive",
-            "apt-get", "-y", "install", "--no-install-recommends",
+            "apt-get", "-y", "install", "--no-install-recommends", *deps_to_install,
         ]
-        + deps_to_install,
     )
 
 def install_yum_deps(deps_to_install: List[str]) -> None:
@@ -279,23 +270,23 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
             else:
                 print("Unrecognized output. `subscription-manager` might not be available")
 
-    run_as_root(["yum", "install", "-y"] + yum_extra_flags + deps_to_install)
+    run_as_root(["yum", "install", "-y", *yum_extra_flags, *deps_to_install])
     if "rhel" in os_families():
         # This is how a pip3 is installed to /usr/bin in CentOS/RHEL
         # for python35 and later.
         run_as_root(["python36", "-m", "ensurepip"])
         # `python36` is not aliased to `python3` by default
         run_as_root(["ln", "-nsf", "/usr/bin/python36", "/usr/bin/python3"])
-    postgres_dir = 'pgsql-{}'.format(POSTGRES_VERSION)
+    postgres_dir = f'pgsql-{POSTGRES_VERSION}'
     for cmd in ['pg_config', 'pg_isready', 'psql']:
         # Our tooling expects these postgres scripts to be at
         # well-known paths.  There's an argument for eventually
         # making our tooling auto-detect, but this is simpler.
-        run_as_root(["ln", "-nsf", "/usr/{}/bin/{}".format(postgres_dir, cmd),
-                     "/usr/bin/{}".format(cmd)])
+        run_as_root(["ln", "-nsf", f"/usr/{postgres_dir}/bin/{cmd}",
+                     f"/usr/bin/{cmd}"])
 
     # From here, we do the first-time setup/initialization for the postgres database.
-    pg_datadir = "/var/lib/pgsql/{}/data".format(POSTGRES_VERSION)
+    pg_datadir = f"/var/lib/pgsql/{POSTGRES_VERSION}/data"
     pg_hba_conf = os.path.join(pg_datadir, "pg_hba.conf")
 
     # We can't just check if the file exists with os.path, since the
@@ -305,7 +296,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         # Skip setup if it has been applied previously
         return
 
-    run_as_root(["/usr/{}/bin/postgresql-{}-setup".format(postgres_dir, POSTGRES_VERSION), "initdb"],
+    run_as_root([f"/usr/{postgres_dir}/bin/postgresql-{POSTGRES_VERSION}-setup", "initdb"],
                 sudo_args = ['-H'])
     # Use vendored pg_hba.conf, which enables password authentication.
     run_as_root(["cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
@@ -314,11 +305,11 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
     # Link in tsearch data files
     overwrite_symlink(
         "/usr/share/myspell/en_US.dic",
-        "/usr/pgsql-{}/share/tsearch_data/en_us.dict".format(POSTGRES_VERSION),
+        f"/usr/pgsql-{POSTGRES_VERSION}/share/tsearch_data/en_us.dict",
     )
     overwrite_symlink(
         "/usr/share/myspell/en_US.aff",
-        "/usr/pgsql-{}/share/tsearch_data/en_us.affix".format(POSTGRES_VERSION,),
+        f"/usr/pgsql-{POSTGRES_VERSION}/share/tsearch_data/en_us.affix",
     )
 
 def main(options: argparse.Namespace) -> "NoReturn":
@@ -368,11 +359,11 @@ def main(options: argparse.Namespace) -> "NoReturn":
         "https_proxy=" + os.environ.get("https_proxy", ""),
         "no_proxy=" + os.environ.get("no_proxy", ""),
     ]
-    run_as_root(proxy_env + ["scripts/lib/install-node"], sudo_args = ['-H'])
+    run_as_root([*proxy_env, "scripts/lib/install-node"], sudo_args = ['-H'])
 
     if not os.access(NODE_MODULES_CACHE_PATH, os.W_OK):
         run_as_root(["mkdir", "-p", NODE_MODULES_CACHE_PATH])
-        run_as_root(["chown", "{}:{}".format(os.getuid(), os.getgid()), NODE_MODULES_CACHE_PATH])
+        run_as_root(["chown", f"{os.getuid()}:{os.getgid()}", NODE_MODULES_CACHE_PATH])
 
     # This is a wrapper around `yarn`, which we run last since
     # it can often fail due to network issues beyond our control.
@@ -403,7 +394,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
     elif "fedora" in os_families():
         # These platforms don't enable and start services on
         # installing their package, so we do that here.
-        for service in ["postgresql-{}".format(POSTGRES_VERSION), "rabbitmq-server", "memcached", "redis"]:
+        for service in [f"postgresql-{POSTGRES_VERSION}", "rabbitmq-server", "memcached", "redis"]:
             run_as_root(["systemctl", "enable", service], sudo_args = ['-H'])
             run_as_root(["systemctl", "start", service], sudo_args = ['-H'])
 
@@ -430,17 +421,13 @@ if __name__ == "__main__":
     description = ("Provision script to install Zulip")
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--force', action='store_true', dest='is_force',
-                        default=False,
                         help="Ignore all provisioning optimizations.")
 
     parser.add_argument('--build-release-tarball-only', action='store_true',
                         dest='is_build_release_tarball_only',
-                        default=False,
                         help="Provision needed to build release tarball.")
 
     parser.add_argument('--skip-dev-db-build', action='store_true',
-                        dest='skip_dev_db_build',
-                        default=False,
                         help="Don't run migrations on dev database.")
 
     options = parser.parse_args()

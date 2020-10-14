@@ -1,5 +1,7 @@
 "use strict";
 
+const people = require("./people");
+
 exports.get_hash_category = function (hash) {
     // given "#streams/subscribed", returns "streams"
     return hash ? hash.replace(/^#/, "").split(/\//)[0] : "";
@@ -64,7 +66,7 @@ exports.decodeHashComponent = function (str) {
         // that the url is invalid.
         // TODO: Show possible valid urls to the user.
         return decodeURIComponent(str.replace(/\./g, "%"));
-    } catch (e) {
+    } catch {
         ui_report.error(i18n.t("Invalid URL"), undefined, $("#home-error"), 2000);
         return "";
     }
@@ -164,7 +166,7 @@ exports.by_conversation_and_time_uri = function (message) {
 };
 
 exports.stream_edit_uri = function (sub) {
-    const hash = "#streams" + "/" + sub.stream_id + "/" + exports.encodeHashComponent(sub.name);
+    const hash = `#streams/${sub.stream_id}/${exports.encodeHashComponent(sub.name)}`;
     return hash;
 };
 
@@ -190,7 +192,7 @@ exports.parse_narrow = function (hash) {
         const raw_operand = hash[i + 1];
 
         if (!raw_operand) {
-            return;
+            return undefined;
         }
 
         let negated = false;

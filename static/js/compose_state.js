@@ -13,7 +13,7 @@ exports.get_message_type = function () {
 exports.composing = function () {
     // This is very similar to get_message_type(), but it returns
     // a boolean.
-    return !!message_type;
+    return Boolean(message_type);
 };
 
 exports.focus_in_empty_compose = function () {
@@ -34,7 +34,7 @@ function get_or_set(fieldname, keep_leading_whitespace) {
         if (newval !== undefined) {
             elem.val(newval);
         }
-        return keep_leading_whitespace ? oldval.trimRight() : oldval.trim();
+        return keep_leading_whitespace ? oldval.trimEnd() : oldval.trim();
     };
 }
 
@@ -47,9 +47,9 @@ exports.message_content = get_or_set("compose-textarea", true);
 exports.private_message_recipient = function (value) {
     if (typeof value === "string") {
         compose_pm_pill.set_from_emails(value);
-    } else {
-        return compose_pm_pill.get_emails();
+        return undefined;
     }
+    return compose_pm_pill.get_emails();
 };
 
 exports.has_message_content = function () {

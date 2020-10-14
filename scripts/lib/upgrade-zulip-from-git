@@ -38,7 +38,7 @@ logging.basicConfig(format="%(asctime)s upgrade-zulip-from-git: %(message)s",
 
 parser = argparse.ArgumentParser()
 parser.add_argument("refname", help="Git reference, e.g. a branch, tag, or commit ID.")
-parser.add_argument("--remote-url", dest="remote_url",
+parser.add_argument("--remote-url",
                     help="Override the Git remote URL configured in /etc/zulip/zulip.conf.")
 args = parser.parse_args()
 
@@ -78,6 +78,6 @@ try:
     overwrite_symlink(deploy_path, os.path.join(DEPLOYMENTS_DIR, "next"))
 
     subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "upgrade-zulip-stage-2"),
-                           deploy_path, "--from-git"] + deploy_options)
+                           deploy_path, "--from-git", *deploy_options])
 finally:
     release_deployment_lock()

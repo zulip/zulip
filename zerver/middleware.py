@@ -5,11 +5,15 @@ import traceback
 from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Union
 
 from django.conf import settings
+from django.conf.urls.i18n import is_language_prefix_patterns_used
 from django.core.handlers.wsgi import WSGIRequest
 from django.db import connection
-from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, StreamingHttpResponse
 from django.middleware.common import CommonMiddleware
+from django.middleware.locale import LocaleMiddleware as DjangoLocaleMiddleware
 from django.shortcuts import render
+from django.utils import translation
+from django.utils.cache import patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.translation import ugettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
@@ -19,11 +23,12 @@ from sentry_sdk.integrations.logging import ignore_logger
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
-from zerver.lib.exceptions import ErrorCode, JsonableError, RateLimited
+from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError, RateLimited
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.rate_limiter import RateLimitResult
-from zerver.lib.response import json_error, json_response_from_error
+from zerver.lib.request import set_request, unset_request
+from zerver.lib.response import json_error, json_response_from_error, json_unauthorized
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ViewFuncT
 from zerver.lib.utils import statsd
@@ -224,6 +229,14 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
             error_data = "[content more than 200 characters]"
         logger.info('status=%3d, data=%s, uid=%s', status_code, error_data, requestor_for_logs)
 
+class RequestContext(MiddlewareMixin):
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        set_request(request)
+        try:
+            return self.get_response(request)
+        finally:
+            unset_request()
+
 class LogRequests(MiddlewareMixin):
     # We primarily are doing logging using the process_view hook, but
     # for some views, process_view isn't run, so we call the start
@@ -239,7 +252,7 @@ class LogRequests(MiddlewareMixin):
             # Avoid re-initializing request._log_data if it's already there.
             return
 
-        request._log_data = dict()
+        request._log_data = {}
         record_request_start_data(request._log_data)
 
     def process_view(self, request: HttpRequest, view_func: ViewFuncT,
@@ -301,6 +314,23 @@ class JsonErrorHandler(MiddlewareMixin):
         ignore_logger("zerver.middleware.json_error_handler")
 
     def process_exception(self, request: HttpRequest, exception: Exception) -> Optional[HttpResponse]:
+        if isinstance(exception, MissingAuthenticationError):
+            if 'text/html' in request.META.get('HTTP_ACCEPT', ''):
+                # If this looks like a request from a top-level page in a
+                # browser, send the user to the login page.
+                #
+                # TODO: The next part is a bit questionable; it will
+                # execute the likely intent for intentionally visiting
+                # an API endpoint without authentication in a browser,
+                # but that's an unlikely to be done intentionally often.
+                return HttpResponseRedirect(f'{settings.HOME_NOT_LOGGED_IN}?next={request.path}')
+            if request.path.startswith("/api"):
+                # For API routes, ask for HTTP basic auth (email:apiKey).
+                return json_unauthorized()
+            else:
+                # For /json routes, ask for session authentication.
+                return json_unauthorized(www_authenticate='session')
+
         if isinstance(exception, JsonableError):
             return json_response_from_error(exception)
         if request.error_format == "JSON":
@@ -339,18 +369,33 @@ def csrf_failure(request: HttpRequest, reason: str="") -> HttpResponse:
     else:
         return html_csrf_failure(request, reason)
 
+class LocaleMiddleware(DjangoLocaleMiddleware):
+    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
+        # This is the same as the default LocaleMiddleware, minus the
+        # logic that redirects 404's that lack a prefixed language in
+        # the path into having a language.  See
+        # https://code.djangoproject.com/ticket/32005
+        language = translation.get_language()
+        language_from_path = translation.get_language_from_path(request.path_info)
+        urlconf = getattr(request, 'urlconf', settings.ROOT_URLCONF)
+        i18n_patterns_used, _ = is_language_prefix_patterns_used(urlconf)
+        if not (i18n_patterns_used and language_from_path):
+            patch_vary_headers(response, ('Accept-Language',))
+        response.setdefault('Content-Language', language)
+        return response
+
 class RateLimitMiddleware(MiddlewareMixin):
     def set_response_headers(self, response: HttpResponse,
                              rate_limit_results: List[RateLimitResult]) -> None:
         # The limit on the action that was requested is the minimum of the limits that get applied:
-        limit = min([result.entity.max_api_calls() for result in rate_limit_results])
+        limit = min(result.entity.max_api_calls() for result in rate_limit_results)
         response['X-RateLimit-Limit'] = str(limit)
         # Same principle applies to remaining api calls:
-        remaining_api_calls = min([result.remaining for result in rate_limit_results])
+        remaining_api_calls = min(result.remaining for result in rate_limit_results)
         response['X-RateLimit-Remaining'] = str(remaining_api_calls)
 
         # The full reset time is the maximum of the reset times for the limits that get applied:
-        reset_time = time.time() + max([result.secs_to_freedom for result in rate_limit_results])
+        reset_time = time.time() + max(result.secs_to_freedom for result in rate_limit_results)
         response['X-RateLimit-Reset'] = str(int(reset_time))
 
     def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
@@ -366,7 +411,8 @@ class RateLimitMiddleware(MiddlewareMixin):
     def process_exception(self, request: HttpRequest,
                           exception: Exception) -> Optional[HttpResponse]:
         if isinstance(exception, RateLimited):
-            secs_to_freedom = float(str(exception))  # secs_to_freedom is passed to RateLimited when raising
+            # secs_to_freedom is passed to RateLimited when raising
+            secs_to_freedom = float(str(exception))
             resp = json_error(
                 _("API usage exceeded rate limit"),
                 data={'retry-after': secs_to_freedom},
@@ -384,10 +430,6 @@ class FlushDisplayRecipientCache(MiddlewareMixin):
         return response
 
 class HostDomainMiddleware(MiddlewareMixin):
-    def __init__(self, get_response: Callable[[Any, WSGIRequest], Union[HttpResponse, BaseException]]) -> None:
-        super().__init__(get_response)
-        ignore_logger("django.security.DisallowedHost")
-
     def process_request(self, request: HttpRequest) -> Optional[HttpResponse]:
         # Match against ALLOWED_HOSTS, which is rather permissive;
         # failure will raise DisallowedHost, which is a 400.

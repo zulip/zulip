@@ -2,12 +2,20 @@
 
 set -e
 
-"$(dirname "$0")/zulip-puppet-apply" -f
-# The step above should have generated the config files, now we need to move them into place:
+# Stand up the new zulip-tornado supervisor instances, and write out
+# the newly generated config files, with .tmp suffix
+SUPPRESS_SHARDING_NOTICE=1 "$(dirname "$0")/zulip-puppet-apply" -f
+
+# Verify, before we move them into place
+if ! [ -e /etc/zulip/nginx_sharding.conf.tmp ] || ! [ -e /etc/zulip/sharding.json.tmp ]; then
+    echo "No sharding updates found to apply."
+    exit 1
+fi
+
 chown root:root /etc/zulip/nginx_sharding.conf.tmp
-chmod 640 /etc/zulip/nginx_sharding.conf.tmp
+chmod 644 /etc/zulip/nginx_sharding.conf.tmp
 chown zulip:zulip /etc/zulip/sharding.json.tmp
-chmod 640 /etc/zulip/sharding.json.tmp
+chmod 644 /etc/zulip/sharding.json.tmp
 mv /etc/zulip/nginx_sharding.conf.tmp /etc/zulip/nginx_sharding.conf
 mv /etc/zulip/sharding.json.tmp /etc/zulip/sharding.json
 

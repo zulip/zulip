@@ -18,7 +18,6 @@ Jinja2
 Markdown
 importlib-metadata;python_version<"3.8"  # for Markdown
 Pygments
-hyperlink
 jsx-lexer
 
 # Needed for manage.py
@@ -79,8 +78,7 @@ pika
 psycopg2 --no-binary psycopg2
 
 # Needed for memcached usage
-# https://github.com/jaysonsantos/python-binary-memcached/pull/230, https://github.com/jaysonsantos/python-binary-memcached/pull/231
-https://github.com/jaysonsantos/python-binary-memcached/archive/364ce723ea73290a6ae27551cab28070424fd280.zip#egg=python-binary-memcached==0.29.0+git
+python-binary-memcached
 
 # Needed for compression support in memcached via python-binary-memcached
 django-bmemcached
@@ -163,7 +161,7 @@ django-sendfile2
 disposable-email-domains
 
 # Needed for parsing YAML with JSON references from the REST API spec files
-yamole
+jsonref
 
 # Needed for signing thumbnail requests so that they can be authenticated on the
 # other end.
@@ -175,9 +173,6 @@ pyahocorasick
 # Needed for function decorators that don't break introspection.
 # Used for rate limiting authentication.
 decorator
-
-# Use SameSite cookies in legacy Django (remove with Django 2.1)
-django-cookies-samesite
 
 # For server-side enforcement of password strength
 zxcvbn
@@ -191,3 +186,6 @@ openapi-core
 
 # For reporting errors to sentry.io
 sentry-sdk
+
+# For detecting URLs to link
+tlds

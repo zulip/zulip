@@ -2,6 +2,8 @@
 
 const XDate = require("xdate");
 
+const people = require("./people");
+
 // This module just manages data.  See activity.js for
 // the UI of our buddy list.
 
@@ -155,7 +157,7 @@ exports.set_info = function (presences, server_timestamp) {
     raw_info.clear();
     exports.presence_info.clear();
     for (const [user_id_str, info] of Object.entries(presences)) {
-        const user_id = parseInt(user_id_str, 10);
+        const user_id = Number.parseInt(user_id_str, 10);
 
         // Note: In contrast with all other state updates received
         // receive from the server, presence data is updated via a
@@ -244,7 +246,7 @@ exports.last_active_date = function (user_id) {
     const info = exports.presence_info.get(user_id);
 
     if (!info || !info.last_active) {
-        return;
+        return undefined;
     }
 
     const date = new XDate(info.last_active * 1000);

@@ -2,10 +2,101 @@
 
 All notable changes to the Zulip server are documented in this file.
 
-## Unreleased
+## 4.0 -- Unreleased
 
 This section lists notable unreleased changes; it is generally updated
 in bursts.
+
+#### Highlights
+
+- Added copy-to-clipboard button on code blocks, making it convenient
+  to extract code for external use.
+- Significant work towards support for web-public streams (visible to
+  the Internet without creating an account).
+- Significant work towards stream-level administrator users.
+
+#### Upgrade notes for 4.0
+
+- Changed the Tornado service to use 127.0.0.1:9800 instead of
+  127.0.0.1:9993 as its default network address, to simplify support
+  for multiple Tornado processes.  Since Tornado only listens on
+  localhost, this change should have no visible effect unless another
+  service is using port 9800.
+
+#### Full feature changelog
+
+- Added support for moving topics to private streams.
+- Added support for subscribing another stream's membership to a stream.
+- Added RealmAuditLog for most settings state changes in Zulip; this
+  data will fascilitate future features showing a log of activity by
+  a given user or changes to an organization's settings.
+- Added support for using Sentry for processing backend exceptions.
+- Added documentation for using `wal-g` for continuous postgres backups.
+- Added loading spinners for message editing widgets.
+- Added live update of compose placeholder text when recipients change.
+- The Zoom integration is now stable (no longer beta).
+- Completed API documentation for Zulip's real-time events system.
+- Fixed numerous rare exceptions when running Zulip at scale.
+- Fixed various UI and accessibility issues in the registration and new
+  user invitation flows.
+- Fixed live update and UI bugs with streams being deactivated.
+- Refactored typeahead and emoji components to be shareable with the
+  mobile codebase.
+- Replaced the old CasperJS frontend test suite with Puppeteer.
+- Switched to `orjson` for JSON serialization, resulting in better
+  performance and more standards-compliant validation.
+- Various API endpoints creating objects now return the ID of the
+  created object.
+- Fixed screenreader accessibility of many components, including
+  the compose box, message editing, popovers, and many more.
+- Improved formatting of GitLab integration.
+- Improved positioning logic for inline Youtube previews.
+- Upgraded our ancient forked version of bootstrap, on a path towards
+  removing the last forked dependencies from the codebase.
+- Updated webapp codebase to use many modern ES6 patterns.
+- Relabeled :smile: and :stuck_out_tongue: emoji to use better codepoints.
+
+### 3.2 -- September 15, 2020
+
+- Switched from `libmemcached` to `python-binary-memcached`, a
+  pure-Python implementation; this should eliminate memcached
+  connection problems affecting some installations.
+- Removed unnecessary `django-cookies-samesite` dependency, which had
+  its latest release removed from PyPI (breaking installation of Zulip
+  3.1).
+- Limited which local email addresses Postfix accepts when the
+  incoming email integration is enabled; this prevents the enumeration
+  of local users via the email system.
+- Fixed incorrectly case-sensitive email validation in `REMOTE_USER`
+  authentication.
+- Fixed search results for `has:image`.
+- Fixed ability to adjust "Who can post on the stream" configuration.
+- Fixed display of "Permission [to post] will be granted in n days"
+  for n > 365.
+- Support providing `nginx_listen_port` setting in conjunction with
+  `http_only` in `zulip.conf`.
+- Improved upgrade documentation.
+- Removed internal ID lists which could leak into the events API.
+
+### 3.1 -- July 30, 2020
+
+- Removed unused `short_name` field from the User model.  This field
+  had no purpose and could leak the local part of email addresses
+  when email address visibility was restricted.
+- Fixed a bug where loading spinners would sometimes not be displayed.
+- Fixed incoming email gateway exception with unstructured headers.
+- Fixed AlertWords not being included in data import/export.
+- Fixed Twitter previews not including a clear link to the tweet.
+- Fixed compose box incorrectly opening after uploading a file in a
+  message edit widget.
+- Fixed exception in SAML integration with encrypted assertions.
+- Fixed an analytics migration bug that could cause upgrading from 2.x
+  releases to fail.
+- Added a Thinkst Canary integration (and renamed the old one, which
+  was actually an integration for canarytokens.org).
+- Reformatted the frontend codebase using prettier.  This change was
+  included in this maintenance release to ensure backporting patches
+  from master remains easy.
 
 ### 3.0 -- July 16, 2020
 
@@ -1822,6 +1913,7 @@ Zulip apps.
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
+* [Draft Upgrade notes for 4.0](#upgrade-notes-for-4-0)
 * [Upgrade notes for 3.0](#upgrade-notes-for-3-0)
 * [Upgrade notes for 2.1.5](#upgrade-notes-for-2-1-5)
 * [Upgrade notes for 2.1.0](#upgrade-notes-for-2-1-0)

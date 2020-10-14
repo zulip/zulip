@@ -1,7 +1,7 @@
 {{! Client-side Mustache template for rendering subscriptions in the "invite user" form.}}
 <div class="invite-stream-controls">
-    <a href="#" class="invite_check_all_button">{{t "Check all" }}</a> |
-    <a href="#" class="invite_uncheck_all_button">{{t "Uncheck all" }}</a>
+    <button class="btn btn-link" type="button" id="invite_check_all_button">{{t "Check all" }}</button> |
+    <button class="btn btn-link" type="button" id="invite_uncheck_all_button">{{t "Uncheck all" }}</button>
 </div>
 <div id="invite-stream-checkboxes" class="new-style">
     {{#each streams}}

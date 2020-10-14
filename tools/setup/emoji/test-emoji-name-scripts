@@ -19,21 +19,21 @@ def generate_files(source_file: str, tmp_dir: str) -> None:
     input_file_path = output_file_path
     output_file_path = os.path.join(tmp_dir, 'NAME_MAP_A')
     subprocess.check_call([os.path.join(TOOLS_DIR, 'setup', 'emoji', 'import_emoji_names_from_csv'),
-                           '--input-file', input_file_path, '--output-file', output_file_path],
+                           f'--input-file={input_file_path}', f'--output-file={output_file_path}'],
                           stdout=subprocess.DEVNULL)
 
     # Regenerate the CSV file from name map.
     input_file_path = output_file_path
     output_file_path = os.path.join(tmp_dir, 'CSV_B')
     subprocess.check_call([os.path.join(TOOLS_DIR, 'setup', 'emoji', 'export_emoji_names_to_csv'),
-                           '--input-file', input_file_path, '--output-file', output_file_path],
+                           f'--input-file={input_file_path}', f'--output-file={output_file_path}'],
                           stdout=subprocess.DEVNULL)
 
     # Regenerate the name map file from the regenerated CSV file.
     input_file_path = output_file_path
     output_file_path = os.path.join(tmp_dir, 'NAME_MAP_B')
     subprocess.check_call([os.path.join(TOOLS_DIR, 'setup', 'emoji', 'import_emoji_names_from_csv'),
-                           '--input-file', input_file_path, '--output-file', output_file_path],
+                           f'--input-file={input_file_path}', f'--output-file={output_file_path}'],
                           stdout=subprocess.DEVNULL)
 
 def print_diff(path_file1: str, path_file2: str) -> None:
@@ -72,7 +72,7 @@ def main() -> None:
                    "and then verifying that no changes were made in the process.")
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
-        "--input-file", dest="input_file_path", type=str, metavar="<path>",
+        "--input-file", dest="input_file_path", metavar="<path>",
         default=os.path.join(TOOLS_DIR, "setup", "emoji", "emoji_names.csv"),
         help="Path to the CSV file to be used for round-trip conversion.")
 

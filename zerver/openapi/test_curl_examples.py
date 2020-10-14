@@ -1,3 +1,10 @@
+# Zulip's OpenAPI-based API documentation system is documented at
+#   https://zulip.readthedocs.io/en/latest/documentation/api.html
+#
+# This file contains the top-level logic for testing the cURL examples
+# in Zulip's API documentation; the details are in
+# zerver.openapi.curl_param_value_generators.
+
 import glob
 import html
 import json
@@ -22,7 +29,8 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
     md_engine = markdown.Markdown(extensions=[markdown_extension.makeExtension(
         api_url=realm.uri + "/api")])
 
-    # We run our curl tests in alphabetical order, since we depend
+    # We run our curl tests in alphabetical order (except that we
+    # delay the deactivate-user test to the very end), since we depend
     # on "add" tests coming before "remove" tests in some cases.  We
     # should try to either avoid ordering dependencies or make them
     # very explicit.

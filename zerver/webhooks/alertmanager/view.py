@@ -3,14 +3,14 @@ from typing import Any, Dict, List
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-@api_key_only_webhook_view('AlertManager')
+@webhook_view('AlertManager')
 @has_request_variables
 def api_alertmanager_webhook(request: HttpRequest, user_profile: UserProfile,
                              payload: Dict[str, Any] = REQ(argument_type='body')) -> HttpResponse:
@@ -49,7 +49,7 @@ def api_alertmanager_webhook(request: HttpRequest, user_profile: UserProfile,
             if len(messages) == 1:
                 body = f"{icon} **{title}** {messages[0]}"
             else:
-                message_list = "\n".join([f"* {m}" for m in messages])
+                message_list = "\n".join(f"* {m}" for m in messages)
                 body = f"{icon} **{title}**\n{message_list}"
 
             check_send_webhook_message(request, user_profile, topic, body)

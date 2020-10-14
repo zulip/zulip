@@ -1,10 +1,12 @@
-from typing import Any, Iterable, List, Mapping, Optional, Set, Tuple, Union
+from typing import Iterable, List, Optional, Tuple, Union
 
 from django.conf import settings
 from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
+from typing_extensions import TypedDict
 
+from zerver.lib.exceptions import StreamAdministratorRequired
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.request import JsonableError
 from zerver.models import (
@@ -24,6 +26,28 @@ from zerver.models import (
 )
 from zerver.tornado.django_api import send_event
 
+
+class StreamDict(TypedDict, total=False):
+    """
+    This type ultimately gets used in two places:
+
+        - we use it to create a stream
+        - we use it to specify a stream
+
+    It's possible we want a smaller type to use
+    for removing streams, but it would complicate
+    how we write the types for list_to_stream.
+
+    Note that these fields are just a subset of
+    the fields in the Stream model.
+    """
+    name: str
+    description: str
+    invite_only: bool
+    is_web_public: bool
+    stream_post_policy: int
+    history_public_to_subscribers: Optional[bool]
+    message_retention_days: Optional[int]
 
 def get_default_value_for_history_public_to_subscribers(
         realm: Realm,
@@ -58,6 +82,7 @@ def create_stream_if_needed(realm: Realm,
                             stream_name: str,
                             *,
                             invite_only: bool=False,
+                            is_web_public: bool=False,
                             stream_post_policy: int=Stream.STREAM_POST_POLICY_EVERYONE,
                             history_public_to_subscribers: Optional[bool]=None,
                             stream_description: str="",
@@ -73,6 +98,7 @@ def create_stream_if_needed(realm: Realm,
             name=stream_name,
             description=stream_description,
             invite_only=invite_only,
+            is_web_public=is_web_public,
             stream_post_policy=stream_post_policy,
             history_public_to_subscribers=history_public_to_subscribers,
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
@@ -100,9 +126,11 @@ def create_stream_if_needed(realm: Realm,
                                      event_time=event_time)
     return stream, created
 
-def create_streams_if_needed(realm: Realm,
-                             stream_dicts: List[Mapping[str, Any]],
-                             acting_user: Optional[UserProfile]=None) -> Tuple[List[Stream], List[Stream]]:
+def create_streams_if_needed(
+    realm: Realm,
+    stream_dicts: List[StreamDict],
+    acting_user: Optional[UserProfile]=None
+) -> Tuple[List[Stream], List[Stream]]:
     """Note that stream_dict["name"] is assumed to already be stripped of
     whitespace"""
     added_streams: List[Stream] = []
@@ -156,6 +184,8 @@ def access_stream_for_send_message(sender: UserProfile,
         pass
     elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS:
         raise JsonableError(_("Only organization administrators can send to this stream."))
+    elif stream.stream_post_policy != Stream.STREAM_POST_POLICY_EVERYONE and sender.is_guest:
+        raise JsonableError(_("Guests cannot send to this stream."))
     elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS:
         if sender.is_bot and (sender.bot_owner is not None and
                               sender.bot_owner.is_new_member):
@@ -203,23 +233,39 @@ def check_for_exactly_one_stream_arg(stream_id: Optional[int], stream: Optional[
     if stream_id is not None and stream is not None:
         raise JsonableError(_("Please choose one: 'stream' or 'stream_id'."))
 
-def access_stream_for_delete_or_update(user_profile: UserProfile, stream_id: int) -> Stream:
-    # We should only ever use this for realm admins, who are allowed
-    # to delete or update all streams on their realm, even private streams
-    # to which they are not subscribed.  We do an assert here, because
-    # all callers should have the require_realm_admin decorator.
-    assert(user_profile.is_realm_admin)
-
+def check_stream_access_for_delete_or_update(user_profile: UserProfile, stream: Stream,
+                                             sub: Optional[Subscription]=None) -> None:
     error = _("Invalid stream id")
-    try:
-        stream = Stream.objects.get(id=stream_id)
-    except Stream.DoesNotExist:
-        raise JsonableError(error)
-
     if stream.realm_id != user_profile.realm_id:
         raise JsonableError(error)
 
-    return stream
+    if user_profile.is_realm_admin:
+        return
+
+    if sub is None and stream.invite_only:
+        raise JsonableError(error)
+
+    if sub is not None and sub.is_stream_admin:
+        return
+
+    raise StreamAdministratorRequired()
+
+def access_stream_for_delete_or_update(user_profile: UserProfile,
+                                       stream_id: int) -> Tuple[Stream, Optional[Subscription]]:
+    try:
+        stream = Stream.objects.get(id=stream_id)
+    except Stream.DoesNotExist:
+        raise JsonableError(_("Invalid stream id"))
+
+    try:
+        sub = Subscription.objects.get(user_profile=user_profile,
+                                       recipient=stream.recipient,
+                                       active=True)
+    except Subscription.DoesNotExist:
+        sub = None
+
+    check_stream_access_for_delete_or_update(user_profile, stream, sub)
+    return (stream, sub)
 
 # Only set allow_realm_admin flag to True when you want to allow realm admin to
 # access unsubscribed private stream content.
@@ -285,6 +331,13 @@ def get_public_streams_queryset(realm: Realm) -> 'QuerySet[Stream]':
     return Stream.objects.filter(realm=realm, invite_only=False,
                                  history_public_to_subscribers=True)
 
+def get_web_public_streams_queryset(realm: Realm) -> 'QuerySet[Stream]':
+    # In theory, is_web_public=True implies invite_only=False and
+    # history_public_to_subscribers=True, but it's safer to include
+    # this in the query.
+    return Stream.objects.filter(realm=realm, deactivated=False, invite_only=False,
+                                 history_public_to_subscribers=True, is_web_public=True)
+
 def get_stream_by_id(stream_id: int) -> Stream:
     error = _("Invalid stream id")
     try:
@@ -313,6 +366,17 @@ def access_stream_by_name(user_profile: UserProfile,
     (recipient, sub) = access_stream_common(user_profile, stream, error,
                                             allow_realm_admin=allow_realm_admin)
     return (stream, recipient, sub)
+
+def access_web_public_stream(stream_id: int, realm: Realm) -> Stream:
+    error = _("Invalid stream id")
+    try:
+        stream = get_stream_by_id_in_realm(stream_id, realm)
+    except Stream.DoesNotExist:
+        raise JsonableError(error)
+
+    if not stream.is_web_public:
+        raise JsonableError(error)
+    return stream
 
 def access_stream_for_unmute_topic_by_name(user_profile: UserProfile,
                                            stream_name: str,
@@ -393,19 +457,16 @@ def can_access_stream_history_by_id(user_profile: UserProfile, stream_id: int) -
 
 def filter_stream_authorization(user_profile: UserProfile,
                                 streams: Iterable[Stream]) -> Tuple[List[Stream], List[Stream]]:
-    streams_subscribed: Set[int] = set()
     recipient_ids = [stream.recipient_id for stream in streams]
-    subs = Subscription.objects.filter(user_profile=user_profile,
-                                       recipient_id__in=recipient_ids,
-                                       active=True)
-
-    for sub in subs:
-        streams_subscribed.add(sub.recipient.type_id)
+    subscribed_recipient_ids = set(Subscription.objects.filter(
+        user_profile=user_profile,
+        recipient_id__in=recipient_ids,
+        active=True).values_list('recipient_id', flat=True))
 
     unauthorized_streams: List[Stream] = []
     for stream in streams:
         # The user is authorized for their own streams
-        if stream.id in streams_subscribed:
+        if stream.recipient_id in subscribed_recipient_ids:
             continue
 
         # Web public streams are accessible even to guests
@@ -422,9 +483,10 @@ def filter_stream_authorization(user_profile: UserProfile,
                           stream.id not in {stream.id for stream in unauthorized_streams}]
     return authorized_streams, unauthorized_streams
 
-def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
+def list_to_streams(streams_raw: Iterable[StreamDict],
                     user_profile: UserProfile,
-                    autocreate: bool=False) -> Tuple[List[Stream], List[Stream]]:
+                    autocreate: bool=False,
+                    admin_access_required: bool=False) -> Tuple[List[Stream], List[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
     For each stream name, we validate it to ensure it meets our
@@ -449,8 +511,22 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
         check_stream_name(stream_name)
 
     existing_streams: List[Stream] = []
-    missing_stream_dicts: List[Mapping[str, Any]] = []
+    missing_stream_dicts: List[StreamDict] = []
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
+
+    if admin_access_required:
+        existing_stream_ids = [stream.id for stream in existing_stream_map.values()]
+        subs = Subscription.objects.select_related("recipient").filter(
+            user_profile=user_profile,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id__in=existing_stream_ids,
+            active=True)
+        sub_dict_by_stream_ids = {sub.recipient.type_id: sub for sub in subs}
+        for stream in existing_stream_map.values():
+            sub = None
+            if stream.id in sub_dict_by_stream_ids:
+                sub = sub_dict_by_stream_ids[stream.id]
+            check_stream_access_for_delete_or_update(user_profile, stream, sub)
 
     message_retention_days_not_none = False
     for stream_dict in streams_raw:

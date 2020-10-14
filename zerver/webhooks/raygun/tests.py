@@ -14,11 +14,12 @@ class RaygunHookTests(WebhookTestCase):
 * **Application details**: [Best App](http://app.raygun.io/application-url)
 """.strip()
 
-        self.send_and_test_stream_message('error_status_changed',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type=
-                                          "application/x-www-form-urlencoded")
+        self.check_webhook(
+            "error_status_changed",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_comment_added_to_error_message(self) -> None:
         expected_topic = "test"
@@ -32,11 +33,12 @@ Ignoring these errors
 * **Application details**: [application name](http://app.raygun.io/application-url)
 """.strip()
 
-        self.send_and_test_stream_message('comment_added_to_error',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type=
-                                          "application/x-www-form-urlencoded")
+        self.check_webhook(
+            "comment_added_to_error",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_error_assigned_to_user_message(self) -> None:
         expected_topic = "test"
@@ -46,11 +48,12 @@ Amy Loondon assigned [Error](https://app.raygun.com/error-url) to Kyle Kenny:
 * **Application details**: [application name](http://app.raygun.io/application-url)
 """.strip()
 
-        self.send_and_test_stream_message('error_assigned_to_user',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type=
-                                          "application/x-www-form-urlencoded")
+        self.check_webhook(
+            "error_assigned_to_user",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_one_minute_followup_error_message(self) -> None:
         expected_topic = "test"
@@ -62,11 +65,12 @@ One minute [follow-up error](http://app.raygun.io/error-url):
 * **Application details**: [application name](http://app.raygun.io/application-url)
 """.strip()
 
-        self.send_and_test_stream_message('one_minute_followup_error',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type=
-                                          "application/x-www-form-urlencoded")
+        self.check_webhook(
+            "one_minute_followup_error",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_hourly_followup_error_message(self) -> None:
         expected_topic = "test"
@@ -78,11 +82,12 @@ Hourly [follow-up error](http://app.raygun.io/error-url):
 * **Application details**: [application name](http://app.raygun.io/application-url)
 """.strip()
 
-        self.send_and_test_stream_message('hourly_followup_error',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type=
-                                          "application/x-www-form-urlencoded")
+        self.check_webhook(
+            "hourly_followup_error",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_new_error_message(self) -> None:
         expected_topic = "test"
@@ -98,11 +103,12 @@ New [Error](http://app.raygun.io/error-url) occurred:
 * **Application details**: [application name](http://app.raygun.io/application-url)
 """.strip()
 
-        self.send_and_test_stream_message('new_error',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type=
-                                          "application/x-www-form-urlencoded")
+        self.check_webhook(
+            "new_error",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_reoccurred_error_message(self) -> None:
         expected_topic = "test"
@@ -118,11 +124,9 @@ New [Error](http://app.raygun.io/error-url) occurred:
 * **Application details**: [application name](http://app.raygun.io/application-url)
 """.strip()
 
-        self.send_and_test_stream_message('reoccurred_error',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type=
-                                          "application/x-www-form-urlencoded")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("raygun", fixture_name, file_type="json")
+        self.check_webhook(
+            "reoccurred_error",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )

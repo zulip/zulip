@@ -11,8 +11,8 @@ let last_topic_update = 0;
 
 exports.rerender = function () {
     // Note: We tend to optimistically rerender muting preferences before
-    // the back end actually acknowledges the mute.  This gives a more
-    // immediate feel to the user, and if the back end fails temporarily,
+    // the backend actually acknowledges the mute.  This gives a more
+    // immediate feel to the user, and if the backend fails temporarily,
     // re-doing a mute or unmute is a pretty recoverable thing.
 
     stream_list.update_streams_sidebar();
@@ -85,7 +85,7 @@ exports.set_up_muted_topics_ui = function () {
         filter: {
             element: $search_input,
             predicate(item, value) {
-                return item.topic.toLocaleLowerCase().indexOf(value) >= 0;
+                return item.topic.toLocaleLowerCase().includes(value);
             },
             onupdate() {
                 ui.reset_scrollbar(muted_topics_table.closest(".progressive-table-wrapper"));

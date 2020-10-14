@@ -1,6 +1,6 @@
 import os
 from typing import Any, Dict, Sequence
-from unittest import mock
+from unittest import mock, skipUnless
 from urllib.parse import urlsplit
 
 import orjson
@@ -75,7 +75,8 @@ class DocPageTest(ZulipTestCase):
             for s in landing_missing_strings:
                 self.assertNotIn(s, str(result.content))
             if not doc_html_str:
-                self.assert_in_success_response(['<meta name="description" content="Zulip combines'], result)
+                # Every page has a meta-description
+                self.assert_in_success_response(['<meta name="description" content="'], result)
             self.assert_not_in_success_response(['<meta name="robots" content="noindex,nofollow">'], result)
 
             # Test the URL on the "zephyr" subdomain with the landing page setting
@@ -122,11 +123,13 @@ class DocPageTest(ZulipTestCase):
         self._test('/api/subscribe', 'authorization_errors_fatal')
         self._test('/api/create-user', 'zuliprc-admin')
         self._test('/api/unsubscribe', 'not_removed')
-        self._test('/team/', 'industry veterans')
+        if settings.ZILENCER_ENABLED:
+            self._test('/team/', 'industry veterans')
         self._test('/history/', 'Cambridge, Massachusetts')
         # Test the i18n version of one of these pages.
         self._test('/en/history/', 'Cambridge, Massachusetts')
-        self._test('/apps/', 'Apps for every platform.')
+        if settings.ZILENCER_ENABLED:
+            self._test('/apps/', 'Apps for every platform.')
         self._test('/features/', 'Beautiful messaging')
         self._test('/hello/', 'Chat for distributed teams', landing_missing_strings=["Login"])
         self._test('/why-zulip/', 'Why Zulip?')
@@ -271,7 +274,7 @@ class IntegrationTest(ZulipTestCase):
             self.assertTrue(os.path.isfile(settings.DEPLOY_ROOT + path), integration.name)
 
     def test_api_url_view_subdomains_base(self) -> None:
-        context: Dict[str, Any] = dict()
+        context: Dict[str, Any] = {}
         add_api_uri_context(context, HostRequestMock())
         self.assertEqual(context["api_url_scheme_relative"], "testserver/api")
         self.assertEqual(context["api_url"], "http://testserver/api")
@@ -279,14 +282,14 @@ class IntegrationTest(ZulipTestCase):
 
     @override_settings(ROOT_DOMAIN_LANDING_PAGE=True)
     def test_api_url_view_subdomains_homepage_base(self) -> None:
-        context: Dict[str, Any] = dict()
+        context: Dict[str, Any] = {}
         add_api_uri_context(context, HostRequestMock())
         self.assertEqual(context["api_url_scheme_relative"], "yourZulipDomain.testserver/api")
         self.assertEqual(context["api_url"], "http://yourZulipDomain.testserver/api")
         self.assertFalse(context["html_settings_links"])
 
     def test_api_url_view_subdomains_full(self) -> None:
-        context: Dict[str, Any] = dict()
+        context: Dict[str, Any] = {}
         request = HostRequestMock(host="mysubdomain.testserver")
         add_api_uri_context(context, request)
         self.assertEqual(context["api_url_scheme_relative"], "mysubdomain.testserver/api")
@@ -294,7 +297,7 @@ class IntegrationTest(ZulipTestCase):
         self.assertTrue(context["html_settings_links"])
 
     def test_html_settings_links(self) -> None:
-        context: Dict[str, Any] = dict()
+        context: Dict[str, Any] = {}
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             add_api_uri_context(context, HostRequestMock())
         self.assertEqual(
@@ -304,7 +307,7 @@ class IntegrationTest(ZulipTestCase):
             context['subscriptions_html'],
             'streams page')
 
-        context = dict()
+        context = {}
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             add_api_uri_context(context, HostRequestMock(host="mysubdomain.testserver"))
         self.assertEqual(
@@ -314,7 +317,7 @@ class IntegrationTest(ZulipTestCase):
             context['subscriptions_html'],
             '<a target="_blank" href="/#streams">streams page</a>')
 
-        context = dict()
+        context = {}
         add_api_uri_context(context, HostRequestMock())
         self.assertEqual(
             context['settings_html'],
@@ -324,6 +327,7 @@ class IntegrationTest(ZulipTestCase):
             '<a target="_blank" href="/#streams">streams page</a>')
 
 class AboutPageTest(ZulipTestCase):
+    @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
     def test_endpoint(self) -> None:
         with self.settings(CONTRIBUTOR_DATA_FILE_PATH="zerver/tests/fixtures/authors.json"):
             result = self.client_get('/team/')
@@ -335,7 +339,7 @@ class AboutPageTest(ZulipTestCase):
             result = self.client_get('/team/')
             self.assertEqual(result.status_code, 200)
             self.assert_in_success_response(['Never ran'], result)
-            m.called_once()
+            m.assert_called_once()
 
         with self.settings(ZILENCER_ENABLED=False):
             result = self.client_get('/team/')
@@ -453,6 +457,11 @@ class AppsPageTest(ZulipTestCase):
 
         with self.settings(ZILENCER_ENABLED=False):
             result = self.client_get('/apps/')
+        self.assertEqual(result.status_code, 301)
+        self.assertTrue(result['Location'] == 'https://zulip.com/apps/')
+
+        with self.settings(ZILENCER_ENABLED=False):
+            result = self.client_get('/apps/linux')
         self.assertEqual(result.status_code, 301)
         self.assertTrue(result['Location'] == 'https://zulip.com/apps/')
 

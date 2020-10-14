@@ -10,9 +10,9 @@ from django.conf import settings
 from django.conf.locale import LANG_INFO
 from django.core.management.base import CommandParser
 from django.core.management.commands import compilemessages
+from django.utils.translation import override as override_language
+from django.utils.translation import ugettext as _
 from django.utils.translation.trans_real import to_language
-
-from zerver.lib.i18n import with_language
 
 
 class Command(compilemessages.Command):
@@ -23,7 +23,6 @@ class Command(compilemessages.Command):
         parser.add_argument(
             '--strict', '-s',
             action='store_true',
-            default=False,
             help='Stop execution in case of errors.')
 
     def handle(self, *args: Any, **options: Any) -> None:
@@ -64,17 +63,11 @@ class Command(compilemessages.Command):
         return f"{locale_path}/{locale}/translations.json"
 
     def get_name_from_po_file(self, po_filename: str, locale: str) -> str:
-        lang_name_re = re.compile(r'"Language-Team: (.*?) \(')
-        with open(po_filename) as reader:
-            result = lang_name_re.search(reader.read())
-            if result:
-                try:
-                    return result.group(1)
-                except Exception:
-                    print(f"Problem in parsing {po_filename}")
-                    raise
-            else:
-                raise Exception(f"Unknown language {locale}")
+        try:
+            team = polib.pofile(po_filename).metadata["Language-Team"]
+            return team[:team.rindex(" (")]
+        except (KeyError, ValueError):
+            raise Exception(f"Unknown language {locale}")
 
     def get_locales(self) -> List[str]:
         output = check_output(['git', 'ls-files', 'locale'])
@@ -128,7 +121,8 @@ class Command(compilemessages.Command):
                 # Fallback to getting the name from PO file.
                 filename = self.get_po_filename(locale_path, locale)
                 name = self.get_name_from_po_file(filename, locale)
-                name_local = with_language(name, code)
+                with override_language(code):
+                    name_local = _(name)
 
             info['name'] = name
             info['name_local'] = name_local

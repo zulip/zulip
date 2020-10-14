@@ -5,6 +5,7 @@ const XDate = require("xdate");
 
 const render_draft_table_body = require("../templates/draft_table_body.hbs");
 
+const people = require("./people");
 const util = require("./util");
 
 function set_count(count) {
@@ -79,7 +80,7 @@ exports.snapshot_message = function () {
     if (!compose_state.composing() || compose_state.message_content().length <= 2) {
         // If you aren't in the middle of composing the body of a
         // message or the message is shorter than 2 characters long, don't try to snapshot.
-        return;
+        return undefined;
     }
 
     // Save what we can.
@@ -200,7 +201,7 @@ exports.restore_draft = function (draft_id) {
         compose_args.topic = "";
     }
     compose_actions.start(compose_args.type, compose_args);
-    compose_ui.autosize_textarea();
+    compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-textarea").data("draft-id", draft_id);
 };
 
@@ -285,7 +286,7 @@ exports.format_draft = function (draft) {
             },
             error.stack,
         );
-        return;
+        return undefined;
     }
 
     return formatted;

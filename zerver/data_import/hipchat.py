@@ -661,7 +661,7 @@ def process_raw_message_batch(realm_id: int,
         content = content.replace('@here', '@**all**')
         return content
 
-    mention_map: Dict[int, Set[int]] = dict()
+    mention_map: Dict[int, Set[int]] = {}
 
     zerver_message = []
 

@@ -3,6 +3,7 @@
 const Handlebars = require("handlebars/runtime");
 const _ = require("lodash");
 
+const people = require("./people");
 const util = require("./util");
 
 function zephyr_stream_name_match(message, operand) {
@@ -242,7 +243,7 @@ class Filter {
                 operand = operand
                     .toString()
                     .toLowerCase()
-                    .replace(/[\u201c\u201d]/g, '"');
+                    .replace(/[\u201C\u201D]/g, '"');
                 break;
             default:
                 operand = operand.toString().toLowerCase();
@@ -583,6 +584,8 @@ class Filter {
                 return "at";
             case "pm-with":
                 return "envelope";
+            default:
+                return undefined;
         }
     }
 
@@ -633,6 +636,8 @@ class Filter {
                 }
             }
         }
+        /* istanbul ignore next */
+        return undefined;
     }
 
     allow_use_first_unread_when_narrowing() {

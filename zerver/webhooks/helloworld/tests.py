@@ -8,7 +8,7 @@ class HelloWorldHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
     URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}&stream={stream}"
     PM_URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
-    FIXTURE_DIR_NAME = 'hello'
+    FIXTURE_DIR_NAME = "helloworld"
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_hello_message(self) -> None:
@@ -16,16 +16,24 @@ class HelloWorldHookTests(WebhookTestCase):
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**"
 
         # use fixture named helloworld_hello
-        self.send_and_test_stream_message('hello', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "hello",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_goodbye_message(self) -> None:
         expected_topic = "Hello World"
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**"
 
         # use fixture named helloworld_goodbye
-        self.send_and_test_stream_message('goodbye', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "goodbye",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_pm_to_bot_owner(self) -> None:
         # Note that this is really just a test for check_send_webhook_message
@@ -52,8 +60,9 @@ class HelloWorldHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(topic=expected_topic)
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**"
 
-        self.send_and_test_stream_message('goodbye', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("helloworld", fixture_name, file_type="json")
+        self.check_webhook(
+            "goodbye",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )

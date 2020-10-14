@@ -1,16 +1,16 @@
 import re
 from functools import partial
 from inspect import signature
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_bool
 from zerver.lib.webhooks.common import (
-    UnexpectedWebhookEventType,
     check_send_webhook_message,
     validate_extract_webhook_http_header,
 )
@@ -91,8 +91,7 @@ def get_issue_created_event_body(payload: Dict[str, Any],
         get_object_url(payload),
         payload['object_attributes'].get('iid'),
         description,
-        get_objects_assignee(payload),
-        payload.get('assignees'),
+        assignees=replace_assignees_username_with_name(get_assignees(payload)),
         title=payload['object_attributes'].get('title') if include_title else None,
     )
 
@@ -142,22 +141,31 @@ def get_merge_request_open_or_updated_body(payload: Dict[str, Any], action: str,
         pull_request.get('source_branch'),
         pull_request.get('target_branch'),
         pull_request.get('description'),
-        get_objects_assignee(payload),
+        assignees=replace_assignees_username_with_name(get_assignees(payload)),
         type='MR',
         title=payload['object_attributes'].get('title') if include_title else None,
     )
 
-def get_objects_assignee(payload: Dict[str, Any]) -> Optional[str]:
-    assignee_object = payload.get('assignee')
-    if assignee_object:
-        return assignee_object.get('name')
-    else:
-        assignee_object = payload.get('assignees')
-        if assignee_object:
-            for assignee in assignee_object:
-                return assignee['name']
+def get_assignees(payload: Dict[str, Any]) -> List[Dict[str, str]]:
+    assignee_details = payload.get('assignees')
+    if assignee_details is None:
+        single_assignee_details = payload.get('assignee')
+        if single_assignee_details is None:
+            assignee_details = []
+        else:
+            assignee_details = [single_assignee_details]
+    return assignee_details
 
-    return None
+def replace_assignees_username_with_name(assignees: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    """Replace the username of each assignee with their (full) name.
+
+    This is a hack-like adaptor so that when assignees are passed to
+    `get_pull_request_event_message` we can use the assignee's name
+    and not their username (for more consistency).
+    """
+    for assignee in assignees:
+        assignee["username"] = assignee["name"]
+    return assignees
 
 def get_commented_commit_event_body(payload: Dict[str, Any]) -> str:
     comment = payload['object_attributes']
@@ -353,7 +361,7 @@ EVENT_FUNCTION_MAPPER = {
     'Pipeline Hook': get_pipeline_event_body,
 }
 
-@api_key_only_webhook_view("Gitlab")
+@webhook_view("Gitlab")
 @has_request_variables
 def api_gitlab_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any]=REQ(argument_type='body'),
@@ -452,4 +460,4 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[
     if event in list(EVENT_FUNCTION_MAPPER.keys()):
         return event
 
-    raise UnexpectedWebhookEventType('GitLab', event)
+    raise UnsupportedWebhookEventType(event)

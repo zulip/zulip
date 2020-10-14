@@ -52,12 +52,12 @@ run([
     './manage.py', 'collectstatic', '--no-default-ignore',
     '-v0',
     '--noinput',
-    '-i', 'assets',
-    '-i', 'emoji-styles',
-    '-i', 'html',
-    '-i', 'js',
-    '-i', 'styles',
-    '-i', 'templates',
+    '--ignore=assets',
+    '--ignore=emoji-styles',
+    '--ignore=html',
+    '--ignore=js',
+    '--ignore=styles',
+    '--ignore=templates',
 ])
 
 # Compile translation strings to generate `.mo` files.

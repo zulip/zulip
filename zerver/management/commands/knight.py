@@ -18,20 +18,16 @@ ONLY perform this on customer request from an authorized person.
         parser.add_argument('-f', '--for-real',
                             dest='ack',
                             action="store_true",
-                            default=False,
                             help='Acknowledgement that this is done according to policy.')
         parser.add_argument('--revoke',
                             dest='grant',
                             action="store_false",
-                            default=True,
                             help='Remove an administrator\'s rights.')
         parser.add_argument('--permission',
-                            dest='permission',
-                            action="store",
                             default='administer',
                             choices=['administer', 'api_super_user'],
                             help='Permission to grant/remove.')
-        parser.add_argument('email', metavar='<email>', type=str,
+        parser.add_argument('email', metavar='<email>',
                             help="email of user to knight")
         self.add_realm_args(parser, True)
 

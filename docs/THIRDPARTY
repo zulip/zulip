@@ -77,7 +77,7 @@ Files: static/third/bootstrap/css/bootstrap-btn.css
 Copyright: 2011-2014 Twitter, Inc
 License: Expat
 
-Files: static/third/bootstrap/css/bootstrap-responsive.css static/third/bootstrap/css/bootstrap.css
+Files: static/third/bootstrap/css/bootstrap.css
 Copyright: 2012 Twitter, Inc
 License: Apache-2.0
 Comment: The software has been modified.
@@ -85,12 +85,16 @@ Comment: The software has been modified.
 Files: static/third/bootstrap/js/bootstrap.js
 Copyright: 2012 Twitter, Inc
 License: Apache-2.0
-Comment: The software has been modified.
 
 Files: static/third/bootstrap-typeahead/*
 Copyright: 2012 Twitter, Inc
 License: Apache-2.0
 Comment: Bootstrap typeahead.  The software has been modified.
+
+Files: static/third/bootstrap-tooltip/*
+Copyright: 2012 Twitter, Inc
+License: Apache-2.0
+Comment: Bootstrap tooltip and bootstrap popover.  The software has been modified.
 
 Files: static/third/bootstrap-notify/*
 Copyright: 2013 Nijiko Yonskai

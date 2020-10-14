@@ -92,6 +92,7 @@ run_test("scroll_element_into_container", () => {
                     return top;
                 }
                 top = arg;
+                return this;
             },
         };
     })();

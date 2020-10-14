@@ -12,10 +12,8 @@ class SlackIncomingHookTests(WebhookTestCase):
 Hello, world.
 """.strip()
 
-        self.send_and_test_stream_message(
-            'text',
-            expected_topic,
-            expected_message,
+        self.check_webhook(
+            "text", expected_topic, expected_message,
         )
 
     def test_message_as_www_urlencoded(self) -> None:
@@ -24,8 +22,8 @@ Hello, world.
 :zap: chris has started deploying project tag v0.0.2rc10 to staging
 """.strip()
 
-        self.send_and_test_stream_message(
-            'urlencoded_text',
+        self.check_webhook(
+            "urlencoded_text",
             expected_topic,
             expected_message,
             content_type="application/x-www-form-urlencoded",
@@ -40,10 +38,8 @@ Danny Torrence left the following review for your property:
 [Haunted hotel image](https://is5-ssl.mzstatic.com/image/thumb/Purple3/v4/d3/72/5c/d3725c8f-c642-5d69-1904-aa36e4297885/source/256x256bb.jpg)
 """.strip()
 
-        self.send_and_test_stream_message(
-            'actions',
-            expected_topic,
-            expected_message,
+        self.check_webhook(
+            "actions", expected_topic, expected_message,
         )
 
     def test_message_with_blocks(self) -> None:
@@ -55,10 +51,8 @@ Danny Torrence left the following review for your property:
 [Haunted hotel image](https://is5-ssl.mzstatic.com/image/thumb/Purple3/v4/d3/72/5c/d3725c8f-c642-5d69-1904-aa36e4297885/source/256x256bb.jpg)
 """.strip()
 
-        self.send_and_test_stream_message(
-            'blocks',
-            expected_topic,
-            expected_message,
+        self.check_webhook(
+            "blocks", expected_topic, expected_message,
         )
 
     def test_message_with_attachment(self) -> None:
@@ -85,10 +79,8 @@ Danny Torrence left the following review for your property:
    • **severity:** `critical`
 """.strip()
 
-        self.send_and_test_stream_message(
-            'attachment',
-            expected_topic,
-            expected_message,
+        self.check_webhook(
+            "attachment", expected_topic, expected_message,
         )
 
     def get_body(self, fixture_name: str) -> str:

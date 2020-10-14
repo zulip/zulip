@@ -2,7 +2,7 @@
 
 const noop = function () {};
 
-const events = require("./lib/events.js");
+const events = require("./lib/events");
 
 const event_fixtures = events.fixtures;
 const test_message = events.test_message;
@@ -29,6 +29,7 @@ set_global("markdown", {});
 set_global("message_edit", {});
 set_global("message_list", {});
 set_global("muting_ui", {});
+set_global("narrow_state", {});
 set_global("night_mode", {});
 set_global("notifications", {});
 set_global("overlays", {});
@@ -74,7 +75,7 @@ zrequire("stream_topic_history");
 zrequire("stream_list");
 zrequire("message_flags");
 zrequire("message_store");
-zrequire("people");
+const people = zrequire("people");
 zrequire("starred_messages");
 zrequire("user_status");
 zrequire("subs");
@@ -491,9 +492,16 @@ run_test("realm_domains", (override) => {
 
 run_test("realm_user", (override) => {
     let event = event_fixtures.realm_user__add;
-    dispatch(event);
+    dispatch({...event});
     const added_person = people.get_by_user_id(event.person.user_id);
+    // sanity check a few individual fields
     assert.equal(added_person.full_name, "Test User");
+    assert.equal(added_person.timezone, "US/Eastern");
+
+    // ...but really the whole struct gets copied without any
+    // manipulation
+    assert.deepEqual(added_person, event.person);
+
     assert(people.is_active_user_for_popover(event.person.user_id));
 
     event = event_fixtures.realm_user__remove;
@@ -567,10 +575,19 @@ run_test("stream", (override) => {
         override("stream_data.get_sub_by_id", (id) =>
             id === devel_id ? {subscribed: true} : {subscribed: false},
         );
+
+        narrow_state.is_for_stream_id = () => true;
+
+        let updated = false;
+        override("current_msg_list.update_trailing_bookend", () => {
+            updated = true;
+        });
+
         override("stream_list.remove_sidebar_row", stub.f);
         dispatch(event);
         const args = stub.get_args("stream_id");
         assert_same(args.stream_id, devel_id);
+        assert_same(updated, true);
 
         override("settings_org.sync_realm_settings", noop);
         override("stream_list.remove_sidebar_row", noop);

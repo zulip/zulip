@@ -127,7 +127,7 @@ def gather_hot_conversations(user_profile: UserProfile, messages: List[Message])
     # out the hot conversations.
     num_convos = len(hot_conversations)
     if num_convos < 4:
-        hot_conversations.extend([elt[0] for elt in diversity_list[num_convos:4]])
+        hot_conversations.extend(elt[0] for elt in diversity_list[num_convos:4])
 
     hot_conversation_render_payloads = []
     for h in hot_conversations:
@@ -148,11 +148,13 @@ def gather_hot_conversations(user_profile: UserProfile, messages: List[Message])
 
 def gather_new_streams(user_profile: UserProfile,
                        threshold: datetime.datetime) -> Tuple[int, Dict[str, List[str]]]:
-    if user_profile.can_access_public_streams():
+    if user_profile.is_guest:
+        new_streams = list(get_active_streams(user_profile.realm).filter(
+            is_web_public=True, date_created__gt=threshold))
+
+    elif user_profile.can_access_public_streams():
         new_streams = list(get_active_streams(user_profile.realm).filter(
             invite_only=False, date_created__gt=threshold))
-    else:
-        new_streams = []
 
     base_url = f"{user_profile.realm.uri}/#narrow/stream/"
 
@@ -180,9 +182,9 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
     context = common_context(user_profile)
 
     # Start building email template data.
-    context.update({
-        'unsubscribe_link': one_click_unsubscribe_link(user_profile, "digest"),
-    })
+    context.update(
+        unsubscribe_link=one_click_unsubscribe_link(user_profile, "digest"),
+    )
 
     home_view_streams = Subscription.objects.filter(
         user_profile=user_profile,

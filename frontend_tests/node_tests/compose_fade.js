@@ -1,7 +1,7 @@
 "use strict";
 
 zrequire("stream_data");
-zrequire("people");
+const people = zrequire("people");
 zrequire("compose_fade");
 
 const me = {
@@ -52,6 +52,8 @@ run_test("set_focused_recipient", () => {
                         return "lunch";
                     },
                 };
+            default:
+                throw new Error(`Unknown selector ${selector}`);
         }
     };
 

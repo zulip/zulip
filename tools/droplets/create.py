@@ -30,7 +30,7 @@ import digitalocean
 parser = argparse.ArgumentParser(description='Create a Zulip devopment VM DigitalOcean droplet.')
 parser.add_argument("username", help="Github username for whom you want to create a Zulip dev droplet")
 parser.add_argument('--tags', nargs='+', default=[])
-parser.add_argument('-f', '--recreate', dest='recreate', action="store_true", default=False)
+parser.add_argument('-f', '--recreate', action="store_true")
 
 def get_config() -> configparser.ConfigParser:
     config = configparser.ConfigParser()

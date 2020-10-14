@@ -1,0 +1,301 @@
+.recent_topics_container {
+    position: relative;
+    height: 95%;
+    width: 70%;
+    max-width: 1200px;
+    max-height: 1000px;
+    padding: 0;
+    border-radius: 4px;
+    background-color: hsl(0, 0%, 100%);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    @media (max-width: 1130px) {
+        max-width: 90%;
+    }
+
+    @media (max-width: 700px) {
+        height: 95%;
+        max-width: none;
+        width: 90%;
+    }
+
+    .recent_topics_header {
+        padding-top: 4px;
+        padding-bottom: 8px;
+        text-align: center;
+        border-bottom: 1px solid hsl(0, 0%, 87%);
+
+        h1 {
+            margin: 0;
+            font-size: 1.1em;
+            text-transform: uppercase;
+        }
+
+        .exit {
+            font-weight: 400;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: hsl(0, 0%, 67%);
+            cursor: pointer;
+
+            .exit-sign {
+                position: relative;
+                top: 3px;
+                margin-left: 3px;
+                font-size: 1.5rem;
+                font-weight: 600;
+                cursor: pointer;
+            }
+        }
+    }
+
+    .recent_topics_table {
+        margin: 0;
+        padding: 15px;
+        overflow: hidden !important;
+        display: flex;
+        flex-direction: column;
+
+        td {
+            vertical-align: middle;
+            padding: 3px 8px 3px 8px;
+        }
+
+        .recent_topics_focusable {
+            display: inline-block;
+
+            & > * {
+                outline: 0;
+            }
+
+            &:focus-within {
+                /* Use the same color as the message feed pointer */
+                box-shadow: 0 3px 0 hsl(215, 47%, 50%);
+            }
+        }
+
+        a {
+            color: hsl(205, 47%, 42%);
+            text-decoration: none;
+            &:hover {
+                color: hsl(214, 40%, 58%);
+            }
+        }
+
+        .required-text:empty::after {
+            content: attr(data-empty);
+            display: block;
+            font-style: italic;
+            color: hsl(0, 0%, 67%);
+        }
+
+        .fa-check-square-o,
+        .fa-square-o {
+            padding: 0 2px 0 2px;
+        }
+
+        .fa-lock {
+            padding-right: 3px;
+        }
+
+        .table_fix_head {
+            padding: 10px;
+            padding-top: 0 !important;
+            overflow-y: auto;
+            max-height: 89%;
+        }
+
+        .table_fix_head table {
+            /* To keep border properties to the thead th. */
+            border-collapse: separate;
+        }
+
+        #recent_topics_filter_buttons {
+            margin: 0 10px 0 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        .search_group {
+            display: flex;
+            flex-grow: 1;
+            margin: 0 0 10px 0;
+        }
+
+        #recent_topics_search {
+            flex-grow: 1;
+        }
+
+        .clear_search_button {
+            /* Overrides app_components.css property. */
+            padding-top: 6px !important;
+        }
+
+        .btn-recent-filters {
+            border-radius: 40px;
+            margin: 0 5px 10px 0;
+
+            &:focus {
+                background-color: hsl(0, 0%, 80%);
+                outline: 0;
+            }
+        }
+
+        .btn-recent-selected {
+            background-color: hsl(0, 11%, 93%);
+        }
+
+        .recent_topic_unread_count {
+            background-color: hsl(105, 2%, 50%) !important;
+            color: hsl(0, 0%, 100%);
+            height: 16px;
+            line-height: 16px;
+            font-size: 12px;
+            font-weight: 400;
+            letter-spacing: 0.6px;
+            border-radius: 4px;
+            padding: 0 4px;
+            margin-right: 10px;
+            align-self: center;
+        }
+
+        .flex_container {
+            display: flex;
+            align-items: center;
+        }
+
+        .flex_container .left_part {
+            flex-wrap: wrap;
+        }
+
+        .flex_container .right_part {
+            margin-left: auto;
+            display: inline-flex;
+        }
+
+        .recent_topic_actions {
+            display: flex;
+            flex-flow: row nowrap;
+        }
+
+        .recent_avatars {
+            display: inline-flex; /* Causes LI items to display in row. */
+            list-style-type: none;
+            margin: auto; /* Centers vertically / horizontally in flex container. */
+            height: 24px;
+            padding: 4px;
+            border-radius: 6px;
+            overflow: hidden;
+
+            /*
+                By using the row-reverse layout, the visual ordering will be opposite of
+                the DOM ordering. This will allows us to stack the items in the opposite
+                direction of the natural stacking order without having to mess with the
+                zIndex value. The MAJOR DOWNSIDE is that the HTML itself now reads
+                backwards, which super janky.
+            */
+            flex-direction: row-reverse;
+        }
+
+        .recent_avatars_item {
+            height: 24px;
+            margin: 0;
+            padding: 0 1.5px 0 1.5px;
+            position: relative;
+            min-width: 24px;
+        }
+
+        .recent_avatars_img,
+        .recent_avatars_others {
+            border: 0;
+            border-radius: 6px;
+            color: hsl(0, 0%, 100%);
+            display: block;
+            height: 24px;
+            text-align: center;
+            background-color: hsl(0, 0%, 88%);
+        }
+
+        .recent_avatars_others {
+            color: hsl(0, 0%, 0%);
+            line-height: 24px;
+        }
+
+        tr {
+            background-color: hsl(0, 0%, 100%);
+
+            &:hover {
+                background-color: hsl(210, 100%, 97%);
+            }
+        }
+
+        .last_msg_time {
+            float: left;
+            margin-right: 5px;
+        }
+
+        thead th {
+            background-color: hsl(0, 0%, 100%);
+            color: inherit;
+            border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
+            border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+
+            &.active::after,
+            &[data-sort]:hover::after {
+                content: " \f0d8";
+                white-space: pre;
+                display: inline-block;
+                position: absolute;
+                padding-top: 3px;
+                font: normal normal normal 12px/1 FontAwesome;
+                font-size: inherit;
+            }
+
+            &.active {
+                opacity: 1;
+                transition: opacity 100ms ease-out;
+
+                &.descend::after {
+                    content: " \f0d7";
+                }
+            }
+
+            &[data-sort]:hover {
+                cursor: pointer;
+                background-color: hsla(0, 0%, 95%);
+                transition: background-color 100ms ease-in-out;
+
+                &:not(.active)::after {
+                    opacity: 0.3;
+                }
+            }
+        }
+
+        .recent_topic_stream,
+        thead .last_msg_time_header {
+            white-space: nowrap;
+        }
+
+        @media (max-width: 750px) {
+            /* Hide participants and last message time
+               on smaller screens. This ensures user always
+               has a nice UI experience. */
+            .recent_topic_users,
+            .recent_topic_timestamp,
+            thead .participants_header,
+            thead .last_msg_time_header {
+                display: none;
+            }
+            table td {
+                line-height: 2em;
+            }
+        }
+    }
+}

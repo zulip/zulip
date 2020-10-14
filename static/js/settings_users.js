@@ -4,6 +4,7 @@ const render_admin_bot_form = require("../templates/admin_bot_form.hbs");
 const render_admin_human_form = require("../templates/admin_human_form.hbs");
 const render_admin_user_list = require("../templates/admin_user_list.hbs");
 
+const people = require("./people");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
 
@@ -110,7 +111,7 @@ function update_view_on_reactivate(row) {
     button.addClass("btn-danger deactivate");
     button.removeClass("btn-warning reactivate");
     button.attr("title", "Deactivate");
-    button.html('<i class="fa fa-user-plus" aria-hidden="true"></i>');
+    button.html('<i class="fa fa-user-times" aria-hidden="true"></i>');
     row.removeClass("deactivated_user");
 
     if (user_role) {
@@ -129,7 +130,7 @@ function get_status_field() {
         case "bot-list-admin":
             return $("#bot-field-status").expectOne();
         default:
-            blueslip.fatal("Invalid admin settings page");
+            throw new Error("Invalid admin settings page");
     }
 }
 
@@ -160,12 +161,12 @@ function reset_scrollbar($sel) {
 
 function bot_owner_full_name(owner_id) {
     if (!owner_id) {
-        return;
+        return undefined;
     }
 
     const bot_owner = people.get_by_user_id(owner_id);
     if (!bot_owner) {
-        return;
+        return undefined;
     }
 
     return bot_owner.full_name;
@@ -175,7 +176,7 @@ function bot_info(bot_user_id) {
     const bot_user = bot_data.get(bot_user_id);
 
     if (!bot_user) {
-        return;
+        return undefined;
     }
 
     const owner_id = bot_user.owner_id;
@@ -437,7 +438,10 @@ function get_human_profile_data(fields_user_pills) {
         // Remove duplicate datepicker input element generated flatpicker library
         if (!$(this).hasClass("form-control")) {
             new_profile_data.push({
-                id: parseInt($(this).closest(".custom_user_field").attr("data-field-id"), 10),
+                id: Number.parseInt(
+                    $(this).closest(".custom_user_field").attr("data-field-id"),
+                    10,
+                ),
                 value: $(this).val(),
             });
         }
@@ -543,7 +547,7 @@ function handle_bot_deactivation(tbody, status_field) {
 
         const button_elem = $(e.target);
         const row = button_elem.closest(".user_row");
-        const bot_id = parseInt(row.attr("data-user-id"), 10);
+        const bot_id = Number.parseInt(row.attr("data-user-id"), 10);
         const url = "/json/bots/" + encodeURIComponent(bot_id);
 
         const opts = {
@@ -565,7 +569,7 @@ function handle_reactivation(tbody, status_field) {
         // Go up the tree until we find the user row, then grab the email element
         const button_elem = $(e.target);
         const row = button_elem.closest(".user_row");
-        const user_id = parseInt(row.attr("data-user-id"), 10);
+        const user_id = Number.parseInt(row.attr("data-user-id"), 10);
         const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
         const data = {};
 
@@ -582,21 +586,11 @@ function handle_reactivation(tbody, status_field) {
     });
 }
 
-function handle_bot_owner_profile(tbody) {
-    tbody.on("click", ".user_row .view_user_profile", (e) => {
-        const owner_id = parseInt($(e.target).attr("data-owner-id"), 10);
-        const owner = people.get_by_user_id(owner_id);
-        popovers.show_user_profile(owner);
-        e.stopPropagation();
-        e.preventDefault();
-    });
-}
-
 function handle_human_form(tbody, status_field) {
     tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
-        const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const person = people.get_by_user_id(user_id);
 
         if (!person) {
@@ -611,7 +605,7 @@ function handle_human_form(tbody, status_field) {
             e.preventDefault();
             e.stopPropagation();
 
-            const role = parseInt(modal.find("#user-role-select").val().trim(), 10);
+            const role = Number.parseInt(modal.find("#user-role-select").val().trim(), 10);
             const full_name = modal.find("input[name='full_name']");
             const profile_data = get_human_profile_data(fields_user_pills);
 
@@ -632,7 +626,7 @@ function handle_bot_form(tbody, status_field) {
     tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
-        const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const bot = people.get_by_user_id(user_id);
 
         if (!bot) {
@@ -685,7 +679,6 @@ section.bots.handle_events = () => {
     const tbody = $("#admin_bots_table").expectOne();
     const status_field = $("#bot-field-status").expectOne();
 
-    handle_bot_owner_profile(tbody);
     handle_bot_deactivation(tbody, status_field);
     handle_reactivation(tbody, status_field);
     handle_bot_form(tbody, status_field);

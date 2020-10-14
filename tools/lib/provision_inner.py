@@ -328,17 +328,13 @@ def main(options: argparse.Namespace) -> int:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--force', action='store_true', dest='is_force',
-                        default=False,
                         help="Ignore all provisioning optimizations.")
 
     parser.add_argument('--build-release-tarball-only', action='store_true',
                         dest='is_build_release_tarball_only',
-                        default=False,
                         help="Provision for test suite with production settings.")
 
     parser.add_argument('--skip-dev-db-build', action='store_true',
-                        dest='skip_dev_db_build',
-                        default=False,
                         help="Don't run migrations on dev database.")
 
     options = parser.parse_args()

@@ -28,7 +28,7 @@ class BuddyListConf {
     }
 
     get_key_from_li(opts) {
-        return parseInt(opts.li.expectOne().attr("data-user-id"), 10);
+        return Number.parseInt(opts.li.expectOne().attr("data-user-id"), 10);
     }
 
     get_data_from_keys(opts) {
@@ -109,7 +109,7 @@ class BuddyList extends BuddyListConf {
         const i = this.keys.indexOf(key);
 
         if (i <= 0) {
-            return;
+            return undefined;
         }
 
         return this.keys[i - 1];
@@ -119,7 +119,7 @@ class BuddyList extends BuddyListConf {
         const i = this.keys.indexOf(key);
 
         if (i < 0) {
-            return;
+            return undefined;
         }
 
         return this.keys[i + 1];

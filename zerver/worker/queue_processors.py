@@ -4,6 +4,7 @@ import copy
 import datetime
 import email
 import email.policy
+import functools
 import logging
 import os
 import signal
@@ -16,7 +17,8 @@ from abc import ABC, abstractmethod
 from collections import defaultdict, deque
 from email.message import EmailMessage
 from functools import wraps
-from threading import Timer
+from threading import Lock, Timer
+from types import FrameType
 from typing import (
     Any,
     Callable,
@@ -25,6 +27,7 @@ from typing import (
     Mapping,
     MutableSequence,
     Optional,
+    Set,
     Tuple,
     Type,
     TypeVar,
@@ -35,9 +38,11 @@ import orjson
 import requests
 from django.conf import settings
 from django.db import connection
+from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
+from sentry_sdk import add_breadcrumb, configure_scope
 from zulip_bots.lib import ExternalBotHandler, extract_query_without_mention
 
 from zerver.context_processors import common_context
@@ -101,6 +106,14 @@ from zerver.models import (
 
 logger = logging.getLogger(__name__)
 
+class WorkerTimeoutException(Exception):
+    def __init__(self, limit: int, event_count: int) -> None:
+        self.limit = limit
+        self.event_count = event_count
+
+    def __str__(self) -> str:
+        return f"Timed out after {self.limit * self.event_count} seconds processing {self.event_count} events"
+
 class WorkerDeclarationException(Exception):
     pass
 
@@ -160,9 +173,15 @@ def retry_send_email_failures(
 
     return wrapper
 
+def timer_expired(limit: int, event_count: int, signal: int, frame: FrameType) -> None:
+    raise WorkerTimeoutException(limit, event_count)
+
 class QueueProcessingWorker(ABC):
     queue_name: str
+    MAX_CONSUME_SECONDS: Optional[int] = 10
+    ENABLE_TIMEOUTS = False
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 50
+    MAX_SECONDS_BEFORE_UPDATE_STATS = 30
 
     def __init__(self) -> None:
         self.q: Optional[SimpleQueueClient] = None
@@ -175,13 +194,15 @@ class QueueProcessingWorker(ABC):
         self.queue_last_emptied_timestamp = time.time()
         self.consumed_since_last_emptied = 0
         self.recent_consume_times: MutableSequence[Tuple[int, float]] = deque(maxlen=50)
-        self.consume_interation_counter = 0
+        self.consume_iteration_counter = 0
+        self.idle = True
+        self.last_statistics_update_time = 0.0
 
         self.update_statistics(0)
 
-    def update_statistics(self, remaining_queue_size: int) -> None:
-        total_seconds = sum([seconds for _, seconds in self.recent_consume_times])
-        total_events = sum([events_number for events_number, _ in self.recent_consume_times])
+    def update_statistics(self, remaining_local_queue_size: int) -> None:
+        total_seconds = sum(seconds for _, seconds in self.recent_consume_times)
+        total_events = sum(events_number for events_number, _ in self.recent_consume_times)
         if total_events == 0:
             recent_average_consume_time = None
         else:
@@ -189,7 +210,7 @@ class QueueProcessingWorker(ABC):
         stats_dict = dict(
             update_time=time.time(),
             recent_average_consume_time=recent_average_consume_time,
-            current_queue_size=remaining_queue_size,
+            current_queue_size=remaining_local_queue_size,
             queue_last_emptied_timestamp=self.queue_last_emptied_timestamp,
             consumed_since_last_emptied=self.consumed_since_last_emptied,
         )
@@ -205,6 +226,16 @@ class QueueProcessingWorker(ABC):
                     orjson.dumps(stats_dict, option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2)
                 )
             os.rename(tmp_fn, fn)
+        self.last_statistics_update_time = time.time()
+
+    def get_remaining_local_queue_size(self) -> int:
+        if self.q is not None:
+            return self.q.local_queue_size()
+        else:
+            # This is a special case that will happen if we're operating without
+            # using RabbitMQ (e.g. in tests). In that case there's no queuing to speak of
+            # and the only reasonable size to return is 0.
+            return 0
 
     @abstractmethod
     def consume(self, data: Dict[str, Any]) -> None:
@@ -213,13 +244,43 @@ class QueueProcessingWorker(ABC):
     def do_consume(self, consume_func: Callable[[List[Dict[str, Any]]], None],
                    events: List[Dict[str, Any]]) -> None:
         consume_time_seconds: Optional[float] = None
+        with configure_scope() as scope:
+            scope.clear_breadcrumbs()
+            add_breadcrumb(
+                type='debug',
+                category='queue_processor',
+                message=f"Consuming {self.queue_name}",
+                data={"events": events, "local_queue_size": self.get_remaining_local_queue_size()},
+            )
         try:
+            if self.idle:
+                # We're reactivating after having gone idle due to emptying the queue.
+                # We should update the stats file to keep it fresh and to make it clear
+                # that the queue started processing, in case the event we're about to process
+                # makes us freeze.
+                self.idle = False
+                self.update_statistics(self.get_remaining_local_queue_size())
+
             time_start = time.time()
-            consume_func(events)
+            if self.MAX_CONSUME_SECONDS and self.ENABLE_TIMEOUTS:
+                try:
+                    signal.signal(
+                        signal.SIGALRM,
+                        functools.partial(timer_expired, self.MAX_CONSUME_SECONDS, len(events)),
+                    )
+                    try:
+                        signal.alarm(self.MAX_CONSUME_SECONDS * len(events))
+                        consume_func(events)
+                    finally:
+                        signal.alarm(0)
+                finally:
+                    signal.signal(signal.SIGALRM, signal.SIG_DFL)
+            else:
+                consume_func(events)
             consume_time_seconds = time.time() - time_start
             self.consumed_since_last_emptied += len(events)
-        except Exception:
-            self._handle_consume_exception(events)
+        except Exception as e:
+            self._handle_consume_exception(events, e)
         finally:
             flush_per_request_caches()
             reset_queries()
@@ -227,27 +288,39 @@ class QueueProcessingWorker(ABC):
             if consume_time_seconds is not None:
                 self.recent_consume_times.append((len(events), consume_time_seconds))
 
-            if self.q is not None:
-                remaining_queue_size = self.q.queue_size()
-            else:
-                remaining_queue_size = 0
-
-            if remaining_queue_size == 0:
+            remaining_local_queue_size = self.get_remaining_local_queue_size()
+            if remaining_local_queue_size == 0:
                 self.queue_last_emptied_timestamp = time.time()
                 self.consumed_since_last_emptied = 0
+                # We've cleared all the events from the queue, so we don't
+                # need to worry about the small overhead of doing a disk write.
+                # We take advantage of this to update the stats file to keep it fresh,
+                # especially since the queue might go idle until new events come in.
+                self.update_statistics(0)
+                self.idle = True
+                return
 
-            self.consume_interation_counter += 1
-            if self.consume_interation_counter >= self.CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM:
+            self.consume_iteration_counter += 1
+            if (self.consume_iteration_counter >= self.CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM
+                    or time.time() - self.last_statistics_update_time >= self.MAX_SECONDS_BEFORE_UPDATE_STATS):
+                self.consume_iteration_counter = 0
+                self.update_statistics(remaining_local_queue_size)
 
-                self.consume_interation_counter = 0
-                self.update_statistics(remaining_queue_size)
-
-    def consume_wrapper(self, data: Dict[str, Any]) -> None:
+    def consume_single_event(self, event: Dict[str, Any]) -> None:
         consume_func = lambda events: self.consume(events[0])
-        self.do_consume(consume_func, [data])
+        self.do_consume(consume_func, [event])
 
-    def _handle_consume_exception(self, events: List[Dict[str, Any]]) -> None:
-        self._log_problem()
+    def _handle_consume_exception(self, events: List[Dict[str, Any]], exception: Exception) -> None:
+        with configure_scope() as scope:
+            scope.set_context("events", {
+                "data": events,
+                "queue_name": self.queue_name,
+            })
+            if isinstance(exception, WorkerTimeoutException):
+                logging.exception("%s in queue %s",
+                                  str(exception), self.queue_name, stack_info=True)
+            else:
+                logging.exception("Problem handling data on queue %s", self.queue_name, stack_info=True)
         if not os.path.exists(settings.QUEUE_ERROR_DIR):
             os.mkdir(settings.QUEUE_ERROR_DIR)  # nocoverage
         # Use 'mark_sanitized' to prevent Pysa from detecting this false positive
@@ -261,37 +334,34 @@ class QueueProcessingWorker(ABC):
                 f.write(line.encode('utf-8'))
         check_and_send_restart_signal()
 
-    def _log_problem(self) -> None:
-        logging.exception("Problem handling data on queue %s", self.queue_name, stack_info=True)
-
     def setup(self) -> None:
         self.q = SimpleQueueClient()
 
     def start(self) -> None:
         assert self.q is not None
         self.initialize_statistics()
-        self.q.register_json_consumer(self.queue_name, self.consume_wrapper)
-        self.q.start_consuming()
+        self.q.start_json_consumer(
+            self.queue_name,
+            lambda events: self.consume_single_event(events[0]),
+        )
 
     def stop(self) -> None:  # nocoverage
         assert self.q is not None
         self.q.stop_consuming()
 
 class LoopQueueProcessingWorker(QueueProcessingWorker):
-    sleep_delay = 0
-    sleep_only_if_empty = True
+    sleep_delay = 1
+    batch_size = 100
 
     def start(self) -> None:  # nocoverage
         assert self.q is not None
         self.initialize_statistics()
-        while True:
-            events = self.q.json_drain_queue(self.queue_name)
-            self.do_consume(self.consume_batch, events)
-            # To avoid spinning the CPU, we go to sleep if there's
-            # nothing in the queue, or for certain queues with
-            # sleep_only_if_empty=False, unconditionally.
-            if not self.sleep_only_if_empty or len(events) == 0:
-                time.sleep(self.sleep_delay)
+        self.q.start_json_consumer(
+            self.queue_name,
+            lambda events: self.do_consume(self.consume_batch, events),
+            batch_size=self.batch_size,
+            timeout=self.sleep_delay,
+        )
 
     @abstractmethod
     def consume_batch(self, events: List[Dict[str, Any]]) -> None:
@@ -351,12 +421,12 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         # queue invitation reminder
         if settings.INVITATION_LINK_VALIDITY_DAYS >= 4:
             context = common_context(referrer)
-            context.update({
-                'activate_url': activate_url,
-                'referrer_name': referrer.full_name,
-                'referrer_email': referrer.delivery_email,
-                'referrer_realm_name': referrer.realm.name,
-            })
+            context.update(
+                activate_url=activate_url,
+                referrer_name=referrer.full_name,
+                referrer_email=referrer.delivery_email,
+                referrer_realm_name=referrer.realm.name,
+            )
             send_future_email(
                 "zerver/emails/invitation_reminder",
                 referrer.realm,
@@ -366,7 +436,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 context=context,
                 delay=datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS - 2))
 
-@assign_queue('user_activity', queue_type="loop")
+@assign_queue('user_activity')
 class UserActivityWorker(LoopQueueProcessingWorker):
     """The UserActivity queue is perhaps our highest-traffic queue, and
     requires some care to ensure it performs adequately.
@@ -385,8 +455,6 @@ class UserActivityWorker(LoopQueueProcessingWorker):
       common events from doing an action multiple times.
 
     """
-    sleep_delay = 10
-    sleep_only_if_empty = True
     client_id_map: Dict[str, int] = {}
 
     def start(self) -> None:
@@ -449,7 +517,7 @@ class UserPresenceWorker(QueueProcessingWorker):
         status = event["status"]
         do_update_user_presence(user_profile, client, log_time, status)
 
-@assign_queue('missedmessage_emails', queue_type="loop")
+@assign_queue('missedmessage_emails')
 class MissedMessageWorker(QueueProcessingWorker):
     # Aggregate all messages received over the last BATCH_DURATION
     # seconds to let someone finish sending a batch of messages and/or
@@ -469,47 +537,58 @@ class MissedMessageWorker(QueueProcessingWorker):
     events_by_recipient: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
     batch_start_by_recipient: Dict[int, float] = {}
 
+    # This lock protects access to all of the data structures declared
+    # above.  A lock is required because maybe_send_batched_emails, as
+    # the argument to Timer, runs in a separate thread from the rest
+    # of the consumer.
+    lock = Lock()
+
     def consume(self, event: Dict[str, Any]) -> None:
-        logging.debug("Received missedmessage_emails event: %s", event)
+        with self.lock:
+            logging.debug("Received missedmessage_emails event: %s", event)
 
-        # When we process an event, just put it into the queue and ensure we have a timer going.
-        user_profile_id = event['user_profile_id']
-        if user_profile_id not in self.batch_start_by_recipient:
-            self.batch_start_by_recipient[user_profile_id] = time.time()
-        self.events_by_recipient[user_profile_id].append(event)
+            # When we process an event, just put it into the queue and ensure we have a timer going.
+            user_profile_id = event['user_profile_id']
+            if user_profile_id not in self.batch_start_by_recipient:
+                self.batch_start_by_recipient[user_profile_id] = time.time()
+            self.events_by_recipient[user_profile_id].append(event)
 
-        self.ensure_timer()
+            self.ensure_timer()
 
     def ensure_timer(self) -> None:
+        # The caller is responsible for ensuring self.lock is held when it calls this.
         if self.timer_event is not None:
             return
-        self.timer_event = Timer(self.TIMER_FREQUENCY, MissedMessageWorker.maybe_send_batched_emails, [self])
+
+        self.timer_event = Timer(self.TIMER_FREQUENCY, MissedMessageWorker.maybe_send_batched_emails,
+                                 [self])
         self.timer_event.start()
 
-    def stop_timer(self) -> None:
-        if self.timer_event and self.timer_event.is_alive():
-            self.timer_event.cancel()
+    def maybe_send_batched_emails(self) -> None:
+        with self.lock:
+            # self.timer_event just triggered execution of this
+            # function in a thread, so now that we hold the lock, we
+            # clear the timer_event attribute to record that no Timer
+            # is active.
             self.timer_event = None
 
-    def maybe_send_batched_emails(self) -> None:
-        self.stop_timer()
+            current_time = time.time()
+            for user_profile_id, timestamp in list(self.batch_start_by_recipient.items()):
+                if current_time - timestamp < self.BATCH_DURATION:
+                    continue
+                events = self.events_by_recipient[user_profile_id]
+                logging.info("Batch-processing %s missedmessage_emails events for user %s",
+                             len(events), user_profile_id)
+                handle_missedmessage_emails(user_profile_id, events)
+                del self.events_by_recipient[user_profile_id]
+                del self.batch_start_by_recipient[user_profile_id]
 
-        current_time = time.time()
-        for user_profile_id, timestamp in list(self.batch_start_by_recipient.items()):
-            if current_time - timestamp < self.BATCH_DURATION:
-                continue
-            events = self.events_by_recipient[user_profile_id]
-            logging.info("Batch-processing %s missedmessage_emails events for user %s",
-                         len(events), user_profile_id)
-            handle_missedmessage_emails(user_profile_id, events)
-            del self.events_by_recipient[user_profile_id]
-            del self.batch_start_by_recipient[user_profile_id]
-
-        # By only restarting the timer if there are actually events in
-        # the queue, we ensure this queue processor is idle when there
-        # are no missed-message emails to process.
-        if len(self.batch_start_by_recipient) > 0:
-            self.ensure_timer()
+            # By only restarting the timer if there are actually events in
+            # the queue, we ensure this queue processor is idle when there
+            # are no missed-message emails to process.  This avoids
+            # constant CPU usage when there is no work to do.
+            if len(self.batch_start_by_recipient) > 0:
+                self.ensure_timer()
 
 @assign_queue('email_senders')
 class EmailSendingWorker(QueueProcessingWorker):
@@ -587,21 +666,12 @@ class MirrorWorker(QueueProcessingWorker):
 
         mirror_email(msg, rcpt_to=rcpt_to)
 
-@assign_queue('test', queue_type="test")
-class TestWorker(QueueProcessingWorker):
-    # This worker allows you to test the queue worker infrastructure without
-    # creating significant side effects.  It can be useful in development or
-    # for troubleshooting prod/staging.  It pulls a message off the test queue
-    # and appends it to a file in /tmp.
-    def consume(self, event: Mapping[str, Any]) -> None:  # nocoverage
-        fn = settings.ZULIP_WORKER_TEST_FILE
-        message = orjson.dumps(event)
-        logging.info("TestWorker should append this message to %s: %s", fn, message.decode())
-        with open(fn, 'ab') as f:
-            f.write(message + b'\n')
-
 @assign_queue('embed_links')
 class FetchLinksEmbedData(QueueProcessingWorker):
+    # This is a slow queue with network requests, so a disk write is negligible.
+    # Update stats file after every consume call.
+    CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 1
+
     def consume(self, event: Mapping[str, Any]) -> None:
         for url in event['urls']:
             start_time = time.time()
@@ -688,6 +758,16 @@ class EmbeddedBotWorker(QueueProcessingWorker):
 
 @assign_queue('deferred_work')
 class DeferredWorker(QueueProcessingWorker):
+    """This queue processor is intended for cases where we want to trigger a
+    potentially expensive, not urgent, job to be run on a separate
+    thread from the Django worker that initiated it (E.g. so we that
+    can provide a low-latency HTTP response or avoid risk of request
+    timeouts for an operation that could in rare cases take minutes).
+    """
+    # Because these operations have no SLO, and can take minutes,
+    # remove any processing timeouts
+    MAX_CONSUME_SECONDS = None
+
     def consume(self, event: Dict[str, Any]) -> None:
         if event['type'] == 'mark_stream_messages_as_read':
             user_profile = get_user_profile_by_id(event['user_profile_id'])
@@ -700,6 +780,18 @@ class DeferredWorker(QueueProcessingWorker):
                 (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id,
                                                                require_active=False)
                 do_mark_stream_messages_as_read(user_profile, client, stream)
+        elif event["type"] == 'mark_stream_messages_as_read_for_everyone':
+            # This event is generated by the stream deactivation code path.
+            batch_size = 100
+            offset = 0
+            while True:
+                messages = Message.objects.filter(recipient_id=event["stream_recipient_id"]) \
+                    .order_by("id")[offset:offset + batch_size]
+                UserMessage.objects.filter(message__in=messages).extra(where=[UserMessage.where_unread()]) \
+                    .update(flags=F('flags').bitor(UserMessage.flags.read))
+                offset += len(messages)
+                if len(messages) < batch_size:
+                    break
         elif event['type'] == 'clear_push_device_tokens':
             try:
                 clear_push_device_tokens(event["user_profile_id"])
@@ -758,3 +850,55 @@ class DeferredWorker(QueueProcessingWorker):
                 "Completed data export for %s in %s",
                 user_profile.realm.string_id, time.time() - start,
             )
+
+@assign_queue('test', queue_type="test")
+class TestWorker(QueueProcessingWorker):
+    # This worker allows you to test the queue worker infrastructure without
+    # creating significant side effects.  It can be useful in development or
+    # for troubleshooting prod/staging.  It pulls a message off the test queue
+    # and appends it to a file in /tmp.
+    def consume(self, event: Mapping[str, Any]) -> None:  # nocoverage
+        fn = settings.ZULIP_WORKER_TEST_FILE
+        message = orjson.dumps(event)
+        logging.info("TestWorker should append this message to %s: %s", fn, message.decode())
+        with open(fn, 'ab') as f:
+            f.write(message + b'\n')
+
+@assign_queue('noop', queue_type="test")
+class NoopWorker(QueueProcessingWorker):
+    """Used to profile the queue processing framework, in zilencer's queue_rate."""
+
+    def __init__(self, max_consume: int=1000, slow_queries: Optional[List[int]]=None) -> None:
+        self.consumed = 0
+        self.max_consume = max_consume
+        self.slow_queries: Set[int] = set(slow_queries or [])
+
+    def consume(self, event: Mapping[str, Any]) -> None:
+        self.consumed += 1
+        if self.consumed in self.slow_queries:
+            logging.info("Slow request...")
+            time.sleep(60)
+            logging.info("Done!")
+        if self.consumed >= self.max_consume:
+            self.stop()
+
+@assign_queue('noop_batch', queue_type="test")
+class BatchNoopWorker(LoopQueueProcessingWorker):
+    """Used to profile the queue processing framework, in zilencer's queue_rate."""
+    batch_size = 500
+
+    def __init__(self, max_consume: int=1000, slow_queries: Optional[List[int]]=None) -> None:
+        self.consumed = 0
+        self.max_consume = max_consume
+        self.slow_queries: Set[int] = set(slow_queries or [])
+
+    def consume_batch(self, events: List[Dict[str, Any]]) -> None:
+        event_numbers = set(range(self.consumed + 1, self.consumed + 1 + len(events)))
+        found_slow = self.slow_queries & event_numbers
+        if found_slow:
+            logging.info("%d slow requests...", len(found_slow))
+            time.sleep(60 * len(found_slow))
+            logging.info("Done!")
+        self.consumed += len(events)
+        if self.consumed >= self.max_consume:
+            self.stop()

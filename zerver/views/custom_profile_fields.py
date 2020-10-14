@@ -90,7 +90,7 @@ def validate_custom_profile_field(name: str, hint: str, field_type: int,
 @has_request_variables
 def create_realm_custom_profile_field(request: HttpRequest,
                                       user_profile: UserProfile,
-                                      name: str=REQ(default=''),
+                                      name: str=REQ(default='', converter=lambda x: x.strip()),
                                       hint: str=REQ(default=''),
                                       field_data: ProfileFieldData=REQ(default={},
                                                                        converter=orjson.loads),
@@ -133,7 +133,7 @@ def delete_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
 @has_request_variables
 def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserProfile,
                                       field_id: int,
-                                      name: str=REQ(default=''),
+                                      name: str=REQ(default='', converter=lambda x: x.strip()),
                                       hint: str=REQ(default=''),
                                       field_data: ProfileFieldData=REQ(default={},
                                                                        converter=orjson.loads),

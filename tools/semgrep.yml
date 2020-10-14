@@ -20,7 +20,6 @@ rules:
   - id: dont-import-models-in-migrations
     patterns:
       - pattern-not: from zerver.lib.redis_utils import get_redis_client
-      - pattern-not: from zerver.lib.utils import generate_random_token
       - pattern-not: from zerver.models import filter_pattern_validator
       - pattern-not: from zerver.models import filter_format_validator
       - pattern-not: from zerver.models import generate_email_token_for_stream

@@ -4,6 +4,7 @@ const moment = require("moment-timezone");
 
 const render_settings_tab = require("../templates/settings_tab.hbs");
 
+const people = require("./people");
 const settings_config = require("./settings_config");
 
 $("body").ready(() => {

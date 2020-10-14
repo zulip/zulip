@@ -29,3 +29,7 @@ Currently, the following actions support limiting access to full members.
 {!save-changes.md!}
 
 {end_tabs}
+
+## Related articles
+
+- [Roles and permissions](/help/roles-and-permissions)

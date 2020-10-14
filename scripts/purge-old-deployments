@@ -17,14 +17,14 @@ def parse_args() -> argparse.Namespace:
         "examined and removed.")
     parser.add_argument(
         "--threshold", dest="threshold_days", type=int, default=14,
-        nargs="?", metavar="<days>", help="Deployments older than "
+        metavar="<days>", help="Deployments older than "
         "threshold days will be deleted. (defaults to 14)")
     parser.add_argument(
-        "--dry-run", dest="dry_run", action="store_true",
+        "--dry-run", action="store_true",
         help="If specified then script will only print the deployments and "
         "caches that it will delete/keep back. It will not delete anything.")
     parser.add_argument(
-        "--verbose", dest="verbose", action="store_true",
+        "--verbose", action="store_true",
         help="If specified then script will print a detailed report "
         "of what is going on.")
 
@@ -62,7 +62,7 @@ def main() -> None:
         print("Cleaning orphaned/unused caches...")
 
     # Call 'clean-unused-caches' script to clean any orphaned/unused caches.
-    subprocess.check_call([os.path.join(ZULIP_PATH, "scripts/lib/clean-unused-caches")] + sys.argv[1:])
+    subprocess.check_call([os.path.join(ZULIP_PATH, "scripts/lib/clean-unused-caches"), *sys.argv[1:]])
     print("Done!")
 
 if __name__ == "__main__":

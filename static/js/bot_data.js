@@ -2,6 +2,8 @@
 
 const _ = require("lodash");
 
+const people = require("./people");
+
 const bots = new Map();
 
 const bot_fields = [

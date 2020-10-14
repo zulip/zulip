@@ -14,7 +14,6 @@ class Command(BaseCommand):
                             action='store_true',
                             help="Actually do it.")
         parser.add_argument('--property',
-                            type=str,
                             help="The property of the stat to be cleared.")
 
     def handle(self, *args: Any, **options: Any) -> None:

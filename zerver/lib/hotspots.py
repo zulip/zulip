@@ -3,7 +3,7 @@
 from typing import Dict, List
 
 from django.conf import settings
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 
 from zerver.models import UserHotspot, UserProfile
 
@@ -25,8 +25,7 @@ ALL_HOTSPOTS: Dict[str, Dict[str, str]] = {
     },
     'intro_gear': {
         'title': _('Settings'),
-        'description': _('Go to Settings to configure your '
-                         'notifications and display settings.'),
+        'description': _('Go to Settings to configure your notifications and display settings.'),
     },
     'intro_compose': {
         'title': _('Compose'),
@@ -44,8 +43,8 @@ def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
     if settings.ALWAYS_SEND_ALL_HOTSPOTS:
         return [{
             'name': hotspot,
-            'title': ALL_HOTSPOTS[hotspot]['title'],
-            'description': ALL_HOTSPOTS[hotspot]['description'],
+            'title': str(ALL_HOTSPOTS[hotspot]['title']),
+            'description': str(ALL_HOTSPOTS[hotspot]['description']),
             'delay': 0,
         } for hotspot in ALL_HOTSPOTS]
 
@@ -57,8 +56,8 @@ def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
         if hotspot not in seen_hotspots:
             return [{
                 'name': hotspot,
-                'title': ALL_HOTSPOTS[hotspot]['title'],
-                'description': ALL_HOTSPOTS[hotspot]['description'],
+                'title': str(ALL_HOTSPOTS[hotspot]['title']),
+                'description': str(ALL_HOTSPOTS[hotspot]['description']),
                 'delay': 0.5,
             }]
 

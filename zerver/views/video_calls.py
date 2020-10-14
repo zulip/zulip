@@ -1,7 +1,8 @@
 import hashlib
 import json
 import random
-import string
+import secrets
+from base64 import b32encode
 from functools import partial
 from typing import Dict
 from urllib.parse import quote, urlencode, urljoin
@@ -164,7 +165,7 @@ def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> Ht
     # https://docs.bigbluebutton.org/dev/api.html#create for reference on the api calls
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
     id = "zulip-" + str(random.randint(100000000000, 999999999999))
-    password = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(10))
+    password = b32encode(secrets.token_bytes(7))[:10].decode()
     checksum = hashlib.sha1(("create" + "meetingID=" + id + "&moderatorPW="
                              + password + "&attendeePW=" + password + "a" + settings.BIG_BLUE_BUTTON_SECRET).encode()).hexdigest()
     url = add_query_to_redirect_url("/calls/bigbluebutton/join", urlencode({
@@ -189,16 +190,16 @@ def join_bigbluebutton(request: HttpRequest, meeting_id: str = REQ(validator=che
     if settings.BIG_BLUE_BUTTON_URL is None or settings.BIG_BLUE_BUTTON_SECRET is None:
         return json_error(_("Big Blue Button is not configured."))
     else:
-        response = requests.get(
-            add_query_to_redirect_url(settings.BIG_BLUE_BUTTON_URL + "api/create", urlencode({
-                "meetingID": meeting_id,
-                "moderatorPW": password,
-                "attendeePW": password + "a",
-                "checksum": checksum
-            })))
         try:
+            response = requests.get(
+                add_query_to_redirect_url(settings.BIG_BLUE_BUTTON_URL + "api/create", urlencode({
+                    "meetingID": meeting_id,
+                    "moderatorPW": password,
+                    "attendeePW": password + "a",
+                    "checksum": checksum
+                })))
             response.raise_for_status()
-        except Exception:
+        except requests.RequestException:
             return json_error(_("Error connecting to the Big Blue Button server."))
 
         payload = ElementTree.fromstring(response.text)
@@ -208,11 +209,14 @@ def join_bigbluebutton(request: HttpRequest, meeting_id: str = REQ(validator=che
         if payload.find("returncode").text != "SUCCESS":
             return json_error(_("Big Blue Button server returned an unexpected error."))
 
-        join_params = urlencode({  # type: ignore[type-var] # https://github.com/python/typeshed/issues/4234
-            "meetingID": meeting_id,
-            "password": password,
-            "fullName": request.user.full_name
-        }, quote_via=quote)
+        join_params = urlencode(  # type: ignore[type-var] # https://github.com/python/typeshed/issues/4234
+            {
+                "meetingID": meeting_id,
+                "password": password,
+                "fullName": request.user.full_name,
+            },
+            quote_via=quote,
+        )
 
         checksum = hashlib.sha1(("join" + join_params + settings.BIG_BLUE_BUTTON_SECRET).encode()).hexdigest()
         redirect_url_base = add_query_to_redirect_url(settings.BIG_BLUE_BUTTON_URL + "api/join", join_params)

@@ -21,11 +21,8 @@ class TravisHookTests(WebhookTestCase):
                             "n/compare/6dccb98bcfd9...6c457d366a31), [build log](ht"
                             "tps://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)")
 
-        self.send_and_test_stream_message(
-            'build',
-            self.TOPIC,
-            expected_message,
-            content_type="application/x-www-form-urlencoded",
+        self.check_webhook(
+            "build", self.TOPIC, expected_message, content_type="application/x-www-form-urlencoded",
         )
 
     def test_ignore_travis_pull_request_by_default(self) -> None:
@@ -46,8 +43,8 @@ class TravisHookTests(WebhookTestCase):
                             "n/compare/6dccb98bcfd9...6c457d366a31), [build log](ht"
                             "tps://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)")
 
-        self.send_and_test_stream_message(
-            'pull_request',
+        self.check_webhook(
+            "pull_request",
             self.TOPIC,
             expected_message,
             content_type="application/x-www-form-urlencoded",
