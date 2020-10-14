@@ -625,11 +625,6 @@ def apply_event(state: Dict[str, Any],
                         stream[prop] = event['value']
                         if prop == 'description':
                             stream['rendered_description'] = event['rendered_description']
-        elif event['op'] == "occupy":
-            state['streams'] += event['streams']
-        elif event['op'] == "vacate":
-            stream_ids = [s["stream_id"] for s in event['streams']]
-            state['streams'] = [s for s in state['streams'] if s["stream_id"] not in stream_ids]
     elif event['type'] == 'default_streams':
         state['realm_default_streams'] = event['default_streams']
     elif event['type'] == 'default_stream_groups':
