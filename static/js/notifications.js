@@ -3,6 +3,7 @@
 const _ = require("lodash");
 
 const render_compose_notification = require("../templates/compose_notification.hbs");
+const render_favicon = require("../templates/favicon.svg.hbs");
 const render_notification = require("../templates/notification.hbs");
 
 const people = require("./people");
@@ -156,6 +157,8 @@ exports.redraw_title = function () {
 
     document.title = new_title;
 
+    let rendered_favicon = "";
+
     // Indicate the message count in the favicon
     if (new_message_count) {
         // Make sure we're working with a number, as a defensive programming
@@ -165,11 +168,11 @@ exports.redraw_title = function () {
         if (n > 99) {
             n = "infinite";
         }
-
-        current_favicon = previous_favicon = "/static/images/favicon/favicon-" + n + ".png?v=4";
+        rendered_favicon = render_favicon({count: n});
     } else {
-        current_favicon = previous_favicon = "/static/images/favicon.svg?v=4";
+        rendered_favicon = render_favicon();
     }
+    current_favicon = "data:image/svg+xml," + encodeURIComponent(rendered_favicon);
     favicon.set(current_favicon);
 
     // Notify the current desktop app's UI about the new unread count.
