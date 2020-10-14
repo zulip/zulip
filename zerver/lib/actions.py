@@ -5592,11 +5592,19 @@ def do_get_streams(
         include_subscribed: bool=True, include_all_active: bool=False,
         include_default: bool=False, include_owner_subscribed: bool=False,
 ) -> List[Dict[str, Any]]:
+    # This function is only used by API clients now.
+
     if include_all_active and not user_profile.is_api_super_user:
         raise JsonableError(_("User not authorized for this query"))
 
     include_public = include_public and user_profile.can_access_public_streams()
+
     # Start out with all streams in the realm with subscribers
+    # Note that we eventually want to deprecate the notion of
+    # "occupied" streams, and instead only care about whether
+    # the stream is active and whether the current user is subscribed
+    # to it.  The get_occupied_streams function below can be quite
+    # expensive.
     query = get_occupied_streams(user_profile.realm)
 
     if include_all_active:
