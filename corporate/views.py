@@ -22,6 +22,7 @@ from corporate.lib.stripe import (
     downgrade_at_the_end_of_billing_cycle,
     downgrade_now_without_creating_additional_invoices,
     get_latest_seat_count,
+    is_sponsored_realm,
     make_end_of_cycle_updates_if_needed,
     process_initial_upgrade,
     renewal_amount,
@@ -190,7 +191,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
             billing_page_url = f"{billing_page_url}?onboarding=true"
         return HttpResponseRedirect(billing_page_url)
 
-    if user.realm.plan_type == user.realm.STANDARD_FREE:
+    if is_sponsored_realm(user.realm):
         return HttpResponseRedirect(billing_page_url)
 
     percent_off = Decimal(0)

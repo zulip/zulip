@@ -38,6 +38,7 @@ from corporate.lib.stripe import (
     invoice_plan,
     invoice_plans_as_needed,
     is_realm_on_free_trial,
+    is_sponsored_realm,
     make_end_of_cycle_updates_if_needed,
     next_month,
     process_initial_upgrade,
@@ -3004,6 +3005,14 @@ class BillingHelpersTest(ZulipTestCase):
         plan.status = CustomerPlan.FREE_TRIAL
         plan.save(update_fields=["status"])
         self.assertTrue(is_realm_on_free_trial(realm))
+
+    def test_is_sponsored_realm(self) -> None:
+        realm = get_realm("zulip")
+        self.assertFalse(is_sponsored_realm(realm))
+
+        realm.plan_type = Realm.STANDARD_FREE
+        realm.save()
+        self.assertTrue(is_sponsored_realm(realm))
 
 
 class LicenseLedgerTest(StripeTestCase):

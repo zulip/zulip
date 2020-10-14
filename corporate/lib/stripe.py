@@ -876,6 +876,10 @@ def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
             internal_send_private_message(notification_bot, billing_admin, message)
 
 
+def is_sponsored_realm(realm: Realm) -> bool:
+    return realm.plan_type == Realm.STANDARD_FREE
+
+
 def get_discount_for_realm(realm: Realm) -> Optional[Decimal]:
     customer = get_customer_by_realm(realm)
     if customer is not None:
