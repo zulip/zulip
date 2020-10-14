@@ -2929,6 +2929,11 @@ def bulk_add_subscriptions(
         already_subscribed,
     )
 
+# This function contains all the database changes as part of
+# subscribing users to streams; we use a transaction to ensure that
+# the RealmAuditLog entries are created atomically with the
+# Subscription object creation (and updates).
+@transaction.atomic
 def bulk_add_subs_to_db_with_logging(
     realm: Realm,
     acting_user: Optional[UserProfile],
