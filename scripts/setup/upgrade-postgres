@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -eo pipefail
 
 if [ "$EUID" -ne 0 ]; then
     echo "Error: This script must be run as root" >&2
