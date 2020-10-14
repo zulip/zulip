@@ -3280,6 +3280,12 @@ class SubscriptionAPITest(ZulipTestCase):
             for user in test_users:
                 self.subscribe(user, stream_name)
 
+        # Now unsubscribe users from the first few streams,
+        # so they have to reactivate.
+        for stream_name in streams[:5]:
+            for user in test_users:
+                self.unsubscribe(user, stream_name)
+
         test_user_ids = [user.id for user in test_users]
 
         with queries_captured() as queries:
@@ -3292,7 +3298,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # The only known O(N) behavior here is that we call
         # principal_to_user_profile for each of our users.
-        self.assert_length(queries, 21)
+        self.assert_length(queries, 22)
 
     def test_subscriptions_add_for_principal(self) -> None:
         """
