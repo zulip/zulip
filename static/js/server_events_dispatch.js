@@ -261,6 +261,9 @@ export function dispatch_normal_event(event) {
                         page_params.realm_night_logo_source = event.data.night_logo_source;
                         realm_logo.rerender();
                         break;
+                    default:
+                        blueslip.error("Unexpected event type realm/update_dict/" + event.property);
+                        break;
                 }
             } else if (event.op === "deactivated") {
                 // This handler is likely unnecessary, in that if we
