@@ -31,7 +31,10 @@ fi
 if [ "$current_node_version" != "v$node_version" ] || ! [ -L "$node_wrapper_path" ]; then
     export NVM_DIR=/usr/local/nvm
     # shellcheck source=/dev/null
-    if ! [ -e "$NVM_DIR/nvm.sh" ] || { . "$NVM_DIR/nvm.sh"; [ "$(nvm --version)" != "$nvm_version" ]; }; then
+    if ! [ -e "$NVM_DIR/nvm.sh" ] || {
+        . "$NVM_DIR/nvm.sh"
+        [ "$(nvm --version)" != "$nvm_version" ]
+    }; then
         mkdir -p "$NVM_DIR"
         wget_opts=(-nv)
         if [ -n "${CUSTOM_CA_CERTIFICATES:-}" ]; then

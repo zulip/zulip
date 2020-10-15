@@ -28,7 +28,7 @@ LOCALFILE="archive.tar.gz"
 wget -qO "$LOCALFILE" "$URL"
 
 # Check the hash against what was passed in
-echo "$SHA256  $LOCALFILE" > "$LOCALFILE.sha256"
+echo "$SHA256  $LOCALFILE" >"$LOCALFILE.sha256"
 sha256sum -c "$LOCALFILE.sha256"
 
 tar xzf "$LOCALFILE"

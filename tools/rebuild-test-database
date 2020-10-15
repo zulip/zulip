@@ -4,17 +4,15 @@ set -x
 
 export DJANGO_SETTINGS_MODULE=zproject.test_settings
 
-create_zulip_test()
-{
-psql -v ON_ERROR_STOP=1 -h localhost postgres zulip_test <<EOF
+create_zulip_test() {
+    psql -v ON_ERROR_STOP=1 -h localhost postgres zulip_test <<EOF
 DROP DATABASE IF EXISTS zulip_test;
 CREATE DATABASE zulip_test TEMPLATE zulip_test_base;
 EOF
 }
 
-create_zulip_test_template()
-{
-    psql -v ON_ERROR_STOP=1 -h localhost postgres zulip_test << EOF
+create_zulip_test_template() {
+    psql -v ON_ERROR_STOP=1 -h localhost postgres zulip_test <<EOF
 DROP DATABASE IF EXISTS zulip_test_template;
 CREATE DATABASE zulip_test_template TEMPLATE zulip_test;
 EOF
@@ -41,7 +39,7 @@ create_zulip_test
     zerver.UserProfile zerver.Stream zerver.Recipient \
     zerver.Subscription zerver.Message zerver.Huddle zerver.Realm \
     zerver.UserMessage zerver.Client \
-    zerver.DefaultStream > zerver/tests/fixtures/messages.json
+    zerver.DefaultStream >zerver/tests/fixtures/messages.json
 
 # create pristine template database, for fast fixture restoration after tests are run.
 create_zulip_test_template
