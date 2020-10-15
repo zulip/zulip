@@ -204,78 +204,89 @@ export function dispatch_normal_event(event) {
                 waiting_period_threshold: noop,
                 wildcard_mention_policy: noop,
             };
-            if (
-                event.op === "update" &&
-                Object.prototype.hasOwnProperty.call(realm_settings, event.property)
-            ) {
-                page_params["realm_" + event.property] = event.value;
-                realm_settings[event.property]();
-                settings_org.sync_realm_settings(event.property);
-                if (event.property === "create_stream_policy") {
-                    // TODO: Add waiting_period_threshold logic here.
-                    page_params.can_create_streams =
-                        page_params.is_admin || page_params.realm_create_stream_policy === 1;
-                } else if (event.property === "invite_to_stream_policy") {
-                    // TODO: Add waiting_period_threshold logic here.
-                    page_params.can_invite_to_stream =
-                        page_params.is_admin || page_params.realm_invite_to_stream_policy === 1;
-                }
+            switch (event.op) {
+                case "update":
+                    if (Object.prototype.hasOwnProperty.call(realm_settings, event.property)) {
+                        page_params["realm_" + event.property] = event.value;
+                        realm_settings[event.property]();
+                        settings_org.sync_realm_settings(event.property);
+                        if (event.property === "create_stream_policy") {
+                            // TODO: Add waiting_period_threshold logic here.
+                            page_params.can_create_streams =
+                                page_params.is_admin ||
+                                page_params.realm_create_stream_policy === 1;
+                        } else if (event.property === "invite_to_stream_policy") {
+                            // TODO: Add waiting_period_threshold logic here.
+                            page_params.can_invite_to_stream =
+                                page_params.is_admin ||
+                                page_params.realm_invite_to_stream_policy === 1;
+                        }
 
-                if (event.property === "name" && window.electron_bridge !== undefined) {
-                    window.electron_bridge.send_event("realm_name", event.value);
-                }
-            } else if (event.op === "update_dict") {
-                switch (event.property) {
-                    case "default":
-                        for (const [key, value] of Object.entries(event.data)) {
-                            page_params["realm_" + key] = value;
-                            if (key === "allow_message_editing") {
-                                message_edit.update_message_topic_editing_pencil();
-                            }
-                            if (Object.prototype.hasOwnProperty.call(realm_settings, key)) {
-                                settings_org.sync_realm_settings(key);
-                            }
+                        if (event.property === "name" && window.electron_bridge !== undefined) {
+                            window.electron_bridge.send_event("realm_name", event.value);
                         }
-                        if (event.data.authentication_methods !== undefined) {
-                            settings_org.populate_auth_methods(event.data.authentication_methods);
-                        }
-                        break;
-                    case "icon":
-                        page_params.realm_icon_url = event.data.icon_url;
-                        page_params.realm_icon_source = event.data.icon_source;
-                        realm_icon.rerender();
-                        {
-                            const electron_bridge = window.electron_bridge;
-                            if (electron_bridge !== undefined) {
-                                electron_bridge.send_event("realm_icon_url", event.data.icon_url);
+                    }
+                    break;
+                case "update_dict":
+                    switch (event.property) {
+                        case "default":
+                            for (const [key, value] of Object.entries(event.data)) {
+                                page_params["realm_" + key] = value;
+                                if (key === "allow_message_editing") {
+                                    message_edit.update_message_topic_editing_pencil();
+                                }
+                                if (Object.prototype.hasOwnProperty.call(realm_settings, key)) {
+                                    settings_org.sync_realm_settings(key);
+                                }
                             }
-                        }
-                        break;
-                    case "logo":
-                        page_params.realm_logo_url = event.data.logo_url;
-                        page_params.realm_logo_source = event.data.logo_source;
-                        realm_logo.rerender();
-                        break;
-                    case "night_logo":
-                        page_params.realm_night_logo_url = event.data.night_logo_url;
-                        page_params.realm_night_logo_source = event.data.night_logo_source;
-                        realm_logo.rerender();
-                        break;
-                    default:
-                        blueslip.error("Unexpected event type realm/update_dict/" + event.property);
-                        break;
-                }
-            } else if (event.op === "deactivated") {
-                // This handler is likely unnecessary, in that if we
-                // did nothing here, we'd reload and end up at the
-                // same place when we attempt the next `GET /events`
-                // and get an error.  Some clients will do that even
-                // with this code, if they didn't have an active
-                // longpoll waiting at the moment the realm was
-                // deactivated.
-                window.location.href = "/accounts/deactivated/";
+                            if (event.data.authentication_methods !== undefined) {
+                                settings_org.populate_auth_methods(
+                                    event.data.authentication_methods,
+                                );
+                            }
+                            break;
+                        case "icon":
+                            page_params.realm_icon_url = event.data.icon_url;
+                            page_params.realm_icon_source = event.data.icon_source;
+                            realm_icon.rerender();
+                            {
+                                const electron_bridge = window.electron_bridge;
+                                if (electron_bridge !== undefined) {
+                                    electron_bridge.send_event(
+                                        "realm_icon_url",
+                                        event.data.icon_url,
+                                    );
+                                }
+                            }
+                            break;
+                        case "logo":
+                            page_params.realm_logo_url = event.data.logo_url;
+                            page_params.realm_logo_source = event.data.logo_source;
+                            realm_logo.rerender();
+                            break;
+                        case "night_logo":
+                            page_params.realm_night_logo_url = event.data.night_logo_url;
+                            page_params.realm_night_logo_source = event.data.night_logo_source;
+                            realm_logo.rerender();
+                            break;
+                        default:
+                            blueslip.error(
+                                "Unexpected event type realm/update_dict/" + event.property,
+                            );
+                            break;
+                    }
+                    break;
+                case "deactivated":
+                    // This handler is likely unnecessary, in that if we
+                    // did nothing here, we'd reload and end up at the
+                    // same place when we attempt the next `GET /events`
+                    // and get an error.  Some clients will do that even
+                    // with this code, if they didn't have an active
+                    // longpoll waiting at the moment the realm was
+                    // deactivated.
+                    window.location.href = "/accounts/deactivated/";
+                    break;
             }
-
             if (page_params.is_admin) {
                 // Update the UI notice about the user's profile being
                 // incomplete, as we might have filled in the missing field(s).
