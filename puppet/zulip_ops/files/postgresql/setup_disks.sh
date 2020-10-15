@@ -5,7 +5,7 @@ set -e
 LOCALDISK=/dev/nvme0n1
 
 if ! grep -q $LOCALDISK /etc/fstab; then
-    echo "$LOCALDISK   /srv  xfs    nofail,noatime 1 1" >> /etc/fstab
+    echo "$LOCALDISK   /srv  xfs    nofail,noatime 1 1" >>/etc/fstab
 fi
 
 if ! mountpoint -q /srv; then

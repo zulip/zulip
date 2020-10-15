@@ -29,18 +29,18 @@ set -x
 
 POSTGRES_USER="postgres"
 if [ "$(uname)" = "OpenBSD" ]; then
-  POSTGRES_USER="_postgresql"
+    POSTGRES_USER="_postgresql"
 fi
 
 ROOT_POSTGRES=(sudo -i -u "$POSTGRES_USER" psql)
 DEFAULT_DB=""
 if [ "$(uname)" = "Darwin" ]; then
-   ROOT_POSTGRES=(psql)
-   DEFAULT_DB="postgres"
+    ROOT_POSTGRES=(psql)
+    DEFAULT_DB="postgres"
 fi
 
 if [ "$(uname)" = "OpenBSD" ]; then
-  DEFAULT_DB="postgres"
+    DEFAULT_DB="postgres"
 fi
 
 VAGRANTUSERNAME=$(whoami)
@@ -64,7 +64,7 @@ fi
 uuid_var_path=$($(readlink -f "$(dirname "$0")/../../scripts/lib/zulip_tools.py") get_dev_uuid)
 rm -f "$uuid_var_path/$STATUS_FILE_NAME"
 
-"${ROOT_POSTGRES[@]}" -v ON_ERROR_STOP=1 -e "$DEFAULT_DB" << EOF
+"${ROOT_POSTGRES[@]}" -v ON_ERROR_STOP=1 -e "$DEFAULT_DB" <<EOF
 DO \$\$BEGIN
     CREATE USER $USERNAME;
 EXCEPTION WHEN duplicate_object THEN
@@ -87,7 +87,7 @@ umask go-rw
 PGPASS_PREFIX="*:*:*:$USERNAME:"
 PGPASS_ESCAPED_PREFIX="*:\\*:\\*:$USERNAME:"
 if ! grep -q "$PGPASS_ESCAPED_PREFIX" ~/.pgpass; then
-    echo "$PGPASS_PREFIX$PASSWORD" >> ~/.pgpass
+    echo "$PGPASS_PREFIX$PASSWORD" >>~/.pgpass
 else
     sed -i "s/$PGPASS_ESCAPED_PREFIX.*\$/$PGPASS_PREFIX$PASSWORD/" ~/.pgpass
 fi
@@ -106,7 +106,7 @@ psql -v ON_ERROR_STOP=1 -e -h localhost "$DBNAME_BASE" "$USERNAME" <<EOF
 CREATE SCHEMA zulip;
 EOF
 
-"${ROOT_POSTGRES[@]}" -v ON_ERROR_STOP=1 -e "$DBNAME_BASE" << EOF
+"${ROOT_POSTGRES[@]}" -v ON_ERROR_STOP=1 -e "$DBNAME_BASE" <<EOF
 CREATE EXTENSION pgroonga;
 GRANT USAGE ON SCHEMA pgroonga TO $USERNAME;
 EOF

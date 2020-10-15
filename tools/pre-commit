@@ -18,7 +18,7 @@ if [ ${#changed_files} -eq 0 ]; then
     exit 0
 fi
 
-if [ -z "$VIRTUAL_ENV" ] && command -v vagrant > /dev/null && [ -e .vagrant ]; then
+if [ -z "$VIRTUAL_ENV" ] && command -v vagrant >/dev/null && [ -e .vagrant ]; then
     vcmd="/srv/zulip/tools/lint --skip=gitlint --force $(printf '%q ' "${changed_files[@]}") || true"
     echo "Running lint using vagrant..."
     vagrant ssh -c "$vcmd"

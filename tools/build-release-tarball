@@ -11,8 +11,11 @@ eval "set -- $args"
 
 while true; do
     case "$1" in
-        --) shift; break;;
-        *) usage;;
+        --)
+            shift
+            break
+            ;;
+        *) usage ;;
     esac
 done
 
@@ -47,8 +50,8 @@ git archive -o "$TARBALL" "--prefix=$prefix/" HEAD
 cd "$TMPDIR"
 tar -xf "$TARBALL"
 while read -r i; do
-    rm -r --interactive=never "${TMPDIR:?}/$prefix/$i";
-done < "$TMPDIR/$prefix/tools/release-tarball-exclude.txt"
+    rm -r --interactive=never "${TMPDIR:?}/$prefix/$i"
+done <"$TMPDIR/$prefix/tools/release-tarball-exclude.txt"
 tar -cf "$TARBALL" "$prefix"
 rm -rf "$prefix"
 
@@ -78,10 +81,10 @@ mkdir -p "var/log"
 # TODO: Would be much better to instead run the below tools with some
 # sort of environment hack so that we don't need to create this dummy
 # secrets file.
-cat >> zproject/prod_settings_template.py <<EOF
+cat >>zproject/prod_settings_template.py <<EOF
 DEBUG = False
 EOF
-cat >> zproject/dev-secrets.conf <<EOF
+cat >>zproject/dev-secrets.conf <<EOF
 [secrets]
 local_database_password = ''
 secret_key = 'not_used_here'
@@ -96,8 +99,8 @@ EOF
 # We don't need duplicate copies of emoji with hashed paths, and they would break Markdown
 find prod-static/serve/generated/emoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png' -delete
 
-echo "$GITID" > build_id
-echo "$version" > version
+echo "$GITID" >build_id
+echo "$version" >version
 
 cd "$TMPDIR"
 
