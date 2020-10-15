@@ -40,6 +40,9 @@
 -A INPUT -p tcp --dport https      -j ACCEPT
 -A INPUT -p tcp --dport postgresql -j ACCEPT
 
+#                       Smokescreen proxy
+-A INPUT -p tcp --dport 4750       -j ACCEPT
+
 #                       statsd
 -A INPUT -p udp --dport 8125       -j ACCEPT
 <% end -%>
