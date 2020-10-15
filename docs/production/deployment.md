@@ -183,6 +183,32 @@ behind reverse proxies.
 
 [using-http]: ../production/deployment.html#configuring-zulip-to-allow-http
 
+## Using an outgoing HTTP proxy
+
+Zulip supports routing all of its outgoing HTTP and HTTPS traffic
+through an HTTP `CONNECT` proxy, such as [smokescreen][smokescreen];
+this includes outgoing webhooks, image and website previews, and
+mobile push notifications.  You may wish to enable this feature to
+provide a consistent egress point, or enforce access control on URLs.
+
+To enable an outgoing HTTP proxy:
+
+1. Add the following block to `/etc/zulip/zulip.conf`, substituting in
+   your proxy's hostname/IP and port:
+
+    ```
+    [http_proxy]
+    host = 192.168.0.1
+    port = 4750
+    ```
+
+1. As root, run
+   `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.  This
+   will reconfigure services to use the outgoing proxy, and restart
+   Zulip.
+
+[smokescreen]: https://github.com/stripe/smokescreen
+
 ## Putting the Zulip application behind a reverse proxy
 
 Zulip is designed to support being run behind a reverse proxy server.
@@ -560,3 +586,16 @@ configured to consume; defaults to 1/8th of the total server memory.
 
 Comma-separated list of IP addresses or netmasks of external
 load balancers whose `X-Forwarded-For` should be respected.
+
+
+
+### `[http_proxy]`
+
+#### `host`
+
+The hostname or IP address of an [outgoing HTTP `CONNECT`
+proxy](#using-an-outgoing-http-proxy).
+
+#### `port`
+
+The TCP port of the HTTP `CONNECT` proxy on the host specified above.

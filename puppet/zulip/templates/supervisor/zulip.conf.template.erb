@@ -9,6 +9,7 @@
 
 [program:zulip-django]
 command=nice -n5 /home/zulip/deployments/current/zulip-current-venv/bin/uwsgi --ini /etc/zulip/uwsgi.ini
+environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=100                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
@@ -27,7 +28,7 @@ directory=/home/zulip/deployments/current/
 [program:zulip-tornado]
 command=/home/zulip/deployments/current/manage.py runtornado 127.0.0.1:98%(process_num)02d
 process_name=zulip-tornado-port-98%(process_num)02d
-environment=PYTHONUNBUFFERED=1
+environment=PYTHONUNBUFFERED=1,HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=200                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
@@ -43,7 +44,7 @@ numprocs=<%= @tornado_ports.length %>
 <% else -%>
 [program:zulip-tornado]
 command=/home/zulip/deployments/current/manage.py runtornado 127.0.0.1:9800
-environment=PYTHONUNBUFFERED=1
+environment=PYTHONUNBUFFERED=1,HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=200                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
@@ -61,6 +62,7 @@ directory=/home/zulip/deployments/current/
 <% @queues.each do |queue| -%>
 [program:zulip_events_<%= queue %>]
 command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --queue_name=<%= queue %>
+environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=300                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
@@ -76,6 +78,7 @@ directory=/home/zulip/deployments/current/
 <% else %>
 [program:zulip_events]
 command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --multi_threaded <%= @queues.join(' ') %>
+environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=300                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
@@ -93,6 +96,7 @@ killasgroup=true              ; Without this, we leak processes every restart
 
 [program:zulip_deliver_enqueued_emails]
 command=nice -n15 /home/zulip/deployments/current/manage.py deliver_email
+environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=350                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
@@ -107,6 +111,7 @@ directory=/home/zulip/deployments/current/
 
 [program:zulip_deliver_scheduled_messages]
 command=nice -n15 /home/zulip/deployments/current/manage.py deliver_scheduled_messages
+environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=350                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
