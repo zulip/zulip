@@ -54,4 +54,4 @@ else
     apt-get update && rm -f "$STAMP_FILE"
 fi
 
-echo "$DEPENDENCIES_HASH" > "$DEPENDENCIES_HASH_FILE"
+echo "$DEPENDENCIES_HASH" >"$DEPENDENCIES_HASH_FILE"

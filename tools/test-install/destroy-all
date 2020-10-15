@@ -10,10 +10,16 @@ args="$(getopt -o +f --long help,force -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
-        --help) usage;;
-        -f|--force) FORCE=1; shift;;
-        --) shift; break;;
-        *) usage;;
+        --help) usage ;;
+        -f | --force)
+            FORCE=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *) usage ;;
     esac
 done
 
@@ -27,9 +33,8 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 lxc-ls -f \
-  | perl -lane '$_ = $F[0]; print if (/^zulip-install-/ && !/-base$/)' \
-  | while read -r c
-do
-    echo "$c"
-    lxc-destroy -f -n "$c"
-done
+    | perl -lane '$_ = $F[0]; print if (/^zulip-install-/ && !/-base$/)' \
+    | while read -r c; do
+        echo "$c"
+        lxc-destroy -f -n "$c"
+    done

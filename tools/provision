@@ -36,12 +36,15 @@ WARNING='\033[93m'
 ENDC='\033[0m'
 
 # Make the script independent of the location from where it is executed
-PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+PARENT_PATH=$(
+    cd "$(dirname "${BASH_SOURCE[0]}")"
+    pwd -P
+)
 cd "$PARENT_PATH"
 mkdir -p ../var/log
 LOG_PATH="../var/log/provision.log"
 
-echo "PROVISIONING STARTING." >> $LOG_PATH
+echo "PROVISIONING STARTING." >>$LOG_PATH
 
 # PYTHONUNBUFFERED is important to ensure that tracebacks don't get
 # lost far above where they should be in the output.

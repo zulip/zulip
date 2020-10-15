@@ -17,7 +17,7 @@ set -e
 set -x
 
 # Set the hostname early
-echo "$HOSTNAME" > /etc/hostname
+echo "$HOSTNAME" >/etc/hostname
 hostname "$HOSTNAME"
 sed -i "s/localhost$/localhost $HOSTNAME $SERVER/" /etc/hosts
 
@@ -57,15 +57,15 @@ EOF
 # function so we do can it again later with the zulip user
 function install_keys() {
     USERNAME="$1"
-    SSHDIR="$( getent passwd "$USERNAME" | cut -d: -f6 )/.ssh"
+    SSHDIR="$(getent passwd "$USERNAME" | cut -d: -f6)/.ssh"
     KEYDATA="$($AWS --output text \
-                    secretsmanager get-secret-value \
-                    --secret-id "$SSH_SECRET_ID" \
-                    --query SecretString)"
+        secretsmanager get-secret-value \
+        --secret-id "$SSH_SECRET_ID" \
+        --query SecretString)"
     mkdir -p "$SSHDIR"
-    echo "$KEYDATA" | jq -r .public  | base64 -d > "$SSHDIR/id_rsa.pub"
-    echo "$KEYDATA" | jq -r .private | base64 -d > "$SSHDIR/id_rsa"
-    chown -R  "$USERNAME:$USERNAME" "$SSHDIR"
+    echo "$KEYDATA" | jq -r .public | base64 -d >"$SSHDIR/id_rsa.pub"
+    echo "$KEYDATA" | jq -r .private | base64 -d >"$SSHDIR/id_rsa"
+    chown -R "$USERNAME:$USERNAME" "$SSHDIR"
     chmod 600 "$SSHDIR/id_rsa"
 }
 install_keys root

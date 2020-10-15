@@ -8,13 +8,12 @@
 SUPERVISOR_STATUS=$(supervisorctl status zulip-workers:zulip_deliver_enqueued_emails 2>&1)
 STATUS=$(echo "$SUPERVISOR_STATUS" | awk '{ print $2 }')
 
-
 case "$STATUS" in
     RUNNING)
         echo "Running"
         exit 0
         ;;
-    STOPPED|STARTING|BACKOFF|STOPPING|EXITED|FATAL|UNKNOWN)
+    STOPPED | STARTING | BACKOFF | STOPPING | EXITED | FATAL | UNKNOWN)
         # not "RUNNING", but a recognized supervisor status
         echo "$STATUS"
         exit 1

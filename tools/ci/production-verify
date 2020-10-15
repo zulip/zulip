@@ -12,7 +12,9 @@ NOREPLY_EMAIL_ADDRESS = 'noreply@circleci.example.com'
 ALLOWED_HOSTS = []
 EOF
 
-echo; echo "Now testing that the supervisord jobs are running properly"; echo
+echo
+echo "Now testing that the supervisord jobs are running properly"
+echo
 sleep 15 # Guaranteed to have a working supervisord process get an extra digit
 if supervisorctl status | grep -vq RUNNING || supervisorctl status | sed 's/^.*uptime //' | grep -q 0:00:0; then
     set +x
@@ -33,16 +35,18 @@ if supervisorctl status | grep -vq RUNNING || supervisorctl status | sed 's/^.*u
 fi
 
 # TODO: Ideally this would test actually logging in, but this is a start.
-echo; echo "Now testing that the newly installed server's homepage loads"; echo
+echo
+echo "Now testing that the newly installed server's homepage loads"
+echo
 
-wget https://localhost -O /tmp/index.html --no-check-certificate -S 2> /tmp/wget-output || true # || true so we see errors.log if this 500s
-grep -vi '\(Vary\|Content-Language\|expires\|issued by\|modified\|saved\|[.][.][.]\|Date\|[-][-]\)' /tmp/wget-output > /tmp/http-headers-processed
+wget https://localhost -O /tmp/index.html --no-check-certificate -S 2>/tmp/wget-output || true # || true so we see errors.log if this 500s
+grep -vi '\(Vary\|Content-Language\|expires\|issued by\|modified\|saved\|[.][.][.]\|Date\|[-][-]\)' /tmp/wget-output >/tmp/http-headers-processed
 
 nginx_version="$(nginx -v 2>&1 | awk '{print $3, $4}')"
 
 # Simplify the diff by getting replacing 4-5 digit length numbers with <Length>.
 sed -i 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' /tmp/http-headers-processed
-sed -i -e 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' -e "s|{nginx_version_string}|$nginx_version|g"  /tmp/success-http-headers.template.txt
+sed -i -e 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' -e "s|{nginx_version_string}|$nginx_version|g" /tmp/success-http-headers.template.txt
 if ! diff -ur /tmp/http-headers-processed /tmp/success-http-headers.template.txt; then
     set +x
     echo
@@ -58,12 +62,14 @@ if ! diff -ur /tmp/http-headers-processed /tmp/success-http-headers.template.txt
 fi
 
 # Start the RabbitMQ queue worker related section
-echo; echo "Now confirming all the RabbitMQ queue processors are correctly registered!"; echo
+echo
+echo "Now confirming all the RabbitMQ queue processors are correctly registered!"
+echo
 # These hacky shell scripts just extract the sorted list of queue processors, running and expected
-supervisorctl status | cut -f1 -dR | cut -f2- -d: | grep events | cut -f1 -d" " | cut -f3- -d_ | cut -f1 -d- | sort -u > /tmp/running_queue_processors.txt
-su zulip -c /home/zulip/deployments/current/scripts/lib/queue_workers.py | sort -u > /tmp/all_queue_processors.txt
-su zulip -c "/home/zulip/deployments/current/scripts/lib/queue_workers.py --queue-type test" | sort -u > /tmp/expected_test_queues.txt
-grep -v -x -f /tmp/expected_test_queues.txt /tmp/all_queue_processors.txt > /tmp/expected_queue_processors.txt
+supervisorctl status | cut -f1 -dR | cut -f2- -d: | grep events | cut -f1 -d" " | cut -f3- -d_ | cut -f1 -d- | sort -u >/tmp/running_queue_processors.txt
+su zulip -c /home/zulip/deployments/current/scripts/lib/queue_workers.py | sort -u >/tmp/all_queue_processors.txt
+su zulip -c "/home/zulip/deployments/current/scripts/lib/queue_workers.py --queue-type test" | sort -u >/tmp/expected_test_queues.txt
+grep -v -x -f /tmp/expected_test_queues.txt /tmp/all_queue_processors.txt >/tmp/expected_queue_processors.txt
 if ! diff /tmp/expected_queue_processors.txt /tmp/running_queue_processors.txt >/dev/null; then
     set +x
     echo "FAILURE: Runnable queue processors declared in zerver/worker/queue_processors.py "
@@ -74,7 +80,9 @@ if ! diff /tmp/expected_queue_processors.txt /tmp/running_queue_processors.txt >
     exit 1
 fi
 
-echo; echo "Now running RabbitMQ consumer Nagios tests"; echo
+echo
+echo "Now running RabbitMQ consumer Nagios tests"
+echo
 # First run the check that usually runs in cron and populates the state files
 /home/zulip/deployments/current/scripts/nagios/check-rabbitmq-consumers
 
@@ -95,10 +103,12 @@ done
 
 # Some of the Nagios tests have been temporarily disabled to work
 # around a Travis CI infrastructure issue.
-echo; echo "Now running additional Nagios tests"; echo
-if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_queue_worker_errors || \
-   ! su zulip -c /usr/lib/nagios/plugins/zulip_postgres_appdb/check_fts_update_log; then # || \
-#   ! su zulip -c "/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://127.0.0.1/api --nagios --insecure"; then
+echo
+echo "Now running additional Nagios tests"
+echo
+if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_queue_worker_errors \
+    || ! su zulip -c /usr/lib/nagios/plugins/zulip_postgres_appdb/check_fts_update_log; then # || \
+    #   ! su zulip -c "/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://127.0.0.1/api --nagios --insecure"; then
     set +x
     echo
     echo "FAILURE: Nagios checks don't pass:"

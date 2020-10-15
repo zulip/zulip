@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-usage () {
+usage() {
     cat >&2 <<EOF
 usage: $0 PULL_REQUEST_ID [REMOTE]
 
@@ -69,7 +69,7 @@ fi
 pr_url=https://api.github.com/repos/"${repo_fq}"/pulls/"${pr_id}"
 pr_details="$(curl -s "$pr_url")"
 
-pr_jq () {
+pr_jq() {
     echo "$pr_details" | jq "$@"
 }
 

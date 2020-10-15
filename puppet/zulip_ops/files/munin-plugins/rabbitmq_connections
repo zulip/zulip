@@ -20,8 +20,8 @@
 # always be included.
 
 if [ "$1" = "autoconf" ]; then
-	echo yes
-	exit 0
+    echo yes
+    exit 0
 fi
 
 HOME=/tmp/
@@ -30,33 +30,33 @@ HOME=/tmp/
 # graphs should look.
 
 if [ "$1" = "config" ]; then
-        CONN_WARN=${queue_warn:-500}
-        CONN_CRIT=${queue_crit:-1000}
+    CONN_WARN=${queue_warn:-500}
+    CONN_CRIT=${queue_crit:-1000}
 
-	# The host name this plugin is for. (Can be overridden to have
-	# one machine answer for several)
+    # The host name this plugin is for. (Can be overridden to have
+    # one machine answer for several)
 
-	# The title of the graph
-	echo 'graph_title RabbitMQ connections'
-	# Arguments to "rrdtool graph". In this case, tell it that the
-	# lower limit of the graph is '0', and that 1k=1000 (not 1024)
-	echo 'graph_args --base 1000 -l 0'
-	# The Y-axis label
-	echo 'graph_vlabel connections'
-	# We want Cur/Min/Avg/Max unscaled (i.e. 0.42 load instead of
-	# 420 milliload)
-	#echo 'graph_scale no'
-	echo 'graph_category RabbitMQ'
+    # The title of the graph
+    echo 'graph_title RabbitMQ connections'
+    # Arguments to "rrdtool graph". In this case, tell it that the
+    # lower limit of the graph is '0', and that 1k=1000 (not 1024)
+    echo 'graph_args --base 1000 -l 0'
+    # The Y-axis label
+    echo 'graph_vlabel connections'
+    # We want Cur/Min/Avg/Max unscaled (i.e. 0.42 load instead of
+    # 420 milliload)
+    #echo 'graph_scale no'
+    echo 'graph_category RabbitMQ'
 
-	echo "connections.label Connections"
-	echo "connections.warning $CONN_WARN"
-	echo "connections.critical $CONN_CRIT"
-	echo "connections.info Number of active connections"
+    echo "connections.label Connections"
+    echo "connections.warning $CONN_WARN"
+    echo "connections.critical $CONN_CRIT"
+    echo "connections.info Number of active connections"
 
-	echo 'graph_info Shows the number of connections to RabbitMQ'
-	# Last, if run with the "config"-parameter, quit here (don't
-	# display any data)
-	exit 0
+    echo 'graph_info Shows the number of connections to RabbitMQ'
+    # Last, if run with the "config"-parameter, quit here (don't
+    # display any data)
+    exit 0
 fi
 
 # If not run with any parameters at all (or only unknown ones), do the
