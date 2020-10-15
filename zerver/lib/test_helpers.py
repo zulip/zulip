@@ -125,6 +125,24 @@ def capture_event(event_info: EventInfo) -> Iterator[None]:
     event_info.populate(m.call_args_list)
 
 @contextmanager
+def cache_tries_captured() -> Iterator[List[Tuple[str, Union[str, List[str]], Optional[str]]]]:
+    cache_queries: List[Tuple[str, Union[str, List[str]], Optional[str]]] = []
+
+    orig_get = cache.cache_get
+    orig_get_many = cache.cache_get_many
+
+    def my_cache_get(key: str, cache_name: Optional[str]=None) -> Optional[Dict[str, Any]]:
+        cache_queries.append(('get', key, cache_name))
+        return orig_get(key, cache_name)
+
+    def my_cache_get_many(keys: List[str], cache_name: Optional[str]=None) -> Dict[str, Any]:  # nocoverage -- simulated code doesn't use this
+        cache_queries.append(('getmany', keys, cache_name))
+        return orig_get_many(keys, cache_name)
+
+    with mock.patch.multiple(cache, cache_get=my_cache_get, cache_get_many=my_cache_get_many):
+        yield cache_queries
+
+@contextmanager
 def simulated_empty_cache() -> Iterator[List[Tuple[str, Union[str, List[str]], Optional[str]]]]:
     cache_queries: List[Tuple[str, Union[str, List[str]], Optional[str]]] = []
 
