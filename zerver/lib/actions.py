@@ -3023,15 +3023,14 @@ def send_peer_add_events(
 def send_peer_remove_events(
     realm: Realm,
     streams: List[Stream],
-    altered_user_dict: Dict[int, List[UserProfile]],
+    altered_user_dict: Dict[int, Set[int]],
     all_subscribers_by_stream: Dict[int, Set[int]],
 ) -> None:
     for stream in streams:
         if stream.is_in_zephyr_realm and not stream.invite_only:
             continue
 
-        altered_users = altered_user_dict[stream.id]
-        altered_user_ids = [u.id for u in altered_users]
+        altered_user_ids = altered_user_dict[stream.id]
 
         subscribed_user_ids = all_subscribers_by_stream[stream.id]
 
@@ -3042,12 +3041,12 @@ def send_peer_remove_events(
         )
 
         if peer_user_ids:
-            for removed_user in altered_users:
+            for removed_user_id in altered_user_ids:
                 event = dict(
                     type="subscription",
                     op="peer_remove",
                     stream_id=stream.id,
-                    user_id=removed_user.id,
+                    user_id=removed_user_id,
                 )
                 send_event(realm, event, peer_user_ids)
 
@@ -3144,11 +3143,11 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
     # Now since we have all log objects generated we can do a bulk insert
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
-    altered_user_dict: Dict[int, List[UserProfile]] = defaultdict(list)
+    altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
     streams_by_user: Dict[int, List[Stream]] = defaultdict(list)
     for (sub, stream) in subs_to_deactivate:
         streams_by_user[sub.user_profile_id].append(stream)
-        altered_user_dict[stream.id].append(sub.user_profile)
+        altered_user_dict[stream.id].add(sub.user_profile_id)
 
     for user_profile in users:
         if len(streams_by_user[user_profile.id]) == 0:
