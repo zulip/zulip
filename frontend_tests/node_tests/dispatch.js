@@ -888,4 +888,6 @@ run_test("server_event_dispatch_op_errors", () => {
         op: "update_dict",
         property: "other",
     });
+    blueslip.expect("error", "Unexpected event type realm_bot/other");
+    server_events_dispatch.dispatch_normal_event({type: "realm_bot", op: "other"});
 });

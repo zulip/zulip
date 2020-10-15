@@ -316,6 +316,9 @@ export function dispatch_normal_event(event) {
                     settings_bots.eventually_render_bots();
                     settings_users.update_bot_data(event.bot.user_id);
                     break;
+                default:
+                    blueslip.error("Unexpected event type realm_bot/" + event.op);
+                    break;
             }
             break;
         case "realm_emoji":
