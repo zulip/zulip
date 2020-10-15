@@ -25,8 +25,9 @@ directory=/home/zulip/deployments/current/
 
 <% if @tornado_ports.length > 1 -%>
 [program:zulip-tornado]
-command=env PYTHONUNBUFFERED=1 /home/zulip/deployments/current/manage.py runtornado 127.0.0.1:98%(process_num)02d
+command=/home/zulip/deployments/current/manage.py runtornado 127.0.0.1:98%(process_num)02d
 process_name=zulip-tornado-port-98%(process_num)02d
+environment=PYTHONUNBUFFERED=1
 priority=200                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
@@ -41,7 +42,8 @@ directory=/home/zulip/deployments/current/
 numprocs=<%= @tornado_ports.length %>
 <% else -%>
 [program:zulip-tornado]
-command=env PYTHONUNBUFFERED=1 /home/zulip/deployments/current/manage.py runtornado 127.0.0.1:9800
+command=/home/zulip/deployments/current/manage.py runtornado 127.0.0.1:9800
+environment=PYTHONUNBUFFERED=1
 priority=200                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
