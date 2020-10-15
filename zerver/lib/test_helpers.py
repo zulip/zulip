@@ -136,13 +136,8 @@ def simulated_empty_cache() -> Iterator[List[Tuple[str, Union[str, List[str]], O
         cache_queries.append(('getmany', keys, cache_name))
         return {}
 
-    old_get = cache.cache_get
-    old_get_many = cache.cache_get_many
-    cache.cache_get = my_cache_get
-    cache.cache_get_many = my_cache_get_many
-    yield cache_queries
-    cache.cache_get = old_get
-    cache.cache_get_many = old_get_many
+    with mock.patch.multiple(cache, cache_get=my_cache_get, cache_get_many=my_cache_get_many):
+        yield cache_queries
 
 @contextmanager
 def queries_captured(include_savepoints: bool=False) -> Generator[
