@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from django.db.models.query import QuerySet
 
@@ -13,7 +13,7 @@ def get_active_subscriptions_for_stream_id(stream_id: int) -> QuerySet:
         active=True,
     )
 
-def get_active_subscriptions_for_stream_ids(stream_ids: List[int]) -> QuerySet:
+def get_active_subscriptions_for_stream_ids(stream_ids: Set[int]) -> QuerySet:
     # TODO: Change return type to QuerySet[Subscription]
     return Subscription.objects.filter(
         recipient__type=Recipient.STREAM,
