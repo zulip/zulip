@@ -364,6 +364,9 @@ export function dispatch_normal_event(event) {
                         }
                         settings_org.populate_realm_domains(page_params.realm_domains);
                         break;
+                    default:
+                        blueslip.error("Unexpected event type realm_domains/" + event.op);
+                        break;
                 }
             }
             break;
