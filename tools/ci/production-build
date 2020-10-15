@@ -32,10 +32,10 @@ fi
 # .circleci/config.yml
 mv /tmp/tmp.*/zulip-server-test.tar.gz /tmp/
 cp -a \
-   tools/ci/success-http-headers.template.txt \
-   tools/ci/production-install \
-   tools/ci/production-verify \
-   tools/ci/production-upgrade-pg \
-   tools/ci/production-extract-tarball \
-   \
-   /tmp/
+    tools/ci/success-http-headers.template.txt \
+    tools/ci/production-install \
+    tools/ci/production-verify \
+    tools/ci/production-upgrade-pg \
+    tools/ci/production-extract-tarball \
+    \
+    /tmp/

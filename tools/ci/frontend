@@ -5,7 +5,7 @@ source tools/ci/activate-venv
 set -e
 set -x
 
-./tools/lint --groups=frontend --skip=gitlint  # gitlint disabled because flaky
+./tools/lint --groups=frontend --skip=gitlint # gitlint disabled because flaky
 
 # Run the node tests first, since they're fast and deterministic
 ./tools/test-js-with-node --coverage
