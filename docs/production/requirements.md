@@ -77,9 +77,12 @@ on hardware requirements for larger organizations.
 * Incoming port 25 if you plan to enable Zulip's [incoming email
   integration](../production/email-gateway.md).
 * Outgoing HTTP(S) access (ports 80 and 443) to the public Internet so
-  that Zulip can properly manage image previews and embeds.  Outgoing
-  Internet access is not required if you [disable those
-  features](https://zulip.com/help/allow-image-link-previews).
+  that Zulip can properly manage image and website previews and mobile
+  push notifications.  Outgoing Internet access is not required if you
+  [disable those
+  features](https://zulip.com/help/allow-image-link-previews), or
+  configure an [existing outgoing HTTP
+  proxy](../production/deployment.html#using-an-outgoing-http-proxy).
 * Outgoing SMTP access (usually port 587) to your [SMTP
   server](../production/email.md) so that Zulip can send emails.
 * A domain name (e.g. `zulip.example.com`) that your users will use to

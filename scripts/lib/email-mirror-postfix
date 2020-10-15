@@ -114,6 +114,10 @@ def send_email_mirror(
         # work, and connections to 127.0.0.1 are secure without SSL.
         verify_ssl = False
 
+    # Because this script is run from postfix, it does not have any
+    # http proxy environment variables set which might interfere with
+    # access to localhost.
+
     context = None
     if not verify_ssl:
         context = ssl.create_default_context()

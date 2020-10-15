@@ -88,6 +88,13 @@ class zulip::app_frontend_base {
     $uwsgi_default_processes = 4
   }
   $tornado_ports = $zulip::tornado_sharding::tornado_ports
+  $proxy_host = zulipconf('http_proxy', 'host', '')
+  $proxy_port = zulipconf('http_proxy', 'port', '')
+  if $proxy_host != '' and $proxy_port != '' {
+    $proxy = "http://${proxy_host}:${proxy_port}"
+  } else {
+    $proxy = ''
+  }
   file { "${zulip::common::supervisor_conf_dir}/zulip.conf":
     ensure  => file,
     require => [Package[supervisor], Exec['stage_updated_sharding']],
