@@ -307,29 +307,36 @@ export function dispatch_normal_event(event) {
             settings_linkifiers.populate_linkifiers(page_params.realm_filters);
             break;
 
-        case "realm_domains": {
-            let i;
-            if (event.op === "add") {
-                page_params.realm_domains.push(event.realm_domain);
-            } else if (event.op === "change") {
-                for (i = 0; i < page_params.realm_domains.length; i += 1) {
-                    if (page_params.realm_domains[i].domain === event.realm_domain.domain) {
-                        page_params.realm_domains[i].allow_subdomains =
-                            event.realm_domain.allow_subdomains;
+        case "realm_domains":
+            {
+                let i;
+                switch (event.op) {
+                    case "add":
+                        page_params.realm_domains.push(event.realm_domain);
+                        settings_org.populate_realm_domains(page_params.realm_domains);
                         break;
-                    }
-                }
-            } else if (event.op === "remove") {
-                for (i = 0; i < page_params.realm_domains.length; i += 1) {
-                    if (page_params.realm_domains[i].domain === event.domain) {
-                        page_params.realm_domains.splice(i, 1);
+                    case "change":
+                        for (i = 0; i < page_params.realm_domains.length; i += 1) {
+                            if (page_params.realm_domains[i].domain === event.realm_domain.domain) {
+                                page_params.realm_domains[i].allow_subdomains =
+                                    event.realm_domain.allow_subdomains;
+                                break;
+                            }
+                        }
+                        settings_org.populate_realm_domains(page_params.realm_domains);
                         break;
-                    }
+                    case "remove":
+                        for (i = 0; i < page_params.realm_domains.length; i += 1) {
+                            if (page_params.realm_domains[i].domain === event.domain) {
+                                page_params.realm_domains.splice(i, 1);
+                                break;
+                            }
+                        }
+                        settings_org.populate_realm_domains(page_params.realm_domains);
+                        break;
                 }
             }
-            settings_org.populate_realm_domains(page_params.realm_domains);
             break;
-        }
 
         case "realm_user":
             if (event.op === "add") {

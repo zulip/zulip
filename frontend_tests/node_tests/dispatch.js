@@ -503,10 +503,12 @@ run_test("realm_domains", (override) => {
     dispatch(event);
     assert_same(page_params.realm_domains, [event.realm_domain]);
 
+    override(settings_org, "populate_realm_domains", noop);
     event = event_fixtures.realm_domains__change;
     dispatch(event);
     assert_same(page_params.realm_domains, [event.realm_domain]);
 
+    override(settings_org, "populate_realm_domains", noop);
     event = event_fixtures.realm_domains__remove;
     dispatch(event);
     assert_same(page_params.realm_domains, []);
