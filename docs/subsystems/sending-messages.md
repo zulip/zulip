@@ -136,7 +136,7 @@ messages.
   duplicated by a real confirmed-by-the-backend message ID.  We choose
   just above the `max_message_id`, because we want any new messages
   that other users send to the current view to be placed after it in
-  the feed (this decision is someone arbitrary; in any case we'll
+  the feed (this decision is somewhat arbitrary; in any case we'll
   resort it to its proper place once it is confirmed by the server.
   We do it this way to minimize messages jumping around/reordering
   visually).
@@ -193,7 +193,7 @@ one place:
   receive the message (including the sender).  As a side effect, it
   adds queue items to the email and push notification queues (which,
   in turn, may trigger those notifications).
-  * Other receive the event and display the new message.
+  * Other clients receive the event and display the new message.
   * For the client that sent the message, it instead replaces its
     locally echoed message with the final message it received back
     from the server (it indicates this to the sender by adding a
@@ -337,7 +337,7 @@ those rows later because we already have the data for when the user
 might have been subscribed or unsubscribed from streams by other
 users, and, importantly, we also know that the user didn’t interact
 with the UI since the message was sent (and thus we can safely assume
-that the messages has not been marked a read by the user).  This is
+that the messages have not been marked as read by the user).  This is
 done in the `add_missing_messages` function, which is the core of the
 soft-deactivation implementation.
 
