@@ -3020,6 +3020,37 @@ def send_peer_add_events(
                              user_id=new_user_id)
                 send_event(realm, event, peer_user_ids)
 
+def send_peer_remove_events(
+    realm: Realm,
+    streams: List[Stream],
+    altered_user_dict: Dict[int, List[UserProfile]],
+    all_subscribers_by_stream: Dict[int, List[int]],
+) -> None:
+    for stream in streams:
+        if stream.is_in_zephyr_realm and not stream.invite_only:
+            continue
+
+        altered_users = altered_user_dict[stream.id]
+        altered_user_ids = [u.id for u in altered_users]
+
+        subscribed_user_ids = all_subscribers_by_stream[stream.id]
+
+        peer_user_ids = get_peer_user_ids_for_stream_change(
+            stream=stream,
+            altered_user_ids=altered_user_ids,
+            subscribed_user_ids=subscribed_user_ids,
+        )
+
+        if peer_user_ids:
+            for removed_user in altered_users:
+                event = dict(
+                    type="subscription",
+                    op="peer_remove",
+                    stream_id=stream.id,
+                    user_id=removed_user.id,
+                )
+                send_event(realm, event, peer_user_ids)
+
 def get_available_notification_sounds() -> List[str]:
     notification_sounds_path = static_path('audio/notification_sounds')
     available_notification_sounds = []
@@ -3132,31 +3163,12 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
 
     all_subscribers_by_stream = get_user_ids_for_streams(streams=streams)
 
-    def send_peer_remove_event(stream: Stream) -> None:
-        if stream.is_in_zephyr_realm and not stream.invite_only:
-            return
-
-        altered_users = altered_user_dict[stream.id]
-        altered_user_ids = [u.id for u in altered_users]
-
-        subscribed_user_ids = all_subscribers_by_stream[stream.id]
-
-        peer_user_ids = get_peer_user_ids_for_stream_change(
-            stream=stream,
-            altered_user_ids=altered_user_ids,
-            subscribed_user_ids=subscribed_user_ids,
-        )
-
-        if peer_user_ids:
-            for removed_user in altered_users:
-                event = dict(type="subscription",
-                             op="peer_remove",
-                             stream_id=stream.id,
-                             user_id=removed_user.id)
-                send_event(our_realm, event, peer_user_ids)
-
-    for stream in streams:
-        send_peer_remove_event(stream=stream)
+    send_peer_remove_events(
+        realm=our_realm,
+        streams=streams,
+        altered_user_dict=altered_user_dict,
+        all_subscribers_by_stream=all_subscribers_by_stream,
+    )
 
     new_vacant_streams = set(occupied_streams_before) - set(occupied_streams_after)
     new_vacant_private_streams = [stream for stream in new_vacant_streams
