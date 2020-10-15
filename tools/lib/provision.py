@@ -390,6 +390,8 @@ def main(options: argparse.Namespace) -> "NoReturn":
 
     # Install shellcheck.
     run_as_root(["tools/setup/install-shellcheck"])
+    # Install shfmt.
+    run_as_root(["tools/setup/install-shfmt"])
 
     # Install semgrep.
     run_as_root(["tools/setup/install-semgrep"])

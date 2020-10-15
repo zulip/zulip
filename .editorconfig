@@ -3,12 +3,13 @@ root = true
 [*]
 end_of_line = lf
 charset = utf-8
+indent_size = 4
+indent_style = space
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-[*.{sh,py,pyi,js,ts,json,xml,css,scss,hbs,html}]
-indent_style = space
-indent_size = 4
+binary_next_line = true  # for shfmt
+switch_case_indent = true  # for shfmt
 
 [*.py]
 max_line_length = 110
@@ -17,5 +18,4 @@ max_line_length = 110
 max_line_length = 100
 
 [*.{svg,rb,pp}]
-indent_style = space
 indent_size = 2
