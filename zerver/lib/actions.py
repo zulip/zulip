@@ -5574,13 +5574,8 @@ def do_get_streams(
 
     include_public = include_public and user_profile.can_access_public_streams()
 
-    # Start out with all streams in the realm with subscribers
-    # Note that we eventually want to deprecate the notion of
-    # "occupied" streams, and instead only care about whether
-    # the stream is active and whether the current user is subscribed
-    # to it.  The get_occupied_streams function below can be quite
-    # expensive.
-    query = get_occupied_streams(user_profile.realm)
+    # Start out with all active streams in the realm.
+    query = Stream.objects.filter(realm=user_profile.realm, deactivated=False)
 
     if include_all_active:
         streams = Stream.get_client_data(query)
