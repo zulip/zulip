@@ -3064,8 +3064,8 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
 
     our_realm = users[0].realm
 
-    # TODO: XXX: This transaction really needs to be done at the serializeable
-    # transaction isolation level.
+    # We do all the database changes in a transaction to ensure
+    # RealmAuditLog entries are atomically created when making changes.
     with transaction.atomic():
         occupied_streams_before = list(get_occupied_streams(our_realm))
         Subscription.objects.filter(
@@ -3073,20 +3073,22 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
         ) .update(active=False)
         occupied_streams_after = list(get_occupied_streams(our_realm))
 
-    # Log Subscription Activities in RealmAuditLog
-    event_time = timezone_now()
-    event_last_message_id = get_last_message_id()
-    all_subscription_logs: (List[RealmAuditLog]) = []
-    for (sub, stream) in subs_to_deactivate:
-        all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
-                                                   acting_user=acting_user,
-                                                   modified_user=sub.user_profile,
-                                                   modified_stream=stream,
-                                                   event_last_message_id=event_last_message_id,
-                                                   event_type=RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
-                                                   event_time=event_time))
-    # Now since we have all log objects generated we can do a bulk insert
-    RealmAuditLog.objects.bulk_create(all_subscription_logs)
+        # Log Subscription Activities in RealmAuditLog
+        event_time = timezone_now()
+        event_last_message_id = get_last_message_id()
+        all_subscription_logs: (List[RealmAuditLog]) = []
+        for (sub, stream) in subs_to_deactivate:
+            audit_log_entry = RealmAuditLog(
+                realm=sub.user_profile.realm,
+                acting_user=acting_user,
+                modified_user=sub.user_profile,
+                modified_stream=stream,
+                event_last_message_id=event_last_message_id,
+                event_type=RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
+                event_time=event_time)
+            all_subscription_logs.append(audit_log_entry)
+        # Now since we have all log objects generated we can do a bulk insert
+        RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
     altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
     streams_by_user: Dict[int, List[Stream]] = defaultdict(list)
