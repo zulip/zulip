@@ -63,6 +63,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
+    cache_tries_captured,
     get_subscription,
     most_recent_usermessage,
     queries_captured,
@@ -3289,16 +3290,18 @@ class SubscriptionAPITest(ZulipTestCase):
         test_user_ids = [user.id for user in test_users]
 
         with queries_captured() as queries:
-            with mock.patch('zerver.views.streams.send_messages_for_new_subscribers'):
-                self.common_subscribe_to_streams(
-                    desdemona,
-                    streams,
-                    dict(principals=orjson.dumps(test_user_ids).decode()),
-                )
+            with cache_tries_captured() as cache_tries:
+                with mock.patch('zerver.views.streams.send_messages_for_new_subscribers'):
+                    self.common_subscribe_to_streams(
+                        desdemona,
+                        streams,
+                        dict(principals=orjson.dumps(test_user_ids).decode()),
+                    )
 
         # The only known O(N) behavior here is that we call
         # principal_to_user_profile for each of our users.
         self.assert_length(queries, 19)
+        self.assert_length(cache_tries, 28)
 
     def test_subscriptions_add_for_principal(self) -> None:
         """
