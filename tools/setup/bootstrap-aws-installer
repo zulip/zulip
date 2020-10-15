@@ -30,9 +30,11 @@ passwd -d root
 # Allow root logins
 sed -i 's/disable_root: true/disable_root: false/' /etc/cloud/cloud.cfg
 
+# Ensure all apt updates (here and in the installer) are non-interactive
+export DEBIAN_FRONTEND=noninteractive
+
 # Dependencies to install AWS CLI
 (
-    export DEBIAN_FRONTEND=noninteractive
     apt-get -qy update
     apt-get -qy -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade
     apt-get -qy install jq unzip wget
@@ -82,8 +84,8 @@ git -C zulip checkout "$BRANCH"
 (
     VIRTUALENV_NEEDED=$(if echo "$ROLES" | grep -q app_frontend; then echo -n yes; else echo -n no; fi)
     export VIRTUALENV_NEEDED
-    PUPPET_CLASSES="$ROLES"
-    export PUPPET_CLASSES
+    export PUPPET_CLASSES="$ROLES"
+    export APT_OPTIONS="-o Dpkg::Options::=--force-confnew"
     /root/zulip/scripts/setup/install \
         --self-signed-cert \
         --no-init-db
