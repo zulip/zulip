@@ -32,11 +32,11 @@ class TornadoAdapter(HTTPAdapter):
         cert: Union[None, bytes, str, Container[Union[bytes, str]]] = None,
         proxies: Optional[Mapping[str, str]] = None,
     ) -> Response:
-        if not proxies:
-            proxies = {}
-        merged_proxies = {**proxies, "no_proxy": "localhost,127.0.0.1"}
+        # Don't talk to Tornado through proxies, which only allow
+        # requests to external hosts.
+        proxies = {}
         try:
-            resp = super().send(request, stream=stream, timeout=timeout, verify=verify, cert=cert, proxies=merged_proxies)
+            resp = super().send(request, stream=stream, timeout=timeout, verify=verify, cert=cert, proxies=proxies)
         except ConnectionError:
             parsed_url = urlparse(request.url)
             logfile = f"tornado-{parsed_url.port}.log" if settings.TORNADO_PROCESSES > 1 else "tornado.log"
