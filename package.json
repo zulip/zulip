@@ -99,7 +99,7 @@
     "prettier": "^2.0.5",
     "puppeteer": "^5.2.0",
     "rewiremock": "^3.13.9",
-    "source-map": "^0.6.1",
+    "source-map": "https://github.com/benthemonkey/source-map.git#d95423f77edef6cbb9e21d2d6014c7de85ae220a",
     "stylelint": "^13.0.0",
     "stylelint-config-prettier": "^8.0.2",
     "stylelint-config-standard": "^20.0.0",
@@ -110,6 +110,9 @@
     "webpack-dev-server": "^3.5.1",
     "yarn-deduplicate": "^3.0.0",
     "zulip-js": "^2.0.8"
+  },
+  "resolutions": {
+    "/source-map": "https://github.com/benthemonkey/source-map.git#d95423f77edef6cbb9e21d2d6014c7de85ae220a"
   },
   "scripts": {
     "postinstall": "rm -rf ./var/webpack-cache",
