@@ -218,36 +218,44 @@ export function dispatch_normal_event(event) {
                 if (event.property === "name" && window.electron_bridge !== undefined) {
                     window.electron_bridge.send_event("realm_name", event.value);
                 }
-            } else if (event.op === "update_dict" && event.property === "default") {
-                for (const [key, value] of Object.entries(event.data)) {
-                    page_params["realm_" + key] = value;
-                    if (key === "allow_message_editing") {
-                        message_edit.update_message_topic_editing_pencil();
-                    }
-                    if (Object.prototype.hasOwnProperty.call(realm_settings, key)) {
-                        settings_org.sync_realm_settings(key);
-                    }
+            } else if (event.op === "update_dict") {
+                switch (event.property) {
+                    case "default":
+                        for (const [key, value] of Object.entries(event.data)) {
+                            page_params["realm_" + key] = value;
+                            if (key === "allow_message_editing") {
+                                message_edit.update_message_topic_editing_pencil();
+                            }
+                            if (Object.prototype.hasOwnProperty.call(realm_settings, key)) {
+                                settings_org.sync_realm_settings(key);
+                            }
+                        }
+                        if (event.data.authentication_methods !== undefined) {
+                            settings_org.populate_auth_methods(event.data.authentication_methods);
+                        }
+                        break;
+                    case "icon":
+                        page_params.realm_icon_url = event.data.icon_url;
+                        page_params.realm_icon_source = event.data.icon_source;
+                        realm_icon.rerender();
+                        {
+                            const electron_bridge = window.electron_bridge;
+                            if (electron_bridge !== undefined) {
+                                electron_bridge.send_event("realm_icon_url", event.data.icon_url);
+                            }
+                        }
+                        break;
+                    case "logo":
+                        page_params.realm_logo_url = event.data.logo_url;
+                        page_params.realm_logo_source = event.data.logo_source;
+                        realm_logo.rerender();
+                        break;
+                    case "night_logo":
+                        page_params.realm_night_logo_url = event.data.night_logo_url;
+                        page_params.realm_night_logo_source = event.data.night_logo_source;
+                        realm_logo.rerender();
+                        break;
                 }
-                if (event.data.authentication_methods !== undefined) {
-                    settings_org.populate_auth_methods(event.data.authentication_methods);
-                }
-            } else if (event.op === "update_dict" && event.property === "icon") {
-                page_params.realm_icon_url = event.data.icon_url;
-                page_params.realm_icon_source = event.data.icon_source;
-                realm_icon.rerender();
-
-                const electron_bridge = window.electron_bridge;
-                if (electron_bridge !== undefined) {
-                    electron_bridge.send_event("realm_icon_url", event.data.icon_url);
-                }
-            } else if (event.op === "update_dict" && event.property === "logo") {
-                page_params.realm_logo_url = event.data.logo_url;
-                page_params.realm_logo_source = event.data.logo_source;
-                realm_logo.rerender();
-            } else if (event.op === "update_dict" && event.property === "night_logo") {
-                page_params.realm_night_logo_url = event.data.night_logo_url;
-                page_params.realm_night_logo_source = event.data.night_logo_source;
-                realm_logo.rerender();
             } else if (event.op === "deactivated") {
                 // This handler is likely unnecessary, in that if we
                 // did nothing here, we'd reload and end up at the
