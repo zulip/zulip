@@ -296,21 +296,28 @@ export function dispatch_normal_event(event) {
         }
 
         case "realm_bot":
-            if (event.op === "add") {
-                bot_data.add(event.bot);
-            } else if (event.op === "remove") {
-                bot_data.deactivate(event.bot.user_id);
-                event.bot.is_active = false;
-            } else if (event.op === "delete") {
-                blueslip.info("ignoring bot deletion for live UI update");
-                break;
-            } else if (event.op === "update") {
-                bot_data.update(event.bot.user_id, event.bot);
+            switch (event.op) {
+                case "add":
+                    bot_data.add(event.bot);
+                    settings_bots.eventually_render_bots();
+                    settings_users.update_bot_data(event.bot.user_id);
+                    break;
+                case "remove":
+                    bot_data.deactivate(event.bot.user_id);
+                    event.bot.is_active = false;
+                    settings_bots.eventually_render_bots();
+                    settings_users.update_bot_data(event.bot.user_id);
+                    break;
+                case "delete":
+                    blueslip.info("ignoring bot deletion for live UI update");
+                    break;
+                case "update":
+                    bot_data.update(event.bot.user_id, event.bot);
+                    settings_bots.eventually_render_bots();
+                    settings_users.update_bot_data(event.bot.user_id);
+                    break;
             }
-            settings_bots.eventually_render_bots();
-            settings_users.update_bot_data(event.bot.user_id);
             break;
-
         case "realm_emoji":
             // The authoritative data source is here.
             emoji.update_emojis(event.realm_emoji);
