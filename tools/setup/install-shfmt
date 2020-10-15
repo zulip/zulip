@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -eu
+
+version=3.1.2
+binary="shfmt_v${version}_linux_amd64"
+sha256=c5794c1ac081f0028d60317454fe388068ab5af7740a83e393515170a7157dce
+
+check_version() {
+    out="$(shfmt --version 2>/dev/null)" && [ "$out" = "v$version" ]
+}
+
+if ! check_version; then
+    tmpdir="$(mktemp -d)"
+    trap 'rm -r "$tmpdir"' EXIT
+    cd "$tmpdir"
+    wget -nv "https://github.com/mvdan/sh/releases/download/v3.1.2/$binary"
+    sha256sum -c <<<"$sha256 $binary"
+    chmod +x "$binary"
+    mv "$binary" /usr/local/bin/shfmt
+    check_version
+fi
