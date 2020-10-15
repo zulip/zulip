@@ -75,6 +75,9 @@ def run() -> None:
                                   "(zerver/openapi/zulip.yaml) ")
     linter_config.external_linter('shellcheck', ['shellcheck', '-x', '-P', 'SCRIPTDIR'], ['sh'],
                                   description="Standard shell script linter")
+    linter_config.external_linter('shfmt', ['shfmt'], ['sh'],
+                                  check_arg='-d', fix_arg='-w',
+                                  description="Formats shell scripts")
     command = ['tools/run-mypy', '--quiet']
     if args.force:
         command.append('--force')
