@@ -8,7 +8,7 @@ if [ ! -d "/srv/zulip-aws-tools/v2/$AWS_CLI_VERSION" ]; then
     cd /srv/zulip-aws-tools || exit 1
     rm -rf awscli.zip awscli.zip.sha256 aws/
     wget -q "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-$AWS_CLI_VERSION.zip" -O awscli.zip
-    echo "$AWS_CLI_SHA  awscli.zip" > awscli.zip.sha256
+    echo "$AWS_CLI_SHA  awscli.zip" >awscli.zip.sha256
     sha256sum -c awscli.zip.sha256
     unzip -q awscli.zip
     (

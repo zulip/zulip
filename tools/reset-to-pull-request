@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-usage () {
+usage() {
     cat >&2 <<EOF
 usage: $0 PULL_REQUEST_ID [REMOTE]
 

@@ -43,7 +43,7 @@ Options:
       Skip the initial `apt-get dist-upgrade`.
 
 EOF
-};
+}
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
@@ -51,22 +51,62 @@ args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacer
 eval "set -- $args"
 while true; do
     case "$1" in
-        --help) usage; exit 0;;
+        --help)
+            usage
+            exit 0
+            ;;
 
-        --hostname) EXTERNAL_HOST="$2"; shift; shift;;
-        --email) ZULIP_ADMINISTRATOR="$2"; shift; shift;;
+        --hostname)
+            EXTERNAL_HOST="$2"
+            shift
+            shift
+            ;;
+        --email)
+            ZULIP_ADMINISTRATOR="$2"
+            shift
+            shift
+            ;;
 
-        --certbot) USE_CERTBOT=1; shift;;
-        --cacert) export CUSTOM_CA_CERTIFICATES="$2"; shift; shift;;
-        --self-signed-cert) SELF_SIGNED_CERT=1; shift;;
+        --certbot)
+            USE_CERTBOT=1
+            shift
+            ;;
+        --cacert)
+            export CUSTOM_CA_CERTIFICATES="$2"
+            shift
+            shift
+            ;;
+        --self-signed-cert)
+            SELF_SIGNED_CERT=1
+            shift
+            ;;
 
-        --postgres-version) POSTGRES_VERSION="$2"; shift; shift;;
-        --postgres-missing-dictionaries) POSTGRES_MISSING_DICTIONARIES=1; shift;;
-        --no-init-db) NO_INIT_DB=1; shift;;
+        --postgres-version)
+            POSTGRES_VERSION="$2"
+            shift
+            shift
+            ;;
+        --postgres-missing-dictionaries)
+            POSTGRES_MISSING_DICTIONARIES=1
+            shift
+            ;;
+        --no-init-db)
+            NO_INIT_DB=1
+            shift
+            ;;
 
-        --no-overwrite-settings) NO_OVERWRITE_SETTINGS=1; shift;;
-        --no-dist-upgrade) NO_DIST_UPGRADE=1; shift;;
-        --) shift; break;;
+        --no-overwrite-settings)
+            NO_OVERWRITE_SETTINGS=1
+            shift
+            ;;
+        --no-dist-upgrade)
+            NO_DIST_UPGRADE=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
     esac
 done
 
@@ -78,9 +118,9 @@ fi
 ## Options from environment variables.
 #
 # Specify options for apt.
-read -r -a APT_OPTIONS <<< "${APT_OPTIONS:-}"
+read -r -a APT_OPTIONS <<<"${APT_OPTIONS:-}"
 # Install additional packages.
-read -r -a ADDITIONAL_PACKAGES <<< "${ADDITIONAL_PACKAGES:-}"
+read -r -a ADDITIONAL_PACKAGES <<<"${ADDITIONAL_PACKAGES:-}"
 # Comma-separated list of puppet manifests to install.  default is
 # zulip::voyager for an all-in-one system or zulip::dockervoyager for
 # Docker.  Use e.g. zulip::app_frontend for a Zulip frontend server.
@@ -111,8 +151,8 @@ if [ -z "$EXTERNAL_HOST" ] || [ -z "$ZULIP_ADMINISTRATOR" ]; then
     fi
 fi
 
-if [ "$EXTERNAL_HOST" = zulip.example.com ] ||
-   [ "$ZULIP_ADMINISTRATOR" = zulip-admin@example.com ]; then
+if [ "$EXTERNAL_HOST" = zulip.example.com ] \
+    || [ "$ZULIP_ADMINISTRATOR" = zulip-admin@example.com ]; then
     # These example values are specifically checked for and would fail
     # later; see check_config in zerver/lib/management.py.
     echo 'error: The example hostname and email must be replaced with real values.' >&2
@@ -134,8 +174,16 @@ export LANGUAGE="en_US.UTF-8"
 
 # Check for a supported OS release.
 if [ -f /etc/os-release ]; then
-    os_info="$(. /etc/os-release; printf '%s\n' "$ID" "$ID_LIKE" "$VERSION_ID" "$VERSION_CODENAME")"
-    { read -r os_id; read -r os_id_like; read -r os_version_id; read -r os_version_codename || true; } <<< "$os_info"
+    os_info="$(
+        . /etc/os-release
+        printf '%s\n' "$ID" "$ID_LIKE" "$VERSION_ID" "$VERSION_CODENAME"
+    )"
+    {
+        read -r os_id
+        read -r os_id_like
+        read -r os_version_id
+        read -r os_version_codename || true
+    } <<<"$os_info"
     case " $os_id $os_id_like " in
         *' debian '*)
             package_system="apt"
@@ -147,7 +195,7 @@ if [ -f /etc/os-release ]; then
 fi
 
 case "$os_id$os_version_id" in
-    debian10|ubuntu18.04|ubuntu20.04) ;;
+    debian10 | ubuntu18.04 | ubuntu20.04) ;;
     *)
         set +x
         cat <<EOF
@@ -163,10 +211,11 @@ For more information, see:
   https://zulip.readthedocs.io/en/latest/production/requirements.html
 EOF
         exit 1
+        ;;
 esac
 
-if [ "$os_id" = ubuntu ] && ! apt-cache policy |
-           grep -q "^     release v=$os_version_id,o=Ubuntu,a=$os_version_codename,n=$os_version_codename,l=Ubuntu,c=universe"; then
+if [ "$os_id" = ubuntu ] && ! apt-cache policy \
+    | grep -q "^     release v=$os_version_id,o=Ubuntu,a=$os_version_codename,n=$os_version_codename,l=Ubuntu,c=universe"; then
     set +x
     cat <<'EOF'
 
@@ -187,10 +236,10 @@ case ",$PUPPET_CLASSES," in
         if [ "$package_system" = apt ]; then
             # We're going to install Postgres from the postgres apt
             # repository; this may conflict with the existing postgres.
-            OTHER_PG="$(dpkg --get-selections |
-                             grep -E '^postgresql-[0-9]+\s+install$' |
-                             grep -v "^postgresql-$POSTGRES_VERSION\b" |
-                             cut -f 1)" || true
+            OTHER_PG="$(dpkg --get-selections \
+                | grep -E '^postgresql-[0-9]+\s+install$' \
+                | grep -v "^postgresql-$POSTGRES_VERSION\b" \
+                | cut -f 1)" || true
             if [ -n "$OTHER_PG" ]; then
                 INDENTED="${OTHER_PG//$'\n'/$'\n'    }"
                 SPACED="${OTHER_PG//$'\n'/ }"
@@ -274,9 +323,9 @@ fi
 
 if [ "$package_system" = apt ]; then
     if ! apt-get install -y \
-         puppet git curl wget jq \
-         python3 crudini \
-         "${ADDITIONAL_PACKAGES[@]}"; then
+        puppet git curl wget jq \
+        python3 crudini \
+        "${ADDITIONAL_PACKAGES[@]}"; then
         set +x
         echo -e '\033[0;31m' >&2
         echo "Installing packages failed; is network working and (on Ubuntu) the universe repository enabled?" >&2
@@ -286,9 +335,9 @@ if [ "$package_system" = apt ]; then
     fi
 elif [ "$package_system" = yum ]; then
     if ! yum install -y \
-         puppet git curl wget jq \
-         python3 crudini \
-         "${ADDITIONAL_PACKAGES[@]}"; then
+        puppet git curl wget jq \
+        python3 crudini \
+        "${ADDITIONAL_PACKAGES[@]}"; then
         set +x
         echo -e '\033[0;31m' >&2
         echo "Installing packages failed; is network working?" >&2
@@ -328,13 +377,13 @@ has_class() {
 id -u zulip &>/dev/null || useradd -m zulip --home-dir /home/zulip
 if [ -n "$NO_OVERWRITE_SETTINGS" ] && [ -e "/etc/zulip/zulip.conf" ]; then
     "$ZULIP_PATH"/scripts/zulip-puppet-apply --noop \
-                 --write-catalog-summary \
-                 --classfile=/var/lib/puppet/classes.txt \
-                 >/dev/null
+        --write-catalog-summary \
+        --classfile=/var/lib/puppet/classes.txt \
+        >/dev/null
 else
     # Write out more than we need, and remove sections that are not
     # applicable to the classes that are actually necessary.
-    cat <<EOF > /etc/zulip/zulip.conf
+    cat <<EOF >/etc/zulip/zulip.conf
 [machine]
 puppet_classes = $PUPPET_CLASSES
 deploy_type = production
@@ -352,9 +401,9 @@ EOF
     fi
 
     "$ZULIP_PATH"/scripts/zulip-puppet-apply --noop \
-                 --write-catalog-summary \
-                 --classfile=/var/lib/puppet/classes.txt \
-                 >/dev/null
+        --write-catalog-summary \
+        --classfile=/var/lib/puppet/classes.txt \
+        >/dev/null
 
     # We only need the postgres version setting on database hosts; but
     # we don't know if this is a database host until we have the catalog summary.

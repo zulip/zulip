@@ -6,7 +6,7 @@ echo "Test suite is running under $(python --version)."
 set -e
 set -x
 
-./tools/lint --groups=backend --skip=gitlint,mypy  # gitlint disabled because flaky
+./tools/lint --groups=backend --skip=gitlint,mypy # gitlint disabled because flaky
 ./tools/test-tools
 # We need to pass a parallel level to test-backend because CircleCI's
 # docker setup means the auto-detection logic sees the ~36 processes

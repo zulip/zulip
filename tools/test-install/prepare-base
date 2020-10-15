@@ -7,13 +7,15 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 RELEASE="$1"
-ARCH=amd64  # TODO: maybe i686 too
+ARCH=amd64 # TODO: maybe i686 too
 
 case "$RELEASE" in
-    bionic) extra_packages=(python-pip)
-            ;;
-    focal) extra_packages=(python3-pip)
-           ;;
+    bionic)
+        extra_packages=(python-pip)
+        ;;
+    focal)
+        extra_packages=(python3-pip)
+        ;;
     *)
         echo "error: unsupported target release: $RELEASE" >&2
         exit 1
@@ -46,16 +48,16 @@ run apt-get dist-upgrade -y
 # As an optimization, we install a bunch of packages the installer
 # would install for itself.
 run apt-get install -y --no-install-recommends \
-  xvfb parallel unzip zip jq python3-pip wget curl eatmydata \
-  git crudini openssl ssl-cert \
-  build-essential python3-dev \
-  memcached redis-server \
-  hunspell-en-us supervisor libssl-dev puppet \
-  gettext libffi-dev libfreetype6-dev zlib1g-dev libjpeg-dev \
-  libldap2-dev \
-  libxml2-dev libxslt1-dev libpq-dev \
-  virtualenv \
-  "${extra_packages[@]}"
+    xvfb parallel unzip zip jq python3-pip wget curl eatmydata \
+    git crudini openssl ssl-cert \
+    build-essential python3-dev \
+    memcached redis-server \
+    hunspell-en-us supervisor libssl-dev puppet \
+    gettext libffi-dev libfreetype6-dev zlib1g-dev libjpeg-dev \
+    libldap2-dev \
+    libxml2-dev libxslt1-dev libpq-dev \
+    virtualenv \
+    "${extra_packages[@]}"
 
 run ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 run locale-gen en_US.UTF-8 || true
