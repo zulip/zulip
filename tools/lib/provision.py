@@ -381,6 +381,8 @@ def main(options: argparse.Namespace) -> "NoReturn":
 
     # Install shellcheck.
     run_as_root(["tools/setup/install-shellcheck"])
+    # Install shfmt.
+    run_as_root(["tools/setup/install-shfmt"])
 
     setup_venvs.main()
 
