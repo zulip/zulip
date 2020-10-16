@@ -479,11 +479,13 @@ export function dispatch_normal_event(event) {
                 // as well as recipients; we ignore such self-generated events.
                 return;
             }
-
-            if (event.op === "start") {
-                typing_events.display_notification(event);
-            } else if (event.op === "stop") {
-                typing_events.hide_notification(event);
+            switch (event.op) {
+                case "start":
+                    typing_events.display_notification(event);
+                    break;
+                case "stop":
+                    typing_events.hide_notification(event);
+                    break;
             }
             break;
 
