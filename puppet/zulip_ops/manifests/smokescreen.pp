@@ -9,12 +9,12 @@ class zulip_ops::smokescreen {
     url     => "https://golang.org/dl/go${golang_version}.linux-amd64.tar.gz",
     sha256  => '66eb6858f375731ba07b0b33f5c813b141a81253e7e74071eec3ae85e9b37098',
     install => {
-      'go/' => "/opt/golang-${golang_version}/",
+      'go/' => "/srv/golang-${golang_version}/",
     },
   }
-  file { '/opt/golang':
+  file { '/srv/golang':
     ensure  => 'link',
-    target  => "/opt/golang-${golang_version}/",
+    target  => "/srv/golang-${golang_version}/",
     require => Zulip::Sha256_tarball_to['golang'],
   }
 
@@ -23,12 +23,12 @@ class zulip_ops::smokescreen {
     url     => "https://github.com/stripe/smokescreen/archive/v${version}.tar.gz",
     sha256  => '7255744f89a62a103fde97d28e3586644d30191b4e3d1f62c9a99e13d732a012',
     install => {
-      "smokescreen-${version}/" => "/opt/smokescreen-src-${version}/",
+      "smokescreen-${version}/" => "/srv/smokescreen-src-${version}/",
     },
   }
   exec { 'compile smokescreen':
-    command     => "/opt/golang/bin/go build -o /usr/local/bin/smokescreen-${version}",
-    cwd         => "/opt/smokescreen-src-${version}/",
+    command     => "/srv/golang/bin/go build -o /usr/local/bin/smokescreen-${version}",
+    cwd         => "/srv/smokescreen-src-${version}/",
     # GOCACHE is required; nothing is written to GOPATH, but it is required to be set
     environment => ['GOCACHE=/tmp/gocache', 'GOPATH=/root/go'],
     creates     => "/usr/local/bin/smokescreen-${version}",
