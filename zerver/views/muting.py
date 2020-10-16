@@ -34,7 +34,7 @@ def mute_topic(user_profile: UserProfile,
     if topic_is_muted(user_profile, stream.id, topic_name):
         return json_error(_("Topic already muted"))
 
-    do_mute_topic(user_profile, stream, recipient, topic_name, date_muted)
+    do_mute_topic(user_profile, stream, topic_name, date_muted)
     return json_success()
 
 def unmute_topic(user_profile: UserProfile,
