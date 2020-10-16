@@ -437,6 +437,9 @@ export function dispatch_normal_event(event) {
                         }
                     }
                     break;
+                default:
+                    blueslip.error("Unexpected event type stream/" + event.op);
+                    break;
             }
             break;
 

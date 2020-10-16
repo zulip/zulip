@@ -894,4 +894,6 @@ run_test("server_event_dispatch_op_errors", () => {
     server_events_dispatch.dispatch_normal_event({type: "realm_domains", op: "other"});
     blueslip.expect("error", "Unexpected event type realm_user/other");
     server_events_dispatch.dispatch_normal_event({type: "realm_user", op: "other"});
+    blueslip.expect("error", "Unexpected event type stream/other");
+    server_events_dispatch.dispatch_normal_event({type: "stream", op: "other"});
 });
