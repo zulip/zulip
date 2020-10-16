@@ -1382,7 +1382,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=19,
+            query_count=16,
             target_users=[self.example_user('cordelia')],
             is_realm_admin=True,
             is_subbed=True,
@@ -1398,7 +1398,7 @@ class StreamAdminTest(ZulipTestCase):
         If you're a realm admin, you can remove multiple users from a stream.
 
         TODO: We have too many queries for this situation--each additional
-              user leads to 7 more queries.
+              user leads to 4 more queries.
 
               Fortunately, some of the extra work here is in
               do_mark_stream_messages_as_read, which gets deferred
@@ -1409,7 +1409,7 @@ class StreamAdminTest(ZulipTestCase):
             for name in ['cordelia', 'prospero', 'iago', 'hamlet', 'ZOE']
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=47,
+            query_count=32,
             cache_count=9,
             target_users=target_users,
             is_realm_admin=True,
@@ -1427,7 +1427,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=20,
+            query_count=17,
             target_users=[self.example_user('cordelia')],
             is_realm_admin=True,
             is_subbed=True,
@@ -1444,7 +1444,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=20,
+            query_count=17,
             target_users=[self.example_user('cordelia')],
             is_realm_admin=True,
             is_subbed=False,
@@ -1461,7 +1461,7 @@ class StreamAdminTest(ZulipTestCase):
         You can remove others from public streams you're a stream administrator of.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=19,
+            query_count=16,
             target_users=[self.example_user('cordelia')],
             is_realm_admin=False,
             is_stream_admin=True,
@@ -1482,7 +1482,7 @@ class StreamAdminTest(ZulipTestCase):
             for name in ['cordelia', 'prospero', 'othello', 'hamlet', 'ZOE']
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=47,
+            query_count=32,
             cache_count=9,
             target_users=target_users,
             is_realm_admin=False,
@@ -1500,7 +1500,7 @@ class StreamAdminTest(ZulipTestCase):
         You can remove others from private streams you're a stream administrator of.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=20,
+            query_count=17,
             target_users=[self.example_user('cordelia')],
             is_realm_admin=False,
             is_stream_admin=True,
@@ -1522,7 +1522,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=19,
+            query_count=16,
             target_users=[self.example_user('cordelia')],
             is_realm_admin=True,
             is_subbed=True,
@@ -1536,7 +1536,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=26,
+            query_count=20,
             target_users=[self.example_user('cordelia'), self.example_user('prospero')],
             is_realm_admin=True,
             is_subbed=True,
@@ -3262,7 +3262,7 @@ class SubscriptionAPITest(ZulipTestCase):
                         get_client("website"),
                     )
 
-        self.assert_length(query_count, 52)
+        self.assert_length(query_count, 28)
         self.assert_length(cache_count, 4)
 
         peer_events = [e for e in events

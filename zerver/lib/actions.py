@@ -3099,7 +3099,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
 
         event = {'type': 'mark_stream_messages_as_read',
                  'user_profile_id': user_profile.id,
-                 'stream_ids': [stream.id for stream in streams]}
+                 'stream_recipient_ids': [stream.recipient_id for stream in streams]}
         queue_json_publish("deferred_work", event)
 
     send_peer_remove_events(
