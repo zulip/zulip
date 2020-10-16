@@ -3098,7 +3098,6 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
         notify_subscriptions_removed(user_profile, streams_by_user[user_profile.id])
 
         event = {'type': 'mark_stream_messages_as_read',
-                 'client_id': acting_client.id,
                  'user_profile_id': user_profile.id,
                  'stream_ids': [stream.id for stream in streams]}
         queue_json_publish("deferred_work", event)
@@ -4142,18 +4141,18 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
 
     return count
 
-def do_mark_stream_messages_as_read(user_profile: UserProfile,
-                                    client: Client,
-                                    stream: Stream,
-                                    topic_name: Optional[str]=None) -> int:
+def do_mark_stream_messages_as_read(
+    user_profile: UserProfile,
+    stream_recipient_id: int,
+    topic_name: Optional[str]=None
+) -> int:
     log_statsd_event('mark_stream_as_read')
 
     msgs = UserMessage.objects.filter(
         user_profile=user_profile,
     )
 
-    recipient = stream.recipient
-    msgs = msgs.filter(message__recipient=recipient)
+    msgs = msgs.filter(message__recipient_id=stream_recipient_id)
 
     if topic_name:
         msgs = filter_by_topic_name_via_message(
