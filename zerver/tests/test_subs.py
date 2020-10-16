@@ -1399,6 +1399,10 @@ class StreamAdminTest(ZulipTestCase):
 
         TODO: We have too many queries for this situation--each additional
               user leads to 7 more queries.
+
+              Fortunately, some of the extra work here is in
+              do_mark_stream_messages_as_read, which gets deferred
+              using a queue.
         """
         target_users = [
             self.example_user(name)
