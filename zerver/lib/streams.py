@@ -319,7 +319,7 @@ def access_stream_common(
 def access_stream_by_id(user_profile: UserProfile,
                         stream_id: int,
                         require_active: bool=True,
-                        allow_realm_admin: bool=False) -> Tuple[Stream, Recipient, Optional[Subscription]]:
+                        allow_realm_admin: bool=False) -> Tuple[Stream, Optional[Subscription]]:
     stream = get_stream_by_id(stream_id)
 
     error = _("Invalid stream id")
@@ -330,7 +330,7 @@ def access_stream_by_id(user_profile: UserProfile,
         require_active=require_active,
         allow_realm_admin=allow_realm_admin,
     )
-    return (stream, stream.recipient, sub)
+    return (stream, sub)
 
 def get_public_streams_queryset(realm: Realm) -> 'QuerySet[Stream]':
     return Stream.objects.filter(realm=realm, invite_only=False,

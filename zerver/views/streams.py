@@ -152,7 +152,7 @@ def deactivate_stream_backend(request: HttpRequest,
 def add_default_stream(request: HttpRequest,
                        user_profile: UserProfile,
                        stream_id: int=REQ(validator=check_int)) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+    (stream, sub) = access_stream_by_id(user_profile, stream_id)
     do_add_default_stream(stream)
     return json_success()
 
@@ -217,7 +217,7 @@ def remove_default_stream_group(request: HttpRequest, user_profile: UserProfile,
 def remove_default_stream(request: HttpRequest,
                           user_profile: UserProfile,
                           stream_id: int=REQ(validator=check_int)) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_id(
+    (stream, sub) = access_stream_by_id(
         user_profile,
         stream_id,
         allow_realm_admin=True,
@@ -279,7 +279,7 @@ def update_stream_backend(
     # But we require even realm administrators to be actually
     # subscribed to make a private stream public.
     if is_private is not None:
-        (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+        (stream, sub) = access_stream_by_id(user_profile, stream_id)
         do_change_stream_invite_only(stream, is_private, history_public_to_subscribers)
     return json_success()
 
@@ -621,8 +621,11 @@ def send_messages_for_new_subscribers(
 @has_request_variables
 def get_subscribers_backend(request: HttpRequest, user_profile: UserProfile,
                             stream_id: int=REQ('stream', converter=to_non_negative_int)) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id,
-                                                   allow_realm_admin=True)
+    (stream, sub) = access_stream_by_id(
+        user_profile,
+        stream_id,
+        allow_realm_admin=True,
+    )
     subscribers = get_subscriber_emails(stream, user_profile)
 
     return json_success({'subscribers': subscribers})
@@ -671,7 +674,7 @@ def get_topics_backend(
     else:
         assert user_profile is not None
 
-        (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+        (stream, sub) = access_stream_by_id(user_profile, stream_id)
 
         result = get_topic_history_for_stream(
             user_profile=user_profile,
@@ -686,7 +689,7 @@ def get_topics_backend(
 def delete_in_topic(request: HttpRequest, user_profile: UserProfile,
                     stream_id: int=REQ(converter=to_non_negative_int),
                     topic_name: str=REQ("topic_name")) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+    (stream, sub) = access_stream_by_id(user_profile, stream_id)
 
     messages = messages_for_topic(stream.recipient_id, topic_name)
     if not stream.is_history_public_to_subscribers():
@@ -783,7 +786,7 @@ def update_subscription_properties_backend(
         if property not in property_converters:
             return json_error(_("Unknown subscription property: {}").format(property))
 
-        (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+        (stream, sub) = access_stream_by_id(user_profile, stream_id)
         if sub is None:
             return json_error(_("Not subscribed to stream id {}").format(stream_id))
 
