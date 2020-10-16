@@ -354,46 +354,53 @@ export function dispatch_normal_event(event) {
             break;
 
         case "stream":
-            if (event.op === "update") {
-                // Legacy: Stream properties are still managed by subs.js on the client side.
-                stream_events.update_property(event.stream_id, event.property, event.value, {
-                    rendered_description: event.rendered_description,
-                    history_public_to_subscribers: event.history_public_to_subscribers,
-                });
-                settings_streams.update_default_streams_table();
-            } else if (event.op === "create") {
-                stream_data.create_streams(event.streams);
-
-                for (const stream of event.streams) {
-                    const sub = stream_data.get_sub_by_id(stream.stream_id);
-                    stream_data.update_calculated_fields(sub);
-                    if (overlays.streams_open()) {
-                        subs.add_sub_to_table(sub);
-                    }
-                }
-            } else if (event.op === "delete") {
-                for (const stream of event.streams) {
-                    const was_subscribed = stream_data.get_sub_by_id(stream.stream_id).subscribed;
-                    const is_narrowed_to_stream = narrow_state.is_for_stream_id(stream.stream_id);
-                    subs.remove_stream(stream.stream_id);
-                    stream_data.delete_sub(stream.stream_id);
-                    if (was_subscribed) {
-                        stream_list.remove_sidebar_row(stream.stream_id);
-                    }
+            switch (event.op) {
+                case "update":
+                    // Legacy: Stream properties are still managed by subs.js on the client side.
+                    stream_events.update_property(event.stream_id, event.property, event.value, {
+                        rendered_description: event.rendered_description,
+                        history_public_to_subscribers: event.history_public_to_subscribers,
+                    });
                     settings_streams.update_default_streams_table();
-                    stream_data.remove_default_stream(stream.stream_id);
-                    if (is_narrowed_to_stream) {
-                        current_msg_list.update_trailing_bookend();
+                    break;
+                case "create":
+                    stream_data.create_streams(event.streams);
+
+                    for (const stream of event.streams) {
+                        const sub = stream_data.get_sub_by_id(stream.stream_id);
+                        stream_data.update_calculated_fields(sub);
+                        if (overlays.streams_open()) {
+                            subs.add_sub_to_table(sub);
+                        }
                     }
-                    if (page_params.realm_notifications_stream_id === stream.stream_id) {
-                        page_params.realm_notifications_stream_id = -1;
-                        settings_org.sync_realm_settings("notifications_stream_id");
+                    break;
+                case "delete":
+                    for (const stream of event.streams) {
+                        const was_subscribed = stream_data.get_sub_by_id(stream.stream_id)
+                            .subscribed;
+                        const is_narrowed_to_stream = narrow_state.is_for_stream_id(
+                            stream.stream_id,
+                        );
+                        subs.remove_stream(stream.stream_id);
+                        stream_data.delete_sub(stream.stream_id);
+                        if (was_subscribed) {
+                            stream_list.remove_sidebar_row(stream.stream_id);
+                        }
+                        settings_streams.update_default_streams_table();
+                        stream_data.remove_default_stream(stream.stream_id);
+                        if (is_narrowed_to_stream) {
+                            current_msg_list.update_trailing_bookend();
+                        }
+                        if (page_params.realm_notifications_stream_id === stream.stream_id) {
+                            page_params.realm_notifications_stream_id = -1;
+                            settings_org.sync_realm_settings("notifications_stream_id");
+                        }
+                        if (page_params.realm_signup_notifications_stream_id === stream.stream_id) {
+                            page_params.realm_signup_notifications_stream_id = -1;
+                            settings_org.sync_realm_settings("signup_notifications_stream_id");
+                        }
                     }
-                    if (page_params.realm_signup_notifications_stream_id === stream.stream_id) {
-                        page_params.realm_signup_notifications_stream_id = -1;
-                        settings_org.sync_realm_settings("signup_notifications_stream_id");
-                    }
-                }
+                    break;
             }
             break;
 
