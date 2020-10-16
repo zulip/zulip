@@ -546,7 +546,7 @@ def get_subscription_backend(request: HttpRequest, user_profile: UserProfile,
                              stream_id: int=REQ(validator=check_int, path_only=True),
                              ) -> HttpResponse:
     target_user = access_user_by_id(user_profile, user_id, read_only=True)
-    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+    (stream, sub) = access_stream_by_id(user_profile, stream_id)
 
     subscription_status = {'is_subscribed': subscribed_to_stream(target_user, stream_id)}
 

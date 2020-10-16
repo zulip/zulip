@@ -51,7 +51,7 @@ def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
     streams: List[Stream] = []
     for stream_id in stream_ids:
         try:
-            (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+            (stream, sub) = access_stream_by_id(user_profile, stream_id)
         except JsonableError:
             return json_error(
                 _("Stream does not exist with id: {}. No invites were sent.").format(stream_id))
@@ -146,7 +146,7 @@ def generate_multiuse_invite_backend(
     streams = []
     for stream_id in stream_ids:
         try:
-            (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+            (stream, sub) = access_stream_by_id(user_profile, stream_id)
         except JsonableError:
             return json_error(_("Invalid stream id {}. No invites were sent.").format(stream_id))
         streams.append(stream)
