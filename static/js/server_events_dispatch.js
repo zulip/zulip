@@ -383,6 +383,9 @@ export function dispatch_normal_event(event) {
                 case "update":
                     user_events.update_person(event.person);
                     break;
+                default:
+                    blueslip.error("Unexpected event type realm_user/" + event.op);
+                    break;
             }
             break;
 
