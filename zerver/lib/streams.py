@@ -524,17 +524,14 @@ def list_to_streams(streams_raw: Iterable[StreamDict],
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
     if admin_access_required:
-        existing_stream_ids = [stream.id for stream in existing_stream_map.values()]
-        subs = Subscription.objects.select_related("recipient").filter(
+        existing_recipient_ids = [stream.recipient_id for stream in existing_stream_map.values()]
+        subs = Subscription.objects.filter(
             user_profile=user_profile,
-            recipient__type=Recipient.STREAM,
-            recipient__type_id__in=existing_stream_ids,
+            recipient_id__in=existing_recipient_ids,
             active=True)
-        sub_dict_by_stream_ids = {sub.recipient.type_id: sub for sub in subs}
+        sub_map = {sub.recipient_id: sub for sub in subs}
         for stream in existing_stream_map.values():
-            sub = None
-            if stream.id in sub_dict_by_stream_ids:
-                sub = sub_dict_by_stream_ids[stream.id]
+            sub = sub_map.get(stream.recipient_id, None)
             check_stream_access_for_delete_or_update(user_profile, stream, sub)
 
     message_retention_days_not_none = False
