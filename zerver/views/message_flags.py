@@ -71,7 +71,7 @@ def mark_topic_as_read(request: HttpRequest,
     if topic_name:
         topic_exists = user_message_exists_for_topic(
             user_profile=user_profile,
-            recipient=recipient,
+            recipient_id=stream.recipient_id,
             topic_name=topic_name,
         )
 
