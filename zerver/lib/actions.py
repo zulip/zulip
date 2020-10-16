@@ -5461,11 +5461,15 @@ def do_remove_alert_words(user_profile: UserProfile, alert_words: Iterable[str])
     words = remove_user_alert_words(user_profile, alert_words)
     notify_alert_words(user_profile, words)
 
-def do_mute_topic(user_profile: UserProfile, stream: Stream, recipient: Recipient, topic: str,
-                  date_muted: Optional[datetime.datetime]=None) -> None:
+def do_mute_topic(
+    user_profile: UserProfile,
+    stream: Stream,
+    topic: str,
+    date_muted: Optional[datetime.datetime]=None
+) -> None:
     if date_muted is None:
         date_muted = timezone_now()
-    add_topic_mute(user_profile, stream.id, recipient.id, topic, date_muted)
+    add_topic_mute(user_profile, stream.id, stream.recipient_id, topic, date_muted)
     event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
 
