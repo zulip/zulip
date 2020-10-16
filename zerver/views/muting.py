@@ -26,7 +26,7 @@ def mute_topic(user_profile: UserProfile,
                topic_name: str,
                date_muted: datetime.datetime) -> HttpResponse:
     if stream_name is not None:
-        (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+        (stream, sub) = access_stream_by_name(user_profile, stream_name)
     else:
         assert stream_id is not None
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
