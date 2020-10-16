@@ -17,6 +17,12 @@ from zerver.models import (
 
 
 @dataclass
+class SubInfo:
+    user: UserProfile
+    sub: Subscription
+    stream: Stream
+
+@dataclass
 class SubscriberPeerInfo:
     subscribed_ids: Dict[int, Set[int]]
     peer_ids: Dict[int, Set[int]]
