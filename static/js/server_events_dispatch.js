@@ -528,6 +528,9 @@ export function dispatch_normal_event(event) {
                 case "stop":
                     typing_events.hide_notification(event);
                     break;
+                default:
+                    blueslip.error("Unexpected event type typing/" + event.op);
+                    break;
             }
             break;
 
@@ -664,6 +667,9 @@ export function dispatch_normal_event(event) {
                     break;
                 case "update":
                     user_groups.update(event);
+                    break;
+                default:
+                    blueslip.error("Unexpected event type user_group/" + event.op);
                     break;
             }
             settings_user_groups.reload();
