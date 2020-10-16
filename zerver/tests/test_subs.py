@@ -4593,15 +4593,13 @@ class AccessStreamTest(ZulipTestCase):
             access_stream_by_name(hamlet, "invalid stream")
 
         # Hamlet can access the private stream
-        (stream_ret, rec_ret, sub_ret) = access_stream_by_id(hamlet, stream.id)
+        (stream_ret, sub_ret) = access_stream_by_id(hamlet, stream.id)
         self.assertEqual(stream.id, stream_ret.id)
         assert sub_ret is not None
-        self.assertEqual(sub_ret.recipient, rec_ret)
         self.assertEqual(sub_ret.recipient.type_id, stream.id)
         (stream_ret2, rec_ret2, sub_ret2) = access_stream_by_name(hamlet, stream.name)
         self.assertEqual(stream_ret.id, stream_ret2.id)
         self.assertEqual(sub_ret, sub_ret2)
-        self.assertEqual(rec_ret, rec_ret2)
 
         # Othello cannot access the private stream
         with self.assertRaisesRegex(JsonableError, "Invalid stream id"):
@@ -4656,10 +4654,9 @@ class AccessStreamTest(ZulipTestCase):
 
         # Guest user have access to subscribed public streams
         self.subscribe(guest_user_profile, stream_name)
-        (stream_ret, rec_ret, sub_ret) = access_stream_by_id(guest_user_profile, stream.id)
+        (stream_ret, sub_ret) = access_stream_by_id(guest_user_profile, stream.id)
         assert sub_ret is not None
         self.assertEqual(stream.id, stream_ret.id)
-        self.assertEqual(sub_ret.recipient, rec_ret)
         self.assertEqual(sub_ret.recipient.type_id, stream.id)
 
         stream_name = "private_stream_1"
@@ -4670,16 +4667,15 @@ class AccessStreamTest(ZulipTestCase):
 
         # Guest user have access to subscribed private streams
         self.subscribe(guest_user_profile, stream_name)
-        (stream_ret, rec_ret, sub_ret) = access_stream_by_id(guest_user_profile, stream.id)
+        (stream_ret, sub_ret) = access_stream_by_id(guest_user_profile, stream.id)
         assert sub_ret is not None
         self.assertEqual(stream.id, stream_ret.id)
-        self.assertEqual(sub_ret.recipient, rec_ret)
         self.assertEqual(sub_ret.recipient.type_id, stream.id)
 
         stream_name = "web_public_stream"
         stream = self.make_stream(stream_name, guest_user_profile.realm, is_web_public=True)
         # Guest users have access to web public streams even if they aren't subscribed.
-        (stream_ret, rec_ret, sub_ret) = access_stream_by_id(guest_user_profile, stream.id)
+        (stream_ret, sub_ret) = access_stream_by_id(guest_user_profile, stream.id)
         self.assertTrue(can_access_stream_history(guest_user_profile, stream))
         assert sub_ret is None
         self.assertEqual(stream.id, stream_ret.id)

@@ -29,7 +29,7 @@ def mute_topic(user_profile: UserProfile,
         (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
     else:
         assert stream_id is not None
-        (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+        (stream, sub) = access_stream_by_id(user_profile, stream_id)
 
     if topic_is_muted(user_profile, stream.id, topic_name):
         return json_error(_("Topic already muted"))

@@ -52,8 +52,8 @@ def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 def mark_stream_as_read(request: HttpRequest,
                         user_profile: UserProfile,
                         stream_id: int=REQ(validator=check_int)) -> HttpResponse:
-    stream, recipient, sub = access_stream_by_id(user_profile, stream_id)
-    count = do_mark_stream_messages_as_read(user_profile, recipient.id)
+    stream, sub = access_stream_by_id(user_profile, stream_id)
+    count = do_mark_stream_messages_as_read(user_profile, stream.recipient_id)
 
     log_data_str = f"[{count} updated]"
     request._log_data["extra"] = log_data_str
@@ -66,7 +66,7 @@ def mark_topic_as_read(request: HttpRequest,
                        user_profile: UserProfile,
                        stream_id: int=REQ(validator=check_int),
                        topic_name: str=REQ()) -> HttpResponse:
-    stream, recipient, sub = access_stream_by_id(user_profile, stream_id)
+    stream, sub = access_stream_by_id(user_profile, stream_id)
 
     if topic_name:
         topic_exists = user_message_exists_for_topic(
