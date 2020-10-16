@@ -1142,7 +1142,7 @@ class UserProfileTest(ZulipTestCase):
         with queries_captured() as queries:
             result = orjson.loads(self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content)
 
-        self.assert_length(queries, 7)
+        self.assert_length(queries, 6)
         self.assertTrue(result['is_subscribed'])
 
         # Logging in with a Guest user.
