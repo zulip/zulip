@@ -3021,9 +3021,9 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
 
     stream_dict = {stream.id: stream for stream in streams}
 
-    existing_subs_by_user = get_bulk_stream_subscriber_info(users, stream_dict)
+    existing_subs_by_user = get_bulk_stream_subscriber_info(users, streams)
 
-    def get_non_subscribed_tups() -> List[Tuple[UserProfile, Stream]]:
+    def get_non_subscribed_subs() -> List[Tuple[UserProfile, Stream]]:
         stream_ids = {stream.id for stream in streams}
 
         not_subscribed: List[Tuple[UserProfile, Stream]] = []
@@ -3032,8 +3032,8 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
             user_sub_stream_info = existing_subs_by_user[user_profile.id]
 
             subscribed_stream_ids = {
-                stream.id
-                for (sub, stream) in user_sub_stream_info
+                sub_info.stream.id
+                for sub_info in user_sub_stream_info
             }
             not_subscribed_stream_ids = stream_ids - subscribed_stream_ids
 
@@ -3043,17 +3043,17 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
 
         return not_subscribed
 
-    not_subscribed = get_non_subscribed_tups()
+    not_subscribed = get_non_subscribed_subs()
 
-    subs_to_deactivate: List[Tuple[Subscription, Stream]] = []
+    subs_to_deactivate: List[SubInfo] = []
     sub_ids_to_deactivate: List[int] = []
 
     # This loop just flattens out our data into big lists for
     # bulk operations.
-    for tup_list in existing_subs_by_user.values():
-        for (sub, stream) in tup_list:
-            subs_to_deactivate.append((sub, stream))
-            sub_ids_to_deactivate.append(sub.id)
+    for sub_infos in existing_subs_by_user.values():
+        for sub_info in sub_infos:
+            subs_to_deactivate.append(sub_info)
+            sub_ids_to_deactivate.append(sub_info.sub.id)
 
     our_realm = users[0].realm
 
@@ -3069,25 +3069,28 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
         # Log Subscription Activities in RealmAuditLog
         event_time = timezone_now()
         event_last_message_id = get_last_message_id()
-        all_subscription_logs: (List[RealmAuditLog]) = []
-        for (sub, stream) in subs_to_deactivate:
-            audit_log_entry = RealmAuditLog(
-                realm=sub.user_profile.realm,
+        all_subscription_logs = [
+            RealmAuditLog(
+                realm=sub.user.realm,
                 acting_user=acting_user,
-                modified_user=sub.user_profile,
-                modified_stream=stream,
+                modified_user=sub_info.user,
+                modified_stream=sub_info.stream,
                 event_last_message_id=event_last_message_id,
                 event_type=RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
-                event_time=event_time)
-            all_subscription_logs.append(audit_log_entry)
+                event_time=event_time,
+            )
+            for sub in subs_to_deactivate
+        ]
+
         # Now since we have all log objects generated we can do a bulk insert
         RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
     altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
     streams_by_user: Dict[int, List[Stream]] = defaultdict(list)
-    for (sub, stream) in subs_to_deactivate:
-        streams_by_user[sub.user_profile_id].append(stream)
-        altered_user_dict[stream.id].add(sub.user_profile_id)
+    for sub_info in subs_to_deactivate:
+        stream = sub_info.stream
+        streams_by_user[sub_info.user.id].append(stream)
+        altered_user_dict[stream.id].add(sub_info.user.id)
 
     for user_profile in users:
         if len(streams_by_user[user_profile.id]) == 0:
@@ -3116,7 +3119,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
             do_deactivate_stream(stream, acting_user=acting_user)
 
     return (
-        [(sub.user_profile, stream) for (sub, stream) in subs_to_deactivate],
+        [(sub_info.user, sub_info.stream) for sub_info in subs_to_deactivate],
         not_subscribed,
     )
 

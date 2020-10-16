@@ -2,7 +2,7 @@ import itertools
 from collections import defaultdict
 from dataclasses import dataclass
 from operator import itemgetter
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
 from django.db.models.query import QuerySet
 
@@ -65,28 +65,36 @@ def get_stream_subscriptions_for_users(user_profiles: List[UserProfile]) -> Quer
     )
 
 def get_bulk_stream_subscriber_info(
-        user_profiles: List[UserProfile],
-        stream_dict: Dict[int, Stream]) -> Dict[int, List[Tuple[Subscription, Stream]]]:
+    users: List[UserProfile],
+    streams: List[Stream],
+) -> Dict[int, List[SubInfo]]:
 
-    stream_ids = stream_dict.keys()
-
-    result: Dict[int, List[Tuple[Subscription, Stream]]] = {
-        user_profile.id: []
-        for user_profile in user_profiles
-    }
+    stream_ids = {stream.id for stream in streams}
 
     subs = Subscription.objects.filter(
-        user_profile__in=user_profiles,
+        user_profile__in=users,
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=stream_ids,
         active=True,
-    ).select_related('user_profile', 'recipient')
+    ).only('user_profile_id', 'recipient_id')
+
+    stream_map = {stream.recipient_id: stream for stream in streams}
+    user_map = {user.id: user for user in users}
+
+    result: Dict[int, List[SubInfo]] = {user.id: [] for user in users}
 
     for sub in subs:
-        user_profile_id = sub.user_profile_id
-        stream_id = sub.recipient.type_id
-        stream = stream_dict[stream_id]
-        result[user_profile_id].append((sub, stream))
+        user_id = sub.user_profile_id
+        user = user_map[user_id]
+        recipient_id = sub.recipient_id
+        stream = stream_map[recipient_id]
+        sub_info = SubInfo(
+            user=user,
+            sub=sub,
+            stream=stream,
+        )
+
+        result[user_id].append(sub_info)
 
     return result
 
