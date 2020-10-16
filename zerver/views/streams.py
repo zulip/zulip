@@ -163,7 +163,7 @@ def create_default_stream_group(request: HttpRequest, user_profile: UserProfile,
                                 stream_names: List[str]=REQ(validator=check_list(check_string))) -> None:
     streams = []
     for stream_name in stream_names:
-        (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+        (stream, sub) = access_stream_by_name(user_profile, stream_name)
         streams.append(stream)
     do_create_default_stream_group(user_profile.realm, group_name, description, streams)
     return json_success()
@@ -193,7 +193,7 @@ def update_default_stream_group_streams(request: HttpRequest, user_profile: User
     group = access_default_stream_group_by_id(user_profile.realm, group_id)
     streams = []
     for stream_name in stream_names:
-        (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+        (stream, sub) = access_stream_by_name(user_profile, stream_name)
         streams.append(stream)
 
     if op == 'add':
@@ -711,7 +711,7 @@ def json_stream_exists(request: HttpRequest, user_profile: UserProfile, stream_n
     check_stream_name(stream_name)
 
     try:
-        (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+        (stream, sub) = access_stream_by_name(user_profile, stream_name)
     except JsonableError as e:
         return json_error(e.msg, status=404)
 
@@ -732,7 +732,7 @@ def json_stream_exists(request: HttpRequest, user_profile: UserProfile, stream_n
 def json_get_stream_id(request: HttpRequest,
                        user_profile: UserProfile,
                        stream_name: str=REQ('stream')) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+    (stream, sub) = access_stream_by_name(user_profile, stream_name)
     return json_success({'stream_id': stream.id})
 
 @has_request_variables
