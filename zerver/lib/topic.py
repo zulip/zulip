@@ -5,7 +5,7 @@ from django.db.models.query import Q, QuerySet
 from sqlalchemy.sql import column, func, literal
 
 from zerver.lib.request import REQ
-from zerver.models import Message, Recipient, Stream, UserMessage, UserProfile
+from zerver.models import Message, Stream, UserMessage, UserProfile
 
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
@@ -158,7 +158,7 @@ def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dic
         )
     return sorted(history, key=lambda x: -x['max_id'])
 
-def get_topic_history_for_public_stream(recipient: Recipient) -> List[Dict[str, Any]]:
+def get_topic_history_for_public_stream(recipient_id: int) -> List[Dict[str, Any]]:
     cursor = connection.cursor()
     query = '''
     SELECT
@@ -173,17 +173,17 @@ def get_topic_history_for_public_stream(recipient: Recipient) -> List[Dict[str, 
     )
     ORDER BY max("zerver_message".id) DESC
     '''
-    cursor.execute(query, [recipient.id])
+    cursor.execute(query, [recipient_id])
     rows = cursor.fetchall()
     cursor.close()
 
     return generate_topic_history_from_db_rows(rows)
 
 def get_topic_history_for_stream(user_profile: UserProfile,
-                                 recipient: Recipient,
+                                 recipient_id: int,
                                  public_history: bool) -> List[Dict[str, Any]]:
     if public_history:
-        return get_topic_history_for_public_stream(recipient)
+        return get_topic_history_for_public_stream(recipient_id)
 
     cursor = connection.cursor()
     query = '''
@@ -203,7 +203,7 @@ def get_topic_history_for_stream(user_profile: UserProfile,
     )
     ORDER BY max("zerver_message".id) DESC
     '''
-    cursor.execute(query, [user_profile.id, recipient.id])
+    cursor.execute(query, [user_profile.id, recipient_id])
     rows = cursor.fetchall()
     cursor.close()
 

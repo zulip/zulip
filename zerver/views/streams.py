@@ -666,7 +666,7 @@ def get_topics_backend(
     if is_web_public_query:
         realm = get_valid_realm_from_request(request)
         stream = access_web_public_stream(stream_id, realm)
-        result = get_topic_history_for_public_stream(recipient=stream.recipient)
+        result = get_topic_history_for_public_stream(recipient_id=stream.recipient_id)
 
     else:
         assert user_profile is not None
@@ -675,7 +675,7 @@ def get_topics_backend(
 
         result = get_topic_history_for_stream(
             user_profile=user_profile,
-            recipient=recipient,
+            recipient_id=stream.recipient_id,
             public_history=stream.is_history_public_to_subscribers(),
         )
 
