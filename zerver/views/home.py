@@ -78,7 +78,7 @@ def detect_narrowed_window(request: HttpRequest,
         try:
             # TODO: We should support stream IDs and PMs here as well.
             narrow_stream_name = request.GET.get("stream")
-            (narrow_stream, ignored_rec, ignored_sub) = access_stream_by_name(
+            (narrow_stream, ignored_sub) = access_stream_by_name(
                 user_profile, narrow_stream_name)
             narrow = [["stream", narrow_stream.name]]
         except Exception:
