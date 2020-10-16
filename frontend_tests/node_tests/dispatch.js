@@ -877,7 +877,7 @@ run_test("realm_export", (override) => {
     assert.equal(args.exports, event.exports);
 });
 
-run_test("server_event_dispatch_op_errors", () => {
+run_test("server_event_dispatch_op_errors", (override) => {
     blueslip.expect("error", "Unexpected event type subscription/other");
     server_events_dispatch.dispatch_normal_event({type: "subscription", op: "other"});
     blueslip.expect("error", "Unexpected event type reaction/other");
@@ -896,4 +896,13 @@ run_test("server_event_dispatch_op_errors", () => {
     server_events_dispatch.dispatch_normal_event({type: "realm_user", op: "other"});
     blueslip.expect("error", "Unexpected event type stream/other");
     server_events_dispatch.dispatch_normal_event({type: "stream", op: "other"});
+    blueslip.expect("error", "Unexpected event type typing/other");
+    server_events_dispatch.dispatch_normal_event({
+        type: "typing",
+        sender: {user_id: 5},
+        op: "other",
+    });
+    override(settings_user_groups, "reload", noop);
+    blueslip.expect("error", "Unexpected event type user_group/other");
+    server_events_dispatch.dispatch_normal_event({type: "user_group", op: "other"});
 });
