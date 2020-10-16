@@ -269,10 +269,13 @@ def access_stream_for_delete_or_update(user_profile: UserProfile,
 
 # Only set allow_realm_admin flag to True when you want to allow realm admin to
 # access unsubscribed private stream content.
-def access_stream_common(user_profile: UserProfile, stream: Stream,
-                         error: str,
-                         require_active: bool=True,
-                         allow_realm_admin: bool=False) -> Tuple[Recipient, Optional[Subscription]]:
+def access_stream_common(
+    user_profile: UserProfile,
+    stream: Stream,
+    error: str,
+    require_active: bool=True,
+    allow_realm_admin: bool=False
+) -> Optional[Subscription]:
     """Common function for backend code where the target use attempts to
     access the target stream, returning all the data fetched along the
     way.  If that user does not have permission to access that stream,
@@ -283,33 +286,31 @@ def access_stream_common(user_profile: UserProfile, stream: Stream,
     if stream.realm_id != user_profile.realm_id:
         raise JsonableError(error)
 
-    recipient = stream.recipient
-
     try:
         sub = Subscription.objects.get(user_profile=user_profile,
-                                       recipient=recipient,
+                                       recipient_id=stream.recipient_id,
                                        active=require_active)
     except Subscription.DoesNotExist:
         sub = None
 
     # Any realm user, even guests, can access web_public streams.
     if stream.is_web_public:
-        return (recipient, sub)
+        return sub
 
     # If the stream is in your realm and public, you can access it.
     if stream.is_public() and not user_profile.is_guest:
-        return (recipient, sub)
+        return sub
 
     # Or if you are subscribed to the stream, you can access it.
     if sub is not None:
-        return (recipient, sub)
+        return sub
 
     # For some specific callers (e.g. getting list of subscribers,
     # removing other users from a stream, and updating stream name and
     # description), we allow realm admins to access stream even if
     # they are not subscribed to a private stream.
     if user_profile.is_realm_admin and allow_realm_admin:
-        return (recipient, sub)
+        return sub
 
     # Otherwise it is a private stream and you're not on it, so throw
     # an error.
@@ -322,10 +323,14 @@ def access_stream_by_id(user_profile: UserProfile,
     stream = get_stream_by_id(stream_id)
 
     error = _("Invalid stream id")
-    (recipient, sub) = access_stream_common(user_profile, stream, error,
-                                            require_active=require_active,
-                                            allow_realm_admin=allow_realm_admin)
-    return (stream, recipient, sub)
+    sub = access_stream_common(
+        user_profile,
+        stream,
+        error,
+        require_active=require_active,
+        allow_realm_admin=allow_realm_admin,
+    )
+    return (stream, stream.recipient, sub)
 
 def get_public_streams_queryset(realm: Realm) -> 'QuerySet[Stream]':
     return Stream.objects.filter(realm=realm, invite_only=False,
@@ -363,9 +368,13 @@ def access_stream_by_name(user_profile: UserProfile,
     except Stream.DoesNotExist:
         raise JsonableError(error)
 
-    (recipient, sub) = access_stream_common(user_profile, stream, error,
-                                            allow_realm_admin=allow_realm_admin)
-    return (stream, recipient, sub)
+    sub = access_stream_common(
+        user_profile,
+        stream,
+        error,
+        allow_realm_admin=allow_realm_admin,
+    )
+    return (stream, stream.recipient, sub)
 
 def access_web_public_stream(stream_id: int, realm: Realm) -> Stream:
     error = _("Invalid stream id")
@@ -435,7 +444,7 @@ def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool
         # In this case, we check if the user is subscribed.
         error = _("Invalid stream name '{}'").format(stream.name)
         try:
-            (recipient, sub) = access_stream_common(user_profile, stream, error)
+            access_stream_common(user_profile, stream, error)
         except JsonableError:
             return False
         return True
