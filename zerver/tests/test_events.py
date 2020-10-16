@@ -954,12 +954,10 @@ class NormalActionsTest(BaseAction):
 
     def test_muted_topics_events(self) -> None:
         stream = get_stream('Denmark', self.user_profile.realm)
-        recipient = stream.recipient
         events = self.verify_action(
             lambda: do_mute_topic(
                 self.user_profile,
                 stream,
-                recipient,
                 "topic"))
         check_muted_topics('events[0]', events[0])
 
