@@ -361,7 +361,7 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
 
 def access_stream_by_name(user_profile: UserProfile,
                           stream_name: str,
-                          allow_realm_admin: bool=False) -> Tuple[Stream, Recipient, Optional[Subscription]]:
+                          allow_realm_admin: bool=False) -> Tuple[Stream, Optional[Subscription]]:
     error = _("Invalid stream name '{}'").format(stream_name)
     try:
         stream = get_realm_stream(stream_name, user_profile.realm_id)
@@ -374,7 +374,7 @@ def access_stream_by_name(user_profile: UserProfile,
         error,
         allow_realm_admin=allow_realm_admin,
     )
-    return (stream, stream.recipient, sub)
+    return (stream, sub)
 
 def access_web_public_stream(stream_id: int, realm: Realm) -> Stream:
     error = _("Invalid stream id")

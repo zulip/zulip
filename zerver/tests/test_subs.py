@@ -4597,7 +4597,7 @@ class AccessStreamTest(ZulipTestCase):
         self.assertEqual(stream.id, stream_ret.id)
         assert sub_ret is not None
         self.assertEqual(sub_ret.recipient.type_id, stream.id)
-        (stream_ret2, rec_ret2, sub_ret2) = access_stream_by_name(hamlet, stream.name)
+        (stream_ret2, sub_ret2) = access_stream_by_name(hamlet, stream.name)
         self.assertEqual(stream_ret.id, stream_ret2.id)
         self.assertEqual(sub_ret, sub_ret2)
 
