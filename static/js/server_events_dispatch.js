@@ -610,14 +610,19 @@ export function dispatch_normal_event(event) {
         }
 
         case "user_group":
-            if (event.op === "add") {
-                user_groups.add(event.group);
-            } else if (event.op === "add_members") {
-                user_groups.add_members(event.group_id, event.user_ids);
-            } else if (event.op === "remove_members") {
-                user_groups.remove_members(event.group_id, event.user_ids);
-            } else if (event.op === "update") {
-                user_groups.update(event);
+            switch (event.op) {
+                case "add":
+                    user_groups.add(event.group);
+                    break;
+                case "add_members":
+                    user_groups.add_members(event.group_id, event.user_ids);
+                    break;
+                case "remove_members":
+                    user_groups.remove_members(event.group_id, event.user_ids);
+                    break;
+                case "update":
+                    user_groups.update(event);
+                    break;
             }
             settings_user_groups.reload();
             break;
