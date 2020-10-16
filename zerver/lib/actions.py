@@ -4,7 +4,6 @@ import logging
 import os
 import time
 from collections import defaultdict
-from dataclasses import dataclass
 from operator import itemgetter
 from typing import (
     AbstractSet,
@@ -122,6 +121,7 @@ from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.storage import static_path
 from zerver.lib.stream_recipient import StreamRecipientMap
 from zerver.lib.stream_subscription import (
+    SubInfo,
     bulk_get_peers,
     bulk_get_subscriber_peer_info,
     get_active_subscriptions_for_stream_id,
@@ -233,13 +233,6 @@ from zerver.models import (
     validate_attachment_request,
 )
 from zerver.tornado.django_api import send_event
-
-
-@dataclass
-class SubInfo:
-    user: UserProfile
-    sub: Subscription
-    stream: Stream
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
