@@ -95,11 +95,11 @@ def save_message_for_edit_use_case(message: Message) -> None:
 
 
 def user_message_exists_for_topic(user_profile: UserProfile,
-                                  recipient: Recipient,
+                                  recipient_id: int,
                                   topic_name: str) -> bool:
     return UserMessage.objects.filter(
         user_profile=user_profile,
-        message__recipient=recipient,
+        message__recipient_id=recipient_id,
         message__subject__iexact=topic_name,
     ).exists()
 
