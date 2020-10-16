@@ -1178,7 +1178,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         self.send_stream_message(user1, stream.name)
         self.send_stream_message(user1, stream.name)
-        do_mark_stream_messages_as_read(user2, client, stream)
+        do_mark_stream_messages_as_read(user2, stream.recipient_id)
         self.assertEqual(3, UserCount.objects.filter(property=read_count_property)
                          .aggregate(Sum('value'))['value__sum'])
         self.assertEqual(2, UserCount.objects.filter(property=interactions_property)
