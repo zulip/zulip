@@ -402,6 +402,7 @@ html {
         input[type="email"],
         input[type="password"] {
             padding: 10px 32px 10px 12px;
+            margin: 25px 0 5px;
 
             font-family: "Source Sans Pro";
             font-size: 1.2rem;
@@ -424,6 +425,20 @@ html {
             &:focus {
                 border: 1px solid hsl(0, 0%, 53%);
             }
+        }
+
+        input[type="email"] {
+            margin-bottom: 10px;
+        }
+
+        label {
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            margin-top: 1px;
+
+            transition: all 0.3s ease;
         }
 
         &.moving-label {
@@ -471,8 +486,8 @@ html {
 
         label.text-error {
             display: block;
-            position: relative;
-            top: -8px;
+
+            top: 66px;
             color: hsl(0, 54%, 61%);
             font-size: 0.7em;
             font-weight: 600;

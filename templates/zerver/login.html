@@ -52,6 +52,10 @@ page can be easily identified in it's respective JavaScript file. -->
                             <!-- .no-validation is for removing the red star in CSS -->
                             {% if not two_factor_authentication_enabled or wizard.steps.current == 'auth' %}
                             <div class="input-box no-validation">
+                                <input id="id_username" type="{% if not require_email_format_usernames %}text{% else %}email{% endif %}"
+                                  name="username" class="{% if require_email_format_usernames %}email {% endif %}required"
+                                  {% if email %} value="{{ email }}" {% else %} value="" autofocus {% endif %}
+                                  maxlength="72" required />
                                 <label for="id_username">
                                     {% if not require_email_format_usernames and email_auth_enabled %}
                                     {{ _('Email or username') }}
@@ -61,17 +65,13 @@ page can be easily identified in it's respective JavaScript file. -->
                                     {{ _('Email') }}
                                     {% endif %}
                                 </label>
-                                <input id="id_username" type="{% if not require_email_format_usernames %}text{% else %}email{% endif %}"
-                                  name="username" class="{% if require_email_format_usernames %}email {% endif %}required"
-                                  {% if email %} value="{{ email }}" {% else %} value="" autofocus {% endif %}
-                                  maxlength="72" required />
                             </div>
 
                             <div class="input-box no-validation">
-                                <label for="id_password" class="control-label">{{ _('Password') }}</label>
                                 <input id="id_password" name="password" class="required" type="password"
                                   {% if email %} autofocus {% endif %}
                                   required />
+                                <label for="id_password" class="control-label">{{ _('Password') }}</label>
                             </div>
                             {% else %}
                             {% include "two_factor/_wizard_forms.html" %}
