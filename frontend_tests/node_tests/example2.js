@@ -83,7 +83,7 @@ run_test("message_store", () => {
 // app, and we use the unread object to track unread messages.
 
 run_test("unread", () => {
-    unread.declare_bankruptcy();
+    unread.clear_all_counters();
     stream_data.clear_subscriptions();
     stream_data.add_sub(denmark_stream);
 

@@ -77,7 +77,7 @@ run_test("unread_ops", (override) => {
     stream_data.clear_subscriptions();
     stream_data.add_sub(denmark_stream);
     message_store.clear_for_testing();
-    unread.declare_bankruptcy();
+    unread.clear_all_counters();
 
     const message_id = 50;
     const test_messages = [

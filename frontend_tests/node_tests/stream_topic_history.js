@@ -15,7 +15,7 @@ const stream_topic_history = zrequire("stream_topic_history");
 
 function test(label, f) {
     run_test(label, (override) => {
-        unread.declare_bankruptcy();
+        unread.clear_all_counters();
         stream_topic_history.reset();
         f(override);
     });

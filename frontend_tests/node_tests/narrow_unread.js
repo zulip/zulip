@@ -42,7 +42,7 @@ function candidate_ids() {
 }
 
 run_test("get_unread_ids", () => {
-    unread.declare_bankruptcy();
+    unread.clear_all_counters();
     narrow_state.reset_current_filter();
 
     let unread_ids;

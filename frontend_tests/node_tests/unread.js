@@ -55,7 +55,7 @@ function test_notifiable_count(home_unread_messages, expected_notifiable_count) 
 
 function test(label, f) {
     run_test(label, (override) => {
-        unread.declare_bankruptcy();
+        unread.clear_all_counters();
         muting.set_muted_topics([]);
         f(override);
     });
