@@ -474,7 +474,7 @@ html {
             display: block;
             padding: 0;
 
-            color: hsl(0, 54%, 61%);
+            color: hsl(1.1, 44.7%, 50.4%);
             font-size: 0.7em;
             font-weight: 600;
             text-align: left;
@@ -490,7 +490,7 @@ html {
             top: 0;
             right: 0;
             text-align: right;
-            color: hsl(0, 54%, 61%);
+            color: hsl(1.1, 44.7%, 50.4%);
             font-size: 0.7em;
             font-weight: 600;
             padding-left: 0;
