@@ -320,7 +320,7 @@ html {
     font-size: 0.9rem;
 
     &.text-error {
-        color: hsl(1, 54%, 61%);
+        color: hsl(1.1, 44.7%, 50.4%);
     }
 }
 
