@@ -13,6 +13,7 @@ from zerver.lib.actions import (
     do_change_user_role,
     do_create_user,
     do_deactivate_user,
+    do_invite_users,
     do_reactivate_user,
     do_set_realm_property,
     get_emails_from_user_ids,
@@ -26,6 +27,7 @@ from zerver.lib.send_email import clear_scheduled_emails, deliver_email, send_fu
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
+    cache_tries_captured,
     get_subscription,
     get_test_image_file,
     queries_captured,
@@ -39,6 +41,7 @@ from zerver.lib.users import access_user_by_id, get_accounts_for_email, user_ids
 from zerver.models import (
     CustomProfileField,
     InvalidFakeEmailDomain,
+    PreregistrationUser,
     Realm,
     RealmDomain,
     Recipient,
@@ -714,6 +717,52 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch('/json/users/{}'.format(self.example_user("cordelia").id),
                                    {'profile_data': orjson.dumps(new_profile_data).decode()})
         self.assert_json_error(result, 'Insufficient permission')
+
+class QueryCountTest(ZulipTestCase):
+    def test_create_user_with_multiple_streams(self) -> None:
+        # This just focuses on making sure we don't too many
+        # queries/cache tries or send too many events.
+        realm = get_realm("zulip")
+
+        self.make_stream("private_stream1", invite_only=True)
+        self.make_stream("private_stream2", invite_only=True)
+
+        stream_names = [
+            "Denmark",
+            "Scotland",
+            "Verona",
+            "private_stream1",
+            "private_stream2",
+        ]
+        streams = [
+            get_stream(stream_name, realm)
+            for stream_name in stream_names
+        ]
+
+        do_invite_users(
+            user_profile=self.example_user("hamlet"),
+            invitee_emails=["fred@zulip.com"],
+            streams=streams,
+        )
+
+        prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
+
+        events: List[Mapping[str, Any]] = []
+
+        with queries_captured() as queries:
+            with cache_tries_captured() as cache_tries:
+                with tornado_redirected_to_list(events):
+                    do_create_user(
+                        email="fred@zulip.com",
+                        password="password",
+                        realm=realm,
+                        full_name="Fred Flintstone",
+                        prereg_user=prereg_user,
+                    )
+
+        self.assertTrue(80 <= len(queries) <= 81)
+        self.assert_length(cache_tries, 23)
+        self.assert_length(events, 12)
 
 class BulkCreateUserTest(ZulipTestCase):
     def test_create_users(self) -> None:
