@@ -15,6 +15,7 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy
 
 from corporate.models import (
     Customer,
@@ -143,14 +144,14 @@ def get_idempotency_key(ledger_entry: LicenseLedger) -> Optional[str]:
 
 class BillingError(Exception):
     # error messages
-    CONTACT_SUPPORT = _("Something went wrong. Please contact {email}.").format(
-        email=settings.ZULIP_ADMINISTRATOR,
-    )
-    TRY_RELOADING = _("Something went wrong. Please reload the page.")
+    CONTACT_SUPPORT = ugettext_lazy("Something went wrong. Please contact {email}.")
+    TRY_RELOADING = ugettext_lazy("Something went wrong. Please reload the page.")
 
     # description is used only for tests
-    def __init__(self, description: str, message: str=CONTACT_SUPPORT) -> None:
+    def __init__(self, description: str, message: Optional[str] = None) -> None:
         self.description = description
+        if message is None:
+            message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
         self.message = message
 
 class StripeCardError(BillingError):
@@ -188,7 +189,7 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
                 raise StripeConnectionError(
                     'stripe connection error',
                     _("Something went wrong. Please wait a few seconds and try again."))
-            raise BillingError('other stripe error', BillingError.CONTACT_SUPPORT)
+            raise BillingError('other stripe error')
     return cast(CallableT, wrapped)
 
 @catch_stripe_errors
@@ -373,7 +374,7 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
         billing_logger.warning(
             "Customer %s trying to upgrade, but has an active subscription", customer,
         )
-        raise BillingError('subscribing with existing subscription', BillingError.TRY_RELOADING)
+        raise BillingError('subscribing with existing subscription', str(BillingError.TRY_RELOADING))
 
     billing_cycle_anchor, next_invoice_date, period_end, price_per_license = compute_plan_parameters(
         automanage_licenses, billing_schedule, customer.default_discount, free_trial)
