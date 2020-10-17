@@ -193,50 +193,42 @@ class InvalidJSONError(JsonableError):
 class OrganizationMemberRequired(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
-    MEMBER_REQUIRED_MESSAGE = _("Must be an organization member")
-
     def __init__(self) -> None:
-        super().__init__(self.MEMBER_REQUIRED_MESSAGE)
+        pass
 
     @staticmethod
     def msg_format() -> str:
-        return OrganizationMemberRequired.MEMBER_REQUIRED_MESSAGE
+        return _("Must be an organization member")
 
 class OrganizationAdministratorRequired(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
-    ADMIN_REQUIRED_MESSAGE = _("Must be an organization administrator")
-
     def __init__(self) -> None:
-        super().__init__(self.ADMIN_REQUIRED_MESSAGE)
+        pass
 
     @staticmethod
     def msg_format() -> str:
-        return OrganizationAdministratorRequired.ADMIN_REQUIRED_MESSAGE
+        return _("Must be an organization administrator")
 
 class OrganizationOwnerRequired(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
-    OWNER_REQUIRED_MESSAGE = _("Must be an organization owner")
-
     def __init__(self) -> None:
-        super().__init__(self.OWNER_REQUIRED_MESSAGE)
+        pass
 
     @staticmethod
     def msg_format() -> str:
-        return OrganizationOwnerRequired.OWNER_REQUIRED_MESSAGE
+        return _("Must be an organization owner")
 
 class StreamAdministratorRequired(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
-    ADMIN_REQUIRED_MESSAGE = _("Must be an organization or stream administrator")
-
     def __init__(self) -> None:
-        super().__init__(self.ADMIN_REQUIRED_MESSAGE)
+        pass
 
     @staticmethod
     def msg_format() -> str:
-        return StreamAdministratorRequired.ADMIN_REQUIRED_MESSAGE
+        return _("Must be an organization or stream administrator")
 
 class MarkdownRenderingException(Exception):
     pass

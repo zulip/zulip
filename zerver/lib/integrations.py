@@ -5,8 +5,9 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 from django.conf.urls import url
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls.resolvers import RegexPattern
+from django.utils.functional import Promise
 from django.utils.module_loading import import_string
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as ugettext_lazy
 
 from zerver.lib.storage import static_path
 from zerver.lib.types import Validator
@@ -30,21 +31,21 @@ Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
 """
 
-CATEGORIES: Dict[str, str] = {
-    'meta-integration': _('Integration frameworks'),
-    'continuous-integration': _('Continuous integration'),
-    'customer-support': _('Customer support'),
-    'deployment': _('Deployment'),
-    'communication': _('Communication'),
-    'financial': _('Financial'),
-    'hr': _('HR'),
-    'marketing': _('Marketing'),
-    'misc': _('Miscellaneous'),
-    'monitoring': _('Monitoring tools'),
-    'project-management': _('Project management'),
-    'productivity': _('Productivity'),
-    'version-control': _('Version control'),
-    'bots': _('Interactive bots'),
+CATEGORIES: Dict[str, Promise] = {
+    'meta-integration': ugettext_lazy('Integration frameworks'),
+    'continuous-integration': ugettext_lazy('Continuous integration'),
+    'customer-support': ugettext_lazy('Customer support'),
+    'deployment': ugettext_lazy('Deployment'),
+    'communication': ugettext_lazy('Communication'),
+    'financial': ugettext_lazy('Financial'),
+    'hr': ugettext_lazy('HR'),
+    'marketing': ugettext_lazy('Marketing'),
+    'misc': ugettext_lazy('Miscellaneous'),
+    'monitoring': ugettext_lazy('Monitoring tools'),
+    'project-management': ugettext_lazy('Project management'),
+    'productivity': ugettext_lazy('Productivity'),
+    'version-control': ugettext_lazy('Version control'),
+    'bots': ugettext_lazy('Interactive bots'),
 }
 
 class Integration:
