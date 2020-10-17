@@ -101,10 +101,6 @@ exports.initialize = function () {
         } else {
             source.attr("type", "audio/mpeg");
         }
-
-        const audio_file_without_extension =
-            "/static/audio/notification_sounds/" + page_params.notification_sound;
-        source.attr("src", get_audio_file_path(audio[0], audio_file_without_extension));
     }
 };
 
