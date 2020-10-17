@@ -212,7 +212,7 @@ import "../../styles/image_upload_widget.css";
 import "../../styles/subscriptions.css";
 import "../../styles/drafts.css";
 import "../../styles/input_pill.css";
-import "../../styles/informational-overlays.css";
+import "../../styles/informational_overlays.css";
 import "../../styles/compose.css";
 import "../../styles/message_edit_history.css";
 import "../../styles/reactions.css";
