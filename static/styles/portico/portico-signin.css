@@ -487,7 +487,9 @@ html {
         label.text-error {
             display: block;
 
-            top: 66px;
+            top: 0;
+            right: 0;
+            text-align: right;
             color: hsl(0, 54%, 61%);
             font-size: 0.7em;
             font-weight: 600;
