@@ -121,7 +121,9 @@ def fetch_initial_state_data(
     if want('custom_profile_fields'):
         fields = custom_profile_fields_for_realm(realm.id)
         state['custom_profile_fields'] = [f.as_dict() for f in fields]
-        state['custom_profile_field_types'] = CustomProfileField.FIELD_TYPE_CHOICES_DICT
+        state['custom_profile_field_types'] = {
+            item[4]: {"id": item[0], "name": str(item[1])} for item in CustomProfileField.ALL_FIELD_TYPES
+        }
 
     if want('hotspots'):
         # Even if we offered special hotspots for guests without an
