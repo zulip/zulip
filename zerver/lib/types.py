@@ -1,6 +1,7 @@
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
 
 from django.http import HttpResponse
+from django.utils.functional import Promise
 from typing_extensions import TypedDict
 
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
@@ -26,9 +27,9 @@ class ProfileDataElement(ProfileDataElementBase):
 
 ProfileData = List[ProfileDataElement]
 
-FieldElement = Tuple[int, str, Validator[Union[int, str, List[int]]], Callable[[Any], Any], str]
-ExtendedFieldElement = Tuple[int, str, ExtendedValidator, Callable[[Any], Any], str]
-UserFieldElement = Tuple[int, str, RealmUserValidator, Callable[[Any], Any], str]
+FieldElement = Tuple[int, Promise, Validator[Union[int, str, List[int]]], Callable[[Any], Any], str]
+ExtendedFieldElement = Tuple[int, Promise, ExtendedValidator, Callable[[Any], Any], str]
+UserFieldElement = Tuple[int, Promise, RealmUserValidator, Callable[[Any], Any], str]
 
 ProfileFieldData = Dict[str, Union[Dict[str, str], str]]
 
