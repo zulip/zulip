@@ -72,8 +72,16 @@ rules:
     pattern-either:
       - pattern: django.utils.translation.ugettext(... .format(...))
       - pattern: django.utils.translation.ugettext(f"...")
+      - pattern: django.utils.translation.ugettext_lazy(... .format(...))
+      - pattern: django.utils.translation.ugettext_lazy(f"...")
     severity: ERROR
     message: "Format strings after translation, not before"
+
+  - id: translated-format-lazy
+    languages: [python]
+    pattern: django.utils.translation.ugettext_lazy(...).format(...)
+    severity: ERROR
+    message: "Immediately formatting a lazily translated string destroys its laziness"
 
   - id: mutable-default-type
     languages: [python]
@@ -116,6 +124,7 @@ rules:
     pattern-either:
       - pattern: '"..." % ...'
       - pattern: django.utils.translation.ugettext(...) % ...
+      - pattern: django.utils.translation.ugettext_lazy(...) % ...
     severity: ERROR
     message: "Prefer f-strings or .format for string formatting"
 
