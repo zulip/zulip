@@ -33,8 +33,10 @@ from django.db import models, transaction
 from django.db.models import CASCADE, Manager, Q, Sum
 from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save
+from django.utils.functional import Promise
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -323,7 +325,7 @@ class Realm(models.Model):
 
     DEFAULT_NOTIFICATION_STREAM_NAME = 'general'
     INITIAL_PRIVATE_STREAM_NAME = 'core team'
-    STREAM_EVENTS_NOTIFICATION_TOPIC = _('stream events')
+    STREAM_EVENTS_NOTIFICATION_TOPIC = ugettext_lazy('stream events')
     notifications_stream: Optional["Stream"] = models.ForeignKey(
         "Stream", related_name="+", null=True, blank=True, on_delete=CASCADE,
     )
@@ -349,7 +351,7 @@ class Realm(models.Model):
     COMMUNITY = 2
     org_type: int = models.PositiveSmallIntegerField(default=CORPORATE)
 
-    UPGRADE_TEXT_STANDARD = _("Available on Zulip Standard. Upgrade to access.")
+    UPGRADE_TEXT_STANDARD = ugettext_lazy("Available on Zulip Standard. Upgrade to access.")
     # plan_type controls various features around resource/feature
     # limitations for a Zulip organization on multi-tenant installations
     # like Zulip Cloud.
@@ -687,7 +689,7 @@ class RealmEmoji(models.Model):
         # The second part of the regex (negative lookbehind) disallows names
         # ending with one of the punctuation characters.
         RegexValidator(regex=r'^[0-9a-z.\-_]+(?<![.\-_])$',
-                       message=_("Invalid characters in emoji name"))])
+                       message=ugettext_lazy("Invalid characters in emoji name"))])
 
     # The basename of the custom emoji's filename; see PATH_ID_TEMPLATE for the full path.
     file_name: Optional[str] = models.TextField(db_index=True, null=True, blank=True)
@@ -743,7 +745,7 @@ post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 def filter_pattern_validator(value: str) -> None:
     regex = re.compile(r'^(?:(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\)))+$')
-    error_msg = _('Invalid filter pattern.  Valid characters are %s.') % (
+    error_msg = _('Invalid filter pattern.  Valid characters are {}.').format(
         '[ a-zA-Z_#=/:+!-]',)
 
     if not regex.match(str(value)):
@@ -1154,10 +1156,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     )
 
     ROLE_ID_TO_NAME_MAP = {
-        ROLE_REALM_OWNER: _("Organization owner"),
-        ROLE_REALM_ADMINISTRATOR: _("Organization administrator"),
-        ROLE_MEMBER: _("Member"),
-        ROLE_GUEST: _("Guest"),
+        ROLE_REALM_OWNER: ugettext_lazy("Organization owner"),
+        ROLE_REALM_ADMINISTRATOR: ugettext_lazy("Organization administrator"),
+        ROLE_MEMBER: ugettext_lazy("Member"),
+        ROLE_GUEST: ugettext_lazy("Guest"),
     }
 
     def get_role_name(self) -> str:
@@ -1975,9 +1977,9 @@ class AbstractReaction(models.Model):
     UNICODE_EMOJI       = 'unicode_emoji'
     REALM_EMOJI         = 'realm_emoji'
     ZULIP_EXTRA_EMOJI   = 'zulip_extra_emoji'
-    REACTION_TYPES      = ((UNICODE_EMOJI, _("Unicode emoji")),
-                           (REALM_EMOJI, _("Custom emoji")),
-                           (ZULIP_EXTRA_EMOJI, _("Zulip extra emoji")))
+    REACTION_TYPES      = ((UNICODE_EMOJI, ugettext_lazy("Unicode emoji")),
+                           (REALM_EMOJI, ugettext_lazy("Custom emoji")),
+                           (ZULIP_EXTRA_EMOJI, ugettext_lazy("Zulip extra emoji")))
     reaction_type: str = models.CharField(default=UNICODE_EMOJI, choices=REACTION_TYPES, max_length=30)
 
     # A string that uniquely identifies a particular emoji.  The format varies
@@ -2903,14 +2905,14 @@ def check_valid_user_ids(realm_id: int, val: object,
         try:
             user_profile = get_user_profile_by_id_in_realm(user_id, realm)
         except UserProfile.DoesNotExist:
-            raise ValidationError(_('Invalid user ID: %d') % (user_id))
+            raise ValidationError(_('Invalid user ID: {}').format(user_id))
 
         if not allow_deactivated:
             if not user_profile.is_active:
-                raise ValidationError(_('User with ID %d is deactivated') % (user_id))
+                raise ValidationError(_('User with ID {} is deactivated').format(user_id))
 
         if (user_profile.is_bot):
-            raise ValidationError(_('User with ID %d is a bot') % (user_id))
+            raise ValidationError(_('User with ID {} is a bot').format(user_id))
 
     return user_ids
 
@@ -2941,10 +2943,10 @@ class CustomProfileField(models.Model):
     # and value argument. i.e. CHOICE require field_data, USER require
     # realm as argument.
     CHOICE_FIELD_TYPE_DATA: List[ExtendedFieldElement] = [
-        (CHOICE, str(_('List of options')), validate_choice_field, str, "CHOICE"),
+        (CHOICE, ugettext_lazy('List of options'), validate_choice_field, str, "CHOICE"),
     ]
     USER_FIELD_TYPE_DATA: List[UserFieldElement] = [
-        (USER, str(_('Person picker')), check_valid_user_ids, ast.literal_eval, "USER"),
+        (USER, ugettext_lazy('Person picker'), check_valid_user_ids, ast.literal_eval, "USER"),
     ]
 
     CHOICE_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
@@ -2956,21 +2958,18 @@ class CustomProfileField(models.Model):
 
     FIELD_TYPE_DATA: List[FieldElement] = [
         # Type, Display Name, Validator, Converter, Keyword
-        (SHORT_TEXT, str(_('Short text')), check_short_string, str, "SHORT_TEXT"),
-        (LONG_TEXT, str(_('Long text')), check_long_string, str, "LONG_TEXT"),
-        (DATE, str(_('Date picker')), check_date, str, "DATE"),
-        (URL, str(_('Link')), check_url, str, "URL"),
-        (EXTERNAL_ACCOUNT, str(_('External account')), check_short_string, str, "EXTERNAL_ACCOUNT"),
+        (SHORT_TEXT, ugettext_lazy('Short text'), check_short_string, str, "SHORT_TEXT"),
+        (LONG_TEXT, ugettext_lazy('Long text'), check_long_string, str, "LONG_TEXT"),
+        (DATE, ugettext_lazy('Date picker'), check_date, str, "DATE"),
+        (URL, ugettext_lazy('Link'), check_url, str, "URL"),
+        (EXTERNAL_ACCOUNT, ugettext_lazy('External account'), check_short_string, str, "EXTERNAL_ACCOUNT"),
     ]
 
     ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *CHOICE_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
 
     FIELD_VALIDATORS: Dict[int, Validator[Union[int, str, List[int]]]] = {item[0]: item[2] for item in FIELD_TYPE_DATA}
     FIELD_CONVERTERS: Dict[int, Callable[[Any], Any]] = {item[0]: item[3] for item in ALL_FIELD_TYPES}
-    FIELD_TYPE_CHOICES: List[Tuple[int, str]] = [(item[0], item[1]) for item in ALL_FIELD_TYPES]
-    FIELD_TYPE_CHOICES_DICT: Dict[str, Dict[str, Union[str, int]]] = {
-        item[4]: {"id": item[0], "name": item[1]} for item in ALL_FIELD_TYPES
-    }
+    FIELD_TYPE_CHOICES: List[Tuple[int, Promise]] = [(item[0], item[1]) for item in ALL_FIELD_TYPES]
 
     field_type: int = models.PositiveSmallIntegerField(
         choices=FIELD_TYPE_CHOICES, default=SHORT_TEXT,
