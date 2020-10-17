@@ -3019,7 +3019,7 @@ def send_peer_add_events(
 
 def get_available_notification_sounds() -> List[str]:
     notification_sounds_path = static_path('audio/notification_sounds')
-    available_notification_sounds = ["silent"]
+    available_notification_sounds = ['silent']
 
     for file_name in os.listdir(notification_sounds_path):
         root, ext = os.path.splitext(file_name)
