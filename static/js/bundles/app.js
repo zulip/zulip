@@ -217,7 +217,7 @@ import "../../styles/compose.css";
 import "../../styles/message_edit_history.css";
 import "../../styles/reactions.css";
 import "../../styles/user_circles.css";
-import "../../styles/left-sidebar.css";
+import "../../styles/left_sidebar.css";
 import "../../styles/right-sidebar.css";
 import "../../styles/lightbox.css";
 import "../../styles/popovers.css";
