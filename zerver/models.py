@@ -2321,7 +2321,6 @@ class Subscription(models.Model):
     # * "is_muted" often needs to be copied to not "in_home_view" for
     #   backwards-compatibility.
     API_FIELDS = [
-        "active",
         "color",
         "is_muted",
         "pin_to_top",
