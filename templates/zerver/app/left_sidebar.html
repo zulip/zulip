@@ -68,6 +68,9 @@
         </ul>
         <div id="streams_list" class="zoom-out">
             <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-toggle="tooltip" title="{{ _('Filter streams') }}">{{ _('STREAMS') }}</h4>
+                {% if show_add_streams %}
+                <i id="browse_streams_icon" class='fa fa-plus' aria-hidden="true" data-toggle="tooltip" title="{{ _('Browse all streams') }}"></i>
+                {% endif %}
                 <i id="streams_inline_cog" class='fa fa-cog' aria-hidden="true" data-toggle="tooltip" title="{{ _('Subscribe, add, or configure streams') }}"></i>
                 <i id="streams_filter_icon" class='fa fa-search' aria-hidden="true" data-toggle="tooltip" title="{{ _('Filter streams') }} (q)"></i>
                 <div class="input-append notdisplayed stream_search_section">
@@ -82,11 +85,6 @@
             </div>
             <div id="stream-filters-container" class="scrolling_list" data-simplebar>
                 <ul id="stream_filters" class="filters"></ul>
-                {% if show_add_streams %}
-                <div id="add-stream-link">
-                    <a href="#streams/all"><i class="fa fa-plus-circle" aria-hidden="true"></i>{{ _('Add streams') }}</a>
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>

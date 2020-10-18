@@ -714,6 +714,11 @@ exports.initialize = function () {
         compose_actions.cancel();
     });
 
+    $("#browse_streams_icon").on("click", (e) => {
+        e.stopPropagation();
+        hashchange.go_to_location("streams/all");
+    });
+
     $("#streams_inline_cog").on("click", (e) => {
         e.stopPropagation();
         hashchange.go_to_location("streams/subscribed");

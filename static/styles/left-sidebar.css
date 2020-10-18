@@ -55,7 +55,8 @@ li.show-more-topics {
 }
 
 #streams_inline_cog,
-#streams_filter_icon {
+#streams_filter_icon,
+#browse_streams_icon {
     float: right;
     opacity: 0.5;
     font-size: 13px;
@@ -68,7 +69,7 @@ li.show-more-topics {
     }
 }
 
-#streams_inline_cog {
+#browse_streams_icon {
     margin-right: 10px;
 }
 
@@ -169,19 +170,6 @@ li.show-more-topics {
     &#stream_filters li.highlighted_stream {
         background-color: hsla(120, 12.3%, 71.4%, 0.38);
         border-radius: 4px;
-    }
-}
-
-#add-stream-link {
-    text-decoration: none;
-    margin-left: 10px;
-    margin-bottom: 18px;
-    i {
-        min-width: 19px;
-        text-align: center;
-        &::before {
-            padding-right: 3px;
-        }
     }
 }
 
