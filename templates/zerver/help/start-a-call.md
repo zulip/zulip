@@ -39,10 +39,9 @@ just set `JITSI_SERVER_URL` in `/etc/zulip/settings.py`.
 
 {tab|bigbluebutton}
 
-Using Big Blue Button as a video chat provider is currently only possible on
-self-hosted Zulip installations.
-
-For specifics on configuring Big Blue Button on a self hosted installation see [here][big-blue-button-configuration].
+Using Big Blue Button as a video chat provider is currently only
+possible on self-hosted Zulip installations.  See the [detailed
+configuration instructions][big-blue-button-configuration].
 
 {tab|zoom}
 
@@ -76,4 +75,5 @@ setting the provider to "None".
 
 {end_tabs}
 
-[zoom-configuration]: https://zulip.readthedocs.io/en/latest/production/zoom-configuration.html
+[big-blue-button-configuration]: https://zulip.readthedocs.io/en/latest/production/video-calls.html#big-blue-button
+[zoom-configuration]: https://zulip.readthedocs.io/en/latest/production/video-calls.html#zoom
