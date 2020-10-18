@@ -4986,6 +4986,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         "email_token",
     )
     recip_id_to_stream_id = {stream["recipient_id"]: stream["id"] for stream in all_streams}
+    all_streams_map = {stream["id"]: stream for stream in all_streams}
 
     sub_dicts = get_stream_subscriptions_for_user(user_profile).values(
         *Subscription.API_FIELDS,
@@ -5018,8 +5019,6 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         if stream:
             sub["is_web_public"] = stream.get("is_web_public", False)
 
-    all_streams_id = [stream["id"] for stream in all_streams]
-
     subscribed = []
     unsubscribed = []
     never_subscribed = []
@@ -5047,7 +5046,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     for sub in sub_dicts:
         stream_id = sub["stream_id"]
         sub_unsub_stream_ids.add(stream_id)
-        stream = stream_hash[stream_id]
+        stream = all_streams_map[stream_id]
 
         stream_dict = build_stream_dict_for_sub(
             user=user_profile,
@@ -5064,14 +5063,16 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         else:
             unsubscribed.append(stream_dict)
 
-    all_streams_id_set = set(all_streams_id)
     if user_profile.can_access_public_streams():
-        never_subscribed_stream_ids = all_streams_id_set - sub_unsub_stream_ids
+        never_subscribed_stream_ids = set(all_streams_map) - sub_unsub_stream_ids
     else:
         web_public_stream_ids = {stream['id'] for stream in all_streams if stream['is_web_public']}
         never_subscribed_stream_ids = web_public_stream_ids - sub_unsub_stream_ids
-    never_subscribed_streams = [ns_stream_dict for ns_stream_dict in all_streams
-                                if ns_stream_dict['id'] in never_subscribed_stream_ids]
+
+    never_subscribed_streams = [
+        all_streams_map[stream_id]
+        for stream_id in never_subscribed_stream_ids
+    ]
 
     for stream in never_subscribed_streams:
         is_public = not stream['invite_only']
