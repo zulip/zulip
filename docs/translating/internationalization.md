@@ -175,8 +175,12 @@ json_error(_('English Text'))
 JsonableError(_('English Text'))
 ```
 
+If you're declaring a string at top level or in a class, you need to
+use `ugettext_lazy` instead, to ensure that the translation happens at
+request-processing time when Django knows what language to use.
+
 To ensure we always internationalize our JSON errors messages, the
-Zulip linter (`tools/lint`) checks for correct usage.
+Zulip linter (`tools/lint`) attempts to verify correct usage.
 
 ## Frontend translations
 
