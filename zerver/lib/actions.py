@@ -119,7 +119,6 @@ from zerver.lib.send_email import (
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.storage import static_path
-from zerver.lib.stream_recipient import StreamRecipientMap
 from zerver.lib.stream_subscription import (
     SubInfo,
     bulk_get_peers,
@@ -2626,15 +2625,14 @@ def validate_user_access_to_subscribers_helper(
     if (stream_dict["invite_only"] and not check_user_subscribed(user_profile)):
         raise JsonableError(_("Unable to retrieve subscribers for private stream"))
 
-def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
-                                 user_profile: UserProfile,
-                                 sub_dict: Mapping[int, bool],
-                                 stream_recipient: StreamRecipientMap) -> Dict[int, List[int]]:
+def bulk_get_subscriber_user_ids(
+    stream_dicts: Iterable[Mapping[str, Any]],
+    user_profile: UserProfile,
+    sub_dict: Mapping[int, bool],
+) -> Dict[int, List[int]]:
     """sub_dict maps stream_id => whether the user is subscribed to that stream."""
     target_stream_dicts = []
     for stream_dict in stream_dicts:
-        stream_recipient.populate_with(stream_id=stream_dict["id"],
-                                       recipient_id=stream_dict["recipient_id"])
         try:
             validate_user_access_to_subscribers_helper(
                 user_profile,
@@ -2645,11 +2643,8 @@ def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
             continue
         target_stream_dicts.append(stream_dict)
 
-    stream_ids = [stream['id'] for stream in target_stream_dicts]
-    recipient_ids = sorted(
-        stream_recipient.recipient_id_for(stream_id)
-        for stream_id in stream_ids
-    )
+    recip_to_stream_id = {stream["recipient_id"]: stream["id"] for stream in target_stream_dicts}
+    recipient_ids = sorted([stream["recipient_id"] for stream in target_stream_dicts])
 
     result: Dict[int, List[int]] = {stream["id"]: [] for stream in stream_dicts}
     if not recipient_ids:
@@ -2683,8 +2678,6 @@ def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
     cursor.execute(query, {"recipient_ids": tuple(recipient_ids)})
     rows = cursor.fetchall()
     cursor.close()
-
-    recip_to_stream_id = stream_recipient.recipient_to_stream_id_dict()
 
     '''
     Using groupby/itemgetter here is important for performance, at scale.
@@ -4915,23 +4908,24 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         # the stream, so doesn't belong in API_FIELDS.
         "email_token",
     )
+    recip_id_to_stream_id = {stream["recipient_id"]: stream["id"] for stream in all_streams}
 
     sub_dicts = get_stream_subscriptions_for_user(user_profile).values(
         *Subscription.API_FIELDS, "recipient_id").order_by("recipient_id")
 
-    sub_dicts = list(sub_dicts)
-    sub_recipient_ids = [
-        sub['recipient_id']
-        for sub in sub_dicts
+    # We only care about subscriptions for active streams.
+    sub_dicts = [
+        sub for sub in sub_dicts
+        if recip_id_to_stream_id.get(sub["recipient_id"])
     ]
-    stream_recipient = StreamRecipientMap()
-    stream_recipient.populate_for_recipient_ids(sub_recipient_ids)
 
-    stream_ids: Set[int] = set()
+    # Hydrate sub_dicts with stream_id
     for sub in sub_dicts:
-        sub['stream_id'] = stream_recipient.stream_id_for(sub['recipient_id'])
-        stream_ids.add(sub['stream_id'])
+        recipient_id = sub["recipient_id"]
+        stream_id = recip_id_to_stream_id[recipient_id]
+        sub["stream_id"] = stream_id
 
+    stream_ids = {sub["stream_id"] for sub in sub_dicts}
     recent_traffic = get_streams_traffic(stream_ids=stream_ids)
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
@@ -4964,7 +4958,6 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             all_streams,
             user_profile,
             streams_subscribed_map,
-            stream_recipient,
         )
     else:
         # If we're not including subscribers, always return None,
@@ -4975,9 +4968,6 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     for sub in sub_dicts:
         sub_unsub_stream_ids.add(sub["stream_id"])
         stream = stream_hash.get(sub["stream_id"])
-        if not stream:
-            # This stream has been deactivated, don't include it.
-            continue
 
         # We first construct a dictionary based on the standard Stream
         # and Subscription models' API_FIELDS.
