@@ -5002,19 +5002,16 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         if recip_id_to_stream_id.get(sub["recipient_id"])
     ]
 
-    # Hydrate sub_dicts with stream_id
-    for sub in sub_dicts:
-        recipient_id = sub["recipient_id"]
-        stream_id = recip_id_to_stream_id[recipient_id]
-        sub["stream_id"] = stream_id
+    def get_stream_id(sub: Subscription) -> int:
+        return recip_id_to_stream_id[sub["recipient_id"]]
 
-    stream_ids = {sub["stream_id"] for sub in sub_dicts}
-    recent_traffic = get_streams_traffic(stream_ids=stream_ids)
+    traffic_stream_ids = {get_stream_id(sub) for sub in sub_dicts}
+    recent_traffic = get_streams_traffic(stream_ids=traffic_stream_ids)
 
     # The highly optimized bulk_get_subscriber_user_ids wants to know which
     # streams we are subscribed to, for validation purposes, and it uses that
     # info to know if it's allowed to find OTHER subscribers.
-    subscribed_stream_ids = {sub["stream_id"] for sub in sub_dicts if sub["active"]}
+    subscribed_stream_ids = {get_stream_id(sub) for sub in sub_dicts if sub["active"]}
 
     if include_subscribers:
         subscriber_map: Mapping[int, Optional[List[int]]] = bulk_get_subscriber_user_ids(
@@ -5035,7 +5032,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
 
     sub_unsub_stream_ids = set()
     for sub in sub_dicts:
-        stream_id = sub["stream_id"]
+        stream_id = get_stream_id(sub)
         sub_unsub_stream_ids.add(stream_id)
         stream = all_streams_map[stream_id]
 
