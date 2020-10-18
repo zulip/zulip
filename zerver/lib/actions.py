@@ -4888,6 +4888,86 @@ def get_web_public_subs(realm: Realm) -> SubHelperT:
 
     return (subscribed, [], [])
 
+def build_stream_dict_for_sub(
+    user: UserProfile,
+    sub: Subscription,
+    stream: Stream,
+    subscribers: Optional[List[int]],
+    recent_traffic: Dict[int, int],
+) -> Dict[str, object]:
+    # We first construct a dictionary based on the standard Stream
+    # and Subscription models' API_FIELDS.
+    result = {}
+    for field_name in Stream.API_FIELDS:
+        if field_name == "id":
+            result["stream_id"] = stream["id"]
+            continue
+        elif field_name == "date_created":
+            result["date_created"] = datetime_to_timestamp(stream[field_name])
+            continue
+        result[field_name] = stream[field_name]
+
+    # Copy Subscription.API_FIELDS.
+    for field_name in Subscription.API_FIELDS:
+        result[field_name] = sub[field_name]
+
+    # Backwards-compatibility for clients that haven't been
+    # updated for the in_home_view => is_muted API migration.
+    result["in_home_view"] = not result["is_muted"]
+
+    # Backwards-compatibility for clients that haven't been
+    # updated for the is_announcement_only -> stream_post_policy
+    # migration.
+    result["is_announcement_only"] = \
+        stream["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
+
+    # Add a few computed fields not directly from the data models.
+    result["stream_weekly_traffic"] = get_average_weekly_stream_traffic(
+        stream["id"], stream["date_created"], recent_traffic)
+
+    result["email_address"] = encode_email_address_helper(
+        stream["name"], stream["email_token"], show_sender=True)
+
+    # Important: don't show the subscribers if the stream is invite only
+    # and this user isn't on it anymore (or a realm administrator).
+    if stream["invite_only"] and not (sub["active"] or user.is_realm_admin):
+        subscribers = None
+
+    # Guest users lose access to subscribers when they are unsubscribed if the stream
+    # is not web-public.
+    if not sub["active"] and user.is_guest and not sub["is_web_public"]:
+        subscribers = None
+    if subscribers is not None:
+        result["subscribers"] = subscribers
+
+    return result
+
+def build_stream_dict_for_never_sub(
+    stream: Stream,
+    subscribers: Optional[List[int]],
+    recent_traffic: Dict[int, int],
+) -> Dict[str, object]:
+    result = {}
+    for field_name in Stream.API_FIELDS:
+        if field_name == "id":
+            result["stream_id"] = stream["id"]
+            continue
+        elif field_name == "date_created":
+            result["date_created"] = datetime_to_timestamp(stream[field_name])
+            continue
+        result[field_name] = stream[field_name]
+
+    result["stream_weekly_traffic"] = get_average_weekly_stream_traffic(
+        stream["id"], stream["date_created"], recent_traffic)
+
+    # Backwards-compatibility addition of removed field.
+    result["is_announcement_only"] = stream["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
+
+    if subscribers is not None:
+        result["subscribers"] = subscribers
+
+    return result
+
 # In general, it's better to avoid using .values() because it makes
 # the code pretty ugly, but in this case, it has significant
 # performance impact for loading / for users with large numbers of
@@ -4965,52 +5045,17 @@ def gather_subscriptions_helper(user_profile: UserProfile,
 
     sub_unsub_stream_ids = set()
     for sub in sub_dicts:
-        sub_unsub_stream_ids.add(sub["stream_id"])
-        stream = stream_hash.get(sub["stream_id"])
+        stream_id = sub["stream_id"]
+        sub_unsub_stream_ids.add(stream_id)
+        stream = stream_hash[stream_id]
 
-        # We first construct a dictionary based on the standard Stream
-        # and Subscription models' API_FIELDS.
-        stream_dict = {}
-        for field_name in Stream.API_FIELDS:
-            if field_name == "id":
-                stream_dict['stream_id'] = stream["id"]
-                continue
-            elif field_name == "date_created":
-                stream_dict['date_created'] = datetime_to_timestamp(stream[field_name])
-                continue
-            stream_dict[field_name] = stream[field_name]
-
-        # Copy Subscription.API_FIELDS.
-        for field_name in Subscription.API_FIELDS:
-            stream_dict[field_name] = sub[field_name]
-
-        # Backwards-compatibility for clients that haven't been
-        # updated for the in_home_view => is_muted API migration.
-        stream_dict['in_home_view'] = not stream_dict['is_muted']
-        # Backwards-compatibility for clients that haven't been
-        # updated for the is_announcement_only -> stream_post_policy
-        # migration.
-        stream_dict['is_announcement_only'] = \
-            stream['stream_post_policy'] == Stream.STREAM_POST_POLICY_ADMINS
-
-        # Add a few computed fields not directly from the data models.
-        stream_dict['stream_weekly_traffic'] = get_average_weekly_stream_traffic(
-            stream["id"], stream["date_created"], recent_traffic)
-        stream_dict['email_address'] = encode_email_address_helper(
-            stream["name"], stream["email_token"], show_sender=True)
-
-        # Construct and add subscribers data
-        subscribers: Optional[List[int]] = subscriber_map[stream["id"]]
-        # Important: don't show the subscribers if the stream is invite only
-        # and this user isn't on it anymore (or a realm administrator).
-        if stream["invite_only"] and not (sub["active"] or user_profile.is_realm_admin):
-            subscribers = None
-        # Guest users lose access to subscribers when they are unsubscribed if the stream
-        # is not web-public.
-        if not sub["active"] and user_profile.is_guest and not sub["is_web_public"]:
-            subscribers = None
-        if subscribers is not None:
-            stream_dict['subscribers'] = subscribers
+        stream_dict = build_stream_dict_for_sub(
+            user=user_profile,
+            sub=sub,
+            stream=stream,
+            subscribers=subscriber_map[stream_id],
+            recent_traffic=recent_traffic,
+        )
 
         # is_active is represented in this structure by which list we include it in.
         is_active = sub["active"]
@@ -5031,25 +5076,12 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     for stream in never_subscribed_streams:
         is_public = (not stream['invite_only'])
         if is_public or user_profile.is_realm_admin:
-            stream_dict = {}
-            for field_name in Stream.API_FIELDS:
-                if field_name == "id":
-                    stream_dict['stream_id'] = stream["id"]
-                    continue
-                elif field_name == "date_created":
-                    stream_dict['date_created'] = datetime_to_timestamp(stream[field_name])
-                    continue
-                stream_dict[field_name] = stream[field_name]
+            stream_dict = build_stream_dict_for_never_sub(
+                stream=stream,
+                subscribers=subscriber_map[stream["id"]],
+                recent_traffic=recent_traffic
+            )
 
-            stream_dict['stream_weekly_traffic'] = get_average_weekly_stream_traffic(
-                stream["id"], stream["date_created"], recent_traffic)
-            # Backwards-compatibility addition of removed field.
-            stream_dict['is_announcement_only'] = \
-                stream['stream_post_policy'] == Stream.STREAM_POST_POLICY_ADMINS
-
-            subscribers = subscriber_map[stream["id"]]
-            if subscribers is not None:
-                stream_dict['subscribers'] = subscribers
             never_subscribed.append(stream_dict)
 
     return (sorted(subscribed, key=lambda x: x['name']),
