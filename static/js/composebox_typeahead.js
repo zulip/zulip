@@ -775,109 +775,129 @@ exports.content_typeahead_selected = function (item, event) {
     let rest = pieces[1];
     const textbox = this.$element;
 
-    if (this.completing === "emoji") {
-        // leading and trailing spaces are required for emoji,
-        // except if it begins a message or a new line.
-        if (
-            beginning.lastIndexOf(":") === 0 ||
-            beginning.charAt(beginning.lastIndexOf(":") - 1) === " " ||
-            beginning.charAt(beginning.lastIndexOf(":") - 1) === "\n"
-        ) {
-            beginning = beginning.slice(0, -this.token.length - 1) + ":" + item.emoji_name + ": ";
-        } else {
-            beginning = beginning.slice(0, -this.token.length - 1) + " :" + item.emoji_name + ": ";
-        }
-    } else if (this.completing === "mention" || this.completing === "silent_mention") {
-        const is_silent = this.completing === "silent_mention";
-        beginning = beginning.slice(0, -this.token.length - 1);
-        if (beginning.endsWith("@_*")) {
-            beginning = beginning.slice(0, -3);
-        } else if (beginning.endsWith("@*") || beginning.endsWith("@_")) {
-            beginning = beginning.slice(0, -2);
-        } else if (beginning.endsWith("@")) {
-            beginning = beginning.slice(0, -1);
-        }
-        if (user_groups.is_user_group(item)) {
-            beginning += "@*" + item.name + "* ";
-            // We could theoretically warn folks if they are
-            // mentioning a user group that literally has zero
-            // members where we are posting to, but we don't have
-            // that functionality yet, and we haven't gotten much
-            // feedback on this being an actual pitfall.
-        } else {
-            const mention_text = people.get_mention_syntax(item.full_name, item.user_id, is_silent);
-            beginning += mention_text + " ";
-            if (!is_silent) {
-                compose.warn_if_mentioning_unsubscribed_user(item);
+    switch (this.completing) {
+        case "emoji":
+            // leading and trailing spaces are required for emoji,
+            // except if it begins a message or a new line.
+            if (
+                beginning.lastIndexOf(":") === 0 ||
+                beginning.charAt(beginning.lastIndexOf(":") - 1) === " " ||
+                beginning.charAt(beginning.lastIndexOf(":") - 1) === "\n"
+            ) {
+                beginning =
+                    beginning.slice(0, -this.token.length - 1) + ":" + item.emoji_name + ": ";
+            } else {
+                beginning =
+                    beginning.slice(0, -this.token.length - 1) + " :" + item.emoji_name + ": ";
             }
+            break;
+        case "silent_mention":
+        case "mention": {
+            const is_silent = this.completing === "silent_mention";
+            beginning = beginning.slice(0, -this.token.length - 1);
+            if (beginning.endsWith("@_*")) {
+                beginning = beginning.slice(0, -3);
+            } else if (beginning.endsWith("@*") || beginning.endsWith("@_")) {
+                beginning = beginning.slice(0, -2);
+            } else if (beginning.endsWith("@")) {
+                beginning = beginning.slice(0, -1);
+            }
+            if (user_groups.is_user_group(item)) {
+                beginning += "@*" + item.name + "* ";
+                // We could theoretically warn folks if they are
+                // mentioning a user group that literally has zero
+                // members where we are posting to, but we don't have
+                // that functionality yet, and we haven't gotten much
+                // feedback on this being an actual pitfall.
+            } else {
+                const mention_text = people.get_mention_syntax(
+                    item.full_name,
+                    item.user_id,
+                    is_silent,
+                );
+                beginning += mention_text + " ";
+                if (!is_silent) {
+                    compose.warn_if_mentioning_unsubscribed_user(item);
+                }
+            }
+            break;
         }
-    } else if (this.completing === "slash") {
-        beginning = beginning.slice(0, -this.token.length - 1) + "/" + item.name + " ";
-    } else if (this.completing === "stream") {
-        beginning = beginning.slice(0, -this.token.length - 1);
-        if (beginning.endsWith("#*")) {
-            beginning = beginning.slice(0, -2);
+        case "slash":
+            beginning = beginning.slice(0, -this.token.length - 1) + "/" + item.name + " ";
+            break;
+        case "stream":
+            beginning = beginning.slice(0, -this.token.length - 1);
+            if (beginning.endsWith("#*")) {
+                beginning = beginning.slice(0, -2);
+            }
+            beginning += "#**" + item.name;
+            if (event && event.key === ">") {
+                // Normally, one accepts typeahead with `Tab` or `Enter`, but when completing
+                // stream typeahead, we allow `>`, the delimiter for stream+topic mentions,
+                // as a completion that automatically sets up stream+topic typeahead for you.
+                beginning += ">";
+            } else {
+                beginning += "** ";
+            }
+            compose.warn_if_private_stream_is_linked(item);
+            break;
+        case "syntax": {
+            // Isolate the end index of the triple backticks/tildes, including
+            // possibly a space afterward
+            const backticks = beginning.length - this.token.length;
+            if (rest === "") {
+                // If cursor is at end of input ("rest" is empty), then
+                // complete the token before the cursor, and add a closing fence
+                // after the cursor
+                beginning = beginning.slice(0, backticks) + item + "\n";
+                rest = "\n" + beginning.slice(Math.max(0, backticks - 4), backticks).trim() + rest;
+            } else {
+                // If more text after the input, then complete the token, but don't touch
+                // "rest" (i.e. do not add a closing fence)
+                beginning = beginning.slice(0, backticks) + item;
+            }
+            break;
         }
-        beginning += "#**" + item.name;
-        if (event && event.key === ">") {
-            // Normally, one accepts typeahead with `Tab` or `Enter`, but when completing
-            // stream typeahead, we allow `>`, the delimiter for stream+topic mentions,
-            // as a completion that automatically sets up stream+topic typeahead for you.
-            beginning += ">";
-        } else {
-            beginning += "** ";
+        case "topic_jump": {
+            // Put the cursor at the end of immediately preceding stream mention syntax,
+            // just before where the `**` at the end of the syntax.  This will delete that
+            // final ** and set things up for the topic_list typeahead.
+            const index = beginning.lastIndexOf("**");
+            if (index !== -1) {
+                beginning = beginning.slice(0, index) + ">";
+            }
+            break;
         }
-        compose.warn_if_private_stream_is_linked(item);
-    } else if (this.completing === "syntax") {
-        // Isolate the end index of the triple backticks/tildes, including
-        // possibly a space afterward
-        const backticks = beginning.length - this.token.length;
-        if (rest === "") {
-            // If cursor is at end of input ("rest" is empty), then
-            // complete the token before the cursor, and add a closing fence
-            // after the cursor
-            beginning = beginning.slice(0, backticks) + item + "\n";
-            rest = "\n" + beginning.slice(Math.max(0, backticks - 4), backticks).trim() + rest;
-        } else {
-            // If more text after the input, then complete the token, but don't touch
-            // "rest" (i.e. do not add a closing fence)
-            beginning = beginning.slice(0, backticks) + item;
+        case "topic_list": {
+            // Stream + topic mention typeahead; close the stream+topic mention syntax
+            // with the topic and the final **.  Note that this.token.length can be 0
+            // if we are completing from `**streamname>`.
+            const start = beginning.length - this.token.length;
+            beginning = beginning.slice(0, start) + item + "** ";
+            break;
         }
-    } else if (this.completing === "topic_jump") {
-        // Put the cursor at the end of immediately preceding stream mention syntax,
-        // just before where the `**` at the end of the syntax.  This will delete that
-        // final ** and set things up for the topic_list typeahead.
-        const index = beginning.lastIndexOf("**");
-        if (index !== -1) {
-            beginning = beginning.slice(0, index) + ">";
-        }
-    } else if (this.completing === "topic_list") {
-        // Stream + topic mention typeahead; close the stream+topic mention syntax
-        // with the topic and the final **.  Note that this.token.length can be 0
-        // if we are completing from `**streamname>`.
-        const start = beginning.length - this.token.length;
-        beginning = beginning.slice(0, start) + item + "** ";
-    } else if (this.completing === "time_jump") {
-        let timestring = beginning.slice(Math.max(0, beginning.lastIndexOf("<time:")));
-        if (timestring.startsWith("<time:") && timestring.endsWith(">")) {
-            timestring = timestring.slice(6, -1);
-        }
-        const timestamp = timerender.get_timestamp_for_flatpickr(timestring);
+        case "time_jump": {
+            let timestring = beginning.slice(Math.max(0, beginning.lastIndexOf("<time:")));
+            if (timestring.startsWith("<time:") && timestring.endsWith(">")) {
+                timestring = timestring.slice(6, -1);
+            }
+            const timestamp = timerender.get_timestamp_for_flatpickr(timestring);
 
-        const on_timestamp_selection = (val) => {
-            const datestr = val;
-            beginning =
-                beginning.slice(0, Math.max(0, beginning.lastIndexOf("<time"))) +
-                `<time:${datestr}> `;
-            if (rest.startsWith(">")) {
-                rest = rest.slice(1);
-            }
-            textbox.val(beginning + rest);
-            textbox.caret(beginning.length, beginning.length);
-            compose_ui.autosize_textarea(textbox);
-        };
-        show_flatpickr(this.$element[0], on_timestamp_selection, timestamp);
-        return beginning + rest;
+            const on_timestamp_selection = (val) => {
+                const datestr = val;
+                beginning =
+                    beginning.slice(0, Math.max(0, beginning.lastIndexOf("<time"))) +
+                    `<time:${datestr}> `;
+                if (rest.startsWith(">")) {
+                    rest = rest.slice(1);
+                }
+                textbox.val(beginning + rest);
+                textbox.caret(beginning.length, beginning.length);
+                compose_ui.autosize_textarea(textbox);
+            };
+            show_flatpickr(this.$element[0], on_timestamp_selection, timestamp);
+            return beginning + rest;
+        }
     }
 
     // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to
