@@ -1722,6 +1722,10 @@ label.label-title {
 .desktop-redirect-box {
     text-align: center;
 
+    label {
+        text-align: initial;
+    }
+
     .copy-token-info {
         font-weight: normal;
     }
