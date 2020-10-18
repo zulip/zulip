@@ -112,6 +112,33 @@ function get_topic_matcher(query) {
         return typeahead.query_matches_source_attrs(query, obj, ["topic"], " ");
     };
 }
+let enter_sends_label_deny = false;
+function maybe_change_enter_send_label(contains_code_block) {
+    const label = $("#enter-sends-label");
+    if (contains_code_block && !enter_sends_label_deny) {
+        label.text(i18n.t("code block disables enter"));
+        enter_sends_label_deny = true;
+    } else if (!contains_code_block && enter_sends_label_deny) {
+        label.text(i18n.t("woops"));
+        enter_sends_label_deny = false;
+    }
+    // console.log(label);
+}
+
+function does_contain_code_block() {
+    let contains_code_block = false;
+    const compose_box_elem = $("#compose-textarea");
+    const fences = ["```", "~~~"];
+    fences.forEach((fence) => {
+        contains_code_block =
+            contains_code_block ||
+            compose_box_elem.val().startsWith(fence) ||
+            compose_box_elem.val().includes("\n" + fence);
+    });
+    // console.log(contains_code_block);
+    maybe_change_enter_send_label(contains_code_block);
+    return contains_code_block;
+}
 
 exports.should_enter_send = function (e) {
     const has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
@@ -132,7 +159,7 @@ exports.should_enter_send = function (e) {
         // chat products where Enter-always-sends.
         this_enter_sends = has_non_shift_modifier_key;
     }
-    return this_enter_sends;
+    return this_enter_sends && !does_contain_code_block();
 };
 
 exports.handle_enter = function (textarea, e) {
