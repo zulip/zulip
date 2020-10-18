@@ -4904,6 +4904,18 @@ def get_web_public_subs(realm: Realm) -> SubHelperT:
 # subscriptions, so it's worth optimizing.
 def gather_subscriptions_helper(user_profile: UserProfile,
                                 include_subscribers: bool=True) -> SubHelperT:
+    realm = user_profile.realm
+    all_streams = get_active_streams(realm).values(
+        *Stream.API_FIELDS,
+        # The realm_id and recipient_id are generally not needed in the API.
+        "realm_id",
+        "is_web_public",
+        "recipient_id",
+        # email_token isn't public to some users with access to
+        # the stream, so doesn't belong in API_FIELDS.
+        "email_token",
+    )
+
     sub_dicts = get_stream_subscriptions_for_user(user_profile).values(
         *Subscription.API_FIELDS, "recipient_id").order_by("recipient_id")
 
@@ -4921,17 +4933,6 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         stream_ids.add(sub['stream_id'])
 
     recent_traffic = get_streams_traffic(stream_ids=stream_ids)
-
-    all_streams = get_active_streams(user_profile.realm).select_related(
-        "realm").values(
-            *Stream.API_FIELDS,
-            # The realm_id and recipient_id are generally not needed in the API.
-            "realm_id",
-            "is_web_public",
-            "recipient_id",
-            # email_token isn't public to some users with access to
-            # the stream, so doesn't belong in API_FIELDS.
-            "email_token")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}
