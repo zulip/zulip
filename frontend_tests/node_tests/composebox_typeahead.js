@@ -1495,7 +1495,16 @@ run_test("typeahead_results", () => {
     assert_mentions_matches("of hamlet", []);
 
     // Autocomplete by slash commands.
-    assert_slash_matches("me", [me_slash]);
+    assert_slash_matches("me", [
+        {
+            name: "me",
+            text: "translated: /me is excited (Display action text)",
+        },
+        {
+            name: "theme",
+            text: "translated: /theme <day/night/auto> (Toggle theme)",
+        },
+    ]);
     assert_slash_matches("settings", [settings_slash]);
 
     // Autocomplete stream by stream name or stream description.

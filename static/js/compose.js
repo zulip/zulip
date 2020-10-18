@@ -26,6 +26,7 @@ let user_acknowledged_all_everyone;
 let user_acknowledged_announce;
 let wildcard_mention;
 let uppy;
+let compose_info_timeout;
 
 exports.wildcard_mention_large_stream_threshold = 15;
 exports.announce_warn_threshold = 60;
@@ -270,6 +271,22 @@ function compose_error(error_text, bad_input) {
 }
 
 exports.compose_error = compose_error;
+
+function compose_info(info_text) {
+    const rendered_info_text = info_text;
+    clearTimeout(compose_info_timeout);
+    $("#compose-send-status")
+        .removeClass(common.status_classes)
+        .addClass("alert-info")
+        .stop(true)
+        .fadeTo(0, 1);
+    $("#compose-error-msg").html(rendered_info_text);
+    compose_info_timeout = setTimeout(() => {
+        $("#compose-send-status").hide();
+    }, 5000);
+}
+
+exports.compose_info = compose_info;
 
 function nonexistent_stream_reply_error() {
     $("#nonexistent_stream_reply_error").show();

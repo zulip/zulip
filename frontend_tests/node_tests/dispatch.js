@@ -30,7 +30,6 @@ set_global("message_edit", {});
 set_global("message_list", {});
 set_global("muting_ui", {});
 set_global("narrow_state", {});
-set_global("night_mode", {});
 set_global("notifications", {});
 set_global("overlays", {});
 set_global("reactions", {});
@@ -54,6 +53,7 @@ set_global("settings_users", {});
 set_global("stream_data", {});
 set_global("stream_events", {});
 set_global("submessage", {});
+set_global("theme", {});
 set_global("typing_events", {});
 set_global("ui", {});
 set_global("unread_ops", {});
@@ -705,7 +705,7 @@ run_test("update_display_settings", (override) => {
     global.with_stub((stub) => {
         event = event_fixtures.update_display_settings__color_scheme_dark;
         page_params.color_scheme = 1;
-        override("night_mode.enable", stub.f); // automatically checks if called
+        override("theme.enable_night_mode", stub.f); // automatically checks if called
         override("realm_logo.rerender", noop);
         dispatch(event);
         assert(page_params.color_scheme, 2);
@@ -714,7 +714,7 @@ run_test("update_display_settings", (override) => {
     global.with_stub((stub) => {
         event = event_fixtures.update_display_settings__color_scheme_light;
         page_params.color_scheme = 1;
-        override("night_mode.disable", stub.f); // automatically checks if called
+        override("theme.enable_day_mode", stub.f); // automatically checks if called
         override("realm_logo.rerender", noop);
         dispatch(event);
         assert(page_params.color_scheme, 3);
@@ -723,7 +723,7 @@ run_test("update_display_settings", (override) => {
     global.with_stub((stub) => {
         event = event_fixtures.update_display_settings__color_scheme_automatic;
         page_params.color_scheme = 2;
-        override("night_mode.default_preference_checker", stub.f); // automatically checks if called
+        override("theme.default_preference_checker", stub.f); // automatically checks if called
         override("realm_logo.rerender", noop);
         dispatch(event);
         assert(page_params.color_scheme, 1);

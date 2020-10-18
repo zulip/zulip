@@ -236,6 +236,10 @@ div[id^="message-edit-send-status"],
     display: none;
 }
 
+#compose-send-status p {
+    margin: 0;
+}
+
 #compose-send-status .progress {
     height: 10px;
     margin-bottom: 10px;

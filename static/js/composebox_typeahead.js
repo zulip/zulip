@@ -355,6 +355,14 @@ function should_show_custom_query(query, items) {
 
 exports.slash_commands = [
     {
+        text: i18n.t("/theme <day/night/auto> (Toggle theme)"),
+        name: "theme",
+    },
+    {
+        text: i18n.t("/auto (Toggle auto mode)"),
+        name: "auto",
+    },
+    {
         text: i18n.t("/dark (Toggle night mode)"),
         name: "dark",
     },

@@ -103,7 +103,7 @@ import "../ui_report";
 import "../message_scroll";
 import "../info_overlay";
 import "../ui";
-import "../night_mode";
+import "../theme";
 import "../ui_util";
 import "../click_handlers";
 import "../settings_panel_menu";

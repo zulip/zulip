@@ -20,6 +20,16 @@ What in the heck is a zcommand?
 
 */
 
+exports.set_theme = function (theme) {
+    exports.send({
+        command: "/theme " + theme,
+        on_success(data) {
+            const rendered_msg = marked(data.msg).trim();
+            compose.compose_info(rendered_msg);
+        },
+    });
+};
+
 exports.send = function (opts) {
     const command = opts.command;
     const on_success = opts.on_success;
@@ -50,50 +60,6 @@ exports.tell_user = function (msg) {
         .stop(true)
         .fadeTo(0, 1);
     $("#compose-error-msg").text(msg);
-};
-
-exports.enter_day_mode = function () {
-    exports.send({
-        command: "/day",
-        on_success(data) {
-            night_mode.disable();
-            feedback_widget.show({
-                populate(container) {
-                    const rendered_msg = marked(data.msg).trim();
-                    container.html(rendered_msg);
-                },
-                on_undo() {
-                    exports.send({
-                        command: "/night",
-                    });
-                },
-                title_text: i18n.t("Day mode"),
-                undo_button_text: i18n.t("Night"),
-            });
-        },
-    });
-};
-
-exports.enter_night_mode = function () {
-    exports.send({
-        command: "/night",
-        on_success(data) {
-            night_mode.enable();
-            feedback_widget.show({
-                populate(container) {
-                    const rendered_msg = marked(data.msg).trim();
-                    container.html(rendered_msg);
-                },
-                on_undo() {
-                    exports.send({
-                        command: "/day",
-                    });
-                },
-                title_text: i18n.t("Night mode"),
-                undo_button_text: i18n.t("Day"),
-            });
-        },
-    });
 };
 
 exports.enter_fluid_mode = function () {
@@ -141,7 +107,8 @@ exports.enter_fixed_mode = function () {
 };
 
 exports.process = function (message_content) {
-    const content = message_content.trim();
+    const content = message_content.trim().split(" ")[0];
+    const parameter = message_content.trim().split(" ")[1];
 
     if (content === "/ping") {
         const start_time = new Date();
@@ -161,14 +128,26 @@ exports.process = function (message_content) {
 
     const day_commands = ["/day", "/light"];
     if (day_commands.includes(content)) {
-        exports.enter_day_mode();
+        exports.set_theme("day");
         return true;
     }
 
     const night_commands = ["/night", "/dark"];
     if (night_commands.includes(content)) {
-        exports.enter_night_mode();
+        exports.set_theme("night");
         return true;
+    }
+
+    if (content === "/auto") {
+        exports.set_theme("auto");
+        return true;
+    }
+
+    if (content === "/theme") {
+        if (["night", "day", "auto"].includes(parameter)) {
+            exports.set_theme(parameter);
+            return true;
+        }
     }
 
     if (content === "/fluid-width") {

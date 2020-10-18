@@ -52,6 +52,48 @@ class ZcommandTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertIn('still in day mode', result.json()['msg'])
 
+    def test_auto_zcommand(self) -> None:
+        self.login('hamlet')
+        user = self.example_user('hamlet')
+        user.color_scheme = UserProfile.COLOR_SCHEME_LIGHT
+        user.save()
+
+        payload = dict(command="/auto")
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_success(result)
+        self.assertIn('Changed to auto', result.json()['msg'])
+
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_success(result)
+        self.assertIn('still in auto mode', result.json()['msg'])
+
+    def test_theme_zcommand(self) -> None:
+        self.login('hamlet')
+        user = self.example_user('hamlet')
+        user.color_scheme = UserProfile.COLOR_SCHEME_LIGHT
+        user.save()
+
+        payload = dict(command="/theme auto")
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_success(result)
+        self.assertIn('Changed to auto', result.json()['msg'])
+
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_success(result)
+        self.assertIn('still in auto mode', result.json()['msg'])
+
+        payload = dict(command="/theme night")
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_success(result)
+        self.assertIn('Changed to night', result.json()['msg'])
+
+    def test_invalid_theme_zcommand(self) -> None:
+        self.login('hamlet')
+
+        payload = dict(command="/theme red")
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_error(result, "Invalid parameter for /theme zcommand.")
+
     def test_fluid_zcommand(self) -> None:
         self.login("hamlet")
         user = self.example_user("hamlet")
