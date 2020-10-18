@@ -5011,10 +5011,6 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     stream_ids = {sub["stream_id"] for sub in sub_dicts}
     recent_traffic = get_streams_traffic(stream_ids=stream_ids)
 
-    subscribed = []
-    unsubscribed = []
-    never_subscribed = []
-
     # The highly optimized bulk_get_subscriber_user_ids wants to know which
     # streams we are subscribed to, for validation purposes, and it uses that
     # info to know if it's allowed to find OTHER subscribers.
@@ -5030,6 +5026,12 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         # If we're not including subscribers, always return None,
         # which the below code needs to check for anyway.
         subscriber_map = defaultdict(lambda: None)
+
+    # Okay, now we finally get to populating our main results, which
+    # will be these three lists.
+    subscribed = []
+    unsubscribed = []
+    never_subscribed = []
 
     sub_unsub_stream_ids = set()
     for sub in sub_dicts:
