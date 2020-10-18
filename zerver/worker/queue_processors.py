@@ -138,10 +138,11 @@ def register_worker(queue_name: str, clazz: Type['QueueProcessingWorker'], queue
 def get_worker(queue_name: str) -> 'QueueProcessingWorker':
     return worker_classes[queue_name]()
 
-def get_active_worker_queues(queue_type: Optional[str]=None) -> List[str]:
+def get_active_worker_queues(queue_type: Optional[str]=None, include_test_queues: bool=False) -> List[str]:
     """Returns all the non-test worker queues."""
     if queue_type is None:
-        return list(worker_classes.keys())
+        return [queue_name for queue_name in worker_classes.keys()
+                if include_test_queues or queue_name not in queues["test"]]
     return list(queues[queue_type].keys())
 
 def check_and_send_restart_signal() -> None:

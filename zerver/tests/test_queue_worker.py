@@ -647,4 +647,5 @@ class WorkerTest(ZulipTestCase):
         worker_queue_count = (len(QueueProcessingWorker.__subclasses__()) +
                               len(EmailSendingWorker.__subclasses__()) +
                               len(LoopQueueProcessingWorker.__subclasses__()) - 1)
-        self.assertEqual(worker_queue_count, len(get_active_worker_queues()))
+        self.assertEqual(worker_queue_count, len(get_active_worker_queues(include_test_queues=True)))
+        self.assertEqual(worker_queue_count - 3, len(get_active_worker_queues()))
