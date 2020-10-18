@@ -47,7 +47,6 @@ from zerver.lib.actions import (
 )
 from zerver.lib.message import aggregate_unread_data, get_raw_unread_data
 from zerver.lib.response import json_error, json_success
-from zerver.lib.stream_recipient import StreamRecipientMap
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     num_subscribers_for_stream_id,
@@ -103,7 +102,6 @@ class TestMiscStuff(ZulipTestCase):
             stream_dicts=[],
             user_profile=user_profile,
             sub_dict={},
-            stream_recipient=StreamRecipientMap(),
         )
         self.assertEqual(result, {})
 
@@ -4237,7 +4235,7 @@ class GetSubscribersTest(ZulipTestCase):
             if not sub["name"].startswith("stream_"):
                 continue
             self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
-        self.assert_length(queries, 6)
+        self.assert_length(queries, 5)
 
     def test_never_subscribed_streams(self) -> None:
         """
@@ -4307,7 +4305,7 @@ class GetSubscribersTest(ZulipTestCase):
             with queries_captured() as queries:
                 sub_data = gather_subscriptions_helper(self.user_profile)
             never_subscribed = sub_data[2]
-            self.assert_length(queries, 5)
+            self.assert_length(queries, 4)
 
             # Ignore old streams.
             never_subscribed = [
@@ -4466,7 +4464,7 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
             else:
                 self.assertTrue(len(sub["subscribers"]) == 0)
-        self.assert_length(queries, 6)
+        self.assert_length(queries, 5)
 
     def test_nonsubscriber(self) -> None:
         """
