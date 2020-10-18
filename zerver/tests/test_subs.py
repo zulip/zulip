@@ -101,7 +101,7 @@ class TestMiscStuff(ZulipTestCase):
         result = bulk_get_subscriber_user_ids(
             stream_dicts=[],
             user_profile=user_profile,
-            sub_dict={},
+            subscribed_stream_ids=set(),
         )
         self.assertEqual(result, {})
 
