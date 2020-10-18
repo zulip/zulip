@@ -4938,7 +4938,7 @@ def build_stream_dict_for_sub(
 
     # Guest users lose access to subscribers when they are unsubscribed if the stream
     # is not web-public.
-    if not sub["active"] and user.is_guest and not sub["is_web_public"]:
+    if not sub["active"] and user.is_guest and not stream["is_web_public"]:
         subscribers = None
     if subscribers is not None:
         result["subscribers"] = subscribers
@@ -4982,7 +4982,6 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         *Stream.API_FIELDS,
         # The realm_id and recipient_id are generally not needed in the API.
         "realm_id",
-        "is_web_public",
         "recipient_id",
         # email_token isn't public to some users with access to
         # the stream, so doesn't belong in API_FIELDS.
@@ -5011,16 +5010,6 @@ def gather_subscriptions_helper(user_profile: UserProfile,
 
     stream_ids = {sub["stream_id"] for sub in sub_dicts}
     recent_traffic = get_streams_traffic(stream_ids=stream_ids)
-
-    stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
-    stream_hash = {}
-    for stream in stream_dicts:
-        stream_hash[stream["id"]] = stream
-
-    for sub in sub_dicts:
-        stream = stream_hash.get(sub["stream_id"])
-        if stream:
-            sub["is_web_public"] = stream.get("is_web_public", False)
 
     subscribed = []
     unsubscribed = []
