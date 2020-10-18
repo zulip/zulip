@@ -716,26 +716,30 @@ exports.get_candidates = function (query) {
 };
 
 exports.content_highlighter = function (item) {
-    if (this.completing === "emoji") {
-        return typeahead_helper.render_emoji(item);
-    } else if (this.completing === "mention" || this.completing === "silent_mention") {
-        return typeahead_helper.render_person_or_user_group(item);
-    } else if (this.completing === "slash") {
-        return typeahead_helper.render_typeahead_item({
-            primary: item.text,
-        });
-    } else if (this.completing === "stream") {
-        return typeahead_helper.render_stream(item);
-    } else if (this.completing === "syntax") {
-        return typeahead_helper.render_typeahead_item({primary: item});
-    } else if (this.completing === "topic_jump") {
-        return typeahead_helper.render_typeahead_item({primary: item});
-    } else if (this.completing === "topic_list") {
-        return typeahead_helper.render_typeahead_item({primary: item});
-    } else if (this.completing === "time_jump") {
-        return typeahead_helper.render_typeahead_item({primary: item});
+    switch (this.completing) {
+        case "emoji":
+            return typeahead_helper.render_emoji(item);
+        case "mention":
+            return typeahead_helper.render_person_or_user_group(item);
+        case "silent_mention":
+            return typeahead_helper.render_person_or_user_group(item);
+        case "slash":
+            return typeahead_helper.render_typeahead_item({
+                primary: item.text,
+            });
+        case "stream":
+            return typeahead_helper.render_stream(item);
+        case "syntax":
+            return typeahead_helper.render_typeahead_item({primary: item});
+        case "topic_jump":
+            return typeahead_helper.render_typeahead_item({primary: item});
+        case "topic_list":
+            return typeahead_helper.render_typeahead_item({primary: item});
+        case "time_jump":
+            return typeahead_helper.render_typeahead_item({primary: item});
+        default:
+            return undefined;
     }
-    return undefined;
 };
 
 const show_flatpickr = (element, callback, default_timestamp) => {
