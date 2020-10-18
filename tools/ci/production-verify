@@ -67,9 +67,7 @@ echo "Now confirming all the RabbitMQ queue processors are correctly registered!
 echo
 # These hacky shell scripts just extract the sorted list of queue processors, running and expected
 supervisorctl status | cut -f1 -dR | cut -f2- -d: | grep events | cut -f1 -d" " | cut -f3- -d_ | cut -f1 -d- | sort -u >/tmp/running_queue_processors.txt
-su zulip -c /home/zulip/deployments/current/scripts/lib/queue_workers.py | sort -u >/tmp/all_queue_processors.txt
-su zulip -c "/home/zulip/deployments/current/scripts/lib/queue_workers.py --queue-type test" | sort -u >/tmp/expected_test_queues.txt
-grep -v -x -f /tmp/expected_test_queues.txt /tmp/all_queue_processors.txt >/tmp/expected_queue_processors.txt
+su zulip -c /home/zulip/deployments/current/scripts/lib/queue_workers.py | sort -u >/tmp/expected_queue_processors.txt
 if ! diff /tmp/expected_queue_processors.txt /tmp/running_queue_processors.txt >/dev/null; then
     set +x
     echo "FAILURE: Runnable queue processors declared in zerver/worker/queue_processors.py "
