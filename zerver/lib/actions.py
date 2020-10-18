@@ -2736,9 +2736,6 @@ def send_subscription_add_events(
             subscription = sub_info.sub
             sub_dict = stream.to_dict()
             for field_name in Subscription.API_FIELDS:
-                if field_name == "active":
-                    # Skip the "active" field, it's implied by context
-                    continue
                 sub_dict[field_name] = getattr(subscription, field_name)
 
             sub_dict['in_home_view'] = not subscription.is_muted
@@ -4911,7 +4908,10 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     recip_id_to_stream_id = {stream["recipient_id"]: stream["id"] for stream in all_streams}
 
     sub_dicts = get_stream_subscriptions_for_user(user_profile).values(
-        *Subscription.API_FIELDS, "recipient_id").order_by("recipient_id")
+        *Subscription.API_FIELDS,
+        "recipient_id",
+        "active",
+    ).order_by("recipient_id")
 
     # We only care about subscriptions for active streams.
     sub_dicts = [
@@ -4980,8 +4980,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                 continue
             stream_dict[field_name] = stream[field_name]
 
-        # Copy Subscription.API_FIELDS except for "active", which is
-        # used to determine where to the put the field.
+        # Copy Subscription.API_FIELDS.
         for field_name in Subscription.API_FIELDS:
             stream_dict[field_name] = sub[field_name]
 
@@ -5014,7 +5013,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             stream_dict['subscribers'] = subscribers
 
         # is_active is represented in this structure by which list we include it in.
-        is_active = stream_dict.pop("active")
+        is_active = sub["active"]
         if is_active:
             subscribed.append(stream_dict)
         else:
