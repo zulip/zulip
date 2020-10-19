@@ -5,7 +5,7 @@
     # version e.g. to say that something is likely to have changed.
     # For more info see: https://www.sphinx-doc.org/en/master/templating.html
     #}
-    {% if pagename in ["production/management-commands", "production/email-gateway", "production/upgrade-or-modify", "production/zoom-configuration"] and release.endswith('+git') %}
+    {% if pagename in ["production/video-calls"] and release.endswith('+git') %}
     {#
     # This page doesn't exist in the stable documentation yet.
     # This temporary workaround prevents CircleCI failure and should be removed after the next release.
