@@ -267,7 +267,7 @@ def main() -> None:
     include_webhooks = options.coverage or options.include_webhooks
 
     if parallel < 1:
-        raise argparse.ArgumentError(
+        raise argparse.ArgumentTypeError(
             "option processes: Only positive integers are allowed.")
 
     zerver_test_dir = 'zerver/tests/'
