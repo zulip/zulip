@@ -3,25 +3,13 @@
 # different components of a Zulip installation on different servers by
 # using the modules below on different machines (the module list is
 # stored in `puppet_classes` in /etc/zulip/zulip.conf).  In general,
-# every machine should have `zulip::base` and `zulip::apt_repository`
-# included, but the various service modules can be arranged on
-# different machines or the same machine as desired (corresponding
-# configuration in /etc/zulip/settings.py for how to find the various
-# services is also required to make this work).
+# every machine should have `zulip::base` included, but the various
+# service modules can be arranged on different machines or the same
+# machine as desired (corresponding configuration in
+# /etc/zulip/settings.py for how to find the various services is also
+# required to make this work).
 class zulip::voyager {
   include zulip::base
-  # zulip::apt_repository must come after zulip::base
-  case $::osfamily {
-    'debian': {
-      include zulip::apt_repository
-    }
-    'redhat': {
-      include zulip::yum_repository
-    }
-    default: {
-      fail('osfamily not supported')
-    }
-  }
   include zulip::app_frontend
   include zulip::postgres_appdb_tuned
   include zulip::memcached

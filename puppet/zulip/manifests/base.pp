@@ -2,6 +2,17 @@ class zulip::base {
   include zulip::common
   case $::osfamily {
     'debian': {
+      include zulip::apt_repository
+    }
+    'redhat': {
+      include zulip::yum_repository
+    }
+    default: {
+      fail('osfamily not supported')
+    }
+  }
+  case $::osfamily {
+    'debian': {
       $release_name = $::operatingsystemrelease ? {
         # Debian releases
         /^7\.[0-9]*$/  => 'wheezy',

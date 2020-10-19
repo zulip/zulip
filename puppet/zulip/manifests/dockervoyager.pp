@@ -4,8 +4,6 @@
 # Through this split of services, it is easier to scale the services to the needs.
 class zulip::dockervoyager {
   include zulip::base
-  # zulip::apt_repository must come after zulip::base
-  include zulip::apt_repository
   include zulip::app_frontend
   include zulip::supervisor
   include zulip::process_fts_updates

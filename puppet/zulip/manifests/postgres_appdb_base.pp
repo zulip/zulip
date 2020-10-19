@@ -6,7 +6,6 @@ class zulip::postgres_appdb_base {
 
   case $::osfamily {
     'debian': {
-      include zulip::apt_repository
       $postgresql = "postgresql-${zulip::base::postgres_version}"
       $postgres_sharedir = "/usr/share/postgresql/${zulip::base::postgres_version}"
       $postgres_confdirs = [
@@ -23,7 +22,6 @@ class zulip::postgres_appdb_base {
       $postgres_dict_affix = '/var/cache/postgresql/dicts/en_us.affix'
     }
     'redhat': {
-      include zulip::yum_repository
       $postgresql = "postgresql${zulip::base::postgres_version}"
       $postgres_sharedir = "/usr/pgsql-${zulip::base::postgres_version}/share"
       $postgres_confdirs = [
