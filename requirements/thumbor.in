@@ -1,4 +1,4 @@
-https://github.com/kkopachev/aws/archive/0d02528b47273e143be750ba237f71a076e8f251.zip#egg=tc_aws==6.3
+https://github.com/kkopachev/aws/archive/b5058e6b9fec7354629acc6d5df423e0310bb0cd.zip#egg=tc_aws==6.3
 thumbor>=7.dev
 
 # Not required by Thumbor, but recommended
