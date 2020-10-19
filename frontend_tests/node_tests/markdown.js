@@ -184,7 +184,7 @@ stream_data.add_sub(amp_stream);
 run_test("fenced_block_defaults", () => {
     const input = "\n```\nfenced code\n```\n\nand then after\n";
     const expected =
-        '\n\n<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n\n\n\nand then after\n\n';
+        '\n\n<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n\n\nand then after\n\n';
     const output = fenced_code.process_fenced_code(input);
     assert.equal(output, expected);
 });
@@ -294,13 +294,13 @@ run_test("marked", () => {
         {
             input: "\n```\nfenced code\n```\n\nand then after\n",
             expected:
-                '<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n\n\n<p>and then after</p>',
+                '<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n<p>and then after</p>',
         },
         {
             input:
                 "\n```\n    fenced code trailing whitespace            \n```\n\nand then after\n",
             expected:
-                '<div class="codehilite"><pre><span></span><code>    fenced code trailing whitespace\n</code></pre></div>\n\n\n<p>and then after</p>',
+                '<div class="codehilite"><pre><span></span><code>    fenced code trailing whitespace\n</code></pre></div>\n<p>and then after</p>',
         },
         {
             input: "* a\n* list \n* here",
@@ -309,12 +309,12 @@ run_test("marked", () => {
         {
             input: "\n```c#\nfenced code special\n```\n\nand then after\n",
             expected:
-                '<div class="codehilite" data-code-language="C#"><pre><span></span><code>fenced code special\n</code></pre></div>\n\n\n<p>and then after</p>',
+                '<div class="codehilite" data-code-language="C#"><pre><span></span><code>fenced code special\n</code></pre></div>\n<p>and then after</p>',
         },
         {
             input: "\n```vb.net\nfenced code dot\n```\n\nand then after\n",
             expected:
-                '<div class="codehilite" data-code-language="VB.net"><pre><span></span><code>fenced code dot\n</code></pre></div>\n\n\n<p>and then after</p>',
+                '<div class="codehilite" data-code-language="VB.net"><pre><span></span><code>fenced code dot\n</code></pre></div>\n<p>and then after</p>',
         },
         {
             input: "Some text first\n* a\n* list \n* here\n\nand then after",

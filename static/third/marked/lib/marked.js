@@ -1188,8 +1188,6 @@ Parser.prototype.parse = function(src) {
         safe = stash[2];
     if (!safe) {
       html = escape(html);
-    } else {
-      html += '\n';
     }
     output = output.replace('<p>' + key + '</p>', html)
   }
