@@ -573,24 +573,6 @@ test("starring", () => {
     assert.deepEqual(unread.get_msg_ids_for_starred(), []);
 });
 
-test("declare_bankruptcy", () => {
-    const message = {
-        id: 16,
-        type: "whatever",
-        stream_id: 1999,
-        topic: "whatever",
-        mentioned: true,
-    };
-
-    unread.process_loaded_messages([message]);
-
-    unread.declare_bankruptcy();
-
-    const counts = unread.get_counts();
-    assert_zero_counts(counts);
-    test_notifiable_count(counts.home_unread_messages, 0);
-});
-
 test("message_unread", () => {
     // Test some code that might be overly defensive, for line coverage sake.
     assert(!unread.message_unread(undefined));

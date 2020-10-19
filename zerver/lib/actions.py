@@ -4940,6 +4940,8 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
         where=[UserMessage.where_unread()],
     )
 
+    message_ids = list(msgs.values_list("message__id", flat=True))
+
     count = msgs.update(
         flags=F("flags").bitor(UserMessage.flags.read),
     )
@@ -4949,7 +4951,7 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
         op="add",
         operation="add",
         flag="read",
-        messages=[],  # we don't send messages, since the client reloads anyway
+        messages=message_ids,
         all=True,
     )
     event_time = timezone_now()

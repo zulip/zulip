@@ -458,13 +458,6 @@ export function mark_as_read(message_id) {
     }
 }
 
-export function declare_bankruptcy() {
-    unread_pm_counter.clear();
-    unread_topic_counter.clear();
-    unread_mentions_counter.clear();
-    unread_messages.clear();
-}
-
 export function clear_all_counters() {
     // For use in tests only.
     unread_pm_counter.clear();

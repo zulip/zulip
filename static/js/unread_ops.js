@@ -7,27 +7,13 @@ import * as message_viewport from "./message_viewport";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import * as recent_topics from "./recent_topics";
-import * as reload from "./reload";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 
 export function mark_all_as_read() {
-    unread.declare_bankruptcy();
-    unread_ui.update_unread_counts();
-
     channel.post({
         url: "/json/mark_all_as_read",
         idempotent: true,
-        success: () => {
-            // After marking all messages as read, we reload the browser.
-            // This is useful to avoid leaving ourselves deep in the past.
-            reload.initiate({
-                immediate: true,
-                save_pointer: false,
-                save_narrow: true,
-                save_compose: true,
-            });
-        },
     });
 }
 
