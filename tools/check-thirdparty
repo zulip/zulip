@@ -36,7 +36,9 @@ if not c.header.known_format():
     status = 1
 
 defined_licenses = {
-    p.license.synopsis for p in c.all_license_paragraphs() if p.license.text
+    p.license.to_str().split("\n", 1)[0]
+    for p in c.all_license_paragraphs()
+    if "\n" in p.license.to_str()
 }
 
 for p in c.all_files_paragraphs():
@@ -45,8 +47,8 @@ for p in c.all_files_paragraphs():
             print(f"{COPYRIGHT_FILENAME}: No such file {g}")
             status = 1
 
-    if not p.license.text and p.license.synopsis not in defined_licenses:
-        print(f"{COPYRIGHT_FILENAME}: Missing license text for {p.license.synopsis}")
+    if "\n" not in p.license.to_str() and p.license.to_str() not in defined_licenses:
+        print(f"{COPYRIGHT_FILENAME}: Missing license text for {p.license.to_str()}")
         status = 1
 
 dumped = c.dump()
