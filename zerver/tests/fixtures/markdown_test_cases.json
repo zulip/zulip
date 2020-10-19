@@ -23,7 +23,7 @@
     {
       "name": "ampampamp",
       "input": "& &amp; &amp;amp;\n~~~~\n& &amp; &amp;amp;\n~~~~\n    & &amp; &amp;amp;",
-      "expected_output": "<p>&amp; &amp; &amp;amp;</p>\n<div class=\"codehilite\"><pre><span></span><code>&amp; &amp;amp; &amp;amp;amp;\n</code></pre></div>\n\n\n<div class=\"codehilite\"><pre><span></span><code>&amp; &amp;amp; &amp;amp;amp;\n</code></pre></div>"
+      "expected_output": "<p>&amp; &amp; &amp;amp;</p>\n<div class=\"codehilite\"><pre><span></span><code>&amp; &amp;amp; &amp;amp;amp;\n</code></pre></div>\n<div class=\"codehilite\"><pre><span></span><code>&amp; &amp;amp; &amp;amp;amp;\n</code></pre></div>"
     },
     {
       "name": "basic_paragraph",
@@ -34,8 +34,8 @@
     {
       "name": "codeblock_multiline",
       "input": "Hamlet once said\n~~~~\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n~~~~\nAnd all was good.",
-      "expected_output": "<p>Hamlet once said</p>\n<div class=\"codehilite\"><pre><span></span><code>def func():\n    x = 1\n\n    y = 2\n\n    z = 3\n</code></pre></div>\n\n\n<p>And all was good.</p>",
-      "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\n\n\nAnd all was good."
+      "expected_output": "<p>Hamlet once said</p>\n<div class=\"codehilite\"><pre><span></span><code>def func():\n    x = 1\n\n    y = 2\n\n    z = 3\n</code></pre></div>\n<p>And all was good.</p>",
+      "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\nAnd all was good."
     },
     {
       "name": "test",
@@ -45,8 +45,8 @@
     {
       "name": "codeblock_trailing_whitespace",
       "input": "Hamlet once said\n~~~~\ndef func():\n    x = 1\n\n    y = 2\t\t\n\n    z = 3       \n~~~~\nAnd all was good.",
-      "expected_output": "<p>Hamlet once said</p>\n<div class=\"codehilite\"><pre><span></span><code>def func():\n    x = 1\n\n    y = 2\n\n    z = 3\n</code></pre></div>\n\n\n<p>And all was good.</p>",
-      "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\n\n\nAnd all was good."
+      "expected_output": "<p>Hamlet once said</p>\n<div class=\"codehilite\"><pre><span></span><code>def func():\n    x = 1\n\n    y = 2\n\n    z = 3\n</code></pre></div>\n<p>And all was good.</p>",
+      "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\nAnd all was good."
     },
     {
       "name": "inline_code_spaces",
@@ -63,14 +63,14 @@
     {
       "name": "codeblock_backticks",
       "input": "\n```\nfenced code\n```\n\n```inline code```\n",
-      "expected_output": "<div class=\"codehilite\"><pre><span></span><code>fenced code\n</code></pre></div>\n\n\n<p><code>inline code</code></p>",
-      "text_content": "fenced code\n\n\n\ninline code"
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code>fenced code\n</code></pre></div>\n<p><code>inline code</code></p>",
+      "text_content": "fenced code\n\ninline code"
     },
     {
       "name": "hanging_multi_codeblock",
       "input": "Hamlet said:\n~~~~\ndef speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n~~~~\n\nThen he mentioned ````y = 4 + x**2```` and\n~~~~\ndef foobar(self):\n    return self.baz()",
-      "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre><span></span><code>def speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n</code></pre></div>\n\n\n<p>Then he mentioned <code>y = 4 + x**2</code> and</p>\n<div class=\"codehilite\"><pre><span></span><code>def foobar(self):\n    return self.baz()\n</code></pre></div>",
-      "text_content": "Hamlet said:\ndef speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n\n\n\nThen he mentioned y = 4 + x**2 and\ndef foobar(self):\n    return self.baz()\n"
+      "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre><span></span><code>def speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n</code></pre></div>\n<p>Then he mentioned <code>y = 4 + x**2</code> and</p>\n<div class=\"codehilite\"><pre><span></span><code>def foobar(self):\n    return self.baz()\n</code></pre></div>",
+      "text_content": "Hamlet said:\ndef speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n\nThen he mentioned y = 4 + x**2 and\ndef foobar(self):\n    return self.baz()\n"
     },
     {
       "name": "fenced_quote",
@@ -87,7 +87,7 @@
     {
       "name": "complexly_nested_quote",
       "input": "I heard about this second hand...\n~~~ quote\n\nHe said:\n~~~ quote\nThe customer is complaining.\n\nThey looked at this code:\n``` \ndef hello(): print 'hello\n```\nThey would prefer:\n~~~\ndef hello()\n  puts 'hello'\nend\n~~~\n\nPlease advise.\n~~~\n\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n~~~",
-      "expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<div class=\"codehilite\"><pre><span></span><code>def hello(): print &#39;hello\n</code></pre></div>\n\n\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\n  puts 'hello'<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<div class=\"codehilite\"><pre><span></span><code>She said:\n~~~ quote\nJust send them this:\n```\necho &quot;hello\n&quot;\n```\n</code></pre></div>",
+      "expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<div class=\"codehilite\"><pre><span></span><code>def hello(): print &#39;hello\n</code></pre></div>\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\n  puts 'hello'<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<div class=\"codehilite\"><pre><span></span><code>She said:\n~~~ quote\nJust send them this:\n```\necho &quot;hello\n&quot;\n```\n</code></pre></div>",
       "text_content": "I heard about this second hand...\n> He said:\n> > The customer is complaining.\n> > They looked at this code:\n> > def hello(): print 'hello\n> > They would prefer:\n> def hello()\n>   puts 'hello'\n> end\n\nPlease advise.\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n"
     },
     {
@@ -860,39 +860,39 @@
     {
       "name": "spoilers_fenced_spoiler",
       "input": "```spoiler header\ncontent\n```\noutside spoiler\n",
-      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>content</p>\n</div></div>\n\n<p>outside spoiler</p>",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>content</p>\n</div></div>\n<p>outside spoiler</p>",
       "text_content": "header (…)\noutside spoiler"
     },
     {
       "name": "spoilers_empty_header",
       "input": "```spoiler\ncontent\n```\noutside spoiler\n",
-      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>content</p>\n</div></div>\n\n<p>outside spoiler</p>",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>content</p>\n</div></div>\n<p>outside spoiler</p>",
       "text_content": "(…)\noutside spoiler"
     },
     {
       "name": "spoilers_script_tags",
       "input": "```spoiler <script>alert(1)</script>\n<script>alert(1)</script>\n```",
-      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>\n</div></div>",
-      "marked_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>&lt;script&gt;alert(1)&lt;/script&gt;\n\n</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>&lt;script&gt;alert(1)&lt;/script&gt;\n\n</p>\n</div></div>",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>\n</div></div>",
+      "marked_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>&lt;script&gt;alert(1)&lt;/script&gt;\n\n</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>&lt;script&gt;alert(1)&lt;/script&gt;\n\n</p>\n</div></div>",
       "text_content": "<script>alert(1)</script> (…)\n"
     },
     {
       "name": "spoilers_block_quote",
       "input": "~~~quote\n```spoiler header\ncontent\n```\noutside spoiler\n~~~\noutside quote",
-      "expected_output": "<blockquote>\n<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>content</p>\n</div></div>\n\n<p>outside spoiler</p>\n</blockquote>\n<p>outside quote</p>",
+      "expected_output": "<blockquote>\n<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>content</p>\n</div></div>\n<p>outside spoiler</p>\n</blockquote>\n<p>outside quote</p>",
       "text_content": "> header (…)\n> outside spoiler\n\noutside quote"
     },
     {
       "name": "spoilers_with_header_markdown",
       "input": "```spoiler [Header](https://example.com) :smile:\ncontent\n```",
-      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p><a href=\"https://example.com\">Header</a> <span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span></p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>content</p>\n</div></div>",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p><a href=\"https://example.com\">Header</a> <span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span></p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>content</p>\n</div></div>",
       "text_content": "Header 🙂 (…)\n"
     },
     {
       "name": "spoiler_with_inline_image",
       "input": "```spoiler header\nContent http://example.com/image.png\n```",
-      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n<div class=\"message_inline_image\"><a href=\"http://example.com/image.png\"><img data-src-fullsize=\"/thumbnail?url=http%3A%2F%2Fexample.com%2Fimage.png&amp;size=full\" src=\"/thumbnail?url=http%3A%2F%2Fexample.com%2Fimage.png&amp;size=thumbnail\"></a></div></div></div>",
-      "marked_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n</div></div>",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n<div class=\"message_inline_image\"><a href=\"http://example.com/image.png\"><img data-src-fullsize=\"/thumbnail?url=http%3A%2F%2Fexample.com%2Fimage.png&amp;size=full\" src=\"/thumbnail?url=http%3A%2F%2Fexample.com%2Fimage.png&amp;size=thumbnail\"></a></div></div></div>",
+      "marked_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n</div></div>",
       "text_content": "header (…)\n"
     }
   ],
