@@ -206,6 +206,7 @@ class BaseAction(ZulipTestCase):
                       client_gravatar: bool=True,
                       user_avatar_url_field_optional: bool=False,
                       slim_presence: bool=False,
+                      include_streams: bool=True,
                       num_events: int=1,
                       bulk_message_deletion: bool=True) -> List[Dict[str, Any]]:
         '''
@@ -241,6 +242,7 @@ class BaseAction(ZulipTestCase):
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
+            include_streams=include_streams,
             realm=self.user_profile.realm,
         )
         action()
@@ -282,6 +284,7 @@ class BaseAction(ZulipTestCase):
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
+            include_streams=include_streams,
             realm=self.user_profile.realm,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
@@ -951,12 +954,10 @@ class NormalActionsTest(BaseAction):
 
     def test_muted_topics_events(self) -> None:
         stream = get_stream('Denmark', self.user_profile.realm)
-        recipient = stream.recipient
         events = self.verify_action(
             lambda: do_mute_topic(
                 self.user_profile,
                 stream,
-                recipient,
                 "topic"))
         check_muted_topics('events[0]', events[0])
 
@@ -1729,6 +1730,7 @@ class RealmPropertyActionTest(BaseAction):
             invite_to_stream_policy=[3, 2, 1],
             private_message_policy=[2, 1],
             user_group_edit_policy=[1, 2],
+            wildcard_mention_policy=[3, 2, 1],
             email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
             bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
             video_chat_provider=[
@@ -1861,7 +1863,8 @@ class SubscribeActionTest(BaseAction):
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers,
-            num_events=3)
+            include_streams=False,
+            num_events=2)
         check_subscription_remove('events[0]', events[0])
         self.assertEqual(len(events[0]['subscriptions']), 1)
         self.assertEqual(
@@ -1874,8 +1877,9 @@ class SubscribeActionTest(BaseAction):
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers,
-            num_events=2)
-        check_subscription_add('events[1]', events[1], include_subscribers)
+            include_streams=False,
+            num_events=1)
+        check_subscription_add('events[0]', events[0], include_subscribers)
 
         action = lambda: do_change_stream_description(stream, 'new description')
         events = self.verify_action(
@@ -1909,7 +1913,7 @@ class SubscribeActionTest(BaseAction):
         stream.save()
 
         user_profile = self.example_user('hamlet')
-        action = lambda: bulk_add_subscriptions([stream], [user_profile])
+        action = lambda: bulk_add_subscriptions(user_profile.realm, [stream], [user_profile])
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers,

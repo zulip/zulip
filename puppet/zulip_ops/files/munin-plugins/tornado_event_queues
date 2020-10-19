@@ -18,8 +18,8 @@
 # always be included.
 
 if [ "$1" = "autoconf" ]; then
-	echo yes
-	exit 0
+    echo yes
+    exit 0
 fi
 
 HOME=/tmp/
@@ -28,30 +28,30 @@ HOME=/tmp/
 # graphs should look.
 
 if [ "$1" = "config" ]; then
-	# The host name this plugin is for. (Can be overridden to have
-	# one machine answer for several)
+    # The host name this plugin is for. (Can be overridden to have
+    # one machine answer for several)
 
-	# The title of the graph
-	echo 'graph_title Event queues'
-	# Arguments to "rrdtool graph". In this case, tell it that the
-	# lower limit of the graph is '0', and that 1k=1000 (not 1024)
-	echo 'graph_args --base 1000 -l 0'
-	# The Y-axis label
-	echo 'graph_vlabel Number'
-	# We want Cur/Min/Avg/Max unscaled (i.e. 0.42 load instead of
-	# 420 milliload)
-	#echo 'graph_scale no'
-	echo 'graph_category Tornado'
+    # The title of the graph
+    echo 'graph_title Event queues'
+    # Arguments to "rrdtool graph". In this case, tell it that the
+    # lower limit of the graph is '0', and that 1k=1000 (not 1024)
+    echo 'graph_args --base 1000 -l 0'
+    # The Y-axis label
+    echo 'graph_vlabel Number'
+    # We want Cur/Min/Avg/Max unscaled (i.e. 0.42 load instead of
+    # 420 milliload)
+    #echo 'graph_scale no'
+    echo 'graph_category Tornado'
 
-	echo "active_queues.label Total active event queues"
-	echo "active_queues.info Total number of active event queues"
-	echo "active_users.label Users with active event queues"
-	echo "active_users.info Number of users with active event queues"
+    echo "active_queues.label Total active event queues"
+    echo "active_queues.info Total number of active event queues"
+    echo "active_users.label Users with active event queues"
+    echo "active_users.info Number of users with active event queues"
 
-	echo 'graph_info Shows the number of active event queues'
-	# Last, if run with the "config"-parameter, quit here (don't
-	# display any data)
-	exit 0
+    echo 'graph_info Shows the number of active event queues'
+    # Last, if run with the "config"-parameter, quit here (don't
+    # display any data)
+    exit 0
 fi
 
 # If not run with any parameters at all (or only unknown ones), do the

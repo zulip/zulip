@@ -60,7 +60,7 @@ See also [fixing commits][fix-commit]
     - `git add foo.py bar.py`: add `foo.py` AND `bar.py` to the staging area
     - `git add -u`: Adds all tracked files to the staging area.
 - checkout
-    - `git checkout -b new-branch-name`: create branch `new-branch-name` and switch/checkout to that new branch
+    - `git checkout -b new-branch-name`: create branch `new-branch-name` and switch to/check out that new branch
     - `git checkout master`: switch to your `master` branch
     - `git checkout old-branch-name`: switch to an existing branch `old-branch-name`
 - commit

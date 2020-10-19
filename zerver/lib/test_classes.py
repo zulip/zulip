@@ -2,12 +2,14 @@ import base64
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 import urllib
 from contextlib import contextmanager
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple, Union
 from unittest import TestResult, mock
 
+import lxml.html
 import orjson
 from django.apps import apps
 from django.conf import settings
@@ -444,6 +446,24 @@ Output:
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, assert_json_error_msg)
 
+    def _get_page_params(self, result: HttpResponse) -> Dict[str, Any]:
+        """Helper for parsing page_params after fetching the webapp's home view."""
+        doc = lxml.html.document_fromstring(result.content)
+        [div] = doc.xpath("//div[@id='page-params']")
+        page_params_json = div.get("data-params")
+        page_params = orjson.loads(page_params_json)
+        return page_params
+
+    def check_rendered_logged_in_app(self, result: HttpResponse) -> None:
+        """Verifies that a visit of / was a 200 that rendered page_params
+           and not for a logged-out web-public visitor."""
+        self.assertEqual(result.status_code, 200)
+        page_params = self._get_page_params(result)
+        # It is important to check `is_web_public_visitor` to verify
+        # that we treated this request as a normal logged-in session,
+        # not as a web-public visitor.
+        self.assertEqual(page_params['is_web_public_visitor'], False)
+
     def login_with_return(self, email: str, password: Optional[str]=None,
                           **kwargs: Any) -> HttpResponse:
         if password is None:
@@ -726,7 +746,7 @@ Output:
         """
         try:
             json = orjson.loads(result.content)
-        except Exception:  # nocoverage
+        except orjson.JSONDecodeError:  # nocoverage
             json = {'msg': "Error parsing JSON in response!"}
         self.assertEqual(result.status_code, 200, json['msg'])
         self.assertEqual(json.get("result"), "success")
@@ -739,7 +759,7 @@ Output:
     def get_json_error(self, result: HttpResponse, status_code: int=400) -> Dict[str, Any]:
         try:
             json = orjson.loads(result.content)
-        except Exception:  # nocoverage
+        except orjson.JSONDecodeError:  # nocoverage
             json = {'msg': "Error parsing JSON in response!"}
         self.assertEqual(result.status_code, status_code, msg=json.get('msg'))
         self.assertEqual(json.get("result"), "error")
@@ -849,12 +869,12 @@ Output:
 
     # Subscribe to a stream directly
     def subscribe(self, user_profile: UserProfile, stream_name: str) -> Stream:
+        realm = user_profile.realm
         try:
             stream = get_stream(stream_name, user_profile.realm)
-            from_stream_creation = False
         except Stream.DoesNotExist:
-            stream, from_stream_creation = create_stream_if_needed(user_profile.realm, stream_name)
-        bulk_add_subscriptions([stream], [user_profile], from_stream_creation=from_stream_creation)
+            stream, from_stream_creation = create_stream_if_needed(realm, stream_name)
+        bulk_add_subscriptions(realm, [stream], [user_profile])
         return stream
 
     def unsubscribe(self, user_profile: UserProfile, stream_name: str) -> None:
@@ -951,7 +971,7 @@ Output:
         '''
         with \
                 self.settings(ERROR_BOT=None), \
-                mock.patch('zerver.lib.markdown.timeout', side_effect=KeyError('foo')), \
+                mock.patch('zerver.lib.markdown.timeout', side_effect=subprocess.CalledProcessError(1, [])), \
                 mock.patch('zerver.lib.markdown.markdown_logger'):
             yield
 

@@ -49,12 +49,12 @@ exports.create = function (opts) {
     const funcs = {
         // return the value of the contenteditable input form.
         value(input_elem) {
-            return input_elem.innerText;
+            return input_elem.textContent;
         },
 
         // clear the value of the input form.
         clear(input_elem) {
-            input_elem.innerText = "";
+            input_elem.textContent = "";
         },
 
         clear_text() {

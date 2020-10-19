@@ -749,7 +749,7 @@ run_test("extract_people_from_message", () => {
 
     // Get line coverage
     people.__Rewire__("report_late_add", () => {
-        throw Error("unexpected late add");
+        throw new Error("unexpected late add");
     });
 
     message = {
@@ -878,14 +878,14 @@ run_test("updates", () => {
     const all_people = get_all_persons();
     assert.equal(all_people.length, 2);
 
-    person = all_people.filter((p) => p.email === new_email)[0];
+    person = all_people.find((p) => p.email === new_email);
     assert.equal(person.full_name, "Foo Barson");
 
     // Test shim where we can still retrieve user info using the
     // old email.
     blueslip.expect(
         "warn",
-        "Obsolete email passed to get_by_email: " + "FOO@example.com new email = bar@example.com",
+        "Obsolete email passed to get_by_email: FOO@example.com new email = bar@example.com",
     );
     person = people.get_by_email(old_email);
     assert.equal(person.user_id, user_id);

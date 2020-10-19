@@ -10,7 +10,7 @@ run_test("test_early_returns", () => {
         elem: stub,
         handlers: {
             left_arrow: () => {
-                throw Error("do not dispatch this with alt key");
+                throw new Error("do not dispatch this with alt key");
             },
         },
     };

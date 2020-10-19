@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -eo pipefail
 
 if [ "$EUID" -ne 0 ]; then
     echo "Error: This script must be run as root" >&2
@@ -40,7 +40,7 @@ fi
 
 # Capture the output so we know where the path to the post-upgrade scripts is
 UPGRADE_LOG=$(mktemp "/var/log/zulip/postgres-upgrade-$UPGRADE_FROM-$UPGRADE_TO.XXXXXXXXX.log")
-pg_upgradecluster "$UPGRADE_FROM" main --method=upgrade --link | tee "$UPGRADE_LOG"
+pg_upgradecluster -v "$UPGRADE_TO" "$UPGRADE_FROM" main --method=upgrade --link | tee "$UPGRADE_LOG"
 SCRIPTS_PATH=$(grep -o "/var/log/postgresql/pg_upgradecluster-$UPGRADE_FROM-$UPGRADE_TO-main.*" "$UPGRADE_LOG" || true)
 
 # If the upgrade completed successfully, lock in the new version in

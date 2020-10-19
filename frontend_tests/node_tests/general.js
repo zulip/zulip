@@ -641,7 +641,7 @@ function make_jquery_helper() {
             case "#stream_filters":
                 return stream_filters;
             default:
-                throw Error("unknown selector: " + selector);
+                throw new Error("unknown selector: " + selector);
         }
     }
 

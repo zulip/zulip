@@ -309,8 +309,8 @@ class CommonUtils {
         } else if (type === "private") {
             await page.keyboard.press("KeyX");
             const recipients = params.recipient.split(", ");
-            for (let i = 0; i < recipients.length; i += 1) {
-                await this.pm_recipient.set(page, recipients[i]);
+            for (const recipient of recipients) {
+                await this.pm_recipient.set(page, recipient);
             }
             delete params.recipient;
         } else {
@@ -353,8 +353,7 @@ class CommonUtils {
     }
 
     async send_multiple_messages(page, msgs) {
-        for (let msg_index = 0; msg_index < msgs.length; msg_index += 1) {
-            const msg = msgs[msg_index];
+        for (const msg of msgs) {
             await this.send_message(page, msg.stream !== undefined ? "stream" : "private", msg);
         }
     }
@@ -386,7 +385,7 @@ class CommonUtils {
 
                 const messages = [];
                 $.map($el.find(".message_row .message_content"), (message_row) => {
-                    messages.push(message_row.innerText.trim());
+                    messages.push(message_row.textContent.trim());
                 });
 
                 data.push([key, messages]);
@@ -460,8 +459,8 @@ class CommonUtils {
         const page = await this.get_page();
         try {
             await test_function(page);
-        } catch (e) {
-            console.log(e);
+        } catch (error) {
+            console.log(error);
 
             // Take a screenshot, and increment the screenshot_id.
             await this.screenshot(page, `failure-${this.screenshot_id}`);

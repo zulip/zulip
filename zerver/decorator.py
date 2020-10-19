@@ -778,15 +778,30 @@ def zulip_otp_required(
     def test(user: UserProfile) -> bool:
         """
         :if_configured: If ``True``, an authenticated user with no confirmed
-        OTP devices will be allowed. Default is ``False``. If ``False``,
+        OTP devices will be allowed. Also, non-authenticated users will be
+        allowed as web_public_visitor users. Default is ``False``. If ``False``,
         2FA will not do any authentication.
         """
         if_configured = settings.TWO_FACTOR_AUTHENTICATION_ENABLED
         if not if_configured:
             return True
 
-        return user.is_verified() or (user.is_authenticated
-                                      and not user_has_device(user))
+        # User has completed 2FA verification
+        if user.is_verified():
+            return True
+
+        # This request is unauthenticated (logged-out) access; 2FA is
+        # not required or possible.
+        if not user.is_authenticated:  # nocoverage
+            return True
+
+        # If the user doesn't have 2FA set up, we can't enforce 2FA.
+        if not user_has_device(user):
+            return True
+
+        # User has configured 2FA and is not verified, so the user
+        # fails the test (and we should redirect to the 2FA view).
+        return False
 
     decorator = django_user_passes_test(test,
                                         login_url=login_url,

@@ -95,7 +95,7 @@ exports.id = function (message_row) {
         blueslip.error("Calling code passed rows.id a row with no zid attr.");
     }
 
-    return parseFloat(zid);
+    return Number.parseFloat(zid);
 };
 
 exports.local_echo_id = function (message_row) {

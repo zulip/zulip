@@ -10,6 +10,7 @@ from two_factor.utils import default_device
 
 from zerver.lib.events import do_events_register
 from zerver.lib.i18n import (
+    get_and_set_request_language,
     get_language_list,
     get_language_list_for_templates,
     get_language_name,
@@ -103,6 +104,7 @@ def get_user_permission_info(user_profile: Optional[UserProfile]) -> UserPermiss
 def build_page_params_for_home_page_load(
     request: HttpRequest,
     user_profile: UserProfile,
+    realm: Realm,
     insecure_desktop_app: bool,
     has_mobile_devices: bool,
     narrow: List[List[str]],
@@ -131,21 +133,16 @@ def build_page_params_for_home_page_load(
         slim_presence=True,
         client_capabilities=client_capabilities,
         narrow=narrow,
+        include_streams=False,
     )
 
     furthest_read_time = get_furthest_read_time(user_profile)
 
-    # We pick a language for the user as follows:
-    # * First priority is the language in the URL, for debugging.
-    # * If not in the URL, we use the language from the user's settings.
-    request_language = translation.get_language_from_path(request.path_info)
-    if request_language is None:
-        request_language = register_ret['default_language']
-    translation.activate(request_language)
-
-    # We also save the language to the user's session, so that
-    # something reasonable will happen in logged-in portico pages.
-    request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
+    request_language = get_and_set_request_language(
+        request,
+        register_ret['default_language'],
+        translation.get_language_from_path(request.path_info)
+    )
 
     two_fa_enabled = (
         settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
@@ -181,12 +178,10 @@ def build_page_params_for_home_page_load(
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.
         two_fa_enabled_user=two_fa_enabled and bool(default_device(user_profile)),
+        is_web_public_visitor=user_profile is None,
     )
 
-    undesired_register_ret_fields = [
-        "streams",
-    ]
-    for field_name in set(register_ret.keys()) - set(undesired_register_ret_fields):
+    for field_name in register_ret.keys():
         page_params[field_name] = register_ret[field_name]
 
     if narrow_stream is not None:

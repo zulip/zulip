@@ -4,11 +4,11 @@ zrequire("colorspace");
 
 run_test("sRGB_to_linear", () => {
     let srgb_color = 0.0042;
-    let expected_value = 0.0042 / 255.0 / 12.92;
+    let expected_value = 0.0042 / 255 / 12.92;
     let actual_value = colorspace.sRGB_to_linear(srgb_color);
     assert.equal(actual_value, expected_value);
 
-    srgb_color = 255.0;
+    srgb_color = 255;
     expected_value = 1;
     actual_value = colorspace.sRGB_to_linear(srgb_color);
     assert.equal(actual_value, expected_value);

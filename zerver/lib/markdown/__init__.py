@@ -449,7 +449,7 @@ def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
     # TODO: What if response content is huge? Should we get headers first?
     try:
         content = requests.get(url, timeout=1).text
-    except Exception:
+    except requests.RequestException:
         return None
     # Extract the head and meta tags
     # All meta tags are self closing, have no children or are closed

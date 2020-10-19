@@ -1216,7 +1216,7 @@ class StripeTest(StripeTestCase):
     @mock_stripe()
     def test_payment_method_string(self, *mocks: Mock) -> None:
         pass
-        # If you signup with a card, we should show your card as the payment method
+        # If you sign up with a card, we should show your card as the payment method
         # Already tested in test_initial_upgrade
 
         # If you pay by invoice, your payment method should be
@@ -1228,7 +1228,7 @@ class StripeTest(StripeTestCase):
         # stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
         # self.assertEqual('Billed by invoice', payment_method_string(stripe_customer))
 
-        # If you signup with a card and then downgrade, we still have your
+        # If you sign up with a card and then downgrade, we still have your
         # card on file, and should show it
         # TODO
 

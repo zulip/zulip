@@ -1998,7 +1998,7 @@ class TestClearOnRead(ZulipTestCase):
                 UserMessage.flags.active_mobile_push_notification))
 
         with mock_queue_publish("zerver.lib.actions.queue_json_publish") as mock_publish:
-            do_mark_stream_messages_as_read(hamlet, self.client, stream)
+            do_mark_stream_messages_as_read(hamlet, stream.recipient_id)
             queue_items = [c[0][1] for c in mock_publish.call_args_list]
             groups = [item['message_ids'] for item in queue_items]
 

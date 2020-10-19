@@ -78,7 +78,7 @@ function wrap_tex(tex) {
         return katex.renderToString(tex, {
             displayMode: true,
         });
-    } catch (ex) {
+    } catch {
         return '<span class="tex-error">' + _.escape(tex) + "</span>";
     }
 }
@@ -178,7 +178,7 @@ export function process_fenced_code(content) {
                     if (line === fence) {
                         this.done();
                     } else {
-                        lines.push(line.trimRight());
+                        lines.push(line.trimEnd());
                     }
                 },
 

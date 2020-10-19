@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-function error_out {
+function error_out() {
     echo -en '\e[0;31m'
     echo "$1"
     echo -en '\e[0m'

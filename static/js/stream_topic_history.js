@@ -96,7 +96,7 @@ class PerStreamHistory {
         const topic_name = opts.topic_name;
         let message_id = opts.message_id || 0;
 
-        message_id = parseInt(message_id, 10);
+        message_id = Number.parseInt(message_id, 10);
         this.update_stream_max_message_id(message_id);
 
         const existing = this.topics.get(topic_name);

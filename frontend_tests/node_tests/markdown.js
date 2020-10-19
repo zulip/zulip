@@ -364,12 +364,12 @@ run_test("marked", () => {
         {
             input: "This is a #**Denmark>some topic** stream_topic link",
             expected:
-                '<p>This is a <a class="stream-topic" data-stream-id="1" href="/#narrow/stream/1-Denmark/topic/some.20topic">#Denmark > some topic</a> stream_topic link</p>',
+                '<p>This is a <a class="stream-topic" data-stream-id="1" href="/#narrow/stream/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> stream_topic link</p>',
         },
         {
             input: "This has two links: #**Denmark>some topic** and #**social>other topic**.",
             expected:
-                '<p>This has two links: <a class="stream-topic" data-stream-id="1" href="/#narrow/stream/1-Denmark/topic/some.20topic">#Denmark > some topic</a> and <a class="stream-topic" data-stream-id="2" href="/#narrow/stream/2-social/topic/other.20topic">#social > other topic</a>.</p>',
+                '<p>This has two links: <a class="stream-topic" data-stream-id="1" href="/#narrow/stream/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> and <a class="stream-topic" data-stream-id="2" href="/#narrow/stream/2-social/topic/other.20topic">#social &gt; other topic</a>.</p>',
         },
         {
             input: "This is not a #**Denmark>** stream_topic link",
@@ -386,7 +386,7 @@ run_test("marked", () => {
                 '<p>This is an <span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span> message</p>',
         },
         {
-            input: "\ud83d\udca9",
+            input: "\uD83D\uDCA9",
             expected:
                 '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
         },
@@ -512,7 +512,7 @@ run_test("marked", () => {
         {
             input: "#**Bobby <h1>Tables</h1>**",
             expected:
-                '<p><a class="stream-topic" data-stream-id="4" href="/#narrow/stream/4-Bobby-.3Ch1/topic/Tables.3C.2Fh1.3E">#Bobby &lt;h1 > Tables&lt;/h1&gt;</a></p>',
+                '<p><a class="stream-topic" data-stream-id="4" href="/#narrow/stream/4-Bobby-.3Ch1/topic/Tables.3C.2Fh1.3E">#Bobby &lt;h1 &gt; Tables&lt;/h1&gt;</a></p>',
         },
         {
             input: "#**& &amp; &amp;amp;**",
@@ -522,7 +522,7 @@ run_test("marked", () => {
         {
             input: "#**& &amp; &amp;amp;>& &amp; &amp;amp;**",
             expected:
-                '<p><a class="stream-topic" data-stream-id="5" href="/#narrow/stream/5-.26-.26.20.26amp.3B/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; > &amp; &amp; &amp;amp;</a></p>',
+                '<p><a class="stream-topic" data-stream-id="5" href="/#narrow/stream/5-.26-.26.20.26amp.3B/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; &gt; &amp; &amp; &amp;amp;</a></p>',
         },
     ];
 
@@ -676,19 +676,19 @@ run_test("python_to_js_filter", () => {
     // to update_realm_filter_rules.
     markdown.update_realm_filter_rules([["/a(?im)a/g"], ["/a(?L)a/g"]]);
     let actual_value = marked.InlineLexer.rules.zulip.realm_filters;
-    let expected_value = [/\/aa\/g(?![\w])/gim, /\/aa\/g(?![\w])/g];
+    let expected_value = [/\/aa\/g(?!\w)/gim, /\/aa\/g(?!\w)/g];
     assert.deepEqual(actual_value, expected_value);
     // Test case with multiple replacements.
     markdown.update_realm_filter_rules([
-        ["#cf(?P<contest>[0-9]+)(?P<problem>[A-Z][0-9A-Z]*)", "http://google.com"],
+        ["#cf(?P<contest>\\d+)(?P<problem>[A-Z][\\dA-Z]*)", "http://google.com"],
     ]);
     actual_value = marked.InlineLexer.rules.zulip.realm_filters;
-    expected_value = [/#cf([0-9]+)([A-Z][0-9A-Z]*)(?![\w])/g];
+    expected_value = [/#cf(\d+)([A-Z][\dA-Z]*)(?!\w)/g];
     assert.deepEqual(actual_value, expected_value);
     // Test incorrect syntax.
     blueslip.expect(
         "error",
-        "python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?![\\w])/: Unterminated group",
+        "python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?!\\w)/: Unterminated group",
     );
     markdown.update_realm_filter_rules([["!@#@(!#&((!&(@#(", "http://google.com"]]);
     actual_value = marked.InlineLexer.rules.zulip.realm_filters;
@@ -746,7 +746,7 @@ run_test("translate_emoticons_to_names", () => {
 });
 
 run_test("missing unicode emojis", () => {
-    const message = {raw_content: "\u{1f6b2}"};
+    const message = {raw_content: "\u{1F6B2}"};
 
     markdown.apply_markdown(message);
     assert.equal(
@@ -764,5 +764,5 @@ run_test("missing unicode emojis", () => {
         markdown.apply_markdown(message);
     });
 
-    assert.equal(message.content, "<p>\u{1f6b2}</p>");
+    assert.equal(message.content, "<p>\u{1F6B2}</p>");
 });

@@ -266,7 +266,7 @@ run_test("upload_files", () => {
     uppy.addFile = (file) => {
         assert.equal(file.name, "budapest.png");
         add_file_counter += 1;
-        throw Error();
+        throw new Error("some error");
     };
     upload.upload_files(uppy, config, files);
     assert.equal(add_file_counter, 1);

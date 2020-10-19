@@ -107,6 +107,13 @@ class BaseDocumentationSpider(scrapy.Spider):
         return callback
 
     def _make_requests(self, url: str) -> Iterator[Request]:
+        # These URLs are for Zulip's webapp, which with recent changes
+        # can be accessible without login an account.  While we do
+        # crawl documentation served by the webapp (E.g. /help/), we
+        # don't want to crawl the webapp itself, so we exclude these.
+        if url in ['http://localhost:9981/', 'http://localhost:9981'] or url.startswith('http://localhost:9981/#') or url.startswith('http://localhost:9981#'):
+            return
+
         callback: Callable[[Response], Optional[Iterator[Request]]] = self.parse
         dont_filter = False
         method = 'GET'
@@ -159,6 +166,6 @@ class BaseDocumentationSpider(scrapy.Spider):
             if response.status == 405 and response.request.method == 'HEAD':
                 # Method 'HEAD' not allowed, repeat request with 'GET'
                 return self.retry_request_with_get(response.request)
-            self.logger.error("Please check link: %s", response)
+            self.logger.error("Please check link: %s", response.request.url)
 
         return failure

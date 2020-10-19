@@ -438,7 +438,10 @@ function get_human_profile_data(fields_user_pills) {
         // Remove duplicate datepicker input element generated flatpicker library
         if (!$(this).hasClass("form-control")) {
             new_profile_data.push({
-                id: parseInt($(this).closest(".custom_user_field").attr("data-field-id"), 10),
+                id: Number.parseInt(
+                    $(this).closest(".custom_user_field").attr("data-field-id"),
+                    10,
+                ),
                 value: $(this).val(),
             });
         }
@@ -544,7 +547,7 @@ function handle_bot_deactivation(tbody, status_field) {
 
         const button_elem = $(e.target);
         const row = button_elem.closest(".user_row");
-        const bot_id = parseInt(row.attr("data-user-id"), 10);
+        const bot_id = Number.parseInt(row.attr("data-user-id"), 10);
         const url = "/json/bots/" + encodeURIComponent(bot_id);
 
         const opts = {
@@ -566,7 +569,7 @@ function handle_reactivation(tbody, status_field) {
         // Go up the tree until we find the user row, then grab the email element
         const button_elem = $(e.target);
         const row = button_elem.closest(".user_row");
-        const user_id = parseInt(row.attr("data-user-id"), 10);
+        const user_id = Number.parseInt(row.attr("data-user-id"), 10);
         const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
         const data = {};
 
@@ -587,7 +590,7 @@ function handle_human_form(tbody, status_field) {
     tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
-        const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const person = people.get_by_user_id(user_id);
 
         if (!person) {
@@ -602,7 +605,7 @@ function handle_human_form(tbody, status_field) {
             e.preventDefault();
             e.stopPropagation();
 
-            const role = parseInt(modal.find("#user-role-select").val().trim(), 10);
+            const role = Number.parseInt(modal.find("#user-role-select").val().trim(), 10);
             const full_name = modal.find("input[name='full_name']");
             const profile_data = get_human_profile_data(fields_user_pills);
 
@@ -623,7 +626,7 @@ function handle_bot_form(tbody, status_field) {
     tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
-        const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const bot = people.get_by_user_id(user_id);
 
         if (!bot) {

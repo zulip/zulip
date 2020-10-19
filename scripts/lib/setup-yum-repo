@@ -7,8 +7,14 @@ args="$(getopt -o '' --long prod -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
-        --prod) is_prod=true; shift;;
-        --) shift; break;;
+        --prod)
+            is_prod=true
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
     esac
 done
 

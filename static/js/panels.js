@@ -9,7 +9,9 @@ const resize_app = function () {
     // the floating recipient bar is usually positioned right below
     // the `.header` element (including padding).
     const frb_top =
-        panels_height + $(".header").height() + parseInt($(".header").css("paddingBottom"), 10);
+        panels_height +
+        $(".header").height() +
+        Number.parseInt($(".header").css("paddingBottom"), 10);
     $("#floating_recipient_bar").css("top", frb_top + "px");
 };
 
@@ -24,7 +26,7 @@ const show_step = function ($process, step) {
 };
 
 const get_step = function ($process) {
-    return $process.find("[data-step]").filter(":visible").data("step");
+    return $process.find("[data-step]:visible").data("step");
 };
 
 function should_show_notifications(ls) {

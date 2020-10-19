@@ -179,8 +179,8 @@ const funcs = {
             return;
         }
 
-        if (typeof meta.onresize === "function") {
-            meta.onresize(canvas);
+        if (typeof meta.resize_handler === "function") {
+            meta.resize_handler(canvas);
         }
 
         const parent = {
@@ -267,7 +267,7 @@ class LightboxCanvas {
     }
 
     resize(callback) {
-        this.meta.onresize = callback;
+        this.meta.resize_handler = callback;
     }
 }
 

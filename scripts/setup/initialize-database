@@ -10,10 +10,16 @@ args="$(getopt -o '' --long help,quiet -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
-        --help) usage;;
-        --quiet) QUIET=1; shift;;
-        --) shift; break;;
-        *) usage;;
+        --help) usage ;;
+        --quiet)
+            QUIET=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *) usage ;;
     esac
 done
 

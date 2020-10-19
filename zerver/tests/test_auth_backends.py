@@ -818,7 +818,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
           /register (True) or /login (False).  This is important
           because we need to verify behavior like the
           "Continue to registration" if you try to log in using an
-          account that doesn't exist but is allowed to signup.
+          account that doesn't exist but is allowed to sign up.
         * next: Parameter passed through in production authentication
           to redirect the user to (e.g.) the specific page in the webapp
           that they clicked a link to before being presented with the login
@@ -1282,12 +1282,12 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         multiuse_object_key = multiuse_confirmation.confirmation_key
         account_data_dict = self.get_account_data_dict(email=email, name=name)
 
-        # First, try to signup for closed realm without using an invitation
+        # First, try to sign up for closed realm without using an invitation
         result = self.social_auth_test(account_data_dict,
                                        expect_choose_email_screen=True,
                                        subdomain=subdomain, is_signup=True)
         result = self.client_get(result.url)
-        # Verify that we're unable to signup, since this is a closed realm
+        # Verify that we're unable to sign up, since this is a closed realm
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(["Sign up"], result)
 

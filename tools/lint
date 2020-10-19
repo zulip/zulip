@@ -55,7 +55,7 @@ def run() -> None:
     linter_config.external_linter('eslint', ['node', 'node_modules/.bin/eslint',
                                              '--quiet', '--cache', '--ext', '.js,.ts'], ['js', 'ts'],
                                   fix_arg='--fix',
-                                  description="Standard JavaScript style and formatting linter"
+                                  description="Standard JavaScript style and formatting linter "
                                   "(config: .eslintrc).")
     linter_config.external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'],
                                   description="Runs the puppet parser validator, "
@@ -64,17 +64,20 @@ def run() -> None:
                                   ['puppet-lint', '--fail-on-warnings', *PUPPET_CHECK_RULES_TO_EXCLUDE],
                                   ['pp'],
                                   fix_arg='--fix',
-                                  description="Standard puppet linter"
+                                  description="Standard puppet linter "
                                   "(config: tools/linter_lib/exclude.py)")
     linter_config.external_linter('templates', ['tools/check-templates'], ['hbs', 'html'],
-                                  description="Custom linter checks whitespace formatting"
-                                  "of HTML templates.",
+                                  description="Custom linter checks whitespace formatting "
+                                  "of HTML templates",
                                   fix_arg='--fix')
     linter_config.external_linter('openapi', ['node', 'tools/check-openapi'], ['yaml'],
-                                  description="Validates our OpenAPI/Swagger API documentation"
+                                  description="Validates our OpenAPI/Swagger API documentation "
                                   "(zerver/openapi/zulip.yaml) ")
     linter_config.external_linter('shellcheck', ['shellcheck', '-x', '-P', 'SCRIPTDIR'], ['sh'],
-                                  description="Standard shell script linter.")
+                                  description="Standard shell script linter")
+    linter_config.external_linter('shfmt', ['shfmt'], ['sh'],
+                                  check_arg='-d', fix_arg='-w',
+                                  description="Formats shell scripts")
     command = ['tools/run-mypy', '--quiet']
     if args.force:
         command.append('--force')
@@ -86,7 +89,7 @@ def run() -> None:
                                   pass_targets=False,
                                   description="Shares duplicate packages in yarn.lock")
     linter_config.external_linter('gitlint', ['tools/commit-message-lint'],
-                                  description="Checks commit messages for common formatting errors."
+                                  description="Checks commit messages for common formatting errors "
                                   "(config: .gitlint)")
     linter_config.external_linter('isort', ['isort'], ['py'],
                                   description="Sorts Python import statements",

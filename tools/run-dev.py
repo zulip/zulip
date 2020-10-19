@@ -5,7 +5,6 @@ import pwd
 import signal
 import subprocess
 import sys
-import traceback
 from typing import Any, Callable, Generator, List, Sequence
 from urllib.parse import urlunparse
 
@@ -164,7 +163,7 @@ def do_one_time_webpack_compile() -> None:
     # with a running development server.
     subprocess.check_call(['./tools/webpack', '--quiet', '--test'])
 
-def start_webpack_watcher() -> None:
+def start_webpack_watcher() -> "subprocess.Popen[bytes]":
     webpack_cmd = ['./tools/webpack', '--watch', f'--port={webpack_port}']
     if options.minify:
         webpack_cmd.append('--minify')
@@ -176,7 +175,7 @@ def start_webpack_watcher() -> None:
         webpack_cmd.append(f"--host={options.interface}")
     else:
         webpack_cmd.append("--host=0.0.0.0")
-    subprocess.Popen(webpack_cmd)
+    return subprocess.Popen(webpack_cmd)
 
 def transform_url(protocol: str, path: str, query: str, target_port: int, target_host: str) -> str:
     # generate url with target host
@@ -362,15 +361,17 @@ def print_listeners() -> None:
     proxy_warning = f"Only the proxy port ({proxy_port}) is exposed."
     print(WARNING + "Note to Vagrant users: " + ENDC + proxy_warning + '\n')
 
-if options.test:
-    do_one_time_webpack_compile()
-else:
-    start_webpack_watcher()
-
-for cmd in server_processes():
-    subprocess.Popen(cmd)
+children = []
 
 try:
+    if options.test:
+        do_one_time_webpack_compile()
+    else:
+        children.append(start_webpack_watcher())
+
+    for cmd in server_processes():
+        children.append(subprocess.Popen(cmd))
+
     app = Application(enable_logging=options.enable_tornado_logging)
     try:
         app.listen(proxy_port, address=options.interface)
@@ -385,12 +386,13 @@ try:
     for s in (signal.SIGINT, signal.SIGTERM):
         signal.signal(s, shutdown_handler)
     ioloop.start()
-except Exception:
-    # Print the traceback before we get SIGTERM and die.
-    traceback.print_exc()
-    raise
 finally:
-    # Kill everything in our process group.
-    os.killpg(0, signal.SIGTERM)
+    for child in children:
+        child.terminate()
+
+    print("Waiting for children to stop...")
+    for child in children:
+        child.wait()
+
     # Remove pid file when development server closed correctly.
     os.remove(pid_file_path)

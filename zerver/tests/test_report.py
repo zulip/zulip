@@ -1,3 +1,4 @@
+import subprocess
 from typing import Any, Callable, Dict, Iterable, List, Tuple
 from unittest import mock
 
@@ -148,7 +149,7 @@ class TestReport(ZulipTestCase):
 
         subprocess_mock = mock.patch(
             'zerver.views.report.subprocess.check_output',
-            side_effect=KeyError('foo'),
+            side_effect=subprocess.CalledProcessError(1, []),
         )
         with mock_queue_publish('zerver.views.report.queue_json_publish') as m, subprocess_mock:
             result = self.client_post("/json/report/error", params)

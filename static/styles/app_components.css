@@ -315,6 +315,7 @@
 .input-append {
     font-size: 90%;
     letter-spacing: -0.3em;
+    display: block;
 }
 
 .input-append input[type="text"],

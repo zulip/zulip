@@ -22,9 +22,6 @@ const _navigator = {
 };
 
 const _document = {
-    getElementById() {
-        return $("#compose-textarea");
-    },
     execCommand() {
         return false;
     },
@@ -365,7 +362,7 @@ run_test("validate_stream_message", () => {
     assert($("#compose-all-everyone").visible());
 });
 
-run_test("test_validate_stream_message_post_policy", () => {
+run_test("test_validate_stream_message_post_policy_admin_only", () => {
     // This test is in continuation with test_validate but it has been separated out
     // for better readability. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
@@ -387,9 +384,45 @@ run_test("test_validate_stream_message_post_policy", () => {
         i18n.t("Only organization admins are allowed to post to this stream."),
     );
 
-    // reset compose_state.stream_name to 'social' again so that any tests occurung after this
+    // Reset error message.
+    compose_state.stream_name("social");
+
+    page_params.is_admin = false;
+    page_params.is_guest = true;
+
+    compose_state.topic("subject102");
+    compose_state.stream_name("stream102");
+    assert(!compose.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        i18n.t("Only organization admins are allowed to post to this stream."),
+    );
+});
+
+run_test("test_validate_stream_message_post_policy_full_members_only", () => {
+    page_params.is_admin = false;
+    page_params.is_guest = true;
+    const sub = {
+        stream_id: 103,
+        name: "stream103",
+        subscribed: true,
+        stream_post_policy: stream_data.stream_post_policy_values.non_new_members.code,
+    };
+
+    compose_state.topic("subject103");
+    compose_state.stream_name("stream103");
+    stream_data.add_sub(sub);
+    assert(!compose.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        i18n.t("Guests are not allowed to post to this stream."),
+    );
+
+    // reset compose_state.stream_name to 'social' again so that any tests occurring after this
     // do not reproduce this error.
     compose_state.stream_name("social");
+    // Reset page_params
+    page_params.is_guest = false;
 });
 
 run_test("markdown_rtl", () => {
@@ -453,12 +486,13 @@ run_test("markdown_shortcuts", () => {
         const compose_textarea = $("#compose-textarea");
         const value = compose_textarea.val();
         $("#compose-textarea").val(
-            value.substring(0, compose_textarea.range().start) +
+            value.slice(0, compose_textarea.range().start) +
                 markdown +
-                value.substring(compose_textarea.range().end, value.length),
+                value.slice(compose_textarea.range().end),
         );
     };
 
+    $("#compose-textarea")[0] = {};
     $("#compose-textarea").range = function () {
         return {
             start: range_start,
@@ -467,7 +501,7 @@ run_test("markdown_shortcuts", () => {
             range: noop,
             text: $("#compose-textarea")
                 .val()
-                .substring(range_start, range_length + range_start),
+                .slice(range_start, range_length + range_start),
         };
     };
     $("#compose-textarea").caret = noop;
@@ -692,7 +726,7 @@ run_test("send_message", () => {
 
         // Setting message content with a host server link and we will assert
         // later that this has been converted to a relative link.
-        $("#compose-textarea").val("[foobar]" + "(https://foo.com/user_uploads/123456)");
+        $("#compose-textarea").val("[foobar](https://foo.com/user_uploads/123456)");
         $("#compose-textarea").trigger("blur");
         $("#compose-send-status").show();
         $("#compose-send-button").prop("disabled", true);
@@ -1489,7 +1523,7 @@ run_test("on_events", () => {
         handler(ev);
 
         // video link ids consist of 15 random digits
-        let video_link_regex = /\[translated: Click to join video call\]\(https:\/\/meet.jit.si\/\d{15}\)/;
+        let video_link_regex = /\[translated: Click to join video call]\(https:\/\/meet.jit.si\/\d{15}\)/;
         assert.match(syntax_to_insert, video_link_regex);
 
         page_params.jitsi_server_url = null;
@@ -1514,7 +1548,7 @@ run_test("on_events", () => {
         };
 
         handler(ev);
-        video_link_regex = /\[translated: Click to join video call\]\(example\.zoom\.com\)/;
+        video_link_regex = /\[translated: Click to join video call]\(example\.zoom\.com\)/;
         assert.match(syntax_to_insert, video_link_regex);
 
         page_params.realm_video_chat_provider =
@@ -1529,7 +1563,7 @@ run_test("on_events", () => {
         };
 
         handler(ev);
-        video_link_regex = /\[translated: Click to join video call\]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
+        video_link_regex = /\[translated: Click to join video call]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
         assert.match(syntax_to_insert, video_link_regex);
     })();
 

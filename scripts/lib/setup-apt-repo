@@ -36,7 +36,7 @@ apt-get -y install "${pre_setup_deps[@]}"
 SCRIPTS_PATH="$(dirname "$(dirname "$0")")"
 
 release=$(lsb_release -sc)
-if [[ "$release" =~ ^(bionic|cosmic|disco|eoan|focal)$ ]] ; then
+if [[ "$release" =~ ^(bionic|cosmic|disco|eoan|focal)$ ]]; then
     apt-key add "$SCRIPTS_PATH"/setup/pgdg.asc
     apt-key add "$SCRIPTS_PATH"/setup/pgroonga-ppa.asc
     cat >$SOURCES_FILE <<EOF
@@ -46,7 +46,7 @@ deb-src http://apt.postgresql.org/pub/repos/apt/ $release-pgdg main
 deb http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 EOF
-elif [[ "$release" =~ ^(buster)$ ]] ; then
+elif [[ "$release" =~ ^(buster)$ ]]; then
     apt-key add "$SCRIPTS_PATH"/setup/pgdg.asc
     apt-key add "$SCRIPTS_PATH"/setup/pgroonga-debian.asc
     cat >$SOURCES_FILE <<EOF
@@ -71,4 +71,4 @@ else
     apt-get update && rm -f "$STAMP_FILE"
 fi
 
-echo "$DEPENDENCIES_HASH" > "$DEPENDENCIES_HASH_FILE"
+echo "$DEPENDENCIES_HASH" >"$DEPENDENCIES_HASH_FILE"

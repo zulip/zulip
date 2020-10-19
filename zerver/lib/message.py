@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 import ahocorasick
 import orjson
 from django.db import connection
-from django.db.models import Sum
+from django.db.models import Max, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from psycopg2.sql import SQL
@@ -840,7 +840,6 @@ def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
     ).values_list('message_id', flat=True)[0:10000])
 
 def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
-
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
 
     user_msgs = UserMessage.objects.filter(
@@ -863,8 +862,33 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
     user_msgs = list(user_msgs[:MAX_UNREAD_MESSAGES])
 
     rows = list(reversed(user_msgs))
+    return extract_unread_data_from_um_rows(rows, user_profile)
+
+def extract_unread_data_from_um_rows(
+    rows: List[Dict[str, Any]],
+    user_profile: Optional[UserProfile]
+) -> RawUnreadMessagesResult:
+
+    pm_dict: Dict[int, Any] = {}
+    stream_dict: Dict[int, Any] = {}
+    unmuted_stream_msgs: Set[int] = set()
+    huddle_dict: Dict[int, Any] = {}
+    mentions: Set[int] = set()
+
+    raw_unread_messages: RawUnreadMessagesResult = dict(
+        pm_dict=pm_dict,
+        stream_dict=stream_dict,
+        muted_stream_ids=[],
+        unmuted_stream_msgs=unmuted_stream_msgs,
+        huddle_dict=huddle_dict,
+        mentions=mentions,
+    )
+
+    if user_profile is None:
+        return raw_unread_messages  # nocoverage
 
     muted_stream_ids = get_muted_stream_ids(user_profile)
+    raw_unread_messages['muted_stream_ids'] = muted_stream_ids
 
     topic_mute_checker = build_topic_mute_checker(user_profile)
 
@@ -886,12 +910,6 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
         user_ids_string = huddle_users(recipient_id)
         huddle_cache[recipient_id] = user_ids_string
         return user_ids_string
-
-    pm_dict = {}
-    stream_dict = {}
-    unmuted_stream_msgs = set()
-    huddle_dict = {}
-    mentions = set()
 
     for row in rows:
         message_id = row['message_id']
@@ -946,14 +964,7 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
             else:  # nocoverage # TODO: Test wildcard mentions in PMs.
                 mentions.add(message_id)
 
-    return dict(
-        pm_dict=pm_dict,
-        stream_dict=stream_dict,
-        muted_stream_ids=muted_stream_ids,
-        unmuted_stream_msgs=unmuted_stream_msgs,
-        huddle_dict=huddle_dict,
-        mentions=mentions,
-    )
+    return raw_unread_messages
 
 def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesResult:
 
@@ -1099,6 +1110,17 @@ def update_first_visible_message_id(realm: Realm) -> None:
         realm.first_visible_message_id = first_visible_message_id
     realm.save(update_fields=["first_visible_message_id"])
 
+def get_last_message_id() -> int:
+    # We generally use this function to populate RealmAuditLog, and
+    # the max id here is actually systemwide, not per-realm.  I
+    # assume there's some advantage in not filtering by realm.
+    last_id = Message.objects.aggregate(Max('id'))['id__max']
+    if last_id is None:
+        # During initial realm creation, there might be 0 messages in
+        # the database; in that case, the `aggregate` query returns
+        # None.  Since we want an int for "beginning of time", use -1.
+        last_id = -1
+    return last_id
 
 def get_recent_conversations_recipient_id(user_profile: UserProfile,
                                           recipient_id: int,

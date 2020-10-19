@@ -248,14 +248,14 @@ def patch_bot_backend(
         if default_sending_stream == "":
             stream: Optional[Stream] = None
         else:
-            (stream, recipient, sub) = access_stream_by_name(
+            (stream, sub) = access_stream_by_name(
                 user_profile, default_sending_stream)
         do_change_default_sending_stream(bot, stream, acting_user=user_profile)
     if default_events_register_stream is not None:
         if default_events_register_stream == "":
             stream = None
         else:
-            (stream, recipient, sub) = access_stream_by_name(
+            (stream, sub) = access_stream_by_name(
                 user_profile, default_events_register_stream)
         do_change_default_events_register_stream(bot, stream, acting_user=user_profile)
     if default_all_public_streams is not None:
@@ -369,12 +369,12 @@ def add_bot_backend(
 
     default_sending_stream = None
     if default_sending_stream_name is not None:
-        (default_sending_stream, ignored_rec, ignored_sub) = access_stream_by_name(
+        (default_sending_stream, ignored_sub) = access_stream_by_name(
             user_profile, default_sending_stream_name)
 
     default_events_register_stream = None
     if default_events_register_stream_name is not None:
-        (default_events_register_stream, ignored_rec, ignored_sub) = access_stream_by_name(
+        (default_events_register_stream, ignored_sub) = access_stream_by_name(
             user_profile, default_events_register_stream_name)
 
     if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT) and service_name:
@@ -546,7 +546,7 @@ def get_subscription_backend(request: HttpRequest, user_profile: UserProfile,
                              stream_id: int=REQ(validator=check_int, path_only=True),
                              ) -> HttpResponse:
     target_user = access_user_by_id(user_profile, user_id, read_only=True)
-    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+    (stream, sub) = access_stream_by_id(user_profile, stream_id)
 
     subscription_status = {'is_subscribed': subscribed_to_stream(target_user, stream_id)}
 

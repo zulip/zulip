@@ -80,6 +80,8 @@ def update_realm(
             Realm.USER_GROUP_EDIT_POLICY_TYPES), default=None),
         private_message_policy: Optional[int]=REQ(validator=check_int_in(
             Realm.PRIVATE_MESSAGE_POLICY_TYPES), default=None),
+        wildcard_mention_policy: Optional[int]=REQ(validator=check_int_in(
+            Realm.WILDCARD_MENTION_POLICY_TYPES), default=None),
         email_address_visibility: Optional[int]=REQ(validator=check_int_in(
             Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None),
         default_twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
@@ -166,7 +168,7 @@ def update_realm(
                                                   notifications_stream_id):
             new_notifications_stream = None
             if notifications_stream_id >= 0:
-                (new_notifications_stream, recipient, sub) = access_stream_by_id(
+                (new_notifications_stream, sub) = access_stream_by_id(
                     user_profile, notifications_stream_id)
             do_set_realm_notifications_stream(realm, new_notifications_stream,
                                               notifications_stream_id,
@@ -178,7 +180,7 @@ def update_realm(
                                                          signup_notifications_stream_id):
             new_signup_notifications_stream = None
             if signup_notifications_stream_id >= 0:
-                (new_signup_notifications_stream, recipient, sub) = access_stream_by_id(
+                (new_signup_notifications_stream, sub) = access_stream_by_id(
                     user_profile, signup_notifications_stream_id)
             do_set_realm_signup_notifications_stream(realm, new_signup_notifications_stream,
                                                      signup_notifications_stream_id,

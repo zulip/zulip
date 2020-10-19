@@ -13,15 +13,14 @@ POSTGRES_USER="${POSTGRES_USER:-postgres}"
 # This psql command may fail because the zulip database doesn’t exist,
 # hence the &&.
 if records="$(
-    cd /  # Make sure the current working directory is readable by postgres
+    cd / # Make sure the current working directory is readable by postgres
     su "$POSTGRES_USER" -c "psql -v ON_ERROR_STOP=1 -Atc 'SELECT COUNT(*) FROM zulip.zerver_message;' zulip"
 )" && [ "$records" -gt 200 ]; then
     set +x
     echo "WARNING: This will delete your Zulip database which currently contains $records messages."
     read -p "Do you want to proceed? [y/N] " -r
     echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]
-    then
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         exit 1
     fi
     set -x
@@ -35,12 +34,12 @@ fi
 # Drop any open connections to any old database.
 # Send the script via stdin in case the postgres user lacks permission to read it.
 su -s /usr/bin/env - -- "$POSTGRES_USER" \
-    bash -s - zulip zulip_base < "$(dirname "$0")/terminate-psql-sessions"
+    bash -s - zulip zulip_base <"$(dirname "$0")/terminate-psql-sessions"
 
 (
-    cd /  # Make sure the current working directory is readable by postgres
+    cd / # Make sure the current working directory is readable by postgres
     su "$POSTGRES_USER" -c 'psql -v ON_ERROR_STOP=1 -e'
-) < "$(dirname "$0")/create-db.sql"
+) <"$(dirname "$0")/create-db.sql"
 
 # Clear memcached to avoid contamination from previous database state
 "$(dirname "$0")/flush-memcached"

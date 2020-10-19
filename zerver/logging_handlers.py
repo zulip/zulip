@@ -26,7 +26,7 @@ def try_git_describe() -> Optional[str]:
             stderr=subprocess.PIPE,
             cwd=os.path.join(os.path.dirname(__file__), '..'),
         ).strip().decode('utf-8')
-    except Exception:  # nocoverage
+    except (FileNotFoundError, subprocess.CalledProcessError):  # nocoverage
         return None
 
 def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:

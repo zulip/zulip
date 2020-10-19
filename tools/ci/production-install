@@ -14,8 +14,11 @@ APT_OPTIONS=(-o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-co
 apt-get update
 
 if [ -f /etc/os-release ]; then
-    os_info="$(. /etc/os-release; printf '%s\n' "$VERSION_CODENAME")"
-    { read -r os_version_codename || true; } <<< "$os_info"
+    os_info="$(
+        . /etc/os-release
+        printf '%s\n' "$VERSION_CODENAME"
+    )"
+    { read -r os_version_codename || true; } <<<"$os_info"
 fi
 
 if ! apt-get dist-upgrade -y "${APT_OPTIONS[@]}"; then

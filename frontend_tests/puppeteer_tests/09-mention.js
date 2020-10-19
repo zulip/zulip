@@ -19,8 +19,8 @@ async function test_mention(page) {
     console.log("Checking for all everyone warning");
     const stream_size = await page.evaluate(() => stream_data.get_sub("Verona").subscribers.size);
     const threshold = await page.evaluate(() => {
-        compose.all_everyone_warn_threshold = 5;
-        return compose.all_everyone_warn_threshold;
+        compose.wildcard_mention_large_stream_threshold = 5;
+        return compose.wildcard_mention_large_stream_threshold;
     });
     assert(stream_size > threshold);
     await page.click("#compose-send-button");

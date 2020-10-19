@@ -166,7 +166,7 @@ def generate_sprite_css_files(cache_path: str,
             # Why is the test here has_img_google and not
             # emoji_is_universal?  Because we briefly supported all
             # Google emoji (not just the universal ones), we need to
-            # ensure the spritesheet is setup to correctly display
+            # ensure the spritesheet is set up to correctly display
             # those google emoji (in case anyone used them).
 
             """
@@ -276,11 +276,11 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
 
         generate_sprite_css_files(cache_path, emoji_data, emojiset, alt_name)
 
-    # Setup standard emojisets.
+    # Set up standard emojisets.
     for emojiset in ['google', 'twitter']:
         setup_emoji_farm(emojiset, emoji_data)
 
-    # Setup old google "blobs" emojiset.
+    # Set up old google "blobs" emojiset.
     GOOGLE_BLOB_EMOJI_DATA_PATH = os.path.join(NODE_MODULES_PATH,
                                                'emoji-datasource-google-blob',
                                                'emoji.json')
@@ -348,7 +348,7 @@ def dump_emojis(cache_path: str) -> None:
         emoji_data = orjson.loads(emoji_data_file.read())
     emoji_catalog = generate_emoji_catalog(emoji_data, EMOJI_NAME_MAPS)
 
-    # Setup emoji farms.
+    # Set up emoji farms.
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
     setup_emoji_farms(cache_path, emoji_data)

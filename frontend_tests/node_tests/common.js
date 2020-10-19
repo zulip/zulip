@@ -116,8 +116,8 @@ run_test("adjust_mac_shortcuts", () => {
     });
 
     $(".markdown_content").each = (f) => {
-        for (let key_id = 0; key_id < keys_elem_list.length; key_id += 1) {
-            f.call(keys_elem_list[key_id]);
+        for (const key_elem of keys_elem_list) {
+            f.call(key_elem);
         }
     };
     common.adjust_mac_shortcuts(".markdown_content");

@@ -490,16 +490,6 @@ EMAIL_GATEWAY_IMAP_PORT = 993
 EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 
 
-########
-# Zoom integration.
-#
-# Zulip supports using Zoom as a video calling provider. To learn more about
-# configuring Zoom, see:
-# https://zulip.readthedocs.io/en/latest/production/zoom-configuration.html
-#
-#VIDEO_ZOOM_CLIENT_ID = <your Zoom Client ID>
-
-
 ################
 # LDAP integration.
 #
@@ -652,6 +642,14 @@ CAMO_URI = '/external_content/'
 # previews should be thumbnailed by thumbor, which saves bandwidth but
 # can modify the image's appearance.
 #THUMBNAIL_IMAGES = True
+
+################
+# Video call integrations.
+#
+# Controls the Zoom video call integration.  See:
+# https://zulip.readthedocs.io/en/latest/production/video-calls.html
+#
+#VIDEO_ZOOM_CLIENT_ID = <your Zoom Client ID>
 
 # Controls the Jitsi Meet video call integration.  By default, the
 # integration uses the SaaS https://meet.jit.si server.  You can specify

@@ -8,6 +8,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.cache import patch_cache_control
 
+from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import zulip_login_required
 from zerver.forms import ToSForm
 from zerver.lib.actions import do_change_tos_version, realm_user_count
@@ -77,7 +78,7 @@ def detect_narrowed_window(request: HttpRequest,
         try:
             # TODO: We should support stream IDs and PMs here as well.
             narrow_stream_name = request.GET.get("stream")
-            (narrow_stream, ignored_rec, ignored_sub) = access_stream_by_name(
+            (narrow_stream, ignored_sub) = access_stream_by_name(
                 user_profile, narrow_stream_name)
             narrow = [["stream", narrow_stream.name]]
         except Exception:
@@ -150,9 +151,11 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     if request.user.is_authenticated:
         user_profile = request.user
+        realm = user_profile.realm
     else:  # nocoverage
-        # This code path should not be reachable because of zulip_login_required above.
+        # user_profile=None corresponds to the logged-out "web_public" visitor case.
         user_profile = None
+        realm = get_valid_realm_from_request(request)
 
     update_last_reminder(user_profile)
 
@@ -185,6 +188,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     queue_id, page_params = build_page_params_for_home_page_load(
         request=request,
         user_profile=user_profile,
+        realm=realm,
         insecure_desktop_app=insecure_desktop_app,
         has_mobile_devices=has_mobile_devices,
         narrow=narrow,

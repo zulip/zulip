@@ -10,11 +10,20 @@ args="$(getopt -o '' --long help,force,exists-ok -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
-        --help) usage;;
-        --force) FORCE=1; shift;;
-        --exists-ok) EXISTS_OK=1; shift;;
-        --) shift; break;;
-        *) usage;;
+        --help) usage ;;
+        --force)
+            FORCE=1
+            shift
+            ;;
+        --exists-ok)
+            EXISTS_OK=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *) usage ;;
     esac
 done
 EXTERNAL_HOST="$1"
@@ -51,9 +60,9 @@ fi
 rm -f "$KEYFILE" "$CERTFILE"
 
 if [[ "$EXTERNAL_HOST" =~ ^(([0-9]+\.){3}[0-9]+)(:[0-9]+)?$ ]]; then
-    subjectAltName="IP:${BASH_REMATCH[1]}"  # IPv4 address
+    subjectAltName="IP:${BASH_REMATCH[1]}" # IPv4 address
 elif [[ "$EXTERNAL_HOST" =~ ^\[([^][]*)\](:[0-9]+)?$ ]]; then
-    subjectAltName="IP:${BASH_REMATCH[1]}"  # IPv6 address
+    subjectAltName="IP:${BASH_REMATCH[1]}" # IPv6 address
 elif [[ "$EXTERNAL_HOST" =~ ^([^:]+)(:[0-9]+)?$ ]]; then
     subjectAltName="DNS:${BASH_REMATCH[1]}"
 else
@@ -94,8 +103,8 @@ fi
 
 # Based on /usr/sbin/make-ssl-cert from Debian's `ssl-cert` package.
 openssl req -new -x509 \
-        -config "$config" -days 3650 -nodes -sha256 \
-        -out "$CERTFILE" -keyout "$KEYFILE"
+    -config "$config" -days 3650 -nodes -sha256 \
+    -out "$CERTFILE" -keyout "$KEYFILE"
 
 chmod 644 "$CERTFILE"
 chmod 640 "$KEYFILE"

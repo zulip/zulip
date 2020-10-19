@@ -179,6 +179,24 @@ run_test("basics", () => {
     assert.deepEqual(result, expected_result);
 });
 
+run_test("unknown realm emojis (add)", () => {
+    blueslip.expect("error", "Cannot find/add realm emoji for code 'broken'.");
+    reactions.add_clean_reaction({
+        reaction_type: "realm_emoji",
+        emoji_code: "broken",
+        user_ids: [alice.user_id],
+    });
+});
+
+run_test("unknown realm emojis (insert)", () => {
+    blueslip.expect("error", "Cannot find/insert realm emoji for code 'bogus'.");
+    reactions.view.insert_new_reaction({
+        reaction_type: "realm_emoji",
+        emoji_code: "bogus",
+        user_id: bob.user_id,
+    });
+});
+
 run_test("sending", (override) => {
     const message_id = 1001; // see above for setup
     let emoji_name = "smile"; // should be a current reaction
@@ -436,7 +454,7 @@ run_test("add_and_remove_reaction", () => {
 
     const result = reactions.get_message_reactions(message);
     assert(reaction_element.hasClass("reacted"));
-    const realm_emoji_data = result.filter((v) => v.emoji_name === "realm_emoji")[0];
+    const realm_emoji_data = result.find((v) => v.emoji_name === "realm_emoji");
 
     assert.equal(realm_emoji_data.count, 2);
     assert.equal(realm_emoji_data.is_realm_emoji, true);

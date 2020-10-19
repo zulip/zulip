@@ -347,7 +347,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
             if param.validator is not None and not default_assigned:
                 try:
                     val = orjson.loads(val)
-                except Exception:
+                except orjson.JSONDecodeError:
                     raise JsonableError(_('Argument "{}" is not valid JSON.').format(post_var_name))
 
                 try:

@@ -17,11 +17,11 @@ if [ $# -ne 0 ] && [ "$1" == "--reviews" ]; then
 fi
 push_args=()
 
-function is_merged {
+function is_merged() {
     ! git rev-list -n 1 origin/master.."$1" | grep -q .
 }
 
-function clean_ref {
+function clean_ref() {
     ref="$1"
     case "$ref" in
         */master | */HEAD)

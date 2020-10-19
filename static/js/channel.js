@@ -55,11 +55,11 @@ function call(args, idempotent) {
                         save_compose: true,
                     });
                 }
-            } catch (ex) {
+            } catch (error) {
                 blueslip.error(
                     "Unexpected 403 response from server",
                     {xhr: xhr.responseText, args},
-                    ex.stack,
+                    error.stack,
                 );
             }
         }

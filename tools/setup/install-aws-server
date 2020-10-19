@@ -43,19 +43,19 @@ if [ -z "$BRANCH" ]; then
     BRANCH=$(crudini --get "$zulip_install_config_file" repo default_branch)
 fi
 
-AWS_ZONE_ID=$(    crudini --get "$zulip_install_config_file" aws zone_id)
+AWS_ZONE_ID=$(crudini --get "$zulip_install_config_file" aws zone_id)
 SECURITY_GROUPS=$(crudini --get "$zulip_install_config_file" aws security_groups)
-AMI_ID=$(         crudini --get "$zulip_install_config_file" aws image_id)
-INSTANCE_TYPE=$(  crudini --get "$zulip_install_config_file" aws instance_type)
-SSH_SECRET_ID=$(  crudini --get "$zulip_install_config_file" aws ssh_secret_id)
+AMI_ID=$(crudini --get "$zulip_install_config_file" aws image_id)
+INSTANCE_TYPE=$(crudini --get "$zulip_install_config_file" aws instance_type)
+SSH_SECRET_ID=$(crudini --get "$zulip_install_config_file" aws ssh_secret_id)
 
 # Verify it doesn't exist already
-ZONE_NAME=$($AWS route53 get-hosted-zone --id "$AWS_ZONE_ID" | jq -r '.HostedZone.Name' )
-HOSTNAME="$SERVER.${ZONE_NAME%?}"  # Remove trailing .
+ZONE_NAME=$($AWS route53 get-hosted-zone --id "$AWS_ZONE_ID" | jq -r '.HostedZone.Name')
+HOSTNAME="$SERVER.${ZONE_NAME%?}" # Remove trailing .
 EXISTING_RECORDS=$($AWS route53 list-resource-record-sets \
-                        --hosted-zone-id "$AWS_ZONE_ID" \
-                        --query "ResourceRecordSets[?Name == '$HOSTNAME.']" \
-                       | jq '. | length')
+    --hosted-zone-id "$AWS_ZONE_ID" \
+    --query "ResourceRecordSets[?Name == '$HOSTNAME.']" \
+    | jq '. | length')
 if [ "$EXISTING_RECORDS" != "0" ]; then
     echo "$HOSTNAME already exists!"
     exit 1
@@ -72,16 +72,16 @@ BOOTDATA=$(mktemp)
     echo "BRANCH=$BRANCH"
     echo "SSH_SECRET_ID=$SSH_SECRET_ID"
     sed '/^AWS=/ r ./bootstrap-awscli' bootstrap-aws-installer
-} >> "$BOOTDATA"
+} >>"$BOOTDATA"
 
 TAGS="[{Key=Name,Value=$SERVER},{Key=role,Value=\"$ROLES\"}]"
 INSTANCE_DATA=$($AWS ec2 run-instances \
-                     --iam-instance-profile 'Name="EC2ProdInstance"' \
-                     --image-id "$AMI_ID" \
-                     --instance-type "$INSTANCE_TYPE" \
-                     --security-group-ids "$SECURITY_GROUPS" \
-                     --tag-specifications "ResourceType=instance,Tags=$TAGS" \
-                     --user-data "file://$BOOTDATA")
+    --iam-instance-profile 'Name="EC2ProdInstance"' \
+    --image-id "$AMI_ID" \
+    --instance-type "$INSTANCE_TYPE" \
+    --security-group-ids "$SECURITY_GROUPS" \
+    --tag-specifications "ResourceType=instance,Tags=$TAGS" \
+    --user-data "file://$BOOTDATA")
 INSTANCEID=$(echo "$INSTANCE_DATA" | jq -r .Instances[0].InstanceId)
 
 # Wait for public IP assignment
@@ -89,12 +89,12 @@ PUBLIC_DNS_NAME=""
 while [ -z "$PUBLIC_DNS_NAME" ]; do
     sleep 1
     PUBLIC_DNS_NAME=$($AWS ec2 describe-instances --instance-ids "$INSTANCEID" \
-                          | jq -r .Reservations[0].Instances[0].PublicDnsName )
+        | jq -r .Reservations[0].Instances[0].PublicDnsName)
 done
 
 # Add the hostname to the zone
 ROUTE53_CHANGES=$(mktemp)
-cat > "$ROUTE53_CHANGES" <<EOF
+cat >"$ROUTE53_CHANGES" <<EOF
 {
     "Comment": "Add the $HOSTNAME CNAME record",
     "Changes": [

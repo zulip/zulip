@@ -175,7 +175,7 @@ function format_topic(topic_data) {
     // We only supply the data to the topic rows and let jquery
     // display / hide them according to filters instead of
     // doing complete re-render.
-    const topic_muted = !!muting.is_topic_muted(stream_id, topic);
+    const topic_muted = Boolean(muting.is_topic_muted(stream_id, topic));
     const stream_muted = stream_data.is_muted(stream_id);
     const muted = topic_muted || stream_muted;
     const unread_count = unread.unread_topic_counter.get(stream_id, topic);
@@ -266,7 +266,7 @@ exports.filters_should_hide_topic = function (topic_data) {
     }
 
     if (!filters.has("include_muted")) {
-        const topic_muted = !!muting.is_topic_muted(msg.stream_id, msg.topic);
+        const topic_muted = Boolean(muting.is_topic_muted(msg.stream_id, msg.topic));
         const stream_muted = stream_data.is_muted(msg.stream_id);
         if (topic_muted || stream_muted) {
             return true;

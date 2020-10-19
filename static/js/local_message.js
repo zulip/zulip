@@ -3,7 +3,7 @@
 const XDate = require("xdate");
 
 function truncate_precision(float) {
-    return parseFloat(float.toFixed(3));
+    return Number.parseFloat(float.toFixed(3));
 }
 
 exports.now = function () {

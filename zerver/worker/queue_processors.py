@@ -4,6 +4,7 @@ import copy
 import datetime
 import email
 import email.policy
+import functools
 import logging
 import os
 import signal
@@ -17,6 +18,7 @@ from collections import defaultdict, deque
 from email.message import EmailMessage
 from functools import wraps
 from threading import Lock, Timer
+from types import FrameType
 from typing import (
     Any,
     Callable,
@@ -25,6 +27,7 @@ from typing import (
     Mapping,
     MutableSequence,
     Optional,
+    Set,
     Tuple,
     Type,
     TypeVar,
@@ -82,11 +85,9 @@ from zerver.lib.send_email import (
     send_email_from_dict,
     send_future_email,
 )
-from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.url_preview import preview as url_preview
 from zerver.models import (
-    Client,
     Message,
     PreregistrationUser,
     Realm,
@@ -102,6 +103,14 @@ from zerver.models import (
 )
 
 logger = logging.getLogger(__name__)
+
+class WorkerTimeoutException(Exception):
+    def __init__(self, limit: int, event_count: int) -> None:
+        self.limit = limit
+        self.event_count = event_count
+
+    def __str__(self) -> str:
+        return f"Timed out after {self.limit * self.event_count} seconds processing {self.event_count} events"
 
 class WorkerDeclarationException(Exception):
     pass
@@ -129,10 +138,11 @@ def register_worker(queue_name: str, clazz: Type['QueueProcessingWorker'], queue
 def get_worker(queue_name: str) -> 'QueueProcessingWorker':
     return worker_classes[queue_name]()
 
-def get_active_worker_queues(queue_type: Optional[str]=None) -> List[str]:
+def get_active_worker_queues(queue_type: Optional[str]=None, include_test_queues: bool=False) -> List[str]:
     """Returns all the non-test worker queues."""
     if queue_type is None:
-        return list(worker_classes.keys())
+        return [queue_name for queue_name in worker_classes.keys()
+                if include_test_queues or queue_name not in queues["test"]]
     return list(queues[queue_type].keys())
 
 def check_and_send_restart_signal() -> None:
@@ -162,8 +172,13 @@ def retry_send_email_failures(
 
     return wrapper
 
+def timer_expired(limit: int, event_count: int, signal: int, frame: FrameType) -> None:
+    raise WorkerTimeoutException(limit, event_count)
+
 class QueueProcessingWorker(ABC):
     queue_name: str
+    MAX_CONSUME_SECONDS: Optional[int] = 10
+    ENABLE_TIMEOUTS = False
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 50
     MAX_SECONDS_BEFORE_UPDATE_STATS = 30
 
@@ -184,7 +199,7 @@ class QueueProcessingWorker(ABC):
 
         self.update_statistics(0)
 
-    def update_statistics(self, remaining_queue_size: int) -> None:
+    def update_statistics(self, remaining_local_queue_size: int) -> None:
         total_seconds = sum(seconds for _, seconds in self.recent_consume_times)
         total_events = sum(events_number for events_number, _ in self.recent_consume_times)
         if total_events == 0:
@@ -194,7 +209,7 @@ class QueueProcessingWorker(ABC):
         stats_dict = dict(
             update_time=time.time(),
             recent_average_consume_time=recent_average_consume_time,
-            current_queue_size=remaining_queue_size,
+            current_queue_size=remaining_local_queue_size,
             queue_last_emptied_timestamp=self.queue_last_emptied_timestamp,
             consumed_since_last_emptied=self.consumed_since_last_emptied,
         )
@@ -212,9 +227,9 @@ class QueueProcessingWorker(ABC):
             os.rename(tmp_fn, fn)
         self.last_statistics_update_time = time.time()
 
-    def get_remaining_queue_size(self) -> int:
+    def get_remaining_local_queue_size(self) -> int:
         if self.q is not None:
-            return self.q.queue_size()
+            return self.q.local_queue_size()
         else:
             # This is a special case that will happen if we're operating without
             # using RabbitMQ (e.g. in tests). In that case there's no queuing to speak of
@@ -234,7 +249,7 @@ class QueueProcessingWorker(ABC):
                 type='debug',
                 category='queue_processor',
                 message=f"Consuming {self.queue_name}",
-                data={"events": events, "queue_size": self.get_remaining_queue_size()},
+                data={"events": events, "local_queue_size": self.get_remaining_local_queue_size()},
             )
         try:
             if self.idle:
@@ -243,14 +258,28 @@ class QueueProcessingWorker(ABC):
                 # that the queue started processing, in case the event we're about to process
                 # makes us freeze.
                 self.idle = False
-                self.update_statistics(self.get_remaining_queue_size())
+                self.update_statistics(self.get_remaining_local_queue_size())
 
             time_start = time.time()
-            consume_func(events)
+            if self.MAX_CONSUME_SECONDS and self.ENABLE_TIMEOUTS:
+                try:
+                    signal.signal(
+                        signal.SIGALRM,
+                        functools.partial(timer_expired, self.MAX_CONSUME_SECONDS, len(events)),
+                    )
+                    try:
+                        signal.alarm(self.MAX_CONSUME_SECONDS * len(events))
+                        consume_func(events)
+                    finally:
+                        signal.alarm(0)
+                finally:
+                    signal.signal(signal.SIGALRM, signal.SIG_DFL)
+            else:
+                consume_func(events)
             consume_time_seconds = time.time() - time_start
             self.consumed_since_last_emptied += len(events)
-        except Exception:
-            self._handle_consume_exception(events)
+        except Exception as e:
+            self._handle_consume_exception(events, e)
         finally:
             flush_per_request_caches()
             reset_queries()
@@ -258,8 +287,8 @@ class QueueProcessingWorker(ABC):
             if consume_time_seconds is not None:
                 self.recent_consume_times.append((len(events), consume_time_seconds))
 
-            remaining_queue_size = self.get_remaining_queue_size()
-            if remaining_queue_size == 0:
+            remaining_local_queue_size = self.get_remaining_local_queue_size()
+            if remaining_local_queue_size == 0:
                 self.queue_last_emptied_timestamp = time.time()
                 self.consumed_since_last_emptied = 0
                 # We've cleared all the events from the queue, so we don't
@@ -274,19 +303,23 @@ class QueueProcessingWorker(ABC):
             if (self.consume_iteration_counter >= self.CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM
                     or time.time() - self.last_statistics_update_time >= self.MAX_SECONDS_BEFORE_UPDATE_STATS):
                 self.consume_iteration_counter = 0
-                self.update_statistics(remaining_queue_size)
+                self.update_statistics(remaining_local_queue_size)
 
-    def consume_wrapper(self, data: Dict[str, Any]) -> None:
+    def consume_single_event(self, event: Dict[str, Any]) -> None:
         consume_func = lambda events: self.consume(events[0])
-        self.do_consume(consume_func, [data])
+        self.do_consume(consume_func, [event])
 
-    def _handle_consume_exception(self, events: List[Dict[str, Any]]) -> None:
+    def _handle_consume_exception(self, events: List[Dict[str, Any]], exception: Exception) -> None:
         with configure_scope() as scope:
             scope.set_context("events", {
                 "data": events,
                 "queue_name": self.queue_name,
             })
-            logging.exception("Problem handling data on queue %s", self.queue_name, stack_info=True)
+            if isinstance(exception, WorkerTimeoutException):
+                logging.exception("%s in queue %s",
+                                  str(exception), self.queue_name, stack_info=True)
+            else:
+                logging.exception("Problem handling data on queue %s", self.queue_name, stack_info=True)
         if not os.path.exists(settings.QUEUE_ERROR_DIR):
             os.mkdir(settings.QUEUE_ERROR_DIR)  # nocoverage
         # Use 'mark_sanitized' to prevent Pysa from detecting this false positive
@@ -306,28 +339,28 @@ class QueueProcessingWorker(ABC):
     def start(self) -> None:
         assert self.q is not None
         self.initialize_statistics()
-        self.q.register_json_consumer(self.queue_name, self.consume_wrapper)
-        self.q.start_consuming()
+        self.q.start_json_consumer(
+            self.queue_name,
+            lambda events: self.consume_single_event(events[0]),
+        )
 
     def stop(self) -> None:  # nocoverage
         assert self.q is not None
         self.q.stop_consuming()
 
 class LoopQueueProcessingWorker(QueueProcessingWorker):
-    sleep_delay = 0
-    sleep_only_if_empty = True
+    sleep_delay = 1
+    batch_size = 100
 
     def start(self) -> None:  # nocoverage
         assert self.q is not None
         self.initialize_statistics()
-        while True:
-            events = self.q.json_drain_queue(self.queue_name)
-            self.do_consume(self.consume_batch, events)
-            # To avoid spinning the CPU, we go to sleep if there's
-            # nothing in the queue, or for certain queues with
-            # sleep_only_if_empty=False, unconditionally.
-            if not self.sleep_only_if_empty or len(events) == 0:
-                time.sleep(self.sleep_delay)
+        self.q.start_json_consumer(
+            self.queue_name,
+            lambda events: self.do_consume(self.consume_batch, events),
+            batch_size=self.batch_size,
+            timeout=self.sleep_delay,
+        )
 
     @abstractmethod
     def consume_batch(self, events: List[Dict[str, Any]]) -> None:
@@ -402,7 +435,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 context=context,
                 delay=datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS - 2))
 
-@assign_queue('user_activity', queue_type="loop")
+@assign_queue('user_activity')
 class UserActivityWorker(LoopQueueProcessingWorker):
     """The UserActivity queue is perhaps our highest-traffic queue, and
     requires some care to ensure it performs adequately.
@@ -421,8 +454,6 @@ class UserActivityWorker(LoopQueueProcessingWorker):
       common events from doing an action multiple times.
 
     """
-    sleep_delay = 10
-    sleep_only_if_empty = True
     client_id_map: Dict[str, int] = {}
 
     def start(self) -> None:
@@ -485,7 +516,7 @@ class UserPresenceWorker(QueueProcessingWorker):
         status = event["status"]
         do_update_user_presence(user_profile, client, log_time, status)
 
-@assign_queue('missedmessage_emails', queue_type="loop")
+@assign_queue('missedmessage_emails')
 class MissedMessageWorker(QueueProcessingWorker):
     # Aggregate all messages received over the last BATCH_DURATION
     # seconds to let someone finish sending a batch of messages and/or
@@ -634,22 +665,9 @@ class MirrorWorker(QueueProcessingWorker):
 
         mirror_email(msg, rcpt_to=rcpt_to)
 
-@assign_queue('test', queue_type="test")
-class TestWorker(QueueProcessingWorker):
-    # This worker allows you to test the queue worker infrastructure without
-    # creating significant side effects.  It can be useful in development or
-    # for troubleshooting prod/staging.  It pulls a message off the test queue
-    # and appends it to a file in /tmp.
-    def consume(self, event: Mapping[str, Any]) -> None:  # nocoverage
-        fn = settings.ZULIP_WORKER_TEST_FILE
-        message = orjson.dumps(event)
-        logging.info("TestWorker should append this message to %s: %s", fn, message.decode())
-        with open(fn, 'ab') as f:
-            f.write(message + b'\n')
-
 @assign_queue('embed_links')
 class FetchLinksEmbedData(QueueProcessingWorker):
-    # This is a slow queue with network requests, so a disk write is neglible.
+    # This is a slow queue with network requests, so a disk write is negligible.
     # Update stats file after every consume call.
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 1
 
@@ -745,18 +763,16 @@ class DeferredWorker(QueueProcessingWorker):
     can provide a low-latency HTTP response or avoid risk of request
     timeouts for an operation that could in rare cases take minutes).
     """
+    # Because these operations have no SLO, and can take minutes,
+    # remove any processing timeouts
+    MAX_CONSUME_SECONDS = None
+
     def consume(self, event: Dict[str, Any]) -> None:
         if event['type'] == 'mark_stream_messages_as_read':
             user_profile = get_user_profile_by_id(event['user_profile_id'])
-            client = Client.objects.get(id=event['client_id'])
 
-            for stream_id in event['stream_ids']:
-                # Since the user just unsubscribed, we don't require
-                # an active Subscription object (otherwise, private
-                # streams would never be accessible)
-                (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id,
-                                                               require_active=False)
-                do_mark_stream_messages_as_read(user_profile, client, stream)
+            for recipient_id in event['stream_recipient_ids']:
+                do_mark_stream_messages_as_read(user_profile, recipient_id)
         elif event["type"] == 'mark_stream_messages_as_read_for_everyone':
             # This event is generated by the stream deactivation code path.
             batch_size = 100
@@ -827,3 +843,55 @@ class DeferredWorker(QueueProcessingWorker):
                 "Completed data export for %s in %s",
                 user_profile.realm.string_id, time.time() - start,
             )
+
+@assign_queue('test', queue_type="test")
+class TestWorker(QueueProcessingWorker):
+    # This worker allows you to test the queue worker infrastructure without
+    # creating significant side effects.  It can be useful in development or
+    # for troubleshooting prod/staging.  It pulls a message off the test queue
+    # and appends it to a file in /tmp.
+    def consume(self, event: Mapping[str, Any]) -> None:  # nocoverage
+        fn = settings.ZULIP_WORKER_TEST_FILE
+        message = orjson.dumps(event)
+        logging.info("TestWorker should append this message to %s: %s", fn, message.decode())
+        with open(fn, 'ab') as f:
+            f.write(message + b'\n')
+
+@assign_queue('noop', queue_type="test")
+class NoopWorker(QueueProcessingWorker):
+    """Used to profile the queue processing framework, in zilencer's queue_rate."""
+
+    def __init__(self, max_consume: int=1000, slow_queries: Optional[List[int]]=None) -> None:
+        self.consumed = 0
+        self.max_consume = max_consume
+        self.slow_queries: Set[int] = set(slow_queries or [])
+
+    def consume(self, event: Mapping[str, Any]) -> None:
+        self.consumed += 1
+        if self.consumed in self.slow_queries:
+            logging.info("Slow request...")
+            time.sleep(60)
+            logging.info("Done!")
+        if self.consumed >= self.max_consume:
+            self.stop()
+
+@assign_queue('noop_batch', queue_type="test")
+class BatchNoopWorker(LoopQueueProcessingWorker):
+    """Used to profile the queue processing framework, in zilencer's queue_rate."""
+    batch_size = 500
+
+    def __init__(self, max_consume: int=1000, slow_queries: Optional[List[int]]=None) -> None:
+        self.consumed = 0
+        self.max_consume = max_consume
+        self.slow_queries: Set[int] = set(slow_queries or [])
+
+    def consume_batch(self, events: List[Dict[str, Any]]) -> None:
+        event_numbers = set(range(self.consumed + 1, self.consumed + 1 + len(events)))
+        found_slow = self.slow_queries & event_numbers
+        if found_slow:
+            logging.info("%d slow requests...", len(found_slow))
+            time.sleep(60 * len(found_slow))
+            logging.info("Done!")
+        self.consumed += len(events)
+        if self.consumed >= self.max_consume:
+            self.stop()

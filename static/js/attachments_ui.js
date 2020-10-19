@@ -17,7 +17,7 @@ exports.bytes_to_size = function (bytes, kb_with_1024_bytes) {
     if (bytes === 0) {
         return "0 B";
     }
-    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(kb_size)), 10);
+    const i = Number.parseInt(Math.floor(Math.log(bytes) / Math.log(kb_size)), 10);
     let size = Math.round(bytes / Math.pow(kb_size, i));
     if (i > 0 && size < 10) {
         size = Math.round((bytes / Math.pow(kb_size, i)) * 10) / 10;

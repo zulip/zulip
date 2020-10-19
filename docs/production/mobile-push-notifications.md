@@ -32,6 +32,9 @@ follows:
     su zulip -c '/home/zulip/deployments/current/manage.py register_server'
     # Or as the zulip user, you can skip the `su zulip -c`:
     /home/zulip/deployments/current/manage.py register_server
+
+    # docker-zulip users can run this inside the container with `docker exec`:
+    docker exec -it -u zulip <container_name> /home/zulip/deployments/current/manage.py register_server
     ```
    This command will print the registration data it would send to the
    mobile push notifications service, ask you to accept the terms of

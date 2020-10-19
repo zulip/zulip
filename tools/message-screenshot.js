@@ -70,8 +70,8 @@ async function run() {
         const imageDir = path.dirname(imagePath);
         mkdirp.sync(imageDir);
         await page.screenshot({path: imagePath, clip});
-    } catch (e) {
-        console.log(e);
+    } catch (error) {
+        console.log(error);
         process.exit(1);
     } finally {
         await browser.close();

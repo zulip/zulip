@@ -16,7 +16,7 @@ async function decrypt_manual() {
                 document.querySelector("#submit").disabled = tokenElement.value === "";
                 try {
                     const data = new Uint8Array(
-                        tokenElement.value.match(/../g).map((b) => parseInt(b, 16)),
+                        tokenElement.value.match(/../g).map((b) => Number.parseInt(b, 16)),
                     );
                     const iv = data.slice(0, 12);
                     const ciphertext = data.slice(12);

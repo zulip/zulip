@@ -8,7 +8,7 @@ const common = require("../puppeteer_lib/common");
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const GENERIC_BOT_TYPE = "1";
 
-const zuliprc_regex = /^data:application\/octet-stream;charset=utf-8,\[api\]\nemail=.+\nkey=.+\nsite=.+\n$/;
+const zuliprc_regex = /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\n$/;
 
 async function get_decoded_url_in_selector(page, selector) {
     return await page.evaluate(
@@ -76,7 +76,7 @@ async function test_get_api_key(page) {
 
     await page.waitForSelector("#show_api_key", {visible: true});
     const api_key = await common.get_text_from_selector(page, "#api_key_value");
-    assert(/[a-zA-Z0-9]{32}/.test(api_key), "Incorrect API key format.");
+    assert(/[\dA-Za-z]{32}/.test(api_key), "Incorrect API key format.");
 
     const download_zuliprc_selector = "#download_zuliprc";
     await page.click(download_zuliprc_selector);
@@ -97,7 +97,7 @@ async function test_webhook_bot_creation(page) {
 
     const bot_email = "1-bot@zulip.testserver";
     const download_zuliprc_selector = '.download_bot_zuliprc[data-email="' + bot_email + '"]';
-    const outgoing_webhook_zuliprc_regex = /^data:application\/octet-stream;charset=utf-8,\[api\]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
+    const outgoing_webhook_zuliprc_regex = /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
 
     await page.waitForSelector(download_zuliprc_selector, {visible: true});
     await page.click(download_zuliprc_selector);
@@ -137,7 +137,7 @@ async function test_botserverrc(page) {
         page,
         "#download_botserverrc",
     );
-    const botserverrc_regex = /^data:application\/octet-stream;charset=utf-8,\[\]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
+    const botserverrc_regex = /^data:application\/octet-stream;charset=utf-8,\[]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
     assert(botserverrc_regex.test(botserverrc_decoded_url), "Incorrect botserverrc format.");
 }
 

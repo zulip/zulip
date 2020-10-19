@@ -17,7 +17,7 @@ set -e
 set -x
 
 # Set the hostname early
-echo "$HOSTNAME" > /etc/hostname
+echo "$HOSTNAME" >/etc/hostname
 hostname "$HOSTNAME"
 sed -i "s/localhost$/localhost $HOSTNAME $SERVER/" /etc/hosts
 
@@ -30,9 +30,11 @@ passwd -d root
 # Allow root logins
 sed -i 's/disable_root: true/disable_root: false/' /etc/cloud/cloud.cfg
 
+# Ensure all apt updates (here and in the installer) are non-interactive
+export DEBIAN_FRONTEND=noninteractive
+
 # Dependencies to install AWS CLI
 (
-    export DEBIAN_FRONTEND=noninteractive
     apt-get -qy update
     apt-get -qy -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade
     apt-get -qy install jq unzip wget
@@ -55,15 +57,15 @@ EOF
 # function so we do can it again later with the zulip user
 function install_keys() {
     USERNAME="$1"
-    SSHDIR="$( getent passwd "$USERNAME" | cut -d: -f6 )/.ssh"
+    SSHDIR="$(getent passwd "$USERNAME" | cut -d: -f6)/.ssh"
     KEYDATA="$($AWS --output text \
-                    secretsmanager get-secret-value \
-                    --secret-id "$SSH_SECRET_ID" \
-                    --query SecretString)"
+        secretsmanager get-secret-value \
+        --secret-id "$SSH_SECRET_ID" \
+        --query SecretString)"
     mkdir -p "$SSHDIR"
-    echo "$KEYDATA" | jq -r .public  | base64 -d > "$SSHDIR/id_rsa.pub"
-    echo "$KEYDATA" | jq -r .private | base64 -d > "$SSHDIR/id_rsa"
-    chown -R  "$USERNAME:$USERNAME" "$SSHDIR"
+    echo "$KEYDATA" | jq -r .public | base64 -d >"$SSHDIR/id_rsa.pub"
+    echo "$KEYDATA" | jq -r .private | base64 -d >"$SSHDIR/id_rsa"
+    chown -R "$USERNAME:$USERNAME" "$SSHDIR"
     chmod 600 "$SSHDIR/id_rsa"
 }
 install_keys root
@@ -82,8 +84,8 @@ git -C zulip checkout "$BRANCH"
 (
     VIRTUALENV_NEEDED=$(if echo "$ROLES" | grep -q app_frontend; then echo -n yes; else echo -n no; fi)
     export VIRTUALENV_NEEDED
-    PUPPET_CLASSES="$ROLES"
-    export PUPPET_CLASSES
+    export PUPPET_CLASSES="$ROLES"
+    export APT_OPTIONS="-o Dpkg::Options::=--force-confnew"
     /root/zulip/scripts/setup/install \
         --self-signed-cert \
         --no-init-db

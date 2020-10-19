@@ -554,14 +554,14 @@ exports.set_up = function () {
         e.preventDefault();
         e.stopPropagation();
         const field = $(e.target).closest(".custom_user_field").expectOne();
-        const field_id = parseInt($(field).attr("data-field-id"), 10);
+        const field_id = Number.parseInt($(field).attr("data-field-id"), 10);
         update_user_custom_profile_fields([field_id], channel.del);
     });
 
     $("#account-settings").on("change", ".custom_user_field_value", function (e) {
         const fields = [];
         const value = $(this).val();
-        const field_id = parseInt(
+        const field_id = Number.parseInt(
             $(e.target).closest(".custom_user_field").attr("data-field-id"),
             10,
         );

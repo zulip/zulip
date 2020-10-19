@@ -35,7 +35,7 @@ function immediate(f) {
 // Find the files we need to run.
 const files = process.argv.slice(2);
 if (files.length === 0) {
-    throw "No tests found";
+    throw new Error("No tests found");
 }
 
 // Set up our namespace helpers.
@@ -143,11 +143,11 @@ try {
         namespace.restore();
         Handlebars.HandlebarsEnvironment();
     });
-} catch (e) {
-    if (e.stack) {
-        console.info(short_tb(e.stack));
+} catch (error) {
+    if (error.stack) {
+        console.info(short_tb(error.stack));
     } else {
-        console.info(e);
+        console.info(error);
     }
     process.exit(1);
 }

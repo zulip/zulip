@@ -27,7 +27,7 @@ let user_acknowledged_announce;
 let wildcard_mention;
 let uppy;
 
-exports.all_everyone_warn_threshold = 15;
+exports.wildcard_mention_large_stream_threshold = 15;
 exports.announce_warn_threshold = 60;
 
 exports.uploads_domain = document.location.protocol + "//" + document.location.host;
@@ -485,7 +485,10 @@ function validate_stream_message_mentions(stream_id) {
     const stream_count = stream_data.get_subscriber_count(stream_id) || 0;
 
     // check if wildcard_mention has any mention and henceforth execute the warning message.
-    if (wildcard_mention !== null && stream_count > exports.all_everyone_warn_threshold) {
+    if (
+        wildcard_mention !== null &&
+        stream_count > exports.wildcard_mention_large_stream_threshold
+    ) {
         if (
             user_acknowledged_all_everyone === undefined ||
             user_acknowledged_all_everyone === false
@@ -538,6 +541,11 @@ function validate_stream_message_post_policy(sub) {
 
     if (stream_post_policy === stream_post_permission_type.admins.code) {
         compose_error(i18n.t("Only organization admins are allowed to post to this stream."));
+        return false;
+    }
+
+    if (page_params.is_guest && stream_post_policy !== stream_post_permission_type.everyone.code) {
+        compose_error(i18n.t("Guests are not allowed to post to this stream."));
         return false;
     }
 
@@ -762,7 +770,7 @@ exports.handle_keydown = function (event, textarea) {
             // Ctrl + L: Insert a link to selected text
             wrap_text_with_markdown("[", "](url)");
             const position = textarea.caret();
-            const txt = document.getElementById(textarea[0].id);
+            const txt = textarea[0];
 
             // Include selected text in between [] parentheses and insert '(url)'
             // where "url" should be automatically selected.
@@ -969,7 +977,7 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
         const existing_invites_area = $("#compose_invite_users .compose_invite_user");
 
         const existing_invites = Array.from($(existing_invites_area), (user_row) =>
-            parseInt($(user_row).data("user-id"), 10),
+            Number.parseInt($(user_row).data("user-id"), 10),
         );
 
         if (!existing_invites.includes(user_id)) {
@@ -1053,8 +1061,8 @@ exports.initialize = function () {
 
         const invite_row = $(event.target).parents(".compose_invite_user");
 
-        const user_id = parseInt($(invite_row).data("user-id"), 10);
-        const stream_id = parseInt($(invite_row).data("stream-id"), 10);
+        const user_id = Number.parseInt($(invite_row).data("user-id"), 10);
+        const stream_id = Number.parseInt($(invite_row).data("stream-id"), 10);
 
         function success() {
             const all_invites = $("#compose_invite_users");

@@ -252,7 +252,7 @@ exports.initialize = function () {
         e.preventDefault();
         // Note that we may have an href here, but we trust the stream id more,
         // so we re-encode the hash.
-        const stream_id = parseInt($(this).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id) {
             hashchange.go_to_location(hash_util.by_stream_uri(stream_id));
             return;
@@ -392,7 +392,7 @@ exports.initialize = function () {
 
     $("body").on("click", ".on_hover_topic_mute", (e) => {
         e.stopPropagation();
-        const stream_id = parseInt($(e.currentTarget).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
         muting_ui.mute(stream_id, topic);
     });
@@ -401,7 +401,7 @@ exports.initialize = function () {
 
     $("body").on("click", ".on_hover_topic_unmute", (e) => {
         e.stopPropagation();
-        const stream_id = parseInt($(e.currentTarget).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
         muting_ui.unmute(stream_id, topic);
     });
@@ -417,7 +417,7 @@ exports.initialize = function () {
 
     $("body").on("click", ".on_hover_topic_read", (e) => {
         e.stopPropagation();
-        const stream_id = parseInt($(e.currentTarget).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
         unread_ops.mark_topic_as_read(stream_id, topic);
     });
@@ -428,6 +428,11 @@ exports.initialize = function () {
         e.stopPropagation();
         recent_topics.set_filter(e.currentTarget.dataset.filter);
         recent_topics.update_filters_view();
+    });
+
+    $("body").on("click", "td.recent_topic_name", (e) => {
+        e.stopPropagation();
+        window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
     // Search for all table rows (this combines stream & topic names)
@@ -815,7 +820,7 @@ exports.initialize = function () {
             // wrong.
             for (let x = 0; x < this.childNodes.length; x += 1) {
                 if (this.childNodes[x].nodeType !== 3) {
-                    this.innerText = this.innerText.replace(/\n/, "");
+                    this.textContent = this.textContent.replace(/\n/, "");
                     break;
                 }
             }
