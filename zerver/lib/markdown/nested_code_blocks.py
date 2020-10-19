@@ -8,11 +8,11 @@ from zerver.lib.markdown import ResultWithFamily, walk_tree_with_family
 
 
 class NestedCodeBlocksRenderer(Extension):
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
-        md.treeprocessors.add(
-            'nested_code_blocks',
+    def extendMarkdown(self, md: markdown.Markdown) -> None:
+        md.treeprocessors.register(
             NestedCodeBlocksRendererTreeProcessor(md, self.getConfigs()),
-            '_end',
+            'nested_code_blocks',
+            -500,
         )
 
 class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocessor):

@@ -348,12 +348,12 @@ class APIMarkdownExtension(Extension):
             ],
         }
 
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
-        md.preprocessors.add(
-            'generate_code_example', APICodeExamplesPreprocessor(md, self.getConfigs()), '_begin',
+    def extendMarkdown(self, md: markdown.Markdown) -> None:
+        md.preprocessors.register(
+            APICodeExamplesPreprocessor(md, self.getConfigs()), 'generate_code_example', 525
         )
-        md.preprocessors.add(
-            'generate_api_description', APIDescriptionPreprocessor(md, self.getConfigs()), '_begin',
+        md.preprocessors.register(
+            APIDescriptionPreprocessor(md, self.getConfigs()), 'generate_api_description', 530
         )
 
 class APICodeExamplesPreprocessor(Preprocessor):
