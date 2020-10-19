@@ -725,7 +725,7 @@ class MarkdownTest(ZulipTestCase):
         msg = """\n```spoiler Check out this Pycon Video\nhttps://www.youtube.com/watch?v=0c46YHS3RY8\n```"""
         converted = markdown_convert_wrapper(msg)
 
-        self.assertEqual(converted, '<div class="spoiler-block"><div class="spoiler-header">\n\n<p>Check out this Pycon Video</p>\n</div><div class="spoiler-content" aria-hidden="true">\n\n<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">https://www.youtube.com/watch?v=0c46YHS3RY8</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="https://i.ytimg.com/vi/0c46YHS3RY8/default.jpg"></a></div></div></div>')
+        self.assertEqual(converted, '<div class="spoiler-block"><div class="spoiler-header">\n<p>Check out this Pycon Video</p>\n</div><div class="spoiler-content" aria-hidden="true">\n<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">https://www.youtube.com/watch?v=0c46YHS3RY8</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="https://i.ytimg.com/vi/0c46YHS3RY8/default.jpg"></a></div></div></div>')
 
         # Test youtube urls in normal messages.
         msg = '[Youtube link](https://www.youtube.com/watch?v=0c46YHS3RY8)'
@@ -896,7 +896,7 @@ class MarkdownTest(ZulipTestCase):
         msg = '```spoiler secret tweet\nTweet: http://twitter.com/wdaher/status/287977969287315456\n```'
         converted = markdown_convert_wrapper(msg)
 
-        rendered_spoiler = "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>secret tweet</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>Tweet: {}</p>\n{}</div></div>"
+        rendered_spoiler = "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>secret tweet</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Tweet: {}</p>\n{}</div></div>"
         self.assertEqual(converted, rendered_spoiler.format(
             make_link('http://twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
@@ -2134,8 +2134,6 @@ class MarkdownTest(ZulipTestCase):
             <div class="codehilite"><pre><span></span><code>&amp;copy;
             &amp;copy;
             </code></pre></div>
-
-
             <p>Test quote:</p>
             <blockquote>
             <p>&copy;</p>
