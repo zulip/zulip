@@ -377,3 +377,182 @@ that can be quite difficult to debug.  Be sure to declare your
 unexpectedly (e.g. pointing to a DNS name that you haven't configured
 with multiple IPs for your Zulip machine; sometimes this happens with
 IPv6 configuration).
+
+
+## System and deployment configuration
+
+The file `/etc/zulip/zulip.conf` is used to configure properties of
+the system and deployment; `/etc/zulip/settings.py` is used to
+configure the application itself.  The `zulip.conf` sections and
+settings are described below.
+
+### `[machine]`
+
+#### `puppet_classes`
+
+A comma-separated list of the Puppet classes to install on the server.
+The most common is **`zulip::profile::standalone`**, used for a
+stand-alone single-host deployment.
+[Components](../overview/architecture-overview.html#components) of
+that include:
+ - **`zulip::profile::app_frontend`**
+ - **`zulip::profile::memcached`**
+ - **`zulip::profile::postgresql`**
+ - **`zulip::profile::redis`**
+ - **`zulip::profile::rabbitmq`**
+
+If you are using a [Apache as a single-sign-on
+authenticator](../production/authentication-methods.html#apache-based-sso-with-remote-user),
+you will need to add **`zulip::apache_sso`** to the list.
+
+#### `pgroonga`
+
+Set to the string `enabled` if enabling the [multi-language PGroonga
+search
+extension](../subsystems/full-text-search.html#multi-language-full-text-search).
+
+
+
+### `[deployment]`
+
+#### `deploy_options`
+
+Options passed by `upgrade-zulip` and `upgrade-zulip-from-git` into
+`upgrade-zulip-stage-2`.  These might be any of:
+
+ - **`--skip-puppet`** skips doing Puppet/apt upgrades.  The user will need
+   to run `zulip-puppet-apply` manually after the upgrade.
+ - **`--skip-migrations`** skips running database migrations.  The
+   user will need to run `./manage.py migrate` manually after the upgrade.
+ - **`--skip-purge-old-deployments`** skips purging old deployments;
+   without it, only deployments with the last two weeks are kept.
+
+Generally installations will not want to set any of these options; the
+`--skip-*` options are primarily useful for reducing upgrade downtime
+for servers that are upgraded frequently by core Zulip developers.
+
+#### `git_repo_url`
+
+Default repository URL used when [upgrading from a Git
+repository](../production/upgrade-or-modify.html#upgrading-from-a-git-repository).
+
+
+
+### `[application_server]`
+
+#### `http_only`
+
+If set to non-empty, [configures Zulip to allow HTTP
+access][using-http]; use if Zulip is deployed behind a reverse proxy
+that is handling SSL/TLS termination.
+
+#### `nginx_listen_port`
+
+Set to the port number if you [prefer to listen on a port other than
+443](#using-an-alternate-port).
+
+#### `no_serve_uploads`
+
+Set to true to configure `nginx` to enable [the S3 uploads
+backend](../production/upload-backends.html#s3-backend-configuration).
+
+#### `uwsgi_buffer_size`
+
+Override the default uwsgi buffer size of 8192.
+
+#### `uwsgi_listen_backlog_limit`
+
+Override the default uwsgi backlog of 128 connections.
+
+#### `uwsgi_processes`
+
+Override the default `uwsgi` (Django) process count of 6 on hosts with
+more than 3.5GiB of RAM, 4 on hosts with less.
+
+
+
+### `[certbot]`
+
+#### `auto_renew`
+
+If set to the string `yes`, [Certbot will attempt to automatically
+renew its certificate](../production/ssl-certificates.html#certbot-recommended).  Do
+no set by hand; use `scripts/setup/setup-certbot` to configure this.
+
+
+
+### `[postfix]`
+
+#### `mailname`
+
+The hostname that [Postfix should be configured to receive mail
+at](../production/email-gateway.html#local-delivery-setup).
+
+### `[postgresql]`
+
+#### `effective_io_concurrency`
+
+Override PostgreSQL's [`effective_io_concurrency`
+setting](https://www.postgresql.org/docs/current/runtime-config-resource.html#GUC-EFFECTIVE-IO-CONCURRENCY).
+
+#### `listen_addresses`
+
+Override PostgreSQL's [`listen_addresses`
+setting](https://www.postgresql.org/docs/current/runtime-config-connection.html#GUC-LISTEN-ADDRESSES).
+
+#### `random_page_cost`
+
+Override PostgreSQL's [`random_page_cost`
+setting](https://www.postgresql.org/docs/current/runtime-config-query.html#GUC-RANDOM-PAGE-COST)
+
+#### `replication`
+
+Set to non-empty to enable replication to enable [streaming
+replication between PostgreSQL
+servers](../production/export-and-import.html#postgres-streaming-replication).
+
+#### `ssl_ca_file`
+
+Set to the path to the PEM-encoded certificate authority used to
+authenticate client connections.
+
+#### `ssl_cert_file`
+
+Set to the path to the PEM-encoded public certificate used to secure
+client connections.
+
+#### `ssl_key_file`
+
+Set to the path to the PEM-encoded private key used to secure client
+connections.
+
+#### `version`
+
+The version of PostgreSQL that is in use.  Do not set by hand; use the
+[PostgreSQL upgrade tool](../production/upgrade-or-modify.html#upgrading-postgresql).
+
+
+
+### `[rabbitmq]`
+
+#### `nodename`
+
+The name used to identify the local RabbitMQ server; do not modify.
+
+
+
+### `[memcached]`
+
+#### `memory`
+
+Override the number of megabytes of memory that memcached should be
+configured to consume; defaults to 1/8th of the total server memory.
+
+
+
+### `[loadbalancer]`
+
+#### `ips`
+
+Comma-separated list of IP addresses or netmasks of external
+load balancers whose `X-Forwarded-For` should be respected.

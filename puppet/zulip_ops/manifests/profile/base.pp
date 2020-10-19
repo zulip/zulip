@@ -132,9 +132,7 @@ class zulip_ops::profile::base {
       group   => 'nagios',
       source  => 'puppet:///modules/zulip_ops/nagios_authorized_keys',
     }
-  }
 
-  if $hosting_provider == 'ec2' {
     file { '/usr/local/sbin/zulip-ec2-configure-interfaces':
       ensure => file,
       mode   => '0755',
