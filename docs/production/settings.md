@@ -100,7 +100,7 @@ Some popular settings in `/etc/zulip/settings.py` include:
   tweets.
 * The [email gateway](../production/email-gateway.md), which lets
   users send emails into Zulip.
-* The [Video call integrations](video-calls.md).
+* The [Video call integrations](../production/video-calls.md).
 
 ## Zulip announcement list
 
