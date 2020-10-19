@@ -2,7 +2,8 @@ import re
 from typing import Any, List
 from typing.re import Match
 
-import markdown
+from markdown import Markdown
+from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
 from zerver.lib.emoji import EMOTICON_CONVERSIONS, name_to_codepoint
@@ -35,8 +36,8 @@ ROW_HTML = """\
 </tr>
 """
 
-class EmoticonTranslationsHelpExtension(markdown.Extension):
-    def extendMarkdown(self, md: markdown.Markdown) -> None:
+class EmoticonTranslationsHelpExtension(Extension):
+    def extendMarkdown(self, md: Markdown) -> None:
         """ Add SettingHelpExtension to the Markdown instance. """
         md.registerExtension(self)
         md.preprocessors.register(EmoticonTranslation(), 'emoticon_translations', -505)

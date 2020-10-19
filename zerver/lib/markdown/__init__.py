@@ -33,6 +33,11 @@ import ahocorasick
 import dateutil.parser
 import dateutil.tz
 import markdown
+import markdown.blockprocessors
+import markdown.inlinepatterns
+import markdown.postprocessors
+import markdown.treeprocessors
+import markdown.util
 import requests
 from django.conf import settings
 from django.db.models import Q

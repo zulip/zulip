@@ -79,9 +79,11 @@ import re
 from typing import Any, Dict, Iterable, List, Mapping, MutableSequence, Optional
 
 import lxml.html
-import markdown
 from django.utils.html import escape
+from markdown import Markdown
+from markdown.extensions import Extension
 from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
+from markdown.preprocessors import Preprocessor
 from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
 
@@ -137,7 +139,7 @@ CODE_VALIDATORS = {
     'curl': validate_curl_content,
 }
 
-class FencedCodeExtension(markdown.Extension):
+class FencedCodeExtension(Extension):
     def __init__(self, config: Mapping[str, Any] = {}) -> None:
         self.config = {
             'run_content_validators': [
@@ -149,7 +151,7 @@ class FencedCodeExtension(markdown.Extension):
         for key, value in config.items():
             self.setConfig(key, value)
 
-    def extendMarkdown(self, md: markdown.Markdown) -> None:
+    def extendMarkdown(self, md: Markdown) -> None:
         """ Add FencedBlockPreprocessor to the Markdown instance. """
         md.registerExtension(self)
         processor = FencedBlockPreprocessor(
@@ -321,9 +323,9 @@ class TexHandler(BaseHandler):
         self.processor.pop()
 
 
-class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
-    def __init__(self, md: markdown.Markdown, run_content_validators: bool=False) -> None:
-        markdown.preprocessors.Preprocessor.__init__(self, md)
+class FencedBlockPreprocessor(Preprocessor):
+    def __init__(self, md: Markdown, run_content_validators: bool=False) -> None:
+        super().__init__(md)
 
         self.checked_for_codehilite = False
         self.run_content_validators = run_content_validators

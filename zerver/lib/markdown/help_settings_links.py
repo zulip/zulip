@@ -2,7 +2,8 @@ import re
 from typing import Any, List, Optional
 from typing.re import Match
 
-import markdown
+from markdown import Markdown
+from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
 # There is a lot of duplicated code between this file and
@@ -62,8 +63,8 @@ settings_markdown = """
 """
 
 
-class SettingHelpExtension(markdown.Extension):
-    def extendMarkdown(self, md: markdown.Markdown) -> None:
+class SettingHelpExtension(Extension):
+    def extendMarkdown(self, md: Markdown) -> None:
         """ Add SettingHelpExtension to the Markdown instance. """
         md.registerExtension(self)
         md.preprocessors.register(Setting(), 'setting', 515)
