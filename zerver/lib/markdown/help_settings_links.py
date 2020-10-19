@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 from typing.re import Match
 
 import markdown
@@ -63,10 +63,10 @@ settings_markdown = """
 
 
 class SettingHelpExtension(markdown.Extension):
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
+    def extendMarkdown(self, md: markdown.Markdown) -> None:
         """ Add SettingHelpExtension to the Markdown instance. """
         md.registerExtension(self)
-        md.preprocessors.add('setting', Setting(), '_begin')
+        md.preprocessors.register(Setting(), 'setting', 515)
 
 relative_settings_links: Optional[bool] = None
 
