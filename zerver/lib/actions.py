@@ -2945,12 +2945,13 @@ def send_peer_subscriber_events(
 
     assert op in ["peer_add", "peer_remove"]
 
-    for stream_id, altered_user_ids in altered_user_dict.items():
-        stream = stream_dict[stream_id]
+    private_stream_ids = [
+        stream_id for stream_id in altered_user_dict
+        if stream_dict[stream_id].invite_only
+    ]
 
-        if stream.is_in_zephyr_realm and not stream.invite_only:
-            continue
-
+    for stream_id in private_stream_ids:
+        altered_user_ids = altered_user_dict[stream_id]
         peer_user_ids = peer_id_dict[stream_id] - altered_user_ids
 
         if peer_user_ids:
@@ -2958,7 +2959,27 @@ def send_peer_subscriber_events(
                 event = dict(
                     type="subscription",
                     op=op,
-                    stream_id=stream.id,
+                    stream_id=stream_id,
+                    user_id=new_user_id,
+                )
+                send_event(realm, event, peer_user_ids)
+
+    public_stream_ids = [
+        stream_id for stream_id in altered_user_dict
+        if not stream_dict[stream_id].invite_only
+        and not stream_dict[stream_id].is_in_zephyr_realm
+    ]
+
+    for stream_id in public_stream_ids:
+        altered_user_ids = altered_user_dict[stream_id]
+        peer_user_ids = peer_id_dict[stream_id] - altered_user_ids
+
+        if peer_user_ids:
+            for new_user_id in altered_user_ids:
+                event = dict(
+                    type="subscription",
+                    op=op,
+                    stream_id=stream_id,
                     user_id=new_user_id,
                 )
                 send_event(realm, event, peer_user_ids)
