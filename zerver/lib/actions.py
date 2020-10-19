@@ -2335,7 +2335,13 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
             stream = addressee.stream()
         assert stream is not None
 
-        recipient = stream.recipient
+        # We create a recipient object that matches what is
+        # already in the database.
+        recipient = Recipient(
+            id=stream.recipient_id,
+            type_id=stream.id,
+            type=Recipient.STREAM,
+        )
 
         # This will raise JsonableError if there are problems.
 
