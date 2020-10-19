@@ -2335,9 +2335,20 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
             stream = addressee.stream()
         assert stream is not None
 
-        recipient = stream.recipient
-
-        # This will raise JsonableError if there are problems.
+        # To save a database round trip, we construct the Recipient
+        # object for the Stream rather than fetching it from the
+        # database using the stream.recipient foreign key.
+        #
+        # This is simpler than ensuring that code paths that fetch a
+        # Stream that will be used for sending a message have a
+        # `select_related("recipient"), which would also needlessly
+        # expand Stream objects in memory (all the fields of Recipient
+        # are already known given the Stream object).
+        recipient = Recipient(
+            id=stream.recipient_id,
+            type_id=stream.id,
+            type=Recipient.STREAM,
+        )
 
         if sender.bot_type != sender.OUTGOING_WEBHOOK_BOT:
             access_stream_for_send_message(
