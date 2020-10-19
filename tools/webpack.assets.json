@@ -43,7 +43,7 @@
     "portico": ["./static/js/bundles/portico"],
     "error-styles": [
         "./static/third/bootstrap/css/bootstrap.css",
-        "./static/styles/portico/portico-styles.css"
+        "./static/styles/portico/portico_styles.css"
     ],
     "common": ["./static/js/bundles/common"],
     "help": [
