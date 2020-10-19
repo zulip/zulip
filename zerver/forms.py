@@ -50,7 +50,7 @@ DEACTIVATED_ACCOUNT_ERROR = "Your account is no longer active. " + \
                             "Please contact your organization administrator to reactivate it."
 PASSWORD_TOO_WEAK_ERROR = "The password is too weak."
 AUTHENTICATION_RATE_LIMITED_ERROR = "You're making too many attempts to sign in. " + \
-                                    "Try again in %s seconds or contact your organization administrator " + \
+                                    "Try again in {} seconds or contact your organization administrator " + \
                                     "for help."
 
 def email_is_not_mit_mailing_list(email: str) -> None:
@@ -351,7 +351,7 @@ class OurAuthenticationForm(AuthenticationForm):
                                                realm=realm, return_data=return_data)
             except RateLimited as e:
                 secs_to_freedom = int(float(str(e)))
-                raise ValidationError(AUTHENTICATION_RATE_LIMITED_ERROR % (secs_to_freedom,))
+                raise ValidationError(AUTHENTICATION_RATE_LIMITED_ERROR.format(secs_to_freedom))
 
             if return_data.get("inactive_realm"):
                 raise AssertionError("Programming error: inactive realm in authentication form")
