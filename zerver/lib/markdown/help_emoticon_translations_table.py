@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, List
+from typing import Any, List
 from typing.re import Match
 
 import markdown
@@ -36,10 +36,10 @@ ROW_HTML = """\
 """
 
 class EmoticonTranslationsHelpExtension(markdown.Extension):
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
+    def extendMarkdown(self, md: markdown.Markdown) -> None:
         """ Add SettingHelpExtension to the Markdown instance. """
         md.registerExtension(self)
-        md.preprocessors.add('emoticon_translations', EmoticonTranslation(), '_end')
+        md.preprocessors.register(EmoticonTranslation(), 'emoticon_translations', -505)
 
 
 class EmoticonTranslation(Preprocessor):

@@ -149,7 +149,7 @@ class FencedCodeExtension(markdown.Extension):
         for key, value in config.items():
             self.setConfig(key, value)
 
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
+    def extendMarkdown(self, md: markdown.Markdown) -> None:
         """ Add FencedBlockPreprocessor to the Markdown instance. """
         md.registerExtension(self)
         processor = FencedBlockPreprocessor(

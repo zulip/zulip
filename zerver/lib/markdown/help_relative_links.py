@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 from typing.re import Match
 
 import markdown
@@ -67,10 +67,10 @@ LINK_TYPE_HANDLERS = {
 }
 
 class RelativeLinksHelpExtension(markdown.Extension):
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
+    def extendMarkdown(self, md: markdown.Markdown) -> None:
         """ Add RelativeLinksHelpExtension to the Markdown instance. """
         md.registerExtension(self)
-        md.preprocessors.add('help_relative_links', RelativeLinks(), '_begin')
+        md.preprocessors.register(RelativeLinks(), 'help_relative_links', 520)
 
 relative_help_links: Optional[bool] = None
 
