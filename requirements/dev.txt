@@ -295,6 +295,10 @@ django-formtools==2.2 \
     --hash=sha256:304fa777b8ef9e0693ce7833f885cb89ba46b0e46fc23b01176900a93f46742f \
     --hash=sha256:c5272c03c1cd51b2375abf7397a199a3148a9fbbf2f100e186467a84025d13b2 \
     # via django-two-factor-auth
+django-oauth-toolkit==1.3.3 \
+    --hash=sha256:48a45d9ec23b50646b14b4b93988bd0d35ad5cf933edfcb833a8527f86329f28 \
+    --hash=sha256:a67ab96089b96540e34dc8d1ee6e6305a80ee01a36f7688108cd94b77406bdd3 \
+    # via -r requirements/common.in
 django-otp==1.0.1 \
     --hash=sha256:2fb1c8dbd7e7ae76a65b63d89d3d8c3e1105a48bc29830b81c6e417a89380658 \
     --hash=sha256:fef1f2de9a52bc37e16211b98b4323e5b34fa24739116fbe3d1ff018c17ebea8 \
@@ -321,7 +325,7 @@ django-webpack4-loader==0.0.5 \
 django==2.2.16 \
     --hash=sha256:62cf45e5ee425c52e411c0742e641a6588b7e8af0d2c274a27940931b2786594 \
     --hash=sha256:83ced795a0f239f41d8ecabf51cc5fad4b97462a6008dc12e5af3cb9288724ec \
-    # via -r requirements/common.in, django-auth-ldap, django-bitfield, django-formtools, django-otp, django-phonenumber-field, django-sendfile2, django-two-factor-auth
+    # via -r requirements/common.in, django-auth-ldap, django-bitfield, django-formtools, django-oauth-toolkit, django-otp, django-phonenumber-field, django-sendfile2, django-two-factor-auth
 docker==4.3.1 \
     --hash=sha256:13966471e8bc23b36bfb3a6fb4ab75043a5ef1dac86516274777576bed3b9828 \
     --hash=sha256:bad94b8dd001a8a4af19ce4becc17f41b09f228173ffe6a4e0355389eef142f2 \
@@ -688,7 +692,7 @@ networkx==2.5 \
 oauthlib==3.1.0 \
     --hash=sha256:bee41cc35fcca6e988463cacc3bcb8a96224f470ca547e697b604cc697b2f889 \
     --hash=sha256:df884cd6cbe20e32633f1db1072e9356f53638e4361bef4e8b03c9127c9328ea \
-    # via requests-oauthlib, social-auth-core
+    # via django-oauth-toolkit, requests-oauthlib, social-auth-core
 openapi-core==0.13.4 \
     --hash=sha256:1b4a21e2f0f5d567fb0835929d0a3fb7456f5091b6297f46a9cabaa7d8b05639 \
     --hash=sha256:b8b4283d84038495fb3bde4a868cd9377272ecf898f142d7706d6d49fc14d218 \
@@ -1015,7 +1019,7 @@ requests-oauthlib==1.3.0 \
 requests[security]==2.24.0 \
     --hash=sha256:b3559a131db72c33ee969480840fff4bb6dd111de7dd27c8ee1f820f4f00231b \
     --hash=sha256:fe75cc94a9443b9246fc7049224f75604b113c36acb93f87b80ed42c44cbb898 \
-    # via -r requirements/common.in, docker, hypchat, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, semgrep, social-auth-core, sphinx, stripe, twilio, zulip
+    # via -r requirements/common.in, django-oauth-toolkit, docker, hypchat, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, semgrep, social-auth-core, sphinx, stripe, twilio, zulip
 responses==0.12.0 \
     --hash=sha256:0de50fbf600adf5ef9f0821b85cc537acca98d66bc7776755924476775c1989c \
     --hash=sha256:e80d5276011a4b79ecb62c5f82ba07aa23fb31ecbc95ee7cad6de250a3c97444 \
