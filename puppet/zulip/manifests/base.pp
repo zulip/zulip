@@ -144,20 +144,6 @@ class zulip::base {
     mode   => '0640',
   }
 
-  file { '/var/log/zulip/queue_error':
-    ensure => 'directory',
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0640',
-  }
-
-  file { '/var/log/zulip/queue_stats':
-    ensure => 'directory',
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0640',
-  }
-
   file { "${zulip::common::nagios_plugins_dir}/zulip_base":
     require => Package[$zulip::common::nagios_plugins],
     recurse => true,

@@ -145,6 +145,21 @@ class zulip::app_frontend_base {
     group  => 'zulip',
     mode   => '0755',
   }
+
+  file { '/var/log/zulip/queue_error':
+    ensure => 'directory',
+    owner  => 'zulip',
+    group  => 'zulip',
+    mode   => '0640',
+  }
+
+  file { '/var/log/zulip/queue_stats':
+    ensure => 'directory',
+    owner  => 'zulip',
+    group  => 'zulip',
+    mode   => '0640',
+  }
+
   file { "${zulip::common::nagios_plugins_dir}/zulip_app_frontend":
     require => Package[$zulip::common::nagios_plugins],
     recurse => true,
