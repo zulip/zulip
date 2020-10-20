@@ -162,7 +162,7 @@ data includes:
 * The Postgres database.  You can back it up like any Postgres
 database. We have some example tooling for doing that incrementally
 into S3 using [wal-g](https://github.com/wal-g/wal-g) in
-`puppet/zulip/manifests/postgres_backups.pp`.
+`puppet/zulip/manifests/postgresql_backups.pp`.
 In short, this requires:
   - Zulip 1.4 or newer release.
   - An Amazon S3 bucket for storing the backups.
@@ -174,7 +174,7 @@ In short, this requires:
     s3_backups_bucket = # name of S3 backup
     ```
   - A cron job to run `/usr/local/bin/pg_backup_and_purge.py`. There's puppet
-  config for this in `puppet/zulip/manifests/postgres_backups.pp`.
+  config for this in `puppet/zulip/manifests/postgresql_backups.pp`.
   - Verification that backups are running via
   `/usr/lib/nagios/plugins/zulip_postgres_backups/check_postgres_backup`.
 

@@ -1,8 +1,8 @@
 # postgres_appdb_tuned extends postgres_appdb_base by automatically
 # generating tuned database configuration.
-class zulip::profile::postgres_appdb_tuned {
+class zulip::profile::postgresql {
   include zulip::profile::base
-  include zulip::postgres_appdb_base
+  include zulip::postgresql_base
 
   $work_mem = $zulip::common::total_memory_mb / 512
   $shared_buffers = $zulip::common::total_memory_mb / 8
@@ -18,24 +18,24 @@ class zulip::profile::postgres_appdb_tuned {
   $ssl_key_file = zulipconf('postgresql', 'ssl_key_file', undef)
   $ssl_ca_file = zulipconf('postgresql', 'ssl_ca_file', undef)
 
-  file { $zulip::postgres_appdb_base::postgres_confdirs:
+  file { $zulip::postgresql_base::postgres_confdirs:
     ensure => directory,
     owner  => 'postgres',
     group  => 'postgres',
   }
 
-  $postgres_conf_file = "${zulip::postgres_appdb_base::postgres_confdir}/postgresql.conf"
+  $postgres_conf_file = "${zulip::postgresql_base::postgres_confdir}/postgresql.conf"
   file { $postgres_conf_file:
     ensure  => file,
-    require => Package[$zulip::postgres_appdb_base::postgresql],
+    require => Package[$zulip::postgresql_base::postgresql],
     owner   => 'postgres',
     group   => 'postgres',
     mode    => '0644',
-    content => template("zulip/postgresql/${zulip::postgres_common::version}/postgresql.conf.template.erb"),
+    content => template("zulip/postgresql/${zulip::postgresql_common::version}/postgresql.conf.template.erb"),
   }
 
-  exec { $zulip::postgres_appdb_base::postgres_restart:
-    require     => Package[$zulip::postgres_appdb_base::postgresql],
+  exec { $zulip::postgresql_base::postgres_restart:
+    require     => Package[$zulip::postgresql_base::postgresql],
     refreshonly => true,
     subscribe   => [ File[$postgres_conf_file] ],
   }

@@ -1,4 +1,4 @@
-# @summary Temporary shim for postgres database server profile
+# @summary Temporary shim for postgresql database server profile
 class zulip::postgres_appdb_tuned {
-  include zulip::profile::postgres_appdb_tuned
+  include zulip::profile::postgresql
 }

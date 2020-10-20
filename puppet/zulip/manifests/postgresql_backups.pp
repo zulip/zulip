@@ -1,7 +1,7 @@
 # @summary Use wal-g to take daily backups of PostgreSQL
 #
-class zulip::postgres_backups {
-  include zulip::postgres_common
+class zulip::postgresql_backups {
+  include zulip::postgresql_common
 
   $wal_g_version = '0.2.15'
   zulip::sha256_tarball_to { 'wal-g':
@@ -21,7 +21,7 @@ class zulip::postgres_backups {
     group   => 'postgres',
     mode    => '0750',
     source  => 'puppet:///modules/zulip/postgresql/env-wal-g',
-    require => Package[$zulip::postgres_common::postgresql],
+    require => Package[$zulip::postgresql_common::postgresql],
   }
 
   file { '/usr/local/bin/pg_backup_and_purge':
@@ -33,7 +33,7 @@ class zulip::postgres_backups {
     require => [
       File['/usr/local/bin/env-wal-g'],
       Package[
-        $zulip::postgres_common::postgresql,
+        $zulip::postgresql_common::postgresql,
         'python3-dateutil',
       ],
     ],

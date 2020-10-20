@@ -9,7 +9,7 @@
 class zulip::profile::standalone {
   include zulip::profile::base
   include zulip::profile::app_frontend
-  include zulip::profile::postgres_appdb_tuned
+  include zulip::profile::postgresql
   include zulip::profile::redis
   include zulip::profile::memcached
   include zulip::profile::rabbit
