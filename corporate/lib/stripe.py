@@ -190,6 +190,10 @@ def get_idempotency_key(ledger_entry: LicenseLedger) -> Optional[str]:
     return f"ledger_entry:{ledger_entry.id}"  # nocoverage
 
 
+def cents_to_dollar_string(cents: int) -> str:
+    return f"{cents / 100.:,.2f}"
+
+
 class BillingError(Exception):
     # error messages
     CONTACT_SUPPORT = gettext_lazy("Something went wrong. Please contact {email}.")
