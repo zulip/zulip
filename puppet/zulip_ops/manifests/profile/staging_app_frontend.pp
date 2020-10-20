@@ -1,5 +1,5 @@
-class zulip_ops::staging_app_frontend {
-  include zulip_ops::base
+class zulip_ops::profile::staging_app_frontend {
+  include zulip_ops::profile::base
   include zulip_ops::app_frontend
 
   file { '/etc/nginx/sites-available/zulip-staging':

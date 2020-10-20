@@ -1,5 +1,5 @@
-class zulip_ops::zulip_org {
-  include zulip_ops::base
+class zulip_ops::profile::zulip_org {
+  include zulip_ops::profile::base
   include zulip::nginx
 
   file { '/etc/nginx/sites-available/zulip-org':

@@ -1,7 +1,7 @@
 # @summary Outgoing HTTP CONNECT proxy for HTTP/HTTPS on port 4750.
 #
-class zulip_ops::smokescreen {
-  include zulip_ops::base
+class zulip_ops::profile::smokescreen {
+  include zulip_ops::profile::base
   include zulip::supervisor
 
   $golang_version = '1.14.10'
