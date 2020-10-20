@@ -470,6 +470,10 @@ exports.register_stream_handlers = function () {
         $(".streams_popover").on("click", "a.sp-cancel", () => {
             exports.hide_stream_popover();
         });
+        if ($(window).width() <= 768) {
+            $(".popover-inner").hide().fadeIn(300);
+            $(".popover").addClass("colorpicker-popover");
+        }
     });
 };
 
