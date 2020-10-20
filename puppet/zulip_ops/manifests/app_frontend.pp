@@ -1,7 +1,7 @@
 class zulip_ops::app_frontend {
   include zulip::app_frontend_base
-  include zulip::memcached
-  include zulip::rabbit
+  include zulip::profile::memcached
+  include zulip::profile::rabbit
   include zulip::postfix_localmail
   include zulip::static_asset_compiler
   include zulip_ops::app_frontend_monitoring

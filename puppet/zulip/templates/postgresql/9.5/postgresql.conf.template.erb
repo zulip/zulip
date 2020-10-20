@@ -648,10 +648,10 @@ vacuum_freeze_min_age     = 1000000000
 vacuum_freeze_table_age   = 1800000000
 
 # Performance settings
-maintenance_work_mem = <%= scope["zulip::postgres_appdb_tuned::maintenance_work_mem"] %>MB
-effective_cache_size = <%= scope["zulip::postgres_appdb_tuned::effective_cache_size"] %>MB
-work_mem = <%= scope["zulip::postgres_appdb_tuned::work_mem"] %>MB
-shared_buffers = <%= scope["zulip::postgres_appdb_tuned::shared_buffers"] %>MB
+maintenance_work_mem = <%= scope["zulip::profile::postgres_appdb_tuned::maintenance_work_mem"] %>MB
+effective_cache_size = <%= scope["zulip::profile::postgres_appdb_tuned::effective_cache_size"] %>MB
+work_mem = <%= scope["zulip::profile::postgres_appdb_tuned::work_mem"] %>MB
+shared_buffers = <%= scope["zulip::profile::postgres_appdb_tuned::shared_buffers"] %>MB
 wal_buffers = 4MB
 checkpoint_completion_target = 0.7
 <% if @random_page_cost != '' -%>

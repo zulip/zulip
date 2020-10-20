@@ -60,22 +60,21 @@ itself (e.g. installing our Postgres extensions), we have designed
 the Puppet configuration that Zulip uses for installing and upgrading
 configuration to be completely modular.
 
-For example, you can install a Zulip rabbitmq server on a machine, you
-can do the following after unpacking a Zulip production release
-tarball:
+For example, to install a Zulip Redis server on a machine, you can run
+the following after unpacking a Zulip production release tarball:
 
 ```
-env PUPPET_CLASSES=zulip::base,zulip::redis ./scripts/setup/install
+env PUPPET_CLASSES=zulip::profile::redis ./scripts/setup/install
 ```
 
-You can see most likely manifests you might want to choose in the list
-of includes in
-[the main manifest for the default all-in-one Zulip server][voyager.pp],
-though it's also possible to subclass some of the lower-level
-manifests defined in that directory if you want to customize.  A good
-example of doing this is in the
-[zulip_ops Puppet configuration][zulipchat-puppet] that we use as part
-of managing chat.zulip.org and zulip.com.
+All puppet modules under `zulip::profile` are allowed to be configured
+stand-alone on a host.  You can see most likely manifests you might
+want to choose in the list of includes in [the main manifest for the
+default all-in-one Zulip server][voyager.pp], though it's also
+possible to subclass some of the lower-level manifests defined in that
+directory if you want to customize.  A good example of doing this is
+in the [zulip_ops Puppet configuration][zulipchat-puppet] that we use
+as part of managing chat.zulip.org and zulip.com.
 
 ### Using Zulip with Amazon RDS as the database
 
@@ -262,7 +261,7 @@ your installation.
 
 [nginx-proxy-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy
 [nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling
-[voyager.pp]: https://github.com/zulip/zulip/blob/master/puppet/zulip/manifests/voyager.pp
+[voyager.pp]: https://github.com/zulip/zulip/blob/master/puppet/zulip/manifests/profile/voyager.pp
 [zulipchat-puppet]: https://github.com/zulip/zulip/tree/master/puppet/zulip_ops/manifests
 [nginx-loadbalancer]: https://github.com/zulip/zulip/blob/master/puppet/zulip_ops/files/nginx/sites-available/loadbalancer
 

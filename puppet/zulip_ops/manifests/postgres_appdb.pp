@@ -1,6 +1,6 @@
 class zulip_ops::postgres_appdb {
   include zulip_ops::base
-  include zulip::postgres_appdb_tuned
+  include zulip::profile::postgres_appdb_tuned
   include zulip::postgres_backups
 
   $common_packages = ['xfsprogs']
