@@ -5,6 +5,7 @@ import _ from "lodash";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
+import {get_recipient_label} from "./compose_closed_ui";
 import * as compose_error from "./compose_error";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
@@ -616,8 +617,12 @@ export function initialize() {
             available_providers.big_blue_button &&
             page_params.realm_video_chat_provider === available_providers.big_blue_button.id
         ) {
+            const meeting_name = get_recipient_label() + " meeting";
             channel.get({
                 url: "/json/calls/bigbluebutton/create",
+                data: {
+                    meeting_name,
+                },
                 success(response) {
                     insert_video_call_url(response.url, $target_textarea);
                 },

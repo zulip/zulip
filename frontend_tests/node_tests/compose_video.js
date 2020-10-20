@@ -27,6 +27,7 @@ set_global("ResizeObserver", function () {
 
 const server_events_dispatch = zrequire("server_events_dispatch");
 const compose_ui = zrequire("compose_ui");
+const compose_closed = zrequire("compose_closed_ui");
 const compose = zrequire("compose");
 function stub_out_video_calls() {
     const $elem = $("#below-compose-content .video_link");
@@ -210,8 +211,11 @@ test("videos", ({override, override_rewire}) => {
         page_params.realm_video_chat_provider =
             realm_available_video_chat_providers.big_blue_button.id;
 
+        compose_closed.get_recipient_label = () => "a";
+
         channel.get = (options) => {
             assert.equal(options.url, "/json/calls/bigbluebutton/create");
+            assert.equal(options.data.meeting_name, "a meeting");
             options.success({
                 url: "/calls/bigbluebutton/join?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22",
             });
