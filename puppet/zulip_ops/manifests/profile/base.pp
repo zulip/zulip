@@ -1,4 +1,4 @@
-class zulip_ops::base {
+class zulip_ops::profile::base {
   include zulip::profile::base
   include zulip_ops::munin_node
 

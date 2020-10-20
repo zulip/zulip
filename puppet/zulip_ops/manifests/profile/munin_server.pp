@@ -1,5 +1,5 @@
-class zulip_ops::munin_server {
-  include zulip_ops::base
+class zulip_ops::profile::munin_server {
+  include zulip_ops::profile::base
   include zulip_ops::apache
   include zulip::supervisor
 

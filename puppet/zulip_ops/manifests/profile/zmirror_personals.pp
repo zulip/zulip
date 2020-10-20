@@ -1,5 +1,5 @@
-class zulip_ops::zmirror_personals {
-  include zulip_ops::base
+class zulip_ops::profile::zmirror_personals {
+  include zulip_ops::profile::base
   include zulip_ops::apt_repository_debathena
   include zulip::supervisor
 

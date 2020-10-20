@@ -1,5 +1,5 @@
-class zulip_ops::loadbalancer {
-  include zulip_ops::base
+class zulip_ops::profile::loadbalancer {
+  include zulip_ops::profile::base
   include zulip::nginx
   include zulip::camo
 
