@@ -58,7 +58,7 @@ using an [HTTP reverse proxy][reverse-proxy]).
 1. Add `, zulip::postfix_localmail` to `puppet_classes` in
    `/etc/zulip/zulip.conf`.  A typical value after this change is:
    ```
-   puppet_classes = zulip::profile::voyager, zulip::postfix_localmail
+   puppet_classes = zulip::profile::standalone, zulip::postfix_localmail
    ```
 
 1.  If `hostname.example.com` is different from

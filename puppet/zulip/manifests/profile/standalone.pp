@@ -6,7 +6,7 @@
 # /etc/zulip/zulip.conf).  See the corresponding configuration in
 # /etc/zulip/settings.py for how to find the various services is also
 # required to make this work.
-class zulip::profile::voyager {
+class zulip::profile::standalone {
   include zulip::profile::base
   include zulip::profile::app_frontend
   include zulip::profile::postgres_appdb_tuned
