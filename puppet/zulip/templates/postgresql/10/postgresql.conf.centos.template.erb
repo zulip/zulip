@@ -38,15 +38,15 @@
 # The default values of these variables are driven from the -D command-line
 # option or PGDATA environment variable, represented here as ConfigDir.
 
-data_directory = '<%= scope["zulip::postgres_appdb_base::postgres_datadir"] %>'		# use data in another directory
+data_directory = '<%= scope["zulip::postgresql_base::postgres_datadir"] %>'		# use data in another directory
 					# (change requires restart)
-hba_file = '<%= scope["zulip::postgres_appdb_base::postgres_confdir"] %>/pg_hba.conf'	# host-based authentication file
+hba_file = '<%= scope["zulip::postgresql_base::postgres_confdir"] %>/pg_hba.conf'	# host-based authentication file
 					# (change requires restart)
-ident_file = '<%= scope["zulip::postgres_appdb_base::postgres_confdir"] %>/pg_ident.conf'	# ident configuration file
+ident_file = '<%= scope["zulip::postgresql_base::postgres_confdir"] %>/pg_ident.conf'	# ident configuration file
 					# (change requires restart)
 
 # If external_pid_file is not explicitly set, no extra PID file is written.
-external_pid_file = '/var/run/postgresql/<%= scope["zulip::postgres_common::version"] %>-main.pid'
+external_pid_file = '/var/run/postgresql/<%= scope["zulip::postgresql_common::version"] %>-main.pid'
 					# (change requires restart)
 
 
@@ -473,7 +473,7 @@ log_line_prefix = '%m [%p] '		# special values:
 
 # - Process Title -
 
-#cluster_name = '<%= scope["zulip::postgres_common::version"] %>/main'			# added to process titles if nonempty
+#cluster_name = '<%= scope["zulip::postgresql_common::version"] %>/main'			# added to process titles if nonempty
 					# (change requires restart)
 #update_process_title = on
 
@@ -676,10 +676,10 @@ vacuum_freeze_min_age     = 1000000000
 vacuum_freeze_table_age   = 1800000000
 
 # Performance settings
-maintenance_work_mem = <%= scope["zulip::profile::postgres_appdb_tuned::maintenance_work_mem"] %>MB
-effective_cache_size = <%= scope["zulip::profile::postgres_appdb_tuned::effective_cache_size"] %>MB
-work_mem = <%= scope["zulip::profile::postgres_appdb_tuned::work_mem"] %>MB
-shared_buffers = <%= scope["zulip::profile::postgres_appdb_tuned::shared_buffers"] %>MB
+maintenance_work_mem = <%= scope["zulip::profile::postgresql::maintenance_work_mem"] %>MB
+effective_cache_size = <%= scope["zulip::profile::postgresql::effective_cache_size"] %>MB
+work_mem = <%= scope["zulip::profile::postgresql::work_mem"] %>MB
+shared_buffers = <%= scope["zulip::profile::postgresql::shared_buffers"] %>MB
 wal_buffers = 4MB
 checkpoint_completion_target = 0.7
 <% if @random_page_cost != '' -%>

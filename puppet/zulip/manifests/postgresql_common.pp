@@ -1,6 +1,5 @@
-class zulip::postgres_common {
+class zulip::postgresql_common {
   $version = zulipconf('postgresql', 'version', undef)
-
   case $::osfamily {
     'debian': {
       $postgresql = "postgresql-${version}"

@@ -266,7 +266,7 @@ This component is intended to install Nagios plugins intended to be run
 on a Nagios server; most of the Zulip Nagios plugins are intended to be
 run on the Zulip servers themselves, and are included with the relevant
 component of the Zulip server (e.g.
-`puppet/zulip/manifests/postgres_backups.pp` installs a few under
+`puppet/zulip/manifests/postgresql_backups.pp` installs a few under
 `/usr/lib/nagios/plugins/zulip_backups`).
 
 ## Glossary

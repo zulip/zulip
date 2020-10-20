@@ -233,7 +233,7 @@ EOF
 fi
 
 case ",$PUPPET_CLASSES," in
-    *,zulip::profile::standalone,* | *,zulip::profile::postgres_appdb_tuned,*)
+    *,zulip::profile::standalone,* | *,zulip::profile::postgresql,*)
         if [ "$package_system" = apt ]; then
             # We're going to install Postgres from the Postgres apt
             # repository; this may conflict with the existing Postgres.
@@ -408,7 +408,7 @@ EOF
 
     # We only need the Postgres version setting on database hosts; but
     # we don't know if this is a database host until we have the catalog summary.
-    if ! has_class "zulip::postgres_common" || [ "$package_system" != apt ]; then
+    if ! has_class "zulip::postgresql_common" || [ "$package_system" != apt ]; then
         crudini --del /etc/zulip/zulip.conf postgresql
     fi
 
@@ -496,7 +496,7 @@ EOF
     "$ZULIP_PATH"/scripts/setup/configure-rabbitmq
 fi
 
-if has_class "zulip::postgres_common" && [ -z "$NO_INIT_DB" ]; then
+if has_class "zulip::postgresql_common" && [ -z "$NO_INIT_DB" ]; then
     "$ZULIP_PATH"/scripts/setup/postgres-init-db
 fi
 

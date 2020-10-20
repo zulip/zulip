@@ -31,7 +31,7 @@ fi
     cp /etc/zulip/zulip.conf "$TEMP_CONF_DIR"
     ZULIP_CONF="${TEMP_CONF_DIR}/zulip.conf"
     crudini --set "$ZULIP_CONF" postgresql version "$UPGRADE_TO"
-    crudini --set "$ZULIP_CONF" machine puppet_classes zulip::profile::base,zulip::postgres_appdb_base
+    crudini --set "$ZULIP_CONF" machine puppet_classes zulip::profile::base,zulip::postgresql_base
     touch "/usr/share/postgresql/$UPGRADE_TO/pgroonga_setup.sql.applied"
 
     "$ZULIP_PATH"/scripts/zulip-puppet-apply -f --config "$ZULIP_CONF"

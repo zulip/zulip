@@ -11,7 +11,7 @@ if [ -z "$SERVER" ] || [ -z "$ROLES" ]; then
     echo
     echo " * server is the local part of the hostname (e.g. postgres0)"
     echo " * roles is a comma-separated list of Puppet rules to be passed to scripts/lib/install"
-    echo "   E.g. 'zulip::profile::postgres_appdb_tuned'"
+    echo "   E.g. 'zulip::profile::postgresql'"
     echo " * branch is used to override the default branch to install from."
     echo
     echo "Reads configuration from $HOME/.zulip-install-server.conf, which should look like:"

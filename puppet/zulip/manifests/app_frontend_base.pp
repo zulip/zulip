@@ -11,7 +11,7 @@ class zulip::app_frontend_base {
     # shell.  This is not necessary on CentOS because the PostgreSQL
     # package already includes the client.  This may get us a more
     # recent client than the database server is configured to be,
-    # ($zulip::postgres_common::version), but they're compatible.
+    # ($zulip::postgresql_common::version), but they're compatible.
     zulip::safepackage { 'postgresql-client': ensure => 'installed' }
   }
   # For Slack import

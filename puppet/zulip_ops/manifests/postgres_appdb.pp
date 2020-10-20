@@ -1,7 +1,7 @@
 class zulip_ops::postgres_appdb {
   include zulip_ops::base
-  include zulip::profile::postgres_appdb_tuned
-  include zulip::postgres_backups
+  include zulip::profile::postgresql
+  include zulip::postgresql_backups
 
   $common_packages = ['xfsprogs']
   package { $common_packages: ensure => 'installed' }
@@ -28,13 +28,13 @@ class zulip_ops::postgres_appdb {
   }
   exec { 'setup_disks':
     command => '/root/setup_disks.sh',
-    require => Package["postgresql-${zulip::postgres_common::version}", 'xfsprogs'],
+    require => Package["postgresql-${zulip::postgresql_common::version}", 'xfsprogs'],
     unless  => 'test $(readlink /var/lib/postgresql) = "/srv/postgresql/" -a -d /srv/postgresql',
   }
 
-  file { "${zulip::postgres_appdb_base::postgres_confdir}/pg_hba.conf":
+  file { "${zulip::postgresql_base::postgres_confdir}/pg_hba.conf":
     ensure  => file,
-    require => Package["postgresql-${zulip::postgres_common::version}"],
+    require => Package["postgresql-${zulip::postgresql_common::version}"],
     owner   => 'postgres',
     group   => 'postgres',
     mode    => '0640',
