@@ -105,6 +105,30 @@ class Command(compilemessages.Command):
                     'locale': 'en',
                 })
                 continue
+            if locale == 'hi':
+                data['languages'].append({
+                    'name': 'Hindi',
+                    'name_local': 'हिंदी',
+                    'code': 'hi',
+                    'locale': 'hi',
+                })
+                continue
+            if locale == 'zh_TW':
+                data['languages'].append({
+                    'name': 'chinese',
+                    'name_local': '繁體中文-台灣',
+                    'code': 'zh-tw',
+                    'locale': 'zh_TW',
+                })
+                continue
+            if locale == 'ml':
+                data['languages'].append({
+                    'name': 'Malayalam',
+                    'name_local': 'മലയാളം',
+                    'code': 'ml',
+                    'locale': 'ml',
+                })
+                continue
 
             lc_messages_path = os.path.join(locale_path, locale, 'LC_MESSAGES')
             if not os.path.exists(lc_messages_path):
