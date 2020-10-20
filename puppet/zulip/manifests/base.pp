@@ -67,24 +67,6 @@ class zulip::base {
 
   $postgres_version = zulipconf('postgresql', 'version', undef)
 
-  $normal_queues = [
-    'deferred_work',
-    'digest_emails',
-    'email_mirror',
-    'embed_links',
-    'embedded_bots',
-    'error_reports',
-    'invites',
-    'email_senders',
-    'missedmessage_emails',
-    'missedmessage_mobile_notifications',
-    'outgoing_webhooks',
-    'signups',
-    'user_activity',
-    'user_activity_interval',
-    'user_presence',
-  ]
-
   $total_memory_mb = Integer($::memorysize_mb);
 
   group { 'zulip':

@@ -66,7 +66,23 @@ class zulip::app_frontend_base {
   # multiprocess.  Multiprocess scales much better, but requires more
   # RAM; we just auto-detect based on available system RAM.
   $queues_multiprocess = $zulip::base::total_memory_mb > 3500
-  $queues = $zulip::base::normal_queues
+  $queues = [
+    'deferred_work',
+    'digest_emails',
+    'email_mirror',
+    'embed_links',
+    'embedded_bots',
+    'error_reports',
+    'invites',
+    'email_senders',
+    'missedmessage_emails',
+    'missedmessage_mobile_notifications',
+    'outgoing_webhooks',
+    'signups',
+    'user_activity',
+    'user_activity_interval',
+    'user_presence',
+  ]
   if $queues_multiprocess {
     $uwsgi_default_processes = 6
   } else {

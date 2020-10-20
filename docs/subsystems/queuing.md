@@ -44,11 +44,10 @@ To add a new queue processor:
   a single queue processor manually using e.g. `./manage.py
   process_queue --queue=user_activity`.
 
-* So that supervisord will known to run the queue processor in
-  production, you will need to add to to `normal_queues` in
-  `puppet/zulip/manifests/base.pp`; the list there is used to generate
-  `/etc/supervisor/conf.d/zulip.conf` via a puppet template in
-  `app_frontend.pp`.
+* So that supervisord will know to run the queue processor in
+  production, you will need to add to the `queues` variable in
+  `puppet/zulip/manifests/app_frontend_base.pp`; the list there is
+  used to generate `/etc/supervisor/conf.d/zulip.conf`.
 
 The queue will automatically be added to the list of queues tracked by
 `scripts/nagios/check-rabbitmq-consumers`, so Nagios can properly
