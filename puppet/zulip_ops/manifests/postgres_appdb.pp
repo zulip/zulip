@@ -28,13 +28,13 @@ class zulip_ops::postgres_appdb {
   }
   exec { 'setup_disks':
     command => '/root/setup_disks.sh',
-    require => Package["postgresql-${zulip::base::postgres_version}", 'xfsprogs'],
+    require => Package["postgresql-${zulip::postgres_common::version}", 'xfsprogs'],
     unless  => 'test $(readlink /var/lib/postgresql) = "/srv/postgresql/" -a -d /srv/postgresql',
   }
 
   file { "${zulip::postgres_appdb_base::postgres_confdir}/pg_hba.conf":
     ensure  => file,
-    require => Package["postgresql-${zulip::base::postgres_version}"],
+    require => Package["postgresql-${zulip::postgres_common::version}"],
     owner   => 'postgres',
     group   => 'postgres',
     mode    => '0640',

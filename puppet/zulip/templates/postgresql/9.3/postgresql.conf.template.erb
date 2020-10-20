@@ -46,7 +46,7 @@ ident_file = '<%= scope["zulip::postgres_appdb_base::postgres_confdir"] %>/pg_id
 					# (change requires restart)
 
 # If external_pid_file is not explicitly set, no extra PID file is written.
-external_pid_file = '/var/run/postgresql/<%= scope["zulip::base::postgres_version"] %>-main.pid'		# write an extra PID file
+external_pid_file = '/var/run/postgresql/<%= scope["zulip::postgres_common::version"] %>-main.pid'		# write an extra PID file
 					# (change requires restart)
 
 

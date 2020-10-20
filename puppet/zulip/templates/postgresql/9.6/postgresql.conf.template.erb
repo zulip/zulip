@@ -46,7 +46,7 @@ ident_file = '<%= scope["zulip::postgres_appdb_base::postgres_confdir"] %>/pg_id
 					# (change requires restart)
 
 # If external_pid_file is not explicitly set, no extra PID file is written.
-external_pid_file = '/var/run/postgresql/<%= scope["zulip::base::postgres_version"] %>-main.pid'			# write an extra PID file
+external_pid_file = '/var/run/postgresql/<%= scope["zulip::postgres_common::version"] %>-main.pid'			# write an extra PID file
 					# (change requires restart)
 
 
@@ -461,7 +461,7 @@ log_timezone = 'UTC'
 
 # - Process Title -
 
-cluster_name = '<%= scope["zulip::base::postgres_version"] %>/main'			# added to process titles if nonempty
+cluster_name = '<%= scope["zulip::postgres_common::version"] %>/main'			# added to process titles if nonempty
 					# (change requires restart)
 #update_process_title = on
 
@@ -477,7 +477,7 @@ cluster_name = '<%= scope["zulip::base::postgres_version"] %>/main'			# added to
 #track_io_timing = off
 #track_functions = none			# none, pl, all
 #track_activity_query_size = 1024	# (change requires restart)
-stats_temp_directory = '/var/run/postgresql/<%= scope["zulip::base::postgres_version"] %>-main.pg_stat_tmp'
+stats_temp_directory = '/var/run/postgresql/<%= scope["zulip::postgres_common::version"] %>-main.pg_stat_tmp'
 
 
 # - Statistics Monitoring -

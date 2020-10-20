@@ -1,8 +1,11 @@
 class zulip::postgres_common {
   include zulip::common
+
+  $version = zulipconf('postgresql', 'version', undef)
+
   case $::osfamily {
     'debian': {
-      $postgresql = "postgresql-${zulip::base::postgres_version}"
+      $postgresql = "postgresql-${version}"
       $postgres_packages = [
         # The database itself
         $postgresql,
@@ -23,7 +26,7 @@ class zulip::postgres_common {
       ]
     }
     'redhat': {
-      $postgresql = "postgresql${zulip::base::postgres_version}"
+      $postgresql = "postgresql${version}"
       $postgres_packages = [
         $postgresql,
         "${postgresql}-server",

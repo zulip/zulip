@@ -65,8 +65,6 @@ class zulip::base {
   }
   package { $base_packages: ensure => 'installed' }
 
-  $postgres_version = zulipconf('postgresql', 'version', undef)
-
   $total_memory_mb = Integer($::memorysize_mb);
 
   group { 'zulip':

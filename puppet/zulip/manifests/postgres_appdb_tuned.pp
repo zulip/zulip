@@ -30,7 +30,7 @@ class zulip::postgres_appdb_tuned {
     owner   => 'postgres',
     group   => 'postgres',
     mode    => '0644',
-    content => template("zulip/postgresql/${zulip::base::postgres_version}/postgresql.conf.template.erb"),
+    content => template("zulip/postgresql/${zulip::postgres_common::version}/postgresql.conf.template.erb"),
   }
 
   exec { $zulip::postgres_appdb_base::postgres_restart:
