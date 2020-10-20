@@ -121,11 +121,11 @@ fi
 read -r -a APT_OPTIONS <<<"${APT_OPTIONS:-}"
 # Install additional packages.
 read -r -a ADDITIONAL_PACKAGES <<<"${ADDITIONAL_PACKAGES:-}"
-# Comma-separated list of Puppet manifests to install.  default is
-# zulip::profile::voyager for an all-in-one system or
-# zulip::profile::dockervoyager for Docker.  Use
+# Comma-separated list of Puppet manifests to install.  The default is
+# zulip::profile::standalone for an all-in-one system or
+# zulip::profile::docker for Docker.  Use
 # e.g. zulip::profile::app_frontend for a Zulip frontend server.
-PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::profile::voyager}"
+PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::profile::standalone}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
 POSTGRES_VERSION="${POSTGRES_VERSION:-12}"
 
@@ -233,7 +233,7 @@ EOF
 fi
 
 case ",$PUPPET_CLASSES," in
-    *,zulip::profile::voyager,* | *,zulip::profile::postgres_appdb_tuned,*)
+    *,zulip::profile::standalone,* | *,zulip::profile::postgres_appdb_tuned,*)
         if [ "$package_system" = apt ]; then
             # We're going to install Postgres from the Postgres apt
             # repository; this may conflict with the existing Postgres.
@@ -287,7 +287,7 @@ elif [ "$package_system" = yum ]; then
 fi
 
 # Check early for missing SSL certificates
-if [ "$PUPPET_CLASSES" = "zulip::profile::voyager" ] && [ -z "$USE_CERTBOT""$SELF_SIGNED_CERT" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
+if [ "$PUPPET_CLASSES" = "zulip::profile::standalone" ] && [ -z "$USE_CERTBOT""$SELF_SIGNED_CERT" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
     set +x
     cat <<EOF
 
@@ -459,7 +459,7 @@ elif [ "$package_system" = yum ]; then
     :
 fi
 
-if has_class "zulip::nginx" && ! has_class "zulip::profile::dockervoyager"; then
+if has_class "zulip::nginx" && ! has_class "zulip::profile::docker"; then
     # Check nginx was configured properly now that we've installed it.
     # Most common failure mode is certs not having been installed.
     if ! nginx -t; then

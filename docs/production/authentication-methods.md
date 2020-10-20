@@ -481,7 +481,7 @@ straightforward way to deploy that SSO solution with Zulip.
 2. Edit `/etc/zulip/zulip.conf` and change the `puppet_classes` line to read:
 
    ```
-   puppet_classes = zulip::profile::voyager, zulip::apache_sso
+   puppet_classes = zulip::profile::standalone, zulip::apache_sso
    ```
 
 3. As root, run `/home/zulip/deployments/current/scripts/zulip-puppet-apply`

@@ -70,7 +70,7 @@ env PUPPET_CLASSES=zulip::profile::redis ./scripts/setup/install
 All puppet modules under `zulip::profile` are allowed to be configured
 stand-alone on a host.  You can see most likely manifests you might
 want to choose in the list of includes in [the main manifest for the
-default all-in-one Zulip server][voyager.pp], though it's also
+default all-in-one Zulip server][standalone.pp], though it's also
 possible to subclass some of the lower-level manifests defined in that
 directory if you want to customize.  A good example of doing this is
 in the [zulip_ops Puppet configuration][zulipchat-puppet] that we use
@@ -261,7 +261,7 @@ your installation.
 
 [nginx-proxy-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy
 [nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling
-[voyager.pp]: https://github.com/zulip/zulip/blob/master/puppet/zulip/manifests/profile/voyager.pp
+[standalone.pp]: https://github.com/zulip/zulip/blob/master/puppet/zulip/manifests/profile/standalone.pp
 [zulipchat-puppet]: https://github.com/zulip/zulip/tree/master/puppet/zulip_ops/manifests
 [nginx-loadbalancer]: https://github.com/zulip/zulip/blob/master/puppet/zulip_ops/files/nginx/sites-available/loadbalancer
 
