@@ -1,15 +1,37 @@
 class zulip::supervisor {
+  $supervisor_service = $zulip::common::supervisor_service
+
   package { 'supervisor': ensure => 'installed' }
 
-  if $::osfamily == 'redhat' {
-    file { $zulip::common::supervisor_conf_dir:
-      ensure => 'directory',
-      owner  => 'root',
-      group  => 'root',
-    }
+  file { $zulip::common::supervisor_system_conf_dir:
+    ensure  => 'directory',
+    require => Package['supervisor'],
+    owner   => 'root',
+    group   => 'root',
   }
 
-  $supervisor_service = $zulip::common::supervisor_service
+  file { $zulip::common::supervisor_conf_dir:
+    ensure  => 'directory',
+    require => Package['supervisor'],
+    owner   => 'root',
+    group   => 'root',
+    purge   => true,
+    recurse => true,
+    notify  => Service[$supervisor_service],
+  }
+
+  # These files were moved from /etc/supervisor/conf.d/ into a zulip/
+  # subdirectory in 2020-10 in version 4.0; these lines can be removed
+  # in Zulip version 5.0 and later.
+  file { [
+    "${zulip::common::supervisor_system_conf_dir}/cron.conf",
+    "${zulip::common::supervisor_system_conf_dir}/nginx.conf",
+    "${zulip::common::supervisor_system_conf_dir}/thumbor.conf",
+    "${zulip::common::supervisor_system_conf_dir}/zulip_db.conf",
+    "${zulip::common::supervisor_system_conf_dir}/zulip.conf",
+  ]:
+    ensure => absent,
+  }
 
   # In the dockervoyager environment, we don't want/need supervisor to be started/stopped
   # /bin/true is used as a decoy command, to maintain compatibility with other
@@ -80,19 +102,5 @@ class zulip::supervisor {
     mode    => '0644',
     source  => 'puppet:///modules/zulip/supervisor/supervisord.conf',
     notify  => Exec['supervisor-restart'],
-  }
-
-  # We need a block here to handle deleting the old thumbor.conf file,
-  # unless zulip::thumbor has been enabled. It would be cleaner
-  # to use tidy instead of exec here, but notify is broken with it
-  # (https://tickets.puppetlabs.com/browse/PUP-6021)
-  # so we wouldn't be able to notify the supervisor service.
-  $thumbor_enabled = defined(Class['zulip::thumbor'])
-  if !$thumbor_enabled {
-    exec { 'cleanup_thumbor_supervisor_conf_file':
-      command => "rm ${zulip::common::supervisor_conf_dir}/thumbor.conf",
-      onlyif  => "test -e ${zulip::common::supervisor_conf_dir}/thumbor.conf",
-      notify  => Service[$zulip::common::supervisor_service],
-    }
   }
 }
