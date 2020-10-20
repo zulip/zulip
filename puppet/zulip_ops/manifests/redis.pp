@@ -1,6 +1,6 @@
 class zulip_ops::redis {
   include zulip_ops::base
-  include zulip::redis
+  include zulip::profile::redis
 
   # Need redis_password in its own file for Nagios
   file { '/var/lib/nagios/redis_password':

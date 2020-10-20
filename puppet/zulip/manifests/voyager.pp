@@ -1,24 +1,4 @@
-# This class includes all the modules you need to run an entire Zulip
-# installation on a single server.  If desired, you can split up the
-# different components of a Zulip installation on different servers by
-# using the modules below on different machines (the module list is
-# stored in `puppet_classes` in /etc/zulip/zulip.conf).  In general,
-# every machine should have `zulip::base` included, but the various
-# service modules can be arranged on different machines or the same
-# machine as desired (corresponding configuration in
-# /etc/zulip/settings.py for how to find the various services is also
-# required to make this work).
+# @summary Temporary shim for all-in-one profile
 class zulip::voyager {
-  include zulip::base
-  include zulip::app_frontend
-  include zulip::postgres_appdb_tuned
-  include zulip::memcached
-  include zulip::rabbit
-  include zulip::redis
-  if $::osfamily == debian {
-    # camo is only required on Debian-based systems as part of
-    # our migration towards not including camo at all.
-    include zulip::localhost_camo
-  }
-  include zulip::static_asset_compiler
+  include zulip::profile::voyager
 }

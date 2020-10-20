@@ -1,5 +1,5 @@
 class zulip_ops::base {
-  include zulip::base
+  include zulip::profile::base
   include zulip_ops::munin_node
 
   $org_base_packages = [# Management for our systems
