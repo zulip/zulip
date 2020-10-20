@@ -22,7 +22,7 @@ class MarkdownReturnValuesTableGenerator(Extension):
 
 
 class APIReturnValuesTablePreprocessor(Preprocessor):
-    def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
+    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
 
     def run(self, lines: List[str]) -> List[str]:

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, List, Mapping, Optional, Tuple
 from xml.etree.ElementTree import Element, SubElement
 
 import markdown
@@ -16,7 +16,7 @@ class NestedCodeBlocksRenderer(Extension):
         )
 
 class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocessor):
-    def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
+    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
 
     def run(self, root: Element) -> None:

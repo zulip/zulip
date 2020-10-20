@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import markdown
 from markdown.extensions import Extension
@@ -85,7 +85,7 @@ class TabbedSectionsGenerator(Extension):
         )
 
 class TabbedSectionsPreprocessor(Preprocessor):
-    def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
+    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
 
     def run(self, lines: List[str]) -> List[str]:

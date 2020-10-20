@@ -9,7 +9,7 @@ import inspect
 import json
 import re
 import shlex
-from typing import Any, Dict, List, Optional, Pattern, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Pattern, Tuple
 
 import markdown
 from django.conf import settings
@@ -358,7 +358,7 @@ class APIMarkdownExtension(Extension):
         )
 
 class APICodeExamplesPreprocessor(Preprocessor):
-    def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
+    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
         self.api_url = config['api_url']
 
@@ -416,7 +416,7 @@ class APICodeExamplesPreprocessor(Preprocessor):
         return fixture
 
 class APIDescriptionPreprocessor(Preprocessor):
-    def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
+    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
         self.api_url = config['api_url']
 

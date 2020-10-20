@@ -28,7 +28,7 @@ class MarkdownArgumentsTableGenerator(Extension):
 
 
 class APIArgumentsTablePreprocessor(Preprocessor):
-    def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
+    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
         self.base_path = config['base_path']
 
