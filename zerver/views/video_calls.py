@@ -10,6 +10,7 @@ from urllib.parse import quote, urlencode, urljoin
 import requests
 from defusedxml import ElementTree
 from django.conf import settings
+from django.core.signing import Signer
 from django.http import HttpRequest, HttpResponse
 from django.middleware import csrf
 from django.shortcuts import redirect, render
@@ -168,35 +169,27 @@ def deauthorize_zoom_user(request: HttpRequest) -> HttpResponse:
     return json_success(request)
 
 
-def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+@has_request_variables
+def get_bigbluebutton_url(
+    request: HttpRequest, user_profile: UserProfile, meeting_name: str = REQ()
+) -> HttpResponse:
     # https://docs.bigbluebutton.org/dev/api.html#create for reference on the API calls
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
     id = "zulip-" + str(random.randint(100000000000, 999999999999))
-    password = b32encode(secrets.token_bytes(7))[:10].decode()
-    checksum = hashlib.sha256(
-        (
-            "create"
-            + "meetingID="
-            + id
-            + "&moderatorPW="
-            + password
-            + "&attendeePW="
-            + password
-            + "a"
-            + settings.BIG_BLUE_BUTTON_SECRET
-        ).encode()
-    ).hexdigest()
-    url = append_url_query_string(
-        "/calls/bigbluebutton/join",
-        urlencode(
-            {
-                "meeting_id": id,
-                "password": password,
-                "checksum": checksum,
-            }
-        ),
+    password = b32encode(secrets.token_bytes(7))[:20].decode()
+
+    # We sign our data here to ensure a Zulip user can not tamper with
+    # the join link to gain access to other meetings that are on the
+    # same bigbluebutton server.
+    signed = Signer().sign_object(
+        {
+            "meeting_id": id,
+            "name": meeting_name,
+            "password": password,
+        }
     )
-    return json_success(request, data={"url": url})
+    url = append_url_query_string("/calls/bigbluebutton/join", "bigbluebutton=" + signed)
+    return json_success(request, {"url": url})
 
 
 # We use zulip_login_required here mainly to get access to the user's
@@ -207,55 +200,78 @@ def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> Ht
 @zulip_login_required
 @never_cache
 @has_request_variables
-def join_bigbluebutton(
-    request: HttpRequest,
-    meeting_id: str = REQ(),
-    password: str = REQ(),
-    checksum: str = REQ(),
-) -> HttpResponse:
+def join_bigbluebutton(request: HttpRequest, bigbluebutton: str = REQ()) -> HttpResponse:
     assert request.user.is_authenticated
 
     if settings.BIG_BLUE_BUTTON_URL is None or settings.BIG_BLUE_BUTTON_SECRET is None:
         raise JsonableError(_("BigBlueButton is not configured."))
-    else:
-        try:
-            response = VideoCallSession().get(
-                append_url_query_string(
-                    settings.BIG_BLUE_BUTTON_URL + "api/create",
-                    urlencode(
-                        {
-                            "meetingID": meeting_id,
-                            "moderatorPW": password,
-                            "attendeePW": password + "a",
-                            "checksum": checksum,
-                        }
-                    ),
-                )
-            )
-            response.raise_for_status()
-        except requests.RequestException:
-            raise JsonableError(_("Error connecting to the BigBlueButton server."))
 
-        payload = ElementTree.fromstring(response.text)
-        if payload.find("messageKey").text == "checksumError":
-            raise JsonableError(_("Error authenticating to the BigBlueButton server."))
+    try:
+        bigbluebutton_data = Signer().unsign_object(bigbluebutton)
+    except Exception:
+        raise JsonableError(_("Invalid signature."))
 
-        if payload.find("returncode").text != "SUCCESS":
-            raise JsonableError(_("BigBlueButton server returned an unexpected error."))
+    create_params = urlencode(
+        {
+            "meetingID": bigbluebutton_data["meeting_id"],
+            "name": bigbluebutton_data["name"],
+            "moderatorPW": bigbluebutton_data["password"],
+            # We generate the attendee password from moderatorPW,
+            # because the BigBlueButton API requires a separate
+            # password. This integration is designed to have all users
+            # join as moderators, so we generate attendeePW by
+            # truncating the moderatorPW while keeping it long enough
+            # to not be vulnerable to brute force attacks.
+            "attendeePW": bigbluebutton_data["password"][:16],
+        },
+        quote_via=quote,
+    )
 
-        join_params = urlencode(
-            {
-                "meetingID": meeting_id,
-                "password": password,
-                "fullName": request.user.full_name,
-            },
-            quote_via=quote,
+    checksum = hashlib.sha256(
+        ("create" + create_params + settings.BIG_BLUE_BUTTON_SECRET).encode()
+    ).hexdigest()
+
+    try:
+        response = VideoCallSession().get(
+            append_url_query_string(settings.BIG_BLUE_BUTTON_URL + "api/create", create_params)
+            + "&checksum="
+            + checksum
         )
+        response.raise_for_status()
+    except requests.RequestException:
+        raise JsonableError(_("Error connecting to the BigBlueButton server."))
 
-        checksum = hashlib.sha256(
-            ("join" + join_params + settings.BIG_BLUE_BUTTON_SECRET).encode()
-        ).hexdigest()
-        redirect_url_base = append_url_query_string(
-            settings.BIG_BLUE_BUTTON_URL + "api/join", join_params
-        )
-        return redirect(append_url_query_string(redirect_url_base, "checksum=" + checksum))
+    payload = ElementTree.fromstring(response.text)
+    if payload.find("messageKey").text == "checksumError":
+        raise JsonableError(_("Error authenticating to the BigBlueButton server."))
+
+    if payload.find("returncode").text != "SUCCESS":
+        raise JsonableError(_("BigBlueButton server returned an unexpected error."))
+
+    join_params = urlencode(
+        {
+            "meetingID": bigbluebutton_data["meeting_id"],
+            # We use the moderator password here to grant ever user
+            # full moderator permissions to the bigbluebutton session.
+            "password": bigbluebutton_data["password"],
+            "fullName": request.user.full_name,
+            # https://docs.bigbluebutton.org/dev/api.html#create
+            # The createTime option is used to have the user redirected to a link
+            # that is only valid for this meeting.
+            #
+            # Even if the same link in Zulip is used again, a new
+            # createTime parameter will be created, as the meeting on
+            # the BigBlueButton server has to be recreated. (after a
+            # few minutes)
+            "createTime": payload.find("createTime").text,
+        },
+        quote_via=quote,
+    )
+
+    checksum = hashlib.sha256(
+        ("join" + join_params + settings.BIG_BLUE_BUTTON_SECRET).encode()
+    ).hexdigest()
+    redirect_url_base = append_url_query_string(
+        settings.BIG_BLUE_BUTTON_URL + "api/join", join_params
+    )
+    return redirect(append_url_query_string(redirect_url_base, "checksum=" + checksum))
