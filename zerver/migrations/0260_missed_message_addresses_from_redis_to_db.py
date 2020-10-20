@@ -28,16 +28,14 @@ def move_missed_message_addresses_to_database(apps: StateApps, schema_editor: Da
             redis_client.delete(key)
             continue
 
-        result = redis_client.hmget(key, 'user_profile_id', 'recipient_id', 'subject')
-        if not all(val is not None for val in result):
+        user_profile_id, recipient_id, subject_b = redis_client.hmget(
+            key, 'user_profile_id', 'recipient_id', 'subject'
+        )
+        if user_profile_id is None or recipient_id is None or subject_b is None:
             # Missing data, skip this key; this should never happen
             redis_client.delete(key)
             continue
 
-        user_profile_id: bytes
-        recipient_id: bytes
-        subject_id: bytes
-        user_profile_id, recipient_id, subject_b = result
         topic_name = subject_b.decode('utf-8')
 
         # The data model for missed-message emails has changed in two

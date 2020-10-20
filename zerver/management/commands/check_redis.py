@@ -21,7 +21,7 @@ class Command(BaseCommand):
                             help="Actually trim excess")
 
     def _check_within_range(self, key: str, count_func: Callable[[], int],
-                            trim_func: Optional[Callable[[str, int], None]]=None) -> None:
+                            trim_func: Optional[Callable[[str, int], object]]=None) -> None:
         user_id = int(key.split(':')[1])
         user = get_user_profile_by_id(user_id)
         entity = RateLimitedUser(user)
@@ -48,7 +48,7 @@ than max_api_calls! (trying to trim) %s %s", key, count)
         wildcard_zset = "ratelimit:*:*:zset"
 
         trim_func: Optional[
-            Callable[[str, int], None]
+            Callable[[str, int], object]
         ] = lambda key, max_calls: client.ltrim(key, 0, max_calls - 1)
         if not options['trim']:
             trim_func = None
