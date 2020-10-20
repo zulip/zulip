@@ -1,6 +1,6 @@
-class zulip::zulip_org {
+class zulip_ops::zulip_org {
   include zulip::common
-  include zulip::base
+  include zulip_ops::base
   include zulip::nginx
 
   file { '/etc/nginx/sites-available/zulip-org':
@@ -9,7 +9,7 @@ class zulip::zulip_org {
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    source  => 'puppet:///modules/zulip/nginx/sites-available/zulip-org',
+    source  => 'puppet:///modules/zulip_ops/nginx/sites-available/zulip-org',
     notify  => Service['nginx'],
   }
 
