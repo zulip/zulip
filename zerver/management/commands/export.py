@@ -173,7 +173,8 @@ class Command(ZulipBaseCommand):
 
         tarball_path = output_dir.rstrip("/") + ".tar.gz"
         try:
-            os.close(os.open(tarball_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o666))
+            with open(tarball_path, "x"):
+                pass
         except FileExistsError:
             raise CommandError(f"Refusing to overwrite existing tarball: {tarball_path}. Aborting...")
 

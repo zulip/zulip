@@ -85,13 +85,10 @@ def get_or_create_key_prefix() -> str:
 
     filename = os.path.join(settings.DEPLOY_ROOT, "var", "remote_cache_prefix")
     try:
-        fd = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0o444)
-        prefix = secrets.token_hex(16) + ':'
-        # This does close the underlying file
-        with os.fdopen(fd, 'w') as f:
+        with open(filename, 'x') as f:
+            prefix = secrets.token_hex(16) + ':'
             f.write(prefix + "\n")
-    except OSError:
-        # The file already exists
+    except FileExistsError:
         tries = 1
         while tries < 10:
             with open(filename) as f:
