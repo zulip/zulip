@@ -1,5 +1,4 @@
-# postgres_appdb_tuned extends postgres_appdb_base by automatically
-# generating tuned database configuration.
+# @summary Extends postgresql_base by tuning the configuration.
 class zulip::profile::postgresql {
   include zulip::profile::base
   include zulip::postgresql_base

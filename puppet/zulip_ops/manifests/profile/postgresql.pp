@@ -1,4 +1,4 @@
-class zulip_ops::profile::postgres_appdb {
+class zulip_ops::profile::postgresql {
   include zulip_ops::profile::base
   include zulip::profile::postgresql
   include zulip::postgresql_backups
