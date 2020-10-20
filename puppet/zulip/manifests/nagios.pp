@@ -3,7 +3,6 @@
 #
 # Depends on zulip::base to have installed `monitoring-plugins-basic`.
 class zulip::nagios {
-  include zulip::common
   file { "${zulip::common::nagios_plugins_dir}/zulip_nagios_server":
     require => Package[$zulip::common::nagios_plugins],
     recurse => true,

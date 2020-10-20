@@ -1,5 +1,4 @@
 class zulip_ops::zulip_org {
-  include zulip::common
   include zulip_ops::base
   include zulip::nginx
 

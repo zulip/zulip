@@ -1,6 +1,4 @@
 class zulip::postgres_common {
-  include zulip::common
-
   $version = zulipconf('postgresql', 'version', undef)
 
   case $::osfamily {

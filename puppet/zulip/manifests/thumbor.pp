@@ -1,5 +1,5 @@
 class zulip::thumbor {
-  include zulip::common
+  include zulip::base
   include zulip::nginx
   include zulip::supervisor
 
