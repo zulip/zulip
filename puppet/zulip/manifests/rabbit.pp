@@ -1,4 +1,5 @@
 class zulip::rabbit {
+  include zulip::base
   $erlang = $::osfamily ? {
     'debian' => 'erlang-base',
     'redhat' => 'erlang',

@@ -1,7 +1,6 @@
 # Minimal configuration to run a Zulip application server.
 # Default nginx configuration is included in extension app_frontend.pp.
 class zulip::app_frontend_base {
-  include zulip::common
   include zulip::nginx
   include zulip::sasl_modules
   include zulip::supervisor

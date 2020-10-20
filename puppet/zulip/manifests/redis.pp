@@ -1,4 +1,5 @@
 class zulip::redis {
+  include zulip::base
   case $::osfamily {
     'debian': {
       $redis = 'redis-server'

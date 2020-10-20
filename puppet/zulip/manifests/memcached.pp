@@ -1,4 +1,5 @@
 class zulip::memcached {
+  include zulip::base
   include zulip::sasl_modules
   include zulip::systemd_daemon_reload
 

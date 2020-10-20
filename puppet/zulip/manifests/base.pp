@@ -1,3 +1,7 @@
+# @summary Included only by classes that can be deployed.
+#
+# This class should only be included by classes that are intended to
+# be able to be deployed on their own host.
 class zulip::base {
   include zulip::common
   case $::osfamily {

@@ -1,6 +1,4 @@
 class zulip::tornado_sharding {
-  include zulip::base
-  include zulip::common
   include zulip::nginx
 
   # The file entries below serve only to initialize the sharding config files

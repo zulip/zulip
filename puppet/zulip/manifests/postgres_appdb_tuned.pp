@@ -1,6 +1,7 @@
 # postgres_appdb_tuned extends postgres_appdb_base by automatically
 # generating tuned database configuration.
 class zulip::postgres_appdb_tuned {
+  include zulip::base
   include zulip::postgres_appdb_base
 
   $work_mem = $zulip::common::total_memory_mb / 512

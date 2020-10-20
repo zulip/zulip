@@ -1,6 +1,6 @@
 # Default configuration for a Zulip app frontend
 class zulip::app_frontend {
-  include zulip::common
+  include zulip::base
   include zulip::app_frontend_base
   include zulip::app_frontend_once
 
