@@ -6,9 +6,13 @@
     {!webhook-url.md!}
 
     Modify the parameters of the URL above, where `api_key` is the API key
-    of your Zulip bot, and `stream` is the URL-encoded stream name you want the
-    notifications sent to. If you do not specify a `stream`, the bot will
-    send notifications via PMs to the creator of the bot.
+    of your Zulip bot, and `stream` is the [URL-encoded](https://www.urlencoder.org/)
+    stream name you want the notifications sent to. If you do not specify a
+    `stream`, the bot will send notifications via PMs to the creator of the bot.
 
     If you'd like this integration to always send to the topic
     `your topic`, just add `&topic=your%20topic` to the end of the URL.
+
+    To URL-encode the stream name or topic name, copy & paste it in
+    [URL-encoder](https://www.urlencoder.org/). Click on **ENCODE** and
+    copy & paste the result in the URL.
