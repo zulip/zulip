@@ -268,7 +268,7 @@ class Realm(models.Model):
     WILDCARD_MENTION_POLICY_ADMINS = 5
     WILDCARD_MENTION_POLICY_NOBODY = 6
     wildcard_mention_policy: int = models.PositiveSmallIntegerField(
-        default=WILDCARD_MENTION_POLICY_STREAM_ADMINS,
+        default=WILDCARD_MENTION_POLICY_ADMINS,
     )
     WILDCARD_MENTION_POLICY_TYPES = [
         WILDCARD_MENTION_POLICY_EVERYONE,
