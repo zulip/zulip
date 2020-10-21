@@ -98,4 +98,11 @@ class zulip::postgresql_base {
       creates => "${pgroonga_setup_sql_path}.applied",
     }
   }
+
+  $s3_backups_key        = zulipsecret('secrets', 's3_backups_key', '')
+  $s3_backups_secret_key = zulipsecret('secrets', 's3_backups_secret_key', '')
+  $s3_backups_bucket     = zulipsecret('secrets', 's3_backups_bucket', '')
+  if $s3_backups_key != '' and $s3_backups_secret_key != '' and $s3_backups_bucket != '' {
+    include zulip::postgresql_backups
+  }
 }
