@@ -303,6 +303,7 @@ OPTIONAL_CLOSING_TAGS = [
     'input',
     'path',
     'polygon',
+    'stop',
 ]
 
 def is_self_closing_html_tag(s: Text, tag: Text) -> bool:

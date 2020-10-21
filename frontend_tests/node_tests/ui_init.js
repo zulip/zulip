@@ -104,7 +104,9 @@ zrequire("narrow");
 zrequire("search_suggestion");
 zrequire("search");
 zrequire("tutorial");
-zrequire("notifications");
+rewiremock.proxy(() => zrequire("notifications"), {
+    "../../static/js/favicon": {},
+});
 zrequire("pm_conversations");
 zrequire("pm_list");
 zrequire("list_cursor");
