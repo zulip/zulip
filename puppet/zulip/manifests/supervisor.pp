@@ -35,13 +35,11 @@ class zulip::supervisor {
     ensure => absent,
   }
 
-  # In the dockervoyager environment, we don't want/need supervisor to be started/stopped
-  # /bin/true is used as a decoy command, to maintain compatibility with other
-  # code using the supervisor service.
-  #
-  # This logic is definitely a hack, but it's less bad than the old hack :(
+  # In the docker environment, we don't want/need supervisor to be
+  # started/stopped /bin/true is used as a decoy command, to maintain
+  # compatibility with other code using the supervisor service.
   $puppet_classes = zulipconf('machine', 'puppet_classes', undef)
-  if $puppet_classes == 'zulip::dockervoyager' {
+  if 'docker' in $puppet_classes {
     service { $supervisor_service:
       ensure     => running,
       require    => [
