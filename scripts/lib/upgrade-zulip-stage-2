@@ -9,6 +9,7 @@ import glob
 import hashlib
 import logging
 import os
+import re
 import subprocess
 import sys
 import time
@@ -256,6 +257,23 @@ if (not args.skip_puppet or migrations_needed) and IS_SERVER_UP:
     shutdown_server()
 
 if not args.skip_puppet:
+    # Adjust Puppet class names for the rename after 3.x
+    class_renames = {
+        'zulip::app_frontend': 'zulip::profile::app_frontend',
+        'zulip::dockervoyager': 'zulip::profile::docker',
+        'zulip::memcached': 'zulip::profile::memcached',
+        'zulip::postgres_appdb_tuned': 'zulip::profile::postgresql',
+        'zulip::rabbit': 'zulip::profile::rabbitmq',
+        'zulip::thumbor': 'zulip::profile::thumbor',
+        'zulip::voyager': 'zulip::profile::standalone',
+    }
+    classes = re.split(r'\s*,\s*', get_config(config_file, 'machine', 'puppet_classes'))
+    new_classes = [class_renames.get(c, c) for c in classes if c != 'zulip::base']
+    if classes != new_classes:
+        logging.info("Adjusting Puppet classes for renames...")
+        subprocess.check_call(["crudini", "--set", "/etc/zulip/zulip.conf",
+                               "machine", "puppet_classes", ", ".join(new_classes)])
+
     logging.info("Applying Puppet changes...")
     subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
     subprocess.check_call(["apt-get", "-y", "upgrade"])
