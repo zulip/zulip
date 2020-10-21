@@ -5,6 +5,7 @@ const _ = require("lodash");
 const render_compose_notification = require("../templates/compose_notification.hbs");
 const render_notification = require("../templates/notification.hbs");
 
+const favicon = require("./favicon");
 const people = require("./people");
 const settings_config = require("./settings_config");
 
@@ -15,11 +16,6 @@ const notice_memory = new Map();
 let window_focused = document.hasFocus && document.hasFocus();
 
 let supports_sound;
-
-const unread_pms_favicon = "/static/images/favicon/favicon-pms.png?v=4";
-let current_favicon;
-let previous_favicon;
-let flashing = false;
 
 let NotificationAPI;
 
@@ -131,85 +127,41 @@ exports.permission_state = function () {
     return NotificationAPI.permission;
 };
 
-let new_message_count = 0;
-
-exports.update_title_count = function (count) {
-    new_message_count = count;
-    exports.redraw_title();
-};
+let unread_count = 0;
+let pm_count = 0;
 
 exports.redraw_title = function () {
-    // Update window title and favicon to reflect unread messages in current view
-    let n;
-
+    // Update window title to reflect unread messages in current view
     const new_title =
-        (new_message_count ? "(" + new_message_count + ") " : "") +
+        (unread_count ? "(" + unread_count + ") " : "") +
         narrow.narrow_title +
         " - " +
         page_params.realm_name +
         " - " +
         "Zulip";
 
-    if (document.title === new_title) {
+    document.title = new_title;
+};
+
+exports.update_unread_counts = function (new_unread_count, new_pm_count) {
+    if (new_unread_count === unread_count && new_pm_count === pm_count) {
         return;
     }
 
-    document.title = new_title;
+    unread_count = new_unread_count;
+    pm_count = new_pm_count;
 
-    // IE doesn't support PNG favicons, *shrug*
-    if (!/msie/i.test(navigator.userAgent)) {
-        // Indicate the message count in the favicon
-        if (new_message_count) {
-            // Make sure we're working with a number, as a defensive programming
-            // measure.  And we don't have images above 99, so display those as
-            // 'infinite'.
-            n = Number(new_message_count);
-            if (n > 99) {
-                n = "infinite";
-            }
-
-            current_favicon = previous_favicon = "/static/images/favicon/favicon-" + n + ".png?v=4";
-        } else {
-            current_favicon = previous_favicon = "/static/images/favicon.svg?v=4";
-        }
-        favicon.set(current_favicon);
-    }
+    // Indicate the message count in the favicon
+    favicon.update_favicon(unread_count, pm_count);
 
     // Notify the current desktop app's UI about the new unread count.
     if (window.electron_bridge !== undefined) {
-        window.electron_bridge.send_event("total_unread_count", new_message_count);
+        window.electron_bridge.send_event("total_unread_count", unread_count);
     }
-};
 
-function flash_pms() {
-    // When you have unread PMs, toggle the favicon between the unread count and
-    // a special icon indicating that you have unread PMs.
-    if (unread.get_counts().private_message_count > 0) {
-        if (current_favicon === unread_pms_favicon) {
-            favicon.set(previous_favicon);
-            current_favicon = previous_favicon;
-            previous_favicon = unread_pms_favicon;
-        } else {
-            favicon.set(unread_pms_favicon);
-            previous_favicon = current_favicon;
-            current_favicon = unread_pms_favicon;
-        }
-        // Toggle every 2 seconds.
-        setTimeout(flash_pms, 2000);
-    } else {
-        flashing = false;
-        // You have no more unread PMs, so back to only showing the unread
-        // count.
-        favicon.set(current_favicon);
-    }
-}
-
-exports.update_pm_count = function () {
     // TODO: Add a `window.electron_bridge.updatePMCount(new_pm_count);` call?
-    if (!flashing) {
-        flashing = true;
-        flash_pms();
-    }
+
+    exports.redraw_title();
 };
 
 exports.is_window_focused = function () {

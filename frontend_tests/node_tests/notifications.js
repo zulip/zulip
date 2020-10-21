@@ -1,5 +1,7 @@
 "use strict";
 
+const rewiremock = require("rewiremock/node");
+
 // Dependencies
 set_global(
     "$",
@@ -32,7 +34,9 @@ zrequire("ui");
 zrequire("spoilers");
 spoilers.hide_spoilers_in_notification = () => {};
 
-zrequire("notifications");
+rewiremock.proxy(() => zrequire("notifications"), {
+    "../../static/js/favicon": {},
+});
 
 // Not muted streams
 const general = {
