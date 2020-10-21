@@ -43,7 +43,7 @@ repository.
 ## fetch
 Fetching a branch means to get the branch's head ref from a remote
 repository, to find out which objects are missing from the local
-object database, and to get them, too. See also git-fetch(1).
+object database, and to get them, too. See also [git-fetch(1)](https://git-scm.com/docs/git-fetch)
 
 ## hash
 In Git's context, synonym for object name.
@@ -51,7 +51,7 @@ In Git's context, synonym for object name.
 ## head
 A named reference to the commit at the tip of a branch. Heads are
 stored in a file in $GIT_DIR/refs/heads/ directory, except when
-using packed refs. (See git-pack-refs(1).)
+using packed refs. See also [git-pack-refs(1)](https://git-scm.com/docs/git-pack-refs).
 
 ## HEAD
 The current branch. In more detail: Your working tree is normally
@@ -67,8 +67,7 @@ tree. Truth be told, it can also contain a second, and even a third
 version of a working tree, which are used when merging.
 
 ## pull
-Pulling a branch means to fetch it and merge it. See also git-
-pull(1).
+Pulling a branch means to fetch it and merge it. See also [git-pull(1)](https://git-scm.com/docs/git-pull)
 
 ## push
 Pushing a branch means to get the branch's head ref from a remote
