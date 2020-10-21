@@ -185,8 +185,8 @@ django-bitfield==2.0.1 \
     --hash=sha256:83bfa27da718caff436f646369ce58e2d9f922e1f3d65a93f0b731a835cbfc58 \
     --hash=sha256:ab340eb50cdb1e8c005594b9f8170a95a698102d06cf3f5031763be2750a8862 \
     # via -r requirements/common.in
-django-cookies-samesite==0.6.6 \
-    --hash=sha256:a26dc27bfc446279c981a301b053eff845b93d9ba62798e281c90584a7ccaa4a \
+django-cookies-samesite==0.7.0 \
+    --hash=sha256:843f6c5cb5d27d84b8150760f3ef2868082d716462410b67185de0097bbbb26c \
     # via -r requirements/common.in
 django-formtools==2.2 \
     --hash=sha256:304fa777b8ef9e0693ce7833f885cb89ba46b0e46fc23b01176900a93f46742f \
