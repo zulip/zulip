@@ -179,9 +179,29 @@ json_error(_('English Text'))
 JsonableError(_('English Text'))
 ```
 
-If you're declaring a string at top level or in a class, you need to
+If you're declaring a user-facing string at top level or in a class, you need to
 use `ugettext_lazy` instead, to ensure that the translation happens at
-request-processing time when Django knows what language to use.
+request-processing time when Django knows what language to use, e.g.:
+
+```python
+from zproject.backends import check_password_strength, email_belongs_to_ldap
+
+AVATAR_CHANGES_DISABLED_ERROR = ugettext_lazy("Avatar changes are disabled in this organization.")
+
+def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
+  ...
+```
+
+```python
+class Realm(models.Model):
+    MAX_REALM_NAME_LENGTH = 40
+    MAX_REALM_SUBDOMAIN_LENGTH = 40
+
+    ...
+    ...
+
+    STREAM_EVENTS_NOTIFICATION_TOPIC = ugettext_lazy('stream events')
+```
 
 To ensure we always internationalize our JSON errors messages, the
 Zulip linter (`tools/lint`) attempts to verify correct usage.
