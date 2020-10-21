@@ -150,6 +150,7 @@ exports.exit_search = function () {
         // for "searching narrows", we redirect
         window.location.href = filter.generate_redirect_url();
     }
+    $(".app").trigger("focus");
 };
 
 exports.initialize = function () {
