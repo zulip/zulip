@@ -13,6 +13,7 @@ from django.core.management.commands import compilemessages
 from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
 from django.utils.translation.trans_real import to_language
+from pyuca import Collator
 
 
 class Command(compilemessages.Command):
@@ -45,7 +46,8 @@ class Command(compilemessages.Command):
                 del lang_info['name_local']
                 lang_list.append(lang_info)
 
-            lang_list.sort(key=lambda lang: lang['name'])
+            collator = Collator()
+            lang_list.sort(key=lambda lang: collator.sort_key(lang['name']))
 
         with open(output_path, 'wb') as output_file:
             output_file.write(

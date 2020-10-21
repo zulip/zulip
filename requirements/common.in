@@ -189,3 +189,6 @@ sentry-sdk
 
 # For detecting URLs to link
 tlds
+
+# Unicode Collation Algorithm for sorting multilingual strings
+pyuca

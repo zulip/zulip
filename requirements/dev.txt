@@ -947,6 +947,10 @@ pytz==2020.1 \
     --hash=sha256:a494d53b6d39c3c6e44c3bec237336e14305e4f29bbf800b599253057fbb79ed \
     --hash=sha256:c35965d010ce31b23eeb663ed3cc8c906275d6be1a34393a1d73a41febf4a048 \
     # via -r requirements/common.in, babel, django, moto, twilio
+pyuca==1.2 \
+    --hash=sha256:8a382fe74627f08c0d18908c0713ca4a20aad5385f077579e56208beea2893b2 \
+    --hash=sha256:abaa12e1bd2c7c68ca8396ff8383bc0654a739cef3ae68fd7af58bf29af0a91e \
+    # via -r requirements/common.in
 pywatchman==1.4.1 \
     --hash=sha256:d0047eb275deafb0011eda0a1a815fbd9742478c3d2b5ad6956d300e447dc2f9 \
     # via pyre-check
