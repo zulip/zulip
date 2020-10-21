@@ -124,8 +124,9 @@ making it convenient to do a quick call to hash out an idea.
 ### Import from Slack, Mattermost, or Gitter.
 
 Import your existing organization from [Slack](/help/import-from-slack),
-[Mattermost](/help/import-from-mattermost), or
-[Gitter](/help/import-from-gitter).
+[Mattermost](/help/import-from-mattermost),
+[Gitter](/help/import-from-gitter) or
+[RocketChat](/help/import-from-rocketchat).
 
 ### Moderation suite.
 
