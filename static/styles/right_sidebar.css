@@ -1,5 +1,5 @@
 .right-sidebar {
-    font-size: 14px;
+    font-size: 0.875rem;
 
     a:hover {
         text-decoration: none;
@@ -120,7 +120,7 @@
         padding: 0 4px;
         background-color: hsl(105, 2%, 50%);
         color: hsl(0, 0%, 100%);
-        font-size: 12px;
+        font-size: 0.75rem;
         line-height: 14px;
         height: 15px;
         font-weight: normal;
@@ -178,7 +178,7 @@
     }
 
     #user_filter_icon {
-        font-size: 13px;
+        font-size: 0.8125rem;
         opacity: 0.5;
         margin-right: 5px;
     }
@@ -188,7 +188,7 @@
     position: fixed;
     bottom: 8px; /* bottom padding of .compose-content */
     cursor: pointer;
-    font-size: 20px;
+    font-size: 1.25rem;
 }
 
 #sidebar-keyboard-shortcuts {

@@ -1663,7 +1663,7 @@ nav {
     color: hsl(0, 0%, 100%);
     opacity: 0.5;
     position: absolute;
-    font-size: 36px;
+    font-size: 2.25rem;
     top: 40%;
 }
 
@@ -1968,7 +1968,7 @@ nav {
 
 .portico-landing.hello .integrations .integration-name {
     margin-top: 20px;
-    font-size: 22px;
+    font-size: 1.375rem;
     font-weight: 400;
 }
 
@@ -1976,7 +1976,7 @@ nav {
     width: 120px;
     margin: 0 auto 20px;
     font-weight: 400;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 
 .portico-landing.hello .call-to-action-bottom {
@@ -3873,6 +3873,6 @@ nav {
 #download-android-apk a {
     display: inline-block;
     color: hsl(0, 0%, 100%);
-    font-size: 13px;
+    font-size: 0.8125rem;
     padding-left: 10px;
 }

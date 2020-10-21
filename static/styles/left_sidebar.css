@@ -19,14 +19,14 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
         &::after {
             content: "#";
             line-height: 0;
-            font-size: 18px;
+            font-size: 1.125rem;
             font-weight: 800;
         }
     }
 }
 
 .stream-privacy {
-    font-size: 15px;
+    font-size: 0.9375rem;
     font-weight: 800;
     min-width: $left_col_size;
     text-align: center;
@@ -44,13 +44,13 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 
 #stream_filters,
 #global_filters {
-    font-size: 14px;
+    font-size: 0.875rem;
     margin-right: 12px;
 }
 
 li.show-more-topics {
     a {
-        font-size: 12px;
+        font-size: 0.75rem;
     }
 }
 
@@ -58,7 +58,7 @@ li.show-more-topics {
 #streams_filter_icon {
     float: right;
     opacity: 0.5;
-    font-size: 13px;
+    font-size: 0.8125rem;
     margin-top: 3px;
     margin-left: 10px;
 
@@ -276,18 +276,18 @@ li.top_left_recent_topics {
 
 .top_left_all_messages i.fa-home {
     position: relative;
-    font-size: 15px;
+    font-size: 0.9375rem;
 }
 
 .top_left_private_messages i.fa-envelope {
     position: relative;
     top: -1px;
-    font-size: 11px;
+    font-size: 0.6875rem;
 }
 
 .top_left_mentions i.fa-at,
 .top_left_starred_messages i.fa-star {
-    font-size: 13px;
+    font-size: 0.8125rem;
 }
 
 /* We are mostly consistent in how we style
@@ -305,7 +305,7 @@ li.top_left_recent_topics {
     padding: 0 4px;
     height: 16px;
     line-height: 16px;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: normal;
     letter-spacing: 0.6px;
     border-radius: 4px;
@@ -428,7 +428,7 @@ ul.topic-list {
 
 ul.expanded_private_messages {
     list-style-type: none;
-    font-size: 13px;
+    font-size: 0.8125rem;
     font-weight: 400;
     margin-left: 0;
     padding-bottom: 2px;

@@ -127,7 +127,7 @@ html {
         }
 
         p {
-            font-size: 19px;
+            font-size: 1.1875rem;
         }
     }
 }
@@ -924,7 +924,7 @@ button#register_auth_button_gitlab {
     position: relative;
     top: 15px;
     margin-bottom: 20px;
-    font-size: 22px;
+    font-size: 1.375rem;
 }
 
 #source_realm_select {
@@ -944,7 +944,7 @@ button#register_auth_button_gitlab {
     }
 
     #realm_redirect_external_host {
-        font-size: 20px;
+        font-size: 1.25rem;
         top: 13px;
         left: 5px;
         position: relative;
@@ -1028,7 +1028,7 @@ button#register_auth_button_gitlab {
             line-height: 38px;
 
             &::before {
-                font-size: 30px;
+                font-size: 1.875rem;
             }
         }
     }

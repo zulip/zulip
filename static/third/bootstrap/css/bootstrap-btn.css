@@ -35,7 +35,7 @@ THE SOFTWARE.
   display: inline-block;
   padding: 6px 12px;
   margin-bottom: 0;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: normal;
   line-height: 1.42857143;
   text-align: center;
@@ -361,21 +361,21 @@ fieldset[disabled] .btn-link:focus {
 .btn-large,
 .btn-group-large > .btn {
   padding: 10px 16px;
-  font-size: 18px;
+  font-size: 1.125rem;
   line-height: 1.33;
   border-radius: 0px;
 }
 .btn-small,
 .btn-group-small > .btn {
   padding: 5px 10px;
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.5;
   border-radius: 0px;
 }
 .btn-mini,
 .btn-group-mini > .btn {
   padding: 1px 5px;
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.5;
   border-radius: 0px;
 }

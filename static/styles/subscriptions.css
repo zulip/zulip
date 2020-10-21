@@ -83,7 +83,7 @@
 }
 
 .subscription_header .subscription_lock {
-    font-size: 23px;
+    font-size: 1.4375rem;
     display: inline-block;
     vertical-align: middle;
     margin-left: 12px;
@@ -217,7 +217,7 @@ form#add_new_subscription {
 .sub_settings_title {
     line-height: 30px;
     margin: 10px 0 0 0;
-    font-size: 16px;
+    font-size: 1rem;
 }
 
 .new-stream-name,
@@ -356,14 +356,14 @@ form#add_new_subscription {
 }
 
 #subscriptions h1 {
-    font-size: 25px;
+    font-size: 1.5625rem;
     font-weight: 300;
     padding-top: 40px;
 }
 
 #subscriptions .streams-icon {
     margin-right: 10px;
-    font-size: 20px;
+    font-size: 1.25rem;
 }
 
 .change-stream-privacy {

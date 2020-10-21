@@ -155,7 +155,7 @@ $category-text: hsl(219, 23%, 33%);
                     position: absolute;
                     left: 20px;
                     top: 13px;
-                    font-size: 19px;
+                    font-size: 1.1875rem;
                     color: $border-green;
                 }
 
@@ -251,7 +251,7 @@ $category-text: hsl(219, 23%, 33%);
 
             i {
                 margin-right: 10px;
-                font-size: 24px;
+                font-size: 1.5rem;
             }
 
             .dropdown-list {
@@ -361,7 +361,7 @@ $category-text: hsl(219, 23%, 33%);
         }
 
         .fa-plus {
-            font-size: 59px;
+            font-size: 3.6875rem;
         }
 
         .integration-name {
@@ -390,7 +390,7 @@ $category-text: hsl(219, 23%, 33%);
             }
 
             .fa-plus {
-                font-size: 45px;
+                font-size: 2.8125rem;
             }
 
             .integration-name {
@@ -520,7 +520,7 @@ $category-text: hsl(219, 23%, 33%);
                 }
 
                 @media (max-width: 768px) {
-                    font-size: 22px;
+                    font-size: 1.375rem;
                 }
             }
 

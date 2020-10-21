@@ -4,7 +4,7 @@ body {
     line-height: 150%;
     height: 100%;
     font-weight: 300;
-    font-size: 17px;
+    font-size: 1.0625rem;
 }
 
 html {
@@ -19,12 +19,12 @@ html {
 .digest-address-link {
     margin-top: 10px;
     color: hsl(0, 0%, 60%);
-    font-size: 12px;
+    font-size: 0.75rem;
     text-align: center;
 }
 
 .mac-cmd-key {
-    font-size: 15px;
+    font-size: 0.9375rem;
     font-family: monospace;
 }
 
@@ -275,7 +275,7 @@ html {
 
 .title {
     font-family: Helvetica;
-    font-size: 100px;
+    font-size: 6.25rem;
     font-weight: bold;
     margin-top: 50px;
     margin-bottom: 60px;
@@ -694,7 +694,7 @@ input.text-error {
 a.bottom-signup-button {
     color: hsl(0, 0%, 100%) !important;
     text-decoration: none !important;
-    font-size: 20px;
+    font-size: 1.25rem;
     padding: 20px;
     margin-top: 30px;
     margin-bottom: 30px;
@@ -711,17 +711,17 @@ a.bottom-signup-button {
     margin-bottom: 20px;
     padding-top: 0;
     text-align: center;
-    font-size: 16px;
+    font-size: 1rem;
 }
 
 .portico-large-text {
-    font-size: 16px;
+    font-size: 1rem;
     line-height: 20px;
 }
 
 .portico-secondary-header {
     font-weight: 300;
-    font-size: 25px;
+    font-size: 1.5625rem;
 }
 
 .table.table-striped {
@@ -898,7 +898,7 @@ input#terminal:checked ~ #tab-terminal {
 
 .login-page-subheader {
     font-weight: 300;
-    font-size: 24px;
+    font-size: 1.5rem;
     display: block;
     margin: auto;
     width: 300px;
@@ -909,7 +909,7 @@ input#terminal:checked ~ #tab-terminal {
 
 .apps-muted {
     font-weight: 300;
-    font-size: 20px;
+    font-size: 1.25rem;
     display: block;
     margin: auto;
     text-align: center;
@@ -918,11 +918,11 @@ input#terminal:checked ~ #tab-terminal {
 
 .apps-instructions-header {
     font-weight: 300;
-    font-size: 25px;
+    font-size: 1.5625rem;
 }
 
 .btn-app-download {
-    font-size: 25px;
+    font-size: 1.5625rem;
     margin-top: 15px;
     margin-bottom: 15px;
 }
@@ -931,7 +931,7 @@ input#terminal:checked ~ #tab-terminal {
     margin-top: 0;
     margin-bottom: 0;
     padding: 8px;
-    font-size: 18px;
+    font-size: 1.125rem;
     border-radius: 0;
     min-width: 300px;
 }
@@ -1051,13 +1051,13 @@ input.new-organization-button {
     font-weight: 300;
 
     .tagline {
-        font-size: 40px;
+        font-size: 2.5rem;
         line-height: 42px;
     }
 
     .footnote {
         display: block;
-        font-size: 18px;
+        font-size: 1.125rem;
         color: hsl(0, 0%, 0%);
         margin-top: 15px;
     }
@@ -1066,7 +1066,7 @@ input.new-organization-button {
 .main-signup-button {
     margin-top: 15px;
     margin-bottom: 15px;
-    font-size: 22px;
+    font-size: 1.375rem;
 }
 
 .app-main,
@@ -1122,7 +1122,7 @@ input.new-organization-button {
         color: hsl(0, 0%, 100%);
         padding: 2px 7px 1px 8px;
         font-weight: 600;
-        font-size: 16px;
+        font-size: 1rem;
         transition: all 0.2s ease-in;
         border-radius: 4px;
 
@@ -1140,7 +1140,7 @@ input.new-organization-button {
 
 .button-muted {
     display: block;
-    font-size: 12px;
+    font-size: 0.75rem;
     color: hsl(0, 0%, 87%);
 }
 
@@ -1290,7 +1290,7 @@ input.new-organization-button {
         margin-top: 20px;
         padding: 5px 10px;
         border-radius: 2px;
-        font-size: 16px;
+        font-size: 1rem;
         font-weight: 300;
     }
 }
@@ -1324,7 +1324,7 @@ input.new-organization-button {
     max-width: 500px;
     background-color: hsl(0, 0%, 100%);
     box-shadow: 0 0 4px hsl(163, 43%, 46%);
-    font-size: 18px;
+    font-size: 1.125rem;
 
     &.config-error {
         max-width: 750px;
@@ -1342,7 +1342,7 @@ input.new-organization-button {
 
 .error_page .lead {
     color: hsl(163, 49%, 44%);
-    font-size: 35px;
+    font-size: 2.1875rem;
     margin-bottom: 20px;
     line-height: normal;
 }
@@ -1544,7 +1544,7 @@ input.new-organization-button {
 
     .main-headline-text {
         .tagline {
-            font-size: 32px;
+            font-size: 2rem;
             line-height: 34px;
         }
     }
@@ -1700,21 +1700,21 @@ label.label-title {
     .api-argument-required {
         text-transform: uppercase;
         font-weight: 600;
-        font-size: 12px;
+        font-size: 0.75rem;
         color: hsl(14, 75%, 60%);
     }
 
     .api-argument-optional {
         text-transform: uppercase;
         font-weight: 400;
-        font-size: 12px;
+        font-size: 0.75rem;
         color: hsl(0, 0%, 47%);
     }
 
     .api-argument-deprecated {
         text-transform: uppercase;
         font-weight: 600;
-        font-size: 12px;
+        font-size: 0.75rem;
         color: hsl(0, 50%, 60%);
     }
 }

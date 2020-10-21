@@ -47,7 +47,7 @@
     h4,
     h5,
     h6 {
-        font-size: 14px;
+        font-size: 0.875rem;
         font-weight: 600;
         line-height: 1.4;
         margin-top: 0;
@@ -265,7 +265,7 @@
         height: 40px;
         border: none;
         border-radius: 3px;
-        font-size: 25px;
+        font-size: 1.5625rem;
         color: hsl(0, 0%, 100%);
     }
 
@@ -362,7 +362,7 @@
         position: absolute;
         margin: var(--margin-top, 32px) 0 0 var(--margin-left, 45px);
         padding: 5px 8px 5px 10px;
-        font-size: 12px;
+        font-size: 0.75rem;
         border-radius: 4px;
         background-color: hsl(0, 0%, 0%);
         color: hsl(0, 0%, 100%);

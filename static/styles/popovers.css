@@ -88,7 +88,7 @@
                 border: 1px solid hsl(0, 0%, 80%);
                 border-radius: 4px;
                 color: hsl(0, 0%, 25%);
-                font-size: 12px;
+                font-size: 0.75rem;
                 padding: 6px;
                 text-transform: capitalize;
                 text-align: center;
@@ -125,7 +125,7 @@ ul {
             margin-bottom: 5px;
 
             .fa-chevron-right {
-                font-size: 12px;
+                font-size: 0.75rem;
             }
         }
 
@@ -133,7 +133,7 @@ ul {
             display: flex;
             align-items: center;
             text-align: center;
-            font-size: 10px;
+            font-size: 0.625rem;
 
             &::before,
             &::after {
@@ -278,7 +278,7 @@ ul {
     }
 
     #default-section {
-        font-size: 15px;
+        font-size: 0.9375rem;
         display: inline-block;
         vertical-align: top;
 
@@ -298,14 +298,14 @@ ul {
         }
 
         #name {
-            font-size: 26px;
+            font-size: 1.625rem;
             font-weight: 700;
             margin-bottom: 5px;
             max-width: 300px;
             line-height: 30px;
 
             #edit-button {
-                font-size: 18px;
+                font-size: 1.125rem;
                 margin-left: 10px;
             }
         }
@@ -328,7 +328,7 @@ ul {
             }
 
             .value {
-                font-size: 15px;
+                font-size: 0.9375rem;
             }
 
             &[data-type="2"] .value {
