@@ -69,3 +69,6 @@ cairosvg
 
 # Needed for tools/check-thirdparty
 python-debian
+
+# Included bson modue needed for rocketchat import
+pymongo
