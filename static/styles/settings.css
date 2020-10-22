@@ -1313,6 +1313,7 @@ input[type="checkbox"] {
             .text {
                 width: calc(100% - 90px);
                 padding: 0.625rem 0.75rem 0.625rem 0;
+                white-space: nowrap;
             }
 
             .icon {
