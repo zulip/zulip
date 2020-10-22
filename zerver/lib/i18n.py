@@ -73,13 +73,8 @@ def get_available_language_codes() -> List[str]:
 def get_language_translation_data(language: str) -> Dict[str, str]:
     if language == 'en':
         return {}
-    elif language == 'zh-hans':
-        language = 'zh_Hans'
-    elif language == 'zh-hant':
-        language = 'zh_Hant'
-    elif language == 'id-id':
-        language = 'id_ID'
-    path = os.path.join(settings.DEPLOY_ROOT, 'locale', language, 'translations.json')
+    locale = translation.to_locale(language)
+    path = os.path.join(settings.DEPLOY_ROOT, 'locale', locale, 'translations.json')
     try:
         with open(path, "rb") as reader:
             return orjson.loads(reader.read())
