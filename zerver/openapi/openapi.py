@@ -305,14 +305,14 @@ def validate_against_openapi_schema(content: Dict[str, Any], path: str,
             for validator_value in error.validator_value:
                 if validator_value.get("example").get("type") == error.instance.get("type"):
                     to_be_display_validator_value.append(validator_value)
-        except:
+        except Exception:
             pass
 
         try:
             for i_schema in error.schema.get('oneOf'):
                 if i_schema.get("example").get("type") == error.instance.get("type"):
                     to_be_display_schema.get('oneOf').append(i_schema)
-        except:
+        except Exception:
             pass
         raise ValidationError(
             message=error.message, validator=error.validator, path=error.path, instance=error.instance,
