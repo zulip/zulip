@@ -2,13 +2,20 @@ import render_favicon_svg from "../templates/favicon.svg.hbs";
 
 import favicon_font_url from "!url-loader!font-subset-loader2?glyphs=0123456789KMGT∞!source-sans-pro/TTF/SourceSansPro-Bold.ttf";
 
-let favicon_url;
+let favicon_state;
 
-export function set(url) {
-    $("#favicon").attr("href", url);
+function set_favicon() {
+    $("#favicon").attr("href", favicon_state.url);
 }
 
 export function update_favicon(new_message_count, pm_count) {
+    if (favicon_state !== undefined) {
+        favicon_state.image.removeEventListener("load", set_favicon);
+        favicon_state.image.src = "#";
+        URL.revokeObjectURL(favicon_state.url);
+        favicon_state = undefined;
+    }
+
     if (new_message_count === 0 && pm_count === 0) {
         $("#favicon").attr("href", "/static/images/favicon.svg?v=4");
         return;
@@ -30,16 +37,13 @@ export function update_favicon(new_message_count, pm_count) {
         favicon_font_url,
     });
 
-    if (favicon_url !== undefined) {
-        URL.revokeObjectURL(favicon_url);
-    }
-    favicon_url = URL.createObjectURL(new Blob([rendered_favicon], {type: "image/svg+xml"}));
+    favicon_state = {
+        url: URL.createObjectURL(new Blob([rendered_favicon], {type: "image/svg+xml"})),
+        image: new Image(),
+    };
 
     // Without loading the SVG in an Image first, Chrome mysteriously fails to
     // render the webfont (https://crbug.com/1140920).
-    const image = new Image();
-    image.src = favicon_url;
-    image.addEventListener("load", () => {
-        $("#favicon").attr("href", favicon_url);
-    });
+    favicon_state.image.src = favicon_state.url;
+    favicon_state.image.addEventListener("load", set_favicon);
 }
