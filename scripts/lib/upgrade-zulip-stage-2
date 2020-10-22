@@ -32,7 +32,6 @@ from scripts.lib.zulip_tools import (
     get_config_file,
     get_tornado_ports,
     parse_os_release,
-    set_config,
     su_to_zulip,
 )
 
@@ -124,9 +123,9 @@ if os.path.exists('/etc/init.d/postgresql'):
             postgres_version = default_postgres_version[(vendor, os_version)]
         else:
             error_desupported_os(vendor, os_version)
-        set_config(config_file, 'postgresql', 'version', postgres_version)
-        with open('/etc/zulip/zulip.conf', 'w') as zulipconf:
-            config_file.write(zulipconf)
+        subprocess.check_call([
+            "crudini", "--set", "/etc/zulip/zulip.conf",
+            "postgresql", "version", postgres_version])
 
 if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     # Remove legacy tsearch_extras package references
