@@ -82,6 +82,7 @@ from zerver.views.message_flags import (
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
 from zerver.views.muting import update_muted_topic
 from zerver.views.portico import (
+    app_download_link_redirect,
     apps_view,
     hello_view,
     landing_view,
@@ -728,6 +729,7 @@ i18n_urls = [
     path('features/', landing_view, {'template_name': 'zerver/features.html'}),
     path('plans/', plans_view, name='plans'),
     path('apps/', apps_view),
+    path('apps/download/<platform>', app_download_link_redirect),
     path('apps/<platform>', apps_view),
     path('team/', team_view),
     path('history/', landing_view, {'template_name': 'zerver/history.html'}),
