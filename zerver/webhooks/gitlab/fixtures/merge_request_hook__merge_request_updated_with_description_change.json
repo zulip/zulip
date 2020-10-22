@@ -7,7 +7,7 @@
    },
    "project":{
       "name":"my-awesome-project",
-      "description":"",
+      "description":"Some Lengthy Description that is always shown but shouldnt be",
       "web_url":"https://gitlab.com/tomaszkolek0/my-awesome-project",
       "avatar_url":null,
       "git_ssh_url":"git@gitlab.com:tomaszkolek0/my-awesome-project.git",
@@ -36,7 +36,7 @@
       "merge_status":"can_be_merged",
       "target_project_id":1534233,
       "iid":3,
-      "description":"updated desc",
+      "description":"description of merge request -- object attributes",
       "position":0,
       "locked_at":null,
       "updated_by_id":670043,
@@ -53,7 +53,7 @@
       "in_progress_merge_commit_sha":null,
       "source":{
          "name":"my-awesome-project",
-         "description":"",
+         "description":"Some Lengthy Description that is always shown but shouldnt be",
          "web_url":"https://gitlab.com/tomaszkolek0/my-awesome-project",
          "avatar_url":null,
          "git_ssh_url":"git@gitlab.com:tomaszkolek0/my-awesome-project.git",
@@ -97,6 +97,35 @@
       "url":"https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3",
       "action":"update"
    },
+   "changes": {
+      "description": {
+        "previous": "description of merge request",
+        "current": "Test Zulip: Dummy Descrip ---------------- CHANGES"
+      },
+      "last_edited_at": {
+        "previous": null,
+        "current": "2020-10-16 07:15:31 UTC"
+      },
+      "last_edited_by_id": {
+        "previous": null,
+        "current": 7350577
+      },
+      "updated_at": {
+        "previous": "2020-10-16 07:15:31 UTC",
+        "current": "2020-10-16 07:15:31 UTC"
+      },
+      "assignees": {
+        "previous": [],
+        "current": [
+          {
+            "name": "Rohan Jayaram",
+            "username": "rohan.jyrm",
+            "avatar_url": "https://secure.gravatar.com/avatar/a2db3e7cae9eb094233a6ede81ab07f7?s=80&d=identicon",
+            "email": "rohan.jyrm@gmail.com"
+          }
+        ]
+      }
+    },
    "repository":{
       "name":"my-awesome-project",
       "url":"git@gitlab.com:tomaszkolek0/my-awesome-project.git",

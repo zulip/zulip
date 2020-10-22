@@ -10,7 +10,7 @@ const admin_settings_label = {
     // Organization settings
     realm_allow_community_topic_editing: i18n.t("Users can edit the topic of any message"),
     realm_allow_edit_history: i18n.t("Enable message edit history"),
-    realm_mandatory_topics: i18n.t("Require topics in stream messages"),
+    realm_mandatory_topics: i18n.t("Topics required by Ro in stream messages"),
     realm_notifications_stream: i18n.t("New stream notifications:"),
     realm_signup_notifications_stream: i18n.t("New user notifications:"),
     realm_inline_image_preview: i18n.t("Show previews of uploaded and linked images"),

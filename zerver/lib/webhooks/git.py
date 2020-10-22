@@ -130,8 +130,23 @@ def get_remove_branch_event_message(user_name: str, branch_name: str) -> str:
         user_name=user_name,
         branch_name=branch_name,
     )
+'''
+    return get_pull_request_event_message(
+        get_issue_user_name(payload),
+        action,
+        pull_request.get('url'),
+        pull_request.get('iid'),
+        pull_request.get('source_branch'),
+        pull_request.get('target_branch'),
+        pull_request.get('description'),
+        assignees=replace_assignees_username_with_name(get_assignees(payload)),
+        type='MR',
+        title=payload['object_attributes'].get('title') if include_title else None,
+    )
 
-def get_pull_request_event_message(user_name: str, action: str, url: str, number: Optional[int]=None,
+
+'''
+def get_pull_request_event_message(user_name: str, action: str, url: str, number: Optional[int]=None,     #function we modified
                                    target_branch: Optional[str]=None, base_branch: Optional[str]=None,
                                    message: Optional[str]=None, assignee: Optional[str]=None,
                                    assignees: Optional[List[Dict[str, Any]]]=None,

@@ -195,9 +195,11 @@ class Realm(models.Model):
     emails_restricted_to_domains: bool = models.BooleanField(default=False)
 
     invite_required: bool = models.BooleanField(default=True)
+    mandatory_topics: bool = models.BooleanField(default=False)
     invite_by_admins_only: bool = models.BooleanField(default=False)
     _max_invites: Optional[int] = models.IntegerField(null=True, db_column='max_invites')
     disallow_disposable_email_addresses: bool = models.BooleanField(default=True)
+  
     authentication_methods: BitHandler = BitField(
         flags=AUTHENTICATION_FLAGS, default=2**31 - 1,
     )
@@ -214,7 +216,6 @@ class Realm(models.Model):
     send_welcome_emails: bool = models.BooleanField(default=True)
     message_content_allowed_in_email_notifications: bool = models.BooleanField(default=True)
 
-    mandatory_topics: bool = models.BooleanField(default=False)
     add_emoji_by_admins_only: bool = models.BooleanField(default=False)
     name_changes_disabled: bool = models.BooleanField(default=False)
     email_changes_disabled: bool = models.BooleanField(default=False)

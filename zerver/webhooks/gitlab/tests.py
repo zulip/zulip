@@ -366,13 +366,22 @@ A trivial change that should probably be ignored.
             "merge_request_hook__merge_request_approved", expected_topic, expected_message
         )
 
-    def test_merge_request_updated_event_message(self) -> None:
+    def test_merge_request_updated_event_message_with_description_change(self) -> None:
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
-        expected_message = "Tomasz Kolek updated [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`:\n\n~~~ quote\nupdated desc\n~~~"
+        expected_message = "Tomasz Kolek updated [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`:\n\n~~~ quote\nTest Zulip: Dummy Descrip ---------------- CHANGES\n~~~"
         self.check_webhook(
-            'merge_request_hook__merge_request_updated',
+            'merge_request_hook__merge_request_updated_with_description_change',
             expected_topic,
             expected_message)
+
+    def test_merge_request_updated_event_message_without_description_change(self) -> None:
+        expected_topic = "my-awesome-project / MR #3 New Merge Request"
+        expected_message = "Tomasz Kolek updated [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`."
+        self.check_webhook(
+            'merge_request_hook__merge_request_updated_without_description_change',
+            expected_topic,
+            expected_message)
+
 
     def test_merge_request_added_commit_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
