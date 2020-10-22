@@ -272,7 +272,8 @@ def get_bucket(bucket_name: str, session: Optional[Session]=None) -> ServiceReso
     # for why this return type is a `ServiceResource`.
     if session is None:
         session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-    bucket = session.resource('s3').Bucket(bucket_name)
+    bucket = session.resource('s3', region_name=settings.S3_REGION,
+                              endpoint_url=settings.S3_ENDPOINT_URL).Bucket(bucket_name)
     return bucket
 
 def upload_image_to_s3(
@@ -326,7 +327,9 @@ def get_file_info(request: HttpRequest, user_file: File) -> Tuple[str, int, Opti
 
 def get_signed_upload_url(path: str) -> str:
     client = boto3.client('s3', aws_access_key_id=settings.S3_KEY,
-                          aws_secret_access_key=settings.S3_SECRET_KEY)
+                          aws_secret_access_key=settings.S3_SECRET_KEY,
+                          region_name=settings.S3_REGION,
+                          endpoint_url=settings.S3_ENDPOINT_URL)
     return client.generate_presigned_url(ClientMethod='get_object',
                                          Params={
                                              'Bucket': settings.S3_AUTH_UPLOADS_BUCKET,
@@ -601,7 +604,9 @@ class S3UploadBackend(ZulipUploadBackend):
         session = botocore.session.get_session()
         config = Config(signature_version=botocore.UNSIGNED)
 
-        public_url = session.create_client('s3', config=config).generate_presigned_url(
+        public_url = session.create_client('s3', region_name=settings.S3_REGION,
+                                           endpoint_url=settings.S3_ENDPOINT_URL,
+                                           config=config).generate_presigned_url(
             'get_object',
             Params={
                 'Bucket': self.avatar_bucket.name,
