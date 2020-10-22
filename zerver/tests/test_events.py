@@ -1855,7 +1855,7 @@ class SubscribeActionTest(BaseAction):
             state_change_expected=include_subscribers)
         check_subscription_peer_remove('events[0]', events[0])
 
-        # Now remove the second user, to test the 'vacate' event flow
+        # Now remove the user himself, to test the 'remove' event flow
         action = lambda: bulk_remove_subscriptions(
             [self.example_user('hamlet')],
             [stream],
