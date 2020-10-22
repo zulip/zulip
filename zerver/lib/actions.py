@@ -2966,14 +2966,13 @@ def send_peer_subscriber_events(
         peer_user_ids = private_peer_dict[stream_id] - altered_user_ids
 
         if peer_user_ids:
-            for new_user_id in altered_user_ids:
-                event = dict(
-                    type="subscription",
-                    op=op,
-                    stream_id=stream_id,
-                    user_id=new_user_id,
-                )
-                send_event(realm, event, peer_user_ids)
+            event = dict(
+                type="subscription",
+                op=op,
+                stream_ids=[stream_id],
+                user_ids=sorted(list(altered_user_ids))
+            )
+            send_event(realm, event, peer_user_ids)
 
     public_stream_ids = [
         stream_id for stream_id in altered_user_dict
@@ -2984,19 +2983,25 @@ def send_peer_subscriber_events(
     if public_stream_ids:
         public_peer_ids = set(active_non_guest_user_ids(realm.id))
 
+        # TODO:
+        #
+        # We eventually want a special optimization for a single user that
+        # subscribes to many streams.  Right now we optimize for the other
+        # scenario, which is also kind of common--if we add/remove multiple
+        # users all for the same stream, we just send one event per stream.
+
         for stream_id in public_stream_ids:
             altered_user_ids = altered_user_dict[stream_id]
             peer_user_ids = public_peer_ids - altered_user_ids
 
             if peer_user_ids:
-                for new_user_id in altered_user_ids:
-                    event = dict(
-                        type="subscription",
-                        op=op,
-                        stream_id=stream_id,
-                        user_id=new_user_id,
-                    )
-                    send_event(realm, event, peer_user_ids)
+                event = dict(
+                    type="subscription",
+                    op=op,
+                    stream_ids=[stream_id],
+                    user_ids=sorted(list(altered_user_ids)),
+                )
+                send_event(realm, event, peer_user_ids)
 
 def send_peer_remove_events(
     realm: Realm,

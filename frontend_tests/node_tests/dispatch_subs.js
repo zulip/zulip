@@ -50,7 +50,7 @@ test("peer add/remove", (override) => {
 
     stream_data.add_sub({
         name: "devel",
-        stream_id: event.stream_id,
+        stream_id: event.stream_ids[0],
     });
 
     const subs_stub = global.make_stub();
@@ -111,11 +111,13 @@ test("add error handling", (override) => {
     });
 });
 
-test("peer event error handling (bad stream_ids)", () => {
+test("peer event error handling (bad stream_ids)", (override) => {
+    override("compose_fade.update_faded_users", () => {});
+
     const add_event = {
         type: "subscription",
         op: "peer_add",
-        stream_id: 99999,
+        stream_ids: [99999],
     };
 
     blueslip.expect("warn", "Cannot find stream for peer_add: 99999");
@@ -125,7 +127,7 @@ test("peer event error handling (bad stream_ids)", () => {
     const remove_event = {
         type: "subscription",
         op: "peer_remove",
-        stream_id: 99999,
+        stream_ids: [99999],
     };
 
     blueslip.expect("warn", "Cannot find stream for peer_remove: 99999");
@@ -133,6 +135,9 @@ test("peer event error handling (bad stream_ids)", () => {
 });
 
 test("peer event error handling (add_subscriber)", (override) => {
+    override("compose_fade.update_faded_users", () => {});
+    override("subs.update_subscribers_ui", () => {});
+
     stream_data.add_sub({
         name: "devel",
         stream_id: 1,
@@ -143,8 +148,8 @@ test("peer event error handling (add_subscriber)", (override) => {
     const add_event = {
         type: "subscription",
         op: "peer_add",
-        stream_id: 1,
-        user_id: 99999, // id is irrelevant
+        stream_ids: [1],
+        user_ids: [99999], // id is irrelevant
     };
 
     blueslip.expect("warn", "Cannot process peer_add event");
@@ -156,8 +161,8 @@ test("peer event error handling (add_subscriber)", (override) => {
     const remove_event = {
         type: "subscription",
         op: "peer_remove",
-        stream_id: 1,
-        user_id: 99999, // id is irrelevant
+        stream_ids: [1],
+        user_ids: [99999], // id is irrelevant
     };
 
     blueslip.expect("warn", "Cannot process peer_remove event.");

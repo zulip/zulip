@@ -589,8 +589,8 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to other users when a user has been subscribed to a
-                                stream. Sent to all users if the stream is public or to only
+                                Event sent to other users when users have been subscribed to
+                                streams. Sent to all users if the stream is public or to only
                                 the existing subscribers if the stream is private.
                               properties:
                                 id:
@@ -603,14 +603,18 @@ paths:
                                   type: string
                                   enum:
                                     - peer_add
-                                stream_id:
-                                  type: integer
+                                stream_ids:
+                                  type: array
                                   description: |
-                                    The ID of the stream to which the user has subscribed.
-                                user_id:
-                                  type: integer
+                                    The IDs of the streams to which the user has subscribed.
+                                  items:
+                                    type: integer
+                                user_ids:
+                                  type: array
                                   description: |
-                                    The ID of the user who subscribed.
+                                    The IDs of the users who subscribed.
+                                  items:
+                                    type: integer
                               additionalProperties: false
                               example:
                                 {
@@ -622,8 +626,8 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to other users when a user has been unsubscribed
-                                from a stream. Sent to all users if the stream is public or to only
+                                Event sent to other users when users have been unsubscribed
+                                from streams. Sent to all users if the stream is public or to only
                                 the existing subscribers if the stream is private.
                               properties:
                                 id:
@@ -636,15 +640,19 @@ paths:
                                   type: string
                                   enum:
                                     - peer_remove
-                                stream_id:
-                                  type: integer
+                                stream_ids:
+                                  type: array
                                   description: |
-                                    The ID of the stream from which the user has been
+                                    The IDs of the streams from which the users have been
                                     unsubscribed from.
-                                user_id:
-                                  type: integer
+                                  items:
+                                    type: integer
+                                user_ids:
+                                  type: array
                                   description: |
-                                    The ID of the user who has been unsubscribed.
+                                    The IDs of the users who have been unsubscribed.
+                                  items:
+                                    type: integer
                               additionalProperties: false
                               example:
                                 {

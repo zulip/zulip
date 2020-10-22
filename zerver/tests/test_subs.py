@@ -2973,7 +2973,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 )
         self.assert_length(queries, 37)
 
-        self.assert_length(events, 6)
+        self.assert_length(events, 5)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
             if ev['event']['op'] == 'add':
                 self.assertEqual(
@@ -3014,7 +3014,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(len(add_peer_event['users']), 11)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
-        self.assertEqual(add_peer_event['event']['user_id'], self.user_profile.id)
+        self.assertEqual(add_peer_event['event']['user_ids'], [self.user_profile.id])
 
         stream = get_stream('multi_user_stream', realm)
         self.assertEqual(num_subscribers_for_stream_id(stream.id), 3)
@@ -3046,7 +3046,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(len(add_peer_event['users']), 11)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
-        self.assertEqual(add_peer_event['event']['user_id'], user_profile.id)
+        self.assertEqual(add_peer_event['event']['user_ids'], [user_profile.id])
 
     def test_private_stream_subscription(self) -> None:
         realm = get_realm("zulip")
@@ -3087,7 +3087,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(len(add_peer_event['users']), 3)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
-        self.assertEqual(add_peer_event['event']['user_id'], user_profile.id)
+        self.assertEqual(add_peer_event['event']['user_ids'], [user_profile.id])
 
         # Do not send stream creation event to realm admin users
         # even if realm admin is subscribed to stream cause realm admin already get
@@ -3109,7 +3109,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(len(add_peer_event['users']), 1)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
-        self.assertEqual(add_peer_event['event']['user_id'], self.example_user("iago").id)
+        self.assertEqual(add_peer_event['event']['user_ids'], [self.example_user("iago").id])
 
     def test_subscribe_to_stream_post_policy_admins_stream(self) -> None:
         """
@@ -3211,18 +3211,19 @@ class SubscriptionAPITest(ZulipTestCase):
                 dict(principals=orjson.dumps(new_user_ids_to_subscribe).decode()),
             )
 
-        add_peer_events = [events[2], events[3]]
-        for add_peer_event in add_peer_events:
-            self.assertEqual(add_peer_event['event']['type'], 'subscription')
-            self.assertEqual(add_peer_event['event']['op'], 'peer_add')
-            event_sent_to_ids = add_peer_event['users']
-            for user_id in new_user_ids_to_subscribe:
-                # Make sure new users subscribed to stream is not in
-                # peer_add event recipient list
-                self.assertNotIn(user_id, event_sent_to_ids)
-            for old_user in orig_user_ids_to_subscribe:
-                # Check non new users are in peer_add event recipient list.
-                self.assertIn(old_user, event_sent_to_ids)
+        add_peer_events = [event for event in events if event["event"].get("op") == "peer_add"]
+        (add_peer_event,) = add_peer_events
+
+        self.assertEqual(add_peer_event["event"]["type"], "subscription")
+        self.assertEqual(add_peer_event["event"]["op"], "peer_add")
+        event_sent_to_ids = add_peer_event["users"]
+        for user_id in new_user_ids_to_subscribe:
+            # Make sure new users subscribed to stream is not in
+            # peer_add event recipient list
+            self.assertNotIn(user_id, event_sent_to_ids)
+        for old_user in orig_user_ids_to_subscribe:
+            # Check non new users are in peer_add event recipient list.
+            self.assertIn(old_user, event_sent_to_ids)
 
     def test_users_getting_remove_peer_event(self) -> None:
         """
@@ -3233,6 +3234,7 @@ class SubscriptionAPITest(ZulipTestCase):
         user3 = self.example_user("hamlet")
         user4 = self.example_user("iago")
         user5 = self.example_user("AARON")
+        guest = self.example_user("polonius")
 
         stream1 = self.make_stream('stream1')
         stream2 = self.make_stream('stream2')
@@ -3266,49 +3268,36 @@ class SubscriptionAPITest(ZulipTestCase):
         peer_events = [e for e in events
                        if e['event'].get('op') == 'peer_remove']
 
-        notifications = set()
+        # We only care about a subset of users when we inspect
+        # peer_remove events.
+        our_user_ids = {
+            user1.id,
+            user2.id,
+            user3.id,
+            user4.id,
+            user5.id,
+            guest.id,
+        }
+
+        notifications = []
         for event in peer_events:
-            for user_id in event['users']:
-                stream_id = event['event']['stream_id']
-                stream_name = Stream.objects.get(id=stream_id).name
-                removed_user_id = event['event']['user_id']
-                notifications.add((user_id, removed_user_id, stream_name))
+            (stream_id,) = event['event']['stream_ids']
+            stream_name = Stream.objects.get(id=stream_id).name
+            removed_user_ids = set(event['event']['user_ids'])
+            notified_user_ids = set(event['users']) & our_user_ids
+            notifications.append((stream_name, removed_user_ids, notified_user_ids))
 
-        # POSITIVE CASES FIRST
-        self.assertIn((user3.id, user1.id, 'stream1'), notifications)
-        self.assertIn((user4.id, user1.id, 'stream1'), notifications)
+        notifications.sort(key=lambda tup: tup[0])
 
-        self.assertIn((user3.id, user2.id, 'stream1'), notifications)
-        self.assertIn((user4.id, user2.id, 'stream1'), notifications)
-
-        self.assertIn((user1.id, user2.id, 'stream2'), notifications)
-        self.assertIn((user3.id, user2.id, 'stream2'), notifications)
-        self.assertIn((user4.id, user2.id, 'stream2'), notifications)
-
-        self.assertIn((user1.id, user2.id, 'stream3'), notifications)
-        self.assertIn((user3.id, user2.id, 'stream3'), notifications)
-        self.assertIn((user4.id, user2.id, 'stream3'), notifications)
-
-        self.assertIn((user3.id, user1.id, 'private_stream'), notifications)
-        self.assertIn((user3.id, user2.id, 'private_stream'), notifications)
-
-        self.assertIn((user4.id, user1.id, 'private_stream'), notifications)
-        self.assertIn((user4.id, user2.id, 'private_stream'), notifications)
-
-        # NEGATIVE
-
-        # don't be notified if you are being removed yourself
-        self.assertNotIn((user1.id, user1.id, 'stream1'), notifications)
-
-        # don't send false notifications for folks that weren't actually
-        # subscribed int he first place
-        self.assertNotIn((user3.id, user1.id, 'stream2'), notifications)
-
-        # don't send notifications for random people
-        self.assertNotIn((user3.id, user4.id, 'stream2'), notifications)
-
-        # don't send notifications to unsubscribed non realm admin users for private streams
-        self.assertNotIn((user5.id, user1.id, 'private_stream'), notifications)
+        self.assertEqual(
+            notifications,
+            [
+                ("private_stream", {user1.id, user2.id}, {user3.id, user4.id}),
+                ("stream1", {user1.id, user2.id}, {user3.id, user4.id, user5.id}),
+                ("stream2", {user2.id}, {user1.id, user3.id, user4.id, user5.id}),
+                ("stream3", {user2.id}, {user1.id, user3.id, user4.id, user5.id}),
+            ],
+        )
 
     def test_bulk_subscribe_MIT(self) -> None:
         mit_user = self.mit_user('starnine')
