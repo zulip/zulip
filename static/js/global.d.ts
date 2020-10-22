@@ -25,6 +25,7 @@ declare let channel: any;
 declare let click_handlers: any;
 declare let color_data: any;
 declare let colorspace: any;
+declare let comfortable_mode: any;
 declare let common: any;
 declare let components: any;
 declare let compose: any;

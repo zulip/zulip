@@ -104,6 +104,7 @@ import "../message_scroll";
 import "../info_overlay";
 import "../ui";
 import "../night_mode";
+import "../comfortable_mode";
 import "../ui_util";
 import "../click_handlers";
 import "../settings_panel_menu";
@@ -225,6 +226,7 @@ import "../../styles/recent_topics.css";
 import "../../styles/typing_notifications.css";
 import "../../styles/hotspots.css";
 import "../../styles/night_mode.css";
+import "../../styles/comfortable_mode.css";
 import "../../styles/user_status.css";
 import "../../styles/widgets.css";
 

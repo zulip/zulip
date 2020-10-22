@@ -142,6 +142,7 @@
                 "click_handlers": false,
                 "color_data": false,
                 "colorspace": false,
+                "comfortable_mode": false,
                 "common": false,
                 "components": false,
                 "compose": false,
