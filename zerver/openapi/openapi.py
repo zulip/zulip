@@ -9,6 +9,7 @@ import os
 import re
 from typing import Any, Dict, List, Optional, Set
 
+from jsonschema.exceptions import ValidationError
 from openapi_core import create_spec
 from openapi_core.testing import MockRequest
 from openapi_core.validation.request.validators import RequestValidator
@@ -291,7 +292,35 @@ def validate_against_openapi_schema(content: Dict[str, Any], path: str,
         # TODO: Remove this after all events have been documented.
         fix_events(content)
     validator = OAS30Validator(schema)
-    validator.validate(content)
+    try:
+        validator.validate(content)
+    except ValidationError as error:
+        to_be_display_schema = {
+            "nullable": False,
+            "oneOf": []
+        }
+
+        to_be_display_validator_value = []
+        try:
+            for validator_value in error.validator_value:
+                if validator_value.get("example").get("type") == error.instance.get("type"):
+                    to_be_display_validator_value.append(validator_value)
+        except:
+            pass
+
+        try:
+            for i_schema in error.schema.get('oneOf'):
+                if i_schema.get("example").get("type") == error.instance.get("type"):
+                    to_be_display_schema.get('oneOf').append(i_schema)
+        except:
+            pass
+        raise ValidationError(
+            message=error.message, validator=error.validator, path=error.path, instance=error.instance,
+            schema_path=error.schema_path, schema=to_be_display_schema,
+            validator_value=to_be_display_validator_value,
+            cause=error.cause
+        )
+
     return True
 
 def validate_schema(schema: Dict[str, Any]) -> None:
